@@ -1,8 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Grid, makeStyles } from '@material-ui/core';
+import { Box, Grid, Typography, makeStyles } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import classNames from 'classnames';
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import { MultiSelect } from '../../../../../components/Inputs/MultiSelect';
 import { DateInput } from '../../../../../components/Inputs/DateInput';
@@ -16,13 +15,19 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({ className }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { values, touched, errors, setFieldValue } = useFormikContext<any>();
+    console.log('values', values, !values.country);
+    // Get VRF if VRF id
+    // If VRF set form values
     return (
         <>
+            <Box mb={2}>
+                <Typography variant="h5">Vaccine request form</Typography>
+            </Box>
             <Grid container spacing={2}>
                 <Grid container item xs={12} spacing={2}>
                     <Grid item xs={6} md={3}>
                         <Field
-                            label="country.name"
+                            label="Country"
                             name="country.name"
                             component={SingleSelect}
                             disabled={false}
@@ -31,29 +36,29 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({ className }) => {
                     </Grid>
                     <Grid item xs={6} md={3}>
                         <Field
-                            label="obr_name"
+                            label="Campaign"
                             name="obr_name"
                             component={SingleSelect}
-                            disabled={false}
+                            disabled={!values.country}
                             required
                         />
                     </Grid>
                     <Grid item xs={6} md={3}>
                         <Field
-                            label="vaccine_type"
+                            label="Vaccine type"
                             name="vaccine_type"
                             component={SingleSelect}
-                            disabled={false}
+                            disabled={!values.obr_name}
                             required
                         />
                     </Grid>
                     <Grid item xs={6} md={3}>
                         {/* TODO handle values */}
                         <Field
-                            label="rounds"
+                            label="Rounds"
                             name="rounds"
                             component={MultiSelect}
-                            disabled={false}
+                            disabled={!values.vaccine_type}
                             required
                         />
                     </Grid>

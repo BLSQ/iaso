@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import React, { FunctionComponent } from 'react';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { Box, Button, Grid, Tab, Tabs, makeStyles } from '@material-ui/core';
@@ -11,12 +12,60 @@ import { useGoBack } from '../../../../../../../../hat/assets/js/apps/Iaso/routi
 import { useGetVrfDetails } from '../hooks/api';
 import { useTopBarTitle } from '../hooks/utils';
 import { VaccineRequestForm } from './VaccineRequestForm/VaccineRequestForm';
+import MESSAGES from '../messages';
+import { Vaccine } from '../../../../constants/types';
+import { Optional } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 const VRF = 'VRF';
 const VAR = 'VAR';
 const PREALERT = 'PREALERT';
 type Props = { router: Router };
 type TabValue = 'VRF' | 'VAR' | 'PREALERT';
+
+export type VRF = {
+    country: number;
+    campaign: string;
+    vaccine_type: Vaccine;
+    rounds: string; // 1,2
+    date_vrf_signature: string; // date in string form
+    quantity_ordered: number;
+    wastage_ratio: number;
+    date_vrf_reception: string; // date in string form
+    date_vrf_submission_orpg?: string; // date in string form
+    quantity_approved_orpg?: number;
+    date_orpg_approval?: string; // date in string form
+    date_vrf_submission_dg?: string; // date in string form
+    quantity_approved_dg?: number;
+    date_dg_approval?: string; // date in string form
+    comments?: string;
+};
+
+export type PreAlert = {
+    date_reception: string; // date in string form
+    po_number: string;
+    eta: string;
+    lot_number: number;
+    expiration_date: string; // date in string form
+    doses_shipped: number;
+    doses_recieved: number;
+    doses_per_vial: number;
+};
+
+export type VAR = {
+    report_date: string; // date in string form
+    po_number: number;
+    lot_number: number;
+    expiration_date: string; // date in string form
+    doses_shipped: number;
+    doses_recieved: number;
+    doses_per_vial: number;
+};
+
+type FormData = {
+    vrf: Optional<VRF>;
+    prealert: Optional<Partial<PreAlert>[]>;
+    var: Optional<Partial<VAR>[]>;
+};
 
 const useStyles = makeStyles(theme => {
     return {
@@ -38,11 +87,15 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
         defaultTab: (router.params.tab as TabValue) ?? VRF,
         baseUrl: VACCINE_SUPPLY_CHAIN_DETAILS,
     });
-    // const [tab, setTab] = useState<TabValue>(
-    //     (router.params.tab as TabValue) ?? VRF,
-    // );
-    const formik = useFormik({ initialValues: {}, onSubmit: async () => null });
+    // TODO Check if id and change style accordingly
 
+    const formik = useFormik<FormData>({
+        initialValues: {},
+        onSubmit: async () => null,
+        enableReinitialize: true,
+    });
+
+    // TODO refine enabled condition
     const { data: vrfDetails, isFetching } = useGetVrfDetails(router.params.id);
     const title = useTopBarTitle(vrfDetails);
     console.log('DATA', vrfDetails);
@@ -57,19 +110,28 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
                     }}
                     onChange={handleChangeTab}
                 >
-                    <Tab key={VRF} value={VRF} label={VRF} />
-                    <Tab key={PREALERT} value={PREALERT} label={PREALERT} />
-                    <Tab key={VAR} value={VAR} label={VAR} />
+                    <Tab
+                        key={VRF}
+                        value={VRF}
+                        label={formatMessage(MESSAGES.VRF)}
+                    />
+                    <Tab
+                        key={PREALERT}
+                        value={PREALERT}
+                        label={formatMessage(MESSAGES.PREALERT)}
+                        // disable if no saved VRF to avoid users trying to save prealert before vrf
+                        disabled={!vrfDetails}
+                    />
+                    <Tab
+                        key={VAR}
+                        value={VAR}
+                        label={formatMessage(MESSAGES.VAR)}
+                        // disable if no saved VRF to avoid users trying to save VAR before vrf
+                        disabled={!vrfDetails}
+                    />
                 </Tabs>
             </TopBar>
-            <Box
-                className={classNames(
-                    // classes.containerFullHeightNoTabPadded,
-                    classes.containerFullHeightPadded,
-                    classes.marginTopBig,
-                    // classes.root,
-                )}
-            >
+            <Box className={classNames(classes.containerFullHeightPadded)}>
                 <VaccineRequestForm
                     className={tab !== VRF ? classes.inactiveTab : undefined}
                 />
@@ -80,7 +142,7 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
                             className={classes.button}
                             color="primary"
                         >
-                            CANCEL
+                            {formatMessage(MESSAGES.cancel)}
                         </Button>
                     </Box>
                     <Box ml={2} mt={4}>
@@ -89,7 +151,9 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
                             className={classes.button}
                             color="primary"
                         >
-                            SAVE ACTIVE TAB
+                            {`${formatMessage(MESSAGES.save)} ${formatMessage(
+                                MESSAGES[tab],
+                            )}`}
                         </Button>
                     </Box>
                     <Box ml={2} mt={4}>
@@ -98,7 +162,7 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
                             className={classes.button}
                             color="primary"
                         >
-                            SAVE ALL AND CLOSE
+                            {formatMessage(MESSAGES.saveAll)}
                         </Button>
                     </Box>
                 </Grid>

@@ -73,6 +73,30 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.supplyChainStatus',
         defaultMessage: 'Supply chain status',
     },
+    save: {
+        id: 'iaso.label.save',
+        defaultMessage: 'Save',
+    },
+    cancel: {
+        id: 'iaso.label.cancel',
+        defaultMessage: 'Cancel',
+    },
+    PREALERT: {
+        id: 'iaso.polio.label.PREALERT',
+        defaultMessage: 'Pre-alert',
+    },
+    VAR: {
+        id: 'iaso.polio.label.VAR',
+        defaultMessage: 'VAR',
+    },
+    VRF: {
+        id: 'iaso.polio.label.VRF',
+        defaultMessage: 'VRF',
+    },
+    saveAll: {
+        id: 'iaso.polio.label.saveAll',
+        defaultMessage: 'Save all',
+    },
 });
 
 export default MESSAGES;

@@ -12,6 +12,7 @@ type Props = {
     withMarginTop?: boolean;
     clearable?: boolean;
     required?: boolean;
+    disabled?: boolean;
 };
 
 export const SingleSelect: FunctionComponent<Props> = ({
@@ -19,6 +20,7 @@ export const SingleSelect: FunctionComponent<Props> = ({
     label,
     field,
     form,
+    disabled = false,
     clearable = true,
     withMarginTop = false,
     required = false,
@@ -33,6 +35,7 @@ export const SingleSelect: FunctionComponent<Props> = ({
             withMarginTop={withMarginTop}
             value={field.value}
             options={options}
+            disabled={disabled}
             clearable={clearable}
             required={required}
             labelString={label}

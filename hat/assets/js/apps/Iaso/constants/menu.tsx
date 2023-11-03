@@ -34,6 +34,7 @@ import {
     SHOW_PAGES,
     SHOW_DHIS2_LINK,
     SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,
+    SHOW_DEV_FEATURES,
 } from '../utils/featureFlags';
 import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants';
 import { getChipColors } from './chipColors';
@@ -61,6 +62,7 @@ type MenuItem = {
     url?: string;
     // eslint-disable-next-line no-unused-vars
     isActive?: (pathname: string) => boolean;
+    dev?: boolean;
 };
 type MenuItems = MenuItem[];
 type Plugins = {
@@ -318,7 +320,9 @@ export const useMenuItems = (): MenuItems => {
     );
     // Find admin entry
     const admin = allBasicItems.find(item => item.key === 'settings');
-    const basicItems = allBasicItems.filter(item => item.key !== 'settings');
+    const basicItems = hasFeatureFlag(currentUser, SHOW_DEV_FEATURES)
+        ? allBasicItems.filter(item => item.key !== 'settings')
+        : allBasicItems.filter(item => item.dev);
 
     // add feature flags
     if (hasFeatureFlag(currentUser, SHOW_PAGES)) {

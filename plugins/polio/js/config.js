@@ -537,6 +537,7 @@ const menu = [
                     {
                         label: MESSAGES.vaccineSupplyChain,
                         key: 'supplychain',
+                        dev: true,
                         permissions: ['iaso_polio'],
                         icon: props => <MenuBookIcon {...props} />,
                     },

@@ -478,26 +478,26 @@ describe('Submissions', () => {
 
     it('advanced settings should filter correctly', () => {
         goToPage();
-        cy.get('[data-test="advanced-settings"]').click({ force: true });
+        cy.get('[data-test="advanced-settings"]').click();
         cy.get('[data-test="modificationDate"]')
             .find('[data-test="start-date"]')
             .find('input.MuiInputBase-input')
-            .clear({ force: true })
+            .clear()
             .type('14/07/2023');
         cy.get('[data-test="modificationDate"]')
             .find('[data-test="end-date"]')
             .find('input.MuiInputBase-input')
-            .clear({ force: true })
+            .clear()
             .type('15/07/2023');
         cy.get('[data-test="sentDate"]')
             .find('[data-test="start-date"]')
             .find('input.MuiInputBase-input')
-            .clear({ force: true })
+            .clear()
             .type('12/07/2023');
         cy.get('[data-test="sentDate"]')
             .find('[data-test="end-date"]')
             .find('input.MuiInputBase-input')
-            .clear({ force: true })
+            .clear()
             .type('13/07/2023');
         cy.wait('@getSubmissions')
             .then(() => {

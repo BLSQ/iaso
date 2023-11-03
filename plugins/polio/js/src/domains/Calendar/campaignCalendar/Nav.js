@@ -14,7 +14,7 @@ import {
 
 import ChevronLeft from '@mui/icons-material/ChevronLeft';
 import ArrowForward from '@mui/icons-material/ArrowForward';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { DesktopDatePicker as DatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 import ChevronRight from '@mui/icons-material/ChevronRight';
 import ArrowBack from '@mui/icons-material/ArrowBack';
 import Today from '@mui/icons-material/Today';

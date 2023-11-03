@@ -234,8 +234,12 @@ describe('Duplicate entities list', () => {
                 cy.get('[data-test="end-date"] input').type(25052010, {
                     force: true,
                 });
-                cy.get('#check-box-ignored').check();
-                cy.get('#check-box-merged').check();
+                cy.get('#check-box-ignored').check({
+                    force: true,
+                });
+                cy.get('#check-box-merged').check({
+                    force: true,
+                });
                 cy.fillTreeView('#ou-tree-input', 2, false);
 
                 cy.get('[data-test="search-button"]').click();

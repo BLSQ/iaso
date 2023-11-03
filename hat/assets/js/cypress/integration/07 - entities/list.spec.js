@@ -96,12 +96,8 @@ describe('Entities', () => {
             fixture: 'orgunits/details.json',
         });
         cy.get('#search-search').type(search);
-        cy.get('[data-test="start-date"] input').type('10032022', {
-            force: true,
-        });
-        cy.get('[data-test="end-date"] input').type('20032022', {
-            force: true,
-        });
+        cy.get('[data-test="start-date"] input').type('10032022');
+        cy.get('[data-test="end-date"] input').type('20032022');
         cy.fillSingleSelect('#submitterTeamId', 0);
 
         cy.wait('@getProfiles').then(() => {

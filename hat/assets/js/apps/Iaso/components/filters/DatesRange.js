@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@mui/styles';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { DesktopDatePicker as DatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 
 import { Grid, useTheme, useMediaQuery, Box, TextField } from '@mui/material';
 import {

@@ -478,7 +478,7 @@ describe('Submissions', () => {
 
     it('advanced settings should filter correctly', () => {
         goToPage();
-        cy.get('[data-test="advanced-settings"]').click();
+        cy.get('[data-test="advanced-settings"]').click({ force: true });
         cy.get('[data-test="modificationDate"]')
             .find('[data-test="start-date"]')
             .find('input.MuiInputBase-input')

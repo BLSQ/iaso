@@ -21,6 +21,8 @@ export const VaccineSupplyChainTable: FunctionComponent<Props> = ({
             params={params}
             columns={columns}
             baseUrl={VACCINE_SUPPLY_CHAIN}
+            columnSelectorEnabled
+            columnSelectorButtonType="button"
             marginTop={false}
             extraProps={{
                 loading: isFetching,

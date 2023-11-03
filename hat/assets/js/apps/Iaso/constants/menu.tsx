@@ -34,6 +34,7 @@ import {
     SHOW_PAGES,
     SHOW_DHIS2_LINK,
     SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,
+    SHOW_DEV_FEATURES,
 } from '../utils/featureFlags';
 import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants';
 import { getChipColors } from './chipColors';
@@ -61,6 +62,7 @@ type MenuItem = {
     url?: string;
     // eslint-disable-next-line no-unused-vars
     isActive?: (pathname: string) => boolean;
+    dev?: boolean;
 };
 type MenuItems = MenuItem[];
 type Plugins = {
@@ -346,5 +348,9 @@ export const useMenuItems = (): MenuItems => {
         const permissionsList = listMenuPermission(menuItem);
         return userHasOneOfPermissions(permissionsList, currentUser);
     });
-    return items;
+    if (hasFeatureFlag(currentUser, SHOW_DEV_FEATURES)) {
+        return items;
+    }
+    // Remove dev (incomplete) features
+    return items.filter(item => !item.dev);
 };

@@ -10,6 +10,7 @@ import PublicIcon from '@material-ui/icons/Public';
 import DonutSmallIcon from '@material-ui/icons/DonutSmall';
 import GroupWork from '@material-ui/icons/GroupWork';
 import HomeWorkIcon from '@material-ui/icons/HomeWork';
+import LocalShippingIcon from '@material-ui/icons/LocalShipping';
 import PhotoSizeSelectActualIcon from '@material-ui/icons/PhotoSizeSelectActual';
 import HomeIcon from '@material-ui/icons/Home';
 import StorefrontIcon from '@material-ui/icons/Storefront';
@@ -539,7 +540,7 @@ const menu = [
                         key: 'supplychain',
                         dev: true,
                         permissions: ['iaso_polio'],
-                        icon: props => <MenuBookIcon {...props} />,
+                        icon: props => <LocalShippingIcon {...props} />,
                     },
                 ],
             },

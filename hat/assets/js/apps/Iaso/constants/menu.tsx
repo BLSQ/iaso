@@ -320,9 +320,7 @@ export const useMenuItems = (): MenuItems => {
     );
     // Find admin entry
     const admin = allBasicItems.find(item => item.key === 'settings');
-    const basicItems = hasFeatureFlag(currentUser, SHOW_DEV_FEATURES)
-        ? allBasicItems.filter(item => item.key !== 'settings')
-        : allBasicItems.filter(item => item.dev);
+    const basicItems = allBasicItems.filter(item => item.key !== 'settings');
 
     // add feature flags
     if (hasFeatureFlag(currentUser, SHOW_PAGES)) {
@@ -350,5 +348,9 @@ export const useMenuItems = (): MenuItems => {
         const permissionsList = listMenuPermission(menuItem);
         return userHasOneOfPermissions(permissionsList, currentUser);
     });
-    return items;
+    if (hasFeatureFlag(currentUser, SHOW_DEV_FEATURES)) {
+        return items;
+    }
+    // Remove dev (incomplete) features
+    return items.filter(item => !item.dev);
 };

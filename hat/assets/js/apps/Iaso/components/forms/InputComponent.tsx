@@ -15,7 +15,7 @@ import {
 } from 'bluesquare-components';
 import MESSAGES from '../../domains/forms/messages';
 
-export interface InputComponentProps {
+export type InputComponentProps = {
     type?: string;
     keyValue: string;
     value?: any;
@@ -45,7 +45,7 @@ export interface InputComponentProps {
     onErrorChange?: () => void;
     numberInputOptions?: any;
     validationSchema?: any;
-}
+};
 
 const InputComponent: React.FC<InputComponentProps> = ({
     type = 'text',

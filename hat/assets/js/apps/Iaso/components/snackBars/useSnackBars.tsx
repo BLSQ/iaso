@@ -1,8 +1,8 @@
 import React, { useEffect, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useIntl } from 'react-intl';
 import { useSnackbar } from 'notistack';
 
+import { useSafeIntl } from 'bluesquare-components';
 import { removeSnackbar } from '../../redux/snackBarsReducer';
 import SnackBarButton from './SnackBarButton';
 import SnackBarErrorMessage from './SnackBarErrorMessage';
@@ -34,7 +34,7 @@ export const useSnackBars = (): void => {
         (state: { snackBar?: { notifications: Notification[] } }) =>
             state.snackBar ? state.snackBar.notifications : [],
     );
-    const { formatMessage } = useIntl();
+    const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     const { enqueueSnackbar, closeSnackbar } = useSnackbar();
 

@@ -26,6 +26,7 @@ def setup_account(account_name):
         "user_first_name": account_name,
         "user_last_name": account_name,
         "password": account_name,
+        "modules": ["DEFAULT", "REGISTRY", "POLIO_PROJECT", "PLANNING", "ENTITIES", "DATA_COLLECTION_FORMS"],
     }
 
     r = requests.post(setup_account_url, json=data, headers=headers)
@@ -35,7 +36,6 @@ def setup_orgunits(account_name):
     headers = get_auth_headers(account_name, account_name)
 
     r = requests.get(API_URL + "projects/", headers=headers)
-
     project_id = r.json()["projects"][0]["id"]
 
     r = requests.get(API_URL + "datasources/", headers=headers)

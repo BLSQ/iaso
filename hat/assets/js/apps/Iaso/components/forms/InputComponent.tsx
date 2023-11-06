@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { ReactNode, useState } from 'react';
 import { Box } from '@material-ui/core';
 import {
     TextInput,
@@ -12,11 +12,26 @@ import {
     translateOptions,
     Select,
     useSafeIntl,
+    IntlMessage,
 } from 'bluesquare-components';
 import MESSAGES from '../../domains/forms/messages';
+import { DropdownOptions } from '../../types/utils';
+
+type Option = DropdownOptions<any>;
+
+export type InputComponentType =
+    | 'text'
+    | 'email'
+    | 'password'
+    | 'number'
+    | 'radio'
+    | 'checkbox'
+    | 'arrayInput'
+    | 'search'
+    | 'select';
 
 export type InputComponentProps = {
-    type?: string;
+    type: InputComponentType;
     keyValue: string;
     value?: any;
     errors?: string[];
@@ -26,25 +41,39 @@ export type InputComponentProps = {
     disabled?: boolean;
     multiline?: boolean;
     clearable?: boolean;
-    label?: any;
+    label?: IntlMessage;
     labelString?: string;
     required?: boolean;
     onEnterPressed?: () => void;
     withMarginTop?: boolean;
     multi?: boolean;
-    uid?: any;
+    uid?: string;
     loading?: boolean;
-    getOptionLabel?: any;
-    getOptionSelected?: any;
-    renderOption?: any;
+    // eslint-disable-next-line no-unused-vars
+    getOptionLabel?: (option: Option) => string;
+    getOptionSelected?: (
+        // eslint-disable-next-line no-unused-vars
+        option: Option,
+        // eslint-disable-next-line no-unused-vars
+        value: Option,
+    ) => boolean;
+    renderOption?: (
+        // eslint-disable-next-line no-unused-vars
+        option: Option,
+        // eslint-disable-next-line no-unused-vars
+        { inputValue }: { inputValue: string },
+    ) => ReactNode;
     className?: string;
     helperText?: string;
     min?: number;
     max?: number;
     blockForbiddenChars?: boolean;
     onErrorChange?: () => void;
-    numberInputOptions?: any;
-    validationSchema?: any;
+    numberInputOptions?: {
+        min?: number;
+        max?: number;
+        decimalScale?: number;
+    };
 };
 
 const InputComponent: React.FC<InputComponentProps> = ({
@@ -63,11 +92,11 @@ const InputComponent: React.FC<InputComponentProps> = ({
     onEnterPressed = () => null,
     withMarginTop = true,
     multi = false,
-    uid = null,
+    uid,
     loading = false,
-    getOptionLabel = null,
-    getOptionSelected = null,
-    renderOption = null,
+    getOptionLabel,
+    getOptionSelected,
+    renderOption,
     className = '',
     helperText,
     min,
@@ -179,7 +208,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
             case 'search':
                 return (
                     <SearchInput
-                        uid={uid}
+                        uid={uid || ''}
                         keyValue={keyValue}
                         label={labelText}
                         required={required}

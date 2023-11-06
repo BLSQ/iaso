@@ -15,7 +15,9 @@ def missing_vaccine_authorization_for_campaign_email_alert(obr_name, org_unit, a
         message = f"""
         Dear team,
 
-        Please note that the campaign {obr_name} for {org_unit} has been created into the poliooutbreaks platform. 
+        The campaign {obr_name} for {org_unit} has been created in the poliooutbreaks platform.
+
+        Please note that no nOPV2 authorization has been recorded in the platform for {org_unit} yet. 
 
         Be aware that {org_unit} does not have any nOPV2 authorization recorded into the platform yet.
 

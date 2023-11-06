@@ -194,7 +194,7 @@ class CampaignSerializer(serializers.ModelSerializer):
                 try:
                     initial_org_unit = OrgUnit.objects.get(pk=initial_org_unit.pk)
                     vaccine_authorization = VaccineAuthorization.objects.filter(
-                        country=initial_org_unit, status="VALIDATED"
+                        country=initial_org_unit, status="VALIDATED", account=account
                     )
                     if vaccine_authorization:
                         check_total_doses_requested(vaccine_authorization[0], rounds, nOPV2_rounds)
@@ -272,6 +272,7 @@ class CampaignSerializer(serializers.ModelSerializer):
         campaign_scopes = validated_data.pop("scopes", [])
         rounds = validated_data.pop("rounds", [])
         initial_org_unit = validated_data.get("initial_org_unit")
+        account = self.context["request"].user.iaso_profile.account
 
         # check if the quantity of the vaccines requested is not superior to the authorized vaccine quantity
         nopv2_vacc_found = False
@@ -288,7 +289,7 @@ class CampaignSerializer(serializers.ModelSerializer):
                 try:
                     initial_org_unit = OrgUnit.objects.get(pk=initial_org_unit.pk)
                     vaccine_authorization = VaccineAuthorization.objects.filter(
-                        country=initial_org_unit, status="VALIDATED"
+                        country=initial_org_unit, status="VALIDATED", account=account
                     )
                     if vaccine_authorization:
                         check_total_doses_requested(vaccine_authorization[0], rounds, nOPV2_rounds)

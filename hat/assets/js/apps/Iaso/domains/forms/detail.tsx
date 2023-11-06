@@ -1,8 +1,12 @@
-import React, { useCallback, useEffect, useState, useMemo } from 'react';
-import PropTypes from 'prop-types';
+import React, {
+    useCallback,
+    useEffect,
+    useState,
+    useMemo,
+    FunctionComponent,
+} from 'react';
 import { useQueryClient } from 'react-query';
 import { useDispatch, useSelector } from 'react-redux';
-import { FormattedMessage } from 'react-intl';
 import { Box, Button, makeStyles, Tabs, Tab } from '@material-ui/core';
 import mapValues from 'lodash/mapValues';
 import omit from 'lodash/omit';
@@ -13,13 +17,14 @@ import {
     LoadingSpinner,
     useSafeIntl,
 } from 'bluesquare-components';
-import { redirectToReplace } from '../../routing/actions.ts';
+import { CSSProperties } from '@material-ui/core/styles/withStyles';
+import { redirectToReplace } from '../../routing/actions';
 
 import TopBar from '../../components/nav/TopBarComponent';
-import MESSAGES from './messages';
-import { useFormState } from '../../hooks/form';
+import MESSAGES from './messages.js';
+import { useFormState } from '../../hooks/form.js';
 
-import { baseUrls } from '../../constants/urls';
+import { baseUrls } from '../../constants/urls.js';
 
 import { createForm, updateForm } from '../../utils/requests';
 import FormVersions from './components/FormVersionsComponent';
@@ -28,19 +33,33 @@ import FormForm from './components/FormFormComponent';
 import { enqueueSnackbar } from '../../redux/snackBarsReducer';
 import { succesfullSnackBar } from '../../constants/snackBars';
 import { useGetForm } from './requests';
-import { requiredFields } from './config';
+import { requiredFields } from './config/index';
 
 import { isFieldValid, isFormValid } from '../../utils/forms';
-import { FormAttachments } from './components/FormAttachments.tsx';
+import { FormAttachments } from './components/FormAttachments';
+import { FormParams } from './types/forms';
+import { Router } from '../../types/general';
+import LegendDialog from '../completenessStats/components/LegendDialog';
 
+interface FormDetailProps {
+    router: Router;
+    params: FormParams;
+}
+
+type CommonStyles = {
+    // eslint-disable-next-line no-unused-vars
+    [key in
+        | 'containerFullHeightNoTabPadded'
+        | 'tabs'
+        | 'marginLeft']: CSSProperties;
+};
 const useStyles = makeStyles(theme => ({
-    ...commonStyles(theme),
+    ...(commonStyles(theme) as CommonStyles),
     tabs: {
         ...commonStyles(theme).tabs,
         padding: 0,
     },
 }));
-
 const defaultForm = {
     id: null,
     name: '',
@@ -59,7 +78,7 @@ const defaultForm = {
     label_keys: [],
 };
 
-const formatFormData = value => {
+const formatFormData = (value: any) => {
     let form = value;
     if (!form) form = defaultForm;
     return {
@@ -68,9 +87,9 @@ const formatFormData = value => {
         short_name: form.short_name,
         depth: form.depth,
         org_unit_type_ids: form.org_unit_types
-            ? form.org_unit_types.map(ot => ot.id)
+            ? form.org_unit_types.map((ot: any) => ot.id)
             : [],
-        project_ids: form.projects ? form.projects.map(p => p.id) : [],
+        project_ids: form.projects ? form.projects.map((p: any) => p.id) : [],
         period_type:
             form.period_type && form.period_type !== ''
                 ? form.period_type
@@ -86,9 +105,11 @@ const formatFormData = value => {
     };
 };
 
-const FormDetail = ({ router, params }) => {
+const FormDetail: FunctionComponent<FormDetailProps> = ({ router, params }) => {
     const queryClient = useQueryClient();
-    const prevPathname = useSelector(state => state.routerCustom.prevPathname);
+    const prevPathname = useSelector(
+        (state: any) => state.routerCustom.prevPathname,
+    );
     const { data: form, isLoading: isFormLoading } = useGetForm(params.formId);
     const [isLoading, setIsLoading] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
@@ -175,7 +196,7 @@ const FormDetail = ({ router, params }) => {
         },
         [isSaved, setFieldValue, setFieldErrors, formatMessage],
     );
-    const handleChangeTab = newTab => {
+    const handleChangeTab = (newTab: string) => {
         setTab(newTab);
         const newParams = {
             ...params,
@@ -203,9 +224,12 @@ const FormDetail = ({ router, params }) => {
             />
             {(isLoading || isFormLoading) && <LoadingSpinner />}
             <Box className={classes.containerFullHeightNoTabPadded}>
+                <Box width="25%">
+                    <LegendDialog />
+                </Box>
                 <FormForm currentForm={currentForm} setFieldValue={onChange} />
                 <Box mt={2} justifyContent="flex-end" display="flex">
-                    {!currentForm.id.value !== '' && (
+                    {currentForm.id.value !== '' && (
                         <Button
                             data-id="form-detail-cancel"
                             className={classes.marginLeft}
@@ -213,7 +237,7 @@ const FormDetail = ({ router, params }) => {
                             variant="contained"
                             onClick={() => handleReset()}
                         >
-                            <FormattedMessage {...MESSAGES.cancel} />
+                            {formatMessage(MESSAGES.cancel)}
                         </Button>
                     )}
                     <Button
@@ -227,7 +251,7 @@ const FormDetail = ({ router, params }) => {
                         color="primary"
                         onClick={() => onConfirm()}
                     >
-                        <FormattedMessage {...MESSAGES.save} />
+                        {formatMessage(MESSAGES.save)}
                     </Button>
                 </Box>
                 <Box>
@@ -256,17 +280,10 @@ const FormDetail = ({ router, params }) => {
                         formId={parseInt(params.formId, 10)}
                     />
                 )}
-                {tab === 'attachments' && (
-                    <FormAttachments formId={params.formId} params={params} />
-                )}
+                {tab === 'attachments' && <FormAttachments params={params} />}
             </Box>
         </>
     );
-};
-
-FormDetail.propTypes = {
-    router: PropTypes.object.isRequired,
-    params: PropTypes.object.isRequired,
 };
 
 export default FormDetail;

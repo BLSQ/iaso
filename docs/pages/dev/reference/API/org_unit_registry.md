@@ -371,19 +371,13 @@ Same as downloading instances
   "limit": "Long",
   "results": [
     {
-        "org_unit_id": "Int",
-        "org_unit_uuid": "UUID - provided by the client",
-        "instances": [
-            {
-                "id": "Int",
-                "uuid": "UUID - provided by the client",
-                "form_id": "Int",
-                "form_version_id": "Int",
-                "created_at": "Timestamp in double",
-                "updated_at": "Timestamp in double",
-                "json":  "JSONObject - contains the key/value of the instance"
-            }
-        ]
+        "id": "Int",
+        "uuid": "UUID - provided by the client",
+        "form_id": "Int",
+        "form_version_id": "Int",
+        "created_at": "Timestamp in double",
+        "updated_at": "Timestamp in double",
+        "json":  "JSONObject - contains the key/value of the instance"
     }
   ]
 }

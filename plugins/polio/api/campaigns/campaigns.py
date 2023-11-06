@@ -177,6 +177,7 @@ class CampaignSerializer(serializers.ModelSerializer):
         rounds = validated_data.pop("rounds", [])
         initial_org_unit = validated_data.get("initial_org_unit")
         obr_name = validated_data["obr_name"]
+        account = self.context["request"].user.iaso_profile.account
 
         # check if the quantity of the vaccines requested is not superior to the authorized vaccine quantity
         nopv2_vacc_found = False
@@ -198,7 +199,9 @@ class CampaignSerializer(serializers.ModelSerializer):
                     if vaccine_authorization:
                         check_total_doses_requested(vaccine_authorization[0], rounds, nOPV2_rounds)
                     else:
-                        missing_vaccine_authorization_for_campaign_email_alert(obr_name, validated_data["initial_org_unit"])
+                        missing_vaccine_authorization_for_campaign_email_alert(
+                            obr_name, validated_data["initial_org_unit"], account
+                        )
                 except OrgUnit.DoesNotExist:
                     raise Custom403Exception("error:" "Org unit does not exists.")
 

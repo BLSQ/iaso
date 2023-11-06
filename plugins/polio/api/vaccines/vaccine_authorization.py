@@ -11,7 +11,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from hat.menupermissions import models as permission
-from iaso.api.common import DeletionFilterBackend, ModelViewSet, Paginator, TimestampField
+from iaso.api.common import DeletionFilterBackend, ModelViewSet, Paginator, TimestampField, Custom403Exception
 from iaso.models import OrgUnit
 from plugins.polio.models import Group, VaccineAuthorization
 from plugins.polio.settings import COUNTRY
@@ -21,7 +21,7 @@ def check_for_already_validated_authorization(status, country):
     if status == "VALIDATED":
         validated_vaccine_auth = VaccineAuthorization.objects.filter(status="VALIDATED", country=country)
         if validated_vaccine_auth:
-            raise serializers.ValidationError(
+            raise Custom403Exception(
                 {"error": f"A vaccine authorization is already validated for this country"}
             )
 
@@ -95,7 +95,7 @@ class VaccineAuthorizationSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        if validated_data.get("status") == "VALIDATED":
+        if validated_data.get("status") == "VALIDATED" and instance.status != "VALIDATED":
             country = instance.country
             check_for_already_validated_authorization("VALIDATED", country)
 

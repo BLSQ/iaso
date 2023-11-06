@@ -17,7 +17,7 @@ import {
 import MESSAGES from '../../domains/forms/messages';
 import { DropdownOptions } from '../../types/utils';
 
-type Option = DropdownOptions<any>;
+type Option = DropdownOptions<string | number>;
 
 export type InputComponentType =
     | 'text'

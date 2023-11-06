@@ -1,4 +1,9 @@
-import React, { useState, FunctionComponent, useCallback } from 'react';
+import React, {
+    useState,
+    FunctionComponent,
+    useCallback,
+    useEffect,
+} from 'react';
 import {
     Paper,
     makeStyles,
@@ -30,10 +35,10 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-type Operator = '<' | '>' | '<=' | '>=';
+type Operator = '<' | '<=';
 
 type RangeValue = {
-    id: number;
+    id: string;
     operator: Operator;
     percent: number;
     color: string;
@@ -45,18 +50,46 @@ type LegendDialogProps = {
 
 const LegendDialog: FunctionComponent<LegendDialogProps> = ({
     defaultRangeValues = [
-        { id: 0, operator: '<', percent: 0, color: '#000000' },
+        {
+            id: 'range-1',
+            operator: '<=',
+            percent: 100,
+            color: '#000000',
+        },
     ],
 }) => {
     const classes = useStyles();
-    const [idCounter, setIdCounter] = useState<number>(0);
     const [rangeValues, setRangeValues] =
         useState<RangeValue[]>(defaultRangeValues);
+    const getRangeStartEnd = useCallback(
+        (range, index) => {
+            let start = 0;
+            let end = 0;
+            const nextRange =
+                index === rangeValues.length - 1
+                    ? undefined
+                    : rangeValues[index + 1];
+            if (range.operator === '<' || range.operator === '<=') {
+                start = nextRange?.percent || 0;
+                end = range.percent;
+                if (nextRange?.operator === '<=') {
+                    start = nextRange.percent + 1;
+                }
+                if (range.operator === '<') {
+                    end -= 1;
+                }
+            }
+            return {
+                start,
+                end,
+            };
+        },
+        [rangeValues],
+    );
 
     const handleOperatorChange = useCallback(
         (index: number, newOperator?: Operator) => {
             if (newOperator) {
-                console.log('newOperator', newOperator);
                 const newRangeValues = [...rangeValues];
                 newRangeValues[index].operator = newOperator;
                 setRangeValues(newRangeValues);
@@ -67,7 +100,7 @@ const LegendDialog: FunctionComponent<LegendDialogProps> = ({
 
     const handleNumberChange = useCallback(
         (index: number, newNumber?: number) => {
-            if (newNumber) {
+            if (newNumber || newNumber === 0) {
                 const newRangeValues = [...rangeValues];
                 newRangeValues[index].percent = Number(newNumber);
                 setRangeValues(newRangeValues);
@@ -86,12 +119,17 @@ const LegendDialog: FunctionComponent<LegendDialogProps> = ({
     );
 
     const addRangeValue = useCallback(() => {
-        setIdCounter(idCounter + 1);
-        setRangeValues([
-            ...rangeValues,
-            { id: idCounter + 1, operator: '<', percent: 0, color: '#000000' },
-        ]);
-    }, [idCounter, rangeValues]);
+        const newRanges = [...rangeValues];
+        const lastRange = newRanges[newRanges.length - 1];
+        const lastPercent = lastRange.percent - 1;
+        newRanges.push({
+            id: `range-${rangeValues.length + 1}`,
+            operator: '<=',
+            percent: lastPercent,
+            color: '#000000',
+        });
+        setRangeValues(newRanges);
+    }, [rangeValues]);
 
     const removeRangeValue = useCallback(
         (index: number) => {
@@ -105,79 +143,103 @@ const LegendDialog: FunctionComponent<LegendDialogProps> = ({
     return (
         <Paper elevation={1} className={classes.root}>
             <Box className={classes.legendContainer}>
-                {rangeValues.map((rangeItem, index) => (
-                    <Box key={rangeItem.id} mt={2}>
-                        <Grid container spacing={2}>
-                            <Grid
-                                item
-                                xs={12}
-                                sm={2}
-                                container
-                                alignContent="center"
-                                justifyContent="center"
-                            >
-                                <ColorPicker
-                                    currentColor={rangeItem.color}
-                                    onChangeColor={handleColorChange(index)}
-                                    displayLabel={false}
-                                />
-                            </Grid>
-                            <Grid item xs={12} sm={4}>
-                                <InputComponent
-                                    clearable={false}
-                                    withMarginTop={false}
-                                    keyValue={`operator-${rangeItem.id}`}
-                                    className={classes.input}
-                                    labelString=""
-                                    value={rangeItem.operator}
-                                    onChange={(_, newValue) =>
-                                        handleOperatorChange(index, newValue)
-                                    }
-                                    options={[
-                                        {
-                                            label: '<',
-                                            value: '<',
-                                        },
-                                        {
-                                            label: '>',
-                                            value: '>',
-                                        },
-                                    ]}
-                                    type="select"
-                                />
-                            </Grid>
-                            <Grid item xs={12} sm={4}>
-                                <InputComponent
-                                    keyValue={`percent-${rangeItem.id}`}
-                                    className={classes.input}
-                                    labelString=""
-                                    withMarginTop={false}
-                                    value={rangeItem.percent}
-                                    onChange={(_, newValue) =>
-                                        handleNumberChange(index, newValue)
-                                    }
-                                    type="number"
-                                    min={0}
-                                    max={100}
-                                    decimalScale={0}
-                                />
-                            </Grid>
-                            <Grid
-                                item
-                                xs={12}
-                                sm={2}
-                                container
-                                alignContent="center"
-                            >
-                                <IconButton
-                                    onClick={() => removeRangeValue(index)}
+                {rangeValues.map((rangeItem, index) => {
+                    const { start, end } = getRangeStartEnd(rangeItem, index);
+                    const previousRange =
+                        index !== 0 ? rangeValues[index - 1] : undefined;
+                    let max = 100;
+                    if (previousRange) {
+                        max =
+                            previousRange.operator === '<'
+                                ? previousRange.percent - 1
+                                : previousRange.percent;
+                    }
+                    //  get max here from previous range
+                    return (
+                        <Box key={rangeItem.id} mt={2}>
+                            <Grid container spacing={2}>
+                                <Grid
+                                    item
+                                    xs={12}
+                                    sm={2}
+                                    container
+                                    alignContent="center"
+                                    justifyContent="center"
                                 >
-                                    <RemoveIcon />
-                                </IconButton>
+                                    <ColorPicker
+                                        currentColor={rangeItem.color}
+                                        onChangeColor={handleColorChange(index)}
+                                        displayLabel={false}
+                                    />
+                                </Grid>
+                                <Grid item xs={12} sm={4}>
+                                    <InputComponent
+                                        clearable={false}
+                                        withMarginTop={false}
+                                        keyValue={`operator-${rangeItem.id}`}
+                                        className={classes.input}
+                                        labelString=""
+                                        disabled={index === 0}
+                                        value={rangeItem.operator}
+                                        onChange={(_, newValue) =>
+                                            handleOperatorChange(
+                                                index,
+                                                newValue,
+                                            )
+                                        }
+                                        options={[
+                                            {
+                                                label: '<',
+                                                value: '<',
+                                            },
+                                            {
+                                                label: '<=',
+                                                value: '<=',
+                                            },
+                                        ]}
+                                        type="select"
+                                    />
+                                </Grid>
+                                <Grid item xs={12} sm={4}>
+                                    <InputComponent
+                                        keyValue={`percent-${rangeItem.id}`}
+                                        className={classes.input}
+                                        labelString=""
+                                        disabled={index === 0}
+                                        withMarginTop={false}
+                                        value={rangeItem.percent}
+                                        onChange={(_, newValue) =>
+                                            handleNumberChange(index, newValue)
+                                        }
+                                        type="number"
+                                        min={0}
+                                        max={max}
+                                        decimalScale={0}
+                                    />
+                                </Grid>
+                                <Grid
+                                    item
+                                    xs={12}
+                                    sm={2}
+                                    container
+                                    alignContent="center"
+                                >
+                                    {/* {`start: ${start}`}
+                                    {` end: ${end}`} */}
+                                    {index !== 0 && (
+                                        <IconButton
+                                            onClick={() =>
+                                                removeRangeValue(index)
+                                            }
+                                        >
+                                            <RemoveIcon />
+                                        </IconButton>
+                                    )}
+                                </Grid>
                             </Grid>
-                        </Grid>
-                    </Box>
-                ))}
+                        </Box>
+                    );
+                })}
                 <Box display="flex" justifyContent="flex-end" width="100%">
                     <IconButton onClick={addRangeValue}>
                         <AddIcon />

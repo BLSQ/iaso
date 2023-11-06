@@ -224,7 +224,7 @@ const FormDetail: FunctionComponent<FormDetailProps> = ({ router, params }) => {
             />
             {(isLoading || isFormLoading) && <LoadingSpinner />}
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <Box width="25%">
+                <Box width="100%">
                     <LegendDialog />
                 </Box>
                 <FormForm currentForm={currentForm} setFieldValue={onChange} />

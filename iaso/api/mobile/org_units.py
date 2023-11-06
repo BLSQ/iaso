@@ -8,6 +8,7 @@ from django.contrib.gis.geos import Point
 from django.core.cache import cache
 from django.db.models.expressions import RawSQL
 from django.db.models.functions import Cast
+from django.shortcuts import get_object_or_404
 from rest_framework import permissions
 from rest_framework.fields import SerializerMethodField
 from rest_framework.response import Response
@@ -93,10 +94,15 @@ class MobileOrgUnitSerializer(serializers.ModelSerializer):
         return org_unit.location.z if org_unit.location else None
 
 
-class MobileReferenceInstanceSerializer(serializers.ModelSerializer):
+class MobileOrgUnitReferenceInstancesSerializer(serializers.ModelSerializer):
+    org_unit_id = serializers.IntegerField(source="org_unit.id")
+    org_unit_uuid = serializers.UUIDField(source="org_unit.uuid")
+
     class Meta:
         model = Instance
         fields = [
+            "org_unit_id",
+            "org_unit_uuid",
             "id",
             "uuid",
             "form_id",
@@ -104,20 +110,6 @@ class MobileReferenceInstanceSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "json",
-        ]
-
-
-class MobileOrgUnitWithReferenceInstancesSerializer(serializers.ModelSerializer):
-    org_unit_id = serializers.IntegerField(source="id")
-    org_unit_uuid = serializers.UUIDField(source="uuid")
-    reference_instances = MobileReferenceInstanceSerializer(many=True)
-
-    class Meta:
-        model = OrgUnit
-        fields = [
-            "org_unit_id",
-            "org_unit_uuid",
-            "reference_instances",
         ]
 
 
@@ -279,12 +271,16 @@ class MobileOrgUnitViewSet(ModelViewSet):
         return Response(data={"results": results})
 
     @action(detail=True, methods=["get"])
-    def reference_instances(self, request, pk=None):
+    def reference_instances(self, request, pk):
         """
         List the reference instances of the given `OrgUnit` pk.
         """
-        org_unit = self.get_object()
-        serializer = MobileOrgUnitWithReferenceInstancesSerializer(org_unit)
+        queryset = self.filter_queryset(self.get_queryset())
+        try:
+            org_unit = get_object_or_404(queryset, id=pk)
+        except ValueError:
+            org_unit = get_object_or_404(queryset, uuid=pk)
+        serializer = MobileOrgUnitReferenceInstancesSerializer(org_unit.reference_instances.all(), many=True)
         return Response(serializer.data)
 
 

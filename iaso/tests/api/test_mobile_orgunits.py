@@ -249,33 +249,41 @@ class MobileOrgUnitAPITestCase(APITestCase):
         OrgUnitReferenceInstance.objects.create(org_unit=self.raditz, instance=instance2, form=form2)
 
         self.client.force_authenticate(self.user)
-        response = self.client.get(f"{BASE_URL}{self.raditz.pk}/reference_instances/", data={APP_ID: BASE_APP_ID})
-        self.assertJSONResponse(response, 200)
+
+        # By ID.
+        response1 = self.client.get(f"{BASE_URL}{self.raditz.pk}/reference_instances/", data={APP_ID: BASE_APP_ID})
+        self.assertJSONResponse(response1, 200)
+
+        # By UUID.
+        response2 = self.client.get(f"{BASE_URL}{self.raditz.uuid}/reference_instances/", data={APP_ID: BASE_APP_ID})
+        self.assertJSONResponse(response2, 200)
+
+        self.assertEqual(response1.data, response2.data)
 
         self.assertEqual(
-            response.data,
-            {
-                "org_unit_id": self.raditz.pk,
-                "org_unit_uuid": "702dbae8-0f47-4065-ad0c-b2557f31cc96",
-                "reference_instances": [
-                    {
-                        "id": instance1.pk,
-                        "uuid": None,
-                        "form_id": form1.id,
-                        "form_version_id": None,
-                        "created_at": "2023-10-26T09:00:00Z",
-                        "updated_at": "2023-10-26T09:00:00Z",
-                        "json": {"key": "foo"},
-                    },
-                    {
-                        "id": instance2.pk,
-                        "uuid": None,
-                        "form_id": form2.id,
-                        "form_version_id": None,
-                        "created_at": "2023-10-26T09:00:00Z",
-                        "updated_at": "2023-10-26T09:00:00Z",
-                        "json": {"key": "bar"},
-                    },
-                ],
-            },
+            response1.data,
+            [
+                {
+                    "org_unit_id": self.raditz.pk,
+                    "org_unit_uuid": "702dbae8-0f47-4065-ad0c-b2557f31cc96",
+                    "id": instance1.pk,
+                    "uuid": None,
+                    "form_id": form1.id,
+                    "form_version_id": None,
+                    "created_at": "2023-10-26T09:00:00Z",
+                    "updated_at": "2023-10-26T09:00:00Z",
+                    "json": {"key": "foo"},
+                },
+                {
+                    "org_unit_id": self.raditz.pk,
+                    "org_unit_uuid": "702dbae8-0f47-4065-ad0c-b2557f31cc96",
+                    "id": instance2.pk,
+                    "uuid": None,
+                    "form_id": form2.id,
+                    "form_version_id": None,
+                    "created_at": "2023-10-26T09:00:00Z",
+                    "updated_at": "2023-10-26T09:00:00Z",
+                    "json": {"key": "bar"},
+                },
+            ],
         )

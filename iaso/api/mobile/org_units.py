@@ -27,6 +27,7 @@ class MobileOrgUnitsSetPagination(Paginator):
     page_size_query_param = LIMIT
     page_query_param = PAGE
     page_size = None  # None to disable pagination by default.
+    page_size_query_param = "page_size"
 
     def get_page_number(self, request):
         return int(request.query_params.get(self.page_query_param, 1))
@@ -170,7 +171,7 @@ class MobileOrgUnitViewSet(ModelViewSet):
 
     You can also list the reference instances of a given `OrgUnit` ID.
 
-    GET /api/mobile/orgunits/ID/reference_instances/?app_id={APP_ID}
+    GET /api/mobile/orgunits/ID or UUID/reference_instances/?app_id={APP_ID}
     """
 
     permission_classes = [HasOrgUnitPermission]
@@ -273,14 +274,23 @@ class MobileOrgUnitViewSet(ModelViewSet):
     @action(detail=True, methods=["get"])
     def reference_instances(self, request, pk):
         """
-        List the reference instances of the given `OrgUnit` pk.
+        List the reference instances of the given `OrgUnit` pk or uuid.
         """
-        queryset = self.filter_queryset(self.get_queryset())
+        authorized_org_units = self.filter_queryset(self.get_queryset())
         try:
-            org_unit = get_object_or_404(queryset, id=pk)
+            org_unit = get_object_or_404(authorized_org_units, id=pk)
         except ValueError:
-            org_unit = get_object_or_404(queryset, uuid=pk)
-        serializer = MobileOrgUnitReferenceInstancesSerializer(org_unit.reference_instances.all(), many=True)
+            org_unit = get_object_or_404(authorized_org_units, uuid=pk)
+
+        reference_instances = org_unit.reference_instances.all()
+
+        # Pagination is enabled when `page_size_query_param` is defined (e.g. ?page_size=10).
+        paginated_reference_instances = self.paginate_queryset(reference_instances)
+        if paginated_reference_instances is not None:
+            serializer = MobileOrgUnitReferenceInstancesSerializer(paginated_reference_instances, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = MobileOrgUnitReferenceInstancesSerializer(reference_instances, many=True)
         return Response(serializer.data)
 
 

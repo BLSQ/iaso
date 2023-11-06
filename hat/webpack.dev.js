@@ -9,6 +9,7 @@ const LOCALE = 'fr';
 // If you launch the dev server with `WEBPACK_HOST=192.168.1.XXX  npm run dev`
 // where 192.168.1.XXX is your local IP address, you can access the dev server
 // from another device on the same network, typically from a mobile device or tablet
+let WEBPACK_HOST;
 if (process.env.WEBPACK_HOST !== undefined) {
     WEBPACK_HOST = process.env.WEBPACK_HOST;
 } else {
@@ -16,6 +17,120 @@ if (process.env.WEBPACK_HOST !== undefined) {
 }
 
 const WEBPACK_URL = `http://${WEBPACK_HOST}:3000`;
+
+const oldBrowsersConfig = [
+    {
+        test: /\.(ts|tsx)?$/,
+        exclude: /node_modules/,
+        use: [
+            {
+                loader: 'babel-loader',
+                options: {
+                    cacheDirectory: true,
+                    presets: [
+                        [
+                            '@babel/preset-env',
+                            {
+                                targets: {
+                                    node: '12',
+                                    chrome: '55',
+                                    ie: '11',
+                                },
+                                include: [
+                                    '@babel/plugin-proposal-optional-chaining',
+                                    '@babel/plugin-proposal-nullish-coalescing-operator',
+                                    '@babel/plugin-proposal-numeric-separator',
+                                    '@babel/plugin-proposal-logical-assignment-operators',
+                                    '@babel/plugin-transform-destructuring',
+                                ],
+                            },
+                        ],
+                        '@babel/preset-react',
+                        [
+                            '@babel/preset-typescript',
+                            { isTSX: true, allExtensions: true },
+                        ],
+                    ],
+                    plugins: ['@babel/transform-runtime', 'formatjs'],
+                },
+            },
+        ],
+    },
+    {
+        test: /\.js?$/,
+        include: [
+            path.resolve(__dirname, '../node_modules/react-leaflet'),
+            path.resolve(__dirname, '../node_modules/@react-leaflet'),
+            path.resolve(__dirname, '../node_modules/@dnd-kit'),
+            path.resolve(__dirname, '../plugins'),
+            path.resolve(__dirname, 'assets'),
+        ],
+        use: [
+            {
+                loader: 'babel-loader',
+                options: {
+                    presets: [
+                        [
+                            '@babel/preset-env',
+                            {
+                                targets: {
+                                    node: '12',
+                                    chrome: '55',
+                                    ie: '11',
+                                },
+                                include: [
+                                    '@babel/plugin-proposal-optional-chaining',
+                                    '@babel/plugin-proposal-nullish-coalescing-operator',
+                                    '@babel/plugin-proposal-numeric-separator',
+                                    '@babel/plugin-proposal-logical-assignment-operators',
+                                    '@babel/plugin-transform-destructuring',
+                                ],
+                            },
+                        ],
+                        '@babel/preset-react',
+                    ],
+                    plugins: ['@babel/transform-runtime', 'formatjs'],
+                },
+            },
+        ],
+    },
+];
+const newBrowsersConfig = [
+    {
+        test: /\.(ts|tsx)?$/,
+        exclude: /node_modules/,
+        use: [
+            {
+                loader: 'babel-loader',
+                options: {
+                    cacheDirectory: true,
+                    presets: [
+                        ['@babel/preset-env', { targets: { node: '14' } }],
+                        '@babel/preset-react',
+                        [
+                            '@babel/preset-typescript',
+                            { isTSX: true, allExtensions: true },
+                        ],
+                    ],
+                    plugins: ['@babel/transform-runtime', 'formatjs'],
+                },
+            },
+        ],
+    },
+    {
+        test: /\.js?$/,
+        exclude: /node_modules/,
+        use: [
+            {
+                loader: 'babel-loader',
+                options: {
+                    presets: ['@babel/preset-env', '@babel/preset-react'],
+                    plugins: ['@babel/transform-runtime', 'formatjs'],
+                },
+            },
+        ],
+    },
+];
 
 module.exports = {
     context: __dirname,
@@ -115,48 +230,9 @@ module.exports = {
                 use: ['source-map-loader'],
                 exclude: /node_modules/,
             },
-            {
-                test: /\.(ts|tsx)?$/,
-                exclude: /node_modules/,
-                use: [
-                    {
-                        loader: 'babel-loader',
-                        options: {
-                            cacheDirectory: true,
-                            presets: [
-                                [
-                                    '@babel/preset-env',
-                                    { targets: { node: '14' } },
-                                ],
-                                '@babel/preset-react',
-                                [
-                                    '@babel/preset-typescript',
-                                    { isTSX: true, allExtensions: true },
-                                ],
-                            ],
-                            plugins: ['@babel/transform-runtime', 'formatjs'],
-                            // include: ['../plugins/polio/js/']
-                        },
-                    },
-                ],
-            },
-            {
-                test: /\.js?$/,
-                exclude: /node_modules/,
-                use: [
-                    {
-                        loader: 'babel-loader',
-                        options: {
-                            presets: [
-                                '@babel/preset-env',
-                                '@babel/preset-react',
-                            ],
-                            plugins: ['@babel/transform-runtime', 'formatjs'],
-                            // include: ['../plugins/polio/js/']
-                        },
-                    },
-                ],
-            },
+            ...(process.env.OLD_BROWSER === 'true'
+                ? oldBrowsersConfig
+                : newBrowsersConfig),
             {
                 test: /\.css$/,
                 use: [{ loader: 'style-loader' }, { loader: 'css-loader' }],

@@ -52,6 +52,7 @@ class InputComponent extends Component {
             max,
             blockForbiddenChars,
             onErrorChange,
+            numberInputOptions,
         } = this.props;
         const { isFocused, displayPassword } = this.state;
         const labelText =
@@ -115,6 +116,7 @@ class InputComponent extends Component {
                             onChange={input => {
                                 onChange(keyValue, input);
                             }}
+                            {...numberInputOptions}
                         />
                     );
                 case 'select':
@@ -225,6 +227,7 @@ InputComponent.defaultProps = {
     max: undefined,
     blockForbiddenChars: false,
     onErrorChange: () => null,
+    numberInputOptions: undefined,
 };
 InputComponent.propTypes = {
     type: PropTypes.string,
@@ -254,6 +257,7 @@ InputComponent.propTypes = {
     max: PropTypes.number,
     blockForbiddenChars: PropTypes.bool,
     onErrorChange: PropTypes.func,
+    numberInputOptions: PropTypes.object,
 };
 
 const translated = injectIntl(InputComponent);

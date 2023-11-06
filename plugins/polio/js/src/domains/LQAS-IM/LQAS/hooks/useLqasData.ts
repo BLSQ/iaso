@@ -25,6 +25,7 @@ export const useLqasData = ({
 }: UseLQASDataParams): Record<string, unknown> => {
     const convertedData = useConvertedLqasImData(LQASData);
 
+    // TODO move out of this hook
     const { data: campaigns = [], isFetching: campaignsFetching } =
         useGetCampaigns({
             countries: [country],

@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User, Permission
+from hat.menupermissions.constants import MODULE_PERMISSIONS, MODULES
 
 from hat.menupermissions.models import CustomPermissionSupport
 from iaso import models as m
@@ -15,7 +16,7 @@ class SetupAccountApiTestCase(APITestCase):
         account.default_version = version
         account.save()
         cls.account = account
-
+        cls.MODULES = [module["codename"] for module in MODULES]
         user = m.User.objects.create(username="link")
         user.set_password("tiredofplayingthesameagain")
         user.save()
@@ -76,6 +77,7 @@ class SetupAccountApiTestCase(APITestCase):
             "account_name": "unittest_account",
             "user_username": "unittest_username",
             "password": "unittest_password",
+            "modules": self.MODULES,
         }
         response = self.client.post("/api/setupaccount/", data=data, format="json")
 
@@ -92,6 +94,7 @@ class SetupAccountApiTestCase(APITestCase):
             "user_first_name": "unittest_first_name",
             "user_last_name": "unittest_last_name",
             "password": "unittest_password",
+            "modules": self.MODULES,
         }
         response = self.client.post("/api/setupaccount/", data=data, format="json")
 
@@ -106,6 +109,7 @@ class SetupAccountApiTestCase(APITestCase):
             "account_name": "unittest_account",
             "user_username": "unittest_username",
             "password": "unittest_password",
+            "modules": self.MODULES,
         }
         response = self.client.post("/api/setupaccount/", data=data, format="json")
 
@@ -113,12 +117,21 @@ class SetupAccountApiTestCase(APITestCase):
 
         has_all_perms = True
 
-        for perm in Permission.objects.filter(codename__in=CustomPermissionSupport.get_full_permission_list()):
+        account = m.Account.objects.filter(name="unittest_account")
+        account_modules = account.first().modules
+        permission_codenames = []
+        for module in account_modules:
+            permission_codenames = permission_codenames + MODULE_PERMISSIONS[module]
+        all_permissions = filter(
+            lambda permission_module: permission_module in permission_codenames,
+            CustomPermissionSupport.get_full_permission_list(),
+        )
+        for perm in Permission.objects.filter(codename__in=all_permissions):
             if perm not in user.user_permissions.all():
                 has_all_perms = False
 
         self.assertEqual(response.status_code, 201)
-        self.assertEqual(m.Account.objects.filter(name="unittest_account").count(), 1)
+        self.assertEqual(account.count(), 1)
         self.assertEqual(m.Profile.objects.filter(user__username="unittest_username").count(), 1)
         self.assertEqual(m.User.objects.filter(username="unittest_username").count(), 1)
         self.assertEqual(has_all_perms, True)
@@ -130,6 +143,7 @@ class SetupAccountApiTestCase(APITestCase):
             "account_name": "initial_project_account test-appid",
             "user_username": "username",
             "password": "password",
+            "modules": self.MODULES,
         }
 
         response = self.client.post("/api/setupaccount/", data=data, format="json")

@@ -52,7 +52,10 @@ export const iasoFetch = async (
         typeof resource === 'string' ? resource : resource.url ?? resource;
     const method = init?.method ?? 'GET';
     try {
-        response = await fetch(resource, init);
+        response = await fetch(resource, {
+            ...init,
+            credentials: 'same-origin',
+        });
     } catch (error) {
         // ignoring errors from cancelled fetch
         if (error.name !== 'AbortError') {
@@ -105,7 +108,11 @@ export const basePostRequest = (
                 formData.append(key, value);
             }
         });
-        init = { method: 'POST', body: formData, signal };
+        init = {
+            method: 'POST',
+            body: formData,
+            signal,
+        };
     } else {
         // standard json mode
         init = {

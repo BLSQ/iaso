@@ -74,8 +74,6 @@ class VaccineAuthorizationSerializer(serializers.ModelSerializer):
         expiration_date = validated_data.get("expiration_date")
         start_date = validated_data.get("start_date")
 
-        if expiration_date and expiration_date < datetime.date.today():
-            raise serializers.ValidationError({"error": "expiration_date must be a future date."})
         if start_date and start_date > expiration_date:
             raise serializers.ValidationError({"error": "start_date must be before expiration_date."})
 
@@ -138,7 +136,10 @@ class VaccineAuthorizationViewSet(ModelViewSet):
         return queryset
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
-        country = self.request.data.get("country")
+        # Casting both the country id sent by the front-end and teh org unit id as strings
+        # Because otherwise we get bugs left and right. This was done as part of a hotfix and should be cleaned up
+        # POLIO-1247
+        country = str(self.request.data.get("country", None))
         if not self.request.user.is_superuser:
             if country not in [
                 str(ou.id) for ou in OrgUnit.objects.filter_for_user_and_app_id(self.request.user, None)

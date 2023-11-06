@@ -26,6 +26,7 @@ import {
 } from '../shared/LqasIm';
 
 import { determineStatusForDistrict as lqasDistrictStatus } from '../LQAS/utils';
+import { LQASIMType } from '../shared/types/types';
 
 export const determineStatusForDistrict = district => {
     if (!district) return null;
@@ -192,7 +193,7 @@ export const sumChildrenCheckedIm = (
 type GetMapLayerArgs = {
     selectedCampaign?: string;
     data: Record<string, ConvertedLqasImData>;
-    type: 'lqas' | 'imOHH' | 'imGlobal' | 'imIHH';
+    type: LQASIMType;
     campaigns: any[];
     round: number;
     shapes: any[];

@@ -7,6 +7,7 @@ import {
 import MESSAGES from '../messages';
 import { baseUrls } from '../../../constants/urls';
 import { OrgUnit } from '../types/orgUnit';
+import { isValidCoordinate } from '../../../utils/map/mapUtils';
 
 type Props = {
     orgUnit: OrgUnit;
@@ -22,7 +23,7 @@ export const ActionCell: FunctionComponent<Props> = ({ orgUnit }) => {
                     tooltipMessage={MESSAGES.details}
                 />
                 {(orgUnit.has_geo_json ||
-                    Boolean(orgUnit.latitude && orgUnit.longitude)) && (
+                    isValidCoordinate(orgUnit.latitude, orgUnit.longitude)) && (
                     <IconButtonComponent
                         url={`${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}/tab/map`}
                         icon="map"

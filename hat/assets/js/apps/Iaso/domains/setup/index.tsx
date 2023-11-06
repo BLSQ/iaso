@@ -7,8 +7,6 @@ import ExitIcon from '@material-ui/icons/ExitToApp';
 import { useSafeIntl } from 'bluesquare-components';
 import { useFormik } from 'formik';
 import { isEqual } from 'lodash';
-import { useDispatch, useSelector } from 'react-redux';
-import classNames from 'classnames';
 import getDisplayName, { useCurrentUser } from '../../utils/usersUtils';
 import TopBar from '../../components/nav/TopBarComponent';
 import InputComponent from '../../components/forms/InputComponent';
@@ -18,9 +16,11 @@ import {
     useApiErrorValidation,
     useTranslatedErrors,
 } from '../../libs/validation';
-import { SaveAccountQuery, useSaveAccount } from './hooks/useSaveAccount';
-import { switchLocale } from '../app/actions';
-import { APP_LOCALES } from '../app/constants';
+import { useSaveAccount } from './hooks/useSaveAccount';
+import { useGetModulesDropDown } from './hooks/useGetModulesDropDown';
+import { SaveAccountQuery } from './types/account';
+import { commaSeparatedIdsToStringArray } from '../../utils/forms';
+import { LangSwitch } from '../home/components/LangSwitch';
 
 const useStyles = makeStyles(theme => ({
     paper: {
@@ -42,26 +42,13 @@ const useStyles = makeStyles(theme => ({
         display: 'block',
         margin: '0 auto',
     },
-    languageSwitch: {
-        display: 'inline-block',
-        textTransform: 'uppercase',
-        cursor: 'pointer',
-        padding: theme.spacing(0, 0.5),
-    },
-    languageSwitchActive: {
-        color: theme.palette.primary.main,
-    },
 }));
 
 export const SetupAccount: FunctionComponent = () => {
     const currentUser = useCurrentUser();
-    const dispatch = useDispatch();
     const [isSaved, setIsSaved] = useState<boolean>(false);
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
-    const activeLocale = useSelector(
-        (state: { app: { locale: { code: string } } }) => state.app.locale,
-    );
     const isAdmin = currentUser.is_superuser || currentUser.is_staff;
 
     const { mutateAsync: saveAccount, isLoading } = useSaveAccount();
@@ -83,6 +70,7 @@ export const SetupAccount: FunctionComponent = () => {
             user_first_name: '',
             user_last_name: '',
             password: '',
+            modules: [],
         },
         enableReinitialize: true,
         validateOnBlur: true,
@@ -102,7 +90,11 @@ export const SetupAccount: FunctionComponent = () => {
     } = formik;
     const onChange = (keyValue, value) => {
         setFieldTouched(keyValue, true);
-        setFieldValue(keyValue, value);
+        if (keyValue === 'modules' && value) {
+            setFieldValue(keyValue, commaSeparatedIdsToStringArray(value));
+        } else {
+            setFieldValue(keyValue, value);
+        }
     };
 
     const getErrors = useTranslatedErrors({
@@ -111,6 +103,9 @@ export const SetupAccount: FunctionComponent = () => {
         touched,
         messages: MESSAGES,
     });
+
+    const { data: modules, isFetching: isFetchingModules } =
+        useGetModulesDropDown();
 
     const allowConfirm = isValid && !isEqual(values, initialValues);
     return (
@@ -122,23 +117,7 @@ export const SetupAccount: FunctionComponent = () => {
             />
             <Paper className={classes.paper}>
                 <Box display="flex" justifyContent="flex-end">
-                    {APP_LOCALES.map((locale, index) => (
-                        <Box key={locale.code}>
-                            <Box
-                                className={classNames(
-                                    classes.languageSwitch,
-                                    locale.code === activeLocale.code &&
-                                        classes.languageSwitchActive,
-                                )}
-                                onClick={() =>
-                                    dispatch(switchLocale(locale.code))
-                                }
-                            >
-                                {locale.code}
-                            </Box>
-                            {index + 1 !== APP_LOCALES.length && '-'}
-                        </Box>
-                    ))}
+                    <LangSwitch />
                 </Box>
 
                 {isAdmin && (
@@ -235,6 +214,20 @@ export const SetupAccount: FunctionComponent = () => {
                                         value={values.password}
                                         onChange={onChange}
                                         errors={getErrors('password')}
+                                    />
+                                    <InputComponent
+                                        type="select"
+                                        multi
+                                        required
+                                        keyValue="modules"
+                                        labelString={formatMessage(
+                                            MESSAGES.modules,
+                                        )}
+                                        value={values.modules}
+                                        onChange={onChange}
+                                        errors={getErrors('modules')}
+                                        loading={isFetchingModules}
+                                        options={modules ?? []}
                                     />
                                     <Box
                                         mt={2}

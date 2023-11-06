@@ -183,7 +183,18 @@ export const iasoFields: Field[] = [
     },
     {
         type: 'barcode',
-        disabled: true,
+        queryBuilder: {
+            type: 'text',
+            excludeOperators: [
+                'proximity',
+                'ends_with',
+                'starts_with',
+                'like',
+                'not_like',
+                'is_empty',
+                'is_not_empty',
+            ],
+        },
     },
     {
         type: 'calculate',

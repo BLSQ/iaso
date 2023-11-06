@@ -21,12 +21,16 @@ export const orderOrgUnitTypeByDepth = (
 ): OrgunitTypes => orderBy(orgUnitTypes, [o => o.depth], ['asc']);
 
 export const isValidCoordinate = (
-    latitude: number,
-    longitude: number,
+    latitude?: number,
+    longitude?: number,
 ): boolean => {
     if (
-        !latitude ||
-        !longitude ||
+        latitude === undefined ||
+        longitude === undefined ||
+        latitude === null ||
+        longitude === null ||
+        Number.isNaN(latitude) ||
+        Number.isNaN(longitude) ||
         latitude > 90 ||
         latitude < -90 ||
         longitude > 180 ||

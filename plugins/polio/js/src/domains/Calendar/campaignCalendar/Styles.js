@@ -75,9 +75,11 @@ export const useStyles = makeStyles(theme => ({
     },
     tableRowHidden: {
         visibility: 'collapse',
+        height: 0,
     },
     tableCellHidden: {
-        border: `1px solid white`,
+        height: 0,
+        border: `1px solid #fafafa`,
         borderBottom: `1px solid ${theme.palette.ligthGray.border}`,
     },
     round: {
@@ -115,8 +117,8 @@ export const useStyles = makeStyles(theme => ({
     tableCellSpan: {
         position: 'absolute',
         display: 'flex',
-        top: 0,
-        left: 0,
+        top: '0px',
+        left: '0px',
         width: '100%',
         height: '100%',
         justifyContent: 'center',

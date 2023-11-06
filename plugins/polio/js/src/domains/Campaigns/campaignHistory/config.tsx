@@ -683,6 +683,9 @@ export const useGetConfig = (): Record<string, any> => {
                         },
                     ],
                 },
+                {
+                    key: 'preparedness_spreadsheet_url',
+                },
             ],
         },
         {

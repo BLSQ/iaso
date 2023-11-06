@@ -16,17 +16,20 @@ import HomeIcon from '@material-ui/icons/Home';
 import StorefrontIcon from '@material-ui/icons/Storefront';
 import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
 import ExtensionIcon from '@material-ui/icons/Extension';
+import WatchLaterIcon from '@material-ui/icons/WatchLater';
 import { Dashboard } from './src/domains/Campaigns/Dashboard';
 import { Calendar } from './src/domains/Calendar/Calendar';
 import { CampaignHistory } from './src/domains/Campaigns/campaignHistory/CampaignHistory.tsx';
-import { CountryNotificationsConfig } from './src/domains/CountryNotificationsConfig/CountryNotificationsConfig';
+import { CountryNotificationsConfig } from './src/domains/Config/CountryNotification/CountryNotificationsConfig';
+import { ReasonsForDelay } from './src/domains/Config/ReasonsForDelay/ReasonsForDelay.tsx';
 import MESSAGES from './src/constants/messages';
 import {
     DASHBOARD_BASE_URL,
     CAMPAIGN_HISTORY_URL,
     GROUPED_CAMPAIGNS,
     CALENDAR_BASE_URL,
-    CONFIG_BASE_URL,
+    CONFIG_COUNTRY_URL,
+    CONFIG_REASONS_FOR_DELAY_URL,
     LQAS_BASE_URL,
     IM_GLOBAL,
     IM_IHH,
@@ -178,6 +181,14 @@ const routes = [
                 isRequired: false,
                 key: 'rounds',
             },
+            {
+                isRequired: false,
+                key: 'leftTab',
+            },
+            {
+                isRequired: false,
+                key: 'rightTab',
+            },
         ],
     },
     {
@@ -224,6 +235,14 @@ const routes = [
             {
                 isRequired: false,
                 key: 'displayedShapesRight',
+            },
+            {
+                isRequired: false,
+                key: 'leftTab',
+            },
+            {
+                isRequired: false,
+                key: 'rightTab',
             },
         ],
     },
@@ -432,10 +451,29 @@ const routes = [
         ],
     },
     {
-        baseUrl: CONFIG_BASE_URL,
+        baseUrl: CONFIG_COUNTRY_URL,
         component: () => <CountryNotificationsConfig />,
         permissions: ['iaso_polio_config'],
         params: [...paginationPathParams],
+    },
+    {
+        baseUrl: CONFIG_REASONS_FOR_DELAY_URL,
+        component: props => <ReasonsForDelay {...props} />,
+        permissions: ['iaso_polio_config'],
+        params: [
+            {
+                isRequired: false,
+                key: 'order',
+            },
+            {
+                isRequired: false,
+                key: 'page',
+            },
+            {
+                isRequired: false,
+                key: 'pageSize',
+            },
+        ],
     },
     {
         allowAnonymous: true,
@@ -560,6 +598,20 @@ const menu = [
                 key: 'config',
                 permissions: ['iaso_polio_config'],
                 icon: props => <SettingsIcon {...props} />,
+                subMenu: [
+                    {
+                        label: MESSAGES.country,
+                        key: 'country',
+                        permissions: ['iaso_polio_config'],
+                        icon: props => <PhotoSizeSelectActualIcon {...props} />,
+                    },
+                    {
+                        label: MESSAGES.reasonsForDelay,
+                        key: 'reasonsfordelay',
+                        permissions: ['iaso_polio_config'],
+                        icon: props => <WatchLaterIcon {...props} />,
+                    },
+                ],
             },
         ],
     },
@@ -570,11 +622,11 @@ const translations = {
     en,
 };
 
-const overrideLanding = DASHBOARD_BASE_URL;
-
 export default {
     routes,
     menu,
     translations,
-    overrideLanding,
+    homeUrl: DASHBOARD_BASE_URL,
+    // homeOffline: () => <div>OFFLINE</div>,
+    // homeOnline: () => <div>CONNECTED HOME POLIO</div>,
 };

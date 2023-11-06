@@ -1,5 +1,5 @@
 /* eslint-disable react/no-array-index-key */
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import {
     useSafeIntl,
@@ -19,15 +19,15 @@ import { DistrictsNotFound } from '../shared/DistrictsNotFound.tsx';
 import { DatesIgnored } from '../shared/DatesIgnored.tsx';
 import { HorizontalDivider } from '../../../components/HorizontalDivider.tsx';
 import { LqasImVerticalChart } from '../shared/LqasImVerticalChart.tsx';
-import { MapContainer } from '../shared/MapContainer.tsx';
 import { useLqasData } from './hooks/useLqasData.ts';
+import { LqasOverviewContainer } from './CountryOverview/LqasOverviewContainer.tsx';
 import MESSAGES from '../../../constants/messages';
 import { BadRoundNumbers } from '../shared/BadRoundNumber.tsx';
-import { makeDropdownOptions } from '../shared/LqasIm.tsx';
 import { genUrl } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing.ts';
 import { commaSeparatedIdsToArray } from '../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
-import { defaultRounds, paperElevation } from '../shared/constants.ts';
+import { LIST, paperElevation } from '../shared/constants.ts';
 import { useLqasIm } from '../shared/requests.ts';
+import { Sides } from '../../../constants/types.ts';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -41,8 +41,9 @@ export const Lqas = ({ router }) => {
     const classes = useStyles();
     const dispatch = useDispatch();
     const { campaign, country, rounds } = router.params;
+    // TODO initialize undefined to be able to make boolean check on it
     const [selectedRounds, setSelectedRounds] = useState(
-        rounds ? commaSeparatedIdsToArray(rounds) : defaultRounds,
+        rounds ? commaSeparatedIdsToArray(rounds) : [undefined, undefined],
     );
     const { data: LQASData, isFetching } = useLqasIm('lqas', country);
 
@@ -56,8 +57,16 @@ export const Lqas = ({ router }) => {
     } = useLqasData({ campaign, country, selectedRounds, LQASData });
 
     const dropDownOptions = useMemo(() => {
-        return makeDropdownOptions(LQASData?.stats, campaign);
-    }, [LQASData, campaign]);
+        return campaigns
+            ?.filter(c => c.obr_name === campaign)[0]
+            ?.rounds.sort((a, b) => a.number - b.number)
+            .map(r => {
+                return {
+                    label: `Round ${r.number}`,
+                    value: r.number,
+                };
+            });
+    }, [campaign, campaigns]);
 
     const onRoundChange = useCallback(
         index => value => {
@@ -75,9 +84,35 @@ export const Lqas = ({ router }) => {
     const divider = (
         <HorizontalDivider mt={6} mb={4} ml={-4} mr={-4} displayTrigger />
     );
+
     useSkipEffectOnMount(() => {
-        setSelectedRounds(defaultRounds);
-    }, [campaign, country]);
+        setSelectedRounds([undefined, undefined]);
+    }, [country]);
+
+    useEffect(() => {
+        if (dropDownOptions && !rounds) {
+            if (dropDownOptions.length === 1) {
+                setSelectedRounds([
+                    dropDownOptions[0].value,
+                    dropDownOptions[0].value,
+                ]);
+                const url = genUrl(router, {
+                    rounds: [
+                        dropDownOptions[0].value,
+                        dropDownOptions[0].value,
+                    ],
+                    rightTab: LIST,
+                });
+                dispatch(push(url));
+            }
+            if (dropDownOptions.length > 1) {
+                setSelectedRounds([
+                    dropDownOptions[0].value,
+                    dropDownOptions[1].value,
+                ]);
+            }
+        }
+    }, [dropDownOptions, campaign, rounds, router, dispatch]);
 
     return (
         <>
@@ -93,23 +128,40 @@ export const Lqas = ({ router }) => {
                     category="lqas"
                 />
                 <Grid container spacing={2} direction="row">
-                    {selectedRounds.map((rnd, index) => (
-                        <Grid item xs={6} key={`round_${rnd}_${index}`}>
-                            <MapContainer
-                                round={parseInt(rnd, 10)} // parsing the rnd because it will be a string when coming from params
-                                campaign={campaign}
-                                campaigns={campaigns}
-                                country={country}
-                                data={convertedData}
-                                isFetching={isFetching}
-                                debugData={debugData}
-                                paperElevation={paperElevation}
-                                type="lqas"
-                                onRoundChange={onRoundChange(index)}
-                                options={dropDownOptions}
-                            />
-                        </Grid>
-                    ))}
+                    {/* {selectedRounds.map((rnd, index) => ( */}
+                    <Grid item xs={6} key={`round_${selectedRounds[0]}_${0}`}>
+                        <LqasOverviewContainer
+                            round={parseInt(selectedRounds[0], 10)} // parsing the rnd because it will be a string when coming from params
+                            campaign={campaign}
+                            campaigns={campaigns}
+                            country={country}
+                            data={convertedData}
+                            isFetching={isFetching || campaignsFetching}
+                            debugData={debugData}
+                            paperElevation={paperElevation}
+                            onRoundChange={onRoundChange(0)}
+                            options={dropDownOptions}
+                            side={Sides.left}
+                            router={router}
+                        />
+                    </Grid>
+                    <Grid item xs={6} key={`round_${selectedRounds[1]}_${1}`}>
+                        <LqasOverviewContainer
+                            round={parseInt(selectedRounds[1], 10)} // parsing the rnd because it will be a string when coming from params
+                            campaign={campaign}
+                            campaigns={campaigns}
+                            country={country}
+                            data={convertedData}
+                            isFetching={isFetching || campaignsFetching}
+                            debugData={debugData}
+                            paperElevation={paperElevation}
+                            onRoundChange={onRoundChange(1)}
+                            options={dropDownOptions}
+                            side={Sides.right}
+                            router={router}
+                        />
+                    </Grid>
+                    {/* ))} */}
                 </Grid>
 
                 {campaign && !isFetching && (

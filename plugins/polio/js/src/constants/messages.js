@@ -837,6 +837,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.failed',
         defaultMessage: 'Failed',
     },
+    inScope: {
+        id: 'iaso.polio.label.inScope',
+        defaultMessage: 'No data found',
+    },
     districtsNotFound: {
         id: 'iaso.polio.label.districtsNotFound',
         defaultMessage: 'Districts not found',
@@ -2238,6 +2242,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.OTHER_VACCINATION_CAMPAIGNS',
         defaultMessage: 'Other vaccination campaigns',
     },
+    PENDING_LIQUIDATION_OF_PREVIOUS_SIA_FUNDING: {
+        id: 'iaso.polio.label.PENDING_LIQUIDATION_OF_PREVIOUS_SIA_FUNDING',
+        defaultMessage: 'Pending liquidation of previous SIA funding',
+    },
     previousEndDate: {
         id: 'iaso.polio.label.previousEndDate',
         defaultMessage: 'Previous end date',
@@ -2306,9 +2314,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.chooseDates',
         defaultMessage: 'Choose dates',
     },
-    refreshPage: {
-        id: 'iaso.polio.label.refreshPage',
-        defaultMessage: 'Refresh page',
+    refreshLqasData: {
+        id: 'iaso.polio.label.refreshLqasData',
+        defaultMessage: 'Refresh LQAS data',
     },
     districtsInScope: {
         id: 'iaso.polio.label.districtsInScope',
@@ -2386,6 +2394,91 @@ const MESSAGES = defineMessages({
     vaccineSupplyChain: {
         id: 'iaso.polio.menu.vaccineSupplyChain',
         defaultMessage: 'Vaccine supply chain',
+    },
+    latestManualRefresh: {
+        id: 'iaso.polio.label.latestManualRefresh',
+        defaultMessage: 'Latest manual refresh',
+    },
+    SUCCESS: {
+        id: 'iaso.task.label.SUCCESS',
+        defaultMessage: 'Success',
+    },
+    ERRORED: {
+        id: 'iaso.task.label.ERRORED',
+        defaultMessage: 'Errored',
+    },
+    RUNNING: {
+        id: 'iaso.task.label.RUNNING',
+        defaultMessage: 'Running',
+    },
+    QUEUED: {
+        id: 'iaso.task.label.QUEUED',
+        defaultMessage: 'Queued',
+    },
+    SKIPPED: {
+        id: 'iaso.task.label.SKIPPED',
+        defaultMessage: 'Skipped',
+    },
+    KILLED: {
+        id: 'iaso.task.label.KILLED',
+        defaultMessage: 'Killed',
+    },
+    EXPORTED: {
+        id: 'iaso.task.label.EXPORTED',
+        defaultMessage: 'Exported',
+    },
+    gotoLqasForCountry: {
+        id: 'iaso.task.label.gotoLqasForCountry',
+        defaultMessage: 'See LQAS page',
+    },
+    list: {
+        defaultMessage: 'List',
+        id: 'iaso.label.list',
+    },
+    reasonsForDelay: {
+        id: 'iaso.polio.label.reasonsForDelay',
+        defaultMessage: 'Reasons for delay',
+    },
+    name_fr: {
+        id: 'iaso.polio.label.name_fr',
+        defaultMessage: 'French text',
+    },
+    name_en: {
+        id: 'iaso.polio.label.name_en',
+        defaultMessage: 'English text',
+    },
+    keyName: {
+        id: 'iaso.polio.label.keyName',
+        defaultMessage: 'Key',
+    },
+    createReasonForDelay: {
+        id: 'iaso.polio.label.createReasonForDelay',
+        defaultMessage: 'Create reason for delay',
+    },
+    editReasonForDelay: {
+        id: 'iaso.polio.label.editReasonForDelay',
+        defaultMessage: 'Edit reason for delay',
+    },
+    wrongUserAccount: {
+        id: 'iaso.polio.forms.error.wrongUserAccount',
+        defaultMessage: 'Wrong user account',
+    },
+    incorrectFormat: {
+        id: 'iaso.polio.forms.error.incorrectFormat',
+        defaultMessage: 'Incorrect format',
+    },
+    keyNameFormat: {
+        id: 'iaso.polio.forms.error.keyNameFormat',
+        defaultMessage:
+            'Unique identifier. Use all caps letters separated by an underscore. No numbers or special characters',
+    },
+    result: {
+        id: 'iaso.polio.label.result',
+        defaultMessage: 'Result',
+    },
+    noRoundFound: {
+        id: 'iaso.polio.label.noRoundFound',
+        defaultMessage: 'No round found',
     },
 });
 

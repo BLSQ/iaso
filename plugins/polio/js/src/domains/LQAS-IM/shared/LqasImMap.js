@@ -9,7 +9,8 @@ import { MapLegendContainer } from '../../Campaigns/MapComponent/MapLegendContai
 import { makePopup } from './LqasImPopUp';
 import { makeImMapLegendItems, getLqasImMapLayer } from '../IM/utils.ts';
 import { makeLqasMapLegendItems } from '../LQAS/utils.ts';
-import { imDistrictColors, lqasDistrictColors } from './constants.ts';
+import { imDistrictColors } from './constants.ts';
+import { lqasDistrictColors } from '../LQAS/constants.ts';
 import { defaultShapeStyle } from '../../../utils/index';
 import MESSAGES from '../../../constants/messages';
 import { useGetGeoJson } from '../../Campaigns/Scope/hooks/useGetGeoJson.ts';

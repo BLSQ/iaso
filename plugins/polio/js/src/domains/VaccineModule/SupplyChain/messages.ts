@@ -49,10 +49,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.edit',
         defaultMessage: 'Edit',
     },
-    delete: {
-        id: 'iaso.label.delete',
-        defaultMessage: 'Delete',
-    },
     search: {
         defaultMessage: 'Search',
         id: 'iaso.search',
@@ -64,6 +60,15 @@ const MESSAGES = defineMessages({
     RoundStartTo: {
         id: 'iaso.polio.label.RoundStartTo',
         defaultMessage: 'Round start date to',
+    },
+    deleteVRF: {
+        id: 'iaso.polio.label.deleteVRF',
+        defaultMessage: 'Delete VRF',
+    },
+    deleteVRFWarning: {
+        id: 'iaso.polio.label.deleteVRFWarning',
+        defaultMessage:
+            'This will also delete all attached pre-alerts and VARs',
     },
     clear: {
         id: 'iaso.label.clear',

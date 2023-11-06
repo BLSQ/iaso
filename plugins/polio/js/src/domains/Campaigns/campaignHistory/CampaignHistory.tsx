@@ -33,6 +33,7 @@ import {
     CampaignLogDetailResult,
     initialLogDetail,
 } from './hooks/useGetCampaignHistory';
+import { DropdownOptions } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 type RouterCustom = {
     prevPathname?: string;
@@ -66,7 +67,7 @@ export const CampaignHistory: FunctionComponent<Props> = ({
         data: campaignLogsDropdown,
         isFetching: isFetchingCampaignLogsDropdown,
     }: {
-        data?: Record<string, any> | undefined;
+        data?: DropdownOptions<number>[];
         isFetching: boolean;
         isError: boolean;
     } = useGetCampaignLogs(params.campaignId);

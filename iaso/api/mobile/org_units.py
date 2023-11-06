@@ -28,7 +28,6 @@ class MobileOrgUnitsSetPagination(Paginator):
     page_size_query_param = LIMIT
     page_query_param = PAGE
     page_size = None  # None to disable pagination by default.
-    page_size_query_param = "page_size"
 
     def get_page_number(self, request):
         return int(request.query_params.get(self.page_query_param, 1))
@@ -295,10 +294,11 @@ class MobileOrgUnitViewSet(ModelViewSet):
 
         filtered_reference_instances = ReferenceInstancesFilter(request.query_params, reference_instances).qs
 
-        # Use `page_size_query_param` to enable pagination, e.g. `?page_size=10`.
-        paginated_reference_instances = self.paginate_queryset(filtered_reference_instances)
+        page_size = self.paginator.get_page_size(request)
 
-        if paginated_reference_instances is not None:
+        if page_size:
+            self.paginator.page_size = page_size
+            paginated_reference_instances = self.paginate_queryset(filtered_reference_instances)
             serializer = ReferenceInstancesSerializer(paginated_reference_instances, many=True)
             return self.get_paginated_response(serializer.data)
 

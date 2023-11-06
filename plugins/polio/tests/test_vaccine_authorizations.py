@@ -1023,7 +1023,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         response = self.client.post("/api/polio/vaccineauthorizations/", data=data)
 
         print("RESPONSE: ", response.data)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
         self.assertEqual(response.data["error"], "A vaccine authorization is already validated for this country")
 
     def test_cant_update_to_validate_if_another_validate(self):
@@ -1059,5 +1059,5 @@ class VaccineAuthorizationAPITestCase(APITestCase):
 
         response = self.client.patch(f"/api/polio/vaccineauthorizations/{ongoing_auth.pk}/", data=data)
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
         self.assertEqual(response.data["error"], "A vaccine authorization is already validated for this country")

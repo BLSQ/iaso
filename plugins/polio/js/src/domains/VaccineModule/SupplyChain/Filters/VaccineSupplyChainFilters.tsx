@@ -31,6 +31,7 @@ export const VaccineSupplyChainFilters: FunctionComponent<Props> = ({
                     onChange={handleChange}
                     loading={false}
                     labelString={formatMessage(MESSAGES.search)}
+                    onEnterPressed={handleSearch}
                 />
                 <Box mt={2}>
                     <DatePicker

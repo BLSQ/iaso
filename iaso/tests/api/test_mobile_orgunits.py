@@ -250,20 +250,17 @@ class MobileOrgUnitAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user)
 
-        # By ID.
-        response1 = self.client.get(
-            f"{BASE_URL}{self.raditz.pk}/reference_instances/", data={APP_ID: BASE_APP_ID, "page_size": 10}
-        )
+        params = {APP_ID: BASE_APP_ID, "page_size": 10}
+
+        # Fetch OrgUnit by ID.
+        response1 = self.client.get(f"{BASE_URL}{self.raditz.pk}/reference_instances/", data=params)
         self.assertJSONResponse(response1, 200)
 
-        # By UUID.
-        response2 = self.client.get(
-            f"{BASE_URL}{self.raditz.uuid}/reference_instances/", data={APP_ID: BASE_APP_ID, "page_size": 10}
-        )
+        # Fetch OrgUnit by UUID.
+        response2 = self.client.get(f"{BASE_URL}{self.raditz.uuid}/reference_instances/", data=params)
         self.assertJSONResponse(response2, 200)
 
         self.assertEqual(response1.data, response2.data)
-
         self.assertEqual(
             response1.data,
             {

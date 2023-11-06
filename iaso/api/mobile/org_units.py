@@ -1,3 +1,4 @@
+import django_filters
 from typing import Dict, Any
 from typing import Optional
 
@@ -31,6 +32,33 @@ class MobileOrgUnitsSetPagination(Paginator):
 
     def get_page_number(self, request):
         return int(request.query_params.get(self.page_query_param, 1))
+
+
+class ReferenceInstancesFilter(django_filters.rest_framework.FilterSet):
+    last_sync = django_filters.IsoDateTimeFilter(field_name="updated_at", lookup_expr="gte")
+
+    class Meta:
+        model = Instance
+        fields = []
+
+
+class ReferenceInstancesSerializer(serializers.ModelSerializer):
+    org_unit_id = serializers.IntegerField(source="org_unit.id")
+    org_unit_uuid = serializers.UUIDField(source="org_unit.uuid")
+
+    class Meta:
+        model = Instance
+        fields = [
+            "org_unit_id",
+            "org_unit_uuid",
+            "id",
+            "uuid",
+            "form_id",
+            "form_version_id",
+            "created_at",
+            "updated_at",
+            "json",
+        ]
 
 
 class MobileOrgUnitSerializer(serializers.ModelSerializer):
@@ -93,25 +121,6 @@ class MobileOrgUnitSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_altitude(org_unit: OrgUnit):
         return org_unit.location.z if org_unit.location else None
-
-
-class MobileOrgUnitReferenceInstancesSerializer(serializers.ModelSerializer):
-    org_unit_id = serializers.IntegerField(source="org_unit.id")
-    org_unit_uuid = serializers.UUIDField(source="org_unit.uuid")
-
-    class Meta:
-        model = Instance
-        fields = [
-            "org_unit_id",
-            "org_unit_uuid",
-            "id",
-            "uuid",
-            "form_id",
-            "form_version_id",
-            "created_at",
-            "updated_at",
-            "json",
-        ]
 
 
 class HasOrgUnitPermission(permissions.BasePermission):
@@ -276,7 +285,7 @@ class MobileOrgUnitViewSet(ModelViewSet):
         """
         List the reference instances of the given `OrgUnit` pk or uuid.
         """
-        authorized_org_units = self.filter_queryset(self.get_queryset())
+        authorized_org_units = self.get_queryset()
         try:
             org_unit = get_object_or_404(authorized_org_units, id=pk)
         except ValueError:
@@ -284,13 +293,16 @@ class MobileOrgUnitViewSet(ModelViewSet):
 
         reference_instances = org_unit.reference_instances.all()
 
-        # Pagination is enabled when `page_size_query_param` is defined (e.g. ?page_size=10).
-        paginated_reference_instances = self.paginate_queryset(reference_instances)
+        filtered_reference_instances = ReferenceInstancesFilter(request.query_params, reference_instances).qs
+
+        # Use `page_size_query_param` to enable pagination, e.g. `?page_size=10`.
+        paginated_reference_instances = self.paginate_queryset(filtered_reference_instances)
+
         if paginated_reference_instances is not None:
-            serializer = MobileOrgUnitReferenceInstancesSerializer(paginated_reference_instances, many=True)
+            serializer = ReferenceInstancesSerializer(paginated_reference_instances, many=True)
             return self.get_paginated_response(serializer.data)
 
-        serializer = MobileOrgUnitReferenceInstancesSerializer(reference_instances, many=True)
+        serializer = ReferenceInstancesSerializer(filtered_reference_instances, many=True)
         return Response(serializer.data)
 
 

@@ -14,6 +14,8 @@
     "iaso.polio.button.label.addRegion": "Sélectionner region",
     "iaso.polio.button.label.import": "Importer",
     "iaso.polio.button.label.removeDistrict": "Déselectionner  le district",
+    "iaso.polio.label.deleteVRF": "Effacter VRF?",
+    "iaso.polio.label.deleteVRFWarning": "Les pré-alertes et VArs liés seront aussi effacés",
     "iaso.polio.button.label.removeRegion": "Déselectionner le région",
     "iaso.polio.calendar": "Calendrier",
     "iaso.polio.calendar.obrName": "Nom",

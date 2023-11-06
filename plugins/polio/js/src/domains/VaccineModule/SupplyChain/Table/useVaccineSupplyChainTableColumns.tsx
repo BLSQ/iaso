@@ -99,8 +99,8 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
                             />
                             {/* TODO make better DeleteDialog */}
                             <DeleteDialog
-                                titleMessage={MESSAGES.delete}
-                                message={MESSAGES.delete}
+                                titleMessage={MESSAGES.deleteVRF}
+                                message={MESSAGES.deleteVRFWarning}
                                 onConfirm={() =>
                                     deleteVrf(settings.row.original.id)
                                 }
@@ -110,5 +110,5 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
                 },
             },
         ];
-    }, [formatMessage]);
+    }, [deleteVrf, formatMessage]);
 };

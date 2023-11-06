@@ -190,14 +190,17 @@ class CampaignSerializer(serializers.ModelSerializer):
                         nopv2_vacc_found = True
 
             if nopv2_vacc_found:
-                initial_org_unit = OrgUnit.objects.get(pk=initial_org_unit.pk)
-                vaccine_authorization = VaccineAuthorization.objects.filter(
-                    country=initial_org_unit, status="VALIDATED"
-                )
-                if vaccine_authorization:
-                    check_total_doses_requested(vaccine_authorization[0], rounds, nOPV2_rounds)
-                else:
-                    missing_vaccine_authorization_for_campaign_email_alert(obr_name, validated_data["initial_org_unit"])
+                try:
+                    initial_org_unit = OrgUnit.objects.get(pk=initial_org_unit.pk)
+                    vaccine_authorization = VaccineAuthorization.objects.filter(
+                        country=initial_org_unit, status="VALIDATED"
+                    )
+                    if vaccine_authorization:
+                        check_total_doses_requested(vaccine_authorization[0], rounds, nOPV2_rounds)
+                    else:
+                        missing_vaccine_authorization_for_campaign_email_alert(obr_name, validated_data["initial_org_unit"])
+                except OrgUnit.DoesNotExist:
+                    raise Custom403Exception("error:" "Org unit does not exists.")
 
         campaign_scopes = validated_data.pop("scopes", [])
         campaign = Campaign.objects.create(
@@ -279,12 +282,15 @@ class CampaignSerializer(serializers.ModelSerializer):
                         nopv2_vacc_found = True
 
             if nopv2_vacc_found:
-                initial_org_unit = OrgUnit.objects.get(pk=initial_org_unit.pk)
-                vaccine_authorization = VaccineAuthorization.objects.filter(
-                    country=initial_org_unit, status="VALIDATED"
-                )
-                if vaccine_authorization:
-                    check_total_doses_requested(vaccine_authorization[0], rounds, nOPV2_rounds)
+                try:
+                    initial_org_unit = OrgUnit.objects.get(pk=initial_org_unit.pk)
+                    vaccine_authorization = VaccineAuthorization.objects.filter(
+                        country=initial_org_unit, status="VALIDATED"
+                    )
+                    if vaccine_authorization:
+                        check_total_doses_requested(vaccine_authorization[0], rounds, nOPV2_rounds)
+                except OrgUnit.DoesNotExist:
+                    raise Custom403Exception("error:" "Org unit does not exists.")
 
         for scope in campaign_scopes:
             vaccine = scope.get("vaccine")

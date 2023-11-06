@@ -10,7 +10,6 @@ from iaso.api.common import HasPermission, ModelViewSet, UserSerializer
 from plugins.polio.api.shared_serializers import (
     GroupSerializer,
     RoundDateHistoryEntrySerializer,
-    RoundVaccineSerializer,
     RoundDateHistoryEntryForRoundSerializer,
 )
 from plugins.polio.models import ReasonForDelay, Round, RoundDateHistoryEntry, RoundScope, Campaign
@@ -31,7 +30,6 @@ class RoundSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     scopes = RoundScopeSerializer(many=True, required=False)
-    vaccines = RoundVaccineSerializer(many=True, required=False)
     datelogs = RoundDateHistoryEntrySerializer(many=True, required=False)
     districts_count_calculated = serializers.IntegerField(read_only=True)
 

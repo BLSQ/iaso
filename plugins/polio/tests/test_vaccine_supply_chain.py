@@ -220,7 +220,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         response = self.client.get(BASE_URL)
         self.assertEqual(response.status_code, 200)
         res = response.data["results"]
-        self.assertEqual(len(res), 2)
+        self.assertEqual(len(res), 3)
         self.assertEqual(len(res[0]["rounds"]), 2)
         self.assertEqual(len(res[1]["rounds"]), 1)
         self.assertEqual(res[0]["start_date"], datetime.date(2021, 2, 1))

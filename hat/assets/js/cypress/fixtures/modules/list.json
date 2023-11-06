@@ -1,0 +1,201 @@
+{
+    "count": 15,
+    "has_next": true,
+    "has_previous": false,
+    "page": 1,
+    "pages": 2,
+    "limit": 10,
+    "columns": [],
+    "results": [
+        {
+            "name": "Data collection forms",
+            "codename": "DATA_COLLECTION_FORMS",
+            "created_at": 1695050933.486263,
+            "updated_at": 1695050933.498176,
+            "permissions": [
+                {
+                    "id": 532,
+                    "name": "iaso first permission",
+                    "codename": "iaso_first_permission"
+                },
+                {
+                    "id": 554,
+                    "name": "iaso second permission",
+                    "codename": "iaso_second_permission"
+                }
+            ],
+            "account": []
+        },
+        {
+            "name": "Default",
+            "codename": "DEFAULT",
+            "created_at": 1695050933.487474,
+            "updated_at": 1695050933.502418,
+            "permissions": [
+                {
+                    "id": 531,
+                    "name": "iaso third permission",
+                    "codename": "iaso_third_permission"
+                }
+            ],
+            "account": [
+                {
+                    "id": 1,
+                    "name": "account"
+                }
+            ]
+        },
+        {
+            "name": "DHIS2 mapping",
+            "codename": "DHIS2_MAPPING",
+            "created_at": 1695050933.488004,
+            "updated_at": 1695050933.503815,
+            "permissions": [
+                {
+                    "id": 538,
+                    "name": "iaso fourth permission",
+                    "codename": "iaso_fourth_permission"
+                }
+            ],
+            "account": [
+                {
+                    "id": 1,
+                    "name": "account"
+                }
+            ]
+        },
+        {
+            "name": "Embedded links",
+            "codename": "EMBEDDED_LINKS",
+            "created_at": 1695050933.488537,
+            "updated_at": 1695050933.505342,
+            "permissions": [
+                {
+                    "id": 551,
+                    "name": "iaso fifth permission",
+                    "codename": "iaso_fifth_permission"
+                }
+            ],
+            "account": [
+                {
+                    "id": 1,
+                    "name": "account"
+                }
+            ]
+        },
+        {
+            "name": "module test 1",
+            "codename": "MODULE_TEST_1",
+            "created_at": 1695050933.488537,
+            "updated_at": 1695050933.505342,
+            "permissions": [
+                {
+                    "id": 551,
+                    "name": "iaso fifth permission",
+                    "codename": "iaso_fifth_permission"
+                }
+            ],
+            "account": [
+                {
+                    "id": 1,
+                    "name": "account"
+                }
+            ]
+        },
+        {
+            "name": "module test 2",
+            "codename": "MODULE_TEST_2",
+            "created_at": 1695050933.488537,
+            "updated_at": 1695050933.505342,
+            "permissions": [
+                {
+                    "id": 551,
+                    "name": "iaso fifth permission",
+                    "codename": "iaso_fifth_permission"
+                }
+            ],
+            "account": [
+                {
+                    "id": 1,
+                    "name": "account"
+                }
+            ]
+        },
+        {
+            "name": "module test 3",
+            "codename": "MODULE_TEST_3",
+            "created_at": 1695050933.488537,
+            "updated_at": 1695050933.505342,
+            "permissions": [
+                {
+                    "id": 551,
+                    "name": "iaso fifth permission",
+                    "codename": "iaso_fifth_permission"
+                }
+            ],
+            "account": [
+                {
+                    "id": 1,
+                    "name": "account"
+                }
+            ]
+        },
+        {
+            "name": "module test 4",
+            "codename": "MODULE_TEST_4",
+            "created_at": 1695050933.488537,
+            "updated_at": 1695050933.505342,
+            "permissions": [
+                {
+                    "id": 551,
+                    "name": "iaso fifth permission",
+                    "codename": "iaso_fifth_permission"
+                }
+            ],
+            "account": [
+                {
+                    "id": 1,
+                    "name": "account"
+                }
+            ]
+        },
+        {
+            "name": "module test 5",
+            "codename": "MODULE_TEST_5",
+            "created_at": 1695050933.488537,
+            "updated_at": 1695050933.505342,
+            "permissions": [
+                {
+                    "id": 551,
+                    "name": "iaso fifth permission",
+                    "codename": "iaso_fifth_permission"
+                }
+            ],
+            "account": [
+                {
+                    "id": 1,
+                    "name": "account"
+                }
+            ]
+        },
+        {
+            "name": "module tes 6",
+            "codename": "MODULE_TEST_6",
+            "created_at": 1695050933.488537,
+            "updated_at": 1695050933.505342,
+            "permissions": [
+                {
+                    "id": 551,
+                    "name": "iaso fifth permission",
+                    "codename": "iaso_fifth_permission"
+                }
+            ],
+            "account": [
+                {
+                    "id": 1,
+                    "name": "account"
+                }
+            ]
+        }
+    ]
+}

@@ -116,7 +116,6 @@ export const useGetCampaigns = (
         }
         return ['polio', 'campaigns', params];
     }, [params, queryKey]);
-
     return useSnackQuery({
         queryKey: effectiveQueryKey,
         queryFn: () => getRequest(getURL(params, url)),

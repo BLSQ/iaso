@@ -21,6 +21,14 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.tooltip.mappings',
         defaultMessage: 'Match DHIS2 and IASO data elements for data exchanges',
     },
+    iaso_modules: {
+        id: 'iaso.permissions.modules',
+        defaultMessage: 'Modules',
+    },
+    iaso_modules_tooltip: {
+        id: 'iaso.permissions.tooltip.modules',
+        defaultMessage: 'View modules linked to the current account',
+    },
     iaso_polio: {
         id: 'iaso.permissions.polio',
         defaultMessage: 'Polio campaigns management - User',
@@ -296,6 +304,14 @@ const PERMISSIONS_MESSAGES = defineMessages({
     iaso_polio_vaccine_authorizations_read_only: {
         id: 'iaso.permissions.polio_vaccine_authorizations_read_only',
         defaultMessage: 'Polio Vaccine Authorizations: Read Only',
+    },
+    iaso_org_unit_change_request: {
+        id: 'iaso.permissions.iaso_org_unit_change_request',
+        defaultMessage: 'Org unit change request - Read and Write',
+    },
+    iaso_org_unit_change_request_approve: {
+        id: 'iaso.permissions.iaso_org_unit_change_request_approve',
+        defaultMessage: 'Org unit change request - Approve',
     },
 });
 

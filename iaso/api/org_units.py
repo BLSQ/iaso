@@ -412,7 +412,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             latitude = request.data["latitude"]
             longitude = request.data["longitude"]
             altitude = request.data["altitude"]
-            if latitude and longitude:
+            if latitude is not None and longitude is not None:
                 org_unit.location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
             else:
                 org_unit.location = None

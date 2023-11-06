@@ -7,6 +7,7 @@ export const SHOW_LINK_INSTANCE_REFERENCE = 'SHOW_LINK_INSTANCE_REFERENCE';
 export const SHOW_BENEFICIARY_TYPES_IN_LIST_MENU =
     'SHOW_BENEFICIARY_TYPES_IN_LIST_MENU';
 export const SHOW_DEV_FEATURES = 'SHOW_DEV_FEATURES';
+export const SHOW_HOME_ONLINE = 'SHOW_HOME_ONLINE';
 
 /**
  * Check if current user has a feature flag active

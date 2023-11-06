@@ -1,3 +1,4 @@
+from plugins.polio.api.rounds.reasons_for_delay import ReasonForDelayViewSet
 from plugins.polio.tasks.api.refresh_lqas_data import RefreshLQASDataViewset
 from rest_framework import routers
 
@@ -17,7 +18,7 @@ from plugins.polio.api.lqas_im.lqasim_zoom_in_map import LQASIMZoominMapBackgrou
 from plugins.polio.api.campaigns.orgunits_per_campaigns import OrgUnitsPerCampaignViewset
 from plugins.polio.api.polio_org_units import PolioOrgunitViewSet
 from plugins.polio.api.dashboards.preparedness_dashboard import PreparednessDashboardViewSet
-from plugins.polio.api.rounds.round import RoundViewset
+from plugins.polio.api.rounds.round import RoundViewSet
 from plugins.polio.api.rounds.round_date_history import RoundDateHistoryEntryViewset
 from plugins.polio.api.vaccines.vaccine_authorization import VaccineAuthorizationViewSet
 from plugins.polio.api.dashboards.vaccine_stocks import VaccineStocksViewSet
@@ -51,6 +52,7 @@ router.register(r"polio/lqasmap/zoominbackground", LQASIMZoominMapBackgroundView
 router.register(r"polio/vaccineauthorizations", VaccineAuthorizationViewSet, basename="vaccine_authorizations")
 router.register(r"polio/powerbirefresh", LaunchPowerBIRefreshViewSet, basename="powerbirefresh")
 router.register(r"tasks/create/refreshpreparedness", RefreshPreparednessLaucherViewSet, basename="refresh_preparedness")
-router.register(r"polio/rounds", RoundViewset, basename="rounds")
+router.register(r"polio/rounds", RoundViewSet, basename="rounds")
+router.register(r"polio/reasonsfordelay", ReasonForDelayViewSet, basename="reasonsfordelay")
 router.register(r"polio/tasks/refreshlqas", RefreshLQASDataViewset, basename="refreshlqas")
 router.register(r"polio/vaccine/request_forms", VaccineRequestFormViewSet, basename="vaccine_request_forms")

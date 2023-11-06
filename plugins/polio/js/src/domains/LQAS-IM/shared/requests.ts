@@ -5,8 +5,9 @@ import { useSnackQuery } from 'Iaso/libs/apiHooks';
 // @ts-ignore
 import { getRequest } from 'Iaso/libs/Api';
 import { UseQueryResult } from 'react-query';
-import { IM_POC_URL, LQAS_DATASTORE_URL } from './constants';
+import { IM_POC_URL } from './constants';
 import { LqasImData } from '../../../constants/types';
+import { LQAS_DATASTORE_URL } from '../LQAS/constants';
 
 export type LQASIMRequestType = 'lqas' | 'imOHH' | 'imIHH' | 'imGlobal';
 

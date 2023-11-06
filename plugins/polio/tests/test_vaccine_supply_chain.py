@@ -7,6 +7,7 @@ from iaso.test import APITestCase
 from plugins.polio import models as pm
 from django.contrib.auth.models import AnonymousUser
 
+
 BASE_URL = "/api/polio/vaccine/request_forms/"
 
 
@@ -219,7 +220,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         response = self.client.get(BASE_URL)
         self.assertEqual(response.status_code, 200)
         res = response.data["results"]
-        self.assertEqual(len(res), 2)
+        self.assertEqual(len(res), 3)
         self.assertEqual(len(res[0]["rounds"]), 2)
         self.assertEqual(len(res[1]["rounds"]), 1)
         self.assertEqual(res[0]["start_date"], datetime.date(2021, 2, 1))
@@ -308,20 +309,172 @@ class VaccineSupplyChainAPITestCase(APITestCase):
 
         response = self.client.post(
             BASE_URL,
-            {
-                "campaign": self.campaign_rdc_1.id,
+            data={
+                "campaign": campaign_test.id,
                 "vaccine_type": pm.VACCINES[0][0],
                 "date_vrf_reception": "2021-01-01",
                 "date_vrf_signature": "2021-01-02",
                 "date_dg_approval": "2021-01-03",
                 "quantities_ordered_in_doses": 1000000,
-                "rounds": [{"id": campaign_test_round_1.id}],
-                "pre_alerts": [],
-                "arrival_reports": [],
+                "rounds": [campaign_test_round_1.id],
             },
+            format="json",
         )
         self.assertEqual(response.status_code, 201)
         res = response.data
-        self.assertEqual(res["campaign"], self.campaign_rdc_1.id)
+        self.assertEqual(res["campaign"], campaign_test.id)
         self.assertEqual(res["vaccine_type"], pm.VACCINES[0][0])
-        self.assertEqual(res["date_vrf_reception"], datetime.date.today() - datetime.timedelta(days=1))
+
+    def test_can_add_request_form_vaccine_prealerts(self):
+        self.client.force_authenticate(user=self.user_rw_perm)
+
+        # Get the first request form and its pre-alerts
+        request_form = pm.VaccineRequestForm.objects.first()
+
+        response = self.client.post(
+            BASE_URL + f"{request_form.id}/add_pre_alerts/",
+            {
+                "pre_alerts": [
+                    {
+                        "date_pre_alert": "2021-01-01",
+                        "date_receipt": "2021-01-02",
+                        "quantity_in_doses": 500000,
+                        "comments": "Test comment",
+                    }
+                ],
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        res = response.data
+
+        print(res.keys())
+        print(res["pre_alerts"])
+
+        self.assertEqual(len(res["pre_alerts"]), 1)
+        self.assertEqual(res["pre_alerts"][0]["quantity_in_doses"], 500000)
+        self.assertEqual(res["pre_alerts"][0]["comments"], "Test comment")
+
+    def test_can_add_request_form_vaccine_arrival_reports(self):
+        self.client.force_authenticate(user=self.user_rw_perm)
+
+        # Get the first request form and its arrival reports
+        request_form = pm.VaccineRequestForm.objects.first()
+
+        response = self.client.post(
+            BASE_URL + f"{request_form.id}/add_arrival_reports/",
+            {
+                "arrival_reports": [
+                    {
+                        "arrival_report_date": "2021-01-01",
+                        "doses_received": 1000,
+                    }
+                ],
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 201)
+        res = response.data
+
+        print(res.keys())
+        print(res["arrival_reports"])
+
+        self.assertEqual(len(res["arrival_reports"]), 1)
+        self.assertEqual(res["arrival_reports"][0]["doses_received"], 1000)
+        self.assertEqual(res["arrival_reports"][0]["arrival_report_date"], "2021-01-01")
+
+    def test_can_get_request_form_vaccine_prealerts(self):
+        self.client.force_authenticate(user=self.user_rw_perm)
+
+        # Get the first request form and its pre-alerts
+        request_form = pm.VaccineRequestForm.objects.first()
+
+        # Create a pre-alert for the request_form
+        pre_alert = pm.VaccinePreAlert.objects.create(
+            request_form=request_form,
+            date_pre_alert="2021-01-01",
+            date_receipt="2021-01-02",
+            quantity_in_doses=1000,
+        )
+
+        response = self.client.get(
+            BASE_URL + f"{request_form.id}/get_pre_alerts/",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        res = response.data
+
+        self.assertEqual(len(res["pre_alerts"]), 1)
+        self.assertEqual(res["pre_alerts"][0]["id"], pre_alert.id)
+        self.assertEqual(res["pre_alerts"][0]["date_pre_alert"], "2021-01-01")
+        self.assertEqual(res["pre_alerts"][0]["date_receipt"], "2021-01-02")
+        self.assertEqual(res["pre_alerts"][0]["quantity_in_doses"], 1000)
+
+    def test_can_get_request_form_vaccine_arrival_reports(self):
+        self.client.force_authenticate(user=self.user_rw_perm)
+
+        # Get the first request form and its arrival reports
+        request_form = pm.VaccineRequestForm.objects.first()
+
+        # Create a arrival report for the request_form
+        arrival_report = pm.VaccineArrivalReport.objects.create(
+            request_form=request_form,
+            arrival_report_date="2022-01-01",
+            doses_received=2000,
+        )
+
+        response = self.client.get(
+            BASE_URL + f"{request_form.id}/get_arrival_reports/",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        res = response.data
+
+        self.assertEqual(len(res["arrival_reports"]), 1)
+        self.assertEqual(res["arrival_reports"][0]["id"], arrival_report.id)
+        self.assertEqual(res["arrival_reports"][0]["arrival_report_date"], "2022-01-01")
+        self.assertEqual(res["arrival_reports"][0]["doses_received"], 2000)
+
+    def test_can_modify_request_form_vaccine_arrival_reports(self):
+        self.client.force_authenticate(user=self.user_rw_perm)
+
+        # Get the first request form and its arrival reports
+        request_form = pm.VaccineRequestForm.objects.first()
+        arrival_report = request_form.arrival_reports.first()
+
+        response = self.client.patch(
+            BASE_URL + f"{request_form.id}/update_arrival_reports/",
+            {"arrival_reports": [{"id": arrival_report.id, "doses_received": 3333}]},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        res = response.data
+
+        self.assertEqual(res["doses_received"], 3333)
+
+    def test_can_modify_request_form_vaccine_prealerts(self):
+        self.client.force_authenticate(user=self.user_rw_perm)
+
+        # Get the first request form and its pre-alerts
+        request_form = pm.VaccineRequestForm.objects.first()
+        pre_alert = request_form.pre_alerts.first()
+
+        response = self.client.patch(
+            BASE_URL + f"{request_form.id}/update_pre_alerts/",
+            {
+                "pre_alerts": [
+                    {
+                        "id": pre_alert.id,
+                        "doses_shipped": 4444,
+                    }
+                ]
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        res = response.data
+
+        self.assertEqual(res["doses_shipped"], 4444)

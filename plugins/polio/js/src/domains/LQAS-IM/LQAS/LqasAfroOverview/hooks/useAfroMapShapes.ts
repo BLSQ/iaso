@@ -169,6 +169,9 @@ export const useGetZoomedInBackgroundShapes = ({
                 return data.results;
             },
             enabled,
+            keepPreviousData: true,
+            staleTime: 1000 * 60 * 15, // in MS
+            cacheTime: 1000 * 60 * 5,
         },
     });
 };

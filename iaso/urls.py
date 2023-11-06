@@ -62,6 +62,8 @@ from .api.mobile.entity_type import MobileEntityTypesViewSet
 from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.mobile.reports import MobileReportsViewSet
 from .api.mobile.storage import MobileStoragePasswordViewSet
+from .api.org_unit_change_requests.views import OrgUnitChangeRequestViewSet
+from .api.org_unit_change_requests.views_mobile import MobileOrgUnitChangeRequestViewSet
 from .api.org_unit_types import OrgUnitTypeViewSet
 from .api.org_unit_types.viewsets import OrgUnitTypeViewSetV2
 from .api.org_units import OrgUnitViewSet
@@ -85,13 +87,15 @@ from .api.workflows.import_export import export_workflow, import_workflow
 from .api.org_unit_validation_status import ValidationStatusViewSet
 from .dhis2.authentication import dhis2_callback  # type: ignore
 from .api.user_roles import UserRolesViewSet
+from .api.modules import ModulesViewSet
 
 URL = Union[URLPattern, URLResolver]
 URLList = List[URL]
 
 router = routers.DefaultRouter()
+router.register(r"orgunits/changes", OrgUnitChangeRequestViewSet, basename="orgunitschanges")
+router.register(r"mobile/orgunits/changes", MobileOrgUnitChangeRequestViewSet, basename="mobileorgunitschanges")
 router.register(r"orgunits", OrgUnitViewSet, basename="orgunits")
-
 router.register(r"orgunittypes", OrgUnitTypeViewSet, basename="orgunittypes")
 router.register(r"v2/orgunittypes", OrgUnitTypeViewSetV2, basename="orgunittypes")
 router.register(r"apps", AppsViewSet, basename="apps")
@@ -164,7 +168,7 @@ router.register(r"datastore", DataStoreViewSet, basename="datastore")
 router.register(r"validationstatus", ValidationStatusViewSet, basename="validationstatus")
 
 router.register(r"mobile/metadata/lastupdates", LastUpdatesViewSet, basename="lastupdates")
-
+router.register(r"modules", ModulesViewSet, basename="modules")
 router.registry.extend(plugins_router.registry)
 
 urlpatterns: URLList = [

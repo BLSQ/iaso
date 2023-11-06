@@ -1,7 +1,10 @@
+from unittest.mock import patch
+
 from django.contrib.gis.geos import Point
 from django.core.files.uploadedfile import UploadedFile
 
 from iaso import models as m
+from iaso.dhis2.datavalue_exporter import DataValueExporter, InstanceExportError
 from iaso.dhis2.export_request_builder import ExportRequestBuilder
 from iaso.test import APITestCase
 
@@ -147,3 +150,23 @@ class ExportRequestsAPITestCase(APITestCase):
                 + " {'demo': 'noversion'}",
             },
         )
+
+    def test_udpate(self):
+        self.client.force_authenticate(self.user)
+
+        self.build_instance(self.village_1, self.uuid(1), "201901")
+        self.build_instance(self.village_2, self.uuid(2), "201901")
+        ExportRequestBuilder().build_export_request(filters={"period_ids": "201901,201902"}, launcher=self.user)
+        export_request = m.ExportRequest.objects.first()
+
+        with patch.object(DataValueExporter, "export_instances", return_value=None):
+            response = self.client.put(f"/api/exportrequests/{export_request.pk}/", format="json")
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.data["id"], export_request.pk)
+
+        error = InstanceExportError("Error", {}, ["Error"])
+        with patch.object(DataValueExporter, "export_instances", side_effect=error):
+            response = self.client.put(f"/api/exportrequests/{export_request.pk}/", format="json")
+            self.assertEqual(response.status_code, 409)
+            self.assertEqual(response.data["code"], "InstanceExportError")
+            self.assertEqual(response.data["message"], "InstanceExportError, Error : Error ")

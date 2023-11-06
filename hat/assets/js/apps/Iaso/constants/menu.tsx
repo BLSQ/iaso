@@ -23,6 +23,7 @@ import AssignmentIcon from '@material-ui/icons/Assignment';
 import StorageIcon from '@material-ui/icons/Storage';
 import MenuBookIcon from '@material-ui/icons/MenuBook';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
+import ViewModuleIcon from '@material-ui/icons/ViewModule';
 
 import { IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
@@ -37,7 +38,6 @@ import {
     SHOW_DEV_FEATURES,
 } from '../utils/featureFlags';
 import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants';
-import { getChipColors } from './chipColors';
 
 import MESSAGES from './messages';
 import { useCurrentUser } from '../utils/usersUtils';
@@ -46,9 +46,10 @@ import {
     userHasOneOfPermissions,
 } from '../domains/users/utils';
 import { PluginsContext } from '../utils';
-import { getDefaultSourceVersion } from '../domains/dataSources/utils';
 import { useGetBeneficiaryTypesDropdown } from '../domains/entities/hooks/requests';
 import { DropdownOptions } from '../types/utils';
+import { Plugins } from '../domains/app/types';
+import { useGetOrgunitsExtraPath } from '../domains/home/hooks/useGetOrgunitsExtraPath';
 
 type MenuItem = {
     label: string;
@@ -65,15 +66,13 @@ type MenuItem = {
     dev?: boolean;
 };
 type MenuItems = MenuItem[];
-type Plugins = {
-    plugins: Record<string, any>[];
-};
+
 // !! remove permission property if the menu has a subMenu !!
 const menuItems = (
     entityTypes: Array<DropdownOptions<number>>,
     formatMessage: IntlFormatMessage,
     currentUser,
-    defaultSourceId?: number,
+    orgUnitExtraPath?: string,
 ): MenuItems => {
     const beneficiariesListEntry: MenuItem = {
         label: formatMessage(MESSAGES.beneficiariesList),
@@ -145,11 +144,7 @@ const menuItems = (
                 {
                     label: formatMessage(MESSAGES.orgUnitList),
                     permissions: paths.orgUnitsPath.permissions,
-                    extraPath: `/locationLimit/${locationLimitMax}/order/id/pageSize/50/page/1/searchTabIndex/0/searches/[{"validation_status":"all","color":"${getChipColors(
-                        0,
-                    ).replace('#', '')}"${
-                        defaultSourceId ? `,"source":${defaultSourceId}` : ''
-                    }}]`,
+                    extraPath: orgUnitExtraPath,
                     key: 'list',
                     icon: props => <FormatListBulleted {...props} />,
                 },
@@ -272,6 +267,12 @@ const menuItems = (
                     icon: props => <PhonelinkSetupIcon {...props} />,
                 },
                 {
+                    label: formatMessage(MESSAGES.modules),
+                    key: 'modules',
+                    permissions: paths.modulesPath.permissions,
+                    icon: props => <ViewModuleIcon {...props} />,
+                },
+                {
                     label: formatMessage(MESSAGES.users),
                     key: 'users',
                     permissions: paths.usersPath.permissions,
@@ -298,7 +299,7 @@ export const useMenuItems = (): MenuItems => {
     const currentUser = useCurrentUser();
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
-    const defaultSourceVersion = getDefaultSourceVersion(currentUser);
+    const orgUnitExtraPath = useGetOrgunitsExtraPath();
     const { data: entityTypes } = useGetBeneficiaryTypesDropdown();
     const { plugins }: Plugins = useContext(PluginsContext);
     const pluginsMenu = plugins.map(plugin => plugin.menu).flat();
@@ -308,15 +309,10 @@ export const useMenuItems = (): MenuItems => {
                 entityTypes || [],
                 formatMessage,
                 currentUser,
-                defaultSourceVersion?.source?.id,
+                orgUnitExtraPath,
             ),
         ],
-        [
-            currentUser,
-            defaultSourceVersion?.source?.id,
-            entityTypes,
-            formatMessage,
-        ],
+        [currentUser, orgUnitExtraPath, entityTypes, formatMessage],
     );
     // Find admin entry
     const admin = allBasicItems.find(item => item.key === 'settings');
@@ -343,14 +339,23 @@ export const useMenuItems = (): MenuItems => {
         });
     }
 
-    // filter by user permissions
-    const items = [...basicItems, ...pluginsMenu, admin].filter(menuItem => {
-        const permissionsList = listMenuPermission(menuItem);
-        return userHasOneOfPermissions(permissionsList, currentUser);
-    });
-    if (hasFeatureFlag(currentUser, SHOW_DEV_FEATURES)) {
-        return items;
-    }
-    // Remove dev (incomplete) features
-    return items.filter(item => !item.dev);
+    const items: MenuItems = useMemo(() => {
+        const menuItemsTemp = [
+            ...(basicItems as MenuItems),
+            ...(pluginsMenu as MenuItems),
+        ];
+        if (admin) {
+            menuItemsTemp.push(admin as MenuItem);
+        }
+        const authorizedItems = menuItemsTemp.filter(menuItem => {
+            const permissionsList = listMenuPermission(menuItem);
+            return userHasOneOfPermissions(permissionsList, currentUser);
+        });
+        if (hasFeatureFlag(currentUser, SHOW_DEV_FEATURES)) {
+            return authorizedItems;
+        }
+        // Remove dev (incomplete) features
+        return authorizedItems.filter(item => !item.dev);
+    }, [admin, basicItems, currentUser, pluginsMenu]);
+    return items;
 };

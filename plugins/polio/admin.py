@@ -13,6 +13,9 @@ from .budget.models import BudgetStep, BudgetStepFile, BudgetStepLink, MailTempl
 from .models import (
     Campaign,
     CampaignGroup,
+    ReasonForDelay,
+    RoundDateHistoryEntry,
+    Round,
     Config,
     CountryUsersGroup,
     Round,
@@ -169,6 +172,11 @@ class RoundAdmin(admin.ModelAdmin):
     raw_id_fields = ("campaign",)
     list_display = ["campaign", "number"]
     list_filter = ["campaign"]
+
+
+@admin.register(ReasonForDelay)
+class ReasonForDelayAdmin(admin.ModelAdmin):
+    model = ReasonForDelay
 
 
 admin.site.register(Campaign, CampaignAdmin)

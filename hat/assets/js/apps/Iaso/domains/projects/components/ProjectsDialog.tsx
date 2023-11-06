@@ -67,6 +67,7 @@ const ProjectsDialog: FunctionComponent<Props> = ({
 }) => {
     const { data: featureFlags, isFetching: isFetchingFeatureFlags } =
         useGetFeatureFlags();
+
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const initialProject = useCallback(

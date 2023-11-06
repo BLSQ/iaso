@@ -21,9 +21,7 @@ def check_for_already_validated_authorization(status, country):
     if status == "VALIDATED":
         validated_vaccine_auth = VaccineAuthorization.objects.filter(status="VALIDATED", country=country)
         if validated_vaccine_auth:
-            raise Custom403Exception(
-                {"error": f"A vaccine authorization is already validated for this country"}
-            )
+            raise Custom403Exception({"error": f"A vaccine authorization is already validated for this country"})
 
 
 class CountryForVaccineSerializer(serializers.ModelSerializer):

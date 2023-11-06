@@ -4,11 +4,9 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('polio', '0151_alter_rounddatehistoryentry_reason'),
-        ('polio', '0152_auto_20231020_1135'),
+        ("polio", "0151_alter_rounddatehistoryentry_reason"),
+        ("polio", "0152_auto_20231020_1135"),
     ]
 
-    operations = [
-    ]
+    operations = []

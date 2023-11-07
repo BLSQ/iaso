@@ -952,7 +952,7 @@ class VaccineAuthorization(SoftDeletableModel):
     )
     account = models.ForeignKey("iaso.account", on_delete=models.DO_NOTHING, related_name="vaccineauthorization")
     start_date = models.DateField(blank=True, null=True)
-    expiration_date = models.DateField()
+    expiration_date = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     quantity = models.IntegerField(blank=True, null=True)

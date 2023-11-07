@@ -3,6 +3,7 @@ from django.db.models import Q
 from rest_framework import serializers
 
 from iaso.api.common import TimestampField
+from iaso.api.query_params import APP_ID
 from iaso.models import OrgUnit, OrgUnitType, Group
 
 
@@ -28,6 +29,11 @@ class AppIdSerializer(serializers.Serializer):
     """
 
     app_id = serializers.CharField(allow_blank=False)
+
+    def get_app_id(self, raise_exception: bool):
+        if not self.is_valid(raise_exception=raise_exception):
+            return None
+        return self.data[APP_ID]
 
 
 class GroupSerializer(TimestampSerializerMixin, serializers.ModelSerializer):

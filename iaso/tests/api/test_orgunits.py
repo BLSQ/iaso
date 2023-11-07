@@ -579,6 +579,29 @@ class OrgUnitAPITestCase(APITestCase):
             }
         )
 
+    def test_create_org_unit_opening_date_not_anterior_to_closed_date(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            f"/api/orgunits/create_org_unit/",
+            format="json",
+            data={
+                "id": None,
+                "name": "Test ou",
+                "org_unit_type_id": self.jedi_council.pk,
+                "groups": [],
+                "sub_source": "",
+                "status": False,
+                "aliases": ["my alias"],
+                "validation_status": "NEW",
+                "parent_id": "",
+                "source_ref": "",
+                "creation_source": "dashboard",
+                "opening_date": "01-01-2024",
+                "closed_date": "01-12-2023",
+            },
+        )
+        self.assertJSONResponse(response, 400)
+
     def test_create_org_unit_minimal(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.post(

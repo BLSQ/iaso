@@ -83,11 +83,13 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         data = {
             "org_unit_id": self.org_unit.id,
             "new_name": "I want this new name",
+            "new_org_unit_type_id": self.org_unit_type.pk,
         }
         response = self.client.post("/api/orgunits/changes/", data=data, format="json")
         self.assertEqual(response.status_code, 201)
         change_request = m.OrgUnitChangeRequest.objects.get(new_name=data["new_name"])
         self.assertEqual(change_request.new_name, data["new_name"])
+        self.assertEqual(change_request.new_org_unit_type, self.org_unit_type)
         self.assertEqual(change_request.created_by, self.user)
 
     def test_create_ok_from_mobile(self):

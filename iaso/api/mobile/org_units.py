@@ -1,4 +1,5 @@
 from typing import Dict, Any
+from typing import Optional
 
 from django.contrib.gis.db.models import GeometryField
 from django.contrib.gis.db.models.aggregates import Extent
@@ -8,17 +9,17 @@ from django.core.cache import cache
 from django.db.models.expressions import RawSQL
 from django.db.models.functions import Cast
 from rest_framework import permissions
+from rest_framework.decorators import action
 from rest_framework.fields import SerializerMethodField
 from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer, JSONField
-from rest_framework.decorators import action
-from typing import Optional
 
 from hat.api.export_utils import timestamp_to_utc_datetime
+from hat.menupermissions import models as permission
 from iaso.api.common import get_timestamp, TimestampField, ModelViewSet, Paginator, safe_api_import
 from iaso.api.query_params import APP_ID, LIMIT, PAGE
+from iaso.api.serializers import AppIdSerializer
 from iaso.models import OrgUnit, Project, FeatureFlag
-from hat.menupermissions import models as permission
 
 
 class MobileOrgUnitsSetPagination(Paginator):
@@ -55,6 +56,7 @@ class MobileOrgUnitSerializer(ModelSerializer):
             "uuid",
             "aliases",
             "geo_json",
+            "groups",
         ]
 
     parent_id = SerializerMethodField()
@@ -156,7 +158,7 @@ class MobileOrgUnitViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        app_id = self.request.query_params.get(APP_ID)
+        app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
 
         limit_download_to_roots = False
 
@@ -172,7 +174,7 @@ class MobileOrgUnitViewSet(ModelViewSet):
         queryset = (
             org_units.filter(validation_status=OrgUnit.VALIDATION_VALID)
             .order_by("path")
-            .prefetch_related("parent", "org_unit_type")
+            .prefetch_related("parent", "org_unit_type", "groups")
             .select_related("org_unit_type")
         )
         include_geo_json = self.check_include_geo_json()
@@ -189,7 +191,7 @@ class MobileOrgUnitViewSet(ModelViewSet):
         return self.request.query_params.get("shapes", "") == "true"
 
     def list(self, request, *args, **kwargs):
-        app_id = self.request.query_params.get(APP_ID)
+        app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=False)
         if not app_id:
             return Response()
         roots_key = ""

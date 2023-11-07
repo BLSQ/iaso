@@ -15,6 +15,7 @@ import Mappings from '../domains/mappings';
 import MappingDetails from '../domains/mappings/details';
 import { Users } from '../domains/users/index.tsx';
 import { UserRoles } from '../domains/userRoles/index.tsx';
+import { Modules } from '../domains/modules/index.tsx';
 import { Projects } from '../domains/projects/index.tsx';
 import DataSources from '../domains/dataSources';
 import { Details as DataSourceDetail } from '../domains/dataSources/details.tsx';
@@ -705,6 +706,23 @@ export const completenessStatsPath = {
     ],
 };
 
+export const modulesPath = {
+    baseUrl: baseUrls.modules,
+    permissions: [Permission.MODULES],
+    component: props => <Modules {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        {
+            isRequired: false,
+            key: 'search',
+        },
+        ...paginationPathParams,
+    ],
+};
+
 export const usersPath = {
     baseUrl: baseUrls.users,
     permissions: [Permission.USERS_ADMIN, Permission.USERS_MANAGEMENT],
@@ -1358,4 +1376,5 @@ export const routeConfigs = [
     workflowsDetailPath,
     registryPath,
     registryDetailPath,
+    modulesPath,
 ];

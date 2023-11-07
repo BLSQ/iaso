@@ -3,6 +3,7 @@ import uuid
 
 from django.contrib.gis.geos import Point
 from rest_framework.exceptions import ValidationError
+from rest_framework.test import APIRequestFactory
 
 from iaso.api.org_unit_change_requests.serializers import (
     InstanceForChangeRequest,
@@ -315,7 +316,7 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
             org_unit_type=cls.org_unit_type, location=Point(-2.4747713, 47.3358576, 10.0)
         )
 
-    def test_deserialize_change_request(self):
+    def test_deserialize_ok(self):
         data = {
             "uuid": "e05933f4-8370-4329-8cf5-197941785a24",
             "org_unit_id": self.org_unit.id,
@@ -324,7 +325,7 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
         serializer = OrgUnitChangeRequestWriteSerializer(data=data)
         self.assertTrue(serializer.is_valid())
 
-    def test_deserialize_change_request_generate_uuid_if_not_provided(self):
+    def test_generate_uuid_if_not_provided(self):
         data = {
             "org_unit_id": self.org_unit.id,
             "new_name": "Foo",
@@ -333,7 +334,7 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
         self.assertTrue(serializer.is_valid())
         self.assertTrue(isinstance(serializer.validated_data["uuid"], uuid.UUID))
 
-    def test_deserialize_change_request_validate(self):
+    def test_validate(self):
         data = {
             "org_unit_id": self.org_unit.id,
         }
@@ -341,7 +342,60 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
         self.assertFalse(serializer.is_valid())
         self.assertIn("You must provide at least one of the following fields", serializer.errors["non_field_errors"][0])
 
-    def test_deserialize_change_request_validate_new_reference_instances(self):
+    def test_validate_new_parent_version(self):
+        data_source = m.DataSource.objects.create(name="Data source")
+        version1 = m.SourceVersion.objects.create(number=1, data_source=data_source)
+        version2 = m.SourceVersion.objects.create(number=2, data_source=data_source)
+        parent_org_unit = m.OrgUnit.objects.create(org_unit_type=self.org_unit_type, version=version2)
+        self.org_unit.version = version1
+        self.org_unit.save()
+        data = {
+            "org_unit_id": self.org_unit.id,
+            "new_parent_id": parent_org_unit.id,
+        }
+        serializer = OrgUnitChangeRequestWriteSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(
+            "`new_parent_id` and `org_unit_id` must have the same version.", serializer.errors["non_field_errors"][0]
+        )
+
+    def test_validate_new_parent_hierarchy(self):
+        child_org_unit = m.OrgUnit.objects.create(org_unit_type=self.org_unit_type, parent=self.org_unit)
+        self.org_unit.save()
+        data = {
+            "org_unit_id": self.org_unit.id,
+            "new_parent_id": child_org_unit.id,
+        }
+        serializer = OrgUnitChangeRequestWriteSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("`new_parent_id` is already a child of `org_unit_id`.", serializer.errors["non_field_errors"][0])
+
+    def test_validate_new_org_unit_type_id(self):
+        data_source = m.DataSource.objects.create(name="Data source")
+        version = m.SourceVersion.objects.create(number=1, data_source=data_source)
+        account = m.Account.objects.create(name="Account", default_version=version)
+        project = m.Project.objects.create(name="Project", account=account, app_id="foo.bar.baz")
+        org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
+        data_source.projects.set([project])
+        org_unit_type.projects.set([project])
+
+        other_account = m.Account.objects.create(name="Other account")
+        user = self.create_user_with_profile(username="user", account=other_account)
+
+        request = APIRequestFactory().get("/")
+        request.user = user
+
+        data = {
+            "org_unit_id": self.org_unit.id,
+            "new_org_unit_type_id": org_unit_type.id,
+        }
+        serializer = OrgUnitChangeRequestWriteSerializer(data=data, context={"request": request})
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(
+            "`new_org_unit_type_id` is not part of the user account.", serializer.errors["new_org_unit_type_id"][0]
+        )
+
+    def test_validate_new_reference_instances(self):
         form = m.Form.objects.create(name="Vaccine form 1")
         instance1 = m.Instance.objects.create(form=form, org_unit=self.org_unit)
         instance2 = m.Instance.objects.create(form=form, org_unit=self.org_unit)
@@ -356,7 +410,7 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
             serializer.errors["new_reference_instances"][0],
         )
 
-    def test_deserialize_change_request_full(self):
+    def test_deserialize_ok_with_all_data(self):
         group1 = m.Group.objects.create(name="Group 1")
         group2 = m.Group.objects.create(name="Group 2")
 
@@ -365,10 +419,12 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
         form2 = m.Form.objects.create(name="Vaccine form 2")
         instance2 = m.Instance.objects.create(form=form2, org_unit=self.org_unit)
 
+        parent_org_unit = m.OrgUnit.objects.create(org_unit_type=self.org_unit_type)
+
         data = {
             "uuid": "e05933f4-8370-4329-8cf5-197941785a24",
             "org_unit_id": self.org_unit.id,
-            "new_parent_id": self.org_unit.id,
+            "new_parent_id": parent_org_unit.id,
             "new_name": "Foo",
             "new_org_unit_type_id": self.org_unit_type.id,
             "new_groups": [group1.id, group2.id],
@@ -387,7 +443,7 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
 
         change_request = OrgUnitChangeRequest.objects.get(uuid=data["uuid"])
         self.assertEqual(change_request.org_unit, self.org_unit)
-        self.assertEqual(change_request.new_parent, self.org_unit)
+        self.assertEqual(change_request.new_parent, parent_org_unit)
         self.assertEqual(change_request.new_name, "Foo")
         self.assertEqual(change_request.new_org_unit_type, self.org_unit_type)
         new_groups = change_request.new_groups.all()

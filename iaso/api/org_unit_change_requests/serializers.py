@@ -1,6 +1,5 @@
 import uuid
 
-from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
 from iaso.models import Instance, OrgUnit, OrgUnitChangeRequest, OrgUnitType
@@ -203,29 +202,42 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
             "new_reference_instances",
         ]
 
-    def validate_new_reference_instances(self, value):
+    def validate_new_reference_instances(self, new_reference_instances):
         seen = []
-        for instance in value:
+        for instance in new_reference_instances:
             unique_org_unit_form = f"{instance.form_id}-{instance.org_unit_id}"
             if unique_org_unit_form in seen:
                 raise serializers.ValidationError("Only one reference instance can exist by org_unit/form pair.")
             seen.append(unique_org_unit_form)
-        return value
+        return new_reference_instances
 
-    def validate(self, attrs):
-        new_fields = [
-            "new_parent_id",
-            "new_name",
-            "new_org_unit_type_id",
-            "new_groups",
-            "new_location",
-            "new_reference_instances",
-        ]
-        if not any([attrs.get(field) for field in new_fields]):
+    def validate_new_org_unit_type_id(self, new_org_unit_type):
+        request = self.context.get("request")
+        if request and not new_org_unit_type.projects.filter(account=request.user.iaso_profile.account).exists():
+            raise serializers.ValidationError("`new_org_unit_type_id` is not part of the user account.")
+        return new_org_unit_type
+
+    def validate(self, validated_data):
+        # Fields names are different between API and model, e.g. `new_parent_id` VS `new_parent`.
+        new_fields_api = [name for name in self.Meta.fields if name.startswith("new_")]
+        new_fields_model = OrgUnitChangeRequest.get_new_fields()
+
+        if not any([validated_data.get(field) for field in new_fields_model]):
             raise serializers.ValidationError(
-                f"You must provide at least one of the following fields: {', '.join(new_fields)}."
+                f"You must provide at least one of the following fields: {', '.join(new_fields_api)}."
             )
-        return attrs
+
+        org_unit = validated_data.get("org_unit")
+        new_parent = validated_data.get("new_parent")
+
+        if org_unit and new_parent:
+            if new_parent.version_id != org_unit.version_id:
+                raise serializers.ValidationError("`new_parent_id` and `org_unit_id` must have the same version.")
+
+            if OrgUnit.objects.hierarchy(org_unit).filter(pk=new_parent.pk).exists():
+                raise serializers.ValidationError("`new_parent_id` is already a child of `org_unit_id`.")
+
+        return validated_data
 
 
 class OrgUnitChangeRequestReviewSerializer(serializers.ModelSerializer):
@@ -248,17 +260,13 @@ class OrgUnitChangeRequestReviewSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(f"Must be `{approved}` or `{rejected}`.")
         return value
 
-    def validate_approved_fields(self, value):
-        try:
-            OrgUnitChangeRequest.clean_approved_fields(value)
-        except ValidationError as e:
-            raise serializers.ValidationError(e.messages[0]) from e
-        return value
+    def validate(self, validated_data):
+        instance = OrgUnitChangeRequest(**validated_data)
+        instance.clean()
 
-    def validate(self, attrs):
-        status = attrs.get("status")
-        approved_fields = attrs.get("approved_fields")
-        rejection_comment = attrs.get("rejection_comment")
+        status = validated_data.get("status")
+        approved_fields = validated_data.get("approved_fields")
+        rejection_comment = validated_data.get("rejection_comment")
 
         if status == OrgUnitChangeRequest.Statuses.REJECTED and not rejection_comment:
             raise serializers.ValidationError("A `rejection_comment` must be provided.")
@@ -266,4 +274,4 @@ class OrgUnitChangeRequestReviewSerializer(serializers.ModelSerializer):
         if status == OrgUnitChangeRequest.Statuses.APPROVED and not approved_fields:
             raise serializers.ValidationError("At least one `approved_fields` must be provided.")
 
-        return attrs
+        return validated_data

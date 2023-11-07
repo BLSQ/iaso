@@ -16,6 +16,7 @@ class Migration(migrations.Migration):
                 "permissions": (
                     ("iaso_forms", "Formulaires"),
                     ("iaso_mappings", "Correspondances avec DHIS2"),
+                    ("iaso_modules", "modules"),
                     ("iaso_completeness", "Complétude des données"),
                     ("iaso_org_units", "Unités d'organisations"),
                     ("iaso_registry", "Registre"),

@@ -106,7 +106,8 @@ def check_total_doses_requested(vaccine_authorization, nOPV2_rounds):
     if vaccine_authorization:
         total_doses_requested = 0
         for c_round in nOPV2_rounds:
-            total_doses_requested += c_round.doses_requested
+            if c_round.doses_requested is not None:
+                total_doses_requested += c_round.doses_requested
 
         if total_doses_requested > vaccine_authorization.quantity:
             raise Custom403Exception(

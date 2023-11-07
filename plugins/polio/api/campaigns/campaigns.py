@@ -178,32 +178,6 @@ class CampaignSerializer(serializers.ModelSerializer):
         obr_name = validated_data["obr_name"]
         account = self.context["request"].user.iaso_profile.account
 
-        # check if the quantity of the vaccines requested is not superior to the authorized vaccine quantity
-        nopv2_vacc_found = False
-        nOPV2_rounds = []
-        if initial_org_unit:
-            for d in rounds:
-                round_count = d["number"]
-                for element in d["vaccines"]:
-                    if element.get("name") == "nOPV2":
-                        nOPV2_rounds.append(round_count)
-                        nopv2_vacc_found = True
-
-            if nopv2_vacc_found:
-                try:
-                    initial_org_unit = OrgUnit.objects.get(pk=initial_org_unit.pk)
-                    vaccine_authorization = VaccineAuthorization.objects.filter(
-                        country=initial_org_unit, status="VALIDATED", account=account
-                    )
-                    if vaccine_authorization:
-                        check_total_doses_requested(vaccine_authorization[0], rounds, nOPV2_rounds)
-                    else:
-                        missing_vaccine_authorization_for_campaign_email_alert(
-                            obr_name, validated_data["initial_org_unit"], account
-                        )
-                except OrgUnit.DoesNotExist:
-                    raise Custom403Exception("error:" "Org unit does not exists.")
-
         campaign_scopes = validated_data.pop("scopes", [])
         campaign = Campaign.objects.create(
             # there seems a bug in DRF the account is not in validated data, when not using HiddenField
@@ -263,6 +237,29 @@ class CampaignSerializer(serializers.ModelSerializer):
         campaign.update_geojson_field()
         campaign.save()
         log_campaign_modification(campaign, None, self.context["request"].user)
+
+        # check if the quantity of the vaccines requested is not superior to the authorized vaccine quantity
+        c_rounds = [r for r in campaign.rounds.all()]
+        nOPV2_rounds = []
+        for r in c_rounds:
+            if r.vaccine_names() == "nOPV2":
+                nOPV2_rounds.append(r)
+
+        if initial_org_unit and len(nOPV2_rounds) > 0:
+            try:
+                initial_org_unit = OrgUnit.objects.get(pk=initial_org_unit.pk)
+                vaccine_authorization = VaccineAuthorization.objects.filter(
+                    country=initial_org_unit, status="VALIDATED", account=account
+                )
+                if vaccine_authorization:
+                    check_total_doses_requested(vaccine_authorization[0], nOPV2_rounds)
+                else:
+                    missing_vaccine_authorization_for_campaign_email_alert(
+                        obr_name, validated_data["initial_org_unit"], account
+                    )
+            except OrgUnit.DoesNotExist:
+                raise Custom403Exception("error:" "Org unit does not exists.")
+
         return campaign
 
     @atomic

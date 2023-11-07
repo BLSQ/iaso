@@ -103,7 +103,7 @@ def check_total_doses_requested(vaccine_authorization, nOPV2_rounds):
     Check if the total doses requested per round in a campaign is not superior to the allowed doses in the vaccine authorization.
     It also emails the nopv2 vaccine team about it.
     """
-    if vaccine_authorization:
+    if vaccine_authorization and vaccine_authorization.quantity is not None:
         total_doses_requested = 0
         for c_round in nOPV2_rounds:
             if c_round.doses_requested is not None:

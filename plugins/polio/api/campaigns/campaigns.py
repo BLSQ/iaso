@@ -98,16 +98,15 @@ class CurrentAccountDefault:
         return serializer_field.context["request"].user.iaso_profile.account_id
 
 
-def check_total_doses_requested(vaccine_authorization, rounds, nOPV2_rounds):
+def check_total_doses_requested(vaccine_authorization, nOPV2_rounds):
     """
     Check if the total doses requested per round in a campaign is not superior to the allowed doses in the vaccine authorization.
     It also emails the nopv2 vaccine team about it.
     """
     if vaccine_authorization:
         total_doses_requested = 0
-        for c_round in rounds:
-            if c_round["number"] in nOPV2_rounds:
-                total_doses_requested += c_round.get("doses_requested", 0)
+        for c_round in nOPV2_rounds:
+            total_doses_requested += c_round.doses_requested
 
         if total_doses_requested > vaccine_authorization.quantity:
             raise Custom403Exception(
@@ -275,26 +274,23 @@ class CampaignSerializer(serializers.ModelSerializer):
         account = self.context["request"].user.iaso_profile.account
 
         # check if the quantity of the vaccines requested is not superior to the authorized vaccine quantity
-        nopv2_vacc_found = False
+        c_rounds = [r for r in instance.rounds.all()]
         nOPV2_rounds = []
-        if initial_org_unit:
-            for d in rounds:
-                round_count = d["number"]
-                for element in d["vaccines"]:
-                    if element.get("name") == "nOPV2":
-                        nOPV2_rounds.append(round_count)
-                        nopv2_vacc_found = True
+        for r in c_rounds:
+            if r.vaccine_names() == "nOPV2":
+                nOPV2_rounds.append(r)
 
-            if nopv2_vacc_found:
-                try:
-                    initial_org_unit = OrgUnit.objects.get(pk=initial_org_unit.pk)
-                    vaccine_authorization = VaccineAuthorization.objects.filter(
-                        country=initial_org_unit, status="VALIDATED", account=account
-                    )
-                    if vaccine_authorization:
-                        check_total_doses_requested(vaccine_authorization[0], rounds, nOPV2_rounds)
-                except OrgUnit.DoesNotExist:
-                    raise Custom403Exception("error:" "Org unit does not exists.")
+        if initial_org_unit and len(nOPV2_rounds) > 0:
+            try:
+                initial_org_unit = OrgUnit.objects.get(pk=initial_org_unit.pk)
+                vaccine_authorization = VaccineAuthorization.objects.filter(
+                    country=initial_org_unit, status="VALIDATED", account=account
+                )
+                if vaccine_authorization:
+                    print("VACC AUTH FOUND")
+                    check_total_doses_requested(vaccine_authorization[0], nOPV2_rounds)
+            except OrgUnit.DoesNotExist:
+                raise Custom403Exception("error:" "Org unit does not exists.")
 
         for scope in campaign_scopes:
             vaccine = scope.get("vaccine")

@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from django.core.paginator import Paginator
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand
@@ -42,33 +43,44 @@ def model_and_fields_with_files(account_id_to_keep, model_to_copy, offset):
                     )
 
                 print("\t", "count", m.objects.count())
+                LIMIT = 10000
+                all_objects = (
+                    m.objects.order_by("id").all()[offset : offset + LIMIT]
+                    if offset
+                    else m.objects.order_by("id").all()
+                )
 
-                all_objects = m.objects.order_by("id").all()[offset:] if offset else m.objects.order_by("id").all()
-                for object in all_objects:
-                    values = object.__dict__
-                    for field in file_fields:
-                        if values.get(field.name):
-                            target_file_name = "./media/account/" + account_id_to_keep + "/" + values.get(field.name)
+                paginator = Paginator(all_objects, LIMIT)
 
-                            if not os.path.exists(target_file_name):
-                                # avoid touching the s3 storage before this line so resuming the copy is faster
-                                file_field = getattr(object, field.name)
-                                os.makedirs(Path(target_file_name).parent.absolute(), exist_ok=True)
-                                with open(target_file_name, "wb") as target_f:
-                                    print(
-                                        "copying ",
-                                        field.name,
-                                        object.__class__.__qualname__,
-                                        object.id,
-                                        " : ",
-                                        "from s3 ",
-                                        values.get(field.name),
-                                        "to",
-                                        target_file_name,
-                                        "of",
-                                        object,
-                                    )
-                                    target_f.write(file_field.file.read())
+                for page_num in paginator.page_range:
+                    page = paginator.get_page(page_num)
+                    for object in page:
+                        values = object.__dict__
+                        for field in file_fields:
+                            if values.get(field.name):
+                                target_file_name = (
+                                    "./media/account/" + account_id_to_keep + "/" + values.get(field.name)
+                                )
+
+                                if not os.path.exists(target_file_name):
+                                    # avoid touching the s3 storage before this line so resuming the copy is faster
+                                    file_field = getattr(object, field.name)
+                                    os.makedirs(Path(target_file_name).parent.absolute(), exist_ok=True)
+                                    with open(target_file_name, "wb") as target_f:
+                                        print(
+                                            "copying ",
+                                            field.name,
+                                            object.__class__.__qualname__,
+                                            object.id,
+                                            " : ",
+                                            "from s3 ",
+                                            values.get(field.name),
+                                            "to",
+                                            target_file_name,
+                                            "of",
+                                            object,
+                                        )
+                                        target_f.write(file_field.file.read())
 
 
 class Command(BaseCommand):

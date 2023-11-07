@@ -21,7 +21,7 @@ from iaso.models.base import Task, QUEUED, KILLED
 from iaso.models.entity import Entity, EntityType
 from iaso.models.forms import Form
 from iaso.models.microplanning import Assignment, Team, Planning
-from iaso.models.org_unit import OrgUnit
+from iaso.models.org_unit import OrgUnit, OrgUnitReferenceInstance
 from iaso.models.pages import Page
 from iaso.models.project import Project
 from iaso.models.device import Device
@@ -119,9 +119,9 @@ class Command(BaseCommand):
 
                 print(
                     "OrgUnit remove reference_instance",
-                    OrgUnit.objects.filter(reference_instance__in=Instance.objects.filter(project=project)).update(
-                        reference_instance=None
-                    ),
+                    OrgUnitReferenceInstance.objects.filter(
+                        instance__in=Instance.objects.filter(project=project)
+                    ).delete(),
                 )
                 print("Instance update", Instance.objects.filter(project=project).update(entity=None))
 
@@ -422,7 +422,7 @@ class Command(BaseCommand):
         print(Device.objects.filter(projects=None).delete())
 
         for f in forms_without_projects:
-            print(OrgUnitType.objects.filter(reference_form=f).update(reference_form=None))
+            print(OrgUnitType.reference_forms.through.objects.filter(form=f).delete())
             f.org_unit_types.clear()
             print("deleting hard", f.name)
             f.delete_hard()

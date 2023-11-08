@@ -3,6 +3,7 @@ from django.db.models import Q
 from rest_framework import serializers
 
 from iaso.api.common import TimestampField
+from iaso.api.query_params import APP_ID
 from iaso.models import OrgUnit, OrgUnitType, Group
 
 
@@ -17,7 +18,22 @@ class TimestampSerializerMixin:
 
 
 class AppIdSerializer(serializers.Serializer):
+    """
+    Serializer for `Project.app_id` when passed in query_params.
+
+    Used to handle parsing and errors:
+
+        serializer = AppIdSerializer(data=self.request.query_params)
+        serializer.is_valid(raise_exception=True)
+        app_id = serializer.validated_data["app_id"]
+    """
+
     app_id = serializers.CharField(allow_blank=False)
+
+    def get_app_id(self, raise_exception: bool):
+        if not self.is_valid(raise_exception=raise_exception):
+            return None
+        return self.data[APP_ID]
 
 
 class GroupSerializer(TimestampSerializerMixin, serializers.ModelSerializer):

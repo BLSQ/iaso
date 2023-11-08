@@ -28,6 +28,7 @@ const MarkerInputs = ({
     isCreatingMarker,
 }) => {
     const classes = useStyles();
+    const { latitude, longitude, altitude } = orgUnit;
     return (
         <>
             <Box>
@@ -55,49 +56,66 @@ const MarkerInputs = ({
                         <InputComponent
                             disabled={actionBusy}
                             keyValue="latitude"
-                            onChange={(_, lat) => {
-                                if (lat) {
-                                    onChangeLocation({
-                                        lat,
-                                    });
-                                }
-                            }}
-                            value={orgUnit.latitude}
+                            onChange={(_, newlatitude) =>
+                                onChangeLocation({
+                                    latitude:
+                                        newlatitude === undefined
+                                            ? null
+                                            : newlatitude,
+                                    longitude,
+                                    altitude,
+                                })
+                            }
+                            value={latitude}
                             type="number"
                             label={MESSAGES.latitude}
-                            min={-90}
-                            max={90}
-                            step={0.00000001}
+                            numberInputOptions={{
+                                min: -90,
+                                max: 90,
+                                decimalScale: 4,
+                            }}
                         />
                         <InputComponent
                             disabled={actionBusy}
                             keyValue="longitude"
-                            onChange={(_, lng) => {
-                                if (lng) {
-                                    onChangeLocation({
-                                        lng,
-                                    });
-                                }
-                            }}
-                            value={orgUnit.longitude}
+                            onChange={(_, newLongitude) =>
+                                onChangeLocation({
+                                    latitude,
+                                    longitude:
+                                        newLongitude === undefined
+                                            ? null
+                                            : newLongitude,
+                                    altitude,
+                                })
+                            }
+                            value={longitude}
                             type="number"
                             label={MESSAGES.longitude}
-                            min={-180}
-                            max={180}
+                            numberInputOptions={{
+                                min: -180,
+                                max: 180,
+                                decimalScale: 4,
+                            }}
                         />
                         <InputComponent
                             disabled={actionBusy}
                             keyValue="altitude"
-                            value={orgUnit.altitude}
+                            value={altitude}
                             type="number"
                             label={MESSAGES.altitude}
-                            onChange={(_, alt) => {
-                                if (alt) {
-                                    onChangeLocation({
-                                        alt,
-                                    });
-                                }
+                            numberInputOptions={{
+                                decimalScale: 4,
                             }}
+                            onChange={(_, newAltitude) =>
+                                onChangeLocation({
+                                    altitude:
+                                        newAltitude === undefined
+                                            ? null
+                                            : newAltitude,
+                                    longitude,
+                                    latitude,
+                                })
+                            }
                         />
                         <Box mb={2} mt={2}>
                             <Button
@@ -107,9 +125,9 @@ const MarkerInputs = ({
                                 className={classes.button}
                                 onClick={() =>
                                     onChangeLocation({
-                                        lat: null,
-                                        lng: null,
-                                        alt: null,
+                                        latitude: null,
+                                        longitude: null,
+                                        altitude: null,
                                     })
                                 }
                             >

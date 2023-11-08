@@ -7,11 +7,11 @@ in the frontend.
 To add a new permission:
 1. Add a constant to hold its label
 2. Add it to the CustomPermissionSupport.Meta.permissions tuple bellow
-3. Generate a migration via makemigrations (and run the mirgation locally)
+3. Generate a migration via makemigrations (and run the migration locally)
 4. Add it in hat/assets/js/apps/Iaso/domains/users/messages.js
 5. add it to en.json and fr.json
 
-If you don't follow these steps you will break the frontend !
+If you don't follow these steps you will break the frontend!
 
 The frontend is getting the list of existing permission from the
 `/api/permissions/` endpoint
@@ -35,9 +35,12 @@ _ENTITIES_DUPLICATE_WRITE = "iaso_entity_duplicates_write"
 _FORMS = "iaso_forms"
 _LINKS = "iaso_links"
 _MAPPINGS = "iaso_mappings"
+_MODULES = "iaso_modules"
 _ORG_UNITS = "iaso_org_units"
 _ORG_UNITS_TYPES = "iaso_org_unit_types"
 _ORG_UNITS_GROUPS = "iaso_org_unit_groups"
+_ORG_UNITS_CHANGE_REQUEST = "iaso_org_unit_change_request"
+_ORG_UNITS_CHANGE_REQUEST_APPROVE = "iaso_org_unit_change_request_approve"
 _PAGES = "iaso_pages"
 _PAGE_WRITE = "iaso_page_write"
 _PLANNING = "iaso_planning"
@@ -76,9 +79,12 @@ ENTITIES_DUPLICATE_WRITE = _PREFIX + _ENTITIES_DUPLICATE_WRITE
 FORMS = _PREFIX + _FORMS
 LINKS = _PREFIX + _LINKS
 MAPPINGS = _PREFIX + _MAPPINGS
+MODULES = _PREFIX + _MODULES
 ORG_UNITS = _PREFIX + _ORG_UNITS
 ORG_UNITS_TYPES = _PREFIX + _ORG_UNITS_TYPES
 ORG_UNITS_GROUPS = _PREFIX + _ORG_UNITS_GROUPS
+ORG_UNITS_CHANGE_REQUEST = _PREFIX + _ORG_UNITS_CHANGE_REQUEST
+ORG_UNITS_CHANGE_REQUEST_APPROVE = _PREFIX + _ORG_UNITS_CHANGE_REQUEST_APPROVE
 PAGES = _PREFIX + _PAGES
 PAGE_WRITE = _PREFIX + _PAGE_WRITE
 PLANNING = _PREFIX + _PLANNING
@@ -132,6 +138,7 @@ class CustomPermissionSupport(models.Model):
         permissions = (
             (_FORMS, _("Formulaires")),
             (_MAPPINGS, _("Correspondances avec DHIS2")),
+            (_MODULES, _("modules")),
             (_COMPLETENESS, _("Complétude des données")),
             (_ORG_UNITS, _("Unités d'organisations")),
             (_REGISTRY, _("Registre")),
@@ -164,6 +171,8 @@ class CustomPermissionSupport(models.Model):
             (_DATASTORE_WRITE, _("Write data store")),
             (_ORG_UNITS_TYPES, _("Org unit types")),
             (_ORG_UNITS_GROUPS, _("Org unit groups")),
+            (_ORG_UNITS_CHANGE_REQUEST, _("Org unit change request")),
+            (_ORG_UNITS_CHANGE_REQUEST_APPROVE, _("Org unit change request approve")),
             (_SOURCE_WRITE, _("Write data source")),
             (_PAGE_WRITE, _("Write page")),
             (_POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY, _("Polio Vaccine Authorizations Read Only")),
@@ -171,13 +180,16 @@ class CustomPermissionSupport(models.Model):
         )
 
     @staticmethod
-    def filter_permissions(permissions, settings: LazySettings):
+    def filter_permissions(permissions, modules_permissions, settings: LazySettings):
         content_type = ContentType.objects.get_for_model(CustomPermissionSupport)
         permissions = (
             permissions.filter(content_type=content_type)
             .filter(codename__startswith="iaso_")
+            .filter(codename__in=modules_permissions)
             .exclude(codename__contains="datastore")
             .exclude(codename__contains="iaso_beneficiaries")
+            # Wait for the web UI to be ready before displaying `org_unit_change_request` perms.
+            .exclude(codename__contains="org_unit_change_request")
             .order_by("id")
         )
         #  in future filter this on a feature flags, so we can disable it by account

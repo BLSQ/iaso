@@ -29,6 +29,7 @@ const USER_ROLES = 'iaso_user_roles';
 const USERS_ADMIN = 'iaso_users';
 const USERS_MANAGEMENT = 'iaso_users_managed';
 const WORKFLOWS = 'iaso_workflows';
+const MODULES = 'iaso_modules';
 
 export {
     COMPLETENESS,
@@ -62,4 +63,5 @@ export {
     USERS_ADMIN,
     USERS_MANAGEMENT,
     WORKFLOWS,
+    MODULES,
 };

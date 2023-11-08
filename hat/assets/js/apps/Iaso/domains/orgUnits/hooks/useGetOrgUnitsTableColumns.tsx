@@ -136,13 +136,6 @@ export const useGetOrgUnitsTableColumns = (searches: [Search]): Column[] => {
             });
         }
         return columns;
-    }, [
-        classes.roundColor,
-        classes.statusNew,
-        classes.statusRejected,
-        classes.statusValidated,
-        formatMessage,
-        searches,
-    ]);
+    }, [classes.roundColor, formatMessage, getStatusMessage, searches]);
     return cols;
 };

@@ -12,8 +12,9 @@ import {
     formatLqasDataForChart,
     lqasChartTooltipFormatter,
 } from '../LQAS/utils';
-import { imBarColorTresholds, lqasBarColorTresholds } from './constants';
+import { imBarColorTresholds } from './constants';
 import { NoData } from './NoData';
+import { lqasBarColorTresholds } from '../LQAS/constants';
 
 type Props = {
     type: 'imGlobal' | 'imIHH' | 'imOHH' | 'lqas';

@@ -9,6 +9,7 @@ from django.utils.safestring import mark_safe
 from .budget.models import MailTemplate, BudgetStepLink, BudgetStepFile, BudgetStep, WorkflowModel, BudgetProcess
 from .models import (
     Campaign,
+    ReasonForDelay,
     RoundDateHistoryEntry,
     Round,
     Config,
@@ -138,6 +139,9 @@ class BudgetProcessesAdmin(admin.ModelAdmin):
 class RoundAdmin(admin.ModelAdmin):
     mode = Round
     list_display = ["id", "started_at", "ended_at"]
+@admin.register(ReasonForDelay)
+class ReasonForDelayAdmin(admin.ModelAdmin):
+    model = ReasonForDelay
 
 
 admin.site.register(Campaign, CampaignAdmin)

@@ -4,6 +4,7 @@ from rest_framework import serializers
 
 from iaso.models import Instance, OrgUnit, OrgUnitChangeRequest, OrgUnitType
 from iaso.utils.serializer.three_dim_point_field import ThreeDimPointField
+from iaso.api.common import TimestampField
 
 
 class InstanceForChangeRequest(serializers.ModelSerializer):
@@ -60,6 +61,8 @@ class MobileOrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
     org_unit_id = serializers.IntegerField(source="org_unit.id")
     org_unit_uuid = serializers.UUIDField(source="org_unit.uuid")
     new_location = ThreeDimPointField()
+    created_at = TimestampField()
+    updated_at = TimestampField()
 
     class Meta:
         model = OrgUnitChangeRequest
@@ -96,6 +99,8 @@ class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
     groups = serializers.SerializerMethodField(method_name="get_current_org_unit_groups")
     created_by = serializers.CharField(source="created_by.username", default="")
     updated_by = serializers.CharField(source="updated_by.username", default="")
+    created_at = TimestampField()
+    updated_at = TimestampField()
 
     class Meta:
         model = OrgUnitChangeRequest
@@ -135,6 +140,8 @@ class OrgUnitChangeRequestRetrieveSerializer(serializers.ModelSerializer):
     new_groups = serializers.SerializerMethodField(method_name="get_new_groups")
     new_location = ThreeDimPointField()
     new_reference_instances = InstanceForChangeRequest(many=True)
+    created_at = TimestampField()
+    updated_at = TimestampField()
 
     class Meta:
         model = OrgUnitChangeRequest
@@ -186,6 +193,7 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
         required=False,
     )
     new_location = ThreeDimPointField(required=False)
+    updated_at = TimestampField(required=False)
 
     class Meta:
         model = OrgUnitChangeRequest

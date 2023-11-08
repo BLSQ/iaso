@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
-import { UseQueryResult } from 'react-query';
-import { waitFor } from '../../../../../../../../hat/assets/js/apps/Iaso/utils';
+import { UseMutationResult, UseQueryResult, useQueryClient } from 'react-query';
 import {
     useSnackMutation,
     useSnackQuery,
@@ -12,6 +11,15 @@ import {
 import { useUrlParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
 import { useApiParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useApiParams';
 import { useGetCountries } from '../../../../hooks/useGetCountries';
+import { VRF } from '../Details/VaccineSupplyChainDetails';
+import { mockSaveVrf, mockVRF } from './mocks';
+import { waitFor } from '../../../../../../../../hat/assets/js/apps/Iaso/utils';
+import {
+    CAMPAIGNS_ENDPOINT,
+    CampaignType,
+    useGetCampaigns,
+} from '../../../Campaigns/hooks/api/useGetCampaigns';
+import { Campaign } from '../../../../constants/types';
 
 const apiUrl = '/api/polio/vaccine/request_forms/';
 const defaults = {
@@ -59,8 +67,8 @@ export const useDeleteVrf = () => {
     });
 };
 
-export const useGetCountriesOptions = () => {
-    const { data: countries, isFetching } = useGetCountries();
+export const useGetCountriesOptions = (enabled = true) => {
+    const { data: countries, isFetching } = useGetCountries('VALID', enabled);
     return useMemo(() => {
         const options = countries
             ? countries.orgUnits.map(country => {
@@ -75,22 +83,38 @@ export const useGetCountriesOptions = () => {
 };
 
 const saveSupplyChainForm = async supplyChainData => {
-    if (supplyChainData.all === true) {
+    if (supplyChainData.saveAll === true) {
         // update all tabs
     } else {
-        // update active tab: supplyChainData.activeTab
+        switch (supplyChainData.activeTab) {
+            case VRF:
+                return mockSaveVrf(supplyChainData.vrf);
+            default:
+                break;
+        }
     }
     waitFor(100);
     return null;
 };
 
-export const useSaveVaccineSupplyChainForm = () => {
+export const useSaveVaccineSupplyChainForm = (): UseMutationResult<
+    any,
+    any
+> => {
+    const queryClient = useQueryClient();
     // use queryClient.setQueryData to overwrite the cache. see optimistic updates in react query
     return useSnackMutation({
-        mutationFn: data => saveSupplyChainForm(data),
+        mutationFn: saveSupplyChainForm,
         invalidateQueryKey: ['getVrfList'],
         showSucessSnackBar: false,
         ignoreErrorCodes: [400],
+        options: {
+            onSuccess: (data: any, variables: any) => {
+                if (variables.activeTab === VRF && data) {
+                    queryClient.setQueryData(['getVrfDetails', data.id], data);
+                }
+            },
+        },
     });
 };
 
@@ -107,6 +131,50 @@ export const useGetVrfDetails = (id?: string): UseQueryResult => {
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
             enabled: Boolean(id),
+            select: data => {
+                if (!data) return data;
+                return mockVRF;
+            },
         },
     });
+};
+
+export const useCampaignDropDowns = (
+    countryId?: number,
+    campaign?: string,
+    vaccine?: string,
+) => {
+    const options = {
+        enabled: Boolean(countryId),
+        countries: countryId ? [`${countryId}`] : undefined,
+        campaignType: 'regular' as CampaignType,
+    };
+
+    const { data, isFetching } = useGetCampaigns(options, CAMPAIGNS_ENDPOINT);
+
+    return useMemo(() => {
+        const list = (data as Campaign[]) ?? [];
+        const selectedCampaign = list.find(c => c.obr_name === campaign);
+        const campaigns = list.map(c => ({
+            label: c.obr_name,
+            value: c.obr_name,
+        }));
+        const vaccines = (selectedCampaign?.vaccines ?? '')
+            .split(',')
+            .map(vaccineName => ({ label: vaccineName, value: vaccineName }));
+        const rounds = vaccine
+            ? (selectedCampaign?.rounds ?? [])
+                  .filter(round => round.vaccine_names.includes(vaccine))
+                  .map(round => ({
+                      label: `Round ${round.number}`,
+                      value: `${round.number}`,
+                  }))
+            : [];
+        return {
+            campaigns,
+            vaccines,
+            rounds,
+            isFetching,
+        };
+    }, [data, vaccine, isFetching, campaign]);
 };

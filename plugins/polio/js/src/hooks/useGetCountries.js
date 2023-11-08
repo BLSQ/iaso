@@ -2,7 +2,7 @@ import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks.ts';
 import { appId } from '../constants/app.ts';
 
-export const useGetCountries = (status = 'all') => {
+export const useGetCountries = (status = 'all', enabled = true) => {
     const params = {
         validation_status: status,
         order: 'name',
@@ -19,6 +19,7 @@ export const useGetCountries = (status = 'all') => {
         {
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
+            enabled,
         },
     );
 };

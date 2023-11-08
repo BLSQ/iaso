@@ -1,9 +1,11 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import { Paper, makeStyles, Box, useTheme } from '@material-ui/core';
 import { scaleThreshold } from '@visx/scale';
 import { LegendThreshold, LegendItem, LegendLabel } from '@visx/legend';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
+import { ScaleThreshold } from '../../../components/LegendBuilder/types';
+import { useGetThresHoldLabels } from '../../../components/LegendBuilder/hooks';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -20,17 +22,19 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-export const getLegend = scaleThreshold({
+const defaultScaleThreshold = {
     domain: [70, 90],
     range: ['red', 'orange', 'green'],
-});
-
-const legendLabels: string[] = ['< 70', '70% - 90%', '> 90%'];
+};
 
 export const getDirectLegend = scaleThreshold({
     domain: [100],
     range: ['red', 'green'],
 });
+
+export const useGetLegend = (threshold: ScaleThreshold): any => {
+    return scaleThreshold(threshold);
+};
 
 const useGetDirectLabels = (): string[] => {
     const { formatMessage } = useSafeIntl();
@@ -42,14 +46,22 @@ const useGetDirectLabels = (): string[] => {
 
 type Props = {
     showDirectCompleteness: boolean;
+    threshold?: ScaleThreshold;
 };
 
 export const MapLegend: FunctionComponent<Props> = ({
     showDirectCompleteness,
+    threshold = defaultScaleThreshold,
 }) => {
     const classes = useStyles();
     const theme = useTheme();
     const legendDirectLabels = useGetDirectLabels();
+    const getLegendCustom = useGetLegend(threshold);
+    const getThresHoldLabels = useGetThresHoldLabels();
+    const legendLabels = useMemo(
+        () => getThresHoldLabels(threshold),
+        [getThresHoldLabels, threshold],
+    );
     return (
         <Paper elevation={1} className={classes.root}>
             <Box className={classes.legendContainer}>
@@ -84,7 +96,7 @@ export const MapLegend: FunctionComponent<Props> = ({
                 )}
 
                 {!showDirectCompleteness && (
-                    <LegendThreshold scale={getLegend}>
+                    <LegendThreshold scale={getLegendCustom}>
                         {labels =>
                             labels.reverse().map(label => {
                                 return (

@@ -39,8 +39,7 @@ import { isFieldValid, isFormValid } from '../../utils/forms';
 import { FormAttachments } from './components/FormAttachments';
 import { FormParams } from './types/forms';
 import { Router } from '../../types/general';
-import LegendDialog from '../completenessStats/components/LegendDialog';
-
+import { LegendBuilder } from '../../components/LegendBuilder/Index';
 interface FormDetailProps {
     router: Router;
     params: FormParams;
@@ -224,9 +223,7 @@ const FormDetail: FunctionComponent<FormDetailProps> = ({ router, params }) => {
             />
             {(isLoading || isFormLoading) && <LoadingSpinner />}
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <Box width="25%">
-                    <LegendDialog />
-                </Box>
+                <LegendBuilder />
                 <FormForm currentForm={currentForm} setFieldValue={onChange} />
                 <Box mt={2} justifyContent="flex-end" display="flex">
                     {currentForm.id.value !== '' && (

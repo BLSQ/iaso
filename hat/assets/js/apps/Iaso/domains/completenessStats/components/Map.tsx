@@ -33,7 +33,7 @@ import {
 import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
 import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
 
-import { getDirectLegend, getLegend, MapLegend } from './MapLegend';
+import { getDirectLegend, MapLegend, useGetLegend } from './MapLegend';
 import { CompletenessSelect } from './CompletenessSelect';
 
 import MESSAGES from '../messages';
@@ -44,6 +44,7 @@ import {
     AssignmentsResult,
     useGetAssignments,
 } from '../../assignments/hooks/requests/useGetAssignments';
+import { ScaleThreshold } from '../../../components/LegendBuilder/types';
 
 const defaultViewport = {
     center: [1, 20],
@@ -56,6 +57,7 @@ type Props = {
     params: CompletenessRouterParams;
     selectedFormId: number;
     router: Router;
+    threshold?: ScaleThreshold;
 };
 
 const boundsOptions = {
@@ -85,10 +87,11 @@ export const Map: FunctionComponent<Props> = ({
     params,
     selectedFormId,
     router,
+    threshold,
 }) => {
     const { planningId } = params;
     const classes: Record<string, string> = useStyles();
-
+    const getLegend = useGetLegend(threshold);
     const bounds: Bounds | undefined = useMemo(
         () => locations && getOrgUnitsBounds(locations),
         [locations],

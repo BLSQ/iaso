@@ -24,7 +24,9 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         project = m.Project.objects.create(name="Project", account=account, app_id="foo.bar.baz")
 
         org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
-        org_unit = m.OrgUnit.objects.create(org_unit_type=org_unit_type, version=version)
+        org_unit = m.OrgUnit.objects.create(
+            org_unit_type=org_unit_type, version=version, uuid="1539f174-4c53-499c-85de-7a58458c49ef"
+        )
 
         user = cls.create_user_with_profile(
             username="user", account=account, permissions=["iaso_org_unit_change_request"]
@@ -82,6 +84,20 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
         data = {
             "org_unit_id": self.org_unit.id,
+            "new_name": "I want this new name",
+            "new_org_unit_type_id": self.org_unit_type.pk,
+        }
+        response = self.client.post("/api/orgunits/changes/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+        change_request = m.OrgUnitChangeRequest.objects.get(new_name=data["new_name"])
+        self.assertEqual(change_request.new_name, data["new_name"])
+        self.assertEqual(change_request.new_org_unit_type, self.org_unit_type)
+        self.assertEqual(change_request.created_by, self.user)
+
+    def test_create_ok_using_uuid_as_for_org_unit_id(self):
+        self.client.force_authenticate(self.user)
+        data = {
+            "org_unit_id": self.org_unit.uuid,
             "new_name": "I want this new name",
             "new_org_unit_type_id": self.org_unit_type.pk,
         }

@@ -1,20 +1,15 @@
 import React, { useState, FunctionComponent, useCallback } from 'react';
-import { makeStyles, Box, Button, IconButton } from '@material-ui/core';
+import { makeStyles, Box, IconButton } from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
-import { useSafeIntl } from 'bluesquare-components';
 import { LegendRange } from './LegendRange';
 import { RangeValue, ScaleThreshold } from './types';
 import { legendColors } from './colors';
 import { useGetRangeValues, useGetScaleThreshold } from './hooks';
-import { MESSAGES } from './messages';
-import { MapLegend } from '../../domains/completenessStats/components/MapLegend';
 
 const useStyles = makeStyles(theme => ({
     root: {
-        width: 330,
+        width: '100%',
         padding: theme.spacing(2),
-        // @ts-ignore
-        border: `1px solid ${theme.palette.border.main}`,
         borderRadius: 4,
         '& .MuiFormControl-root label': {
             display: 'none !important',
@@ -33,23 +28,18 @@ const useStyles = makeStyles(theme => ({
 
 type LegendBuilderProps = {
     defaultScaleThreshold?: ScaleThreshold;
+    onChange;
 };
 
 export const LegendBuilder: FunctionComponent<LegendBuilderProps> = ({
-    defaultScaleThreshold = {
-        domain: [70, 90],
-        range: [legendColors[8], legendColors[5], legendColors[2]],
-    },
+    defaultScaleThreshold,
+    onChange,
 }) => {
     const classes = useStyles();
-    const { formatMessage } = useSafeIntl();
     const getScaleThreshold = useGetScaleThreshold();
     const getRangeValues = useGetRangeValues();
     const [rangeValues, setRangeValues] = useState<RangeValue[]>(
         getRangeValues(defaultScaleThreshold),
-    );
-    const [scaleThreshold, setScaleThreshold] = useState<ScaleThreshold>(
-        defaultScaleThreshold,
     );
 
     const handleNumberChange = useCallback(
@@ -58,9 +48,10 @@ export const LegendBuilder: FunctionComponent<LegendBuilderProps> = ({
                 const newRangeValues = [...rangeValues];
                 newRangeValues[index].percent = Number(newNumber);
                 setRangeValues(newRangeValues);
+                onChange(getScaleThreshold(newRangeValues));
             }
         },
-        [rangeValues],
+        [getScaleThreshold, onChange, rangeValues],
     );
 
     const handleColorChange = useCallback(
@@ -68,8 +59,9 @@ export const LegendBuilder: FunctionComponent<LegendBuilderProps> = ({
             const newRangeValues = [...rangeValues];
             newRangeValues[index].color = newColor;
             setRangeValues(newRangeValues);
+            onChange(getScaleThreshold(newRangeValues));
         },
-        [rangeValues],
+        [getScaleThreshold, onChange, rangeValues],
     );
 
     const addRangeValue = useCallback(() => {
@@ -82,19 +74,18 @@ export const LegendBuilder: FunctionComponent<LegendBuilderProps> = ({
             color: legendColors[0],
         });
         setRangeValues(newRanges);
-    }, [rangeValues]);
+        onChange(getScaleThreshold(newRanges));
+    }, [getScaleThreshold, onChange, rangeValues]);
 
     const removeRangeValue = useCallback(
         (index: number) => {
             const newRangeValues = [...rangeValues];
             newRangeValues.splice(index, 1);
             setRangeValues(newRangeValues);
+            onChange(getScaleThreshold(newRangeValues));
         },
-        [rangeValues],
+        [getScaleThreshold, onChange, rangeValues],
     );
-    const handleSave = useCallback(() => {
-        setScaleThreshold(getScaleThreshold(rangeValues));
-    }, [getScaleThreshold, rangeValues]);
 
     return (
         <Box className={classes.root}>
@@ -114,36 +105,12 @@ export const LegendBuilder: FunctionComponent<LegendBuilderProps> = ({
                     display="flex"
                     justifyContent="flex-end"
                     width="100%"
-                    mb={2}
                     mr={1}
                     mt={-1}
                 >
                     <IconButton size="small" onClick={addRangeValue}>
                         <AddIcon />
                     </IconButton>
-                </Box>
-                <MapLegend
-                    showDirectCompleteness={false}
-                    threshold={scaleThreshold}
-                />
-                <Box display="flex" justifyContent="flex-end" width="100%">
-                    <Box mr={1}>
-                        <Button
-                            size="small"
-                            variant="contained"
-                            color="primary"
-                        >
-                            {formatMessage(MESSAGES.cancel)}
-                        </Button>
-                    </Box>
-                    <Button
-                        size="small"
-                        variant="contained"
-                        color="primary"
-                        onClick={handleSave}
-                    >
-                        {formatMessage(MESSAGES.save)}
-                    </Button>
                 </Box>
             </Box>
         </Box>

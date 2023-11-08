@@ -32,7 +32,7 @@ export const getDirectLegend = scaleThreshold({
     range: ['red', 'green'],
 });
 
-export const useGetLegend = (threshold: ScaleThreshold): any => {
+export const useGetLegend = (threshold?: ScaleThreshold): any => {
     return scaleThreshold(threshold);
 };
 

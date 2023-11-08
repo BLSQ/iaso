@@ -39,7 +39,8 @@ import { isFieldValid, isFormValid } from '../../utils/forms';
 import { FormAttachments } from './components/FormAttachments';
 import { FormParams } from './types/forms';
 import { Router } from '../../types/general';
-import { LegendBuilder } from '../../components/LegendBuilder/Index';
+import { EditLegendDialog,  AddLegendDialog} from '../../components/LegendBuilder/Dialog';
+import { legendColors } from '../../components/LegendBuilder/colors';
 interface FormDetailProps {
     router: Router;
     params: FormParams;
@@ -223,7 +224,16 @@ const FormDetail: FunctionComponent<FormDetailProps> = ({ router, params }) => {
             />
             {(isLoading || isFormLoading) && <LoadingSpinner />}
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <LegendBuilder />
+                <EditLegendDialog
+                    iconProps={{}}
+                    titleMessage={MESSAGES.edit}
+                    threshold={{
+                        domain: [70, 90],
+                        range: [legendColors[8], legendColors[5], legendColors[2]],
+                    }}
+                    onConfirm={newThreshold => console.log('onConfirm', newThreshold)}
+                />
+                {/* <AddLegendDialog /> */}
                 <FormForm currentForm={currentForm} setFieldValue={onChange} />
                 <Box mt={2} justifyContent="flex-end" display="flex">
                     {currentForm.id.value !== '' && (

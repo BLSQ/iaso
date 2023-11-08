@@ -14,12 +14,19 @@ import {
 import { Router } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import TopBar from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { useGoBack } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/useGoBack';
-import { useGetVrfDetails, useSaveVaccineSupplyChainForm } from '../hooks/api';
+import {
+    useGetArrivalReportsDetails,
+    useGetPreAlertDetails,
+    useGetVrfDetails,
+    useSaveVaccineSupplyChainForm,
+} from '../hooks/api';
 import { useTopBarTitle } from '../hooks/utils';
 import { VaccineRequestForm } from './VaccineRequestForm/VaccineRequestForm';
 import MESSAGES from '../messages';
 import { Vaccine } from '../../../../constants/types';
 import { Optional } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { PreAlerts } from './PreAlerts/PreAlerts';
+import { VaccineArrivalReports } from './VAR/VaccineArrivalReports';
 
 export const VRF = 'VRF';
 export const VAR = 'VAR';
@@ -100,14 +107,18 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
     });
     const dispatch = useDispatch();
     const { data: vrfDetails, isFetching } = useGetVrfDetails(router.params.id);
-
+    const { data: preAlerts, isFetching: isFetchingPreAlerts } =
+        useGetPreAlertDetails(router.params.id);
+    const { data: arrivalReports, isFetching: isFetchingArrivalReports } =
+        useGetArrivalReportsDetails(router.params.id);
+    console.log('preAlerts', preAlerts);
     // TODO Check if id and change style accordingly
     const { mutateAsync: saveForm } = useSaveVaccineSupplyChainForm();
     const formik = useFormik<FormData>({
         initialValues: {
             vrf: vrfDetails ?? {},
-            prealert: [],
-            var: [],
+            prealert: preAlerts ?? [],
+            var: arrivalReports ?? [],
             activeTab: initialTab,
             saveAll: false,
         },
@@ -176,6 +187,16 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
             <Box className={classNames(classes.containerFullHeightPadded)}>
                 <VaccineRequestForm
                     className={tab !== VRF ? classes.inactiveTab : undefined}
+                    router={router}
+                />
+                <PreAlerts
+                    className={
+                        tab !== PREALERT ? classes.inactiveTab : undefined
+                    }
+                    router={router}
+                />
+                <VaccineArrivalReports
+                    className={tab !== VAR ? classes.inactiveTab : undefined}
                     router={router}
                 />
                 <Grid container spacing={2} justifyContent="flex-end">

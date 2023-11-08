@@ -178,3 +178,18 @@ export const useCampaignDropDowns = (
         };
     }, [data, vaccine, isFetching, campaign]);
 };
+
+export const useGetPreAlertDetails = (vrfId?: string) => {
+    return useSnackQuery({
+        queryFn: () => getRequest(`${apiUrl}${vrfId}/get_pre_alerts/`),
+        queryKey: ['preAlertDetails', vrfId],
+        options: { enabled: Boolean(vrfId) },
+    });
+};
+export const useGetArrivalReportsDetails = (vrfId?: string) => {
+    return useSnackQuery({
+        queryFn: () => getRequest(`${apiUrl}${vrfId}/get_arrival_reports/`),
+        queryKey: ['arrivalReportsDetails', vrfId],
+        options: { enabled: Boolean(vrfId) },
+    });
+};

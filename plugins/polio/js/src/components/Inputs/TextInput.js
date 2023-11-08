@@ -9,6 +9,7 @@ export const TextInput = ({
     form = {},
     value,
     touchOnFocus = true,
+    shrinkLabel = true,
     ...props
 } = {}) => {
     const hasError =
@@ -26,7 +27,7 @@ export const TextInput = ({
     return (
         <TextField
             InputLabelProps={{
-                shrink: true,
+                shrink: Boolean(field.value ?? value ?? '') || shrinkLabel,
             }}
             fullWidth
             variant="outlined"
@@ -52,6 +53,7 @@ TextInput.defaultProps = {
     form: {},
     value: undefined,
     touchOnFocus: true,
+    shrinkLabel: true,
 };
 
 TextInput.propTypes = {
@@ -59,4 +61,5 @@ TextInput.propTypes = {
     form: PropTypes.object,
     value: PropTypes.any,
     touchOnFocus: PropTypes.bool,
+    shrinkLabel: PropTypes.bool,
 };

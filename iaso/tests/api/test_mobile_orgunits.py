@@ -9,6 +9,7 @@ from iaso.models import (
     DataSource,
     FeatureFlag,
     Form,
+    FormVersion,
     Group,
     Instance,
     OrgUnit,
@@ -240,10 +241,18 @@ class MobileOrgUnitAPITestCase(APITestCase):
 
     @time_machine.travel("2023-10-26T09:00:00.000Z", tick=False)
     def test_reference_instances(self):
+        # Instance 1.
         form1 = Form.objects.create(name="Form 1")
+        form_version1 = FormVersion.objects.create(form=form1, version_id=1)
+        instance1 = Instance.objects.create(
+            form=form1, org_unit=self.raditz, json={"key": "foo"}, form_version=form_version1
+        )
+        # Instance 2.
         form2 = Form.objects.create(name="Form 2")
-        instance1 = Instance.objects.create(form=form1, org_unit=self.raditz, json={"key": "foo"})
-        instance2 = Instance.objects.create(form=form2, org_unit=self.raditz, json={"key": "bar"})
+        form_version2 = FormVersion.objects.create(form=form2, version_id=5)
+        instance2 = Instance.objects.create(
+            form=form2, org_unit=self.raditz, json={"key": "bar"}, form_version=form_version2
+        )
         # Mark instances as reference instances.
         OrgUnitReferenceInstance.objects.create(org_unit=self.raditz, instance=instance1, form=form1)
         OrgUnitReferenceInstance.objects.create(org_unit=self.raditz, instance=instance2, form=form2)
@@ -270,7 +279,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
                         "id": instance1.pk,
                         "uuid": None,
                         "form_id": form1.id,
-                        "form_version_id": None,
+                        "form_version_id": form_version1.id,
                         "created_at": "2023-10-26T09:00:00Z",
                         "updated_at": "2023-10-26T09:00:00Z",
                         "json": {"key": "foo"},
@@ -279,7 +288,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
                         "id": instance2.pk,
                         "uuid": None,
                         "form_id": form2.id,
-                        "form_version_id": None,
+                        "form_version_id": form_version2.id,
                         "created_at": "2023-10-26T09:00:00Z",
                         "updated_at": "2023-10-26T09:00:00Z",
                         "json": {"key": "bar"},

@@ -573,7 +573,8 @@ class BudgetProcessAPITestCase(APITestCase):
 
 
 class BudgetProcessSerializerTest(APITestCase):
-    """ Test all the BudgetProcess related serializers """
+    """Test all the BudgetProcess related serializers"""
+
     data_source: m.DataSource
     source_version_1: m.SourceVersion
     org_unit: m.OrgUnit

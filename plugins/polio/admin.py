@@ -139,6 +139,8 @@ class BudgetProcessesAdmin(admin.ModelAdmin):
 class RoundAdmin(admin.ModelAdmin):
     mode = Round
     list_display = ["id", "started_at", "ended_at"]
+
+
 @admin.register(ReasonForDelay)
 class ReasonForDelayAdmin(admin.ModelAdmin):
     model = ReasonForDelay

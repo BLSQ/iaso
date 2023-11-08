@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
     dependencies = [
         ("iaso", "0235_merge_20231006_0940"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("polio", "0148_merge_20231002_1610"),
+        ("polio", "0148_merge_20231013_0907"),
     ]
 
     operations = [

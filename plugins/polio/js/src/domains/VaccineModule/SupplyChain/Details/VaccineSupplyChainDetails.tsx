@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import React, { FunctionComponent, useCallback } from 'react';
+import React, { FunctionComponent, useCallback, useEffect } from 'react';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { Box, Button, Grid, Tab, Tabs, makeStyles } from '@material-ui/core';
 import { FormikProvider, useFormik } from 'formik';
@@ -111,35 +111,60 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
         useGetPreAlertDetails(router.params.id);
     const { data: arrivalReports, isFetching: isFetchingArrivalReports } =
         useGetArrivalReportsDetails(router.params.id);
-    console.log('preAlerts', preAlerts);
     // TODO Check if id and change style accordingly
     const { mutateAsync: saveForm } = useSaveVaccineSupplyChainForm();
     const formik = useFormik<FormData>({
         initialValues: {
-            vrf: vrfDetails ?? {},
-            pre_alerts: preAlerts ?? [],
-            var: arrivalReports ?? [],
+            vrf: undefined,
+            pre_alerts: undefined,
+            var: undefined,
             activeTab: initialTab,
             saveAll: false,
         },
-        onSubmit: (values, helpers) =>
-            saveForm(values, {
-                onSuccess: (data, variables, context) => {
-                    console.log('DATA', data);
-                    console.log('VARIABLES', variables);
-                    console.log('CONTEXT', context);
-                    // if POST request , redirect to replace
-                    if (!router.params.id) {
-                        dispatch(
-                            redirectToReplace(VACCINE_SUPPLY_CHAIN_DETAILS, {
-                                id: data.id,
-                            }),
-                        );
-                    }
-                },
-            }),
-        enableReinitialize: true,
+        onSubmit: (values, helpers) => {
+            if (!values.saveAll) {
+                return saveForm(values, {
+                    onSuccess: (data, variables, context) => {
+                        console.log('DATA', data);
+                        console.log('VARIABLES', variables);
+                        console.log('CONTEXT', context);
+                        // if POST request , redirect to replace
+                        if (!router.params.id) {
+                            dispatch(
+                                redirectToReplace(
+                                    VACCINE_SUPPLY_CHAIN_DETAILS,
+                                    {
+                                        id: data.id,
+                                    },
+                                ),
+                            );
+                        } else {
+                            formik.resetForm();
+                        }
+                    },
+                });
+            }
+        },
     });
+    const { setFieldValue, values } = formik;
+
+    // Using formik's enableReinitialize would cause touched, errors etc to reset when changing tabs
+    // So we set values with useEffect once data has been fetched.
+    useEffect(() => {
+        if (arrivalReports && !values.var) {
+            setFieldValue('var', arrivalReports);
+        }
+    }, [arrivalReports, setFieldValue, values.var]);
+    useEffect(() => {
+        if (preAlerts && !values.pre_alerts) {
+            setFieldValue('pre_alerts', preAlerts);
+        }
+    }, [preAlerts, setFieldValue, values.pre_alerts]);
+    useEffect(() => {
+        if (vrfDetails && !values.vrf) {
+            setFieldValue('vrf', vrfDetails);
+        }
+    }, [vrfDetails, setFieldValue, values.vrf]);
 
     const onChangeTab = useCallback(
         (_event, newTab) => {

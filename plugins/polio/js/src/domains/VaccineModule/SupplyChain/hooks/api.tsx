@@ -138,9 +138,18 @@ const savePreAlert = async supplyChainData => {
     return { prealert: [...updated.pre_alerts, ...created.pre_alerts] };
 };
 
+const saveVrf = supplyChainData => {
+    const { vrf } = supplyChainData;
+    if (vrf.id) {
+        return patchRequest(`${apiUrl}${supplyChainData.vrf.id}/`, vrf);
+    }
+    return postRequest(apiUrl, vrf);
+};
+
 const saveSupplyChainForm = async supplyChainData => {
     if (supplyChainData.saveAll === true) {
         // update all tabs
+        // build response
     } else {
         switch (supplyChainData.activeTab) {
             case VRF:

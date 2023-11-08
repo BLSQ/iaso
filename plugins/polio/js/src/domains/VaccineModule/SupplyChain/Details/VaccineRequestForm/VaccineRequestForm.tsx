@@ -30,9 +30,9 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
         rounds,
         isFetching: isFetchingDropDowns,
     } = useCampaignDropDowns(
-        values.vrf.country,
-        values.vrf.campaign,
-        values.vrf.vaccine_type,
+        values?.vrf?.country,
+        values?.vrf?.campaign,
+        values?.vrf?.vaccine_type,
     );
 
     return (
@@ -60,7 +60,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                             label="Campaign"
                             name="vrf.campaign"
                             component={SingleSelect}
-                            disabled={!values.vrf.country}
+                            disabled={!values?.vrf?.country}
                             required
                             options={campaigns}
                             isLoading={
@@ -73,7 +73,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                             label="Vaccine type"
                             name="vrf.vaccine_type"
                             component={SingleSelect}
-                            disabled={!values.vrf.campaign}
+                            disabled={!values?.vrf?.campaign}
                             required
                             options={vaccines}
                             isLoading={
@@ -87,7 +87,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                             label="Rounds"
                             name="vrf.rounds"
                             component={MultiSelect}
-                            disabled={!values.vrf.vaccine_type}
+                            disabled={!values?.vrf?.vaccine_type}
                             required
                             options={rounds}
                             isLoading={
@@ -194,7 +194,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                 <Grid container item xs={12} md={9} lg={6} spacing={1}>
                     <Grid item xs={12}>
                         <TextArea
-                            value={values.vrf.comment}
+                            value={values?.vrf?.comment}
                             // errors={getErrors('comment')}
                             label="Comments"
                             onChange={() => null}

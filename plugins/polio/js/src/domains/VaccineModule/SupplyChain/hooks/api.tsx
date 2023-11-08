@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import { useMemo } from 'react';
 import { UseMutationResult, UseQueryResult, useQueryClient } from 'react-query';
 import {
@@ -7,11 +8,13 @@ import {
 import {
     deleteRequest,
     getRequest,
+    patchRequest,
+    postRequest,
 } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useUrlParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
 import { useApiParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useApiParams';
 import { useGetCountries } from '../../../../hooks/useGetCountries';
-import { VRF } from '../Details/VaccineSupplyChainDetails';
+import { PREALERT, VAR, VRF } from '../Details/VaccineSupplyChainDetails';
 import { mockSaveVrf, mockVRF } from './mocks';
 import { waitFor } from '../../../../../../../../hat/assets/js/apps/Iaso/utils';
 import {
@@ -82,6 +85,59 @@ export const useGetCountriesOptions = (enabled = true) => {
     }, [countries, isFetching]);
 };
 
+const saveVar = async supplyChainData => {
+    const toCreate: any = [];
+    const toUpdate: any = [];
+    supplyChainData.var.forEach(arrivalReport => {
+        if (arrivalReport.id) {
+            toUpdate.push(arrivalReport);
+        } else {
+            toCreate.push(arrivalReport);
+        }
+    });
+
+    const updated = await patchRequest(
+        `${apiUrl}${supplyChainData.vrf.id}/update_arrival_reports/`,
+        { arrival_reports: toUpdate },
+    );
+
+    const created = await postRequest(
+        `${apiUrl}${supplyChainData.vrf.id}/add_arrival_reports/`,
+        { arrival_reports: toCreate },
+    );
+
+    return {
+        arrival_reports: [
+            ...updated.arrival_reports,
+            ...created.arrival_reports,
+        ],
+    };
+};
+const savePreAlert = async supplyChainData => {
+    const { pre_alerts } = supplyChainData;
+    const toCreate: any = [];
+    const toUpdate: any = [];
+    pre_alerts.forEach(preAlert => {
+        if (preAlert.id) {
+            toUpdate.push(preAlert);
+        } else {
+            toCreate.push(preAlert);
+        }
+    });
+
+    const updated = await patchRequest(
+        `${apiUrl}${supplyChainData.vrf.id}/update_pre_alerts/`,
+        { pre_alerts: toUpdate },
+    );
+
+    const created = await postRequest(
+        `${apiUrl}${supplyChainData.vrf.id}/add_pre_alerts/`,
+        { pre_alerts: toCreate },
+    );
+
+    return { prealert: [...updated.pre_alerts, ...created.pre_alerts] };
+};
+
 const saveSupplyChainForm = async supplyChainData => {
     if (supplyChainData.saveAll === true) {
         // update all tabs
@@ -89,6 +145,16 @@ const saveSupplyChainForm = async supplyChainData => {
         switch (supplyChainData.activeTab) {
             case VRF:
                 return mockSaveVrf(supplyChainData.vrf);
+            case VAR:
+                if (supplyChainData.vrf.id === 6) {
+                    return saveVar(supplyChainData);
+                }
+                break;
+            case PREALERT:
+                if (supplyChainData.vrf.id === 6) {
+                    return savePreAlert(supplyChainData);
+                }
+                break;
             default:
                 break;
         }

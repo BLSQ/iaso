@@ -26,14 +26,14 @@ export const PreAlerts: FunctionComponent<Props> = ({ className, router }) => {
                     <Grid item xs={6} md={3}>
                         <Field
                             label="Pre-alert reception"
-                            name="prealert[0].date_pre_alert_reception"
+                            name="pre_alerts[0].date_pre_alert_reception"
                             component={DateInput}
                         />
                     </Grid>
                     <Grid item xs={6} md={3}>
                         <Field
                             label="PO number"
-                            name="prealert[0].po_number"
+                            name="pre_alerts[0].po_number"
                             component={TextInput}
                             shrinkLabel={false}
                         />
@@ -41,14 +41,14 @@ export const PreAlerts: FunctionComponent<Props> = ({ className, router }) => {
                     <Grid item xs={6} md={3}>
                         <Field
                             label="Lot number"
-                            name="prealert[0].lot_number"
+                            name="pre_alerts[0].lot_number"
                             component={NumberInput}
                         />
                     </Grid>
                     <Grid item xs={6} md={3}>
                         <Field
                             label="Estimated arrival time"
-                            name="prealert[0].estimated_arrival_time"
+                            name="pre_alerts[0].estimated_arrival_time"
                             component={DateInput}
                         />
                     </Grid>
@@ -58,7 +58,7 @@ export const PreAlerts: FunctionComponent<Props> = ({ className, router }) => {
                         <Box mt={2}>
                             <Field
                                 label="Expiration date"
-                                name="prealert[0].expiration_date"
+                                name="pre_alerts[0].expiration_date"
                                 component={DateInput}
                                 disabled={false}
                             />
@@ -68,7 +68,7 @@ export const PreAlerts: FunctionComponent<Props> = ({ className, router }) => {
                         <Box mt={2}>
                             <Field
                                 label="Doses shipped"
-                                name="prealert[0].doses_shipped"
+                                name="pre_alerts[0].doses_shipped"
                                 component={NumberInput}
                                 disabled={false}
                             />
@@ -79,7 +79,7 @@ export const PreAlerts: FunctionComponent<Props> = ({ className, router }) => {
                         <Box mt={2}>
                             <Field
                                 label="Doses received"
-                                name="prealert[0].doses_received"
+                                name="pre_alerts[0].doses_received"
                                 component={NumberInput}
                                 disabled={false}
                             />

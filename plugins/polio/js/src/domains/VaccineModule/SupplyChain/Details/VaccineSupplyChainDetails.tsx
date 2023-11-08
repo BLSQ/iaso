@@ -77,7 +77,7 @@ export type VAR = {
 
 type FormData = {
     vrf: Partial<VRF>;
-    prealert: Optional<Partial<PreAlert>[]>;
+    pre_alerts: Optional<Partial<PreAlert>[]>;
     var: Optional<Partial<VAR>[]>;
     activeTab: TabValue;
     saveAll: boolean;
@@ -117,7 +117,7 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
     const formik = useFormik<FormData>({
         initialValues: {
             vrf: vrfDetails ?? {},
-            prealert: preAlerts ?? [],
+            pre_alerts: preAlerts ?? [],
             var: arrivalReports ?? [],
             activeTab: initialTab,
             saveAll: false,

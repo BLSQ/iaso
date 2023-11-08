@@ -295,6 +295,7 @@ class MobileOrgUnitViewSet(ModelViewSet):
         page_size = self.paginator.get_page_size(request)
 
         if page_size:
+            self.paginator.results_key = "instances"
             self.paginator.page_size = page_size
             paginated_reference_instances = self.paginate_queryset(filtered_reference_instances)
             serializer = ReferenceInstancesSerializer(paginated_reference_instances, many=True)

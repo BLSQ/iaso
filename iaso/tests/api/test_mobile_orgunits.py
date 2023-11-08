@@ -274,7 +274,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
             response1.data,
             {
                 "count": 2,
-                "orgUnits": [
+                "instances": [
                     {
                         "id": instance1.pk,
                         "uuid": None,

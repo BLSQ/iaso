@@ -102,6 +102,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.saveAll',
         defaultMessage: 'Save all',
     },
+    createVrf: {
+        id: 'iaso.polio.label.createVrf',
+        defaultMessage: 'Create VRF',
+    },
 });
 
 export default MESSAGES;

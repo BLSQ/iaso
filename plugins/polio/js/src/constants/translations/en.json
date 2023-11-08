@@ -226,6 +226,7 @@
     "iaso.polio.label.countryPassing": "80% or more districts passed",
     "iaso.polio.label.create": "Create",
     "iaso.polio.label.createReasonForDelay": "Create reason for delay",
+    "iaso.polio.label.createVrf": "Create VRF",
     "iaso.polio.label.creation_email_send_at": "Email creation date",
     "iaso.polio.label.csv": "CSV",
     "iaso.polio.label.currentAuthorisedQuantity": "Current authorised quantity",

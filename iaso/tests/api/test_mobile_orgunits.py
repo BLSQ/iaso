@@ -267,8 +267,6 @@ class MobileOrgUnitAPITestCase(APITestCase):
                 "count": 2,
                 "orgUnits": [
                     {
-                        "org_unit_id": self.raditz.pk,
-                        "org_unit_uuid": "702dbae8-0f47-4065-ad0c-b2557f31cc96",
                         "id": instance1.pk,
                         "uuid": None,
                         "form_id": form1.id,
@@ -278,8 +276,6 @@ class MobileOrgUnitAPITestCase(APITestCase):
                         "json": {"key": "foo"},
                     },
                     {
-                        "org_unit_id": self.raditz.pk,
-                        "org_unit_uuid": "702dbae8-0f47-4065-ad0c-b2557f31cc96",
                         "id": instance2.pk,
                         "uuid": None,
                         "form_id": form2.id,

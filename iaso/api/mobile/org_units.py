@@ -42,14 +42,9 @@ class ReferenceInstancesFilter(django_filters.rest_framework.FilterSet):
 
 
 class ReferenceInstancesSerializer(serializers.ModelSerializer):
-    org_unit_id = serializers.IntegerField(source="org_unit.id")
-    org_unit_uuid = serializers.UUIDField(source="org_unit.uuid")
-
     class Meta:
         model = Instance
         fields = [
-            "org_unit_id",
-            "org_unit_uuid",
             "id",
             "uuid",
             "form_id",

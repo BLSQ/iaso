@@ -12,7 +12,7 @@ from iaso.tasks.dhis2_ou_exporter import dhis2_ou_exporter
 logger = logging.getLogger(__name__)
 
 STATUSES = list(OrgUnit.VALIDATION_STATUS_CHOICES) + [("", "all")]
-FIELDS = ["name", "parent", "geometry", "groups"]
+FIELDS = ["name", "parent", "geometry", "groups", "opening_date", "closed_date"]
 
 
 class DiffSerializer(serializers.Serializer):

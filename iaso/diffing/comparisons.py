@@ -80,6 +80,20 @@ class GroupSetFieldType(FieldType):
         return val == other_val
 
 
+class OpeningDateFieldType(FieldType):
+    def access(self, org_unit):
+        if org_unit is None:
+            return None
+        return org_unit.opening_date
+
+
+class ClosedDateFieldType(FieldType):
+    def access(self, org_unit):
+        if org_unit is None:
+            return None
+        return org_unit.closed_date
+
+
 def as_field_types(field_names):
     field_types = []
     for field_name in field_names:
@@ -91,6 +105,10 @@ def as_field_types(field_names):
             field_types.append(ParentFieldType(field_name))
         elif field_name.startswith("groupset:"):
             field_types.append(GroupSetFieldType(field_name))
+        elif field_name == "opening_date":
+            field_types.append(OpeningDateFieldType(field_name))
+        elif field_name == "closed_date":
+            field_types.append(ClosedDateFieldType(field_name))
         else:
             raise Exception("Unsupported field : '" + field_name + "'")
     return field_types

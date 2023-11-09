@@ -17,10 +17,7 @@ export const DateCell = cellInfo =>
     cellInfo.value ? moment(cellInfo.value).format('L') : textPlaceholder;
 
 export const convertValueIfDate = value => {
-    //  returning numbers early as they can be valid moments (unix timestamps)
-    if (typeof value === 'number') return value;
     const asMoment = moment(value);
-
     if (moment(value, 'L', true).isValid()) {
         return asMoment.format('L');
     }

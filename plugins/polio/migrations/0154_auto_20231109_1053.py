@@ -4,35 +4,34 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('polio', '0153_merge_20231106_1026'),
+        ("polio", "0153_merge_20231106_1026"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='vaccineprealert',
-            name='doses_received',
+            model_name="vaccineprealert",
+            name="doses_received",
             field=models.PositiveIntegerField(blank=True, default=None, null=True),
         ),
         migrations.AlterField(
-            model_name='vaccineprealert',
-            name='doses_shipped',
+            model_name="vaccineprealert",
+            name="doses_shipped",
             field=models.PositiveIntegerField(blank=True, default=None, null=True),
         ),
         migrations.AlterField(
-            model_name='vaccineprealert',
-            name='estimated_arrival_time',
+            model_name="vaccineprealert",
+            name="estimated_arrival_time",
             field=models.DateTimeField(blank=True, default=None, null=True),
         ),
         migrations.AlterField(
-            model_name='vaccineprealert',
-            name='expiration_date',
+            model_name="vaccineprealert",
+            name="expiration_date",
             field=models.DateField(blank=True, default=None, null=True),
         ),
         migrations.AlterField(
-            model_name='vaccineprealert',
-            name='lot_number',
+            model_name="vaccineprealert",
+            name="lot_number",
             field=models.CharField(blank=True, default=None, max_length=200, null=True),
         ),
     ]

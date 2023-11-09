@@ -4,6 +4,7 @@ import {
 } from 'bluesquare-components';
 import moment from 'moment';
 
+import { find } from 'lodash';
 import { longDateFormats } from '../../utils/dates.ts';
 
 /* DateTimeCell
@@ -23,12 +24,11 @@ export const convertValueIfDate = value => {
     const locale = moment.locale();
     const formats = Object.values(longDateFormats[locale]);
     let formattedValue = value;
-    formats.some(format => {
-        if (moment(value, format, true).isValid()) {
-            formattedValue = asMoment.format(format);
-            return true;
-        }
-        return false;
-    });
+    const validFormat = find(formats, format =>
+        moment(value, format, true).isValid(),
+    );
+    if (validFormat) {
+        formattedValue = asMoment.format(validFormat);
+    }
     return formattedValue;
 };

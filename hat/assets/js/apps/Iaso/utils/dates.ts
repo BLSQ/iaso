@@ -75,7 +75,7 @@ export const getToDateString = (
     return null;
 };
 
-const longDateFormats = {
+export const longDateFormats = {
     fr: {
         LT: 'HH:mm',
         LTS: 'DD/MM/YYYY HH:mm',

@@ -4,6 +4,8 @@ import {
 } from 'bluesquare-components';
 import moment from 'moment';
 
+import { longDateFormats } from '../../utils/dates.ts';
+
 /* DateTimeCell
    For use in Table's columns to display DateTime
  */
@@ -18,11 +20,15 @@ export const DateCell = cellInfo =>
 
 export const convertValueIfDate = value => {
     const asMoment = moment(value);
-    if (moment(value, 'L', true).isValid()) {
-        return asMoment.format('L');
-    }
-    if (moment(value, 'LTS', true).isValid()) {
-        return asMoment.format('L');
-    }
-    return value;
+    const locale = moment.locale();
+    const formats = Object.values(longDateFormats[locale]);
+    let formattedValue = value;
+    formats.some(format => {
+        if (moment(value, format, true).isValid()) {
+            formattedValue = asMoment.format(format);
+            return true;
+        }
+        return false;
+    });
+    return formattedValue;
 };

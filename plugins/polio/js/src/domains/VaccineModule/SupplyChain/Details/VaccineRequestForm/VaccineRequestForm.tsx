@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 import { Box, Grid, Typography, makeStyles } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
@@ -10,20 +10,22 @@ import { TextArea } from '../../../../../../../../../hat/assets/js/apps/Iaso/com
 import { useCampaignDropDowns, useGetCountriesOptions } from '../../hooks/api';
 import { Router } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/general';
 
-type Props = { className?: string; router: Router };
+type Props = { className?: string; router: Router; vrfData: any };
 const useStyles = makeStyles(theme => ({ ...commonStyles(theme) }));
 
 export const VaccineRequestForm: FunctionComponent<Props> = ({
     className,
     router,
+    vrfData,
 }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { data: countriesOptions, isFetching: isFetchingCountries } =
         useGetCountriesOptions();
-
+    const vrfDataComment = vrfData?.comment;
     // TODO manage errors, allowConfirm
-    const { values } = useFormikContext<any>();
+    const { values, setFieldTouched, setFieldValue, errors } =
+        useFormikContext<any>();
     const {
         campaigns,
         vaccines,
@@ -33,6 +35,20 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
         values?.vrf?.country,
         values?.vrf?.campaign,
         values?.vrf?.vaccine_type,
+    );
+
+    const onCommentChange = useCallback(
+        value => {
+            // this condition is to avoid marking the field as touched when setting the value to the API response
+            if (
+                values?.vrf?.comment !== undefined &&
+                values?.vrf?.comment !== vrfDataComment
+            ) {
+                setFieldTouched('vrf.comment', true);
+            }
+            setFieldValue('vrf.comment', value);
+        },
+        [setFieldTouched, setFieldValue, values?.vrf?.comment, vrfDataComment],
     );
 
     return (
@@ -194,11 +210,10 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                 <Grid container item xs={12} md={9} lg={6} spacing={1}>
                     <Grid item xs={12}>
                         <TextArea
-                            value={values?.vrf?.comment}
-                            // errors={getErrors('comment')}
+                            value={values?.vrf?.comment ?? ''}
+                            // errors={errors.comment ? errors.comment : []}
                             label="Comments"
-                            onChange={() => null}
-                            // required={requiredFields.includes('comment')}
+                            onChange={onCommentChange}
                             debounceTime={0}
                         />
                     </Grid>

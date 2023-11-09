@@ -1,10 +1,16 @@
 /* eslint-disable camelcase */
-import React, { FunctionComponent, useCallback, useEffect } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useMemo,
+} from 'react';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { Box, Button, Grid, Tab, Tabs, makeStyles } from '@material-ui/core';
 import { FormikProvider, useFormik } from 'formik';
 import classNames from 'classnames';
 import { useDispatch } from 'react-redux';
+import { isEqual } from 'lodash';
 import { redirectToReplace } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 import { useTabs } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useTabs';
 import {
@@ -28,10 +34,10 @@ import { Optional } from '../../../../../../../../hat/assets/js/apps/Iaso/types/
 import { PreAlerts } from './PreAlerts/PreAlerts';
 import { VaccineArrivalReports } from './VAR/VaccineArrivalReports';
 
-export const VRF = 'VRF';
-export const VAR = 'VAR';
-export const PREALERT = 'PREALERT';
-export type TabValue = 'VRF' | 'VAR' | 'PREALERT';
+export const VRF = 'vrf';
+export const VAR = 'vars';
+export const PREALERT = 'pre_alerts';
+export type TabValue = 'vrf' | 'vars' | 'pre_alerts';
 
 export type VRF = {
     id?: number;
@@ -76,11 +82,12 @@ export type VAR = {
 };
 
 type FormData = {
-    vrf: Partial<VRF>;
+    vrf: Optional<Partial<VRF>>;
     pre_alerts: Optional<Partial<PreAlert>[]>;
-    var: Optional<Partial<VAR>[]>;
+    vars: Optional<Partial<VAR>[]>;
     activeTab: TabValue;
     saveAll: boolean;
+    touchedTabs: TabValue[];
 };
 type Props = { router: Router };
 
@@ -112,22 +119,33 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
     const { data: arrivalReports, isFetching: isFetchingArrivalReports } =
         useGetArrivalReportsDetails(router.params.id);
     // TODO Check if id and change style accordingly
-    const { mutateAsync: saveForm } = useSaveVaccineSupplyChainForm();
+    const { mutateAsync: saveForm, isLoading: isSaving } =
+        useSaveVaccineSupplyChainForm();
     const formik = useFormik<FormData>({
         initialValues: {
             vrf: undefined,
             pre_alerts: undefined,
-            var: undefined,
+            vars: undefined,
             activeTab: initialTab,
             saveAll: false,
+            touchedTabs: [],
         },
-        onSubmit: (values, helpers) => {
-            if (!values.saveAll) {
-                return saveForm(values, {
+        onSubmit: () => undefined,
+    });
+    const { setFieldValue, values, touched, errors, isValid, isSubmitting } =
+        formik;
+
+    const handleSubmit = useCallback(
+        (saveAll = false) => {
+            formik.submitForm();
+            saveForm(
+                { ...values, saveAll },
+                {
                     onSuccess: (data, variables, context) => {
                         console.log('DATA', data);
                         console.log('VARIABLES', variables);
                         console.log('CONTEXT', context);
+
                         // if POST request , redirect to replace
                         if (!router.params.id) {
                             dispatch(
@@ -139,32 +157,18 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
                                 ),
                             );
                         } else {
-                            formik.resetForm();
+                            formik.setTouched({});
+                            formik.setErrors({});
                         }
                     },
-                });
-            }
+                    onSettled: () => {
+                        formik.setSubmitting(false);
+                    },
+                },
+            );
         },
-    });
-    const { setFieldValue, values } = formik;
-
-    // Using formik's enableReinitialize would cause touched, errors etc to reset when changing tabs
-    // So we set values with useEffect once data has been fetched.
-    useEffect(() => {
-        if (arrivalReports && !values.var) {
-            setFieldValue('var', arrivalReports);
-        }
-    }, [arrivalReports, setFieldValue, values.var]);
-    useEffect(() => {
-        if (preAlerts && !values.pre_alerts) {
-            setFieldValue('pre_alerts', preAlerts);
-        }
-    }, [preAlerts, setFieldValue, values.pre_alerts]);
-    useEffect(() => {
-        if (vrfDetails && !values.vrf) {
-            setFieldValue('vrf', vrfDetails);
-        }
-    }, [vrfDetails, setFieldValue, values.vrf]);
+        [dispatch, formik, router.params.id, saveForm, values],
+    );
 
     const onChangeTab = useCallback(
         (_event, newTab) => {
@@ -174,8 +178,42 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
         [formik, handleChangeTab],
     );
 
+    console.log('FORMIK', formik, touched);
     // TODO refine enabled condition
     const title = useTopBarTitle(vrfDetails);
+    const allowSaveAll =
+        isValid && !isSaving && !isSubmitting && !isEqual(formik.touched, {});
+
+    const isTabTouched = Boolean(touched[tab]);
+    const isTabValid = !errors[tab];
+    // TODO add check that a new values are different from fetched ones.
+    const allowSaveTab =
+        isTabTouched && isTabValid && !isSaving && !isSubmitting;
+
+    // Using formik's enableReinitialize would cause touched, errors etc to reset when changing tabs
+    // So we set values with useEffect once data has been fetched.
+    useEffect(() => {
+        if (arrivalReports && !values.vars) {
+            setFieldValue('vars', arrivalReports.arrival_reports);
+        }
+    }, [arrivalReports, setFieldValue, values.vars]);
+    useEffect(() => {
+        if (preAlerts && !values.pre_alerts) {
+            setFieldValue('pre_alerts', preAlerts.pre_alerts);
+        }
+    }, [preAlerts, setFieldValue, values.pre_alerts]);
+    useEffect(() => {
+        if (vrfDetails && !values.vrf) {
+            setFieldValue('vrf', vrfDetails);
+        }
+    }, [vrfDetails, setFieldValue, values.vrf]);
+
+    const touchedTabs = useMemo(() => Object.keys(touched), [touched]);
+
+    // list touched tabs to avoid patching untouched tabs
+    useEffect(() => {
+        setFieldValue('touchedTabs', touchedTabs);
+    }, [setFieldValue, touchedTabs]);
 
     return (
         <FormikProvider value={formik}>
@@ -191,19 +229,19 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
                     <Tab
                         key={VRF}
                         value={VRF}
-                        label={formatMessage(MESSAGES.VRF)}
+                        label={formatMessage(MESSAGES[VRF])}
                     />
                     <Tab
                         key={PREALERT}
                         value={PREALERT}
-                        label={formatMessage(MESSAGES.PREALERT)}
+                        label={formatMessage(MESSAGES[PREALERT])}
                         // disable if no saved VRF to avoid users trying to save prealert before vrf
                         disabled={!vrfDetails}
                     />
                     <Tab
                         key={VAR}
                         value={VAR}
-                        label={formatMessage(MESSAGES.VAR)}
+                        label={formatMessage(MESSAGES[VAR])}
                         // disable if no saved VRF to avoid users trying to save VAR before vrf
                         disabled={!vrfDetails}
                     />
@@ -213,6 +251,7 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
                 <VaccineRequestForm
                     className={tab !== VRF ? classes.inactiveTab : undefined}
                     router={router}
+                    vrfData={vrfDetails}
                 />
                 <PreAlerts
                     className={
@@ -230,6 +269,9 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
                             variant="contained"
                             className={classes.button}
                             color="primary"
+                            onClick={() => {
+                                formik.resetForm();
+                            }}
                         >
                             {formatMessage(MESSAGES.cancel)}
                         </Button>
@@ -239,7 +281,8 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
                             variant="contained"
                             className={classes.button}
                             color="primary"
-                            onClick={() => formik.handleSubmit()}
+                            onClick={() => handleSubmit()}
+                            disabled={!allowSaveTab}
                         >
                             {`${formatMessage(MESSAGES.save)} ${formatMessage(
                                 MESSAGES[tab],
@@ -251,6 +294,8 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
                             variant="contained"
                             className={classes.button}
                             color="primary"
+                            disabled={!allowSaveAll}
+                            onClick={() => handleSubmit(true)}
                         >
                             {formatMessage(MESSAGES.saveAll)}
                         </Button>

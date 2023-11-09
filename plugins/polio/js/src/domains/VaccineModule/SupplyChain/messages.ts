@@ -86,15 +86,15 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.cancel',
         defaultMessage: 'Cancel',
     },
-    PREALERT: {
+    pre_alerts: {
         id: 'iaso.polio.label.PREALERT',
         defaultMessage: 'Pre-alert',
     },
-    VAR: {
+    vars: {
         id: 'iaso.polio.label.VAR',
         defaultMessage: 'VAR',
     },
-    VRF: {
+    vrf: {
         id: 'iaso.polio.label.VRF',
         defaultMessage: 'VRF',
     },

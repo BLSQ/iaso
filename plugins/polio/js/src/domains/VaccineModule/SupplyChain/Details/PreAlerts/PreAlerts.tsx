@@ -36,6 +36,7 @@ export const PreAlerts: FunctionComponent<Props> = ({ className, router }) => {
                             name="pre_alerts[0].po_number"
                             component={TextInput}
                             shrinkLabel={false}
+                            touchOnFocus={false}
                         />
                     </Grid>
                     <Grid item xs={6} md={3}>

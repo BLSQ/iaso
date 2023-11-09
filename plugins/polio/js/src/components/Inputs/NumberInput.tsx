@@ -29,6 +29,7 @@ export const NumberInput: FunctionComponent<Props> = ({
             value={field.value}
             labelString={label}
             onChange={(_keyValue, value) => {
+                form.setFieldTouched(field.name, true);
                 form.setFieldValue(field.name, value);
             }}
             min={min}

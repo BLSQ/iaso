@@ -85,10 +85,10 @@ export const useGetCountriesOptions = (enabled = true) => {
     }, [countries, isFetching]);
 };
 
-const saveVar = async supplyChainData => {
+const saveVars = async supplyChainData => {
     const toCreate: any = [];
     const toUpdate: any = [];
-    supplyChainData.var.forEach(arrivalReport => {
+    supplyChainData.vars.forEach(arrivalReport => {
         if (arrivalReport.id) {
             toUpdate.push(arrivalReport);
         } else {
@@ -113,7 +113,7 @@ const saveVar = async supplyChainData => {
         ],
     };
 };
-const savePreAlert = async supplyChainData => {
+const savePreAlerts = async supplyChainData => {
     const { pre_alerts } = supplyChainData;
     const toCreate: any = [];
     const toUpdate: any = [];
@@ -146,28 +146,56 @@ const saveVrf = supplyChainData => {
     return postRequest(apiUrl, vrf);
 };
 
-const saveSupplyChainForm = async supplyChainData => {
-    if (supplyChainData.saveAll === true) {
+const saveSupplyChainForm = async (supplyChainData: any) => {
+    console.log('PAYLOAD', supplyChainData);
+    if (supplyChainData.saveAll === true && supplyChainData.vrf.id) {
+        let vrf;
+        let pre_alerts;
+        let vars;
+        const response: any = {};
         // update all tabs
-        // build response
-    } else {
-        switch (supplyChainData.activeTab) {
-            case VRF:
-                return mockSaveVrf(supplyChainData.vrf);
-            case VAR:
-                if (supplyChainData.vrf.id === 6) {
-                    return saveVar(supplyChainData);
-                }
-                break;
-            case PREALERT:
-                if (supplyChainData.vrf.id === 6) {
-                    return savePreAlert(supplyChainData);
-                }
-                break;
-            default:
-                break;
+        if (supplyChainData.touchedTabs.includes(VRF)) {
+            vrf = await mockSaveVrf(supplyChainData.vrf);
         }
+        if (supplyChainData.touchedTabs.includes(PREALERT)) {
+            pre_alerts = await savePreAlerts(supplyChainData);
+        }
+        if (supplyChainData.touchedTabs.includes(VAR)) {
+            vars = await saveVars(supplyChainData);
+        }
+        // build response
+        if (vrf) {
+            response.vrf = vrf;
+        }
+        if (pre_alerts) {
+            response.pre_alerts = pre_alerts;
+        }
+        if (vars) {
+            response.vars = vars;
+        }
+        return response;
     }
+    // We can't save prealerts or var if there's no preexisting vrf
+    if (supplyChainData.saveAll === true) {
+        return mockSaveVrf(supplyChainData.vrf);
+    }
+    switch (supplyChainData.activeTab) {
+        case VRF:
+            return mockSaveVrf(supplyChainData.vrf);
+        case VAR:
+            if (supplyChainData.vrf.id === 6) {
+                return saveVars(supplyChainData);
+            }
+            break;
+        case PREALERT:
+            if (supplyChainData.vrf.id === 6) {
+                return savePreAlerts(supplyChainData);
+            }
+            break;
+        default:
+            break;
+    }
+
     waitFor(100);
     return null;
 };
@@ -184,9 +212,33 @@ export const useSaveVaccineSupplyChainForm = (): UseMutationResult<
         showSucessSnackBar: false,
         ignoreErrorCodes: [400],
         options: {
+            // Setting the cache value with the response onSuccess, so we can reset the form state (touched, etc) without losing data
             onSuccess: (data: any, variables: any) => {
                 if (variables.activeTab === VRF && data) {
                     queryClient.setQueryData(['getVrfDetails', data.id], data);
+                } else if (variables.activeTab === PREALERT && data) {
+                    queryClient.setQueryData(
+                        ['preAlertDetails', variables.vrf.id],
+                        data,
+                    );
+                } else if (variables.activeTab === VAR && data) {
+                    queryClient.setQueryData(
+                        ['arrivalReportsDetails', variables.vrf.id],
+                        data,
+                    );
+                } else if (variables.saveAll && data) {
+                    queryClient.setQueryData(
+                        ['getVrfDetails', data.vrf.id],
+                        data.vrf,
+                    );
+                    queryClient.setQueryData(
+                        ['preAlertDetails', data.vrf.id],
+                        data.pre_alerts,
+                    );
+                    queryClient.setQueryData(
+                        ['arrivalReportsDetails', data.vrf.id],
+                        data.vars,
+                    );
                 }
             },
         },

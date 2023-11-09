@@ -98,21 +98,32 @@ class CurrentAccountDefault:
         return serializer_field.context["request"].user.iaso_profile.account_id
 
 
-def check_total_doses_requested(vaccine_authorization, nOPV2_rounds):
+def check_total_doses_requested(vaccine_authorization, nOPV2_rounds, current_campaign):
     """
     Check if the total doses requested per round in a campaign is not superior to the allowed doses in the vaccine authorization.
     It also emails the nopv2 vaccine team about it.
     """
     if vaccine_authorization and vaccine_authorization.quantity is not None:
+        campaigns = Campaign.objects.filter(country=vaccine_authorization.country).exclude(pk=current_campaign.pk)
+        total_doses_requested_for_campaigns = 0
+        campaigns_rounds = [c_round for c_round in Round.objects.filter(campaign__in=campaigns)]
+
+        for r in campaigns_rounds:
+            if r.started_at and r.doses_requested:
+                if vaccine_authorization.start_date <= r.started_at <= vaccine_authorization.expiration_date:
+                    total_doses_requested_for_campaigns += r.doses_requested
+
         total_doses_requested = 0
         for c_round in nOPV2_rounds:
             if c_round.doses_requested is not None:
-                total_doses_requested += c_round.doses_requested
+                if c_round.started_at >= vaccine_authorization.start_date <= vaccine_authorization.expiration_date:
+                    total_doses_requested += c_round.doses_requested
 
-        if total_doses_requested > vaccine_authorization.quantity:
-            raise Custom403Exception(
-                f"The total of doses requested {total_doses_requested} is superior to the autorized doses for this campaign {vaccine_authorization.quantity}."
-            )
+        if total_doses_requested + total_doses_requested_for_campaigns > vaccine_authorization.quantity:
+            message = f"The total of doses requested {total_doses_requested} is superior to the autorized doses for this campaign {vaccine_authorization.quantity}."
+            if total_doses_requested_for_campaigns > 0:
+                message = f"The total of doses requested {total_doses_requested} and the aggregation of all previous requested doses {total_doses_requested_for_campaigns} are superior to the autorized doses for this campaign {vaccine_authorization.quantity}."
+            raise Custom403Exception(message)
 
 
 class CampaignSerializer(serializers.ModelSerializer):
@@ -253,7 +264,7 @@ class CampaignSerializer(serializers.ModelSerializer):
                     country=initial_org_unit, status="VALIDATED", account=account
                 )
                 if vaccine_authorization:
-                    check_total_doses_requested(vaccine_authorization[0], nOPV2_rounds)
+                    check_total_doses_requested(vaccine_authorization[0], nOPV2_rounds, campaign)
                 else:
                     missing_vaccine_authorization_for_campaign_email_alert(
                         obr_name, validated_data["initial_org_unit"], account
@@ -364,7 +375,7 @@ class CampaignSerializer(serializers.ModelSerializer):
                     country=initial_org_unit, status="VALIDATED", account=account
                 )
                 if vaccine_authorization:
-                    check_total_doses_requested(vaccine_authorization[0], nOPV2_rounds)
+                    check_total_doses_requested(vaccine_authorization[0], nOPV2_rounds, campaign)
             except OrgUnit.DoesNotExist:
                 raise Custom403Exception("error:" "Org unit does not exists.")
 

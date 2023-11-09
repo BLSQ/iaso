@@ -215,7 +215,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         response = self.client.get(BASE_URL)
         self.assertEqual(response.status_code, 403)
 
-    def test_user_with_read_rights_can_see_list(self):
+    def test_user_with_read_only_can_see_list(self):
         self.client.force_authenticate(user=self.user_ro_perm)
         response = self.client.get(BASE_URL)
         self.assertEqual(response.status_code, 200)
@@ -228,12 +228,20 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         self.assertEqual(res[1]["start_date"], datetime.date(2021, 3, 1))
         self.assertEqual(res[1]["end_date"], datetime.date(2021, 3, 31))
 
-    def test_user_with_read_write_rights_can_see_list(self):
+    def test_user_with_read_write_can_see_list(self):
         self.client.force_authenticate(user=self.user_rw_perm)
         response = self.client.get(BASE_URL)
         self.assertEqual(response.status_code, 200)
         res = response.data["results"]
+        self.assertEqual(len(res), 3)
+
+    def test_search_parameter_works_on_get_list_api(self):
+        self.client.force_authenticate(user=self.user_rw_perm)
+        response = self.client.get(BASE_URL + "?search=" + self.vaccine_request_form_rdc_1.campaign.obr_name)
+        self.assertEqual(response.status_code, 200)
+        res = response.data["results"]
         self.assertEqual(len(res), 2)
+        self.assertEqual(res[0]["obr_name"], self.vaccine_request_form_rdc_1.campaign.obr_name)
 
     def test_user_without_read_rights_cannot_see_detail(self):
         self.client.force_authenticate(user=self.user_no_perms)
@@ -261,11 +269,11 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         response = self.client.get(BASE_URL + str(self.vaccine_request_form_be_1.id) + "/")
         self.assertEqual(response.status_code, 404)
 
-    def test_anonymou_user_cannot_post_new_request_form(self):
+    def test_anonymous_user_cannot_post_new_request_form(self):
         self.client.force_authenticate(user=self.anon)
         response = self.client.post(
             BASE_URL,
-            {
+            data={
                 "campaign": self.campaign_rdc_1.id,
                 "vaccine_type": pm.VACCINES[0][0],
                 "date_vrf_reception": self.now - datetime.timedelta(days=1),
@@ -273,6 +281,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
                 "date_dg_approval": self.now,
                 "quantities_ordered_in_doses": 1000000,
             },
+            format="json",
         )
         self.assertEqual(response.status_code, 403)
 
@@ -280,7 +289,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         self.client.force_authenticate(user=self.user_ro_perm)
         response = self.client.post(
             BASE_URL,
-            {
+            data={
                 "campaign": self.campaign_rdc_1.id,
                 "vaccine_type": pm.VACCINES[0][0],
                 "date_vrf_reception": self.now - datetime.timedelta(days=1),
@@ -288,6 +297,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
                 "date_dg_approval": self.now,
                 "quantities_ordered_in_doses": 1000000,
             },
+            format="json",
         )
         self.assertEqual(response.status_code, 403)
 
@@ -333,27 +343,25 @@ class VaccineSupplyChainAPITestCase(APITestCase):
 
         response = self.client.post(
             BASE_URL + f"{request_form.id}/add_pre_alerts/",
-            {
+            data={
                 "pre_alerts": [
                     {
-                        "date_pre_alert": "2021-01-01",
-                        "date_receipt": "2021-01-02",
-                        "quantity_in_doses": 500000,
-                        "comments": "Test comment",
+                        "date_pre_alert_reception": "2021-01-01",
+                        "estimated_arrival_time": "2021-01-02T12:00:00Z",
+                        "doses_shipped": 500000,
+                        "po_number": "PO-1234",
                     }
                 ],
             },
+            format="json",
         )
 
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         res = response.data
 
-        print(res.keys())
-        print(res["pre_alerts"])
-
         self.assertEqual(len(res["pre_alerts"]), 1)
-        self.assertEqual(res["pre_alerts"][0]["quantity_in_doses"], 500000)
-        self.assertEqual(res["pre_alerts"][0]["comments"], "Test comment")
+        self.assertEqual(res["pre_alerts"][0]["doses_shipped"], 500000)
+        self.assertEqual(res["pre_alerts"][0]["po_number"], "PO-1234")
 
     def test_can_add_request_form_vaccine_arrival_reports(self):
         self.client.force_authenticate(user=self.user_rw_perm)
@@ -363,7 +371,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
 
         response = self.client.post(
             BASE_URL + f"{request_form.id}/add_arrival_reports/",
-            {
+            data={
                 "arrival_reports": [
                     {
                         "arrival_report_date": "2021-01-01",
@@ -393,9 +401,10 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         # Create a pre-alert for the request_form
         pre_alert = pm.VaccinePreAlert.objects.create(
             request_form=request_form,
-            date_pre_alert="2021-01-01",
-            date_receipt="2021-01-02",
-            quantity_in_doses=1000,
+            date_pre_alert_reception="2021-01-01",
+            estimated_arrival_time="2021-01-02T00:00:00Z",
+            doses_shipped=1000,
+            po_number="PO-1234",
         )
 
         response = self.client.get(
@@ -407,9 +416,10 @@ class VaccineSupplyChainAPITestCase(APITestCase):
 
         self.assertEqual(len(res["pre_alerts"]), 1)
         self.assertEqual(res["pre_alerts"][0]["id"], pre_alert.id)
-        self.assertEqual(res["pre_alerts"][0]["date_pre_alert"], "2021-01-01")
-        self.assertEqual(res["pre_alerts"][0]["date_receipt"], "2021-01-02")
-        self.assertEqual(res["pre_alerts"][0]["quantity_in_doses"], 1000)
+        self.assertEqual(res["pre_alerts"][0]["date_pre_alert_reception"], "2021-01-01")
+        self.assertEqual(res["pre_alerts"][0]["estimated_arrival_time"], "2021-01-02T00:00:00Z")
+        self.assertEqual(res["pre_alerts"][0]["doses_shipped"], 1000)
+        self.assertEqual(res["pre_alerts"][0]["po_number"], "PO-1234")
 
     def test_can_get_request_form_vaccine_arrival_reports(self):
         self.client.force_authenticate(user=self.user_rw_perm)
@@ -441,40 +451,47 @@ class VaccineSupplyChainAPITestCase(APITestCase):
 
         # Get the first request form and its arrival reports
         request_form = pm.VaccineRequestForm.objects.first()
-        arrival_report = request_form.arrival_reports.first()
+
+        arrival_report = pm.VaccineArrivalReport.objects.create(
+            request_form=request_form,
+            arrival_report_date="2022-01-01",
+            doses_received=2000,
+        )
 
         response = self.client.patch(
             BASE_URL + f"{request_form.id}/update_arrival_reports/",
-            {"arrival_reports": [{"id": arrival_report.id, "doses_received": 3333}]},
+            data={"arrival_reports": [{"id": arrival_report.id, "doses_received": 3333}]},
             format="json",
         )
 
         self.assertEqual(response.status_code, 200)
         res = response.data
 
-        self.assertEqual(res["doses_received"], 3333)
+        self.assertEqual(res["arrival_reports"][0]["doses_received"], 3333)
 
     def test_can_modify_request_form_vaccine_prealerts(self):
         self.client.force_authenticate(user=self.user_rw_perm)
 
         # Get the first request form and its pre-alerts
         request_form = pm.VaccineRequestForm.objects.first()
-        pre_alert = request_form.pre_alerts.first()
+
+        pre_alert = pm.VaccinePreAlert.objects.create(
+            request_form=request_form,
+            date_pre_alert_reception="2021-01-01",
+            estimated_arrival_time="2021-01-02",
+            doses_shipped=1000,
+            po_number="PO-1234",
+        )
 
         response = self.client.patch(
             BASE_URL + f"{request_form.id}/update_pre_alerts/",
-            {
-                "pre_alerts": [
-                    {
-                        "id": pre_alert.id,
-                        "doses_shipped": 4444,
-                    }
-                ]
-            },
+            data={"pre_alerts": [{"id": pre_alert.id, "doses_shipped": 4444}]},
             format="json",
         )
+
+        print(response.data)
 
         self.assertEqual(response.status_code, 200)
         res = response.data
 
-        self.assertEqual(res["doses_shipped"], 4444)
+        self.assertEqual(res["pre_alerts"][0]["doses_shipped"], 4444)

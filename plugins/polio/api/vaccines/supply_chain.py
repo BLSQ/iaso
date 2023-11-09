@@ -1,3 +1,4 @@
+from typing import Any
 from django import forms
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
@@ -83,9 +84,23 @@ class NestedVaccinePreAlertSerializerForPost(BasePostPatchSerializer):
 
 class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerForPost):
     id = serializers.IntegerField(required=True, read_only=False)
+    date_pre_alert_reception = serializers.DateField(required=False)
+    po_number = serializers.CharField(required=False)
+    estimated_arrival_time = serializers.DateTimeField(required=False)
+    lot_number = serializers.CharField(required=False)
+    expiration_date = serializers.DateField(required=False)
+    doses_shipped = serializers.IntegerField(required=False)
+    doses_received = serializers.IntegerField(required=False)
 
     class Meta(NestedVaccinePreAlertSerializerForPost.Meta):
         fields = NestedVaccinePreAlertSerializerForPost.Meta.fields + ["id"]
+
+    def validate(self, attrs: Any) -> Any:
+        # at least one of the other fields must be present
+        if not any(key in attrs.keys() for key in NestedVaccinePreAlertSerializerForPost.Meta.fields):
+            raise serializers.ValidationError("At least one of the fields must be present.")
+
+        return super().validate(attrs)
 
 
 class NestedVaccineArrivalReportSerializerForPost(BasePostPatchSerializer):
@@ -96,9 +111,18 @@ class NestedVaccineArrivalReportSerializerForPost(BasePostPatchSerializer):
 
 class NestedVaccineArrivalReportSerializerForPatch(NestedVaccineArrivalReportSerializerForPost):
     id = serializers.IntegerField(required=True, read_only=False)
+    arrival_report_date = serializers.DateField(required=False)
+    doses_received = serializers.IntegerField(required=False)
 
     class Meta(NestedVaccineArrivalReportSerializerForPost.Meta):
         fields = NestedVaccineArrivalReportSerializerForPost.Meta.fields + ["id"]
+
+    def validate(self, attrs: Any) -> Any:
+        # at least one of the other fields must be present
+        if not any(key in attrs.keys() for key in NestedVaccineArrivalReportSerializerForPost.Meta.fields):
+            raise serializers.ValidationError("At least one of the fields must be present.")
+
+        return super().validate(attrs)
 
 
 class PostPreAlertSerializer(serializers.Serializer):
@@ -170,7 +194,7 @@ class PatchArrivalReportSerializer(serializers.Serializer):
         arrival_reports = []
 
         for item in self.validated_data["arrival_reports"]:
-            arrival_report = NestedVaccineArrivalReportSerializerForPost(data=item, context=self.context)
+            arrival_report = NestedVaccineArrivalReportSerializerForPatch(data=item, context=self.context)
 
             if arrival_report.is_valid():
                 ar = vaccine_request_form.vaccinearrivalreport_set.get(id=item.get("id"))
@@ -383,7 +407,7 @@ class VaccineRequestFormViewSet(ModelViewSet):
     permission_classes = [VaccineSupplyChainReadWritePerm]
     http_method_names = ["get", "post", "delete", "patch"]
 
-    filter_backends = [NoFormDjangoFilterBackend, VRFCustomOrderingFilter, filters.OrderingFilter, SearchFilter]
+    filter_backends = [SearchFilter, NoFormDjangoFilterBackend, VRFCustomOrderingFilter, filters.OrderingFilter]
     filterset_fields = {
         "campaign__obr_name": ["exact"],
         "campaign__country": ["exact"],
@@ -392,7 +416,7 @@ class VaccineRequestFormViewSet(ModelViewSet):
         "rounds__ended_at": ["exact", "gte", "lte", "range"],
     }
     ordering_fields = ["created_at", "updated_at"]
-    search_fields = ["campaign__obr_name", "vaccine_type", "campaign__country"]
+    search_fields = ["campaign__obr_name", "vaccine_type", "campaign__country__name"]
 
     model = VaccineRequestForm
 
@@ -412,13 +436,13 @@ class VaccineRequestFormViewSet(ModelViewSet):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    def _do_generic_get(self, request, serializer_class, get_attr_name):
+    def _do_generic_get(self, request, serializer_class, get_attr_name, res_name):
         request_form = self.get_object()
         rel_objs_qs = getattr(request_form, get_attr_name)
         rel_objs = list(rel_objs_qs.all().order_by("id").distinct())
 
         serializer = serializer_class(rel_objs, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response({res_name: serializer.data}, status=status.HTTP_200_OK)
 
     def _do_generic_add(self, request, serializer_class, set_attr_name, res_name):
         instance = self.get_object()
@@ -446,7 +470,7 @@ class VaccineRequestFormViewSet(ModelViewSet):
 
     @action(detail=True, methods=["get"])
     def get_pre_alerts(self, request, pk=None):
-        return self._do_generic_get(request, NestedVaccinePreAlertSerializerForPatch, PA_SET)
+        return self._do_generic_get(request, NestedVaccinePreAlertSerializerForPatch, PA_SET, "pre_alerts")
 
     @action(detail=True, methods=["patch"])
     def update_pre_alerts(self, request, pk=None):
@@ -458,7 +482,7 @@ class VaccineRequestFormViewSet(ModelViewSet):
 
     @action(detail=True, methods=["get"])
     def get_arrival_reports(self, request, pk=None):
-        return self._do_generic_get(request, NestedVaccineArrivalReportSerializerForPatch, AR_SET)
+        return self._do_generic_get(request, NestedVaccineArrivalReportSerializerForPatch, AR_SET, "arrival_reports")
 
     @action(detail=True, methods=["patch"])
     def update_arrival_reports(self, request, pk=None):

@@ -24,6 +24,11 @@ class IdOrUuidRelatedFieldTestCase(APITestCase):
         value = self.field.to_internal_value(data)
         self.assertEqual(value, self.org_unit2)
 
+    def test_to_internal_value_by_id_as_str(self):
+        data = str(self.org_unit3.pk)
+        value = self.field.to_internal_value(data)
+        self.assertEqual(value, self.org_unit3)
+
     def test_to_internal_value_invalid(self):
         data = None
         with self.assertRaises(ValidationError) as error:

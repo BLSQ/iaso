@@ -37,6 +37,8 @@ export const FIELDS_TO_EXPORT = {
     parent: 'parent',
     geometry: 'geometry',
     groups: 'groups',
+    openingDate: 'opening_date',
+    closedDate: 'closed_date',
 };
 
 export const useFieldsToExport = () => {
@@ -54,6 +56,14 @@ export const useFieldsToExport = () => {
         {
             label: formatMessage(MESSAGES.groups),
             value: FIELDS_TO_EXPORT.groups,
+        },
+        {
+            label: formatMessage(MESSAGES.openingDate),
+            value: FIELDS_TO_EXPORT.openingDate,
+        },
+        {
+            label: formatMessage(MESSAGES.closedDate),
+            value: FIELDS_TO_EXPORT.closedDate,
         },
     ];
 };

@@ -463,26 +463,25 @@ class TransitionToSerializer(serializers.Serializer):
             processes = BudgetProcess.objects.filter(rounds__pk__in=[c_round.pk for c_round in campaign.rounds.all()])
             # FIXME Must Be saved to BudgetProcess instead of campaign
             with transaction.atomic():
-                field = transition.to_node + "_at_WFEDITABLE"
-                if model_field_exists(campaign, field):
+                for process in processes:
+                    field = transition.to_node + "_at_WFEDITABLE"
                     # Write the value only if doesn't exist yet, this way we keep track of when a step was first submitted
-                    if not getattr(campaign, field, None):
-                        setattr(campaign, field, step.created_at)
-                        setattr(campaign, "budget_status", transition.to_node)
-                        # Custom checks for current workflow. Since we're checking the destination, we'll miss the data for the "concurrent steps".
-                        # eg: if we move from state "who_sent_budget" to "gpei_consolidated_budgets", we will miss "unicef_sent_budget" without this check
-                        # Needs to be updated when state key names change
-                        if transition.to_node == "gpei_consolidated_budgets":
-                            if campaign.who_sent_budget_at_WFEDITABLE is None:
-                                setattr(campaign, "who_sent_budget_at_WFEDITABLE", step.created_at)
-                            elif campaign.unicef_sent_budget_at_WFEDITABLE is None:
-                                setattr(campaign, "unicef_sent_budget_at_WFEDITABLE", step.created_at)
-                        if transition.to_node == "approved":
-                            if campaign.approved_by_who_at_WFEDITABLE is None:
-                                setattr(campaign, "approved_by_who_at_WFEDITABLE", step.created_at)
-                            elif campaign.approved_by_unicef_at_WFEDITABLE is None:
-                                setattr(campaign, "approved_by_unicef_at_WFEDITABLE", step.created_at)
-                        campaign.save()
+                    setattr(process, field, step.created_at)
+                    setattr(process, "budget_status", transition.to_node)
+                    # Custom checks for current workflow. Since we're checking the destination, we'll miss the data for the "concurrent steps".
+                    # eg: if we move from state "who_sent_budget" to "gpei_consolidated_budgets", we will miss "unicef_sent_budget" without this check
+                    # Needs to be updated when state key names change
+                    if transition.to_node == "gpei_consolidated_budgets":
+                        if process.who_sent_budget_at_WFEDITABLE is None:
+                            setattr(process, "who_sent_budget_at_WFEDITABLE", step.created_at)
+                        elif process.unicef_sent_budget_at_WFEDITABLE is None:
+                            setattr(process, "unicef_sent_budget_at_WFEDITABLE", step.created_at)
+                    if transition.to_node == "approved":
+                        if process.approved_by_who_at_WFEDITABLE is None:
+                            setattr(process, "approved_by_who_at_WFEDITABLE", step.created_at)
+                        elif process.approved_by_unicef_at_WFEDITABLE is None:
+                            setattr(process, "approved_by_unicef_at_WFEDITABLE", step.created_at)
+                    process.save()
 
         return step
 

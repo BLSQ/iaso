@@ -20,6 +20,12 @@ export const convertValueIfDate = value => {
     //  returning numbers early as they can be valid moments (unix timestamps)
     if (typeof value === 'number') return value;
     const asMoment = moment(value);
-    if (asMoment.isValid()) return asMoment.format('LTS');
+
+    if (moment(value, 'L', true).isValid()) {
+        return asMoment.format('L');
+    }
+    if (moment(value, 'LTS', true).isValid()) {
+        return asMoment.format('L');
+    }
     return value;
 };

@@ -3,6 +3,7 @@ import uuid
 from rest_framework import serializers
 
 from iaso.models import Instance, OrgUnit, OrgUnitChangeRequest, OrgUnitType
+from iaso.utils.serializer.id_or_uuid_field import IdOrUuidRelatedField
 from iaso.utils.serializer.three_dim_point_field import ThreeDimPointField
 from iaso.api.common import TimestampField
 
@@ -177,7 +178,7 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
     """
 
     uuid = serializers.UUIDField(required=False, default=uuid.uuid4)
-    org_unit_id = serializers.PrimaryKeyRelatedField(
+    org_unit_id = IdOrUuidRelatedField(
         source="org_unit",
         queryset=OrgUnit.objects.all(),
         required=False,

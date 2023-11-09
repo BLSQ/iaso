@@ -17,7 +17,10 @@ class IdOrUuidRelatedField(serializers.PrimaryKeyRelatedField):
 
     def to_internal_value(self, data):
         try:
-            kwargs = {"pk": data} if isinstance(data, int) else {"uuid": data}
+            if isinstance(data, int) or (isinstance(data, str) and data.isnumeric()):
+                kwargs = {"pk": data}
+            else:
+                kwargs = {"uuid": data}
             return self.get_queryset().get(**kwargs)
         except ObjectDoesNotExist:
             self.fail("does_not_exist", pk_value=data)

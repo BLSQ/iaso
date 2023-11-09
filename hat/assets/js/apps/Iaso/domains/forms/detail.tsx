@@ -39,8 +39,7 @@ import { isFieldValid, isFormValid } from '../../utils/forms';
 import { FormAttachments } from './components/FormAttachments';
 import { FormParams } from './types/forms';
 import { Router } from '../../types/general';
-import { EditLegendDialog,  AddLegendDialog} from '../../components/LegendBuilder/Dialog';
-import { legendColors } from '../../components/LegendBuilder/colors';
+
 interface FormDetailProps {
     router: Router;
     params: FormParams;
@@ -60,6 +59,7 @@ const useStyles = makeStyles(theme => ({
         padding: 0,
     },
 }));
+
 const defaultForm = {
     id: null,
     name: '',
@@ -76,9 +76,10 @@ const defaultForm = {
     location_field: '',
     possible_fields: [],
     label_keys: [],
+    legend_threshold: null,
 };
 
-const formatFormData = (value: any) => {
+const formatFormData = value => {
     let form = value;
     if (!form) form = defaultForm;
     return {
@@ -102,6 +103,7 @@ const formatFormData = (value: any) => {
         location_field: form.location_field,
         possible_fields: form.possible_fields ?? defaultForm.possible_fields,
         label_keys: form.label_keys ?? defaultForm.label_keys,
+        legend_threshold: form.legend_threshold,
     };
 };
 
@@ -120,7 +122,6 @@ const FormDetail: FunctionComponent<FormDetailProps> = ({ router, params }) => {
     const classes = useStyles();
     const [currentForm, setFieldValue, setFieldErrors, setFormState] =
         useFormState(formatFormData(form));
-
     const isFormModified = useMemo(() => {
         return (
             !isEqual(
@@ -224,17 +225,11 @@ const FormDetail: FunctionComponent<FormDetailProps> = ({ router, params }) => {
             />
             {(isLoading || isFormLoading) && <LoadingSpinner />}
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <EditLegendDialog
-                    iconProps={{}}
-                    titleMessage={MESSAGES.edit}
-                    threshold={{
-                        domain: [70, 90],
-                        range: [legendColors[8], legendColors[5], legendColors[2]],
-                    }}
-                    onConfirm={newThreshold => console.log('onConfirm', newThreshold)}
+                <FormForm
+                    currentForm={currentForm}
+                    setFieldValue={onChange}
+                    isFormLoading={isFormLoading}
                 />
-                {/* <AddLegendDialog /> */}
-                <FormForm currentForm={currentForm} setFieldValue={onChange} />
                 <Box mt={2} justifyContent="flex-end" display="flex">
                     {currentForm.id.value !== '' && (
                         <Button

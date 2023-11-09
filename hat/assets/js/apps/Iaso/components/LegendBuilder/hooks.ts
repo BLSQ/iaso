@@ -1,3 +1,4 @@
+import { legendColors } from './colors';
 import { RangeValue, ScaleThreshold } from './types';
 
 export const useGetScaleThreshold = (): ((
@@ -26,7 +27,7 @@ export const useGetRangeValues = (): ((
         }));
         rangeValues.push({
             percent: 100,
-            color: range[range.length - 1],
+            color: range[range.length - 1] || legendColors[1],
         });
         return rangeValues.reverse().map((rangeValue, index) => ({
             ...rangeValue,

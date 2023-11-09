@@ -32,7 +32,8 @@ const Dialog: FunctionComponent<Props> = ({
     >(threshold);
     const handleConfirm = useCallback(() => {
         onConfirm(scaleThreshold);
-    }, [onConfirm, scaleThreshold]);
+        closeDialog();
+    }, [closeDialog, onConfirm, scaleThreshold]);
     return (
         <ConfirmCancelModal
             titleMessage={titleMessage}

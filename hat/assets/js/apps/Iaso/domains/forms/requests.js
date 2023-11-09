@@ -8,7 +8,7 @@ export const useGetForm = formId =>
         () =>
             getRequest(
                 // eslint-disable-next-line max-len
-                `/api/forms/${formId}/?fields=id,name,org_unit_types,projects,period_type,derived,single_per_period,periods_before_allowed,periods_after_allowed,device_field,location_field,label_keys,possible_fields`,
+                `/api/forms/${formId}/?fields=id,name,org_unit_types,projects,period_type,derived,single_per_period,periods_before_allowed,periods_after_allowed,device_field,location_field,label_keys,possible_fields,legend_threshold`,
             ),
         undefined,
         {

@@ -1,12 +1,14 @@
-// To stay consistent with the naming convention, this component is named FormForm such as OrgUnitForm ...
+/* eslint-disable camelcase */
 
-import React, { useState } from 'react';
+import React, { useState, FunctionComponent } from 'react';
 import { Box, Grid, makeStyles, Typography } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
-import PropTypes from 'prop-types';
 import { Link } from 'react-router';
+import { Theme, createStyles } from '@material-ui/core/styles';
+
 import { History } from '@material-ui/icons';
 import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
+import { isEmpty } from 'lodash';
 import { baseUrls } from '../../../constants/urls';
 import InputComponent from '../../../components/forms/InputComponent';
 import {
@@ -14,32 +16,38 @@ import {
     commaSeparatedIdsToStringArray,
 } from '../../../utils/forms';
 
-import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions.ts';
-import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
+import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
+import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 
-import { formatLabel } from '../../instances/utils/index.tsx';
+import { formatLabel } from '../../instances/utils';
 import { periodTypeOptions } from '../../periods/constants';
 import MESSAGES from '../messages';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
+import {
+    AddLegendDialog,
+    EditLegendDialog,
+} from '../../../components/LegendBuilder/Dialog';
+import { Legend } from '../../../components/LegendBuilder/Legend';
+import { FormDataType } from '../types/forms';
 
-const styles = theme => ({
-    radio: {
-        flexDirection: 'row',
-    },
-    advancedSettings: {
-        color: theme.palette.primary.main,
-        alignSelf: 'center',
-        textAlign: 'right',
-        flex: '1',
-        cursor: 'pointer',
-    },
-    // Align the icon with the text
-    linkWithIcon: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.5em',
-    },
-});
+const styles = (theme: Theme) =>
+    createStyles({
+        radio: {
+            flexDirection: 'row',
+        },
+        advancedSettings: {
+            color: theme.palette.primary.main,
+            alignSelf: 'center',
+            textAlign: 'right',
+            flex: '1',
+            cursor: 'pointer',
+        },
+        linkWithIcon: {
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5em',
+        },
+    });
 
 const useStyles = makeStyles(styles);
 const formatBooleanForRadio = value => {
@@ -48,7 +56,18 @@ const formatBooleanForRadio = value => {
     return null;
 };
 
-const FormForm = ({ currentForm, setFieldValue }) => {
+interface FormFormProps {
+    currentForm: FormDataType;
+    // eslint-disable-next-line no-unused-vars
+    setFieldValue: (key: string, value: any) => void;
+    isFormLoading: boolean;
+}
+
+const FormForm: FunctionComponent<FormFormProps> = ({
+    currentForm,
+    setFieldValue,
+    isFormLoading,
+}) => {
     const classes = useStyles();
     const intl = useSafeIntl();
     const [showAdvancedSettings, setshowAdvancedSettings] = useState(false);
@@ -144,7 +163,6 @@ const FormForm = ({ currentForm, setFieldValue }) => {
                             <InputComponent
                                 className={classes.radio}
                                 keyValue="single_per_period"
-                                name="single_per_period"
                                 disabled={
                                     currentForm.period_type.value === null
                                 }
@@ -178,6 +196,52 @@ const FormForm = ({ currentForm, setFieldValue }) => {
                                 clearable={false}
                                 label={MESSAGES.singlePerPeriod}
                             />
+                        </Grid>
+                        <Grid item xs={6}>
+                            {!isFormLoading && (
+                                <>
+                                    {!isEmpty(
+                                        currentForm.legend_threshold.value,
+                                    ) && (
+                                        <Box position="relative">
+                                            <EditLegendDialog
+                                                iconProps={{}}
+                                                titleMessage={MESSAGES.edit}
+                                                threshold={
+                                                    currentForm.legend_threshold
+                                                        .value
+                                                }
+                                                onConfirm={newThreshold =>
+                                                    setFieldValue(
+                                                        'legend_threshold',
+                                                        newThreshold,
+                                                    )
+                                                }
+                                            />
+                                            <Legend
+                                                threshold={
+                                                    currentForm.legend_threshold
+                                                        .value
+                                                }
+                                            />
+                                        </Box>
+                                    )}
+                                    {isEmpty(
+                                        currentForm.legend_threshold.value,
+                                    ) && (
+                                        <AddLegendDialog
+                                            iconProps={{}}
+                                            titleMessage={MESSAGES.edit}
+                                            onConfirm={newThreshold =>
+                                                setFieldValue(
+                                                    'legend_threshold',
+                                                    newThreshold,
+                                                )
+                                            }
+                                        />
+                                    )}
+                                </>
+                            )}
                         </Grid>
                     </Grid>
                 </Grid>
@@ -251,9 +315,10 @@ const FormForm = ({ currentForm, setFieldValue }) => {
                                         label: formatLabel(field),
                                         value: field.name,
                                     }))
-                                    .sort(
-                                        (option1, option2) =>
-                                            option1.label > option2.label,
+                                    .sort((option1, option2) =>
+                                        option1.label.localeCompare(
+                                            option2.label,
+                                        ),
                                     )}
                                 label={MESSAGES.fields}
                             />
@@ -323,11 +388,6 @@ const FormForm = ({ currentForm, setFieldValue }) => {
             )}
         </>
     );
-};
-
-FormForm.propTypes = {
-    currentForm: PropTypes.object.isRequired,
-    setFieldValue: PropTypes.func.isRequired,
 };
 
 export default FormForm;

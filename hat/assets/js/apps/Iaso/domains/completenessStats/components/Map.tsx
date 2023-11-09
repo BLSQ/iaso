@@ -33,7 +33,8 @@ import {
 import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
 import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
 
-import { getDirectLegend, MapLegend, useGetLegend } from './MapLegend';
+import { defaultScaleThreshold, getDirectLegend, MapLegend } from './MapLegend';
+import { useGetLegend } from '../../../components/LegendBuilder/Legend';
 import { CompletenessSelect } from './CompletenessSelect';
 
 import MESSAGES from '../messages';
@@ -87,8 +88,9 @@ export const Map: FunctionComponent<Props> = ({
     params,
     selectedFormId,
     router,
-    threshold,
+    threshold = defaultScaleThreshold,
 }) => {
+    console.log('threshold', threshold);
     const { planningId } = params;
     const classes: Record<string, string> = useStyles();
     const getLegend = useGetLegend(threshold);
@@ -173,7 +175,13 @@ export const Map: FunctionComponent<Props> = ({
                 ? getDirectLegend(value)
                 : getLegend(value);
         },
-        [planningId, showDirectCompleteness, isLoadingAssignments, assignments],
+        [
+            planningId,
+            showDirectCompleteness,
+            getLegend,
+            isLoadingAssignments,
+            assignments,
+        ],
     );
 
     const getParentPageUrl = usetGetParentPageUrl(router);
@@ -184,7 +192,10 @@ export const Map: FunctionComponent<Props> = ({
                     <LoadingSpinner absolute />
                 )}
                 <CompletenessSelect params={params} />
-                <MapLegend showDirectCompleteness={showDirectCompleteness} />
+                <MapLegend
+                    showDirectCompleteness={showDirectCompleteness}
+                    threshold={threshold}
+                />
                 {parentLocation?.parent_org_unit?.id && (
                     <Box className={classes.parentIcon}>
                         <IconButton

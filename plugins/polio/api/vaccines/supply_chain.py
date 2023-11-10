@@ -249,6 +249,38 @@ class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
         return validate_rounds_and_campaign(data, self.context["request"].user)
 
 
+class VaccineRequestFormDetailSerializer(serializers.ModelSerializer):
+    country_name = serializers.CharField(source="campaign.country.name")
+    country_id = serializers.IntegerField(source="campaign.country.id")
+    obr_name = serializers.CharField(source="campaign.obr_name")
+    rounds = NestedRoundSerializer(many=True)
+
+    class Meta:
+        model = VaccineRequestForm
+        fields = [
+            "campaign",
+            "vaccine_type",
+            "rounds",
+            "date_vrf_signature",
+            "date_vrf_reception",
+            "date_dg_approval",
+            "quantities_ordered_in_doses",
+            "created_at",
+            "updated_at",
+            # optional fields
+            "wastage_rate_used_on_vrf",
+            "date_vrf_submission_to_orpg",
+            "quantities_approved_by_orpg_in_doses",
+            "date_rrt_orpg_approval",
+            "date_vrf_submitted_to_dg",
+            "quantities_approved_by_dg_in_doses",
+            "comment",
+            "country_name",
+            "country_id",
+            "obr_name",
+        ]
+
+
 class VaccineRequestFormListSerializer(serializers.ModelSerializer):
     country = NestedCountrySerializer(source="campaign.country")
     obr_name = serializers.CharField(source="campaign.obr_name")
@@ -489,8 +521,10 @@ class VaccineRequestFormViewSet(ModelViewSet):
         return self._do_generic_update(request, PatchArrivalReportSerializer, AR_SET)
 
     def get_serializer_class(self):
-        if self.action == "list" or self.action == "retrieve":
+        if self.action == "list":
             return VaccineRequestFormListSerializer
+        elif self.action == "retrieve":
+            return VaccineRequestFormDetailSerializer
         elif self.action == "add_pre_alerts":
             return PostPreAlertSerializer
         elif self.action == "update_pre_alerts":

@@ -92,7 +92,7 @@ describe('Modules', () => {
         testTablerender({
             baseUrl,
             rows: listFixture.results.length,
-            columns: 3,
+            columns: 2,
             apiKey: 'modules',
         });
 

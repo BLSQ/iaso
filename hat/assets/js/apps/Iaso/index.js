@@ -8,6 +8,7 @@ import { QueryClient, QueryClientProvider } from 'react-query';
 
 import './libs/polyfills.ts';
 
+import { last } from 'lodash';
 import App from './domains/app';
 import { store, history } from './redux/store';
 import { getPlugins, PluginsContext } from './utils';

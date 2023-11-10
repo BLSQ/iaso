@@ -960,17 +960,26 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
         round = Round.objects.get(pk=request.GET.get("round"))
         campaign = round.campaign
         org_units_list = []
-        org_units = campaign.get_districts_for_round(round)
+        if not campaign.separate_scopes_per_round:
+            scopes = campaign.scopes.prefetch_related("group__org_units__org_unit_type").prefetch_related(
+                "group__org_units__parent__parent"
+            )
+        else:
+            scopes = round.scopes.prefetch_related("group__org_units__org_unit_type").prefetch_related(
+                "group__org_units__parent__parent"
+            )
 
-        for org_unit in org_units:
-            item = {}
-            item["id"] = org_unit.id
-            item["org_unit_name"] = org_unit.name
-            item["org_unit_parent_name"] = org_unit.parent.name
-            item["org_unit_parent_of_parent_name"] = org_unit.parent.parent.name
-            item["obr_name"] = campaign.obr_name
-            item["round_number"] = "R" + str(round.number)
-            org_units_list.append(item)
+        for scope in scopes.all():
+            for org_unit in scope.group.org_units.all():
+                item = {}
+                item["id"] = org_unit.id
+                item["org_unit_name"] = org_unit.name
+                item["org_unit_parent_name"] = org_unit.parent.name
+                item["org_unit_parent_of_parent_name"] = org_unit.parent.parent.name
+                item["obr_name"] = campaign.obr_name
+                item["round_number"] = "R" + str(round.number)
+                item["vaccine"] = scope.vaccine
+                org_units_list.append(item)
 
         filename = "%s-%s--%s--%s-%s" % (
             "campaign",
@@ -986,6 +995,7 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
             {"title": "Admin 0", "width": 25},
             {"title": "OBR Name", "width": 25},
             {"title": "Round Number", "width": 35},
+            {"title": "Vaccine", "width": 35},
         ]
 
         def get_row(org_unit, **kwargs):
@@ -996,6 +1006,7 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
                 org_unit.get("org_unit_parent_of_parent_name"),
                 org_unit.get("obr_name"),
                 org_unit.get("round_number"),
+                org_unit.get("vaccine"),
             ]
             return campaign_scope_values
 
@@ -1004,6 +1015,7 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
         )
         filename = filename + ".csv"
         response["Content-Disposition"] = "attachment; filename=%s" % filename
+
         return response
 
     @staticmethod

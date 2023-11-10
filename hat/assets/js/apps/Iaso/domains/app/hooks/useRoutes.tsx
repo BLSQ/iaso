@@ -171,7 +171,6 @@ const useGetRoutesConfigs = (userHomePage?: string): RouteCustom[] => {
 
 export const useRoutes = (userHomePage?: string): Result => {
     const hasNoAccount = useHasNoAccount();
-    const homeUrl = useHomeUrl();
     const routesConfigs = useGetRoutesConfigs(userHomePage);
 
     const protectedRoutes = useGetProtectedRoutes(routesConfigs, hasNoAccount);
@@ -184,7 +183,7 @@ export const useRoutes = (userHomePage?: string): Result => {
     const redirections = useRedirections(
         hasNoAccount,
         isFetchingCurrentUser,
-        userHomePage || homeUrl,
+        userHomePage,
     );
 
     // routes should only change if currentUser has changed

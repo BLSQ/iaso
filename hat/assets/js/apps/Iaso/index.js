@@ -29,6 +29,7 @@ export default function iasoApp(
     userHomePage,
 ) {
     const plugins = getPlugins(enabledPluginsName);
+    const activeHomePage = userHomePage || last(plugins)?.homeUrl;
     ReactDOM.render(
         <QueryClientProvider client={queryClient}>
             <PluginsContext.Provider value={{ plugins }}>
@@ -40,7 +41,7 @@ export default function iasoApp(
                         <Provider store={store}>
                             <App
                                 history={history}
-                                userHomePage={userHomePage}
+                                userHomePage={activeHomePage}
                             />
                         </Provider>
                     </MuiThemeProvider>

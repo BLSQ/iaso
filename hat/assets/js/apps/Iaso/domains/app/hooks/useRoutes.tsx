@@ -53,20 +53,6 @@ export const useHomeOfflineComponent = (): ElementType | undefined => {
     );
 };
 
-const useHomeUrl = (): string | undefined => {
-    const { plugins }: Plugins = useContext(PluginsContext);
-    // using the last plugin override (arbitrary choice)
-    return useMemo(
-        () =>
-            last(
-                plugins
-                    .filter(plugin => plugin.homeUrl)
-                    .map(plugin => plugin.homeUrl),
-            ),
-        [plugins],
-    );
-};
-
 const useHomeOnlineRoute = (userHomePage?: string): RouteCustom[] => {
     const HomeComponent = useHomeOnlineComponent();
     if (!HomeComponent || userHomePage) {

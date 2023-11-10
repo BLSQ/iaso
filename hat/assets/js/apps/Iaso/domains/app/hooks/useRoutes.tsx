@@ -53,20 +53,6 @@ export const useHomeOfflineComponent = (): ElementType | undefined => {
     );
 };
 
-const useHomeUrl = (): string | undefined => {
-    const { plugins }: Plugins = useContext(PluginsContext);
-    // using the last plugin override (arbitrary choice)
-    return useMemo(
-        () =>
-            last(
-                plugins
-                    .filter(plugin => plugin.homeUrl)
-                    .map(plugin => plugin.homeUrl),
-            ),
-        [plugins],
-    );
-};
-
 const useHomeOnlineRoute = (userHomePage?: string): RouteCustom[] => {
     const HomeComponent = useHomeOnlineComponent();
     if (!HomeComponent || userHomePage) {
@@ -185,7 +171,6 @@ const useGetRoutesConfigs = (userHomePage?: string): RouteCustom[] => {
 
 export const useRoutes = (userHomePage?: string): Result => {
     const hasNoAccount = useHasNoAccount();
-    const homeUrl = useHomeUrl();
     const routesConfigs = useGetRoutesConfigs(userHomePage);
 
     const protectedRoutes = useGetProtectedRoutes(routesConfigs, hasNoAccount);
@@ -198,7 +183,7 @@ export const useRoutes = (userHomePage?: string): Result => {
     const redirections = useRedirections(
         hasNoAccount,
         isFetchingCurrentUser,
-        userHomePage || homeUrl,
+        userHomePage,
     );
 
     // routes should only change if currentUser has changed

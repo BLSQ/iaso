@@ -56,7 +56,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
             <Box mb={4}>
                 <Typography variant="h5">Vaccine request form</Typography>
             </Box>
-            <Grid container spacing={2}>
+            <Grid container>
                 <Grid container item xs={12} spacing={2}>
                     <Grid item xs={6} md={3}>
                         <Field

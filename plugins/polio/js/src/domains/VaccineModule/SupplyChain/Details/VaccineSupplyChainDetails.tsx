@@ -4,6 +4,7 @@ import React, {
     useCallback,
     useEffect,
     useMemo,
+    useState,
 } from 'react';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { Box, Button, Grid, Tab, Tabs, makeStyles } from '@material-ui/core';
@@ -68,6 +69,7 @@ export type PreAlert = {
     doses_shipped: number;
     doses_recieved: number;
     doses_per_vial: number;
+    to_delete?: boolean;
 };
 
 export type VAR = {
@@ -77,11 +79,12 @@ export type VAR = {
     lot_number: number;
     expiration_date: string; // date in string form
     doses_shipped: number;
-    doses_recieved: number;
+    doses_received: number;
     doses_per_vial: number;
+    to_delete?: boolean;
 };
 
-type FormData = {
+export type SupplyChainFormData = {
     vrf: Optional<Partial<VRF>>;
     pre_alerts: Optional<Partial<PreAlert>[]>;
     vars: Optional<Partial<VAR>[]>;
@@ -112,6 +115,14 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
         defaultTab: initialTab,
         baseUrl: VACCINE_SUPPLY_CHAIN_DETAILS,
     });
+    const [initialValues, setInitialValues] = useState<any>({
+        vrf: undefined,
+        pre_alerts: undefined,
+        vars: undefined,
+        activeTab: initialTab,
+        saveAll: false,
+        touchedTabs: [],
+    });
     const dispatch = useDispatch();
     const { data: vrfDetails, isFetching } = useGetVrfDetails(router.params.id);
     const { data: preAlerts, isFetching: isFetchingPreAlerts } =
@@ -121,31 +132,20 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
     // TODO Check if id and change style accordingly
     const { mutateAsync: saveForm, isLoading: isSaving } =
         useSaveVaccineSupplyChainForm();
-    const formik = useFormik<FormData>({
-        initialValues: {
-            vrf: undefined,
-            pre_alerts: undefined,
-            vars: undefined,
-            activeTab: initialTab,
-            saveAll: false,
-            touchedTabs: [],
-        },
+    const formik = useFormik<SupplyChainFormData>({
+        initialValues,
+        enableReinitialize: true,
         onSubmit: () => undefined,
     });
     const { setFieldValue, values, touched, errors, isValid, isSubmitting } =
         formik;
-
     const handleSubmit = useCallback(
         (saveAll = false) => {
             formik.submitForm();
             saveForm(
                 { ...values, saveAll },
                 {
-                    onSuccess: (data, variables, context) => {
-                        console.log('DATA', data);
-                        console.log('VARIABLES', variables);
-                        console.log('CONTEXT', context);
-
+                    onSuccess: (data, variables: SupplyChainFormData) => {
                         // if POST request , redirect to replace
                         if (!router.params.id) {
                             dispatch(
@@ -157,8 +157,37 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
                                 ),
                             );
                         } else {
-                            formik.setTouched({});
+                            const newValues = { ...formik.values };
+                            if (variables.saveAll) {
+                                variables.touchedTabs.forEach(touchedTab => {
+                                    if (touchedTab === VRF) {
+                                        newValues[touchedTab] =
+                                            variables[touchedTab];
+                                    } else {
+                                        const newField = variables[
+                                            touchedTab
+                                        ]?.filter(value => !value.to_delete);
+                                        // setFieldValue(touchedTab, newField);
+                                        newValues[touchedTab] = newField;
+                                    }
+                                });
+                            } else {
+                                const { activeTab } = variables;
+                                const fieldVariable = variables[activeTab];
+                                if (activeTab === VRF) {
+                                    newValues[activeTab] = fieldVariable;
+                                } else {
+                                    const newFieldValue = (
+                                        fieldVariable as
+                                            | Partial<PreAlert>[]
+                                            | Partial<VAR>[]
+                                    )?.filter(value => !value.to_delete);
+                                    newValues[activeTab] = newFieldValue;
+                                }
+                            }
                             formik.setErrors({});
+                            formik.setTouched({});
+                            setInitialValues(newValues);
                         }
                     },
                     onSettled: () => {
@@ -177,8 +206,10 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
         },
         [formik, handleChangeTab],
     );
+    const onCancel = useCallback(() => {
+        formik.resetForm();
+    }, [formik]);
 
-    console.log('FORMIK', formik, touched);
     // TODO refine enabled condition
     const title = useTopBarTitle(vrfDetails);
     const allowSaveAll =
@@ -214,7 +245,6 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
     useEffect(() => {
         setFieldValue('touchedTabs', touchedTabs);
     }, [setFieldValue, touchedTabs]);
-
     return (
         <FormikProvider value={formik}>
             <TopBar title={title} displayBackButton goBack={goBack}>
@@ -257,11 +287,11 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
                     className={
                         tab !== PREALERT ? classes.inactiveTab : undefined
                     }
-                    router={router}
+                    items={values.pre_alerts}
                 />
                 <VaccineArrivalReports
                     className={tab !== VAR ? classes.inactiveTab : undefined}
-                    router={router}
+                    items={values.vars}
                 />
                 <Grid container spacing={2} justifyContent="flex-end">
                     <Box ml={2} mt={4}>
@@ -269,9 +299,7 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
                             variant="contained"
                             className={classes.button}
                             color="primary"
-                            onClick={() => {
-                                formik.resetForm();
-                            }}
+                            onClick={onCancel}
                         >
                             {formatMessage(MESSAGES.cancel)}
                         </Button>

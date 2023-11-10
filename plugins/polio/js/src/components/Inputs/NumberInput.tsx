@@ -9,6 +9,7 @@ type Props = {
     form: Record<string, any>;
     min?: number;
     max?: number;
+    disabled?: boolean;
 };
 
 export const NumberInput: FunctionComponent<Props> = ({
@@ -17,6 +18,7 @@ export const NumberInput: FunctionComponent<Props> = ({
     form,
     min,
     max,
+    disabled = false,
 }) => {
     const hasError =
         form.errors &&
@@ -35,6 +37,7 @@ export const NumberInput: FunctionComponent<Props> = ({
             min={min}
             max={max}
             errors={hasError ? [get(form.errors, field.name)] : []}
+            disabled={disabled}
         />
     );
 };

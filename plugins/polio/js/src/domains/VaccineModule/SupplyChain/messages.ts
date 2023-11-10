@@ -106,6 +106,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.createVrf',
         defaultMessage: 'Create VRF',
     },
+    markForDeletion: {
+        id: 'iaso.polio.label.markForDeletion',
+        defaultMessage: 'Mark for deletion',
+    },
+    cancelDeletion: {
+        id: 'iaso.polio.label.cancelDeletion',
+        defaultMessage: 'Cancel deletion',
+    },
 });
 
 export default MESSAGES;

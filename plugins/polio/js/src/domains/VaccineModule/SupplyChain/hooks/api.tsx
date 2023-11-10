@@ -88,23 +88,47 @@ export const useGetCountriesOptions = (enabled = true) => {
 const saveVars = async supplyChainData => {
     const toCreate: any = [];
     const toUpdate: any = [];
+    const toDelete: any = [];
     supplyChainData.vars.forEach(arrivalReport => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { to_delete, ...dataToPass } = arrivalReport;
         if (arrivalReport.id) {
-            toUpdate.push(arrivalReport);
-        } else {
-            toCreate.push(arrivalReport);
+            if (!to_delete) {
+                toUpdate.push(dataToPass);
+            } else {
+                toDelete.push(dataToPass);
+            }
+        } else if (!to_delete) {
+            // Temporary solution to handle users creating then deleting prealerts in the UI
+            toCreate.push(dataToPass);
         }
     });
 
-    const updated = await patchRequest(
-        `${apiUrl}${supplyChainData.vrf.id}/update_arrival_reports/`,
-        { arrival_reports: toUpdate },
-    );
+    const updated =
+        toUpdate.length > 0
+            ? await patchRequest(
+                  `${apiUrl}${supplyChainData.vrf.id}/update_arrival_reports/`,
+                  { arrival_reports: toUpdate },
+              )
+            : { arrival_reports: [] };
 
-    const created = await postRequest(
-        `${apiUrl}${supplyChainData.vrf.id}/add_arrival_reports/`,
-        { arrival_reports: toCreate },
-    );
+    const created =
+        toCreate.length > 0
+            ? await postRequest(
+                  `${apiUrl}${supplyChainData.vrf.id}/add_arrival_reports/`,
+                  { arrival_reports: toCreate },
+              )
+            : { arrival_reports: [] };
+
+    console.log('Arrival reports to delete', toDelete);
+
+    // const deleted =
+    //     toDelete.length > 0
+    //         ? await postRequest(
+    //               `${apiUrl}${supplyChainData.vrf.id}/delete_pre_alerts/`,
+    //               { pre_alerts: toDelete },
+    //           )
+    //         : undefined;
 
     return {
         arrival_reports: [
@@ -117,23 +141,47 @@ const savePreAlerts = async supplyChainData => {
     const { pre_alerts } = supplyChainData;
     const toCreate: any = [];
     const toUpdate: any = [];
+    const toDelete: any = [];
     pre_alerts.forEach(preAlert => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { to_delete, ...dataToPass } = preAlert;
         if (preAlert.id) {
-            toUpdate.push(preAlert);
-        } else {
-            toCreate.push(preAlert);
+            if (!to_delete) {
+                toUpdate.push(dataToPass);
+            } else {
+                toDelete.push(dataToPass);
+            }
+        } else if (!to_delete) {
+            // Temporary solution to handle users creating then deleting prealerts in the UI
+            toCreate.push(dataToPass);
         }
     });
 
-    const updated = await patchRequest(
-        `${apiUrl}${supplyChainData.vrf.id}/update_pre_alerts/`,
-        { pre_alerts: toUpdate },
-    );
+    const updated =
+        toUpdate.length > 0
+            ? await patchRequest(
+                  `${apiUrl}${supplyChainData.vrf.id}/update_pre_alerts/`,
+                  { pre_alerts: toUpdate },
+              )
+            : { pre_alerts: [] };
 
-    const created = await postRequest(
-        `${apiUrl}${supplyChainData.vrf.id}/add_pre_alerts/`,
-        { pre_alerts: toCreate },
-    );
+    const created =
+        toCreate.length > 0
+            ? await postRequest(
+                  `${apiUrl}${supplyChainData.vrf.id}/add_pre_alerts/`,
+                  { pre_alerts: toCreate },
+              )
+            : { pre_alerts: [] };
+
+    console.log('PreAlerts to delete', toDelete);
+
+    // const deleted =
+    //     toDelete.length > 0
+    //         ? await postRequest(
+    //               `${apiUrl}${supplyChainData.vrf.id}/delete_pre_alerts/`,
+    //               { pre_alerts: toDelete },
+    //           )
+    //         : undefined;
 
     return { prealert: [...updated.pre_alerts, ...created.pre_alerts] };
 };

@@ -8,14 +8,12 @@ import { DateInput } from '../../../../../components/Inputs/DateInput';
 import { NumberInput } from '../../../../../components/Inputs';
 import { TextArea } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/forms/TextArea';
 import { useCampaignDropDowns, useGetCountriesOptions } from '../../hooks/api';
-import { Router } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/general';
 
-type Props = { className?: string; router: Router; vrfData: any };
+type Props = { className?: string; vrfData: any };
 const useStyles = makeStyles(theme => ({ ...commonStyles(theme) }));
 
 export const VaccineRequestForm: FunctionComponent<Props> = ({
     className,
-    router,
     vrfData,
 }) => {
     const classes: Record<string, string> = useStyles();
@@ -24,8 +22,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
         useGetCountriesOptions();
     const vrfDataComment = vrfData?.comment;
     // TODO manage errors, allowConfirm
-    const { values, setFieldTouched, setFieldValue, errors } =
-        useFormikContext<any>();
+    const { values, setFieldTouched, setFieldValue } = useFormikContext<any>();
     const {
         campaigns,
         vaccines,
@@ -98,7 +95,6 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                         />
                     </Grid>
                     <Grid item xs={6} md={3}>
-                        {/* TODO handle values */}
                         <Field
                             label="Rounds"
                             name="vrf.rounds"

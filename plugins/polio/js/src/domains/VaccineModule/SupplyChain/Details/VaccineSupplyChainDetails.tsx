@@ -6,9 +6,13 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import {
+    LoadingSpinner,
+    commonStyles,
+    useSafeIntl,
+} from 'bluesquare-components';
 import { Box, Button, Grid, Tab, Tabs, makeStyles } from '@material-ui/core';
-import { FormikProvider, useFormik } from 'formik';
+import { FormikErrors, FormikProvider, useFormik } from 'formik';
 import classNames from 'classnames';
 import { useDispatch } from 'react-redux';
 import { isEqual } from 'lodash';
@@ -129,7 +133,6 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
         useGetPreAlertDetails(router.params.id);
     const { data: arrivalReports, isFetching: isFetchingArrivalReports } =
         useGetArrivalReportsDetails(router.params.id);
-    // TODO Check if id and change style accordingly
     const { mutateAsync: saveForm, isLoading: isSaving } =
         useSaveVaccineSupplyChainForm();
     const formik = useFormik<SupplyChainFormData>({
@@ -167,14 +170,18 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
                                         const newField = variables[
                                             touchedTab
                                         ]?.filter(value => !value.to_delete);
-                                        // setFieldValue(touchedTab, newField);
+                                        // @ts-ignore
                                         newValues[touchedTab] = newField;
                                     }
                                 });
+                                setInitialValues(newValues);
+                                formik.setErrors({});
+                                formik.setTouched({});
                             } else {
                                 const { activeTab } = variables;
                                 const fieldVariable = variables[activeTab];
                                 if (activeTab === VRF) {
+                                    // @ts-ignore
                                     newValues[activeTab] = fieldVariable;
                                 } else {
                                     const newFieldValue = (
@@ -182,12 +189,22 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
                                             | Partial<PreAlert>[]
                                             | Partial<VAR>[]
                                     )?.filter(value => !value.to_delete);
+                                    // @ts-ignore
                                     newValues[activeTab] = newFieldValue;
                                 }
+                                setInitialValues(newValues);
+                                const newErrors: FormikErrors<SupplyChainFormData> =
+                                    { ...formik.errors };
+                                delete newErrors[activeTab];
+                                formik.setErrors(newErrors);
+                                const newTouched = {
+                                    ...formik.touched,
+                                };
+                                delete newTouched[activeTab];
+                                delete newTouched.saveAll;
+                                delete newTouched.activeTab;
+                                formik.setTouched(newTouched);
                             }
-                            formik.setErrors({});
-                            formik.setTouched({});
-                            setInitialValues(newValues);
                         }
                     },
                     onSettled: () => {
@@ -198,7 +215,6 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
         },
         [dispatch, formik, router.params.id, saveForm, values],
     );
-
     const onChangeTab = useCallback(
         (_event, newTab) => {
             handleChangeTab(_event, newTab);
@@ -209,7 +225,6 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
     const onCancel = useCallback(() => {
         formik.resetForm();
     }, [formik]);
-
     // TODO refine enabled condition
     const title = useTopBarTitle(vrfDetails);
     const allowSaveAll =
@@ -221,6 +236,8 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
     const allowSaveTab =
         isTabTouched && isTabValid && !isSaving && !isSubmitting;
 
+    const isLoading =
+        isFetchingArrivalReports || isFetchingPreAlerts || isFetching;
     // Using formik's enableReinitialize would cause touched, errors etc to reset when changing tabs
     // So we set values with useEffect once data has been fetched.
     useEffect(() => {
@@ -278,57 +295,67 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
                 </Tabs>
             </TopBar>
             <Box className={classNames(classes.containerFullHeightPadded)}>
-                <VaccineRequestForm
-                    className={tab !== VRF ? classes.inactiveTab : undefined}
-                    router={router}
-                    vrfData={vrfDetails}
-                />
-                <PreAlerts
-                    className={
-                        tab !== PREALERT ? classes.inactiveTab : undefined
-                    }
-                    items={values.pre_alerts}
-                />
-                <VaccineArrivalReports
-                    className={tab !== VAR ? classes.inactiveTab : undefined}
-                    items={values.vars}
-                />
-                <Grid container spacing={2} justifyContent="flex-end">
-                    <Box ml={2} mt={4}>
-                        <Button
-                            variant="contained"
-                            className={classes.button}
-                            color="primary"
-                            onClick={onCancel}
-                        >
-                            {formatMessage(MESSAGES.cancel)}
-                        </Button>
-                    </Box>
-                    <Box ml={2} mt={4}>
-                        <Button
-                            variant="contained"
-                            className={classes.button}
-                            color="primary"
-                            onClick={() => handleSubmit()}
-                            disabled={!allowSaveTab}
-                        >
-                            {`${formatMessage(MESSAGES.save)} ${formatMessage(
-                                MESSAGES[tab],
-                            )}`}
-                        </Button>
-                    </Box>
-                    <Box ml={2} mt={4}>
-                        <Button
-                            variant="contained"
-                            className={classes.button}
-                            color="primary"
-                            disabled={!allowSaveAll}
-                            onClick={() => handleSubmit(true)}
-                        >
-                            {formatMessage(MESSAGES.saveAll)}
-                        </Button>
-                    </Box>
-                </Grid>
+                {isLoading && <LoadingSpinner />}
+                {!isLoading && (
+                    <>
+                        <VaccineRequestForm
+                            className={
+                                tab !== VRF ? classes.inactiveTab : undefined
+                            }
+                            vrfData={vrfDetails}
+                        />
+                        <PreAlerts
+                            className={
+                                tab !== PREALERT
+                                    ? classes.inactiveTab
+                                    : undefined
+                            }
+                            items={values.pre_alerts}
+                        />
+                        <VaccineArrivalReports
+                            className={
+                                tab !== VAR ? classes.inactiveTab : undefined
+                            }
+                            items={values.vars}
+                        />
+                        <Grid container spacing={2} justifyContent="flex-end">
+                            <Box ml={2} mt={4}>
+                                <Button
+                                    variant="contained"
+                                    className={classes.button}
+                                    color="primary"
+                                    onClick={onCancel}
+                                >
+                                    {formatMessage(MESSAGES.cancel)}
+                                </Button>
+                            </Box>
+                            <Box ml={2} mt={4}>
+                                <Button
+                                    variant="contained"
+                                    className={classes.button}
+                                    color="primary"
+                                    onClick={() => handleSubmit()}
+                                    disabled={!allowSaveTab}
+                                >
+                                    {`${formatMessage(
+                                        MESSAGES.save,
+                                    )} ${formatMessage(MESSAGES[tab])}`}
+                                </Button>
+                            </Box>
+                            <Box ml={2} mt={4}>
+                                <Button
+                                    variant="contained"
+                                    className={classes.button}
+                                    color="primary"
+                                    disabled={!allowSaveAll}
+                                    onClick={() => handleSubmit(true)}
+                                >
+                                    {formatMessage(MESSAGES.saveAll)}
+                                </Button>
+                            </Box>
+                        </Grid>
+                    </>
+                )}
             </Box>
         </FormikProvider>
     );

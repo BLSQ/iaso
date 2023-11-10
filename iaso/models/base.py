@@ -906,9 +906,7 @@ class Instance(models.Model):
     device = models.ForeignKey("Device", null=True, blank=True, on_delete=models.DO_NOTHING)
     period = models.TextField(null=True, blank=True, db_index=True)
     entity = models.ForeignKey("Entity", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="instances")
-    planning = models.ForeignKey(
-        "Planning", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="instances"
-    )
+    planning = models.ForeignKey("Planning", null=True, blank=True, on_delete=models.SET_NULL, related_name="instances")
     form_version = models.ForeignKey(
         "FormVersion", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="form_version"
     )

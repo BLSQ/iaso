@@ -5,7 +5,7 @@ import {
 } from 'bluesquare-components';
 import moment from 'moment';
 
-import { apiDateFormats, getLocaleDateFormat } from '../../utils/dates';
+import { apiDateFormats } from '../../utils/dates';
 /* DateTimeCell
    For use in Table's columns to display DateTime
  */
@@ -13,14 +13,10 @@ export const DateTimeCell = (cellInfo: { value?: number | null }): string =>
     cellInfo.value ? displayDateFromTimestamp(cellInfo.value) : textPlaceholder;
 
 export const DateTimeCellRfc = (cellInfo: { value?: string | null }): string =>
-    cellInfo.value
-        ? moment(cellInfo.value).format(getLocaleDateFormat('LTS'))
-        : textPlaceholder;
+    cellInfo.value ? moment(cellInfo.value).format('LTS') : textPlaceholder;
 
 export const DateCell = (cellInfo: { value?: string | null }): string =>
-    cellInfo.value
-        ? moment(cellInfo.value).format(getLocaleDateFormat('L'))
-        : textPlaceholder;
+    cellInfo.value ? moment(cellInfo.value).format('L') : textPlaceholder;
 
 export const convertValueIfDate = (value: unknown): string | unknown => {
     if (typeof value !== 'string') {

@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('polio', '0150_vaccinearrivalreport_vaccineprealert_vaccinerequestform'),
+        ("polio", "0150_vaccinearrivalreport_vaccineprealert_vaccinerequestform"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='vaccinerequestform',
-            name='country',
+            model_name="vaccinerequestform",
+            name="country",
         ),
     ]

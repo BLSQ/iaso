@@ -202,13 +202,13 @@ const saveSupplyChainForm = async (supplyChainData: any) => {
         let vars;
         const response: any = {};
         // update all tabs
-        if (supplyChainData.touchedTabs.includes(VRF)) {
+        if (supplyChainData.changedTabs.includes(VRF)) {
             vrf = await mockSaveVrf(supplyChainData.vrf);
         }
-        if (supplyChainData.touchedTabs.includes(PREALERT)) {
+        if (supplyChainData.changedTabs.includes(PREALERT)) {
             pre_alerts = await savePreAlerts(supplyChainData);
         }
-        if (supplyChainData.touchedTabs.includes(VAR)) {
+        if (supplyChainData.changedTabs.includes(VAR)) {
             vars = await saveVars(supplyChainData);
         }
         // build response

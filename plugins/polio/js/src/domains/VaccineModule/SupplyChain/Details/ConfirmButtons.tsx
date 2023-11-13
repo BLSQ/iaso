@@ -1,0 +1,66 @@
+import React, { FunctionComponent } from 'react';
+import { Box, Button } from '@material-ui/core';
+import { useSafeIntl } from 'bluesquare-components';
+import MESSAGES from '../messages';
+import { TabValue } from './VaccineSupplyChainDetails';
+
+type Props = {
+    tab: TabValue;
+    onCancel: () => void;
+    className: string;
+    onSubmitTab: () => void;
+    onSubmitAll: () => void;
+    allowSaveTab: boolean;
+    allowSaveAll: boolean;
+};
+
+export const VaccineSupplyChainConfirmButtons: FunctionComponent<Props> = ({
+    className,
+    tab,
+    onSubmitTab,
+    onSubmitAll,
+    onCancel,
+    allowSaveTab,
+    allowSaveAll,
+}) => {
+    const { formatMessage } = useSafeIntl();
+
+    return (
+        <>
+            <Box ml={2} mt={4}>
+                <Button
+                    variant="contained"
+                    className={className}
+                    color="primary"
+                    onClick={onCancel}
+                >
+                    {formatMessage(MESSAGES.cancel)}
+                </Button>
+            </Box>
+            <Box ml={2} mt={4}>
+                <Button
+                    variant="contained"
+                    className={className}
+                    color="primary"
+                    onClick={onSubmitTab}
+                    disabled={!allowSaveTab}
+                >
+                    {`${formatMessage(MESSAGES.save)} ${formatMessage(
+                        MESSAGES[tab],
+                    )}`}
+                </Button>
+            </Box>
+            <Box ml={2} mt={4}>
+                <Button
+                    variant="contained"
+                    className={className}
+                    color="primary"
+                    disabled={!allowSaveAll}
+                    onClick={onSubmitAll}
+                >
+                    {formatMessage(MESSAGES.saveAll)}
+                </Button>
+            </Box>
+        </>
+    );
+};

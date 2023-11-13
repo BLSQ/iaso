@@ -3,7 +3,6 @@ import React, {
     FunctionComponent,
     useCallback,
     useEffect,
-    useMemo,
     useState,
 } from 'react';
 import {
@@ -11,7 +10,7 @@ import {
     commonStyles,
     useSafeIntl,
 } from 'bluesquare-components';
-import { Box, Button, Grid, Tab, Tabs, makeStyles } from '@material-ui/core';
+import { Box, Grid, Tab, Tabs, makeStyles } from '@material-ui/core';
 import { FormikErrors, FormikProvider, useFormik } from 'formik';
 import classNames from 'classnames';
 import { useDispatch } from 'react-redux';
@@ -38,6 +37,7 @@ import { Vaccine } from '../../../../constants/types';
 import { Optional } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { PreAlerts } from './PreAlerts/PreAlerts';
 import { VaccineArrivalReports } from './VAR/VaccineArrivalReports';
+import { VaccineSupplyChainConfirmButtons } from './ConfirmButtons';
 
 export const VRF = 'vrf';
 export const VAR = 'vars';
@@ -94,7 +94,7 @@ export type SupplyChainFormData = {
     vars: Optional<Partial<VAR>[]>;
     activeTab: TabValue;
     saveAll: boolean;
-    touchedTabs: TabValue[];
+    changedTabs: TabValue[];
 };
 type Props = { router: Router };
 
@@ -122,7 +122,7 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
         vars: undefined,
         activeTab: initialTab,
         saveAll: false,
-        touchedTabs: [],
+        changedTabs: [],
     });
     const dispatch = useDispatch();
     const { data: vrfDetails, isFetching } = useGetVrfDetails(router.params.id);
@@ -159,7 +159,7 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
                         } else {
                             const newValues = { ...formik.values };
                             if (variables.saveAll) {
-                                variables.touchedTabs.forEach(touchedTab => {
+                                variables.changedTabs.forEach(touchedTab => {
                                     if (touchedTab === VRF) {
                                         newValues[touchedTab] =
                                             variables[touchedTab];
@@ -235,7 +235,6 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
 
     const isTabTouched = Boolean(touched[tab]);
     const isTabValid = !errors[tab];
-    // TODO add check that a new values are different from fetched ones.
     const allowSaveTab =
         isTabTouched &&
         isTabValid &&
@@ -271,7 +270,7 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
     useEffect(() => {
         if (vrfDetails && !values.vrf) {
             setFieldValue('vrf', vrfDetails);
-            // set InitialValues so we can compare with form values and enables/disabel dave button accordingly
+            // set initialValues so we can compare with form values and enables/disable save button accordingly
             setInitialValues({
                 ...initialValues,
                 vrf: vrfDetails,
@@ -279,12 +278,28 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
         }
     }, [vrfDetails, setFieldValue, values.vrf, initialValues]);
 
-    const touchedTabs = useMemo(() => Object.keys(touched), [touched]);
+    // defining the booleans here to avoid having formik.values as dependency of useEffect, which would cause an infinite loop
+    const vrfChanged = !isEqual(initialValues[VRF], values[VRF]);
+    const preAlertsChanged = !isEqual(
+        initialValues[PREALERT],
+        values[PREALERT],
+    );
+    const varsChanged = !isEqual(initialValues[VAR], values[VAR]);
 
-    // list touched tabs to avoid patching untouched tabs
+    // list changed tabs to avoid patching unchanged tabs
     useEffect(() => {
-        setFieldValue('touchedTabs', touchedTabs);
-    }, [setFieldValue, touchedTabs]);
+        const changedTabs: TabValue[] = [];
+        if (vrfChanged) {
+            changedTabs.push(VRF);
+        }
+        if (preAlertsChanged) {
+            changedTabs.push(PREALERT);
+        }
+        if (varsChanged) {
+            changedTabs.push(VAR);
+        }
+        setFieldValue('changedTabs', changedTabs);
+    }, [preAlertsChanged, setFieldValue, varsChanged, vrfChanged]);
 
     return (
         <FormikProvider value={formik}>
@@ -332,40 +347,15 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
                             <VaccineArrivalReports items={values.vars} />
                         )}
                         <Grid container spacing={2} justifyContent="flex-end">
-                            <Box ml={2} mt={4}>
-                                <Button
-                                    variant="contained"
-                                    className={classes.button}
-                                    color="primary"
-                                    onClick={onCancel}
-                                >
-                                    {formatMessage(MESSAGES.cancel)}
-                                </Button>
-                            </Box>
-                            <Box ml={2} mt={4}>
-                                <Button
-                                    variant="contained"
-                                    className={classes.button}
-                                    color="primary"
-                                    onClick={() => handleSubmit()}
-                                    disabled={!allowSaveTab}
-                                >
-                                    {`${formatMessage(
-                                        MESSAGES.save,
-                                    )} ${formatMessage(MESSAGES[tab])}`}
-                                </Button>
-                            </Box>
-                            <Box ml={2} mt={4}>
-                                <Button
-                                    variant="contained"
-                                    className={classes.button}
-                                    color="primary"
-                                    disabled={!allowSaveAll}
-                                    onClick={() => handleSubmit(true)}
-                                >
-                                    {formatMessage(MESSAGES.saveAll)}
-                                </Button>
-                            </Box>
+                            <VaccineSupplyChainConfirmButtons
+                                className={classes.button}
+                                tab={tab}
+                                onSubmitTab={() => handleSubmit()}
+                                onSubmitAll={() => handleSubmit(true)}
+                                onCancel={onCancel}
+                                allowSaveTab={allowSaveTab}
+                                allowSaveAll={allowSaveAll}
+                            />
                         </Grid>
                     </>
                 )}

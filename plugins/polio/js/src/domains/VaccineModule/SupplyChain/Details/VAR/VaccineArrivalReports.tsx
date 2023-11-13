@@ -1,7 +1,11 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Grid, Typography } from '@material-ui/core';
 import { useFormikContext } from 'formik';
-import { AddButton, useSafeIntl } from 'bluesquare-components';
+import {
+    AddButton,
+    MENU_HEIGHT_WITH_TABS,
+    useSafeIntl,
+} from 'bluesquare-components';
 import { VaccineArrivalReport } from './VaccineArrivalReport';
 import MESSAGES from '../../messages';
 
@@ -45,9 +49,16 @@ export const VaccineArrivalReports: FunctionComponent<Props> = ({
                     </Box>
                 </Grid>
             </Box>
-            {items.map((_, index) => {
-                return <VaccineArrivalReport index={index} key={index} />;
-            })}
+            <Box
+                style={{
+                    height: `calc(100vh - ${MENU_HEIGHT_WITH_TABS + 200}px)`,
+                    overflow: 'scroll',
+                }}
+            >
+                {items.map((_, index) => {
+                    return <VaccineArrivalReport index={index} key={index} />;
+                })}
+            </Box>
         </Box>
     );
 };

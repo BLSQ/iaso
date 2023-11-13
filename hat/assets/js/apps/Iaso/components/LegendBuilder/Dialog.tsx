@@ -5,8 +5,10 @@ import {
     makeFullModal,
     ConfirmCancelModal,
     AddButton,
-    IconButton,
+    useSafeIntl,
 } from 'bluesquare-components';
+import SettingsIcon from '@material-ui/icons/Settings';
+import IconButton from '@material-ui/core/IconButton';
 
 import { MESSAGES } from './messages';
 import { ScaleThreshold } from './types';
@@ -65,12 +67,15 @@ type PropsIcon = {
 };
 
 export const EditIconButton: FunctionComponent<PropsIcon> = ({ onClick }) => {
+    const { formatMessage } = useSafeIntl();
     return (
         <IconButton
             onClick={onClick}
-            icon="edit"
-            tooltipMessage={MESSAGES.edit}
-        />
+            aria-label={formatMessage(MESSAGES.edit)}
+            size="small"
+        >
+            <SettingsIcon />
+        </IconButton>
     );
 };
 

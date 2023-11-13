@@ -8,7 +8,6 @@ import { Theme, createStyles } from '@material-ui/core/styles';
 
 import { History } from '@material-ui/icons';
 import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
-import { isEmpty } from 'lodash';
 import { baseUrls } from '../../../constants/urls';
 import InputComponent from '../../../components/forms/InputComponent';
 import {
@@ -23,12 +22,8 @@ import { formatLabel } from '../../instances/utils';
 import { periodTypeOptions } from '../../periods/constants';
 import MESSAGES from '../messages';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
-import {
-    AddLegendDialog,
-    EditLegendDialog,
-} from '../../../components/LegendBuilder/Dialog';
-import { Legend } from '../../../components/LegendBuilder/Legend';
 import { FormDataType } from '../types/forms';
+import { FormLegendInput } from './FormLegendInput';
 
 const styles = (theme: Theme) =>
     createStyles({
@@ -56,12 +51,12 @@ const formatBooleanForRadio = value => {
     return null;
 };
 
-interface FormFormProps {
+type FormFormProps = {
     currentForm: FormDataType;
     // eslint-disable-next-line no-unused-vars
     setFieldValue: (key: string, value: any) => void;
     isFormLoading: boolean;
-}
+};
 
 const FormForm: FunctionComponent<FormFormProps> = ({
     currentForm,
@@ -69,7 +64,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
     isFormLoading,
 }) => {
     const classes = useStyles();
-    const intl = useSafeIntl();
+    const { formatMessage } = useSafeIntl();
     const [showAdvancedSettings, setshowAdvancedSettings] = useState(false);
 
     const { data: allProjects, isFetching: isFetchingProjects } =
@@ -176,7 +171,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                                 errors={
                                     currentForm.single_per_period.value === null
                                         ? [
-                                              intl.formatMessage(
+                                              formatMessage(
                                                   MESSAGES.singlePerPeriodSelect,
                                               ),
                                           ]
@@ -185,11 +180,11 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                                 type="radio"
                                 options={[
                                     {
-                                        label: intl.formatMessage(MESSAGES.yes),
+                                        label: formatMessage(MESSAGES.yes),
                                         value: 'true',
                                     },
                                     {
-                                        label: intl.formatMessage(MESSAGES.no),
+                                        label: formatMessage(MESSAGES.no),
                                         value: 'false',
                                     },
                                 ]}
@@ -197,51 +192,13 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                                 label={MESSAGES.singlePerPeriod}
                             />
                         </Grid>
-                        <Grid item xs={6}>
-                            {!isFormLoading && (
-                                <>
-                                    {!isEmpty(
-                                        currentForm.legend_threshold.value,
-                                    ) && (
-                                        <Box position="relative">
-                                            <EditLegendDialog
-                                                iconProps={{}}
-                                                titleMessage={MESSAGES.edit}
-                                                threshold={
-                                                    currentForm.legend_threshold
-                                                        .value
-                                                }
-                                                onConfirm={newThreshold =>
-                                                    setFieldValue(
-                                                        'legend_threshold',
-                                                        newThreshold,
-                                                    )
-                                                }
-                                            />
-                                            <Legend
-                                                threshold={
-                                                    currentForm.legend_threshold
-                                                        .value
-                                                }
-                                            />
-                                        </Box>
-                                    )}
-                                    {isEmpty(
-                                        currentForm.legend_threshold.value,
-                                    ) && (
-                                        <AddLegendDialog
-                                            iconProps={{}}
-                                            titleMessage={MESSAGES.edit}
-                                            onConfirm={newThreshold =>
-                                                setFieldValue(
-                                                    'legend_threshold',
-                                                    newThreshold,
-                                                )
-                                            }
-                                        />
-                                    )}
-                                </>
-                            )}
+                        <Grid item xs={3} />
+                        <Grid item xs={3}>
+                            <FormLegendInput
+                                currentForm={currentForm}
+                                setFieldValue={setFieldValue}
+                                isFormLoading={isFormLoading}
+                            />
                         </Grid>
                     </Grid>
                 </Grid>
@@ -347,7 +304,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                                         setshowAdvancedSettings(false)
                                     }
                                 >
-                                    {intl.formatMessage(
+                                    {formatMessage(
                                         MESSAGES.hideAdvancedSettings,
                                     )}
                                 </Typography>
@@ -360,7 +317,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                             variant="overline"
                             onClick={() => setshowAdvancedSettings(true)}
                         >
-                            {intl.formatMessage(MESSAGES.showAdvancedSettings)}
+                            {formatMessage(MESSAGES.showAdvancedSettings)}
                         </Typography>
                     )}
                 </Grid>
@@ -374,14 +331,14 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                                 href={`/dashboard/forms/submissions/formIds/${currentForm.id.value}/tab/list`}
                             >
                                 <FormatListBulleted />
-                                {intl.formatMessage(MESSAGES.records)}
+                                {formatMessage(MESSAGES.records)}
                             </Link>
                         </Grid>
                     </DisplayIfUserHasPerm>
                     <Grid item>
                         <Link href={logsUrl} className={classes.linkWithIcon}>
                             <History />
-                            {intl.formatMessage(MESSAGES.formChangeLog)}
+                            {formatMessage(MESSAGES.formChangeLog)}
                         </Link>
                     </Grid>
                 </Grid>

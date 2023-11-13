@@ -82,13 +82,22 @@ export const FormLegendInput: FunctionComponent<FormFormProps> = ({
                         </Box>
                     )}
                     {isEmpty(currentForm.legend_threshold.value) && (
-                        <AddLegendDialog
-                            iconProps={{}}
-                            titleMessage={MESSAGES.edit}
-                            onConfirm={newThreshold =>
-                                setFieldValue('legend_threshold', newThreshold)
-                            }
-                        />
+                        <Box
+                            display="flex"
+                            justifyContent="flex-end"
+                            alignContent="flex-start"
+                        >
+                            <AddLegendDialog
+                                iconProps={{}}
+                                titleMessage={MESSAGES.edit}
+                                onConfirm={newThreshold =>
+                                    setFieldValue(
+                                        'legend_threshold',
+                                        newThreshold,
+                                    )
+                                }
+                            />
+                        </Box>
                     )}
                 </>
             )}

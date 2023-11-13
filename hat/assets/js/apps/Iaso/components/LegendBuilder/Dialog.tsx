@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import React, { FunctionComponent, useCallback, useState } from 'react';
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import {
     IntlMessage,
     makeFullModal,
@@ -7,12 +7,15 @@ import {
     AddButton,
     useSafeIntl,
 } from 'bluesquare-components';
+import * as Yup from 'yup';
 import SettingsIcon from '@material-ui/icons/Settings';
 import IconButton from '@material-ui/core/IconButton';
 
+import { useFormik } from 'formik';
 import { MESSAGES } from './messages';
 import { ScaleThreshold } from './types';
 import { LegendBuilder } from './Index';
+import { useGetRangeValues, useGetScaleThreshold } from './hooks';
 
 type Props = {
     titleMessage: IntlMessage;
@@ -22,6 +25,17 @@ type Props = {
     onConfirm: (threshold?: ScaleThreshold) => void;
     threshold?: ScaleThreshold;
 };
+
+const validationSchema = Yup.object().shape({
+    rangeValues: Yup.array().of(
+        Yup.object().shape({
+            percent: Yup.number(),
+            color: Yup.string(),
+            id: Yup.string(),
+        }),
+    ),
+});
+
 const Dialog: FunctionComponent<Props> = ({
     titleMessage,
     isOpen,
@@ -29,21 +43,47 @@ const Dialog: FunctionComponent<Props> = ({
     onConfirm,
     threshold,
 }) => {
-    const [scaleThreshold, setScaleThreshold] = useState<
-        ScaleThreshold | undefined
-    >(threshold);
-    const handleConfirm = useCallback(() => {
-        onConfirm(scaleThreshold);
-        closeDialog();
-    }, [closeDialog, onConfirm, scaleThreshold]);
+    const getRangeValues = useGetRangeValues();
+    const getScaleThreshold = useGetScaleThreshold();
+    const {
+        values: { rangeValues },
+        setFieldValue,
+        setFieldError,
+        isValid,
+        handleSubmit,
+        errors,
+    } = useFormik({
+        initialValues: {
+            rangeValues: getRangeValues(threshold),
+        },
+        validationSchema,
+        onSubmit: () => {
+            onConfirm(getScaleThreshold(rangeValues));
+            closeDialog();
+        },
+    });
+    const handleSetError = useCallback(
+        (keyValue, message) => {
+            const parts = keyValue.split('-');
+            const rangeIndex = parseInt(parts[2], 10) - 1;
+            setFieldError(`rangeValues[${rangeIndex}].percent`, message);
+        },
+        [setFieldError],
+    );
+    const mappedErrors = useMemo(() => {
+        return Array.isArray(errors.rangeValues)
+            ? errors.rangeValues.map(error => error?.percent || [])
+            : [];
+    }, [errors]);
     return (
         <ConfirmCancelModal
             titleMessage={titleMessage}
-            onConfirm={handleConfirm}
+            onConfirm={() => handleSubmit()}
             cancelMessage={MESSAGES.cancel}
             confirmMessage={MESSAGES.save}
             maxWidth="xs"
             open={isOpen}
+            allowConfirm={isValid}
             closeDialog={() => null}
             onClose={() => null}
             onCancel={() => {
@@ -53,10 +93,12 @@ const Dialog: FunctionComponent<Props> = ({
             dataTestId="uslegender-dialog"
         >
             <LegendBuilder
-                defaultScaleThreshold={threshold}
-                onChange={newThreshold => {
-                    setScaleThreshold(newThreshold);
-                }}
+                errors={mappedErrors}
+                setFieldError={handleSetError}
+                rangeValues={rangeValues}
+                onChange={newRangeValues =>
+                    setFieldValue('rangeValues', newRangeValues)
+                }
             />
         </ConfirmCancelModal>
     );

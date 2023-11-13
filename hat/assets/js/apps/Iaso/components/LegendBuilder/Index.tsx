@@ -1,10 +1,10 @@
-import React, { useState, FunctionComponent, useCallback } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 import { makeStyles, Box, IconButton } from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
+
 import { LegendRange } from './LegendRange';
-import { RangeValue, ScaleThreshold } from './types';
+import { RangeValue } from './types';
 import { legendColors } from './colors';
-import { useGetRangeValues, useGetScaleThreshold } from './hooks';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -18,6 +18,13 @@ const useStyles = makeStyles(theme => ({
             height: 13,
             padding: 10,
         },
+        '& .MuiFormControl-root .error-container': {
+            paddingLeft: 0,
+            paddingTop: 4,
+        },
+        '& .MuiFormControl-root .error-container p': {
+            fontSize: 11,
+        },
     },
     legendContainer: {
         display: 'flex',
@@ -27,64 +34,60 @@ const useStyles = makeStyles(theme => ({
 }));
 
 type LegendBuilderProps = {
-    defaultScaleThreshold?: ScaleThreshold;
-    onChange;
+    rangeValues: RangeValue[];
+    // eslint-disable-next-line no-unused-vars
+    onChange: (newRangeValues: RangeValue[]) => void;
+    // eslint-disable-next-line no-unused-vars
+    setFieldError: (keyValue: string, message: string) => void;
+    errors?: string[];
 };
 
 export const LegendBuilder: FunctionComponent<LegendBuilderProps> = ({
-    defaultScaleThreshold,
+    rangeValues,
     onChange,
+    setFieldError,
+    errors = [],
 }) => {
     const classes = useStyles();
-    const getScaleThreshold = useGetScaleThreshold();
-    const getRangeValues = useGetRangeValues();
-    const [rangeValues, setRangeValues] = useState<RangeValue[]>(
-        getRangeValues(defaultScaleThreshold),
-    );
-
     const handleNumberChange = useCallback(
         (index: number, newNumber?: number) => {
             if (newNumber || newNumber === 0) {
                 const newRangeValues = [...rangeValues];
                 newRangeValues[index].percent = Number(newNumber);
-                setRangeValues(newRangeValues);
-                onChange(getScaleThreshold(newRangeValues));
+                onChange(newRangeValues);
             }
         },
-        [getScaleThreshold, onChange, rangeValues],
+        [onChange, rangeValues],
     );
 
     const handleColorChange = useCallback(
         (index: number) => (newColor: string) => {
             const newRangeValues = [...rangeValues];
             newRangeValues[index].color = newColor;
-            setRangeValues(newRangeValues);
-            onChange(getScaleThreshold(newRangeValues));
+            onChange(newRangeValues);
         },
-        [getScaleThreshold, onChange, rangeValues],
+        [onChange, rangeValues],
     );
 
     const addRangeValue = useCallback(() => {
-        const newRanges = [...rangeValues];
-        const lastRange = newRanges[newRanges.length - 1];
+        const newRangeValues = [...rangeValues];
+        const lastRange = newRangeValues[newRangeValues.length - 1];
         const lastPercent = lastRange.percent - 1;
-        newRanges.push({
+        newRangeValues.push({
             id: `range-${rangeValues.length + 1}`,
             percent: lastPercent,
             color: legendColors[0],
         });
-        setRangeValues(newRanges);
-        onChange(getScaleThreshold(newRanges));
-    }, [getScaleThreshold, onChange, rangeValues]);
+        onChange(newRangeValues);
+    }, [onChange, rangeValues]);
 
     const removeRangeValue = useCallback(
         (index: number) => {
             const newRangeValues = [...rangeValues];
             newRangeValues.splice(index, 1);
-            setRangeValues(newRangeValues);
-            onChange(getScaleThreshold(newRangeValues));
+            onChange(newRangeValues);
         },
-        [getScaleThreshold, onChange, rangeValues],
+        [onChange, rangeValues],
     );
 
     return (
@@ -99,6 +102,12 @@ export const LegendBuilder: FunctionComponent<LegendBuilderProps> = ({
                         handleColorChange={handleColorChange}
                         handleNumberChange={handleNumberChange}
                         removeRangeValue={removeRangeValue}
+                        setFieldError={setFieldError}
+                        errors={
+                            index < errors.length && errors[index]
+                                ? [errors[index]]
+                                : []
+                        }
                     />
                 ))}
                 <Box

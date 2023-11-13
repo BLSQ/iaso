@@ -14,7 +14,10 @@ import { legendColors } from './colors';
 
 const useStyles = makeStyles(theme => ({
     legendItem: {
-        marginBottom: theme.spacing(0.5),
+        marginBottom: theme.spacing(2),
+        // @ts-ignore
+        border: `1px solid ${theme.palette.border.main}`,
+        borderRadius: 4,
     },
     input: {
         margin: theme.spacing(1),
@@ -31,6 +34,9 @@ type LegendRowProps = {
     handleNumberChange: (index: number, newNumber?: number) => void;
     // eslint-disable-next-line no-unused-vars
     removeRangeValue: (index: number) => void;
+    // eslint-disable-next-line no-unused-vars
+    setFieldError: (keyValue: string, message: string) => void;
+    errors?: string[];
 };
 
 export const LegendRange: FunctionComponent<LegendRowProps> = ({
@@ -40,12 +46,20 @@ export const LegendRange: FunctionComponent<LegendRowProps> = ({
     handleColorChange,
     handleNumberChange,
     removeRangeValue,
+    setFieldError,
+    errors = [],
 }) => {
     const classes = useStyles();
     const previousRange = index !== 0 ? rangeValues[index - 1] : undefined;
+    const nextRange =
+        index !== rangeValues.length - 1 ? rangeValues[index + 1] : undefined;
     let max = 100;
+    let min = 0;
     if (previousRange) {
         max = previousRange.percent - 1;
+    }
+    if (nextRange) {
+        min = nextRange.percent;
     }
     //  get max here from previous range
     return (
@@ -58,7 +72,7 @@ export const LegendRange: FunctionComponent<LegendRowProps> = ({
                 alignContent="center"
                 justifyContent="flex-end"
             >
-                <Box pt="4px">
+                <Box pt="2px">
                     <ColorPicker
                         currentColor={rangeItem.color}
                         // @ts-ignore
@@ -90,11 +104,14 @@ export const LegendRange: FunctionComponent<LegendRowProps> = ({
                         handleNumberChange(index, newValue)
                     }
                     type="number"
-                    min={0}
+                    min={min}
                     max={max}
+                    required
                     numberInputOptions={{
                         decimalScale: 0,
                     }}
+                    setFieldError={setFieldError}
+                    errors={errors}
                 />
             </Grid>
             <Grid

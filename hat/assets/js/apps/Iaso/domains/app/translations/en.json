@@ -226,6 +226,7 @@
     "iaso.forms.closed": "Closed",
     "iaso.forms.create": "Create form",
     "iaso.forms.created_at": "Created",
+    "iaso.forms.createLegend": "Create legend",
     "iaso.forms.creator": "Creator",
     "iaso.forms.custom": "Custom",
     "iaso.forms.deleted_at": "Deleted",

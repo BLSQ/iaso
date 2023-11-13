@@ -630,6 +630,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.legend',
         defaultMessage: 'Legend',
     },
+    createLegend: {
+        defaultMessage: 'Create legend',
+        id: 'iaso.forms.createLegend',
+    },
 });
 
 export default MESSAGES;

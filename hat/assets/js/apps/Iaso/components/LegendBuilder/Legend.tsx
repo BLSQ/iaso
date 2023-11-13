@@ -27,7 +27,7 @@ export const Legend: FunctionComponent<Props> = ({ threshold }) => {
                 labels.reverse().map(label => {
                     return (
                         <LegendItem
-                            key={`legend-${label.value}`}
+                            key={`legend-${label.value}-${label.index}`}
                             margin={theme.spacing(0, 0, 1, 0)}
                         >
                             <svg width={20} height={20}>

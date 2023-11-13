@@ -95,11 +95,14 @@ export const useDuplicationDetailsColumns = ({
                         settings.row.original.entity2.value,
                         descriptors.descriptor2,
                     );
+                    console.log('value', settings.row.original.entity2.value)
+                    console.log('descr', descr)
                     const result = convertValueIfDate(
                         descr
                             ? formatLabel(descr)
                             : settings.row.original.entity2.value,
                     );
+                    console.log('result', result)
 
                     return (
                         <div onClick={onClick} role="button" tabIndex={0}>

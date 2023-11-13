@@ -347,7 +347,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
                 "pre_alerts": [
                     {
                         "date_pre_alert_reception": "2021-01-01",
-                        "estimated_arrival_time": "2021-01-02T12:00:00Z",
+                        "estimated_arrival_time": "2021-01-02",
                         "doses_shipped": 500000,
                         "po_number": "PO-1234",
                     }
@@ -402,7 +402,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         pre_alert = pm.VaccinePreAlert.objects.create(
             request_form=request_form,
             date_pre_alert_reception="2021-01-01",
-            estimated_arrival_time="2021-01-02T00:00:00Z",
+            estimated_arrival_time="2021-01-02",
             doses_shipped=1000,
             po_number="PO-1234",
         )
@@ -417,7 +417,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         self.assertEqual(len(res["pre_alerts"]), 1)
         self.assertEqual(res["pre_alerts"][0]["id"], pre_alert.id)
         self.assertEqual(res["pre_alerts"][0]["date_pre_alert_reception"], "2021-01-01")
-        self.assertEqual(res["pre_alerts"][0]["estimated_arrival_time"], "2021-01-02T00:00:00Z")
+        self.assertEqual(res["pre_alerts"][0]["estimated_arrival_time"], "2021-01-02")
         self.assertEqual(res["pre_alerts"][0]["doses_shipped"], 1000)
         self.assertEqual(res["pre_alerts"][0]["po_number"], "PO-1234")
 

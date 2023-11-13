@@ -940,7 +940,7 @@ class VaccineAuthorization(SoftDeletableModel):
         return f"{self.country}-{self.expiration_date}"
 
 
-class VaccineRequestForm(models.Model):
+class VaccineRequestForm(SoftDeletableModel):
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
     vaccine_type = models.CharField(max_length=5, choices=VACCINES)
     rounds = models.ManyToManyField(Round)
@@ -979,11 +979,11 @@ class VaccineRequestForm(models.Model):
         return f"VFR for {self.get_country()} {self.campaign} {self.vaccine_type} #VPA {self.count_pre_alerts()} #VAR {self.count_arrival_reports()}"
 
 
-class VaccinePreAlert(models.Model):
+class VaccinePreAlert(SoftDeletableModel):
     request_form = models.ForeignKey(VaccineRequestForm, on_delete=models.CASCADE)
     date_pre_alert_reception = models.DateField()
     po_number = models.CharField(max_length=200)
-    estimated_arrival_time = models.DateTimeField(blank=True, null=True, default=None)
+    estimated_arrival_time = models.DateField(blank=True, null=True, default=None)
     lot_number = models.CharField(max_length=200, blank=True, null=True, default=None)
     expiration_date = models.DateField(blank=True, null=True, default=None)
     doses_shipped = models.PositiveIntegerField(blank=True, null=True, default=None)
@@ -996,7 +996,7 @@ class VaccinePreAlert(models.Model):
         return DOSES_PER_VIAL[self.request_form.vaccine_type]
 
 
-class VaccineArrivalReport(models.Model):
+class VaccineArrivalReport(SoftDeletableModel):
     request_form = models.ForeignKey(VaccineRequestForm, on_delete=models.CASCADE)
     arrival_report_date = models.DateField()  # prepolutated from pre_alert.estimated_arrival_time
     doses_received = models.PositiveIntegerField()  # prepolulated from pre_alert.doses_received

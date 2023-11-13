@@ -4,6 +4,8 @@ import json
 from typing import Union
 from uuid import uuid4
 
+import pandas as pd
+
 import django.db.models.manager
 from django.contrib.auth.models import User, AnonymousUser
 from django.core.serializers.json import DjangoJSONEncoder
@@ -964,10 +966,94 @@ class VaccineAuthorization(SoftDeletableModel):
         return f"{self.country}-{self.expiration_date}"
 
 
+class NotificationImport(models.Model):
+    """
+    Stores uploaded `.xlsx` files of notifications of polio virus outbreaks.
+    Used to populate `Notification`.
+    """
+
+    class Status(models.TextChoices):
+        PENDING = "pending", _("Pending")
+        ERROR = "error", _("Error")
+        CREATED = "created", _("Created")
+
+    file = models.FileField(upload_to="uploads/polio_notifications/%Y-%m-%d-%H-%M/")
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
+    error = models.JSONField(null=True, blank=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    created_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="polio_notification_import_created_set"
+    )
+    updated_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        verbose_name = _("Notification import")
+
+    def __str__(self) -> str:
+        return f"{self.file.name} - {self.status}"
+
+    def create_notifications(self):
+        for idx, row in pd.read_excel(self.file, keep_default_na=False).iterrows():
+            try:
+                date_of_onset = row["Date collection/date of onset (m/d/yyyy)"].date()
+            except AttributeError:
+                date_of_onset = None
+            try:
+                date_results_received = row["Date Results received"].date()
+            except AttributeError:
+                date_results_received = None
+
+            # TODO 1.
+            # row["COUNTRY"]
+            # row["Province "]
+            # row["District "]
+            # row["Site Name/Geocode"]
+
+            # TODO 2.
+            # created_by
+
+            Notification.objects.get_or_create(
+                epid_number=self.clean_str(row["EPID Number"]),
+                defaults={
+                    "vdpv_category": self.clean_vdpv_category(row["VDPV Category"]),
+                    "source": self.clean_source(row["Source(AFP/ENV/CONTACT/HC)"]),
+                    "vdpv_nucleotide_diff_sabin2": self.clean_str(row["VDPV Nucleotide Diff SABIN2"]),
+                    "lineage": self.clean_str(row["Lineage"]),
+                    "closest_match_vdpv2": self.clean_str(row["Closest Match VDPV2"]),
+                    "date_of_onset": date_of_onset,
+                    "date_results_received": date_results_received,
+                    "data_source": self,
+                    "data_raw": row.to_dict(),
+                },
+            )
+
+    @classmethod
+    def clean_str(cls, data) -> str:
+        return str(data).strip()
+
+    @classmethod
+    def clean_vdpv_category(cls, vdpv_category: str) -> str:
+        vdpv_category = cls.clean_str(vdpv_category).upper()
+        vdpv_category = "".join(char for char in vdpv_category if char.isalnum())
+        return Notification.VdpvCategories[vdpv_category].value
+
+    @classmethod
+    def clean_source(cls, source: str) -> str:
+        source = cls.clean_str(source).upper()
+        try:
+            cleaned_source = Notification.Sources[source].value
+        except KeyError:
+            if source.startswith("CONT"):
+                cleaned_source = Notification.Sources["CONTACT"].value
+            else:
+                cleaned_source = Notification.Sources["OTHER"].value
+        return cleaned_source
+
+
 class Notification(models.Model):
     """
     List of notifications of polio virus outbreaks.
-    I.e.: we found a case in this place on this day.
+    I.e. we found a case in this place on this day.
 
     Also called "line list": a table that summarizes key
     information about each case in an outbreak.
@@ -994,10 +1080,6 @@ class Notification(models.Model):
         WPV1 = "wpv1", _("WPV1")
 
     class Sources(models.TextChoices):
-        """
-        Sources for polio virus outbreaks.
-        """
-
         AFP = "afp", _("Accute Flaccid Paralysis")  # A case of someone who got paralyzed because of polio.
         COMMUNITY = "community", _("Community")
         CONTACT = "contact", _("Contact")
@@ -1006,35 +1088,35 @@ class Notification(models.Model):
         OTHER = "other", _("Other")
 
     # EPID number = epidemiological number = unique identifier of a case per disease.
-    # Format = [country code]-[region code]-[district code]-[year]-[case series number]
-    # E.g. ANG-LNO-CAM-19-001
     epid_number = models.CharField(max_length=50, unique=True)
 
     vdpv_category = models.CharField(max_length=20, choices=VdpvCategories.choices, default=VdpvCategories.AVDPV)
     source = models.CharField(max_length=50, choices=Sources.choices, default=Sources.AFP)
     vdpv_nucleotide_diff_sabin2 = models.CharField(max_length=10)
     # Lineage possible values: NIE-ZAS-1, RDC-MAN-3, Ambiguous, etc.
-    lineage = models.CharField(max_length=50, blank=True)
-    closest_match_vdpv2 = models.CharField(max_length=50, blank=True)
+    lineage = models.CharField(max_length=150, blank=True)
+    closest_match_vdpv2 = models.CharField(max_length=150, blank=True)
     date_of_onset = models.DateField(null=True, blank=True)
     date_results_received = models.DateField(null=True, blank=True)
 
     # Country / province / district are modelized as a hierarchy of OrgUnits.
     org_unit = models.ForeignKey(
-        "iaso.orgunit", null=True, blank=True, on_delete=models.SET_NULL, related_name="notifications"
+        "iaso.orgunit", null=True, blank=True, on_delete=models.SET_NULL, related_name="polio_notifications"
     )
     # site_name/geocode
     site_name = models.CharField(max_length=255, blank=True)
 
     created_at = models.DateTimeField(default=timezone.now)
     created_by = models.ForeignKey(
-        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="polio_notifications_created_set"
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="polio_notification_created_set"
     )
     updated_at = models.DateTimeField(blank=True, null=True)
     updated_by = models.ForeignKey(
-        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="polio_notifications_updated_set"
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="polio_notification_updated_set"
     )
-    import_raw_data = models.JSONField()
+
+    data_source = models.ForeignKey(NotificationImport, null=True, blank=True, on_delete=models.SET_NULL)
+    data_raw = models.JSONField(null=True, blank=True, encoder=DjangoJSONEncoder)
 
     class Meta:
         verbose_name = _("Notification")

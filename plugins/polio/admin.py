@@ -18,6 +18,8 @@ from .models import (
     SpreadSheetImport,
     CampaignGroup,
     VaccineAuthorization,
+    NotificationImport,
+    Notification,
 )
 
 from iaso.admin import IasoJSONEditorWidget
@@ -134,6 +136,19 @@ class VaccineAuthorizationsAdmin(admin.ModelAdmin):
 @admin.register(ReasonForDelay)
 class ReasonForDelayAdmin(admin.ModelAdmin):
     model = ReasonForDelay
+
+
+@admin.register(NotificationImport)
+class NotificationImportAdmin(admin.ModelAdmin):
+    raw_id_fields = ("created_by",)
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    raw_id_fields = ("org_unit", "created_by", "updated_by", "data_source")
+    read_only_fields = ("data_source",)
+    list_display = ("epid_number", "vdpv_nucleotide_diff_sabin2", "lineage", "closest_match_vdpv2", "date_of_onset")
+    list_filter = ("vdpv_category", "source")
 
 
 admin.site.register(Campaign, CampaignAdmin)

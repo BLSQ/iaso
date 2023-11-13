@@ -49,6 +49,34 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
         [setFieldTouched, setFieldValue, values?.vrf?.comment, vrfDataComment],
     );
 
+    const onCountryChange = useCallback(
+        (_keyValue, value) => {
+            setFieldTouched('vrf.country', true);
+            setFieldValue('vrf.country', value);
+            setFieldValue('vrf.campaign', undefined);
+            setFieldValue('vrf.vaccine_type', undefined);
+            setFieldValue('vrf.rounds', undefined);
+        },
+        [setFieldTouched, setFieldValue],
+    );
+    const onCampaignChange = useCallback(
+        (_keyValue, value) => {
+            setFieldTouched('vrf.campaign', true);
+            setFieldValue('vrf.campaign', value);
+            setFieldValue('vrf.vaccine_type', undefined);
+            setFieldValue('vrf.rounds', undefined);
+        },
+        [setFieldTouched, setFieldValue],
+    );
+    const onVaccineChange = useCallback(
+        (_keyValue, value) => {
+            setFieldTouched('vrf.vaccine_type', true);
+            setFieldValue('vrf.vaccine_type', value);
+            setFieldValue('vrf.rounds', undefined);
+        },
+        [setFieldTouched, setFieldValue],
+    );
+
     return (
         <Box className={className}>
             <Box mb={4}>
@@ -68,6 +96,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                             isLoading={
                                 isFetchingCountries || isFetchingDropDowns
                             }
+                            onChange={onCountryChange}
                             options={countriesOptions}
                         />
                     </Grid>
@@ -79,6 +108,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                             disabled={!values?.vrf?.country}
                             required
                             options={campaigns}
+                            onChange={onCampaignChange}
                             isLoading={
                                 isFetchingCountries || isFetchingDropDowns
                             }
@@ -92,6 +122,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                             disabled={!values?.vrf?.campaign}
                             required
                             options={vaccines}
+                            onChange={onVaccineChange}
                             isLoading={
                                 isFetchingCountries || isFetchingDropDowns
                             }

@@ -36,15 +36,17 @@ export const PreAlerts: FunctionComponent<Props> = ({
                     <Typography variant="h5">
                         {formatMessage(MESSAGES.pre_alerts)}
                     </Typography>
-                    <AddButton
-                        message={MESSAGES.addPreAlert}
-                        onClick={() => {
-                            setFieldValue('pre_alerts', [
-                                ...values.pre_alerts,
-                                emptyPreAlert,
-                            ]);
-                        }}
-                    />
+                    <Box mr={2}>
+                        <AddButton
+                            message={MESSAGES.addPreAlert}
+                            onClick={() => {
+                                setFieldValue('pre_alerts', [
+                                    ...values.pre_alerts,
+                                    emptyPreAlert,
+                                ]);
+                            }}
+                        />
+                    </Box>
                 </Grid>
             </Box>
             {items.map((_, index) => {

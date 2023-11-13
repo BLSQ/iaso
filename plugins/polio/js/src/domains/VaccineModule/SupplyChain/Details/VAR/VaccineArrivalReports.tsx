@@ -32,15 +32,17 @@ export const VaccineArrivalReports: FunctionComponent<Props> = ({
                     <Typography variant="h5">
                         {formatMessage(MESSAGES.varsTitle)}
                     </Typography>
-                    <AddButton
-                        message={MESSAGES.addVar}
-                        onClick={() => {
-                            setFieldValue('vars', [
-                                ...values.vars,
-                                emptyArrivalReport,
-                            ]);
-                        }}
-                    />
+                    <Box mr={2}>
+                        <AddButton
+                            message={MESSAGES.addVar}
+                            onClick={() => {
+                                setFieldValue('vars', [
+                                    ...values.vars,
+                                    emptyArrivalReport,
+                                ]);
+                            }}
+                        />
+                    </Box>
                 </Grid>
             </Box>
             {items.map((_, index) => {

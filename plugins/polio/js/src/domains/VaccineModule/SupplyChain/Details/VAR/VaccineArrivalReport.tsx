@@ -23,6 +23,7 @@ const useStyles = makeStyles((theme: Theme) => ({
         marginBottom: theme.spacing(4),
         // @ts-ignore
         border: `1px solid ${theme.palette.mediumGray.main}`,
+        width: 'calc(100% - 64px)',
     },
     markedForDeletion: {
         backgroundColor: theme.palette.grey['200'],
@@ -39,135 +40,117 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
     const { vars } = values as SupplyChainFormData;
     const markedForDeletion = vars?.[index].to_delete ?? false;
     return (
-        <Grid container>
-            <Grid item xs={11}>
-                <Paper
-                    className={classNames(
-                        classes.paper,
-                        markedForDeletion ? classes.markedForDeletion : '',
-                    )}
-                >
-                    <Grid container item xs={12} spacing={2}>
-                        <Grid item xs={6} md={3}>
+        <div style={{ display: 'inline-flex', width: '100%' }}>
+            <Paper
+                className={classNames(
+                    classes.paper,
+                    markedForDeletion ? classes.markedForDeletion : '',
+                )}
+            >
+                <Grid container item xs={12} spacing={2}>
+                    <Grid item xs={6} md={3}>
+                        <Field
+                            label={formatMessage(MESSAGES.arrival_report_date)}
+                            name={`vars[${index}].arrival_report_date`}
+                            component={DateInput}
+                            disabled={markedForDeletion}
+                        />
+                    </Grid>
+                    <Grid item xs={6} md={3}>
+                        <Field
+                            label={formatMessage(MESSAGES.po_number)}
+                            name={`vars[${index}].po_number`}
+                            component={TextInput}
+                            shrinkLabel={false}
+                            disabled={markedForDeletion}
+                        />
+                    </Grid>
+                    <Grid item xs={6} md={3}>
+                        <Field
+                            label={formatMessage(MESSAGES.lot_number)}
+                            name={`vars[${index}].lot_number`}
+                            component={NumberInput}
+                            disabled={markedForDeletion}
+                        />
+                    </Grid>
+                </Grid>
+                <Grid container item xs={12} spacing={2}>
+                    <Grid item xs={6} md={3}>
+                        <Box>
                             <Field
-                                label={formatMessage(
-                                    MESSAGES.arrival_report_date,
-                                )}
-                                name={`vars[${index}].arrival_report_date`}
+                                label={formatMessage(MESSAGES.expirationDate)}
+                                name={`vars[${index}].expiration_date`}
                                 component={DateInput}
                                 disabled={markedForDeletion}
                             />
-                        </Grid>
-                        <Grid item xs={6} md={3}>
+                        </Box>
+                    </Grid>
+                    <Grid item xs={6} md={3}>
+                        <Box>
                             <Field
-                                label={formatMessage(MESSAGES.po_number)}
-                                name={`vars[${index}].po_number`}
-                                component={TextInput}
-                                shrinkLabel={false}
-                                disabled={markedForDeletion}
-                            />
-                        </Grid>
-                        <Grid item xs={6} md={3}>
-                            <Field
-                                label={formatMessage(MESSAGES.lot_number)}
-                                name={`vars[${index}].lot_number`}
+                                label={formatMessage(MESSAGES.doses_shipped)}
+                                name={`vars[${index}].doses_shipped`}
                                 component={NumberInput}
                                 disabled={markedForDeletion}
                             />
-                        </Grid>
+                        </Box>
                     </Grid>
-                    <Grid container item xs={12} spacing={2}>
-                        <Grid item xs={6} md={3}>
-                            <Box>
-                                <Field
-                                    label={formatMessage(
-                                        MESSAGES.expirationDate,
-                                    )}
-                                    name={`vars[${index}].expiration_date`}
-                                    component={DateInput}
-                                    disabled={markedForDeletion}
-                                />
-                            </Box>
-                        </Grid>
-                        <Grid item xs={6} md={3}>
-                            <Box>
-                                <Field
-                                    label={formatMessage(
-                                        MESSAGES.doses_shipped,
-                                    )}
-                                    name={`vars[${index}].doses_shipped`}
-                                    component={NumberInput}
-                                    disabled={markedForDeletion}
-                                />
-                            </Box>
-                        </Grid>
 
-                        <Grid item xs={6} md={3}>
-                            <Box>
-                                <Field
-                                    label={formatMessage(
-                                        MESSAGES.doses_received,
-                                    )}
-                                    name={`vars[${index}].doses_received`}
-                                    component={NumberInput}
-                                    disabled={markedForDeletion}
-                                />
-                            </Box>
-                        </Grid>
-                        <Grid item xs={6} md={3}>
-                            <Box mt={2}>
-                                <Typography variant="button">
-                                    {' '}
-                                    {`${formatMessage(
-                                        MESSAGES.dosesPerVial,
-                                    )}: SOME NUMBER`}
-                                </Typography>
-                            </Box>
-                        </Grid>
+                    <Grid item xs={6} md={3}>
+                        <Box>
+                            <Field
+                                label={formatMessage(MESSAGES.doses_received)}
+                                name={`vars[${index}].doses_received`}
+                                component={NumberInput}
+                                disabled={markedForDeletion}
+                            />
+                        </Box>
                     </Grid>
-                </Paper>
-            </Grid>
+                    <Grid item xs={6} md={3}>
+                        <Box mt={2}>
+                            <Typography variant="button">
+                                {' '}
+                                {`${formatMessage(
+                                    MESSAGES.dosesPerVial,
+                                )}: SOME NUMBER`}
+                            </Typography>
+                        </Box>
+                    </Grid>
+                </Grid>
+            </Paper>
             {/* Box is necessay to avoid bad tooltip placemement */}
-            <Grid item xs={1}>
-                <Box>
-                    {!vars?.[index].to_delete && (
-                        <DeleteIconButton
-                            onClick={() => {
-                                if (values?.vars?.[index].id) {
-                                    setFieldValue(
-                                        `vars[${index}].to_delete`,
-                                        true,
-                                    );
-                                    setFieldTouched(
-                                        `vars[${index}].to_delete`,
-                                        true,
-                                    );
-                                } else {
-                                    const copy = [...(values?.vars ?? [])];
-                                    // checking the length to avoid splicing outside of array range
-                                    if (copy.length >= index + 1) {
-                                        copy.splice(index, 1);
-                                        setFieldValue('vars', copy);
-                                    }
-                                }
-                            }}
-                            message={MESSAGES.markForDeletion}
-                        />
-                    )}
-                    {vars?.[index].to_delete && (
-                        <IconButton
-                            onClick={() => {
-                                setFieldValue(
+            <Box ml={2}>
+                {!vars?.[index].to_delete && (
+                    <DeleteIconButton
+                        onClick={() => {
+                            if (values?.vars?.[index].id) {
+                                setFieldValue(`vars[${index}].to_delete`, true);
+                                setFieldTouched(
                                     `vars[${index}].to_delete`,
-                                    false,
+                                    true,
                                 );
-                            }}
-                            overrideIcon={RestoreFromTrashIcon}
-                            tooltipMessage={MESSAGES.cancelDeletion}
-                        />
-                    )}
-                </Box>
-            </Grid>
-        </Grid>
+                            } else {
+                                const copy = [...(values?.vars ?? [])];
+                                // checking the length to avoid splicing outside of array range
+                                if (copy.length >= index + 1) {
+                                    copy.splice(index, 1);
+                                    setFieldValue('vars', copy);
+                                }
+                            }
+                        }}
+                        message={MESSAGES.markForDeletion}
+                    />
+                )}
+                {vars?.[index].to_delete && (
+                    <IconButton
+                        onClick={() => {
+                            setFieldValue(`vars[${index}].to_delete`, false);
+                        }}
+                        overrideIcon={RestoreFromTrashIcon}
+                        tooltipMessage={MESSAGES.cancelDeletion}
+                    />
+                )}
+            </Box>
+        </div>
     );
 };

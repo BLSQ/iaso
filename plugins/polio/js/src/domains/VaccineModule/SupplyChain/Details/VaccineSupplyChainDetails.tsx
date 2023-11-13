@@ -347,15 +347,17 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
                             <VaccineArrivalReports items={values.vars} />
                         )}
                         <Grid container spacing={2} justifyContent="flex-end">
-                            <VaccineSupplyChainConfirmButtons
-                                className={classes.button}
-                                tab={tab}
-                                onSubmitTab={() => handleSubmit()}
-                                onSubmitAll={() => handleSubmit(true)}
-                                onCancel={onCancel}
-                                allowSaveTab={allowSaveTab}
-                                allowSaveAll={allowSaveAll}
-                            />
+                            <Box style={{ display: 'inline-flex' }} mr={3}>
+                                <VaccineSupplyChainConfirmButtons
+                                    className={classes.button}
+                                    tab={tab}
+                                    onSubmitTab={() => handleSubmit()}
+                                    onSubmitAll={() => handleSubmit(true)}
+                                    onCancel={onCancel}
+                                    allowSaveTab={allowSaveTab}
+                                    allowSaveAll={allowSaveAll}
+                                />
+                            </Box>
                         </Grid>
                     </>
                 )}

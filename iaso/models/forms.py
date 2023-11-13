@@ -242,6 +242,11 @@ class FormVersion(models.Model):
 
     objects = FormVersionManager.from_queryset(FormVersionQuerySet)()
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["version_id", "form_id"], name="duplicate_version_id_for_same_form")
+        ]
+
     def get_or_save_form_descriptor(self):  # TODO: remove me - should be populated on create
         if self.form_descriptor:
             json_survey = self.form_descriptor

@@ -1,22 +1,23 @@
 import React, { FunctionComponent, useCallback } from 'react';
-import { Box, Grid, Typography, makeStyles } from '@material-ui/core';
+import { Box, Grid, Typography } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import { MultiSelect } from '../../../../../components/Inputs/MultiSelect';
 import { DateInput } from '../../../../../components/Inputs/DateInput';
 import { NumberInput } from '../../../../../components/Inputs';
 import { TextArea } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/forms/TextArea';
 import { useCampaignDropDowns, useGetCountriesOptions } from '../../hooks/api';
+import MESSAGES from '../../messages';
 
 type Props = { className?: string; vrfData: any };
-const useStyles = makeStyles(theme => ({ ...commonStyles(theme) }));
+// const useStyles = makeStyles(theme => ({ ...commonStyles(theme) }));
 
 export const VaccineRequestForm: FunctionComponent<Props> = ({
     className,
     vrfData,
 }) => {
-    const classes: Record<string, string> = useStyles();
+    // const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { data: countriesOptions, isFetching: isFetchingCountries } =
         useGetCountriesOptions();
@@ -51,13 +52,15 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
     return (
         <Box className={className}>
             <Box mb={4}>
-                <Typography variant="h5">Vaccine request form</Typography>
+                <Typography variant="h5">
+                    {formatMessage(MESSAGES.vrfTitle)}
+                </Typography>
             </Box>
             <Grid container>
                 <Grid container item xs={12} spacing={2}>
                     <Grid item xs={6} md={3}>
                         <Field
-                            label="Country"
+                            label={formatMessage(MESSAGES.country)}
                             name="vrf.country"
                             component={SingleSelect}
                             disabled={false}
@@ -70,7 +73,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                     </Grid>
                     <Grid item xs={6} md={3}>
                         <Field
-                            label="Campaign"
+                            label={formatMessage(MESSAGES.campaign)}
                             name="vrf.campaign"
                             component={SingleSelect}
                             disabled={!values?.vrf?.country}
@@ -83,7 +86,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                     </Grid>
                     <Grid item xs={6} md={3}>
                         <Field
-                            label="Vaccine type"
+                            label={formatMessage(MESSAGES.vaccine)}
                             name="vrf.vaccine_type"
                             component={SingleSelect}
                             disabled={!values?.vrf?.campaign}
@@ -96,7 +99,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                     </Grid>
                     <Grid item xs={6} md={3}>
                         <Field
-                            label="Rounds"
+                            label={formatMessage(MESSAGES.rounds)}
                             name="vrf.rounds"
                             component={MultiSelect}
                             disabled={!values?.vrf?.vaccine_type}
@@ -112,7 +115,9 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                     <Grid item xs={6} md={3}>
                         <Box mt={2}>
                             <Field
-                                label="Date of VRF signature"
+                                label={formatMessage(
+                                    MESSAGES.date_vrf_signature,
+                                )}
                                 name="vrf.date_vrf_signature"
                                 component={DateInput}
                                 disabled={false}
@@ -122,7 +127,9 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                     <Grid item xs={6} md={3}>
                         <Box mt={2}>
                             <Field
-                                label="Quantity ordered in doses"
+                                label={formatMessage(
+                                    MESSAGES.quantities_ordered_in_doses,
+                                )}
                                 name="vrf.quantities_ordered_in_doses"
                                 component={NumberInput}
                                 disabled={false}
@@ -133,7 +140,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                     <Grid item xs={6} md={3}>
                         <Box mt={2}>
                             <Field
-                                label="Wastage ratio"
+                                label={formatMessage(MESSAGES.wastageRatio)}
                                 name="vrf.wastage_rate_used_on_vrf"
                                 component={NumberInput}
                                 disabled={false}
@@ -143,7 +150,9 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                     <Grid item xs={6} md={3}>
                         <Box mt={2}>
                             <Field
-                                label="Date of VRF reception"
+                                label={formatMessage(
+                                    MESSAGES.date_vrf_reception,
+                                )}
                                 name="vrf.date_vrf_reception"
                                 component={DateInput}
                                 disabled={false}
@@ -154,7 +163,9 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                 <Grid container item xs={12} spacing={2}>
                     <Grid item xs={6} md={3}>
                         <Field
-                            label="Date of VRF submission ORPG"
+                            label={formatMessage(
+                                MESSAGES.date_vrf_submission_to_orpg,
+                            )}
                             name="vrf.date_vrf_submission_to_orpg"
                             component={DateInput}
                             disabled={false}
@@ -162,7 +173,9 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                     </Grid>
                     <Grid item xs={6} md={3}>
                         <Field
-                            label="Quantity approved by ORPG in doses"
+                            label={formatMessage(
+                                MESSAGES.quantities_approved_by_orpg_in_doses,
+                            )}
                             name="vrf.quantities_approved_by_orpg_in_doses"
                             component={NumberInput}
                             disabled={false}
@@ -170,7 +183,9 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                     </Grid>
                     <Grid item xs={6} md={3}>
                         <Field
-                            label="Date of RRT/ORPG approval"
+                            label={formatMessage(
+                                MESSAGES.date_rrt_orpg_approval,
+                            )}
                             name="vrf.date_rrt_orpg_approval"
                             component={DateInput}
                             disabled={false}
@@ -180,7 +195,9 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                 <Grid container item xs={12} spacing={2}>
                     <Grid item xs={6} md={3}>
                         <Field
-                            label="Date of VRF submission to DG"
+                            label={formatMessage(
+                                MESSAGES.date_vrf_submission_dg,
+                            )}
                             name="vrf.date_vrf_submission_dg"
                             component={DateInput}
                             disabled={false}
@@ -188,7 +205,9 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                     </Grid>
                     <Grid item xs={6} md={3}>
                         <Field
-                            label="Quantity approved by DG in doses"
+                            label={formatMessage(
+                                MESSAGES.quantities_approved_by_dg_in_doses,
+                            )}
                             name="vrf.quantities_approved_by_dg_in_doses"
                             component={NumberInput}
                             disabled={false}
@@ -196,7 +215,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                     </Grid>
                     <Grid item xs={6} md={3}>
                         <Field
-                            label="Date of DG approval"
+                            label={formatMessage(MESSAGES.date_dg_approval)}
                             name="vrf.date_dg_approval"
                             component={DateInput}
                             disabled={false}
@@ -208,7 +227,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                         <TextArea
                             value={values?.vrf?.comment ?? ''}
                             // errors={errors.comment ? errors.comment : []}
-                            label="Comments"
+                            label={formatMessage(MESSAGES.comments)}
                             onChange={onCommentChange}
                             debounceTime={0}
                         />

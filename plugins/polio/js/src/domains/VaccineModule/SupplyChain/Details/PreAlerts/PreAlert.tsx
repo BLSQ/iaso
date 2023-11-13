@@ -3,7 +3,7 @@ import React, { FunctionComponent } from 'react';
 import { Box, Grid, Paper, Theme, makeStyles } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 import RestoreFromTrashIcon from '@material-ui/icons/RestoreFromTrash';
-import { IconButton } from 'bluesquare-components';
+import { IconButton, useSafeIntl } from 'bluesquare-components';
 import classNames from 'classnames';
 import { DeleteIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/DeleteIconButton';
 import { DateInput } from '../../../../../components/Inputs/DateInput';
@@ -29,6 +29,7 @@ type Props = {
 
 export const PreAlert: FunctionComponent<Props> = ({ index }) => {
     const classes: Record<string, string> = useStyles();
+    const { formatMessage } = useSafeIntl();
     const { values, setFieldValue, setFieldTouched } =
         useFormikContext<SupplyChainFormData>();
     const { pre_alerts } = values as SupplyChainFormData;
@@ -46,7 +47,9 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                     <Grid container item xs={12} spacing={2}>
                         <Grid item xs={6} md={3}>
                             <Field
-                                label="Pre-alert reception"
+                                label={formatMessage(
+                                    MESSAGES.date_pre_alert_reception,
+                                )}
                                 name={`pre_alerts[${index}].date_pre_alert_reception`}
                                 component={DateInput}
                                 disabled={markedForDeletion}
@@ -54,7 +57,7 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                         </Grid>
                         <Grid item xs={6} md={3}>
                             <Field
-                                label="PO number"
+                                label={formatMessage(MESSAGES.po_number)}
                                 name={`pre_alerts[${index}].po_number`}
                                 component={TextInput}
                                 shrinkLabel={false}
@@ -64,7 +67,7 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                         </Grid>
                         <Grid item xs={6} md={3}>
                             <Field
-                                label="Lot number"
+                                label={formatMessage(MESSAGES.lot_number)}
                                 name={`pre_alerts[${index}].lot_number`}
                                 component={NumberInput}
                                 disabled={markedForDeletion}
@@ -72,7 +75,9 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                         </Grid>
                         <Grid item xs={6} md={3}>
                             <Field
-                                label="Estimated arrival time"
+                                label={formatMessage(
+                                    MESSAGES.estimated_arrival_time,
+                                )}
                                 name={`pre_alerts[${index}].estimated_arrival_time`}
                                 component={DateInput}
                                 disabled={markedForDeletion}
@@ -83,7 +88,9 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                         <Grid item xs={6} md={3}>
                             <Box>
                                 <Field
-                                    label="Expiration date"
+                                    label={formatMessage(
+                                        MESSAGES.expirationDate,
+                                    )}
                                     name={`pre_alerts[${index}].expiration_date`}
                                     component={DateInput}
                                     disabled={markedForDeletion}
@@ -93,7 +100,9 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                         <Grid item xs={6} md={3}>
                             <Box>
                                 <Field
-                                    label="Doses shipped"
+                                    label={formatMessage(
+                                        MESSAGES.doses_shipped,
+                                    )}
                                     name={`pre_alerts[${index}].doses_shipped`}
                                     component={NumberInput}
                                     disabled={markedForDeletion}
@@ -104,7 +113,9 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                         <Grid item xs={6} md={3}>
                             <Box>
                                 <Field
-                                    label="Doses received"
+                                    label={formatMessage(
+                                        MESSAGES.doses_received,
+                                    )}
                                     name={`pre_alerts[${index}].doses_received`}
                                     component={NumberInput}
                                     disabled={markedForDeletion}

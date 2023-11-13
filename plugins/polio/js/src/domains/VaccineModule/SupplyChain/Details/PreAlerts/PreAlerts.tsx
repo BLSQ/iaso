@@ -1,12 +1,12 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Grid, Typography, makeStyles } from '@material-ui/core';
-import { AddButton, commonStyles, useSafeIntl } from 'bluesquare-components';
-
+import { Box, Grid, Typography } from '@material-ui/core';
+import { AddButton, useSafeIntl } from 'bluesquare-components';
 import { useFormikContext } from 'formik';
 import { PreAlert } from './PreAlert';
+import MESSAGES from '../../messages';
 
 type Props = { className?: string; items?: any[] };
-const useStyles = makeStyles(theme => ({ ...commonStyles(theme) }));
+// const useStyles = makeStyles(theme => ({ ...commonStyles(theme) }));
 
 const emptyPreAlert = {
     date_reception: undefined,
@@ -23,7 +23,7 @@ export const PreAlerts: FunctionComponent<Props> = ({
     className,
     items = [],
 }) => {
-    const classes: Record<string, string> = useStyles();
+    // const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
 
     // TODO manage errors
@@ -33,8 +33,11 @@ export const PreAlerts: FunctionComponent<Props> = ({
         <Box className={className}>
             <Box mb={4}>
                 <Grid container justifyContent="space-between">
-                    <Typography variant="h5">PreAlerts</Typography>
+                    <Typography variant="h5">
+                        {formatMessage(MESSAGES.pre_alerts)}
+                    </Typography>
                     <AddButton
+                        message={MESSAGES.addPreAlert}
                         onClick={() => {
                             setFieldValue('pre_alerts', [
                                 ...values.pre_alerts,

@@ -314,6 +314,22 @@ export const useGetVrfDetails = (id?: string): UseQueryResult => {
     });
 };
 
+// This is just to avoid a warning polluting the console
+const defaultVaccineOptions = [
+    {
+        label: 'nOPV2',
+        value: 'nOPV2',
+    },
+    {
+        label: 'mOPV2',
+        value: 'mOPV2',
+    },
+    {
+        label: 'bOPV',
+        value: 'bOPV',
+    },
+];
+
 export const useCampaignDropDowns = (
     countryId?: number,
     campaign?: string,
@@ -334,9 +350,12 @@ export const useCampaignDropDowns = (
             label: c.obr_name,
             value: c.obr_name,
         }));
-        const vaccines = (selectedCampaign?.vaccines ?? '')
-            .split(',')
-            .map(vaccineName => ({ label: vaccineName, value: vaccineName }));
+        const vaccines = selectedCampaign?.vaccines
+            ? selectedCampaign.vaccines.split(',').map(vaccineName => ({
+                  label: vaccineName,
+                  value: vaccineName,
+              }))
+            : defaultVaccineOptions;
         const rounds = vaccine
             ? (selectedCampaign?.rounds ?? [])
                   .filter(round => round.vaccine_names.includes(vaccine))

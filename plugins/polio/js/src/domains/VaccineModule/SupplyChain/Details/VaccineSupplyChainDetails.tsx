@@ -101,9 +101,6 @@ type Props = { router: Router };
 const useStyles = makeStyles(theme => {
     return {
         ...commonStyles(theme),
-        inactiveTab: {
-            display: 'none',
-        },
     };
 });
 
@@ -238,6 +235,7 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
 
     const isLoading =
         isFetchingArrivalReports || isFetchingPreAlerts || isFetching;
+
     // Using formik's enableReinitialize would cause touched, errors etc to reset when changing tabs
     // So we set values with useEffect once data has been fetched.
     useEffect(() => {
@@ -262,6 +260,7 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
     useEffect(() => {
         setFieldValue('touchedTabs', touchedTabs);
     }, [setFieldValue, touchedTabs]);
+
     return (
         <FormikProvider value={formik}>
             <TopBar title={title} displayBackButton goBack={goBack}>
@@ -298,26 +297,15 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
                 {isLoading && <LoadingSpinner />}
                 {!isLoading && (
                     <>
-                        <VaccineRequestForm
-                            className={
-                                tab !== VRF ? classes.inactiveTab : undefined
-                            }
-                            vrfData={vrfDetails}
-                        />
-                        <PreAlerts
-                            className={
-                                tab !== PREALERT
-                                    ? classes.inactiveTab
-                                    : undefined
-                            }
-                            items={values.pre_alerts}
-                        />
-                        <VaccineArrivalReports
-                            className={
-                                tab !== VAR ? classes.inactiveTab : undefined
-                            }
-                            items={values.vars}
-                        />
+                        {tab === VRF && (
+                            <VaccineRequestForm vrfData={vrfDetails} />
+                        )}
+                        {tab === PREALERT && (
+                            <PreAlerts items={values.pre_alerts} />
+                        )}
+                        {tab === VAR && (
+                            <VaccineArrivalReports items={values.vars} />
+                        )}
                         <Grid container spacing={2} justifyContent="flex-end">
                             <Box ml={2} mt={4}>
                                 <Button

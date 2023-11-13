@@ -225,13 +225,23 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
     // TODO refine enabled condition
     const title = useTopBarTitle(vrfDetails);
     const allowSaveAll =
-        isValid && !isSaving && !isSubmitting && !isEqual(formik.touched, {});
+        isValid &&
+        !isSaving &&
+        !isSubmitting &&
+        !isEqual(formik.touched, {}) &&
+        (!isEqual(initialValues[VRF], values[VRF]) ||
+            !isEqual(initialValues[PREALERT], values[PREALERT]) ||
+            !isEqual(initialValues[VAR], values[VAR]));
 
     const isTabTouched = Boolean(touched[tab]);
     const isTabValid = !errors[tab];
     // TODO add check that a new values are different from fetched ones.
     const allowSaveTab =
-        isTabTouched && isTabValid && !isSaving && !isSubmitting;
+        isTabTouched &&
+        isTabValid &&
+        !isSaving &&
+        !isSubmitting &&
+        !isEqual(initialValues[tab], values[tab]);
 
     const isLoading =
         isFetchingArrivalReports || isFetchingPreAlerts || isFetching;
@@ -241,18 +251,33 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
     useEffect(() => {
         if (arrivalReports && !values.vars) {
             setFieldValue('vars', arrivalReports.arrival_reports);
+            // set InitialValues so we can compare with form values and enables/disabel dave button accordingly
+            setInitialValues({
+                ...initialValues,
+                vars: arrivalReports.arrival_reports,
+            });
         }
-    }, [arrivalReports, setFieldValue, values.vars]);
+    }, [arrivalReports, initialValues, setFieldValue, values.vars]);
     useEffect(() => {
         if (preAlerts && !values.pre_alerts) {
             setFieldValue('pre_alerts', preAlerts.pre_alerts);
+            // set InitialValues so we can compare with form values and enables/disabel dave button accordingly
+            setInitialValues({
+                ...initialValues,
+                pre_alerts: preAlerts.pre_alerts,
+            });
         }
-    }, [preAlerts, setFieldValue, values.pre_alerts]);
+    }, [initialValues, preAlerts, setFieldValue, values.pre_alerts]);
     useEffect(() => {
         if (vrfDetails && !values.vrf) {
             setFieldValue('vrf', vrfDetails);
+            // set InitialValues so we can compare with form values and enables/disabel dave button accordingly
+            setInitialValues({
+                ...initialValues,
+                vrf: vrfDetails,
+            });
         }
-    }, [vrfDetails, setFieldValue, values.vrf]);
+    }, [vrfDetails, setFieldValue, values.vrf, initialValues]);
 
     const touchedTabs = useMemo(() => Object.keys(touched), [touched]);
 

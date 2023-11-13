@@ -461,7 +461,7 @@ class TransitionToSerializer(serializers.Serializer):
             step.is_email_sent = True
             step.save()
             processes = BudgetProcess.objects.filter(rounds__pk__in=[c_round.pk for c_round in campaign.rounds.all()])
-            # FIXME Must Be saved to BudgetProcess instead of campaign
+            # FIXME Must Be saved to BudgetProcess instead of campaign and add process ID instead of campaign
             with transaction.atomic():
                 for process in processes:
                     field = transition.to_node + "_at_WFEDITABLE"
@@ -801,6 +801,7 @@ class BudgetProcessCreateSerializer(serializers.ModelSerializer):
     updated_at = TimestampField(read_only=True)
 
     def create(self, validated_data):
+        #FIXME: Add Team by config
         user = self.context["request"].user
         validated_data["created_by"] = user
         instance = super(BudgetProcessCreateSerializer, self).create(validated_data)

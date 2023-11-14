@@ -20,6 +20,9 @@ const useStyles = makeStyles((theme: Theme) => ({
         width: 'calc(100% - 64px)',
     },
     markedForDeletion: {
+        '&  label.MuiInputLabel-root': {
+            backgroundColor: `${theme.palette.grey['200']} !important`,
+        },
         backgroundColor: theme.palette.grey['200'],
     },
 }));

@@ -966,123 +966,6 @@ class VaccineAuthorization(SoftDeletableModel):
         return f"{self.country}-{self.expiration_date}"
 
 
-class NotificationImport(models.Model):
-    """
-    Notifications of polio virus outbreaks can be created manually (via the UI)
-    or imported from .xlsx files.
-
-    This model stores .xlsx files and use them to populate `Notification`.
-    """
-
-    XLSX_COL_NAMES = [
-        "EPID_NUMBER",
-        "VDPV_CATEGORY",
-        "SOURCE(AFP/ENV/CONTACT/HC)",
-        "VDPV_NUCLEOTIDE_DIFF_SABIN2",
-        "COUNTRY",
-        "PROVINCE",
-        "DISTRICT",
-        "SITE_NAME/GEOCODE",
-        "DATE_COLLECTION/DATE_OF_ONSET_(M/D/YYYY)",
-        "LINEAGE",
-        "CLOSEST_MATCH_VDPV2",
-        "DATE_RESULTS_RECEIVED",
-    ]
-
-    class Status(models.TextChoices):
-        PENDING = "pending", _("Pending")
-        CREATED = "created", _("Created")
-
-    account = models.ForeignKey("iaso.account", on_delete=models.CASCADE)
-    file = models.FileField(upload_to="uploads/polio_notifications/%Y-%m-%d-%H-%M/")
-    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
-    errors = models.JSONField(null=True, blank=True, encoder=DjangoJSONEncoder)
-    created_at = models.DateTimeField(default=timezone.now)
-    created_by = models.ForeignKey(
-        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="polio_notification_import_created_set"
-    )
-    updated_at = models.DateTimeField(blank=True, null=True)
-
-    class Meta:
-        verbose_name = _("Notification import")
-
-    def __str__(self) -> str:
-        return f"{self.file.name} - {self.status}"
-
-    def create_notifications(self, created_by: User) -> None:
-        try:
-            df = pd.read_excel(self.file, keep_default_na=False)
-        except Exception:
-            raise ValueError(f"Invalid Excel file {self.file}.")
-
-        # Normalize xlsx header's names.
-        df.rename(columns=lambda name: name.upper().strip().replace(" ", "_"), inplace=True)
-        for name in self.XLSX_COL_NAMES:
-            if name not in df.columns:
-                raise ValueError(f"Missing column {name}.")
-
-        errors = []
-        for idx, row in df.iterrows():
-            kwargs = {
-                "account": self.account,
-                "closest_match_vdpv2": self.clean_str(row["CLOSEST_MATCH_VDPV2"]),
-                "created_by": created_by,
-                "data_raw": row.to_dict(),
-                "data_source": self,
-                "date_of_onset": self.clean_date(row["DATE_COLLECTION/DATE_OF_ONSET_(M/D/YYYY)"]),
-                "date_results_received": self.clean_date(row["DATE_RESULTS_RECEIVED"]),
-                "lineage": self.clean_str(row["LINEAGE"]),
-                # TODO: org_unit.
-                # print(self.clean_str(row["COUNTRY"]))
-                # print(self.clean_str(row["PROVINCE"]))
-                # print(self.clean_str(row["DISTRICT"]))
-                "org_unit": None,
-                "site_name": self.clean_str(row["SITE_NAME/GEOCODE"]),
-                "source": self.clean_source(row["SOURCE(AFP/ENV/CONTACT/HC)"]),
-                "vdpv_category": self.clean_vdpv_category(row["VDPV_CATEGORY"]),
-                "vdpv_nucleotide_diff_sabin2": self.clean_str(row["VDPV_NUCLEOTIDE_DIFF_SABIN2"]),
-            }
-            _, created = Notification.objects.get_or_create(
-                epid_number=self.clean_str(row["EPID_NUMBER"]),
-                defaults=kwargs,
-            )
-            if not created:
-                errors.append(row.to_dict())
-
-        self.status = self.Status.CREATED
-        self.errors = errors
-        self.updated_at = timezone.now()
-        self.save()
-
-    @classmethod
-    def clean_str(cls, data) -> str:
-        return str(data).strip()
-
-    @classmethod
-    def clean_date(cls, data) -> Union[None, datetime.date]:
-        try:
-            return data.date()
-        except AttributeError:
-            return None
-
-    @classmethod
-    def clean_vdpv_category(cls, vdpv_category: str) -> str:
-        vdpv_category = cls.clean_str(vdpv_category).upper()
-        vdpv_category = "".join(char for char in vdpv_category if char.isalnum())
-        return Notification.VdpvCategories[vdpv_category]
-
-    @classmethod
-    def clean_source(cls, source: str) -> str:
-        source = cls.clean_str(source).upper()
-        try:
-            return Notification.Sources[source]
-        except KeyError:
-            pass
-        if source.startswith("CONT"):
-            return Notification.Sources["CONTACT"]
-        return Notification.Sources["OTHER"]
-
-
 class Notification(models.Model):
     """
     List of notifications of polio virus outbreaks.
@@ -1147,7 +1030,7 @@ class Notification(models.Model):
         User, null=True, blank=True, on_delete=models.SET_NULL, related_name="polio_notification_updated_set"
     )
 
-    data_source = models.ForeignKey(NotificationImport, null=True, blank=True, on_delete=models.SET_NULL)
+    data_source = models.ForeignKey("NotificationImport", null=True, blank=True, on_delete=models.SET_NULL)
     data_raw = models.JSONField(null=True, blank=True, encoder=DjangoJSONEncoder)
 
     class Meta:
@@ -1155,3 +1038,120 @@ class Notification(models.Model):
 
     def __str__(self) -> str:
         return f"{self.epid_number}"
+
+
+class NotificationImport(models.Model):
+    """
+    Notifications of polio virus outbreaks can be created manually (via the UI)
+    or imported from .xlsx files.
+
+    This model stores .xlsx files and use them to populate `Notification`.
+    """
+
+    XLSX_COL_NAMES = [
+        "EPID_NUMBER",
+        "VDPV_CATEGORY",
+        "SOURCE(AFP/ENV/CONTACT/HC)",
+        "VDPV_NUCLEOTIDE_DIFF_SABIN2",
+        "COUNTRY",
+        "PROVINCE",
+        "DISTRICT",
+        "SITE_NAME/GEOCODE",
+        "DATE_COLLECTION/DATE_OF_ONSET_(M/D/YYYY)",
+        "LINEAGE",
+        "CLOSEST_MATCH_VDPV2",
+        "DATE_RESULTS_RECEIVED",
+    ]
+
+    class Status(models.TextChoices):
+        PENDING = "pending", _("Pending")
+        CREATED = "created", _("Created")
+
+    account = models.ForeignKey("iaso.account", on_delete=models.CASCADE)
+    file = models.FileField(upload_to="uploads/polio_notifications/%Y-%m-%d-%H-%M/")
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
+    errors = models.JSONField(null=True, blank=True, encoder=DjangoJSONEncoder)
+    created_at = models.DateTimeField(default=timezone.now)
+    created_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="polio_notification_import_created_set"
+    )
+    updated_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        verbose_name = _("Notification import")
+
+    def __str__(self) -> str:
+        return f"{self.file.name} - {self.status}"
+
+    def create_notifications(self, created_by: User) -> None:
+        try:
+            df = pd.read_excel(self.file, keep_default_na=False)
+        except Exception as err:
+            raise ValueError(f"Invalid Excel file {self.file}.")
+
+        # Normalize xlsx header's names.
+        df.rename(columns=lambda name: name.upper().strip().replace(" ", "_"), inplace=True)
+        for name in self.XLSX_COL_NAMES:
+            if name not in df.columns:
+                raise ValueError(f"Missing column {name}.")
+
+        errors = []
+        for idx, row in df.iterrows():
+            kwargs = {
+                "account": self.account,
+                "closest_match_vdpv2": self.clean_str(row["CLOSEST_MATCH_VDPV2"]),
+                "created_by": created_by,
+                "data_raw": row.to_dict(),
+                "data_source": self,
+                "date_of_onset": self.clean_date(row["DATE_COLLECTION/DATE_OF_ONSET_(M/D/YYYY)"]),
+                "date_results_received": self.clean_date(row["DATE_RESULTS_RECEIVED"]),
+                "lineage": self.clean_str(row["LINEAGE"]),
+                # TODO: org_unit.
+                # print(self.clean_str(row["COUNTRY"]))
+                # print(self.clean_str(row["PROVINCE"]))
+                # print(self.clean_str(row["DISTRICT"]))
+                "org_unit": None,
+                "site_name": self.clean_str(row["SITE_NAME/GEOCODE"]),
+                "source": self.clean_source(row["SOURCE(AFP/ENV/CONTACT/HC)"]),
+                "vdpv_category": self.clean_vdpv_category(row["VDPV_CATEGORY"]),
+                "vdpv_nucleotide_diff_sabin2": self.clean_str(row["VDPV_NUCLEOTIDE_DIFF_SABIN2"]),
+            }
+            _, created = Notification.objects.get_or_create(
+                epid_number=self.clean_str(row["EPID_NUMBER"]),
+                defaults=kwargs,
+            )
+            if not created:
+                errors.append(row.to_dict())
+
+        self.status = self.Status.CREATED
+        self.errors = errors
+        self.updated_at = timezone.now()
+        self.save()
+
+    @classmethod
+    def clean_str(cls, data) -> str:
+        return str(data).strip()
+
+    @classmethod
+    def clean_date(cls, data) -> Union[None, datetime.date]:
+        try:
+            return data.date()
+        except AttributeError:
+            return None
+
+    @classmethod
+    def clean_vdpv_category(cls, vdpv_category: str) -> Notification.VdpvCategories:
+        vdpv_category = cls.clean_str(vdpv_category).upper()
+        vdpv_category = "".join(char for char in vdpv_category if char.isalnum())
+        return Notification.VdpvCategories[vdpv_category]
+
+    @classmethod
+    def clean_source(cls, source: str) -> Notification.Sources:
+        source = cls.clean_str(source).upper()
+        try:
+            return Notification.Sources[source]
+        except KeyError:
+            pass
+        if source.startswith("CONT"):
+            return Notification.Sources["CONTACT"]
+        return Notification.Sources["OTHER"]

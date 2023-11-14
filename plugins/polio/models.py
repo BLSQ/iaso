@@ -980,7 +980,7 @@ class NotificationImport(models.Model):
     account = models.ForeignKey("iaso.account", on_delete=models.CASCADE)
     file = models.FileField(upload_to="uploads/polio_notifications/%Y-%m-%d-%H-%M/")
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
-    error = models.JSONField(null=True, blank=True)
+    error = models.JSONField(null=True, blank=True, encoder=DjangoJSONEncoder)
     created_at = models.DateTimeField(default=timezone.now)
     created_by = models.ForeignKey(
         User, null=True, blank=True, on_delete=models.SET_NULL, related_name="polio_notification_import_created_set"
@@ -994,36 +994,39 @@ class NotificationImport(models.Model):
         return f"{self.file.name} - {self.status}"
 
     def create_notifications(self, created_by: User) -> None:
-        for idx, row in pd.read_excel(self.file, keep_default_na=False).iterrows():
+        df = pd.read_excel(self.file, keep_default_na=False)
+        # Normalize xlsx header's names.
+        df.rename(columns=lambda name: name.upper().strip().replace(" ", "_"), inplace=True)
+        for idx, row in df.iterrows():
             try:
-                date_of_onset = row["Date collection/date of onset (m/d/yyyy)"].date()
+                date_of_onset = row["DATE_COLLECTION/DATE_OF_ONSET_(M/D/YYYY)"].date()
             except AttributeError:
                 date_of_onset = None
             try:
-                date_results_received = row["Date Results received"].date()
+                date_results_received = row["DATE_RESULTS_RECEIVED"].date()
             except AttributeError:
                 date_results_received = None
 
             # TODO
             # row["COUNTRY"]
-            # row["Province "]
-            # row["District "]
-            # row["Site Name/Geocode"]
+            # row["PROVINCE"]
+            # row["DISTRICT"]
+            # row["SITE_NAME/GEOCODE"]
 
             Notification.objects.get_or_create(
-                epid_number=self.clean_str(row["EPID Number"]),
+                epid_number=self.clean_str(row["EPID_NUMBER"]),
                 defaults={
                     "account": self.account,
-                    "vdpv_category": self.clean_vdpv_category(row["VDPV Category"]),
-                    "source": self.clean_source(row["Source(AFP/ENV/CONTACT/HC)"]),
-                    "vdpv_nucleotide_diff_sabin2": self.clean_str(row["VDPV Nucleotide Diff SABIN2"]),
-                    "lineage": self.clean_str(row["Lineage"]),
-                    "closest_match_vdpv2": self.clean_str(row["Closest Match VDPV2"]),
+                    "closest_match_vdpv2": self.clean_str(row["CLOSEST_MATCH_VDPV2"]),
+                    "created_by": created_by,
+                    "data_raw": row.to_dict(),
+                    "data_source": self,
                     "date_of_onset": date_of_onset,
                     "date_results_received": date_results_received,
-                    "created_by": created_by,
-                    "data_source": self,
-                    "data_raw": row.to_dict(),
+                    "lineage": self.clean_str(row["LINEAGE"]),
+                    "source": self.clean_source(row["SOURCE(AFP/ENV/CONTACT/HC)"]),
+                    "vdpv_category": self.clean_vdpv_category(row["VDPV_CATEGORY"]),
+                    "vdpv_nucleotide_diff_sabin2": self.clean_str(row["VDPV_NUCLEOTIDE_DIFF_SABIN2"]),
                 },
             )
 

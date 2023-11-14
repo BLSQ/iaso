@@ -17,7 +17,7 @@ from django.core.validators import RegexValidator
 from iaso.models import Group, OrgUnit
 from iaso.models.base import Account
 from iaso.models.microplanning import Team
-from iaso.utils.models.soft_deletable import SoftDeletableModel
+from iaso.utils.models.soft_deletable import SoftDeletableModel, DefaultSoftDeletableManager
 from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
 from translated_fields import TranslatedField
@@ -961,6 +961,8 @@ class VaccineRequestForm(SoftDeletableModel):
     quantities_approved_by_dg_in_doses = models.PositiveIntegerField(null=True, blank=True)
     comment = models.TextField(blank=True, null=True)
 
+    objects = DefaultSoftDeletableManager()
+
     def get_country(self):
         return self.campaign.country
 
@@ -992,6 +994,8 @@ class VaccinePreAlert(SoftDeletableModel):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    objects = DefaultSoftDeletableManager()
+
     def get_doses_per_vial(self):
         return DOSES_PER_VIAL[self.request_form.vaccine_type]
 
@@ -1003,3 +1007,5 @@ class VaccineArrivalReport(SoftDeletableModel):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    objects = DefaultSoftDeletableManager()

@@ -3,11 +3,11 @@ from operator import itemgetter
 from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.utils.translation import gettext as _
+from iaso.utils.module_permissions import account_module_permissions
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 
 from hat.menupermissions.models import CustomPermissionSupport
-from hat.menupermissions.constants import MODULE_PERMISSIONS
 from hat.menupermissions import models as p
 
 
@@ -33,12 +33,7 @@ class PermissionsViewSet(viewsets.ViewSet):
         account_modules = account.modules if account.modules else []
 
         # Get all permissions linked to the modules
-        modules_permissions = []
-        modules = MODULE_PERMISSIONS.keys()
-
-        for module in account_modules:
-            if module in modules:
-                modules_permissions = modules_permissions + MODULE_PERMISSIONS[module]
+        modules_permissions = account_module_permissions(account_modules)
 
         perms = CustomPermissionSupport.filter_permissions(perms, modules_permissions, settings)
 

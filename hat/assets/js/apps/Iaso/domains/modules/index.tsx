@@ -1,7 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import { makeStyles, Box } from '@material-ui/core';
+import { makeStyles, Box, Typography, Grid } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
+import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { baseUrls } from '../../constants/urls';
@@ -33,6 +34,15 @@ export const Modules: FunctionComponent<Props> = ({ params }) => {
                 displayBackButton={false}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
+                <Grid container alignContent="stretch" spacing={1}>
+                    <Grid>
+                        <HelpOutlineIcon />
+                    </Grid>
+                    <Grid item>
+                        {formatMessage(MESSAGES.modulesInformation)}
+                    </Grid>
+                </Grid>
+
                 <ModulesFilters params={params} />
                 <TableWithDeepLink
                     marginTop={false}

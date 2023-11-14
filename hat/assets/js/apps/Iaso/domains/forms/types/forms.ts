@@ -142,5 +142,5 @@ export type FormDataType = {
     location_field: FieldError<string>;
     possible_fields: FieldError<PossibleField[]>;
     label_keys: FieldError<string[]>;
-    legend_threshold: FieldError<ScaleThreshold>;
+    legend_threshold?: FieldError<ScaleThreshold>;
 };

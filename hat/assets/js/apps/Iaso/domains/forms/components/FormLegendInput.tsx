@@ -43,9 +43,9 @@ export const FormLegendInput: FunctionComponent<FormFormProps> = ({
     const { formatMessage } = useSafeIntl();
     return (
         <>
-            {!isFormLoading && (
+            {!isFormLoading && currentForm.legend_threshold?.value && (
                 <>
-                    {!isEmpty(currentForm.legend_threshold.value) && (
+                    {!isEmpty(currentForm.legend_threshold?.value) && (
                         <Box position="relative" className={classes.fakeField}>
                             <Grid container spacing={1}>
                                 <Grid item xs={6}>

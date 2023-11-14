@@ -145,17 +145,24 @@ class NotificationImportAdmin(admin.ModelAdmin):
         for notification_import in queryset.filter(status=NotificationImport.Status.PENDING):
             notification_import.create_notifications(created_by=request.user)
 
-    raw_id_fields = ("account", "created_by")
-    list_filter = ("status",)
     actions = (create_notifications,)
-    list_display = ("pk", "account", "file", "status", "created_by")
+    list_display = ("pk", "file", "status", "created_by", "account")
+    list_filter = ("status",)
+    raw_id_fields = ("account", "created_by")
 
 
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
     raw_id_fields = ("account", "org_unit", "created_by", "updated_by", "data_source")
     read_only_fields = ("data_source",)
-    list_display = ("epid_number", "vdpv_nucleotide_diff_sabin2", "lineage", "closest_match_vdpv2", "date_of_onset")
+    list_display = (
+        "epid_number",
+        "vdpv_category",
+        "vdpv_nucleotide_diff_sabin2",
+        "lineage",
+        "closest_match_vdpv2",
+        "date_of_onset",
+    )
     list_filter = ("vdpv_category", "source")
 
 

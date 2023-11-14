@@ -66,6 +66,7 @@ class FormsSerializerTestCase(TestCase):
                     "sub_unit_types": [],
                 }
             ],
+            "legend_threshold": None,
         }
 
         with self.assertNumQueries(8):

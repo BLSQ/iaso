@@ -13,4 +13,8 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Edit',
         id: 'iaso.label.edit',
     },
+    createLegend: {
+        defaultMessage: 'Create legend',
+        id: 'iaso.forms.createLegend',
+    },
 });

@@ -381,7 +381,6 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
         latitude: [],
         longitude: [],
     });
-    console.log('errorsCoordinates', errorsCoordinates);
     return (
         <Grid container spacing={0}>
             <InnerDrawer

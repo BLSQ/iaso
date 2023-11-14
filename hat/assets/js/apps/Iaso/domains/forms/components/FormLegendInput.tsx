@@ -1,8 +1,9 @@
 /* eslint-disable camelcase */
 
 import React, { FunctionComponent } from 'react';
-import { Box, makeStyles, Grid } from '@material-ui/core';
+import { Box, makeStyles, Grid, IconButton } from '@material-ui/core';
 import { isEmpty } from 'lodash';
+import DeleteIcon from '@material-ui/icons/Delete';
 
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
@@ -47,19 +48,14 @@ export const FormLegendInput: FunctionComponent<FormFormProps> = ({
                     {!isEmpty(currentForm.legend_threshold.value) && (
                         <Box position="relative" className={classes.fakeField}>
                             <Grid container spacing={1}>
-                                <Grid item xs={8}>
+                                <Grid item xs={6}>
                                     <span className={classes.label}>
                                         {formatMessage(MESSAGES.legend)}
                                     </span>
-                                    <Legend
-                                        threshold={
-                                            currentForm.legend_threshold.value
-                                        }
-                                    />
                                 </Grid>
                                 <Grid
                                     item
-                                    xs={4}
+                                    xs={6}
                                     container
                                     justifyContent="flex-end"
                                     alignContent="flex-start"
@@ -77,6 +73,24 @@ export const FormLegendInput: FunctionComponent<FormFormProps> = ({
                                             )
                                         }
                                     />
+                                    <IconButton
+                                        size="small"
+                                        onClick={() =>
+                                            setFieldValue(
+                                                'legend_threshold',
+                                                null,
+                                            )
+                                        }
+                                    >
+                                        <DeleteIcon />
+                                    </IconButton>
+                                </Grid>
+                                <Grid item xs={12}>
+                                    <Legend
+                                        threshold={
+                                            currentForm.legend_threshold.value
+                                        }
+                                    />
                                 </Grid>
                             </Grid>
                         </Box>
@@ -89,7 +103,7 @@ export const FormLegendInput: FunctionComponent<FormFormProps> = ({
                         >
                             <AddLegendDialog
                                 iconProps={{}}
-                                titleMessage={MESSAGES.edit}
+                                titleMessage={MESSAGES.createLegend}
                                 onConfirm={newThreshold =>
                                     setFieldValue(
                                         'legend_threshold',

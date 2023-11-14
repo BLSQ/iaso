@@ -61,7 +61,6 @@ export const LegendRange: FunctionComponent<LegendRowProps> = ({
     if (nextRange) {
         min = nextRange.percent;
     }
-    //  get max here from previous range
     return (
         <Grid container spacing={2} className={classes.legendItem}>
             <Grid

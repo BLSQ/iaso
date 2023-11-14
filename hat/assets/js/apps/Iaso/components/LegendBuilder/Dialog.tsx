@@ -4,7 +4,6 @@ import {
     IntlMessage,
     makeFullModal,
     ConfirmCancelModal,
-    AddButton,
     useSafeIntl,
 } from 'bluesquare-components';
 import * as Yup from 'yup';
@@ -12,6 +11,8 @@ import SettingsIcon from '@material-ui/icons/Settings';
 import IconButton from '@material-ui/core/IconButton';
 
 import { useFormik } from 'formik';
+import { Box, Button } from '@material-ui/core';
+import Add from '@material-ui/icons/Add';
 import { MESSAGES } from './messages';
 import { ScaleThreshold } from './types';
 import { LegendBuilder } from './Index';
@@ -59,7 +60,6 @@ const Dialog: FunctionComponent<Props> = ({
         validationSchema,
         onSubmit: () => {
             onConfirm(getScaleThreshold(rangeValues));
-            closeDialog();
         },
     });
     const handleSetError = useCallback(
@@ -72,7 +72,7 @@ const Dialog: FunctionComponent<Props> = ({
     );
     const mappedErrors = useMemo(() => {
         return Array.isArray(errors.rangeValues)
-            ? errors.rangeValues.map(error => error?.percent || [])
+            ? errors.rangeValues.map(error => error?.percent || undefined)
             : [];
     }, [errors]);
     return (
@@ -83,8 +83,8 @@ const Dialog: FunctionComponent<Props> = ({
             confirmMessage={MESSAGES.save}
             maxWidth="xs"
             open={isOpen}
-            allowConfirm={isValid}
-            closeDialog={() => null}
+            allowConfirm={isValid && rangeValues.length > 1}
+            closeDialog={closeDialog}
             onClose={() => null}
             onCancel={() => {
                 closeDialog();
@@ -118,6 +118,22 @@ export const EditIconButton: FunctionComponent<PropsIcon> = ({ onClick }) => {
         >
             <SettingsIcon />
         </IconButton>
+    );
+};
+const AddButton: FunctionComponent<PropsIcon> = ({ onClick }) => {
+    const { formatMessage } = useSafeIntl();
+    return (
+        <Button
+            variant="contained"
+            color="primary"
+            onClick={onClick}
+            size="small"
+        >
+            <Box display="inline-block" mr={1} position="relative" top="4px">
+                <Add fontSize="small" />
+            </Box>
+            {formatMessage(MESSAGES.createLegend)}
+        </Button>
     );
 };
 

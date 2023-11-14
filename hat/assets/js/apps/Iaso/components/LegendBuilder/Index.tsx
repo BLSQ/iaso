@@ -90,6 +90,15 @@ export const LegendBuilder: FunctionComponent<LegendBuilderProps> = ({
         [onChange, rangeValues],
     );
 
+    const getErrors = useCallback(
+        index => {
+            return index < errors.length && errors[index]
+                ? [errors[index]]
+                : [];
+        },
+        [errors],
+    );
+
     return (
         <Box className={classes.root}>
             <Box className={classes.legendContainer}>
@@ -103,11 +112,7 @@ export const LegendBuilder: FunctionComponent<LegendBuilderProps> = ({
                         handleNumberChange={handleNumberChange}
                         removeRangeValue={removeRangeValue}
                         setFieldError={setFieldError}
-                        errors={
-                            index < errors.length && errors[index]
-                                ? [errors[index]]
-                                : []
-                        }
+                        errors={getErrors(index)}
                     />
                 ))}
                 <Box

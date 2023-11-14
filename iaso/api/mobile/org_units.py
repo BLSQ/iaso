@@ -1,3 +1,4 @@
+import django_filters
 from typing import Dict, Any
 from typing import Optional
 
@@ -8,18 +9,19 @@ from django.contrib.gis.geos import Point
 from django.core.cache import cache
 from django.db.models.expressions import RawSQL
 from django.db.models.functions import Cast
+from django.shortcuts import get_object_or_404
 from rest_framework import permissions
-from rest_framework.decorators import action
 from rest_framework.fields import SerializerMethodField
 from rest_framework.response import Response
-from rest_framework.serializers import ModelSerializer, JSONField
+from rest_framework.decorators import action
+from rest_framework import serializers
 
 from hat.api.export_utils import timestamp_to_utc_datetime
-from hat.menupermissions import models as permission
 from iaso.api.common import get_timestamp, TimestampField, ModelViewSet, Paginator, safe_api_import
 from iaso.api.query_params import APP_ID, LIMIT, PAGE
 from iaso.api.serializers import AppIdSerializer
-from iaso.models import OrgUnit, Project, FeatureFlag
+from iaso.models import Instance, OrgUnit, Project, FeatureFlag
+from hat.menupermissions import models as permission
 
 
 class MobileOrgUnitsSetPagination(Paginator):
@@ -31,7 +33,32 @@ class MobileOrgUnitsSetPagination(Paginator):
         return int(request.query_params.get(self.page_query_param, 1))
 
 
-class MobileOrgUnitSerializer(ModelSerializer):
+class ReferenceInstancesFilter(django_filters.rest_framework.FilterSet):
+    last_sync = django_filters.IsoDateTimeFilter(field_name="updated_at", lookup_expr="gte")
+
+    class Meta:
+        model = Instance
+        fields = []
+
+
+class ReferenceInstancesSerializer(serializers.ModelSerializer):
+    created_at = TimestampField()
+    updated_at = TimestampField()
+
+    class Meta:
+        model = Instance
+        fields = [
+            "id",
+            "uuid",
+            "form_id",
+            "form_version_id",
+            "created_at",
+            "updated_at",
+            "json",
+        ]
+
+
+class MobileOrgUnitSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Do not include the geo_json if not requested
@@ -66,7 +93,7 @@ class MobileOrgUnitSerializer(ModelSerializer):
     latitude = SerializerMethodField()
     longitude = SerializerMethodField()
     altitude = SerializerMethodField()
-    geo_json = JSONField()
+    geo_json = serializers.JSONField()
 
     @staticmethod
     def get_org_unit_type_name(org_unit: OrgUnit):
@@ -147,6 +174,10 @@ class MobileOrgUnitViewSet(ModelViewSet):
     You can also request the Geo Shape by adding the `shapes=1` to your query parameters.
 
     GET /api/mobile/orgunits?shapes=1
+
+    You can also list the reference instances of a given `OrgUnit` ID.
+
+    GET /api/mobile/orgunits/ID or UUID/reference_instances/?app_id={APP_ID}
     """
 
     permission_classes = [HasOrgUnitPermission]
@@ -245,6 +276,33 @@ class MobileOrgUnitViewSet(ModelViewSet):
             )
         # merge the bbox
         return Response(data={"results": results})
+
+    @action(detail=True, methods=["get"])
+    def reference_instances(self, request, pk):
+        """
+        List the reference instances of the given `OrgUnit` pk or uuid.
+        """
+        authorized_org_units = self.get_queryset()
+        try:
+            org_unit = get_object_or_404(authorized_org_units, id=pk)
+        except ValueError:
+            org_unit = get_object_or_404(authorized_org_units, uuid=pk)
+
+        reference_instances = org_unit.reference_instances.all()
+
+        filtered_reference_instances = ReferenceInstancesFilter(request.query_params, reference_instances).qs
+
+        page_size = self.paginator.get_page_size(request)
+
+        if page_size:
+            self.paginator.results_key = "instances"
+            self.paginator.page_size = page_size
+            paginated_reference_instances = self.paginate_queryset(filtered_reference_instances)
+            serializer = ReferenceInstancesSerializer(paginated_reference_instances, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = ReferenceInstancesSerializer(filtered_reference_instances, many=True)
+        return Response(serializer.data)
 
 
 def bbox_merge(a: Optional[tuple], b: Optional[tuple]) -> Optional[tuple]:

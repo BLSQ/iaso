@@ -977,6 +977,7 @@ class NotificationImport(models.Model):
         ERROR = "error", _("Error")
         CREATED = "created", _("Created")
 
+    account = models.ForeignKey("iaso.account", on_delete=models.CASCADE)
     file = models.FileField(upload_to="uploads/polio_notifications/%Y-%m-%d-%H-%M/")
     status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
     error = models.JSONField(null=True, blank=True)
@@ -992,7 +993,7 @@ class NotificationImport(models.Model):
     def __str__(self) -> str:
         return f"{self.file.name} - {self.status}"
 
-    def create_notifications(self):
+    def create_notifications(self, created_by: User) -> None:
         for idx, row in pd.read_excel(self.file, keep_default_na=False).iterrows():
             try:
                 date_of_onset = row["Date collection/date of onset (m/d/yyyy)"].date()
@@ -1003,18 +1004,16 @@ class NotificationImport(models.Model):
             except AttributeError:
                 date_results_received = None
 
-            # TODO 1.
+            # TODO
             # row["COUNTRY"]
             # row["Province "]
             # row["District "]
             # row["Site Name/Geocode"]
 
-            # TODO 2.
-            # created_by
-
             Notification.objects.get_or_create(
                 epid_number=self.clean_str(row["EPID Number"]),
                 defaults={
+                    "account": self.account,
                     "vdpv_category": self.clean_vdpv_category(row["VDPV Category"]),
                     "source": self.clean_source(row["Source(AFP/ENV/CONTACT/HC)"]),
                     "vdpv_nucleotide_diff_sabin2": self.clean_str(row["VDPV Nucleotide Diff SABIN2"]),
@@ -1022,10 +1021,15 @@ class NotificationImport(models.Model):
                     "closest_match_vdpv2": self.clean_str(row["Closest Match VDPV2"]),
                     "date_of_onset": date_of_onset,
                     "date_results_received": date_results_received,
+                    "created_by": created_by,
                     "data_source": self,
                     "data_raw": row.to_dict(),
                 },
             )
+
+            self.status = self.Status.CREATED
+            self.updated_at = timezone.now()
+            self.save()
 
     @classmethod
     def clean_str(cls, data) -> str:
@@ -1087,9 +1091,9 @@ class Notification(models.Model):
         HC = "hc", _("HC")
         OTHER = "other", _("Other")
 
+    account = models.ForeignKey("iaso.account", on_delete=models.CASCADE)
     # EPID number = epidemiological number = unique identifier of a case per disease.
     epid_number = models.CharField(max_length=50, unique=True)
-
     vdpv_category = models.CharField(max_length=20, choices=VdpvCategories.choices, default=VdpvCategories.AVDPV)
     source = models.CharField(max_length=50, choices=Sources.choices, default=Sources.AFP)
     vdpv_nucleotide_diff_sabin2 = models.CharField(max_length=10)

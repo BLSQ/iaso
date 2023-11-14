@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('iaso', '0243_form_legend_threshold'),
+        ("iaso", "0243_form_legend_threshold"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='form',
-            name='legend_threshold',
+            model_name="form",
+            name="legend_threshold",
             field=models.JSONField(blank=True, null=True),
         ),
     ]

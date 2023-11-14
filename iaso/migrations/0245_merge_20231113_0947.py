@@ -4,11 +4,9 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('iaso', '0243_alter_instance_planning'),
-        ('iaso', '0244_alter_form_legend_threshold'),
+        ("iaso", "0243_alter_instance_planning"),
+        ("iaso", "0244_alter_form_legend_threshold"),
     ]
 
-    operations = [
-    ]
+    operations = []

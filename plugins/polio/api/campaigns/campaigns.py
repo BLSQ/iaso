@@ -947,6 +947,103 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
         return response
 
     @action(methods=["GET"], detail=False, serializer_class=None)
+    def create_all_rounds_scopes_csv(self, request, **kwargs):
+        print(request.GET)
+        """
+        It generates a csv export file with all round's related informations
+
+            parameters:
+                self: a self
+                roundStartFrom: a date
+                roundStartTo: a date
+            returns:
+                it generates a csv file export
+        """
+        round_start_from = request.GET.get("roundStartFrom")
+        round_start_to = request.GET.get("roundStartTo")
+        round_start_from = datetime.strptime(round_start_from, "%d-%m-%Y") if round_start_from else None
+        round_start_to = datetime.strptime(round_start_to, "%d-%m-%Y") if round_start_to else None
+        current_date = request.GET.get("currentDate")
+        current_date = datetime.strptime(current_date, "%Y-%m-%d") if current_date else None
+        rounds = []
+        query_rounds = Q()
+        if not round_start_from and not round_start_to:
+            query_rounds = Q(started_at__gte=current_date)
+        else:
+            if round_start_from:
+                query_rounds &= Q(started_at__gte=round_start_from)
+            if round_start_to:
+                query_rounds &= Q(started_at__lte=round_start_to)
+
+        rounds = Round.objects.filter(query_rounds)
+
+        columns = [
+            {"title": "ID", "width": 10},
+            {"title": "Admin 2", "width": 25},
+            {"title": "Admin 1", "width": 25},
+            {"title": "Admin 0", "width": 25},
+            {"title": "OBR Name", "width": 25},
+            {"title": "Round Number", "width": 35},
+            {"title": "Vaccine", "width": 35},
+        ]
+        org_units_list = []
+        for round in rounds:
+            campaign = round.campaign
+            if not campaign:
+                continue
+            if not campaign.separate_scopes_per_round:
+                scopes = campaign.scopes.prefetch_related("group__org_units__org_unit_type").prefetch_related(
+                    "group__org_units__parent__parent"
+                )
+            else:
+                scopes = round.scopes.prefetch_related("group__org_units__org_unit_type").prefetch_related(
+                    "group__org_units__parent__parent"
+                )
+
+            for scope in scopes.all():
+                for org_unit in scope.group.org_units.all():
+                    item = {}
+                    item["id"] = org_unit.id
+                    item["org_unit_name"] = org_unit.name
+                    item["org_unit_parent_name"] = org_unit.parent.name
+                    item["org_unit_parent_of_parent_name"] = org_unit.parent.parent.name
+                    item["obr_name"] = campaign.obr_name
+                    item["round_number"] = "R" + str(round.number)
+                    item["vaccine"] = scope.vaccine
+                    item["started"] = round.started_at
+                    org_units_list.append(item)
+
+            filename = "%s-%s--%s--%s-%s" % (
+                "campaign",
+                campaign.obr_name,
+                "R" + str(round.number),
+                "org_units",
+                strftime("%Y-%m-%d-%H-%M", gmtime()),
+            )
+
+        def get_row(org_unit, **kwargs):
+            campaign_scope_values = [
+                org_unit.get("id"),
+                org_unit.get("org_unit_name"),
+                org_unit.get("org_unit_parent_name"),
+                org_unit.get("org_unit_parent_of_parent_name"),
+                org_unit.get("obr_name"),
+                org_unit.get("round_number"),
+                org_unit.get("vaccine"),
+                org_unit.get("started"),
+            ]
+
+            return campaign_scope_values
+
+        response = StreamingHttpResponse(
+            streaming_content=(iter_items(org_units_list, Echo(), columns, get_row)), content_type=CONTENT_TYPE_CSV
+        )
+        filename = "filename" + ".csv"
+        response["Content-Disposition"] = "attachment; filename=%s" % filename
+
+        return response
+
+    @action(methods=["GET"], detail=False, serializer_class=None)
     def csv_campaign_scopes_export(self, request, **kwargs):
         """
         It generates a csv export file with round's related informations

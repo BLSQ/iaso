@@ -3,21 +3,24 @@ import {
     getTableUrl,
     makeFullModal,
 } from 'bluesquare-components';
-import React, { FunctionComponent, useEffect, useState } from 'react';
-import { date } from 'yup';
+import React, { FunctionComponent, useState } from 'react';
 import DatesRange from '../../../../../../hat/assets/js/apps/Iaso/components/filters/DatesRange';
 import MESSAGES from '../../constants/messages.js';
 import { ExportCsvModalButton } from './ExportCsvModalButton';
 
 type Props = {
+    currentDate: string;
     isOpen: boolean;
     closeDialog: () => void;
 };
 
-const ExportCsvModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
+const ExportCsvModal: FunctionComponent<Props> = ({
+    closeDialog,
+    isOpen,
+    currentDate,
+}) => {
     const [roundStartFrom, setRoundStartFrom] = useState(null);
     const [roundStartTo, setRoundStartTo] = useState(null);
-    const [confirm, setConfirm] = useState(false);
     const onChangeDate = (keyValue, value) => {
         if (keyValue === 'roundStartFrom') {
             setRoundStartFrom(value);
@@ -27,27 +30,22 @@ const ExportCsvModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
         }
     };
 
-    useEffect(() => {
-        if (roundStartFrom !== null && roundStartTo !== null) {
-            setConfirm(true);
-        } else {
-            setConfirm(false);
-        }
-    }, [roundStartFrom, roundStartTo]);
     const urlParams = {
+        currentDate,
         roundStartFrom,
         roundStartTo,
     };
     const handleConfirm = () => {
         const xlsxUrl = getTableUrl(
-            'polio/campaigns/create_round_scopes_csv_sheet',
+            'polio/campaigns/create_all_rounds_scopes_csv',
             urlParams,
         );
-        console.log(xlsxUrl);
+
+        window.open(xlsxUrl, '_blank');
     };
     return (
         <ConfirmCancelModal
-            allowConfirm={confirm}
+            allowConfirm
             titleMessage={MESSAGES.dateRangeTitle}
             onConfirm={handleConfirm}
             onCancel={() => {

@@ -1030,8 +1030,9 @@ class Notification(models.Model):
         User, null=True, blank=True, on_delete=models.SET_NULL, related_name="polio_notification_updated_set"
     )
 
-    data_source = models.ForeignKey("NotificationImport", null=True, blank=True, on_delete=models.SET_NULL)
-    data_raw = models.JSONField(null=True, blank=True, encoder=DjangoJSONEncoder)
+    # `import_*` fields are populated when the data come from an .xlsx file.
+    import_source = models.ForeignKey("NotificationImport", null=True, blank=True, on_delete=models.SET_NULL)
+    import_raw_data = models.JSONField(null=True, blank=True, encoder=DjangoJSONEncoder)
 
     class Meta:
         verbose_name = _("Notification")
@@ -1101,10 +1102,10 @@ class NotificationImport(models.Model):
                 "account": self.account,
                 "closest_match_vdpv2": self.clean_str(row["CLOSEST_MATCH_VDPV2"]),
                 "created_by": created_by,
-                "data_raw": row.to_dict(),
-                "data_source": self,
                 "date_of_onset": self.clean_date(row["DATE_COLLECTION/DATE_OF_ONSET_(M/D/YYYY)"]),
                 "date_results_received": self.clean_date(row["DATE_RESULTS_RECEIVED"]),
+                "import_raw_data": row.to_dict(),
+                "import_source": self,
                 "lineage": self.clean_str(row["LINEAGE"]),
                 # TODO: org_unit.
                 # print(self.clean_str(row["COUNTRY"]))

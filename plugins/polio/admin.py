@@ -146,6 +146,7 @@ class NotificationImportAdmin(admin.ModelAdmin):
             notification_import.create_notifications(created_by=request.user)
 
     actions = (create_notifications,)
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
     list_display = ("pk", "file", "status", "created_by", "account")
     list_filter = ("status",)
     raw_id_fields = ("account", "created_by")
@@ -153,8 +154,6 @@ class NotificationImportAdmin(admin.ModelAdmin):
 
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
-    raw_id_fields = ("account", "org_unit", "created_by", "updated_by", "data_source")
-    read_only_fields = ("data_source",)
     list_display = (
         "epid_number",
         "vdpv_category",
@@ -164,6 +163,8 @@ class NotificationAdmin(admin.ModelAdmin):
         "date_of_onset",
     )
     list_filter = ("vdpv_category", "source")
+    raw_id_fields = ("account", "org_unit", "created_by", "updated_by", "import_source")
+    read_only_fields = ("data_source",)
 
 
 admin.site.register(Campaign, CampaignAdmin)

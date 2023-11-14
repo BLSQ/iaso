@@ -256,9 +256,7 @@ const Calendar = ({ params }) => {
                     >
                         <Grid item>
                             <Box display="flex" justifyContent="flex-end">
-                                <ExportCsvModal
-                                    currentDate={params.currentDate}
-                                />
+                                <ExportCsvModal params={params} />
                             </Box>
                         </Grid>
                     </Grid>

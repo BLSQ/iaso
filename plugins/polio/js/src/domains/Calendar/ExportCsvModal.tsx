@@ -9,7 +9,7 @@ import MESSAGES from '../../constants/messages.js';
 import { ExportCsvModalButton } from './ExportCsvModalButton';
 
 type Props = {
-    currentDate: string;
+    params: any;
     isOpen: boolean;
     closeDialog: () => void;
 };
@@ -17,7 +17,7 @@ type Props = {
 const ExportCsvModal: FunctionComponent<Props> = ({
     closeDialog,
     isOpen,
-    currentDate,
+    params,
 }) => {
     const [roundStartFrom, setRoundStartFrom] = useState(null);
     const [roundStartTo, setRoundStartTo] = useState(null);
@@ -31,7 +31,12 @@ const ExportCsvModal: FunctionComponent<Props> = ({
     };
 
     const urlParams = {
-        currentDate,
+        currentDate: params.currentDate,
+        countries: params.countries,
+        campaignType: params.campaignType,
+        campaignGroups: params.campaignGroups,
+        orgUnitGroups: params.orgUnitGroups,
+        search: params.search,
         roundStartFrom,
         roundStartTo,
     };

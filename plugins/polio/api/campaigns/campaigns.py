@@ -961,10 +961,17 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
         """
         round_start_from = request.GET.get("roundStartFrom")
         round_start_to = request.GET.get("roundStartTo")
+        current_date = request.GET.get("currentDate")
+        countries = request.GET.get("countries") if request.GET.get("countries") is not None else None
+        campaign_groups = request.GET.get("campaignGroups") if request.GET.get("campaignGroups") is not None else None
+        campaign_type = request.GET.get("campaignType") if request.GET.get("campaignType") is not None else None
+        search = request.GET.get("search")
+        org_unit_groups = request.GET.get("orgUnitGroups") if request.GET.get("orgUnitGroups") is not None else None
+
         round_start_from = datetime.strptime(round_start_from, "%d-%m-%Y") if round_start_from else None
         round_start_to = datetime.strptime(round_start_to, "%d-%m-%Y") if round_start_to else None
-        current_date = request.GET.get("currentDate")
         current_date = datetime.strptime(current_date, "%Y-%m-%d") if current_date else None
+
         rounds = []
         query_rounds = Q()
         if not round_start_from and not round_start_to:
@@ -976,6 +983,22 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
                 query_rounds &= Q(started_at__lte=round_start_to)
 
         rounds = Round.objects.filter(query_rounds)
+
+        # Test campaigns should not appear in the xlsx calendar
+        rounds = rounds.filter(campaign__is_test=False)
+        # print(countries)
+        if countries:
+            rounds = rounds.filter(campaign__country_id__in=countries.split(","))
+        if campaign_groups:
+            rounds = rounds.filter(campaign__group_id__in=campaign_groups.split(","))
+        if campaign_type == "preventive":
+            rounds = rounds.filter(campaign__is_preventive=True)
+        if campaign_type == "regular":
+            rounds = rounds.filter(campaign__is_preventive=False).filter(campaign__is_test=False)
+        if search:
+            rounds = rounds.filter(Q(campaign__obr_name__icontains=search) | Q(campaign__epid__icontains=search))
+        if org_unit_groups:
+            rounds = rounds.filter(campaign__country__groups__in=org_unit_groups.split(","))
 
         columns = [
             {"title": "ID", "width": 10},

@@ -71,7 +71,6 @@ class NotificationImportTestCase(TestCase):
             notification_import.create_notifications(created_by=self.user)
         self.assertIn("Invalid Excel file", str(error.exception))
 
-    # MEDIA_ROOT
     def test_create_notifications_with_wrong_cols(self):
         with open(self.wrong_cols_file_path, "rb") as xls_file:
             notification_import = NotificationImport.objects.create(

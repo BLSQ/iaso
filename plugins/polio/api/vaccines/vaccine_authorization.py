@@ -19,7 +19,9 @@ from plugins.polio.settings import COUNTRY
 
 def check_for_already_validated_authorization(status, country):
     if status == "VALIDATED":
-        validated_vaccine_auth = VaccineAuthorization.objects.filter(status="VALIDATED", country=country)
+        validated_vaccine_auth = VaccineAuthorization.objects.filter(
+            status="VALIDATED", country=country, deleted_at__isnull=True
+        )
         if validated_vaccine_auth:
             raise Custom403Exception({"error": f"A vaccine authorization is already validated for this country"})
 

@@ -104,11 +104,18 @@ def check_total_doses_requested(vaccine_authorization, nOPV2_rounds, current_cam
     It also emails the nopv2 vaccine team about it.
     """
     if vaccine_authorization and vaccine_authorization.quantity is not None:
-        campaigns = Campaign.objects.filter(country=vaccine_authorization.country).exclude(pk=current_campaign.pk)
+        campaigns = Campaign.objects.filter(country=vaccine_authorization.country, deleted_at__isnull=True).exclude(
+            pk=current_campaign.pk
+        )
         total_doses_requested_for_campaigns = 0
         campaigns_rounds = [c_round for c_round in Round.objects.filter(campaign__in=campaigns)]
 
+        existing_nopv2_rounds = []
         for r in campaigns_rounds:
+            if "nOPV2" in r.vaccine_names():
+                existing_nopv2_rounds.append(r)
+
+        for r in existing_nopv2_rounds:
             if r.started_at and r.doses_requested:
                 if vaccine_authorization.start_date <= r.started_at <= vaccine_authorization.expiration_date:
                     total_doses_requested_for_campaigns += r.doses_requested
@@ -254,14 +261,14 @@ class CampaignSerializer(serializers.ModelSerializer):
         c_rounds = [r for r in campaign.rounds.all()]
         nOPV2_rounds = []
         for r in c_rounds:
-            if r.vaccine_names() == "nOPV2":
+            if "nOPV2" in r.vaccine_names():
                 nOPV2_rounds.append(r)
 
         if initial_org_unit and len(nOPV2_rounds) > 0:
             try:
                 initial_org_unit = OrgUnit.objects.get(pk=initial_org_unit.pk)
                 vaccine_authorization = VaccineAuthorization.objects.filter(
-                    country=initial_org_unit, status="VALIDATED", account=account
+                    country=initial_org_unit, status="VALIDATED", account=account, deleted_at__isnull=True
                 )
                 if vaccine_authorization:
                     check_total_doses_requested(vaccine_authorization[0], nOPV2_rounds, campaign)
@@ -365,14 +372,13 @@ class CampaignSerializer(serializers.ModelSerializer):
         c_rounds = [r for r in campaign.rounds.all()]
         nOPV2_rounds = []
         for r in c_rounds:
-            if r.vaccine_names() == "nOPV2":
+            if "nOPV2" in r.vaccine_names():
                 nOPV2_rounds.append(r)
-
         if initial_org_unit and len(nOPV2_rounds) > 0:
             try:
                 initial_org_unit = OrgUnit.objects.get(pk=initial_org_unit.pk)
                 vaccine_authorization = VaccineAuthorization.objects.filter(
-                    country=initial_org_unit, status="VALIDATED", account=account
+                    country=initial_org_unit, status="VALIDATED", account=account, deleted_at__isnull=True
                 )
                 if vaccine_authorization:
                     check_total_doses_requested(vaccine_authorization[0], nOPV2_rounds, campaign)

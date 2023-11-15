@@ -17,7 +17,7 @@ from django.utils.translation import gettext as _
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.html import strip_tags
 from django.template import Context, Template
-from hat.menupermissions.constants import MODULE_PERMISSIONS
+from iaso.utils.module_permissions import account_module_permissions
 from rest_framework import viewsets, permissions, status
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
@@ -422,13 +422,8 @@ class ProfilesViewSet(viewsets.ViewSet):
     def module_permissions(current_account):
         # Get all modules linked to the current account
         account_modules = current_account.modules if current_account.modules else []
-        modules_permissions = []
-        # Get all permissions linked to the modules
-        modules = MODULE_PERMISSIONS.keys()
-        for module in account_modules:
-            if module in modules:
-                modules_permissions = modules_permissions + MODULE_PERMISSIONS[module]
-        return modules_permissions
+        # Get and return all permissions linked to the modules
+        return account_module_permissions(account_modules)
 
     @staticmethod
     def update_password(user, request):

@@ -25,7 +25,10 @@ class NotificationImportTestCase(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        shutil.rmtree(TEST_MEDIA_ROOT)
+        try:
+            shutil.rmtree(TEST_MEDIA_ROOT)
+        except FileNotFoundError:
+            pass
         super().tearDownClass()
 
     @classmethod
@@ -38,7 +41,7 @@ class NotificationImportTestCase(TestCase):
 
     def test_model_str(self):
         notification_import = NotificationImport(file="foo.xlsx", account=self.account, created_by=self.user)
-        self.assertEqual(str(notification_import), "foo.xlsx - pending")
+        self.assertEqual(str(notification_import), "foo.xlsx - new")
 
     def test_clean_str(self):
         func = NotificationImport.clean_str

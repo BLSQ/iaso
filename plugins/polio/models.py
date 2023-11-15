@@ -1,7 +1,8 @@
+from collections import defaultdict
 from datetime import date
 import datetime
 import json
-from typing import Union
+from typing import Any, Tuple, Union
 from uuid import uuid4
 
 import pandas as pd
@@ -1049,7 +1050,7 @@ class NotificationImport(models.Model):
     This model stores .xlsx files and use them to populate `Notification`.
     """
 
-    XLSX_COL_NAMES = [
+    EXPECTED_XLSX_COL_NAMES = [
         "EPID_NUMBER",
         "VDPV_CATEGORY",
         "SOURCE(AFP/ENV/CONTACT/HC)",
@@ -1065,12 +1066,13 @@ class NotificationImport(models.Model):
     ]
 
     class Status(models.TextChoices):
+        NEW = "new", _("New")
         PENDING = "pending", _("Pending")
-        CREATED = "created", _("Created")
+        DONE = "done", _("Done")
 
     account = models.ForeignKey("iaso.account", on_delete=models.CASCADE)
     file = models.FileField(upload_to="uploads/polio_notifications/%Y-%m-%d-%H-%M/")
-    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.NEW)
     errors = models.JSONField(null=True, blank=True, encoder=DjangoJSONEncoder)
     created_at = models.DateTimeField(default=timezone.now)
     created_by = models.ForeignKey(
@@ -1092,12 +1094,22 @@ class NotificationImport(models.Model):
 
         # Normalize xlsx header's names.
         df.rename(columns=lambda name: name.upper().strip().replace(" ", "_"), inplace=True)
-        for name in self.XLSX_COL_NAMES:
+        for name in self.EXPECTED_XLSX_COL_NAMES:
             if name not in df.columns:
                 raise ValueError(f"Missing column {name}.")
 
+        countries_cache, regions_cache, districts_cache = self._build_org_unit_caches()
         errors = []
+
         for idx, row in df.iterrows():
+            org_unit = self._find_org_unit_in_caches(
+                country_name=self.clean_str(row["COUNTRY"]),
+                region_name=self.clean_str(row["PROVINCE"]),
+                district_name=self.clean_str(row["DISTRICT"]),
+                countries_cache=countries_cache,
+                regions_cache=regions_cache,
+                districts_cache=districts_cache,
+            )
             kwargs = {
                 "account": self.account,
                 "closest_match_vdpv2": self.clean_str(row["CLOSEST_MATCH_VDPV2"]),
@@ -1107,11 +1119,7 @@ class NotificationImport(models.Model):
                 "import_raw_data": row.to_dict(),
                 "import_source": self,
                 "lineage": self.clean_str(row["LINEAGE"]),
-                # TODO: org_unit.
-                # print(self.clean_str(row["COUNTRY"]))
-                # print(self.clean_str(row["PROVINCE"]))
-                # print(self.clean_str(row["DISTRICT"]))
-                "org_unit": None,
+                "org_unit": org_unit,
                 "site_name": self.clean_str(row["SITE_NAME/GEOCODE"]),
                 "source": self.clean_source(row["SOURCE(AFP/ENV/CONTACT/HC)"]),
                 "vdpv_category": self.clean_vdpv_category(row["VDPV_CATEGORY"]),
@@ -1124,17 +1132,66 @@ class NotificationImport(models.Model):
             if not created:
                 errors.append(row.to_dict())
 
-        self.status = self.Status.CREATED
+        self.status = self.Status.DONE
         self.errors = errors
         self.updated_at = timezone.now()
         self.save()
 
     @classmethod
-    def clean_str(cls, data) -> str:
+    def _build_org_unit_caches(cls) -> Tuple[defaultdict, defaultdict, defaultdict]:
+        from plugins.polio.api.common import make_orgunits_cache
+        from plugins.polio.api.dashboards.forma import parents_q
+
+        districts = OrgUnit.objects.filter(
+            org_unit_type__category="DISTRICT", validation_status=OrgUnit.VALIDATION_VALID
+        ).select_related("org_unit_type")
+
+        regions = OrgUnit.objects.filter(
+            parents_q(districts),
+            org_unit_type__category="REGION",
+            validation_status=OrgUnit.VALIDATION_VALID,
+            path__depth=2,
+        ).select_related("org_unit_type")
+
+        countries = OrgUnit.objects.filter(
+            parents_q(districts),
+            org_unit_type__category="COUNTRY",
+            validation_status=OrgUnit.VALIDATION_VALID,
+            path__depth=1,
+        ).select_related("org_unit_type")
+
+        districts_cache = make_orgunits_cache(districts)
+        regions_cache = make_orgunits_cache(regions)
+        countries_cache = make_orgunits_cache(countries)
+
+        return countries_cache, regions_cache, districts_cache
+
+    @classmethod
+    def _find_org_unit_in_caches(
+        cls,
+        country_name: str,
+        region_name: str,
+        district_name: str,
+        countries_cache: defaultdict,
+        regions_cache: defaultdict,
+        districts_cache: defaultdict,
+    ) -> Union[None, OrgUnit]:
+        from plugins.polio.api.common import find_orgunit_in_cache
+
+        country = find_orgunit_in_cache(countries_cache, country_name)
+        region = None
+        if country:
+            region = find_orgunit_in_cache(regions_cache, region_name, country.name)
+        if region:
+            return find_orgunit_in_cache(districts_cache, district_name, region.name)
+        return None
+
+    @classmethod
+    def clean_str(cls, data: Any) -> str:
         return str(data).strip()
 
     @classmethod
-    def clean_date(cls, data) -> Union[None, datetime.date]:
+    def clean_date(cls, data: Any) -> Union[None, datetime.date]:
         try:
             return data.date()
         except AttributeError:

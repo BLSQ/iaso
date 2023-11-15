@@ -142,7 +142,7 @@ class ReasonForDelayAdmin(admin.ModelAdmin):
 class NotificationImportAdmin(admin.ModelAdmin):
     @admin.action(description="Create notifications")
     def create_notifications(self, request, queryset) -> None:
-        for notification_import in queryset.filter(status=NotificationImport.Status.PENDING):
+        for notification_import in queryset.filter(status=NotificationImport.Status.NEW):
             notification_import.create_notifications(created_by=request.user)
 
     actions = (create_notifications,)
@@ -156,6 +156,7 @@ class NotificationImportAdmin(admin.ModelAdmin):
 class NotificationAdmin(admin.ModelAdmin):
     list_display = (
         "epid_number",
+        "org_unit",
         "vdpv_category",
         "vdpv_nucleotide_diff_sabin2",
         "lineage",

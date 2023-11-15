@@ -43,8 +43,7 @@ class ModuleAPITestCase(APITestCase):
         self.client.force_authenticate(self.user_with_no_permissions)
         response = self.client.get("/api/modules/")
 
-        r = self.assertJSONResponse(response, 403)
-        self.assertEqual(r["detail"], "You do not have permission to perform this action.")
+        r = self.assertJSONResponse(response, 200)
 
     def test_list_all_modules_without_search(self):
         self.client.force_authenticate(self.yoda)

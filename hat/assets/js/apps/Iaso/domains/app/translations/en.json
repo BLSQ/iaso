@@ -733,6 +733,7 @@
     "iaso.modules.embedded_links": "Embedded links",
     "iaso.modules.entities": "Entities",
     "iaso.modules.external_storage": "External storage",
+    "iaso.modules.modulesInformation": "You can see here the feature modules that are activated for your account. Contact an admin of your instance if you wish to activate additional features.",
     "iaso.modules.planning": "Planning",
     "iaso.modules.polio_project": "Polio project",
     "iaso.modules.registry": "Registry",

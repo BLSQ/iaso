@@ -948,7 +948,6 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
 
     @action(methods=["GET"], detail=False, serializer_class=None)
     def create_all_rounds_scopes_csv(self, request, **kwargs):
-        print(request.GET)
         """
         It generates a csv export file with all round's related informations
 
@@ -962,17 +961,11 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
         round_start_from = request.GET.get("roundStartFrom")
         round_start_to = request.GET.get("roundStartTo")
         current_date = request.GET.get("currentDate")
-        countries = request.GET.get("countries") if request.GET.get("countries") is not None else None
-        campaign_groups = request.GET.get("campaignGroups") if request.GET.get("campaignGroups") is not None else None
-        campaign_type = request.GET.get("campaignType") if request.GET.get("campaignType") is not None else None
-        search = request.GET.get("search")
-        org_unit_groups = request.GET.get("orgUnitGroups") if request.GET.get("orgUnitGroups") is not None else None
 
         round_start_from = datetime.strptime(round_start_from, "%d-%m-%Y") if round_start_from else None
         round_start_to = datetime.strptime(round_start_to, "%d-%m-%Y") if round_start_to else None
-        current_date = datetime.strptime(current_date, "%Y-%m-%d") if current_date else None
-
-        rounds = []
+        current_date = datetime.strptime(current_date, "%Y-%m-%d") if current_date else datetime.today()
+        # get the filter query on start from and start to dates
         query_rounds = Q()
         if not round_start_from and not round_start_to:
             query_rounds = Q(started_at__gte=current_date)
@@ -982,86 +975,37 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
             if round_start_to:
                 query_rounds &= Q(started_at__lte=round_start_to)
 
+        rounds = []
         rounds = Round.objects.filter(query_rounds)
-
-        # Test campaigns should not appear in the xlsx calendar
-        rounds = rounds.filter(campaign__is_test=False)
-        # print(countries)
-        if countries:
-            rounds = rounds.filter(campaign__country_id__in=countries.split(","))
-        if campaign_groups:
-            rounds = rounds.filter(campaign__group_id__in=campaign_groups.split(","))
-        if campaign_type == "preventive":
-            rounds = rounds.filter(campaign__is_preventive=True)
-        if campaign_type == "regular":
-            rounds = rounds.filter(campaign__is_preventive=False).filter(campaign__is_test=False)
-        if search:
-            rounds = rounds.filter(Q(campaign__obr_name__icontains=search) | Q(campaign__epid__icontains=search))
-        if org_unit_groups:
-            rounds = rounds.filter(campaign__country__groups__in=org_unit_groups.split(","))
-
-        columns = [
-            {"title": "ID", "width": 10},
-            {"title": "Admin 2", "width": 25},
-            {"title": "Admin 1", "width": 25},
-            {"title": "Admin 0", "width": 25},
-            {"title": "OBR Name", "width": 25},
-            {"title": "Round Number", "width": 35},
-            {"title": "Vaccine", "width": 35},
-        ]
+        # get filtered rounds
+        rounds = self.get_filtered_rounds(rounds, request.GET)
+        # The csv file name base on the start from and start to dates
+        start_from_name = (
+            "--start-from-" + round_start_from.strftime("%d-%m-%Y")
+            if round_start_from
+            else ("--start-from-" + current_date.strftime("%d-%m-%Y") if not round_start_to else "")
+        )
+        start_to_name = "--start-to " + round_start_to.strftime("%d-%m-%Y") if round_start_to else ""
+        
+        filename = "%s%s%s" % (
+            "all-rounds-scopes",
+            start_from_name,
+            start_to_name,
+        )
+        # get csv columns
+        columns = self.csv_columns()
         org_units_list = []
+        # loop on filtered rounds and make the org_units_list to be pushed in the csv file
         for round in rounds:
             campaign = round.campaign
             if not campaign:
                 continue
-            if not campaign.separate_scopes_per_round:
-                scopes = campaign.scopes.prefetch_related("group__org_units__org_unit_type").prefetch_related(
-                    "group__org_units__parent__parent"
-                )
-            else:
-                scopes = round.scopes.prefetch_related("group__org_units__org_unit_type").prefetch_related(
-                    "group__org_units__parent__parent"
-                )
-
-            for scope in scopes.all():
-                for org_unit in scope.group.org_units.all():
-                    item = {}
-                    item["id"] = org_unit.id
-                    item["org_unit_name"] = org_unit.name
-                    item["org_unit_parent_name"] = org_unit.parent.name
-                    item["org_unit_parent_of_parent_name"] = org_unit.parent.parent.name
-                    item["obr_name"] = campaign.obr_name
-                    item["round_number"] = "R" + str(round.number)
-                    item["vaccine"] = scope.vaccine
-                    item["started"] = round.started_at
-                    org_units_list.append(item)
-
-            filename = "%s-%s--%s--%s-%s" % (
-                "campaign",
-                campaign.obr_name,
-                "R" + str(round.number),
-                "org_units",
-                strftime("%Y-%m-%d-%H-%M", gmtime()),
-            )
-
-        def get_row(org_unit, **kwargs):
-            campaign_scope_values = [
-                org_unit.get("id"),
-                org_unit.get("org_unit_name"),
-                org_unit.get("org_unit_parent_name"),
-                org_unit.get("org_unit_parent_of_parent_name"),
-                org_unit.get("obr_name"),
-                org_unit.get("round_number"),
-                org_unit.get("vaccine"),
-                org_unit.get("started"),
-            ]
-
-            return campaign_scope_values
+            org_units_list += self.get_org_units_list(round, campaign)
 
         response = StreamingHttpResponse(
-            streaming_content=(iter_items(org_units_list, Echo(), columns, get_row)), content_type=CONTENT_TYPE_CSV
+            streaming_content=(iter_items(org_units_list, Echo(), columns, self.get_row)), content_type=CONTENT_TYPE_CSV
         )
-        filename = "filename" + ".csv"
+        filename = filename + ".csv"
         response["Content-Disposition"] = "attachment; filename=%s" % filename
 
         return response
@@ -1079,6 +1023,113 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
         """
         round = Round.objects.get(pk=request.GET.get("round"))
         campaign = round.campaign
+        org_units_list = self.get_org_units_list(round, campaign)
+
+        filename = "%s-%s--%s--%s-%s" % (
+            "campaign",
+            campaign.obr_name,
+            "R" + str(round.number),
+            "org_units",
+            strftime("%Y-%m-%d-%H-%M", gmtime()),
+        )
+        columns = self.csv_columns()
+
+        response = StreamingHttpResponse(
+            streaming_content=(iter_items(org_units_list, Echo(), columns, self.get_row)), content_type=CONTENT_TYPE_CSV
+        )
+        filename = filename + ".csv"
+        response["Content-Disposition"] = "attachment; filename=%s" % filename
+
+        return response
+
+    @staticmethod
+    def get_year(current_date):
+        if current_date is not None:
+            current_date = datetime.strptime(current_date, "%Y-%m-%d")
+            current_date = current_date.date()
+            return current_date.year
+        else:
+            today = datetime.today()
+            return today.year
+
+    @staticmethod
+    def csv_columns():
+        """
+        It returns the csv file columns for round scopes
+        """
+        return [
+            {"title": "ID", "width": 10},
+            {"title": "Admin 2", "width": 25},
+            {"title": "Admin 1", "width": 25},
+            {"title": "Admin 0", "width": 25},
+            {"title": "OBR Name", "width": 25},
+            {"title": "Round Number", "width": 35},
+            {"title": "Vaccine", "width": 35},
+        ]
+
+    @staticmethod
+    def get_row(org_unit, **kwargs):
+        """
+        It get data to be display on a csv row from the org units list
+            parameters:
+                org_unit: an org unit
+                kwargs: arguments dictionary
+            return:
+                returns a row of a csv file
+        """
+        campaign_scope_values = [
+            org_unit.get("id"),
+            org_unit.get("org_unit_name"),
+            org_unit.get("org_unit_parent_name"),
+            org_unit.get("org_unit_parent_of_parent_name"),
+            org_unit.get("obr_name"),
+            org_unit.get("round_number"),
+            org_unit.get("vaccine"),
+        ]
+
+        return campaign_scope_values
+
+    @staticmethod
+    def get_filtered_rounds(rounds, params):
+        """
+        It returns the filtered rounds based on params from url
+            parameters:
+                rounds: list of rounds
+                params: params from url
+            return:
+                returns filtered list of rounds
+        """
+        countries = params.get("countries") if params.get("countries") is not None else None
+        campaign_groups = params.get("campaignGroups") if params.get("campaignGroups") is not None else None
+        campaign_type = params.get("campaignType") if params.get("campaignType") is not None else None
+        search = params.get("search")
+        org_unit_groups = params.get("orgUnitGroups") if params.get("orgUnitGroups") is not None else None
+        # Test campaigns should not appear in the xlsx calendar
+        rounds = rounds.filter(campaign__is_test=False)
+        if countries:
+            rounds = rounds.filter(campaign__country_id__in=countries.split(","))
+        if campaign_groups:
+            rounds = rounds.filter(campaign__group_id__in=campaign_groups.split(","))
+        if campaign_type == "preventive":
+            rounds = rounds.filter(campaign__is_preventive=True)
+        if campaign_type == "regular":
+            rounds = rounds.filter(campaign__is_preventive=False).filter(campaign__is_test=False)
+        if search:
+            rounds = rounds.filter(Q(campaign__obr_name__icontains=search) | Q(campaign__epid__icontains=search))
+        if org_unit_groups:
+            rounds = rounds.filter(campaign__country__groups__in=org_unit_groups.split(","))
+        return rounds
+
+    @staticmethod
+    def get_org_units_list(round, campaign):
+        """
+        It returns org units list as a list of items
+            parameters:
+                round: a round
+                campaign: a campaign
+            return:
+                returns org units list as a list of items
+        """
         org_units_list = []
         if not campaign.separate_scopes_per_round:
             scopes = campaign.scopes.prefetch_related("group__org_units__org_unit_type").prefetch_related(
@@ -1100,53 +1151,7 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
                 item["round_number"] = "R" + str(round.number)
                 item["vaccine"] = scope.vaccine
                 org_units_list.append(item)
-
-        filename = "%s-%s--%s--%s-%s" % (
-            "campaign",
-            campaign.obr_name,
-            "R" + str(round.number),
-            "org_units",
-            strftime("%Y-%m-%d-%H-%M", gmtime()),
-        )
-        columns = [
-            {"title": "ID", "width": 10},
-            {"title": "Admin 2", "width": 25},
-            {"title": "Admin 1", "width": 25},
-            {"title": "Admin 0", "width": 25},
-            {"title": "OBR Name", "width": 25},
-            {"title": "Round Number", "width": 35},
-            {"title": "Vaccine", "width": 35},
-        ]
-
-        def get_row(org_unit, **kwargs):
-            campaign_scope_values = [
-                org_unit.get("id"),
-                org_unit.get("org_unit_name"),
-                org_unit.get("org_unit_parent_name"),
-                org_unit.get("org_unit_parent_of_parent_name"),
-                org_unit.get("obr_name"),
-                org_unit.get("round_number"),
-                org_unit.get("vaccine"),
-            ]
-            return campaign_scope_values
-
-        response = StreamingHttpResponse(
-            streaming_content=(iter_items(org_units_list, Echo(), columns, get_row)), content_type=CONTENT_TYPE_CSV
-        )
-        filename = filename + ".csv"
-        response["Content-Disposition"] = "attachment; filename=%s" % filename
-
-        return response
-
-    @staticmethod
-    def get_year(current_date):
-        if current_date is not None:
-            current_date = datetime.strptime(current_date, "%Y-%m-%d")
-            current_date = current_date.date()
-            return current_date.year
-        else:
-            today = datetime.today()
-            return today.year
+        return org_units_list
 
     def get_calendar_data(self: "CampaignViewSet", year: int, params: Any) -> Any:
         """
@@ -1159,27 +1164,9 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
             returns:
                 rounds (array of dictionary): a rounds of array of dictionaries
         """
-        countries = params.get("countries") if params.get("countries") is not None else None
-        campaign_groups = params.get("campaignGroups") if params.get("campaignGroups") is not None else None
-        campaign_type = params.get("campaignType") if params.get("campaignType") is not None else None
-        search = params.get("search")
-        org_unit_groups = params.get("orgUnitGroups") if params.get("orgUnitGroups") is not None else None
-
         rounds = Round.objects.filter(started_at__year=year)
-        # Test campaigns should not appear in the xlsx calendar
-        rounds = rounds.filter(campaign__is_test=False)
-        if countries:
-            rounds = rounds.filter(campaign__country_id__in=countries.split(","))
-        if campaign_groups:
-            rounds = rounds.filter(campaign__group_id__in=campaign_groups.split(","))
-        if campaign_type == "preventive":
-            rounds = rounds.filter(campaign__is_preventive=True)
-        if campaign_type == "regular":
-            rounds = rounds.filter(campaign__is_preventive=False).filter(campaign__is_test=False)
-        if search:
-            rounds = rounds.filter(Q(campaign__obr_name__icontains=search) | Q(campaign__epid__icontains=search))
-        if org_unit_groups:
-            rounds = rounds.filter(campaign__country__groups__in=org_unit_groups.split(","))
+        # get the filtered list of rounds
+        rounds = self.get_filtered_rounds(rounds, params)
 
         return self.loop_on_rounds(self, rounds)
 

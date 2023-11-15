@@ -1,6 +1,8 @@
 /* eslint-disable camelcase */
 import { useMemo } from 'react';
 import { UseMutationResult, UseQueryResult, useQueryClient } from 'react-query';
+import { useDispatch } from 'react-redux';
+import { Dispatch } from 'redux';
 import {
     useSnackMutation,
     useSnackQuery,
@@ -14,17 +16,27 @@ import {
 import { useUrlParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
 import { useApiParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useApiParams';
 import { useGetCountries } from '../../../../hooks/useGetCountries';
-import { PREALERT, VAR, VRF } from '../Details/VaccineSupplyChainDetails';
+import {
+    PREALERT,
+    TabValue,
+    VAR,
+    VRF,
+} from '../Details/VaccineSupplyChainDetails';
 import { mockSaveVrf, mockVRF } from './mocks';
-import { waitFor } from '../../../../../../../../hat/assets/js/apps/Iaso/utils';
 import {
     CAMPAIGNS_ENDPOINT,
     CampaignType,
     useGetCampaigns,
 } from '../../../Campaigns/hooks/api/useGetCampaigns';
 import { Campaign } from '../../../../constants/types';
+import {
+    errorSnackBar,
+    succesfullSnackBar,
+} from '../../../../../../../../hat/assets/js/apps/Iaso/constants/snackBars';
+import { enqueueSnackbar } from '../../../../../../../../hat/assets/js/apps/Iaso/redux/snackBarsReducer';
+import MESSAGES from '../messages';
 
-const apiUrl = '/api/polio/vaccine/request_forms/';
+export const apiUrl = '/api/polio/vaccine/request_forms/';
 const defaults = {
     order: 'country',
     pageSize: 20,
@@ -85,10 +97,12 @@ export const useGetCountriesOptions = (enabled = true) => {
     }, [countries, isFetching]);
 };
 
-const saveVars = async supplyChainData => {
+// TODO rename, since we don't save yet
+const saveVars = (supplyChainData): Promise<any>[] => {
     const toCreate: any = [];
     const toUpdate: any = [];
     const toDelete: any = [];
+    const promises: Promise<any>[] = [];
     supplyChainData.vars.forEach(arrivalReport => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { to_delete, ...dataToPass } = arrivalReport;
@@ -103,45 +117,33 @@ const saveVars = async supplyChainData => {
             toCreate.push(dataToPass);
         }
     });
-
-    const updated =
-        toUpdate.length > 0
-            ? await patchRequest(
-                  `${apiUrl}${supplyChainData.vrf.id}/update_arrival_reports/`,
-                  { arrival_reports: toUpdate },
-              )
-            : { arrival_reports: [] };
-
-    const created =
-        toCreate.length > 0
-            ? await postRequest(
-                  `${apiUrl}${supplyChainData.vrf.id}/add_arrival_reports/`,
-                  { arrival_reports: toCreate },
-              )
-            : { arrival_reports: [] };
-
-    console.log('Arrival reports to delete', toDelete);
-
-    // const deleted =
-    //     toDelete.length > 0
-    //         ? await postRequest(
-    //               `${apiUrl}${supplyChainData.vrf.id}/delete_pre_alerts/`,
-    //               { pre_alerts: toDelete },
-    //           )
-    //         : undefined;
-
-    return {
-        arrival_reports: [
-            ...updated.arrival_reports,
-            ...created.arrival_reports,
-        ],
-    };
+    if (toUpdate.length > 0) {
+        promises.push(
+            patchRequest(
+                `${apiUrl}${supplyChainData.vrf.id}/update_arrival_reports/`,
+                { arrival_reports: toUpdate },
+            ),
+        );
+    }
+    if (toCreate.length > 0) {
+        promises.push(
+            postRequest(
+                `${apiUrl}${supplyChainData.vrf.id}/add_arrival_reports/`,
+                { arrival_reports: toCreate },
+            ),
+        );
+    }
+    // console.log('Arrival reports to delete', toDelete);
+    return promises;
 };
-const savePreAlerts = async supplyChainData => {
+
+const savePreAlerts = (supplyChainData: any): Promise<any>[] => {
     const { pre_alerts } = supplyChainData;
     const toCreate: any = [];
     const toUpdate: any = [];
     const toDelete: any = [];
+    const promises: Promise<any>[] = [];
+
     pre_alerts.forEach(preAlert => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { to_delete, ...dataToPass } = preAlert;
@@ -156,34 +158,24 @@ const savePreAlerts = async supplyChainData => {
             toCreate.push(dataToPass);
         }
     });
+    if (toUpdate.length > 0) {
+        promises.push(
+            patchRequest(
+                `${apiUrl}${supplyChainData.vrf.id}/update_pre_alerts/`,
+                { pre_alerts: toUpdate },
+            ),
+        );
+    }
+    if (toCreate.length > 0) {
+        promises.push(
+            postRequest(`${apiUrl}${supplyChainData.vrf.id}/add_pre_alerts/`, {
+                pre_alerts: toCreate,
+            }),
+        );
+    }
 
-    const updated =
-        toUpdate.length > 0
-            ? await patchRequest(
-                  `${apiUrl}${supplyChainData.vrf.id}/update_pre_alerts/`,
-                  { pre_alerts: toUpdate },
-              )
-            : { pre_alerts: [] };
-
-    const created =
-        toCreate.length > 0
-            ? await postRequest(
-                  `${apiUrl}${supplyChainData.vrf.id}/add_pre_alerts/`,
-                  { pre_alerts: toCreate },
-              )
-            : { pre_alerts: [] };
-
-    console.log('PreAlerts to delete', toDelete);
-
-    // const deleted =
-    //     toDelete.length > 0
-    //         ? await postRequest(
-    //               `${apiUrl}${supplyChainData.vrf.id}/delete_pre_alerts/`,
-    //               { pre_alerts: toDelete },
-    //           )
-    //         : undefined;
-
-    return { prealert: [...updated.pre_alerts, ...created.pre_alerts] };
+    // console.log('PreAlerts to delete', toDelete);
+    return promises;
 };
 
 const saveVrf = supplyChainData => {
@@ -194,34 +186,114 @@ const saveVrf = supplyChainData => {
     return postRequest(apiUrl, vrf);
 };
 
-const saveSupplyChainForm = async (supplyChainData: any) => {
-    console.log('PAYLOAD', supplyChainData);
-    if (supplyChainData.saveAll === true && supplyChainData.vrf.id) {
-        let vrf;
-        let pre_alerts;
-        let vars;
+export type ParsedSettledPromise = {
+    status: 'fulfilled' | 'rejected';
+    value: any; // if success: api response, if failure: error message
+};
+
+const normalizePromiseResult = (
+    settledPromise: PromiseSettledResult<any>,
+): ParsedSettledPromise => {
+    // TS thinks value does not exist because it does not exist on rejected promises
+    // @ts-ignore
+    const { status, value } = settledPromise;
+    const result = { status, value };
+    if (!result.value) {
+        // If the promise is rejected, we include the message, so we can use the url to figure out
+        // which call failed and update react-query's cache accordingly
+        result.value = {
+            // TS thinks reason does not exist because it does not exist on fulfilled promises
+            // @ts-ignore
+            ...settledPromise.reason.details,
+            // @ts-ignore
+            message: settledPromise.reason.message,
+        };
+    }
+    return result;
+};
+
+const findPromiseOrigin = (
+    settledPromise: PromiseSettledResult<any>,
+): TabValue => {
+    if (!settledPromise) {
+        throw new Error(
+            `findPromiseOrigin expected PromiseSettledResult, got ${settledPromise}`,
+        );
+    }
+
+    const { value, reason } = Array.isArray(settledPromise)
+        ? settledPromise[0]
+        : settledPromise;
+
+    if (value) {
+        return Object.keys(value)[0] as TabValue;
+    }
+    return Object.keys(reason.details)[0] as TabValue;
+};
+
+const addEntryToResponse = (response, update): void => {
+    const key = findPromiseOrigin(update.value);
+    if (key === VRF) {
+        response[key] = normalizePromiseResult(update);
+    } else {
+        const convertedArray: any[] = update.value.map(item =>
+            normalizePromiseResult(item),
+        );
+        response[key] = convertedArray;
+    }
+};
+
+const parsePromiseResults = (
+    allUpdates: (PromiseSettledResult<any> | PromiseSettledResult<any>[])[],
+): any => {
+    // if length == 3, all tabs have been updated, and we know the order: vrf, prealert, var
+    if (allUpdates.length === 3) {
+        // there's only 1 vrf, so we don't have an array here
+        const vrf = normalizePromiseResult(
+            allUpdates[0] as PromiseSettledResult<any>,
+        );
+        const preAlerts: any[] = (
+            allUpdates[1] as PromiseSettledResult<any>[]
+        ).map(item => normalizePromiseResult(item));
+
+        const vars: any[] = (allUpdates[2] as PromiseSettledResult<any>[]).map(
+            item => normalizePromiseResult(item),
+        );
+        return { vrf, preAlerts, vars };
+    }
+    if (allUpdates.length === 2) {
         const response: any = {};
+        allUpdates.forEach(update => {
+            addEntryToResponse(response, update);
+        });
+        return response;
+    }
+    if (allUpdates.length === 1) {
+        const response: any = {};
+        const [update] = allUpdates;
+        addEntryToResponse(response, update);
+        return response;
+    }
+    throw new Error(`Expected array of length 1-3, got ${allUpdates.length}`);
+};
+
+const saveSupplyChainForm = async (supplyChainData: any) => {
+    if (supplyChainData.saveAll === true && supplyChainData.vrf.id) {
+        const promises: Promise<any>[] = [];
+
         // update all tabs
         if (supplyChainData.changedTabs.includes(VRF)) {
-            vrf = await mockSaveVrf(supplyChainData.vrf);
+            promises.push(mockSaveVrf(supplyChainData.vrf));
         }
         if (supplyChainData.changedTabs.includes(PREALERT)) {
-            pre_alerts = await savePreAlerts(supplyChainData);
+            promises.push(Promise.allSettled(savePreAlerts(supplyChainData)));
         }
         if (supplyChainData.changedTabs.includes(VAR)) {
-            vars = await saveVars(supplyChainData);
+            promises.push(Promise.allSettled(saveVars(supplyChainData)));
         }
-        // build response
-        if (vrf) {
-            response.vrf = vrf;
-        }
-        if (pre_alerts) {
-            response.pre_alerts = pre_alerts;
-        }
-        if (vars) {
-            response.vars = vars;
-        }
-        return response;
+
+        const allUpdates = await Promise.allSettled(promises);
+        return parsePromiseResults(allUpdates);
     }
     // We can't save prealerts or var if there's no preexisting vrf
     if (supplyChainData.saveAll === true) {
@@ -232,20 +304,86 @@ const saveSupplyChainForm = async (supplyChainData: any) => {
             return mockSaveVrf(supplyChainData.vrf);
         case VAR:
             if (supplyChainData.vrf.id === 6) {
-                return saveVars(supplyChainData);
+                const newVars = await Promise.allSettled(
+                    saveVars(supplyChainData),
+                );
+                return {
+                    vars: newVars.map(item => normalizePromiseResult(item)),
+                };
             }
             break;
         case PREALERT:
             if (supplyChainData.vrf.id === 6) {
-                return savePreAlerts(supplyChainData);
+                const newPreAlerts = await Promise.allSettled(
+                    savePreAlerts(supplyChainData),
+                );
+                return {
+                    pre_alerts: newPreAlerts.map(item =>
+                        normalizePromiseResult(item),
+                    ),
+                };
             }
             break;
         default:
             break;
     }
 
-    waitFor(100);
     return null;
+};
+
+const handlePromiseErrors = (data: any, dispatch: Dispatch): void => {
+    const failedPromises = data.filter(item => item.status === 'rejected');
+    if (failedPromises.length === 0) {
+        dispatch(
+            enqueueSnackbar(
+                succesfullSnackBar(
+                    undefined,
+                    MESSAGES.defaultMutationApiSuccess,
+                ),
+            ),
+        );
+    } else {
+        const failedEndpoints = failedPromises.map(item => item.value.message);
+        if (failedEndpoints.find(msg => msg.includes('add'))) {
+            dispatch(
+                enqueueSnackbar(
+                    errorSnackBar(
+                        undefined,
+                        MESSAGES.defaultMutationApiError,
+                        failedPromises.find(item =>
+                            item.value.message.includes('add'),
+                        )?.value,
+                    ),
+                ),
+            );
+        }
+        if (failedEndpoints.find(msg => msg.includes('update'))) {
+            dispatch(
+                enqueueSnackbar(
+                    errorSnackBar(
+                        undefined,
+                        MESSAGES.defaultMutationApiError,
+                        failedPromises.find(item =>
+                            item.value.message.includes('update'),
+                        )?.value,
+                    ),
+                ),
+            );
+        }
+        if (failedEndpoints.find(msg => msg.includes('delete'))) {
+            dispatch(
+                enqueueSnackbar(
+                    errorSnackBar(
+                        undefined,
+                        MESSAGES.defaultMutationApiError,
+                        failedPromises.find(item =>
+                            item.value.message.includes('delete'),
+                        )?.value,
+                    ),
+                ),
+            );
+        }
+    }
 };
 
 export const useSaveVaccineSupplyChainForm = (): UseMutationResult<
@@ -253,6 +391,7 @@ export const useSaveVaccineSupplyChainForm = (): UseMutationResult<
     any
 > => {
     const queryClient = useQueryClient();
+    const dispatch = useDispatch();
     // use queryClient.setQueryData to overwrite the cache. see optimistic updates in react query
     return useSnackMutation({
         mutationFn: saveSupplyChainForm,
@@ -262,32 +401,38 @@ export const useSaveVaccineSupplyChainForm = (): UseMutationResult<
         options: {
             // Setting the cache value with the response onSuccess, so we can reset the form state (touched, etc) without losing data
             onSuccess: (data: any, variables: any) => {
-                if (variables.activeTab === VRF && data) {
-                    queryClient.setQueryData(['getVrfDetails', data.id], data);
-                } else if (variables.activeTab === PREALERT && data) {
-                    queryClient.setQueryData(
-                        ['preAlertDetails', variables.vrf.id],
-                        data,
-                    );
-                } else if (variables.activeTab === VAR && data) {
-                    queryClient.setQueryData(
-                        ['arrivalReportsDetails', variables.vrf.id],
-                        data,
-                    );
-                } else if (variables.saveAll && data) {
-                    queryClient.setQueryData(
-                        ['getVrfDetails', data.vrf.id],
-                        data.vrf,
-                    );
-                    queryClient.setQueryData(
-                        ['preAlertDetails', data.vrf.id],
-                        data.pre_alerts,
-                    );
-                    queryClient.setQueryData(
-                        ['arrivalReportsDetails', data.vrf.id],
-                        data.vars,
-                    );
+                if (variables.saveAll && data) {
+                    if (data.pre_alerts) {
+                        const { pre_alerts } = data;
+                        handlePromiseErrors(pre_alerts, dispatch);
+                        queryClient.invalidateQueries('preAlertDetails');
+                    }
+                    if (data.arrival_reports) {
+                        const { arrival_reports } = data;
+                        handlePromiseErrors(arrival_reports, dispatch);
+                        queryClient.invalidateQueries('arrivalReportsDetails');
+                    }
+                } else {
+                    if (variables.activeTab === PREALERT && data.pre_alerts) {
+                        const { pre_alerts } = data;
+                        handlePromiseErrors(pre_alerts, dispatch);
+                        queryClient.invalidateQueries('preAlertDetails');
+                    }
+                    if (variables.activeTab === VAR && data.vars) {
+                        const { vars } = data;
+                        handlePromiseErrors(vars, dispatch);
+                        queryClient.invalidateQueries('arrivalReportsDetails');
+                    }
                 }
+
+                // if (variables.activeTab === VRF && data) {
+                //     queryClient.setQueryData(['getVrfDetails', data.id], data);
+                // } else if (variables.saveAll && data) {
+                //     queryClient.setQueryData(
+                //         ['getVrfDetails', data.vrf.id],
+                //         data.vrf,
+                //     );
+                // }
             },
         },
     });

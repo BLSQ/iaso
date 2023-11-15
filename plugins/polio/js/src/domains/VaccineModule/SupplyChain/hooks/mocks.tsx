@@ -20,7 +20,7 @@ export const mockVRF = {
     id: 6,
 };
 
-export const mockPatchVrf = (vrfData: Partial<VRF>) => {
+export const mockPatchVrf = async (vrfData: Partial<VRF>) => {
     const activeKeys = Object.keys(vrfData);
     const alteredFields = {};
     activeKeys.forEach(key => {
@@ -30,15 +30,15 @@ export const mockPatchVrf = (vrfData: Partial<VRF>) => {
         }
     });
     const result = { ...mockVRF, ...alteredFields };
-
+    waitFor(200);
     // eslint-disable-next-line no-console
     console.log('PATCH RESULT', result);
     return result;
 };
 
-export const mockPostVrf = (vrfData: Partial<VRF>) => {
+export const mockPostVrf = async (vrfData: Partial<VRF>) => {
     const result = { ...vrfData, id: 21 };
-
+    waitFor(200);
     // eslint-disable-next-line no-console
     console.log('POST RESULT', result);
     return result;

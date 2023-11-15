@@ -214,6 +214,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.date_dg_approval',
         defaultMessage: 'Date of DG approval',
     },
+    defaultMutationApiError: {
+        id: 'iaso.snackBar.error',
+        defaultMessage: 'An error occurred while saving',
+    },
+    defaultMutationApiSuccess: {
+        id: 'iaso.snackBar.successful',
+        defaultMessage: 'Saved successfully',
+    },
 });
 
 export default MESSAGES;

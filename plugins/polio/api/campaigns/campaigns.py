@@ -986,7 +986,7 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
             else ("--start-from-" + current_date.strftime("%d-%m-%Y") if not round_start_to else "")
         )
         start_to_name = "--start-to " + round_start_to.strftime("%d-%m-%Y") if round_start_to else ""
-        
+
         filename = "%s%s%s" % (
             "all-rounds-scopes",
             start_from_name,

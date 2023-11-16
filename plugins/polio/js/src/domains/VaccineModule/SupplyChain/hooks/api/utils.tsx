@@ -16,6 +16,7 @@ import {
 } from '../../../../../../../../../hat/assets/js/apps/Iaso/constants/snackBars';
 import { enqueueSnackbar } from '../../../../../../../../../hat/assets/js/apps/Iaso/redux/snackBarsReducer';
 import MESSAGES from '../../messages';
+import { Optional } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 export const apiUrl = '/api/polio/vaccine/request_forms/';
 
@@ -112,7 +113,7 @@ export const normalizePromiseResult = (
 
 export const findPromiseOrigin = (
     settledPromise: PromiseSettledResult<any>,
-): TabValue => {
+): Optional<TabValue> => {
     if (!settledPromise) {
         throw new Error(
             `findPromiseOrigin expected PromiseSettledResult, got ${settledPromise}`,
@@ -120,9 +121,13 @@ export const findPromiseOrigin = (
     }
 
     const { value, reason } = Array.isArray(settledPromise)
-        ? settledPromise[0]
+        ? settledPromise[0] ?? {}
         : settledPromise;
-
+    // If there's no arrival reports or no pre alerts, settledPromise may be an empty array.
+    // In this case we return undefined to skip adding an entry to the aggregated response when using saveAll
+    if (!value && !reason) {
+        return undefined;
+    }
     const foundValue = value
         ? Object.keys(value)[0]
         : Object.keys(reason.details)[0];
@@ -134,7 +139,7 @@ export const addEntryToResponse = (response, update): void => {
     const key = findPromiseOrigin(update.value);
     if (key === VRF) {
         response[key] = normalizePromiseResult(update);
-    } else {
+    } else if (key) {
         const convertedArray: any[] = update.value.map(item =>
             normalizePromiseResult(item),
         );

@@ -7,6 +7,8 @@ from uuid import uuid4
 
 import pandas as pd
 
+from beanstalk_worker import task_decorator
+
 import django.db.models.manager
 from django.contrib.auth.models import User, AnonymousUser
 from django.core.serializers.json import DjangoJSONEncoder
@@ -18,7 +20,7 @@ from gspread.utils import extract_id_from_url  # type: ignore
 from django.utils import timezone
 from django.core.validators import RegexValidator
 from iaso.models import Group, OrgUnit
-from iaso.models.base import Account
+from iaso.models.base import Account, Task
 from iaso.models.microplanning import Team
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 from plugins.polio.preparedness.parser import open_sheet_by_url
@@ -1090,6 +1092,9 @@ class NotificationImport(models.Model):
         return f"{self.file.name} - {self.status}"
 
     def create_notifications(self, created_by: User) -> None:
+        """
+        Can be launched async, see `create_polio_notifications_async`.
+        """
         try:
             df = pd.read_excel(self.file, keep_default_na=False)
         except Exception as err:
@@ -1100,6 +1105,9 @@ class NotificationImport(models.Model):
         for name in self.EXPECTED_XLSX_COL_NAMES:
             if name not in df.columns:
                 raise ValueError(f"Missing column {name}.")
+
+        self.status = self.Status.PENDING
+        self.save()
 
         errors = []
         importer = NotificationXlsxImporter()
@@ -1136,6 +1144,16 @@ class NotificationImport(models.Model):
         self.errors = errors
         self.updated_at = timezone.now()
         self.save()
+
+
+@task_decorator(task_name="create_polio_notifications_async")
+def create_polio_notifications_async(pk: int, task: Task = None) -> None:
+    task.report_progress_and_stop_if_killed(progress_message="Importing polio notifications…")
+    user = task.launcher
+    notification_import = NotificationImport.objects.get(pk=pk)
+    notification_import.create_notifications(created_by=user)
+    num_created = Notification.objects.filter(import_source=notification_import).count()
+    task.report_success(message=f"{num_created} polio notifications created.")
 
 
 class NotificationXlsxImporter:

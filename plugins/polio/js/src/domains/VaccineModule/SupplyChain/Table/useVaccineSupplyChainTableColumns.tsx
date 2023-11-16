@@ -8,8 +8,8 @@ import {
 } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import MESSAGES from '../messages';
 import DeleteDialog from '../../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
-import { useDeleteVrf } from '../hooks/api';
 import { VACCINE_SUPPLY_CHAIN_DETAILS } from '../../../../constants/routes';
+import { useDeleteVrf } from '../hooks/api/vrf';
 
 export const useVaccineSupplyChainTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();

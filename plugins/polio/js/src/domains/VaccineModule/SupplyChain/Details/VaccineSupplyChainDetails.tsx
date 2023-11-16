@@ -24,12 +24,7 @@ import {
 import { Router } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import TopBar from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { useGoBack } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/useGoBack';
-import {
-    useGetArrivalReportsDetails,
-    useGetPreAlertDetails,
-    useGetVrfDetails,
-    useSaveVaccineSupplyChainForm,
-} from '../hooks/api';
+import { useSaveVaccineSupplyChainForm } from '../hooks/api/useSaveSupplyChainForm';
 import { useTopBarTitle } from '../hooks/utils';
 import { VaccineRequestForm } from './VaccineRequestForm/VaccineRequestForm';
 import MESSAGES from '../messages';
@@ -38,6 +33,9 @@ import { Optional } from '../../../../../../../../hat/assets/js/apps/Iaso/types/
 import { PreAlerts } from './PreAlerts/PreAlerts';
 import { VaccineArrivalReports } from './VAR/VaccineArrivalReports';
 import { VaccineSupplyChainConfirmButtons } from './ConfirmButtons';
+import { useGetVrfDetails } from '../hooks/api/vrf';
+import { useGetPreAlertDetails } from '../hooks/api/preAlerts';
+import { useGetArrivalReportsDetails } from '../hooks/api/arrivalReports';
 
 export const VRF = 'vrf';
 export const VAR = 'arrival_reports';

@@ -94,7 +94,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.PREALERT',
         defaultMessage: 'Pre-alerts',
     },
-    vars: {
+    arrival_reports: {
         id: 'iaso.polio.label.VAR',
         defaultMessage: 'VARs',
     },

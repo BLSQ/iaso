@@ -103,7 +103,7 @@ const saveVars = (supplyChainData): Promise<any>[] => {
     const toUpdate: any = [];
     const toDelete: any = [];
     const promises: Promise<any>[] = [];
-    supplyChainData.vars.forEach(arrivalReport => {
+    supplyChainData.arrival_reports.forEach(arrivalReport => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { to_delete, ...dataToPass } = arrivalReport;
         if (arrivalReport.id) {
@@ -256,10 +256,10 @@ const parsePromiseResults = (
             allUpdates[1] as PromiseSettledResult<any>[]
         ).map(item => normalizePromiseResult(item));
 
-        const vars: any[] = (allUpdates[2] as PromiseSettledResult<any>[]).map(
-            item => normalizePromiseResult(item),
-        );
-        return { vrf, preAlerts, vars };
+        const arrival_reports: any[] = (
+            allUpdates[2] as PromiseSettledResult<any>[]
+        ).map(item => normalizePromiseResult(item));
+        return { vrf, preAlerts, arrival_reports };
     }
     if (allUpdates.length === 2) {
         const response: any = {};
@@ -308,7 +308,9 @@ const saveSupplyChainForm = async (supplyChainData: any) => {
                     saveVars(supplyChainData),
                 );
                 return {
-                    vars: newVars.map(item => normalizePromiseResult(item)),
+                    arrival_reports: newVars.map(item =>
+                        normalizePromiseResult(item),
+                    ),
                 };
             }
             break;
@@ -418,9 +420,9 @@ export const useSaveVaccineSupplyChainForm = (): UseMutationResult<
                         handlePromiseErrors(pre_alerts, dispatch);
                         queryClient.invalidateQueries('preAlertDetails');
                     }
-                    if (variables.activeTab === VAR && data.vars) {
-                        const { vars } = data;
-                        handlePromiseErrors(vars, dispatch);
+                    if (variables.activeTab === VAR && data.arrival_reports) {
+                        const { arrival_reports } = data;
+                        handlePromiseErrors(arrival_reports, dispatch);
                         queryClient.invalidateQueries('arrivalReportsDetails');
                     }
                 }

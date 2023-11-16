@@ -8,6 +8,7 @@ import {
 } from 'bluesquare-components';
 import { VaccineArrivalReport } from './VaccineArrivalReport';
 import MESSAGES from '../../messages';
+import { VAR } from '../VaccineSupplyChainDetails';
 
 type Props = { className?: string; items?: any[] };
 // const useStyles = makeStyles(theme => ({ ...commonStyles(theme) }));
@@ -40,8 +41,8 @@ export const VaccineArrivalReports: FunctionComponent<Props> = ({
                         <AddButton
                             message={MESSAGES.addVar}
                             onClick={() => {
-                                setFieldValue('vars', [
-                                    ...values.vars,
+                                setFieldValue(VAR, [
+                                    ...values[VAR],
                                     emptyArrivalReport,
                                 ]);
                             }}

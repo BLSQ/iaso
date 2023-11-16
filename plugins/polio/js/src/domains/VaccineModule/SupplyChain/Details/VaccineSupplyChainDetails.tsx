@@ -40,9 +40,9 @@ import { VaccineArrivalReports } from './VAR/VaccineArrivalReports';
 import { VaccineSupplyChainConfirmButtons } from './ConfirmButtons';
 
 export const VRF = 'vrf';
-export const VAR = 'vars';
+export const VAR = 'arrival_reports';
 export const PREALERT = 'pre_alerts';
-export type TabValue = 'vrf' | 'vars' | 'pre_alerts';
+export type TabValue = 'vrf' | 'arrival_reports' | 'pre_alerts';
 
 export type VRF = {
     id?: number;
@@ -91,7 +91,7 @@ export type VAR = {
 export type SupplyChainFormData = {
     vrf: Optional<Partial<VRF>>;
     pre_alerts: Optional<Partial<PreAlert>[]>;
-    vars: Optional<Partial<VAR>[]>;
+    arrival_reports: Optional<Partial<VAR>[]>;
     activeTab: TabValue;
     saveAll: boolean;
     changedTabs: TabValue[];
@@ -119,7 +119,7 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
     const [initialValues, setInitialValues] = useState<any>({
         vrf: undefined,
         pre_alerts: undefined,
-        vars: undefined,
+        arrival_reports: undefined,
         activeTab: initialTab,
         saveAll: false,
         changedTabs: [],
@@ -248,15 +248,15 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
     // Using formik's enableReinitialize would cause touched, errors etc to reset when changing tabs
     // So we set values with useEffect once data has been fetched.
     useEffect(() => {
-        if (arrivalReports && !values.vars) {
-            setFieldValue('vars', arrivalReports.arrival_reports);
+        if (arrivalReports && !values.arrival_reports) {
+            setFieldValue('arrival_reports', arrivalReports.arrival_reports);
             // set InitialValues so we can compare with form values and enables/disabel dave button accordingly
             setInitialValues({
                 ...initialValues,
-                vars: arrivalReports.arrival_reports,
+                arrival_reports: arrivalReports.arrival_reports,
             });
         }
-    }, [arrivalReports, initialValues, setFieldValue, values.vars]);
+    }, [arrivalReports, initialValues, setFieldValue, values.arrival_reports]);
     useEffect(() => {
         if (preAlerts && !values.pre_alerts) {
             setFieldValue('pre_alerts', preAlerts.pre_alerts);
@@ -284,7 +284,7 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
         initialValues[PREALERT],
         values[PREALERT],
     );
-    const varsChanged = !isEqual(initialValues[VAR], values[VAR]);
+    const arrivalReportsChanged = !isEqual(initialValues[VAR], values[VAR]);
 
     // list changed tabs to avoid patching unchanged tabs
     useEffect(() => {
@@ -295,11 +295,11 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
         if (preAlertsChanged) {
             changedTabs.push(PREALERT);
         }
-        if (varsChanged) {
+        if (arrivalReportsChanged) {
             changedTabs.push(VAR);
         }
         setFieldValue('changedTabs', changedTabs);
-    }, [preAlertsChanged, setFieldValue, varsChanged, vrfChanged]);
+    }, [preAlertsChanged, setFieldValue, arrivalReportsChanged, vrfChanged]);
 
     return (
         <FormikProvider value={formik}>
@@ -344,7 +344,9 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
                             <PreAlerts items={values.pre_alerts} />
                         )}
                         {tab === VAR && (
-                            <VaccineArrivalReports items={values.vars} />
+                            <VaccineArrivalReports
+                                items={values.arrival_reports}
+                            />
                         )}
                         <Grid container spacing={2} justifyContent="flex-end">
                             <Box style={{ display: 'inline-flex' }} mr={3}>

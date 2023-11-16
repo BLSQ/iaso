@@ -14,7 +14,7 @@ import { IconButton, useSafeIntl } from 'bluesquare-components';
 import { DeleteIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/DeleteIconButton';
 import { DateInput } from '../../../../../components/Inputs/DateInput';
 import { NumberInput, TextInput } from '../../../../../components/Inputs';
-import { SupplyChainFormData } from '../VaccineSupplyChainDetails';
+import { SupplyChainFormData, VAR } from '../VaccineSupplyChainDetails';
 import MESSAGES from '../../messages';
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -24,6 +24,8 @@ const useStyles = makeStyles((theme: Theme) => ({
         // @ts-ignore
         border: `1px solid ${theme.palette.mediumGray.main}`,
         width: 'calc(100% - 64px)',
+        boxShadow:
+            '0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 1px 0px rgba(0,0,0,0.1)',
     },
     markedForDeletion: {
         backgroundColor: theme.palette.grey['200'],
@@ -37,8 +39,8 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
     const { formatMessage } = useSafeIntl();
     const { values, setFieldValue, setFieldTouched } =
         useFormikContext<SupplyChainFormData>();
-    const { vars } = values as SupplyChainFormData;
-    const markedForDeletion = vars?.[index].to_delete ?? false;
+    const { arrival_reports } = values as SupplyChainFormData;
+    const markedForDeletion = arrival_reports?.[index].to_delete ?? false;
     return (
         <div style={{ display: 'inline-flex', width: '100%' }}>
             <Paper
@@ -51,7 +53,7 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
                     <Grid item xs={6} md={3}>
                         <Field
                             label={formatMessage(MESSAGES.arrival_report_date)}
-                            name={`vars[${index}].arrival_report_date`}
+                            name={`${VAR}[${index}].arrival_report_date`}
                             component={DateInput}
                             disabled={markedForDeletion}
                         />
@@ -59,7 +61,7 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
                     <Grid item xs={6} md={3}>
                         <Field
                             label={formatMessage(MESSAGES.po_number)}
-                            name={`vars[${index}].po_number`}
+                            name={`${VAR}[${index}].po_number`}
                             component={TextInput}
                             shrinkLabel={false}
                             disabled={markedForDeletion}
@@ -68,7 +70,7 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
                     <Grid item xs={6} md={3}>
                         <Field
                             label={formatMessage(MESSAGES.lot_number)}
-                            name={`vars[${index}].lot_number`}
+                            name={`${VAR}[${index}].lot_number`}
                             component={NumberInput}
                             disabled={markedForDeletion}
                         />
@@ -79,7 +81,7 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
                         <Box>
                             <Field
                                 label={formatMessage(MESSAGES.expirationDate)}
-                                name={`vars[${index}].expiration_date`}
+                                name={`${VAR}[${index}].expiration_date`}
                                 component={DateInput}
                                 disabled={markedForDeletion}
                             />
@@ -89,7 +91,7 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
                         <Box>
                             <Field
                                 label={formatMessage(MESSAGES.doses_shipped)}
-                                name={`vars[${index}].doses_shipped`}
+                                name={`${VAR}[${index}].doses_shipped`}
                                 component={NumberInput}
                                 disabled={markedForDeletion}
                             />
@@ -100,7 +102,7 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
                         <Box>
                             <Field
                                 label={formatMessage(MESSAGES.doses_received)}
-                                name={`vars[${index}].doses_received`}
+                                name={`${VAR}[${index}].doses_received`}
                                 component={NumberInput}
                                 disabled={markedForDeletion}
                             />
@@ -120,31 +122,36 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
             </Paper>
             {/* Box is necessay to avoid bad tooltip placemement */}
             <Box ml={2}>
-                {!vars?.[index].to_delete && (
+                {!arrival_reports?.[index].to_delete && (
                     <DeleteIconButton
                         onClick={() => {
-                            if (values?.vars?.[index].id) {
-                                setFieldValue(`vars[${index}].to_delete`, true);
+                            if (values?.arrival_reports?.[index].id) {
+                                setFieldValue(
+                                    `${VAR}[${index}].to_delete`,
+                                    true,
+                                );
                                 setFieldTouched(
-                                    `vars[${index}].to_delete`,
+                                    `${VAR}[${index}].to_delete`,
                                     true,
                                 );
                             } else {
-                                const copy = [...(values?.vars ?? [])];
+                                const copy = [
+                                    ...(values?.arrival_reports ?? []),
+                                ];
                                 // checking the length to avoid splicing outside of array range
                                 if (copy.length >= index + 1) {
                                     copy.splice(index, 1);
-                                    setFieldValue('vars', copy);
+                                    setFieldValue(VAR, copy);
                                 }
                             }
                         }}
                         message={MESSAGES.markForDeletion}
                     />
                 )}
-                {vars?.[index].to_delete && (
+                {arrival_reports?.[index].to_delete && (
                     <IconButton
                         onClick={() => {
-                            setFieldValue(`vars[${index}].to_delete`, false);
+                            setFieldValue(`${VAR}[${index}].to_delete`, false);
                         }}
                         overrideIcon={RestoreFromTrashIcon}
                         tooltipMessage={MESSAGES.cancelDeletion}

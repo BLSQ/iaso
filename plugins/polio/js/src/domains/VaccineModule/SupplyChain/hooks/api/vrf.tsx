@@ -14,7 +14,6 @@ import {
     useSnackMutation,
     useSnackQuery,
 } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
-import { apiUrl } from './utils';
 import {
     errorSnackBar,
     succesfullSnackBar,
@@ -27,6 +26,7 @@ import {
 } from '../../../../Campaigns/hooks/api/useGetCampaigns';
 import { Campaign } from '../../../../../constants/types';
 import { enqueueSnackbar } from '../../../../../../../../../hat/assets/js/apps/Iaso/redux/snackBarsReducer';
+import { apiUrl } from '../../constants';
 
 const defaults = {
     order: 'country',

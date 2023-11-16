@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { Box, Button } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
-import { TabValue } from './VaccineSupplyChainDetails';
+import { TabValue } from '../types';
 
 type Props = {
     tab: TabValue;

@@ -3,8 +3,6 @@ import { UseMutationResult, useQueryClient } from 'react-query';
 import { useDispatch } from 'react-redux';
 import { useSnackMutation } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 
-import { PREALERT, VAR, VRF } from '../../Details/VaccineSupplyChainDetails';
-
 import {
     handlePromiseErrors,
     normalizePromiseResult,
@@ -12,6 +10,7 @@ import {
     saveTab,
 } from './utils';
 import { handleVrfPromiseErrors, saveVrf } from './vrf';
+import { PREALERT, VAR, VRF } from '../../constants';
 
 const saveSupplyChainForm = async (supplyChainData: any) => {
     if (supplyChainData.saveAll === true && supplyChainData.vrf.id) {
@@ -104,7 +103,8 @@ export const useSaveVaccineSupplyChainForm = (): UseMutationResult<
                     if (data.vrf) {
                         const { vrf } = data;
                         handleVrfPromiseErrors(vrf, dispatch);
-                        queryClient.invalidateQueries('vrfDetails');
+                        queryClient.invalidateQueries('getVrfList');
+                        queryClient.invalidateQueries('getVrfDetails');
                     }
                 } else {
                     if (variables.activeTab === PREALERT && data.pre_alerts) {
@@ -121,7 +121,8 @@ export const useSaveVaccineSupplyChainForm = (): UseMutationResult<
                         const { vrf } = data;
                         // TODO fix the data type of vrf (arry/object)
                         handleVrfPromiseErrors(vrf[0], dispatch);
-                        queryClient.invalidateQueries('vrfDetails');
+                        queryClient.invalidateQueries('getVrfList');
+                        queryClient.invalidateQueries('getVrfDetails');
                     }
                 }
             },

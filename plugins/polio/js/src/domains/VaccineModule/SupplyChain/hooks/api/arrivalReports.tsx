@@ -1,6 +1,6 @@
 import { useSnackQuery } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
-import { apiUrl } from './utils';
 import { getRequest } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
+import { apiUrl } from '../../constants';
 
 export const useGetArrivalReportsDetails = (vrfId?: string) => {
     return useSnackQuery({

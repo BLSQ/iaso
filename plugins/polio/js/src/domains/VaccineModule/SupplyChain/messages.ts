@@ -128,7 +128,7 @@ const MESSAGES = defineMessages({
     },
     estimated_arrival_time: {
         id: 'iaso.polio.label.estimated_arrival_time',
-        defaultMessage: 'Estimated arrival time',
+        defaultMessage: 'Estimated arrival date',
     },
     lot_number: {
         id: 'iaso.polio.label.lot_number',

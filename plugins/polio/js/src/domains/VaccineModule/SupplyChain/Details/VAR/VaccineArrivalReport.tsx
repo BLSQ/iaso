@@ -14,8 +14,9 @@ import { IconButton, useSafeIntl } from 'bluesquare-components';
 import { DeleteIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/DeleteIconButton';
 import { DateInput } from '../../../../../components/Inputs/DateInput';
 import { NumberInput, TextInput } from '../../../../../components/Inputs';
-import { SupplyChainFormData, VAR } from '../VaccineSupplyChainDetails';
 import MESSAGES from '../../messages';
+import { SupplyChainFormData } from '../../types';
+import { VAR } from '../../constants';
 
 const useStyles = makeStyles((theme: Theme) => ({
     paper: {

@@ -287,7 +287,7 @@
     "iaso.polio.label.ENCODING_ERROR": "Encoding error",
     "iaso.polio.label.enterGoogleSheet": "Enter Google Sheet url",
     "iaso.polio.label.enterOrCreateGoogleSheet": "Enter Google Sheet url or use the button to generate a new one",
-    "iaso.polio.label.estimated_arrival_time": "Estimated arrival time",
+    "iaso.polio.label.estimated_arrival_time": "Estimated arrival date",
     "iaso.polio.label.estimatedDateOfArrival": "Estimated date of arrival",
     "iaso.polio.label.expirationDate": "Expiration date",
     "iaso.polio.label.expired": "Expired",

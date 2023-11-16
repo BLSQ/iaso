@@ -9,7 +9,7 @@ import { DeleteIconButton } from '../../../../../../../../../hat/assets/js/apps/
 import { DateInput } from '../../../../../components/Inputs/DateInput';
 import { NumberInput, TextInput } from '../../../../../components/Inputs';
 import MESSAGES from '../../messages';
-import { SupplyChainFormData } from '../VaccineSupplyChainDetails';
+import { SupplyChainFormData } from '../../types';
 
 const useStyles = makeStyles((theme: Theme) => ({
     paper: {
@@ -27,6 +27,7 @@ const useStyles = makeStyles((theme: Theme) => ({
         },
         backgroundColor: theme.palette.grey['200'],
     },
+    container: { display: 'inline-flex', width: '100%' },
 }));
 
 type Props = {
@@ -42,7 +43,7 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
     const markedForDeletion = pre_alerts?.[index].to_delete ?? false;
 
     return (
-        <div style={{ display: 'inline-flex', width: '100%' }}>
+        <div className={classes.container}>
             <Paper
                 className={classNames(
                     classes.paper,

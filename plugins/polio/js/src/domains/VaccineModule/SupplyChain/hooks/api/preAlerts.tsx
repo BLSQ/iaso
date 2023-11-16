@@ -1,6 +1,6 @@
 import { getRequest } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useSnackQuery } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
-import { apiUrl } from './utils';
+import { apiUrl } from '../../constants';
 
 export const useGetPreAlertDetails = (vrfId?: string) => {
     return useSnackQuery({

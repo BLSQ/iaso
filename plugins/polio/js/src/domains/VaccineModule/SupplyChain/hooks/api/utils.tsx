@@ -4,12 +4,7 @@ import {
     patchRequest,
     postRequest,
 } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
-import {
-    PREALERT,
-    TabValue,
-    VAR,
-    VRF,
-} from '../../Details/VaccineSupplyChainDetails';
+
 import {
     errorSnackBar,
     succesfullSnackBar,
@@ -17,8 +12,8 @@ import {
 import { enqueueSnackbar } from '../../../../../../../../../hat/assets/js/apps/Iaso/redux/snackBarsReducer';
 import MESSAGES from '../../messages';
 import { Optional } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
-
-export const apiUrl = '/api/polio/vaccine/request_forms/';
+import { PREALERT, VAR, VRF, apiUrl } from '../../constants';
+import { TabValue } from '../../types';
 
 export type ParsedSettledPromise = {
     status: 'fulfilled' | 'rejected';

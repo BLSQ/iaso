@@ -9,10 +9,9 @@ import {
     handlePromiseErrors,
     normalizePromiseResult,
     parsePromiseResults,
+    saveTab,
 } from './utils';
-import { saveArrivalReports } from './arrivalReports';
 import { handleVrfPromiseErrors, saveVrf } from './vrf';
-import { savePreAlerts } from './preAlerts';
 
 const saveSupplyChainForm = async (supplyChainData: any) => {
     if (supplyChainData.saveAll === true && supplyChainData.vrf.id) {
@@ -23,12 +22,12 @@ const saveSupplyChainForm = async (supplyChainData: any) => {
             promises.push(Promise.allSettled(saveVrf(supplyChainData.vrf)));
         }
         if (supplyChainData.changedTabs.includes(PREALERT)) {
-            promises.push(Promise.allSettled(savePreAlerts(supplyChainData)));
+            promises.push(
+                Promise.allSettled(saveTab(PREALERT, supplyChainData)),
+            );
         }
         if (supplyChainData.changedTabs.includes(VAR)) {
-            promises.push(
-                Promise.allSettled(saveArrivalReports(supplyChainData)),
-            );
+            promises.push(Promise.allSettled(saveTab(VAR, supplyChainData)));
         }
 
         const allUpdates = await Promise.allSettled(promises);
@@ -52,7 +51,7 @@ const saveSupplyChainForm = async (supplyChainData: any) => {
         }
         case VAR: {
             const newVars = await Promise.allSettled(
-                saveArrivalReports(supplyChainData),
+                saveTab(VAR, supplyChainData),
             );
             return {
                 arrival_reports: newVars.map(item =>
@@ -62,7 +61,7 @@ const saveSupplyChainForm = async (supplyChainData: any) => {
         }
         case PREALERT: {
             const newPreAlerts = await Promise.allSettled(
-                savePreAlerts(supplyChainData),
+                saveTab(PREALERT, supplyChainData),
             );
             return {
                 pre_alerts: newPreAlerts.map(item =>

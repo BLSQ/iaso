@@ -45,53 +45,49 @@ export const prepareData = (data: any[]) => {
     return { toCreate, toUpdate, toDelete };
 };
 
-export const makeSaveFunction =
-    ({ key, postSuffix, patchSuffix, deleteSuffix }) =>
-    (supplyChainData): Promise<any>[] => {
-        const toCreate: any = [];
-        const toUpdate: any = [];
-        const toDelete: any = [];
-        const promises: Promise<any>[] = [];
-        supplyChainData.arrival_reports.forEach(arrivalReport => {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const { to_delete, ...dataToPass } = arrivalReport;
-            if (arrivalReport.id) {
-                if (!to_delete) {
-                    toUpdate.push(dataToPass);
-                } else {
-                    toDelete.push(dataToPass);
-                }
-            } else if (!to_delete) {
-                // Temporary solution to handle users creating then deleting prealerts in the UI
-                toCreate.push(dataToPass);
+export const saveTab = (key, supplyChainData): Promise<any>[] => {
+    const toCreate: any = [];
+    const toUpdate: any = [];
+    const toDelete: any = [];
+    const promises: Promise<any>[] = [];
+    supplyChainData.arrival_reports.forEach(arrivalReport => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { to_delete, ...dataToPass } = arrivalReport;
+        if (arrivalReport.id) {
+            if (!to_delete) {
+                toUpdate.push(dataToPass);
+            } else {
+                toDelete.push(dataToPass);
             }
-        });
-        if (toUpdate.length > 0) {
-            promises.push(
-                patchRequest(
-                    `${apiUrl}${supplyChainData.vrf.id}/${patchSuffix}/`,
-                    { [key]: toUpdate },
-                ),
-            );
+        } else if (!to_delete) {
+            // Temporary solution to handle users creating then deleting prealerts in the UI
+            toCreate.push(dataToPass);
         }
-        if (toCreate.length > 0) {
-            promises.push(
-                postRequest(
-                    `${apiUrl}${supplyChainData.vrf.id}/${postSuffix}/`,
-                    { [key]: toCreate },
-                ),
-            );
-        }
-        // if (toDelete.length > 0) {
-        //     toDelete.forEach(item => {
-        //         promises.push(
-        //             deleteRequest(`${apiUrl}${item.id}/${deleteSuffix}/`),
-        //         );
-        //     });
-        // }
-        // console.log('To delete', toDelete);
-        return promises;
-    };
+    });
+    if (toUpdate.length > 0) {
+        promises.push(
+            patchRequest(`${apiUrl}${supplyChainData.vrf.id}/update_${key}/`, {
+                [key]: toUpdate,
+            }),
+        );
+    }
+    if (toCreate.length > 0) {
+        promises.push(
+            postRequest(`${apiUrl}${supplyChainData.vrf.id}/add_${key}/`, {
+                [key]: toCreate,
+            }),
+        );
+    }
+    // if (toDelete.length > 0) {
+    //     toDelete.forEach(item => {
+    //         promises.push(
+    //             deleteRequest(`${apiUrl}${item.id}/delete_${key}/`),
+    //         );
+    //     });
+    // }
+    // console.log('To delete', toDelete);
+    return promises;
+};
 
 export const normalizePromiseResult = (
     settledPromise: PromiseSettledResult<any>,

@@ -626,6 +626,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.validation_status',
         defaultMessage: 'Status',
     },
+    instance_defining: {
+        id: 'iaso.forms.instance_defining',
+        defaultMessage: 'Instance definition',
+    },
 });
 
 export default MESSAGES;

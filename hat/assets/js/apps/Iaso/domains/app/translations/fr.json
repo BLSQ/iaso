@@ -239,6 +239,7 @@
     "iaso.forms.geom_ref": "Coordonnées de référence",
     "iaso.forms.gps_source": "Source GPS",
     "iaso.forms.hasInstances": "Soumissions de formulaire",
+    "iaso.forms.instance_defining": "Définition d'instance",
     "iaso.forms.instance_updated_at": "Dernière soumission",
     "iaso.forms.latest_version_files": "Dernière version",
     "iaso.forms.level": "Niveau",

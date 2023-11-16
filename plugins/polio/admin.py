@@ -156,16 +156,24 @@ class NotificationImportAdmin(admin.ModelAdmin):
 class NotificationAdmin(admin.ModelAdmin):
     list_display = (
         "epid_number",
-        "org_unit",
+        "get_org_unit_name",
+        "site_name",
         "vdpv_category",
-        "vdpv_nucleotide_diff_sabin2",
-        "lineage",
-        "closest_match_vdpv2",
+        "source",
         "date_of_onset",
     )
     list_filter = ("vdpv_category", "source")
     raw_id_fields = ("account", "org_unit", "created_by", "updated_by", "import_source")
     read_only_fields = ("data_source",)
+
+    @admin.display(description="Org Unit name")
+    def get_org_unit_name(self, obj):
+        if obj.org_unit:
+            return obj.org_unit.name
+        return None
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("org_unit")
 
 
 admin.site.register(Campaign, CampaignAdmin)

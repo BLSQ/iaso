@@ -997,11 +997,14 @@ class Notification(models.Model):
         WPV1 = "wpv1", _("WPV1")
 
     class Sources(models.TextChoices):
-        AFP = "afp", _("Accute Flaccid Paralysis")  # A case of someone who got paralyzed because of polio.
+        AFP = "accute_flaccid_paralysis", _(
+            "Accute Flaccid Paralysis"
+        )  # A case of someone who got paralyzed because of polio.
+        CC = "contact_case", _("Contact Case")
         COMMUNITY = "community", _("Community")
         CONTACT = "contact", _("Contact")
-        ENV = "env", _("Environmental")  # They found a virus in the environment.
-        HC = "hc", _("HC")
+        ENV = "environmental", _("Environmental")  # They found a virus in the environment.
+        HC = "healthy_children", _("Healthy Children")
         OTHER = "other", _("Other")
 
     account = models.ForeignKey("iaso.account", on_delete=models.CASCADE)
@@ -1098,35 +1101,32 @@ class NotificationImport(models.Model):
             if name not in df.columns:
                 raise ValueError(f"Missing column {name}.")
 
-        countries_cache, regions_cache, districts_cache = self._build_org_unit_caches()
         errors = []
+        importer = NotificationXlsxImporter()
 
         for idx, row in df.iterrows():
-            org_unit = self._find_org_unit_in_caches(
-                country_name=self.clean_str(row["COUNTRY"]),
-                region_name=self.clean_str(row["PROVINCE"]),
-                district_name=self.clean_str(row["DISTRICT"]),
-                countries_cache=countries_cache,
-                regions_cache=regions_cache,
-                districts_cache=districts_cache,
+            org_unit = importer.find_org_unit_in_caches(
+                country_name=importer.clean_str(row["COUNTRY"]),
+                region_name=importer.clean_str(row["PROVINCE"]),
+                district_name=importer.clean_str(row["DISTRICT"]),
             )
             kwargs = {
                 "account": self.account,
-                "closest_match_vdpv2": self.clean_str(row["CLOSEST_MATCH_VDPV2"]),
+                "closest_match_vdpv2": importer.clean_str(row["CLOSEST_MATCH_VDPV2"]),
                 "created_by": created_by,
-                "date_of_onset": self.clean_date(row["DATE_COLLECTION/DATE_OF_ONSET_(M/D/YYYY)"]),
-                "date_results_received": self.clean_date(row["DATE_RESULTS_RECEIVED"]),
+                "date_of_onset": importer.clean_date(row["DATE_COLLECTION/DATE_OF_ONSET_(M/D/YYYY)"]),
+                "date_results_received": importer.clean_date(row["DATE_RESULTS_RECEIVED"]),
                 "import_raw_data": row.to_dict(),
                 "import_source": self,
-                "lineage": self.clean_str(row["LINEAGE"]),
+                "lineage": importer.clean_str(row["LINEAGE"]),
                 "org_unit": org_unit,
-                "site_name": self.clean_str(row["SITE_NAME/GEOCODE"]),
-                "source": self.clean_source(row["SOURCE(AFP/ENV/CONTACT/HC)"]),
-                "vdpv_category": self.clean_vdpv_category(row["VDPV_CATEGORY"]),
-                "vdpv_nucleotide_diff_sabin2": self.clean_str(row["VDPV_NUCLEOTIDE_DIFF_SABIN2"]),
+                "site_name": importer.clean_str(row["SITE_NAME/GEOCODE"]),
+                "source": importer.clean_source(row["SOURCE(AFP/ENV/CONTACT/HC)"]),
+                "vdpv_category": importer.clean_vdpv_category(row["VDPV_CATEGORY"]),
+                "vdpv_nucleotide_diff_sabin2": importer.clean_str(row["VDPV_NUCLEOTIDE_DIFF_SABIN2"]),
             }
             _, created = Notification.objects.get_or_create(
-                epid_number=self.clean_str(row["EPID_NUMBER"]),
+                epid_number=importer.clean_str(row["EPID_NUMBER"]),
                 defaults=kwargs,
             )
             if not created:
@@ -1137,8 +1137,14 @@ class NotificationImport(models.Model):
         self.updated_at = timezone.now()
         self.save()
 
-    @classmethod
-    def _build_org_unit_caches(cls) -> Tuple[defaultdict, defaultdict, defaultdict]:
+
+class NotificationXlsxImporter:
+    def __init__(self):
+        self.countries_cache = None
+        self.regions_cache = None
+        self.districts_cache = None
+
+    def build_org_unit_caches(self) -> Tuple[defaultdict, defaultdict, defaultdict]:
         from plugins.polio.api.common import make_orgunits_cache
         from plugins.polio.api.dashboards.forma import parents_q
 
@@ -1166,50 +1172,46 @@ class NotificationImport(models.Model):
 
         return countries_cache, regions_cache, districts_cache
 
-    @classmethod
-    def _find_org_unit_in_caches(
-        cls,
-        country_name: str,
-        region_name: str,
-        district_name: str,
-        countries_cache: defaultdict,
-        regions_cache: defaultdict,
-        districts_cache: defaultdict,
-    ) -> Union[None, OrgUnit]:
+    def find_org_unit_in_caches(self, country_name: str, region_name: str, district_name: str) -> Union[None, OrgUnit]:
         from plugins.polio.api.common import find_orgunit_in_cache
 
-        country = find_orgunit_in_cache(countries_cache, country_name)
+        if not self.countries_cache:
+            self.countries_cache, self.regions_cache, self.districts_cache = self.build_org_unit_caches()
+
+        country = find_orgunit_in_cache(self.countries_cache, country_name)
         region = None
         if country:
-            region = find_orgunit_in_cache(regions_cache, region_name, country.name)
+            region = find_orgunit_in_cache(self.regions_cache, region_name, country.name)
         if region:
-            return find_orgunit_in_cache(districts_cache, district_name, region.name)
+            return find_orgunit_in_cache(self.districts_cache, district_name, region.name)
         return None
 
-    @classmethod
-    def clean_str(cls, data: Any) -> str:
+    def clean_str(self, data: Any) -> str:
         return str(data).strip()
 
-    @classmethod
-    def clean_date(cls, data: Any) -> Union[None, datetime.date]:
+    def clean_date(self, data: Any) -> Union[None, datetime.date]:
         try:
             return data.date()
         except AttributeError:
             return None
 
-    @classmethod
-    def clean_vdpv_category(cls, vdpv_category: str) -> Notification.VdpvCategories:
-        vdpv_category = cls.clean_str(vdpv_category).upper()
+    def clean_vdpv_category(self, vdpv_category: str) -> Notification.VdpvCategories:
+        vdpv_category = self.clean_str(vdpv_category).upper()
         vdpv_category = "".join(char for char in vdpv_category if char.isalnum())
         return Notification.VdpvCategories[vdpv_category]
 
-    @classmethod
-    def clean_source(cls, source: str) -> Notification.Sources:
-        source = cls.clean_str(source).upper()
+    def clean_source(self, source: str) -> Notification.Sources:
+        source = self.clean_str(source)
         try:
-            return Notification.Sources[source]
+            # Find member by value.
+            return Notification.Sources[source.upper()]
         except KeyError:
             pass
-        if source.startswith("CONT"):
+        try:
+            # Find member by name.
+            return Notification.Sources(source.lower().replace(" ", "_"))
+        except Exception:
+            pass
+        if source.upper().startswith("CONT"):
             return Notification.Sources["CONTACT"]
         return Notification.Sources["OTHER"]

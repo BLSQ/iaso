@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useCallback } from 'react';
 import { Box, Grid, Typography } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
-import { MENU_HEIGHT_WITH_TABS, useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import { MultiSelect } from '../../../../../components/Inputs/MultiSelect';
 import { DateInput } from '../../../../../components/Inputs/DateInput';
@@ -13,6 +13,7 @@ import {
     useCampaignDropDowns,
     useGetCountriesOptions,
 } from '../../hooks/api/vrf';
+import { useSharedStyles } from '../shared';
 
 type Props = { className?: string; vrfData: any };
 
@@ -20,12 +21,12 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
     className,
     vrfData,
 }) => {
-    // const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
+    const classes: Record<string, string> = useSharedStyles();
     const { data: countriesOptions, isFetching: isFetchingCountries } =
         useGetCountriesOptions();
     const vrfDataComment = vrfData?.comment;
-    // TODO manage errors, allowConfirm
+    // TODO manage errors
     const { values, setFieldTouched, setFieldValue } = useFormikContext<any>();
     const {
         campaigns,
@@ -81,18 +82,13 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
     );
 
     return (
-        <Box className={className}>
+        <Box className={className} mb={3}>
             <Box mb={2}>
                 <Typography variant="h5">
                     {formatMessage(MESSAGES.vrfTitle)}
                 </Typography>
             </Box>
-            <Box
-                style={{
-                    height: `calc(100vh - ${MENU_HEIGHT_WITH_TABS + 200}px)`,
-                    overflow: 'scroll',
-                }}
-            >
+            <Box className={classes.scrollableForm}>
                 <Grid container>
                     <Grid container item xs={12} spacing={2}>
                         <Grid item xs={6} md={3}>

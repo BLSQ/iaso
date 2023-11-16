@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import React, { FunctionComponent } from 'react';
-import { Box, Grid, Paper, Theme, makeStyles } from '@material-ui/core';
+import { Box, Grid, Paper } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 import RestoreFromTrashIcon from '@material-ui/icons/RestoreFromTrash';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
@@ -10,32 +10,14 @@ import { DateInput } from '../../../../../components/Inputs/DateInput';
 import { NumberInput, TextInput } from '../../../../../components/Inputs';
 import MESSAGES from '../../messages';
 import { SupplyChainFormData } from '../../types';
-
-const useStyles = makeStyles((theme: Theme) => ({
-    paper: {
-        padding: theme.spacing(4, 2, 2, 4),
-        marginBottom: theme.spacing(4),
-        // @ts-ignore
-        border: `1px solid ${theme.palette.mediumGray.main}`,
-        width: 'calc(100% - 64px)',
-        boxShadow:
-            '0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 1px 0px rgba(0,0,0,0.1)',
-    },
-    markedForDeletion: {
-        '&  label.MuiInputLabel-root': {
-            backgroundColor: `${theme.palette.grey['200']} !important`,
-        },
-        backgroundColor: theme.palette.grey['200'],
-    },
-    container: { display: 'inline-flex', width: '100%' },
-}));
+import { usePaperStyles } from '../shared';
 
 type Props = {
     index: number;
 };
 
 export const PreAlert: FunctionComponent<Props> = ({ index }) => {
-    const classes: Record<string, string> = useStyles();
+    const classes: Record<string, string> = usePaperStyles();
     const { formatMessage } = useSafeIntl();
     const { values, setFieldValue, setFieldTouched } =
         useFormikContext<SupplyChainFormData>();

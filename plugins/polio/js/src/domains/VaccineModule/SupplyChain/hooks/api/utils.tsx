@@ -13,40 +13,21 @@ import { enqueueSnackbar } from '../../../../../../../../../hat/assets/js/apps/I
 import MESSAGES from '../../messages';
 import { Optional } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { PREALERT, VAR, VRF, apiUrl } from '../../constants';
-import { TabValue } from '../../types';
+import {
+    ParsedSettledPromise,
+    SupplyChainFormData,
+    TabValue,
+} from '../../types';
 
-export type ParsedSettledPromise = {
-    status: 'fulfilled' | 'rejected';
-    value: any; // if success: api response, if failure: error message
-};
-
-export const prepareData = (data: any[]) => {
-    const toCreate: any[] = [];
-    const toUpdate: any[] = [];
-    const toDelete: any[] = [];
-    data.forEach(item => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { to_delete, ...dataToPass } = item;
-        if (item.id) {
-            if (!to_delete) {
-                toUpdate.push(dataToPass);
-            } else {
-                toDelete.push(dataToPass);
-            }
-        } else if (!to_delete) {
-            // Temporary solution to handle users creating then deleting prealerts in the UI
-            toCreate.push(dataToPass);
-        }
-    });
-    return { toCreate, toUpdate, toDelete };
-};
-
-export const saveTab = (key, supplyChainData): Promise<any>[] => {
+export const saveTab = (
+    key: string,
+    supplyChainData: SupplyChainFormData,
+): Promise<any>[] => {
     const toCreate: any = [];
     const toUpdate: any = [];
     const toDelete: any = [];
     const promises: Promise<any>[] = [];
-    supplyChainData.arrival_reports.forEach(arrivalReport => {
+    supplyChainData?.[key].forEach(arrivalReport => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { to_delete, ...dataToPass } = arrivalReport;
         if (arrivalReport.id) {
@@ -62,14 +43,17 @@ export const saveTab = (key, supplyChainData): Promise<any>[] => {
     });
     if (toUpdate.length > 0) {
         promises.push(
-            patchRequest(`${apiUrl}${supplyChainData.vrf.id}/update_${key}/`, {
-                [key]: toUpdate,
-            }),
+            patchRequest(
+                `${apiUrl}${supplyChainData?.vrf?.id}/update_${key}/`,
+                {
+                    [key]: toUpdate,
+                },
+            ),
         );
     }
     if (toCreate.length > 0) {
         promises.push(
-            postRequest(`${apiUrl}${supplyChainData.vrf.id}/add_${key}/`, {
+            postRequest(`${apiUrl}${supplyChainData?.vrf?.id}/add_${key}/`, {
                 [key]: toCreate,
             }),
         );
@@ -107,7 +91,7 @@ export const normalizePromiseResult = (
 };
 
 export const findPromiseOrigin = (
-    settledPromise: PromiseSettledResult<any>,
+    settledPromise: PromiseSettledResult<any>[],
 ): Optional<TabValue> => {
     if (!settledPromise) {
         throw new Error(
@@ -115,9 +99,9 @@ export const findPromiseOrigin = (
         );
     }
 
-    const { value, reason } = Array.isArray(settledPromise)
-        ? settledPromise[0] ?? {}
-        : settledPromise;
+    // @ts-ignore
+    const { value, reason } = settledPromise[0] ?? {};
+
     // If there's no arrival reports or no pre alerts, settledPromise may be an empty array.
     // In this case we return undefined to skip adding an entry to the aggregated response when using saveAll
     if (!value && !reason) {
@@ -126,49 +110,57 @@ export const findPromiseOrigin = (
     const foundValue = value
         ? Object.keys(value)[0]
         : Object.keys(reason.details)[0];
-
+    // Since there's only 1 vrf, the form of the response doesn't provide a key.
+    // Since it's also the only tab in that situation, we can infer that if the found value is neither VAR nor PRREALERT, it must be VRF
     return foundValue === VAR || foundValue === PREALERT ? foundValue : VRF;
 };
 
-export const addEntryToResponse = (response, update): void => {
+export const addEntryToResponse = (
+    response: Record<string, any>,
+    update: PromiseFulfilledResult<PromiseSettledResult<any>[]>,
+): void => {
     const key = findPromiseOrigin(update.value);
     if (key === VRF) {
         response[key] = normalizePromiseResult(update);
     } else if (key) {
-        const convertedArray: any[] = update.value.map(item =>
-            normalizePromiseResult(item),
-        );
+        const convertedArray: any[] = (
+            update.value as PromiseSettledResult<any>[]
+        ).map(item => normalizePromiseResult(item));
         response[key] = convertedArray;
     }
 };
 
 export const parsePromiseResults = (
-    allUpdates: (PromiseSettledResult<any> | PromiseSettledResult<any>[])[],
-): any => {
+    allUpdates: PromiseFulfilledResult<PromiseSettledResult<any>[]>[],
+): Record<string, ParsedSettledPromise | ParsedSettledPromise[]> => {
     // if length == 3, all tabs have been updated, and we know the order: vrf, prealert, var
     if (allUpdates.length === 3) {
-        // there's only 1 vrf, so we don't have an array here
-        const vrf = normalizePromiseResult(
-            allUpdates[0] as PromiseSettledResult<any>,
+        // there's only 1 vrf so no need to map
+        const vrf = normalizePromiseResult(allUpdates[0].value[0]);
+        const preAlerts: ParsedSettledPromise[] = allUpdates[1].value.map(
+            item => normalizePromiseResult(item),
         );
-        const preAlerts: any[] = (
-            allUpdates[1] as PromiseSettledResult<any>[]
-        ).map(item => normalizePromiseResult(item));
 
-        const arrival_reports: any[] = (
-            allUpdates[2] as PromiseSettledResult<any>[]
-        ).map(item => normalizePromiseResult(item));
+        const arrival_reports: ParsedSettledPromise[] = allUpdates[2].value.map(
+            item => normalizePromiseResult(item),
+        );
         return { vrf, preAlerts, arrival_reports };
     }
     if (allUpdates.length === 2) {
-        const response: any = {};
+        const response: Record<
+            string,
+            ParsedSettledPromise | ParsedSettledPromise[]
+        > = {};
         allUpdates.forEach(update => {
             addEntryToResponse(response, update);
         });
         return response;
     }
     if (allUpdates.length === 1) {
-        const response: any = {};
+        const response: Record<
+            string,
+            ParsedSettledPromise | ParsedSettledPromise[]
+        > = {};
         const [update] = allUpdates;
         addEntryToResponse(response, update);
         return response;

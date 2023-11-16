@@ -25,7 +25,6 @@ import { Router } from '../../../../../../../../hat/assets/js/apps/Iaso/types/ge
 import TopBar from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { useGoBack } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/useGoBack';
 import { useSaveVaccineSupplyChainForm } from '../hooks/api/useSaveSupplyChainForm';
-import { useTopBarTitle } from '../hooks/utils';
 import { VaccineRequestForm } from './VaccineRequestForm/VaccineRequestForm';
 import MESSAGES from '../messages';
 import { PreAlerts } from './PreAlerts/PreAlerts';
@@ -41,6 +40,7 @@ import {
     VAR as VarType,
 } from '../types';
 import { PREALERT, VAR, VRF } from '../constants';
+import { useTopBarTitle } from '../hooks/useTopBarTitle';
 
 type Props = { router: Router };
 
@@ -191,14 +191,10 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
     const isLoading =
         isFetchingArrivalReports || isFetchingPreAlerts || isFetching;
 
-    console.log('vars', values.arrival_reports);
-    console.log('initial', initialValues);
-
     // Using formik's enableReinitialize would cause touched, errors etc to reset when changing tabs
     // So we set values with useEffect once data has been fetched.
     useEffect(() => {
         if (arrivalReports && !values.arrival_reports) {
-            console.log('EFFECT');
             setFieldValue('arrival_reports', arrivalReports.arrival_reports);
             // set InitialValues so we can compare with form values and enables/disabel dave button accordingly
             setInitialValues({

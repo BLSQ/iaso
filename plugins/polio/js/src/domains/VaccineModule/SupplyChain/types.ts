@@ -6,8 +6,10 @@ export type TabValue = 'vrf' | 'arrival_reports' | 'pre_alerts';
 
 export type VRF = {
     id?: number;
-    country: number;
-    campaign: string;
+    country_name: string;
+    country_id: number;
+    campaign: string; // uuid
+    obr_name: string;
     vaccine_type: Vaccine;
     rounds: string; // 1,2
     date_vrf_signature: string; // date in string form
@@ -55,4 +57,17 @@ export type SupplyChainFormData = {
     activeTab: TabValue;
     saveAll: boolean;
     changedTabs: TabValue[];
+};
+
+export type ParsedSettledPromise<T> = {
+    status: 'fulfilled' | 'rejected';
+    value: T; // if success: api response, if failure: error message
+};
+
+export type SupplyChainResponse = {
+    vrf?: ParsedSettledPromise<VRF> | ParsedSettledPromise<VRF>[];
+    pre_alerts?:
+        | ParsedSettledPromise<PreAlert>
+        | ParsedSettledPromise<PreAlert>[];
+    arrival_reports?: ParsedSettledPromise<VAR> | ParsedSettledPromise<VAR>[];
 };

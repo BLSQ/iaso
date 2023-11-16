@@ -1,12 +1,6 @@
+/* eslint-disable camelcase */
 import React, { FunctionComponent } from 'react';
-import {
-    Box,
-    Grid,
-    Paper,
-    Theme,
-    Typography,
-    makeStyles,
-} from '@material-ui/core';
+import { Box, Grid, Paper, Typography } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 import classNames from 'classnames';
 import RestoreFromTrashIcon from '@material-ui/icons/RestoreFromTrash';
@@ -17,33 +11,19 @@ import { NumberInput, TextInput } from '../../../../../components/Inputs';
 import MESSAGES from '../../messages';
 import { SupplyChainFormData } from '../../types';
 import { VAR } from '../../constants';
-
-const useStyles = makeStyles((theme: Theme) => ({
-    paper: {
-        padding: theme.spacing(4, 2, 2, 4),
-        marginBottom: theme.spacing(4),
-        // @ts-ignore
-        border: `1px solid ${theme.palette.mediumGray.main}`,
-        width: 'calc(100% - 64px)',
-        boxShadow:
-            '0px 2px 1px -1px rgba(0,0,0,0.2),0px 1px 1px 0px rgba(0,0,0,0.14),0px 1px 1px 0px rgba(0,0,0,0.1)',
-    },
-    markedForDeletion: {
-        backgroundColor: theme.palette.grey['200'],
-    },
-}));
+import { usePaperStyles } from '../shared';
 
 type Props = { index: number };
 
 export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
-    const classes: Record<string, string> = useStyles();
+    const classes: Record<string, string> = usePaperStyles();
     const { formatMessage } = useSafeIntl();
     const { values, setFieldValue, setFieldTouched } =
         useFormikContext<SupplyChainFormData>();
     const { arrival_reports } = values as SupplyChainFormData;
     const markedForDeletion = arrival_reports?.[index].to_delete ?? false;
     return (
-        <div style={{ display: 'inline-flex', width: '100%' }}>
+        <div className={classes.container}>
             <Paper
                 className={classNames(
                     classes.paper,

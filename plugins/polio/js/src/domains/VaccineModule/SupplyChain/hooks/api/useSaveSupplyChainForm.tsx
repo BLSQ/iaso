@@ -11,10 +11,11 @@ import {
 } from './utils';
 import { handleVrfPromiseErrors, saveVrf } from './vrf';
 import { PREALERT, VAR, VRF } from '../../constants';
+import { SupplyChainFormData, SupplyChainResponse } from '../../types';
 
-const saveSupplyChainForm = async (supplyChainData: any) => {
-    if (supplyChainData.saveAll === true && supplyChainData.vrf.id) {
-        const promises: Promise<any>[] = [];
+const saveSupplyChainForm = async (supplyChainData: SupplyChainFormData) => {
+    if (supplyChainData.saveAll === true && supplyChainData?.vrf?.id) {
+        const promises: Promise<PromiseSettledResult<any>[]>[] = [];
 
         // update all tabs
         if (supplyChainData.changedTabs.includes(VRF)) {
@@ -29,7 +30,10 @@ const saveSupplyChainForm = async (supplyChainData: any) => {
             promises.push(Promise.allSettled(saveTab(VAR, supplyChainData)));
         }
 
-        const allUpdates = await Promise.allSettled(promises);
+        const allUpdates = (await Promise.allSettled(
+            promises,
+            // The first level of nesting will only contain fulfilled promised. The rejected ones will be at least 1 level deep
+        )) as PromiseFulfilledResult<PromiseSettledResult<any>[]>[];
         return parsePromiseResults(allUpdates);
     }
     // We can't save prealerts or var if there's no preexisting vrf
@@ -88,7 +92,10 @@ export const useSaveVaccineSupplyChainForm = (): UseMutationResult<
         ignoreErrorCodes: [400],
         options: {
             // Setting the cache value with the response onSuccess, so we can reset the form state (touched, etc) without losing data
-            onSuccess: (data: any, variables: any) => {
+            onSuccess: (
+                data: SupplyChainResponse,
+                variables: SupplyChainFormData,
+            ) => {
                 if (variables.saveAll && data) {
                     if (data.pre_alerts) {
                         const { pre_alerts } = data;
@@ -119,7 +126,6 @@ export const useSaveVaccineSupplyChainForm = (): UseMutationResult<
                     }
                     if (variables.activeTab === VRF && data.vrf) {
                         const { vrf } = data;
-                        // TODO fix the data type of vrf (arry/object)
                         handleVrfPromiseErrors(vrf[0], dispatch);
                         queryClient.invalidateQueries('getVrfList');
                         queryClient.invalidateQueries('getVrfDetails');

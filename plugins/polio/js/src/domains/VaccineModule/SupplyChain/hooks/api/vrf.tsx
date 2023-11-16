@@ -27,6 +27,7 @@ import {
 import { Campaign } from '../../../../../constants/types';
 import { enqueueSnackbar } from '../../../../../../../../../hat/assets/js/apps/Iaso/redux/snackBarsReducer';
 import { apiUrl } from '../../constants';
+import { ParsedSettledPromise, VRF } from '../../types';
 
 const defaults = {
     order: 'country',
@@ -178,7 +179,7 @@ export const saveVrf = (vrf): Promise<any>[] => {
     // const { vrf } = supplyChainData;
     const payload = {
         ...vrf,
-        rounds: vrf.rounds.split(',').map(r => ({ number: r })),
+        rounds: vrf.rounds.map(r => ({ number: r })),
         campaign: { obr_name: vrf.campaign },
     };
     if (vrf.id) {
@@ -187,7 +188,30 @@ export const saveVrf = (vrf): Promise<any>[] => {
     return [postRequest(apiUrl, payload)];
 };
 
-export const handleVrfPromiseErrors = (data: any, dispatch: Dispatch): void => {
+// TODO There's type mismatch between single save an save all
+/*
+
+save all:{
+    status:fulfilled
+    value:[
+        {
+            status:"rejected",
+            reason: ApiError etc --> normal rejected promise
+        }
+    ]
+}
+
+single save:   {
+            status:"rejected",
+            value: ApiError --> parsed rejected promise
+        }
+
+*/
+export const handleVrfPromiseErrors = (
+    data: ParsedSettledPromise<VRF>,
+    dispatch: Dispatch,
+): void => {
+    console.log('error', data);
     const isSuccessful = data.value.status === 'fulfilled';
     if (isSuccessful) {
         dispatch(

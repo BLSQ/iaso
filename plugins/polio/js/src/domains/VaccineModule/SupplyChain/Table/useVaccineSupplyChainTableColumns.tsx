@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import { Column, IconButton, useSafeIntl } from 'bluesquare-components';
-// import { VACCINE_SUPPLY_CHAIN } from '../../../../constants/routes';
 import {
     DateCell,
     MultiDateCell,
@@ -95,7 +94,6 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
                                 tooltipMessage={MESSAGES.edit}
                                 url={`${VACCINE_SUPPLY_CHAIN_DETAILS}/id/${settings.row.original.id}`}
                             />
-                            {/* TODO make better DeleteDialog */}
                             <DeleteDialog
                                 titleMessage={MESSAGES.deleteVRF}
                                 message={MESSAGES.deleteVRFWarning}

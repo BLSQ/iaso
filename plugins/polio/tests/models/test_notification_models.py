@@ -9,7 +9,7 @@ from django.utils import timezone
 from hat import settings
 from iaso import models as m
 from iaso.test import TestCase
-from plugins.polio.models import NotificationImport, Notification, NotificationXlsxImporter
+from plugins.polio.models import Notification, NotificationImport, NotificationXlsxImporter
 
 TEST_MEDIA_ROOT = os.path.join(settings.BASE_DIR, "media/_test")
 
@@ -32,9 +32,51 @@ class NotificationImportTestCase(TestCase):
     def setUpTestData(cls):
         cls.account = m.Account.objects.create(name="Account")
         cls.user = cls.create_user_with_profile(username="user", account=cls.account)
+
         cls.file_path = "plugins/polio/tests/fixtures/linelist_notification_test.xlsx"
         cls.wrong_cols_file_path = "plugins/polio/tests/fixtures/linelist_notification_wrong_cols_test.xlsx"
         cls.invalid_file_path = "plugins/polio/tests/fixtures/linelist_notification_invalid_format_test.txt"
+
+        # Org units matching data in `cls.file_path`
+        # Country.
+        country_angola = m.OrgUnit.objects.create(
+            name="ANGOLA",
+            org_unit_type=m.OrgUnitType.objects.create(category="COUNTRY"),
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            path=["foo"],
+        )
+        # Region / District 1.
+        region_huila = m.OrgUnit.objects.create(
+            name="HUILA",
+            parent=country_angola,
+            org_unit_type=m.OrgUnitType.objects.create(category="REGION"),
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            path=["foo", "bar"],
+        )
+        cls.district_cuvango = m.OrgUnit.objects.create(
+            name="CUVANGO",
+            parent=region_huila,
+            org_unit_type=m.OrgUnitType.objects.create(category="DISTRICT"),
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            path=["foo", "bar", "baz"],
+        )
+        # Region / District 2.
+        region_lunda_norte = m.OrgUnit.objects.create(
+            name="LUNDA NORTE",
+            parent=country_angola,
+            org_unit_type=m.OrgUnitType.objects.create(category="REGION"),
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            path=["foo", "qux"],
+        )
+        cls.district_cambulo = m.OrgUnit.objects.create(
+            name="CAMBULO",
+            parent=region_lunda_norte,
+            org_unit_type=m.OrgUnitType.objects.create(category="DISTRICT"),
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            path=["foo", "qux", "quux"],
+        )
+        cls.district_cuvango.calculate_paths()
+        cls.district_cambulo.calculate_paths()
 
     def test_model_str(self):
         notification_import = NotificationImport(file="foo.xlsx", account=self.account, created_by=self.user)
@@ -57,6 +99,45 @@ class NotificationImportTestCase(TestCase):
         with self.assertRaises(ValueError) as error:
             notification_import.create_notifications(created_by=self.user)
         self.assertEqual(str(error.exception), "Missing column PROVINCE.")
+
+    def test_create_notifications(self):
+        with open(self.file_path, "rb") as xls_file:
+            notification_import = NotificationImport.objects.create(
+                file=UploadedFile(xls_file), account=self.account, created_by=self.user
+            )
+        notification_import.create_notifications(created_by=self.user)
+
+        self.assertEqual(Notification.objects.count(), 2)
+
+        notification1 = Notification.objects.get(epid_number="ANG-LNO-CAM-19-001")
+        self.assertEqual(notification1.vdpv_category, notification1.VdpvCategories.CVDPV2)
+        self.assertEqual(notification1.source, notification1.Sources.AFP)
+        self.assertEqual(notification1.lineage, "")
+        self.assertEqual(notification1.vdpv_nucleotide_diff_sabin2, "5nt")
+        self.assertEqual(notification1.closest_match_vdpv2, "SABIN 2")
+        self.assertEqual(notification1.date_of_onset, datetime.date(2019, 4, 5))
+        self.assertEqual(notification1.date_results_received, None)
+        self.assertEqual(notification1.org_unit, self.district_cambulo)
+        self.assertEqual(notification1.site_name, "ELIZANDRA ELSA")
+        self.assertEqual(notification1.created_by, self.user)
+        self.assertEqual(notification1.updated_at, None)
+        self.assertEqual(notification1.updated_by, None)
+        self.assertEqual(notification1.import_source, notification_import)
+
+        notification2 = Notification.objects.get(epid_number="ANG-HUI-CUV-19-002")
+        self.assertEqual(notification2.vdpv_category, notification1.VdpvCategories.CVDPV2)
+        self.assertEqual(notification2.source, notification1.Sources.AFP)
+        self.assertEqual(notification2.lineage, "ANG-HUI-1")
+        self.assertEqual(notification2.vdpv_nucleotide_diff_sabin2, "")
+        self.assertEqual(notification2.closest_match_vdpv2, "Sabin 2")
+        self.assertEqual(notification2.date_of_onset, datetime.date(2019, 4, 27))
+        self.assertEqual(notification2.date_results_received, None)
+        self.assertEqual(notification2.org_unit, self.district_cuvango)
+        self.assertEqual(notification2.site_name, "JOSEFA NGOMBE")
+        self.assertEqual(notification2.created_by, self.user)
+        self.assertEqual(notification2.updated_at, None)
+        self.assertEqual(notification2.updated_by, None)
+        self.assertEqual(notification2.import_source, notification_import)
 
 
 class NotificationXlsxImporterTestCase(TestCase):

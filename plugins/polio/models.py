@@ -1146,21 +1146,20 @@ class NotificationXlsxImporter:
 
     def build_org_unit_caches(self) -> Tuple[defaultdict, defaultdict, defaultdict]:
         from plugins.polio.api.common import make_orgunits_cache
-        from plugins.polio.api.dashboards.forma import parents_q
 
         districts = OrgUnit.objects.filter(
             org_unit_type__category="DISTRICT", validation_status=OrgUnit.VALIDATION_VALID
         ).select_related("org_unit_type")
 
         regions = OrgUnit.objects.filter(
-            parents_q(districts),
+            OrgUnit.objects.parents_q(districts),
             org_unit_type__category="REGION",
             validation_status=OrgUnit.VALIDATION_VALID,
             path__depth=2,
         ).select_related("org_unit_type")
 
         countries = OrgUnit.objects.filter(
-            parents_q(districts),
+            OrgUnit.objects.parents_q(districts),
             org_unit_type__category="COUNTRY",
             validation_status=OrgUnit.VALIDATION_VALID,
             path__depth=1,

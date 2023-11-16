@@ -964,7 +964,7 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
 
         round_start_from = datetime.strptime(round_start_from, "%d-%m-%Y") if round_start_from else None
         round_start_to = datetime.strptime(round_start_to, "%d-%m-%Y") if round_start_to else None
-        current_date = datetime.strptime(current_date, "%Y-%m-%d") if current_date else datetime.today()
+        current_date = datetime(self.get_year(current_date), 1, 1) if current_date else datetime(self.get_year(), 1, 1)
         # get the filter query on start from and start to dates
         query_rounds = Q()
         if not round_start_from and not round_start_to:
@@ -1043,7 +1043,7 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
         return response
 
     @staticmethod
-    def get_year(current_date):
+    def get_year(current_date=None):
         if current_date is not None:
             current_date = datetime.strptime(current_date, "%Y-%m-%d")
             current_date = current_date.date()

@@ -12,7 +12,7 @@ from rest_framework.response import Response
 from hat.menupermissions import models as permission
 from iaso.api.common import GenericReadWritePerm, ModelViewSet
 from iaso.models import OrgUnit
-from plugins.polio.models import Round, VaccineArrivalReport, VaccinePreAlert, VaccineRequestForm
+from plugins.polio.models import Round, VaccineArrivalReport, VaccinePreAlert, VaccineRequestForm, DOSES_PER_VIAL
 
 
 PA_SET = "vaccineprealert_set"
@@ -59,7 +59,7 @@ class NestedRoundSerializer(serializers.ModelSerializer):
 class NestedRoundPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Round
-        fields = ["id"]
+        fields = ["number"]
 
 
 class BasePostPatchSerializer(serializers.ModelSerializer):
@@ -86,7 +86,7 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
     id = serializers.IntegerField(required=True, read_only=False)
     date_pre_alert_reception = serializers.DateField(required=False)
     po_number = serializers.CharField(required=False)
-    estimated_arrival_time = serializers.DateTimeField(required=False)
+    estimated_arrival_time = serializers.DateField(required=False)
     lot_number = serializers.CharField(required=False)
     expiration_date = serializers.DateField(required=False)
     doses_shipped = serializers.IntegerField(required=False)
@@ -104,9 +104,14 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
 
 
 class NestedVaccineArrivalReportSerializerForPost(BasePostPatchSerializer):
+    doses_per_vial = serializers.SerializerMethodField()
+
     class Meta:
         model = VaccineArrivalReport
-        fields = ["arrival_report_date", "doses_received"]
+        fields = ["arrival_report_date", "doses_received", "doses_per_vial"]
+
+    def get_doses_per_vial(self, obj):
+        return DOSES_PER_VIAL[obj.request_form.vaccine_type]
 
 
 class NestedVaccineArrivalReportSerializerForPatch(NestedVaccineArrivalReportSerializerForPost):
@@ -222,7 +227,8 @@ class NestedCountrySerializer(serializers.ModelSerializer):
 
 
 class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
-    # rounds = NestedRoundPostSerializer(many=True)
+    rounds = NestedRoundPostSerializer(many=True)
+    campaign = serializers.CharField(source="campaign.obr_name")
 
     class Meta:
         model = VaccineRequestForm
@@ -258,6 +264,7 @@ class VaccineRequestFormDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = VaccineRequestForm
         fields = [
+            "id",
             "campaign",
             "vaccine_type",
             "rounds",
@@ -496,6 +503,14 @@ class VaccineRequestFormViewSet(ModelViewSet):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    def _do_generic_delete(self, request, model_class):
+        instance_id = request.query_params.get("id")
+        instance = model_class.objects.get(id=instance_id)
+        if instance.request_form.campaign.account != request.user.iaso_profile.account:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
     @action(detail=True, methods=["post"])
     def add_pre_alerts(self, request, pk=None):
         return self._do_generic_add(request, PostPreAlertSerializer, PA_SET, "pre_alerts")
@@ -520,6 +535,14 @@ class VaccineRequestFormViewSet(ModelViewSet):
     def update_arrival_reports(self, request, pk=None):
         return self._do_generic_update(request, PatchArrivalReportSerializer, AR_SET)
 
+    @action(detail=True, methods=["delete"])
+    def delete_pre_alerts(self, request, pk=None):
+        return self._do_generic_delete(request, VaccinePreAlert)
+
+    @action(detail=True, methods=["delete"])
+    def delete_arrival_reports(self, request, pk=None):
+        return self._do_generic_delete(request, VaccineArrivalReport)
+
     def get_serializer_class(self):
         if self.action == "list":
             return VaccineRequestFormListSerializer
@@ -533,9 +556,7 @@ class VaccineRequestFormViewSet(ModelViewSet):
             return PostArrivalReportSerializer
         elif self.action == "update_arrival_reports":
             return PatchArrivalReportSerializer
-        elif self.action == "get_pre_alerts":
-            return None
-        elif self.action == "get_arrival_reports":
+        elif self.action in ["get_pre_alerts", "get_arrival_reports", "delete_pre_alerts", "delete_arrival_reports"]:
             return None
 
         else:

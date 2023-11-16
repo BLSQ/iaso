@@ -6,7 +6,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.title',
     },
     pages: {
-        defaultMessage: 'Pages',
+        defaultMessage: 'Embedded links',
         id: 'iaso.pages.title',
     },
     detailTitle: {

@@ -99,6 +99,7 @@ export const useSaveVaccineSupplyChainForm = (): UseMutationResult<
                 if (variables.saveAll && data) {
                     if (data.pre_alerts) {
                         const { pre_alerts } = data;
+
                         handlePromiseErrors(pre_alerts, dispatch);
                         queryClient.invalidateQueries('preAlertDetails');
                     }
@@ -126,7 +127,7 @@ export const useSaveVaccineSupplyChainForm = (): UseMutationResult<
                     }
                     if (variables.activeTab === VRF && data.vrf) {
                         const { vrf } = data;
-                        handleVrfPromiseErrors(vrf[0], dispatch);
+                        handleVrfPromiseErrors(vrf, dispatch);
                         queryClient.invalidateQueries('getVrfList');
                         queryClient.invalidateQueries('getVrfDetails');
                     }

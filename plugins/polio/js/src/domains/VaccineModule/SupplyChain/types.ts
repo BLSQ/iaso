@@ -65,9 +65,7 @@ export type ParsedSettledPromise<T> = {
 };
 
 export type SupplyChainResponse = {
-    vrf?: ParsedSettledPromise<VRF> | ParsedSettledPromise<VRF>[];
-    pre_alerts?:
-        | ParsedSettledPromise<PreAlert>
-        | ParsedSettledPromise<PreAlert>[];
-    arrival_reports?: ParsedSettledPromise<VAR> | ParsedSettledPromise<VAR>[];
+    vrf?: ParsedSettledPromise<VRF>[];
+    pre_alerts?: ParsedSettledPromise<PreAlert>[];
+    arrival_reports?: ParsedSettledPromise<VAR>[];
 };

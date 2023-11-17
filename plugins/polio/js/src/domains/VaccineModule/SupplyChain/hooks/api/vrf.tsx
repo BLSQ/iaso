@@ -208,11 +208,13 @@ single save:   {
 
 */
 export const handleVrfPromiseErrors = (
-    data: ParsedSettledPromise<VRF>,
+    data: ParsedSettledPromise<VRF>[],
     dispatch: Dispatch,
 ): void => {
-    console.log('error', data);
-    const isSuccessful = data.value.status === 'fulfilled';
+    console.log('DATA', data);
+    const vrf = data[0];
+    const isSuccessful = vrf.status === 'fulfilled';
+    console.log('isSuccessful', isSuccessful, vrf);
     if (isSuccessful) {
         dispatch(
             enqueueSnackbar(
@@ -223,10 +225,10 @@ export const handleVrfPromiseErrors = (
             ),
         );
     } else {
-        const details = Array.isArray(data.value)
+        const details = Array.isArray(vrf.value)
             ? // there's only one element in the array
-              data.value[0].reason.details
-            : data.value;
+              vrf.value[0].reason.details
+            : vrf.value;
         dispatch(
             enqueueSnackbar(
                 errorSnackBar(

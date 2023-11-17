@@ -120,9 +120,7 @@ export const addEntryToResponse = (
     update: PromiseFulfilledResult<PromiseSettledResult<any>[]>,
 ): void => {
     const key = findPromiseOrigin(update.value);
-    if (key === VRF) {
-        response[key] = normalizePromiseResult(update);
-    } else if (key) {
+    if (key) {
         const convertedArray: any[] = (
             update.value as PromiseSettledResult<any>[]
         ).map(item => normalizePromiseResult(item));
@@ -132,40 +130,15 @@ export const addEntryToResponse = (
 
 export const parsePromiseResults = (
     allUpdates: PromiseFulfilledResult<PromiseSettledResult<any>[]>[],
-): Record<string, ParsedSettledPromise | ParsedSettledPromise[]> => {
-    // if length == 3, all tabs have been updated, and we know the order: vrf, prealert, var
-    if (allUpdates.length === 3) {
-        // there's only 1 vrf so no need to map
-        const vrf = normalizePromiseResult(allUpdates[0].value[0]);
-        const preAlerts: ParsedSettledPromise[] = allUpdates[1].value.map(
-            item => normalizePromiseResult(item),
-        );
-
-        const arrival_reports: ParsedSettledPromise[] = allUpdates[2].value.map(
-            item => normalizePromiseResult(item),
-        );
-        return { vrf, preAlerts, arrival_reports };
-    }
-    if (allUpdates.length === 2) {
-        const response: Record<
-            string,
-            ParsedSettledPromise | ParsedSettledPromise[]
-        > = {};
-        allUpdates.forEach(update => {
-            addEntryToResponse(response, update);
-        });
-        return response;
-    }
-    if (allUpdates.length === 1) {
-        const response: Record<
-            string,
-            ParsedSettledPromise | ParsedSettledPromise[]
-        > = {};
-        const [update] = allUpdates;
+): Record<string, ParsedSettledPromise<any> | ParsedSettledPromise<any>[]> => {
+    const response: Record<
+        string,
+        ParsedSettledPromise<any> | ParsedSettledPromise<any>[]
+    > = {};
+    allUpdates.forEach(update => {
         addEntryToResponse(response, update);
-        return response;
-    }
-    throw new Error(`Expected array of length 1-3, got ${allUpdates.length}`);
+    });
+    return response;
 };
 
 export const handlePromiseErrors = (data: any, dispatch: Dispatch): void => {

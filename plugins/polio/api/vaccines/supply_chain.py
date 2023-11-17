@@ -104,10 +104,9 @@ class NestedVaccinePreAlertSerializerForPost(BasePostPatchSerializer):
             "date_pre_alert_reception",
             "po_number",
             "estimated_arrival_time",
-            "lot_number",
+            "lot_numbers",
             "expiration_date",
             "doses_shipped",
-            "doses_received",
         ]
 
 
@@ -116,10 +115,9 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
     date_pre_alert_reception = serializers.DateField(required=False)
     po_number = serializers.CharField(required=False)
     estimated_arrival_time = serializers.DateField(required=False)
-    lot_number = serializers.CharField(required=False)
+    lot_numbers = serializers.ListField(child=serializers.CharField(), required=False)
     expiration_date = serializers.DateField(required=False)
     doses_shipped = serializers.IntegerField(required=False)
-    doses_received = serializers.IntegerField(required=False)
 
     class Meta(NestedVaccinePreAlertSerializerForPost.Meta):
         fields = NestedVaccinePreAlertSerializerForPost.Meta.fields + ["id"]

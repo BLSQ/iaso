@@ -391,6 +391,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
                         "estimated_arrival_time": "2021-01-02",
                         "doses_shipped": 500000,
                         "po_number": "PO-1234",
+                        "lot_numbers": ["LOT-1234", "LOT-5678"],
                     }
                 ],
             },
@@ -446,6 +447,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
             estimated_arrival_time="2021-01-02",
             doses_shipped=1000,
             po_number="PO-1234",
+            lot_numbers=["LOT-1234", "LOT-5678"],
         )
 
         response = self.client.get(
@@ -522,6 +524,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
             estimated_arrival_time="2021-01-02",
             doses_shipped=1000,
             po_number="PO-1234",
+            lot_numbers=["LOT-1234", "LOT-5678"],
         )
 
         response = self.client.patch(
@@ -555,6 +558,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
             estimated_arrival_time="2021-01-02",
             doses_shipped=1000,
             po_number="PO-1234",
+            lot_numbers=["LOT-1234", "LOT-5678"],
         )
 
         # Get the related objects from AR_SET and PA_SET
@@ -593,6 +597,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
             estimated_arrival_time="2021-01-02",
             doses_shipped=1000,
             po_number="PO-1234",
+            lot_numbers=["LOT-1234", "LOT-5678"],
         )
 
         # Get one of the pre-alerts attached to the request form

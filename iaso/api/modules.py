@@ -6,6 +6,13 @@ from hat.menupermissions import models as permission
 from hat.menupermissions.constants import MODULE_PERMISSIONS, MODULES
 
 
+class HasModulesPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if (not request.user.has_perm(permission.MODULES)) and request.method != "GET":
+            return False
+        return True
+
+
 class PermissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Permission
@@ -55,7 +62,7 @@ class ModulesViewSet(ModelViewSet):
     GET /api/modules/
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.MODULES)]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasModulesPermission]  # type: ignore
     serializer_class = ModuleSerializer
     http_method_names = ["get"]
 

@@ -18,6 +18,9 @@ export const apiDateTimeFormat = 'YYYY-MM-DD HH:mm';
 
 // this is the short date format used in api calls (only date not time!)
 export const apiDateFormat = 'YYYY-MM-DD';
+// Mapping of API date and time formats to moment.js formats
+
+export const apiMobileDateFormat = 'YYYY-MM-DDTHH:mm:ss.SSSZ';
 
 /**
  * @param {Object} date - date as a moment object
@@ -75,7 +78,7 @@ export const getToDateString = (
     return null;
 };
 
-const longDateFormats = {
+export const longDateFormats = {
     fr: {
         LT: 'HH:mm',
         LTS: 'DD/MM/YYYY HH:mm',
@@ -135,3 +138,18 @@ export const dateRangePickerToDateApi = (
     }
     return moment(dateStr, getLocaleDateFormat('L')).format(apiDateFormat);
 };
+
+type ApiDateFormat = {
+    apiFormat: string;
+    momentFormat: string;
+};
+
+export const apiDateFormats: ApiDateFormat[] = [
+    { apiFormat: apiTimeFormat, momentFormat: getLocaleDateFormat('LT') },
+    { apiFormat: apiDateTimeFormat, momentFormat: getLocaleDateFormat('LTS') },
+    { apiFormat: apiDateFormat, momentFormat: getLocaleDateFormat('L') },
+    {
+        apiFormat: apiMobileDateFormat,
+        momentFormat: getLocaleDateFormat('LTS'),
+    },
+];

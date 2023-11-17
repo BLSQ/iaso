@@ -2,7 +2,7 @@ import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
     pages: {
-        defaultMessage: 'Pages',
+        defaultMessage: 'Embedded links',
         id: 'iaso.pages.title',
     },
     name: {
@@ -23,7 +23,8 @@ const MESSAGES = defineMessages({
     },
     viewPage: {
         id: 'iaso.page.viewpages',
-        defaultMessage: 'View page. {linebreak} New tab: ctrl/command + click',
+        defaultMessage:
+            'View embedded link. {linebreak} New tab: ctrl/command + click',
     },
     edit: {
         id: 'iaso.label.edit',
@@ -47,15 +48,15 @@ const MESSAGES = defineMessages({
     },
     createPage: {
         id: 'iaso.pages.create',
-        defaultMessage: 'Create page',
+        defaultMessage: 'Create an embedded link',
     },
     editPage: {
         id: 'iaso.pages.edit',
-        defaultMessage: 'Edit page',
+        defaultMessage: 'Edit an embedded link',
     },
     pageDialiogHelper: {
         id: 'iaso.pages.dialog.helper',
-        defaultMessage: 'Enter page information',
+        defaultMessage: 'Enter embedded link information',
     },
     confirm: {
         id: 'iaso.label.confirm',
@@ -67,7 +68,7 @@ const MESSAGES = defineMessages({
     },
     deleteDialiogTitle: {
         id: 'iaso.pages.dialog.delete.title',
-        defaultMessage: 'Are you sure you want to delete this page?',
+        defaultMessage: 'Are you sure you want to delete this embedded link??',
     },
     deleteDialiogContent: {
         id: 'iaso.pages.dialog.delete.content',

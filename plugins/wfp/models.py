@@ -3,7 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from iaso.models import OrgUnit
 from plugins.wfp.models import *
 
-GENDERS = [("MALE", _("Male")), ("FEMALE", _("Female"))]
+GENDERS = [("Male", _("Male")), ("Female", _("Female"))]
 
 EXIT_TYPES = [
     ("DEATH", _("Death")),
@@ -29,6 +29,7 @@ ADMISSION_TYPES = [
     ("RETURNED_DEFAULTED", _("Returned defaulter")),
     ("TRANSFER_IF_FROM_OTHER_TSFP", _("Transfer if from other TSFP")),
 ]
+
 
 # WFP Models
 

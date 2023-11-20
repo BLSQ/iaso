@@ -539,9 +539,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.openingDate',
         defaultMessage: 'Opening date',
     },
-    closedDate: {
-        id: 'iaso.orgUnits.closedDate',
-        defaultMessage: 'Closed date',
+    closingDate: {
+        id: 'iaso.orgUnits.closingDate',
+        defaultMessage: 'Closing date',
     },
 });
 

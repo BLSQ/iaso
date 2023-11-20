@@ -197,7 +197,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                     dateFrom={orgUnitState.opening_date.value}
                     dateTo={orgUnitState.closed_date.value}
                     labelFrom={MESSAGES.openingDate}
-                    labelTo={MESSAGES.closedDate}
+                    labelTo={MESSAGES.closingDate}
                     marginTop={0}
                 />
                 <Grid

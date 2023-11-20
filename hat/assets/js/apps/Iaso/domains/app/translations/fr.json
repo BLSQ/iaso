@@ -745,7 +745,7 @@
     "iaso.orgUnits.addSource": "Ajouter une source",
     "iaso.orgUnits.addToGroups": "Ajouter au(x) groupe(s)",
     "iaso.orgUnits.bulkChangeCount": "Vous allez modifier {count} unités d'org.",
-    "iaso.orgUnits.closedDate": "Date de clôture",
+    "iaso.orgUnits.closingDate": "Date de fermeture",
     "iaso.orgUnits.confirmMultiChange": "Confirmer les modifications multiples ?",
     "iaso.orgUnits.createdBy": "Créé par",
     "iaso.orgUnits.createSubUnitTypes": "Sous-type d'unités d'org. pour la création",

@@ -280,7 +280,7 @@ class OrgUnit(TreeModel):
     updated_at = models.DateTimeField(auto_now=True)
     creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
 
-    opening_date = models.DateField(blank=False, null=True)  # Start date of activities of the organisation unit
+    opening_date = models.DateField(blank=True, null=True)  # Start date of activities of the organisation unit
     closed_date = models.DateField(blank=True, null=True)  # End date of activities of the organisation unit
 
     objects = OrgUnitManager()  # type: ignore

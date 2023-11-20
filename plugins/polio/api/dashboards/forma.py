@@ -1,13 +1,12 @@
-import operator
 from datetime import date, timedelta, datetime
-from functools import lru_cache, reduce
+from functools import lru_cache
 from logging import getLogger
 from typing import Any, Callable, Dict, Optional
 from uuid import UUID
 
 import pandas as pd
 from django.core.cache import cache
-from django.db.models import Max, Min, Q
+from django.db.models import Max, Min
 from django.http import HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
@@ -44,19 +43,6 @@ def forma_find_campaign_on_day(campaigns, day):
     return None
 
 
-def parents_q(org_units):
-    """Create Q query object for all the parents for all the org units present
-
-    This fix the problem in django query that it would otherwise only give the intersection
-    """
-    if not org_units:
-        return Q(pk=None)
-
-    queries = [Q(path__ancestors=org_unit.path) for org_unit in org_units]
-    q = reduce(operator.or_, queries)
-    return q
-
-
 def make_find_orgunit_for_campaign(cs):
     districts = (
         cs.get_all_districts_qs()
@@ -73,7 +59,7 @@ def make_find_orgunit_for_campaign(cs):
         .prefetch_related("org_unit_type")
     )
     regions = (
-        OrgUnit.objects.filter(parents_q(districts))
+        OrgUnit.objects.filter(OrgUnit.objects.parents_q(districts))
         .filter(path__depth=2)
         .prefetch_related("parent")
         .prefetch_related("parent__parent")
@@ -81,7 +67,7 @@ def make_find_orgunit_for_campaign(cs):
         .prefetch_related("org_unit_type")
     )
     countries = (
-        OrgUnit.objects.filter(parents_q(districts))
+        OrgUnit.objects.filter(OrgUnit.objects.parents_q(districts))
         .filter(path__depth=1)
         .prefetch_related("parent")
         .prefetch_related("parent__parent")
@@ -241,10 +227,14 @@ def get_forma_scope_df(campaigns):
                 continue
             facilities = OrgUnit.objects.filter(parent__in=districts).filter(validation_status="VALID")
             regions = (
-                OrgUnit.objects.filter(parents_q(districts)).filter(path__depth=2).filter(validation_status="VALID")
+                OrgUnit.objects.filter(OrgUnit.objects.parents_q(districts))
+                .filter(path__depth=2)
+                .filter(validation_status="VALID")
             )
             countries = (
-                OrgUnit.objects.filter(parents_q(districts)).filter(path__depth=1).filter(validation_status="VALID")
+                OrgUnit.objects.filter(OrgUnit.objects.parents_q(districts))
+                .filter(path__depth=1)
+                .filter(validation_status="VALID")
             )
 
             for ous in [districts, facilities, regions, countries]:

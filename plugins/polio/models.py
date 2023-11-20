@@ -1111,7 +1111,9 @@ class NotificationImport(models.Model):
 
         errors = []
         importer = NotificationXlsxImporter(
-            org_units=OrgUnit.objects.filter(version_id=self.account.default_version_id)
+            org_units=OrgUnit.objects.filter(version_id=self.account.default_version_id).defer(
+                "geom", "simplified_geom"
+            )
         )
 
         for idx, row in df.iterrows():
@@ -1168,23 +1170,33 @@ class NotificationXlsxImporter:
     def build_org_unit_caches(self) -> Tuple[defaultdict, defaultdict, defaultdict]:
         from plugins.polio.api.common import make_orgunits_cache
 
-        districts = self.org_units.filter(
-            org_unit_type__category="DISTRICT", validation_status=OrgUnit.VALIDATION_VALID
-        ).select_related("org_unit_type")
+        districts = (
+            self.org_units.filter(org_unit_type__category="DISTRICT", validation_status=OrgUnit.VALIDATION_VALID)
+            .defer("geom", "simplified_geom")
+            .select_related("org_unit_type")
+        )
 
-        regions = self.org_units.filter(
-            OrgUnit.objects.parents_q(districts),
-            org_unit_type__category="REGION",
-            validation_status=OrgUnit.VALIDATION_VALID,
-            path__depth=2,
-        ).select_related("org_unit_type")
+        regions = (
+            self.org_units.filter(
+                OrgUnit.objects.parents_q(districts),
+                org_unit_type__category="REGION",
+                validation_status=OrgUnit.VALIDATION_VALID,
+                path__depth=2,
+            )
+            .defer("geom", "simplified_geom")
+            .select_related("org_unit_type")
+        )
 
-        countries = self.org_units.filter(
-            OrgUnit.objects.parents_q(districts),
-            org_unit_type__category="COUNTRY",
-            validation_status=OrgUnit.VALIDATION_VALID,
-            path__depth=1,
-        ).select_related("org_unit_type")
+        countries = (
+            self.org_units.filter(
+                OrgUnit.objects.parents_q(districts),
+                org_unit_type__category="COUNTRY",
+                validation_status=OrgUnit.VALIDATION_VALID,
+                path__depth=1,
+            )
+            .defer("geom", "simplified_geom")
+            .select_related("org_unit_type")
+        )
 
         districts_cache = make_orgunits_cache(districts)
         regions_cache = make_orgunits_cache(regions)

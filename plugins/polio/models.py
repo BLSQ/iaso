@@ -296,7 +296,9 @@ class CampaignQuerySet(models.QuerySet):
 
             # Restrict Campaign to the OrgUnit on the country he can access
             if user.iaso_profile.org_units.count():
-                org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
+                org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all()).defer(
+                    "geom", "simplified_geom"
+                )
                 qs = qs.filter(Q(country__in=org_units) | Q(initial_org_unit__in=org_units))
         return qs
 
@@ -577,6 +579,7 @@ class Campaign(SoftDeletableModel):
                 OrgUnit.objects.filter(groups__roundScope__round__number=round_number)
                 .filter(groups__roundScope__round__campaign=self)
                 .distinct()
+                .defer("geom", "simplified_geom")
             )
         return self.get_campaign_scope_districts_qs()
 
@@ -596,7 +599,10 @@ class Campaign(SoftDeletableModel):
     def get_districts_for_round_qs(self, round):
         if self.separate_scopes_per_round:
             districts = (
-                OrgUnit.objects.filter(groups__roundScope__round=round).filter(validation_status="VALID").distinct()
+                OrgUnit.objects.filter(groups__roundScope__round=round)
+                .filter(validation_status="VALID")
+                .distinct()
+                .defer("geom", "simplified_geom")
             )
         else:
             districts = self.get_campaign_scope_districts_qs()
@@ -616,7 +622,11 @@ class Campaign(SoftDeletableModel):
 
     def get_campaign_scope_districts_qs(self):
         # Get districts on campaign scope, make only sense if separate_scopes_per_round=True
-        return OrgUnit.objects.filter(groups__campaignScope__campaign=self).filter(validation_status="VALID")
+        return (
+            OrgUnit.objects.filter(groups__campaignScope__campaign=self)
+            .filter(validation_status="VALID")
+            .defer("geom", "simplified_geom")
+        )
 
     def get_all_districts(self):
         """District from all round merged as one"""
@@ -625,6 +635,7 @@ class Campaign(SoftDeletableModel):
                 OrgUnit.objects.filter(groups__roundScope__round__campaign=self)
                 .filter(validation_status="VALID")
                 .distinct()
+                .defer("geom", "simplified_geom")
             )
         return self.get_campaign_scope_districts()
 
@@ -635,6 +646,7 @@ class Campaign(SoftDeletableModel):
                 OrgUnit.objects.filter(groups__roundScope__round__campaign=self)
                 .filter(validation_status="VALID")
                 .distinct()
+                .defer("geom", "simplified_geom")
             )
         return self.get_campaign_scope_districts_qs()
 

@@ -8,6 +8,7 @@ from django.utils import timezone
 
 from hat import settings
 from iaso import models as m
+from iaso.models import OrgUnit
 from iaso.test import TestCase
 from plugins.polio.models import Notification, NotificationImport, NotificationXlsxImporter
 
@@ -30,7 +31,9 @@ class NotificationImportTestCase(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.account = m.Account.objects.create(name="Account")
+        cls.data_source = m.DataSource.objects.create(name="Data Source")
+        cls.source_version = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
+        cls.account = m.Account.objects.create(name="Account", default_version=cls.source_version)
         cls.user = cls.create_user_with_profile(username="user", account=cls.account)
 
         cls.file_path = "plugins/polio/tests/fixtures/linelist_notification_test.xlsx"
@@ -44,6 +47,7 @@ class NotificationImportTestCase(TestCase):
             org_unit_type=m.OrgUnitType.objects.create(category="COUNTRY"),
             validation_status=m.OrgUnit.VALIDATION_VALID,
             path=["foo"],
+            version=cls.source_version,
         )
         # Region / District 1.
         region_huila = m.OrgUnit.objects.create(
@@ -52,6 +56,7 @@ class NotificationImportTestCase(TestCase):
             org_unit_type=m.OrgUnitType.objects.create(category="REGION"),
             validation_status=m.OrgUnit.VALIDATION_VALID,
             path=["foo", "bar"],
+            version=cls.source_version,
         )
         cls.district_cuvango = m.OrgUnit.objects.create(
             name="CUVANGO",
@@ -59,6 +64,7 @@ class NotificationImportTestCase(TestCase):
             org_unit_type=m.OrgUnitType.objects.create(category="DISTRICT"),
             validation_status=m.OrgUnit.VALIDATION_VALID,
             path=["foo", "bar", "baz"],
+            version=cls.source_version,
         )
         # Region / District 2.
         region_lunda_norte = m.OrgUnit.objects.create(
@@ -67,6 +73,7 @@ class NotificationImportTestCase(TestCase):
             org_unit_type=m.OrgUnitType.objects.create(category="REGION"),
             validation_status=m.OrgUnit.VALIDATION_VALID,
             path=["foo", "qux"],
+            version=cls.source_version,
         )
         cls.district_cambulo = m.OrgUnit.objects.create(
             name="CAMBULO",
@@ -74,6 +81,7 @@ class NotificationImportTestCase(TestCase):
             org_unit_type=m.OrgUnitType.objects.create(category="DISTRICT"),
             validation_status=m.OrgUnit.VALIDATION_VALID,
             path=["foo", "qux", "quux"],
+            version=cls.source_version,
         )
         cls.district_cuvango.calculate_paths()
         cls.district_cambulo.calculate_paths()
@@ -143,7 +151,28 @@ class NotificationImportTestCase(TestCase):
 class NotificationXlsxImporterTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.importer = NotificationXlsxImporter()
+        cls.country = m.OrgUnit.objects.create(
+            name="ANGOLA",
+            org_unit_type=m.OrgUnitType.objects.create(category="COUNTRY"),
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            path=["foo"],
+        )
+        cls.region = m.OrgUnit.objects.create(
+            name="HUILA",
+            parent=cls.country,
+            org_unit_type=m.OrgUnitType.objects.create(category="REGION"),
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            path=["foo", "bar"],
+        )
+        cls.district = m.OrgUnit.objects.create(
+            name="CUVANGO",
+            parent=cls.region,
+            org_unit_type=m.OrgUnitType.objects.create(category="DISTRICT"),
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            path=["foo", "bar", "baz"],
+        )
+        cls.district.calculate_paths()
+        cls.importer = NotificationXlsxImporter(org_units=OrgUnit.objects.all())
 
     def test_clean_str(self):
         self.assertEqual(self.importer.clean_str(" foo     "), "foo")
@@ -167,30 +196,7 @@ class NotificationXlsxImporterTestCase(TestCase):
         self.assertEqual(self.importer.clean_source("  accute flaccid paralysis"), Notification.Sources.AFP)
 
     def test_build_org_unit_caches(self):
-        country = m.OrgUnit.objects.create(
-            name="ANGOLA",
-            org_unit_type=m.OrgUnitType.objects.create(category="COUNTRY"),
-            validation_status=m.OrgUnit.VALIDATION_VALID,
-            path=["foo"],
-        )
-        region = m.OrgUnit.objects.create(
-            name="HUILA",
-            parent=country,
-            org_unit_type=m.OrgUnitType.objects.create(category="REGION"),
-            validation_status=m.OrgUnit.VALIDATION_VALID,
-            path=["foo", "bar"],
-        )
-        district = m.OrgUnit.objects.create(
-            name="CUVANGO",
-            parent=region,
-            org_unit_type=m.OrgUnitType.objects.create(category="DISTRICT"),
-            validation_status=m.OrgUnit.VALIDATION_VALID,
-            path=["foo", "bar", "baz"],
-        )
-
-        district.calculate_paths()
         countries_cache, regions_cache, districts_cache = self.importer.build_org_unit_caches()
-
-        self.assertEqual(countries_cache["angola"][0], country)
-        self.assertEqual(regions_cache["huila"][0], region)
-        self.assertEqual(districts_cache["cuvango"][0], district)
+        self.assertEqual(countries_cache["angola"][0], self.country)
+        self.assertEqual(regions_cache["huila"][0], self.region)
+        self.assertEqual(districts_cache["cuvango"][0], self.district)

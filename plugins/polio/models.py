@@ -13,7 +13,7 @@ import django.db.models.manager
 from django.contrib.auth.models import User, AnonymousUser
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
-from django.db.models import Count, Q
+from django.db.models import Q, QuerySet
 from django.db.models.expressions import RawSQL
 from django.utils.translation import gettext as _
 from gspread.utils import extract_id_from_url  # type: ignore
@@ -1110,7 +1110,9 @@ class NotificationImport(models.Model):
         self.save()
 
         errors = []
-        importer = NotificationXlsxImporter()
+        importer = NotificationXlsxImporter(
+            org_units=OrgUnit.objects.filter(version_id=self.account.default_version_id)
+        )
 
         for idx, row in df.iterrows():
             org_unit = importer.find_org_unit_in_caches(
@@ -1157,7 +1159,8 @@ def create_polio_notifications_async(pk: int, task: Task = None) -> None:
 
 
 class NotificationXlsxImporter:
-    def __init__(self):
+    def __init__(self, org_units: QuerySet[OrgUnit]):
+        self.org_units = org_units
         self.countries_cache = None
         self.regions_cache = None
         self.districts_cache = None
@@ -1165,18 +1168,18 @@ class NotificationXlsxImporter:
     def build_org_unit_caches(self) -> Tuple[defaultdict, defaultdict, defaultdict]:
         from plugins.polio.api.common import make_orgunits_cache
 
-        districts = OrgUnit.objects.filter(
+        districts = self.org_units.filter(
             org_unit_type__category="DISTRICT", validation_status=OrgUnit.VALIDATION_VALID
         ).select_related("org_unit_type")
 
-        regions = OrgUnit.objects.filter(
+        regions = self.org_units.filter(
             OrgUnit.objects.parents_q(districts),
             org_unit_type__category="REGION",
             validation_status=OrgUnit.VALIDATION_VALID,
             path__depth=2,
         ).select_related("org_unit_type")
 
-        countries = OrgUnit.objects.filter(
+        countries = self.org_units.filter(
             OrgUnit.objects.parents_q(districts),
             org_unit_type__category="COUNTRY",
             validation_status=OrgUnit.VALIDATION_VALID,

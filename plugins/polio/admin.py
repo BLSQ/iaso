@@ -1,9 +1,9 @@
-import json
-
 import gspread.utils  # type: ignore
 from django.contrib import admin, messages
 from django.contrib.admin import widgets
 from django.db import models
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 from django.utils.safestring import mark_safe
 
 from .budget.models import MailTemplate, BudgetStepLink, BudgetStepFile, BudgetStep, WorkflowModel
@@ -143,12 +143,19 @@ class ReasonForDelayAdmin(admin.ModelAdmin):
 class NotificationImportAdmin(admin.ModelAdmin):
     @admin.action(description="Create notifications")
     def create_notifications(self, request, queryset) -> None:
+        """
+        Quick and easy way to test `create_polio_notifications_async()`.
+        """
         for notification_import in queryset.filter(status=NotificationImport.Status.NEW):
             create_polio_notifications_async(pk=notification_import.pk, user=request.user)
         messages.success(
             request,
-            "Import has been scheduled and will start soon. It will take some time to finish. Please refresh in a few seconds.",
+            "You've been redirected to the notifications list. "
+            "Import of notifications has been scheduled and will start soon. "
+            "Results will appear gradually below. "
+            "Please refresh in a few seconds.",
         )
+        return HttpResponseRedirect(reverse("admin:polio_notification_changelist"))
 
     actions = (create_notifications,)
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}

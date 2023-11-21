@@ -126,7 +126,7 @@ def orgunit_from_row(
         row["organisationUnitGroups"], group_type_dict, row["level"], level_to_type
     )
 
-    # Add opening date and closed on org_unit while importing from dhis2
+    # Add opening date and closing date on org_unit while importing from dhis2
     row_keys = row.keys()
     if "openingDate" in row_keys:
         org_unit.opening_date = datetime.strptime(row["openingDate"], "%Y-%m-%dT%H:%M:%S.%f").date()

@@ -1,9 +1,9 @@
-import json
-
 import gspread.utils  # type: ignore
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.contrib.admin import widgets
 from django.db import models
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 from django.utils.safestring import mark_safe
 
 from .budget.models import MailTemplate, BudgetStepLink, BudgetStepFile, BudgetStep, WorkflowModel
@@ -18,6 +18,9 @@ from .models import (
     SpreadSheetImport,
     CampaignGroup,
     VaccineAuthorization,
+    NotificationImport,
+    Notification,
+    create_polio_notifications_async,
 )
 
 from iaso.admin import IasoJSONEditorWidget
@@ -134,6 +137,55 @@ class VaccineAuthorizationsAdmin(admin.ModelAdmin):
 @admin.register(ReasonForDelay)
 class ReasonForDelayAdmin(admin.ModelAdmin):
     model = ReasonForDelay
+
+
+@admin.register(NotificationImport)
+class NotificationImportAdmin(admin.ModelAdmin):
+    @admin.action(description="Create notifications")
+    def create_notifications(self, request, queryset) -> None:
+        """
+        Quick and easy way to test `create_polio_notifications_async()`.
+        """
+        for notification_import in queryset.filter(status=NotificationImport.Status.NEW):
+            create_polio_notifications_async(pk=notification_import.pk, user=request.user)
+        messages.success(
+            request,
+            "You've been redirected to the notifications list. "
+            "Import of notifications has been scheduled and will start soon. "
+            "Results will appear gradually below. "
+            "Please refresh in a few seconds.",
+        )
+        return HttpResponseRedirect(reverse("admin:polio_notification_changelist"))
+
+    actions = (create_notifications,)
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+    list_display = ("pk", "file", "status", "created_by", "account")
+    list_filter = ("status",)
+    raw_id_fields = ("account", "created_by")
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = (
+        "epid_number",
+        "get_org_unit_name",
+        "site_name",
+        "vdpv_category",
+        "source",
+        "date_of_onset",
+    )
+    list_filter = ("vdpv_category", "source")
+    raw_id_fields = ("account", "org_unit", "created_by", "updated_by", "import_source")
+    read_only_fields = ("data_source",)
+
+    @admin.display(description="Org Unit name")
+    def get_org_unit_name(self, obj):
+        if obj.org_unit:
+            return obj.org_unit.name
+        return None
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("org_unit")
 
 
 admin.site.register(Campaign, CampaignAdmin)

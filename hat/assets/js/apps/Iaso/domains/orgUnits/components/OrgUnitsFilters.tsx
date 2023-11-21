@@ -365,7 +365,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                     dateFrom={filters?.opening_date}
                     dateTo={filters?.closed_date}
                     labelFrom={MESSAGES.openingDate}
-                    labelTo={MESSAGES.closedDate}
+                    labelTo={MESSAGES.closingDate}
                 />
                 {currentTab === 'map' && (
                     <>

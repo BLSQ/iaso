@@ -491,19 +491,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     continue
                 new_groups.append(temp_group)
 
-        if "opening_date" not in request.data:
-            errors.append(
-                {"errorKey": "opening_date", "errorMessage": _("You cannot create an Org Unit without an opening date")}
-            )
-        else:
-            opening_date = request.data.get("opening_date")
-            org_unit.opening_date = None if not opening_date else self.get_date(opening_date)
+        opening_date = request.data.get("opening_date", None)
+        org_unit.opening_date = None if not opening_date else self.get_date(opening_date)
 
-        if "closed_date" in request.data:
-            closed_date = request.data.get("closed_date")
-            org_unit.closed_date = None if not closed_date else self.get_date(closed_date)
-        else:
-            org_unit.closed_date = None
+        closed_date = request.data.get("closed_date", None)
+        org_unit.closed_date = None if not closed_date else self.get_date(closed_date)
 
         if not errors:
             org_unit.save()
@@ -585,14 +577,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit.short_name = request.data.get("short_name", "")
         org_unit.source = request.data.get("source", "")
 
-        opening_date = request.data.get("opening_date")
+        opening_date = request.data.get("opening_date", None)
         closed_date = request.data.get("closed_date", None)
 
-        if not opening_date:
-            errors.append(
-                {"errorKey": "opening_date", "errorMessage": _("You cannot create an Org Unit without an opening date")}
-            )
-        else:
+        if opening_date:
             org_unit.opening_date = datetime.strptime(opening_date, "%d-%m-%Y").date()
 
         if closed_date:

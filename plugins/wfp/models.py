@@ -3,7 +3,7 @@ from django.utils.translation import gettext_lazy as _
 from iaso.models import OrgUnit
 from plugins.wfp.models import *
 
-GENDERS = [("MALE", _("Male")), ("FEMALE", _("Female"))]
+GENDERS = [("Male", _("Male")), ("Female", _("Female"))]
 
 EXIT_TYPES = [
     ("DEATH", _("Death")),
@@ -16,19 +16,20 @@ NUTRITION_PROGRAMMES = [("TSFP", _("TSFP")), ("OTP", _("OTP"))]
 
 PROGRAMME_TYPE = [("PLW", _("PLW")), ("U5", _("U5"))]
 
-ADMISSION_CRITERIAS = [("MUAC", _("MUAC")), ("WHZ", _("WHZ")), ("OEDEMA", _("OEDEMA"))]
+ADMISSION_CRITERIAS = [("muac", _("MUAC")), ("whz", _("WHZ")), ("oedema", _("OEDEMA"))]
 
 ADMISSION_TYPES = [
-    ("NEW", _("new case")),
-    ("NEW_RESPONDANT", _("New respondant")),
-    ("NEW_RESPONDANT", _("New respondant")),
-    ("REFERRED_FROM_OTP_SAM", _("Referred from OTP (SAM)")),
-    ("REFERRED_FROM_SC", _("Referred from SC")),
-    ("REFERRED_FROM_TSFP_MAM", _("Referred from TSFP (MAM)")),
-    ("RELAPSED", _("Relapsed")),
-    ("RETURNED_DEFAULTED", _("Returned defaulter")),
-    ("TRANSFER_IF_FROM_OTHER_TSFP", _("Transfer if from other TSFP")),
+    ("new_case", _("new case")),
+    ("new_respondant", _("New respondant")),
+    ("referred_from_otp_sam", _("Referred from OTP (SAM)")),
+    ("referred_from_sc", _("Referred from SC")),
+    ("referred_from_tsfp_mam", _("Referred from TSFP (MAM)")),
+    ("relapse", _("Relapse")),
+    ("returned_defaulter", _("Returned defaulter")),
+    ("returned_referral", _("Returned referral")),
+    ("transfer_if_from_other_tsfp", _("Transfer if from other TSFP")),
 ]
+
 
 # WFP Models
 

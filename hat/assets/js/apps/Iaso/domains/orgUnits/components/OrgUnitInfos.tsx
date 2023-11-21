@@ -190,14 +190,13 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                     />
                 </FormControlComponent>
                 <DatesRange
-                    dateFromRequired
                     keyDateFrom="opening_date"
                     keyDateTo="closed_date"
                     onChangeDate={onChangeInfo}
                     dateFrom={orgUnitState.opening_date.value}
                     dateTo={orgUnitState.closed_date.value}
                     labelFrom={MESSAGES.openingDate}
-                    labelTo={MESSAGES.closedDate}
+                    labelTo={MESSAGES.closingDate}
                     marginTop={0}
                 />
                 <Grid

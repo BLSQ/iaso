@@ -3,9 +3,9 @@ import time_machine
 
 from django.utils import timezone
 
-from plugins.polio.api.notifications import NotificationSerializer
+from plugins.polio.api.notifications.serializers import NotificationSerializer
 from plugins.polio.models import Notification
-from iaso.test import TestCase
+from iaso.test import APITestCase, TestCase
 from iaso import models as m
 
 
@@ -25,7 +25,6 @@ class NotificationSerializerTestCase(TestCase):
         cls.account = m.Account.objects.create(name="Account", default_version=cls.source_version)
         cls.user = cls.create_user_with_profile(username="user", account=cls.account)
 
-        # Country.
         country_angola = m.OrgUnit.objects.create(
             name="ANGOLA",
             org_unit_type=m.OrgUnitType.objects.create(category="COUNTRY"),
@@ -33,7 +32,6 @@ class NotificationSerializerTestCase(TestCase):
             path=["foo"],
             version=cls.source_version,
         )
-        # Region / District 1.
         region_huila = m.OrgUnit.objects.create(
             name="HUILA",
             parent=country_angola,
@@ -68,6 +66,10 @@ class NotificationSerializerTestCase(TestCase):
             "created_by": self.user,
         }
         notification = Notification.objects.create(**kwargs)
+        # Simulate an annotated queryset.
+        notification.annotated_district = "CUVANGO"
+        notification.annotated_province = "HUILA"
+        notification.annotated_country = "ANGOLA"
 
         serializer = NotificationSerializer(notification)
 
@@ -123,3 +125,84 @@ class NotificationSerializerTestCase(TestCase):
         self.assertEqual(notification.org_unit, self.district_cuvango)
         self.assertEqual(notification.created_by, self.user)
         self.assertEqual(notification.created_at, DT)
+
+
+@time_machine.travel(DT, tick=False)
+class NotificationViewSetTestCase(APITestCase):
+    """
+    Test NotificationViewSet.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.data_source = m.DataSource.objects.create(name="Data Source")
+        cls.source_version = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
+        cls.account = m.Account.objects.create(name="Account", default_version=cls.source_version)
+        cls.user = cls.create_user_with_profile(
+            username="user", account=cls.account, permissions=["iaso_polio_notifications"]
+        )
+
+        country_angola = m.OrgUnit.objects.create(
+            name="ANGOLA",
+            org_unit_type=m.OrgUnitType.objects.create(category="COUNTRY"),
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            path=["foo"],
+            version=cls.source_version,
+        )
+        region_huila = m.OrgUnit.objects.create(
+            name="HUILA",
+            parent=country_angola,
+            org_unit_type=m.OrgUnitType.objects.create(category="REGION"),
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            path=["foo", "bar"],
+            version=cls.source_version,
+        )
+        cls.district_cuvango = m.OrgUnit.objects.create(
+            name="CUVANGO",
+            parent=region_huila,
+            org_unit_type=m.OrgUnitType.objects.create(category="DISTRICT"),
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            path=["foo", "bar", "baz"],
+            version=cls.source_version,
+        )
+        cls.district_cuvango.calculate_paths()
+
+        cls.notification1 = Notification.objects.create(
+            account=cls.account,
+            epid_number="ANG-HUI-CUV-19-001",
+            vdpv_category=Notification.VdpvCategories.CVDPV2,
+            source=Notification.Sources.AFP,
+            vdpv_nucleotide_diff_sabin2="7nt",
+            lineage="CHA-NDJ-1",
+            closest_match_vdpv2="ENV-CHA-NDJ-CEN-CPR-19-02",
+            date_of_onset=datetime.date(2023, 11, 10),
+            date_results_received=datetime.date(2023, 11, 19),
+            org_unit=cls.district_cuvango,
+            site_name="ELIZANDRA ELSANone",
+            created_by=cls.user,
+        )
+        cls.notification2 = Notification.objects.create(
+            account=cls.account,
+            epid_number="ANG-HUI-CUV-19-002",
+            vdpv_category=Notification.VdpvCategories.VDPV1,
+            source=Notification.Sources.CC,
+            vdpv_nucleotide_diff_sabin2="5",
+            lineage="CHA-NDJ-2",
+            closest_match_vdpv2="",
+            date_of_onset=datetime.date(2023, 8, 11),
+            date_results_received=datetime.date(2023, 8, 28),
+            org_unit=cls.district_cuvango,
+            site_name="",
+            created_by=cls.user,
+        )
+
+    def test_list_without_auth(self):
+        response = self.client.get("/api/polio/notifications/")
+        self.assertJSONResponse(response, 403)
+
+    def test_list_with_auth(self):
+        self.client.force_authenticate(self.user)
+        with self.assertNumQueries(4):
+            response = self.client.get("/api/polio/notifications/")
+            self.assertJSONResponse(response, 200)
+            self.assertEqual(2, response.data["count"])

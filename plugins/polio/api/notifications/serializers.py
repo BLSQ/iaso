@@ -4,27 +4,9 @@ from plugins.polio.models import Notification
 
 
 class NotificationSerializer(serializers.ModelSerializer):
-    district = serializers.SerializerMethodField(method_name="get_district")
-    province = serializers.SerializerMethodField(source="get_province")
-    country = serializers.SerializerMethodField(source="get_country")
-
-    def get_district(self, obj):
-        try:
-            return obj.org_unit.name
-        except AttributeError:
-            return None
-
-    def get_province(self, obj):
-        try:
-            return obj.org_unit.parent.name
-        except AttributeError:
-            return None
-
-    def get_country(self, obj):
-        try:
-            return obj.org_unit.parent.parent.name
-        except AttributeError:
-            return None
+    district = serializers.CharField(source="annotated_district", read_only=True)
+    province = serializers.CharField(source="annotated_province", read_only=True)
+    country = serializers.CharField(source="annotated_country", read_only=True)
 
     class Meta:
         model = Notification

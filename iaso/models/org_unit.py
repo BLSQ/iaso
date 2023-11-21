@@ -10,8 +10,8 @@ from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField
 from django.contrib.postgres.indexes import GistIndex
-from django.db import models, transaction, IntegrityError
-from django.db.models import QuerySet
+from django.db import models, transaction
+from django.db.models import QuerySet, Q
 from django.db.models.expressions import RawSQL
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -230,7 +230,17 @@ class OrgUnitQuerySet(django_cte.CTEQuerySet):
         return queryset
 
 
-OrgUnitManager = models.Manager.from_queryset(OrgUnitQuerySet)
+class OrgUnitManager(models.Manager):
+    def parents_q(self, org_units) -> Q:
+        """Create Q query object for all the parents for all the org units present
+
+        This fix the problem in django query that it would otherwise only give the intersection
+        """
+        if not org_units:
+            return Q(pk=None)
+        queries = [Q(path__ancestors=org_unit.path) for org_unit in org_units]
+        q = reduce(operator.or_, queries)
+        return q
 
 
 def get_creator_name(creator):
@@ -282,8 +292,7 @@ class OrgUnit(TreeModel):
 
     opening_date = models.DateField(blank=True, null=True)  # Start date of activities of the organisation unit
     closed_date = models.DateField(blank=True, null=True)  # End date of activities of the organisation unit
-
-    objects = OrgUnitManager()  # type: ignore
+    objects = OrgUnitManager.from_queryset(OrgUnitQuerySet)()  # type: ignore
 
     class Meta:
         indexes = [GistIndex(fields=["path"], buffering=True)]

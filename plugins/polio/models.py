@@ -1,20 +1,26 @@
+from collections import defaultdict
 from datetime import date
 import datetime
 import json
-from typing import Union
+from typing import Any, Tuple, Union
 from uuid import uuid4
+
+import pandas as pd
+
+from beanstalk_worker import task_decorator
 
 import django.db.models.manager
 from django.contrib.auth.models import User, AnonymousUser
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
-from django.db.models import Count, Q
+from django.db.models import Q, QuerySet
 from django.db.models.expressions import RawSQL
 from django.utils.translation import gettext as _
 from gspread.utils import extract_id_from_url  # type: ignore
+from django.utils import timezone
 from django.core.validators import RegexValidator
 from iaso.models import Group, OrgUnit
-from iaso.models.base import Account
+from iaso.models.base import Account, Task
 from iaso.models.microplanning import Team
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 from plugins.polio.preparedness.parser import open_sheet_by_url
@@ -961,3 +967,283 @@ class VaccineAuthorization(SoftDeletableModel):
 
     def __str__(self):
         return f"{self.country}-{self.expiration_date}"
+
+
+class Notification(models.Model):
+    """
+    List of notifications of polio virus outbreaks.
+    I.e. we found a case in this place on this day.
+
+    Also called "line list": a table that summarizes key
+    information about each case in an outbreak.
+    """
+
+    class VdpvCategories(models.TextChoices):
+        """
+        Vaccine-Derived PolioVirus categories.
+        """
+
+        AVDPV = "avdpv", _("aVDPV")
+        CVDPV1 = "cvdpv1", _("cVDPV1")
+        CVDPV2 = "cvdpv2", _("cVDPV2")
+        NOPV2 = "nopv2", _("nOPV2")
+        SABIN = "sabin", _("Sabin")
+        SABIN1 = "sabin1", _("SABIN 1")
+        SABIN2 = "sabin2", _("SABIN 2")
+        SABIN3 = "sabin3", _("SABIN 3")
+        VDPV = "vdpv", _("VDPV")
+        VDPV1 = "vdpv1", _("VDPV1")
+        VDPV2 = "vdpv2", _("VDPV2")
+        VDPV3 = "vdpv3", _("VDPV3")
+        VPV2 = "vpv2", _("VPV2")
+        WPV1 = "wpv1", _("WPV1")
+
+    class Sources(models.TextChoices):
+        AFP = "accute_flaccid_paralysis", _(
+            "Accute Flaccid Paralysis"
+        )  # A case of someone who got paralyzed because of polio.
+        CC = "contact_case", _("Contact Case")
+        COMMUNITY = "community", _("Community")
+        CONTACT = "contact", _("Contact")
+        ENV = "environmental", _("Environmental")  # They found a virus in the environment.
+        HC = "healthy_children", _("Healthy Children")
+        OTHER = "other", _("Other")
+
+    account = models.ForeignKey("iaso.account", on_delete=models.CASCADE)
+    # EPID number = epidemiological number = unique identifier of a case per disease.
+    epid_number = models.CharField(max_length=50, unique=True)
+    vdpv_category = models.CharField(max_length=20, choices=VdpvCategories.choices, default=VdpvCategories.AVDPV)
+    source = models.CharField(max_length=50, choices=Sources.choices, default=Sources.AFP)
+    vdpv_nucleotide_diff_sabin2 = models.CharField(max_length=10)
+    # Lineage possible values: NIE-ZAS-1, RDC-MAN-3, Ambiguous, etc.
+    lineage = models.CharField(max_length=150, blank=True)
+    closest_match_vdpv2 = models.CharField(max_length=150, blank=True)
+    date_of_onset = models.DateField(null=True, blank=True)
+    date_results_received = models.DateField(null=True, blank=True)
+
+    # Country / province / district are modelized as a hierarchy of OrgUnits.
+    org_unit = models.ForeignKey(
+        "iaso.orgunit", null=True, blank=True, on_delete=models.SET_NULL, related_name="polio_notifications"
+    )
+    site_name = models.CharField(max_length=255, blank=True)
+
+    created_at = models.DateTimeField(default=timezone.now)
+    created_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="polio_notification_created_set"
+    )
+    updated_at = models.DateTimeField(blank=True, null=True)
+    updated_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="polio_notification_updated_set"
+    )
+
+    # `import_*` fields are populated when the data come from an .xlsx file.
+    import_source = models.ForeignKey("NotificationImport", null=True, blank=True, on_delete=models.SET_NULL)
+    import_raw_data = models.JSONField(null=True, blank=True, encoder=DjangoJSONEncoder)
+
+    class Meta:
+        verbose_name = _("Notification")
+
+    def __str__(self) -> str:
+        return f"{self.epid_number}"
+
+
+class NotificationImport(models.Model):
+    """
+    Notifications of polio virus outbreaks can be created manually (via the UI)
+    or imported from .xlsx files.
+
+    This model stores .xlsx files and use them to populate `Notification`.
+    """
+
+    EXPECTED_XLSX_COL_NAMES = [
+        "EPID_NUMBER",
+        "VDPV_CATEGORY",
+        "SOURCE(AFP/ENV/CONTACT/HC)",
+        "VDPV_NUCLEOTIDE_DIFF_SABIN2",
+        "COUNTRY",
+        "PROVINCE",
+        "DISTRICT",
+        "SITE_NAME/GEOCODE",
+        "DATE_COLLECTION/DATE_OF_ONSET_(M/D/YYYY)",
+        "LINEAGE",
+        "CLOSEST_MATCH_VDPV2",
+        "DATE_RESULTS_RECEIVED",
+    ]
+
+    class Status(models.TextChoices):
+        NEW = "new", _("New")
+        PENDING = "pending", _("Pending")
+        DONE = "done", _("Done")
+
+    account = models.ForeignKey("iaso.account", on_delete=models.CASCADE)
+    file = models.FileField(upload_to="uploads/polio_notifications/%Y-%m-%d-%H-%M/")
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.NEW)
+    errors = models.JSONField(null=True, blank=True, encoder=DjangoJSONEncoder)
+    created_at = models.DateTimeField(default=timezone.now)
+    created_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="polio_notification_import_created_set"
+    )
+    updated_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        verbose_name = _("Notification import")
+
+    def __str__(self) -> str:
+        return f"{self.file.name} - {self.status}"
+
+    def create_notifications(self, created_by: User) -> None:
+        """
+        Can be launched async, see `create_polio_notifications_async`.
+        """
+        try:
+            df = pd.read_excel(self.file, keep_default_na=False)
+        except Exception as err:
+            raise ValueError(f"Invalid Excel file {self.file}.")
+
+        # Normalize xlsx header's names.
+        df.rename(columns=lambda name: name.upper().strip().replace(" ", "_"), inplace=True)
+        for name in self.EXPECTED_XLSX_COL_NAMES:
+            if name not in df.columns:
+                raise ValueError(f"Missing column {name}.")
+
+        self.status = self.Status.PENDING
+        self.save()
+
+        errors = []
+        importer = NotificationXlsxImporter(
+            org_units=OrgUnit.objects.filter(version_id=self.account.default_version_id).defer(
+                "geom", "simplified_geom"
+            )
+        )
+
+        for idx, row in df.iterrows():
+            org_unit = importer.find_org_unit_in_caches(
+                country_name=importer.clean_str(row["COUNTRY"]),
+                region_name=importer.clean_str(row["PROVINCE"]),
+                district_name=importer.clean_str(row["DISTRICT"]),
+            )
+            kwargs = {
+                "account": self.account,
+                "closest_match_vdpv2": importer.clean_str(row["CLOSEST_MATCH_VDPV2"]),
+                "created_by": created_by,
+                "date_of_onset": importer.clean_date(row["DATE_COLLECTION/DATE_OF_ONSET_(M/D/YYYY)"]),
+                "date_results_received": importer.clean_date(row["DATE_RESULTS_RECEIVED"]),
+                "import_raw_data": row.to_dict(),
+                "import_source": self,
+                "lineage": importer.clean_str(row["LINEAGE"]),
+                "org_unit": org_unit,
+                "site_name": importer.clean_str(row["SITE_NAME/GEOCODE"]),
+                "source": importer.clean_source(row["SOURCE(AFP/ENV/CONTACT/HC)"]),
+                "vdpv_category": importer.clean_vdpv_category(row["VDPV_CATEGORY"]),
+                "vdpv_nucleotide_diff_sabin2": importer.clean_str(row["VDPV_NUCLEOTIDE_DIFF_SABIN2"]),
+            }
+            _, created = Notification.objects.get_or_create(
+                epid_number=importer.clean_str(row["EPID_NUMBER"]),
+                defaults=kwargs,
+            )
+            if not created:
+                errors.append(row.to_dict())
+
+        self.status = self.Status.DONE
+        self.errors = errors
+        self.updated_at = timezone.now()
+        self.save()
+
+
+@task_decorator(task_name="create_polio_notifications_async")
+def create_polio_notifications_async(pk: int, task: Task = None) -> None:
+    task.report_progress_and_stop_if_killed(progress_message="Importing polio notifications…")
+    user = task.launcher
+    notification_import = NotificationImport.objects.get(pk=pk)
+    notification_import.create_notifications(created_by=user)
+    num_created = Notification.objects.filter(import_source=notification_import).count()
+    task.report_success(message=f"{num_created} polio notifications created.")
+
+
+class NotificationXlsxImporter:
+    def __init__(self, org_units: QuerySet[OrgUnit]):
+        self.org_units = org_units
+        self.countries_cache = None
+        self.regions_cache = None
+        self.districts_cache = None
+
+    def build_org_unit_caches(self) -> Tuple[defaultdict, defaultdict, defaultdict]:
+        from plugins.polio.api.common import make_orgunits_cache
+
+        districts = (
+            self.org_units.filter(org_unit_type__category="DISTRICT", validation_status=OrgUnit.VALIDATION_VALID)
+            .defer("geom", "simplified_geom")
+            .select_related("org_unit_type")
+        )
+
+        regions = (
+            self.org_units.filter(
+                OrgUnit.objects.parents_q(districts),
+                org_unit_type__category="REGION",
+                validation_status=OrgUnit.VALIDATION_VALID,
+                path__depth=2,
+            )
+            .defer("geom", "simplified_geom")
+            .select_related("org_unit_type")
+        )
+
+        countries = (
+            self.org_units.filter(
+                OrgUnit.objects.parents_q(districts),
+                org_unit_type__category="COUNTRY",
+                validation_status=OrgUnit.VALIDATION_VALID,
+                path__depth=1,
+            )
+            .defer("geom", "simplified_geom")
+            .select_related("org_unit_type")
+        )
+
+        districts_cache = make_orgunits_cache(districts)
+        regions_cache = make_orgunits_cache(regions)
+        countries_cache = make_orgunits_cache(countries)
+
+        return countries_cache, regions_cache, districts_cache
+
+    def find_org_unit_in_caches(self, country_name: str, region_name: str, district_name: str) -> Union[None, OrgUnit]:
+        from plugins.polio.api.common import find_orgunit_in_cache
+
+        if not self.countries_cache:
+            self.countries_cache, self.regions_cache, self.districts_cache = self.build_org_unit_caches()
+
+        country = find_orgunit_in_cache(self.countries_cache, country_name)
+        region = None
+        if country:
+            region = find_orgunit_in_cache(self.regions_cache, region_name, country.name)
+        if region:
+            return find_orgunit_in_cache(self.districts_cache, district_name, region.name)
+        return None
+
+    def clean_str(self, data: Any) -> str:
+        return str(data).strip()
+
+    def clean_date(self, data: Any) -> Union[None, datetime.date]:
+        try:
+            return data.date()
+        except AttributeError:
+            return None
+
+    def clean_vdpv_category(self, vdpv_category: str) -> Notification.VdpvCategories:
+        vdpv_category = self.clean_str(vdpv_category).upper()
+        vdpv_category = "".join(char for char in vdpv_category if char.isalnum())
+        return Notification.VdpvCategories[vdpv_category]
+
+    def clean_source(self, source: str) -> Notification.Sources:
+        source = self.clean_str(source)
+        try:
+            # Find member by value.
+            return Notification.Sources[source.upper()]
+        except KeyError:
+            pass
+        try:
+            # Find member by name.
+            return Notification.Sources(source.lower().replace(" ", "_"))
+        except Exception:
+            pass
+        if source.upper().startswith("CONT"):
+            return Notification.Sources["CONTACT"]
+        return Notification.Sources["OTHER"]

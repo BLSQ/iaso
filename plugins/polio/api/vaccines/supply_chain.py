@@ -28,19 +28,19 @@ AR_SET = "vaccinearrivalreport_set"
 
 def validate_rounds_and_campaign(data, current_user=None):
     rounds_data = data.get("rounds")
-    campaign_uuid = data.get("campaign")
+    campaign_obr_name = data.get("campaign")
 
     if not rounds_data:
         raise forms.ValidationError("At least one round must be attached.")
 
-    if not campaign_uuid:
+    if not campaign_obr_name:
         raise forms.ValidationError("A campaign must be attached.")
 
     try:
-        new_campaign = Campaign.objects.get(id=campaign_uuid)
+        new_campaign = Campaign.objects.get(obr_name=campaign_obr_name)
         data["campaign"] = new_campaign
     except Campaign.DoesNotExist:
-        raise forms.ValidationError(f"No campaign with obr_name {campaign_uuid} found.")
+        raise forms.ValidationError(f"No campaign with obr_name {campaign_obr_name} found.")
 
     if isinstance(rounds_data, list):
         new_rounds = []

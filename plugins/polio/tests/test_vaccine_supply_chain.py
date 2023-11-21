@@ -327,7 +327,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         response = self.client.post(
             BASE_URL,
             data={
-                "campaign": campaign_test.id,
+                "campaign": campaign_test.obr_name,
                 "vaccine_type": pm.VACCINES[0][0],
                 "date_vrf_reception": "2021-01-01",
                 "date_vrf_signature": "2021-01-02",
@@ -352,7 +352,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         response = self.client.patch(
             BASE_URL + f"{request_form.id}/",
             data={
-                "campaign": str(request_form.campaign.id),
+                "campaign": str(request_form.campaign.obr_name),
                 "vaccine_type": pm.VACCINES[1][0],  # Change the vaccine type
                 "date_vrf_reception": "2021-02-01",  # Change the date of vrf reception
                 "date_vrf_signature": "2021-02-02",  # Change the date of vrf signature

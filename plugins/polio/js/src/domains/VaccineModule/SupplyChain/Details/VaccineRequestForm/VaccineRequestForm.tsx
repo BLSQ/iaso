@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useCallback } from 'react';
+import React, { FunctionComponent, useCallback, useEffect } from 'react';
 import { Box, Grid, Typography } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 import { useSafeIntl } from 'bluesquare-components';
@@ -26,7 +26,6 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
     const { data: countriesOptions, isFetching: isFetchingCountries } =
         useGetCountriesOptions();
     const vrfDataComment = vrfData?.comment;
-    // TODO manage errors
     const { values, setFieldTouched, setFieldValue } = useFormikContext<any>();
     const {
         campaigns,
@@ -53,33 +52,22 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
         [setFieldTouched, setFieldValue, values?.vrf?.comment, vrfDataComment],
     );
 
-    const onCountryChange = useCallback(
-        (_keyValue, value) => {
-            setFieldTouched('vrf.country', true);
-            setFieldValue('vrf.country', value);
-            setFieldValue('vrf.campaign', undefined);
-            setFieldValue('vrf.vaccine_type', undefined);
-            setFieldValue('vrf.rounds', undefined);
-        },
-        [setFieldTouched, setFieldValue],
-    );
-    const onCampaignChange = useCallback(
-        (_keyValue, value) => {
-            setFieldTouched('vrf.campaign', true);
-            setFieldValue('vrf.campaign', value.obr_name);
-            setFieldValue('vrf.vaccine_type', undefined);
-            setFieldValue('vrf.rounds', undefined);
-        },
-        [setFieldTouched, setFieldValue],
-    );
-    const onVaccineChange = useCallback(
-        (_keyValue, value) => {
-            setFieldTouched('vrf.vaccine_type', true);
-            setFieldValue('vrf.vaccine_type', value);
-            setFieldValue('vrf.rounds', undefined);
-        },
-        [setFieldTouched, setFieldValue],
-    );
+    // These need to be handled via useEffect because doing it in a custom onChange function
+    // will cause the validation to be out of sync with the form state
+    useEffect(() => {
+        setFieldValue('vrf.campaign', undefined);
+        setFieldValue('vrf.vaccine_type', undefined);
+        setFieldValue('vrf.rounds', undefined);
+    }, [setFieldValue, values?.vrf?.country]);
+
+    useEffect(() => {
+        setFieldValue('vrf.vaccine_type', undefined);
+        setFieldValue('vrf.rounds', undefined);
+    }, [setFieldValue, values?.vrf?.campaign]);
+
+    useEffect(() => {
+        setFieldValue('vrf.rounds', undefined);
+    }, [setFieldValue, values?.vrf?.vaccine_type]);
 
     return (
         <Box className={className} mb={3}>
@@ -102,7 +90,6 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                 isLoading={
                                     isFetchingCountries || isFetchingDropDowns
                                 }
-                                onChange={onCountryChange}
                                 options={countriesOptions}
                             />
                         </Grid>
@@ -114,7 +101,6 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                 disabled={!values?.vrf?.country}
                                 required
                                 options={campaigns}
-                                onChange={onCampaignChange}
                                 withMarginTop
                                 isLoading={
                                     isFetchingCountries || isFetchingDropDowns
@@ -129,7 +115,6 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                 disabled={!values?.vrf?.campaign}
                                 required
                                 options={vaccines}
-                                onChange={onVaccineChange}
                                 withMarginTop
                                 isLoading={
                                     isFetchingCountries || isFetchingDropDowns

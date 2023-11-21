@@ -12,6 +12,7 @@ type Props = {
     onSubmitAll: () => void;
     allowSaveTab: boolean;
     allowSaveAll: boolean;
+    showSaveAllButton?: boolean;
 };
 
 export const VaccineSupplyChainConfirmButtons: FunctionComponent<Props> = ({
@@ -22,6 +23,7 @@ export const VaccineSupplyChainConfirmButtons: FunctionComponent<Props> = ({
     onCancel,
     allowSaveTab,
     allowSaveAll,
+    showSaveAllButton = true,
 }) => {
     const { formatMessage } = useSafeIntl();
 
@@ -50,17 +52,19 @@ export const VaccineSupplyChainConfirmButtons: FunctionComponent<Props> = ({
                     )}`}
                 </Button>
             </Box>
-            <Box ml={2} mt={4}>
-                <Button
-                    variant="contained"
-                    className={className}
-                    color="primary"
-                    disabled={!allowSaveAll}
-                    onClick={onSubmitAll}
-                >
-                    {formatMessage(MESSAGES.saveAll)}
-                </Button>
-            </Box>
+            {showSaveAllButton && (
+                <Box ml={2} mt={4}>
+                    <Button
+                        variant="contained"
+                        className={className}
+                        color="primary"
+                        disabled={!allowSaveAll}
+                        onClick={onSubmitAll}
+                    >
+                        {formatMessage(MESSAGES.saveAll)}
+                    </Button>
+                </Box>
+            )}
         </>
     );
 };

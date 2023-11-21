@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Dispatch } from 'redux';
-import { UseQueryResult } from 'react-query';
+import { UseMutationResult, UseQueryResult } from 'react-query';
+import { UrlParams } from 'bluesquare-components';
 import {
     deleteRequest,
     getRequest,
@@ -8,7 +9,10 @@ import {
     postRequest,
 } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useUrlParams } from '../../../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
-import { useApiParams } from '../../../../../../../../../hat/assets/js/apps/Iaso/hooks/useApiParams';
+import {
+    FormattedApiParams,
+    useApiParams,
+} from '../../../../../../../../../hat/assets/js/apps/Iaso/hooks/useApiParams';
 import { useGetCountries } from '../../../../../hooks/useGetCountries';
 import {
     useSnackMutation,
@@ -27,20 +31,30 @@ import {
 import { Campaign } from '../../../../../constants/types';
 import { enqueueSnackbar } from '../../../../../../../../../hat/assets/js/apps/Iaso/redux/snackBarsReducer';
 import { apiUrl } from '../../constants';
-import { ParsedSettledPromise, VRF, VRFFormData } from '../../types';
-import { Optional } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import {
+    CampaignDropdowns,
+    ParsedSettledPromise,
+    VRF,
+    VRFFormData,
+} from '../../types';
+import {
+    DropdownOptions,
+    Optional,
+} from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 const defaults = {
     order: 'country',
     pageSize: 20,
     page: 1,
 };
-const getVrfList = params => {
+const getVrfList = (params: FormattedApiParams): Promise<VRF[]> => {
     const queryString = new URLSearchParams(params).toString();
     return getRequest(`${apiUrl}?${queryString}`);
 };
 
-export const useGetVrfList = params => {
+export const useGetVrfList = (
+    params: Partial<UrlParams>,
+): UseQueryResult<any, any> => {
     const safeParams = useUrlParams(params, defaults);
     const apiParams = useApiParams(safeParams);
     return useSnackQuery({
@@ -64,18 +78,20 @@ export const useGetVrfList = params => {
     });
 };
 
-const deleteVrf = id => {
+const deleteVrf = (id: string) => {
     return deleteRequest(`${apiUrl}${id}`);
 };
 
-export const useDeleteVrf = () => {
+export const useDeleteVrf = (): UseMutationResult => {
     return useSnackMutation({
         mutationFn: deleteVrf,
         invalidateQueryKey: ['getVrfList'],
     });
 };
 
-export const useGetCountriesOptions = (enabled = true) => {
+export const useGetCountriesOptions = (
+    enabled = true,
+): { data: DropdownOptions<number>[]; isFetching: boolean } => {
     const { data: countries, isFetching } = useGetCountries('VALID', enabled);
     return useMemo(() => {
         const options = countries
@@ -110,7 +126,7 @@ export const useCampaignDropDowns = (
     countryId?: number,
     campaign?: string,
     vaccine?: string,
-) => {
+): CampaignDropdowns => {
     const options = {
         enabled: Boolean(countryId),
         countries: countryId ? [`${countryId}`] : undefined,
@@ -175,12 +191,20 @@ export const useGetVrfDetails = (id?: string): UseQueryResult => {
     });
 };
 
+const getRoundsForApi = (
+    rounds: number[] | string | undefined,
+): { number: number }[] | undefined => {
+    if (!rounds) return undefined;
+    if (Array.isArray(rounds)) return rounds.map(r => ({ number: r }));
+    return rounds.split(',').map(r => ({ number: parseInt(r, 10) }));
+};
+
 export const saveVrf = (
     vrf: Optional<Partial<VRFFormData>>,
 ): Promise<any>[] => {
     const payload: Partial<VRF> = {
         ...vrf,
-        rounds: vrf?.rounds?.map(r => ({ number: r })),
+        rounds: getRoundsForApi(vrf?.rounds),
     };
     if (vrf?.id) {
         return [patchRequest(`${apiUrl}${vrf?.id}/`, payload)];

@@ -42,6 +42,7 @@ import {
 } from '../types';
 import { PREALERT, VAR, VRF } from '../constants';
 import { useTopBarTitle } from '../hooks/useTopBarTitle';
+import { useSupplyChainFormValidator } from '../hooks/validation';
 
 type Props = { router: Router };
 
@@ -73,19 +74,28 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
     });
     const dispatch = useDispatch();
     const { data: vrfDetails, isFetching } = useGetVrfDetails(router.params.id);
+
     const { data: preAlerts, isFetching: isFetchingPreAlerts } =
         useGetPreAlertDetails(router.params.id);
+
     const { data: arrivalReports, isFetching: isFetchingArrivalReports } =
         useGetArrivalReportsDetails(router.params.id);
+
     const { mutateAsync: saveForm, isLoading: isSaving } =
         useSaveVaccineSupplyChainForm();
+
+    const validationSchema = useSupplyChainFormValidator();
+
     const formik = useFormik<SupplyChainFormData>({
         initialValues,
+        // required to enable data reresh after save
         enableReinitialize: true,
         onSubmit: () => undefined,
+        validationSchema,
     });
     const { setFieldValue, values, touched, errors, isValid, isSubmitting } =
         formik;
+
     const handleSubmit = useCallback(
         (saveAll = false) => {
             formik.submitForm();
@@ -305,6 +315,7 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
                                     onCancel={onCancel}
                                     allowSaveTab={allowSaveTab}
                                     allowSaveAll={allowSaveAll}
+                                    showSaveAllButton={Boolean(values?.vrf?.id)}
                                 />
                             </Box>
                         </Grid>

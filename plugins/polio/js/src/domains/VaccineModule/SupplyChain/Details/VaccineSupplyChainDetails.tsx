@@ -109,7 +109,7 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
                                 redirectToReplace(
                                     VACCINE_SUPPLY_CHAIN_DETAILS,
                                     {
-                                        id: data.id,
+                                        id: data.vrf[0].value.id,
                                     },
                                 ),
                             );

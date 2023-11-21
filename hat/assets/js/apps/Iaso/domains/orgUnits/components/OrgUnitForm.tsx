@@ -29,6 +29,8 @@ const initialFormState = (orgUnit: OrgUnit): OrgunitInititialState => ({
     parent: orgUnit.parent,
     source_ref: orgUnit.source_ref,
     reference_instance_id: orgUnit.reference_instance_id,
+    opening_date: orgUnit.opening_date,
+    closed_date: orgUnit.closed_date,
 });
 
 const useStyles = makeStyles(theme => ({

@@ -28,8 +28,10 @@ export const MultiDateTimeCellRfc = (cellInfo: {
     const valueAsList = value.split(',');
     return (
         <>
-            {valueAsList.map(lineData => (
-                <div key={`${lineData}`}>{convertToDateTimeRfc(lineData)}</div>
+            {valueAsList.map((lineData, index) => (
+                <div key={`${lineData}${index}`}>
+                    {convertToDateTimeRfc(lineData)}
+                </div>
             ))}
         </>
     );
@@ -49,8 +51,8 @@ export const MultiDateCell = (cellInfo: {
     const valueAsList = value.split(',');
     return (
         <>
-            {valueAsList.map(lineData => (
-                <div key={`${lineData}`}>{convertToDate(lineData)}</div>
+            {valueAsList.map((lineData, index) => (
+                <div key={`${lineData}${index}`}>{convertToDate(lineData)}</div>
             ))}
         </>
     );

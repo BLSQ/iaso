@@ -41,8 +41,10 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
                     const poNumbersList = poNumbers.split(',');
                     return (
                         <>
-                            {poNumbersList.map(poNumber => (
-                                <div key={poNumber}>{poNumber}</div>
+                            {poNumbersList.map((poNumber, index) => (
+                                <div key={`${poNumber}${index}`}>
+                                    {poNumber}
+                                </div>
                             ))}
                         </>
                     );

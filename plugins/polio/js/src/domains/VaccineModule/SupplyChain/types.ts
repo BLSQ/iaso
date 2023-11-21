@@ -1,6 +1,9 @@
 /* eslint-disable camelcase */
 import { Vaccine } from '../../../constants/types';
-import { Optional } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import {
+    DropdownOptions,
+    Optional,
+} from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 export type TabValue = 'vrf' | 'arrival_reports' | 'pre_alerts';
 
@@ -72,4 +75,11 @@ export type SupplyChainResponse = {
     vrf?: ParsedSettledPromise<VRF>[];
     pre_alerts?: ParsedSettledPromise<PreAlert>[];
     arrival_reports?: ParsedSettledPromise<VAR>[];
+};
+
+export type CampaignDropdowns = {
+    campaigns: DropdownOptions<string>[];
+    vaccines: DropdownOptions<string>[];
+    rounds: DropdownOptions<string>[];
+    isFetching: boolean;
 };

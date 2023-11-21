@@ -8,14 +8,14 @@ import { PREALERT } from '../../constants';
 type Props = { className?: string; items?: any[] };
 
 const emptyPreAlert = {
-    date_reception: undefined,
+    date_pre_alert_reception: undefined,
     po_number: undefined,
-    eta: undefined,
-    lot_number: undefined,
+    estimated_arrival_time: undefined,
     expiration_date: undefined,
     doses_shipped: undefined,
-    doses_recieved: undefined,
     doses_per_vial: undefined,
+    po_numbers: undefined,
+    id: undefined,
 };
 
 export const PreAlerts: FunctionComponent<Props> = ({

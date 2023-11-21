@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 import { Box, Grid, Paper } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 import RestoreFromTrashIcon from '@material-ui/icons/RestoreFromTrash';
@@ -23,6 +23,20 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
         useFormikContext<SupplyChainFormData>();
     const { pre_alerts } = values as SupplyChainFormData;
     const markedForDeletion = pre_alerts?.[index].to_delete ?? false;
+
+    const onDelete = useCallback(() => {
+        if (values?.pre_alerts?.[index].id) {
+            setFieldValue(`pre_alerts[${index}].to_delete`, true);
+            setFieldTouched(`pre_alerts[${index}].to_delete`, true);
+        } else {
+            const copy = [...(values?.pre_alerts ?? [])];
+            // checking the length to avoid splicing outside of array range
+            if (copy.length >= index + 1) {
+                copy.splice(index, 1);
+                setFieldValue('pre_alerts', copy);
+            }
+        }
+    }, [index, setFieldTouched, setFieldValue, values?.pre_alerts]);
 
     return (
         <div className={classes.container}>
@@ -53,6 +67,7 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                             disabled={markedForDeletion}
                         />
                     </Grid>
+                    {/* TODO make list */}
                     <Grid item xs={6} md={3}>
                         <Field
                             label={formatMessage(MESSAGES.lot_number)}
@@ -94,7 +109,7 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                         </Box>
                     </Grid>
 
-                    <Grid item xs={6} md={3}>
+                    {/* <Grid item xs={6} md={3}>
                         <Box>
                             <Field
                                 label={formatMessage(MESSAGES.doses_received)}
@@ -103,32 +118,14 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                                 disabled={markedForDeletion}
                             />
                         </Box>
-                    </Grid>
+                    </Grid> */}
                 </Grid>
             </Paper>
-            {/* Box is necessay to avoid bad tooltip placemement */}
+            {/* Box is necessay to avoid bad tooltip placement */}
             <Box ml={2}>
                 {!pre_alerts?.[index].to_delete && (
                     <DeleteIconButton
-                        onClick={() => {
-                            if (values?.pre_alerts?.[index].id) {
-                                setFieldValue(
-                                    `pre_alerts[${index}].to_delete`,
-                                    true,
-                                );
-                                setFieldTouched(
-                                    `pre_alerts[${index}].to_delete`,
-                                    true,
-                                );
-                            } else {
-                                const copy = [...(values?.pre_alerts ?? [])];
-                                // checking the length to avoid splicing outside of array range
-                                if (copy.length >= index + 1) {
-                                    copy.splice(index, 1);
-                                    setFieldValue('pre_alerts', copy);
-                                }
-                            }
-                        }}
+                        onClick={onDelete}
                         message={MESSAGES.markForDeletion}
                     />
                 )}

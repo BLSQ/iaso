@@ -204,8 +204,10 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
 
     // Using formik's enableReinitialize would cause touched, errors etc to reset when changing tabs
     // So we set values with useEffect once data has been fetched.
+    // We only want to effect to run when data is fetched, so we can limoit the deps in the array to the fecthed data
+    // To avoid infinite loops
     useEffect(() => {
-        if (arrivalReports && !values.arrival_reports) {
+        if (arrivalReports) {
             setFieldValue('arrival_reports', arrivalReports.arrival_reports);
             // set InitialValues so we can compare with form values and enables/disabel dave button accordingly
             setInitialValues({
@@ -213,9 +215,10 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
                 arrival_reports: arrivalReports.arrival_reports,
             });
         }
-    }, [arrivalReports, initialValues, setFieldValue, values.arrival_reports]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [arrivalReports]);
     useEffect(() => {
-        if (preAlerts && !values.pre_alerts) {
+        if (preAlerts) {
             setFieldValue('pre_alerts', preAlerts.pre_alerts);
             // set InitialValues so we can compare with form values and enables/disabel dave button accordingly
             setInitialValues({
@@ -223,9 +226,10 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
                 pre_alerts: preAlerts.pre_alerts,
             });
         }
-    }, [initialValues, preAlerts, setFieldValue, values.pre_alerts]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [preAlerts]);
     useEffect(() => {
-        if (vrfDetails && !values.vrf) {
+        if (vrfDetails) {
             setFieldValue('vrf', vrfDetails);
             // set initialValues so we can compare with form values and enables/disable save button accordingly
             setInitialValues({
@@ -233,7 +237,8 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
                 vrf: vrfDetails,
             });
         }
-    }, [vrfDetails, setFieldValue, values.vrf, initialValues]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [vrfDetails]);
 
     // defining the booleans here to avoid having formik.values as dependency of useEffect, which would cause an infinite loop
     const vrfChanged = !isEqual(initialValues[VRF], values[VRF]);

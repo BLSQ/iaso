@@ -1,7 +1,7 @@
-import React, { FunctionComponent, useCallback, useEffect } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 import { Box, Grid, Typography } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, useSkipEffectOnMount } from 'bluesquare-components';
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import { MultiSelect } from '../../../../../components/Inputs/MultiSelect';
 import { DateInput } from '../../../../../components/Inputs/DateInput';
@@ -54,18 +54,19 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
 
     // These need to be handled via useEffect because doing it in a custom onChange function
     // will cause the validation to be out of sync with the form state
-    useEffect(() => {
+    // Skipping the effect onmount to avoid clearing existing values from the fields
+    useSkipEffectOnMount(() => {
         setFieldValue('vrf.campaign', undefined);
         setFieldValue('vrf.vaccine_type', undefined);
         setFieldValue('vrf.rounds', undefined);
     }, [setFieldValue, values?.vrf?.country]);
 
-    useEffect(() => {
+    useSkipEffectOnMount(() => {
         setFieldValue('vrf.vaccine_type', undefined);
         setFieldValue('vrf.rounds', undefined);
     }, [setFieldValue, values?.vrf?.campaign]);
 
-    useEffect(() => {
+    useSkipEffectOnMount(() => {
         setFieldValue('vrf.rounds', undefined);
     }, [setFieldValue, values?.vrf?.vaccine_type]);
 
@@ -223,7 +224,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                 label={formatMessage(
                                     MESSAGES.date_vrf_submission_dg,
                                 )}
-                                name="vrf.date_vrf_submission_dg"
+                                name="vrf.date_vrf_submitted_to_dg"
                                 component={DateInput}
                                 disabled={false}
                             />

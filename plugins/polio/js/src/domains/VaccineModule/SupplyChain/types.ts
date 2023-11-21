@@ -8,10 +8,10 @@ export type VRF = {
     id?: number;
     country_name: string;
     country_id: number;
-    campaign: string; // uuid
+    campaign: string; // obr_name
     obr_name: string;
     vaccine_type: Vaccine;
-    rounds: string; // 1,2
+    rounds: { number: number }[];
     date_vrf_signature: string; // date in string form
     quantities_ordered_in_doses: number;
     wastage_rate_used_on_vrf: number;
@@ -23,6 +23,10 @@ export type VRF = {
     quantities_approved_by_dg_in_doses?: number;
     date_dg_approval?: string; // date in string form
     comments?: string;
+};
+
+export type VRFFormData = Omit<VRF, 'rounds'> & {
+    rounds: number[]; // 1,2
 };
 
 export type PreAlert = {
@@ -51,7 +55,7 @@ export type VAR = {
 };
 
 export type SupplyChainFormData = {
-    vrf: Optional<Partial<VRF>>;
+    vrf: Optional<Partial<VRFFormData>>;
     pre_alerts: Optional<Partial<PreAlert>[]>;
     arrival_reports: Optional<Partial<VAR>[]>;
     activeTab: TabValue;

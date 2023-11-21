@@ -37,6 +37,7 @@ import {
     PreAlert,
     SupplyChainFormData,
     TabValue,
+    VRF as VrfType,
     VAR as VarType,
 } from '../types';
 import { PREALERT, VAR, VRF } from '../constants';
@@ -169,7 +170,7 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
         formik.resetForm();
     }, [formik]);
     // TODO refine enabled condition
-    const title = useTopBarTitle(vrfDetails);
+    const title = useTopBarTitle(vrfDetails as VrfType);
     const allowSaveAll =
         isValid &&
         !isSaving &&

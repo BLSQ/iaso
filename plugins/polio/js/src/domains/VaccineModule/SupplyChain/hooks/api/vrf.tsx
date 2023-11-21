@@ -27,7 +27,8 @@ import {
 import { Campaign } from '../../../../../constants/types';
 import { enqueueSnackbar } from '../../../../../../../../../hat/assets/js/apps/Iaso/redux/snackBarsReducer';
 import { apiUrl } from '../../constants';
-import { ParsedSettledPromise, VRF } from '../../types';
+import { ParsedSettledPromise, VRF, VRFFormData } from '../../types';
+import { Optional } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 const defaults = {
     order: 'country',
@@ -174,47 +175,25 @@ export const useGetVrfDetails = (id?: string): UseQueryResult => {
     });
 };
 
-export const saveVrf = (vrf): Promise<any>[] => {
-    // console.log('DATA', supplyChainData);
-    // const { vrf } = supplyChainData;
-    const payload = {
+export const saveVrf = (
+    vrf: Optional<Partial<VRFFormData>>,
+): Promise<any>[] => {
+    const payload: Partial<VRF> = {
         ...vrf,
-        rounds: vrf.rounds.map(r => ({ number: r })),
-        campaign: { obr_name: vrf.campaign },
+        rounds: vrf?.rounds?.map(r => ({ number: r })),
     };
-    if (vrf.id) {
-        return [patchRequest(`${apiUrl}${vrf.id}/`, payload)];
+    if (vrf?.id) {
+        return [patchRequest(`${apiUrl}${vrf?.id}/`, payload)];
     }
     return [postRequest(apiUrl, payload)];
 };
 
-// TODO There's type mismatch between single save an save all
-/*
-
-save all:{
-    status:fulfilled
-    value:[
-        {
-            status:"rejected",
-            reason: ApiError etc --> normal rejected promise
-        }
-    ]
-}
-
-single save:   {
-            status:"rejected",
-            value: ApiError --> parsed rejected promise
-        }
-
-*/
 export const handleVrfPromiseErrors = (
     data: ParsedSettledPromise<VRF>[],
     dispatch: Dispatch,
 ): void => {
-    console.log('DATA', data);
     const vrf = data[0];
     const isSuccessful = vrf.status === 'fulfilled';
-    console.log('isSuccessful', isSuccessful, vrf);
     if (isSuccessful) {
         dispatch(
             enqueueSnackbar(

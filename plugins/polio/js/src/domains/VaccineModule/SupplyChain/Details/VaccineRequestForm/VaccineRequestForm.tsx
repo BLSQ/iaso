@@ -66,7 +66,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
     const onCampaignChange = useCallback(
         (_keyValue, value) => {
             setFieldTouched('vrf.campaign', true);
-            setFieldValue('vrf.campaign', value);
+            setFieldValue('vrf.campaign', value.obr_name);
             setFieldValue('vrf.vaccine_type', undefined);
             setFieldValue('vrf.rounds', undefined);
         },

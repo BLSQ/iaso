@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 import { Dispatch } from 'redux';
 import {
+    deleteRequest,
     patchRequest,
     postRequest,
 } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
@@ -58,20 +59,21 @@ export const saveTab = (
             }),
         );
     }
-    // if (toDelete.length > 0) {
-    //     toDelete.forEach(item => {
-    //         promises.push(
-    //             deleteRequest(`${apiUrl}${item.id}/delete_${key}/`),
-    //         );
-    //     });
-    // }
-    // console.log('To delete', toDelete);
+    if (toDelete.length > 0) {
+        toDelete.forEach(item => {
+            promises.push(
+                deleteRequest(
+                    `${apiUrl}${item.id}/delete_${key}/?id=${item.id}`,
+                ),
+            );
+        });
+    }
     return promises;
 };
 
 export const normalizePromiseResult = (
     settledPromise: PromiseSettledResult<any>,
-): ParsedSettledPromise => {
+): ParsedSettledPromise<any> => {
     // TS thinks value does not exist because it does not exist on rejected promises
     // @ts-ignore
     const { status, value } = settledPromise;
@@ -141,7 +143,10 @@ export const parsePromiseResults = (
     return response;
 };
 
-export const handlePromiseErrors = (data: any, dispatch: Dispatch): void => {
+export const handlePromiseErrors = (
+    data: ParsedSettledPromise<any>[],
+    dispatch: Dispatch,
+): void => {
     const failedPromises = data.filter(item => item.status === 'rejected');
     if (failedPromises.length === 0) {
         dispatch(

@@ -12,7 +12,14 @@ from rest_framework.response import Response
 from hat.menupermissions import models as permission
 from iaso.api.common import GenericReadWritePerm, ModelViewSet
 from iaso.models import OrgUnit
-from plugins.polio.models import Round, VaccineArrivalReport, VaccinePreAlert, VaccineRequestForm, DOSES_PER_VIAL
+from plugins.polio.models import (
+    Campaign,
+    Round,
+    VaccineArrivalReport,
+    VaccinePreAlert,
+    VaccineRequestForm,
+    DOSES_PER_VIAL,
+)
 
 
 PA_SET = "vaccineprealert_set"
@@ -20,26 +27,48 @@ AR_SET = "vaccinearrivalreport_set"
 
 
 def validate_rounds_and_campaign(data, current_user=None):
-    rounds = data.get("rounds")
-    campaign = data.get("campaign")
+    rounds_data = data.get("rounds")
+    campaign_uuid = data.get("campaign")
 
-    if not rounds:
+    if not rounds_data:
         raise forms.ValidationError("At least one round must be attached.")
 
-    if isinstance(rounds, list):
-        for round in rounds:
-            if round.campaign != campaign:
+    if not campaign_uuid:
+        raise forms.ValidationError("A campaign must be attached.")
+
+    try:
+        new_campaign = Campaign.objects.get(id=campaign_uuid)
+        data["campaign"] = new_campaign
+    except Campaign.DoesNotExist:
+        raise forms.ValidationError(f"No campaign with obr_name {campaign_uuid} found.")
+
+    if isinstance(rounds_data, list):
+        new_rounds = []
+        for round in rounds_data:
+            if isinstance(round, dict) and "number" in round:
+                try:
+                    round_obj = Round.objects.get(number=round["number"], campaign=new_campaign)
+                    new_rounds.append(round_obj)
+                except Round.MultipleObjectsReturned:
+                    raise forms.ValidationError(f"Multiple rounds with number {round['number']} found in the campaign.")
+                except Round.DoesNotExist:
+                    raise forms.ValidationError(f"No round with number {round['number']} found in the campaign.")
+            elif hasattr(round, "campaign") and round.campaign != new_campaign:
                 raise forms.ValidationError("Each round's campaign must be the same as the form's campaign.")
+        data["rounds"] = new_rounds
     else:
         try:
-            for round in rounds.all():
-                if round.campaign != campaign:
+            new_rounds = []
+            for round in rounds_data.all():
+                if round.campaign != new_campaign:
                     raise forms.ValidationError("Each round's campaign must be the same as the form's campaign.")
+                new_rounds.append(round)
+            data["rounds"] = new_rounds
         except AttributeError:
             raise forms.ValidationError("Couldn't find any rounds.")
 
     if current_user:
-        if not current_user.iaso_profile.account == campaign.account:
+        if not current_user.iaso_profile.account == new_campaign.account:
             raise forms.ValidationError("The selected account must be the same as the user's account.")
 
     return data
@@ -75,10 +104,9 @@ class NestedVaccinePreAlertSerializerForPost(BasePostPatchSerializer):
             "date_pre_alert_reception",
             "po_number",
             "estimated_arrival_time",
-            "lot_number",
+            "lot_numbers",
             "expiration_date",
             "doses_shipped",
-            "doses_received",
         ]
 
 
@@ -87,10 +115,9 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
     date_pre_alert_reception = serializers.DateField(required=False)
     po_number = serializers.CharField(required=False)
     estimated_arrival_time = serializers.DateField(required=False)
-    lot_number = serializers.CharField(required=False)
+    lot_numbers = serializers.ListField(child=serializers.CharField(), required=False)
     expiration_date = serializers.DateField(required=False)
     doses_shipped = serializers.IntegerField(required=False)
-    doses_received = serializers.IntegerField(required=False)
 
     class Meta(NestedVaccinePreAlertSerializerForPost.Meta):
         fields = NestedVaccinePreAlertSerializerForPost.Meta.fields + ["id"]
@@ -228,7 +255,7 @@ class NestedCountrySerializer(serializers.ModelSerializer):
 
 class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
     rounds = NestedRoundPostSerializer(many=True)
-    campaign = serializers.CharField(source="campaign.obr_name")
+    campaign = serializers.CharField()
 
     class Meta:
         model = VaccineRequestForm
@@ -253,6 +280,44 @@ class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         return validate_rounds_and_campaign(data, self.context["request"].user)
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        # replace the 'campaign' field with the id of the campaign
+        ret["campaign"] = str(instance.campaign.id)
+
+        return ret
+
+    def create(self, validated_data):
+        rounds = validated_data.pop("rounds")
+        campaign = validated_data.pop("campaign")
+        request_form = VaccineRequestForm.objects.create(**validated_data, campaign=campaign)
+        request_form.rounds.set(rounds)
+        return request_form
+
+    def update(self, instance, validated_data):
+        rounds = validated_data.pop("rounds", None)
+        campaign = validated_data.pop("campaign", None)
+        modified = False
+
+        for attr, value in validated_data.items():
+            if getattr(instance, attr) != value:
+                setattr(instance, attr, value)
+                modified = True
+
+        if rounds:
+            instance_rounds = set(instance.rounds.all())
+            if set(rounds) != instance_rounds:
+                instance.rounds.set(rounds)
+                modified = True
+
+        if campaign and instance.campaign != campaign:
+            instance.campaign = campaign
+            modified = True
+
+        if modified:
+            instance.save()
+        return instance
 
 
 class VaccineRequestFormDetailSerializer(serializers.ModelSerializer):
@@ -465,6 +530,14 @@ class VaccineRequestFormViewSet(ModelViewSet):
             .distinct()
             .order_by("id")
         )
+
+    # def create(self, request, *args, **kwargs):
+    #     serializer = self.get_serializer(data=request.data)
+    #     serializer.is_valid(raise_exception=True)
+    #     self.perform_create(serializer)
+    #     headers = self.get_success_headers(serializer.data)
+    #     serializer.data["campaign"] = str(serializer.data["campaign"].id)
+    #     return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     # override the destroy action to delete all the related arrival reports and pre alerts
     def destroy(self, request, *args, **kwargs):

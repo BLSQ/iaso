@@ -22,6 +22,9 @@ from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
 from translated_fields import TranslatedField
 
+from django.contrib.postgres.fields import ArrayField
+
+
 # noinspection PyUnresolvedReferences
 # from .budget.models import BudgetStep, BudgetStepFile
 
@@ -984,12 +987,11 @@ class VaccineRequestForm(SoftDeletableModel):
 class VaccinePreAlert(SoftDeletableModel):
     request_form = models.ForeignKey(VaccineRequestForm, on_delete=models.CASCADE)
     date_pre_alert_reception = models.DateField()
-    po_number = models.CharField(max_length=200)
+    po_number = models.CharField(max_length=200, blank=True, null=True, default=None)
     estimated_arrival_time = models.DateField(blank=True, null=True, default=None)
-    lot_number = models.CharField(max_length=200, blank=True, null=True, default=None)
+    lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
     expiration_date = models.DateField(blank=True, null=True, default=None)
     doses_shipped = models.PositiveIntegerField(blank=True, null=True, default=None)
-    doses_received = models.PositiveIntegerField(blank=True, null=True, default=None)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

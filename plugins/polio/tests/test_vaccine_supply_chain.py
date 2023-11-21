@@ -103,18 +103,21 @@ class VaccineSupplyChainAPITestCase(APITestCase):
             campaign=cls.campaign_rdc_1,
             started_at=datetime.datetime(2021, 1, 1),
             ended_at=datetime.datetime(2021, 1, 31),
+            number=1,
         )
 
         cls.campaign_rdc_1_round_2 = pm.Round.objects.create(
             campaign=cls.campaign_rdc_1,
             started_at=datetime.datetime(2021, 2, 1),
             ended_at=datetime.datetime(2021, 2, 28),
+            number=2,
         )
 
         cls.campaign_rdc_1_round_3 = pm.Round.objects.create(
             campaign=cls.campaign_rdc_1,
             started_at=datetime.datetime(2021, 3, 1),
             ended_at=datetime.datetime(2021, 3, 31),
+            number=3,
         )
 
         cls.vaccine_request_form_rdc_1 = pm.VaccineRequestForm.objects.create(
@@ -318,25 +321,60 @@ class VaccineSupplyChainAPITestCase(APITestCase):
             campaign=campaign_test,
             started_at=datetime.datetime(2021, 1, 1),
             ended_at=datetime.datetime(2021, 1, 31),
+            number=1,
         )
 
         response = self.client.post(
             BASE_URL,
             data={
-                "campaign": campaign_test.obr_name,
+                "campaign": campaign_test.id,
                 "vaccine_type": pm.VACCINES[0][0],
                 "date_vrf_reception": "2021-01-01",
                 "date_vrf_signature": "2021-01-02",
                 "date_dg_approval": "2021-01-03",
                 "quantities_ordered_in_doses": 1000000,
-                "rounds": [campaign_test_round_1.number],
+                "rounds": [{"number": campaign_test_round_1.number}],
             },
             format="json",
         )
         self.assertEqual(response.status_code, 201)
         res = response.data
-        self.assertEqual(res["campaign"], campaign_test.id)
+        self.assertEqual(res["campaign"], str(campaign_test.id))
         self.assertEqual(res["vaccine_type"], pm.VACCINES[0][0])
+
+    def test_user_with_write_permission_can_modify_existing_request_form(self):
+        self.client.force_authenticate(user=self.user_rw_perm)
+
+        # Get the first request form
+        request_form = pm.VaccineRequestForm.objects.first()
+
+        # Modify the request form
+        response = self.client.patch(
+            BASE_URL + f"{request_form.id}/",
+            data={
+                "campaign": str(request_form.campaign.id),
+                "vaccine_type": pm.VACCINES[1][0],  # Change the vaccine type
+                "date_vrf_reception": "2021-02-01",  # Change the date of vrf reception
+                "date_vrf_signature": "2021-02-02",  # Change the date of vrf signature
+                "date_dg_approval": "2021-02-03",  # Change the date of dg approval
+                "quantities_ordered_in_doses": 2000000,  # Change the quantities ordered in doses
+                "rounds": [{"number": request_form.rounds.first().number}],
+            },
+            format="json",
+        )
+
+        # Check the status code
+        self.assertEqual(response.status_code, 200)
+
+        # Check the modified data
+        res = response.data
+        self.assertEqual(res["campaign"], str(request_form.campaign.id))
+        self.assertEqual(res["vaccine_type"], pm.VACCINES[1][0])
+        self.assertEqual(res["date_vrf_reception"], "2021-02-01")
+        self.assertEqual(res["date_vrf_signature"], "2021-02-02")
+        self.assertEqual(res["date_dg_approval"], "2021-02-03")
+        self.assertEqual(res["quantities_ordered_in_doses"], 2000000)
+        self.assertEqual(len(res["rounds"]), 1)
 
     def test_can_add_request_form_vaccine_prealerts(self):
         self.client.force_authenticate(user=self.user_rw_perm)
@@ -353,6 +391,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
                         "estimated_arrival_time": "2021-01-02",
                         "doses_shipped": 500000,
                         "po_number": "PO-1234",
+                        "lot_numbers": ["LOT-1234", "LOT-5678"],
                     }
                 ],
             },
@@ -408,6 +447,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
             estimated_arrival_time="2021-01-02",
             doses_shipped=1000,
             po_number="PO-1234",
+            lot_numbers=["LOT-1234", "LOT-5678"],
         )
 
         response = self.client.get(
@@ -484,6 +524,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
             estimated_arrival_time="2021-01-02",
             doses_shipped=1000,
             po_number="PO-1234",
+            lot_numbers=["LOT-1234", "LOT-5678"],
         )
 
         response = self.client.patch(
@@ -517,6 +558,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
             estimated_arrival_time="2021-01-02",
             doses_shipped=1000,
             po_number="PO-1234",
+            lot_numbers=["LOT-1234", "LOT-5678"],
         )
 
         # Get the related objects from AR_SET and PA_SET
@@ -555,6 +597,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
             estimated_arrival_time="2021-01-02",
             doses_shipped=1000,
             po_number="PO-1234",
+            lot_numbers=["LOT-1234", "LOT-5678"],
         )
 
         # Get one of the pre-alerts attached to the request form

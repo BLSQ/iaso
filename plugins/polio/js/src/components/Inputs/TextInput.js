@@ -2,7 +2,6 @@ import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { TextField } from '@material-ui/core';
 import { get } from 'lodash';
-import { isTouched } from '../../utils';
 
 export const TextInput = ({
     field = {},
@@ -14,7 +13,7 @@ export const TextInput = ({
 } = {}) => {
     const hasError =
         form.errors &&
-        Boolean(get(form.errors, field.name) && isTouched(form.touched));
+        Boolean(get(form.errors, field.name) && get(form.touched, field.name));
 
     const handleChangeAndFocus = useCallback(
         e => {

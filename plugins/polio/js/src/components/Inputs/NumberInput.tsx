@@ -1,7 +1,6 @@
 import { get } from 'lodash';
 import React, { FunctionComponent } from 'react';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-import { isTouched } from '../../utils';
 
 type Props = {
     label: string;
@@ -22,7 +21,7 @@ export const NumberInput: FunctionComponent<Props> = ({
 }) => {
     const hasError =
         form.errors &&
-        Boolean(get(form.errors, field.name) && isTouched(form.touched));
+        Boolean(get(form.errors, field.name) && get(form.touched, field.name));
     return (
         <InputComponent
             withMarginTop={false}

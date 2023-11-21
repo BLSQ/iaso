@@ -62,7 +62,7 @@ export const useFieldsToExport = () => {
             value: FIELDS_TO_EXPORT.openingDate,
         },
         {
-            label: formatMessage(MESSAGES.closedDate),
+            label: formatMessage(MESSAGES.closingDate),
             value: FIELDS_TO_EXPORT.closedDate,
         },
     ];

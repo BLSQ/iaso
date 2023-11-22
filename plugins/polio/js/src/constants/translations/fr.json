@@ -141,6 +141,7 @@
     "iaso.polio.form.label.virus": "Virus",
     "iaso.polio.form.label.virusNotificationDate": "Date de notification virus",
     "iaso.polio.form.label.who_sent_budget": "Budget envoyé par WHO CO",
+    "iaso.polio.form.pleaseCreateVrf": "Veuillez créer un VRF pour débloquer ce tab",
     "iaso.polio.form.title.baseInfoFormTitle": "Entrer les informations sur la nouvelle campagne",
     "iaso.polio.form.validator.error.endDateAfterNextStartDate": "La date de fin ne peut être après ou égal à la date de début du round suivant",
     "iaso.polio.form.validator.error.endDateBeforeStartDate": "La date de fin ne peut être avant la date de début",

@@ -7,9 +7,9 @@ import {
 } from 'bluesquare-components';
 import { Box, Grid, Tab, Tabs, makeStyles } from '@material-ui/core';
 import { FormikErrors, FormikProvider, useFormik } from 'formik';
-import classNames from 'classnames';
 import { useDispatch } from 'react-redux';
 import { isEqual } from 'lodash';
+import classnames from 'classnames';
 import { redirectToReplace } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 import { useTabs } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useTabs';
 import {
@@ -35,16 +35,34 @@ import {
     VRF as VrfType,
     VAR as VarType,
 } from '../types';
+
 import { PREALERT, VAR, VRF } from '../constants';
 import { useTopBarTitle } from '../hooks/useTopBarTitle';
 import { useSupplyChainFormValidator } from '../hooks/validation';
 import { useObjectState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useObjectState';
+import { TabWithInfoIcon } from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TabWithInfoIcon';
 
 type Props = { router: Router };
 
 const useStyles = makeStyles(theme => {
     return {
         ...commonStyles(theme),
+        tabIcon: {
+            position: 'relative',
+            top: 1,
+            left: theme.spacing(0.5),
+            // color: theme.palette.primary.main,
+            cursor: 'pointer',
+        },
+        tab: {
+            '& .MuiTab-wrapper': {
+                display: 'flex',
+                flexDirection: 'row-reverse',
+            },
+        },
+        tabDisabled: {
+            cursor: 'default',
+        },
     };
 });
 
@@ -298,23 +316,31 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
                         value={VRF}
                         label={formatMessage(MESSAGES[VRF])}
                     />
-                    <Tab
+                    <TabWithInfoIcon
                         key={PREALERT}
                         value={PREALERT}
-                        label={formatMessage(MESSAGES[PREALERT])}
+                        title={formatMessage(MESSAGES[PREALERT])}
                         // disable if no saved VRF to avoid users trying to save prealert before vrf
                         disabled={!vrfDetails}
+                        hasTabError={false}
+                        handleChange={onChangeTab}
+                        showIcon={!vrfDetails}
+                        tooltipMessage={formatMessage(MESSAGES.pleaseCreateVrf)}
                     />
-                    <Tab
+                    <TabWithInfoIcon
                         key={VAR}
                         value={VAR}
-                        label={formatMessage(MESSAGES[VAR])}
+                        title={formatMessage(MESSAGES[VAR])}
                         // disable if no saved VRF to avoid users trying to save VAR before vrf
                         disabled={!vrfDetails}
+                        hasTabError={false}
+                        handleChange={onChangeTab}
+                        showIcon={!vrfDetails}
+                        tooltipMessage={formatMessage(MESSAGES.pleaseCreateVrf)}
                     />
                 </Tabs>
             </TopBar>
-            <Box className={classNames(classes.containerFullHeightPadded)}>
+            <Box className={classnames(classes.containerFullHeightPadded)}>
                 {isLoading && <LoadingSpinner />}
                 {!isLoading && (
                     <>

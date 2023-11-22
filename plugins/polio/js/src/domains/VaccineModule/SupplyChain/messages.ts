@@ -238,6 +238,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.doses_per_vial',
         defaultMessage: 'Doses per vial',
     },
+    pleaseCreateVrf: {
+        id: 'iaso.polio.form.pleaseCreateVrf',
+        defaultMessage: 'Create VRF to unlock this tab',
+    },
 });
 
 export default MESSAGES;

@@ -1,10 +1,5 @@
 /* eslint-disable camelcase */
-import React, {
-    FunctionComponent,
-    useCallback,
-    useEffect,
-    useState,
-} from 'react';
+import React, { FunctionComponent, useCallback, useEffect } from 'react';
 import {
     LoadingSpinner,
     commonStyles,
@@ -43,6 +38,7 @@ import {
 import { PREALERT, VAR, VRF } from '../constants';
 import { useTopBarTitle } from '../hooks/useTopBarTitle';
 import { useSupplyChainFormValidator } from '../hooks/validation';
+import { useObjectState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useObjectState';
 
 type Props = { router: Router };
 
@@ -64,7 +60,7 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
         defaultTab: initialTab,
         baseUrl: VACCINE_SUPPLY_CHAIN_DETAILS,
     });
-    const [initialValues, setInitialValues] = useState<any>({
+    const [initialValues, setInitialValues] = useObjectState({
         vrf: undefined,
         pre_alerts: undefined,
         arrival_reports: undefined,
@@ -114,29 +110,30 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
                                 ),
                             );
                         } else {
-                            const newValues = { ...formik.values };
+                            const newInitialValues = { ...initialValues };
                             if (variables.saveAll) {
                                 variables.changedTabs.forEach(touchedTab => {
                                     if (touchedTab === VRF) {
-                                        newValues[touchedTab] =
+                                        newInitialValues[touchedTab] =
                                             variables[touchedTab];
                                     } else {
                                         const newField = variables[
                                             touchedTab
                                         ]?.filter(value => !value.to_delete);
                                         // @ts-ignore
-                                        newValues[touchedTab] = newField;
+                                        newInitialValues[touchedTab] = newField;
                                     }
                                 });
-                                setInitialValues(newValues);
+                                setInitialValues(newInitialValues);
                                 formik.setErrors({});
                                 formik.setTouched({});
                             } else {
+                                // TODO: check if multiple tabs changed
                                 const { activeTab } = variables;
                                 const fieldVariable = variables[activeTab];
                                 if (activeTab === VRF) {
                                     // @ts-ignore
-                                    newValues[activeTab] = fieldVariable;
+                                    newInitialValues[activeTab] = fieldVariable;
                                 } else {
                                     const newFieldValue = (
                                         fieldVariable as
@@ -144,9 +141,10 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
                                             | Partial<VarType>[]
                                     )?.filter(value => !value.to_delete);
                                     // @ts-ignore
-                                    newValues[activeTab] = newFieldValue;
+                                    newInitialValues[activeTab] = newFieldValue;
                                 }
-                                setInitialValues(newValues);
+
+                                setInitialValues(newInitialValues);
                                 const newErrors: FormikErrors<SupplyChainFormData> =
                                     { ...formik.errors };
                                 delete newErrors[activeTab];
@@ -158,6 +156,18 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
                                 delete newTouched.saveAll;
                                 delete newTouched.activeTab;
                                 formik.setTouched(newTouched);
+
+                                const updatedChangedTabs =
+                                    variables.changedTabs.filter(
+                                        changedTab => changedTab !== activeTab,
+                                    );
+                                const newValues = { ...newInitialValues };
+                                updatedChangedTabs.forEach(updated => {
+                                    newValues[updated] = formik.values[updated];
+                                });
+                                newValues.changedTabs =
+                                    formik.values.changedTabs;
+                                formik.setValues(newValues);
                             }
                         }
                     },
@@ -167,7 +177,15 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
                 },
             );
         },
-        [dispatch, formik, router.params.id, saveForm, values],
+        [
+            dispatch,
+            formik,
+            initialValues,
+            router.params.id,
+            saveForm,
+            setInitialValues,
+            values,
+        ],
     );
     const onChangeTab = useCallback(
         (_event, newTab) => {
@@ -204,17 +222,16 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
 
     // Using formik's enableReinitialize would cause touched, errors etc to reset when changing tabs
     // So we set values with useEffect once data has been fetched.
-    // We only want to effect to run when data is fetched, so we can limoit the deps in the array to the fecthed data
-    // To avoid infinite loops
     useEffect(() => {
         if (arrivalReports) {
             setFieldValue('arrival_reports', arrivalReports.arrival_reports);
-            // set InitialValues so we can compare with form values and enables/disabel dave button accordingly
+            // set InitialValues so we can compare with form values and enable/disable save button accordingly
             setInitialValues({
-                ...initialValues,
                 arrival_reports: arrivalReports.arrival_reports,
             });
         }
+        // We only want to effect to run when data is fetched, so we can limoit the deps in the array to the fecthed data
+        // To avoid infinite loops
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [arrivalReports]);
     useEffect(() => {
@@ -222,10 +239,11 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
             setFieldValue('pre_alerts', preAlerts.pre_alerts);
             // set InitialValues so we can compare with form values and enables/disabel dave button accordingly
             setInitialValues({
-                ...initialValues,
                 pre_alerts: preAlerts.pre_alerts,
             });
         }
+        // We only want to effect to run when data is fetched, so we can limoit the deps in the array to the fecthed data
+        // To avoid infinite loops
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [preAlerts]);
     useEffect(() => {
@@ -233,10 +251,11 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
             setFieldValue('vrf', vrfDetails);
             // set initialValues so we can compare with form values and enables/disable save button accordingly
             setInitialValues({
-                ...initialValues,
                 vrf: vrfDetails,
             });
         }
+        // We only want to effect to run when data is fetched, so we can limoit the deps in the array to the fecthed data
+        // To avoid infinite loops
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [vrfDetails]);
 

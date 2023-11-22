@@ -3,8 +3,12 @@ import { isEqual } from 'lodash';
 
 const recursiveCheck = (state, fields): Record<string, any> => {
     if (isEqual(fields, {})) {
-        // Can be disabled because we're using Immer
-        // eslint-disable-next-line no-param-reassign
+        return fields;
+    }
+    if (fields === null || fields === undefined) {
+        return fields;
+    }
+    if (Array.isArray(fields)) {
         return fields;
     }
     const copy = { ...state };
@@ -41,8 +45,7 @@ export const recursiveReducer = (state, fieldDict): Record<string, any> => {
  * Example:
  * const [state, setState] = useObjectState(initialState)
  * setState({name: "Bond"})
- * The `dictReducer` uses immer so it's safe to use with complex objects
- * You can update nested objects as well, but it's not type safe in the sens that you can add fields to the state
+ * You can update nested objects as well, but it's not type safe in the sense that you can add fields to the state
  * that didn't previously exist
  */
 

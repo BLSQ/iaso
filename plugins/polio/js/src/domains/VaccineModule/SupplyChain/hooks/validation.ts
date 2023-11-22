@@ -4,7 +4,7 @@ import * as yup from 'yup';
 import MESSAGES from '../messages';
 
 yup.addMethod(
-    yup.string,
+    yup.mixed,
     'isNumbersArrayString',
     function isNumbersArrayString(formatMessage) {
         return this.test('isNumbersArrayString', '', (value, context) => {
@@ -12,9 +12,12 @@ yup.addMethod(
             let errorMessage;
             if (value) {
                 const regexp = /^\d*$/;
-                const valuesArray = value
-                    .split(',')
-                    .map((v: string) => v.trim());
+
+                const valuesArray = Array.isArray(value)
+                    ? value
+                    : value
+                          .split(',')
+                          .map((v: string | number) => `${v}`.trim());
                 const hasOtherChar = valuesArray.some(v => !regexp.test(v));
                 if (hasOtherChar) {
                     errorMessage = formatMessage(MESSAGES.wastageRatio);
@@ -105,7 +108,7 @@ const usePreAlertShape = () => {
             .nullable(),
         po_number: yup.string().nullable(),
         lot_numbers: yup
-            .string()
+            .mixed()
             .nullable()
             // TS can't detect the added method
             // @ts-ignore
@@ -135,7 +138,7 @@ const useArrivalReportShape = () => {
             .nullable(),
         po_number: yup.string().nullable(),
         lot_numbers: yup
-            .string()
+            .mixed()
             .nullable()
             // TS can't detect the added method
             // @ts-ignore

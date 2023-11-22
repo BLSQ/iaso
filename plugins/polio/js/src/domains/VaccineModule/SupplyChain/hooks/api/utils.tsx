@@ -31,16 +31,12 @@ export const saveTab = (
     supplyChainData?.[key]?.forEach(tabData => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { to_delete, ...dataToPass } = tabData;
-        if (key === 'pre_alerts') {
-            const { lot_numbers } = dataToPass;
-            if (!Array.isArray(lot_numbers)) {
-                const formattedLotNumbers = lot_numbers
-                    ? lot_numbers
-                          .split(',')
-                          .map((number: string) => number.trim())
-                    : undefined;
-                dataToPass.lot_numbers = formattedLotNumbers;
-            }
+        const { lot_numbers } = dataToPass;
+        if (!Array.isArray(lot_numbers)) {
+            const formattedLotNumbers = lot_numbers
+                ? lot_numbers.split(',').map((number: string) => number.trim())
+                : undefined;
+            dataToPass.lot_numbers = formattedLotNumbers;
         }
         if (tabData.id) {
             if (!to_delete) {

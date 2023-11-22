@@ -1,11 +1,10 @@
 import { useSafeIntl } from 'bluesquare-components';
 import { useMemo } from 'react';
-import { object, string, number, date, mixed } from 'yup';
+import { object, string, number, date, mixed, array } from 'yup';
 import MESSAGES from '../messages';
 
 const useVrfShape = () => {
     const { formatMessage } = useSafeIntl();
-    // return useMemo(() => {
     return object().shape({
         id: string().nullable(),
         country: number()
@@ -55,14 +54,62 @@ const useVrfShape = () => {
             .nullable(),
         comments: string().nullable(),
     });
-    // }, [formatMessage]);
+};
+
+const usePreAlertShape = () => {
+    const { formatMessage } = useSafeIntl();
+    return object().shape({
+        date_pre_alert_reception: date()
+            .typeError(formatMessage(MESSAGES.invalidDate))
+            .nullable(),
+        po_number: string().nullable(),
+        lot_numbers: string().nullable(),
+        estimated_arrival_time: date()
+            .typeError(formatMessage(MESSAGES.invalidDate))
+            .nullable(),
+        expiration_date: date()
+            .typeError(formatMessage(MESSAGES.invalidDate))
+            .nullable(),
+        doses_shipped: number()
+            .nullable()
+            .min(0, formatMessage(MESSAGES.positiveInteger))
+            .integer()
+            .typeError(formatMessage(MESSAGES.positiveInteger)),
+    });
+};
+const useArrivalReportShape = () => {
+    const { formatMessage } = useSafeIntl();
+    return object().shape({
+        arrival_report_date: date()
+            .typeError(formatMessage(MESSAGES.invalidDate))
+            .nullable(),
+        po_number: string().nullable(),
+        lot_numbers: string().nullable(),
+        expiration_date: date()
+            .typeError(formatMessage(MESSAGES.invalidDate))
+            .nullable(),
+        doses_shipped: number()
+            .nullable()
+            .min(0, formatMessage(MESSAGES.positiveInteger))
+            .integer()
+            .typeError(formatMessage(MESSAGES.positiveInteger)),
+        doses_received: number()
+            .nullable()
+            .min(0, formatMessage(MESSAGES.positiveInteger))
+            .integer()
+            .typeError(formatMessage(MESSAGES.positiveInteger)),
+    });
 };
 
 export const useSupplyChainFormValidator = () => {
     const vrf = useVrfShape();
+    const preAlert = usePreAlertShape();
+    const arrivalReport = useArrivalReportShape();
     return useMemo(() => {
         return object().shape({
             vrf,
+            pre_alerts: array().of(preAlert),
+            arrival_reports: array().of(arrivalReport),
         });
-    }, [vrf]);
+    }, [vrf, preAlert, arrivalReport]);
 };

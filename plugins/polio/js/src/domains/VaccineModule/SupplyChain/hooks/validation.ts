@@ -1,76 +1,125 @@
 import { useSafeIntl } from 'bluesquare-components';
 import { useMemo } from 'react';
-import { object, string, number, date, mixed, array } from 'yup';
+import * as yup from 'yup';
 import MESSAGES from '../messages';
+
+yup.addMethod(
+    yup.string,
+    'isNumbersArrayString',
+    function isNumbersArrayString(formatMessage) {
+        return this.test('isNumbersArrayString', '', (value, context) => {
+            const { path, createError } = context;
+            let errorMessage;
+            if (value) {
+                const regexp = /^\d*$/;
+                const valuesArray = value
+                    .split(',')
+                    .map((v: string) => v.trim());
+                const hasOtherChar = valuesArray.some(v => !regexp.test(v));
+                if (hasOtherChar) {
+                    errorMessage = formatMessage(MESSAGES.wastageRatio);
+                }
+            }
+
+            if (errorMessage) {
+                return createError({
+                    path,
+                    message: errorMessage,
+                });
+            }
+            return true;
+        });
+    },
+);
 
 const useVrfShape = () => {
     const { formatMessage } = useSafeIntl();
-    return object().shape({
-        id: string().nullable(),
-        country: number()
+    return yup.object().shape({
+        id: yup.string().nullable(),
+        country: yup
+            .number()
             .required()
             .nullable()
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
-        campaign: string().required().nullable(),
-        vaccine_type: string().required().nullable(),
-        rounds: mixed().nullable().required(),
-        date_vrf_signature: date()
+        campaign: yup.string().required().nullable(),
+        vaccine_type: yup.string().required().nullable(),
+        rounds: yup.mixed().nullable().required(),
+        date_vrf_signature: yup
+            .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
-        quantities_ordered_in_doses: number()
+        quantities_ordered_in_doses: yup
+            .number()
             .nullable()
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
-        wastage_rate_used_on_vrf: number()
+        wastage_rate_used_on_vrf: yup
+            .number()
             .nullable()
             .min(0, formatMessage(MESSAGES.positiveNumber)),
-        date_vrf_reception: date()
+        date_vrf_reception: yup
+            .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
-        date_vrf_submission_orpg: date()
+        date_vrf_submission_orpg: yup
+            .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
-        quantities_approved_by_orpg_in_doses: number()
+        quantities_approved_by_orpg_in_doses: yup
+            .number()
             .nullable()
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
-        date_rrt_orpg_approval: date()
+        date_rrt_orpg_approval: yup
+            .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
-        date_vrf_submission_dg: date()
+        date_vrf_submission_dg: yup
+            .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
-        quantities_approved_by_dg_in_doses: number()
+        quantities_approved_by_dg_in_doses: yup
+            .number()
             .nullable()
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
-        date_dg_approval: date()
+        date_dg_approval: yup
+            .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
-        comments: string().nullable(),
+        comments: yup.string().nullable(),
     });
 };
 
 const usePreAlertShape = () => {
     const { formatMessage } = useSafeIntl();
-    return object().shape({
-        date_pre_alert_reception: date()
+    return yup.object().shape({
+        date_pre_alert_reception: yup
+            .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
-        po_number: string().nullable(),
-        lot_numbers: string().nullable(),
-        estimated_arrival_time: date()
+        po_number: yup.string().nullable(),
+        lot_numbers: yup
+            .string()
+            .nullable()
+            // TS can't detect the added method
+            // @ts-ignore
+            .isNumbersArrayString(formatMessage),
+        estimated_arrival_time: yup
+            .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
-        expiration_date: date()
+        expiration_date: yup
+            .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
-        doses_shipped: number()
+        doses_shipped: yup
+            .number()
             .nullable()
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
@@ -79,21 +128,30 @@ const usePreAlertShape = () => {
 };
 const useArrivalReportShape = () => {
     const { formatMessage } = useSafeIntl();
-    return object().shape({
-        arrival_report_date: date()
+    return yup.object().shape({
+        arrival_report_date: yup
+            .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
-        po_number: string().nullable(),
-        lot_numbers: string().nullable(),
-        expiration_date: date()
+        po_number: yup.string().nullable(),
+        lot_numbers: yup
+            .string()
+            .nullable()
+            // TS can't detect the added method
+            // @ts-ignore
+            .isNumbersArrayString(formatMessage),
+        expiration_date: yup
+            .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
-        doses_shipped: number()
+        doses_shipped: yup
+            .number()
             .nullable()
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
-        doses_received: number()
+        doses_received: yup
+            .number()
             .nullable()
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
@@ -106,10 +164,10 @@ export const useSupplyChainFormValidator = () => {
     const preAlert = usePreAlertShape();
     const arrivalReport = useArrivalReportShape();
     return useMemo(() => {
-        return object().shape({
+        return yup.object().shape({
             vrf,
-            pre_alerts: array().of(preAlert),
-            arrival_reports: array().of(arrivalReport),
+            pre_alerts: yup.array().of(preAlert),
+            arrival_reports: yup.array().of(arrivalReport),
         });
     }, [vrf, preAlert, arrivalReport]);
 };

@@ -10,7 +10,7 @@ type Props = { className?: string; items?: any[] };
 const emptyArrivalReport = {
     report_date: undefined,
     po_number: undefined,
-    lot_number: undefined,
+    lot_numbers: undefined,
     expiration_date: undefined,
     doses_shipped: undefined,
     doses_received: undefined,

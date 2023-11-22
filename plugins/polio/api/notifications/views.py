@@ -1,14 +1,16 @@
+from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.response import Response
 
 from django.db.models import F
 from django.http import FileResponse
 
 from plugins.polio.api.notifications.filters import NotificationFilter
 from plugins.polio.api.notifications.permissions import HasNotificationPermission
-from plugins.polio.api.notifications.serializers import NotificationSerializer
-from plugins.polio.models import Notification, NotificationImport
+from plugins.polio.api.notifications.serializers import NotificationSerializer, NotificationImportSerializer
+from plugins.polio.models import Notification, NotificationImport, create_polio_notifications_async
 
 
 class NotificationPagination(LimitOffsetPagination):
@@ -32,3 +34,11 @@ class NotificationViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["get"])
     def download_sample_xlsx(self, request):
         return FileResponse(open(NotificationImport.XLSX_TEMPLATE_PATH, "rb"))
+
+    @action(detail=False, methods=["post"])
+    def import_xlsx(self, request):
+        serializer = NotificationImportSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        notification_import = serializer.save()
+        create_polio_notifications_async(pk=notification_import.pk, user=request.user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)

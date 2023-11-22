@@ -1,6 +1,15 @@
 from rest_framework import serializers
 
-from plugins.polio.models import Notification
+from plugins.polio.models import Notification, NotificationImport
+
+
+class NotificationImportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NotificationImport
+        fields = ["id", "account", "file", "created_by"]
+        extra_kwargs = {
+            "id": {"read_only": True},
+        }
 
 
 class NotificationSerializer(serializers.ModelSerializer):

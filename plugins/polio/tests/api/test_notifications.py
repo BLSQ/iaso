@@ -1,15 +1,64 @@
 import datetime
+import os
+import shutil
 import time_machine
+from unittest import mock
 
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.test import override_settings
 from django.utils import timezone
 
-from plugins.polio.api.notifications.serializers import NotificationSerializer
-from plugins.polio.models import Notification
+from hat import settings
+from plugins.polio.api.notifications.serializers import NotificationSerializer, NotificationImportSerializer
+from plugins.polio.models import Notification, NotificationImport
 from iaso.test import APITestCase, TestCase
 from iaso import models as m
 
 
 DT = datetime.datetime(2023, 11, 21, 11, 0, 0, 0, tzinfo=timezone.utc)
+
+TEST_MEDIA_ROOT = os.path.join(settings.BASE_DIR, "media/_test")
+XLSX_FILE_PATH = "plugins/polio/tests/fixtures/linelist_notification_test.xlsx"
+
+
+@override_settings(MEDIA_ROOT=TEST_MEDIA_ROOT)
+@time_machine.travel(DT, tick=False)
+class NotificationImportSerializerTestCase(TestCase):
+    """
+    Test NotificationImportSerializer.
+    """
+
+    @classmethod
+    def tearDownClass(cls):
+        try:
+            shutil.rmtree(TEST_MEDIA_ROOT)
+        except FileNotFoundError:
+            pass
+        super().tearDownClass()
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.data_source = m.DataSource.objects.create(name="Data Source")
+        cls.source_version = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
+        cls.account = m.Account.objects.create(name="Account", default_version=cls.source_version)
+        cls.user = cls.create_user_with_profile(username="user", account=cls.account)
+
+    def test_deserialize_notification_import(self):
+        with open(XLSX_FILE_PATH, "rb") as xlsx_file:
+            data = {
+                "account": self.account.pk,
+                "file": SimpleUploadedFile("notifications.xlsx", xlsx_file.read()),
+                "created_by": self.user.pk,
+            }
+            serializer = NotificationImportSerializer(data=data)
+
+        self.assertTrue(serializer.is_valid())
+        notification_import = serializer.save()
+        self.assertEqual(notification_import.account, self.account)
+        self.assertEqual(notification_import.created_by, self.user)
+        self.assertEqual(notification_import.created_at, DT)
+        self.assertIn("notifications.xlsx", notification_import.file.name)
+        self.assertEqual(notification_import.created_at, DT)
 
 
 @time_machine.travel(DT, tick=False)
@@ -128,11 +177,20 @@ class NotificationSerializerTestCase(TestCase):
         self.assertEqual(notification.created_at, DT)
 
 
+@override_settings(MEDIA_ROOT=TEST_MEDIA_ROOT)
 @time_machine.travel(DT, tick=False)
 class NotificationViewSetTestCase(APITestCase):
     """
     Test NotificationViewSet.
     """
+
+    @classmethod
+    def tearDownClass(cls):
+        try:
+            shutil.rmtree(TEST_MEDIA_ROOT)
+        except FileNotFoundError:
+            pass
+        super().tearDownClass()
 
     @classmethod
     def setUpTestData(cls):
@@ -251,8 +309,25 @@ class NotificationViewSetTestCase(APITestCase):
         self.notification1.refresh_from_db()
         self.assertEqual(self.notification1.vdpv_category, Notification.VdpvCategories.WPV1)
 
-    def test_download_sample_xlsx(self):
+    def test_action_download_sample_xlsx(self):
         self.client.force_authenticate(self.user)
         response = self.client.get("/api/polio/notifications/download_sample_xlsx/")
         self.assertEqual(response.status_code, 200)
         self.assertEquals(response.get("Content-Disposition"), 'inline; filename="notifications_template.xlsx"')
+
+    @mock.patch("plugins.polio.api.notifications.views.create_polio_notifications_async")
+    def test_action_import_xlsx(self, mocked_create_polio_notifications_async):
+        self.client.force_authenticate(self.user)
+        with open(XLSX_FILE_PATH, "rb") as xlsx_file:
+            data = {"account": self.account.pk, "file": xlsx_file, "created_by": self.user.pk}
+            response = self.client.post(
+                f"/api/polio/notifications/import_xlsx/",
+                data=data,
+                format="multipart",
+                HTTP_ACCEPT="application/json",
+            )
+        self.assertJSONResponse(response, 201)
+        self.assertTrue(mocked_create_polio_notifications_async.called)
+        notification_import = NotificationImport.objects.get(pk=response.data["id"])
+        self.assertEqual(notification_import.account, self.account)
+        self.assertEqual(notification_import.created_by, self.user)

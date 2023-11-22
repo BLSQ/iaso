@@ -109,16 +109,16 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                         </Box>
                     </Grid>
 
-                    {/* <Grid item xs={6} md={3}>
+                    <Grid item xs={6} md={3}>
                         <Box>
                             <Field
-                                label={formatMessage(MESSAGES.doses_received)}
-                                name={`pre_alerts[${index}].doses_received`}
+                                label={formatMessage(MESSAGES.doses_per_vial)}
+                                name={`pre_alerts[${index}].doses_per_vial`}
                                 component={NumberInput}
                                 disabled={markedForDeletion}
                             />
                         </Box>
-                    </Grid> */}
+                    </Grid>
                 </Grid>
             </Paper>
             {/* Box is necessay to avoid bad tooltip placement */}

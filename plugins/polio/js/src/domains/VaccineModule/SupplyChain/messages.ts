@@ -234,6 +234,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.invalidDate',
         defaultMessage: 'Date is invalid',
     },
+    doses_per_vial: {
+        id: 'iaso.polio.form.doses_per_vial',
+        defaultMessage: 'Doses per vial',
+    },
 });
 
 export default MESSAGES;

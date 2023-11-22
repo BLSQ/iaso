@@ -13,7 +13,7 @@ const emptyPreAlert = {
     estimated_arrival_time: undefined,
     expiration_date: undefined,
     doses_shipped: undefined,
-    doses_per_vial: undefined,
+    doses_per_vial: 20,
     lot_numbers: undefined,
     id: undefined,
 };

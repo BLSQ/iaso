@@ -250,3 +250,9 @@ class NotificationViewSetTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.notification1.refresh_from_db()
         self.assertEqual(self.notification1.vdpv_category, Notification.VdpvCategories.WPV1)
+
+    def test_download_sample_xlsx(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get("/api/polio/notifications/download_sample_xlsx/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEquals(response.get("Content-Disposition"), 'inline; filename="notifications_template.xlsx"')

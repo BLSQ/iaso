@@ -1080,6 +1080,8 @@ class NotificationImport(models.Model):
     This model stores .xlsx files and use them to populate `Notification`.
     """
 
+    XLSX_TEMPLATE_PATH = "plugins/polio/fixtures/notifications_template.xlsx"
+
     EXPECTED_XLSX_COL_NAMES = [
         "EPID_NUMBER",
         "VDPV_CATEGORY",

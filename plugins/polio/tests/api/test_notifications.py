@@ -77,27 +77,27 @@ class NotificationSerializerTestCase(TestCase):
             serializer.data,
             {
                 "epid_number": "ANG-HUI-CUV-19-002",
-                "vdpv_category": "cvdpv2",
-                "source": "accute_flaccid_paralysis",
+                "vdpv_category": Notification.VdpvCategories.CVDPV2,
+                "source": Notification.Sources.AFP,
                 "vdpv_nucleotide_diff_sabin2": "7nt",
                 "lineage": "CHA-NDJ-1",
                 "closest_match_vdpv2": "ENV-CHA-NDJ-CEN-CPR-19-02",
                 "date_of_onset": "2023-11-10",
                 "date_results_received": "2023-11-19",
-                "site_name": "ELIZANDRA ELSANone",
-                "created_at": "2023-11-21T11:00:00Z",
-                "updated_at": None,
                 "district": "CUVANGO",
                 "province": "HUILA",
                 "country": "ANGOLA",
+                "site_name": "ELIZANDRA ELSANone",
+                "created_at": "2023-11-21T11:00:00Z",
+                "updated_at": None,
             },
         )
 
     def test_deserialize_notification(self):
         data = {
             "epid_number": "ANG-HUI-CUV-19-002",
-            "vdpv_category": "cvdpv2",
-            "source": "accute_flaccid_paralysis",
+            "vdpv_category": Notification.VdpvCategories.CVDPV2,
+            "source": Notification.Sources.AFP,
             "vdpv_nucleotide_diff_sabin2": "7nt",
             "lineage": "CHA-NDJ-1",
             "closest_match_vdpv2": "ENV-CHA-NDJ-CEN-CPR-19-02",
@@ -116,6 +116,7 @@ class NotificationSerializerTestCase(TestCase):
         notification = Notification.objects.get(epid_number=data["epid_number"])
         self.assertEqual(notification.vdpv_category, Notification.VdpvCategories.CVDPV2)
         self.assertEqual(notification.source, Notification.Sources.AFP)
+        self.assertEqual(notification.vdpv_nucleotide_diff_sabin2, "7nt")
         self.assertEqual(notification.lineage, "CHA-NDJ-1")
         self.assertEqual(notification.closest_match_vdpv2, "ENV-CHA-NDJ-CEN-CPR-19-02")
         self.assertEqual(notification.date_of_onset, datetime.date(2023, 11, 10))
@@ -200,9 +201,52 @@ class NotificationViewSetTestCase(APITestCase):
         response = self.client.get("/api/polio/notifications/")
         self.assertJSONResponse(response, 403)
 
-    def test_list_with_auth(self):
+    def test_list(self):
         self.client.force_authenticate(self.user)
         with self.assertNumQueries(4):
             response = self.client.get("/api/polio/notifications/")
             self.assertJSONResponse(response, 200)
             self.assertEqual(2, response.data["count"])
+
+    def test_get(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get(f"/api/polio/notifications/{self.notification1.pk}/")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.data["epid_number"], self.notification1.epid_number)
+
+    def test_post(self):
+        self.client.force_authenticate(self.user)
+        data = {
+            "epid_number": "ANG-HUI-CUV-19-003",
+            "vdpv_category": Notification.VdpvCategories.VDPV,
+            "source": Notification.Sources.ENV,
+            "vdpv_nucleotide_diff_sabin2": "",
+            "lineage": "",
+            "closest_match_vdpv2": "",
+            "date_of_onset": None,
+            "date_results_received": None,
+            "site_name": "",
+            "account": self.account.pk,
+            "org_unit": self.district_cuvango.pk,
+            "created_by": self.user.pk,
+        }
+        response = self.client.post("/api/polio/notifications/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+        notification = Notification.objects.get(epid_number=data["epid_number"])
+        self.assertEqual(notification.created_by, self.user)
+
+    def test_delete(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.delete(f"/api/polio/notifications/{self.notification1.pk}/")
+        self.assertEqual(response.status_code, 204)
+        self.assertIsNone(Notification.objects.filter(pk=self.notification1.pk).first())
+
+    def test_patch(self):
+        self.client.force_authenticate(self.user)
+        data = {
+            "vdpv_category": Notification.VdpvCategories.WPV1,
+        }
+        response = self.client.patch(f"/api/polio/notifications/{self.notification1.pk}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+        self.notification1.refresh_from_db()
+        self.assertEqual(self.notification1.vdpv_category, Notification.VdpvCategories.WPV1)

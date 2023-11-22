@@ -1037,7 +1037,7 @@ class Notification(models.Model):
     epid_number = models.CharField(max_length=50, unique=True)
     vdpv_category = models.CharField(max_length=20, choices=VdpvCategories.choices, default=VdpvCategories.AVDPV)
     source = models.CharField(max_length=50, choices=Sources.choices, default=Sources.AFP)
-    vdpv_nucleotide_diff_sabin2 = models.CharField(max_length=10)
+    vdpv_nucleotide_diff_sabin2 = models.CharField(max_length=10, blank=True)
     # Lineage possible values: NIE-ZAS-1, RDC-MAN-3, Ambiguous, etc.
     lineage = models.CharField(max_length=150, blank=True)
     closest_match_vdpv2 = models.CharField(max_length=150, blank=True)

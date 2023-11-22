@@ -19,13 +19,12 @@ class NotificationSerializer(serializers.ModelSerializer):
             "closest_match_vdpv2",
             "date_of_onset",
             "date_results_received",
-            "site_name",
-            "created_at",
-            "updated_at",
-            # Read only.
             "district",
             "province",
             "country",
+            "site_name",
+            "created_at",
+            "updated_at",
             # Write only.
             "account",
             "org_unit",

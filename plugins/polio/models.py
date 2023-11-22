@@ -992,7 +992,7 @@ class VaccinePreAlert(SoftDeletableModel):
     lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
     expiration_date = models.DateField(blank=True, null=True, default=None)
     doses_shipped = models.PositiveIntegerField(blank=True, null=True, default=None)
-
+    doses_per_vial = models.PositiveIntegerField(blank=True, null=True, default=None)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

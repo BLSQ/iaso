@@ -981,6 +981,17 @@ class VaccineAuthorization(SoftDeletableModel):
         return f"{self.country}-{self.expiration_date}"
 
 
+class NotificationManager(models.Manager):
+    def get_countries_for_account(self, account: Account) -> QuerySet[OrgUnit]:
+        """
+        Returns a queryset of unique countries used in notifications for the given account.
+        """
+        countries_pk = self.filter(account=account, org_unit__version_id=account.default_version_id).values_list(
+            "org_unit__parent__parent__id", flat=True
+        )
+        return OrgUnit.objects.filter(pk__in=countries_pk).defer("geom", "simplified_geom").order_by("name")
+
+
 class Notification(models.Model):
     """
     List of notifications of polio virus outbreaks.
@@ -1051,6 +1062,8 @@ class Notification(models.Model):
     # `import_*` fields are populated when the data come from an .xlsx file.
     import_source = models.ForeignKey("NotificationImport", null=True, blank=True, on_delete=models.SET_NULL)
     import_raw_data = models.JSONField(null=True, blank=True, encoder=DjangoJSONEncoder)
+
+    objects = NotificationManager()
 
     class Meta:
         verbose_name = _("Notification")

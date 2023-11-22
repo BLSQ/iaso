@@ -70,9 +70,9 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                     {/* TODO make list */}
                     <Grid item xs={6} md={3}>
                         <Field
-                            label={formatMessage(MESSAGES.lot_number)}
-                            name={`pre_alerts[${index}].lot_number`}
-                            component={NumberInput}
+                            label={formatMessage(MESSAGES.lot_numbers)}
+                            name={`pre_alerts[${index}].lot_numbers`}
+                            component={TextInput}
                             disabled={markedForDeletion}
                         />
                     </Grid>

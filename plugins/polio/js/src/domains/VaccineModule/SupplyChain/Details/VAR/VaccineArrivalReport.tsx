@@ -50,7 +50,7 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
                     </Grid>
                     <Grid item xs={6} md={3}>
                         <Field
-                            label={formatMessage(MESSAGES.lot_number)}
+                            label={formatMessage(MESSAGES.lot_numbers)}
                             name={`${VAR}[${index}].lot_number`}
                             component={NumberInput}
                             disabled={markedForDeletion}

@@ -21,17 +21,28 @@ import {
 } from '../../types';
 
 export const saveTab = (
-    key: string,
+    key: 'pre_alerts' | 'arrival_reports',
     supplyChainData: SupplyChainFormData,
 ): Promise<any>[] => {
     const toCreate: any = [];
     const toUpdate: any = [];
     const toDelete: any = [];
     const promises: Promise<any>[] = [];
-    supplyChainData?.[key].forEach(arrivalReport => {
+    supplyChainData?.[key]?.forEach(tabData => {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { to_delete, ...dataToPass } = arrivalReport;
-        if (arrivalReport.id) {
+        const { to_delete, ...dataToPass } = tabData;
+        if (key === 'pre_alerts') {
+            const { lot_numbers } = dataToPass;
+            if (!Array.isArray(lot_numbers)) {
+                const formattedLotNumbers = lot_numbers
+                    ? lot_numbers
+                          .split(',')
+                          .map((number: string) => number.trim())
+                    : undefined;
+                dataToPass.lot_numbers = formattedLotNumbers;
+            }
+        }
+        if (tabData.id) {
             if (!to_delete) {
                 toUpdate.push(dataToPass);
             } else {

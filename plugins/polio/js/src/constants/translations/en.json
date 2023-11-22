@@ -348,7 +348,7 @@
     "iaso.polio.label.latestManualRefresh": "Latest manual refresh",
     "iaso.polio.label.legend": "Legend",
     "iaso.polio.label.linksOrFilesRequired": "You need to attach at least a link or a file",
-    "iaso.polio.label.lot_number": "Lot number",
+    "iaso.polio.label.lot_numbers": "Lot numbers",
     "iaso.polio.label.lqas": "LQAS",
     "iaso.polio.label.lqasPerRegion": "Districts passing LQAS per region (based on districts found)",
     "iaso.polio.label.lqasResults": "LQAS results",

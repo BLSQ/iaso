@@ -115,8 +115,8 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
     id = serializers.IntegerField(required=True, read_only=False)
     date_pre_alert_reception = serializers.DateField(required=False)
     po_number = serializers.CharField(required=False)
-    estimated_arrival_time = serializers.DateField(required=False)
     lot_numbers = serializers.ListField(child=serializers.CharField(), required=False)
+    estimated_arrival_time = serializers.DateField(required=False)
     expiration_date = serializers.DateField(required=False)
     doses_shipped = serializers.IntegerField(required=False)
     doses_per_vial = serializers.IntegerField(required=False)
@@ -133,20 +133,33 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
 
 
 class NestedVaccineArrivalReportSerializerForPost(BasePostPatchSerializer):
-    doses_per_vial = serializers.SerializerMethodField()
+    # doses_per_vial = serializers.SerializerMethodField()
 
     class Meta:
         model = VaccineArrivalReport
-        fields = ["arrival_report_date", "doses_received", "doses_per_vial"]
+        fields = [
+            "arrival_report_date",
+            "doses_received",
+            "doses_per_vial",
+            "lot_numbers",
+            "expiration_date",
+            "doses_shipped",
+            "po_number",
+        ]
 
-    def get_doses_per_vial(self, obj):
-        return DOSES_PER_VIAL[obj.request_form.vaccine_type]
+    # def get_doses_per_vial(self, obj):
+    #     return DOSES_PER_VIAL[obj.request_form.vaccine_type]
 
 
 class NestedVaccineArrivalReportSerializerForPatch(NestedVaccineArrivalReportSerializerForPost):
     id = serializers.IntegerField(required=True, read_only=False)
     arrival_report_date = serializers.DateField(required=False)
+    expiration_date = serializers.DateField(required=False)
+    po_number = serializers.CharField(required=False)
+    lot_numbers = serializers.ListField(child=serializers.CharField(), required=False)
     doses_received = serializers.IntegerField(required=False)
+    doses_shipped = serializers.IntegerField(required=False)
+    doses_per_vial = serializers.IntegerField(required=False)
 
     class Meta(NestedVaccineArrivalReportSerializerForPost.Meta):
         fields = NestedVaccineArrivalReportSerializerForPost.Meta.fields + ["id"]

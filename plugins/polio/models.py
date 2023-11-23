@@ -1004,8 +1004,13 @@ class VaccinePreAlert(SoftDeletableModel):
 
 class VaccineArrivalReport(SoftDeletableModel):
     request_form = models.ForeignKey(VaccineRequestForm, on_delete=models.CASCADE)
-    arrival_report_date = models.DateField()  # prepolutated from pre_alert.estimated_arrival_time
-    doses_received = models.PositiveIntegerField()  # prepolulated from pre_alert.doses_received
+    arrival_report_date = models.DateField()
+    doses_received = models.PositiveIntegerField()
+    po_number = models.CharField(max_length=200, blank=True, null=True, default=None)
+    lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
+    expiration_date = models.DateField(blank=True, null=True, default=None)
+    doses_shipped = models.PositiveIntegerField(blank=True, null=True, default=None)
+    doses_per_vial = models.PositiveIntegerField(blank=True, null=True, default=None)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

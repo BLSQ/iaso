@@ -282,6 +282,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.error.pre_alertsDeleteError',
         defaultMessage: 'Could not delete pre-alert(s)',
     },
+    lotNumberError: {
+        id: 'iaso.polio.form.error.lotNumberError',
+        defaultMessage: 'Please input numbers separated by a comma',
+    },
 });
 
 export default MESSAGES;

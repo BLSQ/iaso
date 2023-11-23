@@ -34,7 +34,9 @@ export const saveTab = (
         const { lot_numbers } = dataToPass;
         if (!Array.isArray(lot_numbers)) {
             const formattedLotNumbers = lot_numbers
-                ? lot_numbers.split(',').map((number: string) => number.trim())
+                ? lot_numbers
+                      .split(',')
+                      .map((number: string) => parseInt(number.trim(), 10))
                 : undefined;
             dataToPass.lot_numbers = formattedLotNumbers;
         }

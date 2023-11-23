@@ -56,6 +56,7 @@
     "iaso.polio.error.startDateAfterExpiration": "Start date must be anterior to expiration date",
     "iaso.polio.error.vrfApiError": "Could not update VRF",
     "iaso.polio.form.doses_per_vial": "Doses per vial",
+    "iaso.polio.form.error.lotNumberError": "Please input numbers separated by a comma",
     "iaso.polio.form.fieldRequired": "This field is required",
     "iaso.polio.form.invalidDate": "Date is invalid",
     "iaso.polio.form.label.agNopvGroup": "AG/nOPV Group",

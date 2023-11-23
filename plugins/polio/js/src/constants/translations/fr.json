@@ -56,6 +56,7 @@
     "iaso.polio.error.startDateAfterExpiration": "La date de début doit être antérieur à celle d'expiration",
     "iaso.polio.error.vrfApiError": "Impossible de mettre le VRF à jour",
     "iaso.polio.form.doses_per_vial": "Doses par flacon",
+    "iaso.polio.form.error.lotNumberError": "Veuillez entrer des nombres séparés par une virgule",
     "iaso.polio.form.fieldRequired": "Ce champs est requis",
     "iaso.polio.form.invalidDate": "Date invalide",
     "iaso.polio.form.label.agNopvGroup": "Groupe AG/nOPV",

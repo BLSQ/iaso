@@ -20,7 +20,7 @@ yup.addMethod(
                           .map((v: string | number) => `${v}`.trim());
                 const hasOtherChar = valuesArray.some(v => !regexp.test(v));
                 if (hasOtherChar) {
-                    errorMessage = formatMessage(MESSAGES.wastageRatio);
+                    errorMessage = formatMessage(MESSAGES.lotNumberError);
                 }
             }
 

@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import React, { FunctionComponent } from 'react';
-import { Box, Grid, Paper, Typography } from '@material-ui/core';
+import { Box, Grid, Paper } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 import classNames from 'classnames';
 import RestoreFromTrashIcon from '@material-ui/icons/RestoreFromTrash';
@@ -54,7 +54,18 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
                             name={`${VAR}[${index}].lot_numbers`}
                             component={TextInput}
                             disabled={markedForDeletion}
+                            shrinkLabel={false}
                         />
+                    </Grid>
+                    <Grid item xs={6} md={3}>
+                        <Box>
+                            <Field
+                                label={formatMessage(MESSAGES.doses_per_vial)}
+                                name={`${VAR}[${index}].doses_per_vial`}
+                                component={NumberInput}
+                                disabled={markedForDeletion}
+                            />
+                        </Box>
                     </Grid>
                 </Grid>
                 <Grid container item xs={12} spacing={2}>
@@ -87,16 +98,6 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
                                 component={NumberInput}
                                 disabled={markedForDeletion}
                             />
-                        </Box>
-                    </Grid>
-                    <Grid item xs={6} md={3}>
-                        <Box mt={2}>
-                            <Typography variant="button">
-                                {' '}
-                                {`${formatMessage(
-                                    MESSAGES.dosesPerVial,
-                                )}: SOME NUMBER`}
-                            </Typography>
                         </Box>
                     </Grid>
                 </Grid>

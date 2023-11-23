@@ -74,6 +74,7 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                             name={`pre_alerts[${index}].lot_numbers`}
                             component={TextInput}
                             disabled={markedForDeletion}
+                            shrinkLabel={false}
                         />
                     </Grid>
                     <Grid item xs={6} md={3}>

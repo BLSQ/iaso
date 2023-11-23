@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useCallback } from 'react';
 import { Box, Grid, Typography } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
-import { useSafeIntl, useSkipEffectOnMount } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import { MultiSelect } from '../../../../../components/Inputs/MultiSelect';
 import { DateInput } from '../../../../../components/Inputs/DateInput';
@@ -14,6 +14,7 @@ import {
     useGetCountriesOptions,
 } from '../../hooks/api/vrf';
 import { useSharedStyles } from '../shared';
+import { useSkipEffectUntilValue } from '../../hooks/utils';
 
 type Props = { className?: string; vrfData: any };
 
@@ -52,23 +53,42 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
         [setFieldTouched, setFieldValue, values?.vrf?.comment, vrfDataComment],
     );
 
-    // These need to be handled via useEffect because doing it in a custom onChange function
-    // will cause the validation to be out of sync with the form state
-    // Skipping the effect onmount to avoid clearing existing values from the fields
-    useSkipEffectOnMount(() => {
+    const resetOnCountryChange = useCallback(() => {
         setFieldValue('vrf.campaign', undefined);
         setFieldValue('vrf.vaccine_type', undefined);
         setFieldValue('vrf.rounds', undefined);
-    }, [setFieldValue, values?.vrf?.country]);
-
-    useSkipEffectOnMount(() => {
+    }, [setFieldValue]);
+    const resetOnCampaignChange = useCallback(() => {
         setFieldValue('vrf.vaccine_type', undefined);
         setFieldValue('vrf.rounds', undefined);
-    }, [setFieldValue, values?.vrf?.campaign]);
-
-    useSkipEffectOnMount(() => {
+    }, [setFieldValue]);
+    const resetOnVaccineChange = useCallback(() => {
+        setFieldValue('vrf.campaign', undefined);
+        setFieldValue('vrf.vaccine_type', undefined);
         setFieldValue('vrf.rounds', undefined);
-    }, [setFieldValue, values?.vrf?.vaccine_type]);
+    }, [setFieldValue]);
+
+    useSkipEffectUntilValue(values?.vrf?.country, resetOnCountryChange);
+    useSkipEffectUntilValue(values?.vrf?.campaign, resetOnCampaignChange);
+    useSkipEffectUntilValue(values?.vrf?.vaccine_type, resetOnVaccineChange);
+
+    // These need to be handled via useEffect because doing it in a custom onChange function
+    // will cause the validation to be out of sync with the form state
+    // Skipping the effect onmount to avoid clearing existing values from the fields
+    // useSkipEffectOnMount(() => {
+    //     setFieldValue('vrf.campaign', undefined);
+    //     setFieldValue('vrf.vaccine_type', undefined);
+    //     setFieldValue('vrf.rounds', undefined);
+    // }, [setFieldValue, values?.vrf?.country]);
+
+    // useSkipEffectOnMount(() => {
+    //     setFieldValue('vrf.vaccine_type', undefined);
+    //     setFieldValue('vrf.rounds', undefined);
+    // }, [setFieldValue, values?.vrf?.campaign]);
+
+    // useSkipEffectOnMount(() => {
+    //     setFieldValue('vrf.rounds', undefined);
+    // }, [setFieldValue, values?.vrf?.vaccine_type]);
 
     return (
         <Box className={className} mb={3}>

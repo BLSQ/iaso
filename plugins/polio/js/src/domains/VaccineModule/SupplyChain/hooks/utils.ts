@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { isEqual } from 'lodash';
 import { FormikProps } from 'formik';
 import { useDispatch } from 'react-redux';
@@ -6,6 +6,7 @@ import { redirectToReplace } from '../../../../../../../../hat/assets/js/apps/Ia
 import { PREALERT, VAR, VRF } from '../constants';
 import { SupplyChainFormData, TabValue, UseHandleSubmitArgs } from '../types';
 import { makeHandleSubmit } from '../Details/utils';
+import { Optional } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 type Args = {
     formik: FormikProps<SupplyChainFormData>;
@@ -133,9 +134,32 @@ export const useInitializeValueOnFetch = ({
         if (value) {
             setFieldValue(key, value[key]);
             // set InitialValues so we can compare with form values and enables/disabel dave button accordingly
-            setInitialValues({
-                [key]: value[key],
-            });
+            if (key === VRF) {
+                setInitialValues({
+                    [key]: value,
+                });
+            } else {
+                setInitialValues({
+                    [key]: value[key],
+                });
+            }
         }
     }, [key, setFieldValue, setInitialValues, value]);
+};
+
+// Needs to be passed a useCallback, so we can have a static deps array for the internal useEffect
+export const useSkipEffectUntilValue = (
+    value: Optional<any>,
+    callback: () => void,
+): void => {
+    const watcher = useRef(undefined);
+
+    useEffect(() => {
+        if (value && !watcher.current) {
+            watcher.current = value;
+        }
+        if (value !== watcher.current) {
+            callback();
+        }
+    }, [callback, value]);
 };

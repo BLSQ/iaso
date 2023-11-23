@@ -263,11 +263,11 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Could not create arrival report(s)',
     },
     arrival_reportsUpdateError: {
-        id: 'iaso.polio.error.arrival_reportsCreateError',
+        id: 'iaso.polio.error.arrival_reportsUpdateError',
         defaultMessage: 'Could not update arrival report(s)',
     },
     arrival_reportsDeleteError: {
-        id: 'iaso.polio.error.arrival_reportsCreateError',
+        id: 'iaso.polio.error.arrival_reportsDeleteError',
         defaultMessage: 'Could not delete arrival report(s)',
     },
     pre_alertsCreateError: {

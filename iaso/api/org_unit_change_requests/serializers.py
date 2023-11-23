@@ -145,6 +145,8 @@ class OrgUnitChangeRequestRetrieveSerializer(serializers.ModelSerializer):
     new_groups = serializers.SerializerMethodField(method_name="get_new_groups")
     new_location = ThreeDimPointField()
     new_reference_instances = InstanceForChangeRequestSerializer(many=True)
+    created_at = TimestampField()
+    updated_at = TimestampField()
 
     class Meta:
         model = OrgUnitChangeRequest

@@ -100,12 +100,20 @@ export const useSaveVaccineSupplyChainForm = (): UseMutationResult<
                     if (data.pre_alerts) {
                         const { pre_alerts } = data;
 
-                        handlePromiseErrors(pre_alerts, dispatch);
+                        handlePromiseErrors({
+                            data: pre_alerts,
+                            dispatch,
+                            key: PREALERT,
+                        });
                         queryClient.invalidateQueries('preAlertDetails');
                     }
                     if (data.arrival_reports) {
                         const { arrival_reports } = data;
-                        handlePromiseErrors(arrival_reports, dispatch);
+                        handlePromiseErrors({
+                            data: arrival_reports,
+                            dispatch,
+                            key: VAR,
+                        });
                         queryClient.invalidateQueries('arrivalReportsDetails');
                     }
                     if (data.vrf) {
@@ -117,12 +125,20 @@ export const useSaveVaccineSupplyChainForm = (): UseMutationResult<
                 } else {
                     if (variables.activeTab === PREALERT && data.pre_alerts) {
                         const { pre_alerts } = data;
-                        handlePromiseErrors(pre_alerts, dispatch);
+                        handlePromiseErrors({
+                            data: pre_alerts,
+                            dispatch,
+                            key: PREALERT,
+                        });
                         queryClient.invalidateQueries('preAlertDetails');
                     }
                     if (variables.activeTab === VAR && data.arrival_reports) {
                         const { arrival_reports } = data;
-                        handlePromiseErrors(arrival_reports, dispatch);
+                        handlePromiseErrors({
+                            data: arrival_reports,
+                            dispatch,
+                            key: VAR,
+                        });
                         queryClient.invalidateQueries('arrivalReportsDetails');
                     }
                     if (variables.activeTab === VRF && data.vrf) {

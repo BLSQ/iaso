@@ -221,10 +221,7 @@ export const handleVrfPromiseErrors = (
     if (isSuccessful) {
         dispatch(
             enqueueSnackbar(
-                succesfullSnackBar(
-                    undefined,
-                    MESSAGES.defaultMutationApiSuccess,
-                ),
+                succesfullSnackBar(undefined, MESSAGES.vrfApiSuccess),
             ),
         );
     } else {
@@ -234,11 +231,7 @@ export const handleVrfPromiseErrors = (
             : vrf.value;
         dispatch(
             enqueueSnackbar(
-                errorSnackBar(
-                    undefined,
-                    MESSAGES.defaultMutationApiError,
-                    details,
-                ),
+                errorSnackBar(undefined, MESSAGES.vrfApiError, details),
             ),
         );
     }

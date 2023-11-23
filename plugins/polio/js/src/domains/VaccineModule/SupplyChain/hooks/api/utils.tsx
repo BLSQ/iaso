@@ -150,28 +150,32 @@ export const parsePromiseResults = (
     return response;
 };
 
-export const handlePromiseErrors = (
-    data: ParsedSettledPromise<any>[],
-    dispatch: Dispatch,
-): void => {
+type HandlePromiseErrorsArgs = {
+    data: ParsedSettledPromise<any>[];
+    dispatch: Dispatch;
+    key: 'pre_alerts' | 'arrival_reports';
+};
+
+export const handlePromiseErrors = ({
+    data,
+    dispatch,
+    key,
+}: HandlePromiseErrorsArgs): void => {
     const failedPromises = data.filter(item => item.status === 'rejected');
     if (failedPromises.length === 0) {
+        const messageKey = `${key}ApiSuccess`;
         dispatch(
-            enqueueSnackbar(
-                succesfullSnackBar(
-                    undefined,
-                    MESSAGES.defaultMutationApiSuccess,
-                ),
-            ),
+            enqueueSnackbar(succesfullSnackBar(key, MESSAGES[messageKey])),
         );
     } else {
         const failedEndpoints = failedPromises.map(item => item.value.message);
         if (failedEndpoints.find(msg => msg.includes('add'))) {
+            const messageKey = `${key}CreateError`;
             dispatch(
                 enqueueSnackbar(
                     errorSnackBar(
-                        undefined,
-                        MESSAGES.defaultMutationApiError,
+                        key,
+                        MESSAGES[messageKey],
                         failedPromises.find(item =>
                             item.value.message.includes('add'),
                         )?.value,
@@ -180,11 +184,13 @@ export const handlePromiseErrors = (
             );
         }
         if (failedEndpoints.find(msg => msg.includes('update'))) {
+            const messageKey = `${key}UpdateError`;
+
             dispatch(
                 enqueueSnackbar(
                     errorSnackBar(
-                        undefined,
-                        MESSAGES.defaultMutationApiError,
+                        key,
+                        MESSAGES[messageKey],
                         failedPromises.find(item =>
                             item.value.message.includes('update'),
                         )?.value,
@@ -193,11 +199,12 @@ export const handlePromiseErrors = (
             );
         }
         if (failedEndpoints.find(msg => msg.includes('delete'))) {
+            const messageKey = `${key}DeleteError`;
             dispatch(
                 enqueueSnackbar(
                     errorSnackBar(
-                        undefined,
-                        MESSAGES.defaultMutationApiError,
+                        key,
+                        MESSAGES[messageKey],
                         failedPromises.find(item =>
                             item.value.message.includes('delete'),
                         )?.value,

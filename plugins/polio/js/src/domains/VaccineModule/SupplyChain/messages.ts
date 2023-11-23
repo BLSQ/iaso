@@ -242,6 +242,46 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.pleaseCreateVrf',
         defaultMessage: 'Create VRF to unlock this tab',
     },
+    arrival_reportsApiSuccess: {
+        id: 'iaso.polio.api.arrival_reportsApiSuccess',
+        defaultMessage: 'Arrival report(s) sucessfully updated',
+    },
+    pre_alertsApiSuccess: {
+        id: 'iaso.polio.api.pre_alertsApiSuccess',
+        defaultMessage: 'Pre-alert(s) sucessfully updated',
+    },
+    vrfApiSuccess: {
+        id: 'iaso.polio.api.vrfApiSuccess',
+        defaultMessage: 'VRF sucessfully updated',
+    },
+    vrfApiError: {
+        id: 'iaso.polio.error.vrfApiError',
+        defaultMessage: 'Could not update VRF',
+    },
+    arrival_reportsCreateError: {
+        id: 'iaso.polio.error.arrival_reportsCreateError',
+        defaultMessage: 'Could not create arrival report(s)',
+    },
+    arrival_reportsUpdateError: {
+        id: 'iaso.polio.error.arrival_reportsCreateError',
+        defaultMessage: 'Could not update arrival report(s)',
+    },
+    arrival_reportsDeleteError: {
+        id: 'iaso.polio.error.arrival_reportsCreateError',
+        defaultMessage: 'Could not delete arrival report(s)',
+    },
+    pre_alertsCreateError: {
+        id: 'iaso.polio.error.pre_alertsCreateError',
+        defaultMessage: 'Could not create pre-alert(s)',
+    },
+    pre_alertsUpdateError: {
+        id: 'iaso.polio.error.pre_alertsUpdateError',
+        defaultMessage: 'Could not update pre-alert(s)',
+    },
+    pre_alertsDeleteError: {
+        id: 'iaso.polio.error.pre_alertsDeleteError',
+        defaultMessage: 'Could not delete pre-alert(s)',
+    },
 });
 
 export default MESSAGES;

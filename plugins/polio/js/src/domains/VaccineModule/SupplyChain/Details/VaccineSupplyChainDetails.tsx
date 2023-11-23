@@ -1,16 +1,9 @@
 /* eslint-disable camelcase */
-import React, { FunctionComponent, useCallback, useEffect } from 'react';
-import {
-    LoadingSpinner,
-    commonStyles,
-    useSafeIntl,
-} from 'bluesquare-components';
-import { Box, Grid, Tab, Tabs, makeStyles } from '@material-ui/core';
-import { FormikErrors, FormikProvider, useFormik } from 'formik';
-import { useDispatch } from 'react-redux';
-import { isEqual } from 'lodash';
+import React, { FunctionComponent, useCallback } from 'react';
+import { LoadingSpinner, commonStyles } from 'bluesquare-components';
+import { Box, Grid, makeStyles } from '@material-ui/core';
+import { FormikProvider, useFormik } from 'formik';
 import classnames from 'classnames';
-import { redirectToReplace } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 import { useTabs } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useTabs';
 import {
     VACCINE_SUPPLY_CHAIN,
@@ -21,55 +14,37 @@ import TopBar from '../../../../../../../../hat/assets/js/apps/Iaso/components/n
 import { useGoBack } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/useGoBack';
 import { useSaveVaccineSupplyChainForm } from '../hooks/api/useSaveSupplyChainForm';
 import { VaccineRequestForm } from './VaccineRequestForm/VaccineRequestForm';
-import MESSAGES from '../messages';
 import { PreAlerts } from './PreAlerts/PreAlerts';
 import { VaccineArrivalReports } from './VAR/VaccineArrivalReports';
 import { VaccineSupplyChainConfirmButtons } from './ConfirmButtons';
 import { useGetVrfDetails } from '../hooks/api/vrf';
 import { useGetPreAlertDetails } from '../hooks/api/preAlerts';
 import { useGetArrivalReportsDetails } from '../hooks/api/arrivalReports';
-import {
-    PreAlert,
-    SupplyChainFormData,
-    TabValue,
-    VRF as VrfType,
-    VAR as VarType,
-} from '../types';
-
+import { SupplyChainFormData, TabValue, VRF as VrfType } from '../types';
 import { PREALERT, VAR, VRF } from '../constants';
 import { useTopBarTitle } from '../hooks/useTopBarTitle';
 import { useSupplyChainFormValidator } from '../hooks/validation';
 import { useObjectState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useObjectState';
-import { TabWithInfoIcon } from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TabWithInfoIcon';
+import {
+    useEnableSaveButtons,
+    useHandleSubmit,
+    useInitializeValueOnFetch,
+    useRedirectToReplace,
+    useWatchChangedTabs,
+} from '../hooks/utils';
+import { SupplyChainTabs } from './SupplyChainTabs';
 
 type Props = { router: Router };
 
 const useStyles = makeStyles(theme => {
     return {
         ...commonStyles(theme),
-        tabIcon: {
-            position: 'relative',
-            top: 1,
-            left: theme.spacing(0.5),
-            // color: theme.palette.primary.main,
-            cursor: 'pointer',
-        },
-        tab: {
-            '& .MuiTab-wrapper': {
-                display: 'flex',
-                flexDirection: 'row-reverse',
-            },
-        },
-        tabDisabled: {
-            cursor: 'default',
-        },
     };
 });
 
 export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
     router,
 }) => {
-    const { formatMessage } = useSafeIntl();
     const goBack = useGoBack(router, VACCINE_SUPPLY_CHAIN);
     const classes: Record<string, string> = useStyles();
     const initialTab = (router.params.tab as TabValue) ?? VRF;
@@ -86,7 +61,6 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
         saveAll: false,
         changedTabs: [],
     });
-    const dispatch = useDispatch();
     const { data: vrfDetails, isFetching } = useGetVrfDetails(router.params.id);
 
     const { data: preAlerts, isFetching: isFetchingPreAlerts } =
@@ -98,113 +72,32 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
     const { mutateAsync: saveForm, isLoading: isSaving } =
         useSaveVaccineSupplyChainForm();
 
+    const title = useTopBarTitle(vrfDetails as VrfType);
+
     const validationSchema = useSupplyChainFormValidator();
 
     const formik = useFormik<SupplyChainFormData>({
         initialValues,
-        // required to enable data reresh after save
+        // required to enable data refresh after save
         enableReinitialize: true,
+        // bypassing formik's onSubmit so we can re-use a custom fucntion for save and save all
         onSubmit: () => undefined,
         validationSchema,
     });
-    const { setFieldValue, values, touched, errors, isValid, isSubmitting } =
-        formik;
+    const { setFieldValue, values } = formik;
 
-    const handleSubmit = useCallback(
-        (saveAll = false) => {
-            formik.submitForm();
-            saveForm(
-                { ...values, saveAll },
-                {
-                    onSuccess: (data, variables: SupplyChainFormData) => {
-                        // if POST request , redirect to replace
-                        if (!router.params.id) {
-                            dispatch(
-                                redirectToReplace(
-                                    VACCINE_SUPPLY_CHAIN_DETAILS,
-                                    {
-                                        id: data.vrf[0].value.id,
-                                    },
-                                ),
-                            );
-                        } else {
-                            const newInitialValues = { ...initialValues };
-                            if (variables.saveAll) {
-                                variables.changedTabs.forEach(touchedTab => {
-                                    if (touchedTab === VRF) {
-                                        newInitialValues[touchedTab] =
-                                            variables[touchedTab];
-                                    } else {
-                                        const newField = variables[
-                                            touchedTab
-                                        ]?.filter(value => !value.to_delete);
-                                        // @ts-ignore
-                                        newInitialValues[touchedTab] = newField;
-                                    }
-                                });
-                                setInitialValues(newInitialValues);
-                                formik.setErrors({});
-                                formik.setTouched({});
-                            } else {
-                                // TODO: check if multiple tabs changed
-                                const { activeTab } = variables;
-                                const fieldVariable = variables[activeTab];
-                                if (activeTab === VRF) {
-                                    // @ts-ignore
-                                    newInitialValues[activeTab] = fieldVariable;
-                                } else {
-                                    const newFieldValue = (
-                                        fieldVariable as
-                                            | Partial<PreAlert>[]
-                                            | Partial<VarType>[]
-                                    )?.filter(value => !value.to_delete);
-                                    // @ts-ignore
-                                    newInitialValues[activeTab] = newFieldValue;
-                                }
+    const isLoading =
+        isFetchingArrivalReports || isFetchingPreAlerts || isFetching;
 
-                                setInitialValues(newInitialValues);
-                                const newErrors: FormikErrors<SupplyChainFormData> =
-                                    { ...formik.errors };
-                                delete newErrors[activeTab];
-                                formik.setErrors(newErrors);
-                                const newTouched = {
-                                    ...formik.touched,
-                                };
-                                delete newTouched[activeTab];
-                                delete newTouched.saveAll;
-                                delete newTouched.activeTab;
-                                formik.setTouched(newTouched);
+    const { allowSaveAll, allowSaveTab } = useEnableSaveButtons({
+        formik,
+        isSaving,
+        initialValues,
+        tab,
+    });
 
-                                const updatedChangedTabs =
-                                    variables.changedTabs.filter(
-                                        changedTab => changedTab !== activeTab,
-                                    );
-                                const newValues = { ...newInitialValues };
-                                updatedChangedTabs.forEach(updated => {
-                                    newValues[updated] = formik.values[updated];
-                                });
-                                newValues.changedTabs =
-                                    formik.values.changedTabs;
-                                formik.setValues(newValues);
-                            }
-                        }
-                    },
-                    onSettled: () => {
-                        formik.setSubmitting(false);
-                    },
-                },
-            );
-        },
-        [
-            dispatch,
-            formik,
-            initialValues,
-            router.params.id,
-            saveForm,
-            setInitialValues,
-            values,
-        ],
-    );
+    const redirect = useRedirectToReplace();
+
     const onChangeTab = useCallback(
         (_event, newTab) => {
             handleChangeTab(_event, newTab);
@@ -215,130 +108,51 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
     const onCancel = useCallback(() => {
         formik.resetForm();
     }, [formik]);
-    // TODO refine enabled condition
-    const title = useTopBarTitle(vrfDetails as VrfType);
-    const allowSaveAll =
-        isValid &&
-        !isSaving &&
-        !isSubmitting &&
-        !isEqual(formik.touched, {}) &&
-        (!isEqual(initialValues[VRF], values[VRF]) ||
-            !isEqual(initialValues[PREALERT], values[PREALERT]) ||
-            !isEqual(initialValues[VAR], values[VAR]));
 
-    const isTabTouched = Boolean(touched[tab]);
-    const isTabValid = !errors[tab];
-    const allowSaveTab =
-        isTabTouched &&
-        isTabValid &&
-        !isSaving &&
-        !isSubmitting &&
-        !isEqual(initialValues[tab], values[tab]);
-
-    const isLoading =
-        isFetchingArrivalReports || isFetchingPreAlerts || isFetching;
+    // eslint-disable-next-line no-unused-vars
+    const handleSubmit: (saveAll?: boolean | undefined) => void =
+        useHandleSubmit({
+            formik,
+            router,
+            initialValues,
+            setInitialValues,
+            saveForm,
+            redirect,
+        });
 
     // Using formik's enableReinitialize would cause touched, errors etc to reset when changing tabs
-    // So we set values with useEffect once data has been fetched.
-    useEffect(() => {
-        if (arrivalReports) {
-            setFieldValue('arrival_reports', arrivalReports.arrival_reports);
-            // set InitialValues so we can compare with form values and enable/disable save button accordingly
-            setInitialValues({
-                arrival_reports: arrivalReports.arrival_reports,
-            });
-        }
-        // We only want to effect to run when data is fetched, so we can limoit the deps in the array to the fecthed data
-        // To avoid infinite loops
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [arrivalReports]);
-    useEffect(() => {
-        if (preAlerts) {
-            setFieldValue('pre_alerts', preAlerts.pre_alerts);
-            // set InitialValues so we can compare with form values and enables/disabel dave button accordingly
-            setInitialValues({
-                pre_alerts: preAlerts.pre_alerts,
-            });
-        }
-        // We only want to effect to run when data is fetched, so we can limoit the deps in the array to the fecthed data
-        // To avoid infinite loops
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [preAlerts]);
-    useEffect(() => {
-        if (vrfDetails) {
-            setFieldValue('vrf', vrfDetails);
-            // set initialValues so we can compare with form values and enables/disable save button accordingly
-            setInitialValues({
-                vrf: vrfDetails,
-            });
-        }
-        // We only want to effect to run when data is fetched, so we can limoit the deps in the array to the fecthed data
-        // To avoid infinite loops
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [vrfDetails]);
+    // So we set values with useEffect once data has been fetched in these custom hooks
 
-    // defining the booleans here to avoid having formik.values as dependency of useEffect, which would cause an infinite loop
-    const vrfChanged = !isEqual(initialValues[VRF], values[VRF]);
-    const preAlertsChanged = !isEqual(
-        initialValues[PREALERT],
-        values[PREALERT],
-    );
-    const arrivalReportsChanged = !isEqual(initialValues[VAR], values[VAR]);
+    useInitializeValueOnFetch({
+        key: VRF,
+        value: vrfDetails,
+        setFieldValue,
+        setInitialValues,
+    });
+    useInitializeValueOnFetch({
+        key: PREALERT,
+        value: preAlerts,
+        setFieldValue,
+        setInitialValues,
+    });
+    useInitializeValueOnFetch({
+        key: VAR,
+        value: arrivalReports,
+        setFieldValue,
+        setInitialValues,
+    });
 
     // list changed tabs to avoid patching unchanged tabs
-    useEffect(() => {
-        const changedTabs: TabValue[] = [];
-        if (vrfChanged) {
-            changedTabs.push(VRF);
-        }
-        if (preAlertsChanged) {
-            changedTabs.push(PREALERT);
-        }
-        if (arrivalReportsChanged) {
-            changedTabs.push(VAR);
-        }
-        setFieldValue('changedTabs', changedTabs);
-    }, [preAlertsChanged, setFieldValue, arrivalReportsChanged, vrfChanged]);
+    useWatchChangedTabs({ initialValues, values, setFieldValue });
 
     return (
         <FormikProvider value={formik}>
             <TopBar title={title} displayBackButton goBack={goBack}>
-                <Tabs
-                    value={tab}
-                    classes={{
-                        root: classes.tabs,
-                        indicator: classes.indicator,
-                    }}
-                    onChange={onChangeTab}
-                >
-                    <Tab
-                        key={VRF}
-                        value={VRF}
-                        label={formatMessage(MESSAGES[VRF])}
-                    />
-                    <TabWithInfoIcon
-                        key={PREALERT}
-                        value={PREALERT}
-                        title={formatMessage(MESSAGES[PREALERT])}
-                        // disable if no saved VRF to avoid users trying to save prealert before vrf
-                        disabled={!vrfDetails}
-                        hasTabError={false}
-                        handleChange={onChangeTab}
-                        showIcon={!vrfDetails}
-                        tooltipMessage={formatMessage(MESSAGES.pleaseCreateVrf)}
-                    />
-                    <TabWithInfoIcon
-                        key={VAR}
-                        value={VAR}
-                        title={formatMessage(MESSAGES[VAR])}
-                        // disable if no saved VRF to avoid users trying to save VAR before vrf
-                        disabled={!vrfDetails}
-                        hasTabError={false}
-                        handleChange={onChangeTab}
-                        showIcon={!vrfDetails}
-                        tooltipMessage={formatMessage(MESSAGES.pleaseCreateVrf)}
-                    />
-                </Tabs>
+                <SupplyChainTabs
+                    tab={tab}
+                    onChangeTab={onChangeTab}
+                    disabled={!vrfDetails}
+                />
             </TopBar>
             <Box className={classnames(classes.containerFullHeightPadded)}>
                 {isLoading && <LoadingSpinner />}

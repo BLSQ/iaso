@@ -1,9 +1,13 @@
 /* eslint-disable camelcase */
+import React from 'react';
+import { FormikProps } from 'formik';
+import { UseMutateAsyncFunction } from 'react-query';
 import { Vaccine } from '../../../constants/types';
 import {
     DropdownOptions,
     Optional,
 } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
 
 export type TabValue = 'vrf' | 'arrival_reports' | 'pre_alerts';
 
@@ -82,4 +86,14 @@ export type CampaignDropdowns = {
     vaccines: DropdownOptions<string>[];
     rounds: DropdownOptions<string>[];
     isFetching: boolean;
+};
+
+export type UseHandleSubmitArgs = {
+    formik: FormikProps<SupplyChainFormData>;
+    router: Router;
+    initialValues: SupplyChainFormData;
+    setInitialValues: React.Dispatch<SupplyChainFormData>;
+    saveForm: UseMutateAsyncFunction<any, any, unknown, unknown>;
+    // eslint-disable-next-line no-unused-vars
+    redirect: (url: string, options: Record<string, string>) => void;
 };

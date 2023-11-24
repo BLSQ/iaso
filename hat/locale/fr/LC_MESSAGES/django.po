@@ -63,10 +63,10 @@ msgid "Submit"
 msgstr "Envoyer"
 
 #: hat/templates/iaso/reset_password_confirmation.html:16
-msgid "The password reset link is invalid, possibly because it has already been used or expired. Please request "
-msgstr "Le lien de réinitialisation du mot de passe n'est pas valide, peut-être parce qu'il a déjà été utilisé ou a expiré. Veuillez demander "
-msgid "a new password reset."
-msgstr " une nouvelle réinitialisation du mot de passe."
+msgid "The password reset link is invalid, possibly because it has already been used or expired. Please request a new password reset by clicking on this "
+msgstr "Le lien de réinitialisation du mot de passe n'est pas valide, peut-être parce qu'il a déjà été utilisé ou a expiré. Veuillez demander une nouvelle réinitialisation de mot de passe en cliquant sur ce "
+msgid "link."
+msgstr "lien."
 
 #: hat/templates/iaso/forgot_password.html:10
 #: hat/templates/iaso/forgot_password_confirmation.html:10

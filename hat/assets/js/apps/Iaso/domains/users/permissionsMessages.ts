@@ -85,7 +85,7 @@ const PERMISSIONS_MESSAGES = defineMessages({
     },
     iaso_pages: {
         id: 'iaso.permissions.pages',
-        defaultMessage: 'Web pages management',
+        defaultMessage: 'Web embedded links management - Read only',
     },
     iaso_pages_tooltip: {
         id: 'iaso.permissions.tooltip.pages',

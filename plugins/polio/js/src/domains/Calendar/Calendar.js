@@ -17,20 +17,18 @@ import TopBar from 'Iaso/components/nav/TopBarComponent';
 import domToPdf from 'dom-to-pdf';
 import { CampaignsCalendar } from './campaignCalendar';
 import { getCampaignColor } from '../../constants/campaignsColors';
-import { CalendarMap } from './campaignCalendar/map/CalendarMap';
+import { CalendarMap } from './campaignCalendar/map/CalendarMap.tsx';
 import {
     mapCampaigns,
     filterCampaigns,
     getCalendarData,
 } from './campaignCalendar/utils';
 
-import {
-    dateFormat,
-    defaultOrder,
-} from './campaignCalendar/constants';
+import { dateFormat, defaultOrder } from './campaignCalendar/constants';
 import { useGetCampaigns } from '../Campaigns/hooks/api/useGetCampaigns.ts';
 import MESSAGES from '../../constants/messages';
 import { Filters } from './campaignCalendar/Filters';
+import { ExportCsvModal } from './ExportCsvModal.tsx';
 
 const pageWidth = 1980;
 
@@ -107,7 +105,7 @@ const Calendar = ({ params }) => {
         const element = document.getElementById('pdf');
         const options = {
             filename: 'calendar.pdf',
-            excludeClassNames: ['createPDF', 'createXlsx'],
+            excludeClassNames: ['createPDF', 'createXlsx', 'createCsv'],
             overrideWidth: pageWidth,
         };
 
@@ -172,7 +170,6 @@ const Calendar = ({ params }) => {
                 <Box
                     className={classnames(
                         classes.containerFullHeightNoTabPadded,
-                        isPdf && classes.isPdf,
                         !isPdf && classes.isNotPdf,
                     )}
                 >
@@ -185,7 +182,6 @@ const Calendar = ({ params }) => {
                             />
                         </Box>
                     )}
-
                     <Grid
                         container
                         spacing={1}
@@ -252,6 +248,19 @@ const Calendar = ({ params }) => {
                             />
                         </Grid>
                     </Grid>
+                    <Grid
+                        container
+                        spacing={1}
+                        display="flex"
+                        justifyContent="flex-end"
+                    >
+                        <Grid item>
+                            <Box display="flex" justifyContent="flex-end">
+                                <ExportCsvModal params={params} />
+                            </Box>
+                        </Grid>
+                    </Grid>
+                    ;
                 </Box>
             </div>
         </div>

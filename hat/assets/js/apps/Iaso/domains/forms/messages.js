@@ -6,7 +6,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.title',
     },
     pages: {
-        defaultMessage: 'Pages',
+        defaultMessage: 'Embedded links',
         id: 'iaso.pages.title',
     },
     detailTitle: {
@@ -625,6 +625,10 @@ const MESSAGES = defineMessages({
     validation_status: {
         id: 'iaso.forms.validation_status',
         defaultMessage: 'Status',
+    },
+    instance_defining: {
+        id: 'iaso.forms.instance_defining',
+        defaultMessage: 'Instance definition',
     },
 });
 

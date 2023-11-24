@@ -122,7 +122,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.polio',
     },
     pages: {
-        defaultMessage: 'Pages',
+        defaultMessage: 'Embedded links',
         id: 'iaso.label.pages',
     },
     planning: {

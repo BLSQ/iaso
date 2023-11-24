@@ -290,6 +290,8 @@ class OrgUnit(TreeModel):
     updated_at = models.DateTimeField(auto_now=True)
     creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
 
+    opening_date = models.DateField(blank=True, null=True)  # Start date of activities of the organisation unit
+    closed_date = models.DateField(blank=True, null=True)  # End date of activities of the organisation unit
     objects = OrgUnitManager.from_queryset(OrgUnitQuerySet)()  # type: ignore
 
     class Meta:
@@ -415,6 +417,8 @@ class OrgUnit(TreeModel):
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "version": self.version.number if self.version else None,
+            "opening_date": self.opening_date.strftime("%d/%m/%Y") if self.opening_date else None,
+            "closed_date": self.closed_date.strftime("%d/%m/%Y") if self.closed_date else None,
         }
 
         if hasattr(self, "search_index"):
@@ -447,6 +451,8 @@ class OrgUnit(TreeModel):
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "creator": get_creator_name(self.creator),
+            "opening_date": self.opening_date.strftime("%d/%m/%Y") if self.opening_date else None,
+            "closed_date": self.closed_date.strftime("%d/%m/%Y") if self.closed_date else None,
         }
         if not light:  # avoiding joins here
             res["groups"] = [group.as_dict(with_counts=False) for group in self.groups.all()]
@@ -474,6 +480,8 @@ class OrgUnit(TreeModel):
             "source_ref": self.source_ref,
             "parent": self.parent.as_small_dict() if self.parent else None,
             "org_unit_type_name": self.org_unit_type.name if self.org_unit_type else None,
+            "opening_date": self.opening_date.strftime("%d/%m/%Y") if self.opening_date else None,
+            "closed_date": self.closed_date.strftime("%d/%m/%Y") if self.closed_date else None,
         }
         if hasattr(self, "search_index"):
             res["search_index"] = self.search_index
@@ -615,6 +623,8 @@ class OrgUnitChangeRequest(models.Model):
     # `new_location_accuracy` is only used to help decision-making during validation: is the accuracy
     # good enough to change the location? The field doesn't exist on `OrgUnit`.
     new_location_accuracy = models.DecimalField(decimal_places=2, max_digits=7, blank=True, null=True)
+    new_opening_date = models.DateField(blank=False, null=True)
+    new_closed_date = models.DateField(blank=True, null=True)
     new_reference_instances = models.ManyToManyField("Instance", blank=True)
 
     # Stores approved fields (only a subset can be approved).
@@ -642,6 +652,7 @@ class OrgUnitChangeRequest(models.Model):
         super().clean()
         self.approved_fields = list(set(self.approved_fields))
         self.clean_approved_fields()
+        self.clean_new_dates()
 
     @property
     def requested_fields(self) -> typing.List[str]:
@@ -662,6 +673,10 @@ class OrgUnitChangeRequest(models.Model):
         for name in self.approved_fields:
             if name not in self.get_new_fields():
                 raise ValidationError({"approved_fields": f"Value {name} is not a valid choice."})
+
+    def clean_new_dates(self) -> None:
+        if (self.new_opening_date and self.new_closed_date) and (self.new_closed_date <= self.new_opening_date):
+            raise ValidationError("Closing date must be later than opening date.")
 
     def reject(self, user: User, rejection_comment: str) -> None:
         self.reviewed_at = timezone.now()

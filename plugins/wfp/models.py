@@ -6,10 +6,10 @@ from plugins.wfp.models import *
 GENDERS = [("Male", _("Male")), ("Female", _("Female"))]
 
 EXIT_TYPES = [
-    ("DEATH", _("Death")),
-    ("CURED", _("Cured")),
-    ("DISMISSED_DUE_TO_CHEATING", _("Dismissal")),
-    ("VOLUNTARY_WITH_DRAWAL", _("Voluntary Withdrawal")),
+    ("death", _("Death")),
+    ("cured", _("Cured")),
+    ("dismissed_due_to_cheating", _("Dismissal")),
+    ("voluntary_with_drawal", _("Voluntary Withdrawal")),
 ]
 
 NUTRITION_PROGRAMMES = [("TSFP", _("TSFP")), ("OTP", _("OTP"))]
@@ -20,7 +20,7 @@ ADMISSION_CRITERIAS = [("muac", _("MUAC")), ("whz", _("WHZ")), ("oedema", _("OED
 
 ADMISSION_TYPES = [
     ("new_case", _("new case")),
-    ("new_respondant", _("New respondant")),
+    ("readmission_as_non_respondent", _("New respondant")),
     ("referred_from_otp_sam", _("Referred from OTP (SAM)")),
     ("referred_from_sc", _("Referred from SC")),
     ("referred_from_tsfp_mam", _("Referred from TSFP (MAM)")),

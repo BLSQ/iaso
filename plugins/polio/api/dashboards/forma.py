@@ -217,24 +217,34 @@ def fetch_and_match_forma_data(country_id=None):
 
 def get_forma_scope_df(campaigns):
     scope_dfs = []
-    one_year_ago = datetime.utcnow() - timedelta(weeks=52)
     for campaign in campaigns:
-        for round in campaign.rounds.filter(started_at__gte=one_year_ago):
+        for round in campaign.rounds.all():
             districts = campaign.get_districts_for_round_qs(round)
 
             if districts.count() == 0:
                 logger.info(f"skipping {campaign}, no scope")
                 continue
-            facilities = OrgUnit.objects.filter(parent__in=districts).filter(validation_status="VALID")
-            regions = (
-                OrgUnit.objects.filter(OrgUnit.objects.parents_q(districts))
-                .filter(path__depth=2)
+            facilities = (
+                OrgUnit.objects.filter(org_unit_type__category="HF")
+                .filter(version=campaign.account.default_version)
+                .filter(parent__in=districts)
                 .filter(validation_status="VALID")
+                .defer("geom", "simplified_geom")
+            )
+            regions = (
+                OrgUnit.objects.filter(version=campaign.account.default_version)
+                .filter(OrgUnit.objects.parents_q(districts))
+                .filter(org_unit_type__category="REGION")
+                .filter(validation_status="VALID")
+                .defer("geom", "simplified_geom")
             )
             countries = (
-                OrgUnit.objects.filter(OrgUnit.objects.parents_q(districts))
-                .filter(path__depth=1)
+                OrgUnit.objects.filter(version=campaign.account.default_version)
+                .filter(version=campaign.account.default_version)
+                .filter(OrgUnit.objects.parents_q(districts))
+                .filter(org_unit_type__category="COUNTRY")
                 .filter(validation_status="VALID")
+                .defer("geom", "simplified_geom")
             )
 
             for ous in [districts, facilities, regions, countries]:

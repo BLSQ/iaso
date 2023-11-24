@@ -358,6 +358,15 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                     loading={isLoadingValidationStatusOptions}
                 />
 
+                <DatesRange
+                    keyDateFrom="opening_date"
+                    keyDateTo="closed_date"
+                    onChangeDate={handleChange}
+                    dateFrom={filters?.opening_date}
+                    dateTo={filters?.closed_date}
+                    labelFrom={MESSAGES.openingDate}
+                    labelTo={MESSAGES.closingDate}
+                />
                 {currentTab === 'map' && (
                     <>
                         <Divider />

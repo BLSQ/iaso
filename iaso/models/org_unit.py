@@ -623,6 +623,8 @@ class OrgUnitChangeRequest(models.Model):
     # `new_location_accuracy` is only used to help decision-making during validation: is the accuracy
     # good enough to change the location? The field doesn't exist on `OrgUnit`.
     new_location_accuracy = models.DecimalField(decimal_places=2, max_digits=7, blank=True, null=True)
+    new_opening_date = models.DateField(blank=False, null=True)
+    new_closed_date = models.DateField(blank=True, null=True)
     new_reference_instances = models.ManyToManyField("Instance", blank=True)
 
     # Stores approved fields (only a subset can be approved).
@@ -650,6 +652,7 @@ class OrgUnitChangeRequest(models.Model):
         super().clean()
         self.approved_fields = list(set(self.approved_fields))
         self.clean_approved_fields()
+        self.clean_new_dates()
 
     @property
     def requested_fields(self) -> typing.List[str]:
@@ -670,6 +673,10 @@ class OrgUnitChangeRequest(models.Model):
         for name in self.approved_fields:
             if name not in self.get_new_fields():
                 raise ValidationError({"approved_fields": f"Value {name} is not a valid choice."})
+
+    def clean_new_dates(self) -> None:
+        if (self.new_opening_date and self.new_closed_date) and (self.new_closed_date <= self.new_opening_date):
+            raise ValidationError("Closing date must be later than opening date.")
 
     def reject(self, user: User, rejection_comment: str) -> None:
         self.reviewed_at = timezone.now()

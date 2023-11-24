@@ -1036,6 +1036,7 @@ class VaccineArrivalReport(SoftDeletableModel):
 
     objects = DefaultSoftDeletableManager()
 
+
 class Notification(models.Model):
     """
     List of notifications of polio virus outbreaks.

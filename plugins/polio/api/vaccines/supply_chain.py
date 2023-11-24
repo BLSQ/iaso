@@ -227,6 +227,7 @@ class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = VaccineRequestForm
         fields = [
+            "id",
             "campaign",
             "vaccine_type",
             "rounds",
@@ -258,6 +259,7 @@ class VaccineRequestFormDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = VaccineRequestForm
         fields = [
+            "id",
             "campaign",
             "vaccine_type",
             "rounds",

@@ -25,7 +25,9 @@ nav:
   - Home: index.md
   - Users: 
     - References:
-      - ./pages/users/reference/user_guide/user_guide.md
+      - User guides:
+        - ./pages/users/reference/user_guide/user_guide.md
+        - ./pages/users/reference/user_guide_mobile/user_guide_mobile.md
       - Interoperability road map:
         - ./pages/users/reference/interop/interop.md
       - How to:

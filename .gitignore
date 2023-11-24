@@ -180,5 +180,6 @@ venv
 /lib/**/*
 pyvenv.cfg
 originals
+!docs/build
 
 *.code-workspace

@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>iaso.api package &mdash; Iaso dev docs  documentation</title>
+      <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../../" id="documentation_options" src="../../../../_static/documentation_options.js"></script>
+        <script src="../../../../_static/jquery.js"></script>
+        <script src="../../../../_static/underscore.js"></script>
+        <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../../../_static/doctools.js"></script>
+        <script src="../../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            Iaso dev docs
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">iaso.api package</a><ul>
+<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#iaso-api-accounts-module">iaso.api.accounts module</a></li>
+<li><a class="reference internal" href="#iaso-api-algorithms-module">iaso.api.algorithms module</a></li>
+<li><a class="reference internal" href="#iaso-api-algorithms-runs-module">iaso.api.algorithms_runs module</a></li>
+<li><a class="reference internal" href="#iaso-api-bulk-create-users-module">iaso.api.bulk_create_users module</a></li>
+<li><a class="reference internal" href="#iaso-api-check-version-module">iaso.api.check_version module</a></li>
+<li><a class="reference internal" href="#iaso-api-comment-module">iaso.api.comment module</a></li>
+<li><a class="reference internal" href="#iaso-api-common-module">iaso.api.common module</a></li>
+<li><a class="reference internal" href="#iaso-api-completeness-module">iaso.api.completeness module</a></li>
+<li><a class="reference internal" href="#iaso-api-completeness-stats-module">iaso.api.completeness_stats module</a></li>
+<li><a class="reference internal" href="#iaso-api-data-sources-module">iaso.api.data_sources module</a></li>
+<li><a class="reference internal" href="#iaso-api-derived-instances-module">iaso.api.derived_instances module</a></li>
+<li><a class="reference internal" href="#iaso-api-devices-module">iaso.api.devices module</a></li>
+<li><a class="reference internal" href="#iaso-api-devices-ownership-module">iaso.api.devices_ownership module</a></li>
+<li><a class="reference internal" href="#iaso-api-devices-position-module">iaso.api.devices_position module</a></li>
+<li><a class="reference internal" href="#iaso-api-dhis2-resources-module">iaso.api.dhis2_resources module</a></li>
+<li><a class="reference internal" href="#iaso-api-enketo-module">iaso.api.enketo module</a></li>
+<li><a class="reference internal" href="#iaso-api-entity-module">iaso.api.entity module</a></li>
+<li><a class="reference internal" href="#iaso-api-export-requests-module">iaso.api.export_requests module</a></li>
+<li><a class="reference internal" href="#iaso-api-feature-flags-module">iaso.api.feature_flags module</a></li>
+<li><a class="reference internal" href="#iaso-api-form-versions-module">iaso.api.form_versions module</a></li>
+<li><a class="reference internal" href="#iaso-api-forms-module">iaso.api.forms module</a></li>
+<li><a class="reference internal" href="#iaso-api-groups-module">iaso.api.groups module</a></li>
+<li><a class="reference internal" href="#iaso-api-hesabu-descriptors-module">iaso.api.hesabu_descriptors module</a></li>
+<li><a class="reference internal" href="#iaso-api-instance-filters-module">iaso.api.instance_filters module</a></li>
+<li><a class="reference internal" href="#iaso-api-instances-module">iaso.api.instances module</a></li>
+<li><a class="reference internal" href="#iaso-api-links-module">iaso.api.links module</a></li>
+<li><a class="reference internal" href="#iaso-api-logs-module">iaso.api.logs module</a></li>
+<li><a class="reference internal" href="#iaso-api-mapping-versions-module">iaso.api.mapping_versions module</a></li>
+<li><a class="reference internal" href="#iaso-api-mappings-module">iaso.api.mappings module</a></li>
+<li><a class="reference internal" href="#iaso-api-microplanning-module">iaso.api.microplanning module</a></li>
+<li><a class="reference internal" href="#iaso-api-org-unit-search-module">iaso.api.org_unit_search module</a></li>
+<li><a class="reference internal" href="#iaso-api-org-units-module">iaso.api.org_units module</a></li>
+<li><a class="reference internal" href="#iaso-api-pages-module">iaso.api.pages module</a></li>
+<li><a class="reference internal" href="#iaso-api-periods-module">iaso.api.periods module</a></li>
+<li><a class="reference internal" href="#iaso-api-permissions-module">iaso.api.permissions module</a></li>
+<li><a class="reference internal" href="#iaso-api-profiles-module">iaso.api.profiles module</a></li>
+<li><a class="reference internal" href="#iaso-api-query-params-module">iaso.api.query_params module</a></li>
+<li><a class="reference internal" href="#iaso-api-reports-module">iaso.api.reports module</a></li>
+<li><a class="reference internal" href="#iaso-api-serializers-module">iaso.api.serializers module</a></li>
+<li><a class="reference internal" href="#iaso-api-setup-account-module">iaso.api.setup_account module</a></li>
+<li><a class="reference internal" href="#iaso-api-source-versions-module">iaso.api.source_versions module</a></li>
+<li><a class="reference internal" href="#iaso-api-source-versions-serializers-module">iaso.api.source_versions_serializers module</a></li>
+<li><a class="reference internal" href="#iaso-api-storage-module">iaso.api.storage module</a></li>
+<li><a class="reference internal" href="#module-contents">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">Iaso dev docs</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">iaso.api package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/pages/api/generated/iaso/iaso.api.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="iaso-api-package">
+<h1>iaso.api package<a class="headerlink" href="#iaso-api-package" title="Permalink to this heading"></a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="iaso.api.apps.html">iaso.api.apps package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="iaso.api.apps.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iaso.api.apps.html#iaso-api-apps-serializers-module">iaso.api.apps.serializers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iaso.api.apps.html#iaso-api-apps-viewsets-module">iaso.api.apps.viewsets module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iaso.api.apps.html#module-contents">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="iaso.api.auth.html">iaso.api.auth package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="iaso.api.auth.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iaso.api.auth.html#iaso-api-auth-authentication-module">iaso.api.auth.authentication module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iaso.api.auth.html#module-contents">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="iaso.api.mobile.html">iaso.api.mobile package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="iaso.api.mobile.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iaso.api.mobile.html#iaso-api-mobile-entity-module">iaso.api.mobile.entity module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iaso.api.mobile.html#iaso-api-mobile-entity-type-module">iaso.api.mobile.entity_type module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iaso.api.mobile.html#iaso-api-mobile-org-units-module">iaso.api.mobile.org_units module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iaso.api.mobile.html#iaso-api-mobile-reports-module">iaso.api.mobile.reports module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iaso.api.mobile.html#iaso-api-mobile-storage-module">iaso.api.mobile.storage module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iaso.api.mobile.html#module-contents">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="iaso.api.org_unit_types.html">iaso.api.org_unit_types package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="iaso.api.org_unit_types.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iaso.api.org_unit_types.html#iaso-api-org-unit-types-serializers-module">iaso.api.org_unit_types.serializers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iaso.api.org_unit_types.html#iaso-api-org-unit-types-viewsets-module">iaso.api.org_unit_types.viewsets module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iaso.api.org_unit_types.html#module-contents">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="iaso.api.projects.html">iaso.api.projects package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="iaso.api.projects.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iaso.api.projects.html#iaso-api-projects-serializers-module">iaso.api.projects.serializers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iaso.api.projects.html#iaso-api-projects-viewsets-module">iaso.api.projects.viewsets module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iaso.api.projects.html#module-contents">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="iaso.api.tasks.html">iaso.api.tasks package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="iaso.api.tasks.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="iaso.api.tasks.create.html">iaso.api.tasks.create package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="iaso.api.tasks.create.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iaso.api.tasks.create.html#iaso-api-tasks-create-copy-version-module">iaso.api.tasks.create.copy_version module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iaso.api.tasks.create.html#iaso-api-tasks-create-dhis2-ou-importer-module">iaso.api.tasks.create.dhis2_ou_importer module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iaso.api.tasks.create.html#iaso-api-tasks-create-import-gpkg-module">iaso.api.tasks.create.import_gpkg module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iaso.api.tasks.create.html#iaso-api-tasks-create-org-units-bulk-update-module">iaso.api.tasks.create.org_units_bulk_update module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="iaso.api.tasks.create.html#module-contents">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="iaso.api.tasks.html#module-contents">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="iaso.api.workflows.html">iaso.api.workflows package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="iaso.api.workflows.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iaso.api.workflows.html#iaso-api-workflows-changes-module">iaso.api.workflows.changes module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iaso.api.workflows.html#iaso-api-workflows-followups-module">iaso.api.workflows.followups module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iaso.api.workflows.html#iaso-api-workflows-mobile-module">iaso.api.workflows.mobile module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iaso.api.workflows.html#iaso-api-workflows-serializers-module">iaso.api.workflows.serializers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iaso.api.workflows.html#iaso-api-workflows-utils-module">iaso.api.workflows.utils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iaso.api.workflows.html#iaso-api-workflows-versions-module">iaso.api.workflows.versions module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="iaso.api.workflows.html#module-contents">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-accounts-module">
+<h2>iaso.api.accounts module<a class="headerlink" href="#iaso-api-accounts-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-algorithms-module">
+<h2>iaso.api.algorithms module<a class="headerlink" href="#iaso-api-algorithms-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-algorithms-runs-module">
+<h2>iaso.api.algorithms_runs module<a class="headerlink" href="#iaso-api-algorithms-runs-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-bulk-create-users-module">
+<h2>iaso.api.bulk_create_users module<a class="headerlink" href="#iaso-api-bulk-create-users-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-check-version-module">
+<h2>iaso.api.check_version module<a class="headerlink" href="#iaso-api-check-version-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-comment-module">
+<h2>iaso.api.comment module<a class="headerlink" href="#iaso-api-comment-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-common-module">
+<h2>iaso.api.common module<a class="headerlink" href="#iaso-api-common-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-completeness-module">
+<h2>iaso.api.completeness module<a class="headerlink" href="#iaso-api-completeness-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-completeness-stats-module">
+<h2>iaso.api.completeness_stats module<a class="headerlink" href="#iaso-api-completeness-stats-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-data-sources-module">
+<h2>iaso.api.data_sources module<a class="headerlink" href="#iaso-api-data-sources-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-derived-instances-module">
+<h2>iaso.api.derived_instances module<a class="headerlink" href="#iaso-api-derived-instances-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-devices-module">
+<h2>iaso.api.devices module<a class="headerlink" href="#iaso-api-devices-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-devices-ownership-module">
+<h2>iaso.api.devices_ownership module<a class="headerlink" href="#iaso-api-devices-ownership-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-devices-position-module">
+<h2>iaso.api.devices_position module<a class="headerlink" href="#iaso-api-devices-position-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-dhis2-resources-module">
+<h2>iaso.api.dhis2_resources module<a class="headerlink" href="#iaso-api-dhis2-resources-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-enketo-module">
+<h2>iaso.api.enketo module<a class="headerlink" href="#iaso-api-enketo-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-entity-module">
+<h2>iaso.api.entity module<a class="headerlink" href="#iaso-api-entity-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-export-requests-module">
+<h2>iaso.api.export_requests module<a class="headerlink" href="#iaso-api-export-requests-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-feature-flags-module">
+<h2>iaso.api.feature_flags module<a class="headerlink" href="#iaso-api-feature-flags-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-form-versions-module">
+<h2>iaso.api.form_versions module<a class="headerlink" href="#iaso-api-form-versions-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-forms-module">
+<h2>iaso.api.forms module<a class="headerlink" href="#iaso-api-forms-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-groups-module">
+<h2>iaso.api.groups module<a class="headerlink" href="#iaso-api-groups-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-hesabu-descriptors-module">
+<h2>iaso.api.hesabu_descriptors module<a class="headerlink" href="#iaso-api-hesabu-descriptors-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-instance-filters-module">
+<h2>iaso.api.instance_filters module<a class="headerlink" href="#iaso-api-instance-filters-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-instances-module">
+<h2>iaso.api.instances module<a class="headerlink" href="#iaso-api-instances-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-links-module">
+<h2>iaso.api.links module<a class="headerlink" href="#iaso-api-links-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-logs-module">
+<h2>iaso.api.logs module<a class="headerlink" href="#iaso-api-logs-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-mapping-versions-module">
+<h2>iaso.api.mapping_versions module<a class="headerlink" href="#iaso-api-mapping-versions-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-mappings-module">
+<h2>iaso.api.mappings module<a class="headerlink" href="#iaso-api-mappings-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-microplanning-module">
+<h2>iaso.api.microplanning module<a class="headerlink" href="#iaso-api-microplanning-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-org-unit-search-module">
+<h2>iaso.api.org_unit_search module<a class="headerlink" href="#iaso-api-org-unit-search-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-org-units-module">
+<h2>iaso.api.org_units module<a class="headerlink" href="#iaso-api-org-units-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-pages-module">
+<h2>iaso.api.pages module<a class="headerlink" href="#iaso-api-pages-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-periods-module">
+<h2>iaso.api.periods module<a class="headerlink" href="#iaso-api-periods-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-permissions-module">
+<h2>iaso.api.permissions module<a class="headerlink" href="#iaso-api-permissions-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-profiles-module">
+<h2>iaso.api.profiles module<a class="headerlink" href="#iaso-api-profiles-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-query-params-module">
+<h2>iaso.api.query_params module<a class="headerlink" href="#iaso-api-query-params-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-reports-module">
+<h2>iaso.api.reports module<a class="headerlink" href="#iaso-api-reports-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-serializers-module">
+<h2>iaso.api.serializers module<a class="headerlink" href="#iaso-api-serializers-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-setup-account-module">
+<h2>iaso.api.setup_account module<a class="headerlink" href="#iaso-api-setup-account-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-source-versions-module">
+<h2>iaso.api.source_versions module<a class="headerlink" href="#iaso-api-source-versions-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-source-versions-serializers-module">
+<h2>iaso.api.source_versions_serializers module<a class="headerlink" href="#iaso-api-source-versions-serializers-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="iaso-api-storage-module">
+<h2>iaso.api.storage module<a class="headerlink" href="#iaso-api-storage-module" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-contents">
+<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Bluesquare.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

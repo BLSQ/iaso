@@ -61,6 +61,8 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
             "new_org_unit_type": self.new_org_unit_type,
             "new_location": Point(-2.4747713, 47.3358576, 1.3358576),
             "new_location_accuracy": "0.11",
+            "new_opening_date": datetime.date(2022, 10, 27),
+            "new_closed_date": datetime.date(2024, 10, 27),
             "approved_fields": [
                 "new_parent",
                 "new_name",
@@ -86,6 +88,8 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         self.assertEqual(change_request.new_org_unit_type, self.new_org_unit_type)
         self.assertCountEqual(change_request.new_location, kwargs["new_location"])
         self.assertEqual(change_request.new_location_accuracy, Decimal("0.11"))
+        self.assertEqual(change_request.new_opening_date, datetime.date(2022, 10, 27))
+        self.assertEqual(change_request.new_closed_date, datetime.date(2024, 10, 27))
         self.assertEqual(change_request.new_groups.count(), 1)
         self.assertEqual(change_request.new_groups.first(), self.new_group1)
         self.assertEqual(change_request.new_reference_instances.count(), 1)
@@ -99,6 +103,16 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
             change_request.clean_approved_fields()
         self.assertIn("Value foo is not a valid choice.", error.exception.messages)
 
+    def test_clean_new_dates(self):
+        change_request = m.OrgUnitChangeRequest(
+            org_unit=self.org_unit,
+            new_opening_date=datetime.date(2022, 10, 27),
+            new_closed_date=datetime.date(2021, 10, 27),
+        )
+        with self.assertRaises(ValidationError) as error:
+            change_request.clean_new_dates()
+        self.assertIn("Closing date must be later than opening date.", error.exception.messages)
+
     def test_get_new_fields(self):
         change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit)
         expected_fields = [
@@ -108,6 +122,8 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
             "new_groups",
             "new_location",
             "new_location_accuracy",
+            "new_opening_date",
+            "new_closed_date",
             "new_reference_instances",
         ]
         self.assertCountEqual(change_request.get_new_fields(), expected_fields)
@@ -139,6 +155,8 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
             new_org_unit_type=self.new_org_unit_type,
             new_location=Point(-2.4747713, 47.3358576, 1.3358576),
             new_location_accuracy=None,
+            new_opening_date=datetime.date(2023, 10, 27),
+            new_closed_date=datetime.date(2025, 10, 27),
         )
         change_request.new_groups.set([self.new_group1, self.new_group2])
         change_request.new_reference_instances.set([self.new_instance1, self.new_instance2])
@@ -149,6 +167,8 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
             "new_org_unit_type",
             "new_location",
             "new_location_accuracy",
+            "new_opening_date",
+            "new_closed_date",
             "new_groups",
             "new_reference_instances",
         ]
@@ -166,6 +186,8 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         self.assertEqual(self.org_unit.parent, self.new_parent)
         self.assertEqual(self.org_unit.org_unit_type, self.new_org_unit_type)
         self.assertEqual(self.org_unit.location, "SRID=4326;POINT Z (-2.4747713 47.3358576 1.3358576)")
+        self.assertEqual(self.org_unit.opening_date, datetime.date(2023, 10, 27))
+        self.assertEqual(self.org_unit.closed_date, datetime.date(2025, 10, 27))
         self.assertCountEqual(self.org_unit.groups.all(), [self.new_group1, self.new_group2])
         self.assertCountEqual(self.org_unit.reference_instances.all(), [self.new_instance1, self.new_instance2])
 

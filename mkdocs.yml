@@ -19,6 +19,8 @@ markdown_extensions:
   - admonition
   - toc:
       permalink: "#"
+repo_url: https://github.com/BLSQ/iaso
+edit_uri: edit/main/docs
 nav:
   - Home: index.md
   - Users: 

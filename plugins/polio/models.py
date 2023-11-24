@@ -14,7 +14,7 @@ import django.db.models.manager
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
-from django.db.models import Q, Sum,QuerySet
+from django.db.models import Q, Sum, QuerySet
 from django.db.models.expressions import RawSQL
 from django.db.models.functions import Coalesce
 from django.utils.translation import gettext as _
@@ -1022,6 +1022,8 @@ class VaccineArrivalReport(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+
 class Notification(models.Model):
     """
     List of notifications of polio virus outbreaks.

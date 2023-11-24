@@ -1,7 +1,16 @@
-import { convertValueIfDate, DateTimeCell, DateTimeCellRfc, DateCell, } from './DateTimeCell';
-import { apiDateFormats, getLocaleDateFormat, longDateFormats } from '../../utils/dates';
 import moment from 'moment';
 import { textPlaceholder } from 'bluesquare-components';
+import {
+    convertValueIfDate,
+    DateTimeCell,
+    DateTimeCellRfc,
+    DateCell,
+} from './DateTimeCell.tsx';
+import {
+    apiDateFormats,
+    getLocaleDateFormat,
+    longDateFormats,
+} from '../../utils/dates.ts';
 
 const locales = Object.keys(longDateFormats);
 
@@ -13,8 +22,10 @@ describe('DateTimeCell', () => {
 
     it('should return the formatted date if value is a timestamp', () => {
         const timestampInSeconds = Math.floor(Date.now() / 1000);
-        const cellInfo = { value: timestampInSeconds }; 
-        const date = moment.unix(timestampInSeconds).format(getLocaleDateFormat('LTS')); 
+        const cellInfo = { value: timestampInSeconds };
+        const date = moment
+            .unix(timestampInSeconds)
+            .format(getLocaleDateFormat('LTS'));
         expect(DateTimeCell(cellInfo)).to.equal(date);
     });
 });
@@ -28,7 +39,9 @@ describe('DateTimeCellRfc', () => {
         });
         it('should return the formatted date if value is a RFC 2822 or ISO 8601 date', () => {
             const cellInfo = { value: '2021-07-29T00:00:00Z' };
-            const expected = moment(cellInfo.value).format(getLocaleDateFormat('LTS'));
+            const expected = moment(cellInfo.value).format(
+                getLocaleDateFormat('LTS'),
+            );
             expect(DateTimeCellRfc(cellInfo)).to.equal(expected);
         });
     });
@@ -43,12 +56,13 @@ describe('DateCell', () => {
         });
         it('should return the formatted date if value is a timestamp', () => {
             const cellInfo = { value: 1627545600000 }; // timestamp for 2021-07-29
-            const expected = moment(cellInfo.value).format(getLocaleDateFormat('L'));
+            const expected = moment(cellInfo.value).format(
+                getLocaleDateFormat('L'),
+            );
             expect(DateCell(cellInfo)).to.equal(expected);
         });
     });
 });
-
 
 describe('convertValueIfDate', () => {
     it('should return the value if it does not match any apiDateFormat', () => {
@@ -67,7 +81,9 @@ describe('convertValueIfDate', () => {
             moment.locale(locale);
             apiDateFormats.forEach(({ apiFormat, momentFormat }) => {
                 const dateString = moment().format(apiFormat);
-                const expected = moment(dateString, apiFormat).format(momentFormat);
+                const expected = moment(dateString, apiFormat).format(
+                    momentFormat,
+                );
                 expect(convertValueIfDate(dateString)).to.equal(expected);
             });
         });
@@ -75,4 +91,3 @@ describe('convertValueIfDate', () => {
         moment.locale('en');
     });
 });
-

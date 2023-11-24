@@ -11,13 +11,13 @@ from django.db import IntegrityError, transaction
 from django.db.models import Q
 from django.http import FileResponse
 from drf_yasg.utils import swagger_auto_schema, no_body
+from iaso.utils.module_permissions import account_module_permissions
 from rest_framework import serializers, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from hat.menupermissions import models as permission
-from hat.menupermissions.constants import MODULE_PERMISSIONS
 from iaso.models import BulkCreateUserCsvFile, Profile, OrgUnit, UserRole, Project
 
 BULK_CREATE_USER_COLUMNS_LIST = [
@@ -363,14 +363,8 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
     def module_permissions(current_account):
         # Get all modules linked to the current account
         account_modules = current_account.modules if current_account.modules else []
-        # Get all permissions linked to the modules
-        modules_permissions = []
-        modules = MODULE_PERMISSIONS.keys()
-
-        for module in account_modules:
-            if module in modules:
-                modules_permissions = modules_permissions + MODULE_PERMISSIONS[module]
-        return modules_permissions
+        # Get and return all permissions linked to the modules
+        return account_module_permissions(account_modules)
 
     @swagger_auto_schema(request_body=no_body)
     @action(detail=False, methods=["get"], url_path="getsample")

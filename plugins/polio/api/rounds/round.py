@@ -30,7 +30,7 @@ class RoundSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
     scopes = RoundScopeSerializer(many=True, required=False)
-    datelogs = RoundDateHistoryEntrySerializer(many=True, required=False)
+    datelogs = RoundDateHistoryEntryForRoundSerializer(many=True, required=False)
     districts_count_calculated = serializers.IntegerField(read_only=True)
 
     # Vaccines from real scopes, from property, separated by ,

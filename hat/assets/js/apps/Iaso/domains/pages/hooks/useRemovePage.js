@@ -6,11 +6,11 @@ export const useRemovePage = () =>
     useSnackMutation(
         slug => deleteRequest(`/api/pages/${slug}`),
         defineMessage({
-            defaultMessage: 'Page successfully removed',
+            defaultMessage: 'Embedded link successfully removed',
             id: 'iaso.page.deleteSuccess',
         }),
         defineMessage({
-            defaultMessage: 'Error removing page',
+            defaultMessage: 'Error removing embedded link',
             id: 'iaso.page.deleteError',
         }),
         ['iaso', 'pages'],

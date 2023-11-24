@@ -567,6 +567,7 @@ class OrgUnitAPITestCase(APITestCase):
                 "parent_id": "",
                 "source_ref": "",
                 "creation_source": "dashboard",
+                "opening_date": "01-01-2024",
             },
         )
         self.assertJSONResponse(response, 200)
@@ -578,15 +579,35 @@ class OrgUnitAPITestCase(APITestCase):
             }
         )
 
-    def test_create_org_unit_minimal(self):
+    def test_create_org_unit_opening_date_not_anterior_to_closed_date(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
             f"/api/orgunits/create_org_unit/",
             format="json",
             data={
+                "id": None,
                 "name": "Test ou",
                 "org_unit_type_id": self.jedi_council.pk,
+                "groups": [],
+                "sub_source": "",
+                "status": False,
+                "aliases": ["my alias"],
+                "validation_status": "NEW",
+                "parent_id": "",
+                "source_ref": "",
+                "creation_source": "dashboard",
+                "opening_date": "01-01-2024",
+                "closed_date": "01-12-2023",
             },
+        )
+        self.assertJSONResponse(response, 400)
+
+    def test_create_org_unit_minimal(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            f"/api/orgunits/create_org_unit/",
+            format="json",
+            data={"name": "Test ou", "org_unit_type_id": self.jedi_council.pk, "opening_date": "01-01-2024"},
         )
 
         jr = self.assertJSONResponse(response, 200)
@@ -635,7 +656,12 @@ class OrgUnitAPITestCase(APITestCase):
         response = self.client.post(
             f"/api/orgunits/create_org_unit/",
             format="json",
-            data={"name": "Test ou", "org_unit_type_id": self.jedi_council.pk, "groups": [group.pk]},
+            data={
+                "name": "Test ou",
+                "org_unit_type_id": self.jedi_council.pk,
+                "groups": [group.pk],
+                "opening_date": "01-01-2024",
+            },
         )
         jr = self.assertJSONResponse(response, 400)
         self.assertEqual(jr[0]["errorKey"], "groups")
@@ -649,7 +675,12 @@ class OrgUnitAPITestCase(APITestCase):
         response = self.client.post(
             f"/api/orgunits/create_org_unit/",
             format="json",
-            data={"name": "Test ou", "org_unit_type_id": self.jedi_council.pk, "groups": [group.pk]},
+            data={
+                "name": "Test ou",
+                "org_unit_type_id": self.jedi_council.pk,
+                "groups": [group.pk],
+                "opening_date": "01-01-2024",
+            },
         )
         jr = self.assertJSONResponse(response, 400)
         self.assertEqual(jr[0]["errorKey"], "groups")
@@ -664,7 +695,12 @@ class OrgUnitAPITestCase(APITestCase):
         response = self.client.post(
             f"/api/orgunits/create_org_unit/",
             format="json",
-            data={"name": "Test ou", "org_unit_type_id": self.jedi_council.pk, "groups": [group_1.pk, group_2.pk]},
+            data={
+                "name": "Test ou",
+                "org_unit_type_id": self.jedi_council.pk,
+                "groups": [group_1.pk, group_2.pk],
+                "opening_date": "01-01-2024",
+            },
         )
 
         jr = self.assertJSONResponse(response, 200)
@@ -697,6 +733,7 @@ class OrgUnitAPITestCase(APITestCase):
                 "parent_id": "",
                 "source_ref": "",
                 "creation_source": "dashboard",
+                "opening_date": "01-01-2024",
             },
         )
         jr = self.assertJSONResponse(response, 200)
@@ -722,6 +759,7 @@ class OrgUnitAPITestCase(APITestCase):
                 "parent_id": "",
                 "source_ref": "",
                 "creation_source": "dashboard",
+                "opening_date": "01-01-2024",
             },
         )
         jr = self.assertJSONResponse(response, 200)
@@ -848,7 +886,7 @@ class OrgUnitAPITestCase(APITestCase):
         ou.save()
         old_modification_date = ou.updated_at
         self.client.force_authenticate(self.yoda)
-        data = {"source_ref": "new source ref"}
+        data = {"source_ref": "new source ref", "opening_date": "01-01-2024"}
         response = self.client.patch(
             f"/api/orgunits/{ou.id}/",
             format="json",
@@ -924,6 +962,7 @@ class OrgUnitAPITestCase(APITestCase):
         data["altitude"] = form_altitude
         data["latitude"] = form_latitude
         data["longitude"] = form_longitude
+        data["opening_date"] = "01-01-2024"
 
         response = self.client.patch(
             f"/api/orgunits/{org_unit.id}/",

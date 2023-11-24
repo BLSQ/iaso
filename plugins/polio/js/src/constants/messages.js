@@ -1590,6 +1590,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.exportToExcel',
         defaultMessage: 'Export to XLSX',
     },
+    downloadScopesToCsv: {
+        id: 'iaso.polio.label.downloadScopesToCsv',
+        defaultMessage: 'Download scopes',
+    },
     userWithoutTeam: {
         id: 'iaso.polio.error.label.userWithoutTeam',
         defaultMessage: 'User should be part of a team',
@@ -2479,6 +2483,10 @@ const MESSAGES = defineMessages({
     noRoundFound: {
         id: 'iaso.polio.label.noRoundFound',
         defaultMessage: 'No round found',
+    },
+    dateRangeTitle: {
+        id: 'iaso.polio.label.dateRangeTitle',
+        defaultMessage: 'Enter date range',
     },
 });
 

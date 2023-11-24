@@ -54,7 +54,7 @@ nav:
         - ./pages/dev/how_to/contribute/contribute.md 
       - Set up your dev environment:
         - ./pages/dev/how_to/setup_dev_env/setup_dev_env.md 
-      - Manually test Enketo public_create_url:
+      - Test Enketo public_create_url:
         - ./pages/dev/how_to/manually_test_enketo/manually_test_enketo.md 
       - Deploy:
         - ./pages/dev/how_to/deploy/deploy.md
@@ -62,12 +62,12 @@ nav:
         - ./pages/dev/how_to/use_iaso_apis/use_iaso_apis.md
       - Run docs locally:
         - ./pages/dev/how_to/run_docs_locally/run_docs_locally.md
-      - Write a visit on an NFC card: 
-        - ./pages/dev/how_to/write_visit_on_nfc/write_visit_on_nfc.md
+      # - Write a visit on an NFC card: 
+      #   - ./pages/dev/how_to/write_visit_on_nfc/write_visit_on_nfc.md
 
   - More about Iaso:
+    - Get a demo: https://www.bluesquarehub.com/iaso/ 
     - Bluesquare: https://www.bluesquarehub.com/
-    - Source code: https://github.com/BLSQ/iaso
 
 
 

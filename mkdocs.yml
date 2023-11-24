@@ -17,12 +17,13 @@ markdown_extensions:
   - markdown_include.include:
       base_path: .
   - admonition
+  - toc:
+      permalink: "#"
 nav:
   - Home: index.md
   - Users: 
     - References:
-      - User guide:
-        - ./pages/users/reference/user_guide/user_guide.md
+      - ./pages/users/reference/user_guide/user_guide.md
       - Interoperability road map:
         - ./pages/users/reference/interop/interop.md
       - How to:

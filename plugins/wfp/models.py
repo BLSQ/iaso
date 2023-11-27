@@ -9,7 +9,11 @@ EXIT_TYPES = [
     ("death", _("Death")),
     ("cured", _("Cured")),
     ("dismissed_due_to_cheating", _("Dismissal")),
-    ("voluntary_with_drawal", _("Voluntary Withdrawal")),
+    ("voluntary_withdrawal", _("Voluntary Withdrawal")),
+    ("transfer_to_otp", _("Transfer To OTP")),
+    ("transfer_to_tsfp", _("Transfer To TSFP")),
+    ("non_respondent", _("Non respondent")),
+    ("transferredout", _("Transferred out")),
 ]
 
 NUTRITION_PROGRAMMES = [("TSFP", _("TSFP")), ("OTP", _("OTP"))]

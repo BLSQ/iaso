@@ -26,7 +26,7 @@ class NotificationViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         account = self.request.user.iaso_profile.account
-        return Notification.objects.filter(account=account, org_unit__isnull=False).annotate(
+        return Notification.objects.filter(account=account).annotate(
             annotated_district=F("org_unit__name"),
             annotated_province=F("org_unit__parent__name"),
             annotated_country=F("org_unit__parent__parent__name"),

@@ -12,6 +12,7 @@ from django.http import HttpResponse
 from django.utils.timezone import make_aware
 from rest_framework import compat, exceptions, filters, pagination, permissions, serializers
 from rest_framework.decorators import action
+from rest_framework.exceptions import APIException
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet as BaseModelViewSet
@@ -413,3 +414,10 @@ class IsAdminOrSuperUser(permissions.BasePermission):
 
     def has_permission(self, request, view):
         return bool(request.user and request.user.is_staff) or (request.user and request.user.is_superuser)
+
+
+class Custom403Exception(APIException):
+    """This custom 403 exception is created to make use of the custom 403 snackbar handling on front-end"""
+
+    status_code = 403
+    default_detail = "Forbidden"

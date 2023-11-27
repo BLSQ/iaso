@@ -260,7 +260,7 @@ The Django model that stores "Change Requests" is `OrgUnitChangeRequest`.
     "groups": [
       {
         "id": "Int - id of the Group",
-        "name": "String - name of the Group",
+        "name": "String - name of the Group"
       }
     ],
     "location": { "": "Geopoint for the OrgUnit",
@@ -344,7 +344,7 @@ API to change the status of on change request.
 ## Permissions
 
 - User must be authenticated
-- User must have the `ORG_UNITS_CHANGE_REQUEST` permission
+- User must have the `ORG_UNITS_CHANGE_REQUEST_APPROVE` permission
 
 ## Body
 

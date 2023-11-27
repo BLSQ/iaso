@@ -268,8 +268,8 @@ The Django model that stores "Change Requests" is `OrgUnitChangeRequest`.
       "longitude": "Double - New longitude of the OrgUnit",
       "altitude": "Double - New altitude of the OrgUnit"
     },
-    "opening_date": "Timestamp",
-    "closed_date": "Timestamp",
+    "opening_date": "Timestamp?",
+    "closed_date": "Timestamp?",
     "reference_instances": [ "Array of form objects - can be empty",
       {
         "id": "Int - id in the database",
@@ -298,7 +298,7 @@ The Django model that stores "Change Requests" is `OrgUnitChangeRequest`.
     "longitude": "Double - New longitude of the OrgUnit",
     "altitude": "Double - New altitude of the OrgUnit"
   },
-  "new_location_accuracy": "Double - New accuracy of the OrgUnit",
+  "new_location_accuracy": "Double? - New accuracy of the OrgUnit",
   "new_opening_date": "Timestamp?",
   "new_closed_date": "Timestamp?",
   "new_reference_instances": [ "Array of form objects? - may be null or omitted, cannot be empty",

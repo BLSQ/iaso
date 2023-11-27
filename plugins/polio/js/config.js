@@ -17,6 +17,7 @@ import StorefrontIcon from '@material-ui/icons/Storefront';
 import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
 import ExtensionIcon from '@material-ui/icons/Extension';
 import StorageIcon from '@material-ui/icons/Storage';
+import NotificationsActiveIcon from '@material-ui/icons/NotificationsActive';
 import WatchLaterIcon from '@material-ui/icons/WatchLater';
 import { Dashboard } from './src/domains/Campaigns/Dashboard';
 import { Calendar } from './src/domains/Calendar/Calendar';
@@ -45,6 +46,7 @@ import {
     STOCK_MANAGEMENT,
     STOCK_MANAGEMENT_DETAILS,
     STOCK_VARIATION,
+    NOTIFICATIONS_BASE_URL,
 } from './src/constants/routes';
 import fr from './src/constants/translations/fr.json';
 import en from './src/constants/translations/en.json';
@@ -69,6 +71,7 @@ import {
     USABLE_VIALS,
 } from './src/domains/VaccineModule/StockManagement/constants.ts';
 import { VaccineSupplyChainDetails } from './src/domains/VaccineModule/SupplyChain/Details/VaccineSupplyChainDetails.tsx';
+import { Notifications } from './src/domains/Notifications/index.tsx';
 
 const campaignsFilters = [
     {
@@ -620,6 +623,12 @@ const routes = [
         ],
         isRootUrl: false,
     },
+    {
+        baseUrl: NOTIFICATIONS_BASE_URL,
+        component: props => <Notifications {...props} />,
+        permissions: ['iaso_polio'],
+        params: [...paginationPathParams],
+    },
 ];
 
 const menu = [
@@ -724,6 +733,12 @@ const menu = [
                         icon: props => <StorageIcon {...props} />,
                     },
                 ],
+            },
+            {
+                label: MESSAGES.notifications,
+                key: 'notifications',
+                permissions: ['iaso_polio'],
+                icon: props => <NotificationsActiveIcon {...props} />,
             },
             {
                 label: MESSAGES.configuration,

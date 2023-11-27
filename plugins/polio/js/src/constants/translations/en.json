@@ -422,6 +422,7 @@
     "iaso.polio.label.noScopeFound": "No scope was encoded for this campaign",
     "iaso.polio.label.note": "Note",
     "iaso.polio.label.notes": "Comments",
+    "iaso.polio.label.notifications": "Virus notification",
     "iaso.polio.label.numberCaregiversInformed": "Number of caregivers informed",
     "iaso.polio.label.onDate": "on {date}",
     "iaso.polio.label.ongoing": "Ongoing",

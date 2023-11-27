@@ -2480,6 +2480,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.dateRangeTitle',
         defaultMessage: 'Enter date range',
     },
+    notifications: {
+        id: 'iaso.polio.label.notifications',
+        defaultMessage: 'Notifications',
+    },
 });
 
 export default MESSAGES;

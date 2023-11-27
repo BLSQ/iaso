@@ -422,6 +422,7 @@
     "iaso.polio.label.noScopeFound": "Aucun périmètre encodé pour cette campagne",
     "iaso.polio.label.note": "Note",
     "iaso.polio.label.notes": "Commentaires",
+    "iaso.polio.label.notifications": "Notification des virus",
     "iaso.polio.label.numberCaregiversInformed": "Nombre de parents informés",
     "iaso.polio.label.onDate": "le {date}",
     "iaso.polio.label.ongoing": "En cours",

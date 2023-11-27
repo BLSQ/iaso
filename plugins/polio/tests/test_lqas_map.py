@@ -666,7 +666,9 @@ class PolioLqasAfroMapTestCase(APITestCase):
         content = json.loads(response.content)
         results = content["results"]
         self.assertEquals(len(results), 3)
-        self.assertEquals(results[0]["data"]["campaign"], self.campaign_1.obr_name)
+        # There's no guarantee on the order.
+        obr_names = [item["data"]["campaign"] for item in results]
+        self.assertIn(self.campaign_1.obr_name, obr_names)
         self.assertEquals(results[0]["data"]["round_number"], 2)
 
     def test_lqas_zoomedin_start_date_filter(self):
@@ -697,15 +699,14 @@ class PolioLqasAfroMapTestCase(APITestCase):
         results = content["results"]
         self.assertEquals(len(results), 3)
         self.assertEquals(results[0]["data"]["campaign"], self.campaign_1.obr_name)
-        # There's no guarantee on the order of the districts
-        district_name_to_check = (
-            self.district_org_unit_2.name
-            if results[0]["data"]["district_name"] == self.district_org_unit_1.name
-            else self.district_org_unit_1.name
-        )
+        # There's no guarantee on the order of districts/campaigns.
+        obr_names = [item["data"]["campaign"] for item in results]
+        district_names = [item["data"]["district_name"] for item in results]
+        self.assertIn(self.district_org_unit_1.name, district_names)
+        self.assertIn(self.district_org_unit_2.name, district_names)
+        self.assertIn(self.campaign_1.obr_name, obr_names)
+        self.assertIn(self.campaign_2.obr_name, obr_names)
         self.assertEquals(results[0]["status"], LQASStatus.Pass)
-        self.assertEquals(results[1]["data"]["campaign"], self.campaign_1.obr_name)
-        self.assertEquals(results[1]["data"]["district_name"], district_name_to_check)
         self.assertEquals(results[1]["status"], LQASStatus.Pass)
 
     def test_lqas_zoomin_round_with_end_date_filters(self):

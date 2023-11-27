@@ -2482,7 +2482,11 @@ const MESSAGES = defineMessages({
     },
     notifications: {
         id: 'iaso.polio.label.notifications',
-        defaultMessage: 'Notifications',
+        defaultMessage: 'Virus notification',
+    },
+    notificationsTitle: {
+        id: 'iaso.polio.title.notifications',
+        defaultMessage: 'Virus notification',
     },
 });
 

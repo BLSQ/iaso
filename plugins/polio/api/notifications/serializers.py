@@ -9,6 +9,7 @@ class NotificationImportSerializer(serializers.ModelSerializer):
         fields = ["id", "account", "file", "created_by"]
         extra_kwargs = {
             "id": {"read_only": True},
+            "account": {"read_only": True},
         }
 
 
@@ -32,17 +33,15 @@ class NotificationSerializer(serializers.ModelSerializer):
             "province",
             "country",
             "site_name",
-            "created_at",
-            "updated_at",
-            # Write only.
-            "account",
             "org_unit",
+            "account",
             "created_by",
+            "created_at",
             "updated_by",
+            "updated_at",
         ]
         extra_kwargs = {
-            "account": {"write_only": True},
-            "org_unit": {"write_only": True},
-            "created_by": {"write_only": True},
-            "updated_by": {"write_only": True},
+            "account": {"read_only": True},
+            "created_by": {"read_only": True},
+            "updated_by": {"read_only": True},
         }

@@ -46,14 +46,13 @@ class NotificationImportSerializerTestCase(TestCase):
     def test_deserialize_notification_import(self):
         with open(XLSX_FILE_PATH, "rb") as xlsx_file:
             data = {
-                "account": self.account.pk,
                 "file": SimpleUploadedFile("notifications.xlsx", xlsx_file.read()),
                 "created_by": self.user.pk,
             }
             serializer = NotificationImportSerializer(data=data)
 
         self.assertTrue(serializer.is_valid())
-        notification_import = serializer.save()
+        notification_import = serializer.save(account=self.account)
         self.assertEqual(notification_import.account, self.account)
         self.assertEqual(notification_import.created_by, self.user)
         self.assertEqual(notification_import.created_at, DT)
@@ -137,7 +136,11 @@ class NotificationSerializerTestCase(TestCase):
                 "province": "HUILA",
                 "country": "ANGOLA",
                 "site_name": "ELIZANDRA ELSANone",
+                "org_unit": self.district_cuvango.pk,
+                "account": self.account.pk,
+                "created_by": self.user.pk,
                 "created_at": "2023-11-21T11:00:00Z",
+                "updated_by": None,
                 "updated_at": None,
             },
         )
@@ -153,14 +156,12 @@ class NotificationSerializerTestCase(TestCase):
             "date_of_onset": "2023-11-10",
             "date_results_received": "2023-11-19",
             "site_name": "ELIZANDRA ELSANone",
-            "account": self.account.pk,
             "org_unit": self.district_cuvango.pk,
-            "created_by": self.user.pk,
         }
         serializer = NotificationSerializer(data=data)
 
         self.assertTrue(serializer.is_valid())
-        serializer.save()
+        serializer.save(account=self.account, created_by=self.user)
 
         notification = Notification.objects.get(epid_number=data["epid_number"])
         self.assertEqual(notification.vdpv_category, Notification.VdpvCategories.CVDPV2)
@@ -284,9 +285,7 @@ class NotificationViewSetTestCase(APITestCase):
             "date_of_onset": None,
             "date_results_received": None,
             "site_name": "",
-            "account": self.account.pk,
             "org_unit": self.district_cuvango.pk,
-            "created_by": self.user.pk,
         }
         response = self.client.post("/api/polio/notifications/", data=data, format="json")
         self.assertEqual(response.status_code, 201)
@@ -308,6 +307,7 @@ class NotificationViewSetTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.notification1.refresh_from_db()
         self.assertEqual(self.notification1.vdpv_category, Notification.VdpvCategories.WPV1)
+        self.assertEqual(self.notification1.updated_by, self.user)
 
     def test_action_download_sample_xlsx(self):
         self.client.force_authenticate(self.user)
@@ -319,7 +319,7 @@ class NotificationViewSetTestCase(APITestCase):
     def test_action_import_xlsx(self, mocked_create_polio_notifications_async):
         self.client.force_authenticate(self.user)
         with open(XLSX_FILE_PATH, "rb") as xlsx_file:
-            data = {"account": self.account.pk, "file": xlsx_file, "created_by": self.user.pk}
+            data = {"account": self.account.pk, "file": xlsx_file}
             response = self.client.post(
                 f"/api/polio/notifications/import_xlsx/",
                 data=data,

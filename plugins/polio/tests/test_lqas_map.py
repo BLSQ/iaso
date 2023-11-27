@@ -698,7 +698,6 @@ class PolioLqasAfroMapTestCase(APITestCase):
         content = json.loads(response.content)
         results = content["results"]
         self.assertEquals(len(results), 3)
-        self.assertEquals(results[0]["data"]["campaign"], self.campaign_1.obr_name)
         # There's no guarantee on the order of districts/campaigns.
         obr_names = [item["data"]["campaign"] for item in results]
         district_names = [item["data"]["district_name"] for item in results]

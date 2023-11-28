@@ -104,10 +104,34 @@ class ETL:
 
     def exit_type(self, visit):
         exit_type = None
-        if visit.get("reasons_not_continuing") is not None and visit.get("reasons_not_continuing") != "":
-            exit_type = visit.get("reasons_not_continuing")
-        if visit.get("reason_for_not_continuing") is not None and visit.get("reason_for_not_continuing") != "":
+        if (
+            (visit.get("_Xfinal_color_result") is not None and visit.get("_Xfinal_color_result") == "Y")
+            and (visit.get("previous_child_color") is not None and visit.get("previous_child_color") == "Y")
+            and (visit.get("_transfer_to_tsfp") is not None and visit.get("_transfer_to_tsfp") == "1")
+        ):
+            exit_type = "cured"
+        elif (
+            (visit.get("previous_whz_color") is not None and visit.get("previous_whz_color") == "R")
+            and (visit.get("_Xwhz_color") is not None and visit.get("_Xwhz_color") == "R")
+            and (visit.get("previous_muac_color") is not None and visit.get("previous_muac_color") == "R")
+            and (visit.get("_Xmuac_color") is not None and visit.get("_Xmuac_color") == "R")
+            and (visit.get("_transfer_to_tsfp") is not None and visit.get("_transfer_to_tsfp") == "1")
+        ):
+            exit_type = "transfer_to_tsfp"
+        elif visit.get("_transfer_to_otp") is not None and visit.get("_transfer_to_otp") == "1":
+            exit_type = "transfer_to_otp"
+
+        elif visit.get("reason_for_not_continuing") is not None and visit.get("reason_for_not_continuing") != "":
             exit_type = visit.get("reason_for_not_continuing")
+
+        elif visit.get("reasons_not_continuing") is not None and visit.get("reasons_not_continuing") != "":
+            exit_type = visit.get("reasons_not_continuing")
+        elif visit.get("reason_not_continue") is not None and visit.get("reason_not_continue") != "":
+            exit_type = visit.get("reason_not_continue")
+
+        elif visit.get("not_continue") is not None and visit.get("not_continue") != "":
+            exit_type = visit.get("not_continue")
+
         elif (visit.get("non_respondent") is not None and visit.get("non_respondent") == "1") or (
             visit.get("non_respondent__int__") is not None and visit.get("non_respondent__int__") == "1"
         ):
@@ -116,6 +140,11 @@ class ETL:
             visit.get("discharge_note__int__") is not None and visit.get("discharge_note__int__") == "1"
         ):
             exit_type = "cured"
+
+        if exit_type == "dismissedduetocheating":
+            exit_type = "dismissed_due_to_cheating"
+        elif exit_type == "transferredout":
+            exit_type = "transferred_out"
         return exit_type
 
     def get_admission_steps(self, steps):

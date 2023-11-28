@@ -19,13 +19,13 @@ export const useStyles = makeStyles(() => ({
         display: 'flex',
     },
     pageActions: {
-        marginBottom: theme.spacing(0),
+        marginBottom: `${theme.spacing(0)} !important`,
     },
     pageAction: {
-        marginRight: theme.spacing(1),
+        marginRight: `${theme.spacing(1)} !important`,
     },
     form: {
-        marginTop: theme.spacing(4),
+        marginTop: `${theme.spacing(4)} !important`,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'flex-start',
@@ -45,11 +45,11 @@ export const useStyles = makeStyles(() => ({
         },
     },
     round1FormCalculations: {
-        marginTop: theme.spacing(4),
-        marginBottom: theme.spacing(4),
+        marginTop: `${theme.spacing(4)} !important`,
+        marginBottom: `${theme.spacing(4)} !important`,
     },
     input: {
-        marginBottom: theme.spacing(2),
+        marginBottom: `${theme.spacing(2)} !important`,
     },
     tabs: {
         borderBottom: '1px solid rgba(0, 0, 0, 0.1)',
@@ -177,7 +177,7 @@ export const useStyles = makeStyles(() => ({
         fontWeight: 'bold',
     },
     roundColor: {
-        marginRight: theme.spacing(1),
+        marginRight: `${theme.spacing(1)} !important`,
         width: 18,
         height: 18,
         borderRadius: '100%',

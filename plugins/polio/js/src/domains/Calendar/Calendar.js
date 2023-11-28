@@ -256,7 +256,11 @@ const Calendar = ({ params }) => {
                         justifyContent="flex-end"
                     >
                         <Grid item>
-                            <Box display="flex" justifyContent="flex-end">
+                            <Box
+                                display="flex"
+                                justifyContent="flex-end"
+                                mt={2}
+                            >
                                 <ExportCsvModal params={params} />
                             </Box>
                         </Grid>

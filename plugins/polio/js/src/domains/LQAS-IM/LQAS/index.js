@@ -122,12 +122,14 @@ export const Lqas = ({ router }) => {
                 displayBackButton={false}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <Filters
-                    isFetching={isFetching}
-                    campaigns={campaigns}
-                    campaignsFetching={campaignsFetching}
-                    category="lqas"
-                />
+                <Box mb={1}>
+                    <Filters
+                        isFetching={isFetching}
+                        campaigns={campaigns}
+                        campaignsFetching={campaignsFetching}
+                        category="lqas"
+                    />
+                </Box>
                 <Grid container spacing={2} direction="row">
                     {/* {selectedRounds.map((rnd, index) => ( */}
                     <Grid item xs={6} key={`round_${selectedRounds[0]}_${0}`}>

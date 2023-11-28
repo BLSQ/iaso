@@ -73,6 +73,8 @@ const DatesRange = ({
     errors,
     blockInvalidDates,
     marginTop,
+    dateFromRequired = false,
+    dateToRequired = false,
 }) => {
     const classes = useStyles();
     const [from, setFrom] = useState(dateFrom);
@@ -113,6 +115,7 @@ const DatesRange = ({
                             autoOk
                             renderInput={props => <TextField {...props} />}
                             disableToolbar
+                            required={dateFromRequired}
                             variant="inline"
                             maxDate={
                                 dateTo === '' || dateTo === null
@@ -167,6 +170,7 @@ const DatesRange = ({
                             autoOk
                             renderInput={props => <TextField {...props} />}
                             disableToolbar
+                            required={dateToRequired}
                             inputVariant="outlined"
                             variant="inline"
                             minDate={
@@ -233,6 +237,8 @@ DatesRange.defaultProps = {
     errors: [[], []],
     blockInvalidDates: true,
     marginTop: 2,
+    dateFromRequired: false,
+    dateToRequired: false,
 };
 
 DatesRange.propTypes = {
@@ -251,6 +257,8 @@ DatesRange.propTypes = {
     errors: PropTypes.array,
     blockInvalidDates: PropTypes.bool,
     marginTop: PropTypes.number,
+    dateFromRequired: PropTypes.bool,
+    dateToRequired: PropTypes.bool,
 };
 
 const DatesRangeIntl = injectIntl(DatesRange);

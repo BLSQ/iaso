@@ -13,7 +13,7 @@ from rest_framework import status
 from rest_framework.test import APIClient
 
 from iaso import models as m
-from iaso.models import Account
+from iaso.models import Account, Team
 from iaso.test import APITestCase, TestCase
 from plugins.polio.api.campaigns.campaigns import CampaignSerializer
 from plugins.polio.api.common import CACHE_VERSION
@@ -290,6 +290,13 @@ class PolioAPITestCase(APITestCase):
         Ensure a user can only see the campaigns for an org unit (or a descendent of that org unit) that was
         previously assigned to their profile
         """
+        project = m.Project.objects.create(
+            name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics", account=self.star_wars
+        )
+
+        nopv2_team = Team.objects.create(name="NOPV2_VACCINE_TEAM_NAME", project=project, manager=self.yoda)
+
+        nopv2_team.users.set([self.yoda.pk])
 
         payload = {
             "account": self.account.pk,

@@ -303,6 +303,7 @@ class OrgUnitAPITestCase(APITestCase):
                 "parent_id": "",
                 "source_ref": "",
                 "creation_source": "dashboard",
+                "opening_date": "01-01-2024",
             },
         )
         self.assertJSONResponse(response, 200)

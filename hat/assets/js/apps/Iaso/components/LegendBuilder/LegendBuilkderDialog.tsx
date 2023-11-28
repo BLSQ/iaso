@@ -15,7 +15,7 @@ import { Box, Button } from '@material-ui/core';
 import Add from '@material-ui/icons/Add';
 import { MESSAGES } from './messages';
 import { ScaleThreshold } from './types';
-import { LegendBuilder } from './LegendBuilder';
+import { LegendBuilder } from './index';
 import { getRangeValues, getScaleThreshold } from './utils';
 
 type Props = {

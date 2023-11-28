@@ -192,7 +192,7 @@ def merge_attributes(e1: Entity, e2: Entity, new_entity_uuid: UUID, merge_def: D
     # ET.dump(root)
 
     new_xml_string = ET.tostring(root, encoding="utf-8", xml_declaration=False)
-    new_xml_content = ContentFile(new_xml_string.decode("utf-8"))
+    new_xml_content = ContentFile(new_xml_string)  # .decode("utf-8")
 
     new_file_name = f"{slugify(att1.form.name)}_{new_uuid}_merged_{e1.pk}-{e2.pk}.xml"  # type: ignore
     new_attributes = deepcopy(att1)

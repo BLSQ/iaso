@@ -11,10 +11,19 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from hat.menupermissions import models as permission
-from iaso.api.common import DeletionFilterBackend, ModelViewSet, Paginator, TimestampField
+from iaso.api.common import DeletionFilterBackend, ModelViewSet, Paginator, TimestampField, Custom403Exception
 from iaso.models import OrgUnit
 from plugins.polio.models import Group, VaccineAuthorization
 from plugins.polio.settings import COUNTRY
+
+
+def check_for_already_validated_authorization(status, country):
+    if status == "VALIDATED":
+        validated_vaccine_auth = VaccineAuthorization.objects.filter(
+            status="VALIDATED", country=country, deleted_at__isnull=True
+        )
+        if validated_vaccine_auth:
+            raise Custom403Exception({"error": f"A vaccine authorization is already validated for this country"})
 
 
 class CountryForVaccineSerializer(serializers.ModelSerializer):
@@ -70,14 +79,27 @@ class VaccineAuthorizationSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = self.context["request"].user
         validated_data["account"] = user.iaso_profile.account
-
+        status = validated_data.get("status")
         expiration_date = validated_data.get("expiration_date")
         start_date = validated_data.get("start_date")
+        country = validated_data["country"]
 
+        check_for_already_validated_authorization(status, country)
+
+        # Check validity of the dates
+        if expiration_date and expiration_date < datetime.date.today():
+            raise serializers.ValidationError({"error": "expiration_date must be a future date."})
         if start_date and start_date > expiration_date:
             raise serializers.ValidationError({"error": "start_date must be before expiration_date."})
 
         return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        if validated_data.get("status") == "VALIDATED" and instance.status != "VALIDATED":
+            country = instance.country
+            check_for_already_validated_authorization("VALIDATED", country)
+
+        return super().update(instance, validated_data)
 
 
 class HasVaccineAuthorizationsPermissions(permissions.BasePermission):

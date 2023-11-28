@@ -47,16 +47,16 @@ Systems.
 
 ### Interoperability roadmap
 
-1.  **Short-term (by end of 2023)**
+**1. Short-term (by end of 2023)**
 
--  **DHIS2 Tracker data import/export**
+- **DHIS2 Tracker data import/export**
 
 Recently, we implemented case management features in Iaso, which is
 mainly the possibility to collect and store data about individuals. One
 goal will be to further develop the integration between Iaso and DHIS2
 Tracker, to allow the import and export of data linked to individuals.
 
--  **FHIR**
+- **FHIR**
 
 In the same context as above, Bluesquare would ensure that Iaso is
 compatible with the FHIR standard for health care data exchange. That
@@ -71,7 +71,7 @@ system and here, there is a very good opportunity to adopt **OHIE**
 facility registry standards. This will be studied by the end of the year
 and implemented if we can identify a project needing the feature.
 
-2.  **Long-term (end of 2023 and beyond)**
+**2. Long-term (end of 2023 and beyond)**
 
 -  **Better sharing of documentation about Iaso**
 

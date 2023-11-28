@@ -6,7 +6,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.title',
     },
     pages: {
-        defaultMessage: 'Pages',
+        defaultMessage: 'Embedded links',
         id: 'iaso.pages.title',
     },
     detailTitle: {
@@ -633,6 +633,10 @@ const MESSAGES = defineMessages({
     createLegend: {
         defaultMessage: 'Create legend',
         id: 'iaso.forms.createLegend',
+    },
+    instance_defining: {
+        id: 'iaso.forms.instance_defining',
+        defaultMessage: 'Instance definition',
     },
 });
 

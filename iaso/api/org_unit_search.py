@@ -1,3 +1,4 @@
+from datetime import datetime
 import re
 
 from django.contrib.gis.db.models import PointField, MultiPolygonField
@@ -41,6 +42,9 @@ def build_org_units_queryset(queryset, params, profile):
 
     org_unit_type_category = params.get("orgUnitTypeCategory", None)
     path_depth = params.get("depth", None)
+
+    opening_date = params.get("opening_date", None)
+    closed_date = params.get("closed_date", None)
 
     if validation_status != "all":
         queryset = queryset.filter(validation_status=validation_status)
@@ -210,7 +214,10 @@ def build_org_units_queryset(queryset, params, profile):
 
     if path_depth is not None:
         queryset = queryset.filter(path__depth=path_depth)
-
+    if opening_date:
+        queryset = queryset.filter(opening_date=datetime.strptime(opening_date, "%d-%m-%Y").date())
+    if closed_date:
+        queryset = queryset.filter(closed_date=datetime.strptime(closed_date, "%d-%m-%Y").date())
     if not direct_children:
         queryset = queryset.exclude(pk=org_unit_parent_id)
 

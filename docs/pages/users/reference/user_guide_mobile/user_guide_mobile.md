@@ -34,92 +34,21 @@ structure.
 
 ## Quick overview of buttons
 
-<table>
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr class="header">
-<td><img src="./attachments/image108.png" style="width:0.41177in;height:0.4in" /></td>
-<td>The left arrow button in the top left corner allows you to navigate
-back to other levels in the pyramid.</td>
-</tr>
-<tr class="odd">
-<th><img src="./attachments/image79.jpg"
-style="width:0.5715in;height:0.4in" /></th>
-<th>The Home icon button brings you directly back to the homepage, you
-will see a list of all the forms you have filled out, and can filter
-them by total, unfinished, finalised, uploaded.</th>
-</tr>
-<tr class="header">
-<th><p><img src="./attachments/image2.jpg"
-style="width:0.41026in;height:0.4in" /></p>
-<h2 id="section-4" class="unnumbered"></h2>
-<h2 id="section-5" class="unnumbered"><img src="./attachments/image23.jpg"
-style="width:1.6875in;height:0.85417in" /></h2></th>
-<th>The filter icon button allows you to view only a selection of
-Organisation units depending on the type. If this is not set up, the
-only option available is to see the whole health pyramid.</th>
-</tr>
-<tr class="odd">
-<th><p><img src="./attachments/image68.png"
-style="width:0.35417in;height:0.36458in" /></p>
-<h2 id="section-6" class="unnumbered"><img src="./attachments/image56.jpg"
-style="width:2.59896in;height:2.67429in" /></h2></th>
-<th><p>The sort button allows you to sort the forms by name, period, or
-encoding date</p>
-<p>Increasing and Decreasing period = sort by date</p>
-<p>Increasing and Decreasing encoding period = sort by encoding date</p>
-<p>Increasing and Decreasing form name = sort by alphabetical
-order</p></th>
-</tr>
-<tr class="header">
-<th><img src="./attachments/image27.png"
-style="width:0.4375in;height:0.4in" /></th>
-<th>The Skip button allows you to navigate to the beginning or end of
-the form.</th>
-</tr>
-<tr class="odd">
-<th><img src="./attachments/image46.png"
-style="width:0.41333in;height:0.4in" /></th>
-<th>Save button allows you to save the data collected so far.</th>
-</tr>
-<tr class="header">
-<th><img src="./attachments/image8.png"
-style="width:0.50667in;height:0.4in" /></th>
-<th>Upload button allows you to upload data to the server. Only
-finalised forms will be uploaded.</th>
-</tr>
-<tr class="odd">
-<th><img src="./attachments/image8.png"
-style="width:0.43229in;height:0.46431in" /></th>
-<th>Orange Menu button allows you to refresh the app data and view app
-details</th>
-</tr>
-<tr class="header">
-<th><img src="./attachments/image68.png"
-style="width:0.4375in;height:0.35417in" /></th>
-<th>White Menu button allows you to edit a form that has already been
-started.</th>
-</tr>
-<tr class="odd">
-<th><img src="./attachments/image8.png"
-style="width:0.72917in;height:0.34375in" /></th>
-<th>Start button allows you to start collecting data.</th>
-</tr>
-<tr class="header">
-<th><img src="./attachments/image70.png"
-style="width:1.01042in;height:0.34375in" /></th>
-<th>Fill out form button allows you to select the form needed for the
-organisation unit you are collecting data for.</th>
-</tr>
-</thead>
-<tbody>
-</tbody>
-</table>
+|Button                                                                       | Description
+|-----------------------------------------------------------------------------|-----------------------------------------------------------------------------------|
+| <img src="./attachments/image108.png" style="width:0.41177in;height:0.4in" />   | The left arrow button in the top left corner allows you to navigate
+| <img src="./attachments/image79.jpg" style="width:0.5715in;height:0.4in" />   | The Home icon button brings you directly back to the homepage, you will see a list of all the forms you have filled out, and can filter them by total, unfinished, finalised, uploaded. 
+| <img src="./attachments/image2.jpg" style="width:0.41026in;height:0.4in" />   | The Filter icon button allows you to view only a selection of Organisation units depending on the type. If this is not set up, the only option available is to see the whole health pyramid. 
+| <img src="./attachments/image56.jpg" style="width:2.59896in;height:2.67429in" />   | The Sort button allows you to sort the forms by name period, or encoding date 
+| <img src="./attachments/image27.png" style="width:0.4375in;height:0.4in" />   | The Skip button allows you to navigate to the beginning or end of the form.
+| <img src="./attachments/image46.png" style="width:0.41333in;height:0.4in" />   | The Save button allows you to save the data collected so far.
+| <img src="./attachments/image8.png" style="width:0.50667in;height:0.4in" />   | The Upload button allows you to upload data to the server. Only finalised forms will be uploaded.
+| <img src="./attachments/image8.png" style="width:0.43229in;height:0.46431in" />   | The Orange menu button allows you to refresh the app data and view app details
+| <img src="./attachments/image68.png" style="width:0.4375in;height:0.35417in" />   | The White menu button allows you to edit a form that has already been started.
+| <img src="./attachments/image8.png" style="width:0.72917in;height:0.34375in" />   | The Start button allows you to start collecting data.
+| <img src="./attachments/image70.png" style="width:1.01042in;height:0.34375in" />   | The Fill out form button allows you to select the form needed for the organisation unit you are collecting data for.
 
-## Homepage <img src="./attachments/image118.png" style="width:0.5715in;height:0.4in" />
+## Homepage <img src="./attachments/image118.png" style="width:0.5715in;height:0.4in"/>
 
 #### List of forms
 
@@ -127,20 +56,19 @@ On the homepage are listed forms that have been accessed, either
 completed, finalised… In the case of the first use, this page will be
 blank and all filters will show “0”.
 
-<img src="./attachments/image8.png" style="width:2in;height:4.45in" />
+<img src="./attachments/image8.png" style="width:2in;height:4.45in"/>
 
 Click on the magnifying glass and type the name of a form you want to
 see.
 
-If you click on <img src="./attachments/image119.png" style="width:0.21875in;height:0.44792in" /> to the right of a form, you
+If you click on <img src="./attachments/image119.png" style="width:0.21875in;height:0.44792in"/> to the right of a form, you
 can change the time period or the organisational unit. Each org unit can
 have 1 or multiple forms attached to it. It’s possible to suggest org
 units in the field if something is missing (source of truth is backed).
 
 If you click on a form in this list, you can view it. If you click on a
 question in a form, you can change the answer. You can choose whether or
-not to save the changes when you exit the form. And at any time, you can
-click <img src="./attachments/image80.png"style="width:0.24479in;height:0.24479in" /> to save the changes and
+not to save the changes when you exit the form. And at any time, you can/> to save the changes and
 return to the Organization Unit page.
 
 ### Setting

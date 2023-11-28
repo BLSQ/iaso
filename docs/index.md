@@ -20,11 +20,9 @@ Iaso has been created by the company Bluesquare, specialised in software and ser
 
 ### Technical stack
 
-Iaso is made of a white labeled Android application using Java/Kotlin, reusing large parts of the ODK projects, and a web platform programmed using Python/GeoDjango on top of PostGIS. Frontend is mainly React/Leaflet. One of the aims is the ease of integration with other platforms. We already have csv and geopackage imports and exports and target easy integration with OSM.
+Iaso is made of a white labeled Android application using Java/Kotlin, reusing large parts of the ODK projects, and a web platform programmed using Python/GeoDjango on top of PostGIS. Frontend is mainly React/Leaflet. The APi is implemented via Django rest framework, all data is stored in Postgresql or the media/ directory. One of the aims is the ease of integration with other platforms. We already have csv and geopackage imports and exports and target easy integration with OSM.
 Structure
-
-This repository contains Iaso frontend and backend, respectively in Python Django and JS React. They interact via an API implemented via Django rest framework, all data is stored in Postgresql or the media/ directory.
 
 A companion mobile app for Android allow submitting Form and creating org unit.
 
-Form can also be filled in a web interface via the Enketo companion service. Both Iaso and Enketo need to be configured to work together. It is possible to run an Enketo service locally, see Enketo section.
+Form can also be filled in a web interface via the Enketo companion service. Both Iaso and Enketo need to be configured to work together. It is possible to run an Enketo service locally.

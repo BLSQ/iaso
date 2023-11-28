@@ -71,44 +71,43 @@ These are the steps to visualize it within the dashboard:
 
 - In ``hat/webpack.dev.js`` include a new ``entry``.
 
-  .. code:: javascript
-
-      'my_custom_app': [
-        'webpack-dev-server/client?' + WEBPACK_URL,
-        'webpack/hot/only-dev-server',
-        './assets/js/apps/MyCustomApp/index'
-      ],
-
+```javascript
+    'my_custom_app': [
+    'webpack-dev-server/client?' + WEBPACK_URL,
+    'webpack/hot/only-dev-server',
+    './assets/js/apps/MyCustomApp/index'
+    ],
+```
 
 - In ``hat/webpack.prod.js`` include a new ``entry``.
 
-  .. code:: javascript
-
-      'my_custom_app': './assets/js/apps/MyCustomApp/index',
-
+```javascript
+    'my_custom_app': './assets/js/apps/MyCustomApp/index',
+```
 
 - In ``hat/dashboard/views.py`` include a new view.
 
-  .. code:: python
+```python
+    @login_required()  # needs login?
+    @permission_required('cases.view')  # the needed permissions
+    @require_http_methods(['GET'])  # http methods allowed
+    def my_custom_app(request: HttpRequest) -> HttpResponse:
+        return render(request, 'dashboard/my_custom_app.html')
+```
 
-      @login_required()  # needs login?
-      @permission_required('cases.view')  # the needed permissions
-      @require_http_methods(['GET'])  # http methods allowed
-      def my_custom_app(request: HttpRequest) -> HttpResponse:
-          return render(request, 'dashboard/my_custom_app.html')
 
 
 - In ``hat/dashboard/urls.py`` include a new url pattern.
-
-  .. code:: python
+```python
+    url(r'^my-custom-app/.*$', views.my_custom_app, name='my_custom_app'),
+```
 
       url(r'^my-custom-app/.*$', views.my_custom_app, name='my_custom_app'),
 
 
 - In ``hat/templates/dashboard`` create a new template file ``my_custom_app.html``.
 
-  .. code:: html
-
+```html
       {% extends 'app.html' %}
       {% load i18n %}
       {% load render_bundle from webpack_loader %}
@@ -132,7 +131,7 @@ These are the steps to visualize it within the dashboard:
           )
         </script>
       {% endblock %}
-
+```
 
 Testing the production build
 ============================
@@ -151,9 +150,10 @@ that there is no need to rebuild the image for that.
 JS Unit Testing
 ---------------
 
-.. code:: shell
-
+```shell
     docker-compose run hat test_js
+```
+
 
 
 Adding new assets in package.json

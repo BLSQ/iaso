@@ -185,6 +185,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Analysis in progress',
         id: 'iaso.duplicate.analysisBusy',
     },
+    confirm: {
+        defaultMessage: 'Confirm',
+        id: 'iaso.label.confirm',
+    },
+    cancel: {
+        defaultMessage: 'Cancel',
+        id: 'iaso.label.cancel',
+    },
 });
 
 export default MESSAGES;

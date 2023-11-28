@@ -7,7 +7,7 @@ by Bluesquare to support the continuous management of geographical
 information.
 
 The tool supports data management based on master lists of generic
-geographical objects often called organizational units (“org. units”,
+geographical objects called organizational units (“org. units”),
 which are for example health areas, schools, provinces, health
 districts, or wells).
 

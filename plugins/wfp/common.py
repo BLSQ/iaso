@@ -140,12 +140,16 @@ class ETL:
             visit.get("discharge_note__int__") is not None and visit.get("discharge_note__int__") == "1"
         ):
             exit_type = "cured"
-
-        if exit_type == "dismissedduetocheating":
-            exit_type = "dismissed_due_to_cheating"
-        elif exit_type == "transferredout":
-            exit_type = "transferred_out"
+        exit_type = self.exit_type_converter(exit_type)
         return exit_type
+
+    def exit_type_converter(self, exit_type):
+        if exit_type == "dismissedduetocheating":
+            return "dismissed_due_to_cheating"
+        elif exit_type == "transferredout":
+            return "transferred_out"
+        else:
+            return exit_type
 
     def get_admission_steps(self, steps):
         step_visits = []

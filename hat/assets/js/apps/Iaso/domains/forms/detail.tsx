@@ -16,8 +16,8 @@ import {
     commonStyles,
     LoadingSpinner,
     useSafeIntl,
+    CommonStyles,
 } from 'bluesquare-components';
-import { CSSProperties } from '@material-ui/core/styles/withStyles';
 import { redirectToReplace } from '../../routing/actions';
 
 import TopBar from '../../components/nav/TopBarComponent';
@@ -45,13 +45,6 @@ interface FormDetailProps {
     params: FormParams;
 }
 
-type CommonStyles = {
-    // eslint-disable-next-line no-unused-vars
-    [key in
-        | 'containerFullHeightNoTabPadded'
-        | 'tabs'
-        | 'marginLeft']: CSSProperties;
-};
 const useStyles = makeStyles(theme => ({
     ...(commonStyles(theme) as CommonStyles),
     tabs: {

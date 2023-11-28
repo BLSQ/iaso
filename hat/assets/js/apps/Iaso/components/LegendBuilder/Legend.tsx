@@ -3,7 +3,7 @@ import { useTheme } from '@material-ui/core';
 import { scaleThreshold } from '@visx/scale';
 import { LegendThreshold, LegendItem, LegendLabel } from '@visx/legend';
 import { ScaleThreshold } from './types';
-import { useGetThresHoldLabels } from './hooks';
+import { getThresHoldLabels } from './utils';
 
 export const useGetLegend = (threshold?: ScaleThreshold): any => {
     return scaleThreshold(threshold);
@@ -16,10 +16,9 @@ type Props = {
 export const Legend: FunctionComponent<Props> = ({ threshold }) => {
     const theme = useTheme();
     const getLegend = useGetLegend(threshold);
-    const getThresHoldLabels = useGetThresHoldLabels();
     const legendLabels = useMemo(
         () => getThresHoldLabels(threshold),
-        [getThresHoldLabels, threshold],
+        [threshold],
     );
     return (
         <LegendThreshold scale={getLegend}>

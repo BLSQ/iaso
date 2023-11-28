@@ -4,7 +4,7 @@ import React, { useState, FunctionComponent } from 'react';
 import { Box, Grid, makeStyles, Typography } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
 import { Link } from 'react-router';
-import { Theme, createStyles } from '@material-ui/core/styles';
+import { Theme } from '@material-ui/core/styles';
 
 import { History } from '@material-ui/icons';
 import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
@@ -25,26 +25,24 @@ import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import { FormDataType } from '../types/forms';
 import { FormLegendInput } from './FormLegendInput';
 
-const styles = (theme: Theme) =>
-    createStyles({
-        radio: {
-            flexDirection: 'row',
-        },
-        advancedSettings: {
-            color: theme.palette.primary.main,
-            alignSelf: 'center',
-            textAlign: 'right',
-            flex: '1',
-            cursor: 'pointer',
-        },
-        linkWithIcon: {
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5em',
-        },
-    });
+const useStyles = makeStyles((theme: Theme) => ({
+    radio: {
+        flexDirection: 'row',
+    },
+    advancedSettings: {
+        color: theme.palette.primary.main,
+        alignSelf: 'center',
+        textAlign: 'right',
+        flex: '1',
+        cursor: 'pointer',
+    },
+    linkWithIcon: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5em',
+    },
+}));
 
-const useStyles = makeStyles(styles);
 const formatBooleanForRadio = value => {
     if (value === true) return 'true';
     if (value === false) return 'false';
@@ -190,6 +188,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                                 ]}
                                 clearable={false}
                                 label={MESSAGES.singlePerPeriod}
+                                withMarginTop={false}
                             />
                         </Grid>
                         <Grid item xs={3} />

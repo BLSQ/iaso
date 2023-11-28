@@ -15,8 +15,8 @@ import { Box, Button } from '@material-ui/core';
 import Add from '@material-ui/icons/Add';
 import { MESSAGES } from './messages';
 import { ScaleThreshold } from './types';
-import { LegendBuilder } from './Index';
-import { useGetRangeValues, useGetScaleThreshold } from './hooks';
+import { LegendBuilder } from '.';
+import { getRangeValues, getScaleThreshold } from './utils';
 
 type Props = {
     titleMessage: IntlMessage;
@@ -37,15 +37,13 @@ const validationSchema = Yup.object().shape({
     ),
 });
 
-const Dialog: FunctionComponent<Props> = ({
+const LegendBuilkderDialog: FunctionComponent<Props> = ({
     titleMessage,
     isOpen,
     closeDialog,
     onConfirm,
     threshold,
 }) => {
-    const getRangeValues = useGetRangeValues();
-    const getScaleThreshold = useGetScaleThreshold();
     const {
         values: { rangeValues },
         setFieldValue,
@@ -137,8 +135,8 @@ const AddButton: FunctionComponent<PropsIcon> = ({ onClick }) => {
     );
 };
 
-const modalWithButton = makeFullModal(Dialog, AddButton);
-const modalWithIcon = makeFullModal(Dialog, EditIconButton);
+const modalWithButton = makeFullModal(LegendBuilkderDialog, AddButton);
+const modalWithIcon = makeFullModal(LegendBuilkderDialog, EditIconButton);
 
 export {
     modalWithButton as AddLegendDialog,

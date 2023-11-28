@@ -9,7 +9,7 @@ class FormsSerializerTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
         org_unit_type = m.OrgUnitType.objects.create(name="Org Unit Type", short_name="Out")
-        form = m.Form.objects.create(name="Form")
+        form = m.Form.objects.create(name="Form", legend_threshold=10)
 
         form.org_unit_types.add(org_unit_type)
         form.save()
@@ -66,7 +66,7 @@ class FormsSerializerTestCase(TestCase):
                     "sub_unit_types": [],
                 }
             ],
-            "legend_threshold": None,
+            "legend_threshold": self.form.legend_threshold,
         }
 
         with self.assertNumQueries(8):

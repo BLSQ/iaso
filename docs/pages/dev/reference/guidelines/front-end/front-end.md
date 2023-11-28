@@ -53,6 +53,13 @@ For every big feature entity in IASO (forms, org units, plannings, ...) we have 
 config: used to store constants like defaultOrder, columns, 'baseUrls' 
 - `types`: All types related to the domain
 
+## Styling components
+
+To create custom styles in js for your component you can use `makeStyles` from material ui:
+
+    const useStyles =  makeStyles((theme: Theme) => ({
+        ... your custom classes
+    }));
 
 ## Maps
 
@@ -61,7 +68,7 @@ To use latest version of react-leaflet we need to upgrade to react 18.
 
 Styles are located in `bluesquare-components`, you have to import it on each map:
 
-    const useStyles = makeStyles(theme => ({
+    const useStyles = makeStyles((theme: Theme)=> ({
         mapContainer: {
             ...commonStyles(theme).mapContainer,
         },

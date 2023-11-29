@@ -627,7 +627,16 @@ const routes = [
         baseUrl: NOTIFICATIONS_BASE_URL,
         component: props => <Notifications {...props} />,
         permissions: ['iaso_polio'],
-        params: [...paginationPathParams],
+        params: [
+            { isRequired: false, key: 'order' },
+            { isRequired: false, key: 'limit' },
+            { isRequired: false, key: 'page' },
+            { isRequired: false, key: 'vdpv_category' },
+            { isRequired: false, key: 'source' },
+            { isRequired: false, key: 'country' },
+            { isRequired: false, key: 'date_of_onset_after' },
+            { isRequired: false, key: 'date_of_onset_before' },
+        ],
     },
 ];
 

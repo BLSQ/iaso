@@ -2484,10 +2484,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.notifications',
         defaultMessage: 'Virus notification',
     },
-    notificationsTitle: {
-        id: 'iaso.polio.title.notifications',
-        defaultMessage: 'Virus notification',
-    },
 });
 
 export default MESSAGES;

@@ -1,29 +1,31 @@
-from plugins.polio.api.rounds.reasons_for_delay import ReasonForDelayViewSet
-from plugins.polio.tasks.api.refresh_lqas_data import RefreshLQASDataViewset
 from rest_framework import routers
 
 from plugins.polio.api.campaigns.campaign_groups import CampaignGroupViewSet
 from plugins.polio.api.campaigns.campaigns import CampaignViewSet
+from plugins.polio.api.campaigns.orgunits_per_campaigns import OrgUnitsPerCampaignViewset
 from plugins.polio.api.config import ConfigViewSet
-from plugins.polio.api.lqas_im.countries_with_lqas_im import CountriesWithLqasIMConfigViewSet
 from plugins.polio.api.country_user_groups import CountryUsersGroupViewSet
-from plugins.polio.api.dashboards.forma import FormAStocksViewSetV2
 from plugins.polio.api.dashboards.forma import FormAStocksViewSet
-from plugins.polio.api.lqas_im.im_stats import IMStatsViewSet
+from plugins.polio.api.dashboards.forma import FormAStocksViewSetV2
 from plugins.polio.api.dashboards.launch_powerbi import LaunchPowerBIRefreshViewSet
+from plugins.polio.api.dashboards.preparedness_dashboard import PreparednessDashboardViewSet
+from plugins.polio.api.dashboards.vaccine_stocks import VaccineStocksViewSet
 from plugins.polio.api.line_list_imports import LineListImportViewSet
+from plugins.polio.api.lqas_im.countries_with_lqas_im import CountriesWithLqasIMConfigViewSet
+from plugins.polio.api.lqas_im.im_stats import IMStatsViewSet
 from plugins.polio.api.lqas_im.lqas_stats import LQASStatsViewSet
 from plugins.polio.api.lqas_im.lqasim_global_map import LQASIMGlobalMapViewSet
 from plugins.polio.api.lqas_im.lqasim_zoom_in_map import LQASIMZoominMapBackgroundViewSet, LQASIMZoominMapViewSet
-from plugins.polio.api.campaigns.orgunits_per_campaigns import OrgUnitsPerCampaignViewset
+from plugins.polio.api.notifications.views import NotificationViewSet
 from plugins.polio.api.polio_org_units import PolioOrgunitViewSet
-from plugins.polio.api.dashboards.preparedness_dashboard import PreparednessDashboardViewSet
+from plugins.polio.api.rounds.reasons_for_delay import ReasonForDelayViewSet
 from plugins.polio.api.rounds.round import RoundViewSet
 from plugins.polio.api.rounds.round_date_history import RoundDateHistoryEntryViewset
 from plugins.polio.api.vaccines.vaccine_authorization import VaccineAuthorizationViewSet
-from plugins.polio.api.dashboards.vaccine_stocks import VaccineStocksViewSet
 from plugins.polio.budget.api import BudgetCampaignViewSet, BudgetStepViewSet, WorkflowViewSet
 from plugins.polio.tasks.api.create_refresh_preparedness_data import RefreshPreparednessLaucherViewSet
+from plugins.polio.tasks.api.refresh_lqas_data import RefreshLQASDataViewset
+
 
 router = routers.SimpleRouter()
 router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")
@@ -53,3 +55,4 @@ router.register(r"tasks/create/refreshpreparedness", RefreshPreparednessLaucherV
 router.register(r"polio/rounds", RoundViewSet, basename="rounds")
 router.register(r"polio/reasonsfordelay", ReasonForDelayViewSet, basename="reasonsfordelay")
 router.register(r"polio/tasks/refreshlqas", RefreshLQASDataViewset, basename="refreshlqas")
+router.register(r"polio/notifications", NotificationViewSet, basename="notifications")

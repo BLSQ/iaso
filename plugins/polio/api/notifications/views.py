@@ -1,7 +1,9 @@
+import django_filters
+
+from rest_framework import filters
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 
 from django.db.models import F
@@ -21,6 +23,7 @@ class NotificationPagination(Paginator):
 
 
 class NotificationViewSet(viewsets.ModelViewSet):
+    filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     filterset_class = NotificationFilter
     pagination_class = NotificationPagination
     permission_classes = [HasNotificationPermission]
@@ -28,10 +31,14 @@ class NotificationViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         account = self.request.user.iaso_profile.account
-        return Notification.objects.filter(account=account).annotate(
-            annotated_district=F("org_unit__name"),
-            annotated_province=F("org_unit__parent__name"),
-            annotated_country=F("org_unit__parent__parent__name"),
+        return (
+            Notification.objects.filter(account=account)
+            .annotate(
+                annotated_district=F("org_unit__name"),
+                annotated_province=F("org_unit__parent__name"),
+                annotated_country=F("org_unit__parent__parent__name"),
+            )
+            .order_by("-id")
         )
 
     def perform_create(self, serializer):

@@ -124,6 +124,7 @@ class NotificationSerializerTestCase(TestCase):
         self.assertEqual(
             serializer.data,
             {
+                "id": notification.id,
                 "epid_number": "ANG-HUI-CUV-19-002",
                 "vdpv_category": Notification.VdpvCategories.CVDPV2,
                 "source": Notification.Sources.AFP,

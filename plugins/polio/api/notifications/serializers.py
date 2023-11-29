@@ -21,6 +21,7 @@ class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
         fields = [
+            "id",
             "epid_number",
             "vdpv_category",
             "source",
@@ -41,6 +42,7 @@ class NotificationSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         extra_kwargs = {
+            "id": {"read_only": True},
             "account": {"read_only": True},
             "created_by": {"read_only": True},
             "updated_by": {"read_only": True},

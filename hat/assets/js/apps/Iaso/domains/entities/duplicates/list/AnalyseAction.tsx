@@ -8,7 +8,6 @@ import { AnalysisTooltipTitle } from './AnalysisTooltipTitle';
 import MESSAGES from '../messages';
 import { Analysis } from '../types';
 import { AnalysisModal } from './AnalysisModal';
-import { useStartAnalyse } from '../hooks/api/analyzes';
 
 type Props = {
     latestAnalysis: Analysis | undefined;
@@ -20,19 +19,6 @@ export const AnalyseAction: FunctionComponent<Props> = ({
     isFetchingLatestAnalysis,
 }) => {
     const { formatMessage } = useSafeIntl();
-    // const { data: latestAnalysis, isFetching: isFetchingLatestAnalysis } =
-    //     useGetLatestAnalysis();
-
-    const { mutateAsync: startAnalyse } = useStartAnalyse();
-    const handleClick = useCallback(() => {
-        console.log(latestAnalysis?.algorithm);
-        startAnalyse({
-            algorithm: latestAnalysis?.algorithm,
-            entity_type_id: latestAnalysis?.metadata.entity_type_id,
-            fields: latestAnalysis?.metadata.fields,
-            parameters: latestAnalysis?.metadata.parameters,
-        });
-    }, [latestAnalysis, startAnalyse]);
 
     return (
         <Box minHeight={36} display="flex" width="100%">
@@ -67,15 +53,7 @@ export const AnalyseAction: FunctionComponent<Props> = ({
                             </Tooltip>
                         </Box>
                     </Box>
-                    <AnalysisModal
-                        handleChange={() => {
-                            console.log('hello');
-                        }}
-                        iconProps={{}}
-                        handleConfirm={() => {
-                            handleClick();
-                        }}
-                    />
+                    <AnalysisModal iconProps={{}} />
                 </>
             )}
         </Box>

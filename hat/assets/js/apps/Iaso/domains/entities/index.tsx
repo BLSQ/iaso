@@ -15,6 +15,7 @@ import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import TopBar from '../../components/nav/TopBarComponent';
 import { Filters } from './components/Filters';
 import {
+    useGetBeneficiariesLocations,
     useGetBeneficiariesPaginated,
     useGetBeneficiaryTypesDropdown,
 } from './hooks/requests';
@@ -110,25 +111,8 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
             entityTypeName = currentType.label;
         }
     }
-    const locations = useMemo(() => {
-        return (
-            data?.result?.map(beneficiary => ({
-                latitude:
-                    displayedLocation === 'submissions'
-                        ? beneficiary.latitude
-                        : beneficiary.org_unit?.latitude,
-                longitude:
-                    displayedLocation === 'submissions'
-                        ? beneficiary.longitude
-                        : beneficiary.org_unit?.longitude,
-                orgUnit: beneficiary.org_unit,
-                id: beneficiary.id,
-                original: {
-                    ...beneficiary,
-                },
-            })) || []
-        );
-    }, [data?.result, displayedLocation]);
+    const { data: locations, isFetching: isFetchingLocations } =
+        useGetBeneficiariesLocations(params, displayedLocation);
     return (
         <>
             {isLoading && tab === 'map' && <LoadingSpinner />}
@@ -159,8 +143,8 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                     >
                         {!isFetching && (
                             <ListMap
-                                locations={locations}
-                                isFetchingLocations={isFetching}
+                                locations={locations || []}
+                                isFetchingLocations={isFetchingLocations}
                                 extraColumns={extraColumns}
                                 displayedLocation={displayedLocation}
                                 setDisplayedLocation={setDisplayedLocation}

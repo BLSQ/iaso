@@ -9,7 +9,7 @@ const useStyles = makeStyles(theme => ({
     root: {
         position: 'absolute', // assuming you have a parent relative
         zIndex: 500,
-        bottom: theme.spacing(2),
+        bottom: theme.spacing(3),
         right: theme.spacing(2),
         left: 'auto',
         top: 'auto',

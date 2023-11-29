@@ -85,17 +85,16 @@ export const ListMap: FunctionComponent<Props> = ({
 
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
 
-    const isLoading = isFetchingLocations;
     return (
         <section className={classes.mapContainer}>
             <Box position="relative">
-                {isLoading && <LoadingSpinner absolute />}
+                {isFetchingLocations && <LoadingSpinner absolute />}
                 <LocationSwitch
                     displayedLocation={displayedLocation}
                     setDisplayedLocation={setDisplayedLocation}
                 />
                 <MapContainer
-                    isLoading={isLoading}
+                    isLoading={isFetchingLocations}
                     maxZoom={currentTile.maxZoom}
                     style={{ height: '60vh' }}
                     center={defaultViewport.center}

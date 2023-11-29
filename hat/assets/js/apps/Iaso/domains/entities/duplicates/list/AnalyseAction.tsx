@@ -53,7 +53,10 @@ export const AnalyseAction: FunctionComponent<Props> = ({
                             </Tooltip>
                         </Box>
                     </Box>
-                    <AnalysisModal iconProps={{}} />
+                    <AnalysisModal
+                        iconProps={{}}
+                        latestAnalysis={latestAnalysis}
+                    />
                 </>
             )}
         </Box>

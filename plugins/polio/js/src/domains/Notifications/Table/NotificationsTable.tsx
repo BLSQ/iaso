@@ -6,6 +6,7 @@ import MESSAGES from '../messages';
 import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 import { NOTIFICATIONS_BASE_URL } from '../../../constants/routes';
 import { handleTableDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/utils/table';
+import { DateCell } from '../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 
 type Props = { params: NotificationsParams };
 
@@ -19,6 +20,11 @@ export const NotificationsTable: FunctionComponent<Props> = ({ params }) => {
     const { data, isFetching } = useGetNotifications(apiParams);
     const { formatMessage } = useSafeIntl();
     const columns: Array<Column> = [
+        {
+            Header: formatMessage(MESSAGES.labelId),
+            id: 'id',
+            accessor: 'id',
+        },
         {
             Header: formatMessage(MESSAGES.labelEpid),
             id: 'epid_number',
@@ -43,16 +49,19 @@ export const NotificationsTable: FunctionComponent<Props> = ({ params }) => {
             Header: formatMessage(MESSAGES.labelCountry),
             id: 'country',
             accessor: 'country',
+            sortable: false,
         },
         {
             Header: formatMessage(MESSAGES.labelProvince),
             id: 'province',
             accessor: 'province',
+            sortable: false,
         },
         {
             Header: formatMessage(MESSAGES.labelDistrict),
             id: 'district',
             accessor: 'district',
+            sortable: false,
         },
         {
             Header: formatMessage(MESSAGES.labelSiteName),
@@ -68,6 +77,7 @@ export const NotificationsTable: FunctionComponent<Props> = ({ params }) => {
             Header: formatMessage(MESSAGES.labelDateOfOnset),
             id: 'date_of_onset',
             accessor: 'date_of_onset',
+            Cell: DateCell,
         },
         {
             Header: formatMessage(MESSAGES.labelClosestMatchVdpv2),
@@ -78,6 +88,7 @@ export const NotificationsTable: FunctionComponent<Props> = ({ params }) => {
             Header: formatMessage(MESSAGES.labelDateResultsReceived),
             id: 'date_results_received',
             accessor: 'date_results_received',
+            Cell: DateCell,
         },
     ];
     return (

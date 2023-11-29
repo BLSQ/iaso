@@ -5,6 +5,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.notifications.title',
         defaultMessage: 'Virus notification',
     },
+    labelId: {
+        id: 'iaso.polio.notifications.label.id',
+        defaultMessage: 'ID',
+    },
     labelEpid: {
         id: 'iaso.polio.notifications.label.epid',
         defaultMessage: 'EPID number',

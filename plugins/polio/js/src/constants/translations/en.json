@@ -587,6 +587,7 @@
     "iaso.polio.notifications.label.district": "District",
     "iaso.polio.notifications.label.epid": "EPID number",
     "iaso.polio.notifications.label.lineage": "Lineage",
+    "iaso.polio.notifications.label.id": "ID",
     "iaso.polio.notifications.label.province": "Province",
     "iaso.polio.notifications.label.site_name": "Site name",
     "iaso.polio.notifications.label.source": "Source",

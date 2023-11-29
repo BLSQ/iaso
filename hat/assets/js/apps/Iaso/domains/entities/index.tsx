@@ -26,6 +26,7 @@ import { redirectTo } from '../../routing/actions';
 import { ListMap } from './components/ListMap';
 
 import { MENU_HEIGHT_WITH_TABS } from '../../constants/uiConstants';
+import { DisplayedLocation } from './types/locations';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -58,6 +59,8 @@ type Props = {
 
 export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
     const classes: Record<string, string> = useStyles();
+    const [displayedLocation, setDisplayedLocation] =
+        useState<DisplayedLocation>('submissions');
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
 
@@ -107,6 +110,25 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
             entityTypeName = currentType.label;
         }
     }
+    const locations = useMemo(() => {
+        return (
+            data?.result?.map(beneficiary => ({
+                latitude:
+                    displayedLocation === 'submissions'
+                        ? beneficiary.latitude
+                        : beneficiary.org_unit?.latitude,
+                longitude:
+                    displayedLocation === 'submissions'
+                        ? beneficiary.longitude
+                        : beneficiary.org_unit?.longitude,
+                orgUnit: beneficiary.org_unit,
+                id: beneficiary.id,
+                original: {
+                    ...beneficiary,
+                },
+            })) || []
+        );
+    }, [data?.result, displayedLocation]);
     return (
         <>
             {isLoading && tab === 'map' && <LoadingSpinner />}
@@ -137,21 +159,11 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                     >
                         {!isFetching && (
                             <ListMap
-                                locations={
-                                    data?.result?.map(beneficiary => ({
-                                        latitude:
-                                            beneficiary.org_unit?.latitude,
-                                        longitude:
-                                            beneficiary.org_unit?.longitude,
-                                        orgUnit: beneficiary.org_unit,
-                                        id: beneficiary.id,
-                                        original: {
-                                            ...beneficiary,
-                                        },
-                                    })) || []
-                                }
+                                locations={locations}
                                 isFetchingLocations={isFetching}
                                 extraColumns={extraColumns}
+                                displayedLocation={displayedLocation}
+                                setDisplayedLocation={setDisplayedLocation}
                             />
                         )}
                     </Box>

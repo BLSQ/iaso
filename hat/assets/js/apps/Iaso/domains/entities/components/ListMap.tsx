@@ -1,4 +1,10 @@
-import React, { FunctionComponent, useState, useMemo } from 'react';
+import React, {
+    FunctionComponent,
+    useState,
+    useMemo,
+    Dispatch,
+    SetStateAction,
+} from 'react';
 import { MapContainer, Pane, ScaleControl } from 'react-leaflet';
 import { Box, useTheme, makeStyles } from '@material-ui/core';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
@@ -22,6 +28,8 @@ import {
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
 import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
+import { LocationSwitch } from './LocationSwitch';
+import { DisplayedLocation } from '../types/locations';
 
 const defaultViewport = {
     center: [1, 20],
@@ -40,6 +48,8 @@ type Props = {
     locations: Location[] | undefined;
     isFetchingLocations: boolean;
     extraColumns: Array<ExtraColumn>;
+    displayedLocation: DisplayedLocation;
+    setDisplayedLocation: Dispatch<SetStateAction<DisplayedLocation>>;
 };
 
 const boundsOptions = {
@@ -62,6 +72,8 @@ export const ListMap: FunctionComponent<Props> = ({
     locations,
     isFetchingLocations,
     extraColumns,
+    displayedLocation,
+    setDisplayedLocation,
 }) => {
     const classes: Record<string, string> = useStyles();
     const theme = useTheme();
@@ -78,6 +90,10 @@ export const ListMap: FunctionComponent<Props> = ({
         <section className={classes.mapContainer}>
             <Box position="relative">
                 {isLoading && <LoadingSpinner absolute />}
+                <LocationSwitch
+                    displayedLocation={displayedLocation}
+                    setDisplayedLocation={setDisplayedLocation}
+                />
                 <MapContainer
                     isLoading={isLoading}
                     maxZoom={currentTile.maxZoom}

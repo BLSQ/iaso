@@ -245,6 +245,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.all',
         defaultMessage: 'All',
     },
+    orgUnits: {
+        id: 'iaso.label.orgUnit',
+        defaultMessage: 'Org units',
+    },
 });
 
 export default MESSAGES;

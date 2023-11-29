@@ -8,13 +8,15 @@ from django.db.models import F
 from django.http import FileResponse
 from django.utils import timezone
 
+from iaso.api.common import Paginator
+
 from plugins.polio.api.notifications.filters import NotificationFilter
 from plugins.polio.api.notifications.permissions import HasNotificationPermission
 from plugins.polio.api.notifications.serializers import NotificationSerializer, NotificationImportSerializer
 from plugins.polio.models import Notification, NotificationImport, create_polio_notifications_async
 
 
-class NotificationPagination(LimitOffsetPagination):
+class NotificationPagination(Paginator):
     default_limit = 20
 
 

@@ -263,7 +263,7 @@ class NotificationViewSetTestCase(APITestCase):
     def test_list(self):
         self.client.force_authenticate(self.user)
         with self.assertNumQueries(4):
-            response = self.client.get("/api/polio/notifications/")
+            response = self.client.get("/api/polio/notifications/?limit=2")
             self.assertJSONResponse(response, 200)
             self.assertEqual(2, response.data["count"])
 

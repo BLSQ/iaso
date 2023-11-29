@@ -1,16 +1,18 @@
 /* eslint-disable camelcase */
 
-import { AuthorisationAPIData } from '../VaccineModule/Nopv2Authorisations/types';
-
 export type NotificationsParams = {
-    limit: string;
-    order: string;
-    page: string;
+    order?: string;
+    page?: string;
+    pageSize?: string; // TableWithDeepLink name for "number of results per page".
     vdpv_category?: string;
     source?: string;
     country?: string;
     date_of_onset_after?: string; // Date
     date_of_onset_before?: string; // Date
+};
+
+export type ApiNotificationsParams = NotificationsParams & {
+    limit?: string; // API name for "number of results per page".
 };
 
 export type NotificationsApiData = {

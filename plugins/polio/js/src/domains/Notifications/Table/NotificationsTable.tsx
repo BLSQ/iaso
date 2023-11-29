@@ -1,17 +1,23 @@
 import React, { FunctionComponent } from 'react';
 import { Column, useSafeIntl } from 'bluesquare-components';
-import { NotificationsParams } from '../types';
+import { ApiNotificationsParams, NotificationsParams } from '../types';
 import { useGetNotifications } from '../hooks/api';
 import MESSAGES from '../messages';
 import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 import { NOTIFICATIONS_BASE_URL } from '../../../constants/routes';
+import { handleTableDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/utils/table';
 
 type Props = { params: NotificationsParams };
 
 export const NotificationsTable: FunctionComponent<Props> = ({ params }) => {
-    const { data, isFetching } = useGetNotifications(params);
+    const apiParams: ApiNotificationsParams = {
+        ...params,
+        limit: params.pageSize || '20',
+        order: params.order || 'id',
+        page: params.page || '1',
+    };
+    const { data, isFetching } = useGetNotifications(apiParams);
     const { formatMessage } = useSafeIntl();
-
     const columns: Array<Column> = [
         {
             Header: formatMessage(MESSAGES.labelEpid),
@@ -74,9 +80,6 @@ export const NotificationsTable: FunctionComponent<Props> = ({ params }) => {
             accessor: 'date_results_received',
         },
     ];
-
-    console.log('NotificationsTable', data);
-
     return (
         <TableWithDeepLink
             baseUrl={NOTIFICATIONS_BASE_URL}
@@ -85,9 +88,7 @@ export const NotificationsTable: FunctionComponent<Props> = ({ params }) => {
             columns={columns}
             count={data?.count ?? 0}
             params={params}
-            // onTableParamsChange={p =>
-            // dispatch(redirectToReplace(baseUrl, p))
-            // }
+            onTableParamsChange={handleTableDeepLink(NOTIFICATIONS_BASE_URL)}
             extraProps={{ loading: isFetching }}
         />
     );

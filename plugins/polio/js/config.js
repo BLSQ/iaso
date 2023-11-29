@@ -629,8 +629,8 @@ const routes = [
         permissions: ['iaso_polio'],
         params: [
             { isRequired: false, key: 'order' },
-            { isRequired: false, key: 'limit' },
             { isRequired: false, key: 'page' },
+            { isRequired: false, key: 'pageSize' },
             { isRequired: false, key: 'vdpv_category' },
             { isRequired: false, key: 'source' },
             { isRequired: false, key: 'country' },

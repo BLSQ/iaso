@@ -152,6 +152,7 @@
     "iaso.devices.timeUpdated": "Date modified",
     "iaso.duplicate.analysisBusy": "Analysis in progress",
     "iaso.duplicate.latestAnalysis": "Latest analysis completed: {finishedAt}",
+    "iaso.duplicate.launchAnalysis": "Launch Analysis",
     "iaso.duplicate.noAnalysis": "No analysis found",
     "iaso.duplicate.relaunchAnalysis": "Relaunch Analysis",
     "iaso.entities.create": "Create entity",

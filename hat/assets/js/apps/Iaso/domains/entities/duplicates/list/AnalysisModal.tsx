@@ -5,12 +5,10 @@ import { AnalysisModalButton } from './AnalysisModalButton';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { useGetBeneficiaryTypesDropdown } from '../../hooks/requests';
 import { useStartAnalyse } from '../hooks/api/analyzes';
-import { Analysis } from '../types';
 
 type Props = {
     isOpen: boolean;
     closeDialog: () => void;
-    latestAnalysis: Analysis | undefined;
 };
 
 // TODO move to more accessible const
@@ -20,33 +18,32 @@ const algorithmDropDown = [
     { label: 'invert', value: 'invert' },
 ];
 
-const AnalysisModal: FunctionComponent<Props> = ({
-    closeDialog,
-    isOpen,
-    latestAnalysis,
-}) => {
+const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
     const [entityType, setEntityType] = useState();
     const [algorithm, setAlgorithm] = useState();
+    const [fields, setFields] = useState([]);
     const { data: entityTypesDropdown, isFetching: isFetchingEntityTypes } =
         useGetBeneficiaryTypesDropdown();
+
     const { mutateAsync: startAnalyse } = useStartAnalyse();
     const handleConfirm = useCallback(() => {
         startAnalyse({
             algorithm,
             entity_type_id: entityType,
-            fields: latestAnalysis?.metadata.fields,
-            parameters: latestAnalysis?.metadata.parameters,
+            fields,
+            parameters: {},
         });
-    }, [
-        algorithm,
-        entityType,
-        latestAnalysis?.metadata.fields,
-        latestAnalysis?.metadata.parameters,
-        startAnalyse,
-    ]);
+    }, [startAnalyse, algorithm, entityType, fields]);
 
     const handleChange = (keyValue, value) => {
         if (keyValue === 'entity_type') {
+            const filteredEntityType = entityTypesDropdown?.find(
+                entityTypeItem => entityTypeItem.value === value,
+            );
+            const entityTypeFields =
+                filteredEntityType?.original?.fields_duplicate_search;
+
+            setFields(entityTypeFields || []);
             setEntityType(value);
         }
         if (keyValue === 'algorithm') {

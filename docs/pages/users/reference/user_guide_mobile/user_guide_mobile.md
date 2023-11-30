@@ -56,7 +56,7 @@ structure.
         <td>The Sort button allows you to sort the forms by name period, or encoding date</td>
     </tr>
     <tr>
-        <td><img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image27.png" style="display:block;margin: 0 auto;max-width:150px;" /></td>
+        <td><img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/skip_button.png" style="display:block;margin: 0 auto;max-width:150px;" /></td>
         <td>The Skip button allows you to navigate to the beginning or end of the form</td>
     </tr>
     <tr>
@@ -68,7 +68,7 @@ structure.
         <td>The Upload button allows you to upload data to the server. Only finalised forms will be uploaded</td>
     </tr>
     <tr>
-        <td><img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image8.png" style="display:block;margin: 0 auto;max-width:150px;" /></td>
+        <td><img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/orange_menu_button.png" style="display:block;margin: 0 auto;max-width:150px;" /></td>
         <td>The Orange menu button allows you to refresh the app data and view app details</td>
     </tr>
     <tr>
@@ -209,11 +209,11 @@ mark it as finalised.
 
 You can give a name to the form to make it easier to find it later -
 NOTE - this is only for personal use to find the form. The name will not
-be sent to the data management
-system.<img src="./attachments/image46.png" style="width:2in;height:4.45in" />
+be sent to the data management system.
 
-The form will be saved and available from the main menu under
-« Unfinished ».
+<img src="./attachments/image46.png" style="width:2in;height:4.45in" />
+
+The form will be saved and available from the main menu under « Unfinished ».
 
 ##### How to interrupt data collection?
 
@@ -229,14 +229,15 @@ Save the Form
 
 You can give a name to the form to make it easier to find it later -
 NOTE - This is only for personal use to find the form. The name will not
-be sent to the data management system
+be sent to the data management system.
+
+<img src="./attachments/image46.png" style="width:1.60938in;height:3.59107in" />
 
 The form will be saved and available from the main menu under
 “Unfinished” or “Finalised”.
 
 You are then directed to the screen showing the forms you have filled in
 for the Organisation Unit you are working on.
-<img src="./attachments/image46.png" style="width:1.60938in;height:3.59107in" />
 
 <img src="./attachments/image68.png" style="width:1.57813in;height:3.50321in" />
 
@@ -274,7 +275,9 @@ in for the organisation unit you have navigated to in the “UNITS” tab.
 If you have not started collecting data for the organisation unit yet,
 there will be no forms in the “FORMS” tab.
 
-<img src="./attachments/image81.jpg" style="width:2in;height:2.61458in" /><img src="./attachments/image99.jpg" style="width:2.09169in;height:2.61979in" /><img src="./attachments/image8.png" style="width:0.39323in;height:0.3125in" />
+<img src="./attachments/image81.jpg" style="width:2in;height:2.61458in" />
+<img src="./attachments/image99.jpg" style="width:2.09169in;height:2.61979in" />
+<img src="./attachments/image8.png" style="width:0.39323in;height:0.3125in" />
 
 ### Upload
 

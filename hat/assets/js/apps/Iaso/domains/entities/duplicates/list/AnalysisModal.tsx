@@ -1,5 +1,10 @@
 import { ConfirmCancelModal, makeFullModal } from 'bluesquare-components';
-import React, { FunctionComponent, useCallback, useState } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useState,
+} from 'react';
 import MESSAGES from '../messages';
 import { AnalysisModalButton } from './AnalysisModalButton';
 import InputComponent from '../../../../components/forms/InputComponent';
@@ -19,9 +24,11 @@ const algorithmDropDown = [
 ];
 
 const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
-    const [entityType, setEntityType] = useState();
-    const [algorithm, setAlgorithm] = useState();
+    const [entityType, setEntityType] = useState(null);
+    const [algorithm, setAlgorithm] = useState(null);
     const [fields, setFields] = useState([]);
+    const [confirm, setConfirm] = useState(false);
+
     const { data: entityTypesDropdown, isFetching: isFetchingEntityTypes } =
         useGetBeneficiaryTypesDropdown();
 
@@ -50,15 +57,24 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
             setAlgorithm(value);
         }
     };
+
+    useEffect(() => {
+        if (algorithm && entityType) {
+            setConfirm(true);
+        } else {
+            setConfirm(false);
+        }
+    }, [algorithm, entityType]);
+
     return (
         <ConfirmCancelModal
-            allowConfirm
-            titleMessage={MESSAGES.relaunchAnalysis}
+            allowConfirm={confirm}
+            titleMessage={MESSAGES.launchAnalysis}
             onConfirm={handleConfirm}
             onCancel={() => {
                 closeDialog();
             }}
-            maxWidth="sm"
+            maxWidth="xs"
             cancelMessage={MESSAGES.cancel}
             confirmMessage={MESSAGES.confirm}
             open={isOpen}

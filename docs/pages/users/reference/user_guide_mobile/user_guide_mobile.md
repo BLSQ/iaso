@@ -46,7 +46,7 @@ structure.
 | <img src="https://github.com/BLSQ/iaso/blob/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image8.png" />   | The Orange menu button allows you to refresh the app data and view app details
 | <img src="https://github.com/BLSQ/iaso/blob/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image68.png" />   | The White menu button allows you to edit a form that has already been started
 | <img src="https://github.com/BLSQ/iaso/blob/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image8.png" />   | The Start button allows you to start collecting data.
-| <img src="https://github.com/BLSQ/iaso/blob/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image70.png" />   | The Fill out form button allows you to select the form needed for the organisation unit you are collecting data for|
+
 
 ## Homepage <img src="./attachments/image118.png" style="width:0.5715in;height:0.4in"/>
 

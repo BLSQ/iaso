@@ -174,7 +174,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.duplicate.latestAnalysis',
     },
     launchAnalysis: {
-        defaultMessage: 'Launch Analysis',
+        defaultMessage: 'Launch analysis',
         id: 'iaso.duplicate.launchAnalysis',
     },
     relaunchAnalysis: {

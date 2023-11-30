@@ -36,17 +36,17 @@ structure.
 
 |Button                                                                       | Description
 |-----------------------------------------------------------------------------|-----------------------------------------------------------------------------------|
-| <img src="./attachments/image108.png" style="width:0.41177in;height:0.4in" />   | The left arrow button in the top left corner allows you to navigate
-| <img src="./attachments/image79.jpg" style="width:0.5715in;height:0.4in" />   | The Home icon button brings you directly back to the homepage, you will see a list of all the forms you have filled out, and can filter them by total, unfinished, finalised, uploaded.
-| <img src="./attachments/image2.jpg" style="width:0.41026in;height:0.4in" />   | The Filter icon button allows you to view only a selection of Organisation units depending on the type. If this is not set up, the only option available is to see the whole health pyramid 
-| <img src="./attachments/image56.jpg" style="width:2.59896in;height:2.67429in" />   | The Sort button allows you to sort the forms by name period, or encoding date 
-| <img src="./attachments/image27.png" style="width:0.4375in;height:0.4in" />   | The Skip button allows you to navigate to the beginning or end of the form
-| <img src="./attachments/image46.png" style="width:0.41333in;height:0.4in" />   | The Save button allows you to save the data collected so far.
-| <img src="./attachments/image8.png" style="width:0.50667in;height:0.4in" />   | The Upload button allows you to upload data to the server. Only finalised forms will be uploaded
-| <img src="./attachments/image8.png" style="width:0.43229in;height:0.46431in" />   | The Orange menu button allows you to refresh the app data and view app details
-| <img src="./attachments/image68.png" style="width:0.4375in;height:0.35417in" />   | The White menu button allows you to edit a form that has already been started
-| <img src="./attachments/image8.png" style="width:0.72917in;height:0.34375in" />   | The Start button allows you to start collecting data.
-| <img src="./attachments/image70.png" style="width:1.01042in;height:0.34375in" />   | The Fill out form button allows you to select the form needed for the organisation unit you are collecting data for|
+| <img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image108.png"/>   | The left arrow button in the top left corner allows you to navigate
+| <img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image79.jpg" style="width:0.5715in;height:0.4in" />   | The Home icon button brings you directly back to the homepage, you will see a list of all the forms you have filled out, and can filter them by total, unfinished, finalised, uploaded.
+| <img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image2.jpg" style="width:0.41026in;height:0.4in" />   | The Filter icon button allows you to view only a selection of Organisation units depending on the type. If this is not set up, the only option available is to see the whole health pyramid 
+| <img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image56.jpg" style="width:2.59896in;height:2.67429in" />   | The Sort button allows you to sort the forms by name period, or encoding date 
+| <img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image27.png" style="width:0.4375in;height:0.4in" />   | The Skip button allows you to navigate to the beginning or end of the form
+| <img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image46.png" style="width:0.41333in;height:0.4in" />   | The Save button allows you to save the data collected so far.
+| <img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image8.png" style="width:0.50667in;height:0.4in" />   | The Upload button allows you to upload data to the server. Only finalised forms will be uploaded
+| <img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image8.png" style="width:0.43229in;height:0.46431in" />   | The Orange menu button allows you to refresh the app data and view app details
+| <img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image68.png" style="width:0.4375in;height:0.35417in" />   | The White menu button allows you to edit a form that has already been started
+| <img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image8.png" style="width:0.72917in;height:0.34375in" />   | The Start button allows you to start collecting data.
+| <img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image70.png" style="width:1.01042in;height:0.34375in" />   | The Fill out form button allows you to select the form needed for the organisation unit you are collecting data for|
 
 ## Homepage <img src="./attachments/image118.png" style="width:0.5715in;height:0.4in"/>
 

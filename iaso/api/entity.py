@@ -250,7 +250,7 @@ class EntityViewSet(ModelViewSet):
             # TODO: see if we use created_at as reference date (or latest instance creation, update, ...)
             queryset = queryset.filter(created_at__gte=date_from)
         if date_to:
-            queryset = queryset.filter(created_at__lte=date_to)
+            queryset = queryset.filter(created_at__date__lte=date_to)
         if show_deleted:
             queryset = queryset.filter(deleted_at__isnull=True)
         if created_by_id:
@@ -259,7 +259,6 @@ class EntityViewSet(ModelViewSet):
             queryset = queryset.filter(attributes__created_by__teams__id=created_by_team_id)
 
         # location
-
         return queryset
 
     def create(self, request, *args, **kwargs):

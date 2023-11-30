@@ -19,7 +19,7 @@ from plugins.polio.models import Notification, NotificationImport, create_polio_
 
 
 class NotificationPagination(Paginator):
-    default_limit = 20
+    page_size = 20
 
 
 class NotificationViewSet(viewsets.ModelViewSet):

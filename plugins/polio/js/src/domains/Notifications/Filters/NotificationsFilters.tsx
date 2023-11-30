@@ -1,11 +1,12 @@
 import React, { FunctionComponent } from 'react';
 import { NotificationsParams } from '../types';
-// import { NOTIFICATIONS_BASE_URL } from '../../../constants/routes';
+import { useGetVdpvCategoriesDropdown } from '../hooks/api';
 
-// const baseUrl = NOTIFICATIONS_BASE_URL;
 type Props = { params: NotificationsParams };
 
 export const NotificationsFilters: FunctionComponent<Props> = ({ params }) => {
-    console.log('NotificationsFilters', params);
+    const { data: entityTypesDropdown, isFetching: isFetchingEntityTypes } =
+        useGetVdpvCategoriesDropdown();
+
     return <h1>Filtering</h1>;
 };

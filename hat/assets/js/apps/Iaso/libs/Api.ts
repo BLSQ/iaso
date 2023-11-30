@@ -83,6 +83,19 @@ export const getRequest = async (
     });
 };
 
+export const optionsRequest = (
+    url: string,
+    signal?: Nullable<AbortSignal>,
+): Promise<boolean> =>
+    iasoFetch(url, {
+        method: 'OPTIONS',
+        headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+        },
+        signal,
+    }).then(response => response.json());
+
 export const basePostRequest = (
     url: string,
     data: Record<string, any> = {},

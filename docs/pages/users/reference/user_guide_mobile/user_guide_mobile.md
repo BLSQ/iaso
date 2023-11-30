@@ -72,7 +72,7 @@ structure.
         <td>The Orange menu button allows you to refresh the app data and view app details</td>
     </tr>
     <tr>
-        <td><img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/white_menu.png" style="display:block;margin: 0 auto;max-width:150px;" /></td>
+        <td><img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/white_menu_button.png" style="display:block;margin: 0 auto;max-width:150px;" /></td>
         <td>The White menu button allows you to edit a form that has already been started</td>
     </tr>
     <tr>

@@ -219,7 +219,7 @@ The form will be saved and available from the main menu under « Unfinished »
 
 1. Option one
 
-<img src="./attachments/image27.png" style="width:0.35417in;height:0.31771in" />
+<img src="./attachments/image27.png" style="width:1.77in;height:3.92524in" />
 
 Tap on the three boxes with arrows in the top right corner of the screen
 

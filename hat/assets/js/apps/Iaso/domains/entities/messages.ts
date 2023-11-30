@@ -245,9 +245,13 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.all',
         defaultMessage: 'All',
     },
-    orgUnits: {
-        id: 'iaso.label.orgUnit',
-        defaultMessage: 'Org units',
+    orgUnitsLocations: {
+        id: 'iaso.label.orgUnitsLocations',
+        defaultMessage: 'Org units locations',
+    },
+    submissionsLocations: {
+        id: 'iaso.label.submissionsLocations',
+        defaultMessage: 'Submissions locations',
     },
 });
 

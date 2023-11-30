@@ -13,7 +13,7 @@ const useStyles = makeStyles(theme => ({
         right: theme.spacing(2),
         left: 'auto',
         top: 'auto',
-        width: 180,
+        width: 250,
     },
 }));
 
@@ -44,7 +44,7 @@ export const LocationSwitch: FunctionComponent<Props> = ({
                     onChange={() => {
                         setDisplayedLocation('orgUnits');
                     }}
-                    label={MESSAGES.orgUnits}
+                    label={MESSAGES.orgUnitsLocations}
                 />
                 <InputComponent
                     withMarginTop={false}
@@ -54,7 +54,7 @@ export const LocationSwitch: FunctionComponent<Props> = ({
                     onChange={() => {
                         setDisplayedLocation('submissions');
                     }}
-                    label={MESSAGES.submissions}
+                    label={MESSAGES.submissionsLocations}
                 />
             </Box>
         </Paper>

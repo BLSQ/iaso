@@ -10,18 +10,12 @@ import { AnalysisModalButton } from './AnalysisModalButton';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { useGetBeneficiaryTypesDropdown } from '../../hooks/requests';
 import { useStartAnalyse } from '../hooks/api/analyzes';
+import { ALGORITHM_DROPDOWN } from '../../constants';
 
 type Props = {
     isOpen: boolean;
     closeDialog: () => void;
 };
-
-// TODO move to more accessible const
-const algorithmDropDown = [
-    { label: 'namesim', value: 'namesim' },
-    { label: 'levenshtein', value: 'levenshtein' },
-    { label: 'invert', value: 'invert' },
-];
 
 const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
     const [entityType, setEntityType] = useState(null);
@@ -98,7 +92,7 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
                 value={algorithm}
                 onChange={handleChange}
                 label={MESSAGES.algorithm}
-                options={algorithmDropDown}
+                options={ALGORITHM_DROPDOWN}
             />
         </ConfirmCancelModal>
     );

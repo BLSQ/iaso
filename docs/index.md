@@ -1,13 +1,14 @@
-## Welcome to Iaso
+## Welcome to the documentation of Iaso
 
-Iaso is a georegistry and data collection web platform structured around trees of organization units (also known a master lists)
+Iaso is a georegistry, data collection and planning web platform structured around trees of organization units (also known a master lists)
 
 The main tasks it allows accomplishing are:
 
 - Data collection using XLSForm forms linked to org units through a mobile application.
 - Import, comparison and merging of multiple Org Units' trees, both through a web application and an API allowing manipulation through data science tools like Jupyter notebooks.
 - Validation of received data for Org Units' trees and forms.
-- Exports of the Org Units' trees and form data, either in csv, xlsx, GeoPackage or through an api.
+- Exports of the Org Units' trees and form data, either in csv, xlsx, GeoPackage or through an api. Exports to DHIS2 are also very well supported
+- Planning of activities through a planning interface. The created plannings are then made available to end users through the mobile application.
 
 
 ### History
@@ -20,9 +21,8 @@ Iaso has been created by the company Bluesquare, specialised in software and ser
 
 ### Technical stack
 
-Iaso is made of a white labeled Android application using Java/Kotlin, reusing large parts of the ODK projects, and a web platform programmed using Python/GeoDjango on top of PostGIS. Frontend is mainly React/Leaflet. The APi is implemented via Django rest framework, all data is stored in Postgresql or the media/ directory. One of the aims is the ease of integration with other platforms. We already have csv and geopackage imports and exports and target easy integration with OSM.
-Structure
+Iaso is made of a white labeled Android application using Java/Kotlin, reusing large parts of the ODK projects, and a web platform programmed using Python/GeoDjango on top of PostGIS. Frontend is mainly React/Leaflet. The API is implemented via Django rest framework, all data is stored in Postgresql or the media/ directory. One of the aims is the ease of integration with other platforms. We already have csv and geopackage imports and exports and target easy integration with OSM.
 
-A companion mobile app for Android allow submitting Form and creating org unit.
+The companion mobile app for Android allow submitting forms and creating org unit.
 
-Form can also be filled in a web interface via the Enketo companion service. Both Iaso and Enketo need to be configured to work together. It is possible to run an Enketo service locally.
+Forms can also be filled in a web interface via the Enketo companion service. Both Iaso and Enketo need to be configured to work together. It is possible to run an Enketo service locally.

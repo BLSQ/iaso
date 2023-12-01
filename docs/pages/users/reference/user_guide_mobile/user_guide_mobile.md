@@ -34,19 +34,56 @@ structure.
 
 ## Quick overview of buttons
 
-|Button                                                                       | Description
-|-----------------------------------------------------------------------------|-----------------------------------------------------------------------------------|
-| <img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image108.png" />   | The left arrow button in the top left corner allows you to navigate
-| <img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image79.jpg" />   | The Home icon button brings you directly back to the homepage, you will see a list of all the forms you have filled out, and can filter them by total, unfinished, finalised, uploaded.
-| <img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image2.jpg" />   | The Filter icon button allows you to view only a selection of Organisation units depending on the type. If this is not set up, the only option available is to see the whole health pyramid 
-| <img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image56.jpg"  />   | The Sort button allows you to sort the forms by name period, or encoding date 
-| <img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image27.png" />   | The Skip button allows you to navigate to the beginning or end of the form
-| <img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image46.png" />   | The Save button allows you to save the data collected so far.
-| <img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image8.png" />   | The Upload button allows you to upload data to the server. Only finalised forms will be uploaded
-| <img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image8.png" />   | The Orange menu button allows you to refresh the app data and view app details
-| <img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image68.png" />   | The White menu button allows you to edit a form that has already been started
-| <img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image8.png" />   | The Start button allows you to start collecting data.
-
+<table>
+    <tr>
+        <th>Button</th>
+        <th>Description</th>
+    </tr>
+    <tr>
+        <td><img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image108.png" style="display:block;margin: 0 auto;max-width:150px;"/></td>
+        <td>The left arrow button in the top left corner allows you to navigate</td>
+    </tr>
+    <tr>
+        <td><img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image79.jpg" style="display:block;margin: 0 auto;max-width:150px;" /></td>
+        <td>The Home icon button brings you directly back to the homepage, you will see a list of all the forms you have filled out, and can filter them by total, unfinished, finalised, uploaded.</td>
+    </tr>
+    <tr>
+        <td><img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image2.jpg" style="display:block;margin: 0 auto;max-width:150px;" /></td>
+        <td>The Filter icon button allows you to view only a selection of Organisation units depending on the type. If this is not set up, the only option available is to see the whole health pyramid</td>
+    </tr>
+    <tr>
+        <td><img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image56.jpg" style="display:block;margin: 0 auto;max-width:150px;" /></td>
+        <td>The Sort button allows you to sort the forms by name period, or encoding date</td>
+    </tr>
+    <tr>
+        <td><img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/skip_button.png" style="display:block;margin: 0 auto;max-width:150px;" /></td>
+        <td>The Skip button allows you to navigate to the beginning or end of the form</td>
+    </tr>
+    <tr>
+        <td><img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image80.png" style="display:block;margin: 0 auto;max-width:150px;" /></td>
+        <td>The Save button allows you to save the data collected so far.</td>
+    </tr>
+    <tr>
+        <td><img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/upload_button.png" style="display:block;margin: 0 auto;max-width:150px;" /></td>
+        <td>The Upload button allows you to upload data to the server. Only finalised forms will be uploaded</td>
+    </tr>
+    <tr>
+        <td><img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/orange_menu_button.png" style="display:block;margin: 0 auto;max-width:150px;" /></td>
+        <td>The Orange menu button allows you to refresh the app data and view app details</td>
+    </tr>
+    <tr>
+        <td><img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/white_menu_button.png" style="display:block;margin: 0 auto;max-width:150px;" /></td>
+        <td>The White menu button allows you to edit a form that has already been started</td>
+    </tr>
+    <tr>
+        <td><img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/start_button.png" style="display:block;margin: 0 auto;max-width:150px;" /></td>
+        <td>The Start button allows you to start collecting data.</td>
+    </tr>
+    <tr>
+        <td><img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image70.png" style="display:block;margin: 0 auto;max-width:150px;" /></td>
+        <td>The Fill out form button allows you to select the form needed for the organisation unit you are collecting data for</td>
+    </tr>
+</table>
 
 ## Homepage <img src="./attachments/image118.png" style="width:0.5715in;height:0.4in"/>
 
@@ -172,17 +209,17 @@ mark it as finalised.
 
 You can give a name to the form to make it easier to find it later -
 NOTE - this is only for personal use to find the form. The name will not
-be sent to the data management
-system.<img src="./attachments/image46.png" style="width:2in;height:4.45in" />
+be sent to the data management system.
 
-The form will be saved and available from the main menu under
-« Unfinished ».
+<img src="./attachments/image46.png" style="width:2in;height:4.45in" />
+
+The form will be saved and available from the main menu under « Unfinished ».
 
 ##### How to interrupt data collection?
 
 1. Option one
 
-<img src="./attachments/image27.png" style="width:0.35417in;height:0.31771in" />
+<img src="./attachments/image27.png" style="width:1.77in;height:3.92524in" />
 
 Tap on the three boxes with arrows in the top right corner of the screen
 
@@ -192,14 +229,15 @@ Save the Form
 
 You can give a name to the form to make it easier to find it later -
 NOTE - This is only for personal use to find the form. The name will not
-be sent to the data management system
+be sent to the data management system.
+
+<img src="./attachments/image46.png" style="width:1.60938in;height:3.59107in" />
 
 The form will be saved and available from the main menu under
 “Unfinished” or “Finalised”.
 
 You are then directed to the screen showing the forms you have filled in
 for the Organisation Unit you are working on.
-<img src="./attachments/image46.png" style="width:1.60938in;height:3.59107in" />
 
 <img src="./attachments/image68.png" style="width:1.57813in;height:3.50321in" />
 
@@ -237,7 +275,9 @@ in for the organisation unit you have navigated to in the “UNITS” tab.
 If you have not started collecting data for the organisation unit yet,
 there will be no forms in the “FORMS” tab.
 
-<img src="./attachments/image81.jpg" style="width:2in;height:2.61458in" /><img src="./attachments/image99.jpg" style="width:2.09169in;height:2.61979in" /><img src="./attachments/image8.png" style="width:0.39323in;height:0.3125in" />
+<img src="./attachments/image81.jpg" style="width:2in;height:2.61458in" />
+<img src="./attachments/image99.jpg" style="width:2.09169in;height:2.61979in" />
+<img src="./attachments/image8.png" style="width:0.39323in;height:0.3125in" />
 
 ### Upload
 

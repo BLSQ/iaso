@@ -66,7 +66,6 @@ const ExportCsvModal: FunctionComponent<Props> = ({
             dataTestId=""
         >
             <DatesRange
-                dateFromRequired
                 keyDateFrom="roundStartFrom"
                 keyDateTo="roundStartTo"
                 labelFrom={MESSAGES.RoundStartFrom}

@@ -223,6 +223,16 @@ const Calendar = ({ params }) => {
                                 </Button>
                             </Box>
                         </Grid>
+                        {userHasPermission(
+                            'iaso_polio_config',
+                            currentUser,
+                        ) && (
+                            <Grid item>
+                                <Box mb={2} mt={2}>
+                                    <ExportCsvModal params={params} />
+                                </Box>
+                            </Grid>
+                        )}
                     </Grid>
                     <Grid container spacing={2}>
                         {isPdf && (
@@ -252,20 +262,6 @@ const Calendar = ({ params }) => {
                             />
                         </Grid>
                     </Grid>
-                    {userHasPermission('iaso_polio_config', currentUser) && (
-                        <Grid
-                            container
-                            spacing={1}
-                            display="flex"
-                            justifyContent="flex-end"
-                        >
-                            <Grid item>
-                                <Box display="flex" justifyContent="flex-end">
-                                    <ExportCsvModal params={params} />
-                                </Box>
-                            </Grid>
-                        </Grid>
-                    )}
                 </Box>
             </div>
         </div>

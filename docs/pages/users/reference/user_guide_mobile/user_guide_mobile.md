@@ -35,91 +35,57 @@ structure.
 ## Quick overview of buttons
 
 <table>
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
-<thead>
-<tr class="header">
-<td><img src="./attachments/image108.png" style="width:0.41177in;height:0.4in" /></td>
-<td>The left arrow button in the top left corner allows you to navigate
-back to other levels in the pyramid.</td>
-</tr>
-<tr class="odd">
-<th><img src="./attachments/image79.jpg"
-style="width:0.5715in;height:0.4in" /></th>
-<th>The Home icon button brings you directly back to the homepage, you
-will see a list of all the forms you have filled out, and can filter
-them by total, unfinished, finalised, uploaded.</th>
-</tr>
-<tr class="header">
-<th><p><img src="./attachments/image2.jpg"
-style="width:0.41026in;height:0.4in" /></p>
-<h2 id="section-4" class="unnumbered"></h2>
-<h2 id="section-5" class="unnumbered"><img src="./attachments/image23.jpg"
-style="width:1.6875in;height:0.85417in" /></h2></th>
-<th>The filter icon button allows you to view only a selection of
-Organisation units depending on the type. If this is not set up, the
-only option available is to see the whole health pyramid.</th>
-</tr>
-<tr class="odd">
-<th><p><img src="./attachments/image68.png"
-style="width:0.35417in;height:0.36458in" /></p>
-<h2 id="section-6" class="unnumbered"><img src="./attachments/image56.jpg"
-style="width:2.59896in;height:2.67429in" /></h2></th>
-<th><p>The sort button allows you to sort the forms by name, period, or
-encoding date</p>
-<p>Increasing and Decreasing period = sort by date</p>
-<p>Increasing and Decreasing encoding period = sort by encoding date</p>
-<p>Increasing and Decreasing form name = sort by alphabetical
-order</p></th>
-</tr>
-<tr class="header">
-<th><img src="./attachments/image27.png"
-style="width:0.4375in;height:0.4in" /></th>
-<th>The Skip button allows you to navigate to the beginning or end of
-the form.</th>
-</tr>
-<tr class="odd">
-<th><img src="./attachments/image46.png"
-style="width:0.41333in;height:0.4in" /></th>
-<th>Save button allows you to save the data collected so far.</th>
-</tr>
-<tr class="header">
-<th><img src="./attachments/image8.png"
-style="width:0.50667in;height:0.4in" /></th>
-<th>Upload button allows you to upload data to the server. Only
-finalised forms will be uploaded.</th>
-</tr>
-<tr class="odd">
-<th><img src="./attachments/image8.png"
-style="width:0.43229in;height:0.46431in" /></th>
-<th>Orange Menu button allows you to refresh the app data and view app
-details</th>
-</tr>
-<tr class="header">
-<th><img src="./attachments/image68.png"
-style="width:0.4375in;height:0.35417in" /></th>
-<th>White Menu button allows you to edit a form that has already been
-started.</th>
-</tr>
-<tr class="odd">
-<th><img src="./attachments/image8.png"
-style="width:0.72917in;height:0.34375in" /></th>
-<th>Start button allows you to start collecting data.</th>
-</tr>
-<tr class="header">
-<th><img src="./attachments/image70.png"
-style="width:1.01042in;height:0.34375in" /></th>
-<th>Fill out form button allows you to select the form needed for the
-organisation unit you are collecting data for.</th>
-</tr>
-</thead>
-<tbody>
-</tbody>
+    <tr>
+        <th>Button</th>
+        <th>Description</th>
+    </tr>
+    <tr>
+        <td><img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image108.png" style="display:block;margin: 0 auto;max-width:150px;"/></td>
+        <td>The left arrow button in the top left corner allows you to navigate</td>
+    </tr>
+    <tr>
+        <td><img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image79.jpg" style="display:block;margin: 0 auto;max-width:150px;" /></td>
+        <td>The Home icon button brings you directly back to the homepage, you will see a list of all the forms you have filled out, and can filter them by total, unfinished, finalised, uploaded.</td>
+    </tr>
+    <tr>
+        <td><img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image2.jpg" style="display:block;margin: 0 auto;max-width:150px;" /></td>
+        <td>The Filter icon button allows you to view only a selection of Organisation units depending on the type. If this is not set up, the only option available is to see the whole health pyramid</td>
+    </tr>
+    <tr>
+        <td><img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image56.jpg" style="display:block;margin: 0 auto;max-width:150px;" /></td>
+        <td>The Sort button allows you to sort the forms by name period, or encoding date</td>
+    </tr>
+    <tr>
+        <td><img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/skip_button.png" style="display:block;margin: 0 auto;max-width:150px;" /></td>
+        <td>The Skip button allows you to navigate to the beginning or end of the form</td>
+    </tr>
+    <tr>
+        <td><img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image80.png" style="display:block;margin: 0 auto;max-width:150px;" /></td>
+        <td>The Save button allows you to save the data collected so far.</td>
+    </tr>
+    <tr>
+        <td><img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/upload_button.png" style="display:block;margin: 0 auto;max-width:150px;" /></td>
+        <td>The Upload button allows you to upload data to the server. Only finalised forms will be uploaded</td>
+    </tr>
+    <tr>
+        <td><img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/orange_menu_button.png" style="display:block;margin: 0 auto;max-width:150px;" /></td>
+        <td>The Orange menu button allows you to refresh the app data and view app details</td>
+    </tr>
+    <tr>
+        <td><img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/white_menu_button.png" style="display:block;margin: 0 auto;max-width:150px;" /></td>
+        <td>The White menu button allows you to edit a form that has already been started</td>
+    </tr>
+    <tr>
+        <td><img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/start_button.png" style="display:block;margin: 0 auto;max-width:150px;" /></td>
+        <td>The Start button allows you to start collecting data.</td>
+    </tr>
+    <tr>
+        <td><img src="https://raw.githubusercontent.com/BLSQ/iaso/main/docs/pages/users/reference/user_guide_mobile/user_guide_mobile/attachments/image70.png" style="display:block;margin: 0 auto;max-width:150px;" /></td>
+        <td>The Fill out form button allows you to select the form needed for the organisation unit you are collecting data for</td>
+    </tr>
 </table>
 
-## Homepage <img src="./attachments/image118.png" style="width:0.5715in;height:0.4in" />
+## Homepage <img src="./attachments/image118.png" style="width:0.5715in;height:0.4in"/>
 
 #### List of forms
 
@@ -127,20 +93,19 @@ On the homepage are listed forms that have been accessed, either
 completed, finalised… In the case of the first use, this page will be
 blank and all filters will show “0”.
 
-<img src="./attachments/image8.png" style="width:2in;height:4.45in" />
+<img src="./attachments/image8.png" style="width:2in;height:4.45in"/>
 
 Click on the magnifying glass and type the name of a form you want to
 see.
 
-If you click on <img src="./attachments/image119.png" style="width:0.21875in;height:0.44792in" /> to the right of a form, you
+If you click on <img src="./attachments/image119.png" style="width:0.21875in;height:0.44792in"/> to the right of a form, you
 can change the time period or the organisational unit. Each org unit can
 have 1 or multiple forms attached to it. It’s possible to suggest org
 units in the field if something is missing (source of truth is backed).
 
 If you click on a form in this list, you can view it. If you click on a
 question in a form, you can change the answer. You can choose whether or
-not to save the changes when you exit the form. And at any time, you can
-click <img src="./attachments/image80.png"style="width:0.24479in;height:0.24479in" /> to save the changes and
+not to save the changes when you exit the form. And at any time, you can/> to save the changes and
 return to the Organization Unit page.
 
 ### Setting
@@ -244,17 +209,17 @@ mark it as finalised.
 
 You can give a name to the form to make it easier to find it later -
 NOTE - this is only for personal use to find the form. The name will not
-be sent to the data management
-system.<img src="./attachments/image46.png" style="width:2in;height:4.45in" />
+be sent to the data management system.
 
-The form will be saved and available from the main menu under
-« Unfinished ».
+<img src="./attachments/image46.png" style="width:2in;height:4.45in" />
+
+The form will be saved and available from the main menu under « Unfinished ».
 
 ##### How to interrupt data collection?
 
 1. Option one
 
-<img src="./attachments/image27.png" style="width:0.35417in;height:0.31771in" />
+<img src="./attachments/image27.png" style="width:1.77in;height:3.92524in" />
 
 Tap on the three boxes with arrows in the top right corner of the screen
 
@@ -264,14 +229,15 @@ Save the Form
 
 You can give a name to the form to make it easier to find it later -
 NOTE - This is only for personal use to find the form. The name will not
-be sent to the data management system
+be sent to the data management system.
+
+<img src="./attachments/image46.png" style="width:1.60938in;height:3.59107in" />
 
 The form will be saved and available from the main menu under
 “Unfinished” or “Finalised”.
 
 You are then directed to the screen showing the forms you have filled in
 for the Organisation Unit you are working on.
-<img src="./attachments/image46.png" style="width:1.60938in;height:3.59107in" />
 
 <img src="./attachments/image68.png" style="width:1.57813in;height:3.50321in" />
 
@@ -309,7 +275,9 @@ in for the organisation unit you have navigated to in the “UNITS” tab.
 If you have not started collecting data for the organisation unit yet,
 there will be no forms in the “FORMS” tab.
 
-<img src="./attachments/image81.jpg" style="width:2in;height:2.61458in" /><img src="./attachments/image99.jpg" style="width:2.09169in;height:2.61979in" /><img src="./attachments/image8.png" style="width:0.39323in;height:0.3125in" />
+<img src="./attachments/image81.jpg" style="width:2in;height:2.61458in" />
+<img src="./attachments/image99.jpg" style="width:2.09169in;height:2.61979in" />
+<img src="./attachments/image8.png" style="width:0.39323in;height:0.3125in" />
 
 ### Upload
 

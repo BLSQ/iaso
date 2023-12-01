@@ -63,7 +63,7 @@ const ExportCsvModal: FunctionComponent<Props> = ({
             closeDialog={closeDialog}
             id=""
             onClose={() => null}
-            dataTestId=""
+            dataTestId="launch-duplicate-analysis"
         >
             <DatesRange
                 keyDateFrom="roundStartFrom"

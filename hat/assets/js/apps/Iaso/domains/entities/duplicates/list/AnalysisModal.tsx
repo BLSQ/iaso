@@ -1,10 +1,15 @@
-import { ConfirmCancelModal, makeFullModal } from 'bluesquare-components';
+import {
+    ConfirmCancelModal,
+    makeFullModal,
+    useSafeIntl,
+} from 'bluesquare-components';
 import React, {
     FunctionComponent,
     useCallback,
     useEffect,
     useState,
 } from 'react';
+import { Alert } from '@material-ui/lab';
 import MESSAGES from '../messages';
 import { AnalysisModalButton } from './AnalysisModalButton';
 import InputComponent from '../../../../components/forms/InputComponent';
@@ -22,6 +27,9 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
     const [algorithm, setAlgorithm] = useState(null);
     const [fields, setFields] = useState([]);
     const [confirm, setConfirm] = useState(false);
+    const [errorMissingFields, setErrorMissingFields] = useState('');
+
+    const { formatMessage } = useSafeIntl();
 
     const { data: entityTypesDropdown, isFetching: isFetchingEntityTypes } =
         useGetBeneficiaryTypesDropdown();
@@ -43,8 +51,15 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
             );
             const entityTypeFields =
                 filteredEntityType?.original?.fields_duplicate_search;
+            if (!entityTypeFields) {
+                setErrorMissingFields(
+                    formatMessage(MESSAGES.messageErrorMissingFields),
+                );
+            } else {
+                setErrorMissingFields('');
+                setFields(entityTypeFields || []);
+            }
 
-            setFields(entityTypeFields || []);
             setEntityType(value);
         }
         if (keyValue === 'algorithm') {
@@ -53,12 +68,12 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
     };
 
     useEffect(() => {
-        if (algorithm && entityType) {
+        if (algorithm && entityType && errorMissingFields !== '') {
             setConfirm(true);
         } else {
             setConfirm(false);
         }
-    }, [algorithm, entityType]);
+    }, [algorithm, entityType, errorMissingFields]);
 
     return (
         <ConfirmCancelModal
@@ -77,6 +92,10 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
             onClose={() => null}
             dataTestId=""
         >
+            {errorMissingFields && (
+                <Alert severity="error">{errorMissingFields}</Alert>
+            )}
+
             <InputComponent
                 type="select"
                 keyValue="entity_type"

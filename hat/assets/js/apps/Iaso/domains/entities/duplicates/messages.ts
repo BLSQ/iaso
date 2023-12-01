@@ -197,6 +197,11 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Cancel',
         id: 'iaso.label.cancel',
     },
+    messageErrorMissingFields: {
+        defaultMessage:
+            'No fields to analyse. You can setup them in beneficiaries types',
+        id: 'iaso.duplicate.messageErrorMissingFields',
+    },
 });
 
 export default MESSAGES;

@@ -68,7 +68,7 @@ const AnalysisModal: FunctionComponent<Props> = ({ closeDialog, isOpen }) => {
     };
 
     useEffect(() => {
-        if (algorithm && entityType && errorMissingFields !== '') {
+        if (algorithm && entityType && errorMissingFields === '') {
             setConfirm(true);
         } else {
             setConfirm(false);

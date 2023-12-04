@@ -1,14 +1,16 @@
 import { getSort } from 'bluesquare-components';
 import { Route, Redirect } from 'react-router';
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useContext } from 'react';
 import { baseUrls } from '../constants/urls';
 import Page404 from '../components/errors/Page404';
 
+import { Plugins } from '../domains/app/types';
 import { defaultSorted as storageDefaultSort } from '../domains/storages/config';
 import { defaultSorted as workflowDefaultSort } from '../domains/workflows/config/index';
 import { getOrgUnitsUrl } from '../domains/orgUnits/utils';
 import { useHomeOfflineComponent } from '../domains/app/hooks/useRoutes';
 import { useCurrentUser } from '../utils/usersUtils';
+import { PluginsContext } from '../utils';
 
 const getPaginationParams = (order = 'id', pageSize = 20) =>
     `/order/${order}/pageSize/${pageSize}/page/1`;
@@ -100,10 +102,6 @@ const baseRedirections = [
             '(/dateTo/:dateTo)(/periods/:periods)(/status/:status)(/levels/:levels)(/orgUnitTypeId/:orgUnitTypeId)' +
             '(/withLocation/:withLocation)(/deviceId/:deviceId)(/deviceOwnershipId/:deviceOwnershipId)(/tab/:tab)(/columns/:columns)(/search/:search)(/showDeleted/:showDeleted)',
     },
-    {
-        path: '/*',
-        component: ({ location }) => <Page404 location={location} />,
-    },
 ];
 
 type RedirectionsMethod = (
@@ -123,6 +121,11 @@ export const useRedirections: RedirectionsMethod = (
     let redirections;
     const currentUser = useCurrentUser();
     const homeOfflineComponent = useHomeOfflineComponent();
+    const { plugins }: Plugins = useContext(PluginsContext);
+    const pluginsRedirections = plugins
+        .map(plugin => plugin.redirections || [])
+        .flat();
+
     if (hasNoAccount) {
         redirections = setupRedirections;
     } else if (
@@ -150,6 +153,11 @@ export const useRedirections: RedirectionsMethod = (
                 to: homeUrl,
             },
             ...baseRedirections,
+            ...pluginsRedirections,
+            {
+                path: '/*',
+                component: ({ location }) => <Page404 location={location} />,
+            },
         ];
     }
     return redirections.map(redirection => {

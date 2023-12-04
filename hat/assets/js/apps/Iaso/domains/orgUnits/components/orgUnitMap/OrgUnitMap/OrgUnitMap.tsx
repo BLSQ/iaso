@@ -377,14 +377,10 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
         state.locationGroup.value,
     ]);
 
-    const { latitude, longitude } = currentOrgUnit;
-    // one has a value and the other not or both have a value but are impossible
-    const isInvalidCoordinate =
-        (latitude === null && longitude !== null) ||
-        (longitude === null && latitude !== null) ||
-        (latitude !== null &&
-            longitude !== null &&
-            !isValidCoordinate(latitude, longitude));
+    const [errorsCoordinates, setErrorsCoordinates] = useState({
+        latitude: [],
+        longitude: [],
+    });
     return (
         <Grid container spacing={0}>
             <InnerDrawer
@@ -400,7 +396,8 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                         saveDisabled={
                             actionBusy ||
                             !orgUnitLocationModified ||
-                            isInvalidCoordinate
+                            errorsCoordinates.latitude.length > 0 ||
+                            errorsCoordinates.longitude.length > 0
                         }
                         saveOrgUnit={saveOrgUnit}
                     />
@@ -460,6 +457,8 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                             setIsCreatingMarker(false);
                             onChangeLocation(latLong);
                         }}
+                        errorsCoordinates={errorsCoordinates}
+                        setErrorsCoordinates={setErrorsCoordinates}
                     />
                 }
                 commentsOptionComponent={

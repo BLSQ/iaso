@@ -48,6 +48,7 @@ export const LocationSwitch: FunctionComponent<Props> = ({
                         withMarginTop={false}
                         type="checkbox"
                         value={displayedLocation === option.value}
+                        key={option.value}
                         keyValue={option.value}
                         onChange={() => {
                             setDisplayedLocation(option.value);

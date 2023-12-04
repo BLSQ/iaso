@@ -38,3 +38,9 @@ responses==0.24.1  # https://github.com/getsentry/responses/tags
 types-requests==2.31.0.6  # https://pypi.org/project/types-requests/
 djangorestframework-stubs==1.4.0  # https://github.com/typeddjango/djangorestframework-stubs/tags
 types-mock==4.0.15  # https://pypi.org/project/types-mock/
+
+# Trypelim plugin.
+# ------------------------------------------------------------------------------
+sauceclient==1.0.0
+selenium==3.141.0
+vcrpy==4.1.1

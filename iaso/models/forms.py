@@ -147,7 +147,7 @@ class Form(SoftDeletableModel):
 
         return res
 
-    def as_dict_for_completeness_stats(self):
+    def as_minimal_dict(self):
         return {
             "name": self.name,
             "id": self.id,

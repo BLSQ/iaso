@@ -199,7 +199,7 @@ const MESSAGES = defineMessages({
     },
     messageErrorMissingFields: {
         defaultMessage:
-            'No fields to analyse. You can setup them in beneficiaries types',
+            'No fields to analyse. You can set them up in the beneficiaries types page',
         id: 'iaso.duplicate.messageErrorMissingFields',
     },
 });

@@ -256,7 +256,11 @@ module.exports = {
             fs: false,
         },
         /* assets/js/apps path allow using absolute import eg: from 'iaso/libs/Api' */
-        modules: ['node_modules', path.resolve(__dirname, 'assets/js/apps/')],
+        modules: [
+            path.resolve(__dirname, '../node_modules'),
+            'node_modules',
+            path.resolve(__dirname, 'assets/js/apps/'),
+        ],
         extensions: ['.js', '.tsx', '.ts'],
     },
 };

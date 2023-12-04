@@ -390,12 +390,10 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
             return {
                 "name": row_ou.name,
                 "id": row_ou.id,
-                "org_unit": row_ou.as_dict_for_completeness_stats(),
+                "org_unit": row_ou.as_minimal_dict(),
                 "form_stats": row_ou.form_stats,
-                "org_unit_type": row_ou.org_unit_type.as_dict_for_completeness_stats() if row_ou.org_unit_type else {},
-                "parent_org_unit": (
-                    row_ou.parent.as_dict_for_completeness_stats_with_parent() if row_ou.parent else None
-                ),
+                "org_unit_type": row_ou.org_unit_type.as_minimal_dict() if row_ou.org_unit_type else {},
+                "parent_org_unit": row_ou.parent.as_minimal_dict_with_parent() if row_ou.parent else None,
                 "has_children": has_children(row_ou),
             }
 
@@ -409,10 +407,8 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
                 "latitude": row_ou.location.y if row_ou.location else None,
                 "longitude": row_ou.location.x if row_ou.location else None,
                 "altitude": row_ou.location.z if row_ou.location else None,
-                "org_unit_type": row_ou.org_unit_type.as_dict_for_completeness_stats() if row_ou.org_unit_type else {},
-                "parent_org_unit": (
-                    row_ou.parent.as_dict_for_completeness_stats_with_parent() if row_ou.parent else None
-                ),
+                "org_unit_type": row_ou.org_unit_type.as_minimal_dict() if row_ou.org_unit_type else {},
+                "parent_org_unit": row_ou.parent.as_minimal_dict_with_parent() if row_ou.parent else None,
                 "has_children": has_children(row_ou),
             }
             if temp_org_unit["has_geo_json"] == True:

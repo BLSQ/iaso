@@ -313,6 +313,142 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.iaso_org_unit_change_request_approve',
         defaultMessage: 'Org unit change request - Approve',
     },
+    iaso_trypelim_anonymous: {
+        id: 'trypelim.permissions.anonymous',
+        defaultMessage: 'Anonymisation des patients',
+    },
+    iaso_trypelim_management_areas: {
+        id: 'trypelim.permissions.management_areas',
+        defaultMessage: 'Areas',
+    },
+    iaso_trypelim_management_edit_areas: {
+        id: 'trypelim.permissions.management_edit_areas',
+        defaultMessage: 'Edit areas',
+    },
+    iaso_trypelim_management_edit_shape_areas: {
+        id: 'trypelim.permissions.management_edit_shape_areas',
+        defaultMessage: 'Edit area shapes',
+    },
+    iaso_trypelim_case_cases: {
+        id: 'trypelim.permissions.case_cases',
+        defaultMessage: 'Cases',
+    },
+    iaso_trypelim_case_analysis: {
+        id: 'trypelim.permissions.case_analysis',
+        defaultMessage: 'Cases analysis',
+    },
+    iaso_trypelim_management_coordinations: {
+        id: 'trypelim.permissions.management_coordinations',
+        defaultMessage: 'Coordination',
+    },
+    iaso_trypelim_management_devices: {
+        id: 'trypelim.permissions.management_devices',
+        defaultMessage: 'Devices',
+    },
+    iaso_trypelim_datas_download: {
+        id: 'trypelim.permissions.datas_download',
+        defaultMessage: 'Download data',
+    },
+    iaso_trypelim_duplicates: {
+        id: 'trypelim.permissions.duplicates',
+        defaultMessage: 'Duplicates',
+    },
+    iaso_trypelim_datas_patient_edition: {
+        id: 'trypelim.permissions.datas_patient_edition',
+        defaultMessage: 'Edit patients',
+    },
+    iaso_trypelim_stats_graphs: {
+        id: 'trypelim.permissions.stats_graphs',
+        defaultMessage: 'Graphs',
+    },
+    iaso_trypelim_management_health_structures: {
+        id: 'trypelim.permissions.management_health_structures',
+        defaultMessage: 'Health structures',
+    },
+    iaso_trypelim_lab: {
+        id: 'trypelim.permissions.lab',
+        defaultMessage: 'Lab',
+    },
+    iaso_trypelim_labupload: {
+        id: 'trypelim.permissions.labupload',
+        defaultMessage: 'Lab import',
+    },
+    iaso_trypelim_locator: {
+        id: 'trypelim.permissions.locator',
+        defaultMessage: 'Locator',
+    },
+    iaso_trypelim_plannings_macroplanning: {
+        id: 'trypelim.permissions.macroplanning',
+        defaultMessage: 'Macroplanning',
+    },
+    iaso_trypelim_plannings_microplanning: {
+        id: 'trypelim.permissions.microplanning',
+        defaultMessage: 'Microplanning',
+    },
+    iaso_trypelim_modifications: {
+        id: 'trypelim.permissions.modifications',
+        defaultMessage: 'Modifications',
+    },
+    iaso_trypelim_management_plannings: {
+        id: 'trypelim.permissions.plannings',
+        defaultMessage: 'Plannings',
+    },
+    iaso_trypelim_management_plannings_template: {
+        id: 'trypelim.permissions.plannings_template',
+        defaultMessage: 'Plannings template',
+    },
+    iaso_trypelim_qualitycontrol: {
+        id: 'trypelim.permissions.quality_control',
+        defaultMessage: 'Quality control',
+    },
+    iaso_trypelim_case_reconciliation: {
+        id: 'trypelim.permissions.reconciliation',
+        defaultMessage: 'Reconciliation',
+    },
+    iaso_trypelim_plannings_routes: {
+        id: 'trypelim.permissions.routes',
+        defaultMessage: 'Routes',
+    },
+    iaso_trypelim_datasets_datauploads: {
+        id: 'trypelim.permissions.upload_of_case_files',
+        defaultMessage: 'Upload of case files',
+    },
+    iaso_trypelim_datasets_villageuploads: {
+        id: 'trypelim.permissions.upload_of_villages',
+        defaultMessage: 'Upload of villages',
+    },
+    iaso_trypelim_management_users: {
+        id: 'trypelim.permissions.users',
+        defaultMessage: 'Users',
+    },
+    iaso_trypelim_vectorcontrol: {
+        id: 'trypelim.permissions.vector_control',
+        defaultMessage: 'Vector control',
+    },
+    iaso_trypelim_vectorcontrolupload: {
+        id: 'trypelim.permissions.vectorcontrolupload',
+        defaultMessage: 'Vector control upload',
+    },
+    iaso_trypelim_management_villages: {
+        id: 'trypelim.permissions.villages',
+        defaultMessage: 'Villages',
+    },
+    iaso_trypelim_management_workzones: {
+        id: 'trypelim.permissions.workzones',
+        defaultMessage: 'Workzones',
+    },
+    iaso_trypelim_management_zones: {
+        id: 'trypelim.permissions.zones',
+        defaultMessage: 'Zones',
+    },
+    iaso_trypelim_management_edit_zones: {
+        id: 'trypelim.permissions.zones_edit',
+        defaultMessage: 'Edit zones',
+    },
+    iaso_trypelim_management_edit_shape_zones: {
+        id: 'trypelim.permissions.zones_shapes_edit',
+        defaultMessage: 'Edit zone shapes',
+    },
 });
 
 export default PERMISSIONS_MESSAGES;

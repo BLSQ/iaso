@@ -132,4 +132,9 @@ if apps.is_installed("django_sql_dashboard"):
 
 urlpatterns.append(path("dashboard/", include("hat.dashboard.urls")))
 
+if "trypelim" in settings.PLUGINS:
+    urlpatterns += [
+        path("", include("plugins.trypelim.urls")),
+    ]
+
 urlpatterns += static(settings.MEDIA_URL_PREFIX, document_root=settings.MEDIA_ROOT)

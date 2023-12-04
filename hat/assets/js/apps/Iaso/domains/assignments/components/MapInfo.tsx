@@ -15,9 +15,9 @@ export const useStyles = makeStyles(theme => ({
         zIndex: 499,
         bottom: theme.spacing(5),
         left: theme.spacing(2),
-        borderRadius: '100%',
-        height: theme.spacing(4),
-        width: theme.spacing(4),
+        borderRadius: '100%  !important',
+        height: `${theme.spacing(3)} !important`,
+        width: `${theme.spacing(3)} !important`,
     },
     icon: {
         fontSize: theme.spacing(4),

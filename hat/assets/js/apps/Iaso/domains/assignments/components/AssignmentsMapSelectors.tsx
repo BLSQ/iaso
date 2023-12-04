@@ -61,6 +61,7 @@ export const AssignmentsMapSelectors: FunctionComponent<Props> = ({
                         alignItems="center"
                         height="100%"
                         justifyContent="center"
+                        mt={1}
                     >
                         <FormControlLabel
                             control={

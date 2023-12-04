@@ -15,15 +15,15 @@ type Props = {
 const styles = theme => ({
     labelStart: {
         fontWeight: 'bold',
-        marginLeft: theme.spacing(2),
+        marginLeft: `${theme.spacing(2)} !important`,
         fontSize: '1rem',
-        paddingBottom: theme.spacing(2),
+        paddingBottom: `${theme.spacing(2)} !important`,
     },
     labelEnd: {
         fontWeight: 'bold',
-        marginLeft: theme.spacing(2),
+        marginLeft: `${theme.spacing(2)} !important`,
         fontSize: '1rem',
-        paddingBottom: theme.spacing(2),
+        paddingBottom: `${theme.spacing(2)} !important`,
     },
     infoIcon: {
         fontSize: 14,
@@ -32,12 +32,12 @@ const styles = theme => ({
     dateTextOK: {
         color: OK_COLOR,
         fontSize: '1rem',
-        marginLeft: theme.spacing(2),
+        marginLeft: `${theme.spacing(2)} !important`,
     },
     dateTextDefault: {
         color: FAIL_COLOR,
         fontSize: '1rem',
-        marginLeft: theme.spacing(2),
+        marginLeft: `${theme.spacing(2)} !important`,
     },
 });
 // @ts-ignore

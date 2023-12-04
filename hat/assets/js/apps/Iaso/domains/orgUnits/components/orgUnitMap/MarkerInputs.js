@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { Button, Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -10,7 +10,7 @@ import PropTypes from 'prop-types';
 
 import { commonStyles } from 'bluesquare-components';
 
-import InputComponent from '../../../../components/forms/InputComponent';
+import InputComponent from '../../../../components/forms/InputComponent.tsx';
 
 import MESSAGES from '../../messages';
 
@@ -27,9 +27,21 @@ const MarkerInputs = ({
     hasMarker,
     actionBusy,
     isCreatingMarker,
+    errorsCoordinates,
+    setErrorsCoordinates,
 }) => {
     const classes = useStyles();
     const { latitude, longitude, altitude } = orgUnit;
+    const handleSetError = useCallback(
+        (keyValue, message) => {
+            const newErrors = {
+                ...errorsCoordinates,
+                [keyValue]: message ? [message] : [],
+            };
+            setErrorsCoordinates(newErrors);
+        },
+        [errorsCoordinates, setErrorsCoordinates],
+    );
     return (
         <>
             <Box>
@@ -55,18 +67,19 @@ const MarkerInputs = ({
                 {hasMarker && (
                     <>
                         <InputComponent
+                            errors={errorsCoordinates.latitude}
+                            setFieldError={handleSetError}
                             disabled={actionBusy}
                             keyValue="latitude"
-                            onChange={(_, newlatitude) =>
+                            required
+                            onChange={(_, newlatitude) => {
                                 onChangeLocation({
-                                    latitude:
-                                        newlatitude === undefined
-                                            ? null
-                                            : newlatitude,
+                                    latitude: newlatitude,
                                     longitude,
                                     altitude,
-                                })
-                            }
+                                });
+                                handleSetError('latitude');
+                            }}
                             value={latitude}
                             type="number"
                             label={MESSAGES.latitude}
@@ -77,18 +90,19 @@ const MarkerInputs = ({
                             }}
                         />
                         <InputComponent
+                            setFieldError={handleSetError}
+                            errors={errorsCoordinates.longitude}
                             disabled={actionBusy}
                             keyValue="longitude"
-                            onChange={(_, newLongitude) =>
+                            onChange={(_, newLongitude) => {
                                 onChangeLocation({
                                     latitude,
-                                    longitude:
-                                        newLongitude === undefined
-                                            ? null
-                                            : newLongitude,
+                                    longitude: newLongitude,
                                     altitude,
-                                })
-                            }
+                                });
+                                handleSetError('longitude');
+                            }}
+                            required
                             value={longitude}
                             type="number"
                             label={MESSAGES.longitude}
@@ -149,6 +163,8 @@ MarkerInputs.propTypes = {
     hasMarker: PropTypes.bool.isRequired,
     actionBusy: PropTypes.bool.isRequired,
     isCreatingMarker: PropTypes.bool.isRequired,
+    errorsCoordinates: PropTypes.object.isRequired,
+    setErrorsCoordinates: PropTypes.func.isRequired,
 };
 
 export default MarkerInputs;

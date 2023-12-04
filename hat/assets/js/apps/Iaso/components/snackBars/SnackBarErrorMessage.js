@@ -12,7 +12,7 @@ import { closeFixedSnackbar } from '../../redux/snackBarsReducer';
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     tooltip: {
-        marginRight: theme.spacing(),
+        marginRight: `${theme.spacing()} !important`,
     },
     textarea: {
         position: 'absolute',

@@ -36,8 +36,6 @@ type ModalMode = 'create' | 'edit' | 'copy';
 type Props = Partial<SavePlanningQuery> & {
     type: ModalMode;
 };
-
-const removePadding = { paddingTop: 4, paddingBottom: 4 };
 const makeRenderTrigger = (type: 'create' | 'edit' | 'copy') => {
     if (type === 'create') {
         return ({ openDialog }) => (
@@ -246,7 +244,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
             >
                 <>
                     <Grid container id="top-row" spacing={2}>
-                        <Grid xs={6} item style={removePadding}>
+                        <Grid xs={6} item>
                             <InputComponent
                                 keyValue="name"
                                 onChange={onChange}
@@ -257,7 +255,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                                 required
                             />
                         </Grid>
-                        <Grid xs={6} item style={removePadding}>
+                        <Grid xs={6} item>
                             <InputComponent
                                 type="select"
                                 keyValue="project"
@@ -272,7 +270,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                         </Grid>
                     </Grid>
                     <Grid container id="middle-row" spacing={2}>
-                        <Grid xs={6} item style={removePadding}>
+                        <Grid xs={6} item>
                             <InputComponent
                                 type="select"
                                 keyValue="selectedTeam"
@@ -293,7 +291,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                                 }
                             />
                         </Grid>
-                        <Grid xs={6} item style={removePadding}>
+                        <Grid xs={6} item>
                             <InputComponent
                                 type="select"
                                 keyValue="forms"
@@ -322,7 +320,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                         </Grid>
                     </Grid>
                     <Grid container id="last-row" spacing={2}>
-                        <Grid item xs={6} style={removePadding}>
+                        <Grid item xs={6}>
                             <Box mt={1}>
                                 <Field
                                     required
@@ -335,7 +333,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                                 />
                             </Box>
                         </Grid>
-                        <Grid xs={6} item style={removePadding}>
+                        <Grid xs={6} item>
                             <InputComponent
                                 keyValue="description"
                                 onChange={onChange}

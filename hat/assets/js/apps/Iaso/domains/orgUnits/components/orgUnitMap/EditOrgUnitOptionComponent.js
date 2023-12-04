@@ -34,6 +34,8 @@ const EditOrgUnitOptionComponent = ({
     canEditLocation,
     canEditCatchment,
     isCreatingMarker,
+    errorsCoordinates,
+    setErrorsCoordinates,
 }) => {
     const classes = useStyles();
     const hasMarker = orgUnit.latitude !== null || orgUnit.longitude !== null;
@@ -62,6 +64,8 @@ const EditOrgUnitOptionComponent = ({
                         </Typography>
                     </Box>
                     <MarkerInputs
+                        errorsCoordinates={errorsCoordinates}
+                        setErrorsCoordinates={setErrorsCoordinates}
                         orgUnit={orgUnit}
                         onChangeLocation={onChangeLocation}
                         toggleAddMarker={toggleAddMarker}
@@ -158,6 +162,8 @@ EditOrgUnitOptionComponent.propTypes = {
     canEditLocation: PropTypes.bool.isRequired,
     canEditCatchment: PropTypes.bool.isRequired,
     isCreatingMarker: PropTypes.bool.isRequired,
+    errorsCoordinates: PropTypes.object.isRequired,
+    setErrorsCoordinates: PropTypes.func.isRequired,
 };
 
 export default EditOrgUnitOptionComponent;

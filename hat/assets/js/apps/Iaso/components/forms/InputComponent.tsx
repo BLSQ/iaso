@@ -74,6 +74,8 @@ export type InputComponentProps = {
         max?: number;
         decimalScale?: number;
     };
+    // eslint-disable-next-line no-unused-vars
+    setFieldError?: (keyValue: string, message: string) => void;
 };
 
 const InputComponent: React.FC<InputComponentProps> = ({
@@ -104,6 +106,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
     blockForbiddenChars = false,
     onErrorChange = () => null,
     numberInputOptions,
+    setFieldError = () => null,
 }) => {
     const [displayPassword, setDisplayPassword] = useState(false);
     const { formatMessage } = useSafeIntl();
@@ -169,6 +172,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
                         onChange={input => {
                             onChange(keyValue, input);
                         }}
+                        setFieldError={setFieldError}
                         // eslint-disable-next-line react/jsx-props-no-spreading
                         {...numberInputOptions}
                     />

@@ -50,7 +50,7 @@ const useStyles = makeStyles(theme => ({
     },
     open: {
         width: 235,
-        height: 240,
+        height: 275,
     },
     closed: {
         width: 0,

@@ -34,7 +34,8 @@ import {
 import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
 import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
 
-import { getDirectLegend, getLegend, MapLegend } from './MapLegend';
+import { defaultScaleThreshold, getDirectLegend, MapLegend } from './MapLegend';
+import { useGetLegend } from '../../../components/LegendBuilder/Legend';
 import { CompletenessSelect } from './CompletenessSelect';
 
 import MESSAGES from '../messages';
@@ -45,6 +46,7 @@ import {
     AssignmentsResult,
     useGetAssignments,
 } from '../../assignments/hooks/requests/useGetAssignments';
+import { ScaleThreshold } from '../../../components/LegendBuilder/types';
 
 const defaultViewport = {
     center: [1, 20],
@@ -57,6 +59,7 @@ type Props = {
     params: CompletenessRouterParams;
     selectedFormId: number;
     router: Router;
+    threshold?: ScaleThreshold;
 };
 
 const boundsOptions = {
@@ -86,10 +89,12 @@ export const Map: FunctionComponent<Props> = ({
     params,
     selectedFormId,
     router,
+    threshold = defaultScaleThreshold,
 }) => {
+    console.log('threshold', threshold);
     const { planningId } = params;
     const classes: Record<string, string> = useStyles();
-
+    const getLegend = useGetLegend(threshold);
     const bounds: Bounds | undefined = useMemo(
         () => locations && getOrgUnitsBounds(locations),
         [locations],
@@ -171,7 +176,13 @@ export const Map: FunctionComponent<Props> = ({
                 ? getDirectLegend(value)
                 : getLegend(value);
         },
-        [planningId, showDirectCompleteness, isLoadingAssignments, assignments],
+        [
+            planningId,
+            showDirectCompleteness,
+            getLegend,
+            isLoadingAssignments,
+            assignments,
+        ],
     );
 
     const getParentPageUrl = usetGetParentPageUrl(router);
@@ -182,7 +193,10 @@ export const Map: FunctionComponent<Props> = ({
                     <LoadingSpinner absolute />
                 )}
                 <CompletenessSelect params={params} />
-                <MapLegend showDirectCompleteness={showDirectCompleteness} />
+                <MapLegend
+                    showDirectCompleteness={showDirectCompleteness}
+                    threshold={threshold}
+                />
                 {parentLocation?.parent_org_unit?.id && (
                     <Box className={classes.parentIcon}>
                         <IconButton

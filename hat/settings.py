@@ -255,7 +255,11 @@ if ENABLE_CORS:
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": ["./hat/templates", "./django_sql_dashboard_export/templates"],
+        "DIRS": [
+            "./hat/templates",
+            "./django_sql_dashboard_export/templates",
+            os.path.join(BASE_DIR, "plugins/trypelim/templates"),
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -468,6 +472,8 @@ else:
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "iaso/static"),
     os.path.join(BASE_DIR, "hat/assets/webpack"),
+    os.path.join(BASE_DIR, "plugins/trypelim/assets/webpack"),
+    os.path.join(BASE_DIR, "plugins/trypelim/dashboard/static"),
 )
 
 # Javascript/CSS Files:
@@ -481,7 +487,17 @@ WEBPACK_LOADER = {
             if (DEBUG and not os.environ.get("TEST_PROD", None) and not USE_S3)
             else "webpack-stats-prod.json",
         ),
-    }
+    },
+    "TRYPELIM_OLD": {
+        "BUNDLE_DIR_NAME": "",  # used in prod, same as default, set to root
+        "STATS_FILE": os.path.join(
+            BASE_DIR,
+            "plugins/trypelim/assets/webpack",
+            "webpack-stats.json"
+            if (DEBUG and not os.environ.get("TEST_PROD", None) and not USE_S3)
+            else "webpack-stats-prod.json",
+        ),
+    },
 }
 
 AUTH_PROFILE_MODULE = "hat.users.Profile"

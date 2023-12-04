@@ -13,6 +13,7 @@ export const useGetForm = formId =>
         undefined,
         {
             enabled: formId && formId !== '0',
+            keepPreviousData: true,
         },
     );
 

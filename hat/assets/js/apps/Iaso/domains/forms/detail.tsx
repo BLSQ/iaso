@@ -160,6 +160,7 @@ const FormDetail: FunctionComponent<FormDetailProps> = ({ router, params }) => {
                     'formDetailsForInstance',
                     `${savedFormData.id}`,
                 ]);
+                queryClient.resetQueries(['forms']);
             }
         } catch (error) {
             if (error.status === 400) {
@@ -199,7 +200,9 @@ const FormDetail: FunctionComponent<FormDetailProps> = ({ router, params }) => {
         dispatch(redirectToReplace(baseUrls.formDetail, newParams));
     };
     useEffect(() => {
-        setFormState(formatFormData(form));
+        if (form) {
+            setFormState(formatFormData(form));
+        }
     }, [form, setFormState]);
     return (
         <>
@@ -218,11 +221,7 @@ const FormDetail: FunctionComponent<FormDetailProps> = ({ router, params }) => {
             />
             {(isLoading || isFormLoading) && <LoadingSpinner />}
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <FormForm
-                    currentForm={currentForm}
-                    setFieldValue={onChange}
-                    isFormLoading={isFormLoading}
-                />
+                <FormForm currentForm={currentForm} setFieldValue={onChange} />
                 <Box mt={2} justifyContent="flex-end" display="flex">
                     {currentForm.id.value !== '' && (
                         <Button

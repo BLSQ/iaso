@@ -53,13 +53,11 @@ type FormFormProps = {
     currentForm: FormDataType;
     // eslint-disable-next-line no-unused-vars
     setFieldValue: (key: string, value: any) => void;
-    isFormLoading: boolean;
 };
 
 const FormForm: FunctionComponent<FormFormProps> = ({
     currentForm,
     setFieldValue,
-    isFormLoading,
 }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
@@ -196,7 +194,6 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                             <FormLegendInput
                                 currentForm={currentForm}
                                 setFieldValue={setFieldValue}
-                                isFormLoading={isFormLoading}
                             />
                         </Grid>
                     </Grid>

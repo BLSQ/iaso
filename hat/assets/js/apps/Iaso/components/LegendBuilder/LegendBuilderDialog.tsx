@@ -37,7 +37,7 @@ const validationSchema = Yup.object().shape({
     ),
 });
 
-const LegendBuilkderDialog: FunctionComponent<Props> = ({
+const LegendBuilderDialog: FunctionComponent<Props> = ({
     titleMessage,
     isOpen,
     closeDialog,
@@ -135,8 +135,8 @@ const AddButton: FunctionComponent<PropsIcon> = ({ onClick }) => {
     );
 };
 
-const modalWithButton = makeFullModal(LegendBuilkderDialog, AddButton);
-const modalWithIcon = makeFullModal(LegendBuilkderDialog, EditIconButton);
+const modalWithButton = makeFullModal(LegendBuilderDialog, AddButton);
+const modalWithIcon = makeFullModal(LegendBuilderDialog, EditIconButton);
 
 export {
     modalWithButton as AddLegendDialog,

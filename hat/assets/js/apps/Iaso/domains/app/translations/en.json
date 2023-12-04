@@ -152,6 +152,8 @@
     "iaso.devices.timeUpdated": "Date modified",
     "iaso.duplicate.analysisBusy": "Analysis in progress",
     "iaso.duplicate.latestAnalysis": "Latest analysis completed: {finishedAt}",
+    "iaso.duplicate.launchAnalysis": "Launch analysis",
+    "iaso.duplicate.messageErrorMissingFields": "No fields to analyse. You can set them up in the beneficiaries types page",
     "iaso.duplicate.noAnalysis": "No analysis found",
     "iaso.duplicate.relaunchAnalysis": "Relaunch Analysis",
     "iaso.entities.create": "Create entity",

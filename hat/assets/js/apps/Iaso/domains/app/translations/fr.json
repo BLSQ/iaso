@@ -152,6 +152,8 @@
     "iaso.devices.timeUpdated": "Dernière modification",
     "iaso.duplicate.analysisBusy": "Analyse en cours",
     "iaso.duplicate.latestAnalysis": "Dernière analyse terminée: {finishedAt}",
+    "iaso.duplicate.launchAnalysis": "Lancer l'analyse",
+    "iaso.duplicate.messageErrorMissingFields": "Aucun champ à analyser. Vous pouvez les configurer dans les types de bénéficiaires",
     "iaso.duplicate.noAnalysis": "Aucune analyse n'a été faite",
     "iaso.duplicate.relaunchAnalysis": "Relancer l'analyse",
     "iaso.entities.create": "Créer une entité",

@@ -17,6 +17,7 @@ import os
 import re
 import sys
 import urllib.parse
+import importlib
 from datetime import timedelta
 from typing import Any, Dict
 from urllib.parse import urlparse
@@ -206,7 +207,22 @@ COMMENTS_APP = "iaso"
 
 print("Enabled plugins:", PLUGINS, end=" ")
 for plugin_name in PLUGINS:
-    INSTALLED_APPS.append(f"plugins.{plugin_name}")
+    try:
+        plugin_settings = importlib.import_module(f"plugins.{plugin_name}.plugin_settings")
+
+        if hasattr(plugin_settings, "INSTALLED_APPS"):
+            INSTALLED_APPS.extend(plugin_settings.INSTALLED_APPS)
+        else:
+            print(f"WARNING: found plugin_settings.py for plugin {plugin_name}, but it doesn't contain INSTALLED_APPS")
+
+        if hasattr(plugin_settings, "CONSTANTS"):
+            # Inject CONSTANTS dictionary into the Django settings
+            for constant, value in plugin_settings.CONSTANTS.items():
+                globals()[constant] = value
+        else:
+            print(f"WARNING: found plugin_settings.py for plugin {plugin_name}, but it doesn't contain CONSTANTS")
+    except ModuleNotFoundError:  # Use "simple" plugin system if no settings file found
+        INSTALLED_APPS.append(f"plugins.{plugin_name}")
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

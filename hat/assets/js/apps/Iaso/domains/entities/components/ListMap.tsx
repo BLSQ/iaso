@@ -28,8 +28,9 @@ import {
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
 import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
-import { LocationSwitch } from './LocationSwitch';
+import { LocationOption, LocationSwitch } from './LocationSwitch';
 import { DisplayedLocation } from '../types/locations';
+import MESSAGES from '../messages';
 
 const defaultViewport = {
     center: [1, 20],
@@ -84,6 +85,13 @@ export const ListMap: FunctionComponent<Props> = ({
     );
 
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
+    const locationOptions: LocationOption[] = useMemo(
+        () => [
+            { value: 'orgUnits', label: MESSAGES.orgUnitsLocations },
+            { value: 'submissions', label: MESSAGES.submissionsLocations },
+        ],
+        [],
+    );
 
     return (
         <section className={classes.mapContainer}>
@@ -92,6 +100,7 @@ export const ListMap: FunctionComponent<Props> = ({
                 <LocationSwitch
                     displayedLocation={displayedLocation}
                     setDisplayedLocation={setDisplayedLocation}
+                    locationOptions={locationOptions}
                 />
                 <MapContainer
                     isLoading={isFetchingLocations}

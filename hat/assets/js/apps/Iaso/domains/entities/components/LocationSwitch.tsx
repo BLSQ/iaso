@@ -1,8 +1,8 @@
 import React, { FunctionComponent, Dispatch, SetStateAction } from 'react';
 import { Paper, makeStyles, Box } from '@material-ui/core';
 
+import { IntlMessage } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
-import MESSAGES from '../messages';
 import { DisplayedLocation } from '../types/locations';
 
 const useStyles = makeStyles(theme => ({
@@ -23,39 +23,38 @@ export type Legend = {
     color: string; // has to be an hexa color
 };
 
+export type LocationOption = {
+    value: DisplayedLocation;
+    label: IntlMessage;
+};
+
 type Props = {
     displayedLocation: DisplayedLocation;
     setDisplayedLocation: Dispatch<SetStateAction<DisplayedLocation>>;
+    locationOptions: LocationOption[];
 };
 
 export const LocationSwitch: FunctionComponent<Props> = ({
     displayedLocation,
     setDisplayedLocation,
+    locationOptions,
 }) => {
     const classes = useStyles();
     return (
         <Paper elevation={1} className={classes.root}>
             <Box p={2}>
-                <InputComponent
-                    withMarginTop={false}
-                    type="checkbox"
-                    value={displayedLocation === 'orgUnits'}
-                    keyValue="orgUnits"
-                    onChange={() => {
-                        setDisplayedLocation('orgUnits');
-                    }}
-                    label={MESSAGES.orgUnitsLocations}
-                />
-                <InputComponent
-                    withMarginTop={false}
-                    type="checkbox"
-                    value={displayedLocation === 'submissions'}
-                    keyValue="submissions"
-                    onChange={() => {
-                        setDisplayedLocation('submissions');
-                    }}
-                    label={MESSAGES.submissionsLocations}
-                />
+                {locationOptions.map(option => (
+                    <InputComponent
+                        withMarginTop={false}
+                        type="checkbox"
+                        value={displayedLocation === option.value}
+                        keyValue={option.value}
+                        onChange={() => {
+                            setDisplayedLocation(option.value);
+                        }}
+                        label={option.label}
+                    />
+                ))}
             </Box>
         </Paper>
     );

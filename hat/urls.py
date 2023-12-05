@@ -107,6 +107,8 @@ if apps.is_installed("django_sql_dashboard"):
     urlpatterns.append(path("explore/<slug>/export/", export_sql_results_for_dashboard))
 
 urlpatterns.append(path("dashboard/", include("hat.dashboard.urls")))
-urlpatterns.append(path("old-trypelim-dashboard/", include("plugins.trypelim.dashboard.urls")))
+
+if "trypelim" in settings.PLUGINS:
+    urlpatterns.append(path("old-trypelim-dashboard/", include("plugins.trypelim.dashboard.urls")))
 
 urlpatterns += static(settings.MEDIA_URL_PREFIX, document_root=settings.MEDIA_ROOT)

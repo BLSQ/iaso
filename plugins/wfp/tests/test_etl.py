@@ -25,7 +25,7 @@ class ETLTestCase(TestCase):
             admission_type="new_case",
             nutrition_programme=random.choice(["TSFP", "OTP"]),
             weight_gain=5,
-            exit_type=random.choice(["cured", "dismissedduetocheating"]),
+            exit_type=random.choice(["cured", "dismissed_due_to_cheating", "voluntary_withdrawal", "transferred_out"]),
             instance_id=1,
         )
         journey.save()

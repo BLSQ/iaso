@@ -5,8 +5,10 @@ from unittest.mock import patch
 
 import jsonschema
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import Permission, User
+from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
 from rest_framework import status
 
@@ -185,7 +187,11 @@ class BulkCreateAPITestCase(BulkCreateBaseAPITestCaseMixin):
             context=context,
         )
 
-        with self.assertNumQueries(47):
+        correct_query_num = 47
+        if "trypelim" in settings.PLUGINS:  # extra queries because of trypelim_profile
+            correct_query_num += 9
+
+        with self.assertNumQueries(correct_query_num):
             response = self.client.post(f"{BASE_URL}", {"file": test_file}, format="multipart")
 
         self.assertJSONResponse(response, status.HTTP_201_CREATED)

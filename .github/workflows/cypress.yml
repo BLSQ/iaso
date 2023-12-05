@@ -180,6 +180,7 @@ jobs:
           browser: chrome
           wait-on: 'http://localhost:8081'
           spec: hat/assets/js/cypress/integration/**/*.spec.js
+          node-version: '14.17'
         env:
           CYPRESS_USERNAME: "test"
           CYPRESS_PASSWORD: "test"

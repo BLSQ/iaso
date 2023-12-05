@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useSnackbar } from 'notistack';
 
@@ -24,12 +24,36 @@ type Notification = {
     };
 };
 
-let displayed: Notification[] = [];
-const saveDisplayedSnackBar = (snackBar: Notification) => {
-    displayed = [...displayed, snackBar];
+const translateMessage = (notification, formatMessage) => {
+    if (notification.messageObject) {
+        if (typeof notification.messageObject === 'string') {
+            return notification.messageObject;
+        }
+        if (notification.messageObject.id) {
+            return formatMessage(notification.messageObject);
+        }
+        console.error(
+            `Invalid translation message for snackbar ${notification.messageObject}`,
+        );
+        return formatMessage(MESSAGES.error); // some message here
+    }
+    if (notification.messageKey) {
+        if (MESSAGES[notification.messageKey]) {
+            return formatMessage(MESSAGES[notification.messageKey]);
+        }
+        console.error(
+            `Translation ${notification.messageKey} not present in SnackBar messages`,
+        );
+    }
+    return formatMessage(MESSAGES.error); // handle case with no messageKey  and no messageObject
 };
 
 export const useSnackBars = (): void => {
+    const [displayed, setDisplayed] = useState<Notification[]>([]);
+
+    const saveDisplayedSnackBar = useCallback((snackBar: Notification) => {
+        setDisplayed(prevDisplayed => [...prevDisplayed, snackBar]);
+    }, []);
     const notifications = useSelector(
         (state: { snackBar?: { notifications: Notification[] } }) =>
             state.snackBar ? state.snackBar.notifications : [],
@@ -56,27 +80,6 @@ export const useSnackBars = (): void => {
                 );
             }
 
-            let message;
-            if (notification.messageObject) {
-                if (typeof notification.messageObject === 'string') {
-                    message = notification.messageObject;
-                } else if (notification.messageObject.id) {
-                    message = formatMessage(notification.messageObject);
-                } else {
-                    console.error(
-                        `Invalid translation message for snackbar ${notification.messageObject}`,
-                    );
-                    message = 'Error';
-                }
-            } else if (MESSAGES[notification.messageKey]) {
-                message = formatMessage(MESSAGES[notification.messageKey]);
-            } else {
-                console.warn(
-                    `Translation ${notification.messageKey} not present in SnackBar messages`,
-                );
-                message = 'Error';
-            }
-
             if (notification.errorLog) {
                 options.action = (
                     <SnackBarErrorMessage
@@ -85,7 +88,10 @@ export const useSnackBars = (): void => {
                     />
                 );
             }
-            const id = enqueueSnackbar(message, options);
+            const id = enqueueSnackbar(
+                translateMessage(notification, formatMessage),
+                options,
+            );
 
             saveDisplayedSnackBar({
                 key: notification.key,
@@ -94,7 +100,7 @@ export const useSnackBars = (): void => {
                 id,
             });
         },
-        [enqueueSnackbar, formatMessage],
+        [enqueueSnackbar, saveDisplayedSnackBar, formatMessage],
     );
 
     const closePersistingSnackBars = useCallback(() => {
@@ -106,17 +112,23 @@ export const useSnackBars = (): void => {
                 closeSnackbar(displayedNotification.id);
             }
         });
-    }, [notifications, closeSnackbar]);
+    }, [notifications, closeSnackbar, displayed]);
 
     useEffect(() => {
         notifications.forEach(notification => {
-            if (displayed.find(s => s.key === notification.key)) return;
-
-            displaySnackBars(notification);
-            if (!notification.options.persist) {
-                dispatch(removeSnackbar(notification.key));
+            if (!displayed.find(s => s.key === notification.key)) {
+                displaySnackBars(notification);
+                if (!notification.options.persist) {
+                    dispatch(removeSnackbar(notification.key));
+                }
             }
         });
         closePersistingSnackBars();
-    }, [notifications, dispatch, closePersistingSnackBars, displaySnackBars]);
+    }, [
+        notifications,
+        dispatch,
+        closePersistingSnackBars,
+        displaySnackBars,
+        displayed,
+    ]);
 };

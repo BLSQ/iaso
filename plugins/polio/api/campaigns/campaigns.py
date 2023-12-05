@@ -455,7 +455,6 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "description",
             "initial_org_unit",
             "creation_email_send_at",
-            # "group",
             "onset_at",
             "cvdpv_notified_at",
             "cvdpv2_notified_at",
@@ -515,7 +514,6 @@ class SmallCampaignSerializer(CampaignSerializer):
             "description",
             "initial_org_unit",
             "creation_email_send_at",
-            # "group",
             "onset_at",
             "cvdpv_notified_at",
             "cvdpv2_notified_at",
@@ -544,8 +542,6 @@ class SmallCampaignSerializer(CampaignSerializer):
             "eomg",
             "no_regret_fund_amount",
             "payment_mode",
-            # "round_one",
-            # "round_two",
             "created_at",
             "updated_at",
             "district_count",
@@ -646,9 +642,6 @@ class ExportCampaignSerializer(CampaignSerializer):
             model = Round
             fields = [
                 "scopes",
-                # "vaccines",
-                # "shipments",
-                # "destructions",
                 "number",
                 "started_at",
                 "ended_at",
@@ -934,9 +927,6 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
             .prefetch_related("rounds")
             .prefetch_related("rounds__datelogs")
             .prefetch_related("rounds__datelogs__modified_by")
-            # .prefetch_related("rounds__shipments")
-            # .prefetch_related("rounds__destructions")
-            # .prefetch_related("rounds__vaccines")
             .prefetch_related("rounds__scopes")
             .prefetch_related("rounds__scopes__group")
             .prefetch_related(rounds_scopes_group_org_units_prefetch)

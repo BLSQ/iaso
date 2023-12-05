@@ -970,6 +970,12 @@ class NotificationManager(models.Manager):
         return OrgUnit.objects.filter(pk__in=countries_pk).defer("geom", "simplified_geom").order_by("name")
 
 
+## Terminology
+# VRF = Vaccine Request Form
+# VPA = Vaccine Pre Alert
+# VAR = Vaccine Arrival Report
+
+
 class VaccineRequestForm(models.Model):
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
     vaccine_type = models.CharField(max_length=5, choices=VACCINES)
@@ -1006,7 +1012,7 @@ class VaccineRequestForm(models.Model):
         ]
 
     def __str__(self):
-        return f"VFR for {self.get_country()} {self.campaign} {self.vaccine_type} #VPA {self.count_pre_alerts()} #VAR {self.count_arrival_reports()}"
+        return f"VRF for {self.get_country()} {self.campaign} {self.vaccine_type} #VPA {self.count_pre_alerts()} #VAR {self.count_arrival_reports()}"
 
 
 class VaccinePreAlert(models.Model):

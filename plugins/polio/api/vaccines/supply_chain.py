@@ -1,4 +1,6 @@
+from logging import getLogger
 from typing import Any
+
 from django import forms
 from django.db.models import Sum
 from django.db.models.functions import Coalesce
@@ -14,6 +16,7 @@ from iaso.api.common import GenericReadWritePerm, ModelViewSet
 from iaso.models import OrgUnit
 from plugins.polio.models import Round, VaccineArrivalReport, VaccinePreAlert, VaccineRequestForm
 
+logger = getLogger(__name__)
 
 PA_SET = "vaccineprealert_set"
 AR_SET = "vaccinearrivalreport_set"
@@ -54,12 +57,6 @@ class NestedRoundSerializer(serializers.ModelSerializer):
     class Meta:
         model = Round
         fields = ["number", "id"]
-
-
-class NestedRoundPostSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Round
-        fields = ["id"]
 
 
 class BasePostPatchSerializer(serializers.ModelSerializer):
@@ -166,7 +163,7 @@ class PatchPreAlertSerializer(serializers.Serializer):
                 pre_alerts.append(ar)
 
             else:
-                print(pre_alert.errors)
+                logger.error(pre_alert.errors)
 
         return {"pre_alerts": pre_alerts}
 
@@ -210,7 +207,7 @@ class PatchArrivalReportSerializer(serializers.Serializer):
                 arrival_reports.append(ar)
 
             else:
-                print(arrival_report.errors)
+                logger.error(arrival_report.errors)
 
         return {"arrival_reports": arrival_reports}
 
@@ -222,8 +219,6 @@ class NestedCountrySerializer(serializers.ModelSerializer):
 
 
 class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
-    # rounds = NestedRoundPostSerializer(many=True)
-
     class Meta:
         model = VaccineRequestForm
         fields = [
@@ -457,6 +452,7 @@ class VaccineRequestFormViewSet(ModelViewSet):
     def get_queryset(self):
         return (
             VaccineRequestForm.objects.filter(campaign__account=self.request.user.iaso_profile.account)
+            .prefetch_related("vaccineprealert_set", "vaccinearrivalreport_set", "rounds")
             .distinct()
             .order_by("id")
         )

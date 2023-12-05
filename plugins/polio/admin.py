@@ -152,7 +152,7 @@ class VaccinePreAlertAdminInline(admin.TabularInline):
     extra = 0
 
 
-class VaccineRequestFormForm(forms.ModelForm):
+class VaccineRequestAdminForm(forms.ModelForm):
     class Meta:
         model = VaccineRequestForm
         fields = "__all__"
@@ -162,9 +162,10 @@ class VaccineRequestFormForm(forms.ModelForm):
         return validate_rounds_and_campaign(cleaned_data)
 
 
+@admin.register(VaccineRequestForm)
 class VaccineRequestFormAdmin(admin.ModelAdmin):
     model = VaccineRequestForm
-    form = VaccineRequestFormForm
+    form = VaccineRequestAdminForm
     inlines = [VaccinePreAlertAdminInline, VaccineArrivalReportAdminInline]
     readonly_fields = ["created_at", "updated_at"]
     list_display = ["campaign", "get_country", "count_pre_alerts", "count_arrival_reports", "created_at"]
@@ -243,4 +244,3 @@ admin.site.register(BudgetStep, BudgetStepAdmin)
 admin.site.register(MailTemplate, MailTemplateAdmin)
 admin.site.register(WorkflowModel, WorkflowAdmin)
 admin.site.register(VaccineAuthorization, VaccineAuthorizationsAdmin)
-admin.site.register(VaccineRequestForm, VaccineRequestFormAdmin)

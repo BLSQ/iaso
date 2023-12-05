@@ -15,6 +15,7 @@ export const Nopv2AuthorisationsTable: FunctionComponent<Props> = ({
     const { data: latestAuth, isFetching } = useGetLatestAuthorisations(params);
     const columns = useNopv2AuthTableColumns();
     return (
+        // @ts-ignore
         <TableWithDeepLink
             data={latestAuth?.results ?? []}
             count={latestAuth?.count}

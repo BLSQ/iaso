@@ -88,7 +88,7 @@ const MESSAGES = defineMessages({
     },
     validated: {
         defaultMessage: 'Validated',
-        id: 'iaso.forms.validated',
+        id: 'iaso.forms.valid',
     },
     validationStatus: {
         defaultMessage: 'Validation status',

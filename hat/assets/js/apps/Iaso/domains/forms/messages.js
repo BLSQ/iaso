@@ -182,8 +182,8 @@ const MESSAGES = defineMessages({
         defaultMessage: 'No',
     },
     validated: {
-        id: 'iaso.forms.validated',
-        defaultMessage: 'Validated',
+        id: 'iaso.forms.valid',
+        defaultMessage: 'Valid',
     },
     rejected: {
         id: 'iaso.forms.rejectedCap',

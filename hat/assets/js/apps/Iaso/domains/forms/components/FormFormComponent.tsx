@@ -1,10 +1,11 @@
-// To stay consistent with the naming convention, this component is named FormForm such as OrgUnitForm ...
+/* eslint-disable camelcase */
 
-import React, { useState } from 'react';
+import React, { useState, FunctionComponent } from 'react';
 import { Box, Grid, makeStyles, Typography } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
-import PropTypes from 'prop-types';
 import { Link } from 'react-router';
+import { Theme } from '@material-ui/core/styles';
+
 import { History } from '@material-ui/icons';
 import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
 import { baseUrls } from '../../../constants/urls';
@@ -14,15 +15,17 @@ import {
     commaSeparatedIdsToStringArray,
 } from '../../../utils/forms';
 
-import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions.ts';
-import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
+import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
+import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 
-import { formatLabel } from '../../instances/utils/index.tsx';
+import { formatLabel } from '../../instances/utils';
 import { periodTypeOptions } from '../../periods/constants';
 import MESSAGES from '../messages';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
+import { FormDataType } from '../types/forms';
+import { FormLegendInput } from './FormLegendInput';
 
-const styles = theme => ({
+const useStyles = makeStyles((theme: Theme) => ({
     radio: {
         flexDirection: 'row',
     },
@@ -33,24 +36,31 @@ const styles = theme => ({
         flex: '1',
         cursor: 'pointer',
     },
-    // Align the icon with the text
     linkWithIcon: {
         display: 'flex',
         alignItems: 'center',
         gap: '0.5em',
     },
-});
+}));
 
-const useStyles = makeStyles(styles);
 const formatBooleanForRadio = value => {
     if (value === true) return 'true';
     if (value === false) return 'false';
     return null;
 };
 
-const FormForm = ({ currentForm, setFieldValue }) => {
+type FormFormProps = {
+    currentForm: FormDataType;
+    // eslint-disable-next-line no-unused-vars
+    setFieldValue: (key: string, value: any) => void;
+};
+
+const FormForm: FunctionComponent<FormFormProps> = ({
+    currentForm,
+    setFieldValue,
+}) => {
     const classes = useStyles();
-    const intl = useSafeIntl();
+    const { formatMessage } = useSafeIntl();
     const [showAdvancedSettings, setshowAdvancedSettings] = useState(false);
 
     const { data: allProjects, isFetching: isFetchingProjects } =
@@ -144,7 +154,6 @@ const FormForm = ({ currentForm, setFieldValue }) => {
                             <InputComponent
                                 className={classes.radio}
                                 keyValue="single_per_period"
-                                name="single_per_period"
                                 disabled={
                                     currentForm.period_type.value === null
                                 }
@@ -158,7 +167,7 @@ const FormForm = ({ currentForm, setFieldValue }) => {
                                 errors={
                                     currentForm.single_per_period.value === null
                                         ? [
-                                              intl.formatMessage(
+                                              formatMessage(
                                                   MESSAGES.singlePerPeriodSelect,
                                               ),
                                           ]
@@ -167,16 +176,24 @@ const FormForm = ({ currentForm, setFieldValue }) => {
                                 type="radio"
                                 options={[
                                     {
-                                        label: intl.formatMessage(MESSAGES.yes),
+                                        label: formatMessage(MESSAGES.yes),
                                         value: 'true',
                                     },
                                     {
-                                        label: intl.formatMessage(MESSAGES.no),
+                                        label: formatMessage(MESSAGES.no),
                                         value: 'false',
                                     },
                                 ]}
                                 clearable={false}
                                 label={MESSAGES.singlePerPeriod}
+                                withMarginTop={false}
+                            />
+                        </Grid>
+                        <Grid item xs={3} />
+                        <Grid item xs={3}>
+                            <FormLegendInput
+                                currentForm={currentForm}
+                                setFieldValue={setFieldValue}
                             />
                         </Grid>
                     </Grid>
@@ -251,9 +268,10 @@ const FormForm = ({ currentForm, setFieldValue }) => {
                                         label: formatLabel(field),
                                         value: field.name,
                                     }))
-                                    .sort(
-                                        (option1, option2) =>
-                                            option1.label > option2.label,
+                                    .sort((option1, option2) =>
+                                        option1.label.localeCompare(
+                                            option2.label,
+                                        ),
                                     )}
                                 label={MESSAGES.fields}
                             />
@@ -282,7 +300,7 @@ const FormForm = ({ currentForm, setFieldValue }) => {
                                         setshowAdvancedSettings(false)
                                     }
                                 >
-                                    {intl.formatMessage(
+                                    {formatMessage(
                                         MESSAGES.hideAdvancedSettings,
                                     )}
                                 </Typography>
@@ -295,7 +313,7 @@ const FormForm = ({ currentForm, setFieldValue }) => {
                             variant="overline"
                             onClick={() => setshowAdvancedSettings(true)}
                         >
-                            {intl.formatMessage(MESSAGES.showAdvancedSettings)}
+                            {formatMessage(MESSAGES.showAdvancedSettings)}
                         </Typography>
                     )}
                 </Grid>
@@ -309,25 +327,20 @@ const FormForm = ({ currentForm, setFieldValue }) => {
                                 href={`/dashboard/forms/submissions/formIds/${currentForm.id.value}/tab/list`}
                             >
                                 <FormatListBulleted />
-                                {intl.formatMessage(MESSAGES.records)}
+                                {formatMessage(MESSAGES.records)}
                             </Link>
                         </Grid>
                     </DisplayIfUserHasPerm>
                     <Grid item>
                         <Link href={logsUrl} className={classes.linkWithIcon}>
                             <History />
-                            {intl.formatMessage(MESSAGES.formChangeLog)}
+                            {formatMessage(MESSAGES.formChangeLog)}
                         </Link>
                     </Grid>
                 </Grid>
             )}
         </>
     );
-};
-
-FormForm.propTypes = {
-    currentForm: PropTypes.object.isRequired,
-    setFieldValue: PropTypes.func.isRequired,
 };
 
 export default FormForm;

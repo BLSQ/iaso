@@ -23,19 +23,13 @@ import {
     useGetBeneficiaryTypesDropdown,
     useGetUsersDropDown,
 } from '../../hooks/requests';
+import { ALGORITHM_DROPDOWN } from '../../constants';
 
 type Params = PaginationParams & DuplicatesGETParams;
 
 type Props = {
     params: Params;
 };
-
-// TODO move to more accessible const
-const algorithmDropDown = [
-    { label: 'namesim', value: 'namesim' },
-    { label: 'levenshtein', value: 'levenshtein' },
-    { label: 'invert', value: 'invert' },
-];
 
 const similarityDropdown = [5, 4, 3, 2, 1].map(score => {
     const offset = 20 * score;
@@ -179,7 +173,7 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                         onChange={handleChange}
                         onEnterPressed={handleSearch}
                         label={MESSAGES.algorithm}
-                        options={algorithmDropDown}
+                        options={ALGORITHM_DROPDOWN}
                     />
                 </Grid>
 

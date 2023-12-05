@@ -104,6 +104,8 @@ class Form(SoftDeletableModel):
 
     objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(FormQuerySet)()
 
+    legend_threshold = models.JSONField(blank=True, null=True)
+
     @property
     def latest_version(self):
         return self.form_versions.order_by("-created_at").first()

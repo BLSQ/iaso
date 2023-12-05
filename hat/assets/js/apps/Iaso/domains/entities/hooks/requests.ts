@@ -22,6 +22,8 @@ import { DropdownOptions } from '../../../types/utils';
 import getDisplayName, { Profile } from '../../../utils/usersUtils';
 import { DropdownTeamsOptions, Team } from '../../teams/types/team';
 import { ExtraColumn } from '../types/fields';
+import { DisplayedLocation } from '../types/locations';
+import { Location } from '../components/ListMap';
 
 export interface PaginatedBeneficiaries extends Pagination {
     result: Array<Beneficiary>;
@@ -42,9 +44,9 @@ type Params = {
 };
 
 type ApiParams = {
-    limit: string;
+    limit?: string;
     order_columns: string;
-    page: string;
+    page?: string;
     search?: string;
     orgUnitId?: string;
     dateFrom?: string;
@@ -58,11 +60,12 @@ type GetAPiParams = {
     url: string;
     apiParams: ApiParams;
 };
-export const useGetBeneficiariesApiParams = (params: Params): GetAPiParams => {
+export const useGetBeneficiariesApiParams = (
+    params: Params,
+    withPagination = true,
+): GetAPiParams => {
     const apiParams: ApiParams = {
-        limit: params.pageSize || '20',
         order_columns: params.order || 'id',
-        page: params.page || '1',
         search: params.search,
         orgUnitId: params.location,
         dateFrom:
@@ -75,6 +78,10 @@ export const useGetBeneficiariesApiParams = (params: Params): GetAPiParams => {
         created_by_team_id: params.submitterTeamId,
         entity_type_ids: params.entityTypeIds,
     };
+    if (withPagination) {
+        apiParams.limit = params.pageSize || '20';
+        apiParams.page = params.page || '1';
+    }
     const url = makeUrlWithParams('/api/entities/', apiParams);
     return {
         url,
@@ -92,6 +99,36 @@ export const useGetBeneficiariesPaginated = (
         queryFn: () => getRequest(url),
         options: {
             staleTime: 60000,
+        },
+    });
+};
+export const useGetBeneficiariesLocations = (
+    params: Params,
+    displayedLocation: DisplayedLocation,
+): UseQueryResult<Array<Location>, Error> => {
+    const { url, apiParams } = useGetBeneficiariesApiParams(params, false);
+    // @ts-ignore
+    return useSnackQuery({
+        queryKey: ['beneficiariesLocations', apiParams],
+        queryFn: () => getRequest(url),
+        options: {
+            staleTime: 60000,
+            select: data =>
+                data?.result?.map(beneficiary => ({
+                    latitude:
+                        displayedLocation === 'submissions'
+                            ? beneficiary.latitude
+                            : beneficiary.org_unit?.latitude,
+                    longitude:
+                        displayedLocation === 'submissions'
+                            ? beneficiary.longitude
+                            : beneficiary.org_unit?.longitude,
+                    orgUnit: beneficiary.org_unit,
+                    id: beneficiary.id,
+                    original: {
+                        ...beneficiary,
+                    },
+                })) || [],
         },
     });
 };

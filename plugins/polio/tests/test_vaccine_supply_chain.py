@@ -6,6 +6,7 @@ from iaso import models as m
 from iaso.test import APITestCase
 from plugins.polio import models as pm
 from django.contrib.auth.models import AnonymousUser
+from plugins.polio.api.vaccines.supply_chain import PA_SET, AR_SET
 
 
 BASE_URL = "/api/polio/vaccine/request_forms/"
@@ -102,18 +103,21 @@ class VaccineSupplyChainAPITestCase(APITestCase):
             campaign=cls.campaign_rdc_1,
             started_at=datetime.datetime(2021, 1, 1),
             ended_at=datetime.datetime(2021, 1, 31),
+            number=1,
         )
 
         cls.campaign_rdc_1_round_2 = pm.Round.objects.create(
             campaign=cls.campaign_rdc_1,
             started_at=datetime.datetime(2021, 2, 1),
             ended_at=datetime.datetime(2021, 2, 28),
+            number=2,
         )
 
         cls.campaign_rdc_1_round_3 = pm.Round.objects.create(
             campaign=cls.campaign_rdc_1,
             started_at=datetime.datetime(2021, 3, 1),
             ended_at=datetime.datetime(2021, 3, 31),
+            number=3,
         )
 
         cls.vaccine_request_form_rdc_1 = pm.VaccineRequestForm.objects.create(
@@ -253,6 +257,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         response = self.client.get(BASE_URL + str(self.vaccine_request_form_rdc_1.id) + "/")
         self.assertEqual(response.status_code, 200)
         res = response.data
+        self.assertEqual(res["campaign"], self.vaccine_request_form_rdc_1.campaign.id)
         self.assertEqual(res["id"], self.vaccine_request_form_rdc_1.id)
         self.assertEqual(len(res["rounds"]), 2)
 
@@ -261,6 +266,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         response = self.client.get(BASE_URL + str(self.vaccine_request_form_rdc_1.id) + "/")
         self.assertEqual(response.status_code, 200)
         res = response.data
+        self.assertEqual(res["campaign"], self.vaccine_request_form_rdc_1.campaign.id)
         self.assertEqual(res["id"], self.vaccine_request_form_rdc_1.id)
         self.assertEqual(len(res["rounds"]), 2)
 
@@ -315,25 +321,60 @@ class VaccineSupplyChainAPITestCase(APITestCase):
             campaign=campaign_test,
             started_at=datetime.datetime(2021, 1, 1),
             ended_at=datetime.datetime(2021, 1, 31),
+            number=1,
         )
 
         response = self.client.post(
             BASE_URL,
             data={
-                "campaign": campaign_test.id,
+                "campaign": campaign_test.obr_name,
                 "vaccine_type": pm.VACCINES[0][0],
                 "date_vrf_reception": "2021-01-01",
                 "date_vrf_signature": "2021-01-02",
                 "date_dg_approval": "2021-01-03",
                 "quantities_ordered_in_doses": 1000000,
-                "rounds": [campaign_test_round_1.id],
+                "rounds": [{"number": campaign_test_round_1.number}],
             },
             format="json",
         )
         self.assertEqual(response.status_code, 201)
         res = response.data
-        self.assertEqual(res["campaign"], campaign_test.id)
+        self.assertEqual(res["campaign"], str(campaign_test.id))
         self.assertEqual(res["vaccine_type"], pm.VACCINES[0][0])
+
+    def test_user_with_write_permission_can_modify_existing_request_form(self):
+        self.client.force_authenticate(user=self.user_rw_perm)
+
+        # Get the first request form
+        request_form = pm.VaccineRequestForm.objects.first()
+
+        # Modify the request form
+        response = self.client.patch(
+            BASE_URL + f"{request_form.id}/",
+            data={
+                "campaign": str(request_form.campaign.obr_name),
+                "vaccine_type": pm.VACCINES[1][0],  # Change the vaccine type
+                "date_vrf_reception": "2021-02-01",  # Change the date of vrf reception
+                "date_vrf_signature": "2021-02-02",  # Change the date of vrf signature
+                "date_dg_approval": "2021-02-03",  # Change the date of dg approval
+                "quantities_ordered_in_doses": 2000000,  # Change the quantities ordered in doses
+                "rounds": [{"number": request_form.rounds.first().number}],
+            },
+            format="json",
+        )
+
+        # Check the status code
+        self.assertEqual(response.status_code, 200)
+
+        # Check the modified data
+        res = response.data
+        self.assertEqual(res["campaign"], str(request_form.campaign.id))
+        self.assertEqual(res["vaccine_type"], pm.VACCINES[1][0])
+        self.assertEqual(res["date_vrf_reception"], "2021-02-01")
+        self.assertEqual(res["date_vrf_signature"], "2021-02-02")
+        self.assertEqual(res["date_dg_approval"], "2021-02-03")
+        self.assertEqual(res["quantities_ordered_in_doses"], 2000000)
+        self.assertEqual(len(res["rounds"]), 1)
 
     def test_can_add_request_form_vaccine_prealerts(self):
         self.client.force_authenticate(user=self.user_rw_perm)
@@ -347,9 +388,10 @@ class VaccineSupplyChainAPITestCase(APITestCase):
                 "pre_alerts": [
                     {
                         "date_pre_alert_reception": "2021-01-01",
-                        "estimated_arrival_time": "2021-01-02T12:00:00Z",
+                        "estimated_arrival_time": "2021-01-02",
                         "doses_shipped": 500000,
                         "po_number": "PO-1234",
+                        "lot_numbers": ["LOT-1234", "LOT-5678"],
                     }
                 ],
             },
@@ -399,9 +441,10 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         pre_alert = pm.VaccinePreAlert.objects.create(
             request_form=request_form,
             date_pre_alert_reception="2021-01-01",
-            estimated_arrival_time="2021-01-02T00:00:00Z",
+            estimated_arrival_time="2021-01-02",
             doses_shipped=1000,
             po_number="PO-1234",
+            lot_numbers=["LOT-1234", "LOT-5678"],
         )
 
         response = self.client.get(
@@ -414,7 +457,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         self.assertEqual(len(res["pre_alerts"]), 1)
         self.assertEqual(res["pre_alerts"][0]["id"], pre_alert.id)
         self.assertEqual(res["pre_alerts"][0]["date_pre_alert_reception"], "2021-01-01")
-        self.assertEqual(res["pre_alerts"][0]["estimated_arrival_time"], "2021-01-02T00:00:00Z")
+        self.assertEqual(res["pre_alerts"][0]["estimated_arrival_time"], "2021-01-02")
         self.assertEqual(res["pre_alerts"][0]["doses_shipped"], 1000)
         self.assertEqual(res["pre_alerts"][0]["po_number"], "PO-1234")
 
@@ -478,6 +521,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
             estimated_arrival_time="2021-01-02",
             doses_shipped=1000,
             po_number="PO-1234",
+            lot_numbers=["LOT-1234", "LOT-5678"],
         )
 
         response = self.client.patch(
@@ -490,3 +534,103 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         res = response.data
 
         self.assertEqual(res["pre_alerts"][0]["doses_shipped"], 4444)
+
+    def test_can_delete_request_form(self):
+        self.client.force_authenticate(user=self.user_rw_perm)
+
+        # Get the first request form
+        request_form = pm.VaccineRequestForm.objects.first()
+
+        arrival_report = pm.VaccineArrivalReport.objects.create(
+            request_form=request_form,
+            arrival_report_date="2022-01-01",
+            doses_received=2000,
+        )
+
+        pre_alert = pm.VaccinePreAlert.objects.create(
+            request_form=request_form,
+            date_pre_alert_reception="2021-01-01",
+            estimated_arrival_time="2021-01-02",
+            doses_shipped=1000,
+            po_number="PO-1234",
+            lot_numbers=["LOT-1234", "LOT-5678"],
+        )
+
+        # Get the related objects from AR_SET and PA_SET
+        ar_set = getattr(request_form, AR_SET).all()
+        pa_set = getattr(request_form, PA_SET).all()
+
+        response = self.client.delete(
+            BASE_URL + f"{request_form.id}/",
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 204)
+
+        # Verify that the request_form was deleted
+        with self.assertRaises(pm.VaccineRequestForm.DoesNotExist):
+            pm.VaccineRequestForm.objects.get(id=request_form.id)
+
+        # Verify that the related objects in AR_SET and PA_SET were also deleted
+        for ar in ar_set:
+            with self.assertRaises(pm.VaccineArrivalReport.DoesNotExist):
+                pm.VaccineArrivalReport.objects.get(id=ar.id)
+
+        for pa in pa_set:
+            with self.assertRaises(pm.VaccinePreAlert.DoesNotExist):
+                pm.VaccinePreAlert.objects.get(id=pa.id)
+
+    def test_can_delete_pre_alert(self):
+        self.client.force_authenticate(user=self.user_rw_perm)
+
+        # Get the first request form
+        request_form = pm.VaccineRequestForm.objects.first()
+
+        pre_alert = pm.VaccinePreAlert.objects.create(
+            request_form=request_form,
+            date_pre_alert_reception="2021-01-01",
+            estimated_arrival_time="2021-01-02",
+            doses_shipped=1000,
+            po_number="PO-1234",
+            lot_numbers=["LOT-1234", "LOT-5678"],
+        )
+
+        # Get one of the pre-alerts attached to the request form
+        pre_alert = getattr(request_form, PA_SET).first()
+
+        response = self.client.delete(
+            BASE_URL + f"{request_form.id}/delete_pre_alerts/?id={pre_alert.id}",
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 204)
+
+        # Verify that the pre_alert was deleted
+        with self.assertRaises(pm.VaccinePreAlert.DoesNotExist):
+            pm.VaccinePreAlert.objects.get(id=pre_alert.id)
+
+    def test_can_delete_arrival_report(self):
+        self.client.force_authenticate(user=self.user_rw_perm)
+
+        # Get the first request form
+        request_form = pm.VaccineRequestForm.objects.first()
+
+        arrival_report = pm.VaccineArrivalReport.objects.create(
+            request_form=request_form,
+            arrival_report_date="2022-01-01",
+            doses_received=2000,
+        )
+
+        # Get one of the arrival reports attached to the request form
+        arrival_report = getattr(request_form, AR_SET).first()
+
+        response = self.client.delete(
+            BASE_URL + f"{request_form.id}/delete_arrival_reports/?id={arrival_report.id}",
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 204)
+
+        # Verify that the arrival_report was deleted
+        with self.assertRaises(pm.VaccineArrivalReport.DoesNotExist):
+            pm.VaccineArrivalReport.objects.get(id=arrival_report.id)

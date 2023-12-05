@@ -24,10 +24,13 @@ from django.core.validators import RegexValidator
 from iaso.models import Group, OrgUnit
 from iaso.models.base import Account, Task
 from iaso.models.microplanning import Team
-from iaso.utils.models.soft_deletable import SoftDeletableModel
+from iaso.utils.models.soft_deletable import SoftDeletableModel, DefaultSoftDeletableManager
 from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
 from translated_fields import TranslatedField
+
+from django.contrib.postgres.fields import ArrayField
+
 
 # noinspection PyUnresolvedReferences
 # from .budget.models import BudgetStep, BudgetStepFile
@@ -976,7 +979,7 @@ class NotificationManager(models.Manager):
 # VAR = Vaccine Arrival Report
 
 
-class VaccineRequestForm(models.Model):
+class VaccineRequestForm(SoftDeletableModel):
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
     vaccine_type = models.CharField(max_length=5, choices=VACCINES)
     rounds = models.ManyToManyField(Round)
@@ -997,6 +1000,8 @@ class VaccineRequestForm(models.Model):
     quantities_approved_by_dg_in_doses = models.PositiveIntegerField(null=True, blank=True)
     comment = models.TextField(blank=True, null=True)
 
+    objects = DefaultSoftDeletableManager()
+
     def get_country(self):
         return self.campaign.country
 
@@ -1015,30 +1020,38 @@ class VaccineRequestForm(models.Model):
         return f"VRF for {self.get_country()} {self.campaign} {self.vaccine_type} #VPA {self.count_pre_alerts()} #VAR {self.count_arrival_reports()}"
 
 
-class VaccinePreAlert(models.Model):
+class VaccinePreAlert(SoftDeletableModel):
     request_form = models.ForeignKey(VaccineRequestForm, on_delete=models.CASCADE)
     date_pre_alert_reception = models.DateField()
-    po_number = models.CharField(max_length=200)
-    estimated_arrival_time = models.DateTimeField(blank=True, null=True, default=None)
-    lot_number = models.CharField(max_length=200, blank=True, null=True, default=None)
+    po_number = models.CharField(max_length=200, blank=True, null=True, default=None)
+    estimated_arrival_time = models.DateField(blank=True, null=True, default=None)
+    lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
     expiration_date = models.DateField(blank=True, null=True, default=None)
     doses_shipped = models.PositiveIntegerField(blank=True, null=True, default=None)
-    doses_received = models.PositiveIntegerField(blank=True, null=True, default=None)
-
+    doses_per_vial = models.PositiveIntegerField(blank=True, null=True, default=None)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    objects = DefaultSoftDeletableManager()
 
     def get_doses_per_vial(self):
         return DOSES_PER_VIAL[self.request_form.vaccine_type]
 
 
-class VaccineArrivalReport(models.Model):
+class VaccineArrivalReport(SoftDeletableModel):
     request_form = models.ForeignKey(VaccineRequestForm, on_delete=models.CASCADE)
-    arrival_report_date = models.DateField()  # prepolutated from pre_alert.estimated_arrival_time
-    doses_received = models.PositiveIntegerField()  # prepolulated from pre_alert.doses_received
+    arrival_report_date = models.DateField()
+    doses_received = models.PositiveIntegerField()
+    po_number = models.CharField(max_length=200, blank=True, null=True, default=None)
+    lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
+    expiration_date = models.DateField(blank=True, null=True, default=None)
+    doses_shipped = models.PositiveIntegerField(blank=True, null=True, default=None)
+    doses_per_vial = models.PositiveIntegerField(blank=True, null=True, default=None)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    objects = DefaultSoftDeletableManager()
 
 
 class Notification(models.Model):

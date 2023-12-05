@@ -154,10 +154,10 @@ jobs:
         with:
           ref: ${{ steps.get-branch.outputs.branch }}
 
-      - name: Use node.js 14.7
+      - name: Use node.js 14.17
         uses: actions/setup-node@v2
         with:
-          node-version: '14.7'
+          node-version: '14.17'
           cache: npm
 
       - name: Cache dependencies

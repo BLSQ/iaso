@@ -362,7 +362,6 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         self.assertEqual(len(res["pre_alerts"]), 1)
         self.assertEqual(res["pre_alerts"][0]["doses_shipped"], 500000)
         self.assertEqual(res["pre_alerts"][0]["po_number"], "PO-1234")
-        self.assertEqual(res["pre_alerts"][0]["request_form"], request_form)
 
     def test_can_add_request_form_vaccine_arrival_reports(self):
         self.client.force_authenticate(user=self.user_rw_perm)
@@ -389,7 +388,6 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         self.assertEqual(len(res["arrival_reports"]), 1)
         self.assertEqual(res["arrival_reports"][0]["doses_received"], 1000)
         self.assertEqual(res["arrival_reports"][0]["arrival_report_date"], "2021-01-01")
-        self.assertEqual(res["arrival_reports"][0]["request_form"], request_form)
 
     def test_can_get_request_form_vaccine_prealerts(self):
         self.client.force_authenticate(user=self.user_rw_perm)

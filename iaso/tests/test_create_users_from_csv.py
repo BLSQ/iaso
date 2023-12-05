@@ -6,6 +6,7 @@ from unittest.mock import patch
 
 import jsonschema
 
+from django.conf import settings
 from django.contrib.auth.models import Permission, User
 from django.core.exceptions import ValidationError
 from django.core.files.storage import default_storage
@@ -126,8 +127,12 @@ class BulkCreateCsvTestCase(APITestCase):
             "test_user_bulk_create_valid.csv", csv_content.encode("utf-8"), content_type="text/csv"
         )
 
-        with self.assertNumQueries(37):
-            response = self.client.post(f"{BASE_URL}", {"file": test_file}, format="multipart")
+        correct_query_num = 83
+        if "trypelim" in settings.PLUGINS:  # extra queries because of trypelim_profile
+            correct_query_num += 9
+        with self.assertNumQueries(correct_query_num):
+            with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv") as csv_users:
+                response = self.client.post(f"{BASE_URL}", {"file": csv_users}, format="multipart")
 
         users = User.objects.all()
         profiles = Profile.objects.all()

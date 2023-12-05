@@ -46,6 +46,7 @@ import { SHOW_PAGES } from '../utils/featureFlags';
 import { paginationPathParams } from '../routing/common.ts';
 import { Duplicates } from '../domains/entities/duplicates/list/Duplicates.tsx';
 import { DuplicateDetails } from '../domains/entities/duplicates/details/DuplicateDetails.tsx';
+import { ApproveOrgUnitChanges } from '../domains/orgUnits/approveChanges/ApproveOrgUnitChanges.tsx';
 import { VisitDetails } from '../domains/entities/components/VisitDetails.tsx';
 import * as Permission from '../utils/permissions.ts';
 import { SetupAccount } from '../domains/setup/index.tsx';
@@ -473,6 +474,34 @@ export const orgUnitsDetailsPath = {
     ],
 };
 
+export const orgUnitChangeRequestPath = {
+    baseUrl: baseUrls.orgUnitsChangeRequest,
+    permissions: [Permission.ORG_UNITS_CHANGE_REQUEST_APPROVE],
+    component: props => <ApproveOrgUnitChanges {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        ...paginationPathParams,
+        {
+            key: 'parent_id',
+            isRequired: false,
+        },
+        {
+            key: 'groups',
+            isRequired: false,
+        },
+        {
+            key: 'org_unit_type_id',
+            isRequired: false,
+        },
+        {
+            key: 'status',
+            isRequired: false,
+        },
+    ],
+};
 export const registryPath = {
     baseUrl: baseUrls.registry,
     permissions: [Permission.REGISTRY],
@@ -1374,6 +1403,7 @@ export const routeConfigs = [
     storageDetailPath,
     workflowsPath,
     workflowsDetailPath,
+    orgUnitChangeRequestPath,
     registryPath,
     registryDetailPath,
     modulesPath,

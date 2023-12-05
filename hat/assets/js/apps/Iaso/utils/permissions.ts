@@ -19,6 +19,7 @@ const POLIO = 'iaso_polio';
 const POLIO_CONFIG = 'iaso_polio_config';
 const PROJECTS = 'iaso_projects';
 const REGISTRY = 'iaso_registry';
+const ORG_UNITS_CHANGE_REQUEST_APPROVE = 'iaso_org_unit_change_request_approve';
 const SOURCES = 'iaso_sources';
 const SOURCE_WRITE = 'iaso_write_sources';
 const STORAGES = 'iaso_storages';
@@ -43,6 +44,7 @@ export {
     FORMS,
     LINKS,
     MAPPINGS,
+    ORG_UNITS_CHANGE_REQUEST_APPROVE,
     ORG_UNIT_GROUPS,
     ORG_UNIT_TYPES,
     ORG_UNITS,

@@ -49,6 +49,7 @@ import { useGetBeneficiaryTypesDropdown } from '../domains/entities/hooks/reques
 import { DropdownOptions } from '../types/utils';
 import { Plugins } from '../domains/app/types';
 import { useGetOrgunitsExtraPath } from '../domains/home/hooks/useGetOrgunitsExtraPath';
+import { CHANGE_REQUEST } from './urls';
 
 type MenuItem = {
     label: string;
@@ -145,6 +146,12 @@ const menuItems = (
                     extraPath: orgUnitExtraPath,
                     key: 'list',
                     icon: props => <FormatListBulleted {...props} />,
+                },
+                {
+                    label: formatMessage(MESSAGES.reviewChangeProposals),
+                    permissions: paths.orgUnitChangeRequestPath.permissions,
+                    key: CHANGE_REQUEST,
+                    icon: props => <CategoryIcon {...props} />,
                 },
                 {
                     label: formatMessage(MESSAGES.registry),

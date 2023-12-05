@@ -3,6 +3,7 @@ import io
 
 import jsonschema
 
+from django.conf import settings
 from django.contrib.auth.models import Permission, User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import serializers
@@ -97,7 +98,10 @@ class BulkCreateCsvTestCase(APITestCase):
     def test_upload_valid_csv(self):
         self.client.force_authenticate(self.yoda)
         self.source.projects.set([self.project])
-        with self.assertNumQueries(83):
+        correct_query_num = 83
+        if "trypelim" in settings.PLUGINS:  # extra queries because of trypelim_profile
+            correct_query_num += 9
+        with self.assertNumQueries(correct_query_num):
             with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv") as csv_users:
                 response = self.client.post(f"{BASE_URL}", {"file": csv_users})
 

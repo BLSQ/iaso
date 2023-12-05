@@ -810,7 +810,7 @@ export const projectsPath = {
 
 export const dataSourcesPath = {
     baseUrl: baseUrls.sources,
-    permissions: [Permission.SOURCES],
+    permissions: [Permission.SOURCES, Permission.SOURCE_WRITE],
     component: props => <DataSources {...props} />,
     params: [
         {

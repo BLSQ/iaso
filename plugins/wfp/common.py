@@ -82,6 +82,7 @@ class ETL:
             admission_type = visit.get("admission_type_yellow")
         elif visit.get("_admission_type"):
             admission_type = visit.get("_admission_type")
+        admission_type = self.admission_type_converter(admission_type)
         return admission_type
 
     def admission_criteria(self, visit):
@@ -150,6 +151,16 @@ class ETL:
             return "transferred_out"
         else:
             return exit_type
+
+    def admission_type_converter(self, admission_type):
+        if admission_type == "referred_from_other_otp":
+            return "referred_from_otp_sam"
+        elif admission_type == "referred_from_tsfp":
+            return "referred_from_tsfp_mam"
+        elif admission_type == "referred_from_sc_itp":
+            return "referred_from_sc"
+        else:
+            return admission_type
 
     def get_admission_steps(self, steps):
         step_visits = []

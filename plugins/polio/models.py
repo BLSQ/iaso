@@ -1,7 +1,8 @@
-from collections import defaultdict
-from datetime import date
 import datetime
 import json
+from datetime import date
+from typing import Union
+from collections import defaultdict
 from typing import Any, Tuple, Union
 from uuid import uuid4
 
@@ -10,11 +11,12 @@ import pandas as pd
 from beanstalk_worker import task_decorator
 
 import django.db.models.manager
-from django.contrib.auth.models import User, AnonymousUser
+from django.contrib.auth.models import AnonymousUser, User
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
-from django.db.models import Q, QuerySet
+from django.db.models import Q, Sum, QuerySet
 from django.db.models.expressions import RawSQL
+from django.db.models.functions import Coalesce
 from django.utils.translation import gettext as _
 from gspread.utils import extract_id_from_url  # type: ignore
 from django.utils import timezone
@@ -43,6 +45,12 @@ VACCINES = [
     ("nOPV2", _("nOPV2")),
     ("bOPV", _("bOPV")),
 ]
+
+DOSES_PER_VIAL = {
+    "mOPV2": 20,
+    "nOPV2": 20,
+    "bOPV": 20,
+}
 
 LANGUAGES = [
     ("FR", "Français"),
@@ -139,36 +147,6 @@ class CampaignScope(models.Model):
     class Meta:
         unique_together = [("campaign", "vaccine")]
         ordering = ["campaign", "vaccine"]
-
-
-class Destruction(models.Model):
-    vials_destroyed = models.IntegerField(null=True, blank=True)
-    date_report_received = models.DateField(null=True, blank=True)
-    date_report = models.DateField(null=True, blank=True)
-    comment = models.TextField(null=True, blank=True)
-    round = models.ForeignKey("Round", related_name="destructions", on_delete=models.CASCADE, null=True)
-
-
-class Shipment(models.Model):
-    vaccine_name = models.CharField(max_length=5, choices=VACCINES)
-    po_numbers = models.IntegerField(null=True, blank=True)
-    vials_received = models.IntegerField(null=True, blank=True)
-    estimated_arrival_date = models.DateField(null=True, blank=True)
-    reception_pre_alert = models.DateField(null=True, blank=True)
-    date_reception = models.DateField(null=True, blank=True)
-    comment = models.TextField(null=True, blank=True)
-    round = models.ForeignKey("Round", related_name="shipments", on_delete=models.CASCADE, null=True)
-
-
-class RoundVaccine(models.Model):
-    class Meta:
-        unique_together = [("name", "round")]
-        ordering = ["name"]
-
-    name = models.CharField(max_length=5, choices=VACCINES)
-    round = models.ForeignKey("Round", on_delete=models.CASCADE, related_name="vaccines", null=True, blank=True)
-    doses_per_vial = models.IntegerField(null=True, blank=True)
-    wastage_ratio_forecast = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
 
 
 class RoundDateHistoryEntryQuerySet(models.QuerySet):
@@ -990,6 +968,77 @@ class NotificationManager(models.Manager):
             "org_unit__parent__parent__id", flat=True
         )
         return OrgUnit.objects.filter(pk__in=countries_pk).defer("geom", "simplified_geom").order_by("name")
+
+
+## Terminology
+# VRF = Vaccine Request Form
+# VPA = Vaccine Pre Alert
+# VAR = Vaccine Arrival Report
+
+
+class VaccineRequestForm(models.Model):
+    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
+    vaccine_type = models.CharField(max_length=5, choices=VACCINES)
+    rounds = models.ManyToManyField(Round)
+    date_vrf_signature = models.DateField()
+    date_vrf_reception = models.DateField()
+    date_dg_approval = models.DateField()
+    quantities_ordered_in_doses = models.PositiveIntegerField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    # optional fields
+    wastage_rate_used_on_vrf = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    date_vrf_submission_to_orpg = models.DateField(null=True, blank=True)
+    quantities_approved_by_orpg_in_doses = models.PositiveIntegerField(null=True, blank=True)
+    date_rrt_orpg_approval = models.DateField(null=True, blank=True)
+    date_vrf_submitted_to_dg = models.DateField(null=True, blank=True)
+    quantities_approved_by_dg_in_doses = models.PositiveIntegerField(null=True, blank=True)
+    comment = models.TextField(blank=True, null=True)
+
+    def get_country(self):
+        return self.campaign.country
+
+    def count_pre_alerts(self):
+        return self.vaccineprealert_set.count()
+
+    def count_arrival_reports(self):
+        return self.vaccinearrivalreport_set.count()
+
+    def total_doses_shipped(self):
+        return self.vaccineprealert_set.all().aggregate(total_doses_shipped=Coalesce(Sum("doses_shipped"), 0))[
+            "total_doses_shipped"
+        ]
+
+    def __str__(self):
+        return f"VRF for {self.get_country()} {self.campaign} {self.vaccine_type} #VPA {self.count_pre_alerts()} #VAR {self.count_arrival_reports()}"
+
+
+class VaccinePreAlert(models.Model):
+    request_form = models.ForeignKey(VaccineRequestForm, on_delete=models.CASCADE)
+    date_pre_alert_reception = models.DateField()
+    po_number = models.CharField(max_length=200)
+    estimated_arrival_time = models.DateTimeField(blank=True, null=True, default=None)
+    lot_number = models.CharField(max_length=200, blank=True, null=True, default=None)
+    expiration_date = models.DateField(blank=True, null=True, default=None)
+    doses_shipped = models.PositiveIntegerField(blank=True, null=True, default=None)
+    doses_received = models.PositiveIntegerField(blank=True, null=True, default=None)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def get_doses_per_vial(self):
+        return DOSES_PER_VIAL[self.request_form.vaccine_type]
+
+
+class VaccineArrivalReport(models.Model):
+    request_form = models.ForeignKey(VaccineRequestForm, on_delete=models.CASCADE)
+    arrival_report_date = models.DateField()  # prepolutated from pre_alert.estimated_arrival_time
+    doses_received = models.PositiveIntegerField()  # prepolulated from pre_alert.doses_received
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
 
 class Notification(models.Model):

@@ -16,6 +16,7 @@ import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import TopBar from '../../components/nav/TopBarComponent';
 import { Filters } from './components/Filters';
 import {
+    useGetBeneficiariesLocations,
     useGetBeneficiariesPaginated,
     useGetBeneficiaryTypesDropdown,
 } from './hooks/requests';
@@ -27,6 +28,7 @@ import { redirectTo } from '../../routing/actions';
 import { ListMap } from './components/ListMap';
 
 import { MENU_HEIGHT_WITH_TABS } from '../../constants/uiConstants';
+import { DisplayedLocation } from './types/locations';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -59,6 +61,8 @@ type Props = {
 
 export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
     const classes: Record<string, string> = useStyles();
+    const [displayedLocation, setDisplayedLocation] =
+        useState<DisplayedLocation>('submissions');
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
 
@@ -108,6 +112,8 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
             entityTypeName = currentType.label;
         }
     }
+    const { data: locations, isFetching: isFetchingLocations } =
+        useGetBeneficiariesLocations(params, displayedLocation);
     return (
         <>
             {isLoading && tab === 'map' && <LoadingSpinner />}
@@ -140,21 +146,11 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                     >
                         {!isFetching && (
                             <ListMap
-                                locations={
-                                    data?.result?.map(beneficiary => ({
-                                        latitude:
-                                            beneficiary.org_unit?.latitude,
-                                        longitude:
-                                            beneficiary.org_unit?.longitude,
-                                        orgUnit: beneficiary.org_unit,
-                                        id: beneficiary.id,
-                                        original: {
-                                            ...beneficiary,
-                                        },
-                                    })) || []
-                                }
-                                isFetchingLocations={isFetching}
+                                locations={locations || []}
+                                isFetchingLocations={isFetchingLocations}
                                 extraColumns={extraColumns}
+                                displayedLocation={displayedLocation}
+                                setDisplayedLocation={setDisplayedLocation}
                             />
                         )}
                     </Box>

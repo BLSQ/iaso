@@ -2395,6 +2395,10 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'The latest campaign is the campaign with the round that started the most recently within the chosen time frame',
     },
+    vaccineSupplyChain: {
+        id: 'iaso.polio.menu.vaccineSupplyChain',
+        defaultMessage: 'Vaccine supply chain',
+    },
     latestManualRefresh: {
         id: 'iaso.polio.label.latestManualRefresh',
         defaultMessage: 'Latest manual refresh',

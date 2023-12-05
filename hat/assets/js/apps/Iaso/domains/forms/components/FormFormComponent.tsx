@@ -1,5 +1,4 @@
 /* eslint-disable camelcase */
-
 import React, { useState, FunctionComponent } from 'react';
 import { Box, Grid, Typography, Theme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -13,10 +12,8 @@ import {
     commaSeparatedIdsToArray,
     commaSeparatedIdsToStringArray,
 } from '../../../utils/forms';
-
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
-
 import { formatLabel } from '../../instances/utils';
 import { periodTypeOptions } from '../../periods/constants';
 import MESSAGES from '../messages';

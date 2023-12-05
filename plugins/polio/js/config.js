@@ -16,6 +16,7 @@ import StorefrontIcon from '@mui/icons-material/Storefront';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import ExtensionIcon from '@mui/icons-material/Extension';
 import WatchLaterIcon from '@mui/icons-material/WatchLater';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import { Dashboard } from './src/domains/Campaigns/Dashboard';
 import { Calendar } from './src/domains/Calendar/Calendar';
 import { CampaignHistory } from './src/domains/Campaigns/campaignHistory/CampaignHistory.tsx';
@@ -38,6 +39,7 @@ import {
     LQAS_AFRO_MAP_URL,
     NOPV2_AUTH,
     NOPV2_AUTH_DETAILS,
+    VACCINE_SUPPLY_CHAIN,
 } from './src/constants/routes';
 import fr from './src/constants/translations/fr.json';
 import en from './src/constants/translations/en.json';
@@ -50,6 +52,7 @@ import { BudgetList } from './src/domains/Budget/index.tsx';
 import { LqasAfroOverview } from './src/domains/LQAS-IM/LQAS/LqasAfroOverview/LqasAfroOverview.tsx';
 import { Nopv2Authorisations } from './src/domains/VaccineModule/Nopv2Authorisations/Nopv2Authorisations.tsx';
 import { Nopv2AuthorisationsDetails } from './src/domains/VaccineModule/Nopv2Authorisations/Details/Nopv2AuthorisationsDetails.tsx';
+import { VaccineSupplyChain } from './src/domains/VaccineModule/SupplyChain/VaccineSupplyChain.tsx';
 
 const campaignsFilters = [
     {
@@ -408,23 +411,39 @@ const routes = [
         ],
     },
     {
+        baseUrl: VACCINE_SUPPLY_CHAIN,
+        component: props => <VaccineSupplyChain {...props} />,
+        permissions: ['iaso_polio'],
+        params: [
+            ...paginationPathParams,
+
+            {
+                isRequired: false,
+                key: 'search',
+            },
+            {
+                isRequired: false,
+                key: 'campaign__country',
+            },
+            {
+                isRequired: false,
+                key: 'vaccine_type',
+            },
+            {
+                isRequired: false,
+                key: 'rounds__started_at__gte',
+            },
+            {
+                isRequired: false,
+                key: 'rounds__started_at__lte',
+            },
+        ],
+    },
+    {
         baseUrl: CONFIG_COUNTRY_URL,
         component: () => <CountryNotificationsConfig />,
         permissions: ['iaso_polio_config'],
-        params: [
-            {
-                isRequired: false,
-                key: 'order',
-            },
-            {
-                isRequired: false,
-                key: 'page',
-            },
-            {
-                isRequired: false,
-                key: 'pageSize',
-            },
-        ],
+        params: [...paginationPathParams],
     },
     {
         baseUrl: CONFIG_REASONS_FOR_DELAY_URL,
@@ -554,6 +573,13 @@ const menu = [
                         permissions: ['iaso_polio'],
                         icon: props => <MenuBookIcon {...props} />,
                     },
+                    {
+                        label: MESSAGES.vaccineSupplyChain,
+                        key: 'supplychain',
+                        dev: true,
+                        permissions: ['iaso_polio'],
+                        icon: props => <LocalShippingIcon {...props} />,
+                    },
                 ],
             },
             {
@@ -589,7 +615,7 @@ export default {
     routes,
     menu,
     translations,
-    homeUrl: DASHBOARD_BASE_URL,
+    homeUrl: `/${DASHBOARD_BASE_URL}`,
     // homeOffline: () => <div>OFFLINE</div>,
     // homeOnline: () => <div>CONNECTED HOME POLIO</div>,
 };

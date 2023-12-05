@@ -8,6 +8,7 @@ import { QueryClient, QueryClientProvider } from 'react-query';
 
 import './libs/polyfills.ts';
 
+import { last } from 'lodash';
 import App from './domains/app';
 import { store, history } from './redux/store';
 import { getPlugins, PluginsContext } from './utils';
@@ -29,6 +30,7 @@ export default function iasoApp(
     userHomePage,
 ) {
     const plugins = getPlugins(enabledPluginsName);
+    const activeHomePage = userHomePage || last(plugins)?.homeUrl;
     ReactDOM.render(
         <QueryClientProvider client={queryClient}>
             <PluginsContext.Provider value={{ plugins }}>
@@ -40,7 +42,7 @@ export default function iasoApp(
                         <Provider store={store}>
                             <App
                                 history={history}
-                                userHomePage={userHomePage}
+                                userHomePage={activeHomePage}
                             />
                         </Provider>
                     </MuiThemeProvider>

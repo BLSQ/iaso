@@ -29,6 +29,7 @@ class Migration(migrations.Migration):
                     ("iaso_data_tasks", "Tâches"),
                     ("iaso_polio", "Polio"),
                     ("iaso_polio_config", "Polio config"),
+                    ("iaso_polio_notifications", "Polio notifications"),
                     ("iaso_submissions", "Soumissions"),
                     ("iaso_update_submission", "Editer soumissions"),
                     ("iaso_planning", "Planning"),

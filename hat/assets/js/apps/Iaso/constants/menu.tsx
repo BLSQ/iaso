@@ -86,7 +86,7 @@ const menuItems = (
             isActive: pathname =>
                 pathname?.includes(`/entityTypeIds/${entityType.value}/`) &&
                 pathname?.includes(`entities/list/`),
-            extraPath: `/entityTypeIds/${entityType.value}/order/last_saved_instance/pageSize/20/page/1`,
+            extraPath: `/entityTypeIds/${entityType.value}/order/-last_saved_instance/pageSize/20/page/1`,
         }));
     }
     return [

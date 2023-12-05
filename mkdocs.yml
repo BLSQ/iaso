@@ -1,4 +1,4 @@
-site_name: Iaso
+site_name: IASO
 theme:
   name: readthedocs
   highlightjs: true
@@ -17,50 +17,59 @@ markdown_extensions:
   - markdown_include.include:
       base_path: .
   - admonition
+  - toc:
+      permalink: "#"
+repo_url: https://github.com/BLSQ/iaso
+edit_uri: edit/main/docs
 nav:
   - Home: index.md
   - Users: 
     - References:
-      - User guide:
+      - User guides:
         - ./pages/users/reference/user_guide/user_guide.md
-      - How to:
-        - ./pages/users/how_to/convert_docx_to_md/convert_docx_to_md.md
-      - FAQ: ./pages/users/FAQ/faq.md
+        - ./pages/users/reference/user_guide_mobile/user_guide_mobile.md
+      - Interoperability road map:
+        - ./pages/users/reference/interop/interop.md
+      # - How to:
+      #   - ./pages/users/how_to/convert_docx_to_md/convert_docx_to_md.md
+      # - FAQ: ./pages/users/FAQ/faq.md
   - Developers:
     - References:
-      - SQL dashboard : 
-        - ./pages/dev/reference/sql_dashboard/SQL_Dashboard_feature.md
-      - Entities:
-        - ./pages/dev/reference/entities_in_iaso/entities_in_iaso.md
-      - Front-end:
-        - ./pages/dev/reference/front-end_reference/front-end_reference.md
-      - Data model glossary:
-        - ./pages/dev/reference/data_model_glossary/data_model_glossary.md
-      - Audit:
-        - ./pages/dev/reference/audit/audit.md
-      - Vector control:
-        - ./pages/dev/reference/vector_control/vector_control.md
-      - API: 
-        - ./pages/dev/reference/API/entity.md
+      # - Data model glossary:
+      - ./pages/dev/reference/data_model_glossary/data_model_glossary.md
+      # - SQL dashboard : 
+      - ./pages/dev/reference/sql_dashboard/SQL_Dashboard_feature.md
+      - ./pages/dev/reference/docker/docker.md
+      - ./pages/dev/reference/background_tasks/background_tasks.md
+      # - Entities:
+      #   - ./pages/dev/reference/entities_in_iaso/entities_in_iaso.md
+      # - Front-end:
+      #   - ./pages/dev/reference/front-end_reference/front-end_reference.md
+      # - Audit:
+      #   - ./pages/dev/reference/audit/audit.md
+      # - Vector control:
+      #   - ./pages/dev/reference/vector_control/vector_control.md
+      # - Models: 
+      #   - ./pages/dev/reference/API/entity.md
     - How to:
-      - Contribute:
-        - ./pages/dev/how_to/contribute/contribute.md 
-      - Set up your dev environment:
-        - ./pages/dev/how_to/setup_dev_env/setup_dev_env.md 
-      - Manually test Enketo public_create_url:
-        - ./pages/dev/how_to/manually_test_enketo/manually_test_enketo.md 
-      - Deploy:
-        - ./pages/dev/how_to/deploy/deploy.md
-      - Use the APIs:
-        - ./pages/dev/how_to/use_iaso_apis/use_iaso_apis.md
-      - Run docs locally:
-        - ./pages/dev/how_to/run_docs_locally/run_docs_locally.md
-      - Write a visit on an NFC card: 
-        - ./pages/dev/how_to/write_visit_on_nfc/write_visit_on_nfc.md
+      # - Contribute:
+      - ./pages/dev/how_to/contribute/contribute.md 
+      # - Set up a dev environment:
+      - ./pages/dev/how_to/setup_dev_env/setup_dev_env.md 
+      # - Test Enketo public_create_url:
+      #   - ./pages/dev/how_to/manually_test_enketo/manually_test_enketo.md 
+      # - Deploy:
+      #   - ./pages/dev/how_to/deploy/deploy.md
+      # - Use the APIs:
+      - ./pages/dev/how_to/use_iaso_apis/use_iaso_apis.md
+      # - Run docs locally:
+      #   - ./pages/dev/how_to/run_docs_locally/run_docs_locally.md
+      # - Write a visit on an NFC card: 
+      #   - ./pages/dev/how_to/write_visit_on_nfc/write_visit_on_nfc.md
 
   - More about Iaso:
+    - Get a demo: https://www.bluesquarehub.com/iaso/ 
     - Bluesquare: https://www.bluesquarehub.com/
-    - Source code: https://github.com/BLSQ/iaso
 
 
 

@@ -29,6 +29,8 @@ import { useGetCampaigns } from '../Campaigns/hooks/api/useGetCampaigns.ts';
 import MESSAGES from '../../constants/messages';
 import { Filters } from './campaignCalendar/Filters';
 import { ExportCsvModal } from './ExportCsvModal.tsx';
+import { userHasPermission } from '../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils.ts';
 
 const pageWidth = 1980;
 
@@ -149,6 +151,8 @@ const Calendar = ({ params }) => {
         }
     }, [filteredCampaigns, mappedCampaigns, isLoading]);
 
+    const currentUser = useCurrentUser();
+
     return (
         <div>
             {isLogged && !isPdf && (
@@ -219,6 +223,16 @@ const Calendar = ({ params }) => {
                                 </Button>
                             </Box>
                         </Grid>
+                        {userHasPermission(
+                            'iaso_polio_config',
+                            currentUser,
+                        ) && (
+                            <Grid item>
+                                <Box mb={2} mt={2}>
+                                    <ExportCsvModal params={params} />
+                                </Box>
+                            </Grid>
+                        )}
                     </Grid>
                     <Grid container spacing={2}>
                         {isPdf && (
@@ -248,19 +262,6 @@ const Calendar = ({ params }) => {
                             />
                         </Grid>
                     </Grid>
-                    <Grid
-                        container
-                        spacing={1}
-                        display="flex"
-                        justifyContent="flex-end"
-                    >
-                        <Grid item>
-                            <Box display="flex" justifyContent="flex-end">
-                                <ExportCsvModal params={params} />
-                            </Box>
-                        </Grid>
-                    </Grid>
-                    ;
                 </Box>
             </div>
         </div>

@@ -427,9 +427,6 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 201)
         res = response.data
 
-        print(res.keys())
-        print(res["arrival_reports"])
-
         self.assertEqual(len(res["arrival_reports"]), 1)
         self.assertEqual(res["arrival_reports"][0]["doses_received"], 1000)
         self.assertEqual(res["arrival_reports"][0]["arrival_report_date"], "2021-01-01")
@@ -532,8 +529,6 @@ class VaccineSupplyChainAPITestCase(APITestCase):
             data={"pre_alerts": [{"id": pre_alert.id, "doses_shipped": 4444}]},
             format="json",
         )
-
-        print(response.data)
 
         self.assertEqual(response.status_code, 200)
         res = response.data

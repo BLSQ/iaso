@@ -154,10 +154,10 @@ jobs:
         with:
           ref: ${{ steps.get-branch.outputs.branch }}
 
-      - name: Use node.js 14
+      - name: Use node.js 14.7
         uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: '14.7'
           cache: npm
 
       - name: Cache dependencies
@@ -169,7 +169,7 @@ jobs:
 
       - name: upgrade npm
         run: |
-          npm install --global npm@8.5
+          npm install --global npm@8.5.5
 
       - run: npm ci
         if: steps.cache.outputs.cache-hit != 'true'

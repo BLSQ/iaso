@@ -5,13 +5,20 @@ from typing import Any
 
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import filters, permissions, serializers
+from rest_framework import filters, serializers
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from hat.menupermissions import models as permission
-from iaso.api.common import DeletionFilterBackend, ModelViewSet, Paginator, TimestampField, Custom403Exception
+from iaso.api.common import (
+    DeletionFilterBackend,
+    GenericReadWritePerm,
+    ModelViewSet,
+    Paginator,
+    TimestampField,
+    Custom403Exception,
+)
 from iaso.models import OrgUnit
 from plugins.polio.models import Group, VaccineAuthorization
 from plugins.polio.settings import COUNTRY
@@ -102,33 +109,9 @@ class VaccineAuthorizationSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 
-class HasVaccineAuthorizationsPermissions(permissions.BasePermission):
-    def has_permission(self, request, view):
-        read_perm = permission.POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY
-        write_perm = permission.POLIO_VACCINE_AUTHORIZATIONS_ADMIN
-        if request.method == "GET":
-            can_get = (
-                request.user
-                and request.user.is_authenticated
-                and request.user.has_perm(read_perm)
-                or request.user.is_superuser
-            )
-            return can_get
-        elif (
-            request.method == "POST"
-            or request.method == "PUT"
-            or request.method == "PATCH"
-            or request.method == "DELETE"
-        ):
-            can_post = (
-                request.user
-                and request.user.is_authenticated
-                and request.user.has_perm(write_perm)
-                or request.user.is_superuser
-            )
-            return can_post
-        else:
-            return False
+class HasVaccineAuthorizationsPermissions(GenericReadWritePerm):
+    read_perm = permission.POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY
+    write_perm = permission.POLIO_VACCINE_AUTHORIZATIONS_ADMIN
 
 
 @swagger_auto_schema(tags=["vaccineauthorizations"])

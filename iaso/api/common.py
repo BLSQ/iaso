@@ -416,6 +416,33 @@ class IsAdminOrSuperUser(permissions.BasePermission):
         return bool(request.user and request.user.is_staff) or (request.user and request.user.is_superuser)
 
 
+class GenericReadWritePerm(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            can_get = (
+                request.user
+                and request.user.is_authenticated
+                and request.user.has_perm(self.read_perm)
+                or request.user.is_superuser
+            )
+            return can_get
+        elif (
+            request.method == "POST"
+            or request.method == "PUT"
+            or request.method == "PATCH"
+            or request.method == "DELETE"
+        ):
+            can_post = (
+                request.user
+                and request.user.is_authenticated
+                and request.user.has_perm(self.write_perm)
+                or request.user.is_superuser
+            )
+            return can_post
+        else:
+            return False
+
+
 class Custom403Exception(APIException):
     """This custom 403 exception is created to make use of the custom 403 snackbar handling on front-end"""
 

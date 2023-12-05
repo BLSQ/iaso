@@ -5,7 +5,7 @@ feature_flags = [
         "code": "CHECK_POSITION_FOR_FORMS",
         "name": "Mobile: Enforce users are within reach of the Org Unit before starting a form.",
     },
-    {"code": "ENTITY", "name": "Mobile: Show entities screen (requires authentification)"},
+    {"code": "ENTITY", "name": "Mobile: Show entities screen)", "requires_authentication": True},
     {"code": "FORMS_AUTO_UPLOAD", "name": "Upload auto des f. finalisés"},
     {"code": "GPS_TRACKING", "name": "gps tracking"},
     {"code": "LIMIT_OU_DOWNLOAD_TO_ROOTS", "name": "Mobile: Limit download of orgunit to what the user has access to"},
@@ -40,7 +40,15 @@ def create_feature_flags(apps, schema_editor):
     FeatureFlag = apps.get_model("iaso", "FeatureFlag")
 
     for flag in feature_flags:
-        FeatureFlag.objects.update_or_create(**flag)
+        try:
+            existing = FeatureFlag.objects.get(code=flag["code"])
+            existing.name = flag["name"]
+            existing.requires_authentication = (
+                flag.get("requires_authentication") if flag.get("requires_authentication") is not None else False
+            )
+            existing.save()
+        except FeatureFlag.DoesNotExist:
+            FeatureFlag.objects.create(**flag)
 
 
 def reverse_create_feature_flags(apps, schema_editor):

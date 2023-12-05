@@ -25,10 +25,8 @@ class AppsAPITestCase(APITestCase):
             code="send_location", name="Send GPS location", description="Send GPS location every time etc"
         )
         cls.flag_2 = m.FeatureFlag.objects.create(code="another_feature", name="Another feature")
-        cls.flag_3 = m.FeatureFlag.objects.create(
+        cls.flag_3 = m.FeatureFlag.objects.get(
             code="REQUIRE_AUTHENTICATION",
-            name="Exige l'authentification pour télécharger",
-            description="Exige l'authentification pour télécharger",
         )
         cls.flag_4 = m.FeatureFlag.objects.create(
             code="FEATURE_FLAG_THAT_REQUIRES_AUTHENTICATION",

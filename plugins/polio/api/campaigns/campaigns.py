@@ -34,9 +34,13 @@ from iaso.api.common import (
     CustomFilterBackend,
     DeletionFilterBackend,
     ModelViewSet,
+    Custom403Exception,
 )
 from iaso.models import Group, OrgUnit
 from plugins.polio.api.campaigns.campaigns_log import log_campaign_modification, serialize_campaign
+from plugins.polio.api.campaigns.vaccine_authorization_missing_email import (
+    missing_vaccine_authorization_for_campaign_email_alert,
+)
 from plugins.polio.api.common import CACHE_VERSION
 from plugins.polio.api.rounds.round import RoundScopeSerializer, RoundSerializer
 from plugins.polio.api.shared_serializers import (
@@ -54,6 +58,7 @@ from plugins.polio.models import (
     RoundDateHistoryEntry,
     RoundScope,
     SpreadSheetImport,
+    VaccineAuthorization,
 )
 from plugins.polio.preparedness.calculator import get_preparedness_score
 from plugins.polio.preparedness.parser import InvalidFormatError, get_preparedness
@@ -86,6 +91,41 @@ class CurrentAccountDefault:
 
     def __call__(self, serializer_field):
         return serializer_field.context["request"].user.iaso_profile.account_id
+
+
+def check_total_doses_requested(vaccine_authorization, nOPV2_rounds, current_campaign):
+    """
+    Check if the total doses requested per round in a campaign is not superior to the allowed doses in the vaccine authorization.
+    It also emails the nopv2 vaccine team about it.
+    """
+    if vaccine_authorization and vaccine_authorization.quantity is not None:
+        campaigns = Campaign.objects.filter(country=vaccine_authorization.country, deleted_at__isnull=True).exclude(
+            pk=current_campaign.pk
+        )
+        total_doses_requested_for_campaigns = 0
+        campaigns_rounds = [c_round for c_round in Round.objects.filter(campaign__in=campaigns)]
+
+        existing_nopv2_rounds = []
+        for r in campaigns_rounds:
+            if "nOPV2" in r.vaccine_names():
+                existing_nopv2_rounds.append(r)
+
+        for r in existing_nopv2_rounds:
+            if r.started_at and r.doses_requested:
+                if vaccine_authorization.start_date <= r.started_at <= vaccine_authorization.expiration_date:
+                    total_doses_requested_for_campaigns += r.doses_requested
+
+        total_doses_requested = 0
+        for c_round in nOPV2_rounds:
+            if c_round.doses_requested is not None:
+                if c_round.started_at >= vaccine_authorization.start_date <= vaccine_authorization.expiration_date:
+                    total_doses_requested += c_round.doses_requested
+
+        if total_doses_requested + total_doses_requested_for_campaigns > vaccine_authorization.quantity:
+            message = f"The total of doses requested {total_doses_requested} is superior to the autorized doses for this campaign {vaccine_authorization.quantity}."
+            if total_doses_requested_for_campaigns > 0:
+                message = f"The total of doses requested {total_doses_requested} and the aggregation of all previous requested doses {total_doses_requested_for_campaigns} are superior to the autorized doses for this campaign {vaccine_authorization.quantity}."
+            raise Custom403Exception(message)
 
 
 class CampaignSerializer(serializers.ModelSerializer):
@@ -148,6 +188,9 @@ class CampaignSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         grouped_campaigns = validated_data.pop("grouped_campaigns", [])
         rounds = validated_data.pop("rounds", [])
+        initial_org_unit = validated_data.get("initial_org_unit")
+        obr_name = validated_data["obr_name"]
+        account = self.context["request"].user.iaso_profile.account
 
         campaign_scopes = validated_data.pop("scopes", [])
         campaign = Campaign.objects.create(
@@ -208,13 +251,39 @@ class CampaignSerializer(serializers.ModelSerializer):
         campaign.update_geojson_field()
         campaign.save()
         log_campaign_modification(campaign, None, self.context["request"].user)
+
+        # check if the quantity of the vaccines requested is not superior to the authorized vaccine quantity
+        c_rounds = [r for r in campaign.rounds.all()]
+        nOPV2_rounds = []
+        for r in c_rounds:
+            if "nOPV2" in r.vaccine_names():
+                nOPV2_rounds.append(r)
+
+        if initial_org_unit and len(nOPV2_rounds) > 0:
+            try:
+                initial_org_unit = OrgUnit.objects.get(pk=initial_org_unit.pk)
+                vaccine_authorization = VaccineAuthorization.objects.filter(
+                    country=initial_org_unit, status="VALIDATED", account=account, deleted_at__isnull=True
+                )
+                if vaccine_authorization:
+                    check_total_doses_requested(vaccine_authorization[0], nOPV2_rounds, campaign)
+                else:
+                    missing_vaccine_authorization_for_campaign_email_alert(
+                        obr_name, validated_data["initial_org_unit"], account
+                    )
+            except OrgUnit.DoesNotExist:
+                raise Custom403Exception("error:" "Org unit does not exists.")
+
         return campaign
 
     @atomic
     def update(self, instance: Campaign, validated_data):
         old_campaign_dump = serialize_campaign(instance)
-        rounds = validated_data.pop("rounds", [])
         campaign_scopes = validated_data.pop("scopes", [])
+        rounds = validated_data.pop("rounds", [])
+        initial_org_unit = validated_data.get("initial_org_unit")
+        account = self.context["request"].user.iaso_profile.account
+
         for scope in campaign_scopes:
             vaccine = scope.get("vaccine")
             org_units = scope.get("group", {}).get("org_units")
@@ -294,6 +363,23 @@ class CampaignSerializer(serializers.ModelSerializer):
         campaign.update_geojson_field()
         campaign.save()
 
+        # check if the quantity of the vaccines requested is not superior to the authorized vaccine quantity
+        c_rounds = [r for r in campaign.rounds.all()]
+        nOPV2_rounds = []
+        for r in c_rounds:
+            if "nOPV2" in r.vaccine_names():
+                nOPV2_rounds.append(r)
+        if initial_org_unit and len(nOPV2_rounds) > 0:
+            try:
+                initial_org_unit = OrgUnit.objects.get(pk=initial_org_unit.pk)
+                vaccine_authorization = VaccineAuthorization.objects.filter(
+                    country=initial_org_unit, status="VALIDATED", account=account, deleted_at__isnull=True
+                )
+                if vaccine_authorization:
+                    check_total_doses_requested(vaccine_authorization[0], nOPV2_rounds, campaign)
+            except OrgUnit.DoesNotExist:
+                raise Custom403Exception("error:" "Org unit does not exists.")
+
         log_campaign_modification(campaign, old_campaign_dump, self.context["request"].user)
         return campaign
 
@@ -310,7 +396,7 @@ class CampaignSerializer(serializers.ModelSerializer):
 
 
 class ListCampaignSerializer(CampaignSerializer):
-    "This serializer contains juste enough data for the List view in the web ui"
+    """This serializer contains juste enough data for the List view in the web ui"""
 
     class NestedListRoundSerializer(RoundSerializer):
         class Meta:

@@ -32,6 +32,7 @@ import { CompletenessStatsFilters } from './CompletenessStatsFilters';
 import { CsvButton } from '../../components/Buttons/CsvButton';
 import { CompletenessRouterParams } from './types';
 import { Map } from './components/Map';
+import { useGetFormsOptions } from './hooks/api/useGetFormsOptions';
 
 const baseUrl = baseUrls.completenessStats;
 const useStyles = makeStyles(theme => ({
@@ -73,6 +74,11 @@ export const CompletenessStats: FunctionComponent<Props> = ({
         params,
         completenessStats,
     );
+    const { data: forms, isFetching: fetchingForms } = useGetFormsOptions([
+        'period_type',
+        'legend_threshold',
+    ]);
+
     const mapResults =
         completenessMapStats?.filter(location => !location.is_root) || [];
     const displayWarning =
@@ -139,7 +145,11 @@ export const CompletenessStats: FunctionComponent<Props> = ({
             handleChangeTab(params.tab);
         }
     }, [handleChangeTab, params.tab, tab]);
+    const selectedFormsId = selectedFormsIds[0];
 
+    const selectedForm = useMemo(() => {
+        return forms?.find(form => `${form.value}` === `${selectedFormsId}`);
+    }, [forms, selectedFormsId]);
     return (
         <>
             <TopBar
@@ -148,7 +158,11 @@ export const CompletenessStats: FunctionComponent<Props> = ({
             />
             <Box p={4} className={classes.container}>
                 <Box>
-                    <CompletenessStatsFilters params={params} />
+                    <CompletenessStatsFilters
+                        params={params}
+                        forms={forms}
+                        fetchingForms={fetchingForms}
+                    />
                 </Box>
                 <Grid
                     container
@@ -186,8 +200,9 @@ export const CompletenessStats: FunctionComponent<Props> = ({
                             locations={completenessMapStats || []}
                             isLoading={isFetchingMapStats}
                             params={params}
-                            selectedFormId={selectedFormsIds[0]}
+                            selectedFormId={selectedFormsId}
                             router={router}
+                            threshold={selectedForm?.original.legend_threshold}
                         />
                     </Box>
                 )}

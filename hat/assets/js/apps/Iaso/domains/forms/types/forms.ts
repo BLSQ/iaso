@@ -1,3 +1,5 @@
+import { ScaleThreshold } from '../../../components/LegendBuilder/types';
+
 /* eslint-disable camelcase */
 type FeatureFlag = {
     id: number;
@@ -86,6 +88,7 @@ export type Form = {
     derived: boolean;
     label_keys: string[];
     possible_fields: PossibleField[];
+    legend_threshold: ScaleThreshold;
 };
 
 export type FormDescriptor = {
@@ -113,4 +116,31 @@ export type FormParams = {
     attachmentsOrder?: string;
     attachmentsPageSize?: string;
     attachmentsPage?: string;
+};
+type Errors = string[];
+
+type FieldError<T> = {
+    value: T;
+    errors: Errors;
+};
+
+type PeriodType = 'MONTH' | 'QUARTER' | 'SIX_MONTH' | 'YEAR' | null;
+
+export type FormDataType = {
+    id: FieldError<number | null>;
+    name: FieldError<string>;
+    short_name: FieldError<string>;
+    depth: FieldError<number | null>;
+    org_unit_type_ids: FieldError<number[]>;
+    project_ids: FieldError<number[]>;
+    period_type: FieldError<PeriodType>;
+    derived: FieldError<boolean>;
+    single_per_period: FieldError<boolean | null>;
+    periods_before_allowed: FieldError<number>;
+    periods_after_allowed: FieldError<number>;
+    device_field: FieldError<string>;
+    location_field: FieldError<string>;
+    possible_fields: FieldError<PossibleField[]>;
+    label_keys: FieldError<string[]>;
+    legend_threshold?: FieldError<ScaleThreshold>;
 };

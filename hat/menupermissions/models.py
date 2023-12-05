@@ -48,6 +48,7 @@ _POLIO = "iaso_polio"
 _POLIO_BUDGET = "iaso_polio_budget"
 _POLIO_BUDGET_ADMIN = "iaso_polio_budget_admin"
 _POLIO_CONFIG = "iaso_polio_config"
+_POLIO_NOTIFICATIONS = "iaso_polio_notifications"
 _PROJECTS = "iaso_projects"
 _REGISTRY = "iaso_registry"
 _REPORTS = "iaso_reports"
@@ -94,6 +95,7 @@ POLIO = _PREFIX + _POLIO
 POLIO_BUDGET = _PREFIX + _POLIO_BUDGET
 POLIO_BUDGET_ADMIN = _PREFIX + _POLIO_BUDGET_ADMIN
 POLIO_CONFIG = _PREFIX + _POLIO_CONFIG
+POLIO_NOTIFICATIONS = _PREFIX + _POLIO_NOTIFICATIONS
 POLIO_VACCINE_AUTHORIZATIONS_ADMIN = _PREFIX + _POLIO_VACCINE_AUTHORIZATIONS_ADMIN
 POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY = _PREFIX + _POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY
 POLIO_VACCINE_SUPPLY_CHAIN_READ = _PREFIX + _POLIO_VACCINE_SUPPLY_CHAIN_READ
@@ -155,6 +157,7 @@ class CustomPermissionSupport(models.Model):
             (_DATA_TASKS, _("Tâches")),
             (_POLIO, _("Polio")),
             (_POLIO_CONFIG, _("Polio config")),
+            (_POLIO_NOTIFICATIONS, _("Polio notifications")),
             (_SUBMISSIONS, _("Soumissions")),
             (_SUBMISSIONS_UPDATE, _("Editer soumissions")),
             (_PLANNING, _("Planning")),
@@ -196,6 +199,8 @@ class CustomPermissionSupport(models.Model):
             .exclude(codename__contains="iaso_beneficiaries")
             # Wait for the web UI to be ready before displaying `org_unit_change_request` perms.
             .exclude(codename__contains="org_unit_change_request")
+            # Wait for the web UI to be ready before displaying `iaso_polio_notifications` perms.
+            .exclude(codename__contains="iaso_polio_notifications")
             .order_by("id")
         )
         #  in future filter this on a feature flags, so we can disable it by account

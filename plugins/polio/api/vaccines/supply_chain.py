@@ -150,9 +150,6 @@ class NestedVaccineArrivalReportSerializerForPost(BasePostPatchSerializer):
             "po_number",
         ]
 
-    # def get_doses_per_vial(self, obj):
-    #     return DOSES_PER_VIAL[obj.request_form.vaccine_type]
-
 
 class NestedVaccineArrivalReportSerializerForPatch(NestedVaccineArrivalReportSerializerForPost):
     id = serializers.IntegerField(required=True, read_only=False)
@@ -550,14 +547,6 @@ class VaccineRequestFormViewSet(ModelViewSet):
             .distinct()
             .order_by("id")
         )
-
-    # def create(self, request, *args, **kwargs):
-    #     serializer = self.get_serializer(data=request.data)
-    #     serializer.is_valid(raise_exception=True)
-    #     self.perform_create(serializer)
-    #     headers = self.get_success_headers(serializer.data)
-    #     serializer.data["campaign"] = str(serializer.data["campaign"].id)
-    #     return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
     # override the destroy action to delete all the related arrival reports and pre alerts
     def destroy(self, request, *args, **kwargs):

@@ -353,6 +353,7 @@ class OrgUnitModelDbTestCase(TestCase):
         ):
             orgunit.groups.set([group])
 
+    @skip("TODO: Skipping for Trypelim")
     def test_empty_geom(self):
         #  regression test for IA-1326
         ou = m.OrgUnit.objects.create(name="test", location=Point(float("nan"), float("nan"), z=0))

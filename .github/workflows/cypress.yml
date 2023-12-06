@@ -138,7 +138,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         with:
           ref: ${{ github.event.inputs.ref }}
-      
+
       - id: 'get-branch'
         name: Get branch name from PR when triggered by comment
         if: github.event_name != 'workflow_dispatch'
@@ -147,12 +147,29 @@ jobs:
           REPO: ${{ github.repository }}
           PR_NO: ${{ github.event.issue.number }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
+
       - name: Checkout repository (comment)
         uses: actions/checkout@v3
         if: github.event_name != 'workflow_dispatch'
         with:
           ref: ${{ steps.get-branch.outputs.branch }}
+
+      - name: Use node.js 14.17
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14.17'
+          cache: npm
+
+      - name: Cache dependencies
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: ./node_modules
+          key: node_modules-20221121-${{ hashFiles('package-lock.json') }}
+
+      - name: upgrade npm
+        run: |
+          npm install --global npm@8.5.5 & npm node -v & npm -v
 
       - name: Install dependencies
         run: npm ci

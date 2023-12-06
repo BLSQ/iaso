@@ -1,8 +1,6 @@
 import React, { useMemo } from 'react';
 import { Column, IconButton, useSafeIntl } from 'bluesquare-components';
-
 import MESSAGES from '../messages';
-// import DeleteDialog from '../../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
 
 export const useVaccineStockManagementTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();

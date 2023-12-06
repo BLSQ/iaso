@@ -55,7 +55,7 @@ import { LqasAfroOverview } from './src/domains/LQAS-IM/LQAS/LqasAfroOverview/Lq
 import { Nopv2Authorisations } from './src/domains/VaccineModule/Nopv2Authorisations/Nopv2Authorisations.tsx';
 import { Nopv2AuthorisationsDetails } from './src/domains/VaccineModule/Nopv2Authorisations/Details/Nopv2AuthorisationsDetails.tsx';
 import { VaccineSupplyChain } from './src/domains/VaccineModule/SupplyChain/VaccineSupplyChain.tsx';
-import { VaccineStockManagement } from './src/domains/VaccineModule/StockManagement/VaccineStockManagement';
+import { VaccineStockManagement } from './src/domains/VaccineModule/StockManagement/VaccineStockManagement.tsx';
 
 const campaignsFilters = [
     {

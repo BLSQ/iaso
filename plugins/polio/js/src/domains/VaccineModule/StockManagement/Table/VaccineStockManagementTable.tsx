@@ -1,5 +1,4 @@
 import React, { FunctionComponent } from 'react';
-// import { useUrlParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
 import { UrlParams } from 'bluesquare-components';
 import { STOCK_MANAGEMENT } from '../../../../constants/routes';
 import { TableWithDeepLink } from '../../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';

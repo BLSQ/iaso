@@ -1,4 +1,4 @@
-export const mockVaccineStockList = {
+export const mockVaccineStockList: any = {
     count: 5,
     page: 1,
     pages: 1,

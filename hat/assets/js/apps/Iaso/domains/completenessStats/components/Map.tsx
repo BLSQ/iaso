@@ -12,6 +12,7 @@ import {
     LoadingSpinner,
     IconButton,
 } from 'bluesquare-components';
+import { isEqual } from 'lodash';
 import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
 import { PopupComponent as Popup } from './Popup';
 
@@ -91,7 +92,7 @@ export const Map: FunctionComponent<Props> = ({
     threshold,
 }) => {
     const effectiveThreshold: ScaleThreshold =
-        !threshold || isEqual(threshold,{})
+        !threshold || isEqual(threshold, {})
             ? defaultScaleThreshold
             : threshold;
     const { planningId } = params;

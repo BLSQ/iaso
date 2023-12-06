@@ -64,14 +64,6 @@ export const useVaccineStockManagementTableColumns = (): Column[] => {
                                 disabled
                                 onClick={() => null}
                             />
-                            {/* TODO make better DeleteDialog */}
-                            {/* <DeleteDialog
-                                titleMessage={MESSAGES.deleteVRF}
-                                message={MESSAGES.deleteVRFWarning}
-                                onConfirm={() =>
-                                    deleteVrf(settings.row.original.id)
-                                }
-                            /> */}
                         </>
                     );
                 },

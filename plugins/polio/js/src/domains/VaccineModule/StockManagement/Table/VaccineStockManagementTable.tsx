@@ -14,7 +14,6 @@ export const VaccineStockManagementTable: FunctionComponent<Props> = ({
     const { data, isFetching } = useGetVaccineStockList(params);
 
     const columns = useVaccineStockManagementTableColumns();
-    // const columns = useVaccineSupplyChainTableColumns();
     return (
         // @ts-ignore
         <TableWithDeepLink

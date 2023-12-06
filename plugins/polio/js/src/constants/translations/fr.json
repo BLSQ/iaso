@@ -9,6 +9,8 @@
     "iaso.label.stockUnusableVials": "Stock de flacons inutilisables",
     "iaso.label.stockUsableVials": "Stock de flacons utilisables",
     "iaso.label.type": "Type",
+    "iaso.label.unusable": "Inutilisables",
+    "iaso.label.usable": "Utilisables",
     "iaso.label.vialsDestroyed": "Flacons détruits",
     "iaso.label.vialsReceived": "Flacons reçus",
     "iaso.label.vialsUsed": "Flacons utilisés",

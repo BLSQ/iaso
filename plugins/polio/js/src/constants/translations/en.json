@@ -9,6 +9,8 @@
     "iaso.label.stockUnusableVials": "Stock of unusable vials",
     "iaso.label.stockUsableVials": "Stock of usable vials",
     "iaso.label.type": "Type",
+    "iaso.label.unusable": "Unusable",
+    "iaso.label.usable": "Usable",
     "iaso.label.vialsDestroyed": "Vials destroyed",
     "iaso.label.vialsReceived": "Vials received",
     "iaso.label.vialsUsed": "Vials used",

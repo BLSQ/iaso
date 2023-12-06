@@ -40,7 +40,7 @@ export const VaccineStockManagementFilters: FunctionComponent<Props> = ({
                     clearable
                     keyValue="country_id"
                     multi
-                    value={filters.country}
+                    value={filters.country_id}
                     onChange={handleChange}
                     loading={isFetching}
                     options={countries}

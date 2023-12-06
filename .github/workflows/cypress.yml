@@ -169,7 +169,7 @@ jobs:
 
       - name: upgrade npm
         run: |
-          npm install --global npm@8.5.5
+          npm install --global npm@8.5.5 & npm node -v
 
       - run: npm ci
         if: steps.cache.outputs.cache-hit != 'true'

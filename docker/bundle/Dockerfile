@@ -16,6 +16,7 @@ RUN apt-get update && apt-get install -y \
 COPY package.json .
 COPY package-lock.json .
 
+
 RUN npm install -g npm@8.5.5
 
 RUN rm -rf node_modules
@@ -24,8 +25,6 @@ RUN npm cache verify
 # ci install the exact version of package, compared to install which might a bump minor version
 RUN npm ci
 
-# Install Cypress
-RUN npm install cypress --save-dev --no-optional
 COPY hat/ /opt/app/hat/
 COPY plugins/ /opt/app/plugins
 COPY tsconfig.json /opt/app/tsconfig.json

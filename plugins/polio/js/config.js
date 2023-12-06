@@ -446,7 +446,21 @@ const routes = [
         baseUrl: STOCK_MANAGEMENT,
         component: props => <VaccineStockManagement {...props} />,
         permissions: ['iaso_polio'],
-        params: [...paginationPathParams],
+        params: [
+            ...paginationPathParams,
+            {
+                isRequired: false,
+                key: 'search',
+            },
+            {
+                isRequired: false,
+                key: 'country_id',
+            },
+            {
+                isRequired: false,
+                key: 'vaccine_type',
+            },
+        ],
     },
     {
         baseUrl: CONFIG_COUNTRY_URL,

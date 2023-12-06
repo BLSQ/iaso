@@ -25,6 +25,9 @@ export const useApiParams = (
         } else if (!params.page) {
             formattedParams.page = 1;
         }
+        if (formattedParams.accountId) {
+            delete formattedParams.accountId;
+        }
         return formattedParams as FormattedApiParams;
     }, [defaults?.limit, defaults?.order, defaults?.page, params]);
 };

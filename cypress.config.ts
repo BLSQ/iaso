@@ -19,7 +19,7 @@ export default defineConfig({
         },
         specPattern: [
             './/hat/assets/js/cypress/integration/04 - tasks/**/*.js',
-            './/hat/assets/js/cypress/integration/07 - entities/**/*.js',
+            './/plugins/**/cypress/integration/**/*.js',
         ],
         supportFile: 'hat/assets/js/cypress/support/index.js',
         experimentalRunAllSpecs: true,

@@ -2,7 +2,7 @@
 # Then transfert it in the filan django image
 ############ NPM Builder ######################################################################
 
-FROM node:14-bullseye-slim as npmbuilder
+FROM node:14.17-bullseye-slim as npmbuilder
 ENV PROJECT_ROOT /opt
 
 WORKDIR /opt/app
@@ -16,8 +16,9 @@ RUN apt-get update && apt-get install -y \
 COPY package.json .
 COPY package-lock.json .
 
-
-RUN npm install -g npm@8.5
+# Install Cypress
+RUN npm install cypress --save-dev
+RUN npm install -g npm@8.5.5
 
 RUN rm -rf node_modules
 RUN npm cache clean --force

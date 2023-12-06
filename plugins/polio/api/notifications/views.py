@@ -41,6 +41,20 @@ class NotificationViewSet(viewsets.ModelViewSet):
             .order_by("-id")
         )
 
+    def options(self, request, *args, **kwargs):
+        if self.metadata_class is None:
+            return self.http_method_not_allowed(request, *args, **kwargs)
+        data = self.metadata_class().determine_metadata(request, self)
+
+        try:
+            countries_for_account = Notification.objects.get_countries_for_account(request.user.iaso_profile.account)
+            country_choices = [{"display_name": ou.name, "value": ou.pk} for ou in countries_for_account]
+            data["actions"]["POST"]["country"]["choices"] = country_choices
+        except AttributeError:
+            data["actions"]["POST"]["country"]["choices"] = []
+
+        return Response(data, status=status.HTTP_200_OK)
+
     def perform_create(self, serializer):
         user = self.request.user
         account = user.iaso_profile.account

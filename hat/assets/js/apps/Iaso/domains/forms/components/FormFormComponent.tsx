@@ -185,8 +185,8 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                                 withMarginTop={false}
                             />
                         </Grid>
-                        <Grid item xs={3} />
-                        <Grid item xs={3}>
+                        <Grid item xs={2} />
+                        <Grid item xs={4}>
                             <FormLegendInput
                                 currentForm={currentForm}
                                 setFieldValue={setFieldValue}

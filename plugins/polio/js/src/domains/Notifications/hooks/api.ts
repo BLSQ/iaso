@@ -1,9 +1,11 @@
 import { UseBaseQueryResult, UseQueryResult } from 'react-query';
+
 import { useSnackQuery } from '../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import {
     getRequest,
     optionsRequest,
 } from '../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
+
 import {
     NotificationsApiResponse,
     ApiNotificationsParams,

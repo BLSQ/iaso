@@ -626,7 +626,7 @@ const routes = [
     {
         baseUrl: NOTIFICATIONS_BASE_URL,
         component: props => <Notifications {...props} />,
-        permissions: ['iaso_polio'],
+        permissions: ['iaso_polio_notifications'],
         params: [
             { isRequired: false, key: 'order' },
             { isRequired: false, key: 'page' },
@@ -746,7 +746,7 @@ const menu = [
             {
                 label: MESSAGES.notifications,
                 key: 'notifications',
-                permissions: ['iaso_polio'],
+                permissions: ['iaso_polio_notifications'],
                 icon: props => <NotificationsActiveIcon {...props} />,
             },
             {

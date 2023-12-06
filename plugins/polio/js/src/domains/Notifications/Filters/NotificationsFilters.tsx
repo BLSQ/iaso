@@ -1,14 +1,16 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
-import MESSAGES from '../messages';
-import { NotificationsParams } from '../types';
-import { getNotificationsDropdownsContent } from '../hooks/api';
-import { NOTIFICATIONS_BASE_URL } from '../../../constants/routes';
+
 import DatesRange from '../../../../../../../hat/assets/js/apps/Iaso/components/filters/DatesRange';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { FilterButton } from '../../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
 import { useFilterState } from '../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
+
+import MESSAGES from '../messages';
+import { NotificationsParams } from '../types';
+import { getNotificationsDropdownsContent } from '../hooks/api';
+import { NOTIFICATIONS_BASE_URL } from '../../../constants/routes';
 
 type Props = { params: NotificationsParams };
 

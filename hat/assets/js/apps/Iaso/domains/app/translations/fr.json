@@ -869,6 +869,7 @@
     "iaso.permissions.polio_budget": "Budget Polio - Utilisateur",
     "iaso.permissions.polio_budget_admin": "Budget Polio - Admin",
     "iaso.permissions.polio_config": "Gestion des campagnes Polio - Admin",
+    "iaso.permissions.iaso_polio_notifications,": "Notifications Polio - Lecture et écriture",
     "iaso.permissions.polio_vaccine_authorizations_admin": "Validation d'authorisation de vaccins polio: Admin",
     "iaso.permissions.polio_vaccine_authorizations_read_only": "Validation d'authorisation de vaccins polio: Lecture seule",
     "iaso.permissions.projects": "Projets",

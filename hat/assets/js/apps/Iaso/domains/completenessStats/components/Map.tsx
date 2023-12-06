@@ -88,12 +88,15 @@ export const Map: FunctionComponent<Props> = ({
     params,
     selectedFormId,
     router,
-    threshold = defaultScaleThreshold,
+    threshold,
 }) => {
-    console.log('threshold', threshold);
+    const effectiveThreshold: ScaleThreshold =
+        !threshold || Object.keys(threshold).length === 0
+            ? defaultScaleThreshold
+            : threshold;
     const { planningId } = params;
     const classes: Record<string, string> = useStyles();
-    const getLegend = useGetLegend(threshold);
+    const getLegend = useGetLegend(effectiveThreshold);
     const bounds: Bounds | undefined = useMemo(
         () => locations && getOrgUnitsBounds(locations),
         [locations],
@@ -194,7 +197,7 @@ export const Map: FunctionComponent<Props> = ({
                 <CompletenessSelect params={params} />
                 <MapLegend
                     showDirectCompleteness={showDirectCompleteness}
-                    threshold={threshold}
+                    threshold={effectiveThreshold}
                 />
                 {parentLocation?.parent_org_unit?.id && (
                     <Box className={classes.parentIcon}>

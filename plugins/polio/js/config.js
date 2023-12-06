@@ -16,6 +16,7 @@ import HomeIcon from '@material-ui/icons/Home';
 import StorefrontIcon from '@material-ui/icons/Storefront';
 import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
 import ExtensionIcon from '@material-ui/icons/Extension';
+import StorageIcon from '@material-ui/icons/Storage';
 import WatchLaterIcon from '@material-ui/icons/WatchLater';
 import { Dashboard } from './src/domains/Campaigns/Dashboard';
 import { Calendar } from './src/domains/Calendar/Calendar';
@@ -40,6 +41,7 @@ import {
     NOPV2_AUTH,
     NOPV2_AUTH_DETAILS,
     VACCINE_SUPPLY_CHAIN,
+    STOCK_MANAGEMENT,
 } from './src/constants/routes';
 import fr from './src/constants/translations/fr.json';
 import en from './src/constants/translations/en.json';
@@ -53,6 +55,7 @@ import { LqasAfroOverview } from './src/domains/LQAS-IM/LQAS/LqasAfroOverview/Lq
 import { Nopv2Authorisations } from './src/domains/VaccineModule/Nopv2Authorisations/Nopv2Authorisations.tsx';
 import { Nopv2AuthorisationsDetails } from './src/domains/VaccineModule/Nopv2Authorisations/Details/Nopv2AuthorisationsDetails.tsx';
 import { VaccineSupplyChain } from './src/domains/VaccineModule/SupplyChain/VaccineSupplyChain.tsx';
+import { VaccineStockManagement } from './src/domains/VaccineModule/StockManagement/VaccineStockManagement';
 
 const campaignsFilters = [
     {
@@ -440,6 +443,12 @@ const routes = [
         ],
     },
     {
+        baseUrl: STOCK_MANAGEMENT,
+        component: props => <VaccineStockManagement {...props} />,
+        permissions: ['iaso_polio'],
+        params: [...paginationPathParams],
+    },
+    {
         baseUrl: CONFIG_COUNTRY_URL,
         component: () => <CountryNotificationsConfig />,
         permissions: ['iaso_polio_config'],
@@ -579,6 +588,13 @@ const menu = [
                         dev: true,
                         permissions: ['iaso_polio'],
                         icon: props => <LocalShippingIcon {...props} />,
+                    },
+                    {
+                        label: MESSAGES.vaccineStockManagement,
+                        key: 'stockmanagement',
+                        dev: true,
+                        permissions: ['iaso_polio'],
+                        icon: props => <StorageIcon {...props} />,
                     },
                 ],
             },

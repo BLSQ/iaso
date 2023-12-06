@@ -14,6 +14,7 @@ export const BUDGET = 'polio/budget';
 export const BUDGET_DETAILS = 'polio/budget/details';
 export const VACCINE_MODULE = 'polio/vaccinemodule';
 export const VACCINE_SUPPLY_CHAIN = `${VACCINE_MODULE}/supplychain`;
+export const STOCK_MANAGEMENT = `${VACCINE_MODULE}/stockmanagement`;
 export const NOPV2_AUTH = 'polio/vaccinemodule/nopv2authorisation';
 export const NOPV2_AUTH_DETAILS =
     'polio/vaccinemodule/nopv2authorisation/details';

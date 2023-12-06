@@ -2397,7 +2397,11 @@ const MESSAGES = defineMessages({
     },
     vaccineSupplyChain: {
         id: 'iaso.polio.menu.vaccineSupplyChain',
-        defaultMessage: 'Vaccine supply chain',
+        defaultMessage: 'Supply chain',
+    },
+    vaccineStockManagement: {
+        id: 'iaso.polio.menu.vaccineStockManagement',
+        defaultMessage: 'Stock management',
     },
     latestManualRefresh: {
         id: 'iaso.polio.label.latestManualRefresh',

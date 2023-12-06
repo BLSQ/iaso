@@ -91,7 +91,7 @@ export const Map: FunctionComponent<Props> = ({
     threshold,
 }) => {
     const effectiveThreshold: ScaleThreshold =
-        !threshold || Object.keys(threshold).length === 0
+        !threshold || isEqual(threshold,{})
             ? defaultScaleThreshold
             : threshold;
     const { planningId } = params;

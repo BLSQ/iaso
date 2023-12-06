@@ -9,7 +9,6 @@ on:
         type: string
         description: 'Branch to test'
         required: true  
-  
 
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
@@ -97,6 +96,7 @@ jobs:
     if: ((github.event_name == 'workflow_dispatch') || (contains(github.event.comment.body, '@cypress')))
     timeout-minutes: 60
     runs-on: ubuntu-20.04
+    container: cypress/base:14.17.0
     needs: build-image
     permissions:
       contents: read
@@ -154,25 +154,8 @@ jobs:
         with:
           ref: ${{ steps.get-branch.outputs.branch }}
 
-      - name: Use node.js 14.17
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14.17'
-          cache: npm
-
-      - name: Cache dependencies
-        id: cache
-        uses: actions/cache@v3
-        with:
-          path: ./node_modules
-          key: node_modules-20221121-${{ hashFiles('package-lock.json') }}
-
-      - name: upgrade npm
-        run: |
-          npm install --global npm@8.5.5 & npm node -v
-
-      - run: npm ci
-        if: steps.cache.outputs.cache-hit != 'true'
+      - name: Install dependencies
+        run: npm ci
 
       - name: Cypress run
         uses: cypress-io/github-action@v6
@@ -180,7 +163,6 @@ jobs:
           browser: chrome
           wait-on: 'http://localhost:8081'
           spec: hat/assets/js/cypress/integration/**/*.spec.js
-          node-version: '14.17'
         env:
           CYPRESS_USERNAME: "test"
           CYPRESS_PASSWORD: "test"
@@ -217,4 +199,3 @@ jobs:
               repo,
               body: 'Test failed: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'
             });
-

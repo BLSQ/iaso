@@ -583,6 +583,8 @@
     "iaso.polio.notifications.label.closest_match_vdpv2": "Closest match",
     "iaso.polio.notifications.label.country": "Country",
     "iaso.polio.notifications.label.date_of_onset": "Date of onset",
+    "iaso.polio.notifications.label.date_of_onset_after": "Onset date from",
+    "iaso.polio.notifications.label.date_of_onset_before": "Onset date to",
     "iaso.polio.notifications.label.date_results_received": "Date results received",
     "iaso.polio.notifications.label.district": "District",
     "iaso.polio.notifications.label.epid": "EPID number",

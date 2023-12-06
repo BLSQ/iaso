@@ -43,3 +43,14 @@ export type NotificationsApiResponse = {
     page: number;
     pages: number;
 };
+
+export type DropdownOptions = {
+    label: string;
+    value: number | string;
+};
+
+export type DropdownsContent = {
+    vdpv_category: DropdownOptions[];
+    source: DropdownOptions[];
+    country: DropdownOptions[];
+};

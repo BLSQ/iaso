@@ -49,6 +49,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.notifications.label.date_of_onset',
         defaultMessage: 'Date of onset',
     },
+    labelDateOfOnsetAfter: {
+        id: 'iaso.polio.notifications.label.date_of_onset_after',
+        defaultMessage: 'Onset date from',
+    },
+    labelDateOfOnsetBefore: {
+        id: 'iaso.polio.notifications.label.date_of_onset_before',
+        defaultMessage: 'Onset date to',
+    },
     labelClosestMatchVdpv2: {
         id: 'iaso.polio.notifications.label.closest_match_vdpv2',
         defaultMessage: 'Closest match',

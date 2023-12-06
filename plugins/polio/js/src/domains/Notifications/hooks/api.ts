@@ -4,8 +4,11 @@ import {
     getRequest,
     optionsRequest,
 } from '../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
-import { NotificationsApiResponse, ApiNotificationsParams } from '../types';
-import { DropdownOptions } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import {
+    NotificationsApiResponse,
+    ApiNotificationsParams,
+    DropdownsContent,
+} from '../types';
 
 const listUrl = '/api/polio/notifications/';
 
@@ -29,31 +32,28 @@ export const useGetNotifications = (
     });
 };
 
-export const useGetVdpvCategoriesDropdown = (): UseQueryResult<
-    Array<DropdownOptions<number>>,
+export const getNotificationsDropdownsContent = (): UseQueryResult<
+    DropdownsContent,
     Error
 > =>
     useSnackQuery({
-        queryKey: ['vdpvCategoriesOptions'],
+        queryKey: ['getNotificationsDropdownsContent'],
         queryFn: () => optionsRequest(`${listUrl}?`),
         options: {
-            staleTime: 0,
-            cacheTime: 0,
+            staleTime: 1000 * 60 * 15, // in ms
+            cacheTime: 1000 * 60 * 5,
             select: data => {
-                console.log(data);
-                return [];
+                const metadata = data.actions.POST;
+                const mapChoices = choices =>
+                    choices.map(choice => ({
+                        label: choice.display_name,
+                        value: choice.value,
+                    }));
+                return {
+                    vdpv_category: mapChoices(metadata.vdpv_category.choices),
+                    source: mapChoices(metadata.source.choices),
+                    country: mapChoices(metadata.country.choices),
+                };
             },
         },
     });
-
-// staleTime: 1000 * 60 * 15, // in ms
-// cacheTime: 1000 * 60 * 5,
-
-// data?.map(
-//     type =>
-//         ({
-//             label: type.name,
-//             value: type.id,
-//             original: type,
-//         } || []),
-// ),

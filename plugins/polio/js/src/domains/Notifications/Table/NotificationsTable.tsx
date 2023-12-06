@@ -1,12 +1,12 @@
 import React, { FunctionComponent } from 'react';
 import { Column, useSafeIntl } from 'bluesquare-components';
+import MESSAGES from '../messages';
 import { ApiNotificationsParams, NotificationsParams } from '../types';
 import { useGetNotifications } from '../hooks/api';
-import MESSAGES from '../messages';
-import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 import { NOTIFICATIONS_BASE_URL } from '../../../constants/routes';
-import { handleTableDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/utils/table';
 import { DateCell } from '../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
+import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
+import { handleTableDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/utils/table';
 
 type Props = { params: NotificationsParams };
 

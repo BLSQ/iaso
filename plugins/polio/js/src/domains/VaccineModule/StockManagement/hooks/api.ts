@@ -1,4 +1,5 @@
 import { UseQueryResult } from 'react-query';
+import { UrlParams } from 'bluesquare-components';
 import { useUrlParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
 import {
     FormattedApiParams,
@@ -36,7 +37,9 @@ const options = {
 
 // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 const getVaccineStockList = async (params: FormattedApiParams) => {
-    waitFor(750);
+    const queryString = new URLSearchParams(params).toString();
+    await waitFor(750);
+    console.log('list params', queryString);
     return mockVaccineStockList;
 };
 
@@ -76,7 +79,12 @@ export const useGetUsableVials = (
         usableVialsPage: page,
         usableVialsPageSize: limit,
     } = params;
-    const queryString = new URLSearchParams({ order, page, limit }).toString();
+    const safeParams = useUrlParams({
+        order,
+        page,
+        limit,
+    } as Partial<UrlParams>);
+    const queryString = new URLSearchParams(safeParams).toString();
     return useSnackQuery({
         queryKey: ['usable-vials', queryString],
         queryFn: () => getUsableVials(queryString),
@@ -101,7 +109,12 @@ export const useGetUnusableVials = (
         unUsableVialsPage: page,
         unUsableVialsPageSize: limit,
     } = params;
-    const queryString = new URLSearchParams({ order, page, limit }).toString();
+    const safeParams = useUrlParams({
+        order,
+        page,
+        limit,
+    } as Partial<UrlParams>);
+    const queryString = new URLSearchParams(safeParams).toString();
     return useSnackQuery({
         queryKey: ['unusable-vials', queryString],
         queryFn: () => getUnusableVials(queryString),

@@ -16,6 +16,7 @@ import {
 import {
     StockManagementListParams,
     StockManagementDetailsParams,
+    StockVariationParams,
 } from '../types';
 
 const defaults = {
@@ -138,5 +139,90 @@ export const useGetStockManagementSummary = (
         queryKey: ['stock-management-summary', id],
         queryFn: () => getStockManagementSummary(id),
         options: { ...options, enabled: Boolean(id) },
+    });
+};
+
+const getFormAList = async (queryString: string) => {
+    await waitFor(750);
+    console.log('forma params', queryString);
+    return null;
+};
+
+export const useGetFormAList = (
+    params: StockVariationParams,
+    enabled: boolean,
+): UseQueryResult<any, any> => {
+    const {
+        formaOrder: order,
+        formaPage: page,
+        formaPageSize: pageSize,
+    } = params;
+    const safeParams = useUrlParams({
+        order,
+        page,
+        pageSize,
+    } as Partial<UrlParams>);
+    const apiParams = useApiParams(safeParams);
+    const queryString = new URLSearchParams(apiParams).toString();
+    return useSnackQuery({
+        queryKey: ['formA', queryString],
+        queryFn: () => getFormAList(queryString),
+        options: { ...options, enabled },
+    });
+};
+const getDestructionList = async (queryString: string) => {
+    await waitFor(750);
+    console.log('destruction params', queryString);
+    return null;
+};
+
+export const useGetDestructionList = (
+    params: StockVariationParams,
+    enabled: boolean,
+): UseQueryResult<any, any> => {
+    const {
+        destructionOrder: order,
+        destructionPage: page,
+        destructionPageSize: pageSize,
+    } = params;
+    const safeParams = useUrlParams({
+        order,
+        page,
+        pageSize,
+    } as Partial<UrlParams>);
+    const apiParams = useApiParams(safeParams);
+    const queryString = new URLSearchParams(apiParams).toString();
+    return useSnackQuery({
+        queryKey: ['destruction', queryString],
+        queryFn: () => getDestructionList(queryString),
+        options: { ...options, enabled },
+    });
+};
+const getIncidentList = async (queryString: string) => {
+    await waitFor(750);
+    console.log('incidents params', queryString);
+    return null;
+};
+
+export const useGetIncidentList = (
+    params: StockVariationParams,
+    enabled: boolean,
+): UseQueryResult<any, any> => {
+    const {
+        incidentOrder: order,
+        incidentPage: page,
+        incidentPageSize: pageSize,
+    } = params;
+    const safeParams = useUrlParams({
+        order,
+        page,
+        pageSize,
+    } as Partial<UrlParams>);
+    const apiParams = useApiParams(safeParams);
+    const queryString = new URLSearchParams(apiParams).toString();
+    return useSnackQuery({
+        queryKey: ['incidents', queryString],
+        queryFn: () => getIncidentList(queryString),
+        options: { ...options, enabled },
     });
 };

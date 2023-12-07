@@ -11,7 +11,9 @@ import { StockManagementListParams } from '../types';
 
 // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 const getVaccineStockList = async (params: FormattedApiParams) => {
-    waitFor(750);
+    const queryString = new URLSearchParams(params).toString();
+    await waitFor(750);
+    console.log('list params', queryString);
     return mockVaccineStockList;
 };
 

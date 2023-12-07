@@ -37,7 +37,7 @@ export const useGetNotifications = (
         JSON.stringify(params),
     );
     return useSnackQuery({
-        queryKey: ['notifications', cleanedParams],
+        queryKey: ['notificationsList', cleanedParams],
         queryFn: () => getNotifications(cleanedParams),
     });
 };
@@ -49,6 +49,7 @@ const deleteNotification = (notificationId: number) => {
 export const useDeleteNotification = (): UseMutationResult =>
     useSnackMutation({
         mutationFn: deleteNotification,
+        invalidateQueryKey: 'notificationsList',
     });
 
 export const getNotificationsDropdownsContent = (): UseQueryResult<

@@ -43,6 +43,7 @@ import {
     VACCINE_SUPPLY_CHAIN,
     STOCK_MANAGEMENT,
     STOCK_MANAGEMENT_DETAILS,
+    STOCK_VARIATION,
 } from './src/constants/routes';
 import fr from './src/constants/translations/fr.json';
 import en from './src/constants/translations/en.json';
@@ -58,7 +59,11 @@ import { Nopv2AuthorisationsDetails } from './src/domains/VaccineModule/Nopv2Aut
 import { VaccineSupplyChain } from './src/domains/VaccineModule/SupplyChain/VaccineSupplyChain.tsx';
 import { VaccineStockManagement } from './src/domains/VaccineModule/StockManagement/VaccineStockManagement.tsx';
 import { VaccineStockManagementDetails } from './src/domains/VaccineModule/StockManagement/Details/VaccineStockManagementDetails.tsx';
+import { VaccineStockVariation } from './src/domains/VaccineModule/StockManagement/StockVariation/VaccineStockVariation.tsx';
 import {
+    DESTRUCTION,
+    FORM_A,
+    INCIDENT,
     UNUSABLE_VIALS,
     USABLE_VIALS,
 } from './src/domains/VaccineModule/StockManagement/constants.ts';
@@ -504,6 +509,57 @@ const routes = [
             {
                 isRequired: false,
                 key: `${UNUSABLE_VIALS}Page`,
+            },
+        ],
+    },
+    {
+        baseUrl: STOCK_VARIATION,
+        component: props => <VaccineStockVariation {...props} />,
+        permissions: ['iaso_polio'],
+        params: [
+            {
+                isRequired: false,
+                key: `id`,
+            },
+            {
+                isRequired: false,
+                key: `tab`,
+            },
+            {
+                isRequired: false,
+                key: `${FORM_A}Order`,
+            },
+            {
+                isRequired: false,
+                key: `${FORM_A}PageSize`,
+            },
+            {
+                isRequired: false,
+                key: `${FORM_A}Page`,
+            },
+            {
+                isRequired: false,
+                key: `${DESTRUCTION}Order`,
+            },
+            {
+                isRequired: false,
+                key: `${DESTRUCTION}PageSize`,
+            },
+            {
+                isRequired: false,
+                key: `${DESTRUCTION}Page`,
+            },
+            {
+                isRequired: false,
+                key: `${INCIDENT}Order`,
+            },
+            {
+                isRequired: false,
+                key: `${INCIDENT}PageSize`,
+            },
+            {
+                isRequired: false,
+                key: `${INCIDENT}Page`,
             },
         ],
     },

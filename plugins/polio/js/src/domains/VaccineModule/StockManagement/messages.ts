@@ -114,6 +114,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.stockDetails',
         defaultMessage: 'Stock details',
     },
+    formA: {
+        id: 'iaso.polio.label.formA',
+        defaultMessage: 'Form A',
+    },
+    destructionReports: {
+        id: 'iaso.polio.label.destructionReports',
+        defaultMessage: 'Destruction reports',
+    },
+    incidentReports: {
+        id: 'iaso.polio.label.incidentReports',
+        defaultMessage: 'Incident reports',
+    },
+    stockVariation: {
+        id: 'iaso.polio.label.stockVariation',
+        defaultMessage: 'Stock variation',
+    },
 });
 
 export default MESSAGES;

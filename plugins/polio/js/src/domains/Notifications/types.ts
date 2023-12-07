@@ -16,6 +16,7 @@ export type ApiNotificationsParams = NotificationsParams & {
 };
 
 export type NotificationsApiData = {
+    id: number;
     account: number;
     closest_match_vdpv2?: string;
     country?: string;

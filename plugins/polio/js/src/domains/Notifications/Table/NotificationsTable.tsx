@@ -7,8 +7,9 @@ import { handleTableDeepLink } from '../../../../../../../hat/assets/js/apps/Ias
 
 import MESSAGES from '../messages';
 import { ApiNotificationsParams, NotificationsParams } from '../types';
-import { useGetNotifications } from '../hooks/api';
+import { DeleteNotificationModal } from '../Modals/NotificationsDeleteModal';
 import { NOTIFICATIONS_BASE_URL } from '../../../constants/routes';
+import { useGetNotifications } from '../hooks/api';
 
 type Props = { params: NotificationsParams };
 
@@ -91,6 +92,19 @@ export const NotificationsTable: FunctionComponent<Props> = ({ params }) => {
             id: 'date_results_received',
             accessor: 'date_results_received',
             Cell: DateCell,
+        },
+        {
+            Header: formatMessage(MESSAGES.labelActions),
+            Cell: settings => {
+                return (
+                    <>
+                        {/* @ts-ignore */}
+                        <DeleteNotificationModal
+                            notification={settings.row.original}
+                        />
+                    </>
+                );
+            },
         },
     ];
     return (

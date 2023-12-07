@@ -1,7 +1,15 @@
-import { UseBaseQueryResult, UseQueryResult } from 'react-query';
-
-import { useSnackQuery } from '../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import {
+    UseBaseQueryResult,
+    UseMutationResult,
+    UseQueryResult,
+} from 'react-query';
+
+import {
+    useSnackMutation,
+    useSnackQuery,
+} from '../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import {
+    deleteRequest,
     getRequest,
     optionsRequest,
 } from '../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
@@ -12,13 +20,13 @@ import {
     DropdownsContent,
 } from '../types';
 
-const listUrl = '/api/polio/notifications/';
+const baseUrl = '/api/polio/notifications/';
 
 const getNotifications = async (
     params: Partial<ApiNotificationsParams>,
 ): Promise<NotificationsApiResponse> => {
     const queryString = new URLSearchParams(params).toString();
-    return getRequest(`${listUrl}?${queryString}`);
+    return getRequest(`${baseUrl}?${queryString}`);
 };
 
 export const useGetNotifications = (
@@ -34,13 +42,22 @@ export const useGetNotifications = (
     });
 };
 
+const deleteNotification = (notificationId: number) => {
+    return deleteRequest(`${baseUrl}${notificationId}`);
+};
+
+export const useDeleteNotification = (): UseMutationResult =>
+    useSnackMutation({
+        mutationFn: deleteNotification,
+    });
+
 export const getNotificationsDropdownsContent = (): UseQueryResult<
     DropdownsContent,
     Error
 > =>
     useSnackQuery({
         queryKey: ['getNotificationsDropdownsContent'],
-        queryFn: () => optionsRequest(`${listUrl}?`),
+        queryFn: () => optionsRequest(`${baseUrl}?`),
         options: {
             staleTime: 1000 * 60 * 15, // in ms
             cacheTime: 1000 * 60 * 5,

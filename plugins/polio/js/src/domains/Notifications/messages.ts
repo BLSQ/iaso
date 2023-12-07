@@ -5,6 +5,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.notifications.title',
         defaultMessage: 'Virus notification',
     },
+    labelActions: {
+        id: 'iaso.polio.notifications.label.actions',
+        defaultMessage: 'Actions',
+    },
     labelId: {
         id: 'iaso.polio.notifications.label.id',
         defaultMessage: 'ID',
@@ -64,6 +68,22 @@ const MESSAGES = defineMessages({
     labelDateResultsReceived: {
         id: 'iaso.polio.notifications.label.date_results_received',
         defaultMessage: 'Date results received',
+    },
+    modalDeleteNo: {
+        id: 'iaso.polio.notifications.modal.delete.no',
+        defaultMessage: 'No',
+    },
+    modalDeleteYes: {
+        id: 'iaso.polio.notifications.modal.delete.yes',
+        defaultMessage: 'Yes',
+    },
+    modalDeleteConfirm: {
+        id: 'iaso.polio.notifications.modal.delete.confirm',
+        defaultMessage: 'Do you really want to delete this notification?',
+    },
+    modalDeleteTitle: {
+        id: 'iaso.polio.notifications.modal.delete.title',
+        defaultMessage: 'Delete notification',
     },
 });
 

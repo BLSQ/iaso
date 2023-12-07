@@ -1,11 +1,5 @@
 /* eslint-disable react/require-default-props */
-import {
-    makeStyles,
-    Table,
-    TableBody,
-    TableRow,
-    TableCell,
-} from '@material-ui/core';
+import { Table, TableBody } from '@material-ui/core';
 import React, { FunctionComponent, useMemo } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
@@ -16,29 +10,7 @@ import { useGetBeneficiaryTypesDropdown } from '../hooks/requests';
 
 import { Beneficiary } from '../types/beneficiary';
 import { Field } from '../types/fields';
-
-const useStyles = makeStyles(theme => ({
-    leftCell: {
-        // @ts-ignore
-        borderRight: `1px solid ${theme.palette.ligthGray.border}`,
-        fontWeight: 'bold',
-    },
-}));
-
-type RowProps = {
-    field: Field;
-};
-
-const Row: FunctionComponent<RowProps> = ({ field }) => {
-    const { label, value } = field;
-    const classes = useStyles();
-    return (
-        <TableRow>
-            <TableCell className={classes.leftCell}>{label}</TableCell>
-            <TableCell>{value}</TableCell>
-        </TableRow>
-    );
-};
+import { PaperTableRow } from '../../../components/tables/PaperTableRow';
 
 type Props = {
     beneficiary?: Beneficiary;
@@ -89,10 +61,18 @@ export const BeneficiaryBaseInfo: FunctionComponent<Props> = ({
                     {!isFetchingForm && beneficiary && (
                         <>
                             {dynamicFields.map(field => (
-                                <Row field={field} key={field.key} />
+                                <PaperTableRow
+                                    label={field.label}
+                                    value={field.value}
+                                    key={field.key}
+                                />
                             ))}
                             {staticFields.map(field => (
-                                <Row field={field} key={field.key} />
+                                <PaperTableRow
+                                    label={field.label}
+                                    value={field.value}
+                                    key={field.key}
+                                />
                             ))}
                         </>
                     )}

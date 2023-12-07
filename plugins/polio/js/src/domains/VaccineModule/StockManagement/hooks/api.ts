@@ -18,6 +18,11 @@ import {
     StockManagementDetailsParams,
     StockVariationParams,
 } from '../types';
+import {
+    mockDestructionsList,
+    mockFormAList,
+    mockIncidentsList,
+} from '../mocks/mockStockVariation';
 
 const defaults = {
     order: 'country',
@@ -145,7 +150,7 @@ export const useGetStockManagementSummary = (
 const getFormAList = async (queryString: string) => {
     await waitFor(750);
     console.log('forma params', queryString);
-    return null;
+    return mockFormAList;
 };
 
 export const useGetFormAList = (
@@ -173,7 +178,7 @@ export const useGetFormAList = (
 const getDestructionList = async (queryString: string) => {
     await waitFor(750);
     console.log('destruction params', queryString);
-    return null;
+    return mockDestructionsList;
 };
 
 export const useGetDestructionList = (
@@ -201,7 +206,7 @@ export const useGetDestructionList = (
 const getIncidentList = async (queryString: string) => {
     await waitFor(750);
     console.log('incidents params', queryString);
-    return null;
+    return mockIncidentsList;
 };
 
 export const useGetIncidentList = (

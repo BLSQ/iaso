@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 import {
     commonStyles,
     textPlaceholder,
@@ -6,15 +6,20 @@ import {
 } from 'bluesquare-components';
 import {
     Box,
+    Button,
+    Grid,
     Paper,
     Tab,
     Tabs,
     Typography,
     makeStyles,
 } from '@material-ui/core';
+import { useDispatch } from 'react-redux';
+import { redirectTo } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 import {
     STOCK_MANAGEMENT,
     STOCK_MANAGEMENT_DETAILS,
+    STOCK_VARIATION,
 } from '../../../../constants/routes';
 import { useTabs } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useTabs';
 import { Router } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
@@ -47,6 +52,7 @@ export const VaccineStockManagementDetails: FunctionComponent<Props> = ({
 }) => {
     const goBack = useGoBack(router, STOCK_MANAGEMENT);
     const { formatMessage } = useSafeIntl();
+    const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
     const initialTab = (router.params.tab as TabValue) ?? USABLE_VIALS;
     const { tab, handleChangeTab } = useTabs<TabValue>({
@@ -54,22 +60,32 @@ export const VaccineStockManagementDetails: FunctionComponent<Props> = ({
         defaultTab: initialTab,
         baseUrl: STOCK_MANAGEMENT_DETAILS,
     });
-    // Make 1 API call with both usable and not usable + vountry and campaign
+
     const { data: usableVials, isFetching: isFetchingUsable } =
         useGetUsableVials(
             router.params as StockManagementDetailsParams,
             tab === USABLE_VIALS,
         );
+
     const { data: unusableVials, isFetching: isFetchingUnusable } =
         useGetUnusableVials(
             router.params as StockManagementDetailsParams,
             tab === UNUSABLE_VIALS,
         );
+
     const { data: summary, isLoading: isLoadingSummary } =
         useGetStockManagementSummary(router.params.id);
+
+    const goToStockVariation = useCallback(() => {
+        dispatch(
+            redirectTo(STOCK_VARIATION, { id: router.params.id as string }),
+        );
+    }, [dispatch, router.params.id]);
+
     const title = `${formatMessage(MESSAGES.stockDetails)}: ${
         summary?.country_name ?? textPlaceholder
     } - ${summary?.vaccine_type ?? textPlaceholder}`;
+
     return (
         <>
             <TopBar title={title} displayBackButton goBack={goBack}>
@@ -94,10 +110,32 @@ export const VaccineStockManagementDetails: FunctionComponent<Props> = ({
                 </Tabs>
             </TopBar>
             <Box className={classes.containerFullHeightPadded}>
-                <VaccineStockManagementSummary
-                    isLoading={isLoadingSummary}
-                    data={summary}
-                />
+                <Grid container>
+                    <Grid item xs={12} sm={6} md={4}>
+                        <VaccineStockManagementSummary
+                            isLoading={isLoadingSummary}
+                            data={summary}
+                        />
+                    </Grid>
+                    <Grid
+                        container
+                        item
+                        xs={12}
+                        sm={6}
+                        md={8}
+                        justifyContent="flex-end"
+                    >
+                        <Box>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={goToStockVariation}
+                            >
+                                {formatMessage(MESSAGES.stockVariation)}
+                            </Button>
+                        </Box>
+                    </Grid>
+                </Grid>
                 <Paper elevation={2} className={classes.marginTop}>
                     <Box padding={2}>
                         <Typography variant="h5" color="primary">

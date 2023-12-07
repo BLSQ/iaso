@@ -12,7 +12,10 @@ import {
     Typography,
     makeStyles,
 } from '@material-ui/core';
-import { STOCK_MANAGEMENT_DETAILS } from '../../../../constants/routes';
+import {
+    STOCK_MANAGEMENT_DETAILS,
+    STOCK_VARIATION,
+} from '../../../../constants/routes';
 import { useTabs } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useTabs';
 import { Router } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import { useGoBack } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/useGoBack';
@@ -28,6 +31,11 @@ import {
     useGetIncidentList,
     useGetStockManagementSummary,
 } from '../hooks/api';
+import {
+    useDestructionTableColumns,
+    useFormATableColumns,
+    useIncidentTableColumns,
+} from './Table/columns';
 
 type Props = { router: Router };
 
@@ -50,7 +58,7 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
     const { tab, handleChangeTab } = useTabs<StockVariationTab>({
         params: router.params,
         defaultTab: initialTab,
-        baseUrl: STOCK_MANAGEMENT_DETAILS,
+        baseUrl: STOCK_VARIATION,
     });
 
     const { data: formA, isFetching: isFetchingFormA } = useGetFormAList(
@@ -68,6 +76,11 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
             tab === INCIDENT,
         );
     const { data: summary } = useGetStockManagementSummary(router.params.id);
+
+    const formAColumns = useFormATableColumns();
+    const destructionsColumns = useDestructionTableColumns();
+    const incidentsColumns = useIncidentTableColumns();
+
     const title = `${formatMessage(MESSAGES.stockVariation)}: ${
         summary?.country_name ?? textPlaceholder
     } - ${summary?.vaccine_type ?? textPlaceholder}`;
@@ -108,7 +121,7 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
                         {tab === FORM_A && (
                             <VaccineStockVariationTable
                                 data={formA}
-                                columns={[]}
+                                columns={formAColumns}
                                 params={router.params}
                                 paramsPrefix={tab}
                                 isFetching={isFetchingFormA}
@@ -117,7 +130,7 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
                         {tab === DESTRUCTION && (
                             <VaccineStockVariationTable
                                 data={destructions}
-                                columns={[]}
+                                columns={destructionsColumns}
                                 params={router.params}
                                 paramsPrefix={tab}
                                 isFetching={isFetchingDestructions}
@@ -126,7 +139,7 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
                         {tab === INCIDENT && (
                             <VaccineStockVariationTable
                                 data={incidents}
-                                columns={[]}
+                                columns={incidentsColumns}
                                 params={router.params}
                                 paramsPrefix={tab}
                                 isFetching={isFetchingIncidents}

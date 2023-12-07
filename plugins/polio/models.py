@@ -1055,6 +1055,7 @@ class VaccineArrivalReport(SoftDeletableModel):
 
 
 class VaccineStock(models.Model):
+    account = models.ForeignKey("iaso.account", on_delete=models.CASCADE, related_name="vaccine_stocks")
     country = models.ForeignKey(
         "iaso.orgunit",
         null=True,

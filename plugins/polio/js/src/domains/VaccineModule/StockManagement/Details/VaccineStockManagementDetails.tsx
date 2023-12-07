@@ -1,5 +1,9 @@
 import React, { FunctionComponent } from 'react';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import {
+    commonStyles,
+    textPlaceholder,
+    useSafeIntl,
+} from 'bluesquare-components';
 import { Box, Tab, Tabs, makeStyles } from '@material-ui/core';
 import {
     STOCK_MANAGEMENT,
@@ -9,11 +13,16 @@ import { useTabs } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/u
 import { Router } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import { useGoBack } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/useGoBack';
 import { UNUSABLE_VIALS, USABLE_VIALS } from '../constants';
-import { TabValue } from '../types';
+import { StockManagementDetailsParams, TabValue } from '../types';
 import TopBar from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import MESSAGES from '../messages';
 import { VaccineStockManagementDetailsTable } from './Table/VaccineStockManagementDetailsTable';
-import { useGetUnusableVials, useGetUsableVials } from '../hooks/api';
+import {
+    useGetStockManagementSummary,
+    useGetUnusableVials,
+    useGetUsableVials,
+} from '../hooks/api';
+import { VaccineStockManagementSummary } from './Summary/VaccineStockManagementSummary';
 
 type Props = { router: Router };
 
@@ -37,18 +46,23 @@ export const VaccineStockManagementDetails: FunctionComponent<Props> = ({
     });
     // Make 1 API call with both usable and not usable + vountry and campaign
     const { data: usableVials, isFetching: isFetchingUsable } =
-        useGetUsableVials(router.params, tab === USABLE_VIALS);
+        useGetUsableVials(
+            router.params as StockManagementDetailsParams,
+            tab === USABLE_VIALS,
+        );
     const { data: unUsableVials, isFetching: isFetchingUnusable } =
-        useGetUnusableVials(router.params, tab === UNUSABLE_VIALS);
-
-    // This won't work
-    // const country =
-    //     tab === USABLE_VIALS ? usableVials?.country : unUsableVials?.country;
-    // const campaign =
-    //     tab === USABLE_VIALS ? usableVials?.campaign : unUsableVials?.campaign;
+        useGetUnusableVials(
+            router.params as StockManagementDetailsParams,
+            tab === UNUSABLE_VIALS,
+        );
+    const { data: summary, isLoading: isLoadingSummary } =
+        useGetStockManagementSummary(router.params.id);
+    const title = `${formatMessage(MESSAGES.stockDetails)}: ${
+        summary?.country_name ?? textPlaceholder
+    } - ${summary?.vaccine_type ?? textPlaceholder}`;
     return (
         <>
-            <TopBar title="title" displayBackButton goBack={goBack}>
+            <TopBar title={title} displayBackButton goBack={goBack}>
                 <Tabs
                     value={tab}
                     classes={{
@@ -70,6 +84,10 @@ export const VaccineStockManagementDetails: FunctionComponent<Props> = ({
                 </Tabs>
             </TopBar>
             <Box className={classes.containerFullHeightPadded}>
+                <VaccineStockManagementSummary
+                    isLoading={isLoadingSummary}
+                    data={summary}
+                />
                 <VaccineStockManagementDetailsTable
                     params={router.params}
                     paramsPrefix={tab}

@@ -1,5 +1,5 @@
 export const mockUsableVials: any = {
-    count: 5,
+    count: 2,
     page: 1,
     pages: 1,
     limit: 20,
@@ -25,7 +25,7 @@ export const mockUsableVials: any = {
     ],
 };
 export const mockUnusableVials: any = {
-    count: 5,
+    count: 2,
     page: 1,
     pages: 1,
     limit: 20,
@@ -45,4 +45,13 @@ export const mockUnusableVials: any = {
             vials_out: null,
         },
     ],
+};
+
+export const mockSummary = {
+    country_name: 'CAMEROON',
+    vaccine_type: 'bOPV',
+    total_usable_doses: 500,
+    total_usable_vials: 25,
+    total_unusable_doses: 100,
+    total_unusable_vials: 5,
 };

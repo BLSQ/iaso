@@ -4,7 +4,6 @@ import { STOCK_MANAGEMENT_DETAILS } from '../../../../../constants/routes';
 import { TableWithDeepLink } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 import { TabValue } from '../../types';
 import { useVaccineStockManagementDetailsColumns } from './useVaccineStockManagementDetailsColumns';
-import { USABLE_VIALS } from '../../constants';
 
 type Props = {
     params: Partial<UrlParams>;
@@ -19,9 +18,10 @@ export const VaccineStockManagementDetailsTable: FunctionComponent<Props> = ({
     paramsPrefix,
     data,
     isFetching,
-    tab = USABLE_VIALS,
+    tab,
 }) => {
     const columns = useVaccineStockManagementDetailsColumns(tab);
+
     return (
         // @ts-ignore
         <TableWithDeepLink

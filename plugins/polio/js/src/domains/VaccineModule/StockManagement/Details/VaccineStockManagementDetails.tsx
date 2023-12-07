@@ -88,17 +88,25 @@ export const VaccineStockManagementDetails: FunctionComponent<Props> = ({
                     isLoading={isLoadingSummary}
                     data={summary}
                 />
-                <VaccineStockManagementDetailsTable
-                    params={router.params}
-                    paramsPrefix={tab}
-                    data={tab === USABLE_VIALS ? usableVials : unUsableVials}
-                    isFetching={
-                        tab === USABLE_VIALS
-                            ? isFetchingUsable
-                            : isFetchingUnusable
-                    }
-                    tab={tab}
-                />
+                {/* Using 2 tables to avoid messing up the Tables internal state, which will create bugs */}
+                {tab === USABLE_VIALS && (
+                    <VaccineStockManagementDetailsTable
+                        params={router.params}
+                        paramsPrefix={tab}
+                        data={usableVials}
+                        isFetching={isFetchingUsable}
+                        tab={tab}
+                    />
+                )}
+                {tab === UNUSABLE_VIALS && (
+                    <VaccineStockManagementDetailsTable
+                        params={router.params}
+                        paramsPrefix={tab}
+                        data={unUsableVials}
+                        isFetching={isFetchingUnusable}
+                        tab={tab}
+                    />
+                )}
             </Box>
         </>
     );

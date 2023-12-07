@@ -30,6 +30,9 @@ requests==2.26.0
 psycopg2-binary==2.8.5
 django-ltree==0.5.3
 
+django-sslserver==0.22
+python-dotenv==0.19.1
+
 # webpack loader
 # This is our custom version of webpack loader to handle S3 better.
 # Use the following line if you want a locally editable version, and comment the other

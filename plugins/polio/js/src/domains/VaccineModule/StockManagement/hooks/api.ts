@@ -61,6 +61,7 @@ export const useGetVaccineStockList = (
 
 // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 const getUsableVials = async (queryString: string) => {
+    console.log('unusable vials', queryString);
     await waitFor(750);
     return mockUsableVials;
 };
@@ -85,6 +86,7 @@ export const useGetUsableVials = (
 
 // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 const getUnusableVials = async (queryString: string) => {
+    console.log('unusable vials', queryString);
     await waitFor(750);
     return mockUnusableVials;
 };
@@ -109,6 +111,7 @@ export const useGetUnusableVials = (
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
 const getStockManagementSummary = async (id?: string) => {
+    console.log('vaccine stock id', id);
     await waitFor(500);
     return mockSummary;
 };

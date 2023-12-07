@@ -92,6 +92,13 @@ class VaccineStockSerializer(serializers.ModelSerializer):
 
 
 class VaccineStockManagementViewSet(ModelViewSet):
-    queryset = VaccineStock.objects.all()
     serializer_class = VaccineStockSerializer
     http_method_names = ["get", "head", "options"]
+
+    def get_queryset(self):
+        return (
+            VaccineStock.objects.filter(account=self.request.user.iaso_profile.account)
+            .prefetch_related("destructionreport_set", "incidentreport_set", "outgoingstockmovement_set")
+            .distinct()
+            .order_by("id")
+        )

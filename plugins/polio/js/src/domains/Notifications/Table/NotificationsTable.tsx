@@ -6,14 +6,22 @@ import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/
 import { handleTableDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/utils/table';
 
 import MESSAGES from '../messages';
-import { ApiNotificationsParams, NotificationsParams } from '../types';
 import { DeleteNotificationModal } from '../Modals/NotificationsDeleteModal';
+import { EditNotificationModal } from '../Modals/NotificationsCreateEditModal';
 import { NOTIFICATIONS_BASE_URL } from '../../../constants/routes';
 import { useGetNotifications } from '../hooks/api';
+import {
+    ApiNotificationsParams,
+    DropdownsContent,
+    NotificationsParams,
+} from '../types';
 
-type Props = { params: NotificationsParams };
+type Props = { params: NotificationsParams; dropdownContent: DropdownsContent };
 
-export const NotificationsTable: FunctionComponent<Props> = ({ params }) => {
+export const NotificationsTable: FunctionComponent<Props> = ({
+    params,
+    dropdownContent,
+}) => {
     const apiParams: ApiNotificationsParams = {
         ...params,
         limit: params.pageSize || '20',
@@ -95,9 +103,15 @@ export const NotificationsTable: FunctionComponent<Props> = ({ params }) => {
         },
         {
             Header: formatMessage(MESSAGES.labelActions),
+            sortable: false,
             Cell: settings => {
                 return (
                     <>
+                        {/* @ts-ignore */}
+                        <EditNotificationModal
+                            dropdownContent={dropdownContent}
+                            notification={settings.row.original}
+                        />
                         {/* @ts-ignore */}
                         <DeleteNotificationModal
                             notification={settings.row.original}

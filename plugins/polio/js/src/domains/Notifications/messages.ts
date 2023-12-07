@@ -85,6 +85,34 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.notifications.modal.delete.title',
         defaultMessage: 'Delete notification',
     },
+    modalAddTitle: {
+        id: 'iaso.polio.notifications.modal.add.title',
+        defaultMessage: 'Add notification',
+    },
+    modalEditTitle: {
+        id: 'iaso.polio.notifications.modal.edit.title',
+        defaultMessage: 'Edit notification',
+    },
+    modalWriteCancel: {
+        id: 'iaso.polio.notifications.modal.write.cancel',
+        defaultMessage: 'Cancel',
+    },
+    modalWriteConfirm: {
+        id: 'iaso.polio.notifications.modal.write.confirm',
+        defaultMessage: 'Confirm',
+    },
+    validationInvalidDate: {
+        id: 'iaso.polio.notifications.validation.invalid_date',
+        defaultMessage: 'Invalid date',
+    },
+    validationFieldRequired: {
+        id: 'iaso.polio.notifications.validation.field_required',
+        defaultMessage: 'This field is required',
+    },
+    labelOrgUnit: {
+        id: 'iaso.polio.notifications.label.org_unit',
+        defaultMessage: 'OrgUnit',
+    },
 });
 
 export default MESSAGES;

@@ -5,22 +5,23 @@ import { useSafeIntl } from 'bluesquare-components';
 import DatesRange from '../../../../../../../hat/assets/js/apps/Iaso/components/filters/DatesRange';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { FilterButton } from '../../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
+import { NOTIFICATIONS_BASE_URL } from '../../../constants/routes';
 import { useFilterState } from '../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 
 import MESSAGES from '../messages';
-import { NotificationsParams } from '../types';
-import { getNotificationsDropdownsContent } from '../hooks/api';
-import { NOTIFICATIONS_BASE_URL } from '../../../constants/routes';
+import { DropdownsContent, NotificationsParams } from '../types';
+import { CreateNotificationModal } from '../Modals/NotificationsCreateEditModal';
 
-type Props = { params: NotificationsParams };
+type Props = { params: NotificationsParams; dropdownContent: DropdownsContent };
 
 const baseUrl = NOTIFICATIONS_BASE_URL;
 
-export const NotificationsFilters: FunctionComponent<Props> = ({ params }) => {
+export const NotificationsFilters: FunctionComponent<Props> = ({
+    params,
+    dropdownContent,
+}) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
-    const { data: dropdownContent, isFetching: isFetchingdropdownContent } =
-        getNotificationsDropdownsContent();
     const { formatMessage } = useSafeIntl();
 
     return (
@@ -32,8 +33,7 @@ export const NotificationsFilters: FunctionComponent<Props> = ({ params }) => {
                     keyValue="country"
                     value={filters.country}
                     onChange={handleChange}
-                    options={dropdownContent?.country}
-                    loading={isFetchingdropdownContent}
+                    options={dropdownContent.country}
                     labelString={formatMessage(MESSAGES.labelCountry)}
                 />
             </Grid>
@@ -44,8 +44,7 @@ export const NotificationsFilters: FunctionComponent<Props> = ({ params }) => {
                     keyValue="vdpv_category"
                     value={filters.vdpv_category}
                     onChange={handleChange}
-                    options={dropdownContent?.vdpv_category}
-                    loading={isFetchingdropdownContent}
+                    options={dropdownContent.vdpv_category}
                     labelString={formatMessage(MESSAGES.labelVdpvCategory)}
                 />
             </Grid>
@@ -56,8 +55,7 @@ export const NotificationsFilters: FunctionComponent<Props> = ({ params }) => {
                     keyValue="source"
                     value={filters.source}
                     onChange={handleChange}
-                    options={dropdownContent?.source}
-                    loading={isFetchingdropdownContent}
+                    options={dropdownContent.source}
                     labelString={formatMessage(MESSAGES.labelSource)}
                 />
             </Grid>
@@ -77,6 +75,14 @@ export const NotificationsFilters: FunctionComponent<Props> = ({ params }) => {
                     <FilterButton
                         disabled={!filtersUpdated}
                         onFilter={handleSearch}
+                    />
+                </Box>
+            </Grid>
+            <Grid container item xs={12} md={12} justifyContent="flex-end">
+                <Box mt={2}>
+                    <CreateNotificationModal
+                        iconProps={{ message: MESSAGES.modalAddTitle }}
+                        dropdownContent={dropdownContent}
                     />
                 </Box>
             </Grid>

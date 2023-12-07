@@ -1,6 +1,7 @@
 import {
     UseBaseQueryResult,
     UseMutationResult,
+    useQueryClient,
     UseQueryResult,
 } from 'react-query';
 
@@ -12,12 +13,15 @@ import {
     deleteRequest,
     getRequest,
     optionsRequest,
+    patchRequest,
+    postRequest,
 } from '../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 
 import {
     NotificationsApiResponse,
     ApiNotificationsParams,
     DropdownsContent,
+    NotificationsApiData,
 } from '../types';
 
 const baseUrl = '/api/polio/notifications/';
@@ -77,3 +81,22 @@ export const getNotificationsDropdownsContent = (): UseQueryResult<
             },
         },
     });
+
+const createEditNotification = (body: NotificationsApiData) => {
+    if (body.id) {
+        return patchRequest(`${baseUrl}${body.id}/`, body);
+    }
+    return postRequest(baseUrl, body);
+};
+
+export const useCreateEditNotification = (): UseMutationResult => {
+    const queryClient = useQueryClient();
+    return useSnackMutation({
+        mutationFn: body => createEditNotification(body),
+        options: {
+            onSuccess: () => {
+                queryClient.invalidateQueries('notificationsList');
+            },
+        },
+    });
+};

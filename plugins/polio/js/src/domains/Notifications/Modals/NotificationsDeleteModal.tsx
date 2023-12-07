@@ -7,9 +7,9 @@ import {
 
 import MESSAGES from '../messages';
 import { useDeleteNotification } from '../hooks/api';
+import { NotificationsApiData } from '../types';
 
 import { DeleteIconButton } from '../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/DeleteIconButton';
-import { NotificationsApiData } from '../types';
 
 type Props = {
     isOpen: boolean;

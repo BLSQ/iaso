@@ -21,8 +21,6 @@ export const VaccineStockManagementDetailsTable: FunctionComponent<Props> = ({
     isFetching,
     tab = USABLE_VIALS,
 }) => {
-    console.log('details table data', data);
-
     const columns = useVaccineStockManagementDetailsColumns(tab);
     return (
         // @ts-ignore

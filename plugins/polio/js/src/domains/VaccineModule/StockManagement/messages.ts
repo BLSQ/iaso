@@ -98,6 +98,22 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Date',
         id: 'iaso.label.date',
     },
+    unusableDoses: {
+        id: 'iaso.label.unusableDoses',
+        defaultMessage: 'Unusable doses',
+    },
+    usableDoses: {
+        id: 'iaso.label.usableDoses',
+        defaultMessage: 'Usable doses',
+    },
+    stockBalance: {
+        id: 'iaso.label.stockBalance',
+        defaultMessage: 'Stock balance',
+    },
+    stockDetails: {
+        id: 'iaso.label.stockDetails',
+        defaultMessage: 'Stock details',
+    },
 });
 
 export default MESSAGES;

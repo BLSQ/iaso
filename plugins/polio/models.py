@@ -1054,6 +1054,64 @@ class VaccineArrivalReport(SoftDeletableModel):
     objects = DefaultSoftDeletableManager()
 
 
+class VaccineStock(models.Model):
+    country = models.ForeignKey(
+        "iaso.orgunit",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="vaccine_stocks",
+        help_text="Unique (Country, Vaccine) pair",
+    )
+    vaccine = models.CharField(max_length=5, choices=VACCINES)
+
+    class Meta:
+        unique_together = ("country", "vaccine")
+
+
+# Form A
+class OutgoingStockMovement(models.Model):
+    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
+    vaccine_stock = models.ForeignKey(
+        VaccineStock, on_delete=models.CASCADE
+    )  # Country can be deduced from the campaign
+    report_date = models.DateField()
+    form_a_reception_date = models.DateField()
+    usable_vials_used = models.PositiveIntegerField()
+    unusable_vials = models.PositiveIntegerField()
+    lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
+    missing_vials = models.PositiveIntegerField()
+
+
+class DestructionReport(models.Model):
+    vaccine_stock = models.ForeignKey(VaccineStock, on_delete=models.CASCADE)
+    action = models.TextField()
+    rrt_destruction_report_reception_date = models.DateField()
+    destruction_report_date = models.DateField()
+    unusable_vials_destroyed = models.PositiveIntegerField()
+    lot_number = models.CharField(max_length=200)
+
+
+class IncidentReport(models.Model):
+    class StockCorrectionChoices(models.TextChoices):
+        VVM_REACHED_DISCARD_POINT = "vvm_reached_discard_point", _("VVM reached the discard point")
+        VACCINE_EXPIRED = "vaccine_expired", _("Vaccine expired")
+        LOSSES = "losses", _("Losses")
+        RETURN = "return", _("Return")
+        STEALING = "stealing", _("Stealing")
+        PHYSICAL_INVENTORY = "physical_inventory", _("Physical Inventory")
+
+    vaccine_stock = models.ForeignKey(VaccineStock, on_delete=models.CASCADE)
+
+    stock_correction = models.CharField(
+        max_length=50, choices=StockCorrectionChoices.choices, default=StockCorrectionChoices.VVM_REACHED_DISCARD_POINT
+    )
+    date_of_incident_report = models.DateField()  # Date du document
+    incident_report_received_by_rrt = models.DateField()  # Date reception document
+    unusable_vials = models.PositiveIntegerField()
+    usable_vials = models.PositiveIntegerField()
+
+
 class Notification(models.Model):
     """
     List of notifications of polio virus outbreaks.

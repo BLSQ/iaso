@@ -33,6 +33,7 @@ export const VaccineStockManagementDetailsTable: FunctionComponent<Props> = ({
             columns={columns}
             baseUrl={STOCK_MANAGEMENT_DETAILS}
             marginTop={false}
+            elevation={0}
             extraProps={{
                 loading: isFetching,
                 params,

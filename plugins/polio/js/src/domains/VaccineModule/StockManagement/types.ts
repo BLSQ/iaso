@@ -9,15 +9,15 @@ export type StockManagementListParams = {
     vaccine_type?: string;
 };
 
-export type TabValue = 'usableVials' | 'unUsableVials';
+export type TabValue = 'usableVials' | 'unusableVials';
 
 export type StockManagementDetailsParams = {
     accountId: string; // number as string
     id: string; // number as string
     tab: TabValue;
-    unUsableVialsPageSize: string; // number as string
-    unUsableVialsPage: string; // number as string
-    unUsableVialsOrder: string; // number as string
+    unusableVialsPageSize: string; // number as string
+    unusableVialsPage: string; // number as string
+    unusableVialsOrder: string; // number as string
     usableVialsPageSize: string; // number as string
     usableVialsPage: string; // number as string
     usableVialsOrder: string; // number as string

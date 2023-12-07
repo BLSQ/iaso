@@ -4,7 +4,14 @@ import {
     textPlaceholder,
     useSafeIntl,
 } from 'bluesquare-components';
-import { Box, Tab, Tabs, makeStyles } from '@material-ui/core';
+import {
+    Box,
+    Paper,
+    Tab,
+    Tabs,
+    Typography,
+    makeStyles,
+} from '@material-ui/core';
 import {
     STOCK_MANAGEMENT,
     STOCK_MANAGEMENT_DETAILS,
@@ -29,6 +36,9 @@ type Props = { router: Router };
 const useStyles = makeStyles(theme => {
     return {
         ...commonStyles(theme),
+        marginTop: {
+            marginTop: theme.spacing(2),
+        },
     };
 });
 
@@ -50,7 +60,7 @@ export const VaccineStockManagementDetails: FunctionComponent<Props> = ({
             router.params as StockManagementDetailsParams,
             tab === USABLE_VIALS,
         );
-    const { data: unUsableVials, isFetching: isFetchingUnusable } =
+    const { data: unusableVials, isFetching: isFetchingUnusable } =
         useGetUnusableVials(
             router.params as StockManagementDetailsParams,
             tab === UNUSABLE_VIALS,
@@ -88,25 +98,33 @@ export const VaccineStockManagementDetails: FunctionComponent<Props> = ({
                     isLoading={isLoadingSummary}
                     data={summary}
                 />
-                {/* Using 2 tables to avoid messing up the Tables internal state, which will create bugs */}
-                {tab === USABLE_VIALS && (
-                    <VaccineStockManagementDetailsTable
-                        params={router.params}
-                        paramsPrefix={tab}
-                        data={usableVials}
-                        isFetching={isFetchingUsable}
-                        tab={tab}
-                    />
-                )}
-                {tab === UNUSABLE_VIALS && (
-                    <VaccineStockManagementDetailsTable
-                        params={router.params}
-                        paramsPrefix={tab}
-                        data={unUsableVials}
-                        isFetching={isFetchingUnusable}
-                        tab={tab}
-                    />
-                )}
+                <Paper elevation={2} className={classes.marginTop}>
+                    <Box padding={2}>
+                        <Typography variant="h5" color="primary">
+                            {formatMessage(MESSAGES[tab])}
+                        </Typography>
+
+                        {/* Using 2 tables to avoid messing up the Tables internal state, which will create bugs */}
+                        {tab === USABLE_VIALS && (
+                            <VaccineStockManagementDetailsTable
+                                params={router.params}
+                                paramsPrefix={tab}
+                                data={usableVials}
+                                isFetching={isFetchingUsable}
+                                tab={tab}
+                            />
+                        )}
+                        {tab === UNUSABLE_VIALS && (
+                            <VaccineStockManagementDetailsTable
+                                params={router.params}
+                                paramsPrefix={tab}
+                                data={unusableVials}
+                                isFetching={isFetchingUnusable}
+                                tab={tab}
+                            />
+                        )}
+                    </Box>
+                </Paper>
             </Box>
         </>
     );

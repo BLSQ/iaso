@@ -1,2 +1,2 @@
 export const USABLE_VIALS = 'usableVials';
-export const UNUSABLE_VIALS = 'unUsableVials';
+export const UNUSABLE_VIALS = 'unusableVials';

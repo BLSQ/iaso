@@ -106,9 +106,9 @@ export const useGetUnusableVials = (
     enabled: boolean,
 ): UseQueryResult<any, any> => {
     const {
-        unUsableVialsOrder: order,
-        unUsableVialsPage: page,
-        unUsableVialsPageSize: pageSize,
+        unusableVialsOrder: order,
+        unusableVialsPage: page,
+        unusableVialsPageSize: pageSize,
     } = params;
     const safeParams = useUrlParams({
         order,

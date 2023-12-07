@@ -1,11 +1,11 @@
 import React, { FunctionComponent } from 'react';
-import { UrlParams } from 'bluesquare-components';
 import { STOCK_MANAGEMENT } from '../../../../constants/routes';
 import { TableWithDeepLink } from '../../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 import { useGetVaccineStockList } from '../hooks/api';
 import { useVaccineStockManagementTableColumns } from './useVaccineStockManagementTableColumns';
+import { StockManagementListParams } from '../types';
 
-type Props = { params: Partial<UrlParams> };
+type Props = { params: StockManagementListParams };
 
 export const VaccineStockManagementTable: FunctionComponent<Props> = ({
     params,

@@ -88,7 +88,7 @@ const menuItems = (
             isActive: pathname =>
                 pathname?.includes(`/entityTypeIds/${entityType.value}/`) &&
                 pathname?.includes(`entities/list/`),
-            extraPath: `/entityTypeIds/${entityType.value}/order/last_saved_instance/pageSize/20/page/1`,
+            extraPath: `/entityTypeIds/${entityType.value}/order/-last_saved_instance/pageSize/20/page/1`,
         }));
     }
     return [
@@ -295,6 +295,20 @@ const menuItems = (
     ];
 };
 
+const filterDevFeatures = (items: MenuItems): MenuItems => {
+    const result: MenuItems = [];
+    items.forEach(item => {
+        if (!item.subMenu && !item.dev) {
+            result.push(item);
+        } else if (item.subMenu) {
+            const subMenu = filterDevFeatures(item.subMenu);
+            const filtered = { ...item, subMenu };
+            result.push(filtered);
+        }
+    });
+    return result;
+};
+
 export const useMenuItems = (): MenuItems => {
     const currentUser = useCurrentUser();
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
@@ -355,7 +369,7 @@ export const useMenuItems = (): MenuItems => {
             return authorizedItems;
         }
         // Remove dev (incomplete) features
-        return authorizedItems.filter(item => !item.dev);
+        return filterDevFeatures(authorizedItems);
     }, [admin, basicItems, currentUser, pluginsMenu]);
     return items;
 };

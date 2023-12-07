@@ -12,6 +12,13 @@ from iaso.models.deduplication import ValidationStatus
 from iaso.test import APITestCase
 
 
+def create_form_instance(form: m.Form = None, period: str = None, org_unit: m.OrgUnit = None, **kwargs):
+    with open("iaso/tests/fixtures/test.xml", "rb") as xml_file:
+        return m.Instance.objects.create(
+            form=form, period=period, org_unit=org_unit, file=UploadedFile(xml_file), **kwargs
+        )
+
+
 def create_instance_and_entity(cls, entity_name, instance_json, form_version, orgunit=None, entity_type=None):
     if orgunit is None:
         orgunit = cls.default_orgunit
@@ -19,7 +26,7 @@ def create_instance_and_entity(cls, entity_name, instance_json, form_version, or
     if entity_type is None:
         entity_type = cls.default_entity_type
 
-    tmp_inst = cls.create_form_instance(
+    tmp_inst = create_form_instance(
         form=cls.default_form,
         period="202001",
         org_unit=orgunit,
@@ -124,10 +131,11 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         default_form_file_mock = mock.MagicMock(spec=File)
         default_form_file_mock.name = "test.xml"
         form_version_id = "2020022401"
-        with open("iaso/tests/fixtures/test_form_deduplication.xlsx", "rb") as xls_file:
-            cls.default_form.form_versions.create(
-                file=default_form_file_mock, xls_file=UploadedFile(xls_file), version_id=form_version_id
-            )
+        with open("iaso/tests/fixtures/test.xml", "rb") as xml_file:
+            with open("iaso/tests/fixtures/test_form_deduplication.xlsx", "rb") as xls_file:
+                cls.default_form.form_versions.create(
+                    file=UploadedFile(xml_file), xls_file=UploadedFile(xls_file), version_id=form_version_id
+                )
 
         cls.default_form.update_possible_fields()
         cls.default_form.save()

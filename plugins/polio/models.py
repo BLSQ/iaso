@@ -962,6 +962,23 @@ class VaccineAuthorization(SoftDeletableModel):
         return f"{self.country}-{self.expiration_date}"
 
 
+class NotificationManager(models.Manager):
+    def get_countries_for_account(self, account: Account) -> QuerySet[OrgUnit]:
+        """
+        Returns a queryset of unique countries used in notifications for the given account.
+        """
+        countries_pk = self.filter(account=account, org_unit__version_id=account.default_version_id).values_list(
+            "org_unit__parent__parent__id", flat=True
+        )
+        return OrgUnit.objects.filter(pk__in=countries_pk).defer("geom", "simplified_geom").order_by("name")
+
+
+## Terminology
+# VRF = Vaccine Request Form
+# VPA = Vaccine Pre Alert
+# VAR = Vaccine Arrival Report
+
+
 class VaccineRequestForm(SoftDeletableModel):
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
     vaccine_type = models.CharField(max_length=5, choices=VACCINES)
@@ -1000,7 +1017,7 @@ class VaccineRequestForm(SoftDeletableModel):
         ]
 
     def __str__(self):
-        return f"VFR for {self.get_country()} {self.campaign} {self.vaccine_type} #VPA {self.count_pre_alerts()} #VAR {self.count_arrival_reports()}"
+        return f"VRF for {self.get_country()} {self.campaign} {self.vaccine_type} #VPA {self.count_pre_alerts()} #VAR {self.count_arrival_reports()}"
 
 
 class VaccinePreAlert(SoftDeletableModel):
@@ -1082,7 +1099,7 @@ class Notification(models.Model):
     epid_number = models.CharField(max_length=50, unique=True)
     vdpv_category = models.CharField(max_length=20, choices=VdpvCategories.choices, default=VdpvCategories.AVDPV)
     source = models.CharField(max_length=50, choices=Sources.choices, default=Sources.AFP)
-    vdpv_nucleotide_diff_sabin2 = models.CharField(max_length=10)
+    vdpv_nucleotide_diff_sabin2 = models.CharField(max_length=10, blank=True)
     # Lineage possible values: NIE-ZAS-1, RDC-MAN-3, Ambiguous, etc.
     lineage = models.CharField(max_length=150, blank=True)
     closest_match_vdpv2 = models.CharField(max_length=150, blank=True)
@@ -1108,6 +1125,8 @@ class Notification(models.Model):
     import_source = models.ForeignKey("NotificationImport", null=True, blank=True, on_delete=models.SET_NULL)
     import_raw_data = models.JSONField(null=True, blank=True, encoder=DjangoJSONEncoder)
 
+    objects = NotificationManager()
+
     class Meta:
         verbose_name = _("Notification")
 
@@ -1122,6 +1141,8 @@ class NotificationImport(models.Model):
 
     This model stores .xlsx files and use them to populate `Notification`.
     """
+
+    XLSX_TEMPLATE_PATH = "plugins/polio/fixtures/notifications_template.xlsx"
 
     EXPECTED_XLSX_COL_NAMES = [
         "EPID_NUMBER",

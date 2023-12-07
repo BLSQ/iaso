@@ -3,6 +3,7 @@ import React, {
     FunctionComponent,
     useCallback,
     useMemo,
+    useEffect,
 } from 'react';
 import { useDispatch } from 'react-redux';
 
@@ -67,6 +68,18 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
         submitterTeamId: params.submitterTeamId,
         entityTypeIds: params.entityTypeIds,
     });
+
+    useEffect(() => {
+        setFilters({
+            search: params.search,
+            location: params.location,
+            dateFrom: params.dateFrom,
+            dateTo: params.dateTo,
+            submitterId: params.submitterId,
+            submitterTeamId: params.submitterTeamId,
+            entityTypeIds: params.entityTypeIds,
+        });
+    }, [params]);
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.location);
     const [textSearchError, setTextSearchError] = useState<boolean>(false);

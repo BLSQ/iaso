@@ -182,3 +182,5 @@ pyvenv.cfg
 originals
 
 *.code-workspace
+
+plugins/trypelim

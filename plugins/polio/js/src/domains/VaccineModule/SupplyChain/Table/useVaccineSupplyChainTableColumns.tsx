@@ -1,5 +1,10 @@
 import React, { useMemo } from 'react';
-import { Column, IconButton, useSafeIntl } from 'bluesquare-components';
+import {
+    Column,
+    IconButton,
+    textPlaceholder,
+    useSafeIntl,
+} from 'bluesquare-components';
 import {
     DateCell,
     MultiDateCell,
@@ -41,9 +46,9 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
                     const poNumbersList = poNumbers.split(',');
                     return (
                         <>
-                            {poNumbersList.map((poNumber, index) => (
-                                <div key={`${poNumber}${index}`}>
-                                    {poNumber}
+                            {poNumbersList.map(poNumber => (
+                                <div key={poNumber}>
+                                    {poNumber ?? textPlaceholder}
                                 </div>
                             ))}
                         </>

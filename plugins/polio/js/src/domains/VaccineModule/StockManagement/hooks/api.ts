@@ -77,14 +77,15 @@ export const useGetUsableVials = (
     const {
         usableVialsOrder: order,
         usableVialsPage: page,
-        usableVialsPageSize: limit,
+        usableVialsPageSize: pageSize,
     } = params;
     const safeParams = useUrlParams({
         order,
         page,
-        limit,
+        pageSize,
     } as Partial<UrlParams>);
-    const queryString = new URLSearchParams(safeParams).toString();
+    const apiParams = useApiParams(safeParams);
+    const queryString = new URLSearchParams(apiParams).toString();
     return useSnackQuery({
         queryKey: ['usable-vials', queryString],
         queryFn: () => getUsableVials(queryString),
@@ -107,14 +108,15 @@ export const useGetUnusableVials = (
     const {
         unUsableVialsOrder: order,
         unUsableVialsPage: page,
-        unUsableVialsPageSize: limit,
+        unUsableVialsPageSize: pageSize,
     } = params;
     const safeParams = useUrlParams({
         order,
         page,
-        limit,
+        pageSize,
     } as Partial<UrlParams>);
-    const queryString = new URLSearchParams(safeParams).toString();
+    const apiParams = useApiParams(safeParams);
+    const queryString = new URLSearchParams(apiParams).toString();
     return useSnackQuery({
         queryKey: ['unusable-vials', queryString],
         queryFn: () => getUnusableVials(queryString),

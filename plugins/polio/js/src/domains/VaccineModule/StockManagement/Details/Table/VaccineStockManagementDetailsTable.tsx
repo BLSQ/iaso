@@ -21,9 +21,7 @@ export const VaccineStockManagementDetailsTable: FunctionComponent<Props> = ({
     isFetching,
     tab = USABLE_VIALS,
 }) => {
-    // const { data, isFetching } = useGetVaccineStockList(params);
-
-    // const columns = useVaccineStockManagementTableColumns();
+    console.log('details table data', data);
 
     const columns = useVaccineStockManagementDetailsColumns(tab);
     return (
@@ -40,6 +38,7 @@ export const VaccineStockManagementDetailsTable: FunctionComponent<Props> = ({
             extraProps={{
                 loading: isFetching,
                 params,
+                defaultPageSize: 20,
             }}
         />
     );

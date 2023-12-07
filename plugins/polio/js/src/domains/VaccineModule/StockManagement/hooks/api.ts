@@ -64,7 +64,7 @@ export const useGetVaccineStockList = (
 
 // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 const getUsableVials = async (queryString: string) => {
-    console.log('unusable vials', queryString);
+    console.log('usable vials', queryString);
     await waitFor(750);
     return mockUsableVials;
 };

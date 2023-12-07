@@ -7,6 +7,7 @@ import { useStyles } from '../../../styles/theme';
 import MESSAGES from './messages';
 import { VaccineStockManagementFilters } from './Filters/VaccineStockManagementFilters';
 import { VaccineStockManagementTable } from './Table/VaccineStockManagementTable';
+import { StockManagementListParams } from './types';
 
 type Props = { router: Router };
 
@@ -22,8 +23,12 @@ export const VaccineStockManagement: FunctionComponent<Props> = ({
                 displayBackButton={false}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <VaccineStockManagementFilters params={router.params} />
-                <VaccineStockManagementTable params={router.params} />
+                <VaccineStockManagementFilters
+                    params={router.params as StockManagementListParams}
+                />
+                <VaccineStockManagementTable
+                    params={router.params as StockManagementListParams}
+                />
             </Box>
         </>
     );

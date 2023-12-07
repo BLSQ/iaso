@@ -8,9 +8,10 @@ import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/comp
 import MESSAGES from '../messages';
 import { polioVaccines } from '../../../../constants/virus';
 import { useGetCountriesOptions } from '../../SupplyChain/hooks/api';
+import { StockManagementListParams } from '../types';
 
 const baseUrl = STOCK_MANAGEMENT;
-type Props = { params: any };
+type Props = { params: StockManagementListParams };
 
 export const VaccineStockManagementFilters: FunctionComponent<Props> = ({
     params,

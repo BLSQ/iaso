@@ -62,7 +62,7 @@ xlrd==1.2.0
 pyjwt==1.7.1
 djangorestframework_simplejwt==4.4.0
 
-sentry-sdk==1.5.11
+sentry-sdk[django]==1.38.0
 django-lazy-services==0.0.3
 dateparser==1.0.0
 

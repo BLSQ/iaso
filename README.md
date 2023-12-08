@@ -596,7 +596,7 @@ You can add your variables in your `.env` file to customise webpack build in dev
 cd ..
 WEBPACK_HOST="IP_OR_DOMAIN"
 WEBPACK_PORT="PORT_USED"
-WEBPACK_PROTOCOL="https_OR_https"
+WEBPACK_PROTOCOL="http_OR_https"
 WEBPACK_PATH="PATH_TO_WRITE_BUILD"
 ```
 

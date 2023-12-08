@@ -233,7 +233,7 @@ describe('Entities', () => {
                 {
                     fixture: 'entities/list.json',
                 },
-            );
+            ).as('getEntities');
             cy.intercept(
                 {
                     pathname: '/api/entities/',
@@ -245,12 +245,15 @@ describe('Entities', () => {
                 },
                 page2,
             );
+            cy.visit(baseUrl);
+            cy.wait('@getEntities');
         });
         testTablerender({
             baseUrl,
             rows: 20,
             columns: 5,
             apiKey: 'entities',
+            withVisit: false,
         });
         testPagination({
             baseUrl,

@@ -116,7 +116,7 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
                 <Paper elevation={2} className={classes.marginTop}>
                     <Box padding={2}>
                         <Typography variant="h5" color="primary">
-                            {formatMessage(MESSAGES[tab])}
+                            {formatMessage(MESSAGES[`${tab}Reports`])}
                         </Typography>
                         {tab === FORM_A && (
                             <VaccineStockVariationTable

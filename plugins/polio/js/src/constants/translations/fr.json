@@ -345,6 +345,7 @@
     "iaso.polio.label.imPerRegion": "Taux de vaccination par région (sur base des districts trouvés)",
     "iaso.polio.label.imResults": "Résultats IM",
     "iaso.polio.label.imWarning": "90%-94%",
+    "iaso.polio.label.incident": "Incident",
     "iaso.polio.label.incident_reception_rrt": "Rapport d'incident' reçu par RRT",
     "iaso.polio.label.incidentReports": "Rapports d'incidents",
     "iaso.polio.label.INITIAL_DATA": "Données initiales",

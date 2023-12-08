@@ -174,6 +174,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.destruction_reception_rrt',
         defaultMessage: 'Destruction report received by RRT',
     },
+    formaReports: {
+        id: 'iaso.polio.label.formA',
+        defaultMessage: 'Form A',
+    },
+    destruction: {
+        id: 'iaso.polio.label.destruction',
+        defaultMessage: 'Desruction',
+    },
+    incident: {
+        id: 'iaso.polio.label.incident',
+        defaultMessage: 'Incident',
+    },
 });
 
 export default MESSAGES;

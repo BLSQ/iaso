@@ -73,6 +73,24 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.notifications.modal.add.title',
         defaultMessage: 'Add notification',
     },
+    modalBulkImportXlsxBackgroundWarning: {
+        id: 'iaso.polio.notifications.modal.bulk_import.background_warning',
+        defaultMessage:
+            'The import will be processed in the background and the data will be visible after a few minutes.',
+    },
+    modalBulkImportSelectXlsxFile: {
+        id: 'iaso.polio.notifications.modal.bulk_import.select_xlsx_file',
+        defaultMessage: 'Select .xlsx file',
+    },
+    modalBulkImportTitle: {
+        id: 'iaso.polio.notifications.modal.bulk_import.title',
+        defaultMessage: 'Import notifications',
+    },
+    modalBulkImportXlsxFileFormat: {
+        id: 'iaso.polio.notifications.modal.bulk_import.xlsx_file_format',
+        defaultMessage:
+            'Select a Microsoft Excel file (.xlsx) with a format similar to the example below.',
+    },
     modalDeleteConfirm: {
         id: 'iaso.polio.notifications.modal.delete.confirm',
         defaultMessage: 'Do you really want to delete this notification?',

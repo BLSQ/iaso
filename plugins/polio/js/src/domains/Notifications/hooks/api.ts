@@ -1,8 +1,8 @@
 import {
     UseBaseQueryResult,
     UseMutationResult,
-    useQueryClient,
     UseQueryResult,
+    useQueryClient,
 } from 'react-query';
 
 import {
@@ -18,11 +18,13 @@ import {
 } from '../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 
 import {
-    NotificationsApiResponse,
     ApiNotificationsParams,
     DropdownsContent,
     NotificationsApiData,
+    NotificationsApiResponse,
+    XlsxFile,
 } from '../types';
+import MESSAGES from '../../../../../../../hat/assets/js/apps/Iaso/domains/users/messages';
 
 const baseUrl = '/api/polio/notifications/';
 
@@ -98,5 +100,19 @@ export const useCreateEditNotification = (): UseMutationResult => {
                 queryClient.invalidateQueries('notificationsList');
             },
         },
+    });
+};
+
+const uploadXlsx = (values: XlsxFile) => {
+    return postRequest({
+        url: `${baseUrl}import_xlsx/`,
+        fileData: { file: values.file },
+        data: values,
+    });
+};
+
+export const useUploadXlsx = (): UseMutationResult => {
+    return useSnackMutation<any, any, any, any>({
+        mutationFn: file => uploadXlsx(file),
     });
 };

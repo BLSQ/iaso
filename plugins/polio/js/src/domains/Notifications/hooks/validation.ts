@@ -1,7 +1,12 @@
 /* eslint-disable camelcase */
 import * as yup from 'yup';
+import { mixed, object, ObjectSchema } from 'yup';
+import { useMemo } from 'react';
 
 import { useSafeIntl } from 'bluesquare-components';
+
+import { ValidationError } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { useAPIErrorValidator } from '../../../../../../../hat/assets/js/apps/Iaso/libs/validation';
 
 import MESSAGES from '../messages';
 
@@ -33,4 +38,20 @@ export const useNotificationSchema = () => {
             .typeError(formatMessage(MESSAGES.validationInvalidDate))
             .nullable(),
     });
+};
+
+export const useBulkImportNotificationSchema = (
+    errors: ValidationError,
+    payload: any,
+): ObjectSchema<any> => {
+    const { formatMessage } = useSafeIntl();
+    const apiValidator = useAPIErrorValidator<Partial<any>>(errors, payload);
+    return useMemo(() => {
+        return object().shape({
+            file: mixed()
+                .nullable()
+                .required(formatMessage(MESSAGES.validationFieldRequired))
+                .test(apiValidator('file')),
+        });
+    }, [apiValidator, formatMessage]);
 };

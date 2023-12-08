@@ -9,8 +9,9 @@ import { NOTIFICATIONS_BASE_URL } from '../../../constants/routes';
 import { useFilterState } from '../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 
 import MESSAGES from '../messages';
-import { DropdownsContent, NotificationsParams } from '../types';
+import { BulkImportNotificationModal } from '../Modals/NotificationsBulkImportModal';
 import { CreateNotificationModal } from '../Modals/NotificationsCreateEditModal';
+import { DropdownsContent, NotificationsParams } from '../types';
 
 type Props = { params: NotificationsParams; dropdownContent: DropdownsContent };
 
@@ -79,7 +80,11 @@ export const NotificationsFilters: FunctionComponent<Props> = ({
                 </Box>
             </Grid>
             <Grid container item xs={12} md={12} justifyContent="flex-end">
-                <Box mt={2}>
+                <Box ml={2}>
+                    {/* @ts-ignore */}
+                    <BulkImportNotificationModal />
+                </Box>
+                <Box ml={2}>
                     <CreateNotificationModal
                         iconProps={{ message: MESSAGES.modalAddTitle }}
                         dropdownContent={dropdownContent}

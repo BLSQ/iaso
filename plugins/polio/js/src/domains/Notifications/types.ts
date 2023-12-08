@@ -55,3 +55,7 @@ export type DropdownsContent = {
     source: DropdownOptions[];
     country: DropdownOptions[];
 };
+
+export type XlsxFile = {
+    file: File[];
+};

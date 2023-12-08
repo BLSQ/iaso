@@ -10,11 +10,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
-from dotenv import load_dotenv
-load_dotenv()
-
+import base64
+import hashlib
+import html
 import os
+import re
 import sys
+import urllib.parse
 from datetime import timedelta
 from typing import Any, Dict
 from urllib.parse import urlparse
@@ -173,10 +175,7 @@ INSTALLED_APPS = [
     "django_filters",
     "drf_yasg",
     "django_json_widget",
-    "sslserver"
 ]
-
-GDAL_LIBRARY_PATH = os.environ.get("GDAL_LIBRARY_PATH", None)
 
 if USE_CELERY:
     INSTALLED_APPS.extend(["django_celery_beat", "django_celery_results"])
@@ -242,6 +241,10 @@ DB_HOST = os.environ.get("RDS_HOSTNAME", "db")
 DB_PORT = os.environ.get("RDS_PORT", 5432)
 SNS_NOTIFICATION_TOPIC = os.environ.get("SNS_NOTIFICATION_TOPIC", None)
 
+print(
+    "DB_NAME",
+    DB_NAME,
+)
 DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",

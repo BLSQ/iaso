@@ -141,6 +141,8 @@ class ETL:
             visit.get("discharge_note__int__") is not None and visit.get("discharge_note__int__") == "1"
         ):
             exit_type = "cured"
+        elif visit.get("_defaulter_admission_type") is not None and visit.get("_defaulter_admission_type") != "":
+            exit_type = "defaulter"
         exit_type = self.exit_type_converter(exit_type)
         return exit_type
 

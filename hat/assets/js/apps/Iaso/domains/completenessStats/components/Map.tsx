@@ -12,6 +12,7 @@ import {
     LoadingSpinner,
     IconButton,
 } from 'bluesquare-components';
+import { isEqual } from 'lodash';
 import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
 import { PopupComponent as Popup } from './Popup';
 
@@ -88,12 +89,15 @@ export const Map: FunctionComponent<Props> = ({
     params,
     selectedFormId,
     router,
-    threshold = defaultScaleThreshold,
+    threshold,
 }) => {
-    console.log('threshold', threshold);
+    const effectiveThreshold: ScaleThreshold =
+        !threshold || isEqual(threshold, {})
+            ? defaultScaleThreshold
+            : threshold;
     const { planningId } = params;
     const classes: Record<string, string> = useStyles();
-    const getLegend = useGetLegend(threshold);
+    const getLegend = useGetLegend(effectiveThreshold);
     const bounds: Bounds | undefined = useMemo(
         () => locations && getOrgUnitsBounds(locations),
         [locations],
@@ -194,7 +198,7 @@ export const Map: FunctionComponent<Props> = ({
                 <CompletenessSelect params={params} />
                 <MapLegend
                     showDirectCompleteness={showDirectCompleteness}
-                    threshold={threshold}
+                    threshold={effectiveThreshold}
                 />
                 {parentLocation?.parent_org_unit?.id && (
                     <Box className={classes.parentIcon}>

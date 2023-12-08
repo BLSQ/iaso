@@ -31,9 +31,11 @@ export type NotificationsApiData = {
     province?: string;
     site_name?: string;
     source?: string;
+    get_source_display?: string;
     updated_at?: string; // DateTime
     updated_by?: number;
     vdpv_category?: string;
+    get_vdpv_category_display?: string;
     vdpv_nucleotide_diff_sabin2?: string;
 };
 

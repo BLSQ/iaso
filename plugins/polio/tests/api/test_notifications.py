@@ -126,8 +126,10 @@ class NotificationSerializerTestCase(TestCase):
             {
                 "id": notification.id,
                 "epid_number": "ANG-HUI-CUV-19-002",
-                "vdpv_category": Notification.VdpvCategories.CVDPV2,
-                "source": Notification.Sources.AFP,
+                "vdpv_category": Notification.VdpvCategories.CVDPV2.value,
+                "get_vdpv_category_display": Notification.VdpvCategories.CVDPV2.label,
+                "source": Notification.Sources.AFP.value,
+                "get_source_display": Notification.Sources.AFP.label,
                 "vdpv_nucleotide_diff_sabin2": "7nt",
                 "lineage": "CHA-NDJ-1",
                 "closest_match_vdpv2": "ENV-CHA-NDJ-CEN-CPR-19-02",

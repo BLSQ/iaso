@@ -44,12 +44,12 @@ export const NotificationsTable: FunctionComponent<Props> = ({
         {
             Header: formatMessage(MESSAGES.labelVdpvCategory),
             id: 'vdpv_category',
-            accessor: 'vdpv_category',
+            accessor: 'get_vdpv_category_display',
         },
         {
             Header: formatMessage(MESSAGES.labelSource),
             id: 'source',
-            accessor: 'source',
+            accessor: 'get_source_display',
         },
         {
             Header: formatMessage(MESSAGES.labelVdpvNucleotideDiffSabin2),

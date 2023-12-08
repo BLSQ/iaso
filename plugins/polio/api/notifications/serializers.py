@@ -24,7 +24,9 @@ class NotificationSerializer(serializers.ModelSerializer):
             "id",
             "epid_number",
             "vdpv_category",
+            "get_vdpv_category_display",
             "source",
+            "get_source_display",
             "vdpv_nucleotide_diff_sabin2",
             "lineage",
             "closest_match_vdpv2",
@@ -44,6 +46,8 @@ class NotificationSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "id": {"read_only": True},
             "account": {"read_only": True},
+            "get_vdpv_category_display": {"read_only": True},
+            "get_source_display": {"read_only": True},
             "created_by": {"read_only": True},
             "updated_by": {"read_only": True},
         }

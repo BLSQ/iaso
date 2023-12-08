@@ -1,37 +1,16 @@
-# export const mockVaccineStockList = {
-#     count: 5,
-#     page: 1,
-#     pages: 1,
-#     limit: 20,
-#     has_next: false,
-#     has_previous: false,
-#     results: [
-#         {
-#             id:1 // The id of the VaccineStock, so we can pass it in the url for the details view
-#             country_name: 'CAMEROON',
-#             country_id: 29685,
-#             vaccine_type: 'bOPV', // from list of vaccines
-#             vials_received: 1000,
-#             vials_used: 500,
-#             stock_of_usable_vials: 300,
-#             leftover_ratio: 15,
-#             stock_of_unusable_vials: 150,
-#             vials_destroyed: 50,
-#         },
-#     ],
-# }
-
-from rest_framework import viewsets, serializers, status
+from rest_framework import serializers, status, viewsets
 from rest_framework.response import Response
+
+from hat.menupermissions import models as permission
+from iaso.api.common import GenericReadWritePerm, ModelViewSet
+from iaso.models import OrgUnit
 from plugins.polio.models import (
-    VaccineStock,
-    OutgoingStockMovement,
     DestructionReport,
     IncidentReport,
+    OutgoingStockMovement,
     VaccineArrivalReport,
+    VaccineStock,
 )
-from iaso.models import OrgUnit
-from iaso.api.common import ModelViewSet
 
 
 class VaccineStockSerializer(serializers.ModelSerializer):
@@ -82,8 +61,11 @@ class VaccineStockSerializer(serializers.ModelSerializer):
     def get_stock_of_unusable_vials(self, obj):
         destruction_reports = DestructionReport.objects.filter(vaccine_stock=obj)
         incident_reports = IncidentReport.objects.filter(vaccine_stock=obj)
-        return sum(report.unusable_vials_destroyed for report in destruction_reports) + sum(
-            report.unusable_vials for report in incident_reports
+        stock_movements = OutgoingStockMovement.objects.filter(vaccine_stock=obj)
+        return (
+            sum(report.unusable_vials_destroyed for report in destruction_reports)
+            + sum(report.unusable_vials for report in incident_reports)
+            + sum(movement.unusable_vials for movement in stock_movements)
         )
 
     def get_vials_destroyed(self, obj):
@@ -91,7 +73,13 @@ class VaccineStockSerializer(serializers.ModelSerializer):
         return sum(report.unusable_vials_destroyed for report in destruction_reports)
 
 
+class VaccineStockManagementReadWritePerm(GenericReadWritePerm):
+    read_perm = permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ
+    write_perm = permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE
+
+
 class VaccineStockManagementViewSet(ModelViewSet):
+    permission_classes = [VaccineStockManagementReadWritePerm]
     serializer_class = VaccineStockSerializer
     http_method_names = ["get", "head", "options"]
 

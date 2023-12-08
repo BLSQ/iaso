@@ -130,7 +130,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.stockVariation',
         defaultMessage: 'Stock variation',
     },
-    // Add to json files
     forma_vials_used: {
         id: 'iaso.polio.label.forma_vials_used',
         defaultMessage: 'Vials used',
@@ -160,7 +159,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Unusable vials',
     },
     usable_vials: {
-        id: 'iaso.polio.label.unusable_vials',
+        id: 'iaso.polio.label.usable_vials',
         defaultMessage: 'Usable vials',
     },
     vials_destroyed: {

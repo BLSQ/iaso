@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Typography } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 import WidgetPaper from '../../../../components/papers/WidgetPaperComponent';
 import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
@@ -8,6 +9,15 @@ import InstanceDetailsInfos from '../../components/InstanceDetailsInfos';
 import InstanceDetailsLocation from '../../components/InstanceDetailsLocation';
 import InstanceFileContent from '../../components/InstanceFileContent';
 import { Instance } from '../../types/instance';
+import { Link } from 'react-router';
+
+const useStyles = makeStyles({
+    linkButton: {
+        color: 'inherit',
+        textDecoration: 'none',
+        display: 'flex',
+    },
+});
 
 type Props = {
     data?: Instance;
@@ -25,6 +35,8 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
     elevation = 1,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const classes = useStyles();
+
     if (isLoading)
         return (
             <Box height="70vh">
@@ -39,14 +51,18 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
     if (isError) {
         return <ErrorPaperComponent message={formatMessage(MESSAGES.error)} />;
     }
+
     return (
         <>
             {showTitle && (
                 <Box mb={4}>
                     <Typography variant="h5" color="secondary">
-                        {`${formatMessage(MESSAGES.submissionTitle)} - ${
-                            data?.id
-                        }`}
+                        <Link
+                            href={`/dashboard/forms/submission/instanceId/${data?.id}`}
+                            className={classes.linkButton}
+                        >
+                            {`${formatMessage(MESSAGES.submissionTitle)} - ${data?.id}`}
+                        </Link>
                     </Typography>
                 </Box>
             )}

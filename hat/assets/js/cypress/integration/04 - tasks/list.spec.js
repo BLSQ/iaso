@@ -42,6 +42,7 @@ describe('Tasks', () => {
                 cy.intercept('/api/tasks/**', {
                     fixture: 'tasks/empty-list.json',
                 }).as('secondFetch');
+                cy.wait(1000); // wait for 1 second
                 cy.get('#refresh-button').click();
                 cy.wait('@secondFetch');
             });

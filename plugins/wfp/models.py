@@ -14,6 +14,7 @@ EXIT_TYPES = [
     ("transfer_to_tsfp", _("Transfer To TSFP")),
     ("non_respondent", _("Non respondent")),
     ("transferredout", _("Transferred out")),
+    ("defaulter", _("Defaulter")),
     ("other", _("Other")),
 ]
 

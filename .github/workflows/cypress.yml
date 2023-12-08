@@ -171,14 +171,7 @@ jobs:
         run: |
           npm install --global npm@8.5.5
 
-      - name: Delete node_modules
-        run: rm -rf node_modules
-
-      - name: Erase package-lock.json
-        run: rm -f package-lock.json
-
-      - name: Install Cypress
-        run: npm install --force cypress@12.17.4
+      - run: npm ci
         if: steps.cache.outputs.cache-hit != 'true'
 
       - name: Run Cypress tests

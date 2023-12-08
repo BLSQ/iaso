@@ -14,24 +14,35 @@ EXIT_TYPES = [
     ("transfer_to_tsfp", _("Transfer To TSFP")),
     ("non_respondent", _("Non respondent")),
     ("transferredout", _("Transferred out")),
+    ("other", _("Other")),
 ]
 
-NUTRITION_PROGRAMMES = [("TSFP", _("TSFP")), ("OTP", _("OTP"))]
+NUTRITION_PROGRAMMES = [
+    ("TSFP", _("TSFP")),
+    ("OTP", _("OTP")),
+    ("breastfeeding", _("Breastfeeding")),
+    ("pregnant", _("Pregnant")),
+]
 
 PROGRAMME_TYPE = [("PLW", _("PLW")), ("U5", _("U5"))]
 
-ADMISSION_CRITERIAS = [("muac", _("MUAC")), ("whz", _("WHZ")), ("oedema", _("OEDEMA"))]
+ADMISSION_CRITERIAS = [
+    ("muac", _("MUAC")),
+    ("whz", _("WHZ")),
+    ("oedema", _("OEDEMA")),
+    ("child_wasted", _("By wasted child")),
+]
 
 ADMISSION_TYPES = [
     ("new_case", _("new case")),
-    ("readmission_as_non_respondent", _("New respondant")),
+    ("readmission_as_non_respondent", _("Readmission as non-respondent")),
     ("referred_from_otp_sam", _("Referred from OTP (SAM)")),
     ("referred_from_sc", _("Referred from SC")),
     ("referred_from_tsfp_mam", _("Referred from TSFP (MAM)")),
     ("relapse", _("Relapse")),
     ("returned_defaulter", _("Returned defaulter")),
     ("returned_referral", _("Returned referral")),
-    ("transfer_if_from_other_tsfp", _("Transfer if from other TSFP")),
+    ("transfer_from_other_tsfp", _("Transfer from other TSFP")),
 ]
 
 

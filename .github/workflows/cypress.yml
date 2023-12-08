@@ -171,7 +171,7 @@ jobs:
         run: |
           npm install --global npm@8.5.5
 
-      - run: npm ci
+      - run: npm install cypress@12.7
         if: steps.cache.outputs.cache-hit != 'true'
 
       - name: Run Cypress tests

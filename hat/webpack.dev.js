@@ -15,7 +15,8 @@ const WEBPACK_HOST = process.env.WEBPACK_HOST || 'localhost';
 const WEBPACK_PORT = process.env.WEBPACK_PORT || '3000';
 const WEBPACK_PROTOCOL = process.env.WEBPACK_PROTOCOL || 'http';
 const WEBPACK_URL = `${WEBPACK_PROTOCOL}://${WEBPACK_HOST}:${WEBPACK_PORT}`;
-const WEBPACK_PATH = process.env.WEBPACK_PATH || '/assets/webpack/';
+const WEBPACK_PATH =
+    process.env.WEBPACK_PATH || path.resolve(__dirname, './assets/webpack/');
 
 const oldBrowsersConfig = [
     {

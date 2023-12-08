@@ -468,7 +468,7 @@ if SENTRY_URL:
 
     ignore_logger("django.security.DisallowedHost")
 
-    errors_sample_rate = get_env_as_float("SENTRY_ERRORS_SAMPLE_RATE", "0.1")
+    errors_sample_rate = get_env_as_float("SENTRY_ERRORS_SAMPLE_RATE", "1.0")
 
     httperror_errors_sample_rate = get_env_as_float("SENTRY_ERRORS_HTTPERROR_SAMPLE_RATE", "0.8")
 

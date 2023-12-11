@@ -580,6 +580,7 @@
     "iaso.polio.menu.vaccineStockManagement": "Stock management",
     "iaso.polio.menu.vaccineSupplyChain": "Supply chain",
     "iaso.polio.noCampaign": "No campaign to display",
+    "iaso.polio.notifications.api.upload_xlsx_success": "Success. Please wait a few moments then refresh the page.",
     "iaso.polio.notifications.label.actions": "Actions",
     "iaso.polio.notifications.label.closest_match_vdpv2": "Closest match",
     "iaso.polio.notifications.label.country": "Country",

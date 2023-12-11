@@ -17,6 +17,7 @@ import {
     postRequest,
 } from '../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 
+import MESSAGES from '../messages';
 import {
     ApiNotificationsParams,
     DropdownsContent,
@@ -24,7 +25,6 @@ import {
     NotificationsApiResponse,
     XlsxFile,
 } from '../types';
-import MESSAGES from '../../../../../../../hat/assets/js/apps/Iaso/domains/users/messages';
 
 const baseUrl = '/api/polio/notifications/';
 
@@ -114,5 +114,6 @@ const uploadXlsx = (values: XlsxFile) => {
 export const useUploadXlsx = (): UseMutationResult => {
     return useSnackMutation<any, any, any, any>({
         mutationFn: file => uploadXlsx(file),
+        snackSuccessMessage: MESSAGES.apiUploadXlsxSuccess,
     });
 };

@@ -1,6 +1,11 @@
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
+    apiUploadXlsxSuccess: {
+        id: 'iaso.polio.notifications.api.upload_xlsx_success',
+        defaultMessage:
+            'Success. Please wait a few moments then refresh the page.',
+    },
     labelActions: {
         id: 'iaso.polio.notifications.label.actions',
         defaultMessage: 'Actions',

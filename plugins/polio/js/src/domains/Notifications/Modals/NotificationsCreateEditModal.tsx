@@ -100,6 +100,7 @@ const CreateEditNotificationModal: FunctionComponent<Props> = ({
                         component={SingleSelect}
                         required
                         options={dropdownContent.vdpv_category}
+                        clearable={false}
                     />
                 </Box>
                 <Box mb={2}>
@@ -109,6 +110,7 @@ const CreateEditNotificationModal: FunctionComponent<Props> = ({
                         component={SingleSelect}
                         required
                         options={dropdownContent.source}
+                        clearable={false}
                     />
                 </Box>
                 <Box mb={2}>

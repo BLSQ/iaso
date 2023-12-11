@@ -1,9 +1,10 @@
 from django.contrib.gis.geos import Point
-from django.db import InternalError, connections
+from django.db import IntegrityError, InternalError, connections
 from django.db.models import Q
 
 from iaso import models as m
 from iaso.test import TestCase
+from iaso.models.data_store import JsonDataStore
 
 
 class OrgUnitTypeModelTestCase(TestCase):
@@ -219,6 +220,7 @@ class OrgUnitModelDbTestCase(TestCase):
         cls.source = m.DataSource.objects.create(name="source")
         cls.version1 = m.SourceVersion.objects.create(data_source=cls.source, number=1)
         cls.version2 = m.SourceVersion.objects.create(data_source=cls.source, number=2)
+        cls.account = m.Account.objects.create(name="a", default_version=cls.version1)
 
     def activate_constraints(self):
         """Active constraints inside the test, so that it raise in real time
@@ -281,3 +283,28 @@ class OrgUnitModelDbTestCase(TestCase):
         ou.refresh_from_db()
         ou.name = "test2"
         ou.save()
+
+    def test_jsondatastore_extra_fields(self):
+        self.activate_constraints()
+        orgunit = m.OrgUnit.objects.create(org_unit_type=self.sector, name="OrgUnit", version=self.version1)
+
+        extra_fields = {"population": 1000, "source": "snis"}
+        orgunit.set_extra_fields(extra_fields)
+        datastore = JsonDataStore.objects.get(org_unit=orgunit)
+        self.assertEqual(datastore.content, orgunit.get_extra_fields())
+        self.assertEqual(datastore.content, extra_fields)
+
+        # add more extra fields and update existing ones
+        orgunit.set_extra_fields({"population": 2500, "foo": "bar"})
+        datastore.refresh_from_db()
+        self.assertEqual(datastore.content, orgunit.get_extra_fields())
+        self.assertEqual(datastore.content, {"population": 2500, "source": "snis", "foo": "bar"})
+
+        # account + org_unit + slug must be unique
+        with self.assertRaisesMessage(IntegrityError, "duplicate key value violates unique constraint"):
+            JsonDataStore.objects.create(
+                account=m.Account.objects.first(),
+                slug="extra_fields",
+                org_unit=orgunit,
+                content={},
+            )

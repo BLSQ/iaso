@@ -418,6 +418,7 @@ STATICFILES_DIRS = (
 # Javascript/CSS Files:
 WEBPACK_LOADER = {
     "DEFAULT": {
+        "CACHE": False,
         "BUNDLE_DIR_NAME": "",  # used in prod
         "STATS_FILE": os.path.join(
             PROJECT_ROOT,

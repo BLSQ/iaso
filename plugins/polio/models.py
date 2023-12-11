@@ -11,6 +11,7 @@ from beanstalk_worker import task_decorator
 
 import django.db.models.manager
 from django.contrib.auth.models import AnonymousUser, User
+from django.core.files.base import File
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django.db.models import Q, Sum, QuerySet
@@ -1230,21 +1231,26 @@ class NotificationImport(models.Model):
     def __str__(self) -> str:
         return f"{self.file.name} - {self.status}"
 
+    @classmethod
+    def read_excel(cls, file: File) -> pd.DataFrame:
+        try:
+            df = pd.read_excel(file, keep_default_na=False)
+        except Exception as err:
+            raise ValueError(f"Invalid Excel file {file}.")
+
+        # Normalize xlsx header's names.
+        df.rename(columns=lambda name: name.upper().strip().replace(" ", "_"), inplace=True)
+        for name in cls.EXPECTED_XLSX_COL_NAMES:
+            if name not in df.columns:
+                raise ValueError(f"Missing column {name}.")
+
+        return df
+
     def create_notifications(self, created_by: User) -> None:
         """
         Can be launched async, see `create_polio_notifications_async`.
         """
-        try:
-            df = pd.read_excel(self.file, keep_default_na=False)
-        except Exception as err:
-            raise ValueError(f"Invalid Excel file {self.file}.")
-
-        # Normalize xlsx header's names.
-        df.rename(columns=lambda name: name.upper().strip().replace(" ", "_"), inplace=True)
-        for name in self.EXPECTED_XLSX_COL_NAMES:
-            if name not in df.columns:
-                raise ValueError(f"Missing column {name}.")
-
+        df = self.read_excel(self.file)
         self.status = self.Status.PENDING
         self.save()
 

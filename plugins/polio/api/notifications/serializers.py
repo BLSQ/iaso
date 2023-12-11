@@ -12,6 +12,13 @@ class NotificationImportSerializer(serializers.ModelSerializer):
             "account": {"read_only": True},
         }
 
+    def validate_file(self, file):
+        try:
+            NotificationImport.read_excel(file)
+        except ValueError as e:
+            raise serializers.ValidationError(e)
+        return file
+
 
 class NotificationSerializer(serializers.ModelSerializer):
     district = serializers.CharField(source="annotated_district", read_only=True)

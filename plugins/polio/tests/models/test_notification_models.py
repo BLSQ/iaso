@@ -90,22 +90,22 @@ class NotificationImportTestCase(TestCase):
         notification_import = NotificationImport(file="foo.xlsx", account=self.account, created_by=self.user)
         self.assertEqual(str(notification_import), "foo.xlsx - new")
 
-    def test_create_notifications_with_invalid_format(self):
+    def test_read_excel_with_invalid_format(self):
         with open(self.invalid_file_path, "rb") as xls_file:
             notification_import = NotificationImport.objects.create(
                 file=UploadedFile(xls_file), account=self.account, created_by=self.user
             )
         with self.assertRaises(ValueError) as error:
-            notification_import.create_notifications(created_by=self.user)
+            notification_import.read_excel(notification_import.file)
         self.assertIn("Invalid Excel file", str(error.exception))
 
-    def test_create_notifications_with_wrong_cols(self):
+    def test_read_excel_with_wrong_cols(self):
         with open(self.wrong_cols_file_path, "rb") as xls_file:
             notification_import = NotificationImport.objects.create(
                 file=UploadedFile(xls_file), account=self.account, created_by=self.user
             )
         with self.assertRaises(ValueError) as error:
-            notification_import.create_notifications(created_by=self.user)
+            notification_import.read_excel(notification_import.file)
         self.assertEqual(str(error.exception), "Missing column PROVINCE.")
 
     def test_create_notifications(self):

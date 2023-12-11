@@ -426,7 +426,7 @@ const PERMISSIONS_MESSAGES = defineMessages({
         defaultMessage: 'Vector control',
     },
     iaso_trypelim_vectorcontrolupload: {
-        id: 'trypelim.permissions.vectorcontrolupload',
+        id: 'trypelim.permissions.vector_control_upload',
         defaultMessage: 'Vector control upload',
     },
     iaso_trypelim_management_villages: {

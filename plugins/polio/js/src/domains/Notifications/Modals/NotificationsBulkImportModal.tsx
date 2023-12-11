@@ -1,4 +1,5 @@
 import React, { FunctionComponent, useMemo } from 'react';
+import { Accept } from 'react-dropzone';
 import { Box } from '@material-ui/core';
 import { useFormik } from 'formik';
 import {
@@ -97,6 +98,12 @@ const BulkImportNotificationModal: FunctionComponent<Props> = ({
         );
     };
 
+    const accept: Accept = {
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': [
+            '.xslx',
+        ],
+    };
+
     return (
         <>
             <SimpleModal
@@ -111,6 +118,7 @@ const BulkImportNotificationModal: FunctionComponent<Props> = ({
                 <p>{formatMessage(MESSAGES.modalBulkImportXlsxFileFormat)}</p>
                 <Box mt={2}>
                     <FilesUpload
+                        accept={accept}
                         files={values.file ?? []}
                         onFilesSelect={files => {
                             setFieldTouched('file', true);

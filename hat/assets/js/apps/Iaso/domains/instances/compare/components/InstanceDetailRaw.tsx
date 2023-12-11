@@ -1,7 +1,11 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
+import {
+    useSafeIntl,
+    LoadingSpinner,
+    IconButton as IconButtonComponent,
+} from 'bluesquare-components';
 import WidgetPaper from '../../../../components/papers/WidgetPaperComponent';
 import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
 import MESSAGES from '../messages';
@@ -57,12 +61,16 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
             {showTitle && (
                 <Box mb={4}>
                     <Typography variant="h5" color="secondary">
-                        <Link
-                            href={`/dashboard/forms/submission/instanceId/${data?.id}`}
-                            className={classes.linkButton}
-                        >
-                            {`${formatMessage(MESSAGES.submissionTitle)} - ${data?.id}`}
-                        </Link>
+                        <section>
+                            {`${formatMessage(MESSAGES.submissionTitle)} - ${
+                                data?.id
+                            }`}
+                            <IconButtonComponent
+                                url={`/forms/submission/instanceId/${data?.id}`}
+                                icon="remove-red-eye"
+                                tooltipMessage={MESSAGES.viewSubmissionDetails}
+                            />
+                        </section>
                     </Typography>
                 </Box>
             )}

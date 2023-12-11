@@ -17,7 +17,7 @@ const WEBPACK_PROTOCOL = process.env.WEBPACK_PROTOCOL || 'http';
 const WEBPACK_URL = `${WEBPACK_PROTOCOL}://${WEBPACK_HOST}:${WEBPACK_PORT}`;
 const WEBPACK_PATH =
     process.env.WEBPACK_PATH || path.resolve(__dirname, './assets/webpack/');
-console.log('WEBPACK_PATH', WEBPACK_PATH);
+
 const oldBrowsersConfig = [
     {
         test: /\.(ts|tsx)?$/,
@@ -166,8 +166,8 @@ module.exports = {
 
     output: {
         path: WEBPACK_PATH,
-        filename: '[name].[contenthash].js',
-        sourceMapFilename: '[name].[contenthash].js.map',
+        filename: '[name].js',
+        sourceMapFilename: '[name].js.map',
         publicPath: `${WEBPACK_URL}/static/`, // Tell django to use this URL to load packages and not use STATIC_URL + bundle_name
     },
     devtool: 'source-map',
@@ -175,9 +175,7 @@ module.exports = {
     // config for webpack-dev-server
     devServer: {
         historyApiFallback: true,
-        devMiddleware: {
-            writeToDisk: true,
-        },
+        writeToDisk: true,
         // noInfo: false,
         // needed so we can load the js from django (on another port or docker)
         headers: {
@@ -185,20 +183,6 @@ module.exports = {
         },
         host: WEBPACK_HOST,
         port: 3000,
-        // It suppresses error shown in console, so it has to be set to false.
-        // quiet: false,
-        // It suppresses everything except error, so it has to be set to false as well
-        // to see success build.
-        /* stats: {
-            // Config for minimal console.log mess.
-            assets: true,
-            colors: true,
-            version: false,
-            hash: false,
-            timings: true,
-            chunks: true,
-            chunkModules: false,
-        }, */
     },
 
     plugins: [

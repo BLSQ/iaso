@@ -1222,5 +1222,6 @@
     "map.label.fitToBounds": "Centrer la carte",
     "map.label.zoom.box": "Dessiner un carré sur la carte pour agrandir une zone",
     "map.label.zoom.info": "Niveau de zoom actuel",
-    "PeriodSelectorComponent.label.apply": "Appliquer"
+    "PeriodSelectorComponent.label.apply": "Appliquer",
+    "iaso.instance.details": "Voir les détails de la soumission"
 }

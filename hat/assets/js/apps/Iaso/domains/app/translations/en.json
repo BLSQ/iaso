@@ -1222,5 +1222,6 @@
     "map.label.fitToBounds": "Center the map",
     "map.label.zoom.box": "Draw a square to zoom",
     "map.label.zoom.info": "Current zoom level",
-    "PeriodSelectorComponent.label.apply": "Apply"
+    "PeriodSelectorComponent.label.apply": "Apply",
+    "iaso.instance.details": "View submission details"
 }

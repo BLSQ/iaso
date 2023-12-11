@@ -581,11 +581,24 @@ sequenceDiagram
 ```
 
 Old browsers support
--------------------
+--------------------
 
 You can launch frontend dev server with `OLD_BROWSER=true npm run dev`
 Webpack will compile the frontend for old browsers as it is in prod
 
+
+Webpack dev and env variables
+-----------------------------
+
+You can add your variables in your `.env` file to customise webpack build in development
+
+``` bash
+cd ..
+WEBPACK_HOST="IP_OR_DOMAIN"
+WEBPACK_PORT="PORT_USED"
+WEBPACK_PROTOCOL="http_OR_https"
+WEBPACK_PATH="PATH_TO_WRITE_BUILD"
+```
 
 Live Bluesquare components
 --------------------------

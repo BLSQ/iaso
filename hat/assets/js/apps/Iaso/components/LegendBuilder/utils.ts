@@ -33,7 +33,7 @@ export const getRangeValues = (
 export const getThresHoldLabels = (
     scaleThreshold?: ScaleThreshold,
 ): string[] => {
-    const { domain } = scaleThreshold || { domain: [] };
+    const domain = scaleThreshold?.domain ?? [];
     const labels = domain.map((percent, index, array) => {
         if (index === 0) {
             return `< ${percent}%`;

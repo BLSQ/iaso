@@ -21,6 +21,7 @@ import { useGetForms } from '../hooks/requests/forms';
 import { useTranslatedErrors } from '../../../../libs/validation';
 import { useGetPossibleFieldsForEntityTypes } from '../../../forms/hooks/useGetPossibleFields';
 import MESSAGES from '../messages';
+import { formatLabel } from '../../../instances/utils';
 
 type RenderTriggerProps = {
     openDialog: () => void;
@@ -224,7 +225,7 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                         label={MESSAGES.fieldsListView}
                         options={possibleFields.map(field => ({
                             value: field.name,
-                            label: field.label,
+                            label: formatLabel(field),
                         }))}
                         helperText={
                             isNew && !values.reference_form
@@ -250,7 +251,7 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                         label={MESSAGES.fieldsDetailInfoView}
                         options={possibleFields.map(field => ({
                             value: field.name,
-                            label: field.label,
+                            label: formatLabel(field),
                         }))}
                         helperText={
                             isNew && !values.reference_form
@@ -274,7 +275,7 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                         label={MESSAGES.fieldsDuplicateSearch}
                         options={possibleFields.map(field => ({
                             value: field.name,
-                            label: field.label,
+                            label: formatLabel(field),
                         }))}
                         helperText={
                             isNew && !values.reference_form

@@ -869,7 +869,7 @@
     "iaso.permissions.polio_budget": "Polio budget - User",
     "iaso.permissions.polio_budget_admin": "Polio budget - Admin",
     "iaso.permissions.polio_config": "Polio campaigns management - Admin",
-    "iaso.permissions.iaso_polio_notifications,": "Polio Notifications - Read and Write",
+    "iaso.permissions.iaso_polio_notifications": "Polio Notifications - Read and Write",
     "iaso.permissions.polio_vaccine_authorizations_admin": "Polio Vaccine Authorizations: Admin",
     "iaso.permissions.polio_vaccine_authorizations_read_only": "Polio Vaccine Authorizations: Read Only",
     "iaso.permissions.projects": "Projects",

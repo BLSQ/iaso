@@ -14,8 +14,13 @@ class APIImport(models.Model):
     so in case of import problem we can fix it server side and not ask them to upload again.
     """
 
+    class Meta:
+        db_table = "vector_control_apiimport"
+
     created_at = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(User, on_delete=CASCADE, null=True)  # Null only when importing from CLI
+    user = models.ForeignKey(
+        User, on_delete=CASCADE, null=True, related_name="apiimports"
+    )  # Null only when importing from CLI
     import_type = models.TextField(max_length=25, choices=IMPORT_TYPE, null=True, blank=True)
     json_body = models.JSONField()
     headers = models.JSONField(null=True, blank=True)

@@ -39,6 +39,9 @@ const useStyles = makeStyles(theme => {
         marginTop: {
             marginTop: theme.spacing(2),
         },
+        bigMarginTop: {
+            marginTop: theme.spacing(4),
+        },
     };
 });
 
@@ -72,12 +75,16 @@ export const VaccineStockManagementDetails: FunctionComponent<Props> = ({
     } - ${summary?.vaccine_type ?? textPlaceholder}`;
     return (
         <>
-            <TopBar title={title} displayBackButton goBack={goBack}>
+            <TopBar title={title} displayBackButton goBack={goBack} />
+            <Box className={classes.containerFullHeightPadded}>
+                <VaccineStockManagementSummary
+                    isLoading={isLoadingSummary}
+                    data={summary}
+                />
                 <Tabs
                     value={tab}
                     classes={{
-                        root: classes.tabs,
-                        indicator: classes.indicator,
+                        root: classes.bigMarginTop,
                     }}
                     onChange={handleChangeTab}
                 >
@@ -92,14 +99,8 @@ export const VaccineStockManagementDetails: FunctionComponent<Props> = ({
                         label={formatMessage(MESSAGES.unusable)}
                     />
                 </Tabs>
-            </TopBar>
-            <Box className={classes.containerFullHeightPadded}>
-                <VaccineStockManagementSummary
-                    isLoading={isLoadingSummary}
-                    data={summary}
-                />
                 <Paper elevation={2} className={classes.marginTop}>
-                    <Box padding={2}>
+                    <Box pt={2} px={2}>
                         <Typography variant="h5" color="primary">
                             {formatMessage(MESSAGES[tab])}
                         </Typography>

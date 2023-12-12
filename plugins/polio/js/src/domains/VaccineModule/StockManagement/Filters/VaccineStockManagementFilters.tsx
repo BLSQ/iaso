@@ -7,7 +7,7 @@ import { useFilterState } from '../../../../../../../../hat/assets/js/apps/Iaso/
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import MESSAGES from '../messages';
 import { polioVaccines } from '../../../../constants/virus';
-import { useGetCountriesOptions } from '../../SupplyChain/hooks/api';
+import { useGetCountriesOptions } from '../../SupplyChain/hooks/api/vrf';
 import { StockManagementListParams } from '../types';
 
 const baseUrl = STOCK_MANAGEMENT;

@@ -95,20 +95,25 @@ const makeOrgUnistStatusIcon = (classes, orgUnit, formatMessage) => {
     return null;
 };
 
-export const makeTreeviewLabel = (classes, withStatusIcon) => orgUnit => {
-    const { formatMessage } = useIntl();
+export const makeTreeviewLabel =
+    (classes, withStatusIcon, withType = false) =>
+    orgUnit => {
+        const { formatMessage } = useIntl();
 
-    const icon = withStatusIcon
-        ? makeOrgUnistStatusIcon(classes, orgUnit, formatMessage)
-        : null;
+        const icon = withStatusIcon
+            ? makeOrgUnistStatusIcon(classes, orgUnit, formatMessage)
+            : null;
 
-    return (
-        <>
-            {orgUnit.name || `id: ${orgUnit.id}`}
-            {icon}
-        </>
-    );
-};
+        return (
+            <>
+                {orgUnit.name || `id: ${orgUnit.id}`}
+                {withType && orgUnit.org_unit_type_short_name
+                    ? ` (${orgUnit.org_unit_type_short_name})`
+                    : ''}
+                {icon}
+            </>
+        );
+    };
 
 export const orgUnitTreeviewStatusIconsStyle = theme => ({
     valid: {

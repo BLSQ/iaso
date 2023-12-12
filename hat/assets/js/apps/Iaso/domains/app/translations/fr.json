@@ -4,6 +4,7 @@
     "blsq.label.clicktoOpenFileSelect": "Cliquer pour sélectionner des fichiers",
     "blsq.label.dropHere": "Déposez les fichiers ici",
     "blsq.label.Files": "Fichiers",
+    "blsq.treeview.displayTypes": "Afficher les types d'unités d'org.",
     "blsq.treeview.error": "Veuillez sélectionner une unité d'org.",
     "blsq.treeview.label.selectMultiple": "Sélectionner des unité(s) d'organisation",
     "blsq.treeview.label.selectSingle": "Sélectionner une unités d'organisation",

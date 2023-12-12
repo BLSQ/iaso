@@ -1,7 +1,6 @@
 import { get } from 'lodash';
 import React, { FunctionComponent } from 'react';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-import { isTouched } from '../../utils';
 
 type Props = {
     label: string;
@@ -9,6 +8,7 @@ type Props = {
     form: Record<string, any>;
     min?: number;
     max?: number;
+    disabled?: boolean;
 };
 
 export const NumberInput: FunctionComponent<Props> = ({
@@ -17,10 +17,11 @@ export const NumberInput: FunctionComponent<Props> = ({
     form,
     min,
     max,
+    disabled = false,
 }) => {
     const hasError =
         form.errors &&
-        Boolean(get(form.errors, field.name) && isTouched(form.touched));
+        Boolean(get(form.errors, field.name) && get(form.touched, field.name));
     return (
         <InputComponent
             withMarginTop={false}
@@ -29,11 +30,13 @@ export const NumberInput: FunctionComponent<Props> = ({
             value={field.value}
             labelString={label}
             onChange={(_keyValue, value) => {
+                form.setFieldTouched(field.name, true);
                 form.setFieldValue(field.name, value);
             }}
             min={min}
             max={max}
             errors={hasError ? [get(form.errors, field.name)] : []}
+            disabled={disabled}
         />
     );
 };

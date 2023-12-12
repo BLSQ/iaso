@@ -1,3 +1,4 @@
+import json
 import operator
 import typing
 import uuid
@@ -547,6 +548,37 @@ class OrgUnit(TreeModel):
 
     def get_reference_instances_details_for_api(self) -> list:
         return [instance.as_full_model() for instance in self.reference_instances.all()]
+
+    def get_extra_fields(self):
+        from iaso.models import Account
+        from iaso.models.data_store import JsonDataStore
+
+        try:
+            datastore = self.jsondatastore_set.get(
+                account=Account.objects.filter(default_version=self.version).first(),
+                slug="extra_fields",
+            )
+            return datastore.content
+        except JsonDataStore.DoesNotExist:
+            return {}
+
+    def set_extra_fields(self, content):
+        from iaso.models import Account
+        from iaso.models.data_store import JsonDataStore
+
+        try:
+            datastore = self.jsondatastore_set.get(
+                account=Account.objects.filter(default_version=self.version).first(),
+                slug="extra_fields",
+            )
+            datastore.content = {**datastore.content, **content}
+            datastore.save()
+        except JsonDataStore.DoesNotExist:
+            self.jsondatastore_set.create(
+                account=Account.objects.filter(default_version=self.version).first(),
+                slug="extra_fields",
+                content=content,
+            )
 
 
 class OrgUnitReferenceInstance(models.Model):

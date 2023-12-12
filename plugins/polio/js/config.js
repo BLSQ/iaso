@@ -41,6 +41,7 @@ import {
     NOPV2_AUTH,
     NOPV2_AUTH_DETAILS,
     VACCINE_SUPPLY_CHAIN,
+    VACCINE_SUPPLY_CHAIN_DETAILS,
     STOCK_MANAGEMENT,
 } from './src/constants/routes';
 import fr from './src/constants/translations/fr.json';
@@ -56,6 +57,7 @@ import { Nopv2Authorisations } from './src/domains/VaccineModule/Nopv2Authorisat
 import { Nopv2AuthorisationsDetails } from './src/domains/VaccineModule/Nopv2Authorisations/Details/Nopv2AuthorisationsDetails.tsx';
 import { VaccineSupplyChain } from './src/domains/VaccineModule/SupplyChain/VaccineSupplyChain.tsx';
 import { VaccineStockManagement } from './src/domains/VaccineModule/StockManagement/VaccineStockManagement.tsx';
+import { VaccineSupplyChainDetails } from './src/domains/VaccineModule/SupplyChain/Details/VaccineSupplyChainDetails.tsx';
 
 const campaignsFilters = [
     {
@@ -460,6 +462,15 @@ const routes = [
                 isRequired: false,
                 key: 'vaccine_type',
             },
+        ],
+    },
+    {
+        baseUrl: VACCINE_SUPPLY_CHAIN_DETAILS,
+        component: props => <VaccineSupplyChainDetails {...props} />,
+        permissions: ['iaso_polio'],
+        params: [
+            { isRequired: false, key: 'id' },
+            { isRequired: false, key: 'tab' },
         ],
     },
     {

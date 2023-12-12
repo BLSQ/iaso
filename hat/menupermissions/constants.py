@@ -24,7 +24,14 @@ MODULE_PERMISSIONS = {
     "ENTITIES": ["iaso_entities", "iaso_workflows", "iaso_entity_duplicates_write", "iaso_entity_duplicates_read"],
     "EXTERNAL_STORAGE": ["iaso_storages"],
     "PLANNING": ["iaso_assignments"],
-    "POLIO_PROJECT": ["iaso_polio_config", "iaso_polio", "iaso_polio_budget_admin", "iaso_polio_budget"],
+    "POLIO_PROJECT": [
+        "iaso_polio_config",
+        "iaso_polio",
+        "iaso_polio_budget_admin",
+        "iaso_polio_budget",
+        "iaso_polio_vaccine_supply_chain_read",
+        "iaso_polio_vaccine_supply_chain_write",
+    ],
     "REGISTRY": ["iaso_registry", "iaso_test", "iaso_testtt", "iaso_testttr", "iaso_testttrr"],
 }
 

@@ -15,6 +15,7 @@ type Props = {
     columnSelectorButtonType?: 'button' | 'icon';
     columnSelectorButtonDisabled?: boolean;
     columnSelectorEnabled?: boolean;
+    defaultSorted?: any;
 };
 
 /**
@@ -34,6 +35,7 @@ export const SimpleTableWithDeepLink: FunctionComponent<Props> = ({
     columns = [],
     elevation = 2,
     marginTop = true,
+    defaultSorted,
     columnSelectorButtonType = 'button',
     columnSelectorEnabled = false,
     columnSelectorButtonDisabled = false,
@@ -47,6 +49,7 @@ export const SimpleTableWithDeepLink: FunctionComponent<Props> = ({
             paramsPrefix={paramsPrefix}
             columns={columns}
             baseUrl={baseUrl}
+            defaultSorted={defaultSorted}
             marginTop={marginTop}
             elevation={elevation}
             extraProps={{

@@ -10,6 +10,7 @@ type Props = {
     data: { results?: any[]; count?: number; pages?: number };
     isFetching: boolean;
     columns?: Column[];
+    defaultSorted: any;
 };
 
 export const VaccineStockVariationTable: FunctionComponent<Props> = ({
@@ -17,6 +18,7 @@ export const VaccineStockVariationTable: FunctionComponent<Props> = ({
     paramsPrefix,
     data,
     isFetching,
+    defaultSorted,
     columns = [],
 }) => {
     return (
@@ -26,6 +28,7 @@ export const VaccineStockVariationTable: FunctionComponent<Props> = ({
             params={params}
             paramsPrefix={paramsPrefix}
             columns={columns}
+            defaultSorted={defaultSorted}
             baseUrl={STOCK_VARIATION}
             marginTop={false}
             elevation={0}

@@ -125,6 +125,9 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
                                 params={router.params}
                                 paramsPrefix={tab}
                                 isFetching={isFetchingFormA}
+                                defaultSorted={[
+                                    { id: 'forma_reception_rrt', desc: true },
+                                ]}
                             />
                         )}
                         {tab === DESTRUCTION && (
@@ -134,6 +137,12 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
                                 params={router.params}
                                 paramsPrefix={tab}
                                 isFetching={isFetchingDestructions}
+                                defaultSorted={[
+                                    {
+                                        id: 'destruction_reception_rrt',
+                                        desc: true,
+                                    },
+                                ]}
                             />
                         )}
                         {tab === INCIDENT && (
@@ -143,6 +152,12 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
                                 params={router.params}
                                 paramsPrefix={tab}
                                 isFetching={isFetchingIncidents}
+                                defaultSorted={[
+                                    {
+                                        id: 'incident_reception_rrt',
+                                        desc: true,
+                                    },
+                                ]}
                             />
                         )}
                     </Box>

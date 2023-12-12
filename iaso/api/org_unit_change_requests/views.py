@@ -6,7 +6,10 @@ from django.utils import timezone
 from rest_framework.response import Response
 
 from iaso.api.org_unit_change_requests.filters import OrgUnitChangeRequestListFilter
-from iaso.api.org_unit_change_requests.permissions import HasOrgUnitsChangeRequestPermission
+from iaso.api.org_unit_change_requests.permissions import (
+    HasOrgUnitsChangeRequestPermission,
+    HasOrgUnitsChangeRequestReviewPermission,
+)
 from iaso.api.org_unit_change_requests.serializers import (
     OrgUnitChangeRequestListSerializer,
     OrgUnitChangeRequestRetrieveSerializer,
@@ -20,8 +23,14 @@ from iaso.models import OrgUnitChangeRequest, OrgUnit
 class OrgUnitChangeRequestViewSet(
     CreateModelMixin, ListModelMixin, RetrieveModelMixin, UpdateModelMixin, viewsets.GenericViewSet
 ):
-    permission_classes = [HasOrgUnitsChangeRequestPermission]
     filterset_class = OrgUnitChangeRequestListFilter
+
+    def get_permissions(self):
+        if self.action == "partial_update":
+            permission_classes = [HasOrgUnitsChangeRequestReviewPermission]
+        else:
+            permission_classes = [HasOrgUnitsChangeRequestPermission]
+        return [permission() for permission in permission_classes]
 
     def get_serializer_class(self):
         if self.action in ["create", "update"]:

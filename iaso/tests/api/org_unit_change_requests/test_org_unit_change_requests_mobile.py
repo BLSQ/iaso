@@ -35,20 +35,17 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user)
 
-        with self.assertNumQueries(10):
-            # permission_classes
-            #   1. SELECT User perms
-            #   2. SELECT Group perms
+        with self.assertNumQueries(8):
             # filter_for_user_and_app_id
-            #   3. SELECT OrgUnit
-            #   4. SELECT Project
-            #   5. SELECT Account
-            #   6. SELECT SourceVersion
+            #   1. SELECT OrgUnit
+            #   2. SELECT Project
+            #   3. SELECT Account
+            #   4. SELECT SourceVersion
             # get_queryset
-            #   7. COUNT(*) OrgUnitChangeRequest
-            #   8. SELECT OrgUnitChangeRequest
-            #   9. PREFETCH OrgUnitChangeRequest.new_groups
-            #  10. PREFETCH OrgUnitChangeRequest.new_reference_instances
+            #   5. COUNT(*) OrgUnitChangeRequest
+            #   6. SELECT OrgUnitChangeRequest
+            #   8. PREFETCH OrgUnitChangeRequest.new_groups
+            #   8. PREFETCH OrgUnitChangeRequest.new_reference_instances
             response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project.app_id}")
             self.assertJSONResponse(response, 200)
             self.assertEqual(2, len(response.data))

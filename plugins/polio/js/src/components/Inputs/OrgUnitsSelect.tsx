@@ -1,9 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import { FormikProps, FieldInputProps } from 'formik';
 import { CircularProgress, Box } from '@mui/material';
+import { get } from 'lodash';
 import { useGetOrgUnit } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/components/TreeView/requests';
 import { OrgUnitTreeviewModal } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/components/TreeView/OrgUnitTreeviewModal';
-import { isTouched } from '../../utils';
 
 type Props = {
     field: FieldInputProps<string>;
@@ -16,7 +16,7 @@ type Props = {
 };
 
 const getErrors = (touched, formErrors, name) => {
-    return isTouched(touched) && formErrors?.[name] ? [formErrors[name]] : [];
+    return get(touched, name) && formErrors?.[name] ? [formErrors[name]] : [];
 };
 
 export const OrgUnitsLevels: FunctionComponent<Props> = ({

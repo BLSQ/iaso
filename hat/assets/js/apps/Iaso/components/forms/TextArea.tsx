@@ -92,8 +92,8 @@ export const TextArea: FunctionComponent<Props> = ({
     const classes: Record<string, string> = useStyles();
     const [focus, setFocus] = useState<boolean>(false);
     const hasErrors = errors.length > 0;
-    const prevValue = useRef<Optional<string>>();
-    const prevDebounced = useRef<Optional<string>>();
+    const prevValue = useRef<Optional<string>>('');
+    const prevDebounced = useRef<Optional<string>>('');
     const [textValue, setTextValue] = useState<string>(value ?? '');
     const [debouncedValue] = useDebounce(textValue, debounceTime);
 

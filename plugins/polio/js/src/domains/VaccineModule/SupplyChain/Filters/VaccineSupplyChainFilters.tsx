@@ -6,11 +6,10 @@ import { VACCINE_SUPPLY_CHAIN } from '../../../../constants/routes';
 import { useFilterState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import MESSAGES from '../messages';
-import { useGetCountriesOptions } from '../hooks/api';
 import { polioVaccines } from '../../../../constants/virus';
 import { apiDateFormat } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/dates';
+import { useGetCountriesOptions } from '../hooks/api/vrf';
 
-const baseUrl = VACCINE_SUPPLY_CHAIN;
 type Props = { params: any };
 
 export const VaccineSupplyChainFilters: FunctionComponent<Props> = ({
@@ -18,7 +17,7 @@ export const VaccineSupplyChainFilters: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const { filters, handleSearch, handleChange, filtersUpdated } =
-        useFilterState({ baseUrl, params });
+        useFilterState({ baseUrl: VACCINE_SUPPLY_CHAIN, params });
     const { data: countries, isFetching } = useGetCountriesOptions();
     return (
         <Grid container spacing={2}>

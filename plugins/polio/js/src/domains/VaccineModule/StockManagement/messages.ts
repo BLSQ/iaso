@@ -180,7 +180,7 @@ const MESSAGES = defineMessages({
     },
     destruction: {
         id: 'iaso.polio.label.destruction',
-        defaultMessage: 'Desruction',
+        defaultMessage: 'Destruction',
     },
     incident: {
         id: 'iaso.polio.label.incident',

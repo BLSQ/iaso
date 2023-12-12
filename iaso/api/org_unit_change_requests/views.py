@@ -1,6 +1,9 @@
+import django_filters
+
+from rest_framework import filters
+from rest_framework import viewsets
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin, UpdateModelMixin
-from rest_framework import viewsets
 
 from django.utils import timezone
 from rest_framework.response import Response
@@ -24,6 +27,7 @@ from iaso.models import OrgUnitChangeRequest, OrgUnit
 class OrgUnitChangeRequestViewSet(
     CreateModelMixin, ListModelMixin, RetrieveModelMixin, UpdateModelMixin, viewsets.GenericViewSet
 ):
+    filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     filterset_class = OrgUnitChangeRequestListFilter
     pagination_class = OrgUnitChangeRequestPagination
 

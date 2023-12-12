@@ -1,3 +1,6 @@
+import django_filters
+
+from rest_framework import filters
 from rest_framework import viewsets
 from rest_framework.mixins import ListModelMixin
 
@@ -11,6 +14,7 @@ from iaso.models import OrgUnit, OrgUnitChangeRequest
 
 class MobileOrgUnitChangeRequestViewSet(ListModelMixin, viewsets.GenericViewSet):
     permission_classes = [HasOrgUnitsChangeRequestPermission]
+    filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     filterset_class = MobileOrgUnitChangeRequestListFilter
     serializer_class = MobileOrgUnitChangeRequestListSerializer
     pagination_class = OrgUnitChangeRequestPagination

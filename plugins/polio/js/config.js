@@ -44,6 +44,7 @@ import {
     STOCK_MANAGEMENT,
     STOCK_MANAGEMENT_DETAILS,
     STOCK_VARIATION,
+    VACCINE_SUPPLY_CHAIN_DETAILS,
 } from './src/constants/routes';
 import fr from './src/constants/translations/fr.json';
 import en from './src/constants/translations/en.json';
@@ -67,6 +68,7 @@ import {
     UNUSABLE_VIALS,
     USABLE_VIALS,
 } from './src/domains/VaccineModule/StockManagement/constants.ts';
+import { VaccineSupplyChainDetails } from './src/domains/VaccineModule/SupplyChain/Details/VaccineSupplyChainDetails.tsx';
 
 const campaignsFilters = [
     {
@@ -561,6 +563,15 @@ const routes = [
                 isRequired: false,
                 key: `${INCIDENT}Page`,
             },
+        ],
+    },
+    {
+        baseUrl: VACCINE_SUPPLY_CHAIN_DETAILS,
+        component: props => <VaccineSupplyChainDetails {...props} />,
+        permissions: ['iaso_polio'],
+        params: [
+            { isRequired: false, key: 'id' },
+            { isRequired: false, key: 'tab' },
         ],
     },
     {

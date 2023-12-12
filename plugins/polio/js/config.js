@@ -41,10 +41,10 @@ import {
     NOPV2_AUTH,
     NOPV2_AUTH_DETAILS,
     VACCINE_SUPPLY_CHAIN,
+    VACCINE_SUPPLY_CHAIN_DETAILS,
     STOCK_MANAGEMENT,
     STOCK_MANAGEMENT_DETAILS,
     STOCK_VARIATION,
-    VACCINE_SUPPLY_CHAIN_DETAILS,
 } from './src/constants/routes';
 import fr from './src/constants/translations/fr.json';
 import en from './src/constants/translations/en.json';

@@ -44,6 +44,9 @@ const useStyles = makeStyles(theme => {
         marginTop: {
             marginTop: theme.spacing(2),
         },
+        bigMarginTop: {
+            marginTop: theme.spacing(4),
+        },
     };
 });
 
@@ -88,27 +91,8 @@ export const VaccineStockManagementDetails: FunctionComponent<Props> = ({
 
     return (
         <>
-            <TopBar title={title} displayBackButton goBack={goBack}>
-                <Tabs
-                    value={tab}
-                    classes={{
-                        root: classes.tabs,
-                        indicator: classes.indicator,
-                    }}
-                    onChange={handleChangeTab}
-                >
-                    <Tab
-                        key={USABLE_VIALS}
-                        value={USABLE_VIALS}
-                        label={formatMessage(MESSAGES.usable)}
-                    />
-                    <Tab
-                        key={UNUSABLE_VIALS}
-                        value={UNUSABLE_VIALS}
-                        label={formatMessage(MESSAGES.unusable)}
-                    />
-                </Tabs>
-            </TopBar>
+            <TopBar title={title} displayBackButton goBack={goBack} />
+
             <Box className={classes.containerFullHeightPadded}>
                 <Grid container>
                     <Grid item xs={12} sm={6} md={4}>
@@ -136,8 +120,26 @@ export const VaccineStockManagementDetails: FunctionComponent<Props> = ({
                         </Box>
                     </Grid>
                 </Grid>
+                <Tabs
+                    value={tab}
+                    classes={{
+                        root: classes.bigMarginTop,
+                    }}
+                    onChange={handleChangeTab}
+                >
+                    <Tab
+                        key={USABLE_VIALS}
+                        value={USABLE_VIALS}
+                        label={formatMessage(MESSAGES.usable)}
+                    />
+                    <Tab
+                        key={UNUSABLE_VIALS}
+                        value={UNUSABLE_VIALS}
+                        label={formatMessage(MESSAGES.unusable)}
+                    />
+                </Tabs>
                 <Paper elevation={2} className={classes.marginTop}>
-                    <Box padding={2}>
+                    <Box pt={2} px={2}>
                         <Typography variant="h5" color="primary">
                             {formatMessage(MESSAGES[tab])}
                         </Typography>

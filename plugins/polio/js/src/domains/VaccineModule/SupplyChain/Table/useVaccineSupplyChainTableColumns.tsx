@@ -5,7 +5,6 @@ import {
     textPlaceholder,
     useSafeIntl,
 } from 'bluesquare-components';
-// import { VACCINE_SUPPLY_CHAIN } from '../../../../constants/routes';
 import {
     DateCell,
     MultiDateCell,
@@ -13,9 +12,8 @@ import {
 } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import MESSAGES from '../messages';
 import DeleteDialog from '../../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
-import { useDeleteVrf } from '../hooks/api';
-
-// const baseUrl = VACCINE_SUPPLY_CHAIN;
+import { VACCINE_SUPPLY_CHAIN_DETAILS } from '../../../../constants/routes';
+import { useDeleteVrf } from '../hooks/api/vrf';
 
 export const useVaccineSupplyChainTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -101,10 +99,8 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
                             <IconButton
                                 icon="edit"
                                 tooltipMessage={MESSAGES.edit}
-                                // disabled
-                                onClick={() => null}
+                                url={`${VACCINE_SUPPLY_CHAIN_DETAILS}/id/${settings.row.original.id}`}
                             />
-                            {/* TODO make better DeleteDialog */}
                             <DeleteDialog
                                 titleMessage={MESSAGES.deleteVRF}
                                 message={MESSAGES.deleteVRFWarning}

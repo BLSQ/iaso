@@ -176,7 +176,6 @@ module.exports = {
     devServer: {
         historyApiFallback: true,
         writeToDisk: true,
-        // noInfo: false,
         // needed so we can load the js from django (on another port or docker)
         headers: {
             'Access-Control-Allow-Origin': '*',

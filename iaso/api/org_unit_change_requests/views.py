@@ -6,6 +6,7 @@ from django.utils import timezone
 from rest_framework.response import Response
 
 from iaso.api.org_unit_change_requests.filters import OrgUnitChangeRequestListFilter
+from iaso.api.org_unit_change_requests.pagination import OrgUnitChangeRequestPagination
 from iaso.api.org_unit_change_requests.permissions import (
     HasOrgUnitsChangeRequestPermission,
     HasOrgUnitsChangeRequestReviewPermission,
@@ -24,6 +25,7 @@ class OrgUnitChangeRequestViewSet(
     CreateModelMixin, ListModelMixin, RetrieveModelMixin, UpdateModelMixin, viewsets.GenericViewSet
 ):
     filterset_class = OrgUnitChangeRequestListFilter
+    pagination_class = OrgUnitChangeRequestPagination
 
     def get_permissions(self):
         if self.action == "partial_update":

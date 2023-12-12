@@ -60,7 +60,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
             #   6. PREFETCH OrgUnitChangeRequest.new_reference_instances
             response = self.client.get("/api/orgunits/changes/")
             self.assertJSONResponse(response, 200)
-            self.assertEqual(2, len(response.data))
+            self.assertEqual(2, len(response.data["results"]))
 
     def test_list_without_auth(self):
         response = self.client.get("/api/orgunits/changes/")

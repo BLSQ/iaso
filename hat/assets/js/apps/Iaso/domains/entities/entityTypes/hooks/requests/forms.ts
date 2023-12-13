@@ -3,7 +3,8 @@ import { UseQueryResult } from 'react-query';
 import { useSnackQuery } from '../../../../../libs/apiHooks';
 import { getRequest } from '../../../../../libs/Api';
 
-import { Form } from '../../../../forms/types/forms';
+import { Form, PossibleField } from '../../../../forms/types/forms';
+import { usePossibleFields } from '../../../../forms/hooks/useGetPossibleFields';
 
 export const useGetForm = (
     formId: number | undefined,
@@ -41,4 +42,26 @@ export const useGetForms = (
                 ),
         },
     });
+};
+type Result = {
+    possibleFields: PossibleField[];
+    isFetchingForm: boolean;
+    name?: string;
+};
+export const useGetFormForEntityType = ({
+    formId,
+    enabled = true,
+}: {
+    formId?: number;
+    enabled?: boolean;
+}): Result => {
+    const { data: currentForm, isFetching: isFetchingForm } = useGetForm(
+        formId,
+        enabled && Boolean(formId),
+        'possible_fields,name',
+    );
+    return {
+        ...usePossibleFields(isFetchingForm, currentForm),
+        name: currentForm?.name,
+    };
 };

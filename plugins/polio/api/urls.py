@@ -24,6 +24,8 @@ from plugins.polio.api.rounds.round_date_history import RoundDateHistoryEntryVie
 from plugins.polio.api.vaccines.vaccine_authorization import VaccineAuthorizationViewSet
 from plugins.polio.budget.api import BudgetCampaignViewSet, BudgetStepViewSet, WorkflowViewSet
 from plugins.polio.tasks.api.create_refresh_preparedness_data import RefreshPreparednessLaucherViewSet
+from plugins.polio.api.vaccines.supply_chain import VaccineRequestFormViewSet
+
 from plugins.polio.tasks.api.refresh_lqas_data import RefreshLQASDataViewset
 
 
@@ -55,4 +57,5 @@ router.register(r"tasks/create/refreshpreparedness", RefreshPreparednessLaucherV
 router.register(r"polio/rounds", RoundViewSet, basename="rounds")
 router.register(r"polio/reasonsfordelay", ReasonForDelayViewSet, basename="reasonsfordelay")
 router.register(r"polio/tasks/refreshlqas", RefreshLQASDataViewset, basename="refreshlqas")
+router.register(r"polio/vaccine/request_forms", VaccineRequestFormViewSet, basename="vaccine_request_forms")
 router.register(r"polio/notifications", NotificationViewSet, basename="notifications")

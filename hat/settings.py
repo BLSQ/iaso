@@ -165,7 +165,7 @@ INSTALLED_APPS = [
     "webpack_loader",
     "django_ltree",
     "hat.sync",
-    "hat.vector_control",
+    "hat.api_import",
     "hat.audit",
     "hat.menupermissions",
     "iaso",

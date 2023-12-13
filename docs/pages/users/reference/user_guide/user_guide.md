@@ -2,11 +2,29 @@
 
 ### Overview
 
-Iaso is a geospatial data management platform (a georegistry) developed
-by Bluesquare to support the continuous management of geographical
-information.
+Iaso is a platform (a georegistry) developed mainly
+at Bluesquare which has 3 main functionalities:
 
-The tool supports data management based on master lists of generic
+-   Data collection (trough forms)
+    -   Create forms
+    -   Validation of data collection
+    -   View forms sent from the mobile app
+    -   Export results ( CSV/Geopackage) into a data warehouse, such as
+    -   Export collected data to DHIS2
+-   Data management (trough territorial hierarchies)
+    -   Location of structures using GPS
+    -   Mapping of multiple data sources
+    -   Distribution of validation work by geographic sub-area
+    -   Traceability of changes
+
+-   Micro planning
+    - Manage teams of users
+    - Create plannings with deadlines
+    - In the context of a planning, assign org units to visit to teams and individual users
+    - Monitor the good execution of your planning
+
+Iaso supports the continuous management of geographical
+information based on master lists of generic
 geographical objects called organizational units (“org. units”),
 which are for example health areas, schools, provinces, health
 districts, or wells).
@@ -25,32 +43,7 @@ dashboard**, a **matching featur**e to merge various data sources, a
 **data scienc**e and **scripting** interface and a seamless
 bi-directional **integration** with DHIS2.
 
-**Capabilities in more details/ 3 main functionalities :**
 
--   Data collection (trough forms)
-
-    -   Create forms
-
-    -   Validation of data collection
-
-    -   View forms sent from the Open Data Kit (ODK) mobile app
-
-    -   Export results ( CSV/Geopackage) into a data warehouse, such as
-        > DHIS2
-
--   Data management (trough territorial hierarchies)
-
-    -   Location of structures using GPS
-
-    -   Mapping of multiple data sources
-
-    -   Distribution of validation work by geographic sub-area
-
-    -   Traceability of changes
-
--   Micro planning
-
--   Possibility of adding matching approaches available to end users
 
 ### Login
 

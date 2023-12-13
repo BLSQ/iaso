@@ -1,4 +1,5 @@
 import gspread.utils  # type: ignore
+from django import forms
 from django.contrib import admin, messages
 from django.contrib.admin import widgets
 from django.db import models
@@ -6,24 +7,31 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 
-from .budget.models import MailTemplate, BudgetStepLink, BudgetStepFile, BudgetStep, WorkflowModel
+from iaso.admin import IasoJSONEditorWidget
+
+from .budget.models import BudgetStep, BudgetStepFile, BudgetStepLink, MailTemplate, WorkflowModel
 from .models import (
     Campaign,
+    CampaignGroup,
     ReasonForDelay,
     RoundDateHistoryEntry,
     Round,
     Config,
     CountryUsersGroup,
-    URLCache,
+    Round,
+    RoundDateHistoryEntry,
     SpreadSheetImport,
-    CampaignGroup,
+    URLCache,
+    VaccineArrivalReport,
     VaccineAuthorization,
+    VaccinePreAlert,
+    VaccineRequestForm,
     NotificationImport,
     Notification,
     create_polio_notifications_async,
 )
 
-from iaso.admin import IasoJSONEditorWidget
+from plugins.polio.api.vaccines.supply_chain import validate_rounds_and_campaign
 
 
 class CampaignAdmin(admin.ModelAdmin):
@@ -134,6 +142,42 @@ class VaccineAuthorizationsAdmin(admin.ModelAdmin):
     raw_id_fields = ("country",)
 
 
+class VaccineArrivalReportAdminInline(admin.TabularInline):
+    model = VaccineArrivalReport
+    extra = 0
+
+
+class VaccinePreAlertAdminInline(admin.TabularInline):
+    model = VaccinePreAlert
+    extra = 0
+
+
+class VaccineRequestAdminForm(forms.ModelForm):
+    class Meta:
+        model = VaccineRequestForm
+        fields = "__all__"
+
+    def clean(self):
+        cleaned_data = super().clean()
+        return validate_rounds_and_campaign(cleaned_data)
+
+
+@admin.register(VaccineRequestForm)
+class VaccineRequestFormAdmin(admin.ModelAdmin):
+    model = VaccineRequestForm
+    form = VaccineRequestAdminForm
+    inlines = [VaccinePreAlertAdminInline, VaccineArrivalReportAdminInline]
+    readonly_fields = ["created_at", "updated_at"]
+    list_display = ["campaign", "get_country", "count_pre_alerts", "count_arrival_reports", "created_at"]
+
+
+class RoundAdmin(admin.ModelAdmin):
+    model = Round
+    raw_id_fields = ("campaign",)
+    list_display = ["campaign", "number"]
+    list_filter = ["campaign"]
+
+
 @admin.register(ReasonForDelay)
 class ReasonForDelayAdmin(admin.ModelAdmin):
     model = ReasonForDelay
@@ -191,7 +235,7 @@ class NotificationAdmin(admin.ModelAdmin):
 admin.site.register(Campaign, CampaignAdmin)
 admin.site.register(CampaignGroup, CampaignGroupAdmin)
 admin.site.register(Config, ConfigAdmin)
-admin.site.register(Round)
+admin.site.register(Round, RoundAdmin)
 admin.site.register(RoundDateHistoryEntry)
 admin.site.register(CountryUsersGroup)
 admin.site.register(URLCache)

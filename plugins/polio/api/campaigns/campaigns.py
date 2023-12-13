@@ -42,13 +42,11 @@ from plugins.polio.api.campaigns.vaccine_authorization_missing_email import (
     missing_vaccine_authorization_for_campaign_email_alert,
 )
 from plugins.polio.api.common import CACHE_VERSION
-from plugins.polio.api.rounds.round import RoundScopeSerializer, RoundSerializer, ShipmentSerializer
+from plugins.polio.api.rounds.round import RoundScopeSerializer, RoundSerializer
 from plugins.polio.api.shared_serializers import (
-    DestructionSerializer,
     GroupSerializer,
     OrgUnitSerializer,
     RoundDateHistoryEntrySerializer,
-    RoundVaccineSerializer,
 )
 from plugins.polio.export_utils import generate_xlsx_campaigns_calendar, xlsx_file_name
 from plugins.polio.models import (
@@ -56,12 +54,9 @@ from plugins.polio.models import (
     CampaignGroup,
     CampaignScope,
     CountryUsersGroup,
-    Destruction,
     Round,
     RoundDateHistoryEntry,
     RoundScope,
-    RoundVaccine,
-    Shipment,
     SpreadSheetImport,
     VaccineAuthorization,
 )
@@ -460,7 +455,6 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "description",
             "initial_org_unit",
             "creation_email_send_at",
-            # "group",
             "onset_at",
             "cvdpv_notified_at",
             "cvdpv2_notified_at",
@@ -520,7 +514,6 @@ class SmallCampaignSerializer(CampaignSerializer):
             "description",
             "initial_org_unit",
             "creation_email_send_at",
-            # "group",
             "onset_at",
             "cvdpv_notified_at",
             "cvdpv2_notified_at",
@@ -549,8 +542,6 @@ class SmallCampaignSerializer(CampaignSerializer):
             "eomg",
             "no_regret_fund_amount",
             "payment_mode",
-            # "round_one",
-            # "round_two",
             "created_at",
             "updated_at",
             "district_count",
@@ -632,39 +623,7 @@ class ExportCampaignSerializer(CampaignSerializer):
                 model = RoundScope
                 fields = ["vaccine"]
 
-        class NestedShipmentSerializer(ShipmentSerializer):
-            class Meta:
-                model = Shipment
-                fields = [
-                    "vaccine_name",
-                    "po_numbers",
-                    "vials_received",
-                    "estimated_arrival_date",
-                    "reception_pre_alert",
-                    "date_reception",
-                    "comment",
-                ]
-
-        class NestedDestructionSerializer(DestructionSerializer):
-            class Meta:
-                model = Destruction
-                fields = [
-                    "vials_destroyed",
-                    "date_report_received",
-                    "date_report",
-                    "comment",
-                ]
-
-        class NestedRoundVaccineSerializer(RoundVaccineSerializer):
-            class Meta:
-                model = RoundVaccine
-                fields = [
-                    "name",
-                    "doses_per_vial",
-                    "wastage_ratio_forecast",
-                ]
-
-        class NestedRoundDateHistoryEntrySerializer(RoundVaccineSerializer):
+        class NestedRoundDateHistoryEntrySerializer(serializers.ModelSerializer):
             class Meta:
                 model = RoundDateHistoryEntry
                 fields = [
@@ -683,9 +642,6 @@ class ExportCampaignSerializer(CampaignSerializer):
             model = Round
             fields = [
                 "scopes",
-                "vaccines",
-                "shipments",
-                "destructions",
                 "number",
                 "started_at",
                 "ended_at",
@@ -723,10 +679,6 @@ class ExportCampaignSerializer(CampaignSerializer):
             ]
 
         scopes = NestedRoundScopeSerializer(many=True, required=False)
-        vaccines = NestedRoundVaccineSerializer(many=True, required=False)
-        shipments = NestedShipmentSerializer(many=True, required=False)
-        destructions = NestedDestructionSerializer(many=True, required=False)
-        # TODO check this is the right serializer to use
         datelogs = RoundDateHistoryEntrySerializer(many=True, required=False)
 
     class ExportCampaignScopeSerializer(CampaignScopeSerializer):
@@ -975,9 +927,6 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
             .prefetch_related("rounds")
             .prefetch_related("rounds__datelogs")
             .prefetch_related("rounds__datelogs__modified_by")
-            .prefetch_related("rounds__shipments")
-            .prefetch_related("rounds__destructions")
-            .prefetch_related("rounds__vaccines")
             .prefetch_related("rounds__scopes")
             .prefetch_related("rounds__scopes__group")
             .prefetch_related(rounds_scopes_group_org_units_prefetch)

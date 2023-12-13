@@ -1098,7 +1098,7 @@ class IncidentReport(models.Model):
         VVM_REACHED_DISCARD_POINT = "vvm_reached_discard_point", _("VVM reached the discard point")
         VACCINE_EXPIRED = "vaccine_expired", _("Vaccine expired")
         LOSSES = "losses", _("Losses")
-        RETURN = "return", _("Return")
+        RETURN = "return", _("Return to supplier")
         STEALING = "stealing", _("Stealing")
         PHYSICAL_INVENTORY = "physical_inventory", _("Physical Inventory")
 

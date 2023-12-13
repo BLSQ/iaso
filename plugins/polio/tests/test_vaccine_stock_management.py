@@ -139,3 +139,8 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.assertEqual(stock["leftover_ratio"], 25)  # 10 used / 40 received * 100
         self.assertEqual(stock["stock_of_unusable_vials"], 9)  # 5 unusable + 3 destroyed + 1 incident
         self.assertEqual(stock["vials_destroyed"], 3)
+
+    def test_usable_vials(self):
+        self.client.force_authenticate(user=self.user_ro_perms)
+        response = self.client.get(f"{BASE_URL}{self.vaccine_stock.id}/usable_vials/")
+        print(response.json())

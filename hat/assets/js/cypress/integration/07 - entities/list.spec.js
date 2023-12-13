@@ -229,9 +229,16 @@ describe('Entities', () => {
             mockPage();
             cy.intercept(
                 'GET',
-                '/api/entities/?limit=20&order_columns=last_saved_instance&page=1',
+                '/api/entities/?order_columns=last_saved_instance&limit=20&page=1',
                 {
                     fixture: 'entities/list.json',
+                },
+            ).as('getEntities');
+            cy.intercept(
+                'GET',
+                '/api/entities/?order_columns=last_saved_instance',
+                {
+                    fixture: 'entities/list-not-paginated.json',
                 },
             );
             cy.intercept(
@@ -245,12 +252,15 @@ describe('Entities', () => {
                 },
                 page2,
             );
+            cy.visit(baseUrl);
+            cy.wait('@getEntities');
         });
         testTablerender({
             baseUrl,
             rows: 20,
             columns: 5,
             apiKey: 'entities',
+            withVisit: false,
         });
         testPagination({
             baseUrl,

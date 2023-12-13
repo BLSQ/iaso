@@ -49,6 +49,11 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Preparedness status',
         id: 'iaso.polio.label.preparednesSyncStatus',
     },
+    preparednessSomeWarningsDuringTheParsing: {
+        defaultMessage:
+            'Warning the application encountered problems while parsing the preparedness sheet',
+        id: 'iaso.polio.label.preparednessSomeWarningsDuringTheParsing',
+    },
     helpTextEditVaccineViaScope: {
         defaultMessage: 'The list of vaccines comes from the scope',
         id: 'iaso.polio.label.helpTextEditVaccineViaScope',

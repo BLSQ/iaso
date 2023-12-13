@@ -23,16 +23,14 @@ describe('Tasks', () => {
             };
             cy.intercept('GET', '/api/profiles/me/**', fakeUser);
             cy.visit(baseUrl);
-            const errorCode = cy.get('#error-code');
-            errorCode.should('contain', '403');
+            cy.get('#error-code').should('contain', '403');
         });
     });
     describe('Table', () => {
         it('should work on empty results', () => {
             cy.intercept('/api/tasks/**', { fixture: 'tasks/empty-list.json' });
             cy.visit(baseUrl);
-            const table = cy.get('table');
-            table.should('have.length', 1);
+            cy.get('table').should('have.length', 1);
         });
         it('should refresh when clicking on refresh Button', () => {
             cy.intercept('/api/tasks/**', {
@@ -40,23 +38,27 @@ describe('Tasks', () => {
             }).as('firstFetch');
 
             cy.visit(baseUrl);
-            cy.wait(['@firstFetch']).then(() => {
+            cy.wait('@firstFetch').then(() => {
                 cy.intercept('/api/tasks/**', {
                     fixture: 'tasks/empty-list.json',
                 }).as('secondFetch');
+                cy.wait(1000); // wait for 1 second
                 cy.get('#refresh-button').click();
-                cy.wait(['@secondFetch']);
+                cy.wait('@secondFetch');
             });
         });
         it('should render results', () => {
             cy.intercept('/api/tasks/**', { fixture: 'tasks/list.json' });
             cy.visit(baseUrl);
 
-            const table = cy.get('table');
-            table.should('have.length', 1);
-            const rows = table.find('tbody').find('tr');
-            rows.should('have.length', 10);
-            rows.eq(0).find('td').should('have.length', 8);
+            cy.get('table').should('have.length', 1);
+            cy.get('table').find('tbody').find('tr').should('have.length', 10);
+            cy.get('table')
+                .find('tbody')
+                .find('tr')
+                .eq(0)
+                .find('td')
+                .should('have.length', 8);
         });
         it('should be able to kill a task', () => {
             cy.intercept('/api/tasks/**', { fixture: 'tasks/list.json' });
@@ -81,11 +83,14 @@ describe('Tasks', () => {
                 progress_message: null,
             }).as('patchRequest');
 
-            const table = cy.get('table');
-            const row = table.find('tbody').find('tr').eq(1);
-            const actionCol = row.find('td').last();
-            const killButton = actionCol.find('button');
-            killButton.click();
+            cy.get('table')
+                .find('tbody')
+                .find('tr')
+                .eq(1)
+                .find('td')
+                .last()
+                .find('button')
+                .click();
             cy.get('#notistack-snackbar').should('exist');
             cy.wait('@patchRequest');
             cy.get('@patchRequest').its('request.body').should('contain', {

@@ -27,7 +27,7 @@ export const NotificationsFilters: FunctionComponent<Props> = ({
 
     return (
         <Grid container spacing={2}>
-            <Grid item xs={12} lg={3}>
+            <Grid item xs={12} md={4} lg={3}>
                 <InputComponent
                     type="select"
                     clearable
@@ -38,7 +38,7 @@ export const NotificationsFilters: FunctionComponent<Props> = ({
                     labelString={formatMessage(MESSAGES.labelCountry)}
                 />
             </Grid>
-            <Grid item xs={12} lg={3}>
+            <Grid item xs={12} md={4} lg={3}>
                 <InputComponent
                     type="select"
                     clearable
@@ -49,7 +49,7 @@ export const NotificationsFilters: FunctionComponent<Props> = ({
                     labelString={formatMessage(MESSAGES.labelVdpvCategory)}
                 />
             </Grid>
-            <Grid item xs={12} lg={3}>
+            <Grid item xs={12} md={4} lg={3}>
                 <InputComponent
                     type="select"
                     clearable
@@ -60,7 +60,7 @@ export const NotificationsFilters: FunctionComponent<Props> = ({
                     labelString={formatMessage(MESSAGES.labelSource)}
                 />
             </Grid>
-            <Grid item xs={12} lg={3}>
+            <Grid item xs={12} md={4} lg={3}>
                 <DatesRange
                     onChangeDate={handleChange}
                     dateFrom={filters.date_of_onset_after}
@@ -71,7 +71,14 @@ export const NotificationsFilters: FunctionComponent<Props> = ({
                     keyDateTo="date_of_onset_before"
                 />
             </Grid>
-            <Grid container item xs={12} md={12} justifyContent="flex-end">
+            <Grid
+                container
+                item
+                xs={12}
+                md={4}
+                md={12}
+                justifyContent="flex-end"
+            >
                 <Box mt={2}>
                     <FilterButton
                         disabled={!filtersUpdated}

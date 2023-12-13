@@ -17,7 +17,7 @@ type Props = { router: Router };
 
 export const Notifications: FunctionComponent<Props> = ({ router }) => {
     const classes: Record<string, string> = useStyles();
-    const { data: dropdownContent, isFetching: isFetchingdropdownContent } =
+    const { data: dropdownContent, isFetching: isFetchingDropdownContent } =
         getNotificationsDropdownsContent();
     const { formatMessage } = useSafeIntl();
     const { params } = router;
@@ -30,8 +30,8 @@ export const Notifications: FunctionComponent<Props> = ({ router }) => {
 
     return (
         <>
-            {isFetchingdropdownContent && <LoadingSpinner />}
-            {!isFetchingdropdownContent && (
+            {isFetchingDropdownContent && <LoadingSpinner />}
+            {!isFetchingDropdownContent && (
                 <>
                     <TopBar
                         title={formatMessage(MESSAGES.notificationsTitle)}

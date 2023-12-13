@@ -3,7 +3,7 @@ import { defineMessages } from 'react-intl';
 const MESSAGES = defineMessages({
     vaccineSupplyChain: {
         id: 'iaso.polio.menu.vaccineSupplyChain',
-        defaultMessage: 'Vaccine supply chain',
+        defaultMessage: 'Supply chain',
     },
     country: {
         id: 'iaso.polio.table.label.country',

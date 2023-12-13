@@ -1227,6 +1227,7 @@
     "map.label.zoom.box": "Draw a square to zoom",
     "map.label.zoom.info": "Current zoom level",
     "PeriodSelectorComponent.label.apply": "Apply",
+    "iaso.instance.details": "View submission details",
     "trypelim.permissions.anonymous": "Anonymisation of patients",
     "trypelim.permissions.case_analysis": "Cases analysis",
     "trypelim.permissions.case_cases": "Cases",

@@ -35,6 +35,7 @@ import {
     SHOW_PAGES,
     SHOW_DHIS2_LINK,
     SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,
+    SHOW_DEV_FEATURES,
 } from '../utils/featureFlags';
 import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants';
 
@@ -62,6 +63,7 @@ type MenuItem = {
     url?: string;
     // eslint-disable-next-line no-unused-vars
     isActive?: (pathname: string) => boolean;
+    dev?: boolean;
 };
 type MenuItems = MenuItem[];
 
@@ -86,7 +88,7 @@ const menuItems = (
             isActive: pathname =>
                 pathname?.includes(`/entityTypeIds/${entityType.value}/`) &&
                 pathname?.includes(`entities/list/`),
-            extraPath: `/entityTypeIds/${entityType.value}/order/last_saved_instance/pageSize/20/page/1`,
+            extraPath: `/entityTypeIds/${entityType.value}/order/-last_saved_instance/pageSize/20/page/1`,
         }));
     }
     return [
@@ -293,6 +295,20 @@ const menuItems = (
     ];
 };
 
+const filterDevFeatures = (items: MenuItems): MenuItems => {
+    const result: MenuItems = [];
+    items.forEach(item => {
+        if (!item.subMenu && !item.dev) {
+            result.push(item);
+        } else if (item.subMenu) {
+            const subMenu = filterDevFeatures(item.subMenu);
+            const filtered = { ...item, subMenu };
+            result.push(filtered);
+        }
+    });
+    return result;
+};
+
 export const useMenuItems = (): MenuItems => {
     const currentUser = useCurrentUser();
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
@@ -337,7 +353,6 @@ export const useMenuItems = (): MenuItems => {
         });
     }
 
-    // filter by user permissions
     const items: MenuItems = useMemo(() => {
         const menuItemsTemp = [
             ...(basicItems as MenuItems),
@@ -346,10 +361,15 @@ export const useMenuItems = (): MenuItems => {
         if (admin) {
             menuItemsTemp.push(admin as MenuItem);
         }
-        return menuItemsTemp.filter(menuItem => {
+        const authorizedItems = menuItemsTemp.filter(menuItem => {
             const permissionsList = listMenuPermission(menuItem);
             return userHasOneOfPermissions(permissionsList, currentUser);
         });
+        if (hasFeatureFlag(currentUser, SHOW_DEV_FEATURES)) {
+            return authorizedItems;
+        }
+        // Remove dev (incomplete) features
+        return filterDevFeatures(authorizedItems);
     }, [admin, basicItems, currentUser, pluginsMenu]);
     return items;
 };

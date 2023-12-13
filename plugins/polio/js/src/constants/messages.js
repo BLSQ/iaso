@@ -1603,6 +1603,7 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'You need to be part of a team to create or edit budget events',
     },
+    // DEPRECATED
     vialsDestroyed: {
         id: 'iaso.polio.label.vialsDestroyed',
         defaultMessage: 'Unusable vials destroyed',
@@ -1630,14 +1631,6 @@ const MESSAGES = defineMessages({
     date_signed_vrf_received: {
         id: 'iaso.polio.label.dateSignedVrf',
         defaultMessage: 'Date signed VRF received',
-    },
-    wastageRatio: {
-        id: 'iaso.polio.label.wastageRatio',
-        defaultMessage: 'Wastage ratio',
-    },
-    dosesPerVial: {
-        id: 'iaso.polio.label.dosesPerVial',
-        defaultMessage: 'Doses per vial',
     },
     reportingDelays: {
         id: 'iaso.polio.label.reportingDelays',
@@ -1675,10 +1668,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.receptionVaccineArrivalReport',
         defaultMessage: 'Reception of Arrival Report',
     },
-    estimatedDateOfArrival: {
-        id: 'iaso.polio.label.estimatedDateOfArrival',
-        defaultMessage: 'Estimated date of arrival',
-    },
+
     vialsShipped: {
         id: 'iaso.polio.label.vialsShipped',
         defaultMessage: 'Vials shipped',
@@ -1743,6 +1733,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.formAMissingVials',
         defaultMessage: 'Number of missing vials from the national form',
     },
+    // END DEPRECATED
     days: {
         id: 'iaso.polio.label.days',
         defaultMessage: 'Days',
@@ -2394,6 +2385,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.afroMapfilterInfo',
         defaultMessage:
             'The latest campaign is the campaign with the round that started the most recently within the chosen time frame',
+    },
+    vaccineSupplyChain: {
+        id: 'iaso.polio.menu.vaccineSupplyChain',
+        defaultMessage: 'Supply chain',
+    },
+    vaccineStockManagement: {
+        id: 'iaso.polio.menu.vaccineStockManagement',
+        defaultMessage: 'Stock management',
     },
     latestManualRefresh: {
         id: 'iaso.polio.label.latestManualRefresh',

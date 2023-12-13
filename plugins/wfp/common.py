@@ -62,6 +62,12 @@ class ETL:
                 program = visit.get("program")
             elif visit.get("program_two") is not None and visit.get("program_two") != "NONE":
                 program = visit.get("program_two", None)
+            elif visit.get("discharge_program") is not None and visit.get("discharge_program") != "NONE":
+                program = visit.get("discharge_program")
+            elif visit.get("_programme") is not None and visit.get("_programme") != "NONE":
+                program = visit.get("_programme")
+            elif visit.get("new_programme") is not None and visit.get("new_programme") != "NONE":
+                program = visit.get("new_programme")
         return program
 
     def admission_type(self, visit):
@@ -76,6 +82,7 @@ class ETL:
             admission_type = visit.get("admission_type_yellow")
         elif visit.get("_admission_type"):
             admission_type = visit.get("_admission_type")
+        admission_type = self.admission_type_converter(admission_type)
         return admission_type
 
     def admission_criteria(self, visit):
@@ -98,15 +105,62 @@ class ETL:
 
     def exit_type(self, visit):
         exit_type = None
-        if visit.get("reasons_not_continuing") is not None and visit.get("reasons_not_continuing") != "":
-            exit_type = visit.get("reasons_not_continuing")
-        if visit.get("reason_for_not_continuing") is not None and visit.get("reason_for_not_continuing") != "":
-            exit_type = visit.get("reason_for_not_continuing")
-        elif visit.get("non_respondent") is not None and visit.get("non_respondent") == "1":
-            exit_type = "non_respondent"
-        elif visit.get("discharge_note") is not None and visit.get("discharge_note") == "yes":
+        if (
+            (visit.get("_Xfinal_color_result") is not None and visit.get("_Xfinal_color_result") == "Y")
+            and (visit.get("previous_child_color") is not None and visit.get("previous_child_color") == "Y")
+            and (visit.get("_transfer_to_tsfp") is not None and visit.get("_transfer_to_tsfp") == "1")
+        ):
             exit_type = "cured"
+        elif (
+            (visit.get("previous_whz_color") is not None and visit.get("previous_whz_color") == "R")
+            and (visit.get("_Xwhz_color") is not None and visit.get("_Xwhz_color") == "R")
+            and (visit.get("previous_muac_color") is not None and visit.get("previous_muac_color") == "R")
+            and (visit.get("_Xmuac_color") is not None and visit.get("_Xmuac_color") == "R")
+            and (visit.get("_transfer_to_tsfp") is not None and visit.get("_transfer_to_tsfp") == "1")
+        ):
+            exit_type = "transfer_to_tsfp"
+        elif visit.get("_transfer_to_otp") is not None and visit.get("_transfer_to_otp") == "1":
+            exit_type = "transfer_to_otp"
+
+        elif visit.get("reason_for_not_continuing") is not None and visit.get("reason_for_not_continuing") != "":
+            exit_type = visit.get("reason_for_not_continuing")
+
+        elif visit.get("reasons_not_continuing") is not None and visit.get("reasons_not_continuing") != "":
+            exit_type = visit.get("reasons_not_continuing")
+        elif visit.get("reason_not_continue") is not None and visit.get("reason_not_continue") != "":
+            exit_type = visit.get("reason_not_continue")
+
+        elif visit.get("not_continue") is not None and visit.get("not_continue") != "":
+            exit_type = visit.get("not_continue")
+
+        elif (visit.get("non_respondent") is not None and visit.get("non_respondent") == "1") or (
+            visit.get("non_respondent__int__") is not None and visit.get("non_respondent__int__") == "1"
+        ):
+            exit_type = "non_respondent"
+        elif (visit.get("discharge_note") is not None and visit.get("discharge_note") == "yes") or (
+            visit.get("discharge_note__int__") is not None and visit.get("discharge_note__int__") == "1"
+        ):
+            exit_type = "cured"
+        exit_type = self.exit_type_converter(exit_type)
         return exit_type
+
+    def exit_type_converter(self, exit_type):
+        if exit_type == "dismissedduetocheating":
+            return "dismissed_due_to_cheating"
+        elif exit_type == "transferredout":
+            return "transferred_out"
+        else:
+            return exit_type
+
+    def admission_type_converter(self, admission_type):
+        if admission_type == "referred_from_other_otp":
+            return "referred_from_otp_sam"
+        elif admission_type == "referred_from_tsfp":
+            return "referred_from_tsfp_mam"
+        elif admission_type == "referred_from_sc_itp":
+            return "referred_from_sc"
+        else:
+            return admission_type
 
     def get_admission_steps(self, steps):
         step_visits = []
@@ -137,6 +191,8 @@ class ETL:
 
         if visit["form_id"] in followup_forms:
             current_journey["exit_type"] = self.exit_type(visit)
+            if current_journey.get("exit_type") == "cured":
+                current_journey["nutrition_programme"] = visit.get("discharge_program")
 
         followup_forms.append(anthropometric_visit_form)
         if visit["form_id"] in followup_forms:
@@ -153,40 +209,47 @@ class ETL:
         return current_step
 
     def map_assistance_step(self, step, given_assistance):
-        assistance = {"type": None, "quantity": 1}
-        if step.get("_net") == "Yes" or step.get("_net") == "yes":
-            assistance["type"] = "Mosquito Net"
+        quantity = 1
+        if (step.get("net_given") is not None and step.get("net_given") == "yes") or (
+            step.get("net_given__bool__") is not None and step.get("net_given__bool__") == "1"
+        ):
+            assistance = {"type": "Mosquito Net", "quantity": quantity}
             given_assistance.append(assistance)
 
-        if step.get("_soap") == "Yes" or step.get("_soap") == "yes":
-            assistance["type"] = "Soap"
+        if (step.get("soap_given") is not None and step.get("soap_given") == "yes") or (
+            step.get("soap_given__bool__") is not None and step.get("soap_given__bool__") == "1"
+        ):
+            assistance = {"type": "Soap", "quantity": quantity}
             given_assistance.append(assistance)
 
         if step.get("ors_given") == "Yes" or step.get("ors_given") == "yes":
-            assistance["type"] = "ORS"
+            assistance = {"type": "ORS", "quantity": quantity}
             given_assistance.append(assistance)
 
         if step.get("medicine_given") is not None:
-            assistance["type"] = step.get("medicine_given")
+            assistance = {"type": step.get("medicine_given"), "quantity": quantity}
             given_assistance.append(assistance)
 
         if step.get("medication") is not None:
-            assistance["type"] = step.get("medication")
+            assistance = {"type": step.get("medication"), "quantity": quantity}
             given_assistance.append(assistance)
 
         if step.get("medicine_given_2") is not None:
-            assistance["type"] = step.get("medicine_given_2")
+            assistance = {"type": step.get("medicine_given_2"), "quantity": quantity}
             given_assistance.append(assistance)
 
         if step.get("medication_2") is not None:
-            assistance["type"] = step.get("medication_2")
+            assistance = {"type": step.get("medication_2"), "quantity": quantity}
             given_assistance.append(assistance)
 
         if step.get("ration_to_distribute") is not None:
-            assistance = {
-                "type": step.get("ration_to_distribute"),
-                "quantity": step.get("_total_number_of_sachets", 0),
-            }
+            quantity = 0
+            if step.get("_total_number_of_sachets") is not None:
+                quantity = step.get("_total_number_of_sachets", 0)
+            elif step.get("_csb_packets") is not None:
+                quantity = step.get("_csb_packets", 0)
+
+            assistance = {"type": step.get("ration_to_distribute"), "quantity": quantity}
             given_assistance.append(assistance)
 
         if step.get("ration_type_tsfp") is not None:
@@ -197,19 +260,16 @@ class ETL:
                 "type": step.get("ration_type_tsfp"),
                 "quantity": quantity,
             }
-
+            given_assistance.append(assistance)
         elif step.get("ration_type_otp") is not None:
             quantity = 0
             if step.get("_total_number_of_sachets") is not None and step.get("_total_number_of_sachets") != "":
                 quantity = step.get("_total_number_of_sachets")
-
             assistance = {
                 "type": step.get("ration_type_otp"),
                 "quantity": quantity,
             }
-            if assistance.get("type") != "":
-                given_assistance.append(assistance)
-
+            given_assistance.append(assistance)
         return list(
             filter(
                 lambda assistance: (assistance.get("type") and assistance.get("type") != ""),

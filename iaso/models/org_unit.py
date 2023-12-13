@@ -1,3 +1,4 @@
+import json
 import operator
 import typing
 import uuid
@@ -548,6 +549,37 @@ class OrgUnit(TreeModel):
     def get_reference_instances_details_for_api(self) -> list:
         return [instance.as_full_model() for instance in self.reference_instances.all()]
 
+    def get_extra_fields(self):
+        from iaso.models import Account
+        from iaso.models.data_store import JsonDataStore
+
+        try:
+            datastore = self.jsondatastore_set.get(
+                account=Account.objects.filter(default_version=self.version).first(),
+                slug="extra_fields",
+            )
+            return datastore.content
+        except JsonDataStore.DoesNotExist:
+            return {}
+
+    def set_extra_fields(self, content):
+        from iaso.models import Account
+        from iaso.models.data_store import JsonDataStore
+
+        try:
+            datastore = self.jsondatastore_set.get(
+                account=Account.objects.filter(default_version=self.version).first(),
+                slug="extra_fields",
+            )
+            datastore.content = {**datastore.content, **content}
+            datastore.save()
+        except JsonDataStore.DoesNotExist:
+            self.jsondatastore_set.create(
+                account=Account.objects.filter(default_version=self.version).first(),
+                slug="extra_fields",
+                content=content,
+            )
+
 
 class OrgUnitReferenceInstance(models.Model):
     """
@@ -623,6 +655,8 @@ class OrgUnitChangeRequest(models.Model):
     # `new_location_accuracy` is only used to help decision-making during validation: is the accuracy
     # good enough to change the location? The field doesn't exist on `OrgUnit`.
     new_location_accuracy = models.DecimalField(decimal_places=2, max_digits=7, blank=True, null=True)
+    new_opening_date = models.DateField(blank=False, null=True)
+    new_closed_date = models.DateField(blank=True, null=True)
     new_reference_instances = models.ManyToManyField("Instance", blank=True)
 
     # Stores approved fields (only a subset can be approved).
@@ -650,6 +684,7 @@ class OrgUnitChangeRequest(models.Model):
         super().clean()
         self.approved_fields = list(set(self.approved_fields))
         self.clean_approved_fields()
+        self.clean_new_dates()
 
     @property
     def requested_fields(self) -> typing.List[str]:
@@ -670,6 +705,10 @@ class OrgUnitChangeRequest(models.Model):
         for name in self.approved_fields:
             if name not in self.get_new_fields():
                 raise ValidationError({"approved_fields": f"Value {name} is not a valid choice."})
+
+    def clean_new_dates(self) -> None:
+        if (self.new_opening_date and self.new_closed_date) and (self.new_closed_date <= self.new_opening_date):
+            raise ValidationError("Closing date must be later than opening date.")
 
     def reject(self, user: User, rejection_comment: str) -> None:
         self.reviewed_at = timezone.now()

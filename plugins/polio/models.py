@@ -1,7 +1,8 @@
-from collections import defaultdict
-from datetime import date
 import datetime
 import json
+from datetime import date
+from typing import Union
+from collections import defaultdict
 from typing import Any, Tuple, Union
 from uuid import uuid4
 
@@ -10,11 +11,12 @@ import pandas as pd
 from beanstalk_worker import task_decorator
 
 import django.db.models.manager
-from django.contrib.auth.models import User, AnonymousUser
+from django.contrib.auth.models import AnonymousUser, User
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
-from django.db.models import Q, QuerySet
+from django.db.models import Q, Sum, QuerySet
 from django.db.models.expressions import RawSQL
+from django.db.models.functions import Coalesce
 from django.utils.translation import gettext as _
 from gspread.utils import extract_id_from_url  # type: ignore
 from django.utils import timezone
@@ -22,10 +24,13 @@ from django.core.validators import RegexValidator
 from iaso.models import Group, OrgUnit
 from iaso.models.base import Account, Task
 from iaso.models.microplanning import Team
-from iaso.utils.models.soft_deletable import SoftDeletableModel
+from iaso.utils.models.soft_deletable import SoftDeletableModel, DefaultSoftDeletableManager
 from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
 from translated_fields import TranslatedField
+
+from django.contrib.postgres.fields import ArrayField
+
 
 # noinspection PyUnresolvedReferences
 # from .budget.models import BudgetStep, BudgetStepFile
@@ -43,6 +48,12 @@ VACCINES = [
     ("nOPV2", _("nOPV2")),
     ("bOPV", _("bOPV")),
 ]
+
+DOSES_PER_VIAL = {
+    "mOPV2": 20,
+    "nOPV2": 20,
+    "bOPV": 20,
+}
 
 LANGUAGES = [
     ("FR", "Français"),
@@ -139,36 +150,6 @@ class CampaignScope(models.Model):
     class Meta:
         unique_together = [("campaign", "vaccine")]
         ordering = ["campaign", "vaccine"]
-
-
-class Destruction(models.Model):
-    vials_destroyed = models.IntegerField(null=True, blank=True)
-    date_report_received = models.DateField(null=True, blank=True)
-    date_report = models.DateField(null=True, blank=True)
-    comment = models.TextField(null=True, blank=True)
-    round = models.ForeignKey("Round", related_name="destructions", on_delete=models.CASCADE, null=True)
-
-
-class Shipment(models.Model):
-    vaccine_name = models.CharField(max_length=5, choices=VACCINES)
-    po_numbers = models.IntegerField(null=True, blank=True)
-    vials_received = models.IntegerField(null=True, blank=True)
-    estimated_arrival_date = models.DateField(null=True, blank=True)
-    reception_pre_alert = models.DateField(null=True, blank=True)
-    date_reception = models.DateField(null=True, blank=True)
-    comment = models.TextField(null=True, blank=True)
-    round = models.ForeignKey("Round", related_name="shipments", on_delete=models.CASCADE, null=True)
-
-
-class RoundVaccine(models.Model):
-    class Meta:
-        unique_together = [("name", "round")]
-        ordering = ["name"]
-
-    name = models.CharField(max_length=5, choices=VACCINES)
-    round = models.ForeignKey("Round", on_delete=models.CASCADE, related_name="vaccines", null=True, blank=True)
-    doses_per_vial = models.IntegerField(null=True, blank=True)
-    wastage_ratio_forecast = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
 
 
 class RoundDateHistoryEntryQuerySet(models.QuerySet):
@@ -302,7 +283,9 @@ class CampaignQuerySet(models.QuerySet):
 
             # Restrict Campaign to the OrgUnit on the country he can access
             if user.iaso_profile.org_units.count():
-                org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
+                org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all()).defer(
+                    "geom", "simplified_geom"
+                )
                 qs = qs.filter(Q(country__in=org_units) | Q(initial_org_unit__in=org_units))
         return qs
 
@@ -583,6 +566,7 @@ class Campaign(SoftDeletableModel):
                 OrgUnit.objects.filter(groups__roundScope__round__number=round_number)
                 .filter(groups__roundScope__round__campaign=self)
                 .distinct()
+                .defer("geom", "simplified_geom")
             )
         return self.get_campaign_scope_districts_qs()
 
@@ -602,7 +586,10 @@ class Campaign(SoftDeletableModel):
     def get_districts_for_round_qs(self, round):
         if self.separate_scopes_per_round:
             districts = (
-                OrgUnit.objects.filter(groups__roundScope__round=round).filter(validation_status="VALID").distinct()
+                OrgUnit.objects.filter(groups__roundScope__round=round)
+                .filter(validation_status="VALID")
+                .distinct()
+                .defer("geom", "simplified_geom")
             )
         else:
             districts = self.get_campaign_scope_districts_qs()
@@ -622,7 +609,11 @@ class Campaign(SoftDeletableModel):
 
     def get_campaign_scope_districts_qs(self):
         # Get districts on campaign scope, make only sense if separate_scopes_per_round=True
-        return OrgUnit.objects.filter(groups__campaignScope__campaign=self).filter(validation_status="VALID")
+        return (
+            OrgUnit.objects.filter(groups__campaignScope__campaign=self)
+            .filter(validation_status="VALID")
+            .defer("geom", "simplified_geom")
+        )
 
     def get_all_districts(self):
         """District from all round merged as one"""
@@ -631,6 +622,7 @@ class Campaign(SoftDeletableModel):
                 OrgUnit.objects.filter(groups__roundScope__round__campaign=self)
                 .filter(validation_status="VALID")
                 .distinct()
+                .defer("geom", "simplified_geom")
             )
         return self.get_campaign_scope_districts()
 
@@ -641,6 +633,7 @@ class Campaign(SoftDeletableModel):
                 OrgUnit.objects.filter(groups__roundScope__round__campaign=self)
                 .filter(validation_status="VALID")
                 .distinct()
+                .defer("geom", "simplified_geom")
             )
         return self.get_campaign_scope_districts_qs()
 
@@ -969,6 +962,98 @@ class VaccineAuthorization(SoftDeletableModel):
         return f"{self.country}-{self.expiration_date}"
 
 
+class NotificationManager(models.Manager):
+    def get_countries_for_account(self, account: Account) -> QuerySet[OrgUnit]:
+        """
+        Returns a queryset of unique countries used in notifications for the given account.
+        """
+        countries_pk = self.filter(account=account, org_unit__version_id=account.default_version_id).values_list(
+            "org_unit__parent__parent__id", flat=True
+        )
+        return OrgUnit.objects.filter(pk__in=countries_pk).defer("geom", "simplified_geom").order_by("name")
+
+
+## Terminology
+# VRF = Vaccine Request Form
+# VPA = Vaccine Pre Alert
+# VAR = Vaccine Arrival Report
+
+
+class VaccineRequestForm(SoftDeletableModel):
+    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
+    vaccine_type = models.CharField(max_length=5, choices=VACCINES)
+    rounds = models.ManyToManyField(Round)
+    date_vrf_signature = models.DateField()
+    date_vrf_reception = models.DateField()
+    date_dg_approval = models.DateField()
+    quantities_ordered_in_doses = models.PositiveIntegerField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    # optional fields
+    wastage_rate_used_on_vrf = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    date_vrf_submission_to_orpg = models.DateField(null=True, blank=True)
+    quantities_approved_by_orpg_in_doses = models.PositiveIntegerField(null=True, blank=True)
+    date_rrt_orpg_approval = models.DateField(null=True, blank=True)
+    date_vrf_submitted_to_dg = models.DateField(null=True, blank=True)
+    quantities_approved_by_dg_in_doses = models.PositiveIntegerField(null=True, blank=True)
+    comment = models.TextField(blank=True, null=True)
+
+    objects = DefaultSoftDeletableManager()
+
+    def get_country(self):
+        return self.campaign.country
+
+    def count_pre_alerts(self):
+        return self.vaccineprealert_set.count()
+
+    def count_arrival_reports(self):
+        return self.vaccinearrivalreport_set.count()
+
+    def total_doses_shipped(self):
+        return self.vaccineprealert_set.all().aggregate(total_doses_shipped=Coalesce(Sum("doses_shipped"), 0))[
+            "total_doses_shipped"
+        ]
+
+    def __str__(self):
+        return f"VRF for {self.get_country()} {self.campaign} {self.vaccine_type} #VPA {self.count_pre_alerts()} #VAR {self.count_arrival_reports()}"
+
+
+class VaccinePreAlert(SoftDeletableModel):
+    request_form = models.ForeignKey(VaccineRequestForm, on_delete=models.CASCADE)
+    date_pre_alert_reception = models.DateField()
+    po_number = models.CharField(max_length=200, blank=True, null=True, default=None)
+    estimated_arrival_time = models.DateField(blank=True, null=True, default=None)
+    lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
+    expiration_date = models.DateField(blank=True, null=True, default=None)
+    doses_shipped = models.PositiveIntegerField(blank=True, null=True, default=None)
+    doses_per_vial = models.PositiveIntegerField(blank=True, null=True, default=None)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    objects = DefaultSoftDeletableManager()
+
+    def get_doses_per_vial(self):
+        return DOSES_PER_VIAL[self.request_form.vaccine_type]
+
+
+class VaccineArrivalReport(SoftDeletableModel):
+    request_form = models.ForeignKey(VaccineRequestForm, on_delete=models.CASCADE)
+    arrival_report_date = models.DateField()
+    doses_received = models.PositiveIntegerField()
+    po_number = models.CharField(max_length=200, blank=True, null=True, default=None)
+    lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
+    expiration_date = models.DateField(blank=True, null=True, default=None)
+    doses_shipped = models.PositiveIntegerField(blank=True, null=True, default=None)
+    doses_per_vial = models.PositiveIntegerField(blank=True, null=True, default=None)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    objects = DefaultSoftDeletableManager()
+
+
 class Notification(models.Model):
     """
     List of notifications of polio virus outbreaks.
@@ -1014,7 +1099,7 @@ class Notification(models.Model):
     epid_number = models.CharField(max_length=50, unique=True)
     vdpv_category = models.CharField(max_length=20, choices=VdpvCategories.choices, default=VdpvCategories.AVDPV)
     source = models.CharField(max_length=50, choices=Sources.choices, default=Sources.AFP)
-    vdpv_nucleotide_diff_sabin2 = models.CharField(max_length=10)
+    vdpv_nucleotide_diff_sabin2 = models.CharField(max_length=10, blank=True)
     # Lineage possible values: NIE-ZAS-1, RDC-MAN-3, Ambiguous, etc.
     lineage = models.CharField(max_length=150, blank=True)
     closest_match_vdpv2 = models.CharField(max_length=150, blank=True)
@@ -1040,6 +1125,8 @@ class Notification(models.Model):
     import_source = models.ForeignKey("NotificationImport", null=True, blank=True, on_delete=models.SET_NULL)
     import_raw_data = models.JSONField(null=True, blank=True, encoder=DjangoJSONEncoder)
 
+    objects = NotificationManager()
+
     class Meta:
         verbose_name = _("Notification")
 
@@ -1054,6 +1141,8 @@ class NotificationImport(models.Model):
 
     This model stores .xlsx files and use them to populate `Notification`.
     """
+
+    XLSX_TEMPLATE_PATH = "plugins/polio/fixtures/notifications_template.xlsx"
 
     EXPECTED_XLSX_COL_NAMES = [
         "EPID_NUMBER",

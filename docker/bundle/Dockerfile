@@ -2,7 +2,7 @@
 # Then transfert it in the filan django image
 ############ NPM Builder ######################################################################
 
-FROM node:14-bullseye-slim as npmbuilder
+FROM node:14.17-bullseye-slim as npmbuilder
 ENV PROJECT_ROOT /opt
 
 WORKDIR /opt/app
@@ -17,7 +17,7 @@ COPY package.json .
 COPY package-lock.json .
 
 
-RUN npm install -g npm@8.5
+RUN npm install -g npm@8.5.5
 
 RUN rm -rf node_modules
 RUN npm cache clean --force

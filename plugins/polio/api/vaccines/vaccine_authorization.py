@@ -5,16 +5,32 @@ from typing import Any
 
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import filters, permissions, serializers
+from rest_framework import filters, serializers
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from hat.menupermissions import models as permission
-from iaso.api.common import DeletionFilterBackend, ModelViewSet, Paginator, TimestampField
+from iaso.api.common import (
+    DeletionFilterBackend,
+    GenericReadWritePerm,
+    ModelViewSet,
+    Paginator,
+    TimestampField,
+    Custom403Exception,
+)
 from iaso.models import OrgUnit
 from plugins.polio.models import Group, VaccineAuthorization
 from plugins.polio.settings import COUNTRY
+
+
+def check_for_already_validated_authorization(status, country):
+    if status == "VALIDATED":
+        validated_vaccine_auth = VaccineAuthorization.objects.filter(
+            status="VALIDATED", country=country, deleted_at__isnull=True
+        )
+        if validated_vaccine_auth:
+            raise Custom403Exception({"error": f"A vaccine authorization is already validated for this country"})
 
 
 class CountryForVaccineSerializer(serializers.ModelSerializer):
@@ -70,43 +86,32 @@ class VaccineAuthorizationSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = self.context["request"].user
         validated_data["account"] = user.iaso_profile.account
-
+        status = validated_data.get("status")
         expiration_date = validated_data.get("expiration_date")
         start_date = validated_data.get("start_date")
+        country = validated_data["country"]
 
+        check_for_already_validated_authorization(status, country)
+
+        # Check validity of the dates
+        if expiration_date and expiration_date < datetime.date.today():
+            raise serializers.ValidationError({"error": "expiration_date must be a future date."})
         if start_date and start_date > expiration_date:
             raise serializers.ValidationError({"error": "start_date must be before expiration_date."})
 
         return super().create(validated_data)
 
+    def update(self, instance, validated_data):
+        if validated_data.get("status") == "VALIDATED" and instance.status != "VALIDATED":
+            country = instance.country
+            check_for_already_validated_authorization("VALIDATED", country)
 
-class HasVaccineAuthorizationsPermissions(permissions.BasePermission):
-    def has_permission(self, request, view):
-        read_perm = permission.POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY
-        write_perm = permission.POLIO_VACCINE_AUTHORIZATIONS_ADMIN
-        if request.method == "GET":
-            can_get = (
-                request.user
-                and request.user.is_authenticated
-                and request.user.has_perm(read_perm)
-                or request.user.is_superuser
-            )
-            return can_get
-        elif (
-            request.method == "POST"
-            or request.method == "PUT"
-            or request.method == "PATCH"
-            or request.method == "DELETE"
-        ):
-            can_post = (
-                request.user
-                and request.user.is_authenticated
-                and request.user.has_perm(write_perm)
-                or request.user.is_superuser
-            )
-            return can_post
-        else:
-            return False
+        return super().update(instance, validated_data)
+
+
+class HasVaccineAuthorizationsPermissions(GenericReadWritePerm):
+    read_perm = permission.POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY
+    write_perm = permission.POLIO_VACCINE_AUTHORIZATIONS_ADMIN
 
 
 @swagger_auto_schema(tags=["vaccineauthorizations"])

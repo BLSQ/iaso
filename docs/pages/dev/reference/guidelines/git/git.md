@@ -33,3 +33,4 @@ Github flow
 - You can add comments on a file or on multiple lines
 - Black formatting is not automatic on new migration files
 - You can access to the pull requests where your review is requested [here](https://github.com/pulls/review-requested)
+- When reviewing a PR and adding comments, you can inline a suggestion with the `suggestion` block. More information can be found [here](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/commenting-on-a-pull-request#adding-comments-to-a-pull-request) on point 6.

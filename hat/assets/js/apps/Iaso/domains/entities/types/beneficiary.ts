@@ -34,4 +34,6 @@ export type Beneficiary = {
     instances: Record<string, any>[];
     program?: string;
     duplicates: number[];
+    latitude?: number;
+    longitude?: number;
 };

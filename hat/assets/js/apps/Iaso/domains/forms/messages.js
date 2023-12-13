@@ -626,6 +626,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.validation_status',
         defaultMessage: 'Status',
     },
+    legend: {
+        id: 'iaso.forms.legend',
+        defaultMessage: 'Legend',
+    },
+    createLegend: {
+        defaultMessage: 'Create legend',
+        id: 'iaso.forms.createLegend',
+    },
     instance_defining: {
         id: 'iaso.forms.instance_defining',
         defaultMessage: 'Instance definition',

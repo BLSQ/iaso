@@ -131,7 +131,7 @@ export const useColumns = (
                         {/* When there's more than one dupe for the entity */}
                         {settings.row.original.duplicates.length > 1 && (
                             <IconButtonComponent
-                                url={`/${baseUrls.entityDuplicates}/order/id/pageSize/50/page/1/entity_id/${settings.row.original.id}/`}
+                                url={`/${baseUrls.entityDuplicates}/entity_id/${settings.row.original.id}/order/id/pageSize/50/page/1/`}
                                 overrideIcon={FileCopyIcon}
                                 tooltipMessage={MESSAGES.seeDuplicates}
                             />

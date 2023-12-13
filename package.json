@@ -17,7 +17,7 @@
         "webpack": "webpack --config ./hat/webpack.dev.js",
         "webpack-prod": "webpack --config ./hat/webpack.prod.js",
         "webpack-server": "webpack  serve --config ./hat/webpack.dev.js",
-        "dev": "npm run webpack && npm run webpack-server",
+        "dev": "npm run webpack-server",
         "tsc": "tsc --watch",
         "scan-translations": "python ./scripts/scantranslations.py",
         "extract": "formatjs extract",
@@ -157,7 +157,7 @@
         "style-loader": "^1.0.0",
         "url-loader": "^4.1.1",
         "webpack": "^5.50.0",
-        "webpack-bundle-tracker": "^0.4.3",
+        "webpack-bundle-tracker": "^1.0.0-alpha.1",
         "webpack-cli": "^4.10.0",
         "webpack-dev-server": "^3.11.3"
     }

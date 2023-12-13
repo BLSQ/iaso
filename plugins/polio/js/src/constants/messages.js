@@ -2140,14 +2140,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.import_file.label',
         defaultMessage: 'Excel Line File',
     },
-    importLineList: {
-        id: 'iaso.polio.import_line_list',
-        defaultMessage: 'Import Line List',
-    },
-    campaignImportSuccess: {
-        id: 'iaso.polio.import_line_list.successMessage',
-        defaultMessage: 'Imported successfully {amount} campaign(s)',
-    },
     futureDateError: {
         id: 'iaso.polio.validation.futureDateError',
         defaultMessage: 'This date should not be in the future',

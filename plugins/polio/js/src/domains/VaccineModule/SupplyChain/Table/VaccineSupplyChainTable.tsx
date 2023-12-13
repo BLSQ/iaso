@@ -1,10 +1,9 @@
 import React, { FunctionComponent } from 'react';
-// import { useUrlParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
 import { UrlParams } from 'bluesquare-components';
 import { VACCINE_SUPPLY_CHAIN } from '../../../../constants/routes';
 import { TableWithDeepLink } from '../../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 import { useVaccineSupplyChainTableColumns } from './useVaccineSupplyChainTableColumns';
-import { useGetVrfList } from '../hooks/api';
+import { useGetVrfList } from '../hooks/api/vrf';
 
 type Props = { params: Partial<UrlParams> };
 

@@ -1,7 +1,6 @@
 import { get } from 'lodash';
 import React, { FunctionComponent, useCallback } from 'react';
 import { TextArea } from '../../../../../../hat/assets/js/apps/Iaso/components/forms/TextArea';
-import { isTouched } from '../../utils';
 
 type Props = {
     field: any;
@@ -30,7 +29,8 @@ export const MultilineText: FunctionComponent<Props> = ({
         setFieldTouched,
     } = form;
     const hasError =
-        form.errors && Boolean(get(formErrors, name) && isTouched(touched));
+        form.errors &&
+        Boolean(get(formErrors, name) && get(touched, field.name));
     const errors = hasError ? [get(formErrors, name)] : [];
     const onChange = useCallback(
         value => {

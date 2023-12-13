@@ -5,7 +5,7 @@ import {
     textPlaceholder,
     useSafeIntl,
 } from 'bluesquare-components';
-// import { VACCINE_SUPPLY_CHAIN } from '../../../../constants/routes';
+import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import {
     DateCell,
     MultiDateCell,
@@ -13,15 +13,17 @@ import {
 } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import MESSAGES from '../messages';
 import DeleteDialog from '../../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
-import { useDeleteVrf } from '../hooks/api';
-
-// const baseUrl = VACCINE_SUPPLY_CHAIN;
+import { VACCINE_SUPPLY_CHAIN_DETAILS } from '../../../../constants/routes';
+import { useDeleteVrf } from '../hooks/api/vrf';
+import { userHasPermission } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import { POLIO_SUPPLY_CHAIN_WRITE } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
 
 export const useVaccineSupplyChainTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: deleteVrf } = useDeleteVrf();
+    const currentUser = useCurrentUser();
     return useMemo(() => {
-        return [
+        const columns: Column[] = [
             {
                 Header: formatMessage(MESSAGES.country),
                 accessor: 'country.name',
@@ -91,7 +93,9 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
                 accessor: 'var',
                 Cell: MultiDateCell,
             },
-            {
+        ];
+        if (userHasPermission(POLIO_SUPPLY_CHAIN_WRITE, currentUser)) {
+            columns.push({
                 Header: formatMessage(MESSAGES.actions),
                 accessor: 'account',
                 sortable: false,
@@ -101,10 +105,8 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
                             <IconButton
                                 icon="edit"
                                 tooltipMessage={MESSAGES.edit}
-                                // disabled
-                                onClick={() => null}
+                                url={`${VACCINE_SUPPLY_CHAIN_DETAILS}/id/${settings.row.original.id}`}
                             />
-                            {/* TODO make better DeleteDialog */}
                             <DeleteDialog
                                 titleMessage={MESSAGES.deleteVRF}
                                 message={MESSAGES.deleteVRFWarning}
@@ -115,7 +117,8 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
                         </>
                     );
                 },
-            },
-        ];
-    }, [deleteVrf, formatMessage]);
+            });
+        }
+        return columns;
+    }, [currentUser, deleteVrf, formatMessage]);
 };

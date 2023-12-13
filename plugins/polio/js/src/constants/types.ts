@@ -257,6 +257,7 @@ export type Round = {
     target_population: Nullable<number>;
     doses_requested: Nullable<number>;
     cost: Nullable<string>;
+    vaccine_names: string;
     im_percentage_children_missed_in_household: Nullable<string>;
     im_percentage_children_missed_out_household: Nullable<string>;
     im_percentage_children_missed_in_plus_out_household: Nullable<string>;

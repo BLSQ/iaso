@@ -383,6 +383,7 @@
     "iaso.polio.label.preparednessError": "Error Generating preparedness",
     "iaso.polio.label.preparednesSpreadsheetUrl": "Preparedness spreadsheet url",
     "iaso.polio.label.preparednesSyncStatus": "Preparedness status",
+    "iaso.polio.label.preparednessSomeWarningsDuringTheParsing": "Warning the application encountered problems while parsing the preparedness sheet",
     "iaso.polio.label.previousEndDate": "Previous end date",
     "iaso.polio.label.previousStartDate": "Previous start date",
     "iaso.polio.label.provinceOption": "PROVINCE",

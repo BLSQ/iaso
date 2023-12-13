@@ -1,12 +1,19 @@
+import django_filters
+
+from rest_framework import filters
+from rest_framework import viewsets
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin, UpdateModelMixin
-from rest_framework import viewsets
 
 from django.utils import timezone
 from rest_framework.response import Response
 
 from iaso.api.org_unit_change_requests.filters import OrgUnitChangeRequestListFilter
-from iaso.api.org_unit_change_requests.permissions import HasOrgUnitsChangeRequestPermission
+from iaso.api.org_unit_change_requests.pagination import OrgUnitChangeRequestPagination
+from iaso.api.org_unit_change_requests.permissions import (
+    HasOrgUnitsChangeRequestPermission,
+    HasOrgUnitsChangeRequestReviewPermission,
+)
 from iaso.api.org_unit_change_requests.serializers import (
     OrgUnitChangeRequestListSerializer,
     OrgUnitChangeRequestRetrieveSerializer,
@@ -20,8 +27,16 @@ from iaso.models import OrgUnitChangeRequest, OrgUnit
 class OrgUnitChangeRequestViewSet(
     CreateModelMixin, ListModelMixin, RetrieveModelMixin, UpdateModelMixin, viewsets.GenericViewSet
 ):
-    permission_classes = [HasOrgUnitsChangeRequestPermission]
+    filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     filterset_class = OrgUnitChangeRequestListFilter
+    pagination_class = OrgUnitChangeRequestPagination
+
+    def get_permissions(self):
+        if self.action == "partial_update":
+            permission_classes = [HasOrgUnitsChangeRequestReviewPermission]
+        else:
+            permission_classes = [HasOrgUnitsChangeRequestPermission]
+        return [permission() for permission in permission_classes]
 
     def get_serializer_class(self):
         if self.action in ["create", "update"]:

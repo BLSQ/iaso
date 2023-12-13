@@ -587,7 +587,6 @@ const menu = [
                     {
                         label: MESSAGES.vaccineSupplyChain,
                         key: 'supplychain',
-                        dev: true,
                         // using read permission to grant access
                         // because backend won't accept fetching with write permission only
                         permissions: ['iaso_polio_vaccine_supply_chain_read'],

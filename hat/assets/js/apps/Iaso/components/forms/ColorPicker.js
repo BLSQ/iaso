@@ -30,7 +30,7 @@ const useStyles = makeStyles(theme => ({
         outline: 'none !important',
     },
     popper: {
-        zIndex: 1001,
+        zIndex: 1300,
         width: 300,
         paddingTop: theme.spacing(2),
         marginLeft: -10,

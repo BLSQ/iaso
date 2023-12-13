@@ -17,6 +17,8 @@ const PAGE_WRITE = 'iaso_page_write';
 const PLANNINGS = 'iaso_planning';
 const POLIO = 'iaso_polio';
 const POLIO_CONFIG = 'iaso_polio_config';
+const POLIO_SUPPLY_CHAIN_READ = 'iaso_polio_vaccine_supply_chain_read';
+const POLIO_SUPPLY_CHAIN_WRITE = 'iaso_polio_vaccine_supply_chain_write';
 const PROJECTS = 'iaso_projects';
 const REGISTRY = 'iaso_registry';
 const ORG_UNITS_CHANGE_REQUEST_APPROVE = 'iaso_org_unit_change_request_approve';
@@ -53,6 +55,8 @@ export {
     PLANNINGS,
     POLIO,
     POLIO_CONFIG,
+    POLIO_SUPPLY_CHAIN_READ,
+    POLIO_SUPPLY_CHAIN_WRITE,
     PROJECTS,
     REGISTRY,
     SOURCES,

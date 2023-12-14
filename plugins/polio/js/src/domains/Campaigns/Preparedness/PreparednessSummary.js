@@ -89,6 +89,17 @@ export const PreparednessSummary = ({ preparedness }) => {
                     {preparedness.title}. {formatMessage(MESSAGES.refreshedAt)}:{' '}
                     {createdAt.format('LTS')} ({createdAt.fromNow()})
                 </Typography>
+                {preparedness.warnings && preparedness.warnings.length > 0 && (
+                    <div>
+                        <Typography variant="caption">
+                            <b title={preparedness.warnings.join('\n')}>
+                                {formatMessage(
+                                    MESSAGES.preparednessSomeWarningsDuringTheParsing,
+                                )}
+                            </b>                            
+                        </Typography>
+                    </div>
+                )}
             </Typography>
         </>
     );

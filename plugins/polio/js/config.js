@@ -429,7 +429,7 @@ const routes = [
     {
         baseUrl: VACCINE_SUPPLY_CHAIN,
         component: props => <VaccineSupplyChain {...props} />,
-        permissions: ['iaso_polio'],
+        permissions: ['iaso_polio_vaccine_supply_chain_read'],
         params: [
             ...paginationPathParams,
 
@@ -568,7 +568,7 @@ const routes = [
     {
         baseUrl: VACCINE_SUPPLY_CHAIN_DETAILS,
         component: props => <VaccineSupplyChainDetails {...props} />,
-        permissions: ['iaso_polio'],
+        permissions: ['iaso_polio_vaccine_supply_chain_write'],
         params: [
             { isRequired: false, key: 'id' },
             { isRequired: false, key: 'tab' },
@@ -711,8 +711,9 @@ const menu = [
                     {
                         label: MESSAGES.vaccineSupplyChain,
                         key: 'supplychain',
-                        dev: true,
-                        permissions: ['iaso_polio'],
+                        // using read permission to grant access
+                        // because backend won't accept fetching with write permission only
+                        permissions: ['iaso_polio_vaccine_supply_chain_read'],
                         icon: props => <LocalShippingIcon {...props} />,
                     },
                     {

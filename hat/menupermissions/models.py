@@ -39,8 +39,7 @@ _MODULES = "iaso_modules"
 _ORG_UNITS = "iaso_org_units"
 _ORG_UNITS_TYPES = "iaso_org_unit_types"
 _ORG_UNITS_GROUPS = "iaso_org_unit_groups"
-_ORG_UNITS_CHANGE_REQUEST = "iaso_org_unit_change_request"
-_ORG_UNITS_CHANGE_REQUEST_APPROVE = "iaso_org_unit_change_request_approve"
+_ORG_UNITS_CHANGE_REQUEST_REVIEW = "iaso_org_unit_change_request_review"
 _PAGES = "iaso_pages"
 _PAGE_WRITE = "iaso_page_write"
 _PLANNING = "iaso_planning"
@@ -121,8 +120,7 @@ MODULES = _PREFIX + _MODULES
 ORG_UNITS = _PREFIX + _ORG_UNITS
 ORG_UNITS_TYPES = _PREFIX + _ORG_UNITS_TYPES
 ORG_UNITS_GROUPS = _PREFIX + _ORG_UNITS_GROUPS
-ORG_UNITS_CHANGE_REQUEST = _PREFIX + _ORG_UNITS_CHANGE_REQUEST
-ORG_UNITS_CHANGE_REQUEST_APPROVE = _PREFIX + _ORG_UNITS_CHANGE_REQUEST_APPROVE
+ORG_UNITS_CHANGE_REQUEST_REVIEW = _PREFIX + _ORG_UNITS_CHANGE_REQUEST_REVIEW
 PAGES = _PREFIX + _PAGES
 PAGE_WRITE = _PREFIX + _PAGE_WRITE
 PLANNING = _PREFIX + _PLANNING
@@ -249,8 +247,7 @@ class CustomPermissionSupport(models.Model):
             (_DATASTORE_WRITE, _("Write data store")),
             (_ORG_UNITS_TYPES, _("Org unit types")),
             (_ORG_UNITS_GROUPS, _("Org unit groups")),
-            (_ORG_UNITS_CHANGE_REQUEST, _("Org unit change request")),
-            (_ORG_UNITS_CHANGE_REQUEST_APPROVE, _("Org unit change request approve")),
+            (_ORG_UNITS_CHANGE_REQUEST_REVIEW, _("Org unit change request review")),
             (_SOURCE_WRITE, _("Write data source")),
             (_PAGE_WRITE, _("Write page")),
             (_POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY, _("Polio Vaccine Authorizations Read Only")),

@@ -35,7 +35,7 @@ django-ltree==0.5.3
 # Use the following line if you want a locally editable version, and comment the other
 # -e git+https://github.com/BLSQ/django-webpack-loader@e94f76d0f8372193f0b662e2a1aba01a9deffb20#egg=django_webpack_loader
 # Use the tar.gz version to install faster
-https://github.com/BLSQ/django-webpack-loader/archive/e94f76d0f8372193f0b662e2a1aba01a9deffb20.tar.gz#egg=django_webpack_loader
+https://github.com/BLSQ/django-webpack-loader/archive/5fa2b6897b27dc6ff5bb51162e1375fd0aa8afea.tar.gz#egg=django_webpack_loader
 
 # importing tools
 jsonschema==3.2.0

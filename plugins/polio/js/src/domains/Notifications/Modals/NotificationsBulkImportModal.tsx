@@ -121,8 +121,10 @@ const BulkImportNotificationModal: FunctionComponent<Props> = ({
                     accept={accept}
                     files={values.file ?? []}
                     onFilesSelect={files => {
-                        setFieldTouched('file', true);
-                        setFieldValue('file', files);
+                        if (files.length) {
+                            setFieldTouched('file', true);
+                            setFieldValue('file', files);
+                        }
                     }}
                     required
                     multi={false}

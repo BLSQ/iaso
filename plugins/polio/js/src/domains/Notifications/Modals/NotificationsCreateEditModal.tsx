@@ -67,9 +67,6 @@ const CreateEditNotificationModal: FunctionComponent<Props> = ({
         ? `${formatMessage(MESSAGES.modalEditTitle)}`
         : `${formatMessage(MESSAGES.modalAddTitle)}`;
 
-    console.log('-----');
-    console.log(notificationsMetaData.org_unit_allowed_ids);
-
     return (
         <FormikProvider value={formik}>
             <ConfirmCancelModal

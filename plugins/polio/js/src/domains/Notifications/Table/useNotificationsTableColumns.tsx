@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { Column, useSafeIntl } from 'bluesquare-components';
+import { Box } from '@material-ui/core';
 
 import { DateCell } from '../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 
@@ -89,7 +90,7 @@ export const useNotificationsTableColumns = (
                 sortable: false,
                 Cell: settings => {
                     return (
-                        <>
+                        <Box display="inline-flex">
                             {/* @ts-ignore */}
                             <EditNotificationModal
                                 dropdownContent={dropdownContent}
@@ -99,7 +100,7 @@ export const useNotificationsTableColumns = (
                             <DeleteNotificationModal
                                 notification={settings.row.original}
                             />
-                        </>
+                        </Box>
                     );
                 },
             },

@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
 import { FilterButton } from '../../../../components/FilterButton';
@@ -21,21 +21,14 @@ export const ApproveOrgUnitChangesFilter: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
-    const [initialOrgUnitId, setInitialOrgUnitId] = useState<
-        string | undefined
-    >(params.parent_id);
-    const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
+    const { data: initialOrgUnit } = useGetOrgUnit(params.parent_id);
     const { data: groupOptions, isLoading: isLoadingGroups } =
         useGetGroupDropdown({});
     const { data: orgUnitTypeOptions, isLoading: isLoadingTypes } =
         useGetOrgUnitTypesDropdownOptions();
+    const { data: statusOptions, isLoading: isLoadingStatuses } =
+        useGetOrgUnitValidationStatus();
 
-    const {data:statusOptions, isLoading:isLoadingStatuses} = useGetOrgUnitValidationStatus()
-
-    // TODO check if necessary (maybe use useSkipUntilValue)
-    // useSkipEffectOnMount(() => {
-    //     setInitialOrgUnitId(currentSearch?.levels);
-    // }, [currentSearch?.levels]);
     return (
         <Grid container spacing={2}>
             <Grid container item xs={6} md={4} lg={3} spacing={0}>

@@ -6,12 +6,15 @@ import { baseUrls } from '../../../../constants/urls';
 import {
     ApproveChangesPaginated,
     ApproveOrgUnitParams,
+    NestedUser,
     OrgUnitChangeRequest,
     OrgUnitValidationStatus,
 } from '../types';
 import { redirectTo } from '../../../../routing/actions';
 import MESSAGES from '../messages';
 import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
+import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
+import getDisplayName from '../../../../utils/usersUtils';
 
 type ColumnCell<T> = { row: { original: T } };
 
@@ -83,16 +86,52 @@ const useColumns = (): Column[] => {
             },
         },
         {
+            Header: formatMessage(MESSAGES.created_at),
+            id: 'created_at',
+            accessor: 'created_at',
+            Cell: DateTimeCell,
+        },
+        {
+            Header: formatMessage(MESSAGES.created_by),
+            id: 'created_by',
+            accessor: 'created_by',
+            Cell: ({
+                value: createdBy,
+            }: {
+                value: NestedUser;
+            }): ReactElement => (
+                <>{createdBy ? getDisplayName(createdBy) : '--'}</>
+            ),
+        },
+        {
+            Header: formatMessage(MESSAGES.updated_at),
+            id: 'updated_at',
+            accessor: 'updated_at',
+            Cell: DateTimeCell,
+        },
+        {
+            Header: formatMessage(MESSAGES.updated_by),
+            id: 'updated_by',
+            accessor: 'updated_by',
+            Cell: ({
+                value: updatedBy,
+            }: {
+                value: NestedUser;
+            }): ReactElement => (
+                <>{updatedBy ? getDisplayName(updatedBy) : '--'}</>
+            ),
+        },
+        {
             Header: formatMessage(MESSAGES.actions),
             id: 'actions',
             accessor: 'actions',
             sortable: false,
             Cell: ({
-                row: { original },
+                row: { original: changeRequest },
             }: ColumnCell<OrgUnitChangeRequest>): ReactElement => {
                 return (
                     <>
-                        ACTIONS
+                        {changeRequest.id}
                         {/* {!settings.row.original.is_root &&
                             settings.row.original.has_children && (
                                 <IconButtonComponent

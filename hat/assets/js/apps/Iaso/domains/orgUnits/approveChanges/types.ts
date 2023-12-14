@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
 import { Pagination, UrlParams } from 'bluesquare-components';
+import { User } from '../../../utils/usersUtils';
 
 export type OrgUnitValidationStatus = 'new' | 'rejected' | 'approved';
 export type ApproveOrgUnitParams = UrlParams & {
@@ -12,6 +13,9 @@ export type Group = {
     id: number;
     name: string;
 };
+
+type NestedUser = Partial<User>;
+
 export type OrgUnitChangeRequest = {
     id: number;
     uuid: string;
@@ -25,9 +29,9 @@ export type OrgUnitChangeRequest = {
     requested_fields: string;
     approved_fields: string[];
     rejection_comment?: string;
-    created_by: string;
+    created_by: NestedUser;
     created_at: string;
-    updated_by: string;
+    updated_by: NestedUser;
     updated_at: string;
 };
 export type ApproveChanges = Array<OrgUnitChangeRequest>;

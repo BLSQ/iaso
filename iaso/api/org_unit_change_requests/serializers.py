@@ -1,7 +1,7 @@
 import uuid
 
 from rest_framework import serializers
-
+from django.contrib.auth.models import User
 from iaso.models import Instance, OrgUnit, OrgUnitChangeRequest, OrgUnitType
 from iaso.utils.serializer.id_or_uuid_field import IdOrUuidRelatedField
 from iaso.utils.serializer.three_dim_point_field import ThreeDimPointField
@@ -91,6 +91,12 @@ class MobileOrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
         ]
 
 
+class UserNestedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "first_name", "last_name"]
+
+
 class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
     """
     Used to list many `OrgUnitChangeRequest` instances.
@@ -102,8 +108,8 @@ class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
     org_unit_type_id = serializers.IntegerField(source="org_unit.org_unit_type.id")
     org_unit_type_name = serializers.CharField(source="org_unit.org_unit_type.name")
     groups = serializers.SerializerMethodField(method_name="get_current_org_unit_groups")
-    created_by = serializers.CharField(source="created_by.username", default="")
-    updated_by = serializers.CharField(source="updated_by.username", default="")
+    created_by = UserNestedSerializer()
+    updated_by = UserNestedSerializer()
     created_at = TimestampField()
     updated_at = TimestampField()
 
@@ -138,8 +144,8 @@ class OrgUnitChangeRequestRetrieveSerializer(serializers.ModelSerializer):
     """
 
     org_unit = OrgUnitForChangeRequestSerializer()
-    created_by = serializers.CharField(source="created_by.username", default="")
-    updated_by = serializers.CharField(source="updated_by.username", default="")
+    created_by = UserNestedSerializer()
+    updated_by = UserNestedSerializer()
     new_parent = serializers.CharField(source="new_parent.name", default="")
     new_org_unit_type_name = serializers.CharField(source="new_org_unit_type.name", default="")
     new_groups = serializers.SerializerMethodField(method_name="get_new_groups")

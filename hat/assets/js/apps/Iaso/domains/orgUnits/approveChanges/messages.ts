@@ -45,6 +45,22 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Approved',
         id: 'iaso.label.approved',
     },
+    updated_at: {
+        id: 'iaso.forms.updated_at',
+        defaultMessage: 'Updated',
+    },
+    created_at: {
+        id: 'iaso.forms.created_at',
+        defaultMessage: 'Created',
+    },
+    created_by: {
+        id: 'iaso.label.created_by',
+        defaultMessage: 'Created by',
+    },
+    updated_by: {
+        id: 'iaso.forms.updated_by',
+        defaultMessage: 'Updated by',
+    },
 });
 
 export default MESSAGES;

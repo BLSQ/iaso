@@ -11,15 +11,18 @@ import { useFilterState } from '../../../../../../../hat/assets/js/apps/Iaso/hoo
 import MESSAGES from '../messages';
 import { BulkImportNotificationModal } from '../Modals/NotificationsBulkImportModal';
 import { CreateNotificationModal } from '../Modals/NotificationsCreateEditModal';
-import { DropdownsContent, NotificationsParams } from '../types';
+import { NotificationsMetaData, NotificationsParams } from '../types';
 
-type Props = { params: NotificationsParams; dropdownContent: DropdownsContent };
+type Props = {
+    params: NotificationsParams;
+    notificationsMetaData: NotificationsMetaData;
+};
 
 const baseUrl = NOTIFICATIONS_BASE_URL;
 
 export const NotificationsFilters: FunctionComponent<Props> = ({
     params,
-    dropdownContent,
+    notificationsMetaData,
 }) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
@@ -34,7 +37,7 @@ export const NotificationsFilters: FunctionComponent<Props> = ({
                     keyValue="country"
                     value={filters.country}
                     onChange={handleChange}
-                    options={dropdownContent.country}
+                    options={notificationsMetaData.country}
                     labelString={formatMessage(MESSAGES.labelCountry)}
                 />
             </Grid>
@@ -45,7 +48,7 @@ export const NotificationsFilters: FunctionComponent<Props> = ({
                     keyValue="vdpv_category"
                     value={filters.vdpv_category}
                     onChange={handleChange}
-                    options={dropdownContent.vdpv_category}
+                    options={notificationsMetaData.vdpv_category}
                     labelString={formatMessage(MESSAGES.labelVdpvCategory)}
                 />
             </Grid>
@@ -56,7 +59,7 @@ export const NotificationsFilters: FunctionComponent<Props> = ({
                     keyValue="source"
                     value={filters.source}
                     onChange={handleChange}
-                    options={dropdownContent.source}
+                    options={notificationsMetaData.source}
                     labelString={formatMessage(MESSAGES.labelSource)}
                 />
             </Grid>
@@ -87,7 +90,7 @@ export const NotificationsFilters: FunctionComponent<Props> = ({
                 <Box ml={2}>
                     <CreateNotificationModal
                         iconProps={{ message: MESSAGES.modalAddTitle }}
-                        dropdownContent={dropdownContent}
+                        notificationsMetaData={notificationsMetaData}
                     />
                 </Box>
             </Grid>

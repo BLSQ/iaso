@@ -11,6 +11,7 @@ from django.http import FileResponse
 from django.utils import timezone
 
 from iaso.api.common import Paginator
+from iaso.models import OrgUnitType
 
 from plugins.polio.api.notifications.filters import NotificationFilter
 from plugins.polio.api.notifications.permissions import HasNotificationPermission
@@ -38,6 +39,10 @@ class NotificationViewSet(viewsets.ModelViewSet):
         )
 
     def options(self, request, *args, **kwargs):
+        """
+        Add custom metadata about the API.
+        It's used by the front-end to build the UI.
+        """
         if self.metadata_class is None:
             return self.http_method_not_allowed(request, *args, **kwargs)
         data = self.metadata_class().determine_metadata(request, self)
@@ -48,6 +53,10 @@ class NotificationViewSet(viewsets.ModelViewSet):
             data["actions"]["POST"]["country"]["choices"] = country_choices
         except AttributeError:
             data["actions"]["POST"]["country"]["choices"] = []
+
+        data["actions"]["POST"]["org_unit"]["allowed_ids"] = OrgUnitType.objects.filter(
+            category="DISTRICT"
+        ).values_list(flat=True)
 
         return Response(data, status=status.HTTP_200_OK)
 

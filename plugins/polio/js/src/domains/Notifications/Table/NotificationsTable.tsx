@@ -5,18 +5,21 @@ import { handleTableDeepLink } from '../../../../../../../hat/assets/js/apps/Ias
 
 import {
     ApiNotificationsParams,
-    DropdownsContent,
+    NotificationsMetaData,
     NotificationsParams,
 } from '../types';
 import { NOTIFICATIONS_BASE_URL } from '../../../constants/routes';
 import { useGetNotifications } from '../hooks/api';
 import { useNotificationsTableColumns } from './useNotificationsTableColumns';
 
-type Props = { params: NotificationsParams; dropdownContent: DropdownsContent };
+type Props = {
+    params: NotificationsParams;
+    notificationsMetaData: NotificationsMetaData;
+};
 
 export const NotificationsTable: FunctionComponent<Props> = ({
     params,
-    dropdownContent,
+    notificationsMetaData,
 }) => {
     const apiParams: ApiNotificationsParams = {
         ...params,
@@ -25,7 +28,7 @@ export const NotificationsTable: FunctionComponent<Props> = ({
         page: params.page || '1',
     };
     const { data, isFetching } = useGetNotifications(apiParams);
-    const columns = useNotificationsTableColumns(dropdownContent);
+    const columns = useNotificationsTableColumns(notificationsMetaData);
     return (
         <TableWithDeepLink
             baseUrl={NOTIFICATIONS_BASE_URL}

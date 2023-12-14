@@ -52,10 +52,11 @@ export type DropdownOptions = {
     value: number | string;
 };
 
-export type DropdownsContent = {
+export type NotificationsMetaData = {
     vdpv_category: DropdownOptions[];
     source: DropdownOptions[];
     country: DropdownOptions[];
+    org_unit_allowed_ids: number[];
 };
 
 export type XlsxFile = {

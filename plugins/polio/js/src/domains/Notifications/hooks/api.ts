@@ -20,9 +20,9 @@ import {
 import MESSAGES from '../messages';
 import {
     ApiNotificationsParams,
-    DropdownsContent,
     NotificationsApiData,
     NotificationsApiResponse,
+    NotificationsMetaData,
     XlsxFile,
 } from '../types';
 
@@ -58,12 +58,12 @@ export const useDeleteNotification = (): UseMutationResult =>
         invalidateQueryKey: 'notificationsList',
     });
 
-export const getNotificationsDropdownsContent = (): UseQueryResult<
-    DropdownsContent,
+export const useOptionNotifications = (): UseQueryResult<
+    NotificationsMetaData,
     Error
 > =>
     useSnackQuery({
-        queryKey: ['getNotificationsDropdownsContent'],
+        queryKey: ['optionNotifications'],
         queryFn: () => optionsRequest(`${baseUrl}?`),
         options: {
             staleTime: 1000 * 60 * 15, // in ms
@@ -79,6 +79,7 @@ export const getNotificationsDropdownsContent = (): UseQueryResult<
                     vdpv_category: mapChoices(metadata.vdpv_category.choices),
                     source: mapChoices(metadata.source.choices),
                     country: mapChoices(metadata.country.choices),
+                    org_unit_allowed_ids: metadata.org_unit.allowed_ids,
                 };
             },
         },

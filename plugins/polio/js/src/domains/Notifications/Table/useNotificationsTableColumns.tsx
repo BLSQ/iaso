@@ -6,11 +6,11 @@ import { DateCell } from '../../../../../../../hat/assets/js/apps/Iaso/component
 
 import MESSAGES from '../messages';
 import { DeleteNotificationModal } from '../Modals/NotificationsDeleteModal';
-import { DropdownsContent } from '../types';
+import { NotificationsMetaData } from '../types';
 import { EditNotificationModal } from '../Modals/NotificationsCreateEditModal';
 
 export const useNotificationsTableColumns = (
-    dropdownContent: DropdownsContent,
+    notificationsMetaData: NotificationsMetaData,
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
@@ -93,7 +93,7 @@ export const useNotificationsTableColumns = (
                         <Box display="inline-flex">
                             {/* @ts-ignore */}
                             <EditNotificationModal
-                                dropdownContent={dropdownContent}
+                                notificationsMetaData={notificationsMetaData}
                                 notification={settings.row.original}
                             />
                             {/* @ts-ignore */}

@@ -9,16 +9,16 @@ import { useStyles } from '../../styles/theme';
 
 import MESSAGES from './messages';
 import { NotificationsFilters } from './Filters/NotificationsFilters';
-import { DropdownsContent, NotificationsParams } from './types';
+import { NotificationsMetaData, NotificationsParams } from './types';
 import { NotificationsTable } from './Table/NotificationsTable';
-import { getNotificationsDropdownsContent } from './hooks/api';
+import { useOptionNotifications } from './hooks/api';
 
 type Props = { router: Router };
 
 export const Notifications: FunctionComponent<Props> = ({ router }) => {
     const classes: Record<string, string> = useStyles();
-    const { data: dropdownContent, isFetching: isFetchingDropdownContent } =
-        getNotificationsDropdownsContent();
+    const { data: notificationsMetaData, isFetching: isFetchingMetaData } =
+        useOptionNotifications();
     const { formatMessage } = useSafeIntl();
     const { params } = router;
     const paramsNew: NotificationsParams = {
@@ -30,8 +30,8 @@ export const Notifications: FunctionComponent<Props> = ({ router }) => {
 
     return (
         <>
-            {isFetchingDropdownContent && <LoadingSpinner />}
-            {!isFetchingDropdownContent && (
+            {isFetchingMetaData && <LoadingSpinner />}
+            {!isFetchingMetaData && (
                 <>
                     <TopBar
                         title={formatMessage(MESSAGES.notificationsTitle)}
@@ -40,14 +40,14 @@ export const Notifications: FunctionComponent<Props> = ({ router }) => {
                     <Box className={classes.containerFullHeightNoTabPadded}>
                         <NotificationsFilters
                             params={paramsNew}
-                            dropdownContent={
-                                dropdownContent as DropdownsContent
+                            notificationsMetaData={
+                                notificationsMetaData as NotificationsMetaData
                             }
                         />
                         <NotificationsTable
                             params={paramsNew}
-                            dropdownContent={
-                                dropdownContent as DropdownsContent
+                            notificationsMetaData={
+                                notificationsMetaData as NotificationsMetaData
                             }
                         />
                     </Box>

@@ -17,21 +17,21 @@ import { OrgUnitsLevels as OrgUnitSelect } from '../../../components/Inputs/OrgU
 import { SingleSelect } from '../../../components/Inputs/SingleSelect';
 
 import MESSAGES from '../messages';
-import { DropdownsContent, NotificationsApiData } from '../types';
+import { NotificationsApiData, NotificationsMetaData } from '../types';
 import { useCreateEditNotification } from '../hooks/api';
 import { useNotificationSchema } from '../hooks/validation';
 
 type Props = {
     isOpen: boolean;
     closeDialog: () => void;
-    dropdownContent: DropdownsContent;
+    notificationsMetaData: NotificationsMetaData;
     notification?: NotificationsApiData;
 };
 
 const CreateEditNotificationModal: FunctionComponent<Props> = ({
     isOpen,
     closeDialog,
-    dropdownContent,
+    notificationsMetaData,
     notification,
 }) => {
     const { formatMessage } = useSafeIntl();
@@ -67,6 +67,9 @@ const CreateEditNotificationModal: FunctionComponent<Props> = ({
         ? `${formatMessage(MESSAGES.modalEditTitle)}`
         : `${formatMessage(MESSAGES.modalAddTitle)}`;
 
+    console.log('-----');
+    console.log(notificationsMetaData.org_unit_allowed_ids);
+
     return (
         <FormikProvider value={formik}>
             <ConfirmCancelModal
@@ -99,7 +102,7 @@ const CreateEditNotificationModal: FunctionComponent<Props> = ({
                         name="vdpv_category"
                         component={SingleSelect}
                         required
-                        options={dropdownContent.vdpv_category}
+                        options={notificationsMetaData.vdpv_category}
                         clearable={false}
                     />
                 </Box>
@@ -109,7 +112,7 @@ const CreateEditNotificationModal: FunctionComponent<Props> = ({
                         name="source"
                         component={SingleSelect}
                         required
-                        options={dropdownContent.source}
+                        options={notificationsMetaData.source}
                         clearable={false}
                     />
                 </Box>
@@ -128,6 +131,9 @@ const CreateEditNotificationModal: FunctionComponent<Props> = ({
                         component={OrgUnitSelect}
                         label={formatMessage(MESSAGES.labelOrgUnit)}
                         name="org_unit"
+                        allowedTypes={
+                            notificationsMetaData.org_unit_allowed_ids
+                        }
                     />
                 </Box>
                 <Box mb={2}>

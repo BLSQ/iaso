@@ -14,6 +14,12 @@ export const useFormATableColumns = () => {
                 sortable: true,
             },
             {
+                Header: formatMessage(MESSAGES.obrName),
+                accessor: 'obr_name',
+                id: 'obr_name',
+                sortable: true,
+            },
+            {
                 Header: formatMessage(MESSAGES.forma_reception_rrt),
                 accessor: 'forma_reception_rrt',
                 id: 'forma_reception_rrt',

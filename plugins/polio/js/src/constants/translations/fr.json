@@ -1,4 +1,5 @@
 {
+    "aso.polio.label.stockCorrection": "Correction du stock",
     "iaso.forms.options.budgetTypeError": "Choisir une valeur parmis \"soumission\", \"commentaires\" ou \"validation\"",
     "iaso.forms.options.emailFormat": "Veuillez encoder des adresses email valides",
     "iaso.forms.options.urlFormat": "Veuillez utiliser une URL valide ",

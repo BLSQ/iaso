@@ -70,7 +70,7 @@ export const mockIncidentsList: any = {
     results: [
         {
             id: 1,
-            action: VACCINE_EXPIRED,
+            stock_correction: VACCINE_EXPIRED,
             incident_reception_rrt: '2023-09-02',
             date_of_report: '2023-09-21',
             unusable_vials: 7,
@@ -78,7 +78,7 @@ export const mockIncidentsList: any = {
         },
         {
             id: 2,
-            action: RETURN_TO_SUPPLIER,
+            stock_correction: RETURN_TO_SUPPLIER,
             incident_reception_rrt: '2023-09-02',
             date_of_report: '2023-09-21',
             unusable_vials: 0,

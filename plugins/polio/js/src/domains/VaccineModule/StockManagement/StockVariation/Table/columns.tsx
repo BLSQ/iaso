@@ -162,13 +162,15 @@ export const useIncidentTableColumns = (
     return useMemo(() => {
         return [
             {
-                Header: formatMessage(MESSAGES.action),
-                accessor: 'action',
-                id: 'action',
+                Header: formatMessage(MESSAGES.stockCorrection),
+                accessor: 'stock_correction',
+                id: 'stock_correction',
                 sortable: true,
                 Cell: settings =>
-                    settings.row.original.action
-                        ? formatMessage(MESSAGES[settings.row.original.action])
+                    settings.row.original.stock_correction
+                        ? formatMessage(
+                              MESSAGES[settings.row.original.stock_correction],
+                          )
                         : textPlaceholder,
             },
             {

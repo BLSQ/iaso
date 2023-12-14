@@ -40,7 +40,7 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
     const formik = useFormik<any>({
         initialValues: {
             id: incident?.id,
-            action: incident?.action,
+            stock_correction: incident?.stock_correction,
             incident_reception_rrt: incident?.incident_reception_rrt,
             date_of_report: incident?.date_of_report,
             usable_vials: incident?.usable_vials,
@@ -77,8 +77,8 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
             >
                 <Box mb={2}>
                     <Field
-                        label={formatMessage(MESSAGES.action)}
-                        name="action"
+                        label={formatMessage(MESSAGES.stockCorrection)}
+                        name="stock_correction"
                         component={SingleSelect}
                         required
                         options={incidentTypeOptions}

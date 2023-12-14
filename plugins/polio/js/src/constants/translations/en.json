@@ -1,4 +1,5 @@
 {
+    "aso.polio.label.stockCorrection": "Stock correction",
     "iaso.forms.options.budgetTypeError": "Value should be one of \"submission\", \"comments\" or \"validation\"",
     "iaso.forms.options.emailFormat": "Please use correctly formatted email addresses",
     "iaso.forms.options.urlFormat": "Please use correctly formatted URL",

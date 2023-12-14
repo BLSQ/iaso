@@ -2,10 +2,9 @@ import React from 'react';
 import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 import HighlightOffIcon from '@material-ui/icons/HighlightOff';
 import FlareIcon from '@material-ui/icons/Flare';
-import CloseIcon from '@material-ui/icons/Close';
 // import FiberNewIcon from '@material-ui/icons/FiberNew';
 import { Tooltip } from '@material-ui/core';
-import { useIntl } from 'react-intl';
+import { useSafeIntl } from 'bluesquare-components';
 import { getOrgUnitAncestors } from '../../utils';
 import OrgUnitTooltip from '../OrgUnitTooltip';
 import MESSAGES from '../../messages';
@@ -98,7 +97,7 @@ const makeOrgUnistStatusIcon = (classes, orgUnit, formatMessage) => {
 export const makeTreeviewLabel =
     (classes, withStatusIcon, withType = false) =>
     orgUnit => {
-        const { formatMessage } = useIntl();
+        const { formatMessage } = useSafeIntl();
 
         const icon = withStatusIcon
             ? makeOrgUnistStatusIcon(classes, orgUnit, formatMessage)

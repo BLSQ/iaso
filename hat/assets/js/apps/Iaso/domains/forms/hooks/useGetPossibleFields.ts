@@ -15,7 +15,10 @@ type Result = {
     isFetchingForm: boolean;
 };
 
-const usePossibleFields = (isFetchingForm: boolean, form?: Form): Result => {
+export const usePossibleFields = (
+    isFetchingForm: boolean,
+    form?: Form,
+): Result => {
     return useMemo(() => {
         const possibleFields =
             form?.possible_fields?.map(field => ({
@@ -33,21 +36,6 @@ export const useGetPossibleFields = (formId?: number): Result => {
     const { data: currentForm, isFetching: isFetchingForm } = useGetForm(
         formId,
         Boolean(formId),
-        'possible_fields',
-    );
-    return usePossibleFields(isFetchingForm, currentForm);
-};
-
-export const useGetPossibleFieldsForEntityTypes = ({
-    formId,
-    enabled = true,
-}: {
-    formId?: number;
-    enabled?: boolean;
-}): Result => {
-    const { data: currentForm, isFetching: isFetchingForm } = useGetForm(
-        formId,
-        enabled && Boolean(formId),
         'possible_fields',
     );
     return usePossibleFields(isFetchingForm, currentForm);

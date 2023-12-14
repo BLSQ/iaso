@@ -14,7 +14,6 @@ The Django model that stores "Change Requests" is `OrgUnitChangeRequest`.
 ## Permissions
 
 - User must be authenticated
-- User must have the `ORG_UNITS_CHANGE_REQUEST` permission
 
 ## Query parameters
 
@@ -80,7 +79,6 @@ The Django model that stores "Change Requests" is `OrgUnitChangeRequest`.
 ## Permissions
 
 - User must be authenticated
-- User must have the `ORG_UNITS_CHANGE_REQUEST` permission
 
 ## Query parameters
 
@@ -158,7 +156,6 @@ The Django model that stores "Change Requests" is `OrgUnitChangeRequest`.
 ## Permissions
 
 - User must be authenticated
-- User must have the `ORG_UNITS_CHANGE_REQUEST` permission
 
 ## Query parameter
 
@@ -233,7 +230,6 @@ The Django model that stores "Change Requests" is `OrgUnitChangeRequest`.
 ## Permissions
 
 - User must be authenticated
-- User must have the `ORG_UNITS_CHANGE_REQUEST` permission
 
 ## Possible responses
 
@@ -344,7 +340,7 @@ API to change the status of on change request.
 ## Permissions
 
 - User must be authenticated
-- User must have the `ORG_UNITS_CHANGE_REQUEST_APPROVE` permission
+- User must have the `ORG_UNITS_CHANGE_REQUEST_REVIEW` permission
 
 ## Body
 

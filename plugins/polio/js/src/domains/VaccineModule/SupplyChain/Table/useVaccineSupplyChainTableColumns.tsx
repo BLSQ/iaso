@@ -5,6 +5,7 @@ import {
     textPlaceholder,
     useSafeIntl,
 } from 'bluesquare-components';
+import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import {
     DateCell,
     MultiDateCell,
@@ -14,12 +15,15 @@ import MESSAGES from '../messages';
 import DeleteDialog from '../../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
 import { VACCINE_SUPPLY_CHAIN_DETAILS } from '../../../../constants/routes';
 import { useDeleteVrf } from '../hooks/api/vrf';
+import { userHasPermission } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import { POLIO_SUPPLY_CHAIN_WRITE } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
 
 export const useVaccineSupplyChainTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: deleteVrf } = useDeleteVrf();
+    const currentUser = useCurrentUser();
     return useMemo(() => {
-        return [
+        const columns: Column[] = [
             {
                 Header: formatMessage(MESSAGES.country),
                 accessor: 'country.name',
@@ -89,7 +93,9 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
                 accessor: 'var',
                 Cell: MultiDateCell,
             },
-            {
+        ];
+        if (userHasPermission(POLIO_SUPPLY_CHAIN_WRITE, currentUser)) {
+            columns.push({
                 Header: formatMessage(MESSAGES.actions),
                 accessor: 'account',
                 sortable: false,
@@ -111,7 +117,8 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
                         </>
                     );
                 },
-            },
-        ];
-    }, [deleteVrf, formatMessage]);
+            });
+        }
+        return columns;
+    }, [currentUser, deleteVrf, formatMessage]);
 };

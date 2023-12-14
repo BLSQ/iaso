@@ -5,6 +5,7 @@
     "blsq.label.dropHere": "Drop files here",
     "blsq.label.Files": "Files",
     "blsq.treeview.error": "Please select an org unit",
+    "blsq.treeview.displayTypes": "Show organisation unit types",
     "blsq.treeview.label.selectMultiple": "Select org unit(s)",
     "blsq.treeview.label.selectSingle": "Select an org unit",
     "blsq.treeview.loading": "Loading",

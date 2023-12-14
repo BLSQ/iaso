@@ -132,8 +132,13 @@ def get_url_content(url, login, password, minutes, prefer_cache: bool = False):
         empty = False
         j = []
         while not empty:
-            paginated_url = url + ("&page=%d&page_size=10000" % page)
+            if "?" in url:
+                paginated_url = url + f"&page={page}&page_size=10000"
+            else:
+                paginated_url = url + f"?page={page}&page_size=10000"
+
             logger.info("paginated_url: " + paginated_url)
+
             response = requests.get(paginated_url, auth=(login, password))
 
             empty = response.status_code == 404

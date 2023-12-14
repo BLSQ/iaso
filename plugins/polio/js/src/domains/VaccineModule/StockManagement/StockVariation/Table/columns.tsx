@@ -1,9 +1,11 @@
-import { useMemo } from 'react';
-import { useSafeIntl } from 'bluesquare-components';
+import React, { useMemo } from 'react';
+import { Column, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../messages';
 import { DateCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
+// import DeleteDialog from '../../../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
+import { EditFormA } from '../FormA/CreateEditFormA';
 
-export const useFormATableColumns = () => {
+export const useFormATableColumns = (title: string): Column[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
         return [
@@ -51,8 +53,32 @@ export const useFormATableColumns = () => {
                 id: 'vials_used',
                 sortable: true,
             },
+            {
+                Header: formatMessage(MESSAGES.actions),
+                accessor: 'account',
+                sortable: false,
+                Cell: settings => {
+                    return (
+                        <>
+                            <EditFormA
+                                title={title}
+                                id={settings.row.original.id}
+                                formA={settings.row.original}
+                                iconProps={{}}
+                            />
+                            {/* <DeleteDialog
+                                titleMessage={MESSAGES.deleteVRF}
+                                message={MESSAGES.deleteVRFWarning}
+                                onConfirm={() =>
+                                    deleteVrf(settings.row.original.id)
+                                }
+                            /> */}
+                        </>
+                    );
+                },
+            },
         ];
-    }, [formatMessage]);
+    }, [formatMessage, title]);
 };
 export const useDestructionTableColumns = () => {
     const { formatMessage } = useSafeIntl();

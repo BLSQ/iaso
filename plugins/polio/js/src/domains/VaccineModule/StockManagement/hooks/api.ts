@@ -5,7 +5,10 @@ import {
     FormattedApiParams,
     useApiParams,
 } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useApiParams';
-import { useSnackQuery } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import {
+    useSnackMutation,
+    useSnackQuery,
+} from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { waitFor } from '../../../../../../../../hat/assets/js/apps/Iaso/utils';
 import { mockVaccineStockList } from '../mocks/mockVaccineStockList';
 import {
@@ -23,6 +26,10 @@ import {
     mockFormAList,
     mockIncidentsList,
 } from '../mocks/mockStockVariation';
+import {
+    CAMPAIGNS_ENDPOINT,
+    useGetCampaigns,
+} from '../../../Campaigns/hooks/api/useGetCampaigns';
 
 const defaults = {
     order: 'country',
@@ -229,5 +236,39 @@ export const useGetIncidentList = (
         queryKey: ['incidents', queryString],
         queryFn: () => getIncidentList(queryString),
         options: { ...options, enabled },
+    });
+};
+
+export const useCampaignOptions = () => {
+    const queryOptions = {
+        select: data => {
+            if (!data) return [];
+            return data.map(c => {
+                return {
+                    label: c.obr_name,
+                    value: c.obr_name,
+                };
+            });
+        },
+        keepPreviousData: true,
+        staleTime: 1000 * 60 * 15, // in MS
+        cacheTime: 1000 * 60 * 5,
+    };
+    return useGetCampaigns({}, CAMPAIGNS_ENDPOINT, undefined, queryOptions);
+};
+
+const createEditFormA = async (body: any) => {
+    await waitFor(500);
+    if (body.id) {
+        console.log('PATCH', body);
+    } else {
+        console.log('POST', body);
+    }
+    return null;
+};
+
+export const useSaveFormA = () => {
+    return useSnackMutation({
+        mutationFn: body => createEditFormA(body),
     });
 };

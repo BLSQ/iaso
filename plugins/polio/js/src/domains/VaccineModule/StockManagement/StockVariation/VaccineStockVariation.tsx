@@ -6,6 +6,7 @@ import {
 } from 'bluesquare-components';
 import {
     Box,
+    Grid,
     Paper,
     Tab,
     Tabs,
@@ -36,6 +37,7 @@ import {
     useFormATableColumns,
     useIncidentTableColumns,
 } from './Table/columns';
+import { CreateFormA } from './FormA/CreateEditFormA';
 
 type Props = { router: Router };
 
@@ -77,13 +79,14 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
         );
     const { data: summary } = useGetStockManagementSummary(router.params.id);
 
-    const formAColumns = useFormATableColumns();
-    const destructionsColumns = useDestructionTableColumns();
-    const incidentsColumns = useIncidentTableColumns();
-
     const title = `${formatMessage(MESSAGES.stockVariation)}: ${
         summary?.country_name ?? textPlaceholder
     } - ${summary?.vaccine_type ?? textPlaceholder}`;
+
+    const formAColumns = useFormATableColumns(title);
+    const destructionsColumns = useDestructionTableColumns();
+    const incidentsColumns = useIncidentTableColumns();
+
     return (
         <>
             <TopBar title={title} displayBackButton goBack={goBack}>
@@ -115,9 +118,14 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
             <Box className={classes.containerFullHeightPadded}>
                 <Paper elevation={2} className={classes.marginTop}>
                     <Box padding={2}>
-                        <Typography variant="h5" color="primary">
-                            {formatMessage(MESSAGES[`${tab}Reports`])}
-                        </Typography>
+                        <Grid container justifyContent="space-between">
+                            <Typography variant="h5" color="primary">
+                                {formatMessage(MESSAGES[`${tab}Reports`])}
+                            </Typography>
+                            {tab === FORM_A && (
+                                <CreateFormA iconProps={{}} title={title} />
+                            )}
+                        </Grid>
                         {tab === FORM_A && (
                             <VaccineStockVariationTable
                                 data={formA}

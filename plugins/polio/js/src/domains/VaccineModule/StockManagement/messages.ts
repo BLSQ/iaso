@@ -186,6 +186,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.incident',
         defaultMessage: 'Incident',
     },
+    lot_numbers: {
+        id: 'iaso.polio.label.lot_numbers',
+        defaultMessage: 'Lot numbers',
+    },
+    save: {
+        id: 'iaso.label.save',
+        defaultMessage: 'Save',
+    },
+    cancel: {
+        id: 'iaso.label.cancel',
+        defaultMessage: 'Cancel',
+    },
 });
 
 export default MESSAGES;

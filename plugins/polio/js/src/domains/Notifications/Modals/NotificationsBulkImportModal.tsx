@@ -111,6 +111,7 @@ const BulkImportNotificationModal: FunctionComponent<Props> = ({
             open={isOpen}
             closeDialog={closeDialog}
             id={id ?? 'bulk-create-notification'}
+            dataTestId="bulk-create-notification"
             onClose={() => resetForm()}
             buttons={Buttons}
         >

@@ -105,41 +105,37 @@ const BulkImportNotificationModal: FunctionComponent<Props> = ({
     };
 
     return (
-        <>
-            <SimpleModal
-                titleMessage={MESSAGES.modalBulkImportTitle}
-                maxWidth="sm"
-                open={isOpen}
-                closeDialog={closeDialog}
-                id={id ?? 'bulk-create-notification'}
-                onClose={() => resetForm()}
-                buttons={Buttons}
-            >
-                <p>{formatMessage(MESSAGES.modalBulkImportXlsxFileFormat)}</p>
-                <Box mt={2}>
-                    <FilesUpload
-                        accept={accept}
-                        files={values.file ?? []}
-                        onFilesSelect={files => {
-                            setFieldTouched('file', true);
-                            setFieldValue('file', files);
-                        }}
-                        required
-                        multi={false}
-                        errors={formikAndApiErrors}
-                        placeholder={formatMessage(
-                            MESSAGES.modalBulkImportSelectXlsxFile,
-                        )}
-                    />
-                </Box>
-                <p>
-                    {formatMessage(
-                        MESSAGES.modalBulkImportXlsxBackgroundWarning,
+        <SimpleModal
+            titleMessage={MESSAGES.modalBulkImportTitle}
+            maxWidth="sm"
+            open={isOpen}
+            closeDialog={closeDialog}
+            id={id ?? 'bulk-create-notification'}
+            onClose={() => resetForm()}
+            buttons={Buttons}
+        >
+            <p>{formatMessage(MESSAGES.modalBulkImportXlsxFileFormat)}</p>
+            <Box mt={2}>
+                <FilesUpload
+                    accept={accept}
+                    files={values.file ?? []}
+                    onFilesSelect={files => {
+                        setFieldTouched('file', true);
+                        setFieldValue('file', files);
+                    }}
+                    required
+                    multi={false}
+                    errors={formikAndApiErrors}
+                    placeholder={formatMessage(
+                        MESSAGES.modalBulkImportSelectXlsxFile,
                     )}
-                </p>
-                {isLoading && <LoadingSpinner absolute={false} fixed={false} />}
-            </SimpleModal>
-        </>
+                />
+            </Box>
+            <p>
+                {formatMessage(MESSAGES.modalBulkImportXlsxBackgroundWarning)}
+            </p>
+            {isLoading && <LoadingSpinner absolute={false} fixed={false} />}
+        </SimpleModal>
     );
 };
 

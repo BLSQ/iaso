@@ -168,6 +168,7 @@ def get_regional_level_preparedness(spread: CachedSpread):
     also in some sheet for the score table there is a gap between the region and the district, which is why we ignore
     empty district_name
     """
+    warnings = []
     regions = {}
     districts = {}
 
@@ -220,7 +221,11 @@ def get_regional_level_preparedness(spread: CachedSpread):
                     value = from_percent(value)
                 districts_indicators[name][indicator_key] = value
 
-        region_indicators = districts_indicators.pop(regional_name)
+        if districts_indicators.get(regional_name) is None:
+            warnings.append(f"no districts info found in {sheet.title}")
+
+        region_indicators = districts_indicators.pop(regional_name, {})
+
         regional_score = _get_scores(sheet, cell)
         regions[regional_name] = {**region_indicators, **regional_score}
         # Find district box
@@ -241,7 +246,7 @@ def get_regional_level_preparedness(spread: CachedSpread):
 
     if not regions:
         raise InvalidFormatError("Summary of Regional Level Preparedness` was not found in this document")
-    return {"regions": regions, "districts": districts}
+    return {"regions": regions, "districts": districts, "warnings": warnings}
 
 
 def get_regional_level_preparedness_v2(spread: CachedSpread):

@@ -44,11 +44,6 @@ export const FIELDS_TO_EXPORT = {
 export const useFieldsToExport = () => {
     const { formatMessage } = useSafeIntl();
     return [
-        { label: formatMessage(MESSAGES.name), value: FIELDS_TO_EXPORT.name },
-        {
-            label: formatMessage(MESSAGES.parent),
-            value: FIELDS_TO_EXPORT.parent,
-        },
         {
             label: formatMessage(MESSAGES.geometry),
             value: FIELDS_TO_EXPORT.geometry,
@@ -64,6 +59,11 @@ export const useFieldsToExport = () => {
         {
             label: formatMessage(MESSAGES.closingDate),
             value: FIELDS_TO_EXPORT.closedDate,
+        },
+        { label: formatMessage(MESSAGES.name), value: FIELDS_TO_EXPORT.name },
+        {
+            label: formatMessage(MESSAGES.parent),
+            value: FIELDS_TO_EXPORT.parent,
         },
     ];
 };

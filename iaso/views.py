@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.views import redirect_to_login
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render, resolve_url
-
+from bs4 import BeautifulSoup as Soup  # type: ignore
 from hat.__version__ import DEPLOYED_BY, DEPLOYED_ON, VERSION
 from iaso.models import IFRAME, POWERBI, TEXT, Account, Page
 from iaso.utils.powerbi import get_powerbi_report_token
@@ -33,16 +33,40 @@ def page(request, page_slug):
     if page.needs_authentication and ((not request.user.is_authenticated) or (request.user not in page.users.all())):
         return redirect_to_login(path, resolved_login_url, "next")
     if page.type == IFRAME:
-        response = render(request, "iaso/pages/iframe.html", {"src": page.content, "title": page.name, "page": page})
+        response = render(
+            request,
+            "iaso/pages/iframe.html",
+            {"src": page.content, "title": page.name, "page": page, "analytics_script": page.analytics_script},
+        )
     elif page.type == TEXT:
-        response = render(request, "iaso/pages/text.html", {"text": page.content, "title": page.name})
+        response = render(
+            request,
+            "iaso/pages/text.html",
+            {"text": page.content, "title": page.name, "analytics_script": page.analytics_script},
+        )
     elif page.type == POWERBI:
         config = load_powerbi_config_for_page(page)
-        response = render(request, "iaso/pages/powerbi.html", {"config": config, "title": page.name, "page": page})
+        response = render(
+            request,
+            "iaso/pages/powerbi.html",
+            {"config": config, "title": page.name, "page": page, "analytics_script": page.analytics_script},
+        )
     else:
-        response = HttpResponse(page.content)
+        raw_html = page.content
+        raw_html = addTag(raw_html, page.analytics_script)
+        response = HttpResponse(raw_html)
     response["X-Frame-Options"] = "ALLOW"
     return response
+
+
+# Function to append analytics script in the head tag
+def addTag(html, tagToAppend):
+    soup = Soup(html, "html.parser")
+    if not soup.head:
+        head = soup.new_tag("head")
+        soup.html.insert(1, head)
+    soup.head.append(Soup(tagToAppend, "html.parser"))
+    return soup
 
 
 def health(request):

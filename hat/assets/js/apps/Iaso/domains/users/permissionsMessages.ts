@@ -286,7 +286,12 @@ const PERMISSIONS_MESSAGES = defineMessages({
     },
     iaso_page_write: {
         id: 'iaso.permissions.iaso_page_write',
-        defaultMessage: 'Web pages management - Read and Write',
+        defaultMessage: 'Web embedded links management - Read and Write',
+    },
+    iaso_page_write_tooltip: {
+        id: 'iaso.permissions.tooltip.iaso_page_write',
+        defaultMessage:
+            'External links management: create or edit an external link',
     },
     iaso_write_sources: {
         id: 'iaso.permissions.iaso_write_sources',

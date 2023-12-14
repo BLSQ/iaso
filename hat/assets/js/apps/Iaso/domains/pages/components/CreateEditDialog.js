@@ -241,6 +241,24 @@ const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
                                             className={classes.input}
                                         />
                                     </Grid>
+                                    <Grid xs={12} md={12} item>
+                                        <Typography>
+                                            {formatMessage(
+                                                MESSAGES.analyticsScript,
+                                            )}
+                                        </Typography>
+                                    </Grid>
+                                    <Grid xs={12} md={12} item>
+                                        <Field
+                                            label={formatMessage(
+                                                MESSAGES.analyticsLabel,
+                                            )}
+                                            name="analytics_script"
+                                            multiline
+                                            component={TextInput}
+                                            className={classes.input}
+                                        />
+                                    </Grid>
                                 </Grid>
                             </Grid>
                         </Grid>

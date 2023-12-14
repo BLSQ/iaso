@@ -35,7 +35,6 @@ import { convertObjectToString } from '../../utils';
 import { DASHBOARD_BASE_URL } from '../../constants/routes';
 import { useSingleTableParams } from '../../../../../../hat/assets/js/apps/Iaso/components/tables/SingleTable';
 import { PageActionWithLink } from '../../components/Buttons/PageActionWithLink.tsx';
-import { ImportLine } from './ImportLine/ImportLine.tsx';
 
 const Dashboard = ({ router }) => {
     const { params } = router;
@@ -310,7 +309,6 @@ const Dashboard = ({ router }) => {
                     <PageActionWithLink icon={DownloadIcon} url={exportToCSV}>
                         {formatMessage(MESSAGES.csv)}
                     </PageActionWithLink>
-                    {isUserAdmin && <ImportLine />}
                 </PageActions>
                 <TableWithDeepLink
                     data={campaigns?.campaigns ?? []}

@@ -2,10 +2,8 @@ import React from 'react';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import FlareIcon from '@mui/icons-material/Flare';
-import CloseIcon from '@mui/icons-material/Close';
-// import FiberNewIcon from '@mui/icons-material/FiberNew';
 import { Tooltip } from '@mui/material';
-import { useIntl } from 'react-intl';
+import { useSafeIntl } from 'bluesquare-components';
 import { getOrgUnitAncestors } from '../../utils';
 import OrgUnitTooltip from '../OrgUnitTooltip';
 import MESSAGES from '../../messages';
@@ -95,20 +93,25 @@ const makeOrgUnistStatusIcon = (classes, orgUnit, formatMessage) => {
     return null;
 };
 
-export const makeTreeviewLabel = (classes, withStatusIcon) => orgUnit => {
-    const { formatMessage } = useIntl();
+export const makeTreeviewLabel =
+    (classes, withStatusIcon, withType = false) =>
+    orgUnit => {
+        const { formatMessage } = useSafeIntl();
 
-    const icon = withStatusIcon
-        ? makeOrgUnistStatusIcon(classes, orgUnit, formatMessage)
-        : null;
+        const icon = withStatusIcon
+            ? makeOrgUnistStatusIcon(classes, orgUnit, formatMessage)
+            : null;
 
-    return (
-        <>
-            {orgUnit.name || `id: ${orgUnit.id}`}
-            {icon}
-        </>
-    );
-};
+        return (
+            <>
+                {orgUnit.name || `id: ${orgUnit.id}`}
+                {withType && orgUnit.org_unit_type_short_name
+                    ? ` (${orgUnit.org_unit_type_short_name})`
+                    : ''}
+                {icon}
+            </>
+        );
+    };
 
 export const orgUnitTreeviewStatusIconsStyle = theme => ({
     valid: {

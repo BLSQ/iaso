@@ -20,7 +20,7 @@ MODULE_PERMISSIONS = {
         "iaso_modules",
     ],
     "DHIS2_MAPPING": ["iaso_mappings"],
-    "EMBEDDED_LINKS": ["iaso_pages"],
+    "EMBEDDED_LINKS": ["iaso_pages", "iaso_page_write"],
     "ENTITIES": ["iaso_entities", "iaso_workflows", "iaso_entity_duplicates_write", "iaso_entity_duplicates_read"],
     "EXTERNAL_STORAGE": ["iaso_storages"],
     "PLANNING": ["iaso_assignments"],

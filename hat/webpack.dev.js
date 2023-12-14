@@ -179,7 +179,7 @@ module.exports = {
         headers: {
             'Access-Control-Allow-Origin': '*',
         },
-        host: WEBPACK_HOST,
+        host: '0.0.0.0',
         port: 3000,
     },
 

@@ -10,6 +10,7 @@ MODULE_PERMISSIONS = {
         "iaso_org_units",
         "iaso_org_unit_types",
         "iaso_sources",
+        "iaso_write_sources",
         "iaso_links",
         "iaso_data_tasks",
         "iaso_reports",

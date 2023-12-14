@@ -810,7 +810,7 @@ export const projectsPath = {
 
 export const dataSourcesPath = {
     baseUrl: baseUrls.sources,
-    permissions: [Permission.SOURCES],
+    permissions: [Permission.SOURCES, Permission.SOURCE_WRITE],
     component: props => <DataSources {...props} />,
     params: [
         {
@@ -823,7 +823,7 @@ export const dataSourcesPath = {
 
 export const dataSourceDetailsPath = {
     baseUrl: baseUrls.sourceDetails,
-    permissions: ['iaso_sources'],
+    permissions: [Permission.SOURCES, Permission.SOURCE_WRITE],
     component: props => <DataSourceDetail {...props} />,
     params: [
         {

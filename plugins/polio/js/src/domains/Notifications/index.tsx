@@ -9,7 +9,7 @@ import { useStyles } from '../../styles/theme';
 
 import MESSAGES from './messages';
 import { NotificationsFilters } from './Filters/NotificationsFilters';
-import { NotificationsParams } from './types';
+import { DropdownsContent, NotificationsParams } from './types';
 import { NotificationsTable } from './Table/NotificationsTable';
 import { getNotificationsDropdownsContent } from './hooks/api';
 
@@ -40,11 +40,15 @@ export const Notifications: FunctionComponent<Props> = ({ router }) => {
                     <Box className={classes.containerFullHeightNoTabPadded}>
                         <NotificationsFilters
                             params={paramsNew}
-                            dropdownContent={dropdownContent}
+                            dropdownContent={
+                                dropdownContent as DropdownsContent
+                            }
                         />
                         <NotificationsTable
                             params={paramsNew}
-                            dropdownContent={dropdownContent}
+                            dropdownContent={
+                                dropdownContent as DropdownsContent
+                            }
                         />
                     </Box>
                 </>

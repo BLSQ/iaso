@@ -126,6 +126,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Users',
         id: 'iaso.label.users',
     },
+    analyticsScript: {
+        id: 'iaso.pages.analyticsScript',
+        defaultMessage: 'The analytics script.',
+    },
+    analyticsLabel: {
+        id: 'iaso.pages.analyticsLabel',
+        defaultMessage: 'Analytics script.',
+    },
 });
 
 export default MESSAGES;

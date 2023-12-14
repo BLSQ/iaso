@@ -25,6 +25,10 @@ const MESSAGES = defineMessages({
         id: 'blsq.treeview.error',
         defaultMessage: 'Please select an org unit',
     },
+    displayTypes: {
+        id: 'blsq.treeview.displayTypes',
+        defaultMessage: 'Show organisation unit types',
+    },
 });
 
 export { MESSAGES };

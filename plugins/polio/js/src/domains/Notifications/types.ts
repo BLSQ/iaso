@@ -59,5 +59,5 @@ export type DropdownsContent = {
 };
 
 export type XlsxFile = {
-    file: File[];
+    file?: File[];
 };

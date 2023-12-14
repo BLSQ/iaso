@@ -2,24 +2,13 @@ import requests
 from credentials import *
 import time
 import uuid
+from client import IasoClient
 
 
-def get_auth_headers(user_name, password):
-    creds = {"username": user_name, "password": password}
-
-    # get API token
-    r = requests.post(API_URL + "token/", json=creds)
-
-    token = r.json().get("access")
-    headers = {"Authorization": "Bearer %s" % token}
-    return headers
+iaso_client = IasoClient(SERVER, ADMIN_USER_NAME, ADMIN_PASSWORD)
 
 
 def setup_account(account_name):
-    headers = get_auth_headers(ADMIN_USER_NAME, ADMIN_PASSWORD)
-
-    setup_account_url = f"{API_URL}setupaccount/"
-
     data = {
         "account_name": account_name,
         "user_username": account_name,
@@ -29,22 +18,17 @@ def setup_account(account_name):
         "modules": ["DEFAULT", "REGISTRY", "POLIO_PROJECT", "PLANNING", "ENTITIES", "DATA_COLLECTION_FORMS"],
     }
 
-    r = requests.post(setup_account_url, json=data, headers=headers)
+    iaso_client.post("/api/setupaccount/", json=data)
 
 
 def setup_orgunits(account_name):
-    headers = get_auth_headers(account_name, account_name)
-
-    r = requests.get(API_URL + "projects/", headers=headers)
-    project_id = r.json()["projects"][0]["id"]
-
-    r = requests.get(API_URL + "datasources/", headers=headers)
-
-    sources = r.json()["sources"]
+    project_id = iaso_client.get("/api/projects/")["projects"][0]["id"]
+    sources = iaso_client.get("/api/datasources/")["sources"]
     source = sources[0]
     data_source_id = source["id"]
 
-    launch_geopackage_import_url = f"{API_URL}tasks/create/importgpkg/"
+    # import a geopackage
+
     data = {
         "project": project_id,
         "data_source": data_source_id,
@@ -55,53 +39,38 @@ def setup_orgunits(account_name):
     test_file = "data/small_sample.gpkg"
 
     geopackage_file = {"file": (test_file, open(test_file, "rb"), "application/octet-stream")}
-    r = requests.post(launch_geopackage_import_url, files=geopackage_file, data=data, headers=headers)
+    iaso_client.post("/api/tasks/create/importgpkg/", files=geopackage_file, data=data)
     print("-- Importing org units")
 
     count = 0
     imported = False
     while not imported and count < 120:
-        r = requests.get(API_URL + "tasks/", headers=headers)
-
-        task = r.json()["tasks"][0]
+        time.sleep(5)
+        task = iaso_client.get("/api/tasks/")["tasks"][0]
         imported = task["status"] == "SUCCESS"
         time.sleep(5)
         count += 5
         print("\tWaiting:", count, "s elapsed", task.get("progress_message"))
 
-    r = requests.get(API_URL + "datasources/", headers=headers)
-
-    source = r.json()["sources"][0]
-    source_id = source["id"]
-
+    # mark them all as valid
     data = {
         "validation_status": "VALID",
         "select_all": True,
-        "searches": [{"validation_status": "all", "color": "f4511e", "source": source_id}],
+        "searches": [{"validation_status": "all", "color": "f4511e", "source": data_source_id}],
     }
-    bulkupdate_url = f"{API_URL}tasks/create/orgunitsbulkupdate/"
-    r = requests.post(bulkupdate_url, json=data, headers=headers)
+    r = iaso_client.post("/api/tasks/create/orgunitsbulkupdate/", json=data)
 
 
 def setup_instances(account_name):
     print("-- Setting up a form")
-    headers = get_auth_headers(account_name, account_name)
+    project_id = iaso_client.get("/api/projects/")["projects"][0]["id"]
+    org_unit_types = iaso_client.get("/api/v2/orgunittypes/")["orgUnitTypes"]
 
-    r = requests.get(API_URL + "projects/", headers=headers)
-
-    project_id = r.json()["projects"][0]["id"]
-
-    r = requests.get(API_URL + "v2/orgunittypes/", headers=headers)
-
-    org_unit_types = r.json()["orgUnitTypes"]
-
-    hf_out = None
-    for out in org_unit_types:
-        if out["name"] == "Formation sanitaire":
-            hf_out = out
+    hf_out = [out for out in org_unit_types if out["name"] == "Formation sanitaire"][0]
 
     org_unit_type_ids = [out["id"] for out in org_unit_types]
 
+    # create a form
     data = {
         "id": None,
         "name": "test_form",
@@ -117,20 +86,27 @@ def setup_instances(account_name):
         "label_keys": [],
     }
 
-    r = requests.post(API_URL + "forms/", json=data, headers=headers)
-    form_id = r.json()["id"]
+    form_id = iaso_client.post("/api/forms/", json=data)["id"]
+
+    # associate it's form version and upload xlsform
 
     test_file = "data/sample_form.xlsx"
     data = {"form_id": form_id, "xls_file": test_file}
     form_files = {"xls_file": open(test_file, "rb")}
 
-    r = requests.post(API_URL + "formversions/", files=form_files, data=data, headers=headers)
+    try:
+        iaso_client.post("/api/formversions/", files=form_files, data=data)
+    except:
+        # TODO mutate the xlsform to have a unique id in the "form_id" based on account_name
+        pass
+
     ######## creating submissions/instances
-    f = open("data/instance.xml", "r")
-    xml = f.read()
-    f.close()
+    with open("data/instance.xml", "r") as f:
+        xml = f.read()
+
+    # fetch orgunit ids
     limit = 20
-    url = API_URL + "orgunits/?limit=%d&orgUnitTypeId=%d" % (limit, hf_out["id"])
+    url = f"/api/orgunits/?limit={limit}&orgUnitTypeId={hf_out['id']}"
 
     org_unit_ids = []
 
@@ -140,8 +116,8 @@ def setup_instances(account_name):
     while len(org_unit_ids) == 0 and seconds <= 30:
         time.sleep(2)
         seconds += 2
-        re = requests.get(url, headers=headers)
-        org_unit_ids = [ou["id"] for ou in re.json()["orgunits"]]
+        re = iaso_client.get(url)
+        org_unit_ids = [ou["id"] for ou in re["orgunits"]]
 
     print("-- Submitting %d form instances" % limit)
     count = 0
@@ -173,15 +149,13 @@ def setup_instances(account_name):
             }
         ]
         #
-        response = requests.post(f"{API_URL}instances/?app_id={account_name}", json=instance_body, headers=headers)
+        iaso_client.post(f"/api/instances/?app_id={account_name}", json=instance_body)
 
         # see hat/sync/views.py
         with open(local_path) as fp_xml:
             image_number = (count % 3) + 1
             with open(f"./data/fosa{image_number}.jpeg", "rb") as fp_image:
-                r = requests.post(
-                    f"{SERVER}/sync/form_upload/", files={"xml_submission_file": fp_xml, "imgUrl": fp_image}
-                )
+                iaso_client.post("/sync/form_upload/", files={"xml_submission_file": fp_xml, "imgUrl": fp_image})
 
         count = count + 1
 

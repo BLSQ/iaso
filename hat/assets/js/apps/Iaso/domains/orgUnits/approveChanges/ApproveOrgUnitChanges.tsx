@@ -20,13 +20,16 @@ export const ApproveOrgUnitChanges: FunctionComponent<Props> = ({
 }) => {
     const { data, isFetching } = useGetApprovalProposals(params);
     const classes: Record<string, string> = useStyles();
-    console.log('data', data);
     return (
         <div>
             <TopBar />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <ApproveOrgUnitChangesFilter params={router.params} />
-                <ApproveOrgUnitChangesTable />
+                <ApproveOrgUnitChangesTable
+                    data={data}
+                    isFetching={isFetching}
+                    params={params}
+                />
             </Box>
         </div>
     );

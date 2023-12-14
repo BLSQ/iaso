@@ -1,9 +1,10 @@
+import { UseQueryResult } from 'react-query';
 import { makeUrlWithParams } from '../../../../../libs/utils';
 import { getRequest } from '../../../../../libs/Api';
 import { useSnackQuery } from '../../../../../libs/apiHooks';
 import { ApproveChangesPaginated, ApproveOrgUnitParams } from '../../types';
 
-const apiUrl = '/api/orgunits/changes';
+const apiUrl = '/api/orgunits/changes/';
 
 const getOrgUnitChangeProposals = (options: ApproveOrgUnitParams) => {
     const apiParams = {
@@ -11,6 +12,9 @@ const getOrgUnitChangeProposals = (options: ApproveOrgUnitParams) => {
         groups: options.groups,
         org_unit_type_id: options.org_unit_type_id,
         status: options.status,
+        order: options.order || 'org_unit__name',
+        limit: options.pageSize || 10,
+        page: options.page,
     };
 
     const url = makeUrlWithParams(apiUrl, apiParams);
@@ -18,7 +22,9 @@ const getOrgUnitChangeProposals = (options: ApproveOrgUnitParams) => {
     return getRequest(url) as Promise<ApproveChangesPaginated>;
 };
 
-export const useGetApprovalProposals = (params: ApproveOrgUnitParams) => {
+export const useGetApprovalProposals = (
+    params: ApproveOrgUnitParams,
+): UseQueryResult<ApproveChangesPaginated, Error> => {
     return useSnackQuery({
         queryKey: ['getApprovalProposals', params],
         queryFn: () => getOrgUnitChangeProposals(params),

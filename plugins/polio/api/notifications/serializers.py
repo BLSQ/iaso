@@ -58,3 +58,8 @@ class NotificationSerializer(serializers.ModelSerializer):
             "created_by": {"read_only": True},
             "updated_by": {"read_only": True},
         }
+
+    def validate_org_unit(self, org_unit):
+        if not org_unit.org_unit_type.category == "DISTRICT":
+            raise serializers.ValidationError("`org_unit` must be of type `DISTRICT`.")
+        return org_unit

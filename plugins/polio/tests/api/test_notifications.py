@@ -73,7 +73,7 @@ class NotificationSerializerTestCase(TestCase):
         cls.account = m.Account.objects.create(name="Account", default_version=cls.source_version)
         cls.user = cls.create_user_with_profile(username="user", account=cls.account)
 
-        country_angola = m.OrgUnit.objects.create(
+        cls.country_angola = m.OrgUnit.objects.create(
             name="ANGOLA",
             org_unit_type=m.OrgUnitType.objects.create(category="COUNTRY"),
             validation_status=m.OrgUnit.VALIDATION_VALID,
@@ -82,7 +82,7 @@ class NotificationSerializerTestCase(TestCase):
         )
         region_huila = m.OrgUnit.objects.create(
             name="HUILA",
-            parent=country_angola,
+            parent=cls.country_angola,
             org_unit_type=m.OrgUnitType.objects.create(category="REGION"),
             validation_status=m.OrgUnit.VALIDATION_VALID,
             path=["foo", "bar"],
@@ -179,6 +179,18 @@ class NotificationSerializerTestCase(TestCase):
         self.assertEqual(notification.org_unit, self.district_cuvango)
         self.assertEqual(notification.created_by, self.user)
         self.assertEqual(notification.created_at, DT)
+
+    def test_validate_org_unit(self):
+        data = {
+            "epid_number": "ANG-HUI-CUV-19-002",
+            "vdpv_category": Notification.VdpvCategories.CVDPV2,
+            "source": Notification.Sources.AFP,
+            "org_unit": self.country_angola.pk,
+        }
+        serializer = NotificationSerializer(data=data)
+
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("`org_unit` must be of type `DISTRICT`.", serializer.errors["org_unit"][0])
 
 
 @override_settings(MEDIA_ROOT=TEST_MEDIA_ROOT)

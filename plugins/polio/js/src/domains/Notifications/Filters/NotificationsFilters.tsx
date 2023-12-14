@@ -71,14 +71,7 @@ export const NotificationsFilters: FunctionComponent<Props> = ({
                     keyDateTo="date_of_onset_before"
                 />
             </Grid>
-            <Grid
-                container
-                item
-                xs={12}
-                md={4}
-                md={12}
-                justifyContent="flex-end"
-            >
+            <Grid container item xs={12} md={12} justifyContent="flex-end">
                 <Box mt={2}>
                     <FilterButton
                         disabled={!filtersUpdated}

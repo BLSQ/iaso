@@ -37,6 +37,7 @@ export const NotificationsTable: FunctionComponent<Props> = ({
             onTableParamsChange={handleTableDeepLink(NOTIFICATIONS_BASE_URL)}
             extraProps={{ loading: isFetching }}
             columnSelectorEnabled
+            columnSelectorButtonType="button"
         />
     );
 };

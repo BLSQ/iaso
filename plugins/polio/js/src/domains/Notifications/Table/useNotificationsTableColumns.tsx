@@ -5,8 +5,8 @@ import { DateCell } from '../../../../../../../hat/assets/js/apps/Iaso/component
 
 import MESSAGES from '../messages';
 import { DeleteNotificationModal } from '../Modals/NotificationsDeleteModal';
-import { EditNotificationModal } from '../Modals/NotificationsCreateEditModal';
 import { DropdownsContent } from '../types';
+import { EditNotificationModal } from '../Modals/NotificationsCreateEditModal';
 
 export const useNotificationsTableColumns = (
     dropdownContent: DropdownsContent,

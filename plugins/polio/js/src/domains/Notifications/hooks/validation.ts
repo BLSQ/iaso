@@ -26,6 +26,10 @@ export const useNotificationSchema = () => {
             .trim()
             .required(formatMessage(MESSAGES.validationFieldRequired)),
         vdpv_nucleotide_diff_sabin2: yup.string().trim().nullable(),
+        org_unit: yup
+            .string()
+            .trim()
+            .required(formatMessage(MESSAGES.validationFieldRequired)),
         site_name: yup.string().trim().nullable(),
         lineage: yup.string().trim().nullable(),
         date_of_onset: yup

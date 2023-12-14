@@ -4,8 +4,13 @@ import MESSAGES from '../../messages';
 import { DateCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 // import DeleteDialog from '../../../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
 import { EditFormA } from '../FormA/CreateEditFormA';
+import { Vaccine } from '../../../../../constants/types';
 
-export const useFormATableColumns = (title: string): Column[] => {
+export const useFormATableColumns = (
+    title: string,
+    countryName: string,
+    vaccine: Vaccine,
+): Column[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
         return [
@@ -71,6 +76,8 @@ export const useFormATableColumns = (title: string): Column[] => {
                                 id={settings.row.original.id}
                                 formA={settings.row.original}
                                 iconProps={{}}
+                                countryName={countryName}
+                                vaccine={vaccine}
                             />
                             {/* <DeleteDialog
                                 titleMessage={MESSAGES.deleteVRF}
@@ -84,7 +91,7 @@ export const useFormATableColumns = (title: string): Column[] => {
                 },
             },
         ];
-    }, [formatMessage, title]);
+    }, [countryName, formatMessage, title, vaccine]);
 };
 export const useDestructionTableColumns = () => {
     const { formatMessage } = useSafeIntl();

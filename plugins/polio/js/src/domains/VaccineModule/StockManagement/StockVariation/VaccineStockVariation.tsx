@@ -82,8 +82,11 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
     const title = `${formatMessage(MESSAGES.stockVariation)}: ${
         summary?.country_name ?? textPlaceholder
     } - ${summary?.vaccine_type ?? textPlaceholder}`;
-
-    const formAColumns = useFormATableColumns(title);
+    const formAColumns = useFormATableColumns(
+        title,
+        summary?.country_name,
+        summary?.vaccine_type,
+    );
     const destructionsColumns = useDestructionTableColumns();
     const incidentsColumns = useIncidentTableColumns();
 
@@ -123,7 +126,12 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
                                 {formatMessage(MESSAGES[`${tab}Reports`])}
                             </Typography>
                             {tab === FORM_A && (
-                                <CreateFormA iconProps={{}} title={title} />
+                                <CreateFormA
+                                    iconProps={{}}
+                                    title={title}
+                                    countryName={summary?.country_name}
+                                    vaccine={summary?.vaccine_type}
+                                />
                             )}
                         </Grid>
                         {tab === FORM_A && (

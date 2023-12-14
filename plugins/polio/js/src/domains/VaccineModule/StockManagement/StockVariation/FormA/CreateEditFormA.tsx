@@ -6,6 +6,7 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
+import { Vaccine } from 'plugins/polio/js/src/constants/types';
 import MESSAGES from '../../messages';
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import {
@@ -22,6 +23,8 @@ type Props = {
     title: string;
     isOpen: boolean;
     closeDialog: () => void;
+    countryName: string;
+    vaccine: Vaccine;
 };
 
 export const CreateEditFormA: FunctionComponent<Props> = ({
@@ -29,6 +32,8 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
     title,
     isOpen,
     closeDialog,
+    countryName,
+    vaccine,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSaveFormA();
@@ -48,7 +53,7 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
         // validationSchema,
     });
     const { data: campaignOptions, isFetching: isFetchingCampaigns } =
-        useCampaignOptions();
+        useCampaignOptions(countryName, vaccine);
     const allowConfirm = true;
 
     return (

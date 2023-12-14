@@ -239,16 +239,19 @@ export const useGetIncidentList = (
     });
 };
 
-export const useCampaignOptions = () => {
+export const useCampaignOptions = (countryName, vaccine) => {
     const queryOptions = {
         select: data => {
             if (!data) return [];
-            return data.map(c => {
-                return {
-                    label: c.obr_name,
-                    value: c.obr_name,
-                };
-            });
+            console.log('CAMPAIGNS', data);
+            return data
+                .filter(c => c.top_level_org_unit_name === countryName)
+                .map(c => {
+                    return {
+                        label: c.obr_name,
+                        value: c.obr_name,
+                    };
+                });
         },
         keepPreviousData: true,
         staleTime: 1000 * 60 * 15, // in MS

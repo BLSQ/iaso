@@ -8,6 +8,7 @@ export const mockFormAList: any = {
     results: [
         {
             id: 1,
+            obr_name: 'DRC-2023-03-01_nOPV',
             action: 'forma_unusable',
             forma_reception_rrt: '2023-05-06',
             date_of_report: '2023-05-03',
@@ -18,6 +19,7 @@ export const mockFormAList: any = {
         },
         {
             id: 2,
+            obr_name: 'DRC-11Prov-03-2022',
             action: 'forma_unusable',
             forma_reception_rrt: '2023-09-02',
             date_of_report: '2023-09-01',

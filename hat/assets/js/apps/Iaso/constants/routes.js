@@ -127,7 +127,7 @@ export const formsPath = {
 
 export const pagesPath = {
     baseUrl: baseUrls.pages,
-    permissions: [Permission.PAGES],
+    permissions: [Permission.PAGES, Permission.PAGE_WRITE],
     featureFlag: SHOW_PAGES,
     params: [
         {

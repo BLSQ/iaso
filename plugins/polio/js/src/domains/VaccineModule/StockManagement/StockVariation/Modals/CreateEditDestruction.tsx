@@ -7,6 +7,7 @@ import {
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { Box } from '@material-ui/core';
+import { isEqual } from 'lodash';
 import { Vaccine } from '../../../../../constants/types';
 import MESSAGES from '../../messages';
 import {
@@ -53,8 +54,7 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
     const title = `${countryName} - ${vaccine}: ${formatMessage(
         titleMessage,
     )} ${formatMessage(MESSAGES.formA)}`;
-    // TODO add conditions
-    const allowConfirm = true;
+    const allowConfirm = formik.isValid && !isEqual(formik.touched, {});
 
     return (
         <FormikProvider value={formik}>

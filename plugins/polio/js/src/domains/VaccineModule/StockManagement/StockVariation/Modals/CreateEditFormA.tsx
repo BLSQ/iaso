@@ -6,8 +6,8 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
-import { Vaccine } from 'plugins/polio/js/src/constants/types';
 import { Box } from '@material-ui/core';
+import { Vaccine } from '../../../../../constants/types';
 import MESSAGES from '../../messages';
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import {
@@ -49,6 +49,7 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
             vials_missing: formA?.vials_missing,
         },
         onSubmit: values => save(values),
+        // TODO add validation
         // validationSchema,
     });
     const { data: campaignOptions, isFetching: isFetchingCampaigns } =
@@ -57,6 +58,7 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
     const title = `${countryName} - ${vaccine}: ${formatMessage(
         titleMessage,
     )} ${formatMessage(MESSAGES.formA)}`;
+    // TODO add conditions
     const allowConfirm = true;
 
     return (

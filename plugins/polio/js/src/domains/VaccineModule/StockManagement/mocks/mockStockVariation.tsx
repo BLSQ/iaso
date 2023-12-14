@@ -1,3 +1,8 @@
+import {
+    RETURN_TO_SUPPLIER,
+    VACCINE_EXPIRED,
+} from '../StockVariation/Modals/useIncidentOptions';
+
 export const mockFormAList: any = {
     count: 2,
     page: 1,
@@ -65,15 +70,17 @@ export const mockIncidentsList: any = {
     results: [
         {
             id: 1,
-            action: 'Vaccine expired',
+            action: VACCINE_EXPIRED,
             incident_reception_rrt: '2023-09-02',
+            date_of_report: '2023-09-21',
             unusable_vials: 7,
             usable_vials: 0,
         },
         {
             id: 2,
-            action: 'Return',
+            action: RETURN_TO_SUPPLIER,
             incident_reception_rrt: '2023-09-02',
+            date_of_report: '2023-09-21',
             unusable_vials: 0,
             usable_vials: 15,
         },

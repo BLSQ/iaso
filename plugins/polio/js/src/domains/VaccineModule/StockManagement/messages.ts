@@ -190,6 +190,30 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.lot_numbers',
         defaultMessage: 'Lot numbers',
     },
+    PHYSICAL_INVENTORY: {
+        id: 'iaso.polio.label.PHYSICAL_INVENTORY',
+        defaultMessage: 'Physical inventory',
+    },
+    STEALING: {
+        id: 'iaso.polio.label.STEALING',
+        defaultMessage: 'Theft',
+    },
+    RETURN_TO_SUPPLIER: {
+        id: 'iaso.polio.label.RETURN_TO_SUPPLIER',
+        defaultMessage: 'Return to supplier',
+    },
+    LOSSES: {
+        id: 'iaso.polio.label.LOSSES',
+        defaultMessage: 'Losses',
+    },
+    VACCINE_EXPIRED: {
+        id: 'iaso.polio.label.VACCINE_EXPIRED',
+        defaultMessage: 'Vaccine expired',
+    },
+    VM_REACHED_DISCARD_POINT: {
+        id: 'iaso.polio.label.VM_REACHED_DISCARD_POINT',
+        defaultMessage: 'VM reached discard point',
+    },
     save: {
         id: 'iaso.label.save',
         defaultMessage: 'Save',

@@ -243,7 +243,6 @@ export const useCampaignOptions = (countryName, vaccine) => {
     const queryOptions = {
         select: data => {
             if (!data) return [];
-            console.log('CAMPAIGNS', data);
             return data
                 .filter(c => c.top_level_org_unit_name === countryName)
                 .map(c => {
@@ -273,5 +272,35 @@ const createEditFormA = async (body: any) => {
 export const useSaveFormA = () => {
     return useSnackMutation({
         mutationFn: body => createEditFormA(body),
+    });
+};
+const createEditDestruction = async (body: any) => {
+    await waitFor(500);
+    if (body.id) {
+        console.log('PATCH', body);
+    } else {
+        console.log('POST', body);
+    }
+    return null;
+};
+
+export const useSaveDestruction = () => {
+    return useSnackMutation({
+        mutationFn: body => createEditDestruction(body),
+    });
+};
+const createEditIncident = async (body: any) => {
+    await waitFor(500);
+    if (body.id) {
+        console.log('PATCH', body);
+    } else {
+        console.log('POST', body);
+    }
+    return null;
+};
+
+export const useSaveIncident = () => {
+    return useSnackMutation({
+        mutationFn: body => createEditIncident(body),
     });
 };

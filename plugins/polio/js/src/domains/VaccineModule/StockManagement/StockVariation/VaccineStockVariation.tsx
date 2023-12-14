@@ -37,7 +37,9 @@ import {
     useFormATableColumns,
     useIncidentTableColumns,
 } from './Table/columns';
-import { CreateFormA } from './FormA/CreateEditFormA';
+import { CreateFormA } from './Modals/CreateEditFormA';
+import { CreateDestruction } from './Modals/CreateEditDestruction';
+import { CreateIncident } from './Modals/CreateEditIncident';
 
 type Props = { router: Router };
 
@@ -86,8 +88,14 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
         summary?.country_name,
         summary?.vaccine_type,
     );
-    const destructionsColumns = useDestructionTableColumns();
-    const incidentsColumns = useIncidentTableColumns();
+    const destructionsColumns = useDestructionTableColumns(
+        summary?.country_name,
+        summary?.vaccine_type,
+    );
+    const incidentsColumns = useIncidentTableColumns(
+        summary?.country_name,
+        summary?.vaccine_type,
+    );
 
     return (
         <>
@@ -126,6 +134,20 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
                             </Typography>
                             {tab === FORM_A && (
                                 <CreateFormA
+                                    iconProps={{}}
+                                    countryName={summary?.country_name}
+                                    vaccine={summary?.vaccine_type}
+                                />
+                            )}
+                            {tab === DESTRUCTION && (
+                                <CreateDestruction
+                                    iconProps={{}}
+                                    countryName={summary?.country_name}
+                                    vaccine={summary?.vaccine_type}
+                                />
+                            )}
+                            {tab === INCIDENT && (
+                                <CreateIncident
                                     iconProps={{}}
                                     countryName={summary?.country_name}
                                     vaccine={summary?.vaccine_type}

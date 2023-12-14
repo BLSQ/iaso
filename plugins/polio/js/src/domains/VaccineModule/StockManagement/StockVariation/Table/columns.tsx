@@ -1,10 +1,12 @@
 import React, { useMemo } from 'react';
-import { Column, useSafeIntl } from 'bluesquare-components';
+import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../messages';
 import { DateCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 // import DeleteDialog from '../../../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
-import { EditFormA } from '../FormA/CreateEditFormA';
+import { EditFormA } from '../Modals/CreateEditFormA';
 import { Vaccine } from '../../../../../constants/types';
+import { EditDestruction } from '../Modals/CreateEditDestruction';
+import { EditIncident } from '../Modals/CreateEditIncident';
 
 export const useFormATableColumns = (
     countryName: string,
@@ -91,7 +93,10 @@ export const useFormATableColumns = (
         ];
     }, [countryName, formatMessage, vaccine]);
 };
-export const useDestructionTableColumns = () => {
+export const useDestructionTableColumns = (
+    countryName: string,
+    vaccine: Vaccine,
+): Column[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
         return [
@@ -121,10 +126,38 @@ export const useDestructionTableColumns = () => {
                 id: 'vials_destroyed',
                 sortable: true,
             },
+            {
+                Header: formatMessage(MESSAGES.actions),
+                accessor: 'account',
+                sortable: false,
+                Cell: settings => {
+                    return (
+                        <>
+                            <EditDestruction
+                                id={settings.row.original.id}
+                                destruction={settings.row.original}
+                                iconProps={{}}
+                                countryName={countryName}
+                                vaccine={vaccine}
+                            />
+                            {/* <DeleteDialog
+                                titleMessage={MESSAGES.deleteVRF}
+                                message={MESSAGES.deleteVRFWarning}
+                                onConfirm={() =>
+                                    deleteVrf(settings.row.original.id)
+                                }
+                            /> */}
+                        </>
+                    );
+                },
+            },
         ];
-    }, [formatMessage]);
+    }, [countryName, formatMessage, vaccine]);
 };
-export const useIncidentTableColumns = () => {
+export const useIncidentTableColumns = (
+    countryName: string,
+    vaccine: Vaccine,
+): Column[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
         return [
@@ -133,6 +166,10 @@ export const useIncidentTableColumns = () => {
                 accessor: 'action',
                 id: 'action',
                 sortable: true,
+                Cell: settings =>
+                    settings.row.original.action
+                        ? formatMessage(MESSAGES[settings.row.original.action])
+                        : textPlaceholder,
             },
             {
                 Header: formatMessage(MESSAGES.incident_reception_rrt),
@@ -153,6 +190,31 @@ export const useIncidentTableColumns = () => {
                 id: 'unusable_vials',
                 sortable: true,
             },
+            {
+                Header: formatMessage(MESSAGES.actions),
+                accessor: 'account',
+                sortable: false,
+                Cell: settings => {
+                    return (
+                        <>
+                            <EditIncident
+                                id={settings.row.original.id}
+                                incident={settings.row.original}
+                                iconProps={{}}
+                                countryName={countryName}
+                                vaccine={vaccine}
+                            />
+                            {/* <DeleteDialog
+                                titleMessage={MESSAGES.deleteVRF}
+                                message={MESSAGES.deleteVRFWarning}
+                                onConfirm={() =>
+                                    deleteVrf(settings.row.original.id)
+                                }
+                            /> */}
+                        </>
+                    );
+                },
+            },
         ];
-    }, [formatMessage]);
+    }, [countryName, formatMessage, vaccine]);
 };

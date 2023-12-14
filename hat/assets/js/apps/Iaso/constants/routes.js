@@ -175,7 +175,7 @@ export const formsStatsPath = {
 
 export const instancesPath = {
     baseUrl: baseUrls.instances,
-    permissions: [Permission.SUBMISSIONS],
+    permissions: [Permission.SUBMISSIONS, Permission.SUBMISSIONS_UPDATE],
     component: props => <Instances {...props} />,
     params: [
         {

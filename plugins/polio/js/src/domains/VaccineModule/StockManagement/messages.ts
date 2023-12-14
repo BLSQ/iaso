@@ -198,6 +198,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.cancel',
         defaultMessage: 'Cancel',
     },
+    create: {
+        defaultMessage: 'Create',
+        id: 'iaso.label.create',
+    },
 });
 
 export default MESSAGES;

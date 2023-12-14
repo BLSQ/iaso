@@ -7,6 +7,7 @@ import {
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { Vaccine } from 'plugins/polio/js/src/constants/types';
+import { Box } from '@material-ui/core';
 import MESSAGES from '../../messages';
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import {
@@ -20,7 +21,6 @@ import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Ia
 type Props = {
     formA?: any;
     id?: number;
-    title: string;
     isOpen: boolean;
     closeDialog: () => void;
     countryName: string;
@@ -29,7 +29,6 @@ type Props = {
 
 export const CreateEditFormA: FunctionComponent<Props> = ({
     formA,
-    title,
     isOpen,
     closeDialog,
     countryName,
@@ -54,6 +53,10 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
     });
     const { data: campaignOptions, isFetching: isFetchingCampaigns } =
         useCampaignOptions(countryName, vaccine);
+    const titleMessage = formA?.id ? MESSAGES.edit : MESSAGES.create;
+    const title = `${countryName} - ${vaccine}: ${formatMessage(
+        titleMessage,
+    )} ${formatMessage(MESSAGES.formA)}`;
     const allowConfirm = true;
 
     return (
@@ -73,21 +76,27 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                 confirmMessage={MESSAGES.save}
                 cancelMessage={MESSAGES.cancel}
             >
-                <Field
-                    label={formatMessage(MESSAGES.obrName)}
-                    name="obr_name"
-                    component={SingleSelect}
-                    required
-                    options={campaignOptions}
-                    withMarginTop
-                    isLoading={isFetchingCampaigns}
-                />
-                <Field
-                    label={formatMessage(MESSAGES.lot_numbers_for_usable_vials)}
-                    name="lot_numbers_for_usable_vials"
-                    component={TextInput}
-                    shrinkLabel={false}
-                />
+                <Box mb={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.obrName)}
+                        name="obr_name"
+                        component={SingleSelect}
+                        required
+                        options={campaignOptions}
+                        withMarginTop
+                        isLoading={isFetchingCampaigns}
+                    />
+                </Box>
+                <Box mb={2}>
+                    <Field
+                        label={formatMessage(
+                            MESSAGES.lot_numbers_for_usable_vials,
+                        )}
+                        name="lot_numbers_for_usable_vials"
+                        component={TextInput}
+                        shrinkLabel={false}
+                    />
+                </Box>
                 <Field
                     label={formatMessage(MESSAGES.date_of_report)}
                     name="date_of_report"
@@ -98,21 +107,27 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                     name="forma_reception_rrt"
                     component={DateInput}
                 />
-                <Field
-                    label={formatMessage(MESSAGES.forma_vials_used)}
-                    name="vials_used"
-                    component={NumberInput}
-                />
-                <Field
-                    label={formatMessage(MESSAGES.forma_vials_missing)}
-                    name="vials_missing"
-                    component={NumberInput}
-                />
-                <Field
-                    label={formatMessage(MESSAGES.forma_unusable_vials)}
-                    name="unusable_vials"
-                    component={NumberInput}
-                />
+                <Box mb={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.forma_vials_used)}
+                        name="vials_used"
+                        component={NumberInput}
+                    />
+                </Box>
+                <Box mb={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.forma_vials_missing)}
+                        name="vials_missing"
+                        component={NumberInput}
+                    />
+                </Box>
+                <Box mb={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.forma_unusable_vials)}
+                        name="unusable_vials"
+                        component={NumberInput}
+                    />
+                </Box>
             </ConfirmCancelModal>
         </FormikProvider>
     );

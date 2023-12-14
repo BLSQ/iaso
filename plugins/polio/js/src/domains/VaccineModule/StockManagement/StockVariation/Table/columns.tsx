@@ -7,7 +7,6 @@ import { EditFormA } from '../FormA/CreateEditFormA';
 import { Vaccine } from '../../../../../constants/types';
 
 export const useFormATableColumns = (
-    title: string,
     countryName: string,
     vaccine: Vaccine,
 ): Column[] => {
@@ -72,7 +71,6 @@ export const useFormATableColumns = (
                     return (
                         <>
                             <EditFormA
-                                title={title}
                                 id={settings.row.original.id}
                                 formA={settings.row.original}
                                 iconProps={{}}
@@ -91,7 +89,7 @@ export const useFormATableColumns = (
                 },
             },
         ];
-    }, [countryName, formatMessage, title, vaccine]);
+    }, [countryName, formatMessage, vaccine]);
 };
 export const useDestructionTableColumns = () => {
     const { formatMessage } = useSafeIntl();

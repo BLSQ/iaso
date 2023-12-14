@@ -83,7 +83,6 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
         summary?.country_name ?? textPlaceholder
     } - ${summary?.vaccine_type ?? textPlaceholder}`;
     const formAColumns = useFormATableColumns(
-        title,
         summary?.country_name,
         summary?.vaccine_type,
     );
@@ -128,7 +127,6 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
                             {tab === FORM_A && (
                                 <CreateFormA
                                     iconProps={{}}
-                                    title={title}
                                     countryName={summary?.country_name}
                                     vaccine={summary?.vaccine_type}
                                 />

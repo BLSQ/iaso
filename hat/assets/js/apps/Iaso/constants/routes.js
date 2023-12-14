@@ -128,7 +128,7 @@ export const formsPath = {
 
 export const pagesPath = {
     baseUrl: baseUrls.pages,
-    permissions: [Permission.PAGES],
+    permissions: [Permission.PAGES, Permission.PAGE_WRITE],
     featureFlag: SHOW_PAGES,
     params: [
         {
@@ -176,7 +176,7 @@ export const formsStatsPath = {
 
 export const instancesPath = {
     baseUrl: baseUrls.instances,
-    permissions: [Permission.SUBMISSIONS],
+    permissions: [Permission.SUBMISSIONS, Permission.SUBMISSIONS_UPDATE],
     component: props => <Instances {...props} />,
     params: [
         {
@@ -839,7 +839,7 @@ export const projectsPath = {
 
 export const dataSourcesPath = {
     baseUrl: baseUrls.sources,
-    permissions: [Permission.SOURCES],
+    permissions: [Permission.SOURCES, Permission.SOURCE_WRITE],
     component: props => <DataSources {...props} />,
     params: [
         {
@@ -852,7 +852,7 @@ export const dataSourcesPath = {
 
 export const dataSourceDetailsPath = {
     baseUrl: baseUrls.sourceDetails,
-    permissions: ['iaso_sources'],
+    permissions: [Permission.SOURCES, Permission.SOURCE_WRITE],
     component: props => <DataSourceDetail {...props} />,
     params: [
         {

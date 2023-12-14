@@ -49,6 +49,7 @@ class Page(models.Model):
         null=True,
         help_text="Language and locale for the PowerBI embedded report e.g en-us or fr-be",
     )
+    analytics_script = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return "%s " % (self.name,)

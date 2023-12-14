@@ -2,7 +2,10 @@ import { UseQueryResult } from 'react-query';
 import { makeUrlWithParams } from '../../../../../libs/utils';
 import { getRequest } from '../../../../../libs/Api';
 import { useSnackQuery } from '../../../../../libs/apiHooks';
-import { ApproveChangesPaginated, ApproveOrgUnitParams } from '../../types';
+import {
+    OrgUnitChangeRequestsPaginated,
+    ApproveOrgUnitParams,
+} from '../../types';
 
 const apiUrl = '/api/orgunits/changes/';
 
@@ -19,12 +22,12 @@ const getOrgUnitChangeProposals = (options: ApproveOrgUnitParams) => {
 
     const url = makeUrlWithParams(apiUrl, apiParams);
 
-    return getRequest(url) as Promise<ApproveChangesPaginated>;
+    return getRequest(url) as Promise<OrgUnitChangeRequestsPaginated>;
 };
 
 export const useGetApprovalProposals = (
     params: ApproveOrgUnitParams,
-): UseQueryResult<ApproveChangesPaginated, Error> => {
+): UseQueryResult<OrgUnitChangeRequestsPaginated, Error> => {
     return useSnackQuery({
         queryKey: ['getApprovalProposals', params],
         queryFn: () => getOrgUnitChangeProposals(params),

@@ -61,6 +61,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.updated_by',
         defaultMessage: 'Updated by',
     },
+    multiSelectionAction: {
+        defaultMessage: 'Validate selected requests',
+        id: 'iaso.orgunitChangeRequest.edit',
+    },
 });
 
 export default MESSAGES;

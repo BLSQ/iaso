@@ -14,7 +14,7 @@ export type Group = {
     name: string;
 };
 
-type NestedUser = Partial<User>;
+export type NestedUser = Partial<User>;
 
 export type OrgUnitChangeRequest = {
     id: number;
@@ -34,8 +34,8 @@ export type OrgUnitChangeRequest = {
     updated_by: NestedUser;
     updated_at: string;
 };
-export type ApproveChanges = Array<OrgUnitChangeRequest>;
+export type OrgUnitChangeRequests = Array<OrgUnitChangeRequest>;
 
-export interface ApproveChangesPaginated extends Pagination {
+export interface OrgUnitChangeRequestsPaginated extends Pagination {
     results: OrgUnitChangeRequest[];
 }

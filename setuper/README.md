@@ -25,3 +25,17 @@ python3 setuper.py
 ```
 
 
+
+## Development
+
+
+in a first terminal 
+
+docker-compose up
+
+in a second terminal launch the worker
+
+docker-compose run iaso manage tasks_worker
+
+
+then launch the setuper

@@ -67,7 +67,7 @@ def setup_orgunits(account_name):
         imported = task["status"] == "SUCCESS"
         time.sleep(5)
         count += 5
-        print("\tWaiting:", count, "s elapsed")
+        print("\tWaiting:", count, "s elapsed", task.get("progress_message"))
 
     r = requests.get(API_URL + "datasources/", headers=headers)
 
@@ -167,18 +167,28 @@ def setup_instances(account_name):
                 "longitude": None,
                 "accuracy": 0,
                 "altitude": 0,
+                "imgUrl": "imgUrl",
                 "file": local_path,
                 "name": file_name,
             }
         ]
         #
-        response = requests.post(
-            API_URL + "instances/" + "?app_id=%s" % account_name, json=instance_body, headers=headers
-        )
+        response = requests.post(f"{API_URL}instances/?app_id={account_name}", json=instance_body, headers=headers)
 
-        with open(local_path) as fp:
-            r = requests.post(UPLOAD_URL, files={"xml_submission_file": fp})
+        # see hat/sync/views.py
+        with open(local_path) as fp_xml:
+            image_number = (count % 3) + 1
+            with open(f"./data/fosa{image_number}.jpeg", "rb") as fp_image:
+                r = requests.post(
+                    f"{SERVER}/sync/form_upload/", files={"xml_submission_file": fp_xml, "imgUrl": fp_image}
+                )
+
         count = count + 1
+
+        ## mobile code
+        # https://github.com/BLSQ/iaso-mobile-app/blob/develop/odk-collect/src/main/java/org/odk/collect/android/tasks/InstanceServerUploaderTask.java#L88
+        # https://github.com/BLSQ/iaso-mobile-app/blob/develop/odk-collect/src/main/java/org/odk/collect/android/upload/InstanceServerUploader.java#L70
+        # https://github.com/BLSQ/iaso-mobile-app/blob/develop/collect_app/src/main/java/com/bluesquare/iaso/usecase/SyncInstances.kt
         if count % 5 == 0:
             print("\t%d submissions done" % count)
 

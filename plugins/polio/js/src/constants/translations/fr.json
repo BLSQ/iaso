@@ -419,6 +419,7 @@
     "iaso.polio.label.preparednessError": "Erreur dans la génération de la Google sheet de préparation",
     "iaso.polio.label.preparednesSpreadsheetUrl": "Url spreadsheet de la préparation",
     "iaso.polio.label.preparednesSyncStatus": "Status de la préparation",
+    "iaso.polio.label.preparednessSomeWarningsDuringTheParsing": "Avertissement : l'application a rencontré des problèmes lors de l'analyse de la feuille de préparation.",
     "iaso.polio.label.previousEndDate": "Date de fin précédente",
     "iaso.polio.label.previousStartDate": "Date de début précédente",
     "iaso.polio.label.provinceOption": "PROVINCE",

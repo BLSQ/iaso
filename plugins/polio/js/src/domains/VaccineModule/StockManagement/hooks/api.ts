@@ -1,5 +1,6 @@
 import { UseQueryResult } from 'react-query';
 import { UrlParams } from 'bluesquare-components';
+import { getRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useUrlParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
 import {
     FormattedApiParams,
@@ -7,7 +8,6 @@ import {
 } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useApiParams';
 import { useSnackQuery } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { waitFor } from '../../../../../../../../hat/assets/js/apps/Iaso/utils';
-import { mockVaccineStockList } from '../mocks/mockVaccineStockList';
 import {
     mockSummary,
     mockUnusableVials,
@@ -41,12 +41,12 @@ const options = {
     refetchInterval: 1000 * 60 * 5,
 };
 
+const apiUrl = '/api/polio/vaccine/vaccine_stock/';
+
 // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 const getVaccineStockList = async (params: FormattedApiParams) => {
     const queryString = new URLSearchParams(params).toString();
-    await waitFor(750);
-    console.log('list params', queryString);
-    return mockVaccineStockList;
+    return getRequest(`${apiUrl}?${queryString}`);
 };
 
 export const useGetVaccineStockList = (

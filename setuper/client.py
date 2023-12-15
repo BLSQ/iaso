@@ -1,4 +1,5 @@
 import requests
+import time
 
 
 class IasoClient:
@@ -38,6 +39,20 @@ class IasoClient:
         payload = r.json()
         self.log(url, payload)
         return payload
+
+    def wait_task_completion(self, task_to_wait):
+        print(f"\tWaiting for async task '{task_to_wait['task']['name']}'")
+        count = 0
+        imported = False
+        while not imported and count < 120:
+            task = self.get(f"/api/tasks/{task_to_wait['task']['id']}")
+            imported = task["status"] == "SUCCESS"
+
+            if task["status"] == "ERRORED":
+                raise Exception(f"Task failed {task}")
+            time.sleep(2)
+            count += 5
+            print("\t\tWaiting:", count, "s elapsed", task.get("progress_message"))
 
     def log(self, arg1, arg2=None):
         if self.debug:

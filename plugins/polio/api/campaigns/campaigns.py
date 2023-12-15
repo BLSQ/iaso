@@ -268,7 +268,9 @@ class CampaignSerializer(serializers.ModelSerializer):
                 if vaccine_authorization:
                     check_total_doses_requested(vaccine_authorization[0], nOPV2_rounds, campaign)
                 else:
-                    missing_vaccine_authorization_for_campaign_email_alert(obr_name, validated_data["initial_org_unit"])
+                    missing_vaccine_authorization_for_campaign_email_alert(
+                        obr_name, validated_data["initial_org_unit"], account
+                    )
             except OrgUnit.DoesNotExist:
                 raise Custom403Exception("error:" "Org unit does not exists.")
 

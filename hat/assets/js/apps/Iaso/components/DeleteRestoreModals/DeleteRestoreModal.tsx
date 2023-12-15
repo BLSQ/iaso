@@ -3,7 +3,7 @@ import { IntlMessage, SimpleModal } from 'bluesquare-components';
 import { YesNoButtons } from './YesNoButtons';
 
 export type DeleteRestoreModalProps = {
-    children: ReactNode;
+    children?: ReactNode;
     isOpen: boolean;
     closeDialog: () => void;
     maxWidth?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';

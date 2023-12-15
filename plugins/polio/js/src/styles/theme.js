@@ -18,12 +18,6 @@ export const useStyles = makeStyles(() => ({
     tableRow: {
         display: 'flex',
     },
-    pageActions: {
-        marginBottom: theme.spacing(0),
-    },
-    pageAction: {
-        marginRight: theme.spacing(1),
-    },
     form: {
         marginTop: theme.spacing(4),
         display: 'flex',

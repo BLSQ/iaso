@@ -114,6 +114,78 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.stockDetails',
         defaultMessage: 'Stock details',
     },
+    formA: {
+        id: 'iaso.polio.label.formA',
+        defaultMessage: 'Form A',
+    },
+    destructionReports: {
+        id: 'iaso.polio.label.destructionReports',
+        defaultMessage: 'Destruction reports',
+    },
+    incidentReports: {
+        id: 'iaso.polio.label.incidentReports',
+        defaultMessage: 'Incident reports',
+    },
+    stockVariation: {
+        id: 'iaso.polio.label.stockVariation',
+        defaultMessage: 'Stock variation',
+    },
+    forma_vials_used: {
+        id: 'iaso.polio.label.forma_vials_used',
+        defaultMessage: 'Vials used',
+    },
+    forma_vials_missing: {
+        id: 'iaso.polio.label.forma_vials_missing',
+        defaultMessage: 'Vials missing',
+    },
+    forma_unusable_vials: {
+        id: 'iaso.polio.label.forma_unusable_vials',
+        defaultMessage: 'Unusable vials',
+    },
+    lot_numbers_for_usable_vials: {
+        id: 'iaso.polio.label.lot_numbers_for_usable_vials',
+        defaultMessage: 'Lot numbers for usable vials',
+    },
+    date_of_report: {
+        id: 'iaso.polio.label.date_of_report',
+        defaultMessage: 'Date of report',
+    },
+    forma_reception_rrt: {
+        id: 'iaso.polio.label.forma_reception_rrt',
+        defaultMessage: 'Form A reception (RRT)',
+    },
+    unusable_vials: {
+        id: 'iaso.polio.label.unusable_vials',
+        defaultMessage: 'Unusable vials',
+    },
+    usable_vials: {
+        id: 'iaso.polio.label.usable_vials',
+        defaultMessage: 'Usable vials',
+    },
+    vials_destroyed: {
+        id: 'iaso.polio.label.vials_destroyed',
+        defaultMessage: 'Vials destroyed',
+    },
+    incident_reception_rrt: {
+        id: 'iaso.polio.label.incident_reception_rrt',
+        defaultMessage: 'Incident report received by RRT',
+    },
+    destruction_reception_rrt: {
+        id: 'iaso.polio.label.destruction_reception_rrt',
+        defaultMessage: 'Destruction report received by RRT',
+    },
+    formaReports: {
+        id: 'iaso.polio.label.formA',
+        defaultMessage: 'Form A',
+    },
+    destruction: {
+        id: 'iaso.polio.label.destruction',
+        defaultMessage: 'Destruction',
+    },
+    incident: {
+        id: 'iaso.polio.label.incident',
+        defaultMessage: 'Incident',
+    },
 });
 
 export default MESSAGES;

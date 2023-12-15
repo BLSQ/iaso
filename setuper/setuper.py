@@ -3,6 +3,9 @@ from client import IasoClient
 from micro_planning import setup_users_teams_micro_planning
 from data_collection import setup_instances
 from pyramid import setup_orgunits
+from entities import setup_entities
+import string
+import random
 
 iaso_client = IasoClient(SERVER, ADMIN_USER_NAME, ADMIN_PASSWORD)
 
@@ -14,7 +17,7 @@ def setup_account(account_name):
         "user_first_name": account_name,
         "user_last_name": account_name,
         "password": account_name,
-        "modules": ["DEFAULT", "REGISTRY", "POLIO_PROJECT", "PLANNING", "ENTITIES", "DATA_COLLECTION_FORMS"],
+        "modules": ["DEFAULT", "REGISTRY", "PLANNING", "ENTITIES", "DATA_COLLECTION_FORMS"],
     }
 
     iaso_client.post("/api/setupaccount/", json=data)
@@ -24,15 +27,14 @@ def setup_account(account_name):
 
 
 if __name__ == "__main__":
-    import string
-    import random
-
     account_name = "".join(random.choices(string.ascii_lowercase, k=7))
     print("Creating account:", account_name)
     iaso_client = setup_account(account_name)
     setup_orgunits(account_name, iaso_client=iaso_client)
-    setup_instances(account_name, iaso_client=iaso_client)
-    setup_users_teams_micro_planning(account_name, iaso_client=iaso_client)
+    setup_entities(account_name, iaso_client=iaso_client)
+
+    # setup_instances(account_name, iaso_client=iaso_client)
+    # setup_users_teams_micro_planning(account_name, iaso_client=iaso_client)
 
     print("-----------------------------------------------")
     print("Account created:", account_name)

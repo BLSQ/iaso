@@ -1,0 +1,21 @@
+
+<data xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" id="wfp_first_reg_2022081601 (2)" version="2022090701" iasoInstance="9899">
+          <start>2022-09-07T17:54:55.805+02:00</start>
+          <end>2022-09-07T17:55:31.192+02:00</end>
+          <register>
+            <name>Joelle Milquet</name>
+            <father_name>Jo Milquet</father_name>
+            <age_type>0</age_type>
+            
+            <birth_date>2022-09-05</birth_date>
+            <child_details>
+              <gender>female</gender>
+              <caretaker_name/>
+              <caretaker_rs>brother</caretaker_rs>
+              <hc>hc_E</hc>
+            </child_details>
+          </register>
+          <meta>
+            <instanceID>uuid:b1c40f51-f333-4f6a-be8b-2a592427b6e7</instanceID>
+          </meta>
+        </data>

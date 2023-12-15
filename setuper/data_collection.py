@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+import os
 
 
 def setup_instances(account_name, iaso_client):
@@ -93,6 +94,8 @@ def setup_instances(account_name, iaso_client):
                 iaso_client.post("/sync/form_upload/", files={"xml_submission_file": fp_xml, "imgUrl": fp_image})
 
         count = count + 1
+
+        os.remove(local_path)
 
         ## mobile code
         # https://github.com/BLSQ/iaso-mobile-app/blob/develop/odk-collect/src/main/java/org/odk/collect/android/tasks/InstanceServerUploaderTask.java#L88

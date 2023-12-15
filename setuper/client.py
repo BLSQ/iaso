@@ -25,11 +25,12 @@ class IasoClient:
     def post(self, url, json=None, data=None, files=None):
         self.log(url, json)
         r = requests.post(self.server_url + url, json=json, data=data, headers=self.headers, files=files)
-        resp = r.json()
+        resp = None
         try:
+            resp = r.json()
             r.raise_for_status()
         except Exception as e:
-            print(resp)
+            print(resp, r)
             raise e
         self.log(resp)
         return resp

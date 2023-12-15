@@ -10,14 +10,16 @@ iaso_client = IasoClient(SERVER, ADMIN_USER_NAME, ADMIN_PASSWORD)
 
 
 def wait_task_completion(task_to_wait):
-    print(f"\tWaiting for async task '#{task_to_wait['task']['name']}'")
+    print(f"\tWaiting for async task '{task_to_wait['task']['name']}'")
     count = 0
     imported = False
     while not imported and count < 120:
-        time.sleep(5)
         task = iaso_client.get(f"/api/tasks/{task_to_wait['task']['id']}")
         imported = task["status"] == "SUCCESS"
-        time.sleep(5)
+
+        if task["status"] == "ERRORED":
+            raise Exception(f"Task failed {task}")
+        time.sleep(2)
         count += 5
         print("\t\tWaiting:", count, "s elapsed", task.get("progress_message"))
 

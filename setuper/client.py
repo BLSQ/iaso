@@ -33,8 +33,8 @@ class IasoClient:
         self.log(resp)
         return resp
 
-    def get(self, url):
-        r = requests.get(self.server_url + url, headers=self.headers)
+    def get(self, url, params=None):
+        r = requests.get(self.server_url + url, params=params, headers=self.headers)
         payload = r.json()
         self.log(url, payload)
         return payload

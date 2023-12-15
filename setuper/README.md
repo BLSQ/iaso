@@ -17,10 +17,10 @@ Once the script has run, you can log in to your server using the account name as
 
 ```
 python3 -m venv venv
-pip install -r requirements.txt
 source venv/bin/activate
+pip install -r requirements.txt
 cp data/sample-credentials.py credentials.py
-#edit credentials.py with your own admin user credentials here
+#edit credentials.py with your own admin user credentials here and server url
 python3 setuper.py
 ```
 
@@ -30,12 +30,17 @@ python3 setuper.py
 
 
 in a first terminal 
-
+```
 docker-compose up
-
+```
 in a second terminal launch the worker
 
+```
 docker-compose run iaso manage tasks_worker
-
+```
 
 then launch the setuper
+
+```
+python3 setuper.py
+```

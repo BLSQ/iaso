@@ -1,18 +1,12 @@
 import React, {
     FunctionComponent,
     ReactElement,
-    useCallback,
-    useMemo,
     useState,
+    Dispatch,
+    SetStateAction,
 } from 'react';
 import { useDispatch } from 'react-redux';
-import {
-    Column,
-    useSafeIntl,
-    selectionInitialState,
-    setTableSelection,
-} from 'bluesquare-components';
-import CheckIcon from '@material-ui/icons/Check';
+import { Column, useSafeIntl } from 'bluesquare-components';
 import { TableWithDeepLink } from '../../../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../../../constants/urls';
 import {
@@ -27,11 +21,14 @@ import MESSAGES from '../messages';
 import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
 import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
 import getDisplayName from '../../../../utils/usersUtils';
-import { Selection } from '../../types/selection';
+import { ApproveOrgUnitChangesDialog } from '../ApproveOrgUnitChangesDialog';
 
-type ColumnCell<T> = { row: { original: T } };
+type ColumnCell<T> = { row: { original: T; index: number } };
 
-const useColumns = (): Column[] => {
+const useColumns = (
+    setSelectedChangeRequest: Dispatch<SetStateAction<SelectedChangeRequest>>,
+    selectedChangeRequest: SelectedChangeRequest | undefined,
+): Column[] => {
     const { formatMessage } = useSafeIntl();
     return [
         {
@@ -140,12 +137,28 @@ const useColumns = (): Column[] => {
             accessor: 'actions',
             sortable: false,
             Cell: ({
-                row: { original: changeRequest },
+                row: { original: changeRequest, index },
             }: ColumnCell<OrgUnitChangeRequest>): ReactElement => {
-                return <>{changeRequest.id}</>;
+                return (
+                    <ApproveOrgUnitChangesDialog
+                        titleMessage={formatMessage(MESSAGES.validate)}
+                        iconProps={{
+                            setSelectedChangeRequest,
+                            changeRequestId: changeRequest.id,
+                            index,
+                        }}
+                        changeRequestId={selectedChangeRequest?.id}
+                        changeRequestIndex={selectedChangeRequest?.index}
+                    />
+                );
             },
         },
     ];
+};
+
+export type SelectedChangeRequest = {
+    id: number;
+    index: number;
 };
 
 type Props = {
@@ -160,60 +173,26 @@ export const ApproveOrgUnitChangesTable: FunctionComponent<Props> = ({
     params,
 }) => {
     const dispatch = useDispatch();
-    const columns = useColumns();
-    const { formatMessage } = useSafeIntl();
-    const [selection, setSelection] = useState<Selection<OrgUnitChangeRequest>>(
-        selectionInitialState,
-    );
-    console.log('selection', selection);
-    const [openDialog, setOpenDialog] = useState<boolean>(false);
-    const multiEditDisabled =
-        !selection.selectAll && selection.selectedItems.length === 0;
-    const selectionActions = useMemo(
-        () => [
-            {
-                icon: <CheckIcon />,
-                label: formatMessage(MESSAGES.multiSelectionAction),
-                onClick: () => setOpenDialog(true),
-                disabled: multiEditDisabled,
-            },
-        ],
-        [formatMessage, multiEditDisabled],
-    );
-    const handleTableSelection = useCallback(
-        (selectionType, items = [], totalCount = 0) => {
-            const newSelection: Selection<OrgUnitChangeRequest> =
-                setTableSelection(selection, selectionType, items, totalCount);
-            setSelection(newSelection);
-        },
-        [selection],
-    );
+    const [selectedChangeRequest, setSelectedChangeRequest] = useState<
+        SelectedChangeRequest | undefined
+    >();
+    const columns = useColumns(setSelectedChangeRequest, selectedChangeRequest);
     return (
-        <>
-            {openDialog && 'OPEN DIALOG'}
-            {/* @ts-ignore */}
-            <TableWithDeepLink
-                marginTop={false}
-                data={data?.results ?? []}
-                pages={data?.pages ?? 1}
-                defaultSorted={[{ id: 'org_unit__name', desc: false }]}
-                columns={columns}
-                count={data?.count ?? 0}
-                baseUrl={baseUrl}
-                countOnTop={false}
-                params={params}
-                extraProps={{ loading: isFetching }}
-                onTableParamsChange={p => {
-                    dispatch(redirectTo(baseUrl, p));
-                }}
-                multiSelect
-                selection={selection}
-                selectionActions={selectionActions}
-                //  @ts-ignore
-                setTableSelection={(selectionType, items, totalCount) =>
-                    handleTableSelection(selectionType, items, totalCount)
-                }
-            />
-        </>
+        // @ts-ignore
+        <TableWithDeepLink
+            marginTop={false}
+            data={data?.results ?? []}
+            pages={data?.pages ?? 1}
+            defaultSorted={[{ id: 'org_unit__name', desc: false }]}
+            columns={columns}
+            count={data?.count ?? 0}
+            baseUrl={baseUrl}
+            countOnTop={false}
+            params={params}
+            extraProps={{ loading: isFetching, selectedChangeRequest }}
+            onTableParamsChange={p => {
+                dispatch(redirectTo(baseUrl, p));
+            }}
+        />
     );
 };

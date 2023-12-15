@@ -65,6 +65,22 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Validate selected requests',
         id: 'iaso.orgunitChangeRequest.edit',
     },
+    save: {
+        id: 'iaso.label.save',
+        defaultMessage: 'Save',
+    },
+    cancel: {
+        id: 'iaso.label.cancel',
+        defaultMessage: 'Cancel',
+    },
+    edit: {
+        defaultMessage: 'Edit',
+        id: 'iaso.label.edit',
+    },
+    validate: {
+        id: 'iaso.label.validate',
+        defaultMessage: 'Validate',
+    },
 });
 
 export default MESSAGES;

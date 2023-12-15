@@ -6,7 +6,7 @@ from iaso.models import Team
 from plugins.polio.settings import NOPV2_VACCINE_TEAM_NAME
 
 
-def missing_vaccine_authorization_for_campaign_email_alert(obr_name, org_unit):
+def missing_vaccine_authorization_for_campaign_email_alert(obr_name, org_unit, account):
     try:
         users = [user for user in Team.objects.get(name=NOPV2_VACCINE_TEAM_NAME).users.all()]
         recipient_list = [user.email for user in users]

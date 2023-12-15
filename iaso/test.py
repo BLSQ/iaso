@@ -10,7 +10,7 @@ from django.test import TestCase as BaseTestCase
 from rest_framework.test import APITestCase as BaseAPITestCase, APIClient
 
 from hat.menupermissions.models import CustomPermissionSupport
-from hat.vector_control.models import APIImport
+from hat.api_import.models import APIImport
 from iaso import models as m
 
 

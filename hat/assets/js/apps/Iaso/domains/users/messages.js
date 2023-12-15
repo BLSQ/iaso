@@ -278,7 +278,7 @@ const MESSAGES = defineMessages({
     },
     iaso_page_write: {
         id: 'iaso.permissions.iaso_page_write',
-        defaultMessage: 'Web pages management - Read and Write',
+        defaultMessage: 'Web embedded links management - Read and Write',
     },
     teams: {
         defaultMessage: 'Teams',

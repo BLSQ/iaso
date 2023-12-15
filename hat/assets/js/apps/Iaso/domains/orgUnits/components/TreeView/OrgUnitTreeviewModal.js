@@ -10,8 +10,9 @@ import {
     array,
 } from 'prop-types';
 import { isEqual } from 'lodash';
-import { makeStyles } from '@material-ui/core/styles';
-import { TreeViewWithSearch } from 'bluesquare-components';
+import { makeStyles, useTheme } from '@material-ui/core/styles';
+import { TreeViewWithSearch, useSafeIntl } from 'bluesquare-components';
+import { Box, FormControlLabel, Switch } from '@material-ui/core';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import { MESSAGES } from './messages';
 import { getRootData, getChildrenData, searchOrgUnits } from './requests';
@@ -45,7 +46,10 @@ const OrgUnitTreeviewModal = ({
     allowedTypes,
     errors,
 }) => {
+    const theme = useTheme();
+    const { formatMessage } = useSafeIntl();
     const classes = useStyles();
+    const [displayTypes, setDisplayTypes] = useState(true);
 
     const [selectedOrgUnits, setSelectedOrgUnits] = useState(initialSelection);
 
@@ -158,7 +162,6 @@ const OrgUnitTreeviewModal = ({
             resetSelection();
         }
     }, [resetTrigger, hardReset, resetSelection]);
-
     return (
         <ConfirmCancelDialogComponent
             renderTrigger={({ openDialog }) => (
@@ -186,13 +189,15 @@ const OrgUnitTreeviewModal = ({
             <TreeViewWithSearch
                 getChildrenData={getChildrenData}
                 getRootData={getRootDataWithSource}
-                label={makeTreeviewLabel(classes, showStatusIconInTree)}
+                label={makeTreeviewLabel(
+                    classes,
+                    showStatusIconInTree,
+                    displayTypes,
+                )}
                 toggleOnLabelClick={toggleOnLabelClick}
                 onSelect={onOrgUnitSelect}
                 request={searchOrgUnitsWithSource}
-                makeDropDownText={orgUnit => (
-                    <OrgUnitLabel orgUnit={orgUnit} withType />
-                )}
+                makeDropDownText={orgUnit => <OrgUnitLabel orgUnit={orgUnit} />}
                 toolTip={tooltip}
                 parseNodeIds={getOrgUnitAncestors}
                 multiselect={multiselect}
@@ -207,6 +212,23 @@ const OrgUnitTreeviewModal = ({
                     return false;
                 }}
             />
+            <Box
+                position="absolute"
+                bottom={theme.spacing(3)}
+                left={theme.spacing(4)}
+            >
+                <FormControlLabel
+                    control={
+                        <Switch
+                            size="small"
+                            checked={displayTypes}
+                            onChange={() => setDisplayTypes(!displayTypes)}
+                            color="primary"
+                        />
+                    }
+                    label={formatMessage(MESSAGES.displayTypes)}
+                />
+            </Box>
         </ConfirmCancelDialogComponent>
     );
 };

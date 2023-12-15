@@ -46,6 +46,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.stockUsableVials',
         defaultMessage: 'Stock of usable vials',
     },
+    unusableVials: {
+        id: 'iaso.label.unusableVials',
+        defaultMessage: 'Unusable vials',
+    },
+    usableVials: {
+        id: 'iaso.label.usableVials',
+        defaultMessage: 'Usable vials',
+    },
+    unusable: {
+        id: 'iaso.label.unusable',
+        defaultMessage: 'Unusable',
+    },
+    usable: {
+        id: 'iaso.label.usable',
+        defaultMessage: 'Usable',
+    },
     leftoverPercentage: {
         id: 'iaso.label.leftoverPercentage',
         defaultMessage: '% leftover on quantities ordered',
@@ -57,6 +73,46 @@ const MESSAGES = defineMessages({
     vialsReceived: {
         id: 'iaso.label.vialsReceived',
         defaultMessage: 'Vials received',
+    },
+    doses_out: {
+        id: 'iaso.label.doses_out',
+        defaultMessage: 'Doses OUT',
+    },
+    doses_in: {
+        id: 'iaso.label.doses_in',
+        defaultMessage: 'Doses IN',
+    },
+    vials_out: {
+        id: 'iaso.label.vials_out',
+        defaultMessage: 'Vials OUT',
+    },
+    vials_in: {
+        id: 'iaso.label.vials_in',
+        defaultMessage: 'Vials IN',
+    },
+    action: {
+        id: 'iaso.label.action',
+        defaultMessage: 'Action',
+    },
+    date: {
+        defaultMessage: 'Date',
+        id: 'iaso.label.date',
+    },
+    unusableDoses: {
+        id: 'iaso.label.unusableDoses',
+        defaultMessage: 'Unusable doses',
+    },
+    usableDoses: {
+        id: 'iaso.label.usableDoses',
+        defaultMessage: 'Usable doses',
+    },
+    stockBalance: {
+        id: 'iaso.label.stockBalance',
+        defaultMessage: 'Stock balance',
+    },
+    stockDetails: {
+        id: 'iaso.label.stockDetails',
+        defaultMessage: 'Stock details',
     },
 });
 

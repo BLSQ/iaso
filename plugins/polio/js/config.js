@@ -43,6 +43,7 @@ import {
     VACCINE_SUPPLY_CHAIN,
     VACCINE_SUPPLY_CHAIN_DETAILS,
     STOCK_MANAGEMENT,
+    STOCK_MANAGEMENT_DETAILS,
 } from './src/constants/routes';
 import fr from './src/constants/translations/fr.json';
 import en from './src/constants/translations/en.json';
@@ -57,6 +58,11 @@ import { Nopv2Authorisations } from './src/domains/VaccineModule/Nopv2Authorisat
 import { Nopv2AuthorisationsDetails } from './src/domains/VaccineModule/Nopv2Authorisations/Details/Nopv2AuthorisationsDetails.tsx';
 import { VaccineSupplyChain } from './src/domains/VaccineModule/SupplyChain/VaccineSupplyChain.tsx';
 import { VaccineStockManagement } from './src/domains/VaccineModule/StockManagement/VaccineStockManagement.tsx';
+import { VaccineStockManagementDetails } from './src/domains/VaccineModule/StockManagement/Details/VaccineStockManagementDetails.tsx';
+import {
+    UNUSABLE_VIALS,
+    USABLE_VIALS,
+} from './src/domains/VaccineModule/StockManagement/constants.ts';
 import { VaccineSupplyChainDetails } from './src/domains/VaccineModule/SupplyChain/Details/VaccineSupplyChainDetails.tsx';
 
 const campaignsFilters = [
@@ -461,6 +467,45 @@ const routes = [
             {
                 isRequired: false,
                 key: 'vaccine_type',
+            },
+        ],
+    },
+    {
+        baseUrl: STOCK_MANAGEMENT_DETAILS,
+        component: props => <VaccineStockManagementDetails {...props} />,
+        permissions: ['iaso_polio'],
+        params: [
+            {
+                isRequired: false,
+                key: `id`,
+            },
+            {
+                isRequired: false,
+                key: `tab`,
+            },
+            {
+                isRequired: false,
+                key: `${USABLE_VIALS}Order`,
+            },
+            {
+                isRequired: false,
+                key: `${USABLE_VIALS}PageSize`,
+            },
+            {
+                isRequired: false,
+                key: `${USABLE_VIALS}Page`,
+            },
+            {
+                isRequired: false,
+                key: `${UNUSABLE_VIALS}Order`,
+            },
+            {
+                isRequired: false,
+                key: `${UNUSABLE_VIALS}PageSize`,
+            },
+            {
+                isRequired: false,
+                key: `${UNUSABLE_VIALS}Page`,
             },
         ],
     },

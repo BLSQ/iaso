@@ -18,11 +18,11 @@ import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
 import ExtensionIcon from '@material-ui/icons/Extension';
 import StorageIcon from '@material-ui/icons/Storage';
 import WatchLaterIcon from '@material-ui/icons/WatchLater';
-import { Dashboard } from './src/domains/Campaigns/Dashboard';
+import { Dashboard } from './src/domains/Campaigns/Dashboard/Dashboard';
 import { Calendar } from './src/domains/Calendar/Calendar';
-import { CampaignHistory } from './src/domains/Campaigns/campaignHistory/CampaignHistory.tsx';
+import { CampaignHistory } from './src/domains/Campaigns/campaignHistory/CampaignHistory';
 import { CountryNotificationsConfig } from './src/domains/Config/CountryNotification/CountryNotificationsConfig';
-import { ReasonsForDelay } from './src/domains/Config/ReasonsForDelay/ReasonsForDelay.tsx';
+import { ReasonsForDelay } from './src/domains/Config/ReasonsForDelay/ReasonsForDelay';
 import MESSAGES from './src/constants/messages';
 import {
     DASHBOARD_BASE_URL,
@@ -50,25 +50,25 @@ import fr from './src/constants/translations/fr.json';
 import en from './src/constants/translations/en.json';
 import { Lqas } from './src/domains/LQAS-IM/LQAS';
 import { ImStats } from './src/domains/LQAS-IM/IM';
-import { paginationPathParams } from '../../../hat/assets/js/apps/Iaso/routing/common.ts';
-import { GroupedCampaigns } from './src/domains/GroupedCampaigns/GroupedCampaigns.tsx';
-import { BudgetDetails } from './src/domains/Budget/BudgetDetails/BudgetDetails.tsx';
-import { BudgetList } from './src/domains/Budget/index.tsx';
-import { LqasAfroOverview } from './src/domains/LQAS-IM/LQAS/LqasAfroOverview/LqasAfroOverview.tsx';
-import { Nopv2Authorisations } from './src/domains/VaccineModule/Nopv2Authorisations/Nopv2Authorisations.tsx';
-import { Nopv2AuthorisationsDetails } from './src/domains/VaccineModule/Nopv2Authorisations/Details/Nopv2AuthorisationsDetails.tsx';
-import { VaccineSupplyChain } from './src/domains/VaccineModule/SupplyChain/VaccineSupplyChain.tsx';
-import { VaccineStockManagement } from './src/domains/VaccineModule/StockManagement/VaccineStockManagement.tsx';
-import { VaccineStockManagementDetails } from './src/domains/VaccineModule/StockManagement/Details/VaccineStockManagementDetails.tsx';
-import { VaccineStockVariation } from './src/domains/VaccineModule/StockManagement/StockVariation/VaccineStockVariation.tsx';
+import { paginationPathParams } from '../../../hat/assets/js/apps/Iaso/routing/common';
+import { GroupedCampaigns } from './src/domains/GroupedCampaigns/GroupedCampaigns';
+import { BudgetDetails } from './src/domains/Budget/BudgetDetails/BudgetDetails';
+import { BudgetList } from './src/domains/Budget';
+import { LqasAfroOverview } from './src/domains/LQAS-IM/LQAS/LqasAfroOverview/LqasAfroOverview';
+import { Nopv2Authorisations } from './src/domains/VaccineModule/Nopv2Authorisations/Nopv2Authorisations';
+import { Nopv2AuthorisationsDetails } from './src/domains/VaccineModule/Nopv2Authorisations/Details/Nopv2AuthorisationsDetails';
+import { VaccineSupplyChain } from './src/domains/VaccineModule/SupplyChain/VaccineSupplyChain';
+import { VaccineStockManagement } from './src/domains/VaccineModule/StockManagement/VaccineStockManagement';
+import { VaccineStockManagementDetails } from './src/domains/VaccineModule/StockManagement/Details/VaccineStockManagementDetails';
+import { VaccineStockVariation } from './src/domains/VaccineModule/StockManagement/StockVariation/VaccineStockVariation';
 import {
     DESTRUCTION,
     FORM_A,
     INCIDENT,
     UNUSABLE_VIALS,
     USABLE_VIALS,
-} from './src/domains/VaccineModule/StockManagement/constants.ts';
-import { VaccineSupplyChainDetails } from './src/domains/VaccineModule/SupplyChain/Details/VaccineSupplyChainDetails.tsx';
+} from './src/domains/VaccineModule/StockManagement/constants';
+import { VaccineSupplyChainDetails } from './src/domains/VaccineModule/SupplyChain/Details/VaccineSupplyChainDetails';
 
 const campaignsFilters = [
     {

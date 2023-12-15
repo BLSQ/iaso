@@ -1,14 +1,15 @@
 /* eslint-disable camelcase */
 import { useMemo } from 'react';
-import { UseQueryResult } from 'react-query';
+import { QueryKey, UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useSnackQuery } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 
 const DEFAULT_PAGE_SIZE = 40;
 const DEFAULT_PAGE = 1;
 const DEFAULT_ORDER = '-cvdpv2_notified_at';
+export const CAMPAIGNS_ENDPOINT = '/api/polio/campaigns/';
 
-type CampaignType = 'all' | 'preventive' | 'test' | 'regular';
+export type CampaignType = 'all' | 'preventive' | 'test' | 'regular';
 
 type Options = {
     pageSize?: number;
@@ -28,7 +29,7 @@ type Options = {
     fieldset?: string;
 };
 
-type GetCampaignsParams = {
+export type GetCampaignsParams = {
     limit?: number;
     page?: number;
     order?: string;
@@ -59,7 +60,7 @@ const getURL = (urlParams: GetCampaignsParams, url: string): string => {
     return `${url}?${queryString.toString()}`;
 };
 
-const useGetCampaignsOptions = (
+export const useGetCampaignsOptions = (
     options: Options,
     asCsv = false,
 ): GetCampaignsParams => {
@@ -105,17 +106,22 @@ const useGetCampaignsOptions = (
 
 export const useGetCampaigns = (
     options: Options = {},
-    url: string | undefined = '/api/polio/campaigns/',
+    url: string | undefined = CAMPAIGNS_ENDPOINT,
     queryKey?: string | unknown[],
+    queryOptions?: Record<string, any>,
 ): UseQueryResult => {
     const params: GetCampaignsParams = useGetCampaignsOptions(options);
     // adding the params to the queryKey to make sure it fetches when the query changes
-    const effectiveQueryKey = useMemo(() => {
+    const effectiveQueryKey: QueryKey = useMemo(() => {
+        const key: any[] = ['polio', 'campaigns', params];
         if (queryKey) {
-            return ['polio', 'campaigns', queryKey, params];
+            key.push(queryKey);
         }
-        return ['polio', 'campaigns', params];
-    }, [params, queryKey]);
+        if (queryOptions) {
+            key.push(queryOptions);
+        }
+        return key;
+    }, [params, queryKey, queryOptions]);
     return useSnackQuery({
         queryKey: effectiveQueryKey,
         queryFn: () => getRequest(getURL(params, url)),
@@ -124,6 +130,7 @@ export const useGetCampaigns = (
             structuralSharing: false,
             refetchOnWindowFocus: false,
             enabled: !!params.enabled,
+            ...queryOptions,
         },
     });
 };

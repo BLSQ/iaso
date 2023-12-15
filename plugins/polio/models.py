@@ -1,7 +1,6 @@
 import datetime
 import json
 from datetime import date
-from typing import Union
 from collections import defaultdict
 from typing import Any, Tuple, Union
 from uuid import uuid4
@@ -815,14 +814,6 @@ class CountryUsersGroup(models.Model):
 
     def __str__(self):
         return str(self.country)
-
-
-class LineListImport(models.Model):
-    file = models.FileField(upload_to="uploads/linelist/% Y/% m/% d/")
-    import_result = models.JSONField()
-    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
 
 
 class URLCache(models.Model):

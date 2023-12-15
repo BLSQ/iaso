@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const path = require('path');
 const webpack = require('webpack');
 const BundleTracker = require('webpack-bundle-tracker');
@@ -9,14 +11,12 @@ const LOCALE = 'fr';
 // If you launch the dev server with `WEBPACK_HOST=192.168.1.XXX  npm run dev`
 // where 192.168.1.XXX is your local IP address, you can access the dev server
 // from another device on the same network, typically from a mobile device or tablet
-let WEBPACK_HOST;
-if (process.env.WEBPACK_HOST !== undefined) {
-    WEBPACK_HOST = process.env.WEBPACK_HOST;
-} else {
-    WEBPACK_HOST = 'localhost';
-}
-
-const WEBPACK_URL = `http://${WEBPACK_HOST}:3000`;
+const WEBPACK_HOST = process.env.WEBPACK_HOST || 'localhost';
+const WEBPACK_PORT = process.env.WEBPACK_PORT || '3000';
+const WEBPACK_PROTOCOL = process.env.WEBPACK_PROTOCOL || 'http';
+const WEBPACK_URL = `${WEBPACK_PROTOCOL}://${WEBPACK_HOST}:${WEBPACK_PORT}`;
+const WEBPACK_PATH =
+    process.env.WEBPACK_PATH || path.resolve(__dirname, './assets/webpack/');
 
 const oldBrowsersConfig = [
     {
@@ -165,7 +165,7 @@ module.exports = {
     },
 
     output: {
-        path: path.resolve(__dirname, './assets/webpack/'),
+        path: WEBPACK_PATH,
         filename: '[name].js',
         sourceMapFilename: '[name].js.map',
         publicPath: `${WEBPACK_URL}/static/`, // Tell django to use this URL to load packages and not use STATIC_URL + bundle_name
@@ -175,27 +175,12 @@ module.exports = {
     // config for webpack-dev-server
     devServer: {
         historyApiFallback: true,
-        noInfo: false,
-        // needed so we can load the js from django (on another port or docker)
+        writeToDisk: true,
         headers: {
             'Access-Control-Allow-Origin': '*',
         },
         host: '0.0.0.0',
         port: 3000,
-        // It suppresses error shown in console, so it has to be set to false.
-        quiet: false,
-        // It suppresses everything except error, so it has to be set to false as well
-        // to see success build.
-        stats: {
-            // Config for minimal console.log mess.
-            assets: true,
-            colors: true,
-            version: false,
-            hash: false,
-            timings: true,
-            chunks: true,
-            chunkModules: false,
-        },
     },
 
     plugins: [
@@ -209,8 +194,8 @@ module.exports = {
         ),
         new webpack.NoEmitOnErrorsPlugin(), // don't reload if there is an error
         new BundleTracker({
-            path: __dirname,
-            filename: './assets/webpack/webpack-stats.json',
+            path: WEBPACK_PATH,
+            filename: 'webpack-stats.json',
         }),
         new webpack.DefinePlugin({
             __LOCALE: JSON.stringify(LOCALE),

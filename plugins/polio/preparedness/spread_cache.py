@@ -33,6 +33,7 @@ class CachedSpread:
                 "properties": sheet._properties,
             }
             sheets.append(dict_sheet)
+
         return CachedSpread(dict_spread)
 
     @property

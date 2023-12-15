@@ -3,7 +3,7 @@ import { string, number, object, arrayOf, func } from 'prop-types';
 import { Grid, Box, Divider, Typography, makeStyles } from '@material-ui/core';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
-import InputComponent from '../../../components/forms/InputComponent';
+import InputComponent from '../../../components/forms/InputComponent.tsx';
 import { useFormState } from '../../../hooks/form';
 import MESSAGES from '../messages';
 import {
@@ -50,9 +50,12 @@ const initialExportData = defaultVersionId => ({
     ref_status: 'all', // "New", "Validated" etc, cf orgunit search
     source_status: 'all', // "New", "Validated" etc, cf orgunit search
     fields_to_export: [
+        FIELDS_TO_EXPORT.geometry,
         FIELDS_TO_EXPORT.name,
         FIELDS_TO_EXPORT.parent,
         FIELDS_TO_EXPORT.geometry,
+        FIELDS_TO_EXPORT.openingDate,
+        FIELDS_TO_EXPORT.closedDate,
     ],
     source_version_id: null, // version id of the origin data source
     source_top_org_unit_id: null,

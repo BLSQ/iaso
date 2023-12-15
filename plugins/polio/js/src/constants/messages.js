@@ -49,6 +49,11 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Preparedness status',
         id: 'iaso.polio.label.preparednesSyncStatus',
     },
+    preparednessSomeWarningsDuringTheParsing: {
+        defaultMessage:
+            'Warning the application encountered problems while parsing the preparedness sheet',
+        id: 'iaso.polio.label.preparednessSomeWarningsDuringTheParsing',
+    },
     helpTextEditVaccineViaScope: {
         defaultMessage: 'The list of vaccines comes from the scope',
         id: 'iaso.polio.label.helpTextEditVaccineViaScope',
@@ -1603,6 +1608,7 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'You need to be part of a team to create or edit budget events',
     },
+    // DEPRECATED
     vialsDestroyed: {
         id: 'iaso.polio.label.vialsDestroyed',
         defaultMessage: 'Unusable vials destroyed',
@@ -1630,14 +1636,6 @@ const MESSAGES = defineMessages({
     date_signed_vrf_received: {
         id: 'iaso.polio.label.dateSignedVrf',
         defaultMessage: 'Date signed VRF received',
-    },
-    wastageRatio: {
-        id: 'iaso.polio.label.wastageRatio',
-        defaultMessage: 'Wastage ratio',
-    },
-    dosesPerVial: {
-        id: 'iaso.polio.label.dosesPerVial',
-        defaultMessage: 'Doses per vial',
     },
     reportingDelays: {
         id: 'iaso.polio.label.reportingDelays',
@@ -1675,10 +1673,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.receptionVaccineArrivalReport',
         defaultMessage: 'Reception of Arrival Report',
     },
-    estimatedDateOfArrival: {
-        id: 'iaso.polio.label.estimatedDateOfArrival',
-        defaultMessage: 'Estimated date of arrival',
-    },
+
     vialsShipped: {
         id: 'iaso.polio.label.vialsShipped',
         defaultMessage: 'Vials shipped',
@@ -1743,6 +1738,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.formAMissingVials',
         defaultMessage: 'Number of missing vials from the national form',
     },
+    // END DEPRECATED
     days: {
         id: 'iaso.polio.label.days',
         defaultMessage: 'Days',
@@ -2149,14 +2145,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.import_file.label',
         defaultMessage: 'Excel Line File',
     },
-    importLineList: {
-        id: 'iaso.polio.import_line_list',
-        defaultMessage: 'Import Line List',
-    },
-    campaignImportSuccess: {
-        id: 'iaso.polio.import_line_list.successMessage',
-        defaultMessage: 'Imported successfully {amount} campaign(s)',
-    },
     futureDateError: {
         id: 'iaso.polio.validation.futureDateError',
         defaultMessage: 'This date should not be in the future',
@@ -2397,7 +2385,11 @@ const MESSAGES = defineMessages({
     },
     vaccineSupplyChain: {
         id: 'iaso.polio.menu.vaccineSupplyChain',
-        defaultMessage: 'Vaccine supply chain',
+        defaultMessage: 'Supply chain',
+    },
+    vaccineStockManagement: {
+        id: 'iaso.polio.menu.vaccineStockManagement',
+        defaultMessage: 'Stock management',
     },
     latestManualRefresh: {
         id: 'iaso.polio.label.latestManualRefresh',

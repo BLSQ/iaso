@@ -12,6 +12,7 @@ from iaso.models import DataSource, OrgUnit, SourceVersion, ExternalCredentials
 from .common import ModelViewSet
 from ..tasks.dhis2_ou_importer import get_api
 from hat.menupermissions import models as permission
+from ..dhis2.url_helper import clean_url
 
 
 class DataSourceSerializer(serializers.ModelSerializer):
@@ -69,7 +70,7 @@ class DataSourceSerializer(serializers.ModelSerializer):
             new_credentials.name = credentials["dhis_name"]
             new_credentials.login = credentials["dhis_login"]
             new_credentials.password = credentials["dhis_password"]
-            new_credentials.url = credentials["dhis_url"]
+            new_credentials.url = clean_url(credentials["dhis_url"])
             new_credentials.save()
             ds.credentials = new_credentials
 
@@ -98,7 +99,8 @@ class DataSourceSerializer(serializers.ModelSerializer):
             if credentials["dhis_url"] != new_credentials.url and not credentials["dhis_password"]:
                 # Don't keep old password if we change the dhis2 url so the password can't be ex-filtrated.
                 new_credentials.password = ""
-            new_credentials.url = credentials["dhis_url"]
+
+            new_credentials.url = clean_url(credentials["dhis_url"])
             new_credentials.save()
             data_source.credentials = new_credentials
 
@@ -147,8 +149,8 @@ class TestCredentialSerializer(serializers.Serializer):
 
         password = data["dhis2_password"]
         dhis2_login = data["dhis2_login"]
-        dhis2_url = data["dhis2_url"]
-        dhis2_system_info_api = data["dhis2_url"] + "/api/system/info"
+        dhis2_url = clean_url(data["dhis2_url"])
+        dhis2_system_info_api = dhis2_url + "/api/system/info"
         # Since we obviously don't send password to front but may want to test an
         # existing setup, if url is same we reuse the current password
         ds: DataSource = data["data_source"]
@@ -166,7 +168,7 @@ class TestCredentialSerializer(serializers.Serializer):
 
         # check the authentication on the dhis2
         try:
-            rep = api.get("system/ping")
+            rep = api.get("system/info")
         except dhis2.exceptions.RequestException as err:
             if err.code == 404:
                 self.raise_exception("dhis2_url")
@@ -182,8 +184,15 @@ class TestCredentialSerializer(serializers.Serializer):
         # check the url authenticity throught the dhis2 api
         try:
             response = requests.get(dhis2_system_info_api, auth=(dhis2_login, password)).json()
-            if response["instanceBaseUrl"] != data["dhis2_url"]:
+            # dependending on the version the field url is not always the same
+            if "instanceBaseUrl" in response and response["instanceBaseUrl"] != dhis2_url:
                 self.raise_exception("dhis2_url")
+            if "contextPath" in response and response["contextPath"] != dhis2_url:
+                self.raise_exception("dhis2_url")
+            # just in case both fields are empty, at least verify that we have a version field
+            if "version" not in response:
+                self.raise_exception("dhis2_url")
+
         except json.decoder.JSONDecodeError:
             self.raise_exception("dhis2_url")
         return rep

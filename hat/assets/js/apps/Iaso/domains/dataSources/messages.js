@@ -376,6 +376,14 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Sort error, there must be a wrong parameter. Received: {sortBy}, {sortFocus}. Expected a combination of asc|desc and number|org_units_count',
     },
+    openingDate: {
+        id: 'iaso.orgUnits.openingDate',
+        defaultMessage: 'Opening date',
+    },
+    closingDate: {
+        id: 'iaso.orgUnits.closingDate',
+        defaultMessage: 'Closing date',
+    },
 });
 
 export default MESSAGES;

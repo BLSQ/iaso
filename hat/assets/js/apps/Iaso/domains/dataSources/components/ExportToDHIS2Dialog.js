@@ -53,6 +53,9 @@ const initialExportData = defaultVersionId => ({
         FIELDS_TO_EXPORT.geometry,
         FIELDS_TO_EXPORT.name,
         FIELDS_TO_EXPORT.parent,
+        FIELDS_TO_EXPORT.geometry,
+        FIELDS_TO_EXPORT.openingDate,
+        FIELDS_TO_EXPORT.closedDate,
     ],
     source_version_id: null, // version id of the origin data source
     source_top_org_unit_id: null,

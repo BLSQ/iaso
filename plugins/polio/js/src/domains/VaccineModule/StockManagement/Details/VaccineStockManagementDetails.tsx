@@ -64,6 +64,7 @@ export const VaccineStockManagementDetails: FunctionComponent<Props> = ({
         baseUrl: STOCK_MANAGEMENT_DETAILS,
     });
 
+    // Make 1 API call with both usable and not usable + vountry and campaign
     const { data: usableVials, isFetching: isFetchingUsable } =
         useGetUsableVials(
             router.params as StockManagementDetailsParams,
@@ -75,7 +76,6 @@ export const VaccineStockManagementDetails: FunctionComponent<Props> = ({
             router.params as StockManagementDetailsParams,
             tab === UNUSABLE_VIALS,
         );
-
     const { data: summary, isLoading: isLoadingSummary } =
         useGetStockManagementSummary(router.params.id);
 
@@ -92,7 +92,6 @@ export const VaccineStockManagementDetails: FunctionComponent<Props> = ({
     return (
         <>
             <TopBar title={title} displayBackButton goBack={goBack} />
-
             <Box className={classes.containerFullHeightPadded}>
                 <Grid container>
                     <Grid item xs={12} sm={6} md={4}>

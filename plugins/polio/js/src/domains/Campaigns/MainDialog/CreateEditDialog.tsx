@@ -1,7 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable camelcase */
-import React, { useEffect, useState, useMemo } from 'react';
-import PropTypes from 'prop-types';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import isEqual from 'lodash/isEqual';
 
 import { FormikProvider, useFormik } from 'formik';
@@ -13,7 +12,6 @@ import {
     DialogContent,
     DialogTitle,
     Grid,
-    Typography,
     Box,
 } from '@material-ui/core';
 
@@ -25,29 +23,27 @@ import {
 } from 'bluesquare-components';
 import { convertEmptyStringToNull } from '../../../utils/convertEmptyStringToNull';
 import { useFormValidator } from '../../../hooks/useFormValidator';
-import { BaseInfoForm, baseInfoFormFields } from '../BaseInfo/BaseInfoForm';
-import {
-    RiskAssessmentForm,
-    riskAssessmentFormFields,
-} from '../RiskAssessment/RiskAssessmentForm';
-import { ScopeForm, scopeFormFields } from '../Scope/ScopeForm.tsx';
-import { BudgetForm, budgetFormFields } from '../Budget/BudgetForm.tsx';
-import { PreparednessForm } from '../Preparedness/PreparednessForm';
 import { Form } from '../../../components/Form';
-import { RoundsForm, roundFormFields } from '../Rounds/RoundsForm';
-
 import { useSaveCampaign } from '../hooks/api/useSaveCampaign';
-import { useGetCampaignLogs } from '../campaignHistory/hooks/useGetCampaignHistory.ts';
-
+import { useGetCampaignLogs } from '../campaignHistory/hooks/useGetCampaignHistory';
 import { CAMPAIGN_HISTORY_URL } from '../../../constants/routes';
-
 import { useStyles } from '../../../styles/theme';
 import MESSAGES from '../../../constants/messages';
 import { useGetCampaign } from '../hooks/api/useGetCampaign';
-import { compareArraysValues } from '../../../utils/compareArraysValues.ts';
-import { PolioDialogTabs } from './PolioDialogTabs.tsx';
+import { PolioDialogTabs } from './PolioDialogTabs';
+import { usePolioDialogTabs } from './usePolioDialogTabs';
 
-const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
+type Props = {
+    isOpen: boolean;
+    onClose: () => void;
+    campaignId?: string;
+};
+
+const CreateEditDialog: FunctionComponent<Props> = ({
+    isOpen,
+    onClose,
+    campaignId,
+}) => {
     const { mutate: saveCampaign } = useSaveCampaign();
     const { data: selectedCampaign, isFetching } = useGetCampaign(
         isOpen && campaignId,
@@ -61,7 +57,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
     const schema = useFormValidator();
     const { formatMessage } = useSafeIntl();
 
-    const classes = useStyles();
+    const classes: Record<string, string> = useStyles();
 
     const handleSubmit = async (values, helpers) => {
         saveCampaign(convertEmptyStringToNull(values), {
@@ -90,6 +86,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         budget_current_state_key: '-',
         detection_status: 'PENDING',
         risk_assessment_status: 'TO_SUBMIT',
+        non_field_errors: undefined,
     };
 
     // Merge inplace default values with the one we get from the campaign.
@@ -115,69 +112,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         formik.resetForm();
         onClose();
     };
-    const tabs = useMemo(() => {
-        return [
-            {
-                title: formatMessage(MESSAGES.baseInfo),
-                form: BaseInfoForm,
-                hasTabError: compareArraysValues(
-                    baseInfoFormFields,
-                    formik.errors,
-                ),
-                key: 'baseInfo',
-            },
-            {
-                title: formatMessage(MESSAGES.rounds),
-                form: RoundsForm,
-                key: 'rounds',
-                hasTabError: compareArraysValues(
-                    roundFormFields(selectedCampaign?.rounds ?? []),
-                    formik.errors,
-                ),
-            },
-            {
-                title: formatMessage(MESSAGES.riskAssessment),
-                form: RiskAssessmentForm,
-                hasTabError: compareArraysValues(
-                    riskAssessmentFormFields,
-                    formik.errors,
-                ),
-                key: 'riskAssessment',
-            },
-            {
-                title: formatMessage(MESSAGES.scope),
-                form: ScopeForm,
-                disabled:
-                    !formik.values.initial_org_unit ||
-                    formik.values.rounds.length === 0,
-                hasTabError: compareArraysValues(
-                    scopeFormFields,
-                    formik.errors,
-                ),
-                key: 'scope',
-            },
-            {
-                title: formatMessage(MESSAGES.budget),
-                form: BudgetForm,
-                hasTabError: compareArraysValues(
-                    budgetFormFields(selectedCampaign?.rounds ?? []),
-                    formik.errors,
-                ),
-                key: 'budget',
-            },
-            {
-                title: formatMessage(MESSAGES.preparedness),
-                form: PreparednessForm,
-                key: 'preparedness',
-            },
-        ];
-    }, [
-        formatMessage,
-        formik.errors,
-        formik.values.initial_org_unit,
-        formik.values.rounds.length,
-        selectedCampaign?.rounds,
-    ]);
+    const tabs = usePolioDialogTabs(formik, selectedCampaign);
     const [selectedTab, setSelectedTab] = useState(0);
 
     const CurrentForm = tabs[selectedTab].form;
@@ -226,7 +161,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
                     </Box>
                 </Grid>
 
-                {selectedCampaign && campaignLogs?.length > 0 && (
+                {selectedCampaign && campaignLogs?.length && (
                     <Grid item xs={12} md={6} className={classes.historyLink}>
                         <Box pr={4} alignItems="center">
                             <IconButtonComponent
@@ -254,24 +189,6 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
                     <Form>
                         <CurrentForm />
                     </Form>
-                    <Grid container justifyContent="flex-end">
-                        <Grid item md={6}>
-                            {formik.errors?.non_field_errors?.map(
-                                (error_msg, i) => (
-                                    <Typography key={i} color="error">
-                                        {error_msg}
-                                    </Typography>
-                                ),
-                            )}
-                        </Grid>
-                    </Grid>
-                    {/* TO DO / SPECIFIC COMMIT TO REMOVE ERRORS ROUND */}
-                    {/* {formik.errors?.rounds && (
-                        <RoundsEmptyDates
-                            roundErrors={formik.errors.rounds}
-                            roundValues={formik.values.rounds}
-                        />
-                    )} */}
                 </FormikProvider>
             </DialogContent>
             <DialogActions className={classes.action}>
@@ -283,7 +200,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
                     {formatMessage(MESSAGES.cancel)}
                 </Button>
                 <Button
-                    onClick={formik.handleSubmit}
+                    onClick={() => formik.handleSubmit()}
                     color="primary"
                     variant="contained"
                     autoFocus
@@ -294,16 +211,6 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
             </DialogActions>
         </Dialog>
     );
-};
-
-CreateEditDialog.defaultProps = {
-    campaignId: undefined,
-};
-
-CreateEditDialog.propTypes = {
-    isOpen: PropTypes.bool.isRequired,
-    onClose: PropTypes.func.isRequired,
-    campaignId: PropTypes.string,
 };
 
 // There's naming conflict with component in Iaso

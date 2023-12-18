@@ -4,6 +4,7 @@ import React, {
     useState,
     Dispatch,
     SetStateAction,
+    useCallback,
 } from 'react';
 import { useDispatch } from 'react-redux';
 import { Column, useSafeIntl } from 'bluesquare-components';
@@ -21,13 +22,15 @@ import MESSAGES from '../messages';
 import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
 import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
 import getDisplayName from '../../../../utils/usersUtils';
-import { ApproveOrgUnitChangesDialog } from '../ApproveOrgUnitChangesDialog';
+import {
+    ApproveOrgUnitChangesDialog,
+    EditIconButton,
+} from '../ApproveOrgUnitChangesDialog';
 
 type ColumnCell<T> = { row: { original: T; index: number } };
 
 const useColumns = (
     setSelectedChangeRequest: Dispatch<SetStateAction<SelectedChangeRequest>>,
-    selectedChangeRequest: SelectedChangeRequest | undefined,
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
     return [
@@ -140,15 +143,10 @@ const useColumns = (
                 row: { original: changeRequest, index },
             }: ColumnCell<OrgUnitChangeRequest>): ReactElement => {
                 return (
-                    <ApproveOrgUnitChangesDialog
-                        titleMessage={formatMessage(MESSAGES.validate)}
-                        iconProps={{
-                            setSelectedChangeRequest,
-                            changeRequestId: changeRequest.id,
-                            index,
-                        }}
-                        changeRequestId={selectedChangeRequest?.id}
-                        changeRequestIndex={selectedChangeRequest?.index}
+                    <EditIconButton
+                        changeRequestId={changeRequest.id}
+                        index={index}
+                        setSelectedChangeRequest={setSelectedChangeRequest}
                     />
                 );
             },
@@ -176,23 +174,35 @@ export const ApproveOrgUnitChangesTable: FunctionComponent<Props> = ({
     const [selectedChangeRequest, setSelectedChangeRequest] = useState<
         SelectedChangeRequest | undefined
     >();
-    const columns = useColumns(setSelectedChangeRequest, selectedChangeRequest);
+    const { formatMessage } = useSafeIntl();
+    const columns = useColumns(setSelectedChangeRequest);
+    const handleCloseDialog = useCallback(() => {
+        setSelectedChangeRequest(undefined);
+    }, []);
     return (
-        // @ts-ignore
-        <TableWithDeepLink
-            marginTop={false}
-            data={data?.results ?? []}
-            pages={data?.pages ?? 1}
-            defaultSorted={[{ id: 'org_unit__name', desc: false }]}
-            columns={columns}
-            count={data?.count ?? 0}
-            baseUrl={baseUrl}
-            countOnTop={false}
-            params={params}
-            extraProps={{ loading: isFetching, selectedChangeRequest }}
-            onTableParamsChange={p => {
-                dispatch(redirectTo(baseUrl, p));
-            }}
-        />
+        <>
+            <ApproveOrgUnitChangesDialog
+                isOpen={Boolean(selectedChangeRequest)}
+                titleMessage={formatMessage(MESSAGES.validate)}
+                selectedChangeRequest={selectedChangeRequest}
+                closeDialog={handleCloseDialog}
+            />
+            {/* @ts-ignore */}
+            <TableWithDeepLink
+                marginTop={false}
+                data={data?.results ?? []}
+                pages={data?.pages ?? 1}
+                defaultSorted={[{ id: 'org_unit__name', desc: false }]}
+                columns={columns}
+                count={data?.count ?? 0}
+                baseUrl={baseUrl}
+                countOnTop={false}
+                params={params}
+                extraProps={{ loading: isFetching, selectedChangeRequest }}
+                onTableParamsChange={p => {
+                    dispatch(redirectTo(baseUrl, p));
+                }}
+            />
+        </>
     );
 };

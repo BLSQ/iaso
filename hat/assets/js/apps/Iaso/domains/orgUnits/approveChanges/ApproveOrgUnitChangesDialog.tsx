@@ -8,15 +8,11 @@ import React, {
 import SettingsIcon from '@material-ui/icons/Settings';
 import {
     IntlMessage,
-    makeFullModal,
-    ConfirmCancelModal,
     LoadingSpinner,
     useSafeIntl,
+    SimpleModal,
 } from 'bluesquare-components';
-import * as Yup from 'yup';
-
-import { useFormik } from 'formik';
-import { Box, IconButton } from '@material-ui/core';
+import { Box, Button, IconButton } from '@material-ui/core';
 import MESSAGES from './messages';
 import { useGetApprovalProposal } from './hooks/api/useGetApprovalProposal';
 import { SelectedChangeRequest } from './Table/ApproveOrgUnitChangesTable';
@@ -25,88 +21,79 @@ type Props = {
     titleMessage: IntlMessage;
     isOpen: boolean;
     closeDialog: () => void;
-    changeRequestId?: number;
-    changeRequestIndex?: number;
+    selectedChangeRequest?: SelectedChangeRequest;
 };
 
-const validationSchema = Yup.object().shape({
-    id: Yup.string().nullable(),
-});
-
-const ApproveOrgUnitChangesDialog: FunctionComponent<Props> = ({
+export const ApproveOrgUnitChangesDialog: FunctionComponent<Props> = ({
     titleMessage,
     isOpen,
     closeDialog,
-    changeRequestId,
-    changeRequestIndex,
+    selectedChangeRequest,
 }) => {
-    const {
-        values,
-        // setFieldValue,
-        // setFieldError,
-        isValid,
-        handleSubmit,
-        // errors,
-    } = useFormik({
-        initialValues: {
-            id: null,
-        },
-        validationSchema,
-        onSubmit: () => {
-            // eslint-disable-next-line no-console
-            console.log(values);
-        },
-    });
     const { data: changeRequest, isFetching: isFetchingChangeRequest } =
-        useGetApprovalProposal(changeRequestId);
+        useGetApprovalProposal(selectedChangeRequest?.id);
     return (
-        <ConfirmCancelModal
-            titleMessage={titleMessage}
-            onConfirm={() => handleSubmit()}
-            cancelMessage={MESSAGES.cancel}
-            confirmMessage={MESSAGES.save}
-            maxWidth="xs"
+        <SimpleModal
             open={isOpen}
-            allowConfirm={isValid}
-            closeDialog={closeDialog}
+            maxWidth="xs"
             onClose={() => null}
-            onCancel={() => {
-                closeDialog();
-            }}
             id="approve-orgunit-changes-dialog"
             dataTestId="pprove-orgunit-changes-dialog"
+            titleMessage={titleMessage}
+            closeDialog={closeDialog}
+            buttons={() => (
+                <>
+                    <Button
+                        onClick={() => {
+                            closeDialog();
+                        }}
+                        color="primary"
+                        data-test="cancel-button"
+                    >
+                        CANCEL
+                    </Button>
+                    <Button
+                        data-test="confirm-button"
+                        onClick={() => {
+                            console.log('SUBMIT');
+                        }}
+                        disabled={false}
+                        color="primary"
+                        autoFocus
+                    >
+                        CONFIRM
+                    </Button>
+                </>
+            )}
         >
             <Box minHeight={200}>
-                INDEX: {changeRequestIndex}
+                INDEX: {selectedChangeRequest?.index}
                 <br />
                 {changeRequest?.id}
                 {isFetchingChangeRequest && <LoadingSpinner absolute />}
             </Box>
-        </ConfirmCancelModal>
+        </SimpleModal>
     );
 };
 
 type PropsIcon = {
-    onClick: () => void;
     changeRequestId: number;
     setSelectedChangeRequest: Dispatch<SetStateAction<SelectedChangeRequest>>;
     index: number;
 };
 
 export const EditIconButton: FunctionComponent<PropsIcon> = ({
-    onClick,
     setSelectedChangeRequest,
     changeRequestId,
     index,
 }) => {
     const { formatMessage } = useSafeIntl();
     const handleClick = useCallback(() => {
-        onClick();
         setSelectedChangeRequest({
             id: changeRequestId,
             index,
         });
-    }, [changeRequestId, index, onClick, setSelectedChangeRequest]);
+    }, [changeRequestId, index, setSelectedChangeRequest]);
     return (
         <IconButton
             onClick={handleClick}
@@ -117,9 +104,3 @@ export const EditIconButton: FunctionComponent<PropsIcon> = ({
         </IconButton>
     );
 };
-const modalWithIcon = makeFullModal(
-    ApproveOrgUnitChangesDialog,
-    EditIconButton,
-);
-
-export { modalWithIcon as ApproveOrgUnitChangesDialog };

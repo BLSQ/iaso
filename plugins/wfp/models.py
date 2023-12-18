@@ -35,7 +35,7 @@ ADMISSION_CRITERIAS = [
 ]
 
 ADMISSION_TYPES = [
-    ("new_case", _("new case")),
+    ("new_case", _("New case")),
     ("readmission_as_non_respondent", _("Readmission as non-respondent")),
     ("referred_from_otp_sam", _("Referred from OTP (SAM)")),
     ("referred_from_sc", _("Referred from SC")),

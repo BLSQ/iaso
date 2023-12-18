@@ -308,8 +308,6 @@ class CustomPermissionSupport(models.Model):
             .exclude(codename__contains="iaso_beneficiaries")
             # Wait for the web UI to be ready before displaying `org_unit_change_request` perms.
             .exclude(codename__contains="org_unit_change_request")
-            # Wait for the web UI to be ready before displaying `iaso_polio_notifications` perms.
-            .exclude(codename__contains="iaso_polio_notifications")
             .order_by("id")
         )
         #  in future filter this on a feature flags, so we can disable it by account

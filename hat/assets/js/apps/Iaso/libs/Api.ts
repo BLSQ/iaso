@@ -192,3 +192,19 @@ export const putRequest = (
         headers: { 'Content-Type': 'application/json' },
         signal,
     }).then(response => response.json());
+
+export const optionsRequest = async (
+    url: string,
+    signal?: Nullable<AbortSignal>,
+): Promise<any> => {
+    return iasoFetch(url, {
+        method: 'OPTIONS',
+        headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+        },
+        signal,
+    }).then(response => {
+        return response.json();
+    });
+};

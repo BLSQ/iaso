@@ -471,6 +471,10 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'trypelim.permissions.zones_shapes_edit',
         defaultMessage: 'Edit zone shapes',
     },
+    iaso_polio_notifications: {
+        id: 'iaso.permissions.iaso_polio_notifications',
+        defaultMessage: 'Polio notifications - Read and Write',
+    },
 });
 
 export default PERMISSIONS_MESSAGES;

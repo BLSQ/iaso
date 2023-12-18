@@ -33,6 +33,7 @@ const USERS_ADMIN = 'iaso_users';
 const USERS_MANAGEMENT = 'iaso_users_managed';
 const WORKFLOWS = 'iaso_workflows';
 const MODULES = 'iaso_modules';
+const POLIO_NOTIFICATIONS = 'iaso_polio_notifications';
 
 export {
     COMPLETENESS,
@@ -57,6 +58,7 @@ export {
     POLIO_CONFIG,
     POLIO_SUPPLY_CHAIN_READ,
     POLIO_SUPPLY_CHAIN_WRITE,
+    POLIO_NOTIFICATIONS,
     PROJECTS,
     REGISTRY,
     SOURCES,

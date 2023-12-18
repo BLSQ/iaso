@@ -32,6 +32,7 @@ MODULE_PERMISSIONS = {
         "iaso_polio_budget",
         "iaso_polio_vaccine_supply_chain_read",
         "iaso_polio_vaccine_supply_chain_write",
+        "iaso_polio_notifications",
     ],
     "REGISTRY": ["iaso_registry", "iaso_test", "iaso_testtt", "iaso_testttr", "iaso_testttrr"],
 }

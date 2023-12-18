@@ -8,16 +8,20 @@ from django.urls import reverse
 from django.utils.safestring import mark_safe
 
 from iaso.admin import IasoJSONEditorWidget
+from plugins.polio.api.vaccines.supply_chain import validate_rounds_and_campaign
 
 from .budget.models import BudgetStep, BudgetStepFile, BudgetStepLink, MailTemplate, WorkflowModel
 from .models import (
     Campaign,
     CampaignGroup,
-    ReasonForDelay,
-    RoundDateHistoryEntry,
-    Round,
     Config,
     CountryUsersGroup,
+    DestructionReport,
+    IncidentReport,
+    Notification,
+    NotificationImport,
+    OutgoingStockMovement,
+    ReasonForDelay,
     Round,
     RoundDateHistoryEntry,
     SpreadSheetImport,
@@ -26,12 +30,9 @@ from .models import (
     VaccineAuthorization,
     VaccinePreAlert,
     VaccineRequestForm,
-    NotificationImport,
-    Notification,
+    VaccineStock,
     create_polio_notifications_async,
 )
-
-from plugins.polio.api.vaccines.supply_chain import validate_rounds_and_campaign
 
 
 class CampaignAdmin(admin.ModelAdmin):
@@ -169,6 +170,35 @@ class VaccineRequestFormAdmin(admin.ModelAdmin):
     inlines = [VaccinePreAlertAdminInline, VaccineArrivalReportAdminInline]
     readonly_fields = ["created_at", "updated_at"]
     list_display = ["campaign", "get_country", "count_pre_alerts", "count_arrival_reports", "created_at"]
+
+    def save_related(self, request, form, formsets, change):
+        for formset in formsets:
+            if not formset.is_valid():
+                print(f"Formset errors: {formset.errors}")
+            else:
+                formset.save()
+
+
+@admin.register(VaccineStock)
+class VaccineStockAdmin(admin.ModelAdmin):
+    model = VaccineStock
+    raw_id_fields = ("country",)
+    list_display = ["country", "vaccine"]
+
+
+@admin.register(OutgoingStockMovement)
+class OutgoingStockMovementAdmin(admin.ModelAdmin):
+    model = OutgoingStockMovement
+
+
+@admin.register(DestructionReport)
+class DestructionReport(admin.ModelAdmin):
+    model = DestructionReport
+
+
+@admin.register(IncidentReport)
+class IncidentReport(admin.ModelAdmin):
+    model = IncidentReport
 
 
 class RoundAdmin(admin.ModelAdmin):

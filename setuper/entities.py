@@ -1,6 +1,8 @@
 from datetime import datetime
 import uuid
-import os
+
+from fake import fake_person
+from submissions import submission2xml
 
 
 def setup_entities(account_name, iaso_client):
@@ -28,7 +30,8 @@ def setup_entities(account_name, iaso_client):
         "label_keys": [],
     }
 
-    reg_form_id = iaso_client.post("/api/forms/", json=reg_form_data)["id"]
+    reg_form = iaso_client.post("/api/forms/", json=reg_form_data)
+    reg_form_id = reg_form["id"]
 
     # associate it's form version and upload xlsform
 
@@ -36,7 +39,7 @@ def setup_entities(account_name, iaso_client):
     reg_form_version_data = {"form_id": reg_form_id, "xls_file": reg_test_file}
     reg_form_files = {"xls_file": open(reg_test_file, "rb")}
 
-    iaso_client.post("/api/formversions/", files=reg_form_files, data=reg_form_version_data)
+    reg_form_version = iaso_client.post("/api/formversions/", files=reg_form_files, data=reg_form_version_data)
 
     # create a form
     follow_form_data = {
@@ -103,9 +106,6 @@ def setup_entities(account_name, iaso_client):
         {"condition": True, "form_ids": [follow_form_id], "order": 0},
     )
 
-    with open("data/entity-child_registration.xml", "r") as f:
-        xml = f.read()
-
     # fetch orgunit ids
     limit = 20
     orgunits = iaso_client.get("/api/orgunits/", params={"limit": limit, "orgUnitTypeId": hf_out["id"]})["orgunits"]
@@ -114,53 +114,75 @@ def setup_entities(account_name, iaso_client):
     print("-- Submitting %d form instances" % limit)
     count = 0
     for org_unit_id in org_unit_ids:
+        child = fake_person()
+
         the_uuid = str(uuid.uuid4())
         file_name = "example_%s.xml" % the_uuid
-        variables = {"uuid": the_uuid}  # TO DO: we should update the version of the form here too
-
-        instance_xml = xml.format(**variables)
 
         local_path = "generated/%s" % file_name
-        f = open(local_path, "w")
-        f.write(instance_xml)
-        f.close()
         current_datetime = int(datetime.now().timestamp())
 
-        instance_body = [
-            {
-                "id": the_uuid,
-                "latitude": None,
-                "created_at": current_datetime,
-                "updated_at": current_datetime,
-                "orgUnitId": org_unit_id,
-                "formId": reg_form_id,
-                "longitude": None,
-                "accuracy": 0,
-                "altitude": 0,
-                "imgUrl": "imgUrl",
-                "file": local_path,
-                "name": file_name,
-            }
-        ]
-
-        iaso_client.post(f"/api/instances/?app_id={account_name}", json=instance_body)
-
-        with open(local_path) as fp_xml:
-            iaso_client.post("/sync/form_upload/", files={"xml_submission_file": fp_xml})
-
-        current_datetime = int(datetime.now().timestamp())
-        entity_data = {
-            "name": "New Client",
-            "entity_type": entity_type["id"],
-            "entity_type_id": entity_type["id"],
-            "attributes": the_uuid,
-            "account": current_user["account"]["id"],
+        instance_data = {
+            "id": the_uuid,
+            "latitude": None,
             "created_at": current_datetime,
             "updated_at": current_datetime,
+            "orgUnitId": org_unit_id,
+            "formId": reg_form_id,
+            "longitude": None,
+            "accuracy": 0,
+            "altitude": 0,
+            "imgUrl": "imgUrl",
+            "file": local_path,
+            "name": file_name,
         }
-        iaso_client.post(f"/api/entities/bulk_create/?app_id={account_name}", json=[entity_data])
+        iaso_client.post(f"/api/instances/?app_id={account_name}", json=[instance_data])
+        iaso_client.post(
+            "/sync/form_upload/",
+            files={
+                "xml_submission_file": (
+                    local_path,
+                    submission2xml(
+                        {
+                            "start": "2022-09-07T17:54:55.805+02:00",
+                            "end": "2022-09-07T17:55:31.192+02:00",
+                            "register": {
+                                "name": child["firstname"],
+                                "father_name": child["lastname"],
+                                "age_type": 1,
+                                "age": child["age_in_months"],
+                                "child_details": {
+                                    "gender": child["gender"],
+                                    "caretaker_name": child["lastname"],
+                                    "caretaker_rs": "brother",
+                                    "hc": "hc_E",
+                                },
+                            },
+                            "meta": {"instanceID": "uuid:" + the_uuid},
+                        },
+                        form_version_id=reg_form_version["version_id"],
+                        form_id="entity-child_registration",
+                    ),
+                )
+            },
+        )
+
+        current_datetime = int(datetime.now().timestamp())
+        iaso_client.post(
+            f"/api/entities/bulk_create/?app_id={account_name}",
+            json=[
+                {
+                    "name": "New Client",
+                    "entity_type": entity_type["id"],
+                    "entity_type_id": entity_type["id"],
+                    "attributes": the_uuid,
+                    "account": current_user["account"]["id"],
+                    "created_at": current_datetime,
+                    "updated_at": current_datetime,
+                }
+            ],
+        )
 
         count = count + 1
 
-        os.remove(local_path)
     print(iaso_client.get("/api/instances", params={"limit": 1})["count"], "instances created")

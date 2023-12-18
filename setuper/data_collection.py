@@ -1,6 +1,8 @@
 import uuid
 from datetime import datetime
-import os
+from submissions import submission2xml
+from fake import fake_person
+from random import random
 
 
 def setup_instances(account_name, iaso_client):
@@ -24,7 +26,7 @@ def setup_instances(account_name, iaso_client):
         "periods_before_allowed": 0,
         "periods_after_allowed": 0,
         "device_field": "deviceid",
-        "location_field": "",
+        "location_field": "gps",
         "label_keys": [],
     }
 
@@ -36,16 +38,9 @@ def setup_instances(account_name, iaso_client):
     data = {"form_id": form_id, "xls_file": test_file}
     form_files = {"xls_file": open(test_file, "rb")}
 
-    try:
-        iaso_client.post("/api/formversions/", files=form_files, data=data)
-    except:
-        # TODO mutate the xlsform to have a unique id in the "form_id" based on account_name
-        pass
+    form_version = iaso_client.post("/api/formversions/", files=form_files, data=data)
 
     ######## creating submissions/instances
-    with open("data/instance.xml", "r") as f:
-        xml = f.read()
-
     print("-- Downloading org units")
 
     # fetch orgunit ids
@@ -58,14 +53,7 @@ def setup_instances(account_name, iaso_client):
     for org_unit_id in org_unit_ids:
         the_uuid = str(uuid.uuid4())
         file_name = "example_%s.xml" % the_uuid
-        variables = {"uuid": the_uuid}  # TO DO: we should update the version of the form here too
-
-        instance_xml = xml.format(**variables)
-
         local_path = "generated/%s" % file_name
-        f = open(local_path, "w")
-        f.write(instance_xml)
-        f.close()
         current_datetime = int(datetime.now().timestamp())
 
         instance_body = [
@@ -87,15 +75,34 @@ def setup_instances(account_name, iaso_client):
 
         iaso_client.post(f"/api/instances/?app_id={account_name}", json=instance_body)
 
+        person = fake_person()
+        latitude = 40 + random()
+        longitude = -99 + random()
+        instance_json = {
+            "title": None,
+            "name": person["lastname"] + " " + person["firstname"],
+            "test_submission": "yes",
+            "test_group": {"CAN_part_1_note": None, "imgUrl": "imgUrl", "gps": f"{latitude} {longitude} 0 0"},
+            "meta": {"instanceID": "uuid:" + the_uuid},
+        }
+
         # see hat/sync/views.py
-        with open(local_path) as fp_xml:
-            image_number = (count % 3) + 1
-            with open(f"./data/fosa{image_number}.jpeg", "rb") as fp_image:
-                iaso_client.post("/sync/form_upload/", files={"xml_submission_file": fp_xml, "imgUrl": fp_image})
+        image_number = (count % 3) + 1
+        with open(f"./data/fosa{image_number}.jpeg", "rb") as fp_image:
+            iaso_client.post(
+                "/sync/form_upload/",
+                files={
+                    "xml_submission_file": (
+                        local_path,
+                        submission2xml(
+                            instance_json, form_version_id=form_version["version_id"], form_id="SAMPLE_FORM_new5"
+                        ),
+                    ),
+                    "imgUrl": fp_image,
+                },
+            )
 
         count = count + 1
-
-        os.remove(local_path)
 
         ## mobile code
         # https://github.com/BLSQ/iaso-mobile-app/blob/develop/odk-collect/src/main/java/org/odk/collect/android/tasks/InstanceServerUploaderTask.java#L88

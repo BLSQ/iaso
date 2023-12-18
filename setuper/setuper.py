@@ -26,15 +26,23 @@ def setup_account(account_name):
     return IasoClient(server_url=SERVER, user_name=account_name, password=account_name)
 
 
+seed_instances = True
+
+seed_entities = True
+
+
 if __name__ == "__main__":
     account_name = "".join(random.choices(string.ascii_lowercase, k=7))
     print("Creating account:", account_name)
     iaso_client = setup_account(account_name)
     setup_orgunits(account_name, iaso_client=iaso_client)
-    setup_entities(account_name, iaso_client=iaso_client)
 
-    # setup_instances(account_name, iaso_client=iaso_client)
-    # setup_users_teams_micro_planning(account_name, iaso_client=iaso_client)
+    if seed_instances:
+        setup_instances(account_name, iaso_client=iaso_client)
+        setup_users_teams_micro_planning(account_name, iaso_client=iaso_client)
+
+    if seed_entities:
+        setup_entities(account_name, iaso_client=iaso_client)
 
     print("-----------------------------------------------")
     print("Account created:", account_name)

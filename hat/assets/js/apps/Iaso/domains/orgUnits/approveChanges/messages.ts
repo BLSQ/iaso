@@ -81,6 +81,38 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.validate',
         defaultMessage: 'Validate',
     },
+    location: {
+        id: 'iaso.label.location',
+        defaultMessage: 'Location',
+    },
+    openingDate: {
+        id: 'iaso.changeRequest.openingDate',
+        defaultMessage: 'Opening date',
+    },
+    closingDate: {
+        id: 'iaso.changeRequest.closingDate',
+        defaultMessage: 'Closing date',
+    },
+    multiReferenceInstancesLabel: {
+        id: 'iaso.orgUnits.MultiReferenceInstancesLabel',
+        defaultMessage: 'Reference submissions',
+    },
+    label: {
+        id: 'iaso.label.label',
+        defaultMessage: 'Label',
+    },
+    newValue: {
+        id: 'iaso.changeRequest.newValue',
+        defaultMessage: 'New value',
+    },
+    oldValue: {
+        id: 'iaso.changeRequest.oldValue',
+        defaultMessage: 'Initial version',
+    },
+    reject: {
+        id: 'iaso.changeRequest.reject',
+        defaultMessage: 'Modified version',
+    },
 });
 
 export default MESSAGES;

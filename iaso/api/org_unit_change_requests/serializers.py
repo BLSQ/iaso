@@ -8,6 +8,27 @@ from iaso.utils.serializer.three_dim_point_field import ThreeDimPointField
 from iaso.api.common import TimestampField
 
 
+class UserNestedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "first_name", "last_name"]
+        ref_name = "UserNestedSerializerForChangeRequest"
+
+
+class OrgUnitNestedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrgUnit
+        fields = ["id", "name"]
+        ref_name = "OrgUnitNestedSerializerForChangeRequest"
+
+
+class OrgUnitTypeNestedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrgUnitType
+        fields = ["id", "name", "short_name"]
+        ref_name = "OrgUnitTypeNestedSerializerForChangeRequest"
+
+
 class InstanceForChangeRequestSerializer(serializers.ModelSerializer):
     """
     Used for nesting `Instance` instances.
@@ -31,8 +52,8 @@ class OrgUnitForChangeRequestSerializer(serializers.ModelSerializer):
     Used for nesting `OrgUnit` instances.
     """
 
-    parent = serializers.CharField(source="parent.name", default="")
-    org_unit_type_name = serializers.CharField(source="org_unit_type.name")
+    parent = OrgUnitNestedSerializer()
+    org_unit_type = OrgUnitTypeNestedSerializer()
     groups = serializers.SerializerMethodField(method_name="get_groups")
     location = ThreeDimPointField()
     reference_instances = InstanceForChangeRequestSerializer(many=True)
@@ -43,8 +64,7 @@ class OrgUnitForChangeRequestSerializer(serializers.ModelSerializer):
             "id",
             "parent",
             "name",
-            "org_unit_type_id",
-            "org_unit_type_name",
+            "org_unit_type",
             "groups",
             "location",
             "opening_date",
@@ -89,12 +109,6 @@ class MobileOrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
             "new_closed_date",
             "new_reference_instances",
         ]
-
-
-class UserNestedSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ["id", "username", "first_name", "last_name"]
 
 
 class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
@@ -146,8 +160,8 @@ class OrgUnitChangeRequestRetrieveSerializer(serializers.ModelSerializer):
     org_unit = OrgUnitForChangeRequestSerializer()
     created_by = UserNestedSerializer()
     updated_by = UserNestedSerializer()
-    new_parent = serializers.CharField(source="new_parent.name", default="")
-    new_org_unit_type_name = serializers.CharField(source="new_org_unit_type.name", default="")
+    new_parent = OrgUnitNestedSerializer()
+    new_org_unit_type = OrgUnitTypeNestedSerializer()
     new_groups = serializers.SerializerMethodField(method_name="get_new_groups")
     new_location = ThreeDimPointField()
     new_reference_instances = InstanceForChangeRequestSerializer(many=True)
@@ -170,8 +184,7 @@ class OrgUnitChangeRequestRetrieveSerializer(serializers.ModelSerializer):
             "org_unit",
             "new_parent",
             "new_name",
-            "new_org_unit_type_id",
-            "new_org_unit_type_name",
+            "new_org_unit_type",
             "new_groups",
             "new_location",
             "new_location_accuracy",

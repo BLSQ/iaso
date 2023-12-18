@@ -26,11 +26,13 @@ const useStyles = makeStyles(theme => ({
 type Props = {
     latitude: number | undefined;
     longitude: number | undefined;
+    maxZoom?: number;
 };
 
 export const MarkerMap: FunctionComponent<Props> = ({
     latitude,
     longitude,
+    maxZoom,
 }) => {
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
 
@@ -38,7 +40,7 @@ export const MarkerMap: FunctionComponent<Props> = ({
 
     const boundsOptions: Record<string, [number, number] | number> = {
         padding: [500, 500],
-        maxZoom: currentTile.maxZoom,
+        maxZoom: maxZoom || currentTile.maxZoom,
     };
 
     const bounds = useMemo(() => {
@@ -74,6 +76,9 @@ export const MarkerMap: FunctionComponent<Props> = ({
                         latitude,
                         longitude,
                     }}
+                    markerProps={() => ({
+                        fillColor: 'red',
+                    })}
                 />
             </MapContainer>
         </div>

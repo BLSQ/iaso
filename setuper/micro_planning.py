@@ -1,4 +1,5 @@
 import json
+from fake import fake_person
 
 
 def setup_users_teams_micro_planning(account_name, iaso_client):
@@ -7,12 +8,12 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
     project_ids = [x["id"] for x in iaso_client.get("/api/projects/")["projects"]]
 
     permissions_codes = [x["codename"] for x in iaso_client.get("/api/permissions/")["permissions"]]
-    user_names = open("./data/user_names.txt").read().split("\n")
 
     for user_index in range(1, 40):
-        user_name = user_names[(user_index - 1) % len(user_names)]
-        first_name = user_name.split(" ")[0]
-        last_name = user_name.replace(first_name, "")
+        person = fake_person()
+
+        first_name = person["firstname"]
+        last_name = person["lastname"]
         user_identifier = f"user{user_index:02d}"
         user = {
             "id": None,

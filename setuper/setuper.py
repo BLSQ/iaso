@@ -26,7 +26,7 @@ def setup_account(account_name):
     return IasoClient(server_url=SERVER, user_name=account_name, password=account_name)
 
 
-seed_instances = True
+seed_instances = False
 
 seed_entities = True
 

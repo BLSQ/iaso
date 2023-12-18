@@ -1,6 +1,7 @@
 import datetime
 import os
 import shutil
+import time_machine
 
 from django.core.files.uploadedfile import UploadedFile
 from django.test import override_settings
@@ -12,10 +13,14 @@ from iaso.models import OrgUnit
 from iaso.test import TestCase
 from plugins.polio.models import Notification, NotificationImport, NotificationXlsxImporter
 
+
+DT = datetime.datetime(2023, 12, 12, 11, 0, 0, 0, tzinfo=timezone.utc)
+
 TEST_MEDIA_ROOT = os.path.join(settings.BASE_DIR, "media/_test")
 
 
 @override_settings(MEDIA_ROOT=TEST_MEDIA_ROOT)
+@time_machine.travel(DT, tick=False)
 class NotificationImportTestCase(TestCase):
     """
     Test NotificationImport model.
@@ -90,22 +95,22 @@ class NotificationImportTestCase(TestCase):
         notification_import = NotificationImport(file="foo.xlsx", account=self.account, created_by=self.user)
         self.assertEqual(str(notification_import), "foo.xlsx - new")
 
-    def test_create_notifications_with_invalid_format(self):
+    def test_read_excel_with_invalid_format(self):
         with open(self.invalid_file_path, "rb") as xls_file:
             notification_import = NotificationImport.objects.create(
                 file=UploadedFile(xls_file), account=self.account, created_by=self.user
             )
         with self.assertRaises(ValueError) as error:
-            notification_import.create_notifications(created_by=self.user)
+            notification_import.read_excel(notification_import.file)
         self.assertIn("Invalid Excel file", str(error.exception))
 
-    def test_create_notifications_with_wrong_cols(self):
+    def test_read_excel_with_wrong_cols(self):
         with open(self.wrong_cols_file_path, "rb") as xls_file:
             notification_import = NotificationImport.objects.create(
                 file=UploadedFile(xls_file), account=self.account, created_by=self.user
             )
         with self.assertRaises(ValueError) as error:
-            notification_import.create_notifications(created_by=self.user)
+            notification_import.read_excel(notification_import.file)
         self.assertEqual(str(error.exception), "Missing column PROVINCE.")
 
     def test_create_notifications(self):
@@ -128,6 +133,7 @@ class NotificationImportTestCase(TestCase):
         self.assertEqual(notification1.org_unit, self.district_cambulo)
         self.assertEqual(notification1.site_name, "ELIZANDRA ELSA")
         self.assertEqual(notification1.created_by, self.user)
+        self.assertEqual(notification1.created_at, DT)
         self.assertEqual(notification1.updated_at, None)
         self.assertEqual(notification1.updated_by, None)
         self.assertEqual(notification1.import_source, notification_import)
@@ -143,9 +149,30 @@ class NotificationImportTestCase(TestCase):
         self.assertEqual(notification2.org_unit, self.district_cuvango)
         self.assertEqual(notification2.site_name, "JOSEFA NGOMBE")
         self.assertEqual(notification2.created_by, self.user)
+        self.assertEqual(notification2.created_at, DT)
         self.assertEqual(notification2.updated_at, None)
         self.assertEqual(notification2.updated_by, None)
         self.assertEqual(notification2.import_source, notification_import)
+
+    def test_update_notifications(self):
+        with open(self.file_path, "rb") as xls_file:
+            notification_import = NotificationImport.objects.create(
+                file=UploadedFile(xls_file), account=self.account, created_by=self.user
+            )
+
+        notification_import.create_notifications(created_by=self.user)
+        # Import data a second time (it must be treated as an update).
+        notification_import.create_notifications(created_by=self.user)
+
+        self.assertEqual(Notification.objects.count(), 2)
+
+        notification1 = Notification.objects.get(epid_number="ANG-LNO-CAM-19-001")
+        self.assertEqual(notification1.updated_by, self.user)
+        self.assertEqual(notification1.updated_at, DT)
+
+        notification2 = Notification.objects.get(epid_number="ANG-HUI-CUV-19-002")
+        self.assertEqual(notification2.updated_by, self.user)
+        self.assertEqual(notification2.updated_at, DT)
 
 
 class NotificationXlsxImporterTestCase(TestCase):

@@ -18,6 +18,7 @@ import ExtensionIcon from '@mui/icons-material/Extension';
 import WatchLaterIcon from '@mui/icons-material/WatchLater';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import StorageIcon from '@mui/icons-material/Storage';
+import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import { Dashboard } from './src/domains/Campaigns/Dashboard';
 import { Calendar } from './src/domains/Calendar/Calendar';
 import { CampaignHistory } from './src/domains/Campaigns/campaignHistory/CampaignHistory.tsx';
@@ -43,6 +44,9 @@ import {
     VACCINE_SUPPLY_CHAIN,
     VACCINE_SUPPLY_CHAIN_DETAILS,
     STOCK_MANAGEMENT,
+    STOCK_MANAGEMENT_DETAILS,
+    STOCK_VARIATION,
+    NOTIFICATIONS_BASE_URL,
 } from './src/constants/routes';
 import fr from './src/constants/translations/fr.json';
 import en from './src/constants/translations/en.json';
@@ -57,7 +61,17 @@ import { Nopv2Authorisations } from './src/domains/VaccineModule/Nopv2Authorisat
 import { Nopv2AuthorisationsDetails } from './src/domains/VaccineModule/Nopv2Authorisations/Details/Nopv2AuthorisationsDetails.tsx';
 import { VaccineSupplyChain } from './src/domains/VaccineModule/SupplyChain/VaccineSupplyChain.tsx';
 import { VaccineStockManagement } from './src/domains/VaccineModule/StockManagement/VaccineStockManagement.tsx';
+import { VaccineStockManagementDetails } from './src/domains/VaccineModule/StockManagement/Details/VaccineStockManagementDetails.tsx';
+import { VaccineStockVariation } from './src/domains/VaccineModule/StockManagement/StockVariation/VaccineStockVariation.tsx';
+import {
+    DESTRUCTION,
+    FORM_A,
+    INCIDENT,
+    UNUSABLE_VIALS,
+    USABLE_VIALS,
+} from './src/domains/VaccineModule/StockManagement/constants.ts';
 import { VaccineSupplyChainDetails } from './src/domains/VaccineModule/SupplyChain/Details/VaccineSupplyChainDetails.tsx';
+import { Notifications } from './src/domains/Notifications/index.tsx';
 
 const campaignsFilters = [
     {
@@ -465,6 +479,96 @@ const routes = [
         ],
     },
     {
+        baseUrl: STOCK_MANAGEMENT_DETAILS,
+        component: props => <VaccineStockManagementDetails {...props} />,
+        permissions: ['iaso_polio'],
+        params: [
+            {
+                isRequired: false,
+                key: `id`,
+            },
+            {
+                isRequired: false,
+                key: `tab`,
+            },
+            {
+                isRequired: false,
+                key: `${USABLE_VIALS}Order`,
+            },
+            {
+                isRequired: false,
+                key: `${USABLE_VIALS}PageSize`,
+            },
+            {
+                isRequired: false,
+                key: `${USABLE_VIALS}Page`,
+            },
+            {
+                isRequired: false,
+                key: `${UNUSABLE_VIALS}Order`,
+            },
+            {
+                isRequired: false,
+                key: `${UNUSABLE_VIALS}PageSize`,
+            },
+            {
+                isRequired: false,
+                key: `${UNUSABLE_VIALS}Page`,
+            },
+        ],
+    },
+    {
+        baseUrl: STOCK_VARIATION,
+        component: props => <VaccineStockVariation {...props} />,
+        permissions: ['iaso_polio'],
+        params: [
+            {
+                isRequired: false,
+                key: `id`,
+            },
+            {
+                isRequired: false,
+                key: `tab`,
+            },
+            {
+                isRequired: false,
+                key: `${FORM_A}Order`,
+            },
+            {
+                isRequired: false,
+                key: `${FORM_A}PageSize`,
+            },
+            {
+                isRequired: false,
+                key: `${FORM_A}Page`,
+            },
+            {
+                isRequired: false,
+                key: `${DESTRUCTION}Order`,
+            },
+            {
+                isRequired: false,
+                key: `${DESTRUCTION}PageSize`,
+            },
+            {
+                isRequired: false,
+                key: `${DESTRUCTION}Page`,
+            },
+            {
+                isRequired: false,
+                key: `${INCIDENT}Order`,
+            },
+            {
+                isRequired: false,
+                key: `${INCIDENT}PageSize`,
+            },
+            {
+                isRequired: false,
+                key: `${INCIDENT}Page`,
+            },
+        ],
+    },
+    {
         baseUrl: VACCINE_SUPPLY_CHAIN_DETAILS,
         component: props => <VaccineSupplyChainDetails {...props} />,
         permissions: ['iaso_polio_vaccine_supply_chain_write'],
@@ -518,6 +622,21 @@ const routes = [
             },
         ],
         isRootUrl: false,
+    },
+    {
+        baseUrl: NOTIFICATIONS_BASE_URL,
+        component: props => <Notifications {...props} />,
+        permissions: ['iaso_polio_notifications'],
+        params: [
+            { isRequired: false, key: 'order' },
+            { isRequired: false, key: 'page' },
+            { isRequired: false, key: 'pageSize' },
+            { isRequired: false, key: 'vdpv_category' },
+            { isRequired: false, key: 'source' },
+            { isRequired: false, key: 'country' },
+            { isRequired: false, key: 'date_of_onset_after' },
+            { isRequired: false, key: 'date_of_onset_before' },
+        ],
     },
 ];
 
@@ -623,6 +742,12 @@ const menu = [
                         icon: props => <StorageIcon {...props} />,
                     },
                 ],
+            },
+            {
+                label: MESSAGES.notifications,
+                key: 'notifications',
+                permissions: ['iaso_polio_notifications'],
+                icon: props => <NotificationsActiveIcon {...props} />,
             },
             {
                 label: MESSAGES.configuration,

@@ -207,9 +207,7 @@ const OrgUnitTreeviewModal = ({
                 onUpdate={onUpdate}
                 allowSelection={item => {
                     if (allowedTypes.length === 0) return true;
-                    if (allowedTypes.includes(item.org_unit_type_id))
-                        return true;
-                    return false;
+                    return allowedTypes.includes(item.org_unit_type_id);
                 }}
             />
             <Box

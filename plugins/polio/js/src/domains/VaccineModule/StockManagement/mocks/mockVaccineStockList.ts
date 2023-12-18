@@ -7,6 +7,7 @@ export const mockVaccineStockList: any = {
     has_previous: false,
     results: [
         {
+            id: 1,
             country_name: 'CAMEROON',
             country_id: 29685,
             vaccine_type: 'bOPV',
@@ -18,6 +19,7 @@ export const mockVaccineStockList: any = {
             vials_destroyed: 50,
         },
         {
+            id: 2,
             country_name: 'DEMOCRATIC REPUBLIC OF THE CONGO',
             country_id: 29727,
             vaccine_type: 'bOPV',
@@ -29,6 +31,7 @@ export const mockVaccineStockList: any = {
             vials_destroyed: 100,
         },
         {
+            id: 3,
             country_name: 'MALAWI',
             country_id: 29706,
             vaccine_type: 'bOPV',
@@ -40,6 +43,7 @@ export const mockVaccineStockList: any = {
             vials_destroyed: 100,
         },
         {
+            id: 4,
             country_name: 'SENEGAL',
             country_id: 29713,
             vaccine_type: 'bOPV',
@@ -51,6 +55,7 @@ export const mockVaccineStockList: any = {
             vials_destroyed: 50,
         },
         {
+            id: 5,
             country_name: 'ZAMBIA',
             country_id: 29725,
             vaccine_type: 'bOPV',

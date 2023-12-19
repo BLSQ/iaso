@@ -33,27 +33,45 @@ def page(request, page_slug):
     if page.needs_authentication and ((not request.user.is_authenticated) or (request.user not in page.users.all())):
         return redirect_to_login(path, resolved_login_url, "next")
     if page.type == IFRAME:
+        content = {"src": page.content, "title": page.name, "page": page}
+        if page.analytics_script:
+            content["analytics_script"] = page.analytics_script
         response = render(
             request,
             "iaso/pages/iframe.html",
-            {"src": page.content, "title": page.name, "page": page, "analytics_script": page.analytics_script},
+            content,
         )
     elif page.type == TEXT:
+        content = {
+            "text": page.content,
+            "title": page.name,
+        }
+        if page.analytics_script:
+            content["analytics_script"] = page.analytics_script
+
         response = render(
             request,
             "iaso/pages/text.html",
-            {"text": page.content, "title": page.name, "analytics_script": page.analytics_script},
+            content,
         )
     elif page.type == POWERBI:
         config = load_powerbi_config_for_page(page)
+        content = {
+            "config": config,
+            "title": page.name,
+            "page": page,
+        }
+        if page.analytics_script:
+            content["analytics_script"] = page.analytics_script
         response = render(
             request,
             "iaso/pages/powerbi.html",
-            {"config": config, "title": page.name, "page": page, "analytics_script": page.analytics_script},
+            content,
         )
     else:
         raw_html = page.content
-        raw_html = addTag(raw_html, page.analytics_script)
+        if page.analytics_script:
+            raw_html = addTag(raw_html, page.analytics_script)
         response = HttpResponse(raw_html)
     response["X-Frame-Options"] = "ALLOW"
     return response

@@ -266,6 +266,10 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.iaso_org_unit_groups',
         defaultMessage: 'Organisation unit groups management',
     },
+    iaso_org_unit_groups_tooltip: {
+        id: 'iaso.permissions.tooltip.iaso_org_unit_groups',
+        defaultMessage: 'Manage groups of organisation units',
+    },
     iaso_reports: {
         id: 'iaso.permission.reports',
         defaultMessage: 'Devices',

@@ -53,7 +53,6 @@ const initialExportData = defaultVersionId => ({
         FIELDS_TO_EXPORT.geometry,
         FIELDS_TO_EXPORT.name,
         FIELDS_TO_EXPORT.parent,
-        FIELDS_TO_EXPORT.geometry,
         FIELDS_TO_EXPORT.openingDate,
         FIELDS_TO_EXPORT.closedDate,
     ],

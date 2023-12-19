@@ -4,10 +4,11 @@ from micro_planning import setup_users_teams_micro_planning
 from data_collection import setup_instances
 from pyramid import setup_orgunits
 from entities import setup_entities
+from registry import setup_registry
 import string
 import random
 
-iaso_client = IasoClient(SERVER, ADMIN_USER_NAME, ADMIN_PASSWORD)
+iaso_client = IasoClient(server_url=SERVER, user_name=ADMIN_USER_NAME, password=ADMIN_PASSWORD)
 
 
 def setup_account(account_name):
@@ -26,9 +27,11 @@ def setup_account(account_name):
     return IasoClient(server_url=SERVER, user_name=account_name, password=account_name)
 
 
-seed_instances = False
+seed_instances = True
 
 seed_entities = True
+
+seed_registry = True
 
 
 if __name__ == "__main__":
@@ -36,6 +39,9 @@ if __name__ == "__main__":
     print("Creating account:", account_name)
     iaso_client = setup_account(account_name)
     setup_orgunits(account_name, iaso_client=iaso_client)
+
+    if seed_registry:
+        setup_registry(account_name, iaso_client=iaso_client)
 
     if seed_instances:
         setup_instances(account_name, iaso_client=iaso_client)

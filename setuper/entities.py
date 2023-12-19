@@ -113,7 +113,7 @@ def setup_entities(account_name, iaso_client):
     orgunits = iaso_client.get("/api/orgunits/", params={"limit": limit, "orgUnitTypeId": hf_out["id"]})["orgunits"]
     org_unit_ids = [ou["id"] for ou in orgunits]
 
-    print("-- Submitting %d form instances" % limit)
+    print("-- Submitting %d submissions" % limit)
     count = 0
     for org_unit_id in org_unit_ids:
         child = fake_person()

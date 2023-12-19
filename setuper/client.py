@@ -35,6 +35,34 @@ class IasoClient:
         self.log(resp)
         return resp
 
+    def patch(self, url, json=None, data=None, files=None):
+        self.log(url, json)
+        print(url, json)
+        r = requests.patch(self.server_url + url, json=json, data=data, headers=self.headers, files=files)
+        resp = None
+        try:
+            resp = r.json()
+            r.raise_for_status()
+        except Exception as e:
+            print(resp, r)
+            raise e
+        self.log(resp)
+        return resp
+
+    def put(self, url, json=None, data=None, files=None):
+        self.log(url, json)
+        print(url, json)
+        r = requests.put(self.server_url + url, json=json, data=data, headers=self.headers, files=files)
+        resp = None
+        try:
+            resp = r.json()
+            r.raise_for_status()
+        except Exception as e:
+            print(resp, r)
+            raise e
+        self.log(resp)
+        return resp
+
     def get(self, url, params=None):
         r = requests.get(self.server_url + url, params=params, headers=self.headers)
         payload = r.json()

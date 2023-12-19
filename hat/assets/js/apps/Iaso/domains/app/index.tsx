@@ -10,7 +10,9 @@ type Props = {
 };
 
 const App: FunctionComponent<Props> = ({ history, userHomePage }) => {
-    const { routes, isLoadingRoutes } = useRoutes(userHomePage);
+    const { routes, isLoadingRoutes } = useRoutes(
+        userHomePage && userHomePage !== '' ? userHomePage : undefined,
+    );
     useSnackBars();
     return (
         <>

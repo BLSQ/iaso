@@ -4,14 +4,8 @@ import {
     textPlaceholder,
     useSafeIntl,
 } from 'bluesquare-components';
-import {
-    Box,
-    Paper,
-    Tab,
-    Tabs,
-    Typography,
-    makeStyles,
-} from '@material-ui/core';
+import { Box, Paper, Tab, Tabs, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     STOCK_MANAGEMENT_DETAILS,
     STOCK_VARIATION,

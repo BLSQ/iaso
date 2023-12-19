@@ -12,6 +12,7 @@ type Props = {
     required?: boolean;
     clearable?: boolean;
     disabled?: boolean;
+    allowedTypes?: number[];
     errors?: string[];
 };
 
@@ -26,6 +27,7 @@ export const OrgUnitsLevels: FunctionComponent<Props> = ({
     required = false,
     clearable = true,
     disabled = false,
+    allowedTypes = [],
     errors: backendErrors = undefined,
 }) => {
     const { name } = field;
@@ -55,6 +57,7 @@ export const OrgUnitsLevels: FunctionComponent<Props> = ({
                 required={required}
                 clearable={clearable}
                 disabled={disabled}
+                allowedTypes={allowedTypes}
             />
             {isLoading && (
                 <Box

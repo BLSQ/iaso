@@ -152,7 +152,6 @@ export const useRedirections: RedirectionsMethod = (
             ...baseRedirections,
         ];
     }
-    console.log('redirections', redirections);
     return redirections.map(redirection => {
         if (redirection.component) {
             return (

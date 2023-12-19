@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import OutlinedInput from '@material-ui/core/OutlinedInput';
+import OutlinedInput from '@mui/material/OutlinedInput';
 
 import {
     injectIntl,
@@ -36,7 +36,7 @@ function FileInputComponent({
                 error={hasErrors}
             />
             <OutlinedInput
-                size="small"
+                // size="small"
                 disabled={disabled}
                 id={`input-text-${keyValue}`}
                 type="file"

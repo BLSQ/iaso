@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Box } from '@material-ui/core';
+import { Box } from '@mui/material';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 
 import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';

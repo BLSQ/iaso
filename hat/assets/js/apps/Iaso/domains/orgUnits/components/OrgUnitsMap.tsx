@@ -7,7 +7,8 @@ import {
     Tooltip,
     ScaleControl,
 } from 'react-leaflet';
-import { Grid, makeStyles, Box } from '@material-ui/core';
+import { Grid, Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     useSafeIntl,
     commonStyles,

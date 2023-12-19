@@ -2,9 +2,10 @@ import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { Box, Button, Grid, makeStyles, Typography } from '@material-ui/core';
+import { Box, Button, Grid, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
-import Search from '@material-ui/icons/Search';
+import Search from '@mui/icons-material/Search';
 import {
     commonStyles,
     useSafeIntl,

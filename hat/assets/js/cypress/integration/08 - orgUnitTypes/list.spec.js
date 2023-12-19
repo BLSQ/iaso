@@ -33,24 +33,12 @@ describe('Org unit types', () => {
                     limit: '20',
                     page: '1',
                 },
+                times: 10000,
             },
             {
                 fixture: 'orgunittypes/page1_limit20.json',
             },
         ).as('getOrgUnitTypes');
-        cy.intercept(
-            {
-                pathname: '/api/v2/orgunittypes/**',
-                query: {
-                    order: 'name',
-                    limit: '20',
-                    page: '2',
-                },
-            },
-            {
-                fixture: 'orgunittypes/page1_limit20.json',
-            },
-        );
         cy.intercept('GET', '/api/profiles/me/**', superUser);
     });
 
@@ -60,6 +48,17 @@ describe('Org unit types', () => {
         describe('Table', () => {
             beforeEach(() => {
                 cy.visit(baseUrl);
+                cy.intercept(
+                    {
+                        pathname: '/api/v2/orgunittypes/**',
+                        query: {
+                            page: '2',
+                        },
+                    },
+                    {
+                        fixture: 'orgunittypes/page2_limit20.json',
+                    },
+                );
                 cy.wait('@getOrgUnitTypes');
             });
 
@@ -128,7 +127,7 @@ describe('Org unit types', () => {
                 cy.get('@editIcon').should('exist');
             });
             it('displays tooltip when hovering', () => {
-                cy.assertTooltipDiplay('editIcon');
+                cy.assertButtonTooltipDiplay('editIcon', 'Edit');
             });
             it('opens modal when clicked', () => {
                 cy.get('@editIcon')
@@ -172,9 +171,8 @@ describe('Org unit types', () => {
             it('displays tooltip when hovering type with no org units', () => {
                 cy.visit(baseUrl);
                 cy.wait('@getOrgUnitTypes');
-                // This is going to be fail if the structure of the button changes and the aria-describedby attribute moves to the eg the underlying svg
                 cy.get('#delete-button-2').as('deleteIcon');
-                cy.assertTooltipDiplay('deleteIcon');
+                cy.assertButtonTooltipDiplay('deleteIcon', 'Delete');
             });
             it('does not display tooltip when hovering type with org units', () => {
                 cy.visit(baseUrl);

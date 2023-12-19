@@ -8,7 +8,8 @@ import { commonStyles } from 'bluesquare-components';
 import { useDispatch, useSelector } from 'react-redux';
 import { MapContainer, ScaleControl } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
-import { Box, makeStyles } from '@material-ui/core';
+import { Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import {
     getLatLngBounds,

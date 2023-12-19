@@ -16,9 +16,9 @@ import {
     TableHead,
     Box,
     Typography,
-    makeStyles,
-} from '@material-ui/core';
-import MapIcon from '@material-ui/icons/Map';
+} from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import MapIcon from '@mui/icons-material/Map';
 import { OK_COLOR, FAIL_COLOR } from '../../../../styles/constants';
 import { LQAS_PASS, LQAS_FAIL } from '../constants';
 import { useStyles } from '../../../../styles/theme';

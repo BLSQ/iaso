@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
-import { Box, Grid } from '@material-ui/core';
+import { Box, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 import { push } from 'react-router-redux';

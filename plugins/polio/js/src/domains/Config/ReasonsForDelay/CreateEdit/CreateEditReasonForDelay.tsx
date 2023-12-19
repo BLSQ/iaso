@@ -5,7 +5,7 @@ import {
     makeFullModal,
     AddButton,
 } from 'bluesquare-components';
-import { Box, Divider } from '@material-ui/core';
+import { Box, Divider } from '@mui/material';
 import { FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
 import MESSAGES from '../../../../constants/messages';

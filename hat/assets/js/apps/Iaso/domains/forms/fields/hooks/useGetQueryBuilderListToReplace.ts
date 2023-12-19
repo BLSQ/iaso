@@ -1,5 +1,5 @@
 import { QueryBuilderListToReplace } from 'bluesquare-components';
-import { purple, blue } from '@material-ui/core/colors';
+import { purple, blue } from '@mui/material/colors';
 
 export const useGetQueryBuilderListToReplace =
     (): QueryBuilderListToReplace[] => {

@@ -6,12 +6,12 @@ import {
     DialogContent,
     DialogActions,
     Button,
-    makeStyles,
     Box,
     Typography,
     useTheme,
     Tooltip,
-} from '@material-ui/core';
+} from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     // @ts-ignore
     commonStyles,
@@ -20,11 +20,11 @@ import {
     // @ts-ignore
     useSafeIntl,
 } from 'bluesquare-components';
-import ReportIcon from '@material-ui/icons/Report';
+import ReportIcon from '@mui/icons-material/Report';
 // @ts-ignore
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import { UseMutateAsyncFunction } from 'react-query';
-import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { useGetOrgUnitTypes } from '../hooks/requests/useGetOrgUnitTypes';
 
 import MESSAGES from '../messages';

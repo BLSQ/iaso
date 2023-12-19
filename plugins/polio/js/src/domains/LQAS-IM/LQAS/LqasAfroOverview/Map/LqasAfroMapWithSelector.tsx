@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
-import { Box, Paper, makeStyles, Tabs, Tab } from '@material-ui/core';
+import { Box, Paper, Tabs, Tab } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 import { LIST, MAP, paperElevation } from '../../../shared/constants';

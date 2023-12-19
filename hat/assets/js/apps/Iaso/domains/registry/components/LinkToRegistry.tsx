@@ -1,11 +1,11 @@
 import React, { FunctionComponent } from 'react';
 import { useDispatch } from 'react-redux';
-import { makeStyles } from '@material-ui/core';
+import { makeStyles } from '@mui/styles';
 import {
     IconButton as IconButtonComponent,
     useKeyPressListener,
 } from 'bluesquare-components';
-import MenuBookIcon from '@material-ui/icons/MenuBook';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
 import { Link } from 'react-router';
 import classNames from 'classnames';
 

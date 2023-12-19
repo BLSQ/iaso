@@ -1,9 +1,10 @@
-import { Box, makeStyles, Typography } from '@material-ui/core';
+import { Box, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { useFormikContext } from 'formik';
 import React, { FunctionComponent, useMemo } from 'react';
 // @ts-ignore
 import { useSafeIntl, IconButton } from 'bluesquare-components';
-import AddIcon from '@material-ui/icons/Add';
+import AddIcon from '@mui/icons-material/Add';
 import classNames from 'classnames';
 import MESSAGES from '../../../constants/messages';
 import { NamedLink } from './NamedLink';

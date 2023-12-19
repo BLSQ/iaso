@@ -1,7 +1,8 @@
 import React, { FunctionComponent, useMemo } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
-import { Paper, makeStyles, ClickAwayListener, Box } from '@material-ui/core';
+import { Paper, ClickAwayListener, Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import classnames from 'classnames';
 
 import { OrgUnitMarker, OrgUnitShape } from '../types/locations';

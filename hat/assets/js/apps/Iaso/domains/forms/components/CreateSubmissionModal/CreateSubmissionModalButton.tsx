@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { IconButton } from 'bluesquare-components';
-import PublishIcon from '@material-ui/icons/Publish';
+import PublishIcon from '@mui/icons-material/Publish';
 import MESSAGES from '../../messages';
 
 type Props = { onClick: () => void };

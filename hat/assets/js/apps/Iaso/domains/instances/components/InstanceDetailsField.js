@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Grid, withStyles, Typography } from '@material-ui/core';
+import { Grid, Typography } from '@mui/material';
+import { withStyles } from '@mui/styles';
 
 import { textPlaceholder, commonStyles } from 'bluesquare-components';
 

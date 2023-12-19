@@ -1,5 +1,5 @@
 import React, { ReactElement, useMemo } from 'react';
-import { ListAlt, Storage, Assignment } from '@material-ui/icons/';
+import { ListAlt, Storage, Assignment } from '@mui/icons-material/';
 import { useSafeIntl } from 'bluesquare-components';
 
 import OrgUnitSvg from '../../../components/svg/OrgUnitSvgComponent';

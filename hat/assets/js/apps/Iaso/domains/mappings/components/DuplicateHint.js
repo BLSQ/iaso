@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Alert from '@material-ui/lab/Alert';
+import Alert from '@mui/lab/Alert';
 import { useSafeIntl } from 'bluesquare-components';
 import { isNeverMapped } from '../question_mappings';
 import MESSAGES from '../messages';

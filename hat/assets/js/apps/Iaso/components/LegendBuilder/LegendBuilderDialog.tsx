@@ -7,12 +7,11 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import * as Yup from 'yup';
-import SettingsIcon from '@material-ui/icons/Settings';
-import IconButton from '@material-ui/core/IconButton';
+import SettingsIcon from '@mui/icons-material/Settings';
+import { IconButton, Box, Button } from '@mui/material';
 
 import { useFormik } from 'formik';
-import { Box, Button } from '@material-ui/core';
-import Add from '@material-ui/icons/Add';
+import Add from '@mui/icons-material/Add';
 import { MESSAGES } from './messages';
 import { ScaleThreshold } from './types';
 import { LegendBuilder } from './index';

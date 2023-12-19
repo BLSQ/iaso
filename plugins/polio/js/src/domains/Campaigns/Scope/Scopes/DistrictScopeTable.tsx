@@ -22,13 +22,13 @@ import {
     TableRow,
     Typography,
     Box,
-} from '@material-ui/core';
+} from '@mui/material';
 import sortBy from 'lodash/sortBy';
 import { cloneDeep } from 'lodash';
-import MapIcon from '@material-ui/icons/Map';
+import MapIcon from '@mui/icons-material/Map';
 
-import CheckIcon from '@material-ui/icons/Check';
-import SelectAllIcon from '@material-ui/icons/SelectAll';
+import CheckIcon from '@mui/icons-material/Check';
+import SelectAllIcon from '@mui/icons-material/SelectAll';
 import MESSAGES from '../../../../constants/messages';
 import { useStyles } from '../../../../styles/theme';
 

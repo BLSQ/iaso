@@ -98,7 +98,7 @@ const goToPage = (
     cy.intercept('GET', '/api/profiles/me/**', fakeUser);
     cy.intercept('GET', '/api/v2/orgunittypes/', {
         fixture: 'orgunittypes/list.json',
-    });
+    }).as('getOrgunittypes');
     cy.intercept(
         'GET',
         '/api/forms/?all=true&order=name&fields=name%2Cperiod_type%2Clabel_keys%2Cid%2Clatest_form_version',
@@ -145,6 +145,62 @@ describe('Submissions', () => {
         goToPage(superUser, {}, emptyFixture);
         cy.wait('@getSubmissions').then(() => {
             cy.wrap(interceptFlag).should('eq', true);
+        });
+    });
+
+    it('change filters should deep link and call api with correct params', () => {
+        goToPage();
+        cy.intercept(
+            'GET',
+            '/api/orgunits/treesearch/?&rootsForUser=true&defaultVersion=true&validation_status=all&ignoreEmptyNames=true',
+            {
+                fixture: 'orgunits/list.json',
+            },
+        ).as('getOrgunits');
+        cy.intercept(
+            'GET',
+            '/api/forms/1/?fields=name,period_type,label_keys,id,org_unit_type_ids',
+            {
+                fixture: 'forms/detail.json',
+            },
+        );
+        cy.intercept('GET', '/api/forms/1/?fields=possible_fields', {
+            fixture: 'forms/possibleFields.json',
+        });
+        cy.intercept('GET', '/api/orgunits/3/', {
+            fixture: 'orgunits/details.json',
+        });
+        cy.wait(['@getSubmissions', '@getOrgunittypes']).then(() => {
+            interceptFlag = false;
+            cy.intercept(
+                {
+                    method: 'GET',
+                    pathname: '/api/instances/**',
+                    query: {
+                        ...defaultQuery,
+                        withLocation: newFilters.withLocation.urlValue,
+                        orgUnitTypeId: newFilters.orgUnitTypeId.urlValue,
+                        status: newFilters.status.urlValue,
+                        search: newFilters.search.urlValue,
+                        orgUnitParentId: newFilters.levels.urlValue,
+                        dateFrom: newFilters.dateFrom.apiValue,
+                        dateTo: newFilters.dateTo.apiValue,
+                        form_ids: newFilters.formIds.urlValue,
+                    },
+                },
+                req => {
+                    interceptFlag = true;
+                    req.reply({
+                        statusCode: 200,
+                        body: listFixture,
+                    });
+                },
+            ).as('getSubmissionsSearch');
+            testPageFilters(newFilters);
+
+            cy.wait('@getSubmissionsSearch').then(() => {
+                cy.wrap(interceptFlag).should('eq', true);
+            });
         });
     });
     describe('page', () => {
@@ -356,62 +412,6 @@ describe('Submissions', () => {
         });
     });
 
-    it('change filters should deep link and call api with correct params', () => {
-        cy.intercept(
-            'GET',
-            '/api/orgunits/treesearch/?&rootsForUser=true&defaultVersion=true&validation_status=all&ignoreEmptyNames=true',
-            {
-                fixture: 'orgunits/list.json',
-            },
-        ).as('getOrgunits');
-        cy.intercept(
-            'GET',
-            '/api/forms/1/?fields=name,period_type,label_keys,id,org_unit_type_ids',
-            {
-                fixture: 'forms/detail.json',
-            },
-        );
-        cy.intercept('GET', '/api/forms/1/?fields=possible_fields', {
-            fixture: 'forms/possibleFields.json',
-        });
-        cy.intercept('GET', '/api/orgunits/3/', {
-            fixture: 'orgunits/details.json',
-        });
-        goToPage();
-        cy.wait('@getSubmissions').then(() => {
-            interceptFlag = false;
-            cy.intercept(
-                {
-                    method: 'GET',
-                    pathname: '/api/instances/**',
-                    query: {
-                        ...defaultQuery,
-                        withLocation: newFilters.withLocation.urlValue,
-                        orgUnitTypeId: newFilters.orgUnitTypeId.urlValue,
-                        status: newFilters.status.urlValue,
-                        search: newFilters.search.urlValue,
-                        orgUnitParentId: newFilters.levels.urlValue,
-                        dateFrom: newFilters.dateFrom.apiValue,
-                        dateTo: newFilters.dateTo.apiValue,
-                        form_ids: newFilters.formIds.urlValue,
-                    },
-                },
-                req => {
-                    interceptFlag = true;
-                    req.reply({
-                        statusCode: 200,
-                        body: listFixture,
-                    });
-                },
-            ).as('getSubmissionsSearch');
-            testPageFilters(newFilters);
-
-            cy.wait('@getSubmissionsSearch').then(() => {
-                cy.wrap(interceptFlag).should('eq', true);
-            });
-        });
-    });
-
     it('period picker should correctly deep link changes and call api with correct params', () => {
         goToPage();
         const fillPeriodPicker = (id, optionId, defaultValueIndex = 0) => {
@@ -478,7 +478,7 @@ describe('Submissions', () => {
 
     it('advanced settings should filter correctly', () => {
         goToPage();
-        cy.get('[data-test="advanced-settings"]').click();
+        cy.get('[data-test="advanced-settings"]').click({ force: true });
         cy.get('[data-test="modificationDate"]')
             .find('[data-test="start-date"]')
             .find('input.MuiInputBase-input')

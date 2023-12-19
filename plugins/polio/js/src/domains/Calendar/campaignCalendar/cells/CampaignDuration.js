@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import classnames from 'classnames';
 import { useSafeIntl } from 'bluesquare-components';
 
-import { TableCell } from '@material-ui/core';
+import { TableCell } from '@mui/material';
 import { useStyles } from '../Styles';
 
 import MESSAGES from '../../../../constants/messages';

@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { TableRow, TableBody } from '@material-ui/core';
+import { TableRow, TableBody } from '@mui/material';
 import { useStyles } from './Styles';
 
 import { getCells } from './utils';

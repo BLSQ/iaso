@@ -73,6 +73,8 @@ export type InputComponentProps = {
         min?: number;
         max?: number;
         decimalScale?: number;
+        decimalSeparator?: '.' | ',';
+        thousandSeparator?: '.' | ',';
     };
     // eslint-disable-next-line no-unused-vars
     setFieldError?: (keyValue: string, message: string) => void;

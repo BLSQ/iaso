@@ -6,7 +6,8 @@ import {
 } from 'bluesquare-components';
 import { Popup } from 'react-leaflet';
 import PopupItemComponent from 'Iaso/components/maps/popups/PopupItemComponent';
-import { makeStyles, Card, CardContent } from '@material-ui/core';
+import { Card, CardContent } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { number, object, string } from 'prop-types';
 import MESSAGES from '../../../constants/messages';
 import { findDataForShape } from '../../../utils/index';

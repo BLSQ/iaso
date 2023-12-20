@@ -1,7 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
-import { Button, DialogActions, withStyles } from '@material-ui/core';
+import { Button, DialogActions } from '@mui/material';
+import { withStyles } from '@mui/styles';
 
 import DialogComponent from './DialogComponent';
 import MESSAGES from './messages';

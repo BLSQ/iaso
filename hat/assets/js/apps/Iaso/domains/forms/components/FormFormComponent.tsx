@@ -1,23 +1,19 @@
 /* eslint-disable camelcase */
-
 import React, { useState, FunctionComponent } from 'react';
-import { Box, Grid, makeStyles, Typography } from '@material-ui/core';
+import { Box, Grid, Typography, Theme } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
 import { Link } from 'react-router';
-import { Theme } from '@material-ui/core/styles';
 
-import { History } from '@material-ui/icons';
-import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
+import { History, FormatListBulleted } from '@mui/icons-material';
 import { baseUrls } from '../../../constants/urls';
 import InputComponent from '../../../components/forms/InputComponent';
 import {
     commaSeparatedIdsToArray,
     commaSeparatedIdsToStringArray,
 } from '../../../utils/forms';
-
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
-
 import { formatLabel } from '../../instances/utils';
 import { periodTypeOptions } from '../../periods/constants';
 import MESSAGES from '../messages';

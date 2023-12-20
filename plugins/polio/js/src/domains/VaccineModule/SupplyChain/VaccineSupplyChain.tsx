@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { useSafeIntl, AddButton } from 'bluesquare-components';
-import { Box, Grid } from '@material-ui/core';
+import { useSafeIntl } from 'bluesquare-components';
+import { Box, Grid } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import { userHasPermission } from '../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 import { POLIO_SUPPLY_CHAIN_WRITE } from '../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';

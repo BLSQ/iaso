@@ -12,11 +12,11 @@ import {
     DialogTitle,
     DialogContent,
     DialogActions,
-    makeStyles,
     Button,
     Box,
-} from '@material-ui/core';
-import WarningIcon from '@material-ui/icons/Warning';
+} from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import WarningIcon from '@mui/icons-material/Warning';
 
 import MESSAGES from '../messages';
 

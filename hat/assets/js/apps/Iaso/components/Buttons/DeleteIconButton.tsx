@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { IconButton, IntlMessage } from 'bluesquare-components';
 import { defineMessages } from 'react-intl';
-import DeleteIcon from '@material-ui/icons/Delete';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const messages = defineMessages({
     delete: {

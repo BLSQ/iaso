@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import { Button } from '@material-ui/core';
+import { Button } from '@mui/material';
 import { MESSAGES } from './messages';
 
 type ButtonProps = { closeDialog: () => void };

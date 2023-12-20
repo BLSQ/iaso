@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Grid } from '@material-ui/core';
+import { Grid } from '@mui/material';
 import { useStyles } from '../../styles/theme';
 import { Filters } from '../../domains/Calendar/campaignCalendar/Filters';
 import { DASHBOARD_BASE_URL } from '../../constants/routes';

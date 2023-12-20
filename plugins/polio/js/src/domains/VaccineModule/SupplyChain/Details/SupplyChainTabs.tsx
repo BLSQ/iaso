@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import { Tab, Tabs, makeStyles } from '@material-ui/core';
+import { Tab, Tabs } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { TabWithInfoIcon } from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TabWithInfoIcon';
 import MESSAGES from '../messages';
 import { PREALERT, VAR, VRF } from '../constants';

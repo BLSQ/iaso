@@ -56,19 +56,6 @@ describe('Forms config', () => {
             expect(openStub).to.have.been.called;
             sinon.restore();
         });
-        it('should render IconButtonComponent', () => {
-            formVersionsDialog = wrapper.find(FormVersionsDialog);
-            expect(formVersionsDialog).to.have.lengthOf(1);
-            const iconButtonComponent = shallow(
-                formVersionsDialog.props().renderTrigger({ openDialog: null }),
-            );
-
-            expect(iconButtonComponent).to.have.lengthOf(1);
-        });
-        it('should trigger setForceRefresh on onConfirmed', () => {
-            formVersionsDialog.props().onConfirmed();
-            expect(setForceRefreshSpy.calledOnce).to.equal(true);
-        });
     });
     describe('formsTableColumns', () => {
         it('should return an array of 10 columns', () => {

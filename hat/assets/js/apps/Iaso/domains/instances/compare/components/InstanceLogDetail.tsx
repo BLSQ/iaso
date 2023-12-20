@@ -6,7 +6,7 @@ import {
     IntlFormatMessage,
 } from 'bluesquare-components';
 
-import { Box, Paper } from '@material-ui/core';
+import { Box, Paper } from '@mui/material';
 import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
 
 import { useGetFormDescriptor } from '../hooks/useGetInstanceLogs';

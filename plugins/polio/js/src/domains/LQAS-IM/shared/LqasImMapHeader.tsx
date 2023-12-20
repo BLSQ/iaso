@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Box, makeStyles, Divider, Grid, Typography } from '@material-ui/core';
+import { Box, Divider, Grid, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
 import classNames from 'classnames';
 import MESSAGES from '../../../constants/messages';
@@ -33,7 +34,10 @@ const styles = theme => ({
         fontWeight: 'bold',
     },
     // setting marginRight to prevent Divider from breaking the grid, marginLeft to prevent misalignment
-    verticalDivider: { marginRight: -1, marginLeft: -1 },
+    verticalDivider: {
+        marginRight: '-1px !important',
+        marginLeft: '-1px !important',
+    },
     // This is to align the divider.There's a 2px misalignment for some reason
     dividerOffset: {
         marginRight: '2px',

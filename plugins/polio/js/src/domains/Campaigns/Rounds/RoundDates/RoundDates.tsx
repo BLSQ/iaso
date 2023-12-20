@@ -2,7 +2,7 @@
 import React, { FunctionComponent } from 'react';
 import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
 import { useSafeIntl } from 'bluesquare-components';
-import { Box, Divider, Grid, Typography } from '@material-ui/core';
+import { Box, Divider, Grid, Typography } from '@mui/material';
 import { isEqual } from 'lodash';
 import moment from 'moment';
 import { dateFormat } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/dates';

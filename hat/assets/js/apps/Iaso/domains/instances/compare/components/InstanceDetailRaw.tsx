@@ -1,11 +1,11 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Typography } from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
+import { Box, Typography } from '@mui/material';
 import {
     useSafeIntl,
     LoadingSpinner,
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
+import { makeStyles } from '@mui/styles';
 import WidgetPaper from '../../../../components/papers/WidgetPaperComponent';
 import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
 import MESSAGES from '../messages';

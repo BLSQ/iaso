@@ -1,6 +1,7 @@
 import React from 'react';
 import nock from 'nock';
 
+import { renderWithMuiTheme } from '../../../../test/utils/muiTheme';
 import ConnectedCompleteness from './index';
 
 import { mockGetRequestsList } from '../../../../test/utils/requests';
@@ -27,8 +28,10 @@ describe('Completeness connected component', () => {
     it('mount properly', () => {
         const connectedWrapper = mount(
             renderWithIntl(
-                withQueryClientProvider(
-                    renderWithStore(<ConnectedCompleteness params={{}} />),
+                renderWithMuiTheme(
+                    withQueryClientProvider(
+                        renderWithStore(<ConnectedCompleteness params={{}} />),
+                    ),
                 ),
             ),
         );

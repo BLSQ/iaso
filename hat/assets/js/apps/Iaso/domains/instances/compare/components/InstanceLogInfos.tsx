@@ -7,7 +7,7 @@ import {
     IntlFormatMessage,
 } from 'bluesquare-components';
 
-import { Grid, Typography, Box } from '@material-ui/core';
+import { Grid, Typography, Box } from '@mui/material';
 import { usePrettyPeriod } from '../../../periods/utils';
 import WidgetPaper from '../../../../components/papers/WidgetPaperComponent';
 

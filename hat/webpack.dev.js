@@ -143,11 +143,11 @@ module.exports = {
             'bluesquare-components',
             'react-dom',
             'react-intl',
-            '@material-ui/core',
+            '@mui/material',
             // Don't include, it packs all the icon instead of actually used one
-            // '@material-ui/icons',
-            '@material-ui/lab',
-            '@material-ui/pickers',
+            // '@mui/icons-material',
+            '@mui/lab',
+            '@mui/x-date-pickers',
             'lodash',
             'moment',
             'leaflet',
@@ -201,7 +201,7 @@ module.exports = {
             __LOCALE: JSON.stringify(LOCALE),
         }),
         // XLSX
-        new webpack.IgnorePlugin(/cptable/),
+        new webpack.IgnorePlugin({ resourceRegExp: /cptable/ }),
         new webpack.WatchIgnorePlugin({
             paths: [/\.d\.ts$/],
         }),

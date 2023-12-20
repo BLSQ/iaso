@@ -1,4 +1,5 @@
-import { Box, Divider, Grid, makeStyles, Paper } from '@material-ui/core';
+import { Box, Divider, Grid, Paper } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
 import React, {

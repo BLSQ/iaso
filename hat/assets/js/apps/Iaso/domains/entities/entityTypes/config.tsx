@@ -1,5 +1,5 @@
 import React, { ReactElement } from 'react';
-import DataSourceIcon from '@material-ui/icons/ListAltTwoTone';
+import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
 import {
     IconButton as IconButtonComponent,
     Column,

@@ -1,5 +1,5 @@
 import React from 'react';
-import HelpIcon from '@material-ui/icons/Help';
+import HelpIcon from '@mui/icons-material/Help';
 import TestApp from './';
 import MESSAGES from './messages';
 

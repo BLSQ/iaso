@@ -4,13 +4,8 @@ import {
     commonStyles,
 } from 'bluesquare-components';
 
-import {
-    TableRow,
-    TableCell,
-    makeStyles,
-    Theme,
-    Typography,
-} from '@material-ui/core';
+import { TableRow, TableCell, Theme, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import classNames from 'classnames';
 import { useGetCampaignFieldLabel } from '../hooks/useGetCampaignFieldLabel';

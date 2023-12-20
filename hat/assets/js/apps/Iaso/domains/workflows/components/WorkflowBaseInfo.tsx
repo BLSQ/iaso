@@ -1,12 +1,12 @@
 import {
-    makeStyles,
     Table,
     TableBody,
     TableRow,
     TableCell,
     Divider,
     Box,
-} from '@material-ui/core';
+} from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import React, { FunctionComponent, ReactNode } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 

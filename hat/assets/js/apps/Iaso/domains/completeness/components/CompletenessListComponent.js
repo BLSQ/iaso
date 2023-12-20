@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { Box, withStyles } from '@material-ui/core';
+import { Box } from '@mui/material';
+import { withStyles } from '@mui/styles';
 
 import { commonStyles } from 'bluesquare-components';
 import CompletenessFiltersComponent from './CompletenessFiltersComponent';

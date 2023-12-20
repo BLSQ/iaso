@@ -1,11 +1,12 @@
 import React from 'react';
 
-import { withStyles, Paper } from '@material-ui/core';
+import { Paper } from '@mui/material';
+import { withStyles } from '@mui/styles';
 import { Link } from 'react-router';
 
 import PropTypes from 'prop-types';
 
-import AttachFile from '@material-ui/icons/AttachFile';
+import AttachFile from '@mui/icons-material/AttachFile';
 
 import {
     displayDateFromTimestamp,

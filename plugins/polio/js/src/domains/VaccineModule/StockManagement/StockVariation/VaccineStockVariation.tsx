@@ -4,14 +4,8 @@ import {
     textPlaceholder,
     useSafeIntl,
 } from 'bluesquare-components';
-import {
-    Box,
-    Paper,
-    Tab,
-    Tabs,
-    Typography,
-    makeStyles,
-} from '@material-ui/core';
+import { Grid, Box, Paper, Tab, Tabs, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     STOCK_MANAGEMENT_DETAILS,
     STOCK_VARIATION,
@@ -36,6 +30,9 @@ import {
     useFormATableColumns,
     useIncidentTableColumns,
 } from './Table/columns';
+import { CreateFormA } from './Modals/CreateEditFormA';
+import { CreateDestruction } from './Modals/CreateEditDestruction';
+import { CreateIncident } from './Modals/CreateEditIncident';
 
 type Props = { router: Router };
 
@@ -77,13 +74,22 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
         );
     const { data: summary } = useGetStockManagementSummary(router.params.id);
 
-    const formAColumns = useFormATableColumns();
-    const destructionsColumns = useDestructionTableColumns();
-    const incidentsColumns = useIncidentTableColumns();
-
     const title = `${formatMessage(MESSAGES.stockVariation)}: ${
         summary?.country_name ?? textPlaceholder
     } - ${summary?.vaccine_type ?? textPlaceholder}`;
+    const formAColumns = useFormATableColumns(
+        summary?.country_name,
+        summary?.vaccine_type,
+    );
+    const destructionsColumns = useDestructionTableColumns(
+        summary?.country_name,
+        summary?.vaccine_type,
+    );
+    const incidentsColumns = useIncidentTableColumns(
+        summary?.country_name,
+        summary?.vaccine_type,
+    );
+
     return (
         <>
             <TopBar title={title} displayBackButton goBack={goBack}>
@@ -115,9 +121,32 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
             <Box className={classes.containerFullHeightPadded}>
                 <Paper elevation={2} className={classes.marginTop}>
                     <Box padding={2}>
-                        <Typography variant="h5" color="primary">
-                            {formatMessage(MESSAGES[`${tab}Reports`])}
-                        </Typography>
+                        <Grid container justifyContent="space-between">
+                            <Typography variant="h5" color="primary">
+                                {formatMessage(MESSAGES[`${tab}Reports`])}
+                            </Typography>
+                            {tab === FORM_A && (
+                                <CreateFormA
+                                    iconProps={{}}
+                                    countryName={summary?.country_name}
+                                    vaccine={summary?.vaccine_type}
+                                />
+                            )}
+                            {tab === DESTRUCTION && (
+                                <CreateDestruction
+                                    iconProps={{}}
+                                    countryName={summary?.country_name}
+                                    vaccine={summary?.vaccine_type}
+                                />
+                            )}
+                            {tab === INCIDENT && (
+                                <CreateIncident
+                                    iconProps={{}}
+                                    countryName={summary?.country_name}
+                                    vaccine={summary?.vaccine_type}
+                                />
+                            )}
+                        </Grid>
                         {tab === FORM_A && (
                             <VaccineStockVariationTable
                                 data={formA}

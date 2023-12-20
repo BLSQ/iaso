@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
-import { Box, Typography, makeStyles } from '@material-ui/core';
+import { Box, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     useSafeIntl,
     LoadingSpinner,

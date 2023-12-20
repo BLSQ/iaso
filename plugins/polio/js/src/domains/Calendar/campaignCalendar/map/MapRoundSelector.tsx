@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { FunctionComponent, useState } from 'react';
-import { Box } from '@material-ui/core';
+import { Box } from '@mui/material';
 // @ts-ignore
 import { ConfirmCancelModal, makeFullModal } from 'bluesquare-components';
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';

@@ -1,4 +1,4 @@
-import { Box, Divider, Grid, Paper } from '@material-ui/core';
+import { Box, Divider, Grid, Paper } from '@mui/material';
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl, Column, Paginated } from 'bluesquare-components';
 import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';

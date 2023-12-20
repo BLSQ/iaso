@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useCallback } from 'react';
-import { Grid, makeStyles, IconButton } from '@material-ui/core';
+import { Grid, IconButton } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { Field, useFormikContext } from 'formik';
 import {
     // @ts-ignore
@@ -7,9 +8,9 @@ import {
     // @ts-ignore
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
-import ClearIcon from '@material-ui/icons/Clear';
+import ClearIcon from '@mui/icons-material/Clear';
 import classNames from 'classnames';
-import OpenInNewIcon from '@material-ui/icons/OpenInNew';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 
 import { useStyles } from '../../../styles/theme';
 import { TextInput } from '../../../components/Inputs/TextInput';

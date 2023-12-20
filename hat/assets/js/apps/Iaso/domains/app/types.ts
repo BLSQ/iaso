@@ -32,6 +32,7 @@ export type Plugin = {
     homeUrl?: string;
     homeOnline?: ElementType;
     homeOffline?: ElementType;
+    key?: string;
 };
 
 export type Plugins = {

@@ -1,6 +1,6 @@
-import { Grid, Button, Box } from '@material-ui/core';
+import { Grid, Button, Box } from '@mui/material';
 import React, { FunctionComponent, useState } from 'react';
-import FiltersIcon from '@material-ui/icons/FilterList';
+import FiltersIcon from '@mui/icons-material/FilterList';
 import { useSafeIntl, IntlFormatMessage } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 import { baseUrls } from '../../../constants/urls';

@@ -5,17 +5,11 @@ import {
     LoadingSpinner,
     useSafeIntl,
 } from 'bluesquare-components';
-import {
-    Box,
-    makeStyles,
-    Paper,
-    Typography,
-    Grid,
-    Divider,
-} from '@material-ui/core';
+import { makeStyles } from '@mui/styles';
+import { Box, Paper, Typography, Grid, Divider } from '@mui/material';
 import moment from 'moment';
 import { useDispatch } from 'react-redux';
-import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
 import MESSAGES from '../messages';
 import { baseUrls } from '../../../constants/urls';

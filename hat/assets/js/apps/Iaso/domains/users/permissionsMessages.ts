@@ -212,7 +212,7 @@ const PERMISSIONS_MESSAGES = defineMessages({
     },
     iaso_entity_type_write: {
         id: 'iaso.permissions.iaso_entity_type_write',
-        defaultMessage: 'Entity types',
+        defaultMessage: 'Entity types - read and write',
     },
     iaso_entity_type_write_tooltip: {
         id: 'iaso.permissions.tooltip.iaso_entity_type_write',

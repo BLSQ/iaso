@@ -25,9 +25,9 @@ export const RestoreModal: FunctionComponent<Props> = ({
     titleMessage,
     onConfirm,
     onCancel,
-    id = 'deleteModal',
+    id = 'restoreModal',
     maxWidth = 'sm',
-    dataTestId = 'deleteModal',
+    dataTestId = 'restoreModal',
     backdropClick = false,
 }) => {
     if (type === 'icon') {

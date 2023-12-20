@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import { Box, Grid, makeStyles } from '@material-ui/core';
+import { Box, Grid } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { Router } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import MESSAGES from '../../../../constants/messages';
 import TopBar from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';

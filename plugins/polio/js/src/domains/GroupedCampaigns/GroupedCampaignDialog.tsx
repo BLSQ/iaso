@@ -6,7 +6,7 @@ import React, {
     useMemo,
     ReactNode,
 } from 'react';
-import { Box, Divider, Grid } from '@material-ui/core';
+import { Box, Divider, Grid } from '@mui/material';
 // @ts-ignore
 import ConfirmCancelDialogComponent from 'Iaso/components/dialogs/ConfirmCancelDialogComponent';
 import { useSafeIntl } from 'bluesquare-components';

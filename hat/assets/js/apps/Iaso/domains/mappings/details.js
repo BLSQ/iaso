@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import { Grid, Box, withStyles } from '@material-ui/core';
+import { Grid, Box } from '@mui/material';
+import { withStyles } from '@mui/styles';
 import PropTypes from 'prop-types';
 
 import {

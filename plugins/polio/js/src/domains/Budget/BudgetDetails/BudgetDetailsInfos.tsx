@@ -1,5 +1,4 @@
 import {
-    makeStyles,
     Table,
     TableBody,
     TableCell,
@@ -8,7 +7,8 @@ import {
     useTheme,
     Box,
     Grid,
-} from '@material-ui/core';
+} from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import React, { FunctionComponent, useMemo } from 'react';
 // @ts-ignore
 import { useSafeIntl, Paginated } from 'bluesquare-components';

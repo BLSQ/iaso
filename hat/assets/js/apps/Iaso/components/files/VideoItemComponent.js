@@ -2,9 +2,10 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import videojs from 'video.js';
 import moment from 'moment';
-import { withStyles, IconButton } from '@material-ui/core';
-import PlayIcon from '@material-ui/icons/PlayCircleFilled';
-import PauseIcon from '@material-ui/icons/PauseCircleFilled';
+import { IconButton } from '@mui/material';
+import { withStyles } from '@mui/styles';
+import PlayIcon from '@mui/icons-material/PlayCircleFilled';
+import PauseIcon from '@mui/icons-material/PauseCircleFilled';
 import { theme } from 'bluesquare-components';
 
 import 'video.js/dist/video-js.min.css';

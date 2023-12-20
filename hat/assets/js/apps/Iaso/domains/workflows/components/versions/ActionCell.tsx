@@ -1,9 +1,10 @@
 import React, { FunctionComponent } from 'react';
 
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
-import { Box, makeStyles } from '@material-ui/core';
-import FileCopyIcon from '@material-ui/icons/FileCopy';
-import BlockIcon from '@material-ui/icons/Block';
+import { Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import FileCopyIcon from '@mui/icons-material/FileCopy';
+import BlockIcon from '@mui/icons-material/Block';
 
 import { WorkflowVersion } from '../../types';
 

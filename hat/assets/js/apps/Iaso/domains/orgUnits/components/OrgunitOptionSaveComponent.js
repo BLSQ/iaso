@@ -1,7 +1,8 @@
 import React, { Fragment } from 'react';
 import { FormattedMessage } from 'react-intl';
 
-import { withStyles, Button } from '@material-ui/core';
+import { Button, Box } from '@mui/material';
+import { withStyles } from '@mui/styles';
 
 import PropTypes from 'prop-types';
 
@@ -13,7 +14,6 @@ const styles = theme => ({
     ...commonStyles(theme),
     button: {
         width: '100%',
-        marginBottom: theme.spacing(2),
     },
 });
 
@@ -21,16 +21,18 @@ function OrgunitOptionSaveComponent(props) {
     const { saveDisabled, classes, resetOrgUnit, saveOrgUnit } = props;
     return (
         <>
-            <Button
-                className={classes.button}
-                disabled={saveDisabled}
-                variant="contained"
-                onClick={() => {
-                    resetOrgUnit();
-                }}
-            >
-                <FormattedMessage {...MESSAGES.cancel} />
-            </Button>
+            <Box mb={2}>
+                <Button
+                    className={classes.button}
+                    disabled={saveDisabled}
+                    variant="contained"
+                    onClick={() => {
+                        resetOrgUnit();
+                    }}
+                >
+                    <FormattedMessage {...MESSAGES.cancel} />
+                </Button>
+            </Box>
             <Button
                 disabled={saveDisabled}
                 variant="contained"

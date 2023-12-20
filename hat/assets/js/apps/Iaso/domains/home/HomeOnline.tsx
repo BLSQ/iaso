@@ -1,14 +1,8 @@
 import React, { FunctionComponent, useCallback, useContext } from 'react';
 import { Link } from 'react-router';
-import {
-    Box,
-    makeStyles,
-    Container,
-    Typography,
-    IconButton,
-    Grid,
-} from '@material-ui/core';
-import MenuIcon from '@material-ui/icons/Menu';
+import { Box, Container, Typography, IconButton, Grid } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import MenuIcon from '@mui/icons-material/Menu';
 import { useDispatch } from 'react-redux';
 import iasoBg from '../../images/iaso-bg.jpg';
 import { LogoSvg } from '../app/components/LogoSvg';

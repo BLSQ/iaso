@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import isEqual from 'lodash/isEqual';
 import { useSafeIntl } from 'bluesquare-components';
-import { Tabs, Tab, Box, Button, Tooltip, IconButton } from '@material-ui/core';
-import AddIcon from '@material-ui/icons/Add';
-import RemoveIcon from '@material-ui/icons/Clear';
+import { Tabs, Tab, Box, Button, Tooltip, IconButton } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Clear';
 import { useFormikContext } from 'formik';
 
 import MESSAGES from '../../../constants/messages';

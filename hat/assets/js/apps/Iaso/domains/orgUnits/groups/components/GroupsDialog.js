@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import get from 'lodash/get';
 import PropTypes from 'prop-types';
-import { Grid } from '@material-ui/core';
+import { Grid } from '@mui/material';
 import { userHasPermission } from '../../../users/utils';
 import { useCurrentUser } from '../../../../utils/usersUtils.ts';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';

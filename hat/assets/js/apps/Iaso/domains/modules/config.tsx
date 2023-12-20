@@ -3,7 +3,7 @@ import { useSafeIntl, Column, IntlFormatMessage } from 'bluesquare-components';
 import {
     HighlightOffOutlined as NotCheckedIcon,
     CheckCircleOutlineOutlined as CheckedIcon,
-} from '@material-ui/icons';
+} from '@mui/icons-material';
 import MESSAGES from './messages';
 
 export const useGetModulesColumns = (): Column[] => {

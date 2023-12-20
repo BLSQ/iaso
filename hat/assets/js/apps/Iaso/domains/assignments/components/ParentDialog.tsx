@@ -1,11 +1,11 @@
 import {
-    makeStyles,
     Dialog,
     DialogContent,
     DialogTitle,
     DialogActions,
     Button,
-} from '@material-ui/core';
+} from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     // @ts-ignore
     commonStyles,

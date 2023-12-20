@@ -7,7 +7,6 @@ import {
 import { Popup } from 'react-leaflet';
 import { Link } from 'react-router';
 import {
-    makeStyles,
     Card,
     CardContent,
     Button,
@@ -15,7 +14,8 @@ import {
     Grid,
     Typography,
     Divider,
-} from '@material-ui/core';
+} from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import PopupItemComponent from '../../../../../../../../../hat/assets/js/apps/Iaso/components/maps/popups/PopupItemComponent';
 import MESSAGES from '../../../../../constants/messages';
 import { LQAS_BASE_URL } from '../../../../../constants/routes';

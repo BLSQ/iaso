@@ -5,7 +5,8 @@ import React, {
     useEffect,
     useCallback,
 } from 'react';
-import { makeStyles, Box, Tabs, Tab } from '@material-ui/core';
+import { Box, Tabs, Tab } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     // @ts-ignore
     commonStyles,
@@ -250,7 +251,6 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                     counts={(!isLoading && orgUnitsData?.counts) || []}
                     setDeletedTab={setDeletedTab}
                 />
-
                 {tab === 'list' &&
                     orgUnitsData &&
                     orgUnitsData?.orgunits?.length > 0 && (

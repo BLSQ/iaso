@@ -5,12 +5,12 @@ import {
     Button,
     DialogActions,
     Grid,
-    makeStyles,
     Tooltip,
     Typography,
-} from '@material-ui/core';
-import Public from '@material-ui/icons/Public';
-import CheckCircleIcon from '@material-ui/icons/CheckCircle';
+} from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import Public from '@mui/icons-material/Public';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import AddBox from '@mui/icons-material/AddBoxOutlined';
 import { FormattedMessage } from 'react-intl';
 import {
@@ -20,7 +20,7 @@ import {
     Table,
     useSafeIntl,
 } from 'bluesquare-components';
-import 'react-table';
+// import 'react-table';
 import { CopySourceVersion } from './CopySourceVersion/CopySourceVersion.tsx';
 
 import DialogComponent from '../../../components/dialogs/DialogComponent';

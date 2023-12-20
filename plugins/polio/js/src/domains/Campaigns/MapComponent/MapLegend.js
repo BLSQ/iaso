@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid, Paper, Box, Typography } from '@material-ui/core';
+import { Grid, Paper, Box, Typography } from '@mui/material';
 import { array, oneOf, string } from 'prop-types';
 import { useStyles } from './styles';
 import { convertWidth } from '../../../utils';

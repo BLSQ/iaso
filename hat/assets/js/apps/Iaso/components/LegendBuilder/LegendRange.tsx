@@ -1,12 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import {
-    makeStyles,
-    IconButton,
-    Grid,
-    Typography,
-    Box,
-} from '@material-ui/core';
-import RemoveIcon from '@material-ui/icons/Remove';
+import { IconButton, Grid, Typography, Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import RemoveIcon from '@mui/icons-material/Remove';
 import { ColorPicker } from '../forms/ColorPicker';
 import InputComponent from '../forms/InputComponent';
 import { RangeValue } from './types';

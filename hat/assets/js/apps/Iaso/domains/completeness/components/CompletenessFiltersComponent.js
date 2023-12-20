@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import Grid from '@material-ui/core/Grid';
+import Grid from '@mui/material/Grid';
 
 import InputComponent from '../../../components/forms/InputComponent';
 import ChipListComponent from '../../../components/chips/ChipListComponent';

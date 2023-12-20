@@ -1,11 +1,12 @@
-import { Box, Button, makeStyles, Tooltip } from '@material-ui/core';
+import { Box, Button, Tooltip } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import React, { FunctionComponent } from 'react';
 import {
     commonStyles,
     LoadingSpinner,
     useSafeIntl,
 } from 'bluesquare-components';
-import Add from '@material-ui/icons/Add';
+import Add from '@mui/icons-material/Add';
 import { useIsMutating } from 'react-query';
 import MESSAGES from '../../messages';
 

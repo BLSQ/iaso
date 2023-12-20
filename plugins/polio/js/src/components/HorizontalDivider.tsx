@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Divider, Grid, makeStyles } from '@material-ui/core';
+import { Box, Divider, Grid } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 type Props = {
     mt: number;

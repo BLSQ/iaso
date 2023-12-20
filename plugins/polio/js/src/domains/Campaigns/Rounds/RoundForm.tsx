@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Grid } from '@material-ui/core';
+import { Grid } from '@mui/material';
 import { Field, useFormikContext } from 'formik';
 import { useSafeIntl } from 'bluesquare-components';
 import { useStyles } from '../../../styles/theme';

@@ -18,7 +18,7 @@ import {
     brown,
     blueGrey,
     grey,
-} from '@material-ui/core/colors';
+} from '@mui/material/colors';
 
 export const colors = [
     teal[500],

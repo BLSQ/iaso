@@ -1,16 +1,16 @@
 /* eslint-disable react/require-default-props */
 import {
-    makeStyles,
     Table,
     TableBody,
     TableRow,
     TableCell,
     Box,
     Button,
-} from '@material-ui/core';
+} from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import CircularProgress from '@material-ui/core/CircularProgress';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 

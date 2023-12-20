@@ -1,6 +1,6 @@
 import { ConfirmCancelModal, useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
-import { Box, Divider, Typography } from '@material-ui/core';
+import { Box, Divider, Typography } from '@mui/material';
 import { MESSAGES } from './messages';
 import { noOp } from '../../../../utils';
 

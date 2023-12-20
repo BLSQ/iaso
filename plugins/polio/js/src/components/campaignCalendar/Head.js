@@ -2,7 +2,7 @@ import React from 'react';
 
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
-import { TableHead, TableRow, TableCell, Typography } from '@material-ui/core';
+import { TableHead, TableRow, TableCell, Typography } from '@mui/material';
 
 import { useStyles } from './Styles';
 

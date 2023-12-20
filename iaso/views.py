@@ -73,7 +73,7 @@ def page(request, page_slug):
         )
     else:
         raw_html = page.content
-        if analytics_script and raw_html:
+        if analytics_script and raw_html is not None:
             raw_html = addTag(raw_html, analytics_script)
         response = HttpResponse(raw_html)
     response["X-Frame-Options"] = "ALLOW"

@@ -48,7 +48,7 @@ export const ApproveOrgUnitChangesFilter: FunctionComponent<Props> = ({
     return (
         <>
             <Grid container spacing={2}>
-                <Grid item xs={12} md={4} lg={3} spacing={0}>
+                <Grid item xs={12} md={4} lg={3}>
                     <InputComponent
                         type="select"
                         multi
@@ -62,7 +62,7 @@ export const ApproveOrgUnitChangesFilter: FunctionComponent<Props> = ({
                         labelString={formatMessage(MESSAGES.orgUnitType)}
                     />
                 </Grid>
-                <Grid item xs={12} md={4} lg={3} spacing={0}>
+                <Grid item xs={12} md={4} lg={3}>
                     <InputComponent
                         type="select"
                         multi

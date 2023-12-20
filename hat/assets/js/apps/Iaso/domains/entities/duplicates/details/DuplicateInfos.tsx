@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useCallback } from 'react';
-import { Box, Button, Grid, makeStyles } from '@material-ui/core';
+import { Box, Button, Grid } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import classnames from 'classnames';
 import { useSafeIntl } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';

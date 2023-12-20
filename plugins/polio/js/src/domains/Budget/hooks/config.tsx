@@ -7,7 +7,8 @@ import {
     Column,
     Paginated,
 } from 'bluesquare-components';
-import { Box, Tooltip, Typography, makeStyles } from '@material-ui/core';
+import { Box, Tooltip, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import MESSAGES from '../../../constants/messages';
 import { BUDGET_DETAILS } from '../../../constants/routes';
 import {
@@ -135,7 +136,7 @@ export const useBudgetDetailsColumns = (
                     return (
                         <Tooltip
                             title={formattedComment}
-                            interactive
+                            disableInteractive={false}
                             leaveDelay={500}
                             placement="right-start"
                             arrow

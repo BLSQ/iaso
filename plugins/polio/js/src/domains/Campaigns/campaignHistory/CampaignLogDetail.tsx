@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 
-import { Box, Table, TableBody } from '@material-ui/core';
+import { Box, Table, TableBody } from '@mui/material';
 
 import {
     useGetCampaignLogDetail,

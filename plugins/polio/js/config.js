@@ -1,23 +1,24 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
-import DataSourceIcon from '@material-ui/icons/ListAltTwoTone';
-import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
-import SettingsIcon from '@material-ui/icons/Settings';
-import CalendarToday from '@material-ui/icons/CalendarToday';
-import AssessmentIcon from '@material-ui/icons/Assessment';
-import MenuBookIcon from '@material-ui/icons/MenuBook';
-import PublicIcon from '@material-ui/icons/Public';
-import DonutSmallIcon from '@material-ui/icons/DonutSmall';
-import GroupWork from '@material-ui/icons/GroupWork';
-import HomeWorkIcon from '@material-ui/icons/HomeWork';
-import LocalShippingIcon from '@material-ui/icons/LocalShipping';
-import PhotoSizeSelectActualIcon from '@material-ui/icons/PhotoSizeSelectActual';
-import HomeIcon from '@material-ui/icons/Home';
-import StorefrontIcon from '@material-ui/icons/Storefront';
-import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
-import ExtensionIcon from '@material-ui/icons/Extension';
-import StorageIcon from '@material-ui/icons/Storage';
-import WatchLaterIcon from '@material-ui/icons/WatchLater';
+import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
+import FormatListBulleted from '@mui/icons-material/FormatListBulleted';
+import SettingsIcon from '@mui/icons-material/Settings';
+import CalendarToday from '@mui/icons-material/CalendarToday';
+import AssessmentIcon from '@mui/icons-material/Assessment';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import PublicIcon from '@mui/icons-material/Public';
+import DonutSmallIcon from '@mui/icons-material/DonutSmall';
+import GroupWork from '@mui/icons-material/GroupWork';
+import HomeWorkIcon from '@mui/icons-material/HomeWork';
+import PhotoSizeSelectActualIcon from '@mui/icons-material/PhotoSizeSelectActual';
+import HomeIcon from '@mui/icons-material/Home';
+import StorefrontIcon from '@mui/icons-material/Storefront';
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import ExtensionIcon from '@mui/icons-material/Extension';
+import WatchLaterIcon from '@mui/icons-material/WatchLater';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import StorageIcon from '@mui/icons-material/Storage';
+import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import { Dashboard } from './src/domains/Campaigns/Dashboard';
 import { Calendar } from './src/domains/Calendar/Calendar';
 import { CampaignHistory } from './src/domains/Campaigns/campaignHistory/CampaignHistory.tsx';
@@ -45,6 +46,7 @@ import {
     STOCK_MANAGEMENT,
     STOCK_MANAGEMENT_DETAILS,
     STOCK_VARIATION,
+    NOTIFICATIONS_BASE_URL,
 } from './src/constants/routes';
 import fr from './src/constants/translations/fr.json';
 import en from './src/constants/translations/en.json';
@@ -69,6 +71,7 @@ import {
     USABLE_VIALS,
 } from './src/domains/VaccineModule/StockManagement/constants.ts';
 import { VaccineSupplyChainDetails } from './src/domains/VaccineModule/SupplyChain/Details/VaccineSupplyChainDetails.tsx';
+import { Notifications } from './src/domains/Notifications/index.tsx';
 
 const campaignsFilters = [
     {
@@ -620,6 +623,21 @@ const routes = [
         ],
         isRootUrl: false,
     },
+    {
+        baseUrl: NOTIFICATIONS_BASE_URL,
+        component: props => <Notifications {...props} />,
+        permissions: ['iaso_polio_notifications'],
+        params: [
+            { isRequired: false, key: 'order' },
+            { isRequired: false, key: 'page' },
+            { isRequired: false, key: 'pageSize' },
+            { isRequired: false, key: 'vdpv_category' },
+            { isRequired: false, key: 'source' },
+            { isRequired: false, key: 'country' },
+            { isRequired: false, key: 'date_of_onset_after' },
+            { isRequired: false, key: 'date_of_onset_before' },
+        ],
+    },
 ];
 
 const menu = [
@@ -724,6 +742,12 @@ const menu = [
                         icon: props => <StorageIcon {...props} />,
                     },
                 ],
+            },
+            {
+                label: MESSAGES.notifications,
+                key: 'notifications',
+                permissions: ['iaso_polio_notifications'],
+                icon: props => <NotificationsActiveIcon {...props} />,
             },
             {
                 label: MESSAGES.configuration,

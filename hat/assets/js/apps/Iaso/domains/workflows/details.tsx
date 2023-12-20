@@ -17,7 +17,8 @@ import {
     useHumanReadableJsonLogic,
 } from 'bluesquare-components';
 import { isEqual } from 'lodash';
-import { Box, Grid, makeStyles, Button } from '@material-ui/core';
+import { Box, Grid, Button } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { useDispatch } from 'react-redux';
 import orderBy from 'lodash/orderBy';
 import uniqWith from 'lodash/uniqWith';

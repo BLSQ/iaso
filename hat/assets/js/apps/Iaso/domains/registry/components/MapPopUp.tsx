@@ -1,15 +1,9 @@
 import React, { FunctionComponent, useRef } from 'react';
 import { Popup, useMap } from 'react-leaflet';
 
-import ClearIcon from '@material-ui/icons/Clear';
-import {
-    Card,
-    CardContent,
-    Box,
-    makeStyles,
-    Divider,
-    IconButton,
-} from '@material-ui/core';
+import ClearIcon from '@mui/icons-material/Clear';
+import { Card, CardContent, Box, Divider, IconButton } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import {
     useSafeIntl,

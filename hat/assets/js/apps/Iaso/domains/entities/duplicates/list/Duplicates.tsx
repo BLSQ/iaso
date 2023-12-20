@@ -1,7 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
-import { Box, makeStyles } from '@material-ui/core';
+import { Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { PaginationParams } from '../../../../types/general';
 import MESSAGES from '../messages';
 import TopBar from '../../../../components/nav/TopBarComponent';

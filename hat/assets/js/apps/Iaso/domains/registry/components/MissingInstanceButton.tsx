@@ -1,8 +1,9 @@
 import React, { FunctionComponent, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSafeIntl } from 'bluesquare-components';
-import { Button, Tooltip, makeStyles } from '@material-ui/core';
-import VisibilityIcon from '@material-ui/icons/Visibility';
+import { Button, Tooltip } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 
 import { RegistryDetailParams } from '../types';
 

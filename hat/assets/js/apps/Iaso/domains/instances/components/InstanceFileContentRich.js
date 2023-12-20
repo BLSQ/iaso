@@ -1,16 +1,10 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableRow,
-    Tooltip,
-} from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
-import FunctionsIcon from '@material-ui/icons/Functions';
-import CommentIcon from '@material-ui/icons/Comment';
+import { Table, TableBody, TableCell, TableRow, Tooltip } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import FunctionsIcon from '@mui/icons-material/Functions';
+import CommentIcon from '@mui/icons-material/Comment';
 import isPlainObject from 'lodash/isPlainObject';
 
 import { textPlaceholder } from 'bluesquare-components';

@@ -4,16 +4,8 @@ import {
     textPlaceholder,
     useSafeIntl,
 } from 'bluesquare-components';
-import {
-    Box,
-    Button,
-    Grid,
-    Paper,
-    Tab,
-    Tabs,
-    Typography,
-    makeStyles,
-} from '@material-ui/core';
+import { Box, Button, Grid, Paper, Tab, Tabs, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { useDispatch } from 'react-redux';
 import { redirectTo } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 import {
@@ -64,6 +56,7 @@ export const VaccineStockManagementDetails: FunctionComponent<Props> = ({
         baseUrl: STOCK_MANAGEMENT_DETAILS,
     });
 
+    // Make 1 API call with both usable and not usable + vountry and campaign
     const { data: usableVials, isFetching: isFetchingUsable } =
         useGetUsableVials(
             router.params as StockManagementDetailsParams,

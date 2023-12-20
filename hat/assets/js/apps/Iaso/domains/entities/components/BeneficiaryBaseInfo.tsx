@@ -1,5 +1,6 @@
 /* eslint-disable react/require-default-props */
-import { Table, TableBody } from '@material-ui/core';
+import { Table, TableBody } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import React, { FunctionComponent, useMemo } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';

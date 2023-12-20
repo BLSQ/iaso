@@ -4,8 +4,8 @@ import { Popup } from 'react-leaflet';
 import { useDispatch } from 'react-redux';
 import classNames from 'classnames';
 
+import { makeStyles } from '@mui/styles';
 import {
-    makeStyles,
     Card,
     CardContent,
     Button,
@@ -13,7 +13,7 @@ import {
     Box,
     Table,
     TableBody,
-} from '@material-ui/core';
+} from '@mui/material';
 
 import { useSafeIntl, mapPopupStyles } from 'bluesquare-components';
 import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';

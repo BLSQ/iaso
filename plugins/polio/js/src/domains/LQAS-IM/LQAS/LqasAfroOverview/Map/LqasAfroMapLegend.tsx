@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import { makeStyles } from '@material-ui/core';
+import { makeStyles } from '@mui/styles';
 import MESSAGES from '../../../../../constants/messages';
 import { MapLegend } from '../../../../Campaigns/MapComponent/MapLegend';
 import { useLegendItems } from '../utils';

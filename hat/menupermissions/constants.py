@@ -9,6 +9,7 @@ MODULE_PERMISSIONS = {
     "DEFAULT": [
         "iaso_org_units",
         "iaso_org_unit_types",
+        "iaso_org_unit_groups",
         "iaso_sources",
         "iaso_write_sources",
         "iaso_links",
@@ -32,6 +33,7 @@ MODULE_PERMISSIONS = {
         "iaso_polio_budget",
         "iaso_polio_vaccine_supply_chain_read",
         "iaso_polio_vaccine_supply_chain_write",
+        "iaso_polio_notifications",
     ],
     "REGISTRY": ["iaso_registry", "iaso_test", "iaso_testtt", "iaso_testttr", "iaso_testttrr"],
 }

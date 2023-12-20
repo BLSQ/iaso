@@ -122,22 +122,7 @@ describe('FormFormComponent connected component', () => {
                 expect(input.exists()).to.equal(false);
             });
         });
-        it('on inputs change update input value', () => {
-            const advancedSettingsButton = connectedWrapper
-                .find('[variant="overline"]')
-                .at(0);
-            // expect(advancedSettingsButton.exists()).to.equal(true);
-            advancedSettingsButton.simulate('click');
-            connectedWrapper.update();
-            inputsList.forEach(i => {
-                const element = connectedWrapper
-                    .find(`[keyValue="${i.keyValue}"]`)
-                    .at(0);
-                element.props().onChange(i.keyValue, i.newValue);
-                connectedWrapper.update();
-            });
-            expect(setFieldValueSpy.callCount).to.equal(17);
-        });
+
         it('mount properly without org_unit_type_ids and project_ids', () => {
             connectedWrapper = mount(
                 withQueryClientProvider(

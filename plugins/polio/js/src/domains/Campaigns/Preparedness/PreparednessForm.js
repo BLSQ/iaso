@@ -1,9 +1,9 @@
 /* eslint-disable camelcase */
-import { Tab, Box } from '@material-ui/core';
+import { Tab, Box } from '@mui/material';
 import { useFormikContext } from 'formik';
 import React, { useState } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import { TabContext, TabList, TabPanel } from '@material-ui/lab';
+import { TabContext, TabList, TabPanel } from '@mui/lab';
 
 import { useStyles } from '../../../styles/theme';
 import MESSAGES from '../../../constants/messages';

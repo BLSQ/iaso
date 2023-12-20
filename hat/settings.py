@@ -330,6 +330,18 @@ USE_I18N = True
 
 USE_L10N = True
 
+# We need a custom setting, because when USE_L10N is True, the locale-dictated
+# `DATE_INPUT_FORMATS` has higher precedence and will be applied instead.
+# https://docs.djangoproject.com/en/dev/ref/settings/#date-input-formats
+API_DATE_INPUT_FORMATS = [
+    "%d-%m-%Y",  # '25-10-2006'
+    "%d/%m/%Y",  # '25/10/2006'
+    "%Y-%m-%d",  # '2006-10-25'
+    "%Y/%m/%d",  # '2006/10/25'
+    "%m-%d-%Y",  # '10-25-2006'
+    "%m/%d/%Y",  # '10/25/2006'
+]
+
 USE_TZ = True
 
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))

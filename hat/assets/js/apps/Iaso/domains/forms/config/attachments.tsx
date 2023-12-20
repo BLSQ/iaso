@@ -1,7 +1,7 @@
 import React, { ReactElement, useMemo } from 'react';
 import { Link } from 'react-router';
 import { useSafeIntl, IconButton, Column } from 'bluesquare-components';
-import GetAppIcon from '@material-ui/icons/GetApp';
+import GetAppIcon from '@mui/icons-material/GetApp';
 
 import MESSAGES from '../messages';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';

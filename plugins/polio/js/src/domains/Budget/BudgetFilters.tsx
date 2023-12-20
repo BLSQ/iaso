@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 /* eslint-disable react/require-default-props */
-import { Box, Grid, useMediaQuery, useTheme } from '@material-ui/core';
+import { Box, Grid, useMediaQuery, useTheme } from '@mui/material';
 import React, { FunctionComponent, useState } from 'react';
 import { UrlParams } from 'bluesquare-components';
 import { FilterButton } from '../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';

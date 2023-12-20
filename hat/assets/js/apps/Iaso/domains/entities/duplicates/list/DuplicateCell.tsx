@@ -1,4 +1,4 @@
-import { makeStyles } from '@material-ui/core';
+import { makeStyles } from '@mui/styles';
 import React, { FunctionComponent } from 'react';
 import { convertValueIfDate } from '../../../../components/Cells/DateTimeCell';
 import { DuplicationAlgorithm } from '../types';

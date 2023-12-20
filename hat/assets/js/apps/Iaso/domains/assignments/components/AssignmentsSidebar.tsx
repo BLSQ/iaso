@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Paper, Box } from '@material-ui/core';
+import { Paper, Box } from '@mui/material';
 
 import {
     // @ts-ignore
@@ -86,7 +86,7 @@ export const Sidebar: FunctionComponent<Props> = ({
                     }}
                 />
             </Box>
-            <Box px={2}>
+            <Box px={2} pb={2}>
                 <AssignmentsMapSelectors
                     params={params}
                     orgunitTypes={orgunitTypes}

@@ -1,11 +1,11 @@
 import React from 'react';
-import CheckCircleIcon from '@material-ui/icons/CheckCircle';
-import { Tooltip } from '@material-ui/core';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { Tooltip } from '@mui/material';
 
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
 // eslint-disable-next-line import/no-named-as-default-member,import/no-named-as-default
-import PublishIcon from '@material-ui/icons/Publish';
-import FormatListNumberedIcon from '@material-ui/icons/FormatListNumbered';
+import PublishIcon from '@mui/icons-material/Publish';
+import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
 import { DataSourceDialogComponent as DataSourceDialog } from './components/DataSourceDialogComponent';
 import MESSAGES from './messages';
 import { VersionsDialog } from './components/VersionsDialog';

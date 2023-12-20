@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import isEqual from 'lodash/isEqual';
 
-import { Grid, withStyles, Tabs, Tab } from '@material-ui/core';
+import { Grid, Tabs, Tab } from '@mui/material';
+import { withStyles } from '@mui/styles';
 
 import PropTypes from 'prop-types';
 

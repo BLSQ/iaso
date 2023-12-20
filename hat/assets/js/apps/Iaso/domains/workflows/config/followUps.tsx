@@ -6,7 +6,7 @@ import {
     IntlFormatMessage,
     Column,
 } from 'bluesquare-components';
-import { Box } from '@material-ui/core';
+import { Box } from '@mui/material';
 
 import MESSAGES from '../messages';
 import { DateCell } from '../../../components/Cells/DateTimeCell';

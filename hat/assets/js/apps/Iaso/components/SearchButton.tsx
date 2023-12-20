@@ -1,9 +1,10 @@
 import React, { FunctionComponent } from 'react';
-import { Button, makeStyles } from '@material-ui/core';
+import { Button } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 // @ts-ignore
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { defineMessages } from 'react-intl';
-import SearchIcon from '@material-ui/icons/Search';
+import SearchIcon from '@mui/icons-material/Search';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

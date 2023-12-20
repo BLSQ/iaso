@@ -1,5 +1,5 @@
 import React, { FunctionComponent, SetStateAction } from 'react';
-import { Box, Button, Grid } from '@material-ui/core';
+import { Box, Button, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../../components/forms/InputComponent';
 import MESSAGES from '../messages';
@@ -40,7 +40,10 @@ export const DuplicateDetailsTableButtons: FunctionComponent<Props> = ({
                     />
                 </Box>
             </Grid>
-            {userHasPermission(Permission.ENTITIES_DUPLICATE_WRITE, currentUser) && (
+            {userHasPermission(
+                Permission.ENTITIES_DUPLICATE_WRITE,
+                currentUser,
+            ) && (
                 <Grid container item xs={8} justifyContent="flex-end">
                     <Box
                         py={2}

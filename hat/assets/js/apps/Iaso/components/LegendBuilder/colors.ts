@@ -1,4 +1,4 @@
-import { green, orange, deepOrange, red } from '@material-ui/core/colors';
+import { green, orange, deepOrange, red } from '@mui/material/colors';
 
 export const legendColors = [
     green[300],

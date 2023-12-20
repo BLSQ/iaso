@@ -10,7 +10,7 @@ import {
     getSort,
 } from 'bluesquare-components';
 
-import { TableCell, TableSortLabel, Box } from '@material-ui/core';
+import { TableCell, TableSortLabel, Box } from '@mui/material';
 
 import { replace } from 'react-router-redux';
 import { withRouter } from 'react-router';

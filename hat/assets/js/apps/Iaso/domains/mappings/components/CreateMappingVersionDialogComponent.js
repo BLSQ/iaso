@@ -2,9 +2,9 @@ import React from 'react';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import TextField from '@material-ui/core/TextField';
-import MenuItem from '@material-ui/core/MenuItem';
-import Grid from '@material-ui/core/Grid';
+import TextField from '@mui/material/TextField';
+import MenuItem from '@mui/material/MenuItem';
+import Grid from '@mui/material/Grid';
 import {
     AddButton as AddButtonComponent,
     useSafeIntl,

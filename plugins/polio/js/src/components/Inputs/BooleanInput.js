@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Checkbox } from '@material-ui/core';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
+import { Checkbox } from '@mui/material';
+import FormControlLabel from '@mui/material/FormControlLabel';
 
 export const BooleanInput = ({ field = {}, label } = {}) => {
     return (

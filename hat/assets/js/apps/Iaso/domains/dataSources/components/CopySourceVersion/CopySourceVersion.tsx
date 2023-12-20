@@ -7,9 +7,9 @@ import React, {
     useMemo,
     useEffect,
 } from 'react';
-import { Grid, Box, Divider } from '@material-ui/core';
+import { Grid, Box, Divider } from '@mui/material';
 import { useDispatch } from 'react-redux';
-import FileCopyIcon from '@material-ui/icons/FileCopy';
+import FileCopyIcon from '@mui/icons-material/FileCopy';
 import {
     IconButton as IconButtonComponent,
     useSafeIntl,

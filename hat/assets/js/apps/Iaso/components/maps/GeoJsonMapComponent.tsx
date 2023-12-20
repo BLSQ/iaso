@@ -2,7 +2,9 @@ import React, { FunctionComponent, useMemo, useState } from 'react';
 import L from 'leaflet';
 import { MapContainer, ScaleControl, GeoJSON } from 'react-leaflet';
 
-import { makeStyles, useTheme } from '@material-ui/core';
+import { useTheme } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+
 import { commonStyles } from 'bluesquare-components';
 
 import tiles from '../../constants/mapTiles';

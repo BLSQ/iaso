@@ -38,4 +38,8 @@ export type StockVariationParams = {
     incidentPageSize: string; // number as string
     incidentPage: string; // number as string
     incidentOrder: string;
+    unusableVialsOrder: string; // number as string
+    usableVialsPageSize: string; // number as string
+    usableVialsPage: string; // number as string
+    usableVialsOrder: string; // number as string
 };

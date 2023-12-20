@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import isEqual from 'lodash/isEqual';
 
-import { Grid, withStyles } from '@material-ui/core';
-import grey from '@material-ui/core/colors/grey';
+import { Grid } from '@mui/material';
+import { withStyles } from '@mui/styles';
+import { grey } from '@mui/material/colors';
 
 import PropTypes from 'prop-types';
 

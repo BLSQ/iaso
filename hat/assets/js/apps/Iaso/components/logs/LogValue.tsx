@@ -2,7 +2,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { wktToGeoJSON as terraformer } from '@terraformer/wkt';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
-import { makeStyles } from '@material-ui/core';
+import { makeStyles } from '@mui/styles';
 
 import { GeoJsonMap } from '../maps/GeoJsonMapComponent';
 import { MarkerMap } from '../maps/MarkerMapComponent';

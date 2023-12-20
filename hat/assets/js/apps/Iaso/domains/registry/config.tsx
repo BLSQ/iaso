@@ -1,7 +1,7 @@
 import React, { ReactElement } from 'react';
 import { useSafeIntl, IntlFormatMessage, Column } from 'bluesquare-components';
-import { Box } from '@material-ui/core';
-import MapIcon from '@material-ui/icons/Map';
+import { Box } from '@mui/material';
+import MapIcon from '@mui/icons-material/Map';
 
 import { InstanceMetasField } from '../instances/components/ColumnSelect';
 import { Instance } from '../instances/types/instance';

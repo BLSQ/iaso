@@ -1,8 +1,8 @@
 /* eslint-disable react/require-default-props */
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { FunctionComponent } from 'react';
-import FiltersIcon from '@material-ui/icons/FilterList';
-import { Button, Box } from '@material-ui/core';
+import FiltersIcon from '@mui/icons-material/FilterList';
+import { Button, Box } from '@mui/material';
 import { FormattedMessage, defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({

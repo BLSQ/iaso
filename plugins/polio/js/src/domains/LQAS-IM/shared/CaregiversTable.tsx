@@ -5,7 +5,7 @@ import React, {
     useCallback,
     useMemo,
 } from 'react';
-import { Box } from '@material-ui/core';
+import { Box } from '@mui/material';
 import { useSafeIntl, Table } from 'bluesquare-components';
 import MESSAGES from '../../../constants/messages';
 import {

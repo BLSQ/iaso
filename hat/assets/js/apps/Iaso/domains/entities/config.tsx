@@ -10,7 +10,7 @@ import {
 
 import moment from 'moment';
 import _ from 'lodash';
-import FileCopyIcon from '@material-ui/icons/FileCopy';
+import FileCopyIcon from '@mui/icons-material/FileCopy';
 import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
 import {
     DateCell,

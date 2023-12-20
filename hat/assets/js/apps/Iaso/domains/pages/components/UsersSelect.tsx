@@ -3,7 +3,7 @@ import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { FormikProps, FieldInputProps } from 'formik';
 // @ts-ignore
 import { Select } from 'bluesquare-components';
-import { Chip } from '@material-ui/core';
+import { Chip } from '@mui/material';
 
 import getDisplayName, { useCurrentUser } from '../../../utils/usersUtils';
 import { useGetProfiles } from '../../users/hooks/useGetProfiles';

@@ -1,6 +1,6 @@
 import { createContext } from 'react';
 
-type ThemeConfig = {
+export type ThemeConfig = {
     APP_TITLE: string;
     THEME_PRIMARY_COLOR: string;
     THEME_SECONDARY_COLOR: string;

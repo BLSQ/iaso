@@ -5,8 +5,8 @@ import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import { replace } from 'react-router-redux';
 
-import { Grid, Button, Box, useMediaQuery, useTheme } from '@material-ui/core';
-import FiltersIcon from '@material-ui/icons/FilterList';
+import { Grid, Button, Box, useMediaQuery, useTheme } from '@mui/material';
+import FiltersIcon from '@mui/icons-material/FilterList';
 import { withRouter } from 'react-router';
 import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';

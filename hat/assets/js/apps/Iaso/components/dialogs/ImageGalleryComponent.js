@@ -1,17 +1,12 @@
 import React from 'react';
 
 import PropTypes from 'prop-types';
-import ArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
-import ArrowRight from '@material-ui/icons/KeyboardArrowRight';
-import Close from '@material-ui/icons/Close';
+import ArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
+import ArrowRight from '@mui/icons-material/KeyboardArrowRight';
+import Close from '@mui/icons-material/Close';
 
-import {
-    withStyles,
-    Dialog,
-    DialogContent,
-    IconButton,
-    Typography,
-} from '@material-ui/core';
+import { Dialog, DialogContent, IconButton, Typography } from '@mui/material';
+import { withStyles } from '@mui/styles';
 import { commonStyles } from 'bluesquare-components';
 
 const styles = theme => ({

@@ -678,7 +678,10 @@ describe('Workflows details', () => {
                     cy.log(
                         'Selected source should not be present in options list',
                     );
-                    cy.get('#source-popup').should('not.contain', 'Last name');
+                    cy.get('#source-listbox').should(
+                        'not.contain',
+                        'Last name',
+                    );
                     cy.get('#source-option-1').click();
 
                     cy.log("Save should be disabled if type does'nt match");
@@ -696,7 +699,10 @@ describe('Workflows details', () => {
                         .invoke('attr', 'value')
                         .should('eq', '');
                     cy.get('@target').click();
-                    cy.get('#target-popup').should('not.contain', 'Type: text');
+                    cy.get('#target-listbox').should(
+                        'not.contain',
+                        'Type: text',
+                    );
                     cy.get('#target-option-0').click();
                     cy.get('@saveButton')
                         .invoke('attr', 'disabled')

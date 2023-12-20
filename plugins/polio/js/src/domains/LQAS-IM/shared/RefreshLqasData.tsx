@@ -6,8 +6,8 @@ import React, {
 } from 'react';
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 import moment from 'moment';
-import { Box, Button } from '@material-ui/core';
-import RefreshIcon from '@material-ui/icons/Refresh';
+import { Box, Button } from '@mui/material';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import { useQueryClient } from 'react-query';
 import {
     Task,

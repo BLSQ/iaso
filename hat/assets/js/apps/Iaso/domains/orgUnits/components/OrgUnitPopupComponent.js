@@ -8,7 +8,6 @@ import { FormattedMessage } from 'react-intl';
 import classNames from 'classnames';
 
 import {
-    makeStyles,
     Card,
     CardContent,
     Button,
@@ -16,7 +15,8 @@ import {
     Box,
     Typography,
     Divider,
-} from '@material-ui/core';
+} from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import moment from 'moment';
 

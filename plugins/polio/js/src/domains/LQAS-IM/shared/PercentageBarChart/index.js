@@ -10,7 +10,7 @@ import {
     LabelList,
     Cell,
 } from 'recharts';
-import { Box } from '@material-ui/core';
+import { Box } from '@mui/material';
 import {
     FAIL_COLOR,
     OK_COLOR,

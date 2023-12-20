@@ -4,7 +4,8 @@ import React, {
     useEffect,
     useCallback,
 } from 'react';
-import { Box, makeStyles, Tabs, Tab, Grid } from '@material-ui/core';
+import { Box, Tabs, Tab, Grid } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { useDispatch } from 'react-redux';
 
 import {
@@ -250,6 +251,8 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                 displayBackButton={false}
             >
                 <Tabs
+                    textColor="inherit"
+                    indicatorColor="secondary"
                     value={tab}
                     classes={{
                         root: classes.tabs,

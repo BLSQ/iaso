@@ -10,8 +10,8 @@ import {
     Popper,
     Paper,
     Box,
-} from '@material-ui/core';
-import CloseIcon from '@material-ui/icons/Close';
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import { useSafeIntl, getTableUrl } from 'bluesquare-components';
 
 import { useSelector } from 'react-redux';

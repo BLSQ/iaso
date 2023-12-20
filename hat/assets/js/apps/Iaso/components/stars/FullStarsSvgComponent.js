@@ -1,9 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import { withStyles } from '@material-ui/core';
-import StarFull from '@material-ui/icons/Star';
-import StarOutlined from '@material-ui/icons/StarBorderOutlined';
+import { withStyles } from '@mui/styles';
+import StarFull from '@mui/icons-material/Star';
+import StarOutlined from '@mui/icons-material/StarBorderOutlined';
 
 const styles = () => ({
     star: {

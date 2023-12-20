@@ -8,7 +8,7 @@ import {
     XAxis,
     YAxis,
 } from 'recharts';
-import { Typography } from '@material-ui/core';
+import { Typography } from '@mui/material';
 import { LoadingSpinner } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';

@@ -1,6 +1,6 @@
 import React, { useState, FunctionComponent } from 'react';
-import { Box, Grid } from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
+import { Box, Grid } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     TreeViewWithSearch,
     useSafeIntl,

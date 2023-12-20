@@ -2,11 +2,11 @@
 /* eslint-disable react/prop-types */
 import React from 'react';
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
-import LinkIcon from '@material-ui/icons/Link';
-import LinkOffIcon from '@material-ui/icons/LinkOff';
-import LockIcon from '@material-ui/icons/Lock';
+import LinkIcon from '@mui/icons-material/Link';
+import LinkOffIcon from '@mui/icons-material/LinkOff';
+import LockIcon from '@mui/icons-material/Lock';
 import omit from 'lodash/omit';
-import { DialogContentText } from '@material-ui/core';
+import { DialogContentText } from '@mui/material';
 import { FormattedMessage } from 'react-intl';
 import { useSaveOrgUnit } from '../../orgUnits/hooks';
 import { baseUrls } from '../../../constants/urls';

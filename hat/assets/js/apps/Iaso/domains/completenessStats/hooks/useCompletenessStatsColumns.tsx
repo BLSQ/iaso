@@ -4,9 +4,9 @@ import {
     useSafeIntl,
     Column,
 } from 'bluesquare-components';
-import { ArrowUpward, AccountTree } from '@material-ui/icons';
-import { Box, LinearProgress } from '@material-ui/core';
-import Typography from '@material-ui/core/Typography';
+import { ArrowUpward, AccountTree } from '@mui/icons-material';
+import { Box, LinearProgress } from '@mui/material';
+import Typography from '@mui/material/Typography';
 import { Router } from 'react-router';
 import MESSAGES from '../messages';
 import { userHasPermission } from '../../users/utils';

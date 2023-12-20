@@ -1,11 +1,11 @@
 import React from 'react';
 import moment from 'moment';
 
-import { makeStyles } from '@material-ui/core/styles';
-import Popover from '@material-ui/core/Popover';
-import Box from '@material-ui/core/Box';
-import { Button } from '@material-ui/core';
-import Info from '@material-ui/icons/InfoOutlined';
+import { makeStyles } from '@mui/styles';
+import Popover from '@mui/material/Popover';
+import Box from '@mui/material/Box';
+import { Button } from '@mui/material';
+import Info from '@mui/icons-material/InfoOutlined';
 
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';

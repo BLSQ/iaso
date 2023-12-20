@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import { Typography, Chip, Box } from '@material-ui/core';
+import { Typography, Chip, Box } from '@mui/material';
 import { LqasImCampaign } from '../../../constants/types';
 import MESSAGES from '../../../constants/messages';
 

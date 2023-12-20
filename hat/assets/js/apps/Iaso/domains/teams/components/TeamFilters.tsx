@@ -1,4 +1,4 @@
-import { Box, Grid } from '@material-ui/core';
+import { Box, Grid } from '@mui/material';
 import React, { FunctionComponent, useState } from 'react';
 import { FilterButton } from '../../../components/FilterButton';
 import InputComponent from '../../../components/forms/InputComponent';

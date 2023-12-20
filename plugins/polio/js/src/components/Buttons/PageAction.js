@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from '@material-ui/core';
+import { Button } from '@mui/material';
 import { useStyles } from '../../styles/theme';
 
 export const PageAction = ({ icon: Icon, onClick, children }) => {

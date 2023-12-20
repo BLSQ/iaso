@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import Color from 'color';
-import { Chip, Box, Tooltip } from '@material-ui/core';
+import { Chip, Box, Tooltip } from '@mui/material';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 

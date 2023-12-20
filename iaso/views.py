@@ -85,7 +85,10 @@ def addTag(html, tagToAppend):
     soup = Soup(html, "html.parser")
     if not soup.head:
         head = soup.new_tag("head")
-        soup.html.insert(1, head)
+        if soup.html:
+            soup.html.insert(1, head)
+        else:
+            soup.insert(1, head)
     soup.head.append(Soup(tagToAppend, "html.parser"))
     return soup
 

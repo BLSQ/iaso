@@ -4,10 +4,11 @@ import React, {
     SetStateAction,
     useEffect,
 } from 'react';
-import { Paper, makeStyles, Box } from '@material-ui/core';
+import { Paper, Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { useMap } from 'react-leaflet';
-import FullscreenIcon from '@material-ui/icons/Fullscreen';
-import FullscreenExitIcon from '@material-ui/icons/FullscreenExit';
+import FullscreenIcon from '@mui/icons-material/Fullscreen';
+import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 
 const useStyles = makeStyles(() => ({
     root: {

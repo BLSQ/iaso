@@ -1,6 +1,7 @@
 import React, { FunctionComponent, useState, useCallback } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import { Box, Button, makeStyles } from '@material-ui/core';
+import { Box, Button } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import InputComponent from '../../../components/forms/InputComponent';
 import { WorkflowVersionDetail } from '../types';
@@ -12,7 +13,7 @@ import MESSAGES from '../messages';
 type Props = {
     workflowVersion: WorkflowVersionDetail;
 };
-
+// @ts-ignore
 const useStyles = makeStyles(theme => ({
     root: {
         position: 'relative',
@@ -21,7 +22,7 @@ const useStyles = makeStyles(theme => ({
         },
     },
     button: {
-        position: 'absolute',
+        position: 'absolute !important',
         right: theme.spacing(3),
         top: 26,
     },

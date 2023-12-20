@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Grid, Typography } from '@material-ui/core';
+import { Grid, Typography } from '@mui/material';
 import { FormattedMessage } from 'react-intl';
 import { LoadingSpinner } from 'bluesquare-components';
 import PropTypes from 'prop-types';

@@ -4,8 +4,9 @@ import {
     AddComment,
     useSafeIntl,
 } from 'bluesquare-components';
-import { Pagination } from '@material-ui/lab';
-import { Box, Typography, makeStyles } from '@material-ui/core';
+import { Pagination } from '@mui/lab';
+import { Box, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';

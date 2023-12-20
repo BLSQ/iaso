@@ -1,6 +1,10 @@
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
+    reviewChangeProposals: {
+        defaultMessage: 'Review change proposals',
+        id: 'iaso.label.reviewChangeProposals',
+    },
     orgUnitType: {
         id: 'iaso.forms.org_unit_type_id',
         defaultMessage: 'Org unit type',
@@ -16,6 +20,10 @@ const MESSAGES = defineMessages({
     group: {
         defaultMessage: 'Group',
         id: 'iaso.label.group',
+    },
+    confirm: {
+        id: 'iaso.label.confirm',
+        defaultMessage: 'Confirm',
     },
     name: {
         defaultMessage: 'Name',
@@ -128,6 +136,14 @@ const MESSAGES = defineMessages({
     seeApprovedChanges: {
         id: 'iaso.changeRequest.seeApprovedChanges',
         defaultMessage: 'See approved change(s)',
+    },
+    addComment: {
+        id: 'iaso.changeRequest.addComment',
+        defaultMessage: 'Add comment',
+    },
+    comment: {
+        id: 'iaso.changeRequest.comment',
+        defaultMessage: 'Comment',
     },
 });
 

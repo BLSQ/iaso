@@ -46,13 +46,14 @@ export const ApproveOrgUnitChangesFilter: FunctionComponent<Props> = ({
     );
 
     return (
-        <Grid container spacing={2}>
-            <Grid container item xs={6} md={4} lg={3} spacing={0}>
-                <Grid item xs={12}>
+        <>
+            <Grid container spacing={2}>
+                <Grid item xs={12} md={4} lg={3} spacing={0}>
                     <InputComponent
                         type="select"
                         multi
                         clearable
+                        withMarginTop={false}
                         keyValue="org_unit_type_id"
                         value={filters.org_unit_type_id}
                         onChange={handleChange}
@@ -61,26 +62,25 @@ export const ApproveOrgUnitChangesFilter: FunctionComponent<Props> = ({
                         labelString={formatMessage(MESSAGES.orgUnitType)}
                     />
                 </Grid>
-                <Grid item xs={12}>
+                <Grid item xs={12} md={4} lg={3} spacing={0}>
                     <InputComponent
                         type="select"
                         multi
                         clearable
+                        withMarginTop={false}
                         keyValue="status"
                         value={filters.status}
                         onChange={handleChange}
-                        withMarginTop={false}
                         options={statusOptions}
                         labelString={formatMessage(MESSAGES.status)}
                     />
                 </Grid>
-            </Grid>
-            <Grid container item xs={6} md={4} lg={3}>
-                <Grid item xs={12}>
+                <Grid item xs={12} md={4} lg={3}>
                     <InputComponent
                         type="select"
                         multi
                         clearable
+                        withMarginTop={false}
                         keyValue="groups"
                         value={filters.groups}
                         onChange={handleChange}
@@ -89,8 +89,9 @@ export const ApproveOrgUnitChangesFilter: FunctionComponent<Props> = ({
                         labelString={formatMessage(MESSAGES.group)}
                     />
                 </Grid>
-                <Grid item xs={12}>
-                    <Box mb={1}>
+
+                <Grid item xs={12} md={4} lg={3}>
+                    <Box mt={-2}>
                         <OrgUnitTreeviewModal
                             toggleOnLabelClick={false}
                             titleMessage={MESSAGES.parent}
@@ -105,22 +106,23 @@ export const ApproveOrgUnitChangesFilter: FunctionComponent<Props> = ({
                     </Box>
                 </Grid>
             </Grid>
-            <Grid container item xs={12} md={4} lg={6}>
-                <Box
-                    display="flex"
-                    justifyContent="flex-start"
-                    alignItems="end"
-                    flexDirection="column"
-                    width="100%"
-                >
-                    <Box mt={2}>
-                        <FilterButton
-                            disabled={!filtersUpdated}
-                            onFilter={handleSearch}
-                        />
-                    </Box>
+
+            <Box
+                display="flex"
+                justifyContent="flex-start"
+                alignItems="end"
+                flexDirection="column"
+                width="100%"
+                mb={3}
+                mt={-1}
+            >
+                <Box mt={2}>
+                    <FilterButton
+                        disabled={!filtersUpdated}
+                        onFilter={handleSearch}
+                    />
                 </Box>
-            </Grid>
-        </Grid>
+            </Box>
+        </>
     );
 };

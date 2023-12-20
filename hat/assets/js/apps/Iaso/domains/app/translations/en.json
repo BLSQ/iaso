@@ -42,6 +42,7 @@
     "iaso.attachments.uploadError": "Error uploading file",
     "iaso.attachments.uploadSuccess": "File uploaded successfully",
     "iaso.CDS": "Health centre",
+    "iaso.changeRequest.addComment": "Add comment",
     "iaso.changeRequest.closingDate": "Closing date",
     "iaso.changeRequest.newValue": "Modified version",
     "iaso.changeRequest.oldValue": "Initial version",

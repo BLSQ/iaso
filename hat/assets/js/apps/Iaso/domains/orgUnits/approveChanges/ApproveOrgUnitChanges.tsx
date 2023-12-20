@@ -1,13 +1,14 @@
 import React, { FunctionComponent } from 'react';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { commonStyles } from 'bluesquare-components';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { ApproveOrgUnitChangesFilter } from './Filter/ApproveOrgUnitChangesFilter';
 import { ApproveOrgUnitChangesTable } from './Table/ApproveOrgUnitChangesTable';
 import { useGetApprovalProposals } from './hooks/api/useGetApprovalProposals';
 import { Router } from '../../../types/general';
 import TopBar from '../../../components/nav/TopBarComponent';
 import { ApproveOrgUnitParams } from './types';
+import MESSAGES from './messages';
 
 type Props = { router: Router; params: ApproveOrgUnitParams };
 
@@ -21,9 +22,10 @@ export const ApproveOrgUnitChanges: FunctionComponent<Props> = ({
 }) => {
     const { data, isFetching } = useGetApprovalProposals(params);
     const classes: Record<string, string> = useStyles();
+    const { formatMessage } = useSafeIntl();
     return (
         <div>
-            <TopBar />
+            <TopBar title={formatMessage(MESSAGES.reviewChangeProposals)} />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <ApproveOrgUnitChangesFilter params={router.params} />
                 <ApproveOrgUnitChangesTable

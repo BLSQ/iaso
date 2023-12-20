@@ -62,7 +62,7 @@ const useColumns = (
                 return (
                     <LinkToOrgUnit
                         orgUnit={{
-                            id: original.id,
+                            id: original.org_unit_id,
                             name: original.org_unit_name,
                         }}
                     />

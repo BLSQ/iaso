@@ -42,7 +42,7 @@
     "iaso.attachments.uploadError": "Erreur de chargement du fichier",
     "iaso.attachments.uploadSuccess": "Fichier envoyé avec succès",
     "iaso.CDS": "Centre de Santé",
-    "iaso.changeRequest.addComment": "Ajouter un commentaire",
+    "iaso.changeRequest.addComment": "Ajouter un commentaire pour le rejet",
     "iaso.changeRequest.closingDate": "Date de fermeture",
     "iaso.changeRequest.comment": "Commentaire",
     "iaso.changeRequest.newValue": "Version modifiée",

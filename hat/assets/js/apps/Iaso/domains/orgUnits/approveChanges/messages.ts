@@ -139,7 +139,7 @@ const MESSAGES = defineMessages({
     },
     addComment: {
         id: 'iaso.changeRequest.addComment',
-        defaultMessage: 'Add comment',
+        defaultMessage: 'Add comment for rejection',
     },
     comment: {
         id: 'iaso.changeRequest.comment',

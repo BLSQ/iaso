@@ -6,8 +6,8 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
-import { Box } from '@material-ui/core';
 import { isEqual } from 'lodash';
+import { Box } from '@mui/material';
 import { Vaccine } from '../../../../../constants/types';
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import MESSAGES from '../../messages';

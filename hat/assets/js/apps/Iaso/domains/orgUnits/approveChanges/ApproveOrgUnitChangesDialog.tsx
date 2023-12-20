@@ -4,18 +4,19 @@ import React, {
     useCallback,
     Dispatch,
     SetStateAction,
+    useMemo,
 } from 'react';
 import SettingsIcon from '@mui/icons-material/Settings';
+import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import {
-    IntlMessage,
     LoadingSpinner,
     useSafeIntl,
     SimpleModal,
 } from 'bluesquare-components';
 import {
     Box,
-    Button,
-    IconButton,
+    IconButton as IconButtonMui,
+    TableContainer,
     Table,
     TableBody,
     TableCell,
@@ -29,22 +30,24 @@ import { useGetApprovalProposal } from './hooks/api/useGetApprovalProposal';
 import { SelectedChangeRequest } from './Table/ApproveOrgUnitChangesTable';
 import { useNewFields } from './hooks/useNewFields';
 import InputComponent from '../../../components/forms/InputComponent';
+import { ApproveOrgUnitChangesButtons } from './ApproveOrgUnitChangesButtons';
+import { ChangeRequestValidationStatus } from './types';
+import { useSaveChangeRequest } from './hooks/api/useSaveChangeRequest';
 
 type Props = {
-    titleMessage: IntlMessage;
     isOpen: boolean;
     closeDialog: () => void;
     selectedChangeRequest?: SelectedChangeRequest;
 };
 
-export const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles(theme => ({
     head: {
         fontWeight: 'bold',
     },
     cell: {
         color: 'inherit',
     },
-    cellChanged: {
+    cellRejected: {
         '& > a': {
             color: theme.palette.error.main,
         },
@@ -55,7 +58,7 @@ export const useStyles = makeStyles(theme => ({
             fill: theme.palette.error.main,
         },
     },
-    cellSelected: {
+    cellApproved: {
         '& > a': {
             color: theme.palette.success.main,
         },
@@ -70,11 +73,13 @@ export const useStyles = makeStyles(theme => ({
         '& label': {
             margin: 0,
         },
+        '& svg': {
+            fontSize: 20,
+        },
     },
 }));
 
 export const ApproveOrgUnitChangesDialog: FunctionComponent<Props> = ({
-    titleMessage,
     isOpen,
     closeDialog,
     selectedChangeRequest,
@@ -83,14 +88,22 @@ export const ApproveOrgUnitChangesDialog: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const { data: changeRequest, isFetching: isFetchingChangeRequest } =
         useGetApprovalProposal(selectedChangeRequest?.id);
+    const isNew: boolean =
+        !isFetchingChangeRequest && changeRequest?.status === 'new';
     const { newFields, setSelected } = useNewFields(changeRequest);
+    const titleMessage = useMemo(() => {
+        if (changeRequest?.status === 'rejected') {
+            return formatMessage(MESSAGES.seeRejectedChanges);
+        }
+        if (changeRequest?.status === 'approved') {
+            return formatMessage(MESSAGES.seeApprovedChanges);
+        }
+        return formatMessage(MESSAGES.validateOrRejectChanges);
+    }, [changeRequest?.status, formatMessage]);
+    const { mutate: submitChangeRequest, isLoading: isSaving } =
+        useSaveChangeRequest(closeDialog, selectedChangeRequest?.id);
+    if (!selectedChangeRequest) return null;
 
-    const handlConfirm = useCallback(() => {
-        closeDialog();
-    }, [closeDialog]);
-    const handleReject = useCallback(() => {
-        closeDialog();
-    }, [closeDialog]);
     return (
         <SimpleModal
             open={isOpen}
@@ -100,48 +113,27 @@ export const ApproveOrgUnitChangesDialog: FunctionComponent<Props> = ({
             dataTestId="approve-orgunit-changes-dialog"
             titleMessage={titleMessage}
             closeDialog={closeDialog}
-            buttons={() => (
-                <Box my={2}>
-                    <Button
-                        onClick={() => {
-                            closeDialog();
-                        }}
-                        color="primary"
-                        data-test="cancel-button"
-                    >
-                        {formatMessage(MESSAGES.cancel)}
-                    </Button>
-                    <Box pl={1} display="inline-block">
-                        <Button
-                            data-test="reject-button"
-                            onClick={handleReject}
-                            variant="contained"
-                            color="secondary"
-                            autoFocus
-                        >
-                            {formatMessage(MESSAGES.reject)}
-                        </Button>
-                    </Box>
-                    <Box pl={1} display="inline-block">
-                        <Button
-                            data-test="confirm-button"
-                            onClick={handlConfirm}
-                            variant="contained"
-                            color="primary"
-                            autoFocus
-                        >
-                            {formatMessage(MESSAGES.validate)}
-                        </Button>
-                    </Box>
-                </Box>
-            )}
+            buttons={() =>
+                isFetchingChangeRequest ? (
+                    <></>
+                ) : (
+                    <ApproveOrgUnitChangesButtons
+                        closeDialog={closeDialog}
+                        newFields={newFields}
+                        isNew={isNew}
+                        submitChangeRequest={submitChangeRequest}
+                    />
+                )
+            }
         >
-            <Box minHeight={200} maxHeight="75vh">
-                {isFetchingChangeRequest && <LoadingSpinner absolute />}
-                <Table size="small">
+            <TableContainer sx={{ maxHeight: '80vh', minHeight: 200 }}>
+                {(isFetchingChangeRequest || isSaving) && (
+                    <LoadingSpinner absolute />
+                )}
+                <Table size="small" stickyHeader>
                     <TableHead>
                         <TableRow>
-                            <TableCell width={100}>
+                            <TableCell width={150}>
                                 <Box className={classes.head}>
                                     {formatMessage(MESSAGES.label)}
                                 </Box>
@@ -156,63 +148,82 @@ export const ApproveOrgUnitChangesDialog: FunctionComponent<Props> = ({
                                     {formatMessage(MESSAGES.newValue)}
                                 </Box>
                             </TableCell>
-                            <TableCell width={100}>
-                                <Box
-                                    className={classes.head}
-                                    display="flex"
-                                    justifyContent="center"
-                                >
-                                    {formatMessage(MESSAGES.selection)}
-                                </Box>
-                            </TableCell>
+                            {isNew && (
+                                <TableCell width={100}>
+                                    <Box
+                                        className={classes.head}
+                                        display="flex"
+                                        justifyContent="center"
+                                    >
+                                        {formatMessage(MESSAGES.selection)}
+                                    </Box>
+                                </TableCell>
+                            )}
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {newFields.map(field => (
-                            <TableRow key={field.key}>
-                                <TableCell>{field.label}</TableCell>
-                                <TableCell>{field.oldValue}</TableCell>
-                                <TableCell
-                                    className={classNames(
-                                        field.isChanged && !field.isSelected
-                                            ? classes.cellChanged
-                                            : classes.cell,
-                                        field.isChanged && field.isSelected
-                                            ? classes.cellSelected
-                                            : classes.cell,
+                        {newFields.map(field => {
+                            const isCellRejected =
+                                (field.isChanged &&
+                                    !field.isSelected &&
+                                    isNew) ||
+                                changeRequest?.status === 'rejected';
+                            const isCellApproved =
+                                (field.isChanged && field.isSelected) ||
+                                (!isNew &&
+                                    changeRequest?.status === 'approved');
+                            return (
+                                <TableRow key={field.key}>
+                                    <TableCell>{field.label}</TableCell>
+                                    <TableCell>{field.oldValue}</TableCell>
+                                    <TableCell
+                                        className={classNames(
+                                            !isFetchingChangeRequest &&
+                                                isCellRejected &&
+                                                classes.cellRejected,
+                                            !isFetchingChangeRequest &&
+                                                isCellApproved &&
+                                                classes.cellApproved,
 
-                                        field.isChanged && 'is-changed',
+                                            !isCellApproved &&
+                                                !isCellRejected &&
+                                                classes.cell,
+                                        )}
+                                    >
+                                        {field.newValue}
+                                    </TableCell>
+                                    {isNew && (
+                                        <TableCell>
+                                            {field.isChanged && (
+                                                <Box
+                                                    display="flex"
+                                                    justifyContent="center"
+                                                    className={
+                                                        classes.checkBoxContainer
+                                                    }
+                                                >
+                                                    <InputComponent
+                                                        type="checkbox"
+                                                        withMarginTop={false}
+                                                        value={field.isSelected}
+                                                        keyValue={field.key}
+                                                        onChange={() => {
+                                                            setSelected(
+                                                                field.key,
+                                                            );
+                                                        }}
+                                                        labelString=""
+                                                    />
+                                                </Box>
+                                            )}
+                                        </TableCell>
                                     )}
-                                >
-                                    {field.newValue}
-                                </TableCell>
-                                <TableCell>
-                                    {field.isChanged && (
-                                        <Box
-                                            display="flex"
-                                            justifyContent="center"
-                                            className={
-                                                classes.checkBoxContainer
-                                            }
-                                        >
-                                            <InputComponent
-                                                type="checkbox"
-                                                withMarginTop={false}
-                                                value={field.isSelected}
-                                                keyValue={field.key}
-                                                onChange={() => {
-                                                    setSelected(field.key);
-                                                }}
-                                                labelString=""
-                                            />
-                                        </Box>
-                                    )}
-                                </TableCell>
-                            </TableRow>
-                        ))}
+                                </TableRow>
+                            );
+                        })}
                     </TableBody>
                 </Table>
-            </Box>
+            </TableContainer>
         </SimpleModal>
     );
 };
@@ -221,12 +232,14 @@ type PropsIcon = {
     changeRequestId: number;
     setSelectedChangeRequest: Dispatch<SetStateAction<SelectedChangeRequest>>;
     index: number;
+    status: ChangeRequestValidationStatus;
 };
 
-export const EditIconButton: FunctionComponent<PropsIcon> = ({
+export const IconButton: FunctionComponent<PropsIcon> = ({
     setSelectedChangeRequest,
     changeRequestId,
     index,
+    status,
 }) => {
     const { formatMessage } = useSafeIntl();
     const handleClick = useCallback(() => {
@@ -236,12 +249,12 @@ export const EditIconButton: FunctionComponent<PropsIcon> = ({
         });
     }, [changeRequestId, index, setSelectedChangeRequest]);
     return (
-        <IconButton
+        <IconButtonMui
             onClick={handleClick}
-            aria-label={formatMessage(MESSAGES.edit)}
+            aria-label={formatMessage(MESSAGES.validateOrRejectChanges)}
             size="small"
         >
-            <SettingsIcon />
-        </IconButton>
+            {status === 'new' ? <SettingsIcon /> : <RemoveRedEyeIcon />}
+        </IconButtonMui>
     );
 };

@@ -8,6 +8,7 @@ import React, {
 } from 'react';
 import { useDispatch } from 'react-redux';
 import { Column, useSafeIntl } from 'bluesquare-components';
+import { Box } from '@mui/material';
 import { TableWithDeepLink } from '../../../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../../../constants/urls';
 import {
@@ -15,7 +16,7 @@ import {
     ApproveOrgUnitParams,
     NestedUser,
     OrgUnitChangeRequest,
-    OrgUnitValidationStatus,
+    ChangeRequestValidationStatus,
 } from '../types';
 import { redirectTo } from '../../../../routing/actions';
 import MESSAGES from '../messages';
@@ -24,10 +25,21 @@ import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
 import getDisplayName from '../../../../utils/usersUtils';
 import {
     ApproveOrgUnitChangesDialog,
-    EditIconButton,
+    IconButton,
 } from '../ApproveOrgUnitChangesDialog';
 
 type ColumnCell<T> = { row: { original: T; index: number } };
+
+const getStatusColor = (status: ChangeRequestValidationStatus) => {
+    switch (status) {
+        case 'approved':
+            return 'success.main';
+        case 'rejected':
+            return 'error.main';
+        default:
+            return 'inherit';
+    }
+};
 
 const useColumns = (
     setSelectedChangeRequest: Dispatch<SetStateAction<SelectedChangeRequest>>,
@@ -87,13 +99,17 @@ const useColumns = (
             Cell: ({
                 value: status,
             }: {
-                value: OrgUnitValidationStatus;
+                value: ChangeRequestValidationStatus;
             }): ReactElement => {
                 return (
                     <>
-                        {status && MESSAGES[status]
-                            ? formatMessage(MESSAGES[status])
-                            : '--'}
+                        {status && MESSAGES[status] ? (
+                            <Box sx={{ color: getStatusColor(status) }}>
+                                {formatMessage(MESSAGES[status])}
+                            </Box>
+                        ) : (
+                            '--'
+                        )}
                     </>
                 );
             },
@@ -143,8 +159,9 @@ const useColumns = (
                 row: { original: changeRequest, index },
             }: ColumnCell<OrgUnitChangeRequest>): ReactElement => {
                 return (
-                    <EditIconButton
+                    <IconButton
                         changeRequestId={changeRequest.id}
+                        status={changeRequest.status}
                         index={index}
                         setSelectedChangeRequest={setSelectedChangeRequest}
                     />
@@ -174,7 +191,6 @@ export const ApproveOrgUnitChangesTable: FunctionComponent<Props> = ({
     const [selectedChangeRequest, setSelectedChangeRequest] = useState<
         SelectedChangeRequest | undefined
     >();
-    const { formatMessage } = useSafeIntl();
     const columns = useColumns(setSelectedChangeRequest);
     const handleCloseDialog = useCallback(() => {
         setSelectedChangeRequest(undefined);
@@ -183,7 +199,6 @@ export const ApproveOrgUnitChangesTable: FunctionComponent<Props> = ({
         <>
             <ApproveOrgUnitChangesDialog
                 isOpen={Boolean(selectedChangeRequest)}
-                titleMessage={formatMessage(MESSAGES.validate)}
                 selectedChangeRequest={selectedChangeRequest}
                 closeDialog={handleCloseDialog}
             />

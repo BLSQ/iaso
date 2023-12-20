@@ -4,12 +4,12 @@ import { User } from '../../../utils/usersUtils';
 import { ShortOrgUnit } from '../types/orgUnit';
 import { OrgunitType } from '../types/orgunitTypes';
 
-export type OrgUnitValidationStatus = 'new' | 'rejected' | 'approved';
+export type ChangeRequestValidationStatus = 'new' | 'rejected' | 'approved';
 export type ApproveOrgUnitParams = UrlParams & {
     parent_id?: string;
     groups?: string;
     org_unit_type_id?: string;
-    status?: OrgUnitValidationStatus;
+    status?: ChangeRequestValidationStatus;
 };
 export type Group = {
     id: number;
@@ -37,7 +37,7 @@ export type OrgUnitChangeRequest = {
     org_unit_name: string;
     org_unit_type_id: number;
     org_unit_type_name: string;
-    status: OrgUnitValidationStatus;
+    status: ChangeRequestValidationStatus;
     groups: Group[];
     requested_fields: string;
     approved_fields: string[];

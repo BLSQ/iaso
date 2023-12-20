@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import { Box, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { FilterButton } from '../../../../components/FilterButton';
@@ -10,7 +10,7 @@ import { OrgUnitTreeviewModal } from '../../components/TreeView/OrgUnitTreeviewM
 import { useGetOrgUnit } from '../../components/TreeView/requests';
 import { useGetGroupDropdown } from '../../hooks/requests/useGetGroups';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
-import { useGetOrgUnitValidationStatus } from '../../hooks/utils/useGetOrgUnitValidationStatus';
+import { DropdownOptions } from '../../../../types/utils';
 
 const baseUrl = baseUrls.orgUnitsChangeRequest;
 type Props = { params: any };
@@ -26,8 +26,24 @@ export const ApproveOrgUnitChangesFilter: FunctionComponent<Props> = ({
         useGetGroupDropdown({});
     const { data: orgUnitTypeOptions, isLoading: isLoadingTypes } =
         useGetOrgUnitTypesDropdownOptions();
-    const { data: statusOptions, isLoading: isLoadingStatuses } =
-        useGetOrgUnitValidationStatus();
+
+    const statusOptions: DropdownOptions<string>[] = useMemo(
+        () => [
+            {
+                label: formatMessage(MESSAGES.new),
+                value: 'new',
+            },
+            {
+                label: formatMessage(MESSAGES.rejected),
+                value: 'rejected',
+            },
+            {
+                label: formatMessage(MESSAGES.approved),
+                value: 'approved',
+            },
+        ],
+        [formatMessage],
+    );
 
     return (
         <Grid container spacing={2}>
@@ -55,7 +71,6 @@ export const ApproveOrgUnitChangesFilter: FunctionComponent<Props> = ({
                         onChange={handleChange}
                         withMarginTop={false}
                         options={statusOptions}
-                        loading={isLoadingStatuses}
                         labelString={formatMessage(MESSAGES.status)}
                     />
                 </Grid>

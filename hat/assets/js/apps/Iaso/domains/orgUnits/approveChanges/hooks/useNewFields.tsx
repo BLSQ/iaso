@@ -13,7 +13,7 @@ import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
 import { ShortOrgUnit } from '../../types/orgUnit';
 import MESSAGES from '../messages';
 
-type NewField = {
+export type NewField = {
     key: string;
     isChanged: boolean;
     isSelected: boolean;
@@ -48,6 +48,7 @@ const getLocationValue = (location: NestedLocation): ReactElement => {
             longitude={location.latitude}
             latitude={location.longitude}
             maxZoom={8}
+            mapHeight={300}
         />
     );
 };

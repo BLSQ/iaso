@@ -77,9 +77,13 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Edit',
         id: 'iaso.label.edit',
     },
-    validate: {
-        id: 'iaso.label.validate',
-        defaultMessage: 'Validate',
+    validateSelected: {
+        id: 'iaso.label.validateSelected',
+        defaultMessage: 'Validate selected change(s)',
+    },
+    validateOrRejectChanges: {
+        id: 'iaso.label.validateOrRejectChanges',
+        defaultMessage: 'Validate or Reject changes',
     },
     location: {
         id: 'iaso.label.location',
@@ -111,11 +115,19 @@ const MESSAGES = defineMessages({
     },
     reject: {
         id: 'iaso.changeRequest.reject',
-        defaultMessage: 'Modified version',
+        defaultMessage: 'Reject all',
     },
     selection: {
         id: 'iaso.label.selection',
         defaultMessage: 'Selection',
+    },
+    seeRejectedChanges: {
+        id: 'iaso.changeRequest.seeRejectedChanges',
+        defaultMessage: 'See rejected change(s)',
+    },
+    seeApprovedChanges: {
+        id: 'iaso.changeRequest.seeApprovedChanges',
+        defaultMessage: 'See approved change(s)',
     },
 });
 

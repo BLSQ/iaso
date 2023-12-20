@@ -1,6 +1,6 @@
 import React, { useMemo, useCallback } from 'react';
-import { Box, Radio } from '@material-ui/core';
-import { Theme, useTheme } from '@material-ui/core/styles';
+import { Box, Radio } from '@mui/material';
+import { Theme, useTheme } from '@mui/material/styles';
 import { useSafeIntl, Column, IntlFormatMessage } from 'bluesquare-components';
 
 import { ColorPicker } from '../../../components/forms/ColorPicker';

@@ -266,6 +266,10 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.iaso_org_unit_groups',
         defaultMessage: 'Organisation unit groups management',
     },
+    iaso_org_unit_groups_tooltip: {
+        id: 'iaso.permissions.tooltip.iaso_org_unit_groups',
+        defaultMessage: 'Manage groups of organisation units',
+    },
     iaso_reports: {
         id: 'iaso.permission.reports',
         defaultMessage: 'Devices',
@@ -470,6 +474,10 @@ const PERMISSIONS_MESSAGES = defineMessages({
     iaso_trypelim_management_edit_shape_zones: {
         id: 'trypelim.permissions.zones_shapes_edit',
         defaultMessage: 'Edit zone shapes',
+    },
+    iaso_polio_notifications: {
+        id: 'iaso.permissions.iaso_polio_notifications',
+        defaultMessage: 'Polio notifications - Read and Write',
     },
 });
 

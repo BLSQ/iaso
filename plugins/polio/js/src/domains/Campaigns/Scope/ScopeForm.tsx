@@ -5,8 +5,8 @@ import { useDebounce } from 'use-debounce';
 import cloneDeep from 'lodash/cloneDeep';
 // @ts-ignore
 import { useSafeIntl, useSkipEffectOnMount } from 'bluesquare-components';
-import { TabContext, TabList, TabPanel } from '@material-ui/lab';
-import { Tab, Grid } from '@material-ui/core';
+import { TabContext, TabList, TabPanel } from '@mui/lab';
+import { Tab, Grid } from '@mui/material';
 
 import { BooleanInput } from '../../../components/Inputs';
 

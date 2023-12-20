@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles, Grid } from '@material-ui/core';
+import { Grid } from '@mui/material';
+import { withStyles } from '@mui/styles';
 
 const styles = theme => ({
     label: {

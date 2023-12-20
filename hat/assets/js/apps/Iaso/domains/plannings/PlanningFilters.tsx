@@ -1,4 +1,4 @@
-import { Box, Grid } from '@material-ui/core';
+import { Box, Grid } from '@mui/material';
 import React, { FunctionComponent, useState } from 'react';
 import { useSafeIntl, IntlFormatMessage } from 'bluesquare-components';
 import { FilterButton } from '../../components/FilterButton';

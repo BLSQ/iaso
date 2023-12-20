@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import { Button, makeStyles } from '@material-ui/core';
-import EditIcon from '@material-ui/icons/Settings';
+import { Button } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import EditIcon from '@mui/icons-material/Settings';
 import classnames from 'classnames';
 import { useIconLabel } from './hooks';
 import { useStyles } from '../Styles';

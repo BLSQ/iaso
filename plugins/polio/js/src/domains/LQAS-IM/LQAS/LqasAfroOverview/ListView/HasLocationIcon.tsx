@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { defineMessages } from 'react-intl';
-import { Tooltip, Box } from '@material-ui/core';
-import LocationDisabledIcon from '@material-ui/icons/LocationDisabled';
+import { Tooltip, Box } from '@mui/material';
+import LocationDisabledIcon from '@mui/icons-material/LocationDisabled';
 
 import { useSafeIntl } from 'bluesquare-components';
 import ShapeSvg from '../../../../../../../../../hat/assets/js/apps/Iaso/components/svg/ShapeSvgComponent';

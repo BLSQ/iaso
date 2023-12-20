@@ -1,6 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { FunctionComponent } from 'react';
-import { Grid, Typography, makeStyles } from '@material-ui/core';
+import { Grid, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { FormattedMessage } from 'react-intl';
 import MESSAGES from '../../messages';
 import { useDataSourceAsDropDown } from '../../requests';

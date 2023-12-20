@@ -4,7 +4,7 @@ import {
     ConfirmCancelModal,
     makeFullModal,
 } from 'bluesquare-components';
-import { Divider } from '@material-ui/core';
+import { Divider } from '@mui/material';
 import { Field, useFormikContext } from 'formik';
 import { useSelector } from 'react-redux';
 import MESSAGES from '../../../../constants/messages';

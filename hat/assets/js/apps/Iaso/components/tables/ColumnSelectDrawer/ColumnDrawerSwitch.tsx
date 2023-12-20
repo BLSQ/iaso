@@ -1,5 +1,5 @@
 import React, { FunctionComponent, ChangeEvent, ReactElement } from 'react';
-import { Switch, ListItemText, Tooltip } from '@material-ui/core';
+import { Switch, ListItemText, Tooltip } from '@mui/material';
 // @ts-ignore
 import { truncateText } from 'bluesquare-components';
 

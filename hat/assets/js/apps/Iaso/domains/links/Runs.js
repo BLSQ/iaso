@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
 
-import { Button, makeStyles } from '@material-ui/core';
-import Autorenew from '@material-ui/icons/Autorenew';
+import { Button, Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import Autorenew from '@mui/icons-material/Autorenew';
 
 import PropTypes from 'prop-types';
 
@@ -14,7 +15,7 @@ import {
     runAlgorithm,
 } from '../../utils/requests';
 
-import { redirectTo } from '../../routing/actions';
+import { redirectTo } from '../../routing/actions.ts';
 import TopBar from '../../components/nav/TopBarComponent';
 
 import { runsTableColumns } from './config';
@@ -131,16 +132,17 @@ const Runs = ({ params }) => {
                 })}
                 onDataLoaded={() => setRefreshEnable(true)}
                 searchExtraComponent={
-                    <Button
-                        disabled={!refreshEnable}
-                        variant="contained"
-                        color="primary"
-                        onClick={() => onRefresh()}
-                        className={classes.marginRight}
-                    >
-                        <Autorenew className={classes.buttonIcon} />
-                        <FormattedMessage {...MESSAGES.refresh} />
-                    </Button>
+                    <Box display="inline-block" mr={2}>
+                        <Button
+                            disabled={!refreshEnable}
+                            variant="contained"
+                            color="primary"
+                            onClick={() => onRefresh()}
+                        >
+                            <Autorenew className={classes.buttonIcon} />
+                            <FormattedMessage {...MESSAGES.refresh} />
+                        </Button>
+                    </Box>
                 }
                 extraComponent={
                     <AddRunDialogComponent

@@ -4,8 +4,9 @@ import React, {
     SetStateAction,
     useCallback,
 } from 'react';
-import { Paper, makeStyles, Box } from '@material-ui/core';
-import CheckIcon from '@material-ui/icons/Check';
+import { Paper, Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import CheckIcon from '@mui/icons-material/Check';
 
 import { Legend } from '../hooks/useGetLegendOptions';
 

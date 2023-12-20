@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import React, { FunctionComponent, useEffect, useMemo } from 'react';
-import { Box, Grid } from '@material-ui/core';
+import { Box, Grid } from '@mui/material';
 import { FilterButton } from '../../../../components/FilterButton';
 import DatesRange from '../../../../components/filters/DatesRange';
 import InputComponent from '../../../../components/forms/InputComponent';
@@ -185,12 +185,16 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                         onChange={handleChange}
                         label={MESSAGES.similarity}
                         options={similarityDropdown}
-                        renderOption={option => (
-                            <FullStarsSvg
-                                // @ts-ignore
-                                score={parseInt(option.label as string, 10)}
-                            />
-                        )}
+                        renderOption={(props, option) => {
+                            const label = props.label || option.label;
+                            return (
+                                <div {...props}>
+                                    <FullStarsSvg
+                                        score={parseInt(label as string, 10)}
+                                    />
+                                </div>
+                            );
+                        }}
                     />
                 </Grid>
             </Grid>

@@ -13,7 +13,7 @@ import {
     DialogTitle,
     Grid,
     Box,
-} from '@material-ui/core';
+} from '@mui/material';
 
 import {
     useSafeIntl,

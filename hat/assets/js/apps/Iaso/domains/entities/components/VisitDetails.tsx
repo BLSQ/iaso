@@ -4,7 +4,8 @@ import {
     LoadingSpinner,
     commonStyles,
 } from 'bluesquare-components';
-import { Box, Grid, makeStyles } from '@material-ui/core';
+import { Box, Grid } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { useDispatch, useSelector } from 'react-redux';
 import moment from 'moment';
 import InstanceFileContent from '../../instances/components/InstanceFileContent';

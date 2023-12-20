@@ -1,6 +1,6 @@
 import React, { FunctionComponent, ReactElement } from 'react';
 // @ts-ignore
-import { Box } from '@material-ui/core';
+import { Box } from '@mui/material';
 
 type Props = {
     label: string;

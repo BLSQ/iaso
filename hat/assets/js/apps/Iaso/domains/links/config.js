@@ -1,7 +1,7 @@
 import React from 'react';
-import Link from '@material-ui/core/Link';
-import Checkbox from '@material-ui/core/Checkbox';
-import { Box } from '@material-ui/core';
+import Link from '@mui/material/Link';
+import Checkbox from '@mui/material/Checkbox';
+import { Box } from '@mui/material';
 
 import {
     LoadingSpinner,

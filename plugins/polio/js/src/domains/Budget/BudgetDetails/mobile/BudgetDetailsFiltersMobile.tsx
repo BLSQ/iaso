@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Collapse, Grid, Box } from '@material-ui/core';
-import MoreHorizIcon from '@material-ui/icons/MoreHoriz';
+import { Collapse, Grid, Box } from '@mui/material';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { BudgetDetailsFilters } from '../BudgetDetailsFilters';
 import { LinkToProcedure } from '../LinkToProcedure';
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';

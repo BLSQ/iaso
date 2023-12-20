@@ -20,3 +20,4 @@ export const VACCINE_SUPPLY_CHAIN_DETAILS = `${VACCINE_SUPPLY_CHAIN}/details`;
 export const STOCK_MANAGEMENT = `${VACCINE_MODULE}/stockmanagement`;
 export const STOCK_MANAGEMENT_DETAILS = `${STOCK_MANAGEMENT}/details`;
 export const STOCK_VARIATION = `${STOCK_MANAGEMENT}/variation`;
+export const NOTIFICATIONS_BASE_URL = 'polio/notifications';

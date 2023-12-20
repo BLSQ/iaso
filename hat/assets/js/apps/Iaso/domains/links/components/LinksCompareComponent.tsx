@@ -1,14 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import isEqual from 'lodash/isEqual';
 
-import {
-    makeStyles,
-    Table,
-    TableBody,
-    Paper,
-    Grid,
-    Typography,
-} from '@material-ui/core';
+import { Table, TableBody, Paper, Grid, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     // @ts-ignore
     IconButton as IconButtonComponent,

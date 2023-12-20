@@ -1,7 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import { makeStyles, Theme } from '@material-ui/core/styles';
-import { Box, Typography, Link } from '@material-ui/core';
+import { Theme } from '@mui/material/styles';
+import { makeStyles } from '@mui/styles';
+import { Box, Typography, Link } from '@mui/material';
 
 import { iasoFields, xlsQuestionsTypesLink } from '../constants';
 import { MESSAGES } from '../messages';

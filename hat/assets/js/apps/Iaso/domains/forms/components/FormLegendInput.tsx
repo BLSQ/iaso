@@ -1,9 +1,9 @@
 /* eslint-disable camelcase */
-
 import React, { FunctionComponent } from 'react';
-import { Box, makeStyles, Grid, IconButton } from '@material-ui/core';
+import { Box, Grid, IconButton } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { isEmpty } from 'lodash';
-import DeleteIcon from '@material-ui/icons/Delete';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';

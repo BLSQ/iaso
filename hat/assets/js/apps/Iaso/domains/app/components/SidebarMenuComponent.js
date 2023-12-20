@@ -2,9 +2,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
-import ExitIcon from '@material-ui/icons/ExitToApp';
+import ExitIcon from '@mui/icons-material/ExitToApp';
 import {
-    withStyles,
     Box,
     Button,
     IconButton,
@@ -15,9 +14,10 @@ import {
     Tooltip,
     useMediaQuery,
     useTheme,
-} from '@material-ui/core';
+} from '@mui/material';
+import { withStyles } from '@mui/styles';
 
-import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router';
 

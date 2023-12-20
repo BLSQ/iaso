@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Box } from '@material-ui/core';
+import { Box } from '@mui/material';
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 import { defaultShapeStyle } from '../../../../utils/index';
 import { LQASIMType } from '../../shared/types/types';

@@ -7,7 +7,8 @@ import React, {
 } from 'react';
 import { useQueryClient } from 'react-query';
 import { useDispatch, useSelector } from 'react-redux';
-import { Box, Button, makeStyles, Tabs, Tab } from '@material-ui/core';
+import { Box, Button, Tabs, Tab } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import mapValues from 'lodash/mapValues';
 import omit from 'lodash/omit';
 import isEqual from 'lodash/isEqual';

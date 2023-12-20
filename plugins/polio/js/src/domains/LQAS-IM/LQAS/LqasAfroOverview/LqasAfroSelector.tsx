@@ -5,7 +5,7 @@ import {
     FormControlLabel,
     Radio,
     RadioGroup,
-} from '@material-ui/core';
+} from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useOptions } from './utils';

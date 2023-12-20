@@ -1,5 +1,6 @@
 import React, { FunctionComponent, ReactNode } from 'react';
-import { Paper, Typography, makeStyles, Box } from '@material-ui/core';
+import { Paper, Typography, Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import { useSafeIntl, IntlMessage } from 'bluesquare-components';
 

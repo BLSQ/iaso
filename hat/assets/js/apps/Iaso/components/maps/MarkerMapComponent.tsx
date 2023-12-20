@@ -3,7 +3,7 @@ import React, { FunctionComponent, useState, useMemo } from 'react';
 import { MapContainer, ScaleControl } from 'react-leaflet';
 import L from 'leaflet';
 
-import { makeStyles } from '@material-ui/core';
+import { makeStyles } from '@mui/styles';
 import { commonStyles } from 'bluesquare-components';
 
 import { CustomTileLayer } from './tools/CustomTileLayer';

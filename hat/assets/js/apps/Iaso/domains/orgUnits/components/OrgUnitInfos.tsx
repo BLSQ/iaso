@@ -1,9 +1,9 @@
 /* eslint-disable camelcase */
 import React, { FunctionComponent } from 'react';
 
-import { Box, Button, Grid } from '@material-ui/core';
+import { Box, Button, Grid } from '@mui/material';
 
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from '@mui/styles';
 
 import {
     useSafeIntl,
@@ -28,7 +28,7 @@ const useStyles = makeStyles(theme => ({
         top: theme.spacing(12.5),
     },
     marginLeft: {
-        marginLeft: '8px',
+        marginLeft: `${theme.spacing(2)} !important`,
     },
 }));
 

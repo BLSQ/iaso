@@ -8,15 +8,15 @@ import {
     TableHead,
     TableRow,
     Typography,
-} from '@material-ui/core';
+} from '@mui/material';
 // @ts-ignore
 import {
     IconButton as IconButtonComponent,
     LoadingSpinner,
     useSafeIntl,
 } from 'bluesquare-components';
-import LockIcon from '@material-ui/icons/Lock';
-import LockOpenIcon from '@material-ui/icons/LockOpen';
+import LockIcon from '@mui/icons-material/Lock';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
 import MESSAGES from '../messages';
 import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 import getDisplayName from '../../../utils/usersUtils';

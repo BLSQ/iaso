@@ -10,9 +10,9 @@ import {
 import { withRouter } from 'react-router';
 import { useDispatch } from 'react-redux';
 import { push } from 'react-router-redux';
-import { Box, Tooltip } from '@material-ui/core';
-import AddIcon from '@material-ui/icons/Add';
-import DownloadIcon from '@material-ui/icons/GetApp';
+import { Box, Tooltip } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import DownloadIcon from '@mui/icons-material/GetApp';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { userHasPermission } from '../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils.ts';

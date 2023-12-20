@@ -7,7 +7,8 @@ import React, {
 import { useDispatch } from 'react-redux';
 import { MapContainer, GeoJSON, Pane, ScaleControl } from 'react-leaflet';
 import { LoadingSpinner, commonStyles } from 'bluesquare-components';
-import { Box, useTheme, makeStyles } from '@material-ui/core';
+import { Box, useTheme } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import classNames from 'classnames';
 import { keyBy } from 'lodash';
 import MarkerClusterGroup from 'react-leaflet-markercluster';

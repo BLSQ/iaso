@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { Grid, Box, Typography, Divider } from '@material-ui/core';
+import { Grid, Box, Typography, Divider } from '@mui/material';
 import { Field, useFormikContext } from 'formik';
 import { useSafeIntl } from 'bluesquare-components';
 import { useStyles } from '../../../styles/theme';

@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { useMediaQuery, useTheme, Box } from '@material-ui/core';
+import { useMediaQuery, useTheme, Box } from '@mui/material';
 import moment from 'moment';
 
 import { Paginated } from 'bluesquare-components';

@@ -1,6 +1,7 @@
 /* eslint-disable react/no-array-index-key */
-import { Box, makeStyles, Button, AppBar } from '@material-ui/core';
-import Add from '@material-ui/icons/Add';
+import { Box, Button, AppBar } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import Add from '@mui/icons-material/Add';
 import { useDispatch } from 'react-redux';
 import {
     commonStyles,
@@ -58,11 +59,11 @@ const useStyles = makeStyles(theme => ({
         width: '100%',
     },
     tabsContainer: {
-        backgroundColor: theme.palette.primary.main,
+        backgroundColor: `${theme.palette.primary.main} !important`,
         // to be over topbar shadow
-        zIndex: 1101,
-        position: 'fixed',
-        top: 64,
+        zIndex: '1101 fixed !important',
+        position: 'fixed !important',
+        top: '64px !important',
     },
     tabsContainerShadow: {
         position: 'absolute',
@@ -149,7 +150,12 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
 
     return (
         <>
-            <AppBar className={classes.tabsContainer} elevation={0}>
+            <AppBar
+                classes={{
+                    root: classes.tabsContainer,
+                }}
+                elevation={0}
+            >
                 <DynamicTabs
                     deleteMessage={MESSAGES.delete}
                     addMessage={MESSAGES.add}
@@ -206,24 +212,23 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                     </Box>
                 ))}
                 <Box mt={2} justifyContent="flex-end" display="flex">
-                    <Button
-                        variant="contained"
-                        className={classnames(
-                            classes.button,
-                            classes.marginRight,
-                        )}
-                        color="primary"
-                        onClick={() =>
-                            dispatch(
-                                redirectTo(baseUrls.orgUnitDetails, {
-                                    orgUnitId: '0',
-                                }),
-                            )
-                        }
-                    >
-                        <Add className={classes.buttonIcon} />
-                        {formatMessage(MESSAGES.create)}
-                    </Button>
+                    <Box display="inline-block" mr={2}>
+                        <Button
+                            variant="contained"
+                            className={classnames(classes.button)}
+                            color="primary"
+                            onClick={() =>
+                                dispatch(
+                                    redirectTo(baseUrls.orgUnitDetails, {
+                                        orgUnitId: '0',
+                                    }),
+                                )
+                            }
+                        >
+                            <Add className={classes.buttonIcon} />
+                            {formatMessage(MESSAGES.create)}
+                        </Button>
+                    </Box>
                     <SearchButton
                         disabled={textSearchError || hasLocationLimitError}
                         onSearch={handleSearch}

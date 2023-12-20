@@ -224,7 +224,13 @@ Cypress.Commands.add('findTableHead', column => {
 Cypress.Commands.add('assertTooltipDiplay', identifier => {
     cy.get(`@${identifier}`).should('exist');
     cy.get(`@${identifier}`).trigger('mouseover');
-    cy.get(`@${identifier}`).invoke('attr', 'aria-describedby').should('exist');
+    cy.get(`@${identifier}`).invoke('attr', 'aria-label').should('exist');
+});
+
+Cypress.Commands.add('assertButtonTooltipDiplay', (identifier, content) => {
+    cy.get(`@${identifier}`).should('exist');
+    cy.get(`@${identifier}`).trigger('mouseover');
+    cy.get('[role="tooltip"]').should('be.visible').should('contain', content);
 });
 
 Cypress.Commands.add('getAndAssert', (selector, identifier) => {

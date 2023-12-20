@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { makeStyles, Box } from '@material-ui/core';
+import { Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     useSafeIntl,
     LoadingSpinner,
@@ -9,11 +10,10 @@ import {
 } from 'bluesquare-components';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 
-import tableColumns from './columns';
-import MESSAGES from './messages';
-
 import { redirectTo } from 'Iaso/routing/actions';
 import { getRequest } from 'Iaso/libs/Api';
+import tableColumns from './columns';
+import MESSAGES from './messages';
 
 const baseUrl = 'test';
 

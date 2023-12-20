@@ -8,7 +8,7 @@ import {
 } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
-import { Box, Divider } from '@material-ui/core';
+import { Box, Divider } from '@mui/material';
 import { DateInput } from '../../../../../../components/Inputs/DateInput';
 import { useCreateEditNopv2Authorisation } from '../../../hooks/api';
 import { EditIconButton } from '../../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';

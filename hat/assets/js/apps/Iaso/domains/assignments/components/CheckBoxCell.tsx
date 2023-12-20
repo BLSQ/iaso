@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Tooltip, Checkbox } from '@material-ui/core';
+import { Box, Tooltip, Checkbox } from '@mui/material';
 import { useSafeIntl, IntlFormatMessage } from 'bluesquare-components';
 import MESSAGES from '../messages';
 import { ChildrenOrgUnitsArrayItem } from '../types/orgUnit';

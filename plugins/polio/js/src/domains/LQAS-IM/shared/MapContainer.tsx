@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 
-import { Paper, Divider, Box } from '@material-ui/core';
+import { Paper, Divider, Box } from '@mui/material';
 
 import { LqasImMap } from './LqasImMap';
 

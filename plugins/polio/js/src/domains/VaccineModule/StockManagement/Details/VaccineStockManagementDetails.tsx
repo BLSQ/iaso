@@ -4,16 +4,8 @@ import {
     textPlaceholder,
     useSafeIntl,
 } from 'bluesquare-components';
-import {
-    Box,
-    Button,
-    Grid,
-    Paper,
-    Tab,
-    Tabs,
-    Typography,
-    makeStyles,
-} from '@material-ui/core';
+import { Box, Button, Grid, Paper, Tab, Tabs, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { useDispatch } from 'react-redux';
 import { redirectTo } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 import {

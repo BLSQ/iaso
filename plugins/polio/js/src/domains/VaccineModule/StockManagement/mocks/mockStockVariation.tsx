@@ -1,3 +1,8 @@
+import {
+    RETURN_TO_SUPPLIER,
+    VACCINE_EXPIRED,
+} from '../StockVariation/Modals/useIncidentOptions';
+
 export const mockFormAList: any = {
     count: 2,
     page: 1,
@@ -40,12 +45,14 @@ export const mockDestructionsList: any = {
     has_previous: false,
     results: [
         {
+            id: 1,
             action: 'PV Destruction - Mordor', // This seems to be input by the user
             destruction_reception_rrt: '2023-09-02',
             date_of_report: '2023-09-01',
             vials_destroyed: 12,
         },
         {
+            id: 2,
             action: 'PV Destruction - Mordor',
             destruction_reception_rrt: '2023-10-02',
             date_of_report: '2023-09-21',
@@ -62,14 +69,18 @@ export const mockIncidentsList: any = {
     has_previous: false,
     results: [
         {
-            action: 'Vaccine expired',
+            id: 1,
+            stock_correction: VACCINE_EXPIRED,
             incident_reception_rrt: '2023-09-02',
+            date_of_report: '2023-09-21',
             unusable_vials: 7,
             usable_vials: 0,
         },
         {
-            action: 'Return',
+            id: 2,
+            stock_correction: RETURN_TO_SUPPLIER,
             incident_reception_rrt: '2023-09-02',
+            date_of_report: '2023-09-21',
             unusable_vials: 0,
             usable_vials: 15,
         },

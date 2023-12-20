@@ -8,7 +8,7 @@ import WidgetPaper from '../../../../../../../../../hat/assets/js/apps/Iaso/comp
 import MESSAGES from '../../messages';
 
 const useStyles = makeStyles({
-    table: {
+    paper: {
         '& .MuiTable-root': {
             width: '100%',
         },
@@ -25,7 +25,7 @@ export const VaccineStockManagementSummary: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     return (
         <WidgetPaper
-            className={classnames(classes.table)}
+            className={classnames(classes.paper)}
             title={formatMessage(MESSAGES.stockBalance)}
         >
             <Table size="small">

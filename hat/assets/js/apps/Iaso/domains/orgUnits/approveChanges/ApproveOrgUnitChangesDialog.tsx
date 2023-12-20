@@ -5,7 +5,7 @@ import React, {
     Dispatch,
     SetStateAction,
 } from 'react';
-import SettingsIcon from '@material-ui/icons/Settings';
+import SettingsIcon from '@mui/icons-material/Settings';
 import {
     IntlMessage,
     LoadingSpinner,
@@ -21,8 +21,8 @@ import {
     TableCell,
     TableHead,
     TableRow,
-    makeStyles,
-} from '@material-ui/core';
+} from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import classNames from 'classnames';
 import MESSAGES from './messages';
 import { useGetApprovalProposal } from './hooks/api/useGetApprovalProposal';

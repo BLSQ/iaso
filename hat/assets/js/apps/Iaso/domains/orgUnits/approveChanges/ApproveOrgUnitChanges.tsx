@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Box, makeStyles } from '@material-ui/core';
+import { Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { commonStyles } from 'bluesquare-components';
 import { ApproveOrgUnitChangesFilter } from './Filter/ApproveOrgUnitChangesFilter';
 import { ApproveOrgUnitChangesTable } from './Table/ApproveOrgUnitChangesTable';

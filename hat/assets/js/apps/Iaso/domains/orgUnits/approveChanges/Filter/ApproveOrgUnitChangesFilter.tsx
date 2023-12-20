@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Grid } from '@material-ui/core';
+import { Box, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { FilterButton } from '../../../../components/FilterButton';
 import { useFilterState } from '../../../../hooks/useFilterState';

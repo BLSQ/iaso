@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('iaso', '0252_remove_analytics_script_field_from_page'),
+        ("iaso", "0252_remove_analytics_script_field_from_page"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='account',
-            name='analytics_script',
+            model_name="account",
+            name="analytics_script",
             field=models.TextField(blank=True, null=True),
         ),
     ]

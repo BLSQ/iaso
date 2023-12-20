@@ -137,6 +137,7 @@ class Account(models.Model):
     modules = ChoiceArrayField(
         models.CharField(max_length=100, choices=MODULE_CHOICES), blank=True, null=True, default=list
     )
+    analytics_script = models.TextField(blank=True, null=True)
 
     def as_dict(self):
         return {

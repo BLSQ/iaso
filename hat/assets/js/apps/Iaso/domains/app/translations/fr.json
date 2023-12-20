@@ -1098,6 +1098,8 @@
     "iaso.tasks.launcher": "Utilisateur",
     "iaso.tasks.message": "Message",
     "iaso.tasks.name": "Nom",
+    "iaso.tasks.polioNotificationImport.details": "Détails de l'importation des notifications Polio",
+    "iaso.tasks.polioNotificationImport.errors": "{count} erreur(s). L'import des données suivantes a échoué.",
     "iaso.tasks.progress": "Avancement",
     "iaso.tasks.queued": "En attente",
     "iaso.tasks.running": "En cours d'exécution",

@@ -1098,6 +1098,8 @@
     "iaso.tasks.launcher": "User",
     "iaso.tasks.message": "Message",
     "iaso.tasks.name": "Name",
+    "iaso.tasks.polioNotificationImport.details": "Polio Notifications Import Details",
+    "iaso.tasks.polioNotificationImport.errors": "{count} error(s). The following data couldn't be imported.",
     "iaso.tasks.progress": "Progress",
     "iaso.tasks.queued": "Queued",
     "iaso.tasks.running": "Running",

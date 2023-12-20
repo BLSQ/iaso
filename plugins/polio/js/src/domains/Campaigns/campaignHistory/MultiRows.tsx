@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Table, TableBody, makeStyles } from '@material-ui/core';
+import { Table, TableBody } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     useSafeIntl,
     ExpandableItem,

@@ -16,7 +16,8 @@ import {
 import uniqWith from 'lodash/uniqWith';
 import isEqual from 'lodash/isEqual';
 
-import { Box, makeStyles } from '@material-ui/core';
+import { Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { EditIconButton } from '../ModalButtons';
 import { MappingTable } from './MappingTable';
 import { Popper } from './InfoPopper';

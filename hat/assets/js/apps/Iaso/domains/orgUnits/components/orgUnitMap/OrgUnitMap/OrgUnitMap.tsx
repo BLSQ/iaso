@@ -8,8 +8,9 @@ import React, {
 } from 'react';
 import { MapContainer, GeoJSON, ScaleControl, Pane } from 'react-leaflet';
 import 'leaflet-draw';
-import pink from '@material-ui/core/colors/pink';
-import { Grid, makeStyles, useTheme } from '@material-ui/core';
+import { pink } from '@mui/material/colors';
+import { Grid, useTheme } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { useSafeIntl, useSkipEffectOnMount } from 'bluesquare-components';
 import {
     mapOrgUnitByLocation,

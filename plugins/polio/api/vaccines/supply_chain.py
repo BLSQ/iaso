@@ -40,8 +40,11 @@ def validate_rounds_and_campaign(data, current_user=None):
         raise forms.ValidationError("A campaign must be attached.")
 
     try:
-        new_campaign = Campaign.objects.get(obr_name=campaign_obr_name)
-        data["campaign"] = new_campaign
+        if isinstance(campaign_obr_name, Campaign):
+            new_campaign = campaign_obr_name
+        else:
+            new_campaign = Campaign.objects.get(obr_name=campaign_obr_name)
+            data["campaign"] = new_campaign
     except Campaign.DoesNotExist:
         raise forms.ValidationError(f"No campaign with obr_name {campaign_obr_name} found.")
 

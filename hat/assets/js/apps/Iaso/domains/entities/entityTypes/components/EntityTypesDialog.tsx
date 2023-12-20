@@ -4,23 +4,23 @@ import { useFormik, FormikProvider, FormikProps } from 'formik';
 import * as yup from 'yup';
 import {
     useSafeIntl,
-    IconButton as IconButtonComponent,
     IntlFormatMessage,
     IntlMessage,
+    IconButton,
 } from 'bluesquare-components';
-import { makeStyles, Box } from '@material-ui/core';
+import { Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import isEqual from 'lodash/isEqual';
 
 import InputComponent from '../../../../components/forms/InputComponent';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import { EntityType } from '../types/entityType';
 
-import { baseUrls } from '../../../../constants/urls';
-
-import { useGetForms } from '../hooks/requests/forms';
+import { useGetFormForEntityType, useGetForms } from '../hooks/requests/forms';
 import { useTranslatedErrors } from '../../../../libs/validation';
-import { useGetPossibleFieldsForEntityTypes } from '../../../forms/hooks/useGetPossibleFields';
 import MESSAGES from '../messages';
+import { formatLabel } from '../../../instances/utils';
+import { baseUrls } from '../../../../constants/urls';
 
 type RenderTriggerProps = {
     openDialog: () => void;
@@ -41,17 +41,6 @@ type Props = {
     ) => void;
 };
 
-const useStyles = makeStyles(theme => ({
-    root: {
-        position: 'relative',
-    },
-    view: {
-        position: 'absolute',
-        top: theme.spacing(1),
-        right: theme.spacing(1),
-    },
-}));
-
 export const EntityTypesDialog: FunctionComponent<Props> = ({
     titleMessage,
     renderTrigger,
@@ -65,7 +54,6 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
     },
     saveEntityType,
 }) => {
-    const classes: Record<string, string> = useStyles();
     const [isOpen, setIsOpen] = useState<boolean>(false);
     const [closeModal, setCloseModal] = useState<any>();
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
@@ -138,11 +126,14 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
     });
     const isNew = !initialData?.id;
     const { data: formsList, isFetching: isFetchingForms } = useGetForms(isNew);
-    const { possibleFields, isFetchingForm } =
-        useGetPossibleFieldsForEntityTypes({
-            formId: values?.reference_form,
-            enabled: isOpen,
-        });
+    const {
+        possibleFields,
+        isFetchingForm,
+        name: formName,
+    } = useGetFormForEntityType({
+        formId: values?.reference_form,
+        enabled: isOpen,
+    });
     return (
         <FormikProvider value={formik}>
             {/* @ts-ignore */}
@@ -161,9 +152,6 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                 confirmMessage={MESSAGES.save}
                 renderTrigger={renderTrigger}
                 maxWidth="xs"
-                dialogProps={{
-                    classNames: classes.dialog,
-                }}
                 onOpen={() => {
                     resetForm();
                     setIsOpen(true);
@@ -172,26 +160,23 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                     setIsOpen(false);
                 }}
             >
-                {!isNew && (
-                    <Box className={classes.view}>
-                        <IconButtonComponent
-                            url={`/${baseUrls.formDetail}/formId/${values.reference_form}`}
-                            icon="remove-red-eye"
-                            tooltipMessage={MESSAGES.viewForm}
-                            dataTestId="see-form-button"
-                        />
-                    </Box>
-                )}
-                <div className={classes.root} id="entity-types-dialog">
-                    <InputComponent
-                        keyValue="name"
-                        onChange={onChange}
-                        value={values.name}
-                        errors={getErrors('name')}
-                        type="text"
-                        label={MESSAGES.name}
-                        required
-                    />
+                <div id="entity-types-dialog">
+                    {!isNew && formName && (
+                        <Box mb={2}>
+                            {`${formatMessage(MESSAGES.referenceForm)}: `}
+                            {formName}
+                            <Box ml={1} display="inline-block">
+                                <IconButton
+                                    url={`/${baseUrls.formDetail}/formId/${values.reference_form}`}
+                                    icon="remove-red-eye"
+                                    tooltipMessage={MESSAGES.viewForm}
+                                    iconSize="small"
+                                    fontSize="small"
+                                    dataTestId="see-form-button"
+                                />
+                            </Box>
+                        </Box>
+                    )}
                     {isNew && (
                         <InputComponent
                             required
@@ -212,6 +197,15 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                         />
                     )}
                     <InputComponent
+                        keyValue="name"
+                        onChange={onChange}
+                        value={values.name}
+                        errors={getErrors('name')}
+                        type="text"
+                        label={MESSAGES.name}
+                        required
+                    />
+                    <InputComponent
                         type="select"
                         multi
                         required
@@ -224,7 +218,7 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                         label={MESSAGES.fieldsListView}
                         options={possibleFields.map(field => ({
                             value: field.name,
-                            label: field.label,
+                            label: formatLabel(field),
                         }))}
                         helperText={
                             isNew && !values.reference_form
@@ -250,7 +244,7 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                         label={MESSAGES.fieldsDetailInfoView}
                         options={possibleFields.map(field => ({
                             value: field.name,
-                            label: field.label,
+                            label: formatLabel(field),
                         }))}
                         helperText={
                             isNew && !values.reference_form
@@ -274,7 +268,7 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                         label={MESSAGES.fieldsDuplicateSearch}
                         options={possibleFields.map(field => ({
                             value: field.name,
-                            label: field.label,
+                            label: formatLabel(field),
                         }))}
                         helperText={
                             isNew && !values.reference_form

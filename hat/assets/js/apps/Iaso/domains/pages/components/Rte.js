@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useQuill } from 'react-quilljs';
-import { makeStyles } from '@material-ui/core/styles';
-import { FormControl, FormLabel } from '@material-ui/core';
+import { makeStyles } from '@mui/styles';
+import { FormControl, FormLabel } from '@mui/material';
 import isEqual from 'lodash/isEqual';
 
 import 'quill/dist/quill.snow.css';

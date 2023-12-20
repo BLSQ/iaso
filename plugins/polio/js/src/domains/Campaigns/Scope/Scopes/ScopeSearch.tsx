@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Grid } from '@material-ui/core';
+import { Grid } from '@mui/material';
 // @ts-ignore
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import MESSAGES from '../../../../constants/messages';

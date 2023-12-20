@@ -1,9 +1,9 @@
 import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-import SpeedDial from '@material-ui/lab/SpeedDial';
-import SpeedDialAction from '@material-ui/lab/SpeedDialAction';
+import { makeStyles } from '@mui/styles';
+import SpeedDial from '@mui/material/SpeedDial';
+import SpeedDialAction from '@mui/material/SpeedDialAction';
 import PropTypes from 'prop-types';
-import EditIcon from '@material-ui/icons/Settings';
+import EditIcon from '@mui/icons-material/Settings';
 import { useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
 import MESSAGES from '../messages';

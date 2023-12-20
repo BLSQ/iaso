@@ -28,8 +28,9 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
             org_unit_type=org_unit_type, version=version, uuid="1539f174-4c53-499c-85de-7a58458c49ef"
         )
 
-        user = cls.create_user_with_profile(
-            username="user", account=account, permissions=["iaso_org_unit_change_request"]
+        user = cls.create_user_with_profile(username="user", account=account)
+        user_with_review_perm = cls.create_user_with_profile(
+            username="user_with_review_perm", account=account, permissions=["iaso_org_unit_change_request_review"]
         )
 
         data_source.projects.set([project])
@@ -40,6 +41,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         cls.org_unit_type = org_unit_type
         cls.project = project
         cls.user = user
+        cls.user_with_review_perm = user_with_review_perm
 
     def test_list_ok(self):
         m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
@@ -47,21 +49,18 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user)
 
-        with self.assertNumQueries(8):
-            # permission_classes
-            #   1. SELECT User perms
-            #   2. SELECT Group perms
+        with self.assertNumQueries(6):
             # filter_for_user_and_app_id
-            #   3. SELECT OrgUnit
+            #   1. SELECT OrgUnit
             # get_queryset
-            #   4. COUNT(*)
-            #   5. SELECT OrgUnitChangeRequest
-            #   6. PREFETCH OrgUnit.groups
-            #   7. PREFETCH OrgUnitChangeRequest.new_groups
-            #   8. PREFETCH OrgUnitChangeRequest.new_reference_instances
+            #   2. COUNT(*)
+            #   3. SELECT OrgUnitChangeRequest
+            #   4. PREFETCH OrgUnit.groups
+            #   5. PREFETCH OrgUnitChangeRequest.new_groups
+            #   6. PREFETCH OrgUnitChangeRequest.new_reference_instances
             response = self.client.get("/api/orgunits/changes/")
             self.assertJSONResponse(response, 200)
-            self.assertEqual(2, len(response.data))
+            self.assertEqual(2, len(response.data["results"]))
 
     def test_list_without_auth(self):
         response = self.client.get("/api/orgunits/changes/")
@@ -70,7 +69,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
     def test_retrieve_ok(self):
         change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
         self.client.force_authenticate(self.user)
-        with self.assertNumQueries(8):
+        with self.assertNumQueries(6):
             response = self.client.get(f"/api/orgunits/changes/{change_request.pk}/")
         self.assertJSONResponse(response, 200)
         self.assertEqual(response.data["id"], change_request.pk)
@@ -238,9 +237,26 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         response = self.client.put(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
         self.assertEqual(response.status_code, 403)
 
+    def test_partial_update_without_perm(self):
+        self.client.force_authenticate(self.user)
+
+        kwargs = {
+            "status": m.OrgUnitChangeRequest.Statuses.NEW,
+            "org_unit": self.org_unit,
+            "new_name": "Foo",
+        }
+        change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
+
+        data = {
+            "status": change_request.Statuses.REJECTED,
+            "rejection_comment": "Not good enough.",
+        }
+        response = self.client.patch(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
+        self.assertEqual(response.status_code, 403)
+
     @time_machine.travel(DT, tick=False)
     def test_partial_update_reject(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.user_with_review_perm)
 
         kwargs = {
             "status": m.OrgUnitChangeRequest.Statuses.NEW,
@@ -262,7 +278,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
 
     @time_machine.travel(DT, tick=False)
     def test_partial_update_approve(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.user_with_review_perm)
 
         kwargs = {
             "org_unit": self.org_unit,
@@ -282,7 +298,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertEqual(change_request.status, change_request.Statuses.APPROVED)
 
     def test_partial_update_approve_fail_wrong_status(self):
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.user_with_review_perm)
 
         kwargs = {
             "status": m.OrgUnitChangeRequest.Statuses.APPROVED,

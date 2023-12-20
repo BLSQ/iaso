@@ -6,7 +6,8 @@ import React, {
 } from 'react';
 import classnames from 'classnames';
 import mapValues from 'lodash/mapValues';
-import { Grid, Box, makeStyles } from '@material-ui/core';
+import { Grid, Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import { commonStyles } from 'bluesquare-components';
 import { isEqual } from 'lodash';

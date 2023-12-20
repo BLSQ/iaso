@@ -1,7 +1,8 @@
 import { createContext } from 'react';
 import pluginsConfigs from '../../../../../../plugins';
+import { Plugin } from '../domains/app/types';
 
-export const capitalize = (text, keepEndCase = false) =>
+export const capitalize = (text: string, keepEndCase = false): string =>
     text
         .split(' ')
         .map(
@@ -11,14 +12,18 @@ export const capitalize = (text, keepEndCase = false) =>
         )
         .join(' ');
 
-export const formatThousand = number => {
+export const formatThousand = (number: number): string => {
     if (number) {
         return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     }
     return '0';
 };
 
-export const getYears = (yearsCount, offset = 0, reverse = false) => {
+export const getYears = (
+    yearsCount: number,
+    offset = 0,
+    reverse = false,
+): number[] => {
     const currentYear = new Date().getFullYear() + offset;
     const years = Array(yearsCount)
         .fill(null)
@@ -30,11 +35,11 @@ export const getYears = (yearsCount, offset = 0, reverse = false) => {
 };
 
 export const userHasPermission = (
-    permissions,
-    currentUser,
-    permissionKey,
+    permissions: any[],
+    currentUser: any,
+    permissionKey: string,
     allowSuperUser = true,
-) => {
+): boolean => {
     let hasPermission = false;
     if (
         currentUser &&
@@ -57,39 +62,41 @@ export const userHasPermission = (
     return hasPermission;
 };
 
-export const getPlugins = pluginsKeys => {
-    const plugins = [];
-    pluginsKeys.forEach(plugin => {
-        const pluginConfig = pluginsConfigs[plugin];
+export const getPlugins = (pluginsKeys: string[]): any[] => {
+    const plugins: Plugin[] = [];
+    pluginsKeys.forEach(pluginsKey => {
+        const pluginConfig: Plugin = pluginsConfigs[pluginsKey];
         if (pluginConfig) {
             plugins.push({
                 ...pluginConfig,
-                key: plugin,
+                key: pluginsKey,
             });
         }
     });
     return plugins;
 };
 
-export const PluginsContext = createContext({ plugins: [] });
+export const PluginsContext = createContext<{ plugins: Plugin[] }>({
+    plugins: [],
+});
 
 // create timeout to simulate async call
 // credit https://stackoverflow.com/questions/51200626/using-a-settimeout-in-a-async-function
 // Added it here because using the one from test/utils would cause compilation errors
-export const waitFor = delay =>
+export const waitFor = (delay: number): Promise<void> =>
     new Promise(resolve => setTimeout(resolve, delay));
 
 export const fakeResponse =
-    response =>
-    async (isError = false) => {
+    (response: any) =>
+    async (isError = false): Promise<any> => {
         if (isError) throw new Error('mock request failed');
         await waitFor(200);
         return response;
     };
 
-export const noOp = () => undefined;
+export const noOp = (): void => undefined;
 
-export const findDescriptorInChildren = (field, descriptor) => {
+export const findDescriptorInChildren = (field: any, descriptor: any): any => {
     const fieldName = typeof field === 'string' ? field : field.name;
     return descriptor?.children?.reduce((a, child) => {
         if (a) return a;

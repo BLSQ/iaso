@@ -10,9 +10,9 @@ import {
 import { withRouter } from 'react-router';
 import { useDispatch } from 'react-redux';
 import { push } from 'react-router-redux';
-import { Box, Tooltip } from '@material-ui/core';
-import AddIcon from '@material-ui/icons/Add';
-import DownloadIcon from '@material-ui/icons/GetApp';
+import { Box, Tooltip } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import DownloadIcon from '@mui/icons-material/GetApp';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { userHasPermission } from '../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils.ts';
@@ -35,7 +35,6 @@ import { convertObjectToString } from '../../utils';
 import { DASHBOARD_BASE_URL } from '../../constants/routes';
 import { useSingleTableParams } from '../../../../../../hat/assets/js/apps/Iaso/components/tables/SingleTable';
 import { PageActionWithLink } from '../../components/Buttons/PageActionWithLink.tsx';
-import { ImportLine } from './ImportLine/ImportLine.tsx';
 
 const Dashboard = ({ router }) => {
     const { params } = router;
@@ -310,7 +309,6 @@ const Dashboard = ({ router }) => {
                     <PageActionWithLink icon={DownloadIcon} url={exportToCSV}>
                         {formatMessage(MESSAGES.csv)}
                     </PageActionWithLink>
-                    {isUserAdmin && <ImportLine />}
                 </PageActions>
                 <TableWithDeepLink
                     data={campaigns?.campaigns ?? []}

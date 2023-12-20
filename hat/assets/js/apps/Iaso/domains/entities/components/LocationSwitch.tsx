@@ -1,5 +1,6 @@
 import React, { FunctionComponent, Dispatch, SetStateAction } from 'react';
-import { Paper, makeStyles, Box } from '@material-ui/core';
+import { Paper, Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import { IntlMessage } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';

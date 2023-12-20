@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Box, Grid } from '@material-ui/core';
+import { Box, Grid } from '@mui/material';
 
 import MESSAGES from '../../messages';
 import InputComponent from '../../../../components/forms/InputComponent';

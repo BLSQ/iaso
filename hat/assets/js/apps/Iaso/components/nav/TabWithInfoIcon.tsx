@@ -1,6 +1,7 @@
 import React, { FunctionComponent, ReactNode, useCallback } from 'react';
-import { Tab, Tooltip, makeStyles } from '@material-ui/core';
-import InfoIcon from '@material-ui/icons/Info';
+import { Tab, Tooltip } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import InfoIcon from '@mui/icons-material/Info';
 import classnames from 'classnames';
 
 export const useStyles = makeStyles(theme => ({

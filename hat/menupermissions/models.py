@@ -39,8 +39,7 @@ _MODULES = "iaso_modules"
 _ORG_UNITS = "iaso_org_units"
 _ORG_UNITS_TYPES = "iaso_org_unit_types"
 _ORG_UNITS_GROUPS = "iaso_org_unit_groups"
-_ORG_UNITS_CHANGE_REQUEST = "iaso_org_unit_change_request"
-_ORG_UNITS_CHANGE_REQUEST_APPROVE = "iaso_org_unit_change_request_approve"
+_ORG_UNITS_CHANGE_REQUEST_REVIEW = "iaso_org_unit_change_request_review"
 _PAGES = "iaso_pages"
 _PAGE_WRITE = "iaso_page_write"
 _PLANNING = "iaso_planning"
@@ -66,6 +65,8 @@ _POLIO_VACCINE_AUTHORIZATIONS_ADMIN = "iaso_polio_vaccine_authorizations_admin"
 _POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY = "iaso_polio_vaccine_authorizations_read_only"
 _POLIO_VACCINE_SUPPLY_CHAIN_READ = "iaso_polio_vaccine_supply_chain_read"
 _POLIO_VACCINE_SUPPLY_CHAIN_WRITE = "iaso_polio_vaccine_supply_chain_write"
+_POLIO_VACCINE_STOCK_MANAGEMENT_READ = "iaso_polio_vaccine_stock_management_read"
+_POLIO_VACCINE_STOCK_MANAGEMENT_WRITE = "iaso_polio_vaccine_stock_management_write"
 
 # Trypelim
 _ANONYMOUS_VIEW = "iaso_trypelim_anonymous"
@@ -121,8 +122,7 @@ MODULES = _PREFIX + _MODULES
 ORG_UNITS = _PREFIX + _ORG_UNITS
 ORG_UNITS_TYPES = _PREFIX + _ORG_UNITS_TYPES
 ORG_UNITS_GROUPS = _PREFIX + _ORG_UNITS_GROUPS
-ORG_UNITS_CHANGE_REQUEST = _PREFIX + _ORG_UNITS_CHANGE_REQUEST
-ORG_UNITS_CHANGE_REQUEST_APPROVE = _PREFIX + _ORG_UNITS_CHANGE_REQUEST_APPROVE
+ORG_UNITS_CHANGE_REQUEST_REVIEW = _PREFIX + _ORG_UNITS_CHANGE_REQUEST_REVIEW
 PAGES = _PREFIX + _PAGES
 PAGE_WRITE = _PREFIX + _PAGE_WRITE
 PLANNING = _PREFIX + _PLANNING
@@ -133,6 +133,8 @@ POLIO_CONFIG = _PREFIX + _POLIO_CONFIG
 POLIO_NOTIFICATIONS = _PREFIX + _POLIO_NOTIFICATIONS
 POLIO_VACCINE_AUTHORIZATIONS_ADMIN = _PREFIX + _POLIO_VACCINE_AUTHORIZATIONS_ADMIN
 POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY = _PREFIX + _POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY
+POLIO_VACCINE_STOCK_MANAGEMENT_READ = _PREFIX + _POLIO_VACCINE_STOCK_MANAGEMENT_READ
+POLIO_VACCINE_STOCK_MANAGEMENT_WRITE = _PREFIX + _POLIO_VACCINE_STOCK_MANAGEMENT_WRITE
 POLIO_VACCINE_SUPPLY_CHAIN_READ = _PREFIX + _POLIO_VACCINE_SUPPLY_CHAIN_READ
 POLIO_VACCINE_SUPPLY_CHAIN_WRITE = _PREFIX + _POLIO_VACCINE_SUPPLY_CHAIN_WRITE
 PROJECTS = _PREFIX + _PROJECTS
@@ -249,14 +251,15 @@ class CustomPermissionSupport(models.Model):
             (_DATASTORE_WRITE, _("Write data store")),
             (_ORG_UNITS_TYPES, _("Org unit types")),
             (_ORG_UNITS_GROUPS, _("Org unit groups")),
-            (_ORG_UNITS_CHANGE_REQUEST, _("Org unit change request")),
-            (_ORG_UNITS_CHANGE_REQUEST_APPROVE, _("Org unit change request approve")),
+            (_ORG_UNITS_CHANGE_REQUEST_REVIEW, _("Org unit change request review")),
             (_SOURCE_WRITE, _("Write data source")),
             (_PAGE_WRITE, _("Write page")),
             (_POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY, _("Polio Vaccine Authorizations Read Only")),
             (_POLIO_VACCINE_AUTHORIZATIONS_ADMIN, _("Polio Vaccine Authorizations Admin")),
             (_POLIO_VACCINE_SUPPLY_CHAIN_READ, _("Polio Vaccine Supply Chain Read")),
             (_POLIO_VACCINE_SUPPLY_CHAIN_WRITE, _("Polio Vaccine Supply Chain Write")),
+            (_POLIO_VACCINE_STOCK_MANAGEMENT_READ, _("Polio Vaccine Stock Management Read")),
+            (_POLIO_VACCINE_STOCK_MANAGEMENT_WRITE, _("Polio Vaccine Stock Management Write")),
             # Trypelim
             (_ANONYMOUS_VIEW, "Anonymisation des patients"),
             (_AREAS, _("Areas")),
@@ -305,8 +308,6 @@ class CustomPermissionSupport(models.Model):
             .exclude(codename__contains="iaso_beneficiaries")
             # Wait for the web UI to be ready before displaying `org_unit_change_request` perms.
             .exclude(codename__contains="org_unit_change_request")
-            # Wait for the web UI to be ready before displaying `iaso_polio_notifications` perms.
-            .exclude(codename__contains="iaso_polio_notifications")
             .order_by("id")
         )
         #  in future filter this on a feature flags, so we can disable it by account

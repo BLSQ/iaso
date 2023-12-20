@@ -1,12 +1,12 @@
 import React, { FunctionComponent } from 'react';
 import {
-    makeStyles,
     Table,
     TableBody,
     TableCell,
     TableRow,
     TableHead,
-} from '@material-ui/core';
+} from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { useSafeIntl, IntlFormatMessage } from 'bluesquare-components';
 
 import { formatLabel } from '../../utils';

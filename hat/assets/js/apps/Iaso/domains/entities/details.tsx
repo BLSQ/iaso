@@ -7,7 +7,8 @@ import {
     // @ts-ignore
     LoadingSpinner,
 } from 'bluesquare-components';
-import { Box, Button, Divider, Grid, makeStyles } from '@material-ui/core';
+import { Box, Button, Divider, Grid } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router';
 import TopBar from '../../components/nav/TopBarComponent';
@@ -165,9 +166,11 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         />
                         <Divider />
                         <Box display="flex" py={2}>
-                            <CsvButton
-                                csvUrl={`/api/entities/?csv=true&id=${entityId}`}
-                            />
+                            <Box mr={1} ml={2}>
+                                <CsvButton
+                                    csvUrl={`/api/entities/?csv=true&id=${entityId}`}
+                                />
+                            </Box>
                             <XlsxButton
                                 xlsxUrl={`/api/entities/?xlsx=true&id=${entityId}`}
                             />

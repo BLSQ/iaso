@@ -3,8 +3,9 @@ import React from 'react';
 import { defineMessages, FormattedMessage } from 'react-intl';
 import PropTypes from 'prop-types';
 
-import { Box, Button, Grid, makeStyles } from '@material-ui/core';
-import SearchIcon from '@material-ui/icons/Search';
+import { Box, Button, Grid } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import SearchIcon from '@mui/icons-material/Search';
 
 import { commonStyles, getParamsKey } from 'bluesquare-components';
 import FiltersComponent from '../filters/FiltersComponent';

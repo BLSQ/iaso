@@ -1,4 +1,4 @@
-import { CircularProgress, Tooltip, Typography } from '@material-ui/core';
+import { CircularProgress, Tooltip, Typography } from '@mui/material';
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useSafeIntl } from 'bluesquare-components';

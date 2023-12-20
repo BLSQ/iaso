@@ -1,8 +1,8 @@
 /* eslint-disable camelcase */
 import React, { FunctionComponent, useCallback } from 'react';
-import { Box, Grid, Paper } from '@material-ui/core';
+import { Box, Grid, Paper } from '@mui/material';
 import { Field, useFormikContext } from 'formik';
-import RestoreFromTrashIcon from '@material-ui/icons/RestoreFromTrash';
+import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
 import classNames from 'classnames';
 import { DeleteIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/DeleteIconButton';

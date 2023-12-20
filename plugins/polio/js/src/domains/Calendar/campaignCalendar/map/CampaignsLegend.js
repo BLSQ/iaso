@@ -8,8 +8,8 @@ import {
     AccordionSummary,
     AccordionDetails,
     Box,
-} from '@material-ui/core';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+} from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useStyles } from '../Styles';
 
 import MESSAGES from '../../../../constants/messages';

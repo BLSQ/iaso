@@ -266,6 +266,10 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.iaso_org_unit_groups',
         defaultMessage: 'Organisation unit groups management',
     },
+    iaso_org_unit_groups_tooltip: {
+        id: 'iaso.permissions.tooltip.iaso_org_unit_groups',
+        defaultMessage: 'Manage groups of organisation units',
+    },
     iaso_reports: {
         id: 'iaso.permission.reports',
         defaultMessage: 'Devices',
@@ -286,7 +290,12 @@ const PERMISSIONS_MESSAGES = defineMessages({
     },
     iaso_page_write: {
         id: 'iaso.permissions.iaso_page_write',
-        defaultMessage: 'Web pages management - Read and Write',
+        defaultMessage: 'Web embedded links management - Read and Write',
+    },
+    iaso_page_write_tooltip: {
+        id: 'iaso.permissions.tooltip.iaso_page_write',
+        defaultMessage:
+            'External links management: create or edit an external link',
     },
     iaso_write_sources: {
         id: 'iaso.permissions.iaso_write_sources',
@@ -312,6 +321,23 @@ const PERMISSIONS_MESSAGES = defineMessages({
     iaso_org_unit_change_request_approve: {
         id: 'iaso.permissions.iaso_org_unit_change_request_approve',
         defaultMessage: 'Org unit change request - Approve',
+    },
+    iaso_polio_vaccine_supply_chain_write: {
+        id: 'iaso.permissions.iaso_polio_vaccine_supply_chain_write',
+        defaultMessage: 'Polio vaccine supply chain - Write',
+    },
+    iaso_polio_vaccine_supply_chain_read: {
+        id: 'iaso.permissions.iaso_polio_vaccine_supply_chain_read',
+        defaultMessage: 'Polio vaccine supply chain - Read',
+    },
+    iaso_polio_vaccine_supply_chain_read_tooltip: {
+        id: 'iaso.permissions.iaso_polio_vaccine_supply_chain_read_tooltip',
+        defaultMessage:
+            'See summary of vaccine supply chain, by country and vaccine',
+    },
+    iaso_polio_vaccine_supply_chain_write_tooltip: {
+        id: 'iaso.permissions.iaso_polio_vaccine_supply_chain_write_tooltip',
+        defaultMessage: 'Edit and add supply chain data',
     },
     iaso_trypelim_anonymous: {
         id: 'trypelim.permissions.anonymous',
@@ -448,6 +474,10 @@ const PERMISSIONS_MESSAGES = defineMessages({
     iaso_trypelim_management_edit_shape_zones: {
         id: 'trypelim.permissions.zones_shapes_edit',
         defaultMessage: 'Edit zone shapes',
+    },
+    iaso_polio_notifications: {
+        id: 'iaso.permissions.iaso_polio_notifications',
+        defaultMessage: 'Polio notifications - Read and Write',
     },
 });
 

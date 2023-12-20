@@ -10,7 +10,6 @@ from plugins.polio.api.dashboards.forma import FormAStocksViewSetV2
 from plugins.polio.api.dashboards.launch_powerbi import LaunchPowerBIRefreshViewSet
 from plugins.polio.api.dashboards.preparedness_dashboard import PreparednessDashboardViewSet
 from plugins.polio.api.dashboards.vaccine_stocks import VaccineStocksViewSet
-from plugins.polio.api.line_list_imports import LineListImportViewSet
 from plugins.polio.api.lqas_im.countries_with_lqas_im import CountriesWithLqasIMConfigViewSet
 from plugins.polio.api.lqas_im.im_stats import IMStatsViewSet
 from plugins.polio.api.lqas_im.lqas_stats import LQASStatsViewSet
@@ -25,6 +24,7 @@ from plugins.polio.api.vaccines.vaccine_authorization import VaccineAuthorizatio
 from plugins.polio.budget.api import BudgetCampaignViewSet, BudgetStepViewSet, WorkflowViewSet
 from plugins.polio.tasks.api.create_refresh_preparedness_data import RefreshPreparednessLaucherViewSet
 from plugins.polio.api.vaccines.supply_chain import VaccineRequestFormViewSet
+from plugins.polio.api.vaccines.stock_management import VaccineStockManagementViewSet
 
 from plugins.polio.tasks.api.refresh_lqas_data import RefreshLQASDataViewset
 
@@ -43,7 +43,6 @@ router.register(r"polio/vaccines", VaccineStocksViewSet, basename="vaccines")
 router.register(r"polio/forma", FormAStocksViewSet, basename="forma")
 router.register(r"polio/v2/forma", FormAStocksViewSetV2, basename="forma")
 router.register(r"polio/countryusersgroup", CountryUsersGroupViewSet, basename="countryusersgroup")
-router.register(r"polio/linelistimport", LineListImportViewSet, basename="linelistimport")
 router.register(r"polio/orgunitspercampaign", OrgUnitsPerCampaignViewset, basename="orgunitspercampaign")
 router.register(r"polio/configs", ConfigViewSet, basename="polioconfigs")
 router.register(r"polio/datelogs", RoundDateHistoryEntryViewset, basename="datelogs")
@@ -58,4 +57,5 @@ router.register(r"polio/rounds", RoundViewSet, basename="rounds")
 router.register(r"polio/reasonsfordelay", ReasonForDelayViewSet, basename="reasonsfordelay")
 router.register(r"polio/tasks/refreshlqas", RefreshLQASDataViewset, basename="refreshlqas")
 router.register(r"polio/vaccine/request_forms", VaccineRequestFormViewSet, basename="vaccine_request_forms")
+router.register(r"polio/vaccine/vaccine_stock", VaccineStockManagementViewSet, basename="vaccine_stocks")
 router.register(r"polio/notifications", NotificationViewSet, basename="notifications")

@@ -1,7 +1,8 @@
 import React from 'react';
 import { FormattedMessage } from 'react-intl';
-import { Box, Button, makeStyles } from '@material-ui/core';
-import Autorenew from '@material-ui/icons/Autorenew';
+import { Box, Button } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import Autorenew from '@mui/icons-material/Autorenew';
 
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 

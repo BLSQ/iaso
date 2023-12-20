@@ -6,7 +6,7 @@ import React, {
 } from 'react';
 import { useMapEvent } from 'react-leaflet';
 import { LoadingSpinner } from 'bluesquare-components';
-import { Box } from '@material-ui/core';
+import { Box } from '@mui/material';
 
 import { useStyles } from '../Styles';
 import 'leaflet/dist/leaflet.css';

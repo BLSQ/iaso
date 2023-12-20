@@ -1,7 +1,7 @@
 import React from 'react';
-import { Box, Grid } from '@material-ui/core';
+import { Box, Grid } from '@mui/material';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from '@mui/styles';
 import TopBar from '../../components/nav/TopBarComponent';
 import { InstancesPerFormGraph } from '../../components/instancesGraph';
 import MESSAGES from './messages';

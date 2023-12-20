@@ -26,7 +26,7 @@ class DHIS2TestMixin:
         responses.add(
             responses.GET,
             "https://play.dhis2.org/2.30/api/organisationUnits.json"
-            "?fields=id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name],level"
+            "?fields=id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name],level,openingDate,closedDate"
             "&pageSize=500&page=1&totalPages=True",
             json=orgunit_response_content,
             status=200,

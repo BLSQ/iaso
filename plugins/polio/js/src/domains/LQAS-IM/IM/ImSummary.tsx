@@ -1,5 +1,6 @@
 /* eslint-disable react/require-default-props */
-import { Box, Divider, Grid, makeStyles, Typography } from '@material-ui/core';
+import { Box, Divider, Grid, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import React, { FunctionComponent, useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { ConvertedLqasImData } from '../../../constants/types';

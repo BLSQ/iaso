@@ -278,7 +278,14 @@ export const score = () => ({
         value: `${(s - 1) * 20},${s * 20}`,
     })),
     label: MESSAGES.score,
-    renderOption: option => <FullStarsSvg score={parseInt(option.label, 10)} />,
+    renderOption: (props, option) => {
+        const label = props.label || option.label;
+        return (
+            <div {...props}>
+                <FullStarsSvg score={parseInt(label, 10)} />
+            </div>
+        );
+    },
     type: 'select',
     isSearchable: false,
 });

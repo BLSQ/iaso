@@ -7,9 +7,9 @@ import {
     DialogContent,
     DialogTitle,
     Divider,
-    makeStyles,
     Typography,
-} from '@material-ui/core';
+} from '@mui/material';
+import { makeStyles } from '@mui/styles';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../../constants/messages';

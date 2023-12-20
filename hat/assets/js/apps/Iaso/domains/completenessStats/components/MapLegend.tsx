@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Paper, makeStyles, Box } from '@material-ui/core';
+import { Paper, Box, useTheme } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { scaleThreshold } from '@visx/scale';
 import { ScaleThreshold } from '../../../components/LegendBuilder/types';
 import { Legend } from '../../../components/LegendBuilder/Legend';

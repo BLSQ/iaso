@@ -1,14 +1,14 @@
 /* eslint-disable camelcase */
 import React, { FunctionComponent } from 'react';
 import {
-    makeStyles,
     Typography,
     Card,
     Grid,
     Divider,
     Box,
     CardContent,
-} from '@material-ui/core';
+} from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     useSafeIntl,
     IconButton as IconButtonComponent,

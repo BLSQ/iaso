@@ -1,7 +1,8 @@
 /* eslint-disable camelcase */
 import React, { FunctionComponent, useCallback } from 'react';
 import { LoadingSpinner, commonStyles } from 'bluesquare-components';
-import { Box, Grid, makeStyles } from '@material-ui/core';
+import { Box, Grid } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { FormikProvider, useFormik } from 'formik';
 import classnames from 'classnames';
 import { useTabs } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useTabs';

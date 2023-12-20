@@ -1,9 +1,9 @@
-import { Box, Divider } from '@material-ui/core';
+import { Box, Divider } from '@mui/material';
 import React, { FunctionComponent, useMemo } from 'react';
 import classnames from 'classnames';
-import Stepper from '@material-ui/core/Stepper';
-import Step from '@material-ui/core/Step';
-import StepLabel from '@material-ui/core/StepLabel';
+import Stepper from '@mui/material/Stepper';
+import Step from '@mui/material/Step';
+import StepLabel from '@mui/material/StepLabel';
 import moment from 'moment';
 import { Categories, Item } from '../types';
 import { TimelineStepIcon } from './TimelineStepIcon';

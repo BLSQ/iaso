@@ -1,8 +1,8 @@
 import moment from 'moment';
 import React, { FunctionComponent, ReactNode } from 'react';
-import { Table, TableBody, TableRow, TableCell } from '@material-ui/core';
-import GpsFixedIcon from '@material-ui/icons/GpsFixed';
-import GpsOffIcon from '@material-ui/icons/GpsOff';
+import { Table, TableBody, TableRow, TableCell } from '@mui/material';
+import GpsFixedIcon from '@mui/icons-material/GpsFixed';
+import GpsOffIcon from '@mui/icons-material/GpsOff';
 import {
     // @ts-ignore
     useSafeIntl,

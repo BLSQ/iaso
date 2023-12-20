@@ -4,16 +4,16 @@ import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 import { connect } from 'react-redux';
 
-import Add from '@material-ui/icons/Add';
+import Add from '@mui/icons-material/Add';
 import {
-    withStyles,
     Button,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
     Grid,
-} from '@material-ui/core';
+} from '@mui/material';
+import { withStyles } from '@mui/styles';
 
 import { injectIntl, commonStyles } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';

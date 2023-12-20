@@ -17,6 +17,8 @@ const PAGE_WRITE = 'iaso_page_write';
 const PLANNINGS = 'iaso_planning';
 const POLIO = 'iaso_polio';
 const POLIO_CONFIG = 'iaso_polio_config';
+const POLIO_SUPPLY_CHAIN_READ = 'iaso_polio_vaccine_supply_chain_read';
+const POLIO_SUPPLY_CHAIN_WRITE = 'iaso_polio_vaccine_supply_chain_write';
 const PROJECTS = 'iaso_projects';
 const REGISTRY = 'iaso_registry';
 const SOURCES = 'iaso_sources';
@@ -30,6 +32,7 @@ const USERS_ADMIN = 'iaso_users';
 const USERS_MANAGEMENT = 'iaso_users_managed';
 const WORKFLOWS = 'iaso_workflows';
 const MODULES = 'iaso_modules';
+const POLIO_NOTIFICATIONS = 'iaso_polio_notifications';
 
 export {
     COMPLETENESS,
@@ -51,6 +54,9 @@ export {
     PLANNINGS,
     POLIO,
     POLIO_CONFIG,
+    POLIO_SUPPLY_CHAIN_READ,
+    POLIO_SUPPLY_CHAIN_WRITE,
+    POLIO_NOTIFICATIONS,
     PROJECTS,
     REGISTRY,
     SOURCES,

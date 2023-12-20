@@ -28,6 +28,7 @@ import MESSAGES from './messages';
 import { useGetApprovalProposal } from './hooks/api/useGetApprovalProposal';
 import { SelectedChangeRequest } from './Table/ApproveOrgUnitChangesTable';
 import { useNewFields } from './hooks/useNewFields';
+import InputComponent from '../../../components/forms/InputComponent';
 
 type Props = {
     titleMessage: IntlMessage;
@@ -54,6 +55,22 @@ export const useStyles = makeStyles(theme => ({
             fill: theme.palette.error.main,
         },
     },
+    cellSelected: {
+        '& > a': {
+            color: theme.palette.success.main,
+        },
+        '& > span': {
+            color: theme.palette.success.main,
+        },
+        '& .marker-custom.primary svg': {
+            fill: theme.palette.success.main,
+        },
+    },
+    checkBoxContainer: {
+        '& label': {
+            margin: 0,
+        },
+    },
 }));
 
 export const ApproveOrgUnitChangesDialog: FunctionComponent<Props> = ({
@@ -66,7 +83,7 @@ export const ApproveOrgUnitChangesDialog: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const { data: changeRequest, isFetching: isFetchingChangeRequest } =
         useGetApprovalProposal(selectedChangeRequest?.id);
-    const newFields = useNewFields(changeRequest);
+    const { newFields, setSelected } = useNewFields(changeRequest);
 
     const handlConfirm = useCallback(() => {
         closeDialog();
@@ -80,11 +97,11 @@ export const ApproveOrgUnitChangesDialog: FunctionComponent<Props> = ({
             maxWidth="lg"
             onClose={() => null}
             id="approve-orgunit-changes-dialog"
-            dataTestId="pprove-orgunit-changes-dialog"
+            dataTestId="approve-orgunit-changes-dialog"
             titleMessage={titleMessage}
             closeDialog={closeDialog}
             buttons={() => (
-                <>
+                <Box my={2}>
                     <Button
                         onClick={() => {
                             closeDialog();
@@ -94,28 +111,32 @@ export const ApproveOrgUnitChangesDialog: FunctionComponent<Props> = ({
                     >
                         {formatMessage(MESSAGES.cancel)}
                     </Button>
-                    <Button
-                        data-test="reject-button"
-                        onClick={handleReject}
-                        variant="contained"
-                        color="secondary"
-                        autoFocus
-                    >
-                        {formatMessage(MESSAGES.reject)}
-                    </Button>
-                    <Button
-                        data-test="confirm-button"
-                        onClick={handlConfirm}
-                        variant="contained"
-                        color="primary"
-                        autoFocus
-                    >
-                        {formatMessage(MESSAGES.validate)}
-                    </Button>
-                </>
+                    <Box pl={1} display="inline-block">
+                        <Button
+                            data-test="reject-button"
+                            onClick={handleReject}
+                            variant="contained"
+                            color="secondary"
+                            autoFocus
+                        >
+                            {formatMessage(MESSAGES.reject)}
+                        </Button>
+                    </Box>
+                    <Box pl={1} display="inline-block">
+                        <Button
+                            data-test="confirm-button"
+                            onClick={handlConfirm}
+                            variant="contained"
+                            color="primary"
+                            autoFocus
+                        >
+                            {formatMessage(MESSAGES.validate)}
+                        </Button>
+                    </Box>
+                </Box>
             )}
         >
-            <Box minHeight={200}>
+            <Box minHeight={200} maxHeight="75vh">
                 {isFetchingChangeRequest && <LoadingSpinner absolute />}
                 <Table size="small">
                     <TableHead>
@@ -135,6 +156,15 @@ export const ApproveOrgUnitChangesDialog: FunctionComponent<Props> = ({
                                     {formatMessage(MESSAGES.newValue)}
                                 </Box>
                             </TableCell>
+                            <TableCell width={100}>
+                                <Box
+                                    className={classes.head}
+                                    display="flex"
+                                    justifyContent="center"
+                                >
+                                    {formatMessage(MESSAGES.selection)}
+                                </Box>
+                            </TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -144,14 +174,39 @@ export const ApproveOrgUnitChangesDialog: FunctionComponent<Props> = ({
                                 <TableCell>{field.oldValue}</TableCell>
                                 <TableCell
                                     className={classNames(
-                                        field.isChanged
+                                        field.isChanged && !field.isSelected
                                             ? classes.cellChanged
+                                            : classes.cell,
+                                        field.isChanged && field.isSelected
+                                            ? classes.cellSelected
                                             : classes.cell,
 
                                         field.isChanged && 'is-changed',
                                     )}
                                 >
                                     {field.newValue}
+                                </TableCell>
+                                <TableCell>
+                                    {field.isChanged && (
+                                        <Box
+                                            display="flex"
+                                            justifyContent="center"
+                                            className={
+                                                classes.checkBoxContainer
+                                            }
+                                        >
+                                            <InputComponent
+                                                type="checkbox"
+                                                withMarginTop={false}
+                                                value={field.isSelected}
+                                                keyValue={field.key}
+                                                onChange={() => {
+                                                    setSelected(field.key);
+                                                }}
+                                                labelString=""
+                                            />
+                                        </Box>
+                                    )}
                                 </TableCell>
                             </TableRow>
                         ))}

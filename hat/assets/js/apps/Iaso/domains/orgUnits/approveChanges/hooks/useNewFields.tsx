@@ -1,4 +1,4 @@
-import React, { ReactElement, useMemo } from 'react';
+import React, { ReactElement, useMemo, useState } from 'react';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import {
@@ -16,9 +16,16 @@ import MESSAGES from '../messages';
 type NewField = {
     key: string;
     isChanged: boolean;
+    isSelected: boolean;
     newValue: ReactElement | string;
     oldValue: ReactElement | string;
     label: string;
+};
+
+type UseNewFields = {
+    newFields: NewField[];
+    // eslint-disable-next-line no-unused-vars
+    setSelected: (key: string) => void;
 };
 
 const getReferenceInstancesValue = (
@@ -47,13 +54,18 @@ const getLocationValue = (location: NestedLocation): ReactElement => {
 
 export const useNewFields = (
     changeRequest?: OrgUnitChangeRequestDetails,
-): NewField[] => {
+): UseNewFields => {
     const { formatMessage } = useSafeIntl();
-    return useMemo(() => {
-        if (!changeRequest) return [];
+    const [fields, setFields] = useState<NewField[]>([]);
+
+    useMemo(() => {
+        if (!changeRequest) {
+            setFields([]);
+            return;
+        }
         const orgUnit = changeRequest.org_unit;
-        return Object.entries(changeRequest)
-            .filter(([key]) => key.startsWith('new_'))
+        const newFields = Object.entries(changeRequest)
+
             .map(([key, value]) => {
                 const originalKey = key.replace('_new', '');
                 switch (key) {
@@ -67,6 +79,7 @@ export const useNewFields = (
                             key: originalKey,
                             label: formatMessage(MESSAGES.parent),
                             isChanged: Boolean(value),
+                            isSelected: false,
                             newValue: value ? (
                                 <LinkToOrgUnit
                                     orgUnit={value as ShortOrgUnit}
@@ -86,6 +99,7 @@ export const useNewFields = (
                             key: originalKey,
                             label: formatMessage(MESSAGES.orgUnitsType),
                             isChanged: Boolean(value),
+                            isSelected: false,
                             newValue: type ? (
                                 <span>{type.short_name}</span>
                             ) : (
@@ -100,6 +114,7 @@ export const useNewFields = (
                             key: originalKey,
                             label: formatMessage(MESSAGES.groups),
                             isChanged: groups.length > 0,
+                            isSelected: false,
                             newValue: (
                                 <span>
                                     {getGroupsValue(
@@ -121,6 +136,7 @@ export const useNewFields = (
                             key: originalKey,
                             label: formatMessage(MESSAGES.location),
                             isChanged: Boolean(value),
+                            isSelected: false,
                             newValue: location
                                 ? getLocationValue(location)
                                 : oldValue,
@@ -140,6 +156,7 @@ export const useNewFields = (
                                     ? formatMessage(MESSAGES.openingDate)
                                     : formatMessage(MESSAGES.closingDate),
                             isChanged: Boolean(value),
+                            isSelected: false,
                             newValue: date ? (
                                 <span>{moment(date).format('LTS')}</span>
                             ) : (
@@ -158,6 +175,7 @@ export const useNewFields = (
                             key: originalKey,
                             label: formatMessage(MESSAGES.name),
                             isChanged: Boolean(value),
+                            isSelected: false,
                             newValue: val ? (
                                 <span>{val.toString()}</span>
                             ) : (
@@ -174,6 +192,7 @@ export const useNewFields = (
                                 MESSAGES.multiReferenceInstancesLabel,
                             ),
                             isChanged: instances.length > 0,
+                            isSelected: false,
                             newValue: (
                                 <span>
                                     {getReferenceInstancesValue(
@@ -193,5 +212,18 @@ export const useNewFields = (
                 }
             })
             .filter(field => field !== null) as NewField[];
+        setFields(newFields);
     }, [changeRequest, formatMessage]);
+
+    const setSelected: UseNewFields['setSelected'] = key => {
+        setFields(currentFields =>
+            currentFields.map(field =>
+                field.key === key
+                    ? { ...field, isSelected: !field.isSelected }
+                    : field,
+            ),
+        );
+    };
+
+    return { newFields: fields, setSelected };
 };

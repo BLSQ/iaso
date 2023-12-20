@@ -113,6 +113,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.changeRequest.reject',
         defaultMessage: 'Modified version',
     },
+    selection: {
+        id: 'iaso.label.selection',
+        defaultMessage: 'Selection',
+    },
 });
 
 export default MESSAGES;

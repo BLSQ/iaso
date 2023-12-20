@@ -63,9 +63,8 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                                 label={formatMessage(MESSAGES.po_number)}
                                 name={`pre_alerts[${index}].po_number`}
                                 component={TextInput}
-                                shrinkLabel={false}
-                                touchOnFocus={false}
                                 disabled={markedForDeletion}
+                                shrinkLabel={false}
                             />
                         </Grid>
                         {/* TODO make list */}
@@ -74,8 +73,8 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                                 label={formatMessage(MESSAGES.lot_numbers)}
                                 name={`pre_alerts[${index}].lot_numbers`}
                                 component={TextInput}
-                                disabled={markedForDeletion}
                                 shrinkLabel={false}
+                                disabled={markedForDeletion}
                             />
                         </Grid>
                         <Grid item xs={6} md={3}>
@@ -91,28 +90,20 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                     </Grid>
                     <Grid container item xs={12} spacing={2}>
                         <Grid item xs={6} md={3}>
-                            <Box>
-                                <Field
-                                    label={formatMessage(
-                                        MESSAGES.expirationDate,
-                                    )}
-                                    name={`pre_alerts[${index}].expiration_date`}
-                                    component={DateInput}
-                                    disabled={markedForDeletion}
-                                />
-                            </Box>
+                            <Field
+                                label={formatMessage(MESSAGES.expirationDate)}
+                                name={`pre_alerts[${index}].expiration_date`}
+                                component={DateInput}
+                                disabled={markedForDeletion}
+                            />
                         </Grid>
                         <Grid item xs={6} md={3}>
-                            <Box>
-                                <Field
-                                    label={formatMessage(
-                                        MESSAGES.doses_shipped,
-                                    )}
-                                    name={`pre_alerts[${index}].doses_shipped`}
-                                    component={NumberInput}
-                                    disabled={markedForDeletion}
-                                />
-                            </Box>
+                            <Field
+                                label={formatMessage(MESSAGES.doses_shipped)}
+                                name={`pre_alerts[${index}].doses_shipped`}
+                                component={NumberInput}
+                                disabled={markedForDeletion}
+                            />
                         </Grid>
 
                         <Grid item xs={6} md={3}>

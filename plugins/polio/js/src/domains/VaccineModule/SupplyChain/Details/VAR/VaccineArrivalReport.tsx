@@ -61,55 +61,39 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
                             />
                         </Grid>
                         <Grid item xs={6} md={3}>
-                            <Box>
-                                <Field
-                                    label={formatMessage(
-                                        MESSAGES.doses_per_vial,
-                                    )}
-                                    name={`${VAR}[${index}].doses_per_vial`}
-                                    component={NumberInput}
-                                    disabled={markedForDeletion}
-                                />
-                            </Box>
+                            <Field
+                                label={formatMessage(MESSAGES.doses_per_vial)}
+                                name={`${VAR}[${index}].doses_per_vial`}
+                                component={NumberInput}
+                                disabled={markedForDeletion}
+                            />
                         </Grid>
                     </Grid>
                     <Grid container item xs={12} spacing={2}>
                         <Grid item xs={6} md={3}>
-                            <Box>
-                                <Field
-                                    label={formatMessage(
-                                        MESSAGES.expirationDate,
-                                    )}
-                                    name={`${VAR}[${index}].expiration_date`}
-                                    component={DateInput}
-                                    disabled={markedForDeletion}
-                                />
-                            </Box>
+                            <Field
+                                label={formatMessage(MESSAGES.expirationDate)}
+                                name={`${VAR}[${index}].expiration_date`}
+                                component={DateInput}
+                                disabled={markedForDeletion}
+                            />
                         </Grid>
                         <Grid item xs={6} md={3}>
-                            <Box>
-                                <Field
-                                    label={formatMessage(
-                                        MESSAGES.doses_shipped,
-                                    )}
-                                    name={`${VAR}[${index}].doses_shipped`}
-                                    component={NumberInput}
-                                    disabled={markedForDeletion}
-                                />
-                            </Box>
+                            <Field
+                                label={formatMessage(MESSAGES.doses_shipped)}
+                                name={`${VAR}[${index}].doses_shipped`}
+                                component={NumberInput}
+                                disabled={markedForDeletion}
+                            />
                         </Grid>
 
                         <Grid item xs={6} md={3}>
-                            <Box>
-                                <Field
-                                    label={formatMessage(
-                                        MESSAGES.doses_received,
-                                    )}
-                                    name={`${VAR}[${index}].doses_received`}
-                                    component={NumberInput}
-                                    disabled={markedForDeletion}
-                                />
-                            </Box>
+                            <Field
+                                label={formatMessage(MESSAGES.doses_received)}
+                                name={`${VAR}[${index}].doses_received`}
+                                component={NumberInput}
+                                disabled={markedForDeletion}
+                            />
                         </Grid>
                     </Grid>
                 </Grid>

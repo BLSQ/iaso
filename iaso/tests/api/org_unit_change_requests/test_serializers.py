@@ -1,6 +1,7 @@
 import datetime
 import time_machine
 import uuid
+import json
 
 from django.contrib.gis.geos import Point
 from rest_framework.exceptions import ValidationError
@@ -86,10 +87,9 @@ class OrgUnitForChangeRequestSerializerTestCase(TestCase):
             serializer.data,
             {
                 "id": self.org_unit.pk,
-                "parent": "",
+                "parent": None,
                 "name": "",
-                "org_unit_type_id": self.org_unit_type.pk,
-                "org_unit_type_name": "Org unit type",
+                "org_unit_type": {"id": 1, "name": "Org unit type", "short_name": ""},
                 "groups": [
                     {"id": self.group1.id, "name": "Group 1"},
                     {"id": self.group2.id, "name": "Group 2"},
@@ -167,9 +167,14 @@ class OrgUnitChangeRequestListSerializerTestCase(TestCase):
                 "requested_fields": serializer.data["requested_fields"],
                 "approved_fields": serializer.data["approved_fields"],
                 "rejection_comment": "",
-                "created_by": "user",
+                "created_by": {
+                    "id": 1,
+                    "username": "user",
+                    "first_name": "",
+                    "last_name": "",
+                },
                 "created_at": 1696856400.0,
-                "updated_by": "",
+                "updated_by": None,
                 "updated_at": None,
             },
         )
@@ -284,29 +289,27 @@ class OrgUnitChangeRequestRetrieveSerializerTestCase(TestCase):
                 "id": change_request.pk,
                 "uuid": str(change_request.uuid),
                 "status": "new",
-                "created_by": "user",
+                "created_by": {"id": 1, "username": "user", "first_name": "", "last_name": ""},
                 "created_at": 1697734800.0,
-                "updated_by": "",
+                "updated_by": None,
                 "updated_at": None,
                 "requested_fields": ["new_org_unit_type", "new_opening_date", "new_closed_date", "new_groups"],
                 "approved_fields": [],
                 "rejection_comment": "",
                 "org_unit": {
                     "id": self.org_unit.pk,
-                    "parent": "",
+                    "parent": None,
                     "name": "",
-                    "org_unit_type_id": self.org_unit_type.pk,
-                    "org_unit_type_name": self.org_unit_type.name,
+                    "org_unit_type": {"id": 1, "name": "Org unit type", "short_name": ""},
                     "groups": [],
                     "location": None,
                     "opening_date": None,
                     "closed_date": None,
                     "reference_instances": [],
                 },
-                "new_parent": "",
+                "new_parent": None,
                 "new_name": "",
-                "new_org_unit_type_id": self.org_unit_type.pk,
-                "new_org_unit_type_name": "Org unit type",
+                "new_org_unit_type": {"id": 1, "name": "Org unit type", "short_name": ""},
                 "new_groups": [
                     {
                         "id": new_group.pk,

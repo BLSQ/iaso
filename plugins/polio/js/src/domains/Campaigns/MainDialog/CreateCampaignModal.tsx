@@ -24,6 +24,7 @@ export const CreateCampaignModal: FunctionComponent<Props> = ({ router }) => {
 
     return (
         <>
+            {/* @ts-ignore */}
             <AddButton
                 onClick={() => {
                     setIsOpen(true);

@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { useSafeIntl, IconButton, Column } from 'bluesquare-components';
+import { useSafeIntl, Column } from 'bluesquare-components';
 import moment from 'moment';
 import { Tooltip } from '@mui/material';
 import { RestoreModal } from '../../../../../../../hat/assets/js/apps/Iaso/components/DeleteRestoreModals/RestoreModal';
@@ -14,8 +14,6 @@ type Args = {
     handleClickRestoreRow: (value: any) => void;
     // eslint-disable-next-line no-unused-vars
     handleClickDeleteRow: (value: any) => void;
-    // eslint-disable-next-line no-unused-vars
-    // handleClickEditRow: (value: any) => void;
     router: Router;
 };
 
@@ -23,7 +21,6 @@ export const useCampaignsTableColumns = ({
     showOnlyDeleted,
     handleClickRestoreRow,
     handleClickDeleteRow,
-    // handleClickEditRow,
     router,
 }: Args): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -99,13 +96,6 @@ export const useCampaignsTableColumns = ({
                             </>
                         )}
                         {showOnlyDeleted && (
-                            // <IconButton
-                            //     icon="restore-from-trash"
-                            //     tooltipMessage={MESSAGES.restoreCampaign}
-                            //     onClick={() =>
-                            //         handleClickRestoreRow(settings.value)
-                            //     }
-                            // />
                             <RestoreModal
                                 type="icon"
                                 titleMessage={MESSAGES.restoreWarning}

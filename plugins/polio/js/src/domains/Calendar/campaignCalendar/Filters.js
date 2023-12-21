@@ -9,7 +9,7 @@ import { Grid, Button, Box, useMediaQuery, useTheme } from '@mui/material';
 import FiltersIcon from '@mui/icons-material/FilterList';
 import { withRouter } from 'react-router';
 import { useSafeIntl } from 'bluesquare-components';
-import InputComponent from 'Iaso/components/forms/InputComponent';
+import InputComponent from 'Iaso/components/forms/InputComponent.tsx';
 import DatesRange from 'Iaso/components/filters/DatesRange';
 import { useGetGroupDropdown } from 'Iaso/domains/orgUnits/hooks/requests/useGetGroups.ts';
 import MESSAGES from '../../../constants/messages';

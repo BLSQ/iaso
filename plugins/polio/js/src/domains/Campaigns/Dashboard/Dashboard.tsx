@@ -28,7 +28,12 @@ const Dashboard = ({ router }) => {
     const paramsToUse = useSingleTableParams(params);
     const apiParams: GetCampaignOptions = useCampaignParams(paramsToUse);
 
-    const { data: rawCampaigns, isFetching } = useGetCampaigns(apiParams);
+    const { data: rawCampaigns, isFetching } = useGetCampaigns(
+        apiParams,
+        undefined,
+        undefined,
+        { keepPreviousData: true },
+    );
     const exportToCSV = useGetCampaignsAsCsv(apiParams);
 
     const campaigns = useMemo(() => {
@@ -45,8 +50,11 @@ const Dashboard = ({ router }) => {
         };
     }, [rawCampaigns]);
 
-    const { mutate: removeCampaign } = useRemoveCampaign();
-    const { mutate: restoreCampaign } = useRestoreCampaign();
+    // Leaving the API code for delete and restore here, so we cxan use isLoading for the table
+    const { mutate: removeCampaign, isLoading: isDeleting } =
+        useRemoveCampaign();
+    const { mutate: restoreCampaign, isLoading: isRestoring } =
+        useRestoreCampaign();
 
     const handleDeleteConfirmDialogConfirm = id => {
         removeCampaign(id);
@@ -87,7 +95,7 @@ const Dashboard = ({ router }) => {
                     baseUrl={DASHBOARD_BASE_URL}
                     marginTop={false}
                     extraProps={{
-                        loading: isFetching,
+                        loading: isFetching || isDeleting || isRestoring,
                     }}
                 />
             </Box>

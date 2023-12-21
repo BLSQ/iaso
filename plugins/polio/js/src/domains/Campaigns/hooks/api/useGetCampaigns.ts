@@ -127,6 +127,7 @@ export const useGetCampaigns = (
         queryFn: () => getRequest(getURL(params, url)),
         options: {
             cacheTime: Infinity,
+            staleTime: 1000 * 60 * 15,
             structuralSharing: false,
             refetchOnWindowFocus: false,
             enabled: !!params.enabled,

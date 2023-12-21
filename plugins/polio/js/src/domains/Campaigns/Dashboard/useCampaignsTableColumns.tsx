@@ -5,6 +5,8 @@ import { Tooltip } from '@mui/material';
 import { RestoreModal } from '../../../../../../../hat/assets/js/apps/Iaso/components/DeleteRestoreModals/RestoreModal';
 import MESSAGES from '../../../constants/messages';
 import { DeleteModal } from '../../../../../../../hat/assets/js/apps/Iaso/components/DeleteRestoreModals/DeleteModal';
+import { EditCampaignModal } from '../MainDialog/EditCampaignModal';
+import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
 
 type Args = {
     showOnlyDeleted: boolean;
@@ -13,14 +15,18 @@ type Args = {
     // eslint-disable-next-line no-unused-vars
     handleClickDeleteRow: (value: any) => void;
     // eslint-disable-next-line no-unused-vars
-    handleClickEditRow: (value: any) => void;
+    // handleClickEditRow: (value: any) => void;
+    router: Router;
+    params: any;
 };
 
 export const useCampaignsTableColumns = ({
     showOnlyDeleted,
     handleClickRestoreRow,
     handleClickDeleteRow,
-    handleClickEditRow,
+    // handleClickEditRow,
+    router,
+    params,
 }: Args): Column[] => {
     const { formatMessage } = useSafeIntl();
     // type Column need to be updated so accessor can also be FunctionComponent
@@ -79,12 +85,17 @@ export const useCampaignsTableColumns = ({
                     <>
                         {!showOnlyDeleted && (
                             <>
-                                <IconButton
+                                {/* <IconButton
                                     icon="edit"
                                     tooltipMessage={MESSAGES.edit}
                                     onClick={() =>
                                         handleClickEditRow(settings.value)
                                     }
+                                /> */}
+                                <EditCampaignModal
+                                    router={router}
+                                    params={params}
+                                    campaignId={settings.value}
                                 />
                                 <DeleteModal
                                     type="icon"
@@ -133,7 +144,8 @@ export const useCampaignsTableColumns = ({
     }, [
         formatMessage,
         showOnlyDeleted,
-        handleClickEditRow,
+        router,
+        params,
         handleClickDeleteRow,
         handleClickRestoreRow,
     ]);

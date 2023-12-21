@@ -9,8 +9,8 @@ const formatGroupedCampaigns = groupedCampaigns => {
     return groupedCampaigns ?? [];
 };
 export const useSaveCampaign = () => {
-    return useSnackMutation(
-        body => {
+    return useSnackMutation({
+        mutationFn: body => {
             // TODO remove this hack when we get the real multiselect in polio
             const hackedBody = {
                 ...body,
@@ -25,8 +25,7 @@ export const useSaveCampaign = () => {
                   )
                 : postRequest('/api/polio/campaigns/', hackedBody);
         },
-        undefined,
-        undefined,
-        ['polio', 'campaigns'],
-    );
+        showSucessSnackBar: false,
+        invalidateQueryKeys: [['polio', 'campaigns']],
+    });
 };

@@ -2484,6 +2484,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.notifications',
         defaultMessage: 'Virus notification',
     },
+    defaultMutationApiSuccess: {
+        id: 'iaso.snackBar.successful',
+        defaultMessage: 'Saved successfully',
+    },
 });
 
 export default MESSAGES;

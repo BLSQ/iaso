@@ -21,6 +21,7 @@ import {
     IconButton as IconButtonComponent,
     BackdropClickModal,
 } from 'bluesquare-components';
+import { useDispatch } from 'react-redux';
 import { convertEmptyStringToNull } from '../../../utils/convertEmptyStringToNull';
 import { useFormValidator } from '../../../hooks/useFormValidator';
 import { Form } from '../../../components/Form';
@@ -32,6 +33,8 @@ import MESSAGES from '../../../constants/messages';
 import { useGetCampaign } from '../hooks/api/useGetCampaign';
 import { PolioDialogTabs } from './PolioDialogTabs';
 import { usePolioDialogTabs } from './usePolioDialogTabs';
+import { enqueueSnackbar } from '../../../../../../../hat/assets/js/apps/Iaso/redux/snackBarsReducer';
+import { succesfullSnackBar } from '../../../../../../../hat/assets/js/apps/Iaso/constants/snackBars';
 
 type Props = {
     isOpen: boolean;
@@ -39,15 +42,18 @@ type Props = {
     campaignId?: string;
 };
 
+const successSnackBar = msg => succesfullSnackBar(undefined, msg);
+
 const CreateEditDialog: FunctionComponent<Props> = ({
     isOpen,
     onClose,
     campaignId,
 }) => {
-    const { mutate: saveCampaign } = useSaveCampaign();
+    const { mutate: saveCampaign, isLoading: isSaving } = useSaveCampaign();
     const { data: selectedCampaign, isFetching } = useGetCampaign(
         isOpen && campaignId,
     );
+    const dispatch = useDispatch();
 
     const { data: campaignLogs } = useGetCampaignLogs(
         selectedCampaign?.id,
@@ -64,6 +70,11 @@ const CreateEditDialog: FunctionComponent<Props> = ({
             onSuccess: () => {
                 helpers.resetForm();
                 onClose();
+                dispatch(
+                    enqueueSnackbar(
+                        successSnackBar(MESSAGES.defaultMutationApiSuccess),
+                    ),
+                );
             },
             onError: error => {
                 helpers.setErrors(error.details);
@@ -143,7 +154,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
             scroll="body"
             className={classes.mainModal}
         >
-            {isFetching && <LoadingSpinner absolute />}
+            {(isFetching || isSaving) && <LoadingSpinner absolute />}
             <BackdropClickModal
                 open={isBackdropOpen}
                 closeDialog={() => setIsBackdropOpen(false)}

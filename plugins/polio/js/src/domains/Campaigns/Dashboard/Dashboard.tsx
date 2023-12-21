@@ -57,24 +57,24 @@ const Dashboard = ({ router }) => {
     const { mutate: removeCampaign } = useRemoveCampaign();
     const { mutate: restoreCampaign } = useRestoreCampaign();
 
-    const openEditDialog = useCallback(
-        (campaignId?: string) => {
-            setIsCreateEditDialogOpen(true);
-            const url = genUrl(router, {
-                campaignId,
-            });
-            dispatch(redirectTo(url));
-        },
-        [router, dispatch],
-    );
+    // const openEditDialog = useCallback(
+    //     (campaignId?: string) => {
+    //         setIsCreateEditDialogOpen(true);
+    //         const url = genUrl(router, {
+    //             campaignId,
+    //         });
+    //         dispatch(redirectTo(url));
+    //     },
+    //     [router, dispatch],
+    // );
 
-    const closeCreateEditDialog = () => {
-        setIsCreateEditDialogOpen(false);
-        const url = genUrl(router, {
-            campaignId: undefined,
-        });
-        dispatch(redirectTo(url));
-    };
+    // const closeCreateEditDialog = () => {
+    //     setIsCreateEditDialogOpen(false);
+    //     const url = genUrl(router, {
+    //         campaignId: undefined,
+    //     });
+    //     dispatch(redirectTo(url));
+    // };
 
     const handleDeleteConfirmDialogConfirm = id => {
         removeCampaign(id);
@@ -83,42 +83,30 @@ const Dashboard = ({ router }) => {
         restoreCampaign(id);
     };
 
-    const handleClickEditRow = useCallback(
-        id => {
-            openEditDialog(id);
-        },
-        [openEditDialog],
-    );
+    // const handleClickEditRow = useCallback(
+    //     id => {
+    //         openEditDialog(id);
+    //     },
+    //     [openEditDialog],
+    // );
 
     const handleClickCreateButton = () => {
         setIsCreateEditDialogOpen(true);
     };
 
-    useEffect(() => {
-        if (params.campaignId && !isCreateEditDialogOpen) {
-            openEditDialog(params.campaignId);
-        }
-    }, [params.campaignId, isCreateEditDialogOpen, openEditDialog]);
-
-    useSkipEffectOnMount(() => {
-        const newParams = {
-            ...apiParams,
-        };
-        delete newParams.page;
-        delete newParams.order;
-    }, [
-        apiParams.pageSize,
-        apiParams.countries,
-        apiParams.search,
-        apiParams.roundStartFrom,
-        apiParams.roundStartTo,
-    ]);
+    // useEffect(() => {
+    //     if (params.campaignId && !isCreateEditDialogOpen) {
+    //         openEditDialog(params.campaignId);
+    //     }
+    // }, [params.campaignId, isCreateEditDialogOpen, openEditDialog]);
 
     const columns = useCampaignsTableColumns({
         showOnlyDeleted: Boolean(params.showOnlyDeleted),
-        handleClickEditRow,
+        // handleClickEditRow,
         handleClickDeleteRow: handleDeleteConfirmDialogConfirm,
         handleClickRestoreRow: handleRestoreDialogConfirm,
+        router,
+        params: paramsToUse,
     });
 
     return (
@@ -127,11 +115,11 @@ const Dashboard = ({ router }) => {
                 title={formatMessage(MESSAGES.campaigns)}
                 displayBackButton={false}
             />
-            <CreateEditDialog
+            {/* <CreateEditDialog
                 campaignId={params.campaignId}
                 isOpen={isCreateEditDialogOpen}
                 onClose={closeCreateEditDialog}
-            />
+            /> */}
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Filters
                     params={params}

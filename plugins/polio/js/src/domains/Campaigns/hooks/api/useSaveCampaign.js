@@ -25,6 +25,8 @@ export const useSaveCampaign = () => {
                   )
                 : postRequest('/api/polio/campaigns/', hackedBody);
         },
+        // disable the snackbar here because it would lead to an early re-render of the table
+        // that would prevent the modal from closing and add a couple of other glitches
         showSucessSnackBar: false,
         invalidateQueryKeys: [['polio', 'campaigns']],
     });

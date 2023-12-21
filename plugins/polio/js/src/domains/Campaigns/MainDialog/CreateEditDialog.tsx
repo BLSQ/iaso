@@ -70,6 +70,8 @@ const CreateEditDialog: FunctionComponent<Props> = ({
             onSuccess: () => {
                 helpers.resetForm();
                 onClose();
+                // dispatching the snackbar here so the form can be reset and `onClose` called
+                // before the snackbar triggers a re-render of the whole table
                 dispatch(
                     enqueueSnackbar(
                         successSnackBar(MESSAGES.defaultMutationApiSuccess),

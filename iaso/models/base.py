@@ -148,6 +148,7 @@ class Account(models.Model):
             "default_version": self.default_version.as_dict() if self.default_version else None,
             "feature_flags": [flag.code for flag in self.feature_flags.all()],
             "user_manual_path": self.user_manual_path,
+            "analytics_script": self.analytics_script,
         }
 
     def __str__(self):

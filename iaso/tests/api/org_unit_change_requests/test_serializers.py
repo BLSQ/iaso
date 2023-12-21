@@ -148,7 +148,6 @@ class OrgUnitChangeRequestListSerializerTestCase(TestCase):
         change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
 
         serializer = OrgUnitChangeRequestListSerializer(change_request)
-
         self.assertEqual(
             serializer.data,
             {

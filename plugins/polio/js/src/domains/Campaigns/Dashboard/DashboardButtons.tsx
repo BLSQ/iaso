@@ -1,7 +1,8 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Grid, makeStyles } from '@material-ui/core';
+import { Box, Grid } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { useSafeIntl, AddButton } from 'bluesquare-components';
-import DownloadIcon from '@material-ui/icons/GetApp';
+import DownloadIcon from '@mui/icons-material//GetApp';
 import { LinkButton } from '../../../components/Buttons/LinkButton';
 import { userHasPermission } from '../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';

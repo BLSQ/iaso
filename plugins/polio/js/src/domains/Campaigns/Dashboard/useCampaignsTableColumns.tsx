@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { useSafeIntl, IconButton, Column } from 'bluesquare-components';
-import { Tooltip } from '@material-ui/core';
 import moment from 'moment';
+import { Tooltip } from '@mui/material';
 import { RestoreModal } from '../../../../../../../hat/assets/js/apps/Iaso/components/DeleteRestoreModals/RestoreModal';
 import MESSAGES from '../../../constants/messages';
 import { DeleteModal } from '../../../../../../../hat/assets/js/apps/Iaso/components/DeleteRestoreModals/DeleteModal';

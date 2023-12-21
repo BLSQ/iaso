@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { IntlMessage, useSafeIntl } from 'bluesquare-components';
 import { defineMessages } from 'react-intl';
-import { Button } from '@material-ui/core';
+import { Button } from '@mui/material';
 
 const messages = defineMessages({
     delete: {

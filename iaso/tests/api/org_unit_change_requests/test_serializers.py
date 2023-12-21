@@ -334,7 +334,13 @@ class OrgUnitChangeRequestRetrieveSerializerTestCase(TestCase):
                 ),
                 "new_parent": None,
                 "new_name": "",
-                "new_org_unit_type": {"id": 1, "name": "Org unit type", "short_name": ""},
+                "new_org_unit_type": OrderedDict(
+                    [
+                        ("id", self.org_unit_type.pk),
+                        ("name", self.org_unit_type.name),
+                        ("short_name", self.org_unit_type.short_name),
+                    ]
+                ),
                 "new_groups": [
                     {
                         "id": new_group.pk,

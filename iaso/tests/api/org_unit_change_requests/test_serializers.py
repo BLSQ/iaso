@@ -1,7 +1,6 @@
 import datetime
 import time_machine
 import uuid
-import json
 
 from django.contrib.gis.geos import Point
 from rest_framework.exceptions import ValidationError

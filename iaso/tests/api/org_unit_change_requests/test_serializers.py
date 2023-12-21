@@ -5,6 +5,7 @@ import uuid
 from django.contrib.gis.geos import Point
 from rest_framework.exceptions import ValidationError
 from rest_framework.test import APIRequestFactory
+from collections import OrderedDict
 
 from iaso.api.org_unit_change_requests.serializers import (
     InstanceForChangeRequestSerializer,
@@ -58,7 +59,7 @@ class OrgUnitForChangeRequestSerializerTestCase(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
+        org_unit_type = m.OrgUnitType.objects.create(name="Org unit type", short_name="short_name")
         org_unit = m.OrgUnit.objects.create(
             org_unit_type=org_unit_type,
             location=Point(-2.4747713, 47.3358576, 10.0),
@@ -88,7 +89,11 @@ class OrgUnitForChangeRequestSerializerTestCase(TestCase):
                 "id": self.org_unit.pk,
                 "parent": None,
                 "name": "",
-                "org_unit_type": {"id": 1, "name": "Org unit type", "short_name": ""},
+                "org_unit_type": {
+                    "id": self.org_unit_type.pk,
+                    "name": self.org_unit_type.name,
+                    "short_name": self.org_unit_type.short_name,
+                },
                 "groups": [
                     {"id": self.group1.id, "name": "Group 1"},
                     {"id": self.group2.id, "name": "Group 2"},
@@ -130,7 +135,9 @@ class OrgUnitChangeRequestListSerializerTestCase(TestCase):
         org_unit.groups.set([group])
 
         account = m.Account.objects.create(name="Account")
-        user = cls.create_user_with_profile(username="user", account=account)
+        user = cls.create_user_with_profile(
+            username="user", first_name="first_name", last_name="last_name", account=account
+        )
 
         cls.group = group
         cls.org_unit = org_unit
@@ -166,10 +173,10 @@ class OrgUnitChangeRequestListSerializerTestCase(TestCase):
                 "approved_fields": serializer.data["approved_fields"],
                 "rejection_comment": "",
                 "created_by": {
-                    "id": 1,
-                    "username": "user",
-                    "first_name": "",
-                    "last_name": "",
+                    "id": self.user.pk,
+                    "username": self.user.username,
+                    "first_name": self.user.first_name,
+                    "last_name": self.user.last_name,
                 },
                 "created_at": 1696856400.0,
                 "updated_by": None,
@@ -260,7 +267,9 @@ class OrgUnitChangeRequestRetrieveSerializerTestCase(TestCase):
 
         form = m.Form.objects.create(name="Vaccine form")
         account = m.Account.objects.create(name="Account")
-        user = cls.create_user_with_profile(username="user", account=account)
+        user = cls.create_user_with_profile(
+            username="user", first_name="first_name", last_name="last_name", account=account
+        )
 
         cls.form = form
         cls.org_unit = org_unit
@@ -287,24 +296,42 @@ class OrgUnitChangeRequestRetrieveSerializerTestCase(TestCase):
                 "id": change_request.pk,
                 "uuid": str(change_request.uuid),
                 "status": "new",
-                "created_by": {"id": 1, "username": "user", "first_name": "", "last_name": ""},
+                "created_by": OrderedDict(
+                    [
+                        ("id", self.user.pk),
+                        ("username", self.user.username),
+                        ("first_name", self.user.first_name),
+                        ("last_name", self.user.last_name),
+                    ]
+                ),
                 "created_at": 1697734800.0,
                 "updated_by": None,
                 "updated_at": None,
                 "requested_fields": ["new_org_unit_type", "new_opening_date", "new_closed_date", "new_groups"],
                 "approved_fields": [],
                 "rejection_comment": "",
-                "org_unit": {
-                    "id": self.org_unit.pk,
-                    "parent": None,
-                    "name": "",
-                    "org_unit_type": {"id": 1, "name": "Org unit type", "short_name": ""},
-                    "groups": [],
-                    "location": None,
-                    "opening_date": None,
-                    "closed_date": None,
-                    "reference_instances": [],
-                },
+                "org_unit": OrderedDict(
+                    [
+                        ("id", self.org_unit.pk),
+                        ("parent", None),
+                        ("name", ""),
+                        (
+                            "org_unit_type",
+                            OrderedDict(
+                                [
+                                    ("id", 1),
+                                    ("name", "Org unit type"),
+                                    ("short_name", ""),
+                                ]
+                            ),
+                        ),
+                        ("groups", []),
+                        ("location", None),
+                        ("opening_date", None),
+                        ("closed_date", None),
+                        ("reference_instances", []),
+                    ]
+                ),
                 "new_parent": None,
                 "new_name": "",
                 "new_org_unit_type": {"id": 1, "name": "Org unit type", "short_name": ""},

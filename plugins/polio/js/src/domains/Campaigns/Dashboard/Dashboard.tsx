@@ -82,7 +82,12 @@ const Dashboard = ({ router }) => {
                     baseUrl={DASHBOARD_BASE_URL}
                     showTest
                 />
-                <DashboardButtons router={router} exportToCSV={exportToCSV} />
+                <Box mb={2}>
+                    <DashboardButtons
+                        router={router}
+                        exportToCSV={exportToCSV}
+                    />
+                </Box>
                 {/* @ts-ignore */}
                 <TableWithDeepLink
                     data={campaigns?.campaigns ?? []}

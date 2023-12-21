@@ -106,7 +106,6 @@ const Dashboard = ({ router }) => {
         handleClickDeleteRow: handleDeleteConfirmDialogConfirm,
         handleClickRestoreRow: handleRestoreDialogConfirm,
         router,
-        params: paramsToUse,
     });
 
     return (

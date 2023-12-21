@@ -27,9 +27,11 @@ export const EditCampaignModal: FunctionComponent<Props> = ({
     }, [campaignId, dispatch, params]);
 
     const closeDialog = useCallback(() => {
-        setIsOpen(false);
-        dispatch(redirectTo(DASHBOARD_BASE_URL, {}));
-    }, [dispatch]);
+        dispatch(
+            // Passing the account id to avoid a redirection which would slow down the closing of the modal
+            redirectTo(DASHBOARD_BASE_URL, { accountId: params.accountId }),
+        );
+    }, [dispatch, params.accountId]);
 
     useEffect(() => {
         if (router?.params.campaignId === campaignId && !isOpen) {

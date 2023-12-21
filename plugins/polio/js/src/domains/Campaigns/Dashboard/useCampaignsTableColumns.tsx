@@ -17,7 +17,6 @@ type Args = {
     // eslint-disable-next-line no-unused-vars
     // handleClickEditRow: (value: any) => void;
     router: Router;
-    params: any;
 };
 
 export const useCampaignsTableColumns = ({
@@ -26,7 +25,6 @@ export const useCampaignsTableColumns = ({
     handleClickDeleteRow,
     // handleClickEditRow,
     router,
-    params,
 }: Args): Column[] => {
     const { formatMessage } = useSafeIntl();
     // type Column need to be updated so accessor can also be FunctionComponent
@@ -85,16 +83,9 @@ export const useCampaignsTableColumns = ({
                     <>
                         {!showOnlyDeleted && (
                             <>
-                                {/* <IconButton
-                                    icon="edit"
-                                    tooltipMessage={MESSAGES.edit}
-                                    onClick={() =>
-                                        handleClickEditRow(settings.value)
-                                    }
-                                /> */}
                                 <EditCampaignModal
                                     router={router}
-                                    params={params}
+                                    params={router.params}
                                     campaignId={settings.value}
                                 />
                                 <DeleteModal
@@ -145,7 +136,6 @@ export const useCampaignsTableColumns = ({
         formatMessage,
         showOnlyDeleted,
         router,
-        params,
         handleClickDeleteRow,
         handleClickRestoreRow,
     ]);

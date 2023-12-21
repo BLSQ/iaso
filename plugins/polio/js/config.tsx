@@ -48,7 +48,9 @@ import {
     STOCK_VARIATION,
     NOTIFICATIONS_BASE_URL,
 } from './src/constants/routes';
+// @ts-ignore
 import fr from './src/constants/translations/fr.json';
+// @ts-ignore
 import en from './src/constants/translations/en.json';
 import { Lqas } from './src/domains/LQAS-IM/LQAS';
 import { ImStats } from './src/domains/LQAS-IM/IM';

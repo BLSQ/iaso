@@ -35,6 +35,7 @@ export const DashboardButtons: FunctionComponent<Props> = ({
             >
                 {isUserAdmin && (
                     <Box mr={2}>
+                        {/* @ts-ignore */}
                         <AddButton onClick={handleClickCreateButton}>
                             {formatMessage(MESSAGES.create)}
                         </AddButton>

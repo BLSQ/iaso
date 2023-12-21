@@ -319,9 +319,9 @@ class OrgUnitChangeRequestRetrieveSerializerTestCase(TestCase):
                             "org_unit_type",
                             OrderedDict(
                                 [
-                                    ("id", 1),
-                                    ("name", "Org unit type"),
-                                    ("short_name", ""),
+                                    ("id", self.org_unit_type.pk), 
+                                    ("name", self.org_unit_type.name),
+                                    ("short_name", self.org_unit_type.short_name),
                                 ]
                             ),
                         ),

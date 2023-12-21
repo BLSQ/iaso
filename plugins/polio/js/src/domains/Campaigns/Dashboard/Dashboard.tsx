@@ -1,12 +1,10 @@
 /* eslint-disable camelcase */
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useSafeIntl, useSkipEffectOnMount } from 'bluesquare-components';
+import React, { useMemo } from 'react';
+import { useSafeIntl } from 'bluesquare-components';
 import { withRouter } from 'react-router';
-import { useDispatch } from 'react-redux';
 import { Box } from '@mui/material';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
-import { PolioCreateEditDialog as CreateEditDialog } from '../MainDialog/CreateEditDialog';
 import {
     useGetCampaigns,
     useCampaignParams,
@@ -17,22 +15,15 @@ import { useRemoveCampaign } from '../hooks/api/useRemoveCampaign';
 import { useRestoreCampaign } from '../hooks/api/useRestoreCampaign';
 import { useStyles } from '../../../styles/theme';
 import MESSAGES from '../../../constants/messages';
-import { genUrl } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import { DASHBOARD_BASE_URL } from '../../../constants/routes';
 import { useSingleTableParams } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/SingleTable';
-import { redirectTo } from '../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 import { useCampaignsTableColumns } from './useCampaignsTableColumns';
 import { Filters } from '../../Calendar/campaignCalendar/Filters';
 import { DashboardButtons } from './DashboardButtons';
 
 const Dashboard = ({ router }) => {
     const { params } = router;
-    const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
-
-    const [isCreateEditDialogOpen, setIsCreateEditDialogOpen] =
-        useState<boolean>(false);
-
     const classes: Record<string, string> = useStyles();
     const paramsToUse = useSingleTableParams(params);
     const apiParams: GetCampaignOptions = useCampaignParams(paramsToUse);
@@ -57,25 +48,6 @@ const Dashboard = ({ router }) => {
     const { mutate: removeCampaign } = useRemoveCampaign();
     const { mutate: restoreCampaign } = useRestoreCampaign();
 
-    // const openEditDialog = useCallback(
-    //     (campaignId?: string) => {
-    //         setIsCreateEditDialogOpen(true);
-    //         const url = genUrl(router, {
-    //             campaignId,
-    //         });
-    //         dispatch(redirectTo(url));
-    //     },
-    //     [router, dispatch],
-    // );
-
-    // const closeCreateEditDialog = () => {
-    //     setIsCreateEditDialogOpen(false);
-    //     const url = genUrl(router, {
-    //         campaignId: undefined,
-    //     });
-    //     dispatch(redirectTo(url));
-    // };
-
     const handleDeleteConfirmDialogConfirm = id => {
         removeCampaign(id);
     };
@@ -83,26 +55,8 @@ const Dashboard = ({ router }) => {
         restoreCampaign(id);
     };
 
-    // const handleClickEditRow = useCallback(
-    //     id => {
-    //         openEditDialog(id);
-    //     },
-    //     [openEditDialog],
-    // );
-
-    const handleClickCreateButton = () => {
-        setIsCreateEditDialogOpen(true);
-    };
-
-    // useEffect(() => {
-    //     if (params.campaignId && !isCreateEditDialogOpen) {
-    //         openEditDialog(params.campaignId);
-    //     }
-    // }, [params.campaignId, isCreateEditDialogOpen, openEditDialog]);
-
     const columns = useCampaignsTableColumns({
         showOnlyDeleted: Boolean(params.showOnlyDeleted),
-        // handleClickEditRow,
         handleClickDeleteRow: handleDeleteConfirmDialogConfirm,
         handleClickRestoreRow: handleRestoreDialogConfirm,
         router,
@@ -114,21 +68,13 @@ const Dashboard = ({ router }) => {
                 title={formatMessage(MESSAGES.campaigns)}
                 displayBackButton={false}
             />
-            {/* <CreateEditDialog
-                campaignId={params.campaignId}
-                isOpen={isCreateEditDialogOpen}
-                onClose={closeCreateEditDialog}
-            /> */}
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Filters
                     params={params}
                     baseUrl={DASHBOARD_BASE_URL}
                     showTest
                 />
-                <DashboardButtons
-                    handleClickCreateButton={handleClickCreateButton}
-                    exportToCSV={exportToCSV}
-                />
+                <DashboardButtons router={router} exportToCSV={exportToCSV} />
                 {/* @ts-ignore */}
                 <TableWithDeepLink
                     data={campaigns?.campaigns ?? []}

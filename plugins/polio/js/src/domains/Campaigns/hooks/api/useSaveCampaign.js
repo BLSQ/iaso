@@ -1,5 +1,5 @@
 import { useSnackMutation } from 'Iaso/libs/apiHooks.ts';
-import { postRequest, putRequest } from 'Iaso/libs/Api';
+import { postRequest, putRequest } from 'Iaso/libs/Api.ts';
 import { commaSeparatedIdsToStringArray } from 'Iaso/utils/forms';
 
 // we need this check because the select box returns the list in string format, but the api retirns an actual array

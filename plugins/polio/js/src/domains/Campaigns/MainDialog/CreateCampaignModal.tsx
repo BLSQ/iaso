@@ -7,12 +7,9 @@ import MESSAGES from '../../../constants/messages';
 import { PolioCreateEditDialog } from './CreateEditDialog';
 import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
 
-type Props = { router?: Router; params?: any };
+type Props = { router?: Router };
 
-export const CreateCampaignModal: FunctionComponent<Props> = ({
-    router,
-    params,
-}) => {
+export const CreateCampaignModal: FunctionComponent<Props> = ({ router }) => {
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     const [isOpen, setIsOpen] = useState<boolean>(false);

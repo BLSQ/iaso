@@ -1,12 +1,14 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useSafeIntl, AddButton } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import DownloadIcon from '@mui/icons-material//GetApp';
 import { LinkButton } from '../../../components/Buttons/LinkButton';
 import { userHasPermission } from '../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import MESSAGES from '../../../constants/messages';
+import { CreateCampaignModal } from '../MainDialog/CreateCampaignModal';
+import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
 
 const useStyles = makeStyles(theme => {
     return {
@@ -14,10 +16,10 @@ const useStyles = makeStyles(theme => {
     };
 });
 
-type Props = { handleClickCreateButton: () => void; exportToCSV: string };
+type Props = { router: Router; exportToCSV: string };
 
 export const DashboardButtons: FunctionComponent<Props> = ({
-    handleClickCreateButton,
+    router,
     exportToCSV,
 }) => {
     const { formatMessage } = useSafeIntl();
@@ -34,11 +36,14 @@ export const DashboardButtons: FunctionComponent<Props> = ({
                 alignItems="center"
             >
                 {isUserAdmin && (
+                    // <Box mr={2}>
+                    //     {/* @ts-ignore */}
+                    //     <AddButton onClick={handleClickCreateButton}>
+                    //         {formatMessage(MESSAGES.create)}
+                    //     </AddButton>
+                    // </Box>
                     <Box mr={2}>
-                        {/* @ts-ignore */}
-                        <AddButton onClick={handleClickCreateButton}>
-                            {formatMessage(MESSAGES.create)}
-                        </AddButton>
+                        <CreateCampaignModal router={router} />
                     </Box>
                 )}
                 <LinkButton icon={DownloadIcon} url={exportToCSV}>

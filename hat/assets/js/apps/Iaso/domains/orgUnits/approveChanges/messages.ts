@@ -71,7 +71,7 @@ const MESSAGES = defineMessages({
     },
     multiSelectionAction: {
         defaultMessage: 'Validate selected requests',
-        id: 'iaso.orgunitChangeRequest.edit',
+        id: 'iaso.changeRequest.edit',
     },
     save: {
         id: 'iaso.label.save',

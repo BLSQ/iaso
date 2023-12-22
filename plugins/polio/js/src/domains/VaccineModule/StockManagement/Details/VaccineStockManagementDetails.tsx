@@ -68,6 +68,7 @@ export const VaccineStockManagementDetails: FunctionComponent<Props> = ({
             router.params as StockManagementDetailsParams,
             tab === UNUSABLE_VIALS,
         );
+
     const { data: summary, isLoading: isLoadingSummary } =
         useGetStockManagementSummary(router.params.id);
 
@@ -84,6 +85,7 @@ export const VaccineStockManagementDetails: FunctionComponent<Props> = ({
     return (
         <>
             <TopBar title={title} displayBackButton goBack={goBack} />
+
             <Box className={classes.containerFullHeightPadded}>
                 <Grid container>
                     <Grid item xs={12} sm={6} md={4}>

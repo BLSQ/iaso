@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { Accept } from 'react-dropzone';
-import { Box } from '@material-ui/core';
+import { Box } from '@mui/material';
 import { useFormik } from 'formik';
 import {
     FilesUpload,

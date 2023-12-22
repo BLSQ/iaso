@@ -1,10 +1,5 @@
-import {
-    makeStyles,
-    Table,
-    TableBody,
-    TableRow,
-    TableCell,
-} from '@material-ui/core';
+import { Table, TableBody, TableRow, TableCell } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import React, { FunctionComponent, useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { getLabelsAndValues } from '../utils';

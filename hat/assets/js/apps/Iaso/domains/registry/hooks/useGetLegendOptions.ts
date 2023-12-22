@@ -1,5 +1,5 @@
 import { useSafeIntl } from 'bluesquare-components';
-import { useTheme } from '@material-ui/core';
+import { useTheme } from '@mui/material';
 
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { OrgunitTypes } from '../../orgUnits/types/orgunitTypes';

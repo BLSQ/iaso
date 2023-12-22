@@ -10,7 +10,7 @@ import {
     XAxis,
     YAxis,
 } from 'recharts';
-import { Typography } from '@material-ui/core';
+import { Typography } from '@mui/material';
 import { FormattedMessage } from 'react-intl';
 import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks';

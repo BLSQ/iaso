@@ -10,9 +10,9 @@ import {
     array,
 } from 'prop-types';
 import { isEqual } from 'lodash';
-import { makeStyles, useTheme } from '@material-ui/core/styles';
+import { makeStyles } from '@mui/styles';
 import { TreeViewWithSearch, useSafeIntl } from 'bluesquare-components';
-import { Box, FormControlLabel, Switch } from '@material-ui/core';
+import { Box, FormControlLabel, Switch, useTheme } from '@mui/material';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import { MESSAGES } from './messages';
 import { getRootData, getChildrenData, searchOrgUnits } from './requests';

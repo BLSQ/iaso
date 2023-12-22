@@ -6,8 +6,8 @@ import React, {
     useEffect,
 } from 'react';
 import { withRouter } from 'react-router';
-import FiltersIcon from '@material-ui/icons/FilterList';
-import { Box, Button, Grid } from '@material-ui/core';
+import FiltersIcon from '@mui/icons-material/FilterList';
+import { Box, Button, Grid } from '@mui/material';
 import { FormattedMessage } from 'react-intl';
 import { useDispatch } from 'react-redux';
 import { replace } from 'react-router-redux';

@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState, useEffect } from 'react';
-import { Box, Typography } from '@material-ui/core';
+import { Box, Typography } from '@mui/material';
 import {
     Bar,
     BarChart,
@@ -10,7 +10,7 @@ import {
     Cell,
     LabelList,
 } from 'recharts';
-import { blue } from '@material-ui/core/colors';
+import { blue } from '@mui/material/colors';
 import { BarChartData } from '../../../constants/types';
 import { BAR_HEIGHT } from './PercentageBarChart/constants';
 import { CustomTick } from './CustomTick';

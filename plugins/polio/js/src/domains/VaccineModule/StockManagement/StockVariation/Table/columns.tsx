@@ -1,9 +1,17 @@
-import { useMemo } from 'react';
-import { useSafeIntl } from 'bluesquare-components';
+import React, { useMemo } from 'react';
+import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../messages';
 import { DateCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
+// import DeleteDialog from '../../../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
+import { EditFormA } from '../Modals/CreateEditFormA';
+import { Vaccine } from '../../../../../constants/types';
+import { EditDestruction } from '../Modals/CreateEditDestruction';
+import { EditIncident } from '../Modals/CreateEditIncident';
 
-export const useFormATableColumns = () => {
+export const useFormATableColumns = (
+    countryName: string,
+    vaccine: Vaccine,
+): Column[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
         return [
@@ -57,10 +65,38 @@ export const useFormATableColumns = () => {
                 id: 'vials_used',
                 sortable: true,
             },
+            {
+                Header: formatMessage(MESSAGES.actions),
+                accessor: 'account',
+                sortable: false,
+                Cell: settings => {
+                    return (
+                        <>
+                            <EditFormA
+                                id={settings.row.original.id}
+                                formA={settings.row.original}
+                                iconProps={{}}
+                                countryName={countryName}
+                                vaccine={vaccine}
+                            />
+                            {/* <DeleteDialog
+                                titleMessage={MESSAGES.deleteVRF}
+                                message={MESSAGES.deleteVRFWarning}
+                                onConfirm={() =>
+                                    deleteVrf(settings.row.original.id)
+                                }
+                            /> */}
+                        </>
+                    );
+                },
+            },
         ];
-    }, [formatMessage]);
+    }, [countryName, formatMessage, vaccine]);
 };
-export const useDestructionTableColumns = () => {
+export const useDestructionTableColumns = (
+    countryName: string,
+    vaccine: Vaccine,
+): Column[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
         return [
@@ -90,18 +126,52 @@ export const useDestructionTableColumns = () => {
                 id: 'vials_destroyed',
                 sortable: true,
             },
+            {
+                Header: formatMessage(MESSAGES.actions),
+                accessor: 'account',
+                sortable: false,
+                Cell: settings => {
+                    return (
+                        <>
+                            <EditDestruction
+                                id={settings.row.original.id}
+                                destruction={settings.row.original}
+                                iconProps={{}}
+                                countryName={countryName}
+                                vaccine={vaccine}
+                            />
+                            {/* <DeleteDialog
+                                titleMessage={MESSAGES.deleteVRF}
+                                message={MESSAGES.deleteVRFWarning}
+                                onConfirm={() =>
+                                    deleteVrf(settings.row.original.id)
+                                }
+                            /> */}
+                        </>
+                    );
+                },
+            },
         ];
-    }, [formatMessage]);
+    }, [countryName, formatMessage, vaccine]);
 };
-export const useIncidentTableColumns = () => {
+export const useIncidentTableColumns = (
+    countryName: string,
+    vaccine: Vaccine,
+): Column[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
         return [
             {
-                Header: formatMessage(MESSAGES.action),
-                accessor: 'action',
-                id: 'action',
+                Header: formatMessage(MESSAGES.stockCorrection),
+                accessor: 'stock_correction',
+                id: 'stock_correction',
                 sortable: true,
+                Cell: settings =>
+                    settings.row.original.stock_correction
+                        ? formatMessage(
+                              MESSAGES[settings.row.original.stock_correction],
+                          )
+                        : textPlaceholder,
             },
             {
                 Header: formatMessage(MESSAGES.incident_reception_rrt),
@@ -122,6 +192,31 @@ export const useIncidentTableColumns = () => {
                 id: 'unusable_vials',
                 sortable: true,
             },
+            {
+                Header: formatMessage(MESSAGES.actions),
+                accessor: 'account',
+                sortable: false,
+                Cell: settings => {
+                    return (
+                        <>
+                            <EditIncident
+                                id={settings.row.original.id}
+                                incident={settings.row.original}
+                                iconProps={{}}
+                                countryName={countryName}
+                                vaccine={vaccine}
+                            />
+                            {/* <DeleteDialog
+                                titleMessage={MESSAGES.deleteVRF}
+                                message={MESSAGES.deleteVRFWarning}
+                                onConfirm={() =>
+                                    deleteVrf(settings.row.original.id)
+                                }
+                            /> */}
+                        </>
+                    );
+                },
+            },
         ];
-    }, [formatMessage]);
+    }, [countryName, formatMessage, vaccine]);
 };

@@ -4,8 +4,8 @@ import React, {
     useState,
     useCallback,
 } from 'react';
-import { Box } from '@material-ui/core';
-import EditIcon from '@material-ui/icons/Settings';
+import { Box } from '@mui/material';
+import EditIcon from '@mui/icons-material/Settings';
 import {
     useSafeIntl,
     // @ts-ignore

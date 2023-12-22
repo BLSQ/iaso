@@ -1,7 +1,8 @@
 import React, { FunctionComponent } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
-import { Grid, Paper, Box, Typography, makeStyles } from '@material-ui/core';
+import { Grid, Paper, Box, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import {
     unSelectedColor,
@@ -54,6 +55,9 @@ export const useStyles = makeStyles(theme => ({
         // @ts-ignore
         border: `2px solid ${theme.palette.ligthGray.border}`,
     },
+    row: {
+        marginBottom: theme.spacing(1),
+    },
 }));
 
 export const MapLegend: FunctionComponent = () => {
@@ -69,7 +73,12 @@ export const MapLegend: FunctionComponent = () => {
                     {formatMessage(MESSAGES.legend)}
                 </Typography>
                 {legends.map(vaccine => (
-                    <Grid container spacing={1} key={vaccine.value}>
+                    <Grid
+                        container
+                        spacing={1}
+                        key={vaccine.value}
+                        className={classes.row}
+                    >
                         <Grid item sm={4} container justifyContent="flex-start">
                             <span
                                 className={classes.roundColor}

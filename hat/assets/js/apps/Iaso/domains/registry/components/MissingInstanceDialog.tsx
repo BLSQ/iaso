@@ -5,9 +5,9 @@ import {
     DialogTitle,
     DialogContent,
     DialogActions,
-    makeStyles,
     Button,
-} from '@material-ui/core';
+} from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     useSafeIntl,
     makeFullModal,

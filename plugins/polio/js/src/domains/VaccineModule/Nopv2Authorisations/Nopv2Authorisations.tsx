@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useEffect } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import { Box } from '@material-ui/core';
+import { Box } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';

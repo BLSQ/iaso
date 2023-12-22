@@ -10,10 +10,10 @@ import {
     Tooltip,
     Button,
     Box,
-} from '@material-ui/core';
-import Close from '@material-ui/icons/Close';
-import ArrowBack from '@material-ui/icons/ArrowBack';
-import ViewColumnIcon from '@material-ui/icons/ViewColumn';
+} from '@mui/material';
+import Close from '@mui/icons-material/Close';
+import ArrowBack from '@mui/icons-material/ArrowBack';
+import ViewColumnIcon from '@mui/icons-material/ViewColumn';
 
 import { BlockPlaceholder, useSafeIntl } from 'bluesquare-components';
 

@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
-import { TableCell } from '@material-ui/core';
+import { TableCell } from '@mui/material';
 import { useStyles } from '../Styles';
 
 const EmptyCell = ({ colSpan, isCurrentWeek }) => {

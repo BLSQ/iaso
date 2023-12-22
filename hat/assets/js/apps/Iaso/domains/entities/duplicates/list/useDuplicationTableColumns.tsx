@@ -1,10 +1,10 @@
 /* eslint-disable react/no-array-index-key */
 import React, { ReactElement, useMemo } from 'react';
 import { useSafeIntl, IconButton, Column } from 'bluesquare-components';
-import CompareArrowsIcon from '@material-ui/icons/CompareArrows';
+import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import MergeIcon from '@mui/icons-material/Merge';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
-import { Box } from '@material-ui/core';
+import { Box } from '@mui/material';
 import { StarsComponent } from '../../../../components/stars/StarsComponent';
 import { DuplicateCell } from './DuplicateCell';
 import { formatLabel } from '../../../instances/utils';

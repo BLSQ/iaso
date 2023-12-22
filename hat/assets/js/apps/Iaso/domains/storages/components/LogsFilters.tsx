@@ -1,4 +1,4 @@
-import { Box, Grid } from '@material-ui/core';
+import { Box, Grid } from '@mui/material';
 import React, { FunctionComponent } from 'react';
 import {
     DatePicker,

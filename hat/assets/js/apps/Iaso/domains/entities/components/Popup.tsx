@@ -5,7 +5,6 @@ import { Link } from 'react-router';
 import classNames from 'classnames';
 
 import {
-    makeStyles,
     Card,
     CardContent,
     Button,
@@ -13,7 +12,8 @@ import {
     Box,
     Typography,
     Divider,
-} from '@material-ui/core';
+} from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import { useSafeIntl, mapPopupStyles } from 'bluesquare-components';
 import PopupItemComponent from '../../../components/maps/popups/PopupItemComponent';

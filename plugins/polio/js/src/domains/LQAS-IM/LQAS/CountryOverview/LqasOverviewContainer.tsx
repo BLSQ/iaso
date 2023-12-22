@@ -5,7 +5,8 @@ import React, {
     useState,
 } from 'react';
 
-import { Paper, Divider, Tab, Tabs, makeStyles } from '@material-ui/core';
+import { Paper, Divider, Tab, Tabs } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import { useDispatch } from 'react-redux';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';

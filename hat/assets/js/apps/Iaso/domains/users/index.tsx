@@ -5,7 +5,8 @@ import React, {
     useCallback,
 } from 'react';
 import { useDispatch } from 'react-redux';
-import { makeStyles, Box, Grid } from '@material-ui/core';
+import { Box, Grid } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import {
     commonStyles,
@@ -16,7 +17,7 @@ import {
     LoadingSpinner,
 } from 'bluesquare-components';
 
-import EditIcon from '@material-ui/icons/Settings';
+import EditIcon from '@mui/icons-material/Settings';
 import TopBar from '../../components/nav/TopBarComponent';
 import Filters from './components/Filters';
 import { AddUsersDialog } from './components/UsersDialog';

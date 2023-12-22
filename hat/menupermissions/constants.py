@@ -9,6 +9,7 @@ MODULE_PERMISSIONS = {
     "DEFAULT": [
         "iaso_org_units",
         "iaso_org_unit_types",
+        "iaso_org_unit_groups",
         "iaso_sources",
         "iaso_write_sources",
         "iaso_links",

@@ -36,63 +36,68 @@ export const getOverriddenTheme = (theme, themeConfig) => {
                 fontFamily: '"Roboto", "Arial", sans-serif',
             },
         },
-        overrides: {
-            MuiCssBaseline: {
-                '@global': {
-                    ...mapCluster,
-                    ...mapCustomControl,
-                    body: {
-                        height: '100vh',
-                        overflow: 'hidden',
-                        lineHeight: 1,
-                        backgroundColor: 'white',
-                    },
-                    sup: {
-                        verticalAlign: 'top',
-                    },
-                    a: {
-                        color: theme.palette.info.dark,
-                        textDecoration: 'none',
-                        '&:hover': { textDecoration: 'underline' },
-                    },
-                    '& .leaflet-bar a': {
-                        textDecoration: 'none !important',
-                    },
-                    '& .leaflet-tooltip': {
-                        zIndex: 1000,
-                    },
-                    '& .leaflet-interactive': {
-                        outline: 'none',
-                    },
-                    '& #notistack-snackbar': {
-                        maxWidth: 400,
-                    },
-                    '& .MuiInputLabel-shrink': {
-                        width: 'auto',
-                        height: 25,
-                        marginTop: -5,
-                        overflow: 'hidden',
-                        whiteSpace: 'nowrap',
-                        'text-overflow': 'ellipsis',
-                    },
-                    '& .MuiInputLabel-outlined.MuiInputLabel-shrink': {
-                        width: 'auto',
-                        height: 25,
-                        marginTop: -5,
-                        overflow: 'hidden',
-                        whiteSpace: 'nowrap',
-                        'text-overflow': 'ellipsis',
-                    },
-                    '& .MuiInputLabel-formControl': {
-                        width: '75%',
-                        height: 53,
-                        overflow: 'hidden',
-                        marginTop: -18,
-                        display: ' -webkit-box !important',
-                        '-webkit-box-align': 'center',
-                    },
-                },
-            },
-        },
     };
 };
+
+export const getGlobalOverrides = theme => ({
+    ...mapCluster,
+    ...mapCustomControl,
+    body: {
+        height: '100vh',
+        overflow: 'hidden',
+        lineHeight: 1,
+        backgroundColor: 'white',
+    },
+    sup: {
+        verticalAlign: 'top',
+    },
+    a: {
+        color: theme.palette.info.dark,
+        textDecoration: 'none',
+        '&:hover': { textDecoration: 'underline' },
+    },
+    '& .leaflet-bar a': {
+        textDecoration: 'none !important',
+    },
+    '& .leaflet-tooltip': {
+        zIndex: 1000,
+    },
+    '& .leaflet-interactive': {
+        outline: 'none',
+    },
+    '& #notistack-snackbar': {
+        maxWidth: 400,
+    },
+    '& .MuiInputLabel-shrink': {
+        width: 'auto',
+        height: 25,
+        marginTop: 0,
+        overflow: 'hidden',
+        whiteSpace: 'nowrap  !important',
+        textOverflow: 'ellipsis',
+    },
+    '& .MuiInputLabel-outlined.MuiInputLabel-shrink': {
+        width: 'auto',
+        height: 25,
+        marginTop: 0,
+        overflow: 'hidden',
+        whiteSpace: 'nowrap  !important',
+        textOverflow: 'ellipsis',
+        display: 'inline-block !important',
+    },
+    '& .MuiInputLabel-formControl': {
+        width: '75%',
+        height: 53,
+        overflow: 'hidden',
+        marginTop: -14,
+        display: '-webkit-box !important',
+        WebkitBoxAlign: 'center',
+        whiteSpace: 'break-spaces !important',
+    },
+    '& .MuiTablePagination-selectLabel': {
+        display: 'none !important',
+    },
+    '& .MuiTablePagination-root .MuiTablePagination-selectLabel + div': {
+        display: 'none !important',
+    },
+});

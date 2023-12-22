@@ -1,7 +1,7 @@
 import React from 'react';
-import HourglassEmpty from '@material-ui/icons/HourglassEmpty';
-import ErrorOutline from '@material-ui/icons/ErrorOutline';
-import CheckCircleOutline from '@material-ui/icons/CheckCircleOutline';
+import HourglassEmpty from '@mui/icons-material/HourglassEmpty';
+import ErrorOutline from '@mui/icons-material/ErrorOutline';
+import CheckCircleOutline from '@mui/icons-material/CheckCircleOutline';
 import { Link } from 'react-router';
 
 import {

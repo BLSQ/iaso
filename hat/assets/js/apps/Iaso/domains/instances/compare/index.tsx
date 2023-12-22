@@ -1,8 +1,8 @@
 import React, { FunctionComponent, useMemo } from 'react';
 
 import { useSelector, useDispatch } from 'react-redux';
-import { Box, Grid, Theme, GridSize } from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
+import { Box, Grid, Theme, GridSize } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 // @ts-ignore
 import { useSafeIntl, commonStyles } from 'bluesquare-components';

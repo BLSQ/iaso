@@ -1,7 +1,7 @@
 import React from 'react';
 import { act } from 'react-dom/test-utils';
-import MomentUtils from '@date-io/moment';
-import { MuiPickersUtilsProvider } from '@material-ui/pickers';
+import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 
 import { expect } from 'chai';
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
@@ -36,7 +36,10 @@ const awaitUseEffect = async wrapper => {
 const getConnectedWrapper = () =>
     mount(
         renderWithStore(
-            <MuiPickersUtilsProvider utils={MomentUtils} locale="en">
+            <LocalizationProvider
+                dateAdapter={AdapterMoment}
+                adapterLocale="en"
+            >
                 <FormVersionsDialog
                     formId={formId}
                     formVersion={fakeFormVersion}
@@ -52,7 +55,7 @@ const getConnectedWrapper = () =>
                     onConfirmed={() => null}
                     periodType={PERIOD_TYPE_DAY}
                 />
-            </MuiPickersUtilsProvider>,
+            </LocalizationProvider>,
             {
                 forms: {
                     current: undefined,

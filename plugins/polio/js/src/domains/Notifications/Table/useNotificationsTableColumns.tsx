@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Column, useSafeIntl } from 'bluesquare-components';
-import { Box } from '@material-ui/core';
+import { Box } from '@mui/material';
 
 import { DateCell } from '../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 

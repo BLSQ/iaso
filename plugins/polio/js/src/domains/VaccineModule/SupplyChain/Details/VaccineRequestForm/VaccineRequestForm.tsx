@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useCallback } from 'react';
-import { Box, Grid, Typography } from '@material-ui/core';
+import { Box, Grid, Typography } from '@mui/material';
 import { Field, useFormikContext } from 'formik';
 import { useSafeIntl } from 'bluesquare-components';
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';

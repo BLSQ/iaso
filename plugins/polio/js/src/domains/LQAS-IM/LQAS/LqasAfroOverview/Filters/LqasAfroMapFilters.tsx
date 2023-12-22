@@ -5,7 +5,7 @@ import {
     FormGroup,
     Grid,
     Switch,
-} from '@material-ui/core';
+} from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { InputWithInfos } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/InputWithInfos';
 import { LQAS_AFRO_MAP_URL } from '../../../../../constants/routes';

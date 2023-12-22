@@ -4,16 +4,8 @@ import {
     textPlaceholder,
     useSafeIntl,
 } from 'bluesquare-components';
-import {
-    Box,
-    Button,
-    Grid,
-    Paper,
-    Tab,
-    Tabs,
-    Typography,
-    makeStyles,
-} from '@material-ui/core';
+import { Box, Button, Grid, Paper, Tab, Tabs, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { useDispatch } from 'react-redux';
 import { redirectTo } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 import {
@@ -76,6 +68,7 @@ export const VaccineStockManagementDetails: FunctionComponent<Props> = ({
             router.params as StockManagementDetailsParams,
             tab === UNUSABLE_VIALS,
         );
+
     const { data: summary, isLoading: isLoadingSummary } =
         useGetStockManagementSummary(router.params.id);
 
@@ -92,6 +85,7 @@ export const VaccineStockManagementDetails: FunctionComponent<Props> = ({
     return (
         <>
             <TopBar title={title} displayBackButton goBack={goBack} />
+
             <Box className={classes.containerFullHeightPadded}>
                 <Grid container>
                     <Grid item xs={12} sm={6} md={4}>

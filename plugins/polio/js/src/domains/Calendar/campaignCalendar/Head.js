@@ -8,7 +8,7 @@ import {
     TableCell,
     Typography,
     Box,
-} from '@material-ui/core';
+} from '@mui/material';
 
 import { useStyles } from './Styles';
 

@@ -1,8 +1,8 @@
 import React from 'react';
-import Grid from '@material-ui/core/Grid';
+import Grid from '@mui/material/Grid';
 import PropTypes from 'prop-types';
 import { useSafeIntl } from 'bluesquare-components';
-import { Button } from '@material-ui/core';
+import { Button } from '@mui/material';
 import Dhis2Search from './Dhis2SearchComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import MESSAGES from '../messages';

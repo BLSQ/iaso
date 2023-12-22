@@ -74,7 +74,7 @@ class TaskSerializerSerializerTestCase(TestCase):
                 "name": "org_unit_bulk_update",
                 "should_be_killed": False,
                 "progress_message": None,
-                "polio_notification_id": None,
+                "polio_notification_import_id": None,
             },
         )
 
@@ -99,7 +99,7 @@ class TaskSerializerSerializerTestCase(TestCase):
                 "name": "create_polio_notifications_async",
                 "should_be_killed": False,
                 "progress_message": None,
-                "polio_notification_id": 10,
+                "polio_notification_import_id": 10,
             },
         )
 

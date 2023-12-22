@@ -28,7 +28,7 @@ const NotificationImportDetailModal: FunctionComponent<Props> = ({
     const {
         data: notificationImport,
         isFetching: isFetchingNotificationImport,
-    } = useGetPolioNotificationImport(task.polio_notification_id);
+    } = useGetPolioNotificationImport(task.polio_notification_import_id);
 
     return (
         <AlertModal
@@ -37,6 +37,7 @@ const NotificationImportDetailModal: FunctionComponent<Props> = ({
             titleMessage={formatMessage(
                 MESSAGES.polioNotificationImportDetails,
             )}
+            id="polio-notifications-import-details-modal"
             maxWidth="md"
         >
             {isFetchingNotificationImport && <LoadingSpinner />}

@@ -11,7 +11,10 @@ type IconButtonProps = {
 };
 
 export const NotificationImportDetailButton: FunctionComponent<IconButtonProps> =
-    ({ onClick, dataTestId = 'roundHistoryButton' }) => {
+    ({
+        onClick,
+        dataTestId = 'open-polio-notifications-import-details-button',
+    }) => {
         return (
             <IconButton
                 dataTestId={dataTestId}

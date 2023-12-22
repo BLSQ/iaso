@@ -28,7 +28,7 @@ export type Task<T> = {
     status: TaskStatus;
     should_be_killed: boolean;
     progress_message: Nullable<string>;
-    polio_notification_id?: number;
+    polio_notification_import_id?: number;
 };
 
 export type TaskApiResponse<T> = {

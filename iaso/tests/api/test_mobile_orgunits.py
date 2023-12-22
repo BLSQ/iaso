@@ -259,7 +259,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user)
 
-        params = {APP_ID: BASE_APP_ID, "limit": 10}
+        params = {APP_ID: BASE_APP_ID}
 
         # Fetch OrgUnit by ID.
         response1 = self.client.get(f"{BASE_URL}{self.raditz.pk}/reference_instances/", data=params)

@@ -110,3 +110,7 @@ django-stubs==4.2.7  # https://github.com/typeddjango/django-stubs/tags
 # ------------------------------------------------------------------------------
 urllib3<2
 requests-toolbelt==0.9.1
+
+# Bug fix for: Pandas requires version '3.0.10' or newer of 'openpyxl'.
+# ------------------------------------------------------------------------------
+openpyxl==3.0.10

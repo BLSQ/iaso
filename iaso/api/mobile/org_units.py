@@ -292,17 +292,11 @@ class MobileOrgUnitViewSet(ModelViewSet):
 
         filtered_reference_instances = ReferenceInstancesFilter(request.query_params, reference_instances).qs
 
-        page_size = self.paginator.get_page_size(request)
-
-        if page_size:
-            self.paginator.results_key = "instances"
-            self.paginator.page_size = page_size
-            paginated_reference_instances = self.paginate_queryset(filtered_reference_instances)
-            serializer = ReferenceInstancesSerializer(paginated_reference_instances, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = ReferenceInstancesSerializer(filtered_reference_instances, many=True)
-        return Response(serializer.data)
+        self.paginator.results_key = "instances"
+        self.paginator.page_size = self.paginator.get_page_size(request) or 10
+        paginated_reference_instances = self.paginate_queryset(filtered_reference_instances)
+        serializer = ReferenceInstancesSerializer(paginated_reference_instances, many=True)
+        return self.get_paginated_response(serializer.data)
 
 
 def bbox_merge(a: Optional[tuple], b: Optional[tuple]) -> Optional[tuple]:

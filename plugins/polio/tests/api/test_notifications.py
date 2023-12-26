@@ -346,7 +346,7 @@ class NotificationViewSetTestCase(APITestCase):
         self.client.force_authenticate(self.user)
         response = self.client.get("/api/polio/notifications/download_sample_xlsx/")
         self.assertEqual(response.status_code, 200)
-        self.assertEquals(response.get("Content-Disposition"), 'inline; filename="notifications_template.xlsx"')
+        self.assertEqual(response.get("Content-Disposition"), 'inline; filename="notifications_template.xlsx"')
 
     @mock.patch("plugins.polio.api.notifications.views.create_polio_notifications_async")
     def test_action_import_xlsx(self, mocked_create_polio_notifications_async):

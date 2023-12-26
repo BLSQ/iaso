@@ -458,22 +458,22 @@ class EntityAPITestCase(APITestCase):
         # export all entities type as csv
         response = self.client.get("/api/entities/?csv=true/")
         self.assertEqual(response.status_code, 200)
-        self.assertEquals(response.get("Content-Disposition"), "attachment; filename=entities-2021-07-18-14-57.csv")
+        self.assertEqual(response.get("Content-Disposition"), "attachment; filename=entities-2021-07-18-14-57.csv")
 
         # export all entities type as xlsx
         response = self.client.get("/api/entities/?xlsx=true/")
         self.assertEqual(response.status_code, 200)
-        self.assertEquals(response.get("Content-Disposition"), "attachment; filename=entities-2021-07-18-14-57.xlsx")
+        self.assertEqual(response.get("Content-Disposition"), "attachment; filename=entities-2021-07-18-14-57.xlsx")
 
         # export specific entity type as xlsx
         response = self.client.get(f"/api/entities/?entity_type_ids={entity_type.pk}&xlsx=true/")
         self.assertEqual(response.status_code, 200)
-        self.assertEquals(response.get("Content-Disposition"), "attachment; filename=entities-2021-07-18-14-57.xlsx")
+        self.assertEqual(response.get("Content-Disposition"), "attachment; filename=entities-2021-07-18-14-57.xlsx")
 
         # export specific entity type as csv
         response = self.client.get(f"/api/entities/?entity_type_ids={entity_type.pk}&csv=true/")
         self.assertEqual(response.status_code, 200)
-        self.assertEquals(response.get("Content-Disposition"), "attachment; filename=entities-2021-07-18-14-57.csv")
+        self.assertEqual(response.get("Content-Disposition"), "attachment; filename=entities-2021-07-18-14-57.csv")
 
         # TODO: we should also check the content of the files
 

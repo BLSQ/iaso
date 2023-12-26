@@ -228,7 +228,7 @@ class InstancesAPITestCase(APITestCase):
 
         last_instance = m.Instance.objects.last()
         self.assertEqual(instance_uuid, last_instance.uuid)
-        self.assertEquals("RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml", last_instance.file_name)
+        self.assertEqual("RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml", last_instance.file_name)
         self.assertEqual("202002", last_instance.period)
         self.assertIsInstance(last_instance.location, Point)
         self.assertEqual(10, last_instance.accuracy)
@@ -278,7 +278,7 @@ class InstancesAPITestCase(APITestCase):
 
         last_instance = m.Instance.objects.last()
         self.assertEqual(instance_uuid, last_instance.uuid)
-        self.assertEquals("RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml", last_instance.file_name)
+        self.assertEqual("RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml", last_instance.file_name)
         self.assertEqual("202002", last_instance.period)
         self.assertIsInstance(last_instance.location, Point)
         self.assertEqual(10, last_instance.accuracy)
@@ -330,7 +330,7 @@ class InstancesAPITestCase(APITestCase):
 
         last_instance = m.Instance.objects.last()
         self.assertEqual(instance_uuid, last_instance.uuid)
-        self.assertEquals("RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml", last_instance.file_name)
+        self.assertEqual("RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml", last_instance.file_name)
         self.assertEqual("202002", last_instance.period)
         self.assertIsInstance(last_instance.location, Point)
         self.assertEqual(10, last_instance.accuracy)

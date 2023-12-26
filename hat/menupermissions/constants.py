@@ -23,7 +23,13 @@ MODULE_PERMISSIONS = {
     ],
     "DHIS2_MAPPING": ["iaso_mappings"],
     "EMBEDDED_LINKS": ["iaso_pages", "iaso_page_write"],
-    "ENTITIES": ["iaso_entities", "iaso_workflows", "iaso_entity_duplicates_write", "iaso_entity_duplicates_read"],
+    "ENTITIES": [
+        "iaso_entities",
+        "iaso_workflows",
+        "iaso_entity_duplicates_write",
+        "iaso_entity_duplicates_read",
+        "iaso_entity_type_write",
+    ],
     "EXTERNAL_STORAGE": ["iaso_storages"],
     "PLANNING": ["iaso_assignments"],
     "POLIO_PROJECT": [

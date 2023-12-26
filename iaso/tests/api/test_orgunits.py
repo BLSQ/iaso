@@ -548,7 +548,7 @@ class OrgUnitAPITestCase(APITestCase):
         for model in new_counts.keys():
             diff[model] = new_counts[model] - self.old_counts[model]
 
-        self.assertDictContainsSubset(createds, diff)
+        self.assertTrue(set(createds.items()).issubset(set(diff.items())))
 
     def test_create_org_unit(self):
         self.client.force_authenticate(self.yoda)

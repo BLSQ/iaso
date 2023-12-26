@@ -907,7 +907,7 @@ class InstancesAPITestCase(APITestCase):
         # assert audit log works
         modification = Modification.objects.last()
         self.assertEqual(self.yoda, modification.user)
-        self.assertNotEquals(modification.past_value[0]["fields"]["deleted"], modification.content_object.deleted)
+        self.assertNotEqual(modification.past_value[0]["fields"]["deleted"], modification.content_object.deleted)
         self.assertEqual(instance_to_patch, modification.content_object)
 
     def test_can_retrieve_instances_in_csv_format(self):

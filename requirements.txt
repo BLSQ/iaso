@@ -21,12 +21,12 @@ pyjwt==1.7.1  # https://github.com/jpadilla/pyjwt/tags
 
 # Redis.
 # ------------------------------------------------------------------------------
-redis==4.6.0
-django-redis==4.12.1
+redis==4.6.0  # https://github.com/redis/redis/tags
+django-redis==4.12.1  # https://github.com/jazzband/django-redis/tags
 
 # Pandas.
 # ------------------------------------------------------------------------------
-pandas==2.1.4  # https://github.com/pandas-dev/pandas/tags
+pandas==2.0.3  # https://github.com/pandas-dev/pandas/tags
 geopandas==0.14.1  # https://github.com/geopandas/geopandas/tags
 numpy==1.26.2  # https://github.com/numpy/numpy/tags
 Shapely==2.0.2  # https://github.com/shapely/shapely/tags
@@ -75,6 +75,11 @@ jsonschema==4.20.0  # https://github.com/python-jsonschema/jsonschema/tags
 oauth2client==4.1.3  # https://github.com/googleapis/oauth2client/tags
 
 # ODK-specific libraries.
+#     pyxform depends on openpyxl==3.0.9
+#     but pandas ≥ 2.1 require openpyxl > 3.0.9
+#     https://github.com/XLSForm/pyxform/blob/f71955/setup.py#L24
+#     This forces us to use a Pandas version without a pre-built wheel
+#     for Python 3.12 which takes forever to build.
 # ------------------------------------------------------------------------------
 pyxform==2.0.0  # https://github.com/XLSForm/pyxform/tags
 
@@ -102,15 +107,11 @@ ipython==8.19.0  # https://github.com/ipython/ipython/tags
 django-stubs==4.2.7  # https://github.com/typeddjango/django-stubs/tags
 
 # Bug fix for: "App Engine" was removed from `requests_toolbelt`.
-# https://github.com/graphql-python/gql/pull/413
-# https://github.com/requests/toolbelt/blob/c62d97/HISTORY.rst#100----2023-05-01
+#     https://github.com/graphql-python/gql/pull/413
+#     https://github.com/requests/toolbelt/blob/c62d97/HISTORY.rst#100----2023-05-01
 # Otherwise this wouldn't work:
-# https://github.com/BLSQ/iaso/blob/a52af7/plugins/polio/tasks/api/refresh_lqas_data.py#L3
-# gql.transport.requests.RequestsHTTPTransport > requests_toolbelt > from urllib3.contrib import appengine
+#     https://github.com/BLSQ/iaso/blob/a52af7/plugins/polio/tasks/api/refresh_lqas_data.py#L3
+#     gql.transport.requests.RequestsHTTPTransport > requests_toolbelt > from urllib3.contrib import appengine
 # ------------------------------------------------------------------------------
 urllib3<2
 requests-toolbelt==0.9.1
-
-# Bug fix for: Pandas requires version '3.0.10' or newer of 'openpyxl'.
-# ------------------------------------------------------------------------------
-openpyxl==3.0.10

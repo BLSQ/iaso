@@ -26,7 +26,7 @@ django-redis==4.12.1  # https://github.com/jazzband/django-redis/tags
 
 # Pandas.
 # ------------------------------------------------------------------------------
-pandas==2.1.4  # https://github.com/pandas-dev/pandas/tags
+pandas==2.0.3  # https://github.com/pandas-dev/pandas/tags
 geopandas==0.14.1  # https://github.com/geopandas/geopandas/tags
 numpy==1.26.2  # https://github.com/numpy/numpy/tags
 Shapely==2.0.2  # https://github.com/shapely/shapely/tags
@@ -42,7 +42,6 @@ django-ltree==0.5.3  # https://github.com/mariocesar/django-ltree/tags
 psycopg2-binary==2.9.9  # https://github.com/psycopg/psycopg2/tags
 
 # Webpack loader.
-# ------------------------------------------------------------------------------
 # This is our custom version of webpack loader to handle S3 better.
 # Use the following line if you want a locally editable version, and comment the other
 # -e git+https://github.com/BLSQ/django-webpack-loader@e94f76d0f8372193f0b662e2a1aba01a9deffb20#egg=django_webpack_loader
@@ -63,10 +62,9 @@ unidecode==1.3.7  # https://github.com/avian2/unidecode/tags
 
 # Exporting tools.
 # ------------------------------------------------------------------------------
+xlsxwriter==3.1.9  # https://github.com/jmcnamara/XlsxWriter/tags
 beautifulsoup4==4.12.2  # https://pypi.org/project/beautifulsoup4/
 lxml==4.9.4  # https://github.com/lxml/lxml/tags
-openpyxl==3.0.10  # https://foss.heptapod.net/openpyxl/openpyxl/-/tags
-xlsxwriter==3.1.9  # https://github.com/jmcnamara/XlsxWriter/tags
 
 # Importing tools.
 # ------------------------------------------------------------------------------
@@ -75,6 +73,14 @@ jsonschema==4.20.0  # https://github.com/python-jsonschema/jsonschema/tags
 # Web server and auth.
 # ------------------------------------------------------------------------------
 oauth2client==4.1.3  # https://github.com/googleapis/oauth2client/tags
+
+# ODK-specific libraries.
+#     pyxform depends on openpyxl==3.0.9 https://github.com/XLSForm/pyxform/blob/f71955/setup.py#L24
+#     but pandas ≥ 2.1 require openpyxl > 3.0.9
+#     This forces us to use a Pandas version < 2.1 without a pre-built wheel
+#     for Python 3.12 (it takes forever to build).
+# ------------------------------------------------------------------------------
+pyxform==2.0.0  # https://github.com/XLSForm/pyxform/tags
 
 # DHIS2 API wrapper.
 # ------------------------------------------------------------------------------
@@ -93,29 +99,18 @@ django-celery-beat==2.5.0  # https://github.com/celery/django-celery-beat/tags
 django-celery-results==2.5.1  # https://github.com/celery/django-celery-results/tags
 >>>>>>> 9707fab2f (Upgrade Python to version 3.12 and requirements)
 
-# ODK-specific libraries.
-# ------------------------------------------------------------------------------
-# Versions of pyxform > 1.7.0 have a pinned dependency to openpyxl==3.0.9:
-# https://github.com/XLSForm/pyxform/blob/f71955/setup.py#L24
-# But pandas ≥ 2.1 require openpyxl > 3.0.9.
-# Upgrading pyxform would force us to use a Pandas version < 2.1 without
-# a pre-built wheel which would take forever to build in Docker (10 minutes+).
-# ------------------------------------------------------------------------------
-pyxform==1.7.0  # https://github.com/XLSForm/pyxform/tags
-
-# Bug fix for: "App Engine" was removed from `requests_toolbelt`.
-# ------------------------------------------------------------------------------
-# Google App Engine was removed from requests-toolbelt in 1.0.0:
-# https://github.com/requests/toolbelt/blob/c62d97/HISTORY.rst#100----2023-05-01
-# Stick to a previous version, otherwise this wouldn't work:
-# https://github.com/BLSQ/iaso/blob/a52af7/plugins/polio/tasks/api/refresh_lqas_data.py#L3
-#     gql > requests_toolbelt > appengine
-# ------------------------------------------------------------------------------
-urllib3<2
-requests-toolbelt==0.9.1
-
 # Dev tools. Why it's not in requirements-dev.txt?
 # ------------------------------------------------------------------------------
 django-extensions==3.2.3  # https://github.com/django-extensions/django-extensions/tags
 ipython==8.19.0  # https://github.com/ipython/ipython/tags
 django-stubs==4.2.7  # https://github.com/typeddjango/django-stubs/tags
+
+# Bug fix for: "App Engine" was removed from `requests_toolbelt`.
+#     https://github.com/graphql-python/gql/pull/413
+#     https://github.com/requests/toolbelt/blob/c62d97/HISTORY.rst#100----2023-05-01
+# Otherwise this wouldn't work:
+#     https://github.com/BLSQ/iaso/blob/a52af7/plugins/polio/tasks/api/refresh_lqas_data.py#L3
+#     gql.transport.requests.RequestsHTTPTransport > requests_toolbelt > from urllib3.contrib import appengine
+# ------------------------------------------------------------------------------
+urllib3<2
+requests-toolbelt==0.9.1

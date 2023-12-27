@@ -100,6 +100,13 @@ services:
             USE_CELERY: ${USE_CELERY:-false}
             CELERY_BROKER_URL: ${CELERY_BROKER_URL:-}
             CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND:-}
+            SUPERSET_DB_HOSTNAME:
+            SUPERSET_DB_NAME:
+            SUPERSET_DB_PASSWORD:
+            SUPERSET_DB_USERNAME:
+            SUPERSET_IASO_USER_TOKEN:
+            SUPERSET_PORT:
+            SUPERSET_SECRET_KEY:
         logging: &iaso_logging
             driver: 'json-file'
             options:

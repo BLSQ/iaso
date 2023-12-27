@@ -35,7 +35,7 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         data = {"name": "hello", "project": project.id, "users": [], "manager": user.id, "sub_teams": []}
 
         serializer = TeamSerializer(context={"request": request}, data=data)
-        self.assertTrue(serializer.is_valid(()), serializer.errors)
+        self.assertTrue(serializer.is_valid(), serializer.errors)
         serializer.save()
 
     def test_serializer_subteam(self):
@@ -56,7 +56,7 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         }
 
         serializer = TeamSerializer(context={"request": request}, data=data, instance=team1)
-        self.assertTrue(serializer.is_valid(()), serializer.errors)
+        self.assertTrue(serializer.is_valid(), serializer.errors)
         serializer.save()
         team1.refresh_from_db()
         team2.refresh_from_db()
@@ -82,7 +82,7 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         }
 
         serializer = TeamSerializer(context={"request": request}, data=data, instance=team1)
-        self.assertFalse(serializer.is_valid(()), serializer.validated_data)
+        self.assertFalse(serializer.is_valid(), serializer.validated_data)
         self.assertIn("sub_teams", serializer.errors)
 
     def test_serializer_valid_parent_no_loop(self):
@@ -99,7 +99,7 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         data = {"parent": parent.id}
 
         serializer = TeamSerializer(context={"request": request}, data=data, instance=team, partial=True)
-        self.assertTrue(serializer.is_valid(()), serializer.errors)
+        self.assertTrue(serializer.is_valid(), serializer.errors)
         serializer.save()
 
     def test_serializer_invalid_because_parent_loop(self):
@@ -117,7 +117,7 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         data = {"name": "team with subteams", "project": project.id, "users": [], "manager": user.id, "parent": team.id}
 
         serializer = TeamSerializer(context={"request": request}, data=data, instance=grand_parent, partial=True)
-        self.assertFalse(serializer.is_valid(()), serializer.validated_data)
+        self.assertFalse(serializer.is_valid(), serializer.validated_data)
         self.assertIn("parent", serializer.errors)
 
     def test_serializer_invalid_because_parent_wrong_type(self):
@@ -133,7 +133,7 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         data = {"parent": parent.id}
 
         serializer = TeamSerializer(context={"request": request}, data=data, instance=team, partial=True)
-        self.assertFalse(serializer.is_valid(()), serializer.validated_data)
+        self.assertFalse(serializer.is_valid(), serializer.validated_data)
         self.assertIn("parent", serializer.errors)
 
     def test_serializer_invalid_because_subteam_loop2(self):
@@ -153,7 +153,7 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         data = {"sub_teams": [root.pk]}
 
         serializer = TeamSerializer(context={"request": request}, data=data, instance=sub_sub_team, partial=True)
-        self.assertFalse(serializer.is_valid(()), serializer.validated_data)
+        self.assertFalse(serializer.is_valid(), serializer.validated_data)
         self.assertIn("sub_teams", serializer.errors)
 
     def test_serializer_team_users(self):
@@ -173,7 +173,7 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         }
 
         serializer = TeamSerializer(context={"request": request}, data=data)
-        self.assertTrue(serializer.is_valid(()), serializer.errors)
+        self.assertTrue(serializer.is_valid(), serializer.errors)
         new_team = serializer.save()
         self.assertEqual(new_team.type, TeamType.TEAM_OF_USERS)
 
@@ -182,7 +182,7 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         serializer = TeamSerializer(
             context={"request": request}, instance=new_team, data={"users": [user1.id]}, partial=True
         )
-        self.assertTrue(serializer.is_valid(()), serializer.errors)
+        self.assertTrue(serializer.is_valid(), serializer.errors)
         serializer.save()
 
     def test_serializer_invalid_user(self):
@@ -204,7 +204,7 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         }
 
         serializer = TeamSerializer(context={"request": request}, data=data)
-        self.assertFalse(serializer.is_valid(()), serializer.validated_data)
+        self.assertFalse(serializer.is_valid(), serializer.validated_data)
         self.assertIn("users", serializer.errors)
 
     def test_serializer_invalid_manager(self):
@@ -226,7 +226,7 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         }
 
         serializer = TeamSerializer(context={"request": request}, data=data)
-        self.assertFalse(serializer.is_valid(()), serializer.validated_data)
+        self.assertFalse(serializer.is_valid(), serializer.validated_data)
         self.assertIn("manager", serializer.errors)
 
     def test_serializer_invalid_project(self):
@@ -249,7 +249,7 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         }
 
         serializer = TeamSerializer(context={"request": request}, data=data)
-        self.assertFalse(serializer.is_valid(()), serializer.validated_data)
+        self.assertFalse(serializer.is_valid(), serializer.validated_data)
         self.assertIn("project", serializer.errors)
 
 

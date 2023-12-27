@@ -983,7 +983,7 @@ class InstancesAPITestCase(APITestCase):
                     "Hydroponic public survey": 1,
                     "Hydroponic public survey III": 1,
                     "Hydroponics study": 4,
-                    "index": "2020-02-01T00:00:00.000Z",
+                    "index": "2020-02-01T00:00:00.000",
                     "name": "2020-02",
                 }
             ],
@@ -1067,7 +1067,7 @@ class InstancesAPITestCase(APITestCase):
                     "Hydroponic public survey": 1,
                     "Hydroponic public survey III": 1,
                     "Hydroponics study": 4,
-                    "index": "2020-02-01T00:00:00.000Z",
+                    "index": "2020-02-01T00:00:00.000",
                     "name": "2020-02",
                 }
             ],
@@ -1117,7 +1117,7 @@ class InstancesAPITestCase(APITestCase):
                     "Hydroponic public survey": 1,
                     "Hydroponic public survey III": 1,
                     "Hydroponics study": 4,
-                    "index": "2020-02-01T00:00:00.000Z",
+                    "index": "2020-02-01T00:00:00.000",
                     "name": "2020-02",
                 }
             ],

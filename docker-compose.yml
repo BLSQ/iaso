@@ -86,6 +86,13 @@ services:
             WFP_AUTH_ACCOUNT:
             WFP_AUTH_CLIENT_ID:
             WFP_EMAIL_RECIPIENTS_NEW_ACCOUNT:
+            SUPERSET_DB_HOSTNAME:
+            SUPERSET_DB_NAME:
+            SUPERSET_DB_PASSWORD:
+            SUPERSET_DB_USERNAME:
+            SUPERSET_IASO_USER_TOKEN:
+            SUPERSET_PORT:
+            SUPERSET_SECRET_KEY:
         logging: &iaso_logging
             driver: 'json-file'
             options:

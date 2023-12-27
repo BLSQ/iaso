@@ -723,7 +723,9 @@ const menu = [
                     {
                         label: MESSAGES.nopv2Auth,
                         key: 'nopv2authorisation',
-                        permissions: ['iaso_polio'],
+                        permissions: [
+                            'iaso_polio_vaccine_authorizations_read_only',
+                        ],
                         icon: props => <MenuBookIcon {...props} />,
                     },
                     {

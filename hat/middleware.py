@@ -19,6 +19,13 @@ def get_current_user():
         return getattr(request, "user", None)
 
 
+# For usage in tests
+def set_current_user(user=None):
+    request = get_current_request()
+    if request:
+        setattr(request, "user", user)
+
+
 class ThreadLocalMiddleware(object):
     """
     Middleware to add the HttpRequest to thread local storage

@@ -237,7 +237,9 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(self.jedi_council_corruscant, last_instance.org_unit)
         self.assertEqual(self.form_1, last_instance.form)
         self.assertEqual(timestamp_to_utc_datetime(1565258153704), last_instance.created_at)
-        self.assertEqual(datetime.datetime(2019, 8, 8, 9, 55, 53, tzinfo=timezone.utc), last_instance.created_at)
+        self.assertEqual(
+            datetime.datetime(2019, 8, 8, 9, 55, 53, tzinfo=datetime.timezone.utc), last_instance.created_at
+        )
         # TODO: the assertion below will fail because our API does not store properly the updated_at property
         # TODO: (See IA-278: https://bluesquare.atlassian.net/browse/IA-278)
         # self.assertEqual(
@@ -287,7 +289,9 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(self.jedi_council_corruscant, last_instance.org_unit)
         self.assertEqual(self.form_1, last_instance.form)
         self.assertEqual(timestamp_to_utc_datetime(1565258153704), last_instance.created_at)
-        self.assertEqual(datetime.datetime(2019, 8, 8, 9, 55, 53, tzinfo=timezone.utc), last_instance.created_at)
+        self.assertEqual(
+            datetime.datetime(2019, 8, 8, 9, 55, 53, tzinfo=datetime.timezone.utc), last_instance.created_at
+        )
         # TODO: the assertion below will fail because our API does not store properly the updated_at property
         # TODO: (See IA-278: https://bluesquare.atlassian.net/browse/IA-278)
         # self.assertEqual(
@@ -339,7 +343,9 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(self.jedi_council_corruscant, last_instance.org_unit)
         self.assertEqual(self.form_1, last_instance.form)
         self.assertEqual(timestamp_to_utc_datetime(1565258153704), last_instance.created_at)
-        self.assertEqual(datetime.datetime(2019, 8, 8, 9, 55, 53, tzinfo=timezone.utc), last_instance.created_at)
+        self.assertEqual(
+            datetime.datetime(2019, 8, 8, 9, 55, 53, tzinfo=datetime.timezone.utc), last_instance.created_at
+        )
         # TODO: the assertion below will fail because our API does not store properly the updated_at property
         # TODO: (See IA-278: https://bluesquare.atlassian.net/browse/IA-278)
         # self.assertEqual(
@@ -803,7 +809,7 @@ class InstancesAPITestCase(APITestCase):
             f"/api/instances/{instance_to_patch.id}/",
             data={"org_unit": new_org_unit.id, "period": "2022Q1"},
             format="json",
-            HTTP_ACCEPT="application/json",
+            headers={"accept": "application/json"},
         )
 
         self.assertJSONResponse(response, 200)
@@ -836,7 +842,7 @@ class InstancesAPITestCase(APITestCase):
             f"/api/instances/{instance_to_patch.id}/",
             data={"org_unit": new_org_unit.id},
             format="json",
-            HTTP_ACCEPT="application/json",
+            headers={"accept": "application/json"},
         )
         self.assertJSONResponse(response, 200)
 
@@ -874,7 +880,7 @@ class InstancesAPITestCase(APITestCase):
             f"/api/instances/{instance.id}/",
             data={"org_unit": new_org_unit.id},
             format="json",
-            HTTP_ACCEPT="application/json",
+            headers={"accept": "application/json"},
         )
 
         self.assertJSONResponse(response, 200)
@@ -895,7 +901,7 @@ class InstancesAPITestCase(APITestCase):
             f"/api/instances/{instance_to_patch.id}/",
             data={"deleted": False},
             format="json",
-            HTTP_ACCEPT="application/json",
+            headers={"accept": "application/json"},
         )
 
         self.assertJSONResponse(response, 200)
@@ -1307,7 +1313,7 @@ class InstancesAPITestCase(APITestCase):
         entity = m.Entity.objects.get(uuid=entity_uuid)
         instance = m.Instance.objects.get(uuid=instance_uuid)
         self.assertEqual(entity.attributes, None)
-        self.assertQuerysetEqual(entity.instances.all(), [instance], ordered=False)
+        self.assertQuerySetEqual(entity.instances.all(), [instance], ordered=False)
         self.assertEqual(instance.entity, entity)
         self.assertEqual(entity.entity_type, entity_type)
         self.assertEqual(entity.account, self.star_wars)
@@ -1352,7 +1358,7 @@ class InstancesAPITestCase(APITestCase):
         entity = m.Entity.objects.get(uuid=entity_uuid)
         instance = m.Instance.objects.get(uuid=instance_uuid)
         self.assertEqual(entity.attributes, None)
-        self.assertQuerysetEqual(entity.instances.all(), [instance], ordered=False)
+        self.assertQuerySetEqual(entity.instances.all(), [instance], ordered=False)
         self.assertEqual(instance.entity, entity)
         self.assertEqual(entity.entity_type, entity_type)
         self.assertEqual(entity.account, self.star_wars)
@@ -1391,7 +1397,7 @@ class InstancesAPITestCase(APITestCase):
         entity = m.Entity.objects.get(uuid=entity_uuid)
         instance = m.Instance.objects.get(uuid=instance_uuid)
         self.assertEqual(entity.attributes, instance)
-        self.assertQuerysetEqual(entity.instances.all(), [instance], ordered=False)
+        self.assertQuerySetEqual(entity.instances.all(), [instance], ordered=False)
         self.assertEqual(instance.entity, entity)
         self.assertEqual(entity.entity_type, entity_type)
         self.assertEqual(entity.account, self.star_wars)

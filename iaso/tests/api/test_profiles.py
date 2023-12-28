@@ -460,7 +460,7 @@ class ProfileAPITestCase(APITestCase):
         user = profile.user
         self.assertEqual(user.username, data["user_name"])
         self.assertEqual(user.first_name, data["first_name"])
-        self.assertQuerysetEqual(user.user_permissions.all(), [])
+        self.assertQuerySetEqual(user.user_permissions.all(), [])
         self.assertEqual(m.User.objects.filter(username=data["user_name"]).count(), 1)
         # check that we have copied the account from the creator account
         self.assertEqual(profile.account, self.ghi)
@@ -470,8 +470,8 @@ class ProfileAPITestCase(APITestCase):
         response = self.client.delete(f"/api/profiles/{profile_id}/")
 
         self.assertEqual(response.status_code, 200)
-        self.assertQuerysetEqual(m.User.objects.filter(id=user_id), [])
-        self.assertQuerysetEqual(m.Profile.objects.filter(id=profile_id), [])
+        self.assertQuerySetEqual(m.User.objects.filter(id=user_id), [])
+        self.assertQuerySetEqual(m.Profile.objects.filter(id=profile_id), [])
 
     def test_create_profile_with_org_units_and_perms(self):
         self.client.force_authenticate(self.jim)
@@ -500,7 +500,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(m.User.objects.filter(username=data["user_name"]).count(), 1)
         self.assertEqual(profile.account, self.ghi)
 
-        self.assertQuerysetEqual(
+        self.assertQuerySetEqual(
             user.user_permissions.all(),
             ["<Permission: menupermissions | custom permission support | Formulaires>"],
         )

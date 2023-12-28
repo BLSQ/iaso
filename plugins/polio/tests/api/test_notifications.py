@@ -15,7 +15,7 @@ from iaso.test import APITestCase, TestCase
 from iaso import models as m
 
 
-DT = datetime.datetime(2023, 11, 21, 11, 0, 0, 0, tzinfo=timezone.utc)
+DT = datetime.datetime(2023, 11, 21, 11, 0, 0, 0, tzinfo=datetime.timezone.utc)
 
 TEST_MEDIA_ROOT = os.path.join(settings.BASE_DIR, "media/_test")
 XLSX_FILE_PATH = "plugins/polio/tests/fixtures/linelist_notification_test.xlsx"
@@ -357,7 +357,7 @@ class NotificationViewSetTestCase(APITestCase):
                 f"/api/polio/notifications/import_xlsx/",
                 data=data,
                 format="multipart",
-                HTTP_ACCEPT="application/json",
+                headers={"accept": "application/json"},
             )
         self.assertJSONResponse(response, 201)
         self.assertTrue(mocked_create_polio_notifications_async.called)

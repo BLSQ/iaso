@@ -98,10 +98,12 @@ class FormsVersionAPITestCase(APITestCase):
             f"/api/mappingversions/" + mappingversionid + "/",
             data={"question_mappings": {"question_1": data_element_1}},
             format="json",
-            HTTP_ACCEPT="application/json",
+            headers={"accept": "application/json"},
         )
         mapping_version = self.client.get(
-            f"/api/mappingversions/" + mappingversionid + "/?fields=:all", format="json", HTTP_ACCEPT="application/json"
+            f"/api/mappingversions/" + mappingversionid + "/?fields=:all",
+            format="json",
+            headers={"accept": "application/json"},
         )
 
         self.assertEqual(mapping_version.json()["question_mappings"]["question_1"], data_element_1)
@@ -129,22 +131,26 @@ class FormsVersionAPITestCase(APITestCase):
             f"/api/mappingversions/" + mappingversionid + "/",
             data={"question_mappings": {"question_2": data_element_2}},
             format="json",
-            HTTP_ACCEPT="application/json",
+            headers={"accept": "application/json"},
         )
 
         mapping_version = self.client.get(
-            f"/api/mappingversions/" + mappingversionid + "/?fields=:all", format="json", HTTP_ACCEPT="application/json"
+            f"/api/mappingversions/" + mappingversionid + "/?fields=:all",
+            format="json",
+            headers={"accept": "application/json"},
         )
         self.assertEqual(mapping_version.json()["question_mappings"]["question_2"], data_element_2)
         self.client.patch(
             f"/api/mappingversions/" + mappingversionid + "/",
             data={"question_mappings": {"question_2": {"action": "unmap"}}},
             format="json",
-            HTTP_ACCEPT="application/json",
+            headers={"accept": "application/json"},
         )
 
         mapping_version = self.client.get(
-            f"/api/mappingversions/" + mappingversionid + "/?fields=:all", format="json", HTTP_ACCEPT="application/json"
+            f"/api/mappingversions/" + mappingversionid + "/?fields=:all",
+            format="json",
+            headers={"accept": "application/json"},
         )
 
         self.assertEqual(list(mapping_version.json()["question_mappings"].keys()), ["question_1"])
@@ -174,7 +180,7 @@ class FormsVersionAPITestCase(APITestCase):
                 "dataset": {"id": "ERTFDG", "name": "My dataset name"},
             },
             format="json",
-            HTTP_ACCEPT="application/json",
+            headers={"accept": "application/json"},
         )
 
         self.assertEqual(create_response.json(), {"mapping.datasource": ["object doesn't exist"]})
@@ -192,7 +198,7 @@ class FormsVersionAPITestCase(APITestCase):
                 "dataset": {"id": "ERTFDG", "name": "My dataset name"},
             },
             format="json",
-            HTTP_ACCEPT="application/json",
+            headers={"accept": "application/json"},
         )
 
         self.assertEqual(create_response.json(), {"form_version": ["object doesn't exist"]})
@@ -214,7 +220,7 @@ class FormsVersionAPITestCase(APITestCase):
             f"/api/mappingversions/" + mappingversionid + "/",
             data={"question_mappings": {"question_1": data_element_1}},
             format="json",
-            HTTP_ACCEPT="application/json",
+            headers={"accept": "application/json"},
         )
 
         self.assertEqual(resp.json(), {"question_mappings.question_1": "should have a least an data element id"})
@@ -237,7 +243,7 @@ class FormsVersionAPITestCase(APITestCase):
             f"/api/mappingversions/" + mappingversionid + "/",
             data={"question_mappings": {"question_1": data_element_1}},
             format="json",
-            HTTP_ACCEPT="application/json",
+            headers={"accept": "application/json"},
         )
 
         self.assertEqual(resp.json(), {"question_mappings.question_1": "should have a valueType"})
@@ -248,7 +254,7 @@ class FormsVersionAPITestCase(APITestCase):
                 f"/api/formversions/",
                 data={"form_id": self.form_1.id, "xls_file": xls_file},
                 format="multipart",
-                HTTP_ACCEPT="application/json",
+                headers={"accept": "application/json"},
             )
 
         return m.FormVersion.objects.all()[0]
@@ -262,10 +268,10 @@ class FormsVersionAPITestCase(APITestCase):
                 "dataset": {"id": "ERTFDG", "name": "My dataset name"},
             },
             format="json",
-            HTTP_ACCEPT="application/json",
+            headers={"accept": "application/json"},
         )
         return self.client.get(
             f"/api/mappingversions/" + str(resp.json()["id"]) + "/?fields=:all",
             format="json",
-            HTTP_ACCEPT="application/json",
+            headers={"accept": "application/json"},
         ).json()

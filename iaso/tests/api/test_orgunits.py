@@ -711,7 +711,7 @@ class OrgUnitAPITestCase(APITestCase):
             }
         )
         ou = m.OrgUnit.objects.get(id=jr["id"])
-        self.assertQuerysetEqual(
+        self.assertQuerySetEqual(
             ou.groups.all().order_by("name"), ["<Group: bla | Evil Empire  1 >", "<Group: bla2 | Evil Empire  1 >"]
         )
 
@@ -788,7 +788,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(response.data["reference_instances"], [])
         self.assertCreated({Modification: 1})
         ou = m.OrgUnit.objects.get(id=jr["id"])
-        self.assertQuerysetEqual(ou.groups.all().order_by("name"), ["<Group: Elite councils | Evil Empire  1 >"])
+        self.assertQuerySetEqual(ou.groups.all().order_by("name"), ["<Group: Elite councils | Evil Empire  1 >"])
         self.assertEqual(ou.id, old_ou.id)
         self.assertEqual(ou.name, old_ou.name)
         self.assertEqual(ou.parent, old_ou.parent)
@@ -898,7 +898,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertGreater(ou.updated_at, old_modification_date)
         self.assertEqual(ou.name, "test ou")
         self.assertEqual(ou.source_ref, "new source ref")
-        self.assertQuerysetEqual(ou.groups.all().order_by("name"), [group_a, group_b])
+        self.assertQuerySetEqual(ou.groups.all().order_by("name"), [group_a, group_b])
         self.assertEqual(ou.geom.wkt, MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])).wkt)
         self.assertEqual(response.data["reference_instances"], [])
 
@@ -936,7 +936,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertCreated({Modification: 1})
         ou = m.OrgUnit.objects.get(id=old_ou.id)
         # Verify group was not modified but the rest was modified
-        self.assertQuerysetEqual(
+        self.assertQuerySetEqual(
             ou.groups.all().order_by("name"), ["<Group:  | Evil Empire  1 >", "<Group: bad | None >"]
         )
         self.assertEqual(ou.id, old_ou.id)

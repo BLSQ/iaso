@@ -94,11 +94,19 @@ https://github.com/BLSQ/django-webpack-loader/archive/5fa2b6897b27dc6ff5bb51162e
 
 # ODK-specific libraries.
 # ------------------------------------------------------------------------------
-# Stick to pyxform==1.7.0 because newer have a pinned dependency to openpyxl==3.0.9:
-# https://github.com/XLSForm/pyxform/blob/f71955/setup.py#L24
-# But pandas ≥ 2.1 require openpyxl > 3.0.9.
-# Upgrading pyxform would force us to use a Pandas version < 2.1 without
-# a pre-built wheel which takes forever to build (10+ minutes).
+# pyxform depends on:
+#
+# 1. xlrd==2.0.1 https://github.com/XLSForm/pyxform/blob/f71955/setup.py#L23
+#     - xlrd supports Python up to 3.9
+#     - https://github.com/python-excel/xlrd/blob/c6d642/CHANGELOG.rst?plain=1#L18
+#     - we are stuck with Python 3.9
+#
+# 2. openpyxl==3.0.9 https://github.com/XLSForm/pyxform/blob/f71955/setup.py#L24
+#     - pandas ≥ 2.1 require openpyxl > 3.0.9
+#     - we are stuck with Pandas < 2.1
+#
+# Since pyxform is used 2 times in Iaso for `create_survey_from_xls`, we should
+# get rid of it to upgrade to newer versions of Python and Pandas.
 # ------------------------------------------------------------------------------
 pyxform==2.0.0  # https://github.com/XLSForm/pyxform/tags
 
@@ -112,9 +120,3 @@ pyxform==2.0.0  # https://github.com/XLSForm/pyxform/tags
 # ------------------------------------------------------------------------------
 urllib3<2
 requests-toolbelt==0.9.1
-
-# Dev tools. Why it's not in requirements-dev.txt?
-# ------------------------------------------------------------------------------
-django-extensions==3.2.3  # https://github.com/django-extensions/django-extensions/tags
-ipython==8.18.1  # https://github.com/ipython/ipython/tags
-django-stubs==4.2.7  # https://github.com/typeddjango/django-stubs/tags

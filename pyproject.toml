@@ -16,7 +16,7 @@ exclude = '''
 [project]
 name= "Iaso"
 readme = "README.md"
-requires-python = "~=3.12"
+requires-python = "~=3.9"
 
 [project.urls]
 Repository = "https://github.com/BLSQ/"

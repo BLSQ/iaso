@@ -103,10 +103,10 @@ jobs:
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.12
+      - name: Set up Python 3.9
         uses: actions/setup-python@v2
         with:
-          python-version: 3.12
+          python-version: 3.9
       - name: Install GDAL
         run: sudo apt-get update && sudo apt install gdal-bin 
       - uses: actions/cache@v2

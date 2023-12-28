@@ -654,7 +654,7 @@ Contributing
 
 If you are not using the Docker container for development, please ensure that
 you are using the supported Python version on your local machine. At the time of
-writing, the supported version is 3.12, but it's always a good idea to check the
+writing, the supported version is 3.9, but it's always a good idea to check the
 system requirements section for the most up-to-date information.
 
 Code formatting

@@ -26,7 +26,7 @@ django-redis==4.12.1  # https://github.com/jazzband/django-redis/tags
 
 # Pandas.
 # ------------------------------------------------------------------------------
-pandas==2.1.4  # https://github.com/pandas-dev/pandas/tags
+pandas==2.0.3  # https://github.com/pandas-dev/pandas/tags
 geopandas==0.14.1  # https://github.com/geopandas/geopandas/tags
 numpy==1.26.2  # https://github.com/numpy/numpy/tags
 Shapely==2.0.2  # https://github.com/shapely/shapely/tags
@@ -100,7 +100,7 @@ https://github.com/BLSQ/django-webpack-loader/archive/5fa2b6897b27dc6ff5bb51162e
 # Upgrading pyxform would force us to use a Pandas version < 2.1 without
 # a pre-built wheel which takes forever to build (10+ minutes).
 # ------------------------------------------------------------------------------
-pyxform==1.7.0  # https://github.com/XLSForm/pyxform/tags
+pyxform==2.0.0  # https://github.com/XLSForm/pyxform/tags
 
 # Bug fix for: "App Engine" was removed from `requests_toolbelt`.
 # ------------------------------------------------------------------------------
@@ -116,5 +116,5 @@ requests-toolbelt==0.9.1
 # Dev tools. Why it's not in requirements-dev.txt?
 # ------------------------------------------------------------------------------
 django-extensions==3.2.3  # https://github.com/django-extensions/django-extensions/tags
-ipython==8.19.0  # https://github.com/ipython/ipython/tags
+ipython==8.18.1  # https://github.com/ipython/ipython/tags
 django-stubs==4.2.7  # https://github.com/typeddjango/django-stubs/tags

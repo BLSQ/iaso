@@ -1,5 +1,5 @@
 # https://hub.docker.com/_/python
-FROM python:3.12
+FROM python:3.9
 
 RUN apt-get update && apt-get --yes install \
 		curl \

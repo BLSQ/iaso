@@ -503,6 +503,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertQuerySetEqual(
             user.user_permissions.all(),
             ["<Permission: menupermissions | custom permission support | Formulaires>"],
+            transform=repr,
         )
         org_units = profile.org_units.all()
         self.assertEqual(org_units.count(), 1)

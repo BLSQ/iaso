@@ -64,7 +64,9 @@ class GPKGImport(TestCase):
         self.assertEqual(c2.geom, None)
         self.assertEqual(c2.location, Point(13.9993, 5.1795, 0.0, srid=4326))
         self.assertQuerySetEqual(
-            c2.groups.all().order_by("source_ref"), ["<Group: Group A | test  1 >", "<Group: Group B | test  1 >"]
+            c2.groups.all().order_by("source_ref"),
+            ["<Group: Group A | test  1 >", "<Group: Group B | test  1 >"],
+            transform=repr,
         )
 
         self.assertEqual(OrgUnitType.objects.count(), 3)
@@ -80,10 +82,10 @@ class GPKGImport(TestCase):
         ou = OrgUnit.objects.create(name="bla", source_ref="cdd3e94c-3c2a-4ab1-8900-be97f82347de", version=version)
         g = Group.objects.create(source_version=version, source_ref="group_b", name="Previous name of group B")
         ou.groups.set([g])
-        self.assertQuerySetEqual(ou.groups.all(), ["<Group: Previous name of group B | hey  2 >"])
+        self.assertQuerySetEqual(ou.groups.all(), ["<Group: Previous name of group B | hey  2 >"], transform=repr)
         ou2 = OrgUnit.objects.create(name="bla2", source_ref="3c24c6ca-3012-4d38-abe8-6d620fe1deb8", version=version)
         ou2.groups.set([g])
-        self.assertQuerySetEqual(ou2.groups.all(), ["<Group: Previous name of group B | hey  2 >"])
+        self.assertQuerySetEqual(ou2.groups.all(), ["<Group: Previous name of group B | hey  2 >"], transform=repr)
 
         import_gpkg_file(
             "./iaso/tests/fixtures/gpkg/minimal.gpkg",
@@ -123,7 +125,9 @@ class GPKGImport(TestCase):
 
         ou2.refresh_from_db()
         self.assertQuerySetEqual(
-            ou2.groups.all().order_by("source_ref"), ["<Group: Group A | hey  2 >", "<Group: Group B | hey  2 >"]
+            ou2.groups.all().order_by("source_ref"),
+            ["<Group: Group A | hey  2 >", "<Group: Group B | hey  2 >"],
+            transform=repr,
         )
         mod = mods.get(object_id=ou2.id)
         old = mod.past_value[0]

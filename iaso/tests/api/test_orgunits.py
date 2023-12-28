@@ -712,7 +712,9 @@ class OrgUnitAPITestCase(APITestCase):
         )
         ou = m.OrgUnit.objects.get(id=jr["id"])
         self.assertQuerySetEqual(
-            ou.groups.all().order_by("name"), ["<Group: bla | Evil Empire  1 >", "<Group: bla2 | Evil Empire  1 >"]
+            ou.groups.all().order_by("name"),
+            ["<Group: bla | Evil Empire  1 >", "<Group: bla2 | Evil Empire  1 >"],
+            transform=repr,
         )
 
     def test_create_org_unit_with_reference_instance(self):
@@ -788,7 +790,9 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(response.data["reference_instances"], [])
         self.assertCreated({Modification: 1})
         ou = m.OrgUnit.objects.get(id=jr["id"])
-        self.assertQuerySetEqual(ou.groups.all().order_by("name"), ["<Group: Elite councils | Evil Empire  1 >"])
+        self.assertQuerySetEqual(
+            ou.groups.all().order_by("name"), ["<Group: Elite councils | Evil Empire  1 >"], transform=repr
+        )
         self.assertEqual(ou.id, old_ou.id)
         self.assertEqual(ou.name, old_ou.name)
         self.assertEqual(ou.parent, old_ou.parent)
@@ -937,7 +941,7 @@ class OrgUnitAPITestCase(APITestCase):
         ou = m.OrgUnit.objects.get(id=old_ou.id)
         # Verify group was not modified but the rest was modified
         self.assertQuerySetEqual(
-            ou.groups.all().order_by("name"), ["<Group:  | Evil Empire  1 >", "<Group: bad | None >"]
+            ou.groups.all().order_by("name"), ["<Group:  | Evil Empire  1 >", "<Group: bad | None >"], transform=repr
         )
         self.assertEqual(ou.id, old_ou.id)
         self.assertEqual(ou.name, "new name")

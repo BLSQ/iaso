@@ -40,6 +40,8 @@ MODULE_PERMISSIONS = {
         "iaso_polio_vaccine_supply_chain_read",
         "iaso_polio_vaccine_supply_chain_write",
         "iaso_polio_notifications",
+        "iaso_polio_vaccine_authorizations_read_only",
+        "iaso_polio_vaccine_authorizations_admin",
     ],
     "REGISTRY": ["iaso_registry", "iaso_test", "iaso_testtt", "iaso_testttr", "iaso_testttrr"],
 }

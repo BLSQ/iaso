@@ -5,11 +5,14 @@ import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/compon
 import { DeleteAuthorisationModal } from './Modals/Delete/DeleteAuthorisationModal';
 import { EditAuthorisationModal } from './Modals/CreateEdit/CreateEditAuthorisationModal';
 import { Nopv2AuthorisationsStatusCell } from '../Table/Nopv2AuthorisationsStatusCell';
+import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { userHasPermission } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 
 export const useNopv2AuthDetailsTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
+    const currentUser = useCurrentUser();
     return useMemo(() => {
-        return [
+        const columns = [
             {
                 Header: formatMessage(MESSAGES.country),
                 accessor: 'country.name',
@@ -57,8 +60,15 @@ export const useNopv2AuthDetailsTableColumns = (): Column[] => {
                 Header: formatMessage(MESSAGES.comment),
                 accessor: 'comment',
             },
-            {
-                Header: formatMessage(MESSAGES.comment),
+        ];
+        if (
+            userHasPermission(
+                'iaso_polio_vaccine_authorizations_admin',
+                currentUser,
+            )
+        ) {
+            columns.push({
+                Header: formatMessage(MESSAGES.actions),
                 accessor: 'account',
                 Cell: settings => {
                     return (
@@ -76,7 +86,9 @@ export const useNopv2AuthDetailsTableColumns = (): Column[] => {
                         </>
                     );
                 },
-            },
-        ];
-    }, [formatMessage]);
+            });
+        }
+
+        return columns;
+    }, [currentUser, formatMessage]);
 };

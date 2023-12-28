@@ -11,6 +11,8 @@ import { useGetGroupDropdown } from '../../../../../../../../hat/assets/js/apps/
 import { useStatusOptions } from '../hooks/statuses';
 import { VaccineAuthParams } from '../types';
 import { CreateAuthorisationModal } from '../Details/Modals/CreateEdit/CreateEditAuthorisationModal';
+import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { userHasPermission } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 
 const baseUrl = NOPV2_AUTH;
 type Props = { params: VaccineAuthParams };
@@ -24,6 +26,8 @@ export const Nopv2AuthorisationsFilters: FunctionComponent<Props> = ({
     const { data: countryBlocksOptions, isFetching: isFetchingCountryBlocks } =
         useGetGroupDropdown({ blockOfCountries: 'True', appId });
     const statusOptions = useStatusOptions();
+    const currentUser = useCurrentUser();
+
     return (
         <Grid container spacing={2}>
             <Grid item xs={6} md={4} lg={3}>
@@ -65,11 +69,18 @@ export const Nopv2AuthorisationsFilters: FunctionComponent<Props> = ({
                             onFilter={handleSearch}
                         />
                     </Box>
-                    <Box mt={2} mb={2}>
-                        <CreateAuthorisationModal
-                            iconProps={{ message: MESSAGES.addAuthorisation }}
-                        />
-                    </Box>
+                    {userHasPermission(
+                        'iaso_polio_vaccine_authorizations_admin',
+                        currentUser,
+                    ) && (
+                        <Box mt={2} mb={2}>
+                            <CreateAuthorisationModal
+                                iconProps={{
+                                    message: MESSAGES.addAuthorisation,
+                                }}
+                            />
+                        </Box>
+                    )}
                 </Box>
             </Grid>
         </Grid>

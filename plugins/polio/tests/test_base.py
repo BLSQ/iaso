@@ -1,5 +1,8 @@
+import csv
 import datetime
 import json
+import io
+from time import gmtime, strftime
 from typing import List
 from unittest import mock, skip
 from unittest.mock import patch
@@ -682,6 +685,181 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(data_dict["COUNTRY"][0], org_unit.name)
         self.assertEqual(data_dict["January"][0], self.format_date_to_test(c, c_round_1))
         self.assertEqual(data_dict["January"][1], self.format_date_to_test(c, c_round_2))
+
+    @staticmethod
+    def campaign_csv_columns():
+        return [
+            "country",
+            "obr_name",
+            "vaccine_types",
+            "onset_date",
+            "pv_notified_at",
+            "round_number",
+            "round_start_date",
+            "round_end_date",
+            "ra_submission_date",
+            "ra_approval_date",
+            "budget_submitted_date",
+            "budget_approved_date",
+            "who_disbursed_to_co_at",
+            "who_disbursed_to_moh_at",
+            "unicef_disbursed_to_co_at",
+            "unicef_disbursed_to_moh_at",
+            "gpei_coordinator",
+            "round_target_population",
+            "doses_requested",
+            "cost",
+            "lqas_district_passing",
+            "lqas_district_failing",
+            "preparedness_spreadsheet_url",
+            "preparedness_sync_status",
+        ]
+
+    @staticmethod
+    def create_org_unit(id, name, type, version):
+        return OrgUnit.objects.create(
+            id=id,
+            name=name,
+            org_unit_type=type,
+            version=version,
+        )
+
+    @staticmethod
+    def row_data(country, obr_name, round_number, round_started_date, round_ended_date):
+        return [
+            country,
+            obr_name,
+            "",
+            "",
+            "",
+            str(round_number),
+            round_started_date,
+            round_ended_date,
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+        ]
+
+    @staticmethod
+    def create_campaign(id, obr_name, vaccine, account):
+        return Campaign.objects.create(country_id=id, obr_name=obr_name, vacine=vaccine, account=account)
+
+    def test_csv_campaigns_export(self):
+        """
+        It tests the whole the csv campaigns file feature when everything happens correctly:
+            1. If the export succeed
+            2. If it return the right header
+            3. If the columns names are correct
+            4. If the data in cells are correct
+        """
+        org_unit = self.create_org_unit(5455, "Country name", self.jedi_squad, self.star_wars.default_version)
+
+        org_unit_2 = self.create_org_unit(5456, "Country name 2", self.jedi_squad, self.star_wars.default_version)
+
+        c = self.create_campaign(org_unit.id, "orb campaign", "vacin", self.account)
+
+        c_round_1 = c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2))
+        c.rounds.create(number=2, started_at=datetime.date(2022, 3, 1), ended_at=datetime.date(2022, 3, 2))
+
+        c2 = self.create_campaign(org_unit_2.id, "orb campaign 2", "vacin", self.account)
+
+        c2.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2))
+        c2.rounds.create(number=2, started_at=datetime.date(2022, 1, 4), ended_at=datetime.date(2022, 1, 7))
+        response = self.client.get("/api/polio/campaigns/csv_campaigns_export/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.get("Content-Disposition"),
+            "attachment; filename=campaigns-rounds--" + strftime("%Y-%m-%d-%H-%M", gmtime()) + ".csv",
+        )
+
+        response_string = "\n".join(s.decode("U8") for s in response).replace("\r\n\n", "\r\n")
+        reader = csv.reader(io.StringIO(response_string), delimiter=",")
+        data = list(reader)
+        self.assertEqual(len(data), 5)
+
+        data_headers = data[0]
+        self.assertEqual(
+            data_headers,
+            self.campaign_csv_columns(),
+        )
+        first_data_row = data[1]
+        self.assertEqual(
+            first_data_row,
+            self.row_data(
+                "Country name",
+                "orb campaign",
+                c_round_1.number,
+                c_round_1.started_at.strftime("%Y-%m-%d"),
+                c_round_1.ended_at.strftime("%Y-%m-%d"),
+            ),
+        )
+
+    def test_csv_campaigns_export_filtered_data(self):
+        """
+        It tests the whole the csv campaigns file feature when everything happens correctly on filtered data:
+            1. If the export succeed
+            2. If it return the right header
+            3. If the columns names are correct
+            4. If the data in cells are correct
+        """
+        org_unit = self.create_org_unit(5455, "Country name", self.jedi_squad, self.star_wars.default_version)
+
+        org_unit_2 = self.create_org_unit(5456, "Country name 2", self.jedi_squad, self.star_wars.default_version)
+
+        c = self.create_campaign(org_unit.id, "orb campaign", "vacin", self.account)
+
+        c_round_1 = c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2))
+        c.rounds.create(number=2, started_at=datetime.date(2022, 3, 1), ended_at=datetime.date(2022, 3, 2))
+
+        c2 = self.create_campaign(org_unit_2.id, "orb campaign 2", "vacin", self.account)
+        c2.is_test = True
+        c2.save()
+
+        c2.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2))
+        c2.rounds.create(number=2, started_at=datetime.date(2022, 1, 4), ended_at=datetime.date(2022, 1, 7))
+        response = self.client.get(
+            "/api/polio/campaigns/csv_campaigns_export/?campaign_type=test&show_test=true&enabled=true"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.get("Content-Disposition"),
+            "attachment; filename=campaigns-rounds--" + strftime("%Y-%m-%d-%H-%M", gmtime()) + ".csv",
+        )
+
+        response_string = "\n".join(s.decode("U8") for s in response).replace("\r\n\n", "\r\n")
+        reader = csv.reader(io.StringIO(response_string), delimiter=",")
+        data = list(reader)
+        self.assertEqual(len(data), 3)
+
+        data_headers = data[0]
+        self.assertEqual(
+            data_headers,
+            self.campaign_csv_columns(),
+        )
+        first_data_row = data[1]
+        self.assertEqual(
+            first_data_row,
+            self.row_data(
+                "Country name 2",
+                "orb campaign 2",
+                c_round_1.number,
+                c_round_1.started_at.strftime("%Y-%m-%d"),
+                c_round_1.ended_at.strftime("%Y-%m-%d"),
+            ),
+        )
 
     @staticmethod
     def format_date_to_test(campaign, round):

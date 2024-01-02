@@ -199,8 +199,6 @@ export const useStyles = makeStyles(() => ({
     vaccinesList: {
         paddingBottom: 0,
         paddingTop: 0,
-        // width: '200px',
-        width: `200 px !important`,
         position: 'relative',
         left: -16,
     },

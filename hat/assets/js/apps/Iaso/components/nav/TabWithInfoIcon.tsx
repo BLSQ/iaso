@@ -19,10 +19,6 @@ export const useStyles = makeStyles(theme => ({
         cursor: 'default',
     },
     tabIcon: {
-        position: 'relative',
-        top: 1,
-        left: theme.spacing(0.5),
-        // color: theme.palette.primary.main,
         cursor: 'pointer',
     },
 }));
@@ -72,6 +68,7 @@ export const TabWithInfoIcon: FunctionComponent<Props> = ({
             )}
             disableFocusRipple={disabled}
             disableRipple={disabled}
+            iconPosition="end"
             icon={
                 (showIcon && (
                     <Tooltip title={tooltipMessage}>

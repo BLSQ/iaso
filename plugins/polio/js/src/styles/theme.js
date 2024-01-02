@@ -216,9 +216,6 @@ export const useStyles = makeStyles(() => ({
         cursor: 'default',
     },
     tabIcon: {
-        position: 'relative',
-        top: 1,
-        left: theme.spacing(0.5),
         color: theme.palette.primary.main,
         cursor: 'pointer',
     },

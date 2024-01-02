@@ -32,11 +32,22 @@ export const SupplyChainTabs: FunctionComponent<Props> = ({
             value={tab}
             classes={{
                 root: classes.tabs,
-                indicator: classes.indicator,
+                // indicator: classes.indicator,
             }}
             onChange={onChangeTab}
+            // textColor="secondary"
+            indicatorColor="secondary"
         >
-            <Tab key={VRF} value={VRF} label={formatMessage(MESSAGES[VRF])} />
+            <TabWithInfoIcon
+                key={VRF}
+                value={VRF}
+                title={formatMessage(MESSAGES[VRF])}
+                disabled={false}
+                hasTabError={false}
+                handleChange={onChangeTab}
+                showIcon={false}
+                tooltipMessage=""
+            />
             {/* TODO extract Tabs component */}
             <TabWithInfoIcon
                 key={PREALERT}

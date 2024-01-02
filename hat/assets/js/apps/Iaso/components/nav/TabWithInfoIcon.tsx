@@ -12,10 +12,10 @@ export const useStyles = makeStyles(theme => ({
         },
     },
     tabError: {
-        color: `${theme.palette.error.main} !important`,
+        // color: `${theme.palette.error.main} !important`,
     },
     tabDisabled: {
-        // color: `${theme.palette.text.disabled} !important`,
+        color: `${theme.palette.mediumGray.main} !important`,
         cursor: 'default',
     },
     tabIcon: {

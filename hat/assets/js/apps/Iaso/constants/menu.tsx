@@ -168,32 +168,32 @@ const menuItems = (
                     permissions: paths.userRolesPath.permissions,
                     icon: props => <GroupsIcon {...props} />,
                 },
-                {
-                    label: formatMessage(MESSAGES.teams),
-                    permissions: paths.teamsPath.permissions,
-                    key: 'teams',
-                    icon: props => <Diversity3Icon {...props} />,
-                },
+                // {
+                //     label: formatMessage(MESSAGES.teams),
+                //     permissions: paths.teamsPath.permissions,
+                //     key: 'teams',
+                //     icon: props => <Diversity3Icon {...props} />,
+                // },
             ],
         },
-        {
-            label: formatMessage(MESSAGES.monitoring),
-            key: 'devices',
-            permissions: paths.devicesPath.permissions,
-            icon: props => <ImportantDevicesRoundedIcon {...props} />,
-        },
+        // {
+        //     label: formatMessage(MESSAGES.monitoring),
+        //     key: 'devices',
+        //     permissions: paths.devicesPath.permissions,
+        //     icon: props => <ImportantDevicesRoundedIcon {...props} />,
+        // },
         {
             label: formatMessage(MESSAGES.apiImport),
             key: 'apiImports',
             permissions: paths.adminApiImportPath.permissions,
             icon: props => <InventoryIcon {...props} />,
         },
-        {
-            label: formatMessage(MESSAGES.pipelines),
-            key: 'pipelines',
-            permissions: paths.pipelineListPath.permissions,
-            icon: props => <ScienceIcon {...props} />,
-        },
+        // {
+        //     label: formatMessage(MESSAGES.pipelines),
+        //     key: 'pipelines',
+        //     permissions: paths.pipelineListPath.permissions,
+        //     icon: props => <ScienceIcon {...props} />,
+        // },
     ];
     if (currentUser.is_staff || currentUser.is_superuser) {
         settingsSubMenu.push({

@@ -81,7 +81,8 @@ _DEVICES = "iaso_trypelim_management_devices"
 _DOWNLOAD_DATAS = "iaso_trypelim_datas_download"
 _DUPLICATES = "iaso_trypelim_duplicates"
 _EDIT_PATIENT = "iaso_trypelim_datas_patient_edition"
-_GRAPHS = "iaso_trypelim_stats_graphs"
+_STATS_GRAPHS = "iaso_trypelim_stats_graphs"
+_STATS_REPORTS = "iaso_trypelim_stats_reports"
 _HEALTH_STRUCTURES = "iaso_trypelim_management_health_structures"
 _LAB = "iaso_trypelim_lab"
 _LAB_UPLOAD = "iaso_trypelim_labupload"
@@ -96,6 +97,7 @@ _RECONCILIATION = "iaso_trypelim_case_reconciliation"
 _ROUTES = "iaso_trypelim_plannings_routes"
 _UPLOAD_OF_CASE_FILES = "iaso_trypelim_datasets_datauploads"
 _UPLOAD_OF_VILLAGES = "iaso_trypelim_datasets_villageuploads"
+_TRYPELIM_TEAMS = "iaso_trypelim_management_teams"
 _USERS = "iaso_trypelim_management_users"
 _VECTOR_CONTROL = "iaso_trypelim_vectorcontrol"
 _VECTOR_CONTROL_UPLOAD = "iaso_trypelim_vectorcontrolupload"
@@ -165,7 +167,6 @@ DEVICES = _PREFIX + _DEVICES
 DOWNLOAD_DATAS = _PREFIX + _DOWNLOAD_DATAS
 DUPLICATES = _PREFIX + _DUPLICATES
 EDIT_PATIENT = _PREFIX + _EDIT_PATIENT
-GRAPHS = _PREFIX + _GRAPHS
 HEALTH_STRUCTURES = _PREFIX + _HEALTH_STRUCTURES
 LAB = _PREFIX + _LAB
 LAB_UPLOAD = _PREFIX + _LAB_UPLOAD
@@ -178,8 +179,11 @@ PLANNINGS_TEMPLATE = _PREFIX + _PLANNINGS_TEMPLATE
 QUALITY_CONTROL = _PREFIX + _QUALITY_CONTROL
 RECONCILIATION = _PREFIX + _RECONCILIATION
 ROUTES = _PREFIX + _ROUTES
+STATS_GRAPHS = _PREFIX + _STATS_GRAPHS
+STATS_REPORTS = _PREFIX + _STATS_REPORTS
 UPLOAD_OF_CASE_FILES = _PREFIX + _UPLOAD_OF_CASE_FILES
 UPLOAD_OF_VILLAGES = _PREFIX + _UPLOAD_OF_VILLAGES
+TRYPELIM_TEAMS = _PREFIX + _TRYPELIM_TEAMS
 USERS = _PREFIX + _USERS
 VECTOR_CONTROL = _PREFIX + _VECTOR_CONTROL
 VECTOR_CONTROL_UPLOAD = _PREFIX + _VECTOR_CONTROL_UPLOAD
@@ -275,7 +279,6 @@ class CustomPermissionSupport(models.Model):
             (_DOWNLOAD_DATAS, _("Téléchargement de données")),
             (_DUPLICATES, _("Doublons")),
             (_EDIT_PATIENT, _("Edition d'un patient")),
-            (_GRAPHS, _("Graphs")),
             (_HEALTH_STRUCTURES, _("Health facilities")),
             (_LAB, _("Labo")),
             (_LAB_UPLOAD, _("Labo import")),
@@ -288,8 +291,11 @@ class CustomPermissionSupport(models.Model):
             (_QUALITY_CONTROL, _("Quality control")),
             (_RECONCILIATION, _("Reconciliation")),
             (_ROUTES, _("Routes")),
+            (_STATS_GRAPHS, _("Graphs")),
+            (_STATS_REPORTS, _("Reports (Trypelim)")),
             (_UPLOAD_OF_CASE_FILES, _("Upload of cases files")),
             (_UPLOAD_OF_VILLAGES, _("Upload of villages files")),
+            (_TRYPELIM_TEAMS, _("Teams (Trypelim)")),
             (_USERS, _("Users")),
             (_VECTOR_CONTROL, _("Vector control")),
             (_VECTOR_CONTROL_UPLOAD, _("Vector control import Gpx")),

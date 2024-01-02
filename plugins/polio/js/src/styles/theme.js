@@ -165,12 +165,13 @@ export const useStyles = makeStyles(() => ({
     fullHeight: { height: '100%' },
     vaccinesSelect: {
         fontSize: 12,
-        positio: 'relative',
+        position: 'relative',
+        width: '175px',
         height: theme.spacing(5),
         paddingTop: theme.spacing(1),
         paddingBottom: theme.spacing(1),
-        display: 'flex',
-        justifyContent: 'center',
+        display: 'inline-flex',
+        justifyContent: 'flex-start',
         alignItems: 'center',
     },
     vaccineName: {
@@ -198,7 +199,8 @@ export const useStyles = makeStyles(() => ({
     vaccinesList: {
         paddingBottom: 0,
         paddingTop: 0,
-        width: 175,
+        // width: '200px',
+        width: `200 px !important`,
         position: 'relative',
         left: -16,
     },

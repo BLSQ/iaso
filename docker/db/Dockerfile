@@ -1,5 +1,7 @@
 FROM postgres:12
 
+ARG DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get update \
  && apt-get install postgis postgresql-12-postgis-3 -y \
  && rm -rf /var/lib/apt/lists/*

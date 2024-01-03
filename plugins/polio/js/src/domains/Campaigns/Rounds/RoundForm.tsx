@@ -4,7 +4,7 @@ import { Field, useFormikContext } from 'formik';
 import { useSafeIntl } from 'bluesquare-components';
 import { useStyles } from '../../../styles/theme';
 import MESSAGES from '../../../constants/messages';
-import { DateInput, TextInput } from '../../../components/Inputs';
+import { DateInput, NumberInput, TextInput } from '../../../components/Inputs';
 import { Campaign } from '../../../constants/types';
 import { RoundDates } from './RoundDates/RoundDates';
 import { LqasDistrictsPassed } from './LqasDistrictsPassed/LqasDistrictsPassed';
@@ -84,46 +84,46 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
                             MESSAGES.percentage_covered_target_population,
                         )}
                         name={`rounds[${roundIndex}].percentage_covered_target_population`}
-                        component={TextInput}
-                        className={classes.input}
+                        component={NumberInput}
+                        withMarginTop
                     />
                     <Field
                         label={formatMessage(MESSAGES.main_awareness_problem)}
                         name={`rounds[${roundIndex}].main_awareness_problem`}
                         component={TextInput}
-                        className={classes.input}
+                        className={classes.marginTop}
                     />
                     <Field
                         label={formatMessage(
                             MESSAGES.im_percentage_children_missed_in_household,
                         )}
                         name={`rounds[${roundIndex}].im_percentage_children_missed_in_household`}
-                        component={TextInput}
-                        className={classes.input}
+                        component={NumberInput}
+                        withMarginTop
                     />
                     <Field
                         label={formatMessage(
                             MESSAGES.im_percentage_children_missed_out_household,
                         )}
                         name={`rounds[${roundIndex}].im_percentage_children_missed_out_household`}
-                        component={TextInput}
-                        className={classes.input}
+                        component={NumberInput}
+                        withMarginTop
                     />
                     <Field
                         label={formatMessage(
                             MESSAGES.im_percentage_children_missed_in_plus_out_household,
                         )}
                         name={`rounds[${roundIndex}].im_percentage_children_missed_in_plus_out_household`}
-                        component={TextInput}
-                        className={classes.input}
+                        component={NumberInput}
+                        withMarginTop
                     />
                     <Field
                         label={formatMessage(
                             MESSAGES.awareness_of_campaign_planning,
                         )}
                         name={`rounds[${roundIndex}].awareness_of_campaign_planning`}
-                        component={TextInput}
-                        className={classes.input}
+                        component={NumberInput}
+                        withMarginTop
                     />
                 </Grid>
             </Grid>

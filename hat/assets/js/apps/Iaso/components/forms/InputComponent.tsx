@@ -113,7 +113,6 @@ const determineNumberSeparators = (
     numberInputOptions: NumberInputOptions,
 ): NumberInputOptions => {
     const { thousand, decimal } = determineSeparatorsFromLocale(activeLocale);
-    console.log('thousand', thousand, 'decimal', decimal);
     return {
         ...numberInputOptions,
         decimalSeparator: numberInputOptions?.decimalSeparator ?? decimal,
@@ -159,8 +158,6 @@ const InputComponent: React.FC<InputComponentProps> = ({
         activeLocale,
         numberInputOptions,
     );
-    console.log('active locale', activeLocale, numberInputOptions);
-    console.log('LOCALOPTION', localizedNumberOptions);
 
     const toggleDisplayPassword = () => {
         setDisplayPassword(!displayPassword);

@@ -28,7 +28,7 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
         useState<boolean>(false);
     const [rejectedReason, setRejectedReason] = useState<string | undefined>();
     const selectedFields = newFields.filter(field => field.isSelected);
-    const handlConfirm = useCallback(() => {
+    const handleConfirm = useCallback(() => {
         submitChangeRequest({
             status: 'approved',
             approved_fields: selectedFields.map(field => field.key),
@@ -115,7 +115,7 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
                         <Box pl={1} display="inline-block">
                             <Button
                                 data-test="confirm-button"
-                                onClick={handlConfirm}
+                                onClick={handleConfirm}
                                 variant="contained"
                                 color="primary"
                                 autoFocus

@@ -47,7 +47,7 @@ interface FormDetailProps {
 }
 
 const useStyles = makeStyles(theme => ({
-    ...(commonStyles(theme) as CommonStyles),
+    ...(commonStyles(theme) as unknown as CommonStyles),
     tabs: {
         ...commonStyles(theme).tabs,
         padding: 0,
@@ -113,7 +113,7 @@ const FormDetail: FunctionComponent<FormDetailProps> = ({ router, params }) => {
     const [forceRefreshVersions, setForceRefreshVersions] = useState(false);
     const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
-    const classes = useStyles();
+    const classes: Record<string, string> = useStyles();
     const [currentForm, setFieldValue, setFieldErrors, setFormState] =
         useFormState(formatFormData(form));
     const isFormModified = useMemo(() => {

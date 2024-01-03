@@ -287,7 +287,7 @@
     "iaso.forms.type": "Type",
     "iaso.forms.update": "Mise à jour du formulaire",
     "iaso.forms.updated_at": "Modification",
-    "iaso.forms.updated_by": "Updated by",
+    "iaso.forms.updated_by": "Mis à jour par",
     "iaso.forms.valid": "Validé",
     "iaso.forms.validated": "Validé",
     "iaso.forms.validation_status": "Statut de validation",

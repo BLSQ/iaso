@@ -4,9 +4,9 @@ import {
     commonStyles,
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
-import { makeStyles } from '@material-ui/core/styles';
-import { Box } from '@material-ui/core';
-import AddIcon from '@material-ui/icons/Add';
+import { makeStyles } from '@mui/styles';
+import { Box } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
 import PropTypes from 'prop-types';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';

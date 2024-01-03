@@ -1,6 +1,7 @@
 import React, { FunctionComponent, ReactNode, useCallback } from 'react';
-import { Tab, Tooltip, makeStyles } from '@material-ui/core';
-import InfoIcon from '@material-ui/icons/Info';
+import { Tab, Tooltip } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import InfoIcon from '@mui/icons-material/Info';
 import classnames from 'classnames';
 
 export const useStyles = makeStyles(theme => ({
@@ -11,17 +12,13 @@ export const useStyles = makeStyles(theme => ({
         },
     },
     tabError: {
-        color: `${theme.palette.error.main} !important`,
+        // color: `${theme.palette.error.main} !important`,
     },
     tabDisabled: {
-        // color: `${theme.palette.text.disabled} !important`,
+        color: `${theme.palette.mediumGray.main} !important`,
         cursor: 'default',
     },
     tabIcon: {
-        position: 'relative',
-        top: 1,
-        left: theme.spacing(0.5),
-        // color: theme.palette.primary.main,
         cursor: 'pointer',
     },
 }));
@@ -71,6 +68,7 @@ export const TabWithInfoIcon: FunctionComponent<Props> = ({
             )}
             disableFocusRipple={disabled}
             disableRipple={disabled}
+            iconPosition="end"
             icon={
                 (showIcon && (
                     <Tooltip title={tooltipMessage}>

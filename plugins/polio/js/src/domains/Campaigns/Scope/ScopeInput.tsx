@@ -13,7 +13,7 @@ import {
     Grid,
     Switch,
     Box,
-} from '@material-ui/core';
+} from '@mui/material';
 import cloneDeep from 'lodash/cloneDeep';
 
 // @ts-ignore

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Tooltip, Typography } from '@material-ui/core';
+import { Tooltip, Typography } from '@mui/material';
 import { IntlFormatMessage } from 'bluesquare-components';
 
 export const makeTableText = (text: string) => {

@@ -1,7 +1,7 @@
 import React, { FunctionComponent, ReactNode, useCallback } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import { Tab, Tooltip } from '@material-ui/core';
-import InfoIcon from '@material-ui/icons/Info';
+import { Tab, Tooltip } from '@mui/material';
+import InfoIcon from '@mui/icons-material/Info';
 
 import classnames from 'classnames';
 import MESSAGES from '../../../constants/messages';
@@ -49,6 +49,7 @@ export const PolioDialogTab: FunctionComponent<Props> = ({
             )}
             disableFocusRipple={disabled}
             disableRipple={disabled}
+            iconPosition="end"
             icon={
                 (disabled && title === formatMessage(MESSAGES.scope) && (
                     <Tooltip

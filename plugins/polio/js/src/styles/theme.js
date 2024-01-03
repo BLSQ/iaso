@@ -1,4 +1,4 @@
-import { makeStyles } from '@material-ui/core';
+import { makeStyles } from '@mui/styles';
 import { commonStyles, theme } from 'bluesquare-components';
 
 export const useStyles = makeStyles(() => ({
@@ -19,13 +19,13 @@ export const useStyles = makeStyles(() => ({
         display: 'flex',
     },
     pageActions: {
-        marginBottom: theme.spacing(0),
+        marginBottom: `${theme.spacing(0)} !important`,
     },
     pageAction: {
-        marginRight: theme.spacing(1),
+        marginRight: `${theme.spacing(1)} !important`,
     },
     form: {
-        marginTop: theme.spacing(4),
+        marginTop: `${theme.spacing(4)} !important`,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'flex-start',
@@ -45,11 +45,11 @@ export const useStyles = makeStyles(() => ({
         },
     },
     round1FormCalculations: {
-        marginTop: theme.spacing(4),
-        marginBottom: theme.spacing(4),
+        marginTop: `${theme.spacing(4)} !important`,
+        marginBottom: `${theme.spacing(4)} !important`,
     },
     input: {
-        marginBottom: theme.spacing(2),
+        marginBottom: `${theme.spacing(2)} !important`,
     },
     tabs: {
         borderBottom: '1px solid rgba(0, 0, 0, 0.1)',
@@ -165,19 +165,20 @@ export const useStyles = makeStyles(() => ({
     fullHeight: { height: '100%' },
     vaccinesSelect: {
         fontSize: 12,
-        positio: 'relative',
+        position: 'relative',
+        width: '175px',
         height: theme.spacing(5),
         paddingTop: theme.spacing(1),
         paddingBottom: theme.spacing(1),
-        display: 'flex',
-        justifyContent: 'center',
+        display: 'inline-flex',
+        justifyContent: 'flex-start',
         alignItems: 'center',
     },
     vaccineName: {
         fontWeight: 'bold',
     },
     roundColor: {
-        marginRight: theme.spacing(1),
+        marginRight: `${theme.spacing(1)} !important`,
         width: 18,
         height: 18,
         borderRadius: '100%',
@@ -198,7 +199,6 @@ export const useStyles = makeStyles(() => ({
     vaccinesList: {
         paddingBottom: 0,
         paddingTop: 0,
-        width: 175,
         position: 'relative',
         left: -16,
     },
@@ -216,9 +216,6 @@ export const useStyles = makeStyles(() => ({
         cursor: 'default',
     },
     tabIcon: {
-        position: 'relative',
-        top: 1,
-        left: theme.spacing(0.5),
         color: theme.palette.primary.main,
         cursor: 'pointer',
     },

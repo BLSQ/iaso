@@ -2,7 +2,7 @@ import L from 'leaflet';
 import Color from 'color';
 import orderBy from 'lodash/orderBy';
 import isNumber from 'lodash/isNumber';
-import { Theme } from '@material-ui/core/styles';
+import { Theme } from '@mui/material/styles';
 import { OrgUnit } from '../../domains/orgUnits/types/orgUnit';
 import { OrgunitTypes } from '../../domains/orgUnits/types/orgunitTypes';
 import {

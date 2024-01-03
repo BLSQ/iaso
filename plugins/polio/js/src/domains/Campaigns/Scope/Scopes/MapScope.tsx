@@ -5,7 +5,7 @@ import {
     // @ts-ignore
     useSafeIntl,
 } from 'bluesquare-components';
-import { FormControl, Box, List, ListItem } from '@material-ui/core';
+import { FormControl, Box, List, ListItem } from '@mui/material';
 import { MapComponent } from '../../MapComponent/MapComponent';
 import { MapLegend } from '../../../../../../../../hat/assets/js/apps/Iaso/components/maps/MapLegend';
 import MESSAGES from '../../../../constants/messages';
@@ -153,9 +153,14 @@ export const MapScope: FunctionComponent<Props> = ({
                                         <span className={classes.vaccineName}>
                                             {vaccine.value}
                                         </span>
-                                        {': '}
-                                        {vaccineCount[vaccine.value] ?? 0}{' '}
-                                        {formatMessage(MESSAGES.districts)}
+
+                                        <span>
+                                            {`: ${
+                                                vaccineCount[vaccine.value] ?? 0
+                                            } ${formatMessage(
+                                                MESSAGES.districts,
+                                            )}`}
+                                        </span>
                                     </Box>
                                 </ListItem>
                             ))}

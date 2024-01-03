@@ -9,6 +9,7 @@ MODULE_PERMISSIONS = {
     "DEFAULT": [
         "iaso_org_units",
         "iaso_org_unit_types",
+        "iaso_org_unit_groups",
         "iaso_sources",
         "iaso_write_sources",
         "iaso_links",
@@ -22,7 +23,13 @@ MODULE_PERMISSIONS = {
     ],
     "DHIS2_MAPPING": ["iaso_mappings"],
     "EMBEDDED_LINKS": ["iaso_pages", "iaso_page_write"],
-    "ENTITIES": ["iaso_entities", "iaso_workflows", "iaso_entity_duplicates_write", "iaso_entity_duplicates_read"],
+    "ENTITIES": [
+        "iaso_entities",
+        "iaso_workflows",
+        "iaso_entity_duplicates_write",
+        "iaso_entity_duplicates_read",
+        "iaso_entity_type_write",
+    ],
     "EXTERNAL_STORAGE": ["iaso_storages"],
     "PLANNING": ["iaso_assignments"],
     "POLIO_PROJECT": [
@@ -33,6 +40,8 @@ MODULE_PERMISSIONS = {
         "iaso_polio_vaccine_supply_chain_read",
         "iaso_polio_vaccine_supply_chain_write",
         "iaso_polio_notifications",
+        "iaso_polio_vaccine_authorizations_read_only",
+        "iaso_polio_vaccine_authorizations_admin",
     ],
     "REGISTRY": ["iaso_registry", "iaso_test", "iaso_testtt", "iaso_testttr", "iaso_testttrr"],
 }

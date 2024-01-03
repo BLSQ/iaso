@@ -3,7 +3,7 @@ import React, { ReactElement } from 'react';
 import moment from 'moment';
 import { upperCase } from 'lodash';
 import { Link } from 'react-router';
-import { Box } from '@material-ui/core';
+import { Box } from '@mui/material';
 import { IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
 import { GeoJsonMap } from '../../../../../../../hat/assets/js/apps/Iaso/components/maps/GeoJsonMapComponent';
 import MESSAGES from '../../../constants/messages';

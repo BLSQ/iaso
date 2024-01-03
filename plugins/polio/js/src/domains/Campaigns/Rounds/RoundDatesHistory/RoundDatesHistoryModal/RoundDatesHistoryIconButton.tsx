@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { IconButton } from 'bluesquare-components';
 import MESSAGES from '../../../../../constants/messages';
 

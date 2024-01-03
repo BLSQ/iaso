@@ -1,5 +1,5 @@
 import React, { useState, useMemo, FunctionComponent } from 'react';
-import { Box } from '@material-ui/core';
+import { Box } from '@mui/material';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import { useMergedShapes, useShapes } from './hooks';
 import { makeSelections } from './utils';

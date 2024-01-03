@@ -1,7 +1,6 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import {
-    makeStyles,
     Tabs,
     Tab,
     Box,
@@ -9,10 +8,11 @@ import {
     Grid,
     Typography,
     Divider,
-} from '@material-ui/core';
+} from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { commonStyles, IconButton, useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
-import AddIcon from '@material-ui/icons/Add';
+import AddIcon from '@mui/icons-material/Add';
 
 import MESSAGES from '../messages';
 

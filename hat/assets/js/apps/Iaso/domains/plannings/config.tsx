@@ -70,6 +70,7 @@ export const planningColumns = (
                             url={getAssignmentUrl(settings.row.original)}
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.viewPlanning}
+                            size="small"
                         />
                         <CreateEditPlanning
                             type="edit"

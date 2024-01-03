@@ -1,7 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
-import { makeStyles, Box, Grid } from '@material-ui/core';
+import { Box, Grid } from '@mui/material';
+
+import { makeStyles } from '@mui/styles';
 import {
     LoadingSpinner,
     commonStyles,

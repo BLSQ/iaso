@@ -3,12 +3,8 @@ import React, { useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 
-import {
-    withStyles,
-    Dialog,
-    DialogContent,
-    DialogTitle,
-} from '@material-ui/core';
+import { Dialog, DialogContent, DialogTitle } from '@mui/material';
+import { withStyles } from '@mui/styles';
 import { commonStyles } from 'bluesquare-components';
 
 const styles = theme => ({

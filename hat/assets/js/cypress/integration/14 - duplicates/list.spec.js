@@ -209,13 +209,17 @@ describe('Duplicate entities list', () => {
                         fixture: 'orgunits/list.json',
                     },
                 );
-                cy.intercept('GET', '/api/entityduplicates/?search=mario&algorithm=levenshtein&similarity=80&entity_type=7%2C3&org_unit=3&start_date=20-05-2010&end_date=25-05-2010&submitter=69&submitter_team=26&ignored=true&merged=true&fields=first_name%2Cmiddle_name&form=1&order=id&page=1&limit=20', req => {
-                    interceptFlag = true;
-                    req.reply({
-                        statusCode: 200,
-                        body: emptyFixture,
-                    });
-                }).as('getDuplicateSearch');
+                cy.intercept(
+                    'GET',
+                    '/api/entityduplicates/?search=mario&algorithm=levenshtein&similarity=80&entity_type=7%2C3&org_unit=3&start_date=20-05-2010&end_date=25-05-2010&submitter=69&submitter_team=26&ignored=true&merged=true&fields=first_name%2Cmiddle_name&form=1&order=id&page=1&limit=20',
+                    req => {
+                        interceptFlag = true;
+                        req.reply({
+                            statusCode: 200,
+                            body: emptyFixture,
+                        });
+                    },
+                ).as('getDuplicateSearch');
                 cy.get('#search-search').type(search);
                 cy.fillSingleSelect('#submitter_team', 1);
                 cy.fillSingleSelect('#form', 0);
@@ -224,10 +228,18 @@ describe('Duplicate entities list', () => {
                 cy.fillSingleSelect('#algorithm', 1);
                 cy.fillSingleSelect('#similarity', 1);
                 cy.fillMultiSelect('#entity_type', [2, 3], false);
-                cy.get('[data-test="start-date"] input').type(20052010);
-                cy.get('[data-test="end-date"] input').type(25052010);
-                cy.get('#check-box-ignored').check();
-                cy.get('#check-box-merged').check();
+                cy.get('[data-test="start-date"] input').type(20052010, {
+                    force: true,
+                });
+                cy.get('[data-test="end-date"] input').type(25052010, {
+                    force: true,
+                });
+                cy.get('#check-box-ignored').check({
+                    force: true,
+                });
+                cy.get('#check-box-merged').check({
+                    force: true,
+                });
                 cy.fillTreeView('#ou-tree-input', 2, false);
 
                 cy.get('[data-test="search-button"]').click();

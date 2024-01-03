@@ -1,6 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
 
-import { Popover, Typography, makeStyles } from '@material-ui/core';
+import { Popover, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import classnames from 'classnames';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';

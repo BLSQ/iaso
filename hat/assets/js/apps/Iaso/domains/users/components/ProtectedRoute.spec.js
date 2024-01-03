@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import React from 'react';
 import nock from 'nock';
 import { ErrorBoundary, theme } from 'bluesquare-components';
-import { MuiThemeProvider } from '@material-ui/core';
+import { ThemeProvider } from '@mui/material';
 import { shallow } from 'enzyme';
 import {
     renderWithMutableStore,
@@ -81,14 +81,14 @@ const renderComponent = () => {
     component = shallow(
         renderWithMutableStore(
             <ErrorBoundary>
-                <MuiThemeProvider theme={theme}>
+                <ThemeProvider theme={theme}>
                     <ProtectedRoute
                         component={stubComponent()}
                         permission="permission"
                         isRootUrl
                         location={{ location: 'here' }}
                     />
-                </MuiThemeProvider>
+                </ThemeProvider>
             </ErrorBoundary>,
             store,
         ),

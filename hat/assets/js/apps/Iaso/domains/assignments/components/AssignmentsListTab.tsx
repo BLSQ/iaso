@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Paper } from '@material-ui/core';
+import { Box, Paper } from '@mui/material';
 import { useDispatch } from 'react-redux';
 
 import { Table } from 'bluesquare-components';

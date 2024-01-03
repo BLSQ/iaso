@@ -1,4 +1,5 @@
-import { TableCell, TableRow, makeStyles } from '@material-ui/core';
+import { TableCell, TableRow } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { LoadingSpinner } from 'bluesquare-components';
 import classNames from 'classnames';
 import React, { FunctionComponent } from 'react';

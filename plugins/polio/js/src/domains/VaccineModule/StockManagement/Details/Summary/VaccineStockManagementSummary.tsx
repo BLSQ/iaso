@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Table, TableBody, makeStyles } from '@material-ui/core';
+import { Table, TableBody } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
 import { PaperTableRow } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/tables/PaperTableRow';
@@ -7,7 +8,7 @@ import WidgetPaper from '../../../../../../../../../hat/assets/js/apps/Iaso/comp
 import MESSAGES from '../../messages';
 
 const useStyles = makeStyles({
-    table: {
+    paper: {
         '& .MuiTable-root': {
             width: '100%',
         },
@@ -24,7 +25,7 @@ export const VaccineStockManagementSummary: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     return (
         <WidgetPaper
-            className={classnames(classes.table)}
+            className={classnames(classes.paper)}
             title={formatMessage(MESSAGES.stockBalance)}
         >
             <Table size="small">

@@ -14,6 +14,7 @@ import {
     useSafeIntl,
     IntlMessage,
 } from 'bluesquare-components';
+import { useSelector } from 'react-redux';
 import MESSAGES from '../../domains/forms/messages';
 import { DropdownOptions } from '../../types/utils';
 
@@ -29,6 +30,19 @@ export type InputComponentType =
     | 'arrayInput'
     | 'search'
     | 'select';
+
+export type NumberInputOptions = {
+    min?: number;
+    max?: number;
+    decimalScale?: number;
+    decimalSeparator?: '.' | ',';
+    thousandSeparator?: '.' | ',';
+};
+
+export type Locale = {
+    code: string;
+    label: string;
+};
 
 export type InputComponentProps = {
     type: InputComponentType;
@@ -80,6 +94,33 @@ export type InputComponentProps = {
     setFieldError?: (keyValue: string, message: string) => void;
 };
 
+const determineSeparatorsFromLocale = (
+    activeLocale: Locale,
+): { thousand: '.' | ','; decimal: '.' | ',' } => {
+    // using a switch to add more locales easily
+    switch (activeLocale.code) {
+        case 'fr':
+            return { thousand: '.', decimal: ',' };
+        case 'en':
+            return { thousand: ',', decimal: '.' };
+        default:
+            return { thousand: ',', decimal: '.' };
+    }
+};
+
+const determineNumberSeparators = (
+    activeLocale: Locale,
+    numberInputOptions: NumberInputOptions,
+): NumberInputOptions => {
+    const { thousand, decimal } = determineSeparatorsFromLocale(activeLocale);
+    console.log('thousand', thousand, 'decimal', decimal);
+    return {
+        ...numberInputOptions,
+        decimalSeparator: numberInputOptions?.decimalSeparator ?? decimal,
+        thousandSeparator: numberInputOptions?.thousandSeparator ?? thousand,
+    };
+};
+
 const InputComponent: React.FC<InputComponentProps> = ({
     type = 'text',
     keyValue,
@@ -107,11 +148,19 @@ const InputComponent: React.FC<InputComponentProps> = ({
     max,
     blockForbiddenChars = false,
     onErrorChange = () => null,
-    numberInputOptions,
+    numberInputOptions = {},
     setFieldError = () => null,
 }) => {
     const [displayPassword, setDisplayPassword] = useState(false);
     const { formatMessage } = useSafeIntl();
+    // @ts-ignore
+    const activeLocale = useSelector(state => state.app.locale);
+    const localizedNumberOptions = determineNumberSeparators(
+        activeLocale,
+        numberInputOptions,
+    );
+    console.log('active locale', activeLocale, numberInputOptions);
+    console.log('LOCALOPTION', localizedNumberOptions);
 
     const toggleDisplayPassword = () => {
         setDisplayPassword(!displayPassword);
@@ -176,7 +225,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
                         }}
                         setFieldError={setFieldError}
                         // eslint-disable-next-line react/jsx-props-no-spreading
-                        {...numberInputOptions}
+                        {...localizedNumberOptions}
                     />
                 );
             case 'select':

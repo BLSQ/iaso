@@ -205,6 +205,7 @@ export const RiskAssessmentForm = () => {
                                 name={`rounds[${i}].target_population`}
                                 component={TextInput}
                                 className={classes.input}
+                                shrinkLabel={false}
                             />
                         );
                     })}
@@ -218,7 +219,7 @@ export const RiskAssessmentForm = () => {
                                     round.number
                                 }`}
                                 name={`rounds[${i}].doses_requested`}
-                                component={TextInput}
+                                component={NumberInput}
                                 className={classes.input}
                             />
                         );

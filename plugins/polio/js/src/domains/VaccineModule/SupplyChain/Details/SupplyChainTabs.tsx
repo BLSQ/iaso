@@ -34,7 +34,6 @@ export const SupplyChainTabs: FunctionComponent<Props> = ({
             indicatorColor="secondary"
             classes={{
                 root: classes.tabs,
-                indicator: classes.indicator,
             }}
             onChange={onChangeTab}
         >
@@ -46,6 +45,7 @@ export const SupplyChainTabs: FunctionComponent<Props> = ({
                 // disable if no saved VRF to avoid users trying to save prealert before vrf
                 disabled={disabled}
                 hasTabError={false}
+                handleChange={onChangeTab}
                 showIcon={disabled}
                 tooltipMessage={formatMessage(MESSAGES.pleaseCreateVrf)}
             />
@@ -56,6 +56,7 @@ export const SupplyChainTabs: FunctionComponent<Props> = ({
                 // disable if no saved VRF to avoid users trying to save VAR before vrf
                 disabled={disabled}
                 hasTabError={false}
+                handleChange={onChangeTab}
                 showIcon={disabled}
                 tooltipMessage={formatMessage(MESSAGES.pleaseCreateVrf)}
             />

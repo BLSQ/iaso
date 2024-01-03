@@ -1,4 +1,9 @@
-import React, { FunctionComponent, ReactNode } from 'react';
+import React, {
+    FunctionComponent,
+    ReactNode,
+    useCallback,
+    useMemo,
+} from 'react';
 import { Tab, Tooltip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import InfoIcon from '@mui/icons-material/Info';
@@ -12,14 +17,14 @@ export const useStyles = makeStyles(theme => ({
         },
     },
     tabError: {
-        color: `${theme.palette.error.main} !important`,
+        // color: `${theme.palette.error.main} !important`,
     },
     tabDisabled: {
         cursor: 'default',
     },
     tabIcon: {
         position: 'relative',
-        top: 1,
+        top: 3,
         left: theme.spacing(0.5),
         cursor: 'pointer',
     },
@@ -38,20 +43,36 @@ type Props = {
     title: string;
     hasTabError: boolean;
     disabled: boolean;
+    // eslint-disable-next-line no-unused-vars
+    handleChange: (_event: any, newValue: number | string) => void;
     showIcon: boolean;
     tooltipMessage: string;
 };
 
 export const TabWithInfoIcon: FunctionComponent<Props> = ({
+    value,
     title,
     hasTabError,
     disabled,
+    handleChange,
     tooltipMessage,
     showIcon = false,
     // passed from Mui Tabs component
     ...props
 }) => {
     const classes: Record<string, string> = useStyles();
+    // Remove onChange to avoid bugs when tab is disabled
+    const filteredProps = useMemo(() => {
+        // @ts-ignore
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { onChange, ...rest } = props;
+        return rest;
+    }, [props]);
+    const onChange = useCallback(() => {
+        if (!disabled) {
+            handleChange(undefined, value);
+        }
+    }, [disabled, handleChange, value]);
     return (
         // @ts-ignore
         <Tab
@@ -63,7 +84,6 @@ export const TabWithInfoIcon: FunctionComponent<Props> = ({
             )}
             disableFocusRipple={disabled}
             disableRipple={disabled}
-            disabled={disabled}
             icon={
                 (showIcon && (
                     <Tooltip title={tooltipMessage}>
@@ -75,7 +95,8 @@ export const TabWithInfoIcon: FunctionComponent<Props> = ({
                 )) || <></>
             }
             // eslint-disable-next-line react/jsx-props-no-spreading
-            {...props}
+            {...filteredProps}
+            onClick={onChange}
         />
     );
 };

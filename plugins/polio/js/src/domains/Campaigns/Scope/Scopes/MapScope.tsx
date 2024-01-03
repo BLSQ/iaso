@@ -153,9 +153,14 @@ export const MapScope: FunctionComponent<Props> = ({
                                         <span className={classes.vaccineName}>
                                             {vaccine.value}
                                         </span>
-                                        {': '}
-                                        {vaccineCount[vaccine.value] ?? 0}{' '}
-                                        {formatMessage(MESSAGES.districts)}
+
+                                        <span>
+                                            {`: ${
+                                                vaccineCount[vaccine.value] ?? 0
+                                            } ${formatMessage(
+                                                MESSAGES.districts,
+                                            )}`}
+                                        </span>
                                     </Box>
                                 </ListItem>
                             ))}

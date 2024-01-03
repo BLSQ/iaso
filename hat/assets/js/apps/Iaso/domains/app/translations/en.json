@@ -45,7 +45,6 @@
     "iaso.changeRequest.addComment": "Add comment for rejection",
     "iaso.changeRequest.closingDate": "Closing date",
     "iaso.changeRequest.comment": "Comment",
-    "iaso.changeRequest.edit": "Validate selected requests",
     "iaso.changeRequest.newValue": "Modified version",
     "iaso.changeRequest.oldValue": "Initial version",
     "iaso.changeRequest.openingDate": "Opening date",

@@ -1,4 +1,4 @@
-import React, { ReactNode, useState } from 'react';
+import React, { ReactNode, useMemo, useState } from 'react';
 import { Box } from '@mui/material';
 import {
     TextInput,
@@ -14,9 +14,9 @@ import {
     useSafeIntl,
     IntlMessage,
 } from 'bluesquare-components';
-import { useSelector } from 'react-redux';
 import MESSAGES from '../../domains/forms/messages';
 import { DropdownOptions } from '../../types/utils';
+import { useNumberSeparatorsFromLocale } from '../../hooks/useNumberSeparatorsFromLocale';
 
 type Option = DropdownOptions<string | number>;
 
@@ -37,11 +37,6 @@ export type NumberInputOptions = {
     decimalScale?: number;
     decimalSeparator?: '.' | ',';
     thousandSeparator?: '.' | ',';
-};
-
-export type Locale = {
-    code: string;
-    label: string;
 };
 
 export type InputComponentProps = {
@@ -94,30 +89,19 @@ export type InputComponentProps = {
     setFieldError?: (keyValue: string, message: string) => void;
 };
 
-const determineSeparatorsFromLocale = (
-    activeLocale: Locale,
-): { thousand: '.' | ','; decimal: '.' | ',' } => {
-    // using a switch to add more locales easily
-    switch (activeLocale.code) {
-        case 'fr':
-            return { thousand: '.', decimal: ',' };
-        case 'en':
-            return { thousand: ',', decimal: '.' };
-        default:
-            return { thousand: ',', decimal: '.' };
-    }
-};
-
-const determineNumberSeparators = (
-    activeLocale: Locale,
+const useLocalizedNumberInputOptions = (
     numberInputOptions: NumberInputOptions,
 ): NumberInputOptions => {
-    const { thousand, decimal } = determineSeparatorsFromLocale(activeLocale);
-    return {
-        ...numberInputOptions,
-        decimalSeparator: numberInputOptions?.decimalSeparator ?? decimal,
-        thousandSeparator: numberInputOptions?.thousandSeparator ?? thousand,
-    };
+    const { thousand, decimal } = useNumberSeparatorsFromLocale();
+    return useMemo(
+        () => ({
+            ...numberInputOptions,
+            decimalSeparator: numberInputOptions?.decimalSeparator ?? decimal,
+            thousandSeparator:
+                numberInputOptions?.thousandSeparator ?? thousand,
+        }),
+        [decimal, numberInputOptions, thousand],
+    );
 };
 
 const InputComponent: React.FC<InputComponentProps> = ({
@@ -152,12 +136,9 @@ const InputComponent: React.FC<InputComponentProps> = ({
 }) => {
     const [displayPassword, setDisplayPassword] = useState(false);
     const { formatMessage } = useSafeIntl();
-    // @ts-ignore
-    const activeLocale = useSelector(state => state.app.locale);
-    const localizedNumberOptions = determineNumberSeparators(
-        activeLocale,
-        numberInputOptions,
-    );
+
+    const localizedNumberOptions =
+        useLocalizedNumberInputOptions(numberInputOptions);
 
     const toggleDisplayPassword = () => {
         setDisplayPassword(!displayPassword);

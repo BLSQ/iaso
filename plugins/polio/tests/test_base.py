@@ -18,10 +18,10 @@ from rest_framework.test import APIClient
 from iaso import models as m
 from iaso.models import Account, Team
 from iaso.test import APITestCase, TestCase
-from plugins.polio.api.campaigns.campaigns import CampaignSerializer
+from plugins.polio.api.campaigns.campaigns import CampaignSerializer, CampaignViewSet
 from plugins.polio.api.common import CACHE_VERSION
 from plugins.polio.export_utils import format_date
-from plugins.polio.models import Config, ReasonForDelay, Round, RoundScope
+from plugins.polio.models import CampaignScope, Config, ReasonForDelay, Round, RoundScope
 from plugins.polio.preparedness.calculator import get_preparedness_score
 from plugins.polio.preparedness.exceptions import InvalidFormatError
 from plugins.polio.preparedness.spreadsheet_manager import *
@@ -96,6 +96,30 @@ class PolioAPITestCase(APITestCase):
             name_en="The cat ate my homework",
             name_fr="Mon chat a mangé mon devoir",
         )
+
+        cls.campaign_csv_columns = [x["title"] for x in CampaignViewSet.campaign_csv_columns()]
+
+        cls.district_1 = OrgUnit.objects.create(
+            id=5460,
+            name="district 1",
+            org_unit_type=cls.jedi_squad,
+            version=cls.star_wars.default_version,
+        )
+
+        cls.district_2 = OrgUnit.objects.create(
+            id=5461,
+            name="district 2",
+            org_unit_type=cls.jedi_squad,
+            version=cls.star_wars.default_version,
+        )
+
+        cls.org_units_group_1 = m.Group.objects.create(name="group_1")
+        cls.org_units_group_1.org_units.add(cls.district_1)
+        cls.org_units_group_1.save()
+
+        cls.org_units_group_2 = m.Group.objects.create(name="group_2")
+        cls.org_units_group_2.org_units.add(cls.district_2)
+        cls.org_units_group_2.save()
 
     def setUp(self) -> None:
         """Make sure we have a fresh client at the beginning of each test"""
@@ -631,20 +655,6 @@ class PolioAPITestCase(APITestCase):
             version=self.star_wars.default_version,
         )
 
-        district_1 = OrgUnit.objects.create(
-            id=5456,
-            name="district 1",
-            org_unit_type=self.jedi_squad,
-            version=self.star_wars.default_version,
-        )
-
-        district_2 = OrgUnit.objects.create(
-            id=5457,
-            name="district 2",
-            org_unit_type=self.jedi_squad,
-            version=self.star_wars.default_version,
-        )
-
         c = Campaign.objects.create(
             country_id=org_unit.id, obr_name="orb campaign", vacine="vacin", account=self.account
         )
@@ -659,16 +669,8 @@ class PolioAPITestCase(APITestCase):
         c.rounds.add(c_round_2)
         c.save()
 
-        org_units_group_1 = m.Group.objects.create(name="group_1")
-        org_units_group_1.org_units.add(district_1)
-        org_units_group_1.save()
-
-        org_units_group_2 = m.Group.objects.create(name="group_2")
-        org_units_group_2.org_units.add(district_2)
-        org_units_group_2.save()
-
-        RoundScope.objects.create(vaccine="nOPV2", group=org_units_group_1, round=c_round_1)
-        RoundScope.objects.create(vaccine="mOPV2", group=org_units_group_2, round=c_round_2)
+        RoundScope.objects.create(vaccine="nOPV2", group=self.org_units_group_1, round=c_round_1)
+        RoundScope.objects.create(vaccine="mOPV2", group=self.org_units_group_2, round=c_round_2)
         c.separate_scopes_per_round = True
         c.save()
         c.refresh_from_db()
@@ -687,35 +689,6 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(data_dict["January"][1], self.format_date_to_test(c, c_round_2))
 
     @staticmethod
-    def campaign_csv_columns():
-        return [
-            "country",
-            "obr_name",
-            "vaccine_types",
-            "onset_date",
-            "pv_notified_at",
-            "round_number",
-            "round_start_date",
-            "round_end_date",
-            "ra_submission_date",
-            "ra_approval_date",
-            "budget_submitted_date",
-            "budget_approved_date",
-            "who_disbursed_to_co_at",
-            "who_disbursed_to_moh_at",
-            "unicef_disbursed_to_co_at",
-            "unicef_disbursed_to_moh_at",
-            "gpei_coordinator",
-            "round_target_population",
-            "doses_requested",
-            "cost",
-            "lqas_district_passing",
-            "lqas_district_failing",
-            "preparedness_spreadsheet_url",
-            "preparedness_sync_status",
-        ]
-
-    @staticmethod
     def create_org_unit(id, name, type, version):
         return OrgUnit.objects.create(
             id=id,
@@ -725,37 +698,24 @@ class PolioAPITestCase(APITestCase):
         )
 
     @staticmethod
-    def row_data(country, obr_name, round_number, round_started_date, round_ended_date):
-        return [
-            country,
-            obr_name,
-            "",
-            "",
-            "",
-            str(round_number),
-            round_started_date,
-            round_ended_date,
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-            "",
-        ]
-
-    @staticmethod
-    def create_campaign(id, obr_name, vaccine, account):
-        return Campaign.objects.create(country_id=id, obr_name=obr_name, vacine=vaccine, account=account)
+    def create_campaign(id, obr_name, account):
+        return Campaign.objects.create(
+            country_id=id,
+            obr_name=obr_name,
+            account=account,
+            onset_at=datetime.date(2022, 1, 1),
+            cvdpv2_notified_at=datetime.date(2022, 1, 20),
+            risk_assessment_first_draft_submitted_at=datetime.date(2022, 2, 1),
+            risk_assessment_rrt_oprtt_approval_at=datetime.date(2022, 2, 25),
+            submitted_to_rrt_at_WFEDITABLE=datetime.date(2022, 3, 1),
+            approved_at_WFEDITABLE=datetime.date(2022, 3, 10),
+            who_disbursed_to_co_at=datetime.date(2022, 3, 5),
+            who_disbursed_to_moh_at=datetime.date(2022, 3, 8),
+            unicef_disbursed_to_co_at=datetime.date(2022, 3, 4),
+            unicef_disbursed_to_moh_at=datetime.date(2022, 3, 5),
+            gpei_coordinator="Test coordinator",
+            doses_requested=500,
+        )
 
     def test_csv_campaigns_export(self):
         """
@@ -765,19 +725,32 @@ class PolioAPITestCase(APITestCase):
             3. If the columns names are correct
             4. If the data in cells are correct
         """
-        org_unit = self.create_org_unit(5455, "Country name", self.jedi_squad, self.star_wars.default_version)
+        org_unit = self.create_org_unit(5453, "Country name", self.jedi_squad, self.star_wars.default_version)
 
-        org_unit_2 = self.create_org_unit(5456, "Country name 2", self.jedi_squad, self.star_wars.default_version)
+        org_unit_2 = self.create_org_unit(5454, "Country name 2", self.jedi_squad, self.star_wars.default_version)
 
-        c = self.create_campaign(org_unit.id, "orb campaign", "vacin", self.account)
+        c = self.create_campaign(org_unit.id, "orb campaign", self.account)
+        c2 = self.create_campaign(org_unit_2.id, "orb campaign 2", self.account)
 
-        c_round_1 = c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2))
+        c_round_1 = c.rounds.create(
+            number=1,
+            started_at=datetime.date(2022, 1, 1),
+            ended_at=datetime.date(2022, 1, 2),
+            target_population=1000,
+            cost=10,
+            lqas_district_passing=12,
+            lqas_district_failing=2,
+            preparedness_spreadsheet_url="https://docs.google.com/spreadsheets/d/test",
+            preparedness_sync_status="FINISHED",
+        )
         c.rounds.create(number=2, started_at=datetime.date(2022, 3, 1), ended_at=datetime.date(2022, 3, 2))
 
-        c2 = self.create_campaign(org_unit_2.id, "orb campaign 2", "vacin", self.account)
+        CampaignScope.objects.create(vaccine="nOPV2", group=self.org_units_group_1, campaign=c)
+        CampaignScope.objects.create(vaccine="mOPV2", group=self.org_units_group_2, campaign=c)
 
         c2.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2))
         c2.rounds.create(number=2, started_at=datetime.date(2022, 1, 4), ended_at=datetime.date(2022, 1, 7))
+
         response = self.client.get("/api/polio/campaigns/csv_campaigns_export/")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
@@ -793,18 +766,13 @@ class PolioAPITestCase(APITestCase):
         data_headers = data[0]
         self.assertEqual(
             data_headers,
-            self.campaign_csv_columns(),
+            self.campaign_csv_columns,
         )
         first_data_row = data[1]
+        row_data = self.row_data(c, c_round_1)
         self.assertEqual(
             first_data_row,
-            self.row_data(
-                "Country name",
-                "orb campaign",
-                c_round_1.number,
-                c_round_1.started_at.strftime("%Y-%m-%d"),
-                c_round_1.ended_at.strftime("%Y-%m-%d"),
-            ),
+            row_data,
         )
 
     def test_csv_campaigns_export_filtered_data(self):
@@ -819,16 +787,26 @@ class PolioAPITestCase(APITestCase):
 
         org_unit_2 = self.create_org_unit(5456, "Country name 2", self.jedi_squad, self.star_wars.default_version)
 
-        c = self.create_campaign(org_unit.id, "orb campaign", "vacin", self.account)
+        c = self.create_campaign(org_unit.id, "orb campaign", self.account)
 
-        c_round_1 = c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2))
+        c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2))
         c.rounds.create(number=2, started_at=datetime.date(2022, 3, 1), ended_at=datetime.date(2022, 3, 2))
 
-        c2 = self.create_campaign(org_unit_2.id, "orb campaign 2", "vacin", self.account)
+        c2 = self.create_campaign(org_unit_2.id, "orb campaign 2", self.account)
         c2.is_test = True
         c2.save()
 
-        c2.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2))
+        c_round_2 = c2.rounds.create(
+            number=1,
+            started_at=datetime.date(2021, 12, 1),
+            ended_at=datetime.date(2021, 12, 31),
+            target_population=1500,
+            cost=15,
+            lqas_district_passing=16,
+            lqas_district_failing=3,
+            preparedness_spreadsheet_url="https://docs.google.com/spreadsheets/d/test2",
+            preparedness_sync_status="FINISHED",
+        )
         c2.rounds.create(number=2, started_at=datetime.date(2022, 1, 4), ended_at=datetime.date(2022, 1, 7))
         response = self.client.get(
             "/api/polio/campaigns/csv_campaigns_export/?campaign_type=test&show_test=true&enabled=true"
@@ -847,19 +825,43 @@ class PolioAPITestCase(APITestCase):
         data_headers = data[0]
         self.assertEqual(
             data_headers,
-            self.campaign_csv_columns(),
+            self.campaign_csv_columns,
         )
         first_data_row = data[1]
+        row_data = self.row_data(c2, c_round_2)
         self.assertEqual(
             first_data_row,
-            self.row_data(
-                "Country name 2",
-                "orb campaign 2",
-                c_round_1.number,
-                c_round_1.started_at.strftime("%Y-%m-%d"),
-                c_round_1.ended_at.strftime("%Y-%m-%d"),
-            ),
+            row_data,
         )
+
+    @staticmethod
+    def row_data(campaign, round):
+        return [
+            campaign.country.name,
+            campaign.obr_name,
+            campaign.vaccines,
+            campaign.onset_at.strftime("%Y-%m-%d"),
+            campaign.cvdpv2_notified_at.strftime("%Y-%m-%d"),
+            str(round.number),
+            round.started_at.strftime("%Y-%m-%d"),
+            round.ended_at.strftime("%Y-%m-%d"),
+            campaign.risk_assessment_first_draft_submitted_at.strftime("%Y-%m-%d"),
+            campaign.risk_assessment_rrt_oprtt_approval_at.strftime("%Y-%m-%d"),
+            campaign.submitted_to_rrt_at_WFEDITABLE.strftime("%Y-%m-%d"),
+            campaign.approved_at_WFEDITABLE.strftime("%Y-%m-%d"),
+            campaign.who_disbursed_to_co_at.strftime("%Y-%m-%d"),
+            campaign.who_disbursed_to_moh_at.strftime("%Y-%m-%d"),
+            campaign.unicef_disbursed_to_co_at.strftime("%Y-%m-%d"),
+            campaign.unicef_disbursed_to_moh_at.strftime("%Y-%m-%d"),
+            campaign.gpei_coordinator,
+            str(round.target_population),
+            str(campaign.doses_requested),
+            str(round.cost),
+            str(round.lqas_district_passing),
+            str(round.lqas_district_failing),
+            round.preparedness_spreadsheet_url,
+            campaign.preperadness_sync_status,
+        ]
 
     @staticmethod
     def format_date_to_test(campaign, round):

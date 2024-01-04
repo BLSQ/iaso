@@ -445,9 +445,9 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
         group2 = m.Group.objects.create(name="Group 2")
 
         form1 = m.Form.objects.create(name="Vaccine form 1")
-        instance1 = m.Instance.objects.create(form=form1, org_unit=self.org_unit)
+        instance1 = m.Instance.objects.create(form=form1, org_unit=self.org_unit, uuid=uuid.uuid4())
         form2 = m.Form.objects.create(name="Vaccine form 2")
-        instance2 = m.Instance.objects.create(form=form2, org_unit=self.org_unit)
+        instance2 = m.Instance.objects.create(form=form2, org_unit=self.org_unit, uuid=uuid.uuid4())
 
         parent_org_unit = m.OrgUnit.objects.create(org_unit_type=self.org_unit_type)
 
@@ -466,7 +466,7 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
             "new_location_accuracy": 4.0,
             "new_opening_date": "2022-10-27",
             "new_closed_date": "2024-10-27",
-            "new_reference_instances": [instance1.id, instance2.id],
+            "new_reference_instances": [instance1.id, instance2.uuid],
         }
         serializer = OrgUnitChangeRequestWriteSerializer(data=data)
 

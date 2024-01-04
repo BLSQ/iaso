@@ -201,6 +201,11 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
     )
     new_location = ThreeDimPointField(required=False)
     updated_at = TimestampField(required=False)
+    new_reference_instances = IdOrUuidRelatedField(
+        many=True,
+        queryset=Instance.objects.all(),
+        required=False,
+    )
 
     class Meta:
         model = OrgUnitChangeRequest

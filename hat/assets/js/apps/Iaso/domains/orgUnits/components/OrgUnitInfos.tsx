@@ -152,7 +152,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
             <Grid item xs={12} md={4}>
                 <InputComponent
                     keyValue="validation_status"
-                    isClearable={false}
+                    clearable={false}
                     onChange={onChangeInfo}
                     errors={orgUnitState.validation_status.errors}
                     value={orgUnitState.validation_status.value}
@@ -162,6 +162,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                     options={validationStatusOptions || []}
                 />
                 <InputComponent
+                    type="text"
                     keyValue="source_ref"
                     value={orgUnitState.source_ref.value || ''}
                     onChange={onChangeInfo}

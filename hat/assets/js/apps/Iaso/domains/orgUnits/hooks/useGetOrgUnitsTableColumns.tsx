@@ -13,6 +13,7 @@ import { useGetStatusMessage, getOrgUnitGroups } from '../utils';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 import { Search } from '../types/search';
 import { ActionCell } from '../components/ActionCell';
+import { NumberCell } from '../../../components/Cells/NumberCell';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -72,11 +73,17 @@ export const useGetOrgUnitsTableColumns = (searches: [Search]): Column[] => {
             {
                 Header: formatMessage(MESSAGES.status),
                 accessor: 'validation_status',
-                Cell: settings => getStatusMessage(settings.value),
+                // Wrap in span to avoid TS error
+                Cell: settings => (
+                    <span>{getStatusMessage(settings.value)}</span>
+                ),
             },
             {
                 Header: formatMessage(MESSAGES.instances_count),
                 accessor: 'instances_count',
+                Cell: settings => (
+                    <NumberCell value={settings.row.original.instances_count} />
+                ),
             },
             {
                 Header: formatMessage(MESSAGES.updated_at),

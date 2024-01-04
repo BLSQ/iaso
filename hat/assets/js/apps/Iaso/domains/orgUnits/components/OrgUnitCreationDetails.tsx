@@ -13,6 +13,7 @@ import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 import { OrgUnit } from '../types/orgUnit';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import MESSAGES from '../messages';
+import { NumberCell } from '../../../components/Cells/NumberCell';
 
 type RowProps = {
     label: string | ReactNode;
@@ -24,7 +25,13 @@ const Row: FunctionComponent<RowProps> = ({ label, value, dataTestId }) => {
     return (
         <TableRow>
             <TableCell>{label}</TableCell>
-            <TableCell data-test={dataTestId}>{value}</TableCell>
+            <TableCell data-test={dataTestId}>
+                {typeof value === 'number' ? (
+                    <NumberCell value={value} />
+                ) : (
+                    value
+                )}
+            </TableCell>
         </TableRow>
     );
 };

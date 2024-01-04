@@ -43,7 +43,6 @@ export const NumberCell: FunctionComponent<Props> = ({
         thousand,
         decimal,
     });
-    console.log('value', value);
     return (
         <FormattedNumber
             value={value}

@@ -23,9 +23,8 @@ export const BudgetDetailsFiltersMobile: FunctionComponent<Props> = ({
     return (
         <Box width="100%">
             <Grid container justifyContent="space-between">
-                <Grid item>
-                    <LinkToProcedure />
-                </Grid>
+                {/* The Link crashes the view */}
+                <Grid item>{/* <LinkToProcedure /> */}</Grid>
                 <Grid item>
                     <MoreHorizIcon
                         color="action"

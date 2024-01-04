@@ -55,7 +55,8 @@ export const BudgetDetailsTableLayout: FunctionComponent<Props> = ({
                                 xs={4}
                                 justifyContent="flex-end"
                             >
-                                <LinkToProcedure />
+                                {/* Link causes crash. The current address requires authtication which users don't have anyway */}
+                                {/* <LinkToProcedure /> */}
                             </Grid>
                         </Grid>
                     </Box>

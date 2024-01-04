@@ -9,7 +9,8 @@ import { baseUrls } from '../../../constants/urls';
 import { userHasPermission } from '../../users/utils';
 import MESSAGES from '../messages';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
-import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
+import { DateTimeCell } from '../../../components/Cells/DateTimeCell.tsx';
+import { NumberCell } from '../../../components/Cells/NumberCell.tsx';
 import { YesNoCell } from '../../../components/Cells/YesNoCell';
 import { CreateSubmissionModal } from '../components/CreateSubmissionModal/CreateSubmissionModal.tsx';
 import { createInstance } from '../../instances/actions';
@@ -136,6 +137,9 @@ const formsTableColumns = ({
         {
             Header: formatMessage(MESSAGES.records),
             accessor: 'instances_count',
+            Cell: settings => (
+                <NumberCell value={settings.row.original.instances_count} />
+            ),
         },
         {
             Header: formatMessage(MESSAGES.form_id),

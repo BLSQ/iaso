@@ -19,6 +19,7 @@ import { userHasPermission } from '../../users/utils';
 
 import * as Permission from '../../../utils/permissions';
 import { useCurrentUser } from '../../../utils/usersUtils';
+import { NumberCell } from '../../../components/Cells/NumberCell';
 
 export const baseUrl = baseUrls.entityTypes;
 
@@ -55,6 +56,9 @@ export const useColumns = ({
             Header: formatMessage(MESSAGES.entitiesCount),
             accessor: 'entities_count',
             sortable: false,
+            Cell: settings => (
+                <NumberCell value={settings.row.original.entities_count} />
+            ),
         },
         {
             Header: formatMessage(MESSAGES.actions),

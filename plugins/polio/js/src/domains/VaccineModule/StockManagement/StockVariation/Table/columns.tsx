@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
+import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 import MESSAGES from '../../messages';
 import { DateCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 // import DeleteDialog from '../../../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
@@ -42,6 +43,7 @@ export const useFormATableColumns = (
                 Cell: DateCell,
             },
             {
+                // Not formatting lot numbers as it's not clear how they will be formatted
                 Header: formatMessage(MESSAGES.lot_numbers_for_usable_vials),
                 accessor: 'lot_numbers_for_usable_vials',
                 id: 'lot_numbers_for_usable_vials',
@@ -52,18 +54,27 @@ export const useFormATableColumns = (
                 accessor: 'unusable_vials',
                 id: 'unusable_vials',
                 sortable: true,
+                Cell: settings => (
+                    <NumberCell value={settings.row.original.unusable_vials} />
+                ),
             },
             {
                 Header: formatMessage(MESSAGES.forma_vials_missing),
                 accessor: 'vials_missing',
                 id: 'vials_missing',
                 sortable: true,
+                Cell: settings => (
+                    <NumberCell value={settings.row.original.vials_missing} />
+                ),
             },
             {
                 Header: formatMessage(MESSAGES.forma_vials_used),
                 accessor: 'vials_used',
                 id: 'vials_used',
                 sortable: true,
+                Cell: settings => (
+                    <NumberCell value={settings.row.original.vials_used} />
+                ),
             },
             {
                 Header: formatMessage(MESSAGES.actions),
@@ -125,6 +136,9 @@ export const useDestructionTableColumns = (
                 accessor: 'vials_destroyed',
                 id: 'vials_destroyed',
                 sortable: true,
+                Cell: settings => (
+                    <NumberCell value={settings.row.original.vials_destroyed} />
+                ),
             },
             {
                 Header: formatMessage(MESSAGES.actions),
@@ -185,12 +199,18 @@ export const useIncidentTableColumns = (
                 accessor: 'usable_vials',
                 id: 'usable_vials',
                 sortable: true,
+                Cell: settings => (
+                    <NumberCell value={settings.row.original.usable_vials} />
+                ),
             },
             {
                 Header: formatMessage(MESSAGES.unusable_vials),
                 accessor: 'unusable_vials',
                 id: 'unusable_vials',
                 sortable: true,
+                Cell: settings => (
+                    <NumberCell value={settings.row.original.unusable_vials} />
+                ),
             },
             {
                 Header: formatMessage(MESSAGES.actions),

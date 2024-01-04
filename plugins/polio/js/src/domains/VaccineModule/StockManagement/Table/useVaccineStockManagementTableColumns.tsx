@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Column, IconButton, useSafeIntl } from 'bluesquare-components';
 import { STOCK_MANAGEMENT_DETAILS } from '../../../../constants/routes';
 import MESSAGES from '../messages';
+import { NumberCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 
 export const useVaccineStockManagementTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -24,31 +25,56 @@ export const useVaccineStockManagementTableColumns = (): Column[] => {
                 Header: formatMessage(MESSAGES.vialsReceived),
                 accessor: 'vials_received',
                 sortable: true,
+                Cell: settings => (
+                    <NumberCell value={settings.row.original.vials_received} />
+                ),
             },
             {
                 Header: formatMessage(MESSAGES.vialsUsed),
                 accessor: 'vials_used',
                 sortable: true,
+                Cell: settings => (
+                    <NumberCell value={settings.row.original.vials_used} />
+                ),
             },
             {
                 Header: formatMessage(MESSAGES.stockUsableVials),
                 accessor: 'stock_of_usable_vials',
                 sortable: true,
+                Cell: settings => (
+                    <NumberCell
+                        value={settings.row.original.stock_of_usable_vials}
+                    />
+                ),
             },
             {
                 Header: formatMessage(MESSAGES.leftoverPercentage),
                 accessor: 'leftover_ratio',
                 sortable: true,
+                Cell: settings => (
+                    <NumberCell
+                        value={settings.row.original.leftover_ratio}
+                        decimalScale={2}
+                    />
+                ),
             },
             {
                 Header: formatMessage(MESSAGES.stockUnusableVials),
                 accessor: 'stock_of_unusable_vials',
                 sortable: true,
+                Cell: settings => (
+                    <NumberCell
+                        value={settings.row.original.stock_of_unusable_vials}
+                    />
+                ),
             },
             {
                 Header: formatMessage(MESSAGES.vialsDestroyed),
                 accessor: 'vials_destroyed',
                 sortable: true,
+                Cell: settings => (
+                    <NumberCell value={settings.row.original.vials_destroyed} />
+                ),
             },
             {
                 Header: formatMessage(MESSAGES.actions),

@@ -18,12 +18,12 @@ import {
 import { makeFileLinks, makeLinks } from '../utils';
 import { Optional } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { convertObjectToString } from '../../../utils';
-import { formatThousand } from '../../../../../../../hat/assets/js/apps/Iaso/utils';
 import { formatComment } from '../cards/utils';
 import { BudgetStep, Transition, Params } from '../types';
 import getDisplayName from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 
 import { StepActionCell } from '../BudgetDetails/StepActionCell';
+import { NumberCell } from '../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 
 const baseUrl = BUDGET_DETAILS;
 
@@ -217,7 +217,8 @@ export const useBudgetDetailsColumns = (
                                     Boolean(settings.row.original.deleted_at),
                                 )}
                             >
-                                {formatThousand(parseInt(amount, 10))}
+                                {/* {formatThousand(parseInt(amount, 10))} */}
+                                <NumberCell value={amount} decimalScale={0} />
                             </span>
                         );
                     }

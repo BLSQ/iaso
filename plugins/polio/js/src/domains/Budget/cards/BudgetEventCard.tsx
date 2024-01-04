@@ -10,21 +10,18 @@ import {
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React, { FunctionComponent, useCallback, useState } from 'react';
-import {
-    // @ts-ignore
-    useSafeIntl,
-} from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import classNames from 'classnames';
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import { PlaylistAdd } from '@mui/icons-material';
+import { NumberCell } from '../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 import MESSAGES from '../../../constants/messages';
 
 import { BudgetFilesModalForCards } from '../pop-ups/BudgetFilesModalForCards';
 
 import { formatComment, shouldOpenModal, useActionMessage } from './utils';
 import { styles as eventStyles } from '../hooks/config';
-import { formatThousand } from '../../../../../../../hat/assets/js/apps/Iaso/utils';
 import { BudgetStep, LinkWithAlias } from '../types';
 import getDisplayName from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { useDeleteRestoreBudgetStep } from '../hooks/api/useGetBudgetDetails';
@@ -69,9 +66,6 @@ export const BudgetEventCard: FunctionComponent<Props> = ({ step }) => {
 
     const authorName = getDisplayName(step?.created_by);
     const textColor = isStepDeleted ? classes.hiddenRow : '';
-    const amount = step.amount
-        ? formatThousand(parseInt(`${step.amount}`, 10)) // using parseInt to remove decimals before formatting
-        : '--';
     const formattedCreationDate = moment(step.created_at).format('L');
 
     const truncatedComment = formatComment(step.comment);
@@ -136,7 +130,11 @@ export const BudgetEventCard: FunctionComponent<Props> = ({ step }) => {
                                 style={{ wordWrap: 'anywhere' }}
                                 className={`${textColor}`}
                             >
-                                {`${formatMessage(MESSAGES.amount)}: ${amount}`}
+                                {`${formatMessage(MESSAGES.amount)}:`}
+                                <NumberCell
+                                    value={step.amount}
+                                    decimalScale={0}
+                                />
                             </Typography>
 
                             <Typography variant="body2" className={classes.cta}>

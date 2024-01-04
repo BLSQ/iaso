@@ -4,6 +4,7 @@ import { APP_LOCALES } from '../../../../../../../../hat/assets/js/apps/Iaso/dom
 import MESSAGES from '../messages';
 import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import { EditReasonForDelay } from '../CreateEdit/CreateEditReasonForDelay';
+import { NumberCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 
 export const useReasonsForDelayColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -43,6 +44,9 @@ export const useReasonsForDelayColumns = (): Column[] => {
                 Header: formatMessage(MESSAGES.timesSelected),
                 accessor: 'times_selected',
                 sortable: false,
+                Cell: settings => (
+                    <NumberCell value={settings.row.original.times_selected} />
+                ),
             },
             {
                 Header: formatMessage(MESSAGES.actions),

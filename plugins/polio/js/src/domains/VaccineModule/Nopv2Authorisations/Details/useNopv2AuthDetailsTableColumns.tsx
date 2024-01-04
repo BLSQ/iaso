@@ -7,6 +7,7 @@ import { EditAuthorisationModal } from './Modals/CreateEdit/CreateEditAuthorisat
 import { Nopv2AuthorisationsStatusCell } from '../Table/Nopv2AuthorisationsStatusCell';
 import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { userHasPermission } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import { NumberCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 
 export const useNopv2AuthDetailsTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -40,13 +41,16 @@ export const useNopv2AuthDetailsTableColumns = (): Column[] => {
             {
                 Header: formatMessage(MESSAGES.quantity),
                 accessor: 'quantity',
-                Cell: settings => (
-                    <span>
-                        {settings.row.original.quantity > 0
-                            ? settings.row.original.quantity
-                            : '--'}
-                    </span>
-                ),
+                Cell: settings => {
+                    // key is required to avoid bugs when creating a new row
+                    // Related to the infamous react key error, though the onsole won't show any error here
+                    return (
+                        <NumberCell
+                            key={settings.row.original.id}
+                            value={settings.row.original.quantity}
+                        />
+                    );
+                },
             },
             {
                 Header: formatMessage(MESSAGES.status),

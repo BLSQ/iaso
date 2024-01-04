@@ -4,6 +4,7 @@ import { NOPV2_AUTH_DETAILS } from '../../../../constants/routes';
 import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import MESSAGES from '../../../../constants/messages';
 import { Nopv2AuthorisationsStatusCell } from './Nopv2AuthorisationsStatusCell';
+import { NumberCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 
 const baseUrl = NOPV2_AUTH_DETAILS;
 
@@ -34,13 +35,16 @@ export const useNopv2AuthTableColumns = (): Column[] => {
             {
                 Header: formatMessage(MESSAGES.currentAuthorisedQuantity),
                 accessor: 'quantity',
-                Cell: settings => (
-                    <span>
-                        {settings.row.original.quantity > 0
-                            ? settings.row.original.quantity
-                            : '--'}
-                    </span>
-                ),
+                Cell: settings => {
+                    // key is required to avoid bugs when creating a new row
+                    // Related to the infamous react key error, though the onsole won't show any error here
+                    return (
+                        <NumberCell
+                            key={settings.row.original.id}
+                            value={settings.row.original.quantity}
+                        />
+                    );
+                },
             },
             {
                 Header: formatMessage(MESSAGES.mostRecentAuthStatus),

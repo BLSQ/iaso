@@ -92,6 +92,7 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
                         name={`rounds[${roundIndex}].main_awareness_problem`}
                         component={TextInput}
                         className={classes.marginTop}
+                        shrinkLabel={false}
                     />
                     <Field
                         label={formatMessage(

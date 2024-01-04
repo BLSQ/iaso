@@ -71,6 +71,7 @@ export const BaseInfoForm = () => {
                             label={formatMessage(MESSAGES.epid)}
                             name="epid"
                             component={TextInput}
+                            shrinkLabel={false}
                             className={classes.input}
                         />
 
@@ -78,6 +79,7 @@ export const BaseInfoForm = () => {
                             label={formatMessage(MESSAGES.obrName)}
                             name="obr_name"
                             component={TextInput}
+                            shrinkLabel={false}
                             className={classes.input}
                             required
                             disabled={!isUserAdmin}
@@ -103,6 +105,7 @@ export const BaseInfoForm = () => {
                             name="vaccines"
                             disabled
                             component={TextInput}
+                            shrinkLabel={false}
                             title={formatMessage(
                                 MESSAGES.helpTextEditVaccineViaScope,
                             )}
@@ -115,11 +118,13 @@ export const BaseInfoForm = () => {
                         label={formatMessage(MESSAGES.description)}
                         name="description"
                         component={TextInput}
+                        shrinkLabel={false}
                     />
                     <Field
                         label={formatMessage(MESSAGES.gpeiCoordinator)}
                         name="gpei_coordinator"
                         component={TextInput}
+                        shrinkLabel={false}
                     />
                     <Box mb={-2}>
                         <Field

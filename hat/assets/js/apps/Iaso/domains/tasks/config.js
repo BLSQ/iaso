@@ -5,6 +5,7 @@ import {
 } from 'bluesquare-components';
 import MESSAGES from './messages';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell';
+import { NotificationImportDetailModal } from './components/NotificationImportDetailModal.tsx';
 
 const getTranslatedStatusMessage = (formatMessage, status) => {
     // Return untranslated status if not translation available
@@ -21,7 +22,11 @@ const safePercent = (a, b) => {
     return `${percent.toFixed(2)}%`;
 };
 
-const tasksTableColumns = (formatMessage, killTaskAction) => [
+const tasksTableColumns = (
+    formatMessage,
+    killTaskAction,
+    hasPolioNotificationsPerm,
+) => [
     {
         Header: formatMessage(MESSAGES.name),
         sortable: true,
@@ -138,6 +143,16 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
                 {settings.row.original.should_be_killed === true &&
                     settings.row.original.status === 'RUNNING' &&
                     formatMessage(MESSAGES.killSignalSent)}
+                {hasPolioNotificationsPerm &&
+                    ['SUCCESS', 'ERRORED'].includes(
+                        settings.row.original.status,
+                    ) &&
+                    settings.row.original.name ===
+                        'create_polio_notifications_async' && (
+                        <NotificationImportDetailModal
+                            task={settings.row.original}
+                        />
+                    )}
             </section>
         ),
     },

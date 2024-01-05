@@ -41,6 +41,7 @@ nav:
       - ./pages/dev/reference/sql_dashboard/SQL_Dashboard_feature.md
       - ./pages/dev/reference/docker/docker.md
       - ./pages/dev/reference/background_tasks/background_tasks.md
+      - ./pages/dev/reference/env_variables/env_variables.md
       # - Entities:
       #   - ./pages/dev/reference/entities_in_iaso/entities_in_iaso.md
       # - Front-end:

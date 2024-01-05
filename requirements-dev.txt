@@ -15,9 +15,7 @@ types-jwt==0.1.3  # https://pypi.org/project/types-jwt/
 
 # Development tools.
 # ------------------------------------------------------------------------------
-django-extensions==3.2.3  # https://github.com/django-extensions/django-extensions/tags
 django-sslserver==0.22  # https://pypi.org/project/django-sslserver/
-ipython==8.18.1  # https://github.com/ipython/ipython/tags
 
 # Quality.
 # ------------------------------------------------------------------------------

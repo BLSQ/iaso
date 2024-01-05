@@ -120,3 +120,8 @@ pyxform==2.0.0  # https://github.com/XLSForm/pyxform/tags
 # ------------------------------------------------------------------------------
 urllib3<2
 requests-toolbelt==0.9.1
+
+# Tools.
+# ------------------------------------------------------------------------------
+ipython==8.18.1  # https://github.com/ipython/ipython/tags
+django-extensions==3.2.3  # https://github.com/django-extensions/django-extensions/tags

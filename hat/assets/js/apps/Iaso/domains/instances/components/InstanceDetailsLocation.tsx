@@ -13,6 +13,7 @@ import { Instance } from '../types/instance';
 
 import MESSAGES from '../messages';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
+import { NumberCell } from '../../../components/Cells/NumberCell';
 
 const useStyles = makeStyles(theme => ({
     infosContainer: {
@@ -116,10 +117,12 @@ const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
                         <InstanceDetailsField
                             label={formatMessage(MESSAGES.latitude)}
                             value={currentInstance.latitude}
+                            renderValue={value => <NumberCell value={value} />}
                         />
                         <InstanceDetailsField
                             label={formatMessage(MESSAGES.longitude)}
                             value={currentInstance.longitude}
+                            renderValue={value => <NumberCell value={value} />}
                         />
                     </>
                 )}

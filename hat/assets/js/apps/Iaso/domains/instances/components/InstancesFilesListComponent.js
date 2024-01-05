@@ -8,13 +8,13 @@ import { withStyles } from '@mui/styles';
 import PropTypes from 'prop-types';
 
 import { injectIntl } from 'bluesquare-components';
-import ErrorPaperComponent from '../../../components/papers/ErrorPaperComponent';
+import ErrorPaperComponent from '../../../components/papers/ErrorPaperComponent.tsx';
 import ImageGallery from '../../../components/dialogs/ImageGalleryComponent';
 import LazyImagesList from '../../../components/files/LazyImagesListComponent';
 import DocumentsList from '../../../components/files/DocumentsListComponent';
 import VideosList from '../../../components/files/VideosListComponent';
 import InstancePopover from './InstancePopoverComponent.tsx';
-
+import { NumberCell } from '../../../components/Cells/NumberCell.tsx';
 import { sortFilesType } from '../../../utils/filesUtils';
 import { fetchInstanceDetail } from '../../../utils/requests';
 import MESSAGES from '../messages';
@@ -175,9 +175,14 @@ class InstancesFilesList extends Component {
                                 disabled={filesCount === 0}
                                 key={fileKey}
                                 value={fileKey}
-                                label={`${formatMessage(
-                                    MESSAGES[fileKey],
-                                )} (${filesCount})`}
+                                label={
+                                    <span>
+                                        {`${formatMessage(
+                                            MESSAGES[fileKey],
+                                        )} (`}
+                                        <NumberCell value={filesCount} />)
+                                    </span>
+                                }
                             />
                         );
                     })}

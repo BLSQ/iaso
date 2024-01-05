@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import { Tab, Tabs } from '@mui/material';
+import { Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { TabWithInfoIcon } from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TabWithInfoIcon';
 import MESSAGES from '../messages';
@@ -32,12 +32,20 @@ export const SupplyChainTabs: FunctionComponent<Props> = ({
             value={tab}
             classes={{
                 root: classes.tabs,
-                indicator: classes.indicator,
             }}
             onChange={onChangeTab}
+            indicatorColor="secondary"
         >
-            <Tab key={VRF} value={VRF} label={formatMessage(MESSAGES[VRF])} />
-            {/* TODO extract Tabs component */}
+            <TabWithInfoIcon
+                key={VRF}
+                value={VRF}
+                title={formatMessage(MESSAGES[VRF])}
+                disabled={false}
+                hasTabError={false}
+                handleChange={onChangeTab}
+                showIcon={false}
+                tooltipMessage=""
+            />
             <TabWithInfoIcon
                 key={PREALERT}
                 value={PREALERT}

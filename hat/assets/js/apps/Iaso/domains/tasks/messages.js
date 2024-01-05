@@ -97,6 +97,15 @@ const MESSAGES = defineMessages({
         defaultMessage: 'An error occurred while fetching tasks list',
         id: 'iaso.snackBar.fetchTasksError',
     },
+    polioNotificationImportDetails: {
+        defaultMessage: 'Polio Notifications Import Details',
+        id: 'iaso.tasks.polioNotificationImport.details',
+    },
+    polioNotificationImportErrors: {
+        defaultMessage:
+            "{count} error(s). The following data couldn't be imported.",
+        id: 'iaso.tasks.polioNotificationImport.errors',
+    },
 });
 
 export default MESSAGES;

@@ -9,6 +9,8 @@ import { Nopv2AuthorisationsDetailsTable } from './Nopv2AuthorisationsDetailsTab
 import { useGoBack } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/useGoBack';
 import { NOPV2_AUTH } from '../../../../constants/routes';
 import { CreateAuthorisationModal } from './Modals/CreateEdit/CreateEditAuthorisationModal';
+import { userHasPermission } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 
 const useStyles = makeStyles(theme => ({ ...commonStyles(theme) }));
 
@@ -22,6 +24,7 @@ export const Nopv2AuthorisationsDetails: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const goBack = useGoBack(router, NOPV2_AUTH);
+    const currentUser = useCurrentUser();
     return (
         <>
             <TopBar
@@ -32,17 +35,23 @@ export const Nopv2AuthorisationsDetails: FunctionComponent<Props> = ({
                 goBack={goBack}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <Grid container item justifyContent="flex-end">
-                    <CreateAuthorisationModal
-                        // The both props cannot actually be undefined
-                        // It's a problem with the typing of Router
-                        // @ts-ignore
-                        countryName={router.params.countryName}
-                        // @ts-ignore
-                        countryId={router.params.country}
-                        iconProps={{ message: MESSAGES.addAuthorisation }}
-                    />
-                </Grid>
+                {userHasPermission(
+                    'iaso_polio_vaccine_authorizations_admin',
+                    currentUser,
+                ) && (
+                    <Grid container item justifyContent="flex-end">
+                        <CreateAuthorisationModal
+                            // The both props cannot actually be undefined
+                            // It's a problem with the typing of Router
+                            // @ts-ignore
+                            countryName={router.params.countryName}
+                            // @ts-ignore
+                            countryId={router.params.country}
+                            iconProps={{ message: MESSAGES.addAuthorisation }}
+                        />
+                    </Grid>
+                )}
+
                 <Nopv2AuthorisationsDetailsTable params={router.params} />
             </Box>
         </>

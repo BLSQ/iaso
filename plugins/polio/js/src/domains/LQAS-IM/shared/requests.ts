@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable no-console */
 // @ts-ignore
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
 // @ts-ignore
@@ -7,7 +5,7 @@ import { getRequest } from 'Iaso/libs/Api';
 import { UseQueryResult } from 'react-query';
 import { IM_POC_URL } from './constants';
 import { LqasImData } from '../../../constants/types';
-import { LQAS_DATASTORE_URL } from '../LQAS/constants';
+import { LQAS_COUNTRY_URL } from '../LQAS/constants';
 
 export type LQASIMRequestType = 'lqas' | 'imOHH' | 'imIHH' | 'imGlobal';
 
@@ -23,7 +21,7 @@ export const getLqasIm = (
         case 'imGlobal':
             return getRequest(`${IM_POC_URL}?country_id=${countryId}`);
         case 'lqas':
-            return getRequest(`${LQAS_DATASTORE_URL}${countryId}/`);
+            return getRequest(`${LQAS_COUNTRY_URL}${countryId}/`);
         default:
             throw new Error(
                 `wrong "type" parameter, expected one of :imOHH,imIHH,imGlobal, lqas; got ${type} `,

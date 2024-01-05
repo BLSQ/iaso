@@ -267,10 +267,11 @@ const Dashboard = ({ router }) => {
         }
         return cols;
     }, [
-        handleClickDeleteRow,
-        handleClickEditRow,
         formatMessage,
         params.showOnlyDeleted,
+        handleClickEditRow,
+        handleClickDeleteRow,
+        handleClickRestoreRow,
     ]);
 
     return (

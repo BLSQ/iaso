@@ -723,7 +723,9 @@ const menu = [
                     {
                         label: MESSAGES.nopv2Auth,
                         key: 'nopv2authorisation',
-                        permissions: ['iaso_polio'],
+                        permissions: [
+                            'iaso_polio_vaccine_authorizations_read_only',
+                        ],
                         icon: props => <MenuBookIcon {...props} />,
                     },
                     {
@@ -782,7 +784,7 @@ export default {
     routes,
     menu,
     translations,
-    homeUrl: `/${DASHBOARD_BASE_URL}`,
+    homeUrl: `${DASHBOARD_BASE_URL}`,
     // homeOffline: () => <div>OFFLINE</div>,
     // homeOnline: () => <div>CONNECTED HOME POLIO</div>,
 };

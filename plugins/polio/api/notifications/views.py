@@ -8,6 +8,7 @@ from rest_framework.response import Response
 
 from django.db.models import F
 from django.http import FileResponse
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
 from iaso.api.common import Paginator
@@ -83,3 +84,13 @@ class NotificationViewSet(viewsets.ModelViewSet):
         notification_import = serializer.save(account=account, created_by=user)
         create_polio_notifications_async(pk=notification_import.pk, user=user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["get"])
+    def get_import_details(self, request, pk=None):
+        """
+        Get the details of an import task.
+        """
+        account = request.user.iaso_profile.account
+        notification_import = get_object_or_404(NotificationImport, account=account, pk=pk)
+        serializer = NotificationImportSerializer(notification_import)
+        return Response(serializer.data, status=status.HTTP_200_OK)

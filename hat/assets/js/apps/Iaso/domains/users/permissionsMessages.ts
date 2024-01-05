@@ -212,7 +212,7 @@ const PERMISSIONS_MESSAGES = defineMessages({
     },
     iaso_entity_type_write: {
         id: 'iaso.permissions.iaso_entity_type_write',
-        defaultMessage: 'Entity types',
+        defaultMessage: 'Entity types - read and write',
     },
     iaso_entity_type_write_tooltip: {
         id: 'iaso.permissions.tooltip.iaso_entity_type_write',
@@ -313,6 +313,14 @@ const PERMISSIONS_MESSAGES = defineMessages({
     iaso_polio_vaccine_authorizations_read_only: {
         id: 'iaso.permissions.polio_vaccine_authorizations_read_only',
         defaultMessage: 'Polio Vaccine Authorizations: Read Only',
+    },
+    iaso_polio_vaccine_authorizations_admin_tooltip: {
+        id: 'iaso.permissions.tooltip.polio_vaccine_authorizations_admin',
+        defaultMessage: 'Manage polio vaccine authorizations - Read and Write',
+    },
+    iaso_polio_vaccine_authorizations_read_only_tooltip: {
+        id: 'iaso.permissions.tooltip.polio_vaccine_authorizations_read_only',
+        defaultMessage: 'Manage polio vaccine authorizations - Read Only',
     },
     iaso_org_unit_change_request: {
         id: 'iaso.permissions.iaso_org_unit_change_request',
@@ -478,6 +486,10 @@ const PERMISSIONS_MESSAGES = defineMessages({
     iaso_polio_notifications: {
         id: 'iaso.permissions.iaso_polio_notifications',
         defaultMessage: 'Polio notifications - Read and Write',
+    },
+    iaso_polio_notifications_tooltip: {
+        id: 'iaso.permissions.tooltip.iaso_polio_notifications',
+        defaultMessage: 'Manage polio notifications - Read and Write',
     },
 });
 

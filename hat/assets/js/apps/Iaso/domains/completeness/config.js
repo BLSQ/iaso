@@ -6,7 +6,6 @@ import { Link } from 'react-router';
 
 import {
     IconButton as IconButtonComponent,
-    formatThousand,
     textPlaceholder,
     HeaderRowIcon,
 } from 'bluesquare-components';
@@ -22,6 +21,7 @@ import {
 import { INSTANCE_STATUSES } from '../instances/constants';
 
 import MESSAGES from './messages';
+import { NumberCell } from '../../components/Cells/NumberCell.tsx';
 
 const STATUS_COLUMN_SIZES = {
     [PERIOD_TYPE_MONTH]: undefined,
@@ -120,7 +120,7 @@ export const getColumns = (
                                     settings.row.original.months[month].period,
                                 )}
                             >
-                                {value || '-'}
+                                <NumberCell value={value} />
                             </Link>
                         );
                     },
@@ -132,7 +132,7 @@ export const getColumns = (
                             (sum, count) => count + sum,
                             0,
                         );
-                        return <>{total && formatThousand(total)}</>;
+                        return <NumberCell value={total} />;
                     },
                     width: STATUS_COLUMN_SIZES[activePeriodType],
                 })),

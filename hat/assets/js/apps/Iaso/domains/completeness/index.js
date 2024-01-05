@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
-import { getRequest } from 'Iaso/libs/Api';
-import { useSnackQuery } from 'Iaso/libs/apiHooks';
+import { getRequest } from 'Iaso/libs/Api.ts';
+import { useSnackQuery } from 'Iaso/libs/apiHooks.ts';
 import TopBar from '../../components/nav/TopBarComponent';
 import CompletenessListComponent from './components/CompletenessListComponent';
 

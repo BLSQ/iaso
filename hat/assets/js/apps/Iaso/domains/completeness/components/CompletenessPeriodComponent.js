@@ -10,11 +10,11 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
-import { postRequest } from 'Iaso/libs/Api';
-import { useSnackMutation } from 'Iaso/libs/apiHooks';
+import { postRequest } from 'Iaso/libs/Api.ts';
+import { useSnackMutation } from 'Iaso/libs/apiHooks.ts';
 import { getColumns } from '../config';
 import { baseUrls } from '../../../constants/urls';
-import { redirectTo } from '../../../routing/actions';
+import { redirectTo } from '../../../routing/actions.ts';
 import MESSAGES from '../../../components/snackBars/messages';
 import { usePrettyPeriod } from '../../periods/utils';
 

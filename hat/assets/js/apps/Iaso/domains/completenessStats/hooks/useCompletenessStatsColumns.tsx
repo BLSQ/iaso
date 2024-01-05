@@ -20,6 +20,7 @@ import {
 } from '../types';
 import * as Permission from '../../../utils/permissions';
 import { usetGetParentPageUrl } from '../utils';
+import { NumberCell } from '../../../components/Cells/NumberCell';
 
 // From https://v4.mui.com/components/progress/
 const LinearProgressWithLabel = props => (
@@ -175,8 +176,15 @@ export const useCompletenessStatsColumns = (
                                             <LinearProgressWithLabel
                                                 value={value.percent}
                                             />
-                                            {value.descendants_ok} /
-                                            {value.descendants}
+                                            <span>
+                                                <NumberCell
+                                                    value={value.descendants_ok}
+                                                />
+                                                /
+                                                <NumberCell
+                                                    value={value.descendants}
+                                                />
+                                            </span>
                                         </>
                                     ) : (
                                         <div

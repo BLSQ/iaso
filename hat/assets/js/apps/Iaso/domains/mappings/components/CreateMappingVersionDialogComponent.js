@@ -9,7 +9,7 @@ import {
     AddButton as AddButtonComponent,
     useSafeIntl,
 } from 'bluesquare-components';
-import InputComponent from '../../../components/forms/InputComponent';
+import InputComponent from '../../../components/forms/InputComponent.tsx';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import IasoSearchComponent from './IasoSearchComponent';
 import Dhis2Search from './Dhis2SearchComponent';

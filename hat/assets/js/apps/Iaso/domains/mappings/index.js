@@ -13,7 +13,7 @@ import {
     LoadingSpinner,
     Table,
 } from 'bluesquare-components';
-import { redirectTo as redirectToAction } from '../../routing/actions';
+import { redirectTo as redirectToAction } from '../../routing/actions.ts';
 import { fetchMappingVersions as fetchMappingVersionsAction } from './actions';
 import TopBar from '../../components/nav/TopBarComponent';
 import mappingsTableColumns from './config';

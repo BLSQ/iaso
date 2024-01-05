@@ -2,7 +2,8 @@ import React from 'react';
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import MESSAGES from './messages';
 import { baseUrls } from '../../constants/urls';
-import { DateTimeCell } from '../../components/Cells/DateTimeCell';
+import { DateTimeCell } from '../../components/Cells/DateTimeCell.tsx';
+import { NumberCell } from '../../components/Cells/NumberCell.tsx';
 
 const safePercent = (a, b) => {
     if (b === 0) {
@@ -49,21 +50,30 @@ const mappingsTableColumns = formatMessage => [
         Header: formatMessage(MESSAGES.mappedQuestions),
         sortable: false,
         accessor: 'mapped_questions',
+        Cell: settings => (
+            <NumberCell value={settings.row.original.mapped_questions} />
+        ),
     },
     {
         Header: formatMessage(MESSAGES.totalQuestions),
         sortable: false,
         accessor: 'total_questions',
+        Cell: settings => (
+            <NumberCell value={settings.row.original.total_questions} />
+        ),
     },
     {
         Header: formatMessage(MESSAGES.coverage),
         accessor: 'coverage',
         sortable: false,
-        Cell: settings =>
-            safePercent(
-                settings.row.original.mapped_questions,
-                settings.row.original.total_questions,
-            ),
+        Cell: settings => (
+            <NumberCell
+                value={safePercent(
+                    settings.row.original.mapped_questions,
+                    settings.row.original.total_questions,
+                )}
+            />
+        ),
     },
 
     {

@@ -16,6 +16,7 @@ import { getTeamUserName } from '../utils';
 import { colors } from '../constants/colors';
 
 import MESSAGES from '../messages';
+import { NumberCell } from '../../../components/Cells/NumberCell';
 
 type Props = {
     assignments: AssignmentsApi;
@@ -46,7 +47,7 @@ export const useColumns = ({
         useSafeIntl();
     const theme: Theme = useTheme();
     const getAssignationsCount = useCallback(
-        (rowId: number): number | string => {
+        (rowId: number): number => {
             return assignments.filter(assignment => {
                 if (currentTeam?.type === 'TEAM_OF_TEAMS') {
                     return (
@@ -158,8 +159,13 @@ export const useColumns = ({
                 Cell: settings => {
                     return (
                         <div>
-                            {!isLoadingAssignments &&
-                                getAssignationsCount(settings.row.original.id)}
+                            {!isLoadingAssignments && (
+                                <NumberCell
+                                    value={getAssignationsCount(
+                                        settings.row.original.id,
+                                    )}
+                                />
+                            )}
                         </div>
                     );
                 },

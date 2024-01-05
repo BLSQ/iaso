@@ -18,7 +18,7 @@ import GroupsDialog from './components/GroupsDialog';
 import tableColumns, { baseUrl } from './config';
 import MESSAGES from './messages';
 
-import { redirectTo } from '../../../routing/actions';
+import { redirectTo } from '../../../routing/actions.ts';
 
 import { useGetGroups, useSaveGroups, useDeleteGroups } from './hooks/requests';
 

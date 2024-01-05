@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-    formatThousand,
     IconButton as IconButtonComponent,
     textPlaceholder,
 } from 'bluesquare-components';
@@ -8,9 +7,10 @@ import { Link } from 'react-router';
 import GroupsDialog from './components/GroupsDialog';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import MESSAGES from './messages';
-import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
+import { DateTimeCell } from '../../../components/Cells/DateTimeCell.tsx';
 import { baseUrls } from '../../../constants/urls';
 import { getChipColors } from '../../../constants/chipColors';
+import { NumberCell } from '../../../components/Cells/NumberCell.tsx';
 
 export const baseUrl = baseUrls.groups;
 
@@ -54,7 +54,10 @@ const TableColumns = (formatMessage, params, deleteGroup, saveGroup) => [
         accessor: 'org_unit_count',
         Cell: settings => (
             <Link to={getUrl(settings.row.original.id)}>
-                {formatThousand(settings.value)}
+                <NumberCell
+                    value={settings.row.original.org_unit_count}
+                    key={settings.row.original.id}
+                />
             </Link>
         ),
     },

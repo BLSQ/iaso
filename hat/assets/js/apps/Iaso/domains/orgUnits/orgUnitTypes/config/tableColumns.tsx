@@ -1,16 +1,11 @@
 import React from 'react';
-import {
-    IconButton,
-    // @ts-ignore
-    formatThousand,
-    useSafeIntl,
-    Column,
-} from 'bluesquare-components';
+import { IconButton, useSafeIntl, Column } from 'bluesquare-components';
 import { OrgUnitsTypesDialog } from '../components/OrgUnitsTypesDialog';
 import DeleteDialog from '../../../../components/dialogs/DeleteDialogComponent';
 import MESSAGES from '../messages';
 import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
 import { useDeleteOrgUnitType } from '../hooks/useDeleteOrgUnitType';
+import { NumberCell } from '../../../../components/Cells/NumberCell';
 
 export const useGetColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -36,7 +31,9 @@ export const useGetColumns = (): Column[] => {
             Header: formatMessage(MESSAGES.validatedOrgUnitCount),
             accessor: 'units_count',
             sortable: false,
-            Cell: settings => formatThousand(settings.value),
+            Cell: settings => (
+                <NumberCell value={settings.row.original.units_count} />
+            ),
         },
         {
             Header: formatMessage(MESSAGES.depth),

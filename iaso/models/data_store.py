@@ -19,6 +19,7 @@ class JsonDataStore(models.Model):
     org_unit = models.ForeignKey(
         OrgUnit,
         null=True,
+        blank=True,
         on_delete=models.PROTECT,
     )
 

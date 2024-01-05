@@ -100,15 +100,31 @@ const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
                         <>
                             <InstanceDetailsField
                                 label={formatMessage(MESSAGES.latitude)}
-                                value={`${
-                                    currentInstance.org_unit.latitude
-                                } ${formatMessage(MESSAGES.fromOrgUnit)}`}
+                                value={currentInstance.org_unit.latitude}
+                                renderValue={value => {
+                                    return (
+                                        <span>
+                                            <NumberCell value={value} />
+                                            {` ${formatMessage(
+                                                MESSAGES.fromOrgUnit,
+                                            )}`}
+                                        </span>
+                                    );
+                                }}
                             />
                             <InstanceDetailsField
                                 label={formatMessage(MESSAGES.longitude)}
-                                value={`${
-                                    currentInstance.org_unit.longitude
-                                } ${formatMessage(MESSAGES.fromOrgUnit)}`}
+                                value={currentInstance.org_unit.longitude}
+                                renderValue={value => {
+                                    return (
+                                        <span>
+                                            <NumberCell value={value} />
+                                            {` ${formatMessage(
+                                                MESSAGES.fromOrgUnit,
+                                            )}`}
+                                        </span>
+                                    );
+                                }}
                             />
                         </>
                     )}
@@ -130,6 +146,7 @@ const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
                     <InstanceDetailsField
                         label={formatMessage(MESSAGES.altitude)}
                         value={currentInstance.altitude}
+                        renderValue={value => <NumberCell value={value} />}
                     />
                 )}
                 {!hasAltitudeFromForm &&
@@ -137,15 +154,24 @@ const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
                     !hasCoordinatesFromForm && (
                         <InstanceDetailsField
                             label={formatMessage(MESSAGES.altitude)}
-                            value={`${orgUnit.altitude} ${formatMessage(
-                                MESSAGES.fromOrgUnit,
-                            )}`}
+                            value={orgUnit.altitude}
+                            renderValue={value => {
+                                return (
+                                    <span>
+                                        <NumberCell value={value} />
+                                        {` ${formatMessage(
+                                            MESSAGES.fromOrgUnit,
+                                        )}`}
+                                    </span>
+                                );
+                            }}
                         />
                     )}
                 {hasAccuracy && (
                     <InstanceDetailsField
                         label={formatMessage(MESSAGES.accuracy)}
                         value={currentInstance.accuracy}
+                        renderValue={value => <NumberCell value={value} />}
                     />
                 )}
             </div>

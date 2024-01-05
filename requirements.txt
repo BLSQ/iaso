@@ -81,7 +81,6 @@ celery==5.3.6  # https://github.com/celery/celery/tags
 django-allauth==0.54.0  # https://github.com/pennersr/django-allauth/tags
 django-celery-beat==2.5.0  # https://github.com/celery/django-celery-beat/tags
 django-celery-results==2.5.1  # https://github.com/celery/django-celery-results/tags
->>>>>>> 9707fab2f (Upgrade Python to version 3.12 and requirements)
 
 # Webpack loader.
 # ------------------------------------------------------------------------------

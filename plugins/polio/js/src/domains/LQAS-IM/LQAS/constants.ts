@@ -1,11 +1,10 @@
 import { FAIL_COLOR, OK_COLOR, WARNING_COLOR } from '../../../styles/constants';
 import { IN_SCOPE } from '../shared/constants';
 
-export const LQAS_POC_URL = '/api/polio/lqasstats/';
 export const LQAS_PASS = '1lqasOK';
 export const LQAS_DISQUALIFIED = '2lqasDisqualified';
 export const LQAS_FAIL = '3lqasFail';
-export const LQAS_DATASTORE_URL = '/api/datastore/lqas_';
+export const LQAS_COUNTRY_URL = '/api/polio/lqasmap/country/lqas_';
 
 export const lqasDistrictColors = {
     [LQAS_PASS]: {

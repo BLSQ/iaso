@@ -2,6 +2,8 @@ from iaso.api.data_store import DataStoreViewSet
 from hat.menupermissions import models as permission
 from rest_framework import permissions
 
+from iaso.models.data_store import JsonDataStore
+
 
 class LQASCountryPermission(permissions.BasePermission):
     def has_permission(self, request, view):
@@ -19,6 +21,10 @@ class LQASCountryPermission(permissions.BasePermission):
             return False
 
 
+# Extending DataStore Viewset to give users with polio and polio config permissions access to lqas endpoints in datastore
 class LQASCountryViewset(DataStoreViewSet):
     http_method_names = ["get"]
     permission_classes = [LQASCountryPermission]
+
+    def get_queryset(self):
+        return JsonDataStore.objects.filter(account=self.request.user.iaso_profile.account, slug__contains="lqas")

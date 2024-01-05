@@ -1,5 +1,5 @@
 from iaso.api.data_store import DataStoreViewSet
-from hat.menupermissions import models as permission
+from hat.menupermissions import models as menu_permission
 from rest_framework import permissions
 
 from iaso.models.data_store import JsonDataStore
@@ -7,8 +7,8 @@ from iaso.models.data_store import JsonDataStore
 
 class LQASCountryPermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        polio = permission.POLIO
-        polio_admin = permission.POLIO_CONFIG
+        polio = menu_permission.POLIO
+        polio_admin = menu_permission.POLIO_CONFIG
 
         if request.method == "GET":
             can_get = (

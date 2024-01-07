@@ -7,7 +7,8 @@ from hat.menupermissions.constants import MODULES
 
 def add_modules_to_accounts(apps, schema_editor):
     modules = [module["codename"] for module in MODULES]
-    all_accounts = Account.objects.all()
+    account = apps.get_model("iaso", "Account")
+    all_accounts = account.objects.all()
     for account in all_accounts:
         account.modules = modules
         account.save()

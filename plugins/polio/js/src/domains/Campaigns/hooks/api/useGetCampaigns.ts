@@ -137,7 +137,7 @@ export const useGetCampaigns = (
 
 export const useGetCampaignsAsCsv = (
     options: Options = {},
-    url = '/api/polio/campaigns/export_csv/',
+    url = '/api/polio/campaigns/csv_campaigns_export',
 ): string => {
     const params = useGetCampaignsOptions(options, true);
     return `${getURL(params, url)}`;

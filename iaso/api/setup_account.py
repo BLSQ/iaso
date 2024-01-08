@@ -26,6 +26,7 @@ class SetupAccountSerializer(serializers.Serializer):
     password = serializers.CharField(required=True)
     user_manual_path = serializers.CharField(required=False)
     modules = serializers.JSONField(required=True, initial=["DEFAULT"])  # type: ignore
+    analytics_script = serializers.CharField(required=False)
 
     def validate_account_name(self, value):
         if Account.objects.filter(name=value).exists():
@@ -72,6 +73,7 @@ class SetupAccountSerializer(serializers.Serializer):
             default_version=source_version,
             user_manual_path=validated_data.get("user_manual_path"),
             modules=account_modules,
+            analytics_script=validated_data.get("analytics_script", ""),
         )
 
         # Create a setup_account project with an app_id represented by the account name

@@ -7,7 +7,7 @@ import {
     ScaleControl,
 } from 'react-leaflet';
 
-import { Box } from '@material-ui/core';
+import { Box } from '@mui/material';
 import { LoadingSpinner } from 'bluesquare-components';
 
 import { Locations, OrgUnitMarker, OrgUnitShape } from '../types/locations';

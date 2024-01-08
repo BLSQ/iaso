@@ -12,7 +12,7 @@ from plugins.polio.api.dashboards.preparedness_dashboard import PreparednessDash
 from plugins.polio.api.dashboards.vaccine_stocks import VaccineStocksViewSet
 from plugins.polio.api.lqas_im.countries_with_lqas_im import CountriesWithLqasIMConfigViewSet
 from plugins.polio.api.lqas_im.im_stats import IMStatsViewSet
-from plugins.polio.api.lqas_im.lqas_stats import LQASStatsViewSet
+from plugins.polio.api.lqas_im.lqas_country import LQASCountryViewset
 from plugins.polio.api.lqas_im.lqasim_global_map import LQASIMGlobalMapViewSet
 from plugins.polio.api.lqas_im.lqasim_zoom_in_map import LQASIMZoominMapBackgroundViewSet, LQASIMZoominMapViewSet
 from plugins.polio.api.notifications.views import NotificationViewSet
@@ -38,7 +38,6 @@ router.register(r"polio/workflow", WorkflowViewSet, basename="BudgetWorkflow")
 router.register(r"polio/campaignsgroup", CampaignGroupViewSet, basename="campaigngroup")
 router.register(r"polio/preparedness_dashboard", PreparednessDashboardViewSet, basename="preparedness_dashboard")
 router.register(r"polio/imstats", IMStatsViewSet, basename="imstats")
-router.register(r"polio/lqasstats", LQASStatsViewSet, basename="lqasstats")
 router.register(r"polio/vaccines", VaccineStocksViewSet, basename="vaccines")
 router.register(r"polio/forma", FormAStocksViewSet, basename="forma")
 router.register(r"polio/v2/forma", FormAStocksViewSetV2, basename="forma")
@@ -47,6 +46,7 @@ router.register(r"polio/orgunitspercampaign", OrgUnitsPerCampaignViewset, basena
 router.register(r"polio/configs", ConfigViewSet, basename="polioconfigs")
 router.register(r"polio/datelogs", RoundDateHistoryEntryViewset, basename="datelogs")
 router.register(r"polio/lqasim/countries", CountriesWithLqasIMConfigViewSet, basename="lqasimcountries")
+router.register(r"polio/lqasmap/country", LQASCountryViewset, basename="lqascountry")
 router.register(r"polio/lqasmap/global", LQASIMGlobalMapViewSet, basename="lqasmapglobal")
 router.register(r"polio/lqasmap/zoomin", LQASIMZoominMapViewSet, basename="lqasmapzoomin")
 router.register(r"polio/lqasmap/zoominbackground", LQASIMZoominMapBackgroundViewSet, basename="lqasmapzoominbackground")

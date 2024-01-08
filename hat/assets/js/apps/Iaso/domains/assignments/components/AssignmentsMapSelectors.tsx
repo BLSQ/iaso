@@ -1,4 +1,4 @@
-import { Grid, FormControlLabel, Switch, Box } from '@material-ui/core';
+import { Grid, FormControlLabel, Switch, Box } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import React, { FunctionComponent, useEffect } from 'react';
 import {
@@ -61,6 +61,7 @@ export const AssignmentsMapSelectors: FunctionComponent<Props> = ({
                         alignItems="center"
                         height="100%"
                         justifyContent="center"
+                        mt={1}
                     >
                         <FormControlLabel
                             control={

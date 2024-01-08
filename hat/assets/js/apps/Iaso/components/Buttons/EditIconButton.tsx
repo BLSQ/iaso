@@ -1,8 +1,8 @@
 import React, { FunctionComponent } from 'react';
-import { IconButton } from 'bluesquare-components';
+import { IconButton, IntlMessage } from 'bluesquare-components';
 import { defineMessages } from 'react-intl';
 
-const message = defineMessages({
+const MESSAGES = defineMessages({
     edit: {
         id: 'iaso.label.edit',
         defaultMessage: 'Edit',
@@ -11,14 +11,18 @@ const message = defineMessages({
 
 type Props = {
     onClick: () => void;
+    message?: IntlMessage;
 };
 
-export const EditIconButton: FunctionComponent<Props> = ({ onClick }) => {
+export const EditIconButton: FunctionComponent<Props> = ({
+    onClick,
+    message,
+}) => {
     return (
         <IconButton
             onClick={onClick}
             icon="edit"
-            tooltipMessage={message.edit}
+            tooltipMessage={message ?? MESSAGES.edit}
         />
     );
 };

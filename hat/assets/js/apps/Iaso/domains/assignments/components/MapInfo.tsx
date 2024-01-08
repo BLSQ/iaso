@@ -3,8 +3,9 @@ import {
     // @ts-ignore
     useSafeIntl,
 } from 'bluesquare-components';
-import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
-import { Tooltip, Paper, makeStyles } from '@material-ui/core';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import { Tooltip, Paper } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import MESSAGES from '../messages';
 
@@ -14,9 +15,9 @@ export const useStyles = makeStyles(theme => ({
         zIndex: 499,
         bottom: theme.spacing(5),
         left: theme.spacing(2),
-        borderRadius: '100%',
-        height: theme.spacing(4),
-        width: theme.spacing(4),
+        borderRadius: '100%  !important',
+        height: `${theme.spacing(3)} !important`,
+        width: `${theme.spacing(3)} !important`,
     },
     icon: {
         fontSize: theme.spacing(4),

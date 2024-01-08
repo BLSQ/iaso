@@ -1,3 +1,5 @@
+from typing import Union
+
 from rest_framework import permissions, serializers
 
 from iaso.models import Task
@@ -7,6 +9,8 @@ from hat.menupermissions import models as permission
 
 
 class TaskSerializer(serializers.ModelSerializer):
+    polio_notification_import_id = serializers.SerializerMethodField()
+
     class Meta:
         model = Task
 
@@ -24,6 +28,7 @@ class TaskSerializer(serializers.ModelSerializer):
             "name",
             "should_be_killed",
             "progress_message",
+            "polio_notification_import_id",
         ]
 
         read_only_fields = ["launcher_name"]
@@ -32,6 +37,11 @@ class TaskSerializer(serializers.ModelSerializer):
     ended_at = TimestampField(read_only=True)
     created_at = TimestampField(read_only=True)
     started_at = TimestampField(read_only=True)
+
+    def get_polio_notification_import_id(self, obj: Task) -> Union[int, None]:
+        if obj.name == "create_polio_notifications_async":
+            return obj.params.get("kwargs", {}).get("pk")
+        return None
 
     def update(self, task, validated_data):
         if validated_data["should_be_killed"] is not None:

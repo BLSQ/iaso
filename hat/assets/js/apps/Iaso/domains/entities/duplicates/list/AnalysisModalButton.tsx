@@ -1,8 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 
-import { Box, Button } from '@material-ui/core';
-import LaunchIcon from '@material-ui/icons/Launch';
+import { Box, Button } from '@mui/material';
+import LaunchIcon from '@mui/icons-material/Launch';
 import MESSAGES from '../messages';
 
 type Props = { onClick: () => void };

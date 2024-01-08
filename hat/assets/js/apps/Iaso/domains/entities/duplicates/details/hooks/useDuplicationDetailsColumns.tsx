@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { useSafeIntl, Column } from 'bluesquare-components';
-import { Box } from '@material-ui/core';
+import { Box } from '@mui/material';
 import MESSAGES from '../../messages';
 import { formatLabel } from '../../../../instances/utils';
 import { convertValueIfDate } from '../../../../../components/Cells/DateTimeCell';

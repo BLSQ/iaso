@@ -6,7 +6,10 @@ import {
     FormattedApiParams,
     useApiParams,
 } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useApiParams';
-import { useSnackQuery } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import {
+    useSnackMutation,
+    useSnackQuery,
+} from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { waitFor } from '../../../../../../../../hat/assets/js/apps/Iaso/utils';
 import {
     mockSummary,
@@ -23,6 +26,10 @@ import {
     mockFormAList,
     mockIncidentsList,
 } from '../mocks/mockStockVariation';
+import {
+    CAMPAIGNS_ENDPOINT,
+    useGetCampaigns,
+} from '../../../Campaigns/hooks/api/useGetCampaigns';
 
 const defaults = {
     order: 'country',
@@ -229,5 +236,71 @@ export const useGetIncidentList = (
         queryKey: ['incidents', queryString],
         queryFn: () => getIncidentList(queryString),
         options: { ...options, enabled },
+    });
+};
+
+export const useCampaignOptions = (countryName, vaccine) => {
+    const queryOptions = {
+        select: data => {
+            if (!data) return [];
+            return data
+                .filter(c => c.top_level_org_unit_name === countryName)
+                .map(c => {
+                    return {
+                        label: c.obr_name,
+                        value: c.obr_name,
+                    };
+                });
+        },
+        keepPreviousData: true,
+        staleTime: 1000 * 60 * 15, // in MS
+        cacheTime: 1000 * 60 * 5,
+    };
+    return useGetCampaigns({}, CAMPAIGNS_ENDPOINT, undefined, queryOptions);
+};
+
+const createEditFormA = async (body: any) => {
+    await waitFor(500);
+    if (body.id) {
+        console.log('PATCH', body);
+    } else {
+        console.log('POST', body);
+    }
+    return null;
+};
+
+export const useSaveFormA = () => {
+    return useSnackMutation({
+        mutationFn: body => createEditFormA(body),
+    });
+};
+const createEditDestruction = async (body: any) => {
+    await waitFor(500);
+    if (body.id) {
+        console.log('PATCH', body);
+    } else {
+        console.log('POST', body);
+    }
+    return null;
+};
+
+export const useSaveDestruction = () => {
+    return useSnackMutation({
+        mutationFn: body => createEditDestruction(body),
+    });
+};
+const createEditIncident = async (body: any) => {
+    await waitFor(500);
+    if (body.id) {
+        console.log('PATCH', body);
+    } else {
+        console.log('POST', body);
+    }
+    return null;
+};
+
+export const useSaveIncident = () => {
+    return useSnackMutation({
+        mutationFn: body => createEditIncident(body),
     });
 };

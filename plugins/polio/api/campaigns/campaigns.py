@@ -30,7 +30,6 @@ from hat.api.export_utils import Echo, iter_items
 from iaso.api.common import (
     CONTENT_TYPE_CSV,
     CONTENT_TYPE_XLSX,
-    CSVExportMixin,
     CustomFilterBackend,
     DeletionFilterBackend,
     ModelViewSet,
@@ -46,7 +45,6 @@ from plugins.polio.api.rounds.round import RoundScopeSerializer, RoundSerializer
 from plugins.polio.api.shared_serializers import (
     GroupSerializer,
     OrgUnitSerializer,
-    RoundDateHistoryEntrySerializer,
 )
 from plugins.polio.export_utils import generate_xlsx_campaigns_calendar, xlsx_file_name
 from plugins.polio.models import (
@@ -55,7 +53,6 @@ from plugins.polio.models import (
     CampaignScope,
     CountryUsersGroup,
     Round,
-    RoundDateHistoryEntry,
     RoundScope,
     SpreadSheetImport,
     VaccineAuthorization,
@@ -616,153 +613,6 @@ class CalendarCampaignSerializer(CampaignSerializer):
         read_only_fields = fields
 
 
-class ExportCampaignSerializer(CampaignSerializer):
-    class NestedRoundSerializer(RoundSerializer):
-        class NestedRoundScopeSerializer(RoundScopeSerializer):
-            class Meta:
-                model = RoundScope
-                fields = ["vaccine"]
-
-        class NestedRoundDateHistoryEntrySerializer(serializers.ModelSerializer):
-            class Meta:
-                model = RoundDateHistoryEntry
-                fields = [
-                    "previous_started_at",
-                    "previous_ended_at",
-                    "started_at",
-                    "ended_at",
-                    "reason",
-                    "reason_for_delay",
-                    "modified_by",
-                    "created_at",
-                    "reason_for_delay",
-                ]
-
-        class Meta:
-            model = Round
-            fields = [
-                "scopes",
-                "number",
-                "started_at",
-                "ended_at",
-                "datelogs",
-                "mop_up_started_at",
-                "mop_up_ended_at",
-                "im_started_at",
-                "im_ended_at",
-                "lqas_started_at",
-                "lqas_ended_at",
-                "target_population",
-                "doses_requested",
-                "cost",
-                "im_percentage_children_missed_in_household",
-                "im_percentage_children_missed_out_household",
-                "im_percentage_children_missed_in_plus_out_household",
-                "awareness_of_campaign_planning",
-                "main_awareness_problem",
-                "lqas_district_passing",
-                "lqas_district_failing",
-                "preparedness_spreadsheet_url",
-                "preparedness_sync_status",
-                "date_signed_vrf_received",
-                "date_destruction",
-                "vials_destroyed",
-                "reporting_delays_hc_to_district",
-                "reporting_delays_district_to_region",
-                "reporting_delays_region_to_national",
-                "forma_reception",
-                "forma_missing_vials",
-                "forma_usable_vials",
-                "forma_unusable_vials",
-                "forma_date",
-                "forma_comment",
-            ]
-
-        scopes = NestedRoundScopeSerializer(many=True, required=False)
-        datelogs = RoundDateHistoryEntrySerializer(many=True, required=False)
-
-    class ExportCampaignScopeSerializer(CampaignScopeSerializer):
-        class Meta:
-            model = CampaignScope
-            fields = ["vaccine"]
-
-    rounds = NestedRoundSerializer(many=True, required=False)
-    scopes = ExportCampaignScopeSerializer(many=True, required=False)
-
-    class Meta:
-        model = Campaign
-        fields = [
-            "obr_name",
-            "rounds",
-            "scopes",
-            "gpei_coordinator",
-            "gpei_email",
-            "description",
-            "initial_org_unit",
-            "country",
-            "creation_email_send_at",
-            "onset_at",
-            "cvdpv_notified_at",
-            "cvdpv2_notified_at",
-            "pv_notified_at",
-            "pv2_notified_at",
-            "virus",
-            "vacine",
-            "detection_status",
-            "detection_responsible",
-            "detection_first_draft_submitted_at",
-            "detection_rrt_oprtt_approval_at",
-            "risk_assessment_status",
-            "risk_assessment_responsible",
-            "investigation_at",
-            "risk_assessment_first_draft_submitted_at",
-            "risk_assessment_rrt_oprtt_approval_at",
-            "ag_nopv_group_met_at",
-            "dg_authorized_at",
-            "verification_score",
-            "doses_requested",
-            "budget_status",
-            "is_test",
-            "budget_current_state_key",
-            "budget_current_state_label",
-            "ra_completed_at_WFEDITABLE",
-            "who_sent_budget_at_WFEDITABLE",
-            "unicef_sent_budget_at_WFEDITABLE",
-            "gpei_consolidated_budgets_at_WFEDITABLE",
-            "submitted_to_rrt_at_WFEDITABLE",
-            "feedback_sent_to_gpei_at_WFEDITABLE",
-            "re_submitted_to_rrt_at_WFEDITABLE",
-            "submitted_to_orpg_operations1_at_WFEDITABLE",
-            "feedback_sent_to_rrt1_at_WFEDITABLE",
-            "re_submitted_to_orpg_operations1_at_WFEDITABLE",
-            "submitted_to_orpg_wider_at_WFEDITABLE",
-            "submitted_to_orpg_operations2_at_WFEDITABLE",
-            "feedback_sent_to_rrt2_at_WFEDITABLE",
-            "re_submitted_to_orpg_operations2_at_WFEDITABLE",
-            "submitted_for_approval_at_WFEDITABLE",
-            "feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE",
-            "feedback_sent_to_orpg_operations_who_at_WFEDITABLE",
-            "approved_by_who_at_WFEDITABLE",
-            "approved_by_unicef_at_WFEDITABLE",
-            "approved_at_WFEDITABLE",
-            "approval_confirmed_at_WFEDITABLE",
-            "who_disbursed_to_co_at",
-            "who_disbursed_to_moh_at",
-            "unicef_disbursed_to_co_at",
-            "unicef_disbursed_to_moh_at",
-            "eomg",
-            "no_regret_fund_amount",
-            "payment_mode",
-            "created_at",
-            "updated_at",
-            "district_count",
-            "is_preventive",
-            "enable_send_weekly_email",
-            "outbreak_declaration_date",
-        ]
-        read_only_fields = fields
-
-
 def preparedness_from_url(spreadsheet_url, force_refresh=False):
     try:
         if force_refresh:
@@ -826,7 +676,7 @@ class CampaignPreparednessSpreadsheetSerializer(serializers.Serializer):
         return {"url": spreadsheet.url}
 
 
-class CampaignViewSet(ModelViewSet, CSVExportMixin):
+class CampaignViewSet(ModelViewSet):
     """Main endpoint for campaign.
 
     GET (Anonymously too)
@@ -866,7 +716,6 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
     # in this case we use a restricted serializer with less field
     # notably not the url that we want to remain private.
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    exporter_serializer_class = ExportCampaignSerializer
     export_filename = "campaigns_list_{date}.csv"
     use_field_order = False
 
@@ -897,7 +746,6 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
         campaign_groups = self.request.query_params.get("campaign_groups")
         show_test = self.request.query_params.get("show_test", "false")
         org_unit_groups = self.request.query_params.get("org_unit_groups")
-
         campaigns = queryset
         if show_test == "false":
             campaigns = campaigns.filter(is_test=False)
@@ -1077,6 +925,80 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
 
         return response
 
+    @action(methods=["GET"], detail=False, serializer_class=None)
+    def csv_campaigns_export(self, request, **kwargs):
+        """
+        It generates a csv export for all campaigns and their related rounds informations
+
+            parameters:
+                self: a self
+            returns:
+                it generates a csv file export
+        """
+        columns = self.campaign_csv_columns()
+        campaigns = self.filter_queryset(self.get_queryset())
+        rounds = Round.objects.order_by("campaign__created_at").filter(campaign_id__in=campaigns)
+        data = []
+
+        for round in rounds:
+            item = {}
+            campaign = campaigns.get(pk=round.campaign_id)
+            country = campaign.country.name
+            obr_name = campaign.obr_name
+            vaccine_types = campaign.vaccines
+            onset_date = campaign.onset_at
+            round_number = round.number
+            item["country"] = country
+            item["obr_name"] = obr_name
+            item["vaccine_types"] = vaccine_types
+            item["round_number"] = round_number
+            item["onset_date"] = onset_date
+            item["round_start_date"] = round.started_at
+            item["round_end_date"] = round.ended_at
+            item["ra_submission_date"] = campaign.risk_assessment_first_draft_submitted_at
+            item["ra_approval_date"] = campaign.risk_assessment_rrt_oprtt_approval_at
+            item["who_disbursed_to_co_at"] = campaign.who_disbursed_to_co_at
+            item["who_disbursed_to_moh_at"] = campaign.who_disbursed_to_moh_at
+            item["unicef_disbursed_to_co_at"] = campaign.unicef_disbursed_to_co_at
+            item["unicef_disbursed_to_moh_at"] = campaign.unicef_disbursed_to_moh_at
+            item["gpei_coordinator"] = campaign.gpei_coordinator
+            item["round_target_population"] = (
+                round.target_population if (round.target_population and (round.target_population > 0)) else ""
+            )
+
+            item["doses_requested"] = campaign.doses_requested
+            if round.lqas_district_failing == 0 and round.lqas_district_passing == 0:
+                item["lqas_district_passing"] = ""
+                item["lqas_district_failing"] = ""
+            else:
+                item["lqas_district_passing"] = round.lqas_district_passing
+                item["lqas_district_failing"] = round.lqas_district_failing
+            item["budget_approved_date"] = campaign.approved_at_WFEDITABLE
+            item["budget_submitted_date"] = campaign.submitted_to_rrt_at_WFEDITABLE
+            item["preparedness_sync_status"] = (
+                round.preparedness_sync_status if round.preparedness_spreadsheet_url else ""
+            )
+
+            item["pv_notified_at"] = campaign.cvdpv2_notified_at
+            item["preparedness_spreadsheet_url"] = round.preparedness_spreadsheet_url
+            item["cost"] = int(float(round.cost)) if (round.cost and (float(round.cost) > 0)) else ""
+            data.append(item)
+
+        filename = "%s-%s--%s" % (
+            "campaigns",
+            "rounds",
+            strftime("%Y-%m-%d-%H-%M", gmtime()),
+        )
+
+        response = StreamingHttpResponse(
+            streaming_content=(iter_items(data, Echo(), columns, self.get_campain_row)),
+            content_type=CONTENT_TYPE_CSV,
+        )
+        filename = filename + ".csv"
+        response["Content-Disposition"] = "attachment; filename=%s" % filename
+
+        return response
+
     @staticmethod
     def get_year(current_date=None):
         if current_date is not None:
@@ -1103,6 +1025,39 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
         ]
 
     @staticmethod
+    def campaign_csv_columns():
+        """
+        It returns the csv file columns for campaigns
+        """
+
+        return [
+            {"title": "country", "width": 10},
+            {"title": "obr_name", "width": 25},
+            {"title": "vaccine_types", "width": 25},
+            {"title": "onset_date", "width": 25},
+            {"title": "pv_notified_at", "width": 25},
+            {"title": "round_number", "width": 35},
+            {"title": "round_start_date", "width": 35},
+            {"title": "round_end_date", "width": 35},
+            {"title": "ra_submission_date", "width": 35},
+            {"title": "ra_approval_date", "width": 35},
+            {"title": "budget_submitted_date", "width": 35},
+            {"title": "budget_approved_date", "width": 35},
+            {"title": "who_disbursed_to_co_at", "width": 35},
+            {"title": "who_disbursed_to_moh_at", "width": 35},
+            {"title": "unicef_disbursed_to_co_at", "width": 35},
+            {"title": "unicef_disbursed_to_moh_at", "width": 35},
+            {"title": "gpei_coordinator", "width": 35},
+            {"title": "round_target_population", "width": 35},
+            {"title": "doses_requested", "width": 35},
+            {"title": "cost", "width": 35},
+            {"title": "lqas_district_passing", "width": 35},
+            {"title": "lqas_district_failing", "width": 35},
+            {"title": "preparedness_spreadsheet_url", "width": 35},
+            {"title": "preparedness_sync_status", "width": 35},
+        ]
+
+    @staticmethod
     def get_row(org_unit, **kwargs):
         """
         It get data to be display on a csv row from the org units list
@@ -1123,6 +1078,14 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
         ]
 
         return campaign_scope_values
+
+    @staticmethod
+    def get_campain_row(data, **kwargs):
+        colums = CampaignViewSet.campaign_csv_columns()
+        campaigns_data = []
+        for column in colums:
+            campaigns_data.append(data.get(column["title"]))
+        return campaigns_data
 
     @staticmethod
     def get_filtered_rounds(rounds, params):

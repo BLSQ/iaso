@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
-import { Grid, Typography, Box, Divider } from '@material-ui/core';
+import { Grid, Typography, Box, Divider } from '@mui/material';
 import { Field, FormikErrors, FormikTouched, useFormikContext } from 'formik';
 import { useSafeIntl, ExpandableItem } from 'bluesquare-components';
 import { useStyles } from '../../../styles/theme';

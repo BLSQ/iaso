@@ -1223,7 +1223,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Forms with the wrong round number',
     },
     groupedCampaigns: {
-        defaultMessage: 'Grouped campaigns',
+        defaultMessage: 'EPID Groups',
         id: 'iaso.polio.label.groupedCampaigns',
     },
     countryBlock: {
@@ -2479,6 +2479,10 @@ const MESSAGES = defineMessages({
     dateRangeTitle: {
         id: 'iaso.polio.label.dateRangeTitle',
         defaultMessage: 'Enter date range',
+    },
+    notifications: {
+        id: 'iaso.polio.label.notifications',
+        defaultMessage: 'Virus notification',
     },
 });
 

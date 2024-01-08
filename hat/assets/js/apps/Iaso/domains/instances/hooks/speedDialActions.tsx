@@ -1,12 +1,12 @@
 /* eslint-disable camelcase */
 import React, { ReactElement, useCallback, useMemo } from 'react';
-import DeleteIcon from '@material-ui/icons/Delete';
-import UpdateIcon from '@material-ui/icons/Update';
-import EditLocationIcon from '@material-ui/icons/EditLocation';
-import RestoreFromTrashIcon from '@material-ui/icons/RestoreFromTrash';
-import LinkIcon from '@material-ui/icons/Link';
-import LinkOffIcon from '@material-ui/icons/LinkOff';
-import LockIcon from '@material-ui/icons/Lock';
+import DeleteIcon from '@mui/icons-material/Delete';
+import UpdateIcon from '@mui/icons-material/Update';
+import EditLocationIcon from '@mui/icons-material/EditLocation';
+import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
+import LinkIcon from '@mui/icons-material/Link';
+import LinkOffIcon from '@mui/icons-material/LinkOff';
+import LockIcon from '@mui/icons-material/Lock';
 
 import {
     // @ts-ignore
@@ -16,7 +16,7 @@ import {
     // @ts-ignore
     useSafeIntl,
 } from 'bluesquare-components';
-import { DialogContentText } from '@material-ui/core';
+import { DialogContentText } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import EnketoIcon from '../components/EnketoIcon';
 import { CreateReAssignDialogComponent } from '../components/CreateReAssignDialogComponent';

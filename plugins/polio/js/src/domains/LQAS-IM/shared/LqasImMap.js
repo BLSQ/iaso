@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import { oneOf, string, array, number, bool, object } from 'prop-types';
-import { Box } from '@material-ui/core';
+import { Box } from '@mui/material';
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 import { any } from 'lodash/fp';
 import { MapComponent } from '../../Campaigns/MapComponent/MapComponent';

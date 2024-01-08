@@ -2,8 +2,8 @@ import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { IntlProvider } from 'react-intl';
 import { useSelector } from 'react-redux';
-import { MuiPickersUtilsProvider } from '@material-ui/pickers';
-import MomentUtils from '@date-io/moment';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 
 // the intl paths get rewritten by webpack depending on the locale
 import fr from '__intl/messages/fr'; // eslint-disable-line
@@ -34,15 +34,15 @@ export default function LocalizedAppComponent({ children }) {
             locale={activeLocale.code}
             messages={messages[activeLocale.code]}
         >
-            <MuiPickersUtilsProvider
-                utils={MomentUtils}
-                locale={activeLocale.code}
+            <LocalizationProvider
+                dateAdapter={AdapterMoment}
+                adapterLocale={activeLocale.code}
             >
                 {children}
-            </MuiPickersUtilsProvider>
+            </LocalizationProvider>
         </IntlProvider>
     );
 }
 LocalizedAppComponent.propTypes = {
-    children: PropTypes.node.isRequired,
+    children: PropTypes.any.isRequired,
 };

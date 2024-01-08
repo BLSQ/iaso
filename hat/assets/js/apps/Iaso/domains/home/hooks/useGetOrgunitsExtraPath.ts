@@ -7,7 +7,7 @@ export const useGetOrgunitsExtraPath = (): string => {
     const currentUser = useCurrentUser();
     const defaultSourceVersionId =
         getDefaultSourceVersion(currentUser)?.source?.id;
-    return `/locationLimit/${locationLimitMax}/order/id/pageSize/50/page/1/searchTabIndex/0/searches/[{"validation_status":"all","color":"${getChipColors(
+    return `/locationLimit/${locationLimitMax}/order/id/pageSize/20/page/1/searchTabIndex/0/searches/[{"validation_status":"all","color":"${getChipColors(
         0,
     ).replace('#', '')}"${
         defaultSourceVersionId ? `,"source":${defaultSourceVersionId}` : ''

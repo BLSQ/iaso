@@ -1,9 +1,10 @@
 import React from 'react';
 import { FormattedMessage } from 'react-intl';
-import { Button, Box, makeStyles } from '@material-ui/core';
+import { Button, Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
-import Edit from '@material-ui/icons/Settings';
-import DeleteIcon from '@material-ui/icons/Delete';
+import Edit from '@mui/icons-material/Settings';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 import PropTypes from 'prop-types';
 

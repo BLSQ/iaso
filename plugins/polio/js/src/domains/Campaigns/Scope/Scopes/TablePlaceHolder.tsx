@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { TableRow, TableCell, Box } from '@material-ui/core';
+import { TableRow, TableCell, Box } from '@mui/material';
 import {
     // @ts-ignore
     useSafeIntl,

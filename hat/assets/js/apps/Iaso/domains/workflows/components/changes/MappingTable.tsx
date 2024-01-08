@@ -11,7 +11,8 @@ import {
     AddButton,
     IntlFormatMessage,
 } from 'bluesquare-components';
-import { Box, makeStyles } from '@material-ui/core';
+import { Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { cloneDeep } from 'lodash';
 
 import { Mapping, ChangesOption, Change, ReferenceForm } from '../../types';

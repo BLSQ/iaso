@@ -3,7 +3,7 @@ import React from 'react';
 import moment from 'moment';
 import { defineMessage } from 'react-intl';
 import { useFormikContext } from 'formik';
-import { Button, Grid, Tooltip, Typography } from '@material-ui/core';
+import { Button, Grid, Tooltip, Typography } from '@mui/material';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { postRequest } from 'Iaso/libs/Api';
 import { useSnackMutation } from 'Iaso/libs/apiHooks';

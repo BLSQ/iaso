@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { makeStyles, Box } from '@material-ui/core';
+import { Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 // @ts-ignore
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';

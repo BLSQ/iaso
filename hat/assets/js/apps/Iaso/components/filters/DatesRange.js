@@ -1,16 +1,16 @@
 import React, { useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { makeStyles } from '@material-ui/core/styles';
-import { KeyboardDatePicker } from '@material-ui/pickers';
+import { makeStyles } from '@mui/styles';
+import { DesktopDatePicker as DatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 
-import { Grid, useTheme, useMediaQuery, Box } from '@material-ui/core';
+import { Grid, useTheme, useMediaQuery, Box, TextField } from '@mui/material';
 import {
     injectIntl,
     IconButton,
     FormControl,
     useSkipEffectOnMount,
 } from 'bluesquare-components';
-import EventIcon from '@material-ui/icons/Event';
+import EventIcon from '@mui/icons-material/Event';
 import MESSAGES from './messages';
 import {
     getUrlParamDateObject,
@@ -111,8 +111,9 @@ const DatesRange = ({
             <Grid item xs={xs} sm={sm} md={md} lg={lg}>
                 <Box mt={marginTop}>
                     <FormControl errors={errors[0]}>
-                        <KeyboardDatePicker
+                        <DatePicker
                             autoOk
+                            renderInput={props => <TextField {...props} />}
                             disableToolbar
                             required={dateFromRequired}
                             variant="inline"
@@ -165,8 +166,9 @@ const DatesRange = ({
             <Grid item xs={xs} sm={sm} md={md} lg={lg}>
                 <Box mt={marginTop}>
                     <FormControl errors={errors[1]}>
-                        <KeyboardDatePicker
+                        <DatePicker
                             autoOk
+                            renderInput={props => <TextField {...props} />}
                             disableToolbar
                             required={dateToRequired}
                             inputVariant="outlined"

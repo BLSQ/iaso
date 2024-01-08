@@ -1,5 +1,6 @@
-import { Box, makeStyles } from '@material-ui/core';
-import { Pagination } from '@material-ui/lab';
+import { Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import { Pagination } from '@mui/lab';
 import React, { FunctionComponent } from 'react';
 import { Paginated } from 'bluesquare-components';
 import { BudgetEventCard } from '../../cards/BudgetEventCard';

@@ -2,7 +2,6 @@ import React from 'react';
 import { Link } from 'react-router';
 
 import {
-    withStyles,
     ListItemIcon,
     ListItem,
     ListItemText,
@@ -10,9 +9,10 @@ import {
     Collapse,
     List,
     Box,
-} from '@material-ui/core';
-import ExpandLess from '@material-ui/icons/ExpandLess';
-import ExpandMore from '@material-ui/icons/ExpandMore';
+} from '@mui/material';
+import { withStyles } from '@mui/styles';
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
 
 import PropTypes from 'prop-types';
 import {

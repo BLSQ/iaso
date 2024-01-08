@@ -11,6 +11,7 @@ from beanstalk_worker import task_decorator
 
 import django.db.models.manager
 from django.contrib.auth.models import AnonymousUser, User
+from django.core.files.base import File
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django.db.models import Q, Sum, QuerySet
@@ -1111,6 +1112,8 @@ class Notification(models.Model):
 
     Also called "line list": a table that summarizes key
     information about each case in an outbreak.
+
+    Notifications can also be imported in bulk (see NotificationImport).
     """
 
     class VdpvCategories(models.TextChoices):
@@ -1186,9 +1189,7 @@ class Notification(models.Model):
 
 class NotificationImport(models.Model):
     """
-    Notifications of polio virus outbreaks can be created manually (via the UI)
-    or imported from .xlsx files.
-
+    Handle bulk import of polio virus outbreaks notifications via .xlsx files.
     This model stores .xlsx files and use them to populate `Notification`.
     """
 
@@ -1230,21 +1231,26 @@ class NotificationImport(models.Model):
     def __str__(self) -> str:
         return f"{self.file.name} - {self.status}"
 
+    @classmethod
+    def read_excel(cls, file: File) -> pd.DataFrame:
+        try:
+            df = pd.read_excel(file, keep_default_na=False)
+        except Exception as err:
+            raise ValueError(f"Invalid Excel file {file}.")
+
+        # Normalize xlsx header's names.
+        df.rename(columns=lambda name: name.upper().strip().replace(" ", "_"), inplace=True)
+        for name in cls.EXPECTED_XLSX_COL_NAMES:
+            if name not in df.columns:
+                raise ValueError(f"Missing column {name}.")
+
+        return df
+
     def create_notifications(self, created_by: User) -> None:
         """
         Can be launched async, see `create_polio_notifications_async`.
         """
-        try:
-            df = pd.read_excel(self.file, keep_default_na=False)
-        except Exception as err:
-            raise ValueError(f"Invalid Excel file {self.file}.")
-
-        # Normalize xlsx header's names.
-        df.rename(columns=lambda name: name.upper().strip().replace(" ", "_"), inplace=True)
-        for name in self.EXPECTED_XLSX_COL_NAMES:
-            if name not in df.columns:
-                raise ValueError(f"Missing column {name}.")
-
+        df = self.read_excel(self.file)
         self.status = self.Status.PENDING
         self.save()
 
@@ -1256,31 +1262,42 @@ class NotificationImport(models.Model):
         )
 
         for idx, row in df.iterrows():
-            org_unit = importer.find_org_unit_in_caches(
-                country_name=importer.clean_str(row["COUNTRY"]),
-                region_name=importer.clean_str(row["PROVINCE"]),
-                district_name=importer.clean_str(row["DISTRICT"]),
-            )
-            kwargs = {
-                "account": self.account,
-                "closest_match_vdpv2": importer.clean_str(row["CLOSEST_MATCH_VDPV2"]),
-                "created_by": created_by,
-                "date_of_onset": importer.clean_date(row["DATE_COLLECTION/DATE_OF_ONSET_(M/D/YYYY)"]),
-                "date_results_received": importer.clean_date(row["DATE_RESULTS_RECEIVED"]),
-                "import_raw_data": row.to_dict(),
-                "import_source": self,
-                "lineage": importer.clean_str(row["LINEAGE"]),
-                "org_unit": org_unit,
-                "site_name": importer.clean_str(row["SITE_NAME/GEOCODE"]),
-                "source": importer.clean_source(row["SOURCE(AFP/ENV/CONTACT/HC)"]),
-                "vdpv_category": importer.clean_vdpv_category(row["VDPV_CATEGORY"]),
-                "vdpv_nucleotide_diff_sabin2": importer.clean_str(row["VDPV_NUCLEOTIDE_DIFF_SABIN2"]),
-            }
-            _, created = Notification.objects.get_or_create(
-                epid_number=importer.clean_str(row["EPID_NUMBER"]),
-                defaults=kwargs,
-            )
-            if not created:
+            try:
+                epid_number = importer.clean_str(row["EPID_NUMBER"])
+                org_unit = importer.find_org_unit_in_caches(
+                    country_name=importer.clean_str(row["COUNTRY"]),
+                    region_name=importer.clean_str(row["PROVINCE"]),
+                    district_name=importer.clean_str(row["DISTRICT"]),
+                )
+                defaults = {
+                    "account": self.account,
+                    "closest_match_vdpv2": importer.clean_str(row["CLOSEST_MATCH_VDPV2"]),
+                    "date_of_onset": importer.clean_date(row["DATE_COLLECTION/DATE_OF_ONSET_(M/D/YYYY)"]),
+                    "date_results_received": importer.clean_date(row["DATE_RESULTS_RECEIVED"]),
+                    "import_raw_data": row.to_dict(),
+                    "import_source": self,
+                    "lineage": importer.clean_str(row["LINEAGE"]),
+                    "org_unit": org_unit,
+                    "site_name": importer.clean_str(row["SITE_NAME/GEOCODE"]),
+                    "source": importer.clean_source(row["SOURCE(AFP/ENV/CONTACT/HC)"]),
+                    "vdpv_category": importer.clean_vdpv_category(row["VDPV_CATEGORY"]),
+                    "vdpv_nucleotide_diff_sabin2": importer.clean_str(row["VDPV_NUCLEOTIDE_DIFF_SABIN2"]),
+                }
+                notification = Notification.objects.filter(epid_number=epid_number).first()
+                if not notification:
+                    notification = Notification(**defaults)
+                    notification.epid_number = epid_number
+                    notification.created_by = created_by
+                    notification.save()
+                else:
+                    # If there is an import with an existing EPID, then we take the data
+                    # as an update of the existing one.
+                    for key, value in defaults.items():
+                        setattr(notification, key, value)
+                    notification.updated_by = created_by
+                    notification.updated_at = timezone.now()
+                    notification.save()
+            except Exception:
                 errors.append(row.to_dict())
 
         self.status = self.Status.DONE

@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from '@mui/styles';
 import {
     Button,
     Box,
@@ -10,12 +10,12 @@ import {
     DialogContent,
     DialogActions,
     Grid,
-} from '@material-ui/core';
+} from '@mui/material';
 import isEqual from 'lodash/isEqual';
 import { get, merge } from 'lodash';
 import { Field, FormikProvider, useFormik } from 'formik';
 import * as yup from 'yup';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 
 import Form from './Form';
 import TextInput from './TextInput';
@@ -238,24 +238,6 @@ const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
                                             name="content"
                                             multiline={type === RAW}
                                             component={contentComponent}
-                                            className={classes.input}
-                                        />
-                                    </Grid>
-                                    <Grid xs={12} md={12} item>
-                                        <Typography>
-                                            {formatMessage(
-                                                MESSAGES.analyticsScript,
-                                            )}
-                                        </Typography>
-                                    </Grid>
-                                    <Grid xs={12} md={12} item>
-                                        <Field
-                                            label={formatMessage(
-                                                MESSAGES.analyticsLabel,
-                                            )}
-                                            name="analytics_script"
-                                            multiline
-                                            component={TextInput}
                                             className={classes.input}
                                         />
                                     </Grid>

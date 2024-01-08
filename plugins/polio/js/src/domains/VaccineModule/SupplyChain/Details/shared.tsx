@@ -1,5 +1,6 @@
 import React, { FunctionComponent, ReactNode } from 'react';
-import { Box, Grid, Theme, Typography, makeStyles } from '@material-ui/core';
+import { Box, Grid, Theme, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     AddButton,
     IntlMessage,

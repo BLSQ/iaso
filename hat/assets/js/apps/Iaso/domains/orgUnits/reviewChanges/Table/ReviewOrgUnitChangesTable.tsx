@@ -24,9 +24,9 @@ import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
 import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
 import getDisplayName from '../../../../utils/usersUtils';
 import {
-    ApproveOrgUnitChangesDialog,
+    ReviewOrgUnitChangesDialog,
     IconButton,
-} from '../ApproveOrgUnitChangesDialog';
+} from '../ReviewOrgUnitChangesDialog';
 
 type ColumnCell<T> = { row: { original: T; index: number } };
 
@@ -182,7 +182,7 @@ type Props = {
     params: ApproveOrgUnitParams;
 };
 export const baseUrl = baseUrls.orgUnitsChangeRequest;
-export const ApproveOrgUnitChangesTable: FunctionComponent<Props> = ({
+export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
     data,
     isFetching,
     params,
@@ -197,7 +197,8 @@ export const ApproveOrgUnitChangesTable: FunctionComponent<Props> = ({
     }, []);
     return (
         <>
-            <ApproveOrgUnitChangesDialog
+            {/* This dialog is at this level to keep selected request in state and allow further multiaction/pagination feature */}
+            <ReviewOrgUnitChangesDialog
                 isOpen={Boolean(selectedChangeRequest)}
                 selectedChangeRequest={selectedChangeRequest}
                 closeDialog={handleCloseDialog}

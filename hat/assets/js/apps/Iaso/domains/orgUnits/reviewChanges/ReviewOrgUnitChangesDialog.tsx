@@ -6,16 +6,14 @@ import React, {
     SetStateAction,
     useMemo,
 } from 'react';
-import SettingsIcon from '@mui/icons-material/Settings';
-import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import {
     LoadingSpinner,
     useSafeIntl,
     SimpleModal,
+    IconButton as IconButtonBlsq,
 } from 'bluesquare-components';
 import {
     Box,
-    IconButton as IconButtonMui,
     TableContainer,
     Table,
     TableBody,
@@ -27,10 +25,10 @@ import { makeStyles } from '@mui/styles';
 import classNames from 'classnames';
 import MESSAGES from './messages';
 import { useGetApprovalProposal } from './hooks/api/useGetApprovalProposal';
-import { SelectedChangeRequest } from './Table/ApproveOrgUnitChangesTable';
+import { SelectedChangeRequest } from './Table/ReviewOrgUnitChangesTable';
 import { useNewFields } from './hooks/useNewFields';
 import InputComponent from '../../../components/forms/InputComponent';
-import { ApproveOrgUnitChangesButtons } from './ApproveOrgUnitChangesButtons';
+import { ApproveOrgUnitChangesButtons } from './ReviewOrgUnitChangesButtons';
 import { ChangeRequestValidationStatus } from './types';
 import { useSaveChangeRequest } from './hooks/api/useSaveChangeRequest';
 
@@ -79,7 +77,7 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-export const ApproveOrgUnitChangesDialog: FunctionComponent<Props> = ({
+export const ReviewOrgUnitChangesDialog: FunctionComponent<Props> = ({
     isOpen,
     closeDialog,
     selectedChangeRequest,
@@ -171,7 +169,10 @@ export const ApproveOrgUnitChangesDialog: FunctionComponent<Props> = ({
                             const isCellApproved =
                                 (field.isChanged && field.isSelected) ||
                                 (!isNew &&
-                                    changeRequest?.status === 'approved');
+                                    changeRequest?.status === 'approved' &&
+                                    changeRequest.approved_fields.includes(
+                                        field.key,
+                                    ));
                             return (
                                 <TableRow key={field.key}>
                                     <TableCell>{field.label}</TableCell>
@@ -241,20 +242,25 @@ export const IconButton: FunctionComponent<PropsIcon> = ({
     index,
     status,
 }) => {
-    const { formatMessage } = useSafeIntl();
     const handleClick = useCallback(() => {
         setSelectedChangeRequest({
             id: changeRequestId,
             index,
         });
     }, [changeRequestId, index, setSelectedChangeRequest]);
+    let message = MESSAGES.validateOrRejectChanges;
+    if (status === 'rejected') {
+        message = MESSAGES.seeRejectedChanges;
+    }
+    if (status === 'approved') {
+        message = MESSAGES.seeApprovedChanges;
+    }
     return (
-        <IconButtonMui
+        <IconButtonBlsq
             onClick={handleClick}
-            aria-label={formatMessage(MESSAGES.validateOrRejectChanges)}
+            tooltipMessage={message}
             size="small"
-        >
-            {status === 'new' ? <SettingsIcon /> : <RemoveRedEyeIcon />}
-        </IconButtonMui>
+            icon={status === 'new' ? 'edit' : 'remove-red-eye'}
+        />
     );
 };

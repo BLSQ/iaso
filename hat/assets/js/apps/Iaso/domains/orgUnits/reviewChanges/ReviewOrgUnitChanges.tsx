@@ -2,8 +2,8 @@ import React, { FunctionComponent } from 'react';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import { ApproveOrgUnitChangesFilter } from './Filter/ApproveOrgUnitChangesFilter';
-import { ApproveOrgUnitChangesTable } from './Table/ApproveOrgUnitChangesTable';
+import { ReviewOrgUnitChangesFilter } from './Filter/ReviewOrgUnitChangesFilter';
+import { ReviewOrgUnitChangesTable } from './Table/ReviewOrgUnitChangesTable';
 import { useGetApprovalProposals } from './hooks/api/useGetApprovalProposals';
 import { Router } from '../../../types/general';
 import TopBar from '../../../components/nav/TopBarComponent';
@@ -16,7 +16,7 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-export const ApproveOrgUnitChanges: FunctionComponent<Props> = ({
+export const ReviewOrgUnitChanges: FunctionComponent<Props> = ({
     router,
     params,
 }) => {
@@ -27,8 +27,8 @@ export const ApproveOrgUnitChanges: FunctionComponent<Props> = ({
         <div>
             <TopBar title={formatMessage(MESSAGES.reviewChangeProposals)} />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <ApproveOrgUnitChangesFilter params={router.params} />
-                <ApproveOrgUnitChangesTable
+                <ReviewOrgUnitChangesFilter params={router.params} />
+                <ReviewOrgUnitChangesTable
                     data={data}
                     isFetching={isFetching}
                     params={params}

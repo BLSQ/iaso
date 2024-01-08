@@ -83,11 +83,11 @@ const MESSAGES = defineMessages({
     },
     validateSelected: {
         id: 'iaso.label.validateSelected',
-        defaultMessage: 'Validate selected change(s)',
+        defaultMessage: 'Approve selected change(s)',
     },
     validateOrRejectChanges: {
         id: 'iaso.label.validateOrRejectChanges',
-        defaultMessage: 'Validate or Reject changes',
+        defaultMessage: 'Review changes',
     },
     location: {
         id: 'iaso.label.location',

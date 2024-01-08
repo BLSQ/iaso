@@ -15,7 +15,7 @@ import { DropdownOptions } from '../../../../types/utils';
 const baseUrl = baseUrls.orgUnitsChangeRequest;
 type Props = { params: any };
 
-export const ApproveOrgUnitChangesFilter: FunctionComponent<Props> = ({
+export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     params,
 }) => {
     const { formatMessage } = useSafeIntl();

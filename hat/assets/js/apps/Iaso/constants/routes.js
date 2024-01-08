@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
 import Forms from '../domains/forms';
-import FormDetail from '../domains/forms/detail';
+import FormDetail from '../domains/forms/detail.tsx';
 import FormsStats from '../domains/forms/stats';
 import { OrgUnits } from '../domains/orgUnits/index.tsx';
 import { Links } from '../domains/links';
@@ -29,7 +29,7 @@ import { Details as BeneficiaryDetail } from '../domains/entities/details.tsx';
 import { EntityTypes } from '../domains/entities/entityTypes/index.tsx';
 import PageError from '../components/errors/PageError';
 import { baseUrls } from './urls';
-import { capitalize } from '../utils/index';
+import { capitalize } from '../utils/index.ts';
 import { linksFiltersWithPrefix, orgUnitFiltersWithPrefix } from './filters';
 import Pages from '../domains/pages';
 import { Planning } from '../domains/plannings/index.tsx';
@@ -46,7 +46,7 @@ import { SHOW_PAGES } from '../utils/featureFlags';
 import { paginationPathParams } from '../routing/common.ts';
 import { Duplicates } from '../domains/entities/duplicates/list/Duplicates.tsx';
 import { DuplicateDetails } from '../domains/entities/duplicates/details/DuplicateDetails.tsx';
-import { ApproveOrgUnitChanges } from '../domains/orgUnits/approveChanges/ApproveOrgUnitChanges.tsx';
+import { ReviewOrgUnitChanges } from '../domains/orgUnits/reviewChanges/ReviewOrgUnitChanges.tsx';
 import { VisitDetails } from '../domains/entities/components/VisitDetails.tsx';
 import * as Permission from '../utils/permissions.ts';
 import { SetupAccount } from '../domains/setup/index.tsx';
@@ -476,8 +476,8 @@ export const orgUnitsDetailsPath = {
 
 export const orgUnitChangeRequestPath = {
     baseUrl: baseUrls.orgUnitsChangeRequest,
-    permissions: [Permission.ORG_UNITS_CHANGE_REQUEST_APPROVE],
-    component: props => <ApproveOrgUnitChanges {...props} />,
+    permissions: [Permission.ORG_UNITS_CHANGE_REQUEST_REVIEW],
+    component: props => <ReviewOrgUnitChanges {...props} />,
     params: [
         {
             isRequired: false,

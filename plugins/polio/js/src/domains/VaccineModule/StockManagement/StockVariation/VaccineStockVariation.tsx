@@ -99,6 +99,8 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
                         root: classes.tabs,
                         indicator: classes.indicator,
                     }}
+                    textColor="inherit"
+                    indicatorColor="secondary"
                     onChange={handleChangeTab}
                 >
                     <Tab

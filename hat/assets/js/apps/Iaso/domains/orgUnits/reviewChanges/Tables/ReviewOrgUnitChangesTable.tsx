@@ -14,7 +14,6 @@ import { baseUrls } from '../../../../constants/urls';
 import {
     OrgUnitChangeRequestsPaginated,
     ApproveOrgUnitParams,
-    NestedUser,
     OrgUnitChangeRequest,
     ChangeRequestValidationStatus,
 } from '../types';
@@ -22,11 +21,11 @@ import { redirectTo } from '../../../../routing/actions';
 import MESSAGES from '../messages';
 import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
 import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
-import getDisplayName from '../../../../utils/usersUtils';
 import {
     ReviewOrgUnitChangesDialog,
     IconButton,
-} from '../ReviewOrgUnitChangesDialog';
+} from '../Dialogs/ReviewOrgUnitChangesDialog';
+import { UserCell } from '../../../../components/Cells/UserCell';
 
 type ColumnCell<T> = { row: { original: T; index: number } };
 
@@ -124,13 +123,7 @@ const useColumns = (
             Header: formatMessage(MESSAGES.created_by),
             id: 'created_by__username',
             accessor: 'created_by',
-            Cell: ({
-                value: createdBy,
-            }: {
-                value: NestedUser;
-            }): ReactElement => (
-                <>{createdBy ? getDisplayName(createdBy) : '--'}</>
-            ),
+            Cell: UserCell,
         },
         {
             Header: formatMessage(MESSAGES.updated_at),
@@ -142,13 +135,7 @@ const useColumns = (
             Header: formatMessage(MESSAGES.updated_by),
             id: 'updated_by__username',
             accessor: 'updated_by',
-            Cell: ({
-                value: updatedBy,
-            }: {
-                value: NestedUser;
-            }): ReactElement => (
-                <>{updatedBy ? getDisplayName(updatedBy) : '--'}</>
-            ),
+            Cell: UserCell,
         },
         {
             Header: formatMessage(MESSAGES.actions),

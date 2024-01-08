@@ -66,7 +66,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Created by',
     },
     updated_by: {
-        id: 'iaso.forms.updated_by',
+        id: 'iaso.label.updated_by',
         defaultMessage: 'Updated by',
     },
     save: {

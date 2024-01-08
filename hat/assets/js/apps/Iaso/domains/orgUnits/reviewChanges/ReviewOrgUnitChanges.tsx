@@ -3,7 +3,7 @@ import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { ReviewOrgUnitChangesFilter } from './Filter/ReviewOrgUnitChangesFilter';
-import { ReviewOrgUnitChangesTable } from './Table/ReviewOrgUnitChangesTable';
+import { ReviewOrgUnitChangesTable } from './Tables/ReviewOrgUnitChangesTable';
 import { useGetApprovalProposals } from './hooks/api/useGetApprovalProposals';
 import { Router } from '../../../types/general';
 import TopBar from '../../../components/nav/TopBarComponent';

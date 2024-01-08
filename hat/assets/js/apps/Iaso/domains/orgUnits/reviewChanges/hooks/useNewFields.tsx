@@ -13,7 +13,7 @@ import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
 import { ShortOrgUnit } from '../../types/orgUnit';
 import MESSAGES from '../messages';
 
-export type NewField = {
+export type NewOrgUnitField = {
     key: string;
     isChanged: boolean;
     isSelected: boolean;
@@ -23,7 +23,7 @@ export type NewField = {
 };
 
 type UseNewFields = {
-    newFields: NewField[];
+    newFields: NewOrgUnitField[];
     // eslint-disable-next-line no-unused-vars
     setSelected: (key: string) => void;
 };
@@ -45,8 +45,8 @@ const getGroupsValue = (groups: NestedGroup[]): ReactElement | string => {
 const getLocationValue = (location: NestedLocation): ReactElement => {
     return (
         <MarkerMap
-            longitude={location.latitude}
-            latitude={location.longitude}
+            longitude={location.longitude}
+            latitude={location.latitude}
             maxZoom={8}
             mapHeight={300}
         />
@@ -57,7 +57,7 @@ export const useNewFields = (
     changeRequest?: OrgUnitChangeRequestDetails,
 ): UseNewFields => {
     const { formatMessage } = useSafeIntl();
-    const [fields, setFields] = useState<NewField[]>([]);
+    const [fields, setFields] = useState<NewOrgUnitField[]>([]);
 
     useMemo(() => {
         if (!changeRequest) {
@@ -212,7 +212,7 @@ export const useNewFields = (
                         return null;
                 }
             })
-            .filter(field => field !== null) as NewField[];
+            .filter(field => field !== null) as NewOrgUnitField[];
         setFields(newFields);
     }, [changeRequest, formatMessage]);
 

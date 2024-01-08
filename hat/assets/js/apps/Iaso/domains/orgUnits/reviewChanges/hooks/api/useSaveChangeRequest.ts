@@ -5,7 +5,7 @@ import { useSnackMutation } from '../../../../../libs/apiHooks';
 
 export type UseSaveChangeRequestQueryData = {
     status: 'rejected' | 'approved';
-    approved_fields: string[];
+    approved_fields?: string[];
     rejection_comment?: string;
 };
 

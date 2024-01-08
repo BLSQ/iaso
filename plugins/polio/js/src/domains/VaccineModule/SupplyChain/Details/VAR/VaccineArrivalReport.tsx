@@ -30,75 +30,71 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
                     markedForDeletion ? classes.markedForDeletion : '',
                 )}
             >
-                <Grid container item xs={12} spacing={2}>
-                    <Grid item xs={6} md={3}>
-                        <Field
-                            label={formatMessage(MESSAGES.arrival_report_date)}
-                            name={`${VAR}[${index}].arrival_report_date`}
-                            component={DateInput}
-                            disabled={markedForDeletion}
-                        />
-                    </Grid>
-                    <Grid item xs={6} md={3}>
-                        <Field
-                            label={formatMessage(MESSAGES.po_number)}
-                            name={`${VAR}[${index}].po_number`}
-                            component={TextInput}
-                            shrinkLabel={false}
-                            disabled={markedForDeletion}
-                        />
-                    </Grid>
-                    <Grid item xs={6} md={3}>
-                        <Field
-                            label={formatMessage(MESSAGES.lot_numbers)}
-                            name={`${VAR}[${index}].lot_numbers`}
-                            component={TextInput}
-                            disabled={markedForDeletion}
-                            shrinkLabel={false}
-                        />
-                    </Grid>
-                    <Grid item xs={6} md={3}>
-                        <Box>
+                <Grid container>
+                    <Grid container item xs={12} spacing={2}>
+                        <Grid item xs={6} md={3}>
+                            <Field
+                                label={formatMessage(
+                                    MESSAGES.arrival_report_date,
+                                )}
+                                name={`${VAR}[${index}].arrival_report_date`}
+                                component={DateInput}
+                                disabled={markedForDeletion}
+                            />
+                        </Grid>
+                        <Grid item xs={6} md={3}>
+                            <Field
+                                label={formatMessage(MESSAGES.po_number)}
+                                name={`${VAR}[${index}].po_number`}
+                                component={TextInput}
+                                shrinkLabel={false}
+                                disabled={markedForDeletion}
+                            />
+                        </Grid>
+                        <Grid item xs={6} md={3}>
+                            <Field
+                                label={formatMessage(MESSAGES.lot_numbers)}
+                                name={`${VAR}[${index}].lot_numbers`}
+                                component={TextInput}
+                                disabled={markedForDeletion}
+                                shrinkLabel={false}
+                            />
+                        </Grid>
+                        <Grid item xs={6} md={3}>
                             <Field
                                 label={formatMessage(MESSAGES.doses_per_vial)}
                                 name={`${VAR}[${index}].doses_per_vial`}
                                 component={NumberInput}
                                 disabled={markedForDeletion}
                             />
-                        </Box>
+                        </Grid>
                     </Grid>
-                </Grid>
-                <Grid container item xs={12} spacing={2}>
-                    <Grid item xs={6} md={3}>
-                        <Box>
+                    <Grid container item xs={12} spacing={2}>
+                        <Grid item xs={6} md={3}>
                             <Field
                                 label={formatMessage(MESSAGES.expirationDate)}
                                 name={`${VAR}[${index}].expiration_date`}
                                 component={DateInput}
                                 disabled={markedForDeletion}
                             />
-                        </Box>
-                    </Grid>
-                    <Grid item xs={6} md={3}>
-                        <Box>
+                        </Grid>
+                        <Grid item xs={6} md={3}>
                             <Field
                                 label={formatMessage(MESSAGES.doses_shipped)}
                                 name={`${VAR}[${index}].doses_shipped`}
                                 component={NumberInput}
                                 disabled={markedForDeletion}
                             />
-                        </Box>
-                    </Grid>
+                        </Grid>
 
-                    <Grid item xs={6} md={3}>
-                        <Box>
+                        <Grid item xs={6} md={3}>
                             <Field
                                 label={formatMessage(MESSAGES.doses_received)}
                                 name={`${VAR}[${index}].doses_received`}
                                 component={NumberInput}
                                 disabled={markedForDeletion}
                             />
-                        </Box>
+                        </Grid>
                     </Grid>
                 </Grid>
             </Paper>

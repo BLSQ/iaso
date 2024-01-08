@@ -17,6 +17,7 @@ type Props = {
     form?: FormikProps<FormValues>;
     label?: string;
     isNewPage?: boolean;
+    managedUsersOnly?: string;
 };
 
 export const UsersSelect: FunctionComponent<Props> = ({
@@ -24,6 +25,7 @@ export const UsersSelect: FunctionComponent<Props> = ({
     form,
     label = '',
     isNewPage = false,
+    managedUsersOnly = 'true',
     ...props
 } = {}) => {
     const currentUser = useCurrentUser();
@@ -33,7 +35,9 @@ export const UsersSelect: FunctionComponent<Props> = ({
         }
         return field?.value;
     }, [currentUser.user_id, field?.value, isNewPage]);
-    const { data, isFetching: isFetchingProfiles } = useGetProfiles();
+    const { data, isFetching: isFetchingProfiles } = useGetProfiles({
+        managedUsersOnly,
+    });
     const profilesList = useMemo(() => {
         if (!data) return [];
         return data.profiles.map(p => ({

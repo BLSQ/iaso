@@ -14,6 +14,9 @@ import { baseUrls } from 'Iaso/constants/urls';
 import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import tasksTableColumns from './config';
 import MESSAGES from './messages';
+import { POLIO_NOTIFICATIONS } from '../../utils/permissions.ts';
+import { userHasPermission } from '../users/utils';
+import { useCurrentUser } from '../../utils/usersUtils.ts';
 
 const baseUrl = baseUrls.tasks;
 
@@ -69,6 +72,11 @@ const Tasks = ({ params }) => {
         MESSAGES.fetchTasksError,
     );
 
+    const hasPolioNotificationsPerm = userHasPermission(
+        POLIO_NOTIFICATIONS,
+        useCurrentUser(),
+    );
+
     return (
         <>
             <TopBar
@@ -95,6 +103,7 @@ const Tasks = ({ params }) => {
                     columns={tasksTableColumns(
                         intl.formatMessage,
                         killTaskAction,
+                        hasPolioNotificationsPerm,
                     )}
                     baseUrl={baseUrl}
                     extraProps={{

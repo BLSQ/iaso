@@ -27,28 +27,30 @@ def load_powerbi_config_for_page(page: Page):
 
 
 def page(request, page_slug):
+    current_account = request.user.iaso_profile.account
+    analytics_script = current_account.analytics_script
+    content = {}
+    if analytics_script:
+        content["analytics_script"] = analytics_script
     page = get_object_or_404(Page, slug=page_slug)
     path = request.get_full_path()
     resolved_login_url = resolve_url(settings.LOGIN_URL)
     if page.needs_authentication and ((not request.user.is_authenticated) or (request.user not in page.users.all())):
         return redirect_to_login(path, resolved_login_url, "next")
     if page.type == IFRAME:
-        content = {"src": page.content, "title": page.name, "page": page}
-        if page.analytics_script:
-            content["analytics_script"] = page.analytics_script
+        content.update({"src": page.content, "title": page.name, "page": page})
         response = render(
             request,
             "iaso/pages/iframe.html",
             content,
         )
     elif page.type == TEXT:
-        content = {
-            "text": page.content,
-            "title": page.name,
-        }
-        if page.analytics_script:
-            content["analytics_script"] = page.analytics_script
-
+        content.update(
+            {
+                "text": page.content,
+                "title": page.name,
+            }
+        )
         response = render(
             request,
             "iaso/pages/text.html",
@@ -56,13 +58,14 @@ def page(request, page_slug):
         )
     elif page.type == POWERBI:
         config = load_powerbi_config_for_page(page)
-        content = {
-            "config": config,
-            "title": page.name,
-            "page": page,
-        }
-        if page.analytics_script:
-            content["analytics_script"] = page.analytics_script
+        content.update(
+            {
+                "config": config,
+                "title": page.name,
+                "page": page,
+            }
+        )
+
         response = render(
             request,
             "iaso/pages/powerbi.html",
@@ -70,8 +73,8 @@ def page(request, page_slug):
         )
     else:
         raw_html = page.content
-        if page.analytics_script:
-            raw_html = addTag(raw_html, page.analytics_script)
+        if analytics_script and raw_html is not None:
+            raw_html = addTag(raw_html, analytics_script)
         response = HttpResponse(raw_html)
     response["X-Frame-Options"] = "ALLOW"
     return response

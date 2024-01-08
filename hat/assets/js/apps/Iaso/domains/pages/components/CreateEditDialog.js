@@ -172,7 +172,6 @@ const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
                                             component={UsersSelect}
                                             isNewPage={isNewPage}
                                             className={classes.input}
-                                            managedUsersOnly="false"
                                         />
                                     </Grid>
                                     <Grid xs={6} md={6} item>

@@ -1,4 +1,10 @@
-import React, { ReactElement, useMemo, useState } from 'react';
+import React, {
+    ReactElement,
+    useMemo,
+    useState,
+    Fragment,
+    FunctionComponent,
+} from 'react';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import {
@@ -12,6 +18,7 @@ import { MarkerMap } from '../../../../components/maps/MarkerMapComponent';
 import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
 import { ShortOrgUnit } from '../../types/orgUnit';
 import MESSAGES from '../messages';
+import { LinkToInstance } from '../../../instances/components/LinkToInstance';
 
 export type NewOrgUnitField = {
     key: string;
@@ -28,14 +35,30 @@ type UseNewFields = {
     setSelected: (key: string) => void;
 };
 
-const getReferenceInstancesValue = (
-    instances: InstanceForChangeRequest[],
-): ReactElement | string => {
-    return instances && instances.length > 0
-        ? instances.map(instance => instance.form_name).join(', ')
-        : textPlaceholder;
+type ReferenceInstancesProps = {
+    instances: InstanceForChangeRequest[];
 };
 
+const ReferenceInstances: FunctionComponent<ReferenceInstancesProps> = ({
+    instances,
+}) => {
+    if (!instances || instances.length === 0) {
+        return <>{textPlaceholder}</>;
+    }
+
+    return (
+        <>
+            {instances.map((instance, index) => (
+                <Fragment key={instance.id}>
+                    {index > 0 && ', '}
+                    <span>
+                        {LinkToInstance({ instanceId: `${instance.id}` })}
+                    </span>
+                </Fragment>
+            ))}
+        </>
+    );
+};
 const getGroupsValue = (groups: NestedGroup[]): ReactElement | string => {
     return groups && groups.length > 0
         ? groups.map(group => group.name).join(', ')
@@ -187,6 +210,11 @@ export const useNewFields = (
                     }
                     case 'new_reference_instances': {
                         const instances = value as InstanceForChangeRequest[];
+                        console.log('instances', instances);
+                        console.log(
+                            'orgUnit.reference_instances',
+                            orgUnit.reference_instances,
+                        );
                         return {
                             key: originalKey,
                             label: formatMessage(
@@ -195,16 +223,18 @@ export const useNewFields = (
                             isChanged: instances.length > 0,
                             isSelected: false,
                             newValue: (
-                                <span>
-                                    {getReferenceInstancesValue(
+                                <ReferenceInstances
+                                    instances={
                                         instances.length > 0
                                             ? instances
-                                            : orgUnit.reference_instances,
-                                    )}
-                                </span>
+                                            : orgUnit.reference_instances
+                                    }
+                                />
                             ),
-                            oldValue: getReferenceInstancesValue(
-                                orgUnit.reference_instances,
+                            oldValue: (
+                                <ReferenceInstances
+                                    instances={orgUnit.reference_instances}
+                                />
                             ),
                         };
                     }

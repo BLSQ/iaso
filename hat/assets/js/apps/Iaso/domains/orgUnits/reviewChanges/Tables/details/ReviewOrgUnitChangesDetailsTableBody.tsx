@@ -25,6 +25,7 @@ export const ReviewOrgUnitChangesDetailsTableBody: FunctionComponent<Props> = ({
         <TableBody>
             {newFields.map(field => (
                 <ReviewOrgUnitChangesDetailsTableRow
+                    key={field.key}
                     field={field}
                     setSelected={setSelected}
                     isNew={isNew}

@@ -33,7 +33,9 @@ export const UsersSelect: FunctionComponent<Props> = ({
         }
         return field?.value;
     }, [currentUser.user_id, field?.value, isNewPage]);
-    const { data, isFetching: isFetchingProfiles } = useGetProfiles();
+    const { data, isFetching: isFetchingProfiles } = useGetProfiles({
+        managedUsersOnly: 'true',
+    });
     const profilesList = useMemo(() => {
         if (!data) return [];
         return data.profiles.map(p => ({
@@ -62,7 +64,9 @@ export const UsersSelect: FunctionComponent<Props> = ({
             loading={isFetchingProfiles}
             clearable={false}
             multi
-            value={value}
+            value={value?.filter(userId =>
+                Boolean(profilesList.find(profile => profile.value===userId))
+            )}
             options={profilesList}
             onChange={handleChange}
             renderTags={(tagValue, getTagProps) =>

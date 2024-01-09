@@ -137,6 +137,7 @@ class Account(models.Model):
     modules = ChoiceArrayField(
         models.CharField(max_length=100, choices=MODULE_CHOICES), blank=True, null=True, default=list
     )
+    analytics_script = models.TextField(blank=True, null=True)
 
     def as_dict(self):
         return {
@@ -147,6 +148,7 @@ class Account(models.Model):
             "default_version": self.default_version.as_dict() if self.default_version else None,
             "feature_flags": [flag.code for flag in self.feature_flags.all()],
             "user_manual_path": self.user_manual_path,
+            "analytics_script": self.analytics_script,
         }
 
     def __str__(self):

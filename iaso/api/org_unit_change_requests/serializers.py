@@ -86,6 +86,7 @@ class MobileOrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
     new_location = ThreeDimPointField()
     created_at = TimestampField()
     updated_at = TimestampField()
+    new_reference_instances = serializers.SlugRelatedField(slug_field="uuid", many=True, read_only=True)
 
     class Meta:
         model = OrgUnitChangeRequest

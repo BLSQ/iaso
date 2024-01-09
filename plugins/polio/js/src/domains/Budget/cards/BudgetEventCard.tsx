@@ -159,6 +159,7 @@ export const BudgetEventCard: FunctionComponent<Props> = ({ step }) => {
                     xs={2}
                     direction="column"
                     justifyContent="center"
+                    alignItems="flex-start"
                     onClick={toggleStepStatus}
                 >
                     <Divider orientation="vertical" />

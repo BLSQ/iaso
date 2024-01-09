@@ -210,11 +210,6 @@ export const useNewFields = (
                     }
                     case 'new_reference_instances': {
                         const instances = value as InstanceForChangeRequest[];
-                        console.log('instances', instances);
-                        console.log(
-                            'orgUnit.reference_instances',
-                            orgUnit.reference_instances,
-                        );
                         return {
                             key: originalKey,
                             label: formatMessage(

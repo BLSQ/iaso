@@ -58,7 +58,7 @@ class DevicesAPITestCase(APITestCase):
 
         response_data = response.json()
         self.assertValidDeviceData(response_data)
-        self.assertEquals(self.device_1.imei, response_data["imei"])
+        self.assertEqual(self.device_1.imei, response_data["imei"])
 
     def assertValidDeviceData(self, device_data: typing.Mapping):
         self.assertHasField(device_data, "id", int)

@@ -13,7 +13,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
     Test ViewSet.
     """
 
-    DT = datetime.datetime(2023, 10, 17, 17, 0, 0, 0, tzinfo=timezone.utc)
+    DT = datetime.datetime(2023, 10, 17, 17, 0, 0, 0, tzinfo=datetime.timezone.utc)
 
     @classmethod
     def setUpTestData(cls):

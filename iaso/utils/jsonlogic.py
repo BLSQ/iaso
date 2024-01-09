@@ -8,16 +8,12 @@ from django.db.models import Q, Transform
 from django.db.models.fields.json import KeyTransformTextLookupMixin, JSONField
 
 
-# This is used to be able to force cast as json value into a float. Didn't find a simple way that would work
-# with our django version. From Django version 4.0 We can apparently use lookup directly in filter which might simplfy
-# things.
-# With this by using a __forcefloat in a json field name it is cast as a double precision
-# e.g:
+# This is used to cast a json value from string into a float.
+# Didn't find a simple way to do that.
+# Using `__forcefloat` in a json field's lookup will cast as a double precision, e.g:
 # `Instance.objects.filter(json__usable_vials_physical__forcefloat__gte= 1)`
-# see
-# https://docs.djangoproject.com/en/4.1/ref/models/lookups/#django.db.models.Transform
-# /django/db/models/fields/json.py
-# /django/db/models/functions/datetime.py class Extract
+# See:
+# https://docs.djangoproject.com/en/4.2/howto/custom-lookups/
 # https://medium.com/nerd-for-tech/custom-lookups-in-django-69fd13e35bdb
 
 # Another alternative would have been to use an annotate in this way. But that complicate the filter flow because we
@@ -32,11 +28,8 @@ class ExtractForceFloat(KeyTransformTextLookupMixin, Transform):
     # tell it to use ->> to extract the value as text otherwhise it can't be cast
 
     def as_sql(self, compiler, connection):
-        if not connection.ops.extract_trunc_lookup_pattern.fullmatch(self.lookup_name):
-            raise ValueError("Invalid lookup_name: %s" % self.lookup_name)
         sql, params = compiler.compile(self.lhs)
         sql = "CAST(%s AS DOUBLE PRECISION)" % sql
-
         return sql, params
 
 

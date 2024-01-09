@@ -112,6 +112,7 @@ class OrgUnitReferenceInstanceInline(admin.TabularInline):
         return True
 
 
+@admin.register(OrgUnit)
 @admin_attr_decorator
 class OrgUnitAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("parent", "reference_instances")
@@ -123,26 +124,21 @@ class OrgUnitAdmin(admin.GeoModelAdmin):
     ]
 
 
-admin.site.register(OrgUnit, OrgUnitAdmin)
-
-
+@admin.register(OrgUnitType)
 @admin_attr_decorator
 class OrgUnitTypeAdmin(admin.GeoModelAdmin):
     search_fields = ("name",)
     list_display = ("name", "projects_list", "short_name", "depth")
     list_filter = ("projects",)
 
+    @admin.display(description="Projects")
     @admin_attr_decorator
     def projects_list(self, obj):
         projects = obj.projects.all()
         return ", ".join(project.name for project in projects) if len(projects) > 0 else "-"
 
-    projects_list.short_description = "Projects"
 
-
-admin.site.register(OrgUnitType, OrgUnitTypeAdmin)
-
-
+@admin.register(Form)
 @admin_attr_decorator
 class FormAdmin(admin.GeoModelAdmin):
     search_fields = ("name", "form_id")
@@ -167,6 +163,7 @@ class FormAdmin(admin.GeoModelAdmin):
         return Form.objects_include_deleted.all()
 
 
+@admin.register(FormVersion)
 @admin_attr_decorator
 class FormVersionAdmin(admin.GeoModelAdmin):
     search_fields = ("form__name", "form__form_id")
@@ -175,27 +172,31 @@ class FormVersionAdmin(admin.GeoModelAdmin):
 
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
+    @admin.display(
+        description="Form name",
+        ordering="form__name",
+    )
     @admin_attr_decorator
     def form_name(self, obj):
         return obj.form.name
 
+    @admin.display(
+        description="Form ID",
+        ordering="form__id",
+    )
     @admin_attr_decorator
     def form_id(self, obj):
         return obj.form.form_id
 
-    form_name.short_description = "Form name"
-    form_name.admin_order_field = "form__name"
 
-    form_id.short_description = "Form ID"
-    form_id.admin_order_field = "form__id"
-
-
+@admin.register(FormPredefinedFilter)
 class FormPredefinedFilterAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
     list_display = ("form", "name", "short_name", "json_logic")
     list_filter = ("form", "name", "short_name")
 
 
+@admin.register(FormAttachment)
 class FormAttachmentAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
     list_display = ("form", "name", "file", "md5")
@@ -211,6 +212,7 @@ class InstanceFileAdminInline(admin.TabularInline):
     }
 
 
+@admin.register(Instance)
 @admin_attr_decorator
 class InstanceAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("org_unit",)
@@ -268,45 +270,51 @@ class InstanceAdmin(admin.GeoModelAdmin):
         super().save_model(request, obj, form, change)
 
 
+@admin.register(InstanceFile)
 @admin_attr_decorator
 class InstanceFileAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("instance",)
     search_fields = ("name", "file")
 
 
+@admin.register(Project)
 @admin_attr_decorator
 class ProjectAdmin(admin.ModelAdmin):
     list_display = ("name", "app_id", "account", "needs_authentication", "feature_flags_list")
 
+    @admin.display(description="Feature flags")
     @admin_attr_decorator
     def feature_flags_list(self, obj):
         flags = obj.feature_flags.all()
         return ", ".join(flag.name for flag in flags) if len(flags) > 0 else "-"
 
-    feature_flags_list.short_description = "Feature flags"
 
-
+@admin.register(FeatureFlag)
 @admin_attr_decorator
 class FeatureFlagAdmin(admin.ModelAdmin):
     list_display = ("code", "name", "requires_authentication")
 
 
+@admin.register(Link)
 @admin_attr_decorator
 class LinkAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("source", "destination")
 
 
+@admin.register(Mapping)
 @admin_attr_decorator
 class MappingAdmin(admin.GeoModelAdmin):
     list_filter = ("form_id",)
 
 
+@admin.register(MappingVersion)
 @admin_attr_decorator
 class MappingVersionAdmin(admin.GeoModelAdmin):
     list_filter = ("form_version_id",)
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
+@admin.register(Group)
 @admin_attr_decorator
 class GroupAdmin(admin.ModelAdmin):
     raw_id_fields = ("org_units",)
@@ -324,6 +332,7 @@ class UserAdmin(admin.GeoModelAdmin):
     list_display = ("username", "email", "first_name", "last_name", "iaso_profile", "is_superuser")
 
 
+@admin.register(Profile)
 @admin_attr_decorator
 class ProfileAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("org_units",)
@@ -333,6 +342,7 @@ class ProfileAdmin(admin.GeoModelAdmin):
     list_display = ("id", "user", "account", "language")
 
 
+@admin.register(ExportRequest)
 @admin_attr_decorator
 class ExportRequestAdmin(admin.GeoModelAdmin):
     list_filter = ("launcher", "status")
@@ -340,12 +350,14 @@ class ExportRequestAdmin(admin.GeoModelAdmin):
     readonly_fields = list_display
 
 
+@admin.register(ExportLog)
 @admin_attr_decorator
 class ExportLogAdmin(admin.GeoModelAdmin):
     list_display = ("id", "http_status", "url", "sent", "received")
     readonly_fields = list_display
 
 
+@admin.register(ExportStatus)
 @admin_attr_decorator
 class ExportStatusAdmin(admin.GeoModelAdmin):
     list_display = ("id", "status", "last_error_message")
@@ -371,6 +383,7 @@ class ExportStatusAdmin(admin.GeoModelAdmin):
         ) or mark_safe("<span>no logs available.</span>")
 
 
+@admin.register(Task)
 @admin_attr_decorator
 class TaskAdmin(admin.ModelAdmin):
     list_display = ("name", "account", "status", "created_at", "launcher", "result_message")
@@ -388,6 +401,7 @@ class TaskAdmin(admin.ModelAdmin):
         return format_html("<p>{}</p><pre>{}</pre>", task.result.get("message", ""), stack)
 
 
+@admin.register(SourceVersion)
 @admin_attr_decorator
 class SourceVersionAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at",)
@@ -395,6 +409,7 @@ class SourceVersionAdmin(admin.ModelAdmin):
     list_filter = ("data_source",)
 
 
+@admin.register(Entity)
 @admin_attr_decorator
 class EntityAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
@@ -416,12 +431,14 @@ class EntityAdmin(admin.ModelAdmin):
     raw_id_fields = ("attributes",)
 
 
+@admin.register(JsonDataStore)
 @admin_attr_decorator
 class JsonDataStoreAdmin(admin.ModelAdmin):
     raw_id_fields = ["account"]
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
+@admin.register(EntityType)
 @admin_attr_decorator
 class EntityTypeAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at",)
@@ -432,6 +449,7 @@ class EntityTypeAdmin(admin.ModelAdmin):
     )
 
 
+@admin.register(Planning)
 @admin_attr_decorator
 class PlanningAdmin(admin.ModelAdmin):
     raw_id_fields = ("org_unit",)
@@ -478,6 +496,7 @@ class PlanningAdmin(admin.ModelAdmin):
     readonly_fields = ("updated_at", "created_at")
 
 
+@admin.register(Team)
 @admin_attr_decorator
 class TeamAdmin(admin.ModelAdmin):
     list_display = (
@@ -494,6 +513,7 @@ class TeamAdmin(admin.ModelAdmin):
     readonly_fields = ("path",)
 
 
+@admin.register(Assignment)
 @admin_attr_decorator
 class AssignmentAdmin(admin.ModelAdmin):
     raw_id_fields = ("org_unit",)
@@ -505,6 +525,7 @@ class AssignmentAdmin(admin.ModelAdmin):
     date_hierarchy = "created_at"
 
 
+@admin.register(InstanceLock)
 class InstanceLockAdmin(admin.ModelAdmin):
     raw_id_fields = ("top_org_unit",)
     list_display = ("instance", "locked_by", "top_org_unit", "locked_at", "unlocked_by", "unlocked_at")
@@ -516,6 +537,7 @@ class StorageLogEntryInline(admin.TabularInline):
     raw_id_fields = ("instances", "org_unit")
 
 
+@admin.register(StorageDevice)
 class StorageDeviceAdmin(admin.ModelAdmin):
     fields = (
         "account",
@@ -539,6 +561,7 @@ class StorageDeviceAdmin(admin.ModelAdmin):
     ]
 
 
+@admin.register(StoragePassword)
 class StoragePasswordAdmin(admin.ModelAdmin):
     fields = (
         "password",
@@ -552,6 +575,7 @@ class StoragePasswordAdmin(admin.ModelAdmin):
     list_filter = ("project", "is_compromised")
 
 
+@admin.register(Workflow)
 class WorkflowAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
 
@@ -577,6 +601,7 @@ class WorkflowFollowupInline(admin.TabularInline):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
+@admin.register(WorkflowVersion)
 class WorkflowVersionAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
     inlines = [WorkflowChangeInline, WorkflowFollowupInline]
@@ -586,14 +611,17 @@ class WorkflowVersionAdmin(admin.ModelAdmin):
         return WorkflowVersion.objects_include_deleted.all()
 
 
+@admin.register(AlgorithmRun)
 class AlgorithmRunAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
+@admin.register(Page)
 class PageAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
+@admin.register(EntityDuplicate)
 class EntityDuplicateAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
@@ -616,6 +644,7 @@ class EntityDuplicateAdmin(admin.ModelAdmin):
     list_filter = ("validation_status", "entity1__entity_type")
 
 
+@admin.register(EntityDuplicateAnalyzis)
 class EntityDuplicateAnalyzisAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
@@ -685,49 +714,16 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
         return super().get_queryset(request).select_related("org_unit")
 
 
-admin.site.register(Link, LinkAdmin)
-admin.site.register(Form, FormAdmin)
-admin.site.register(Instance, InstanceAdmin)
-admin.site.register(InstanceFile, InstanceFileAdmin)
 admin.site.register(Account)
 admin.site.register(AccountFeatureFlag)
-admin.site.register(Project, ProjectAdmin)
-admin.site.register(FeatureFlag, FeatureFlagAdmin)
 admin.site.register(Device)
-admin.site.register(SourceVersion, SourceVersionAdmin)
 admin.site.register(DataSource)
 admin.site.register(DeviceOwnership)
 admin.site.register(MatchingAlgorithm)
-admin.site.register(AlgorithmRun, AlgorithmRunAdmin)
-admin.site.register(FormVersion, FormVersionAdmin)
-admin.site.register(FormPredefinedFilter, FormPredefinedFilterAdmin)
-admin.site.register(FormAttachment, FormAttachmentAdmin)
-admin.site.register(Profile, ProfileAdmin)
 admin.site.register(ExternalCredentials)
-admin.site.register(Mapping, MappingAdmin)
-admin.site.register(MappingVersion, MappingVersionAdmin)
-admin.site.register(Group, GroupAdmin)
 admin.site.register(GroupSet)
-admin.site.register(ExportRequest, ExportRequestAdmin)
-admin.site.register(ExportStatus, ExportStatusAdmin)
-admin.site.register(ExportLog, ExportLogAdmin)
 admin.site.register(DevicePosition)
-admin.site.register(Page, PageAdmin)
-admin.site.register(Task, TaskAdmin)
-admin.site.register(EntityType, EntityTypeAdmin)
-admin.site.register(JsonDataStore, JsonDataStoreAdmin)
-admin.site.register(Entity, EntityAdmin)
-admin.site.register(Team, TeamAdmin)
-admin.site.register(Planning, PlanningAdmin)
 admin.site.register(BulkCreateUserCsvFile)
-admin.site.register(Assignment, AssignmentAdmin)
-admin.site.register(InstanceLock, InstanceLockAdmin)
-admin.site.register(StorageDevice, StorageDeviceAdmin)
-admin.site.register(StoragePassword, StoragePasswordAdmin)
-admin.site.register(Workflow, WorkflowAdmin)
-admin.site.register(WorkflowVersion, WorkflowVersionAdmin)
 admin.site.register(Report)
 admin.site.register(ReportVersion)
-admin.site.register(EntityDuplicate, EntityDuplicateAdmin)
-admin.site.register(EntityDuplicateAnalyzis, EntityDuplicateAnalyzisAdmin)
 admin.site.register(UserRole)

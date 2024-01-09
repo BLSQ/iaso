@@ -29,7 +29,7 @@ class MobileOrgUnitsSetPagination(Paginator):
     page_query_param = PAGE
     page_size = None  # None to disable pagination by default.
 
-    def get_page_number(self, request):
+    def get_iaso_page_number(self, request):
         return int(request.query_params.get(self.page_query_param, 1))
 
 
@@ -232,7 +232,7 @@ class MobileOrgUnitViewSet(ModelViewSet):
             roots_key = "|".join([str(root) for root in roots])
 
         page_size = self.paginator.get_page_size(request)
-        page_number = self.paginator.get_page_number(request)
+        page_number = self.paginator.get_iaso_page_number(request)
 
         include_geo_json = self.check_include_geo_json()
 

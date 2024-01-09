@@ -236,9 +236,9 @@ class PolioAPITestCase(APITestCase):
             format="json",
         )
         jr = self.assertJSONResponse(response, 201)
-        self.assertEquals(len(jr["rounds"]), 1)
-        self.assertEquals(len(jr["rounds"][0]["datelogs"]), 1)
-        self.assertEquals(jr["rounds"][0]["datelogs"][0]["reason_for_delay"], self.initial_data.key_name)
+        self.assertEqual(len(jr["rounds"]), 1)
+        self.assertEqual(len(jr["rounds"][0]["datelogs"]), 1)
+        self.assertEqual(jr["rounds"][0]["datelogs"][0]["reason_for_delay"], self.initial_data.key_name)
 
     def test_update_round_date_adds_history(self):
         """Updating round dates should add an entry in datelogs"""
@@ -281,12 +281,12 @@ class PolioAPITestCase(APITestCase):
         )
         jr = self.assertJSONResponse(response, 200)
         datelogs = jr["rounds"][0]["datelogs"]
-        self.assertEquals(len(jr["rounds"][0]["datelogs"]), 2)
-        self.assertEquals(jr["rounds"][0]["datelogs"][1]["reason_for_delay"], self.cat_ate_my_homework.key_name)
-        self.assertEquals(jr["rounds"][0]["datelogs"][1]["ended_at"], "2023-04-05")
-        self.assertEquals(jr["rounds"][0]["datelogs"][1]["previous_ended_at"], "2023-04-01")
-        self.assertEquals(jr["rounds"][0]["datelogs"][1]["started_at"], "2023-03-21")
-        self.assertEquals(jr["rounds"][0]["datelogs"][1]["previous_started_at"], "2023-03-21")
+        self.assertEqual(len(jr["rounds"][0]["datelogs"]), 2)
+        self.assertEqual(jr["rounds"][0]["datelogs"][1]["reason_for_delay"], self.cat_ate_my_homework.key_name)
+        self.assertEqual(jr["rounds"][0]["datelogs"][1]["ended_at"], "2023-04-05")
+        self.assertEqual(jr["rounds"][0]["datelogs"][1]["previous_ended_at"], "2023-04-01")
+        self.assertEqual(jr["rounds"][0]["datelogs"][1]["started_at"], "2023-03-21")
+        self.assertEqual(jr["rounds"][0]["datelogs"][1]["previous_started_at"], "2023-03-21")
 
     def test_can_only_see_campaigns_within_user_org_units_hierarchy(self):
         """

@@ -65,7 +65,7 @@ export const UsersSelect: FunctionComponent<Props> = ({
             clearable={false}
             multi
             value={value?.filter(userId =>
-                profilesList.map(i => i.value).includes(userId),
+                Boolean(profilesList.find(profile => profile.value===userId))
             )}
             options={profilesList}
             onChange={handleChange}

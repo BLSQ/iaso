@@ -125,7 +125,7 @@ class FormAttachmentsAPITestCase(APITestCase):
                 BASE_URL,
                 data={"form_id": self.form_1.id, "file": file},
                 format="multipart",
-                HTTP_ACCEPT="application/json",
+                headers={"accept": "application/json"},
             )
         self.assertJSONResponse(response, 403)
 
@@ -138,7 +138,7 @@ class FormAttachmentsAPITestCase(APITestCase):
                 BASE_URL,
                 data={"form_id": self.form_1.id, "file": file},
                 format="multipart",
-                HTTP_ACCEPT="application/json",
+                headers={"accept": "application/json"},
             )
         self.assertJSONResponse(response, 201)
         form_attachment_data = response.json()
@@ -173,7 +173,7 @@ class FormAttachmentsAPITestCase(APITestCase):
                 BASE_URL,
                 data={"form_id": self.form_1.id, "file": file},
                 format="multipart",
-                HTTP_ACCEPT="application/json",
+                headers={"accept": "application/json"},
             )
         self.assertJSONResponse(response, 201)
         form_attachment_data = response.json()

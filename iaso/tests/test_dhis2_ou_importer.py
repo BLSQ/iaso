@@ -156,7 +156,7 @@ class CommandTests(TestCase, DHIS2TestMixin):
             ],
         )
         facility_type = groupsets_qs.get(name="Facility Type")
-        self.assertQuerysetEqual(
+        self.assertQuerySetEqual(
             facility_type.groups.all().order_by("name"),
             ["CHC", "CHP", "Clinic", "Hospital", "MCHP"],
             transform=lambda x: x.name,
@@ -304,7 +304,7 @@ class TaskTests(TestCase, DHIS2TestMixin):
             ],
         )
         facility_type = groupsets_qs.get(name="Facility Type")
-        self.assertQuerysetEqual(
+        self.assertQuerySetEqual(
             facility_type.groups.all(),
             ["CHP", "MCHP", "Clinic", "Hospital", "CHC"],
             transform=lambda x: x.name,

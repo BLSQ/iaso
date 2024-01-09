@@ -330,7 +330,6 @@ TIME_ZONE = "UTC"
 
 USE_I18N = True
 
-USE_L10N = True
 
 # We need a custom setting, because when USE_L10N is True, the locale-dictated
 # `DATE_INPUT_FORMATS` has higher precedence and will be applied instead.

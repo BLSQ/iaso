@@ -9,7 +9,7 @@ import django_cte
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
-from django.contrib.postgres.fields import ArrayField, CITextField
+from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.indexes import GistIndex
 from django.db import models, transaction
 from django.db.models import QuerySet, Q
@@ -273,7 +273,9 @@ class OrgUnit(TreeModel):
     version = models.ForeignKey("SourceVersion", null=True, blank=True, on_delete=models.CASCADE)
     parent = models.ForeignKey("OrgUnit", on_delete=models.CASCADE, null=True, blank=True)
     path = PathField(null=True, blank=True, unique=True)
-    aliases = ArrayField(CITextField(max_length=255, blank=True), size=100, null=True, blank=True)
+    aliases = ArrayField(
+        models.CharField(max_length=255, blank=True, db_collation="case_insensitive"), size=100, null=True, blank=True
+    )
 
     org_unit_type = models.ForeignKey(OrgUnitType, on_delete=models.CASCADE, null=True, blank=True)
 

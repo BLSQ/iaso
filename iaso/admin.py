@@ -111,6 +111,7 @@ class OrgUnitReferenceInstanceInline(admin.TabularInline):
     def has_add_permission(self):
         return True
 
+
 @admin.register(OrgUnit)
 @admin_attr_decorator
 class OrgUnitAdmin(admin.GeoModelAdmin):

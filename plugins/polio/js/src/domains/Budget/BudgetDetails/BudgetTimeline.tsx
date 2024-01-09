@@ -75,12 +75,15 @@ export const BudgetTimeline: FunctionComponent<Props> = ({
                             <Box>
                                 {category.label}
 
-                                <Box display="flex" justifyContent="center">
-                                    <Divider
-                                        orientation="vertical"
-                                        className={classes.divider}
-                                    />
-                                </Box>
+                                {/* <Box> */}
+                                <Divider
+                                    orientation="vertical"
+                                    className={classnames(
+                                        classes.divider,
+                                        classes.stepDivider,
+                                    )}
+                                />
+                                {/* </Box> */}
 
                                 <Box>
                                     {category.items.map((item, index) => {

@@ -27,7 +27,7 @@ django-redis==4.12.1  # https://github.com/jazzband/django-redis/tags
 # Pandas.
 # ------------------------------------------------------------------------------
 pandas==2.0.3  # https://github.com/pandas-dev/pandas/tags
-geopandas==0.14.1  # https://github.com/geopandas/geopandas/tags
+geopandas==0.14.2  # https://github.com/geopandas/geopandas/tags
 numpy==1.26.2  # https://github.com/numpy/numpy/tags
 Shapely==2.0.2  # https://github.com/shapely/shapely/tags
 

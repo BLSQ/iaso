@@ -108,7 +108,7 @@ class OrgUnitReferenceInstanceInline(admin.TabularInline):
     )
     can_delete = True
 
-    def has_add_permission(self):
+    def has_add_permission(self, request, obj=None):
         return True
 
 

@@ -31,7 +31,7 @@ class Migration(migrations.Migration):
     """
 
     dependencies = [
-        ("iaso", "0251_merge_20231212_0857"),
+        ("iaso", "0254_merge_20240108_1001"),
     ]
 
     operations = [

@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ("contenttypes", "0002_remove_content_type_name"),
-        ("iaso", "0252_case_insensitive_collation"),
+        ("iaso", "0255_case_insensitive_collation"),
     ]
 
     operations = [

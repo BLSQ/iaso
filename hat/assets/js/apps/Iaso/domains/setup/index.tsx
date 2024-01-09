@@ -25,9 +25,10 @@ import { LangSwitch } from '../home/components/LangSwitch';
 
 const useStyles = makeStyles(theme => ({
     paper: {
-        margin: `${theme.spacing(4)}px auto`,
+        margin: `auto`,
         width: 500,
         padding: theme.spacing(2),
+        marginTop: theme.spacing(4),
     },
     icon: {
         // @ts-ignore

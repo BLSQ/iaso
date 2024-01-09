@@ -31,6 +31,8 @@ type ColumnCell<T> = { row: { original: T; index: number } };
 
 const getStatusColor = (status: ChangeRequestValidationStatus) => {
     switch (status) {
+        case 'new':
+            return 'warning.main';
         case 'approved':
             return 'success.main';
         case 'rejected':
@@ -195,7 +197,7 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
                 marginTop={false}
                 data={data?.results ?? []}
                 pages={data?.pages ?? 1}
-                defaultSorted={[{ id: 'org_unit__name', desc: false }]}
+                defaultSorted={[{ id: 'updated_at', desc: true }]}
                 columns={columns}
                 count={data?.count ?? 0}
                 baseUrl={baseUrl}

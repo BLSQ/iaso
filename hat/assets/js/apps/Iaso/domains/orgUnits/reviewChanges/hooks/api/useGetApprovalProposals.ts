@@ -15,7 +15,7 @@ const getOrgUnitChangeProposals = (options: ApproveOrgUnitParams) => {
         groups: options.groups,
         org_unit_type_id: options.org_unit_type_id,
         status: options.status,
-        order: options.order || 'org_unit__name',
+        order: options.order || '-updated_at',
         limit: options.pageSize || 10,
         page: options.page,
     };

@@ -81,6 +81,7 @@ from .models import (
     WorkflowChange,
     WorkflowFollowup,
     WorkflowVersion,
+    OrgUnitReferenceInstance,
 )
 from .models.microplanning import Team, Planning, Assignment
 from .models.data_store import JsonDataStore
@@ -98,12 +99,28 @@ def admin_attr_decorator(func: Any) -> AdminAttributes:
     return func
 
 
+class OrgUnitReferenceInstanceInline(admin.TabularInline):
+    model = OrgUnitReferenceInstance
+    extra = 0
+    raw_id_fields = (
+        "form",
+        "instance",
+    )
+    can_delete = True
+
+    def has_add_permission(self):
+        return True
+
+
 @admin_attr_decorator
 class OrgUnitAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("parent", "reference_instances")
     list_filter = ("org_unit_type", "custom", "validated", "sub_source", "version")
     search_fields = ("name", "source_ref", "uuid")
     readonly_fields = ("path",)
+    inlines = [
+        OrgUnitReferenceInstanceInline,
+    ]
 
 
 admin.site.register(OrgUnit, OrgUnitAdmin)

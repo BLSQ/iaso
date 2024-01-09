@@ -6,10 +6,15 @@ from plugins.polio.models import Notification, NotificationImport
 class NotificationImportSerializer(serializers.ModelSerializer):
     class Meta:
         model = NotificationImport
-        fields = ["id", "account", "file", "created_by"]
+        fields = ["id", "account", "file", "status", "errors", "created_by", "created_at", "updated_at"]
         extra_kwargs = {
             "id": {"read_only": True},
             "account": {"read_only": True},
+            "status": {"read_only": True},
+            "errors": {"read_only": True},
+            "created_by": {"read_only": True},
+            "created_at": {"read_only": True},
+            "updated_at": {"read_only": True},
         }
 
     def validate_file(self, file):

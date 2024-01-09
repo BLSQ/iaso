@@ -15,7 +15,7 @@ const useStyles = makeStyles(theme => ({
     addLink: {
         position: 'absolute',
         left: theme.spacing(8),
-        top: `-${theme.spacing(1.5)}px`,
+        top: `-${theme.spacing(0.9)}`,
     },
     title: {
         display: 'inline',

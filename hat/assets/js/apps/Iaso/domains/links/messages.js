@@ -50,8 +50,8 @@ export const MESSAGES = defineMessages({
         id: 'iaso.label.validator',
     },
     validated: {
-        defaultMessage: 'Validated',
-        id: 'iaso.forms.validated',
+        defaultMessage: 'Valid',
+        id: 'iaso.forms.valid',
     },
     notValidated: {
         defaultMessage: 'Not validated',

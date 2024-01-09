@@ -89,6 +89,7 @@ export const BudgetCard: FunctionComponent<Props> = ({ budget }) => {
                     xs={2}
                     direction="column"
                     justifyContent="center"
+                    alignItems="flex-start"
                 >
                     <Divider orientation="vertical" />
 

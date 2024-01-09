@@ -31,7 +31,7 @@ MODULE_PERMISSIONS = {
         "iaso_entity_type_write",
     ],
     "EXTERNAL_STORAGE": ["iaso_storages"],
-    "PLANNING": ["iaso_assignments"],
+    "PLANNING": ["iaso_assignments", "iaso_planning"],
     "POLIO_PROJECT": [
         "iaso_polio_config",
         "iaso_polio",
@@ -43,7 +43,7 @@ MODULE_PERMISSIONS = {
         "iaso_polio_vaccine_authorizations_read_only",
         "iaso_polio_vaccine_authorizations_admin",
     ],
-    "REGISTRY": ["iaso_registry", "iaso_test", "iaso_testtt", "iaso_testttr", "iaso_testttrr"],
+    "REGISTRY": ["iaso_registry", "iaso_org_unit_change_request_review"],
 }
 
 MODULES = [

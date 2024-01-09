@@ -64,7 +64,9 @@ export const UsersSelect: FunctionComponent<Props> = ({
             loading={isFetchingProfiles}
             clearable={false}
             multi
-            value={value}
+            value={value?.filter(userId =>
+                profilesList.map(i => i.value).includes(userId),
+            )}
             options={profilesList}
             onChange={handleChange}
             renderTags={(tagValue, getTagProps) =>

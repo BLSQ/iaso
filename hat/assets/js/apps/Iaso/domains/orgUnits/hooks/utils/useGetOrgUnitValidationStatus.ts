@@ -2,10 +2,10 @@ import { UseQueryResult } from 'react-query';
 import { defineMessages } from 'react-intl';
 
 import { useSafeIntl } from 'bluesquare-components';
-import { useSnackQuery } from '../../../libs/apiHooks';
-import { getRequest } from '../../../libs/Api';
-import { DropdownOptions } from '../../../types/utils';
-import { OrgUnitStatus } from '../../orgUnits/types/orgUnit';
+import { useSnackQuery } from '../../../../libs/apiHooks';
+import { getRequest } from '../../../../libs/Api';
+import { DropdownOptions } from '../../../../types/utils';
+import { OrgUnitStatus } from '../../types/orgUnit';
 
 const MESSAGES = defineMessages({
     all: {
@@ -25,14 +25,8 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.valid',
     },
 });
-/** @deprecated
- *
- * use orgUnits/hooks/utils/useGetOrgUnitValidationStatus instead
- *
- * Will be removed: IA-2545
- *
- */
-export const useGetValidationStatus = (
+
+export const useGetOrgUnitValidationStatus = (
     includeAll = false,
     enabled = true,
 ): UseQueryResult<DropdownOptions<string>[], Error> => {

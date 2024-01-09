@@ -901,6 +901,7 @@
     "iaso.permissions.tooltip.iaso_entity_duplicates_read": "View entity duplicates, without the possibility to merge them",
     "iaso.permissions.tooltip.iaso_entity_duplicates_write": "View and edit the entity duplicates - e.g. decide to merge or not similar entities",
     "iaso.permissions.tooltip.iaso_entity_type_write": "Manage entity types and workflows associated. Entity types can be 'Beneficiaries', 'Mosquito nets', 'Medicines' etc.",
+    "iaso.permissions.tooltip.iaso_org_unit_change_request_review": "Org unit change request review",
     "iaso.permissions.tooltip.iaso_org_unit_groups": "Manage groups of organisation units",
     "iaso.permissions.tooltip.iaso_org_unit_types": "Manage types of organisation units, i.e. define the different levels of the pyramid (eg Country/Region/District/Facility/etc)",
     "iaso.permissions.tooltip.iaso_page_write": "External links management: create or edit an external link",

@@ -491,6 +491,10 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.tooltip.iaso_polio_notifications',
         defaultMessage: 'Manage polio notifications - Read and Write',
     },
+    iaso_org_unit_change_request_review: {
+        id: 'iaso.permissions.tooltip.iaso_org_unit_change_request_review',
+        defaultMessage: 'Org unit change request review',
+    },
 });
 
 export default PERMISSIONS_MESSAGES;

@@ -43,7 +43,7 @@ MODULE_PERMISSIONS = {
         "iaso_polio_vaccine_authorizations_read_only",
         "iaso_polio_vaccine_authorizations_admin",
     ],
-    "REGISTRY": ["iaso_registry"],
+    "REGISTRY": ["iaso_registry", "iaso_org_unit_change_request_review"],
 }
 
 MODULES = [

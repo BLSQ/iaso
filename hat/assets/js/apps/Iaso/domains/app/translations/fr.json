@@ -901,6 +901,7 @@
     "iaso.permissions.tooltip.iaso_entity_duplicates_read": "Lecture des doublons d’entités, sans possibilité de les fusionner",
     "iaso.permissions.tooltip.iaso_entity_duplicates_write": "Lecture et écriture des doublons d’entités - décision de fusionner ou non des entités similaires",
     "iaso.permissions.tooltip.iaso_entity_type_write": "Gestion des types d’entités et des processus (workflows) associés. Ex de types d’entités: “Bénéficiaires”, “Moustiquaires”, “Médicaments”, etc.",
+    "iaso.permissions.tooltip.iaso_org_unit_change_request_review": "Demande de changement d'unité d'org.",
     "iaso.permissions.tooltip.iaso_org_unit_groups": "Gestion des groupes d'unités d'organisation",
     "iaso.permissions.tooltip.iaso_org_unit_types": "Gestion des types d’unité d’organisation, i.e. définir les différents niveaux de la pyramide (ex: Pays/Région/Aire/Formation sanitaire)",
     "iaso.permissions.tooltip.iaso_page_write": "Gestion des liens externes : créer ou modifier un lien externe",

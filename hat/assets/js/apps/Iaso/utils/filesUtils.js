@@ -35,10 +35,10 @@ export const sortFilesType = files => {
         const fileName = getFileName(f.path);
         const fullFile = {
             ...f,
-            ...fileName,
+            ...fileName
         };
         if (imgExtensions.indexOf(fileName.extension) !== -1) {
-            filesList.images.push(fullFile);
+            filesList.images.push({...fullFile, checked: false});
         } else if (videoExtensions.indexOf(fileName.extension) !== -1) {
             filesList.videos.push(fullFile);
         } else if (documentExtensions.indexOf(fileName.extension) !== -1) {

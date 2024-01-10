@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import isEqual from 'lodash/isEqual';
 
-import { Grid } from '@mui/material';
+import { Grid, Checkbox } from '@mui/material';
 import { withStyles } from '@mui/styles';
 
 import PropTypes from 'prop-types';
@@ -14,6 +14,9 @@ const styles = theme => ({
         marginTop: theme.spacing(2),
         marginBottom: theme.spacing(2),
     },
+    imageCheckBox: {
+        left: theme.spacing(12),
+    }
 });
 
 class DocumentsListComponent extends Component {
@@ -35,6 +38,7 @@ class DocumentsListComponent extends Component {
                                 getFileName(file.path).name
                             }`}
                         >
+                            <Checkbox className={classes.imageCheckBox} />
                             <DocumentsItem file={file} />
                         </Grid>
                     ))}

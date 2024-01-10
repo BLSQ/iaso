@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import isEqual from 'lodash/isEqual';
 
-import { Grid, Tabs, Tab } from '@mui/material';
+import { Grid, Tabs, Tab, Fab } from '@mui/material';
 import { withStyles } from '@mui/styles';
 
 import PropTypes from 'prop-types';
@@ -14,7 +14,7 @@ import LazyImagesList from '../../../components/files/LazyImagesListComponent';
 import DocumentsList from '../../../components/files/DocumentsListComponent';
 import VideosList from '../../../components/files/VideosListComponent';
 import InstancePopover from './InstancePopoverComponent.tsx';
-
+import DownloadIcon from '@mui/icons-material/Download';
 import { sortFilesType } from '../../../utils/filesUtils';
 import { fetchInstanceDetail } from '../../../utils/requests';
 import MESSAGES from '../messages';
@@ -41,8 +41,12 @@ const styles = theme => ({
     tabContainer: {
         minHeight: minTabHeight,
         backgroundColor: 'white',
-        marginTop: theme.spacing(2),
+        marginTop: theme.spacing(6),
     },
+    downloadFabIcon: {
+        position: 'relative',
+        left: theme.spacing(215)
+    }
 });
 
 class InstancesFilesList extends Component {
@@ -54,6 +58,7 @@ class InstancesFilesList extends Component {
             sortedFiles: sortFilesType(props.files ? props.files : []),
             instanceDetail: props.instanceDetail,
             tab: 'images',
+            checkedImages: [],
         };
     }
 
@@ -102,6 +107,7 @@ class InstancesFilesList extends Component {
     }
 
     openLightbox(index) {
+        console.info('INDEXING ', index, this.props);
         const { onLightBoxToggled } = this.props;
         this.setCurrentIndex(index, 'images');
         this.setState({
@@ -120,6 +126,26 @@ class InstancesFilesList extends Component {
         onLightBoxToggled(false);
     }
 
+    checkedImage(index, checked) {
+        // console.info("EVENT ...:", event, event.target.value, event.target.checked);
+        console.info('CURRENT INDEX ...:', index, checked);
+        //let checkedImages = this.state.checkedImages;
+        let images = this.state.sortedFiles.images;
+        if (checked === true) {
+            console.info('CHECKED IMAGE ', index, checked);
+        } else {
+            checked = false;
+            console.info('UNCHECKED IMAGE ', index, checked);
+        }
+        images = images.map((image, currentIndex) => {
+            return {
+                ...image,
+                checked: currentIndex === index ? checked : image?.checked,
+            };
+        });
+        this.setState({ sortedFiles: { images: images } });
+    }
+
     render() {
         const {
             fetching,
@@ -127,6 +153,9 @@ class InstancesFilesList extends Component {
             classes,
             intl: { formatMessage },
         } = this.props;
+
+        console.info('PROPS ...:', this.props);
+        console.info('Cheched images ...:', this.state);
 
         const {
             currentImageIndex,
@@ -190,6 +219,9 @@ class InstancesFilesList extends Component {
                     <LazyImagesList
                         imageList={sortedFiles.images}
                         onImageClick={index => this.openLightbox(index)}
+                        onSelectedImage={(index, checked) =>
+                            this.checkedImage(index, checked)
+                        }
                     />
                 </div>
                 {tab === 'videos' && (
@@ -220,6 +252,11 @@ class InstancesFilesList extends Component {
                         )}
                     />
                 )}
+                
+
+                <Fab color="primary" aria-label="download" className={classes.downloadFabIcon}>
+                    <DownloadIcon />
+                </Fab>
             </section>
         );
     }

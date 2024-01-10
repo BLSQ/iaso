@@ -1,6 +1,6 @@
 import typing
 
-from rest_framework import permissions
+from rest_framework import permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
@@ -76,9 +76,15 @@ def import_workflow_real(workflow_data: typing.Dict, account: Account) -> Workfl
     except Workflow.DoesNotExist:
         wf = Workflow.objects.create(uuid=workflow_data["uuid"], entity_type=entity_type)
 
+    # Set all related WorkflowVersion objects' status to UNPUBLISHED if they are currently PUBLISHED
+    published_versions = wf.versions.filter(status=WorkflowVersion.WorkflowVersionsStatus.PUBLISHED)
+    for version in published_versions:
+        version.status = WorkflowVersion.WorkflowVersionsStatus.UNPUBLISHED
+        version.save()
+
     for version_data in workflow_data["versions"]:
         try:
-            version = WorkflowVersion.objects.get(uuid=version_data["uuid"])
+            version = WorkflowVersion.objects_include_deleted.get(uuid=version_data["uuid"])
             wv_changed = False
 
             if version.name != version_data["name"]:
@@ -146,5 +152,17 @@ def import_workflow(request):
     Imports the workflow version given by from a JSON body containing an export workflow.
     """
     workflow_data = request.data
+
+    published_versions = [
+        version
+        for version in workflow_data["versions"]
+        if version["status"] == WorkflowVersion.WorkflowVersionsStatus.PUBLISHED
+    ]
+    if len(published_versions) > 1:
+        return Response(
+            {"error": "There can only be one published version in the workflow data."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
     workflow = import_workflow_real(workflow_data, request.user.iaso_profile.account)
     return Response({"status": f"Workflow {workflow.uuid} imported successfully"})

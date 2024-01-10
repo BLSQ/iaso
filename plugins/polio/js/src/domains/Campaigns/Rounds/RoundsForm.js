@@ -203,7 +203,7 @@ export const RoundsForm = () => {
                 )}
             </Box>
             {currentRoundNumber !== undefined && (
-                <Box mt={2} style={{ width: '100%' }}>
+                <Box mt={2} width="100%" >
                     <RoundForm roundNumber={currentRoundNumber} />
                 </Box>
             )}

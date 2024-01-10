@@ -15,7 +15,7 @@ from iaso.test import APITestCase, TestCase
 from iaso import models as m
 
 
-DT = datetime.datetime(2023, 11, 21, 11, 0, 0, 0, tzinfo=timezone.utc)
+DT = datetime.datetime(2023, 11, 21, 11, 0, 0, 0, tzinfo=datetime.timezone.utc)
 
 TEST_MEDIA_ROOT = os.path.join(settings.BASE_DIR, "media/_test")
 XLSX_FILE_PATH = "plugins/polio/tests/fixtures/linelist_notification_test.xlsx"
@@ -43,16 +43,34 @@ class NotificationImportSerializerTestCase(TestCase):
         cls.account = m.Account.objects.create(name="Account", default_version=cls.source_version)
         cls.user = cls.create_user_with_profile(username="user", account=cls.account)
 
+    def test_serialize_notification_import(self):
+        notification_import = NotificationImport.objects.create(
+            file="foo.xlsx", account=self.account, created_by=self.user, errors=[{"KEY": "value"}]
+        )
+        serializer = NotificationImportSerializer(notification_import)
+        self.assertEqual(
+            serializer.data,
+            {
+                "id": notification_import.pk,
+                "account": self.account.pk,
+                "file": "/media/foo.xlsx",
+                "status": "new",
+                "errors": [{"KEY": "value"}],
+                "created_by": self.user.pk,
+                "created_at": "2023-11-21T11:00:00Z",
+                "updated_at": None,
+            },
+        )
+
     def test_deserialize_notification_import(self):
         with open(XLSX_FILE_PATH, "rb") as xlsx_file:
             data = {
                 "file": SimpleUploadedFile("notifications.xlsx", xlsx_file.read()),
-                "created_by": self.user.pk,
             }
             serializer = NotificationImportSerializer(data=data)
 
         self.assertTrue(serializer.is_valid())
-        notification_import = serializer.save(account=self.account)
+        notification_import = serializer.save(account=self.account, created_by=self.user)
         self.assertEqual(notification_import.account, self.account)
         self.assertEqual(notification_import.created_by, self.user)
         self.assertEqual(notification_import.created_at, DT)
@@ -328,7 +346,7 @@ class NotificationViewSetTestCase(APITestCase):
         self.client.force_authenticate(self.user)
         response = self.client.get("/api/polio/notifications/download_sample_xlsx/")
         self.assertEqual(response.status_code, 200)
-        self.assertEquals(response.get("Content-Disposition"), 'inline; filename="notifications_template.xlsx"')
+        self.assertEqual(response.get("Content-Disposition"), 'inline; filename="notifications_template.xlsx"')
 
     @mock.patch("plugins.polio.api.notifications.views.create_polio_notifications_async")
     def test_action_import_xlsx(self, mocked_create_polio_notifications_async):
@@ -339,10 +357,28 @@ class NotificationViewSetTestCase(APITestCase):
                 f"/api/polio/notifications/import_xlsx/",
                 data=data,
                 format="multipart",
-                HTTP_ACCEPT="application/json",
+                headers={"accept": "application/json"},
             )
         self.assertJSONResponse(response, 201)
         self.assertTrue(mocked_create_polio_notifications_async.called)
         notification_import = NotificationImport.objects.get(pk=response.data["id"])
         self.assertEqual(notification_import.account, self.account)
         self.assertEqual(notification_import.created_by, self.user)
+
+    def test_action_get_import_details(self):
+        self.client.force_authenticate(self.user)
+        notification_import = NotificationImport.objects.create(
+            file="foo.xlsx", account=self.account, created_by=self.user, errors=[{"KEY": "value"}]
+        )
+        response = self.client.get(f"/api/polio/notifications/{notification_import.pk}/get_import_details/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["id"], notification_import.pk)
+
+    def test_action_get_import_details_with_wrong_account(self):
+        self.client.force_authenticate(self.user)
+        other_account = m.Account.objects.create(name="Other account", default_version=self.source_version)
+        notification_import = NotificationImport.objects.create(
+            file="foo.xlsx", account=other_account, created_by=self.user
+        )
+        response = self.client.get(f"/api/polio/notifications/{notification_import.pk}/get_import_details/")
+        self.assertEqual(response.status_code, 404)

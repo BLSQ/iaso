@@ -5,10 +5,10 @@ import { getChipColors } from '../../constants/chipColors';
 import { baseUrls } from '../../constants/urls';
 
 import { locationLimitMax } from './constants/orgUnitConstants';
-import { orderOrgUnitsByDepth } from '../../utils/map/mapUtils';
+import { orderOrgUnitsByDepth } from '../../utils/map/mapUtils.ts';
 
 import MESSAGES from './messages';
-import { useGetValidationStatus } from '../forms/hooks/useGetValidationStatus';
+import { useGetValidationStatus } from '../forms/hooks/useGetValidationStatus.ts';
 
 export const fetchLatestOrgUnitLevelId = levels => {
     if (levels) {

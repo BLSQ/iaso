@@ -14,7 +14,7 @@ from iaso.test import TestCase
 from plugins.polio.models import Notification, NotificationImport, NotificationXlsxImporter
 
 
-DT = datetime.datetime(2023, 12, 12, 11, 0, 0, 0, tzinfo=timezone.utc)
+DT = datetime.datetime(2023, 12, 12, 11, 0, 0, 0, tzinfo=datetime.timezone.utc)
 
 TEST_MEDIA_ROOT = os.path.join(settings.BASE_DIR, "media/_test")
 
@@ -208,7 +208,7 @@ class NotificationXlsxImporterTestCase(TestCase):
 
     def test_clean_date(self):
         self.assertEqual(self.importer.clean_date(""), None)
-        dt = datetime.datetime(2023, 11, 14, 15, 0, 0, 0, tzinfo=timezone.utc)
+        dt = datetime.datetime(2023, 11, 14, 15, 0, 0, 0, tzinfo=datetime.timezone.utc)
         self.assertEqual(self.importer.clean_date(dt), datetime.date(2023, 11, 14))
 
     def test_clean_vdpv_category(self):

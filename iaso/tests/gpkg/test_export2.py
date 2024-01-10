@@ -73,19 +73,21 @@ class GPKGExport(TestCase):
         self.assertEqual(root.name, "ou1")
         self.assertEqual(root.org_unit_type.name, "type1")
         self.assertEqual(root.orgunit_set.count(), 1)
-        self.assertQuerysetEqual(root.groups.all(), ["<Group: group1 | test_import  2 >"])
+        self.assertQuerySetEqual(root.groups.all(), ["<Group: group1 | test_import  2 >"], transform=repr)
         c1 = root.orgunit_set.first()
         self.assertEqual(c1.name, "ou2")
         self.assertEqual(c1.org_unit_type.name, "type2")
-        self.assertQuerysetEqual(
-            c1.groups.all().order_by("name"), ["<Group: group1 | test_import  2 >", "<Group: group2 | test_import  2 >"]
+        self.assertQuerySetEqual(
+            c1.groups.all().order_by("name"),
+            ["<Group: group1 | test_import  2 >", "<Group: group2 | test_import  2 >"],
+            transform=repr,
         )
         self.assertEqual(c1.geom, c1.simplified_geom)
         self.assertEqual(c1.geom, self.polygon)
         c2 = c1.orgunit_set.first()
         self.assertEqual(c2.name, "ou3")
         self.assertEqual(c2.org_unit_type.name, "Unknown")
-        self.assertQuerysetEqual(c2.groups.all(), [])
+        self.assertQuerySetEqual(c2.groups.all(), [])
 
     def test_export_mixed(self):
         # new type with two orgunit of mixed type geography

@@ -49,6 +49,7 @@ export const PolioDialogTab: FunctionComponent<Props> = ({
             )}
             disableFocusRipple={disabled}
             disableRipple={disabled}
+            iconPosition="end"
             icon={
                 (disabled && title === formatMessage(MESSAGES.scope) && (
                     <Tooltip

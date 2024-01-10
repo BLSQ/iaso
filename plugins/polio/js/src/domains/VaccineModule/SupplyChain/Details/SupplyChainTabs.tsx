@@ -30,14 +30,14 @@ export const SupplyChainTabs: FunctionComponent<Props> = ({
     return (
         <Tabs
             value={tab}
+            textColor="inherit"
+            indicatorColor="secondary"
             classes={{
                 root: classes.tabs,
-                indicator: classes.indicator,
             }}
             onChange={onChangeTab}
         >
             <Tab key={VRF} value={VRF} label={formatMessage(MESSAGES[VRF])} />
-            {/* TODO extract Tabs component */}
             <TabWithInfoIcon
                 key={PREALERT}
                 value={PREALERT}

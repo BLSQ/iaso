@@ -96,7 +96,7 @@ class InstanceModelTestCase(TestCase):
         )
 
         counts = sorted(m.Instance.objects.with_status().counts_by_status(), key=lambda x: x["period"])
-        self.assertEquals(
+        self.assertEqual(
             counts,
             [
                 {
@@ -132,7 +132,7 @@ class InstanceModelTestCase(TestCase):
             ],
         )
 
-        self.assertEquals(
+        self.assertEqual(
             sorted(
                 m.Instance.objects.filter(period__in=["201903"]).with_status().counts_by_status(),
                 key=lambda x: x["period"],
@@ -384,8 +384,8 @@ class InstanceModelTestCase(TestCase):
         #    grp14/synthesis14/pmns_qlte_cs_rdc_14_total_max 13
         # should be ignored (previous version calculate)
 
-        self.assertEquals(json_instance["pmns_qlte_cs_rdc_14_total_max"], "26")
-        self.assertEquals(json_instance["pmns_qlte_cs_rdc_14_total_point"], "26")
+        self.assertEqual(json_instance["pmns_qlte_cs_rdc_14_total_max"], "26")
+        self.assertEqual(json_instance["pmns_qlte_cs_rdc_14_total_point"], "26")
 
     def test_instances_for_org_unit_hierarchy(self):
         """Test the querying instances within a specific org unit hierarchy"""

@@ -181,6 +181,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Modules',
         id: 'iaso.label.modules',
     },
+    reviewChangeProposals: {
+        defaultMessage: 'Review change proposals',
+        id: 'iaso.label.reviewChangeProposals',
+    },
 });
 
 export default MESSAGES;

@@ -2,6 +2,8 @@ import uuid
 
 from rest_framework import serializers
 from django.contrib.auth.models import User
+
+from iaso.api.mobile.org_units import ReferenceInstancesSerializer
 from iaso.models import Instance, OrgUnit, OrgUnitChangeRequest, OrgUnitType
 from iaso.utils.serializer.id_or_uuid_field import IdOrUuidRelatedField
 from iaso.utils.serializer.three_dim_point_field import ThreeDimPointField
@@ -86,7 +88,7 @@ class MobileOrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
     new_location = ThreeDimPointField()
     created_at = TimestampField()
     updated_at = TimestampField()
-    new_reference_instances = serializers.SlugRelatedField(slug_field="uuid", many=True, read_only=True)
+    new_reference_instances = ReferenceInstancesSerializer(many=True)
 
     class Meta:
         model = OrgUnitChangeRequest

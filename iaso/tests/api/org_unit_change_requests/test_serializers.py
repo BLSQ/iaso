@@ -1,3 +1,4 @@
+import collections
 import datetime
 import time_machine
 import uuid
@@ -199,10 +200,12 @@ class MobileOrgUnitChangeRequestListSerializerTestCase(TestCase):
         org_unit = m.OrgUnit.objects.create(org_unit_type=org_unit_type)
 
         form = m.Form.objects.create(name="Vaccine form")
+        form_version = m.FormVersion.objects.create(form=form)
         account = m.Account.objects.create(name="Account")
         user = cls.create_user_with_profile(username="user", account=account)
 
         cls.form = form
+        cls.form_version = form_version
         cls.org_unit = org_unit
         cls.org_unit_type = org_unit_type
         cls.user = user
@@ -220,7 +223,13 @@ class MobileOrgUnitChangeRequestListSerializerTestCase(TestCase):
         change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
         new_group = m.Group.objects.create(name="new group")
         change_request.new_groups.set([new_group])
-        new_instance = m.Instance.objects.create(form=self.form, org_unit=self.org_unit, uuid=uuid.uuid4())
+        new_instance = m.Instance.objects.create(
+            form=self.form,
+            org_unit=self.org_unit,
+            uuid=uuid.uuid4(),
+            json={"Foo": "Bar"},
+            form_version=self.form_version,
+        )
         change_request.new_reference_instances.set([new_instance])
 
         serializer = MobileOrgUnitChangeRequestListSerializer(change_request)
@@ -249,7 +258,19 @@ class MobileOrgUnitChangeRequestListSerializerTestCase(TestCase):
                 "new_location_accuracy": None,
                 "new_opening_date": "2022-10-27",
                 "new_closed_date": "2024-10-27",
-                "new_reference_instances": [str(new_instance.uuid)],
+                "new_reference_instances": [
+                    collections.OrderedDict(
+                        {
+                            "id": new_instance.id,
+                            "uuid": str(new_instance.uuid),
+                            "form_id": self.form.id,
+                            "form_version_id": self.form.latest_version.id,
+                            "created_at": 1697202000.0,
+                            "updated_at": 1697202000.0,
+                            "json": {"Foo": "Bar"},
+                        }
+                    )
+                ],
             },
         )
 

@@ -19,7 +19,7 @@ import WatchLaterIcon from '@mui/icons-material/WatchLater';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import StorageIcon from '@mui/icons-material/Storage';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
-import { Dashboard } from './src/domains/Campaigns/Dashboard/Dashboard';
+import { Dashboard } from './src/domains/Campaigns/CampaignsList/Dashboard';
 import { Calendar } from './src/domains/Calendar/Calendar';
 import { CampaignHistory } from './src/domains/Campaigns/campaignHistory/CampaignHistory';
 import { CountryNotificationsConfig } from './src/domains/Config/CountryNotification/CountryNotificationsConfig';
@@ -48,9 +48,7 @@ import {
     STOCK_VARIATION,
     NOTIFICATIONS_BASE_URL,
 } from './src/constants/routes';
-// @ts-ignore
 import fr from './src/constants/translations/fr.json';
-// @ts-ignore
 import en from './src/constants/translations/en.json';
 import { Lqas } from './src/domains/LQAS-IM/LQAS';
 import { ImStats } from './src/domains/LQAS-IM/IM';

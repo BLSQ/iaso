@@ -24,6 +24,7 @@ export const EditCampaignModal: FunctionComponent<Props> = ({
 
     const openDialog = useCallback(() => {
         dispatch(redirectTo(DASHBOARD_BASE_URL, { ...params, campaignId }));
+        setIsOpen(true);
     }, [campaignId, dispatch, params]);
 
     const closeDialog = useCallback(() => {
@@ -33,11 +34,13 @@ export const EditCampaignModal: FunctionComponent<Props> = ({
         );
     }, [dispatch, params.accountId]);
 
+    // Effect required when using deep linking
     useEffect(() => {
         if (router?.params.campaignId === campaignId && !isOpen) {
             setIsOpen(true);
         }
     }, [campaignId, isOpen, router?.params.campaignId]);
+
     return (
         <>
             <IconButton
@@ -49,7 +52,10 @@ export const EditCampaignModal: FunctionComponent<Props> = ({
             {isOpen && (
                 <PolioCreateEditDialog
                     isOpen={isOpen}
-                    onClose={() => closeDialog()}
+                    onClose={() => {
+                        setIsOpen(false);
+                        closeDialog();
+                    }}
                     campaignId={campaignId}
                 />
             )}

@@ -1,28 +1,29 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { ReactNode, useContext, useMemo } from 'react';
 
-import DataSourceIcon from '@material-ui/icons/ListAltTwoTone';
-import Link from '@material-ui/icons/Link';
-import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
-import Input from '@material-ui/icons/Input';
-import CompareArrows from '@material-ui/icons/CompareArrows';
-import SupervisorAccount from '@material-ui/icons/SupervisorAccount';
+import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
+import Link from '@mui/icons-material/Link';
+import FormatListBulleted from '@mui/icons-material/FormatListBulleted';
+import Input from '@mui/icons-material/Input';
+import CompareArrows from '@mui/icons-material/CompareArrows';
+import SupervisorAccount from '@mui/icons-material/SupervisorAccount';
 import GroupsIcon from '@mui/icons-material/Groups';
-import PhonelinkSetupIcon from '@material-ui/icons/PhonelinkSetup';
-import DnsRoundedIcon from '@material-ui/icons/DnsRounded';
-import DoneAll from '@material-ui/icons/DoneAll';
-import Settings from '@material-ui/icons/Settings';
-import GroupWork from '@material-ui/icons/GroupWork';
-import CategoryIcon from '@material-ui/icons/Category';
-import AssignmentRoundedIcon from '@material-ui/icons/AssignmentRounded';
-import ImportantDevicesRoundedIcon from '@material-ui/icons/ImportantDevicesRounded';
-import BookIcon from '@material-ui/icons/Book';
-import AssessmentIcon from '@material-ui/icons/Assessment';
-import GroupIcon from '@material-ui/icons/Group';
-import AssignmentIcon from '@material-ui/icons/Assignment';
-import StorageIcon from '@material-ui/icons/Storage';
-import MenuBookIcon from '@material-ui/icons/MenuBook';
-import FileCopyIcon from '@material-ui/icons/FileCopy';
+import PhonelinkSetupIcon from '@mui/icons-material/PhonelinkSetup';
+import DnsRoundedIcon from '@mui/icons-material/DnsRounded';
+import DoneAll from '@mui/icons-material/DoneAll';
+import Settings from '@mui/icons-material/Settings';
+import GroupWork from '@mui/icons-material/GroupWork';
+import CategoryIcon from '@mui/icons-material/Category';
+import AssignmentRoundedIcon from '@mui/icons-material/AssignmentRounded';
+import ImportantDevicesRoundedIcon from '@mui/icons-material/ImportantDevicesRounded';
+import BookIcon from '@mui/icons-material/Book';
+import AssessmentIcon from '@mui/icons-material/Assessment';
+import GroupIcon from '@mui/icons-material/Group';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import StorageIcon from '@mui/icons-material/Storage';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import FileCopyIcon from '@mui/icons-material/FileCopy';
+import ViewModuleIcon from '@mui/icons-material/ViewModule';
 
 import { IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
@@ -34,9 +35,9 @@ import {
     SHOW_PAGES,
     SHOW_DHIS2_LINK,
     SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,
+    SHOW_DEV_FEATURES,
 } from '../utils/featureFlags';
 import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants';
-import { getChipColors } from './chipColors';
 
 import MESSAGES from './messages';
 import { useCurrentUser } from '../utils/usersUtils';
@@ -45,9 +46,11 @@ import {
     userHasOneOfPermissions,
 } from '../domains/users/utils';
 import { PluginsContext } from '../utils';
-import { getDefaultSourceVersion } from '../domains/dataSources/utils';
 import { useGetBeneficiaryTypesDropdown } from '../domains/entities/hooks/requests';
 import { DropdownOptions } from '../types/utils';
+import { Plugins } from '../domains/app/types';
+import { useGetOrgunitsExtraPath } from '../domains/home/hooks/useGetOrgunitsExtraPath';
+import { CHANGE_REQUEST } from './urls';
 
 type MenuItem = {
     label: string;
@@ -61,17 +64,16 @@ type MenuItem = {
     url?: string;
     // eslint-disable-next-line no-unused-vars
     isActive?: (pathname: string) => boolean;
+    dev?: boolean;
 };
 type MenuItems = MenuItem[];
-type Plugins = {
-    plugins: Record<string, any>[];
-};
+
 // !! remove permission property if the menu has a subMenu !!
 const menuItems = (
     entityTypes: Array<DropdownOptions<number>>,
     formatMessage: IntlFormatMessage,
     currentUser,
-    defaultSourceId?: number,
+    orgUnitExtraPath?: string,
 ): MenuItems => {
     const beneficiariesListEntry: MenuItem = {
         label: formatMessage(MESSAGES.beneficiariesList),
@@ -87,7 +89,7 @@ const menuItems = (
             isActive: pathname =>
                 pathname?.includes(`/entityTypeIds/${entityType.value}/`) &&
                 pathname?.includes(`entities/list/`),
-            extraPath: `/entityTypeIds/${entityType.value}/order/last_saved_instance/pageSize/20/page/1`,
+            extraPath: `/entityTypeIds/${entityType.value}/order/-last_saved_instance/pageSize/20/page/1`,
         }));
     }
     return [
@@ -143,13 +145,15 @@ const menuItems = (
                 {
                     label: formatMessage(MESSAGES.orgUnitList),
                     permissions: paths.orgUnitsPath.permissions,
-                    extraPath: `/locationLimit/${locationLimitMax}/order/id/pageSize/50/page/1/searchTabIndex/0/searches/[{"validation_status":"all","color":"${getChipColors(
-                        0,
-                    ).replace('#', '')}"${
-                        defaultSourceId ? `,"source":${defaultSourceId}` : ''
-                    }}]`,
+                    extraPath: orgUnitExtraPath,
                     key: 'list',
                     icon: props => <FormatListBulleted {...props} />,
+                },
+                {
+                    label: formatMessage(MESSAGES.reviewChangeProposals),
+                    permissions: paths.orgUnitChangeRequestPath.permissions,
+                    key: CHANGE_REQUEST,
+                    icon: props => <CategoryIcon {...props} />,
                 },
                 {
                     label: formatMessage(MESSAGES.registry),
@@ -270,6 +274,12 @@ const menuItems = (
                     icon: props => <PhonelinkSetupIcon {...props} />,
                 },
                 {
+                    label: formatMessage(MESSAGES.modules),
+                    key: 'modules',
+                    permissions: paths.modulesPath.permissions,
+                    icon: props => <ViewModuleIcon {...props} />,
+                },
+                {
                     label: formatMessage(MESSAGES.users),
                     key: 'users',
                     permissions: paths.usersPath.permissions,
@@ -292,11 +302,25 @@ const menuItems = (
     ];
 };
 
+const filterDevFeatures = (items: MenuItems): MenuItems => {
+    const result: MenuItems = [];
+    items.forEach(item => {
+        if (!item.subMenu && !item.dev) {
+            result.push(item);
+        } else if (item.subMenu) {
+            const subMenu = filterDevFeatures(item.subMenu);
+            const filtered = { ...item, subMenu };
+            result.push(filtered);
+        }
+    });
+    return result;
+};
+
 export const useMenuItems = (): MenuItems => {
     const currentUser = useCurrentUser();
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
-    const defaultSourceVersion = getDefaultSourceVersion(currentUser);
+    const orgUnitExtraPath = useGetOrgunitsExtraPath();
     const { data: entityTypes } = useGetBeneficiaryTypesDropdown();
     const { plugins }: Plugins = useContext(PluginsContext);
     const pluginsMenu = plugins.map(plugin => plugin.menu).flat();
@@ -306,15 +330,10 @@ export const useMenuItems = (): MenuItems => {
                 entityTypes || [],
                 formatMessage,
                 currentUser,
-                defaultSourceVersion?.source?.id,
+                orgUnitExtraPath,
             ),
         ],
-        [
-            currentUser,
-            defaultSourceVersion?.source?.id,
-            entityTypes,
-            formatMessage,
-        ],
+        [currentUser, orgUnitExtraPath, entityTypes, formatMessage],
     );
     // Find admin entry
     const admin = allBasicItems.find(item => item.key === 'settings');
@@ -341,10 +360,23 @@ export const useMenuItems = (): MenuItems => {
         });
     }
 
-    // filter by user permissions
-    const items = [...basicItems, ...pluginsMenu, admin].filter(menuItem => {
-        const permissionsList = listMenuPermission(menuItem);
-        return userHasOneOfPermissions(permissionsList, currentUser);
-    });
+    const items: MenuItems = useMemo(() => {
+        const menuItemsTemp = [
+            ...(basicItems as MenuItems),
+            ...(pluginsMenu as MenuItems),
+        ];
+        if (admin) {
+            menuItemsTemp.push(admin as MenuItem);
+        }
+        const authorizedItems = menuItemsTemp.filter(menuItem => {
+            const permissionsList = listMenuPermission(menuItem);
+            return userHasOneOfPermissions(permissionsList, currentUser);
+        });
+        if (hasFeatureFlag(currentUser, SHOW_DEV_FEATURES)) {
+            return authorizedItems;
+        }
+        // Remove dev (incomplete) features
+        return filterDevFeatures(authorizedItems);
+    }, [admin, basicItems, currentUser, pluginsMenu]);
     return items;
 };

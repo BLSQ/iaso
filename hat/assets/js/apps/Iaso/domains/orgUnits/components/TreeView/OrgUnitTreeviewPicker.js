@@ -9,8 +9,8 @@ import {
     arrayOf,
 } from 'prop-types';
 import classnames from 'classnames';
-import { Paper, InputLabel, Box } from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
+import { Paper, InputLabel, Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     FormControl,
     IconButton,
@@ -38,9 +38,9 @@ const styles = theme => ({
     paper: {
         display: 'flex',
         alignItems: 'center',
-        border: '1px solid rgba(0,0,0,0.23)', // aligning with AutoSelect
-        paddingTop: 12,
-        paddingBottom: 12,
+        border: '1px solid rgba(0,0,0,0.23) !important', // aligning with AutoSelect
+        paddingTop: 10,
+        paddingBottom: 10,
         paddingRight: theme.spacing(2),
     },
     inputLabel: {
@@ -105,7 +105,6 @@ const OrgUnitTreeviewPicker = ({
         (multiselect
             ? intl.formatMessage(MESSAGES.selectMultiple)
             : intl.formatMessage(MESSAGES.selectSingle));
-
     const makeTruncatedTrees = treesData => {
         if (treesData.size === 0)
             return (
@@ -126,11 +125,14 @@ const OrgUnitTreeviewPicker = ({
                     selectedItems={value}
                     key={`TruncatedTree${key.toString()}`}
                     label={label}
+                    disabled={disabled}
                     redirect={id =>
-                        window.open(
-                            `/dashboard/${baseUrls.orgUnitDetails}/orgUnitId/${id}`,
-                            '_blank',
-                        )
+                        disabled
+                            ? null
+                            : window.open(
+                                  `/dashboard/${baseUrls.orgUnitDetails}/orgUnitId/${id}`,
+                                  '_blank',
+                              )
                     }
                 />
             );
@@ -169,9 +171,13 @@ const OrgUnitTreeviewPicker = ({
                                 icon="clear"
                                 size="small"
                                 tooltipMessage={MESSAGES.clear}
-                                onClick={() => {
-                                    resetSelection();
-                                }}
+                                onClick={
+                                    disabled
+                                        ? noOp
+                                        : () => {
+                                              resetSelection();
+                                          }
+                                }
                             />
                         </Box>
                     )}
@@ -183,7 +189,8 @@ const OrgUnitTreeviewPicker = ({
                                 : MESSAGES.selectSingle
                         }
                         icon="orgUnit"
-                        onClick={onClick}
+                        onClick={disabled ? noOp : onClick}
+                        disabled={disabled}
                     />
                 </Paper>
             </FormControl>

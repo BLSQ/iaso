@@ -7,7 +7,8 @@ import React, {
     useMemo,
 } from 'react';
 import get from 'lodash/get';
-import { Tabs, Tab, makeStyles } from '@material-ui/core';
+import { Tabs, Tab } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { useSafeIntl, IntlMessage } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 
@@ -67,6 +68,7 @@ const ProjectsDialog: FunctionComponent<Props> = ({
 }) => {
     const { data: featureFlags, isFetching: isFetchingFeatureFlags } =
         useGetFeatureFlags();
+
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const initialProject = useCallback(

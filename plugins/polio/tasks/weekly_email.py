@@ -78,9 +78,12 @@ def send_notification_email(campaign):
     # French
 
     if lang == "fr":
-        email_text = f"""Cher·ère coordinateur.rice de la GPEI – {country.name},
+        email_text = f"""Cher coordinateur, chère coordinatrice de la GPEI – {country.name},
 
 Statut hebdomadaire: Il reste {next_round_days_left} jours avant le début du prochain round. 
+
+Veillez à mettre à jour le formulaire ODK et en particulier l’OBR name, le numéro de Round, et les données géographiques avant le début du prochain Round. Merci.
+
 Ci-dessous un résumé des informations de la campagne {c.obr_name} disponibles dans la plateforme. Pour plus de détails, cliquez ici: https://afro-rrt-who.hub.arcgis.com/pages/country-summary. S'il manque des données ou s'il y a des mises à jour à effectuer, cliquez ici {url} pour mettre à jour.
 
 * Date de notification              : {c.cvdpv2_notified_at}
@@ -94,14 +97,17 @@ Ci-dessous un résumé des informations de la campagne {c.obr_name} disponibles 
 * Prep. régional                 : {prep_regional}
 * Prep. district                 : {prep_district}
 
-Pour toute question, contacter l'équipe RRT.
-Ceci est un message automatique.
+
+Pour des conseils sur la mise à jour : contactez l'équipe RRT Carolyne Gathenji gathenjic@who.int et Myk Mwanza mwanza@who.int
+
+Message automatisé du suivi chronologique.
     """
     # Portuguese
     elif lang == "pt":
         email_text = f"""Prezado(a) coordenador(a) da GPEI – {country.name},
 
 Estado semanal: Faltam {next_round_days_left} dias para o início da próxima ronda.
+Por favor, actualize os formulários ODK, o nome OBR, o número da ronda e a informação geográfica antes da ronda. Obrigado pela vossa atenção.
 Segue em baixo um resumo das informações da campanha {c.obr_name} disponíveis na plataforma. Para mais detalhes, clique em: https://afro-rrt-who.hub.arcgis.com/pages/country-summary . Se faltarem dados ou houverem atualizações a serem feitas, por favor clique em {url} para atualizar.
 
 * Data de notificação: {c.cvdpv2_notified_at}
@@ -115,14 +121,16 @@ Segue em baixo um resumo das informações da campanha {c.obr_name} disponíveis
 * Prep. regional: {prep_regional}
 * Prep. distrital: {prep_district}
 
-Por favor, em caso de qualquer dúvida entre em contato com a equipa RRT.
-Esta é uma mensagem automática.
+Para orientações sobre atualizações: entre em contato com a equipe RRT, Carolyne Gathenji gathenjic@who.int e Myk Mwanza mwanza@who.int
+
+Mensagem automatizada do rastreador de cronograma.
     """
     # English
     else:
         email_text = f"""Dear GPEI coordinator – {country.name},
 
 Weekly status update: Today is day {next_round_days_left} to Round {next_round_number} start date.
+Please update the ODK forms OBR name, Round number and Geographic information accordingly ahead of the Round. Thank you.
 Below is the summary of the campaign {c.obr_name}. For more details, visit https://afro-rrt-who.hub.arcgis.com/pages/country-summary
 If there are missing data or dates; visit {url} to update
 
@@ -137,7 +145,8 @@ If there are missing data or dates; visit {url} to update
 * Prep. regional                 : {prep_regional}
 * Prep. district                 : {prep_district}
 
-For guidance on updating: contact RRT team
+For guidance on updating: contact RRT team Carolyne Gathenji gathenjic@who.int and Myk Mwanza mwanza@who.int
+
 Timeline tracker Automated message.
     """
 

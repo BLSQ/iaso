@@ -1,15 +1,16 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 import { FormattedMessage } from 'react-intl';
-import { Button, Box, makeStyles } from '@material-ui/core';
+import { Button, Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
-import AddLocation from '@material-ui/icons/AddLocation';
-import DeleteIcon from '@material-ui/icons/Delete';
+import AddLocation from '@mui/icons-material/AddLocation';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 import PropTypes from 'prop-types';
 
 import { commonStyles } from 'bluesquare-components';
 
-import InputComponent from '../../../../components/forms/InputComponent';
+import InputComponent from '../../../../components/forms/InputComponent.tsx';
 
 import MESSAGES from '../../messages';
 
@@ -26,8 +27,21 @@ const MarkerInputs = ({
     hasMarker,
     actionBusy,
     isCreatingMarker,
+    errorsCoordinates,
+    setErrorsCoordinates,
 }) => {
     const classes = useStyles();
+    const { latitude, longitude, altitude } = orgUnit;
+    const handleSetError = useCallback(
+        (keyValue, message) => {
+            const newErrors = {
+                ...errorsCoordinates,
+                [keyValue]: message ? [message] : [],
+            };
+            setErrorsCoordinates(newErrors);
+        },
+        [errorsCoordinates, setErrorsCoordinates],
+    );
     return (
         <>
             <Box>
@@ -53,51 +67,70 @@ const MarkerInputs = ({
                 {hasMarker && (
                     <>
                         <InputComponent
+                            errors={errorsCoordinates.latitude}
+                            setFieldError={handleSetError}
                             disabled={actionBusy}
                             keyValue="latitude"
-                            onChange={(_, lat) => {
-                                if (lat) {
-                                    onChangeLocation({
-                                        lat,
-                                    });
-                                }
+                            required
+                            onChange={(_, newlatitude) => {
+                                onChangeLocation({
+                                    latitude: newlatitude,
+                                    longitude,
+                                    altitude,
+                                });
+                                handleSetError('latitude');
                             }}
-                            value={orgUnit.latitude}
+                            value={latitude}
                             type="number"
                             label={MESSAGES.latitude}
-                            min={-90}
-                            max={90}
-                            step={0.00000001}
+                            numberInputOptions={{
+                                min: -90,
+                                max: 90,
+                                decimalScale: 4,
+                            }}
                         />
                         <InputComponent
+                            setFieldError={handleSetError}
+                            errors={errorsCoordinates.longitude}
                             disabled={actionBusy}
                             keyValue="longitude"
-                            onChange={(_, lng) => {
-                                if (lng) {
-                                    onChangeLocation({
-                                        lng,
-                                    });
-                                }
+                            onChange={(_, newLongitude) => {
+                                onChangeLocation({
+                                    latitude,
+                                    longitude: newLongitude,
+                                    altitude,
+                                });
+                                handleSetError('longitude');
                             }}
-                            value={orgUnit.longitude}
+                            required
+                            value={longitude}
                             type="number"
                             label={MESSAGES.longitude}
-                            min={-180}
-                            max={180}
+                            numberInputOptions={{
+                                min: -180,
+                                max: 180,
+                                decimalScale: 4,
+                            }}
                         />
                         <InputComponent
                             disabled={actionBusy}
                             keyValue="altitude"
-                            value={orgUnit.altitude}
+                            value={altitude}
                             type="number"
                             label={MESSAGES.altitude}
-                            onChange={(_, alt) => {
-                                if (alt) {
-                                    onChangeLocation({
-                                        alt,
-                                    });
-                                }
+                            numberInputOptions={{
+                                decimalScale: 4,
                             }}
+                            onChange={(_, newAltitude) =>
+                                onChangeLocation({
+                                    altitude:
+                                        newAltitude === undefined
+                                            ? null
+                                            : newAltitude,
+                                    longitude,
+                                    latitude,
+                                })
+                            }
                         />
                         <Box mb={2} mt={2}>
                             <Button
@@ -107,9 +140,9 @@ const MarkerInputs = ({
                                 className={classes.button}
                                 onClick={() =>
                                     onChangeLocation({
-                                        lat: null,
-                                        lng: null,
-                                        alt: null,
+                                        latitude: null,
+                                        longitude: null,
+                                        altitude: null,
                                     })
                                 }
                             >
@@ -130,6 +163,8 @@ MarkerInputs.propTypes = {
     hasMarker: PropTypes.bool.isRequired,
     actionBusy: PropTypes.bool.isRequired,
     isCreatingMarker: PropTypes.bool.isRequired,
+    errorsCoordinates: PropTypes.object.isRequired,
+    setErrorsCoordinates: PropTypes.func.isRequired,
 };
 
 export default MarkerInputs;

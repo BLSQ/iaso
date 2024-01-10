@@ -1,16 +1,9 @@
 import React, { useState, FunctionComponent, ReactElement } from 'react';
 
-import {
-    Paper,
-    Divider,
-    Typography,
-    Grid,
-    Collapse,
-    Box,
-    makeStyles,
-} from '@material-ui/core';
-import ExpandLess from '@material-ui/icons/ExpandLess';
-import ExpandMore from '@material-ui/icons/ExpandMore';
+import { Paper, Divider, Typography, Grid, Collapse, Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
 
 const useStyles = makeStyles(theme => ({
     root: {

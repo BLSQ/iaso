@@ -3,8 +3,9 @@ import React, { useMemo, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import classnames from 'classnames';
-import { Box, makeStyles, Grid, Button, Typography } from '@material-ui/core';
-import PictureAsPdfIcon from '@material-ui/icons/PictureAsPdf';
+import { Box, Grid, Button, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import {
     commonStyles,
     useSafeIntl,
@@ -17,20 +18,20 @@ import TopBar from 'Iaso/components/nav/TopBarComponent';
 import domToPdf from 'dom-to-pdf';
 import { CampaignsCalendar } from './campaignCalendar';
 import { getCampaignColor } from '../../constants/campaignsColors';
-import { CalendarMap } from './campaignCalendar/map/CalendarMap';
+import { CalendarMap } from './campaignCalendar/map/CalendarMap.tsx';
 import {
     mapCampaigns,
     filterCampaigns,
     getCalendarData,
 } from './campaignCalendar/utils';
 
-import {
-    dateFormat,
-    defaultOrder,
-} from './campaignCalendar/constants';
+import { dateFormat, defaultOrder } from './campaignCalendar/constants';
 import { useGetCampaigns } from '../Campaigns/hooks/api/useGetCampaigns.ts';
 import MESSAGES from '../../constants/messages';
 import { Filters } from './campaignCalendar/Filters';
+import { ExportCsvModal } from './ExportCsvModal.tsx';
+import { userHasPermission } from '../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils.ts';
 
 const pageWidth = 1980;
 
@@ -107,7 +108,7 @@ const Calendar = ({ params }) => {
         const element = document.getElementById('pdf');
         const options = {
             filename: 'calendar.pdf',
-            excludeClassNames: ['createPDF', 'createXlsx'],
+            excludeClassNames: ['createPDF', 'createXlsx', 'createCsv'],
             overrideWidth: pageWidth,
         };
 
@@ -151,6 +152,8 @@ const Calendar = ({ params }) => {
         }
     }, [filteredCampaigns, mappedCampaigns, isLoading]);
 
+    const currentUser = useCurrentUser();
+
     return (
         <div>
             {isLogged && !isPdf && (
@@ -172,7 +175,6 @@ const Calendar = ({ params }) => {
                 <Box
                     className={classnames(
                         classes.containerFullHeightNoTabPadded,
-                        isPdf && classes.isPdf,
                         !isPdf && classes.isNotPdf,
                     )}
                 >
@@ -185,7 +187,6 @@ const Calendar = ({ params }) => {
                             />
                         </Box>
                     )}
-
                     <Grid
                         container
                         spacing={1}
@@ -223,6 +224,16 @@ const Calendar = ({ params }) => {
                                 </Button>
                             </Box>
                         </Grid>
+                        {userHasPermission(
+                            'iaso_polio_config',
+                            currentUser,
+                        ) && (
+                            <Grid item>
+                                <Box mb={2} mt={2}>
+                                    <ExportCsvModal params={params} />
+                                </Box>
+                            </Grid>
+                        )}
                     </Grid>
                     <Grid container spacing={2}>
                         {isPdf && (

@@ -1,9 +1,9 @@
-import Alert from '@material-ui/lab/Alert';
+import Alert from '@mui/lab/Alert';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { LoadingSpinner, Select, useSafeIntl } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
-import { Button } from '@material-ui/core';
+import { Button } from '@mui/material';
 import { isMapped, isNeverMapped } from '../question_mappings';
 import Dhis2SearchComponent from './Dhis2SearchComponent';
 import { DuplicateHint } from './DuplicateHint';

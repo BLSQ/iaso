@@ -1,94 +1,126 @@
-# Iaso requires Python 3.8 to ensure compatibility with the server environment.
-# Please take note of this requirement when updating or upgrading dependencies.
-# (Please update this notice if the required Python version changes.)
+# Django.
+# ------------------------------------------------------------------------------
+django<5
+django-contrib-comments==2.2.0  # https://github.com/django/django-contrib-comments/tags
+django-cte==1.3.2  # https://github.com/dimagi/django-cte/tags
+django-filter==23.3  # https://github.com/carltongibson/django-filter
+django-json-widget==1.1.1  # https://github.com/jmrivas86/django-json-widget/tags
+django-lazy-services==0.0.3  # https://pypi.org/project/django-lazy-services/
+django-sql-dashboard==1.2  # https://github.com/simonw/django-sql-dashboard/tags
+django-storages==1.14.2  # https://github.com/jschneier/django-storages/tags
+django-translated-fields==0.12.0  # https://github.com/matthiask/django-translated-fields/tags
 
-# django
-django==3.2.21
-django-cors-headers==3.2.1
-djangorestframework==3.11.2
-django-filter==2.4.0
-pandas==1.1.5
-#cython==0.29.36
-pyproj==3.0.1
-geopandas==0.8.0
-Fiona~=1.8.19
-numpy==1.19.4
-Pillow==8.3.2
-django-storages==1.9.1
-boto3==1.16.63
-geopy==1.21.0
-Shapely==1.7.0
-unidecode==1.2.0
-drf-yasg==1.20.0
-django-cte==1.2.1
+# Django REST Framework.
+# ------------------------------------------------------------------------------
+django-cors-headers==4.3.1  # https://github.com/adamchainz/django-cors-headers/tags
+djangorestframework-csv==3.0.2  # https://github.com/mjumbewu/django-rest-framework-csv/tags
+djangorestframework==3.14.0  # https://github.com/encode/django-rest-framework/tags
+djangorestframework_simplejwt==5.3.1  # https://github.com/jazzband/djangorestframework-simplejwt/tags
+drf-yasg==1.21.7  # https://github.com/axnsan12/drf-yasg/tags
+pyjwt==1.7.1  # https://github.com/jpadilla/pyjwt/tags
 
-# web server and auth
-oauth2client==4.1.3
-requests==2.26.0
+# Redis.
+# ------------------------------------------------------------------------------
+redis==4.6.0  # https://github.com/redis/redis/tags
+django-redis==4.12.1  # https://github.com/jazzband/django-redis/tags
 
-# postgresql and sql
-psycopg2-binary==2.8.5
-django-ltree==0.5.3
+# Pandas.
+# ------------------------------------------------------------------------------
+pandas==2.0.3  # https://github.com/pandas-dev/pandas/tags
+geopandas==0.14.2  # https://github.com/geopandas/geopandas/tags
+numpy==1.26.2  # https://github.com/numpy/numpy/tags
+Shapely==2.0.2  # https://github.com/shapely/shapely/tags
 
-# webpack loader
+# Geo.
+# ------------------------------------------------------------------------------
+Fiona==1.9.5  # https://github.com/Toblerity/Fiona/tags
+geopy==2.4.1  # https://github.com/geopy/geopy/tags
+
+# PostgreSQL and SQL.
+# ------------------------------------------------------------------------------
+django-ltree==0.5.3  # https://github.com/mariocesar/django-ltree/tags
+psycopg2-binary==2.9.9  # https://github.com/psycopg/psycopg2/tags
+
+# Tools.
+# ------------------------------------------------------------------------------
+Pillow==10.1.0  # https://github.com/python-pillow/Pillow/tags
+boto3==1.34.7  # https://github.com/boto/boto3/tags
+dateparser==1.2.0  # https://github.com/scrapinghub/dateparser/tags
+requests==2.31.0  # https://github.com/psf/requests/tags
+gql[requests]==3.4.1  # https://github.com/graphql-python/gql/tags
+gspread-formatting==1.1.2  # https://github.com/robin900/gspread-formatting/tags
+gspread==5.12.3  # https://github.com/burnash/gspread/tags
+unidecode==1.3.7  # https://github.com/avian2/unidecode/tags
+
+# Exporting tools.
+# ------------------------------------------------------------------------------
+xlsxwriter==3.1.9  # https://github.com/jmcnamara/XlsxWriter/tags
+beautifulsoup4==4.12.2  # https://pypi.org/project/beautifulsoup4/
+lxml==4.9.4  # https://github.com/lxml/lxml/tags
+
+# Importing tools.
+# ------------------------------------------------------------------------------
+jsonschema==4.20.0  # https://github.com/python-jsonschema/jsonschema/tags
+
+# Web server and auth.
+# ------------------------------------------------------------------------------
+oauth2client==4.1.3  # https://github.com/googleapis/oauth2client/tags
+
+# DHIS2 API wrapper.
+# ------------------------------------------------------------------------------
+dhis2.py==2.3.0  # https://github.com/davidhuser/dhis2.py/tags
+
+# Monitoring.
+# ------------------------------------------------------------------------------
+sentry-sdk[django]==1.38.0  # https://github.com/getsentry/sentry-python/tags
+
+# Only used for WFP plugin.
+# ------------------------------------------------------------------------------
+SQLAlchemy==2.0.23  # https://github.com/sqlalchemy/sqlalchemy/tags
+celery==5.3.6  # https://github.com/celery/celery/tags
+django-allauth==0.54.0  # https://github.com/pennersr/django-allauth/tags
+django-celery-beat==2.5.0  # https://github.com/celery/django-celery-beat/tags
+django-celery-results==2.5.1  # https://github.com/celery/django-celery-results/tags
+
+# Webpack loader.
+# ------------------------------------------------------------------------------
 # This is our custom version of webpack loader to handle S3 better.
 # Use the following line if you want a locally editable version, and comment the other
 # -e git+https://github.com/BLSQ/django-webpack-loader@e94f76d0f8372193f0b662e2a1aba01a9deffb20#egg=django_webpack_loader
 # Use the tar.gz version to install faster
-https://github.com/BLSQ/django-webpack-loader/archive/e94f76d0f8372193f0b662e2a1aba01a9deffb20.tar.gz#egg=django_webpack_loader
+# ------------------------------------------------------------------------------
+https://github.com/BLSQ/django-webpack-loader/archive/5fa2b6897b27dc6ff5bb51162e1375fd0aa8afea.tar.gz#egg=django_webpack_loader
 
-# importing tools
-jsonschema==3.2.0
+# ODK-specific libraries.
+# ------------------------------------------------------------------------------
+# pyxform depends on:
+#
+# 1. xlrd==2.0.1 https://github.com/XLSForm/pyxform/blob/f71955/setup.py#L23
+#     - xlrd supports Python up to 3.9
+#     - https://github.com/python-excel/xlrd/blob/c6d642/CHANGELOG.rst?plain=1#L18
+#     - we are stuck with Python 3.9
+#
+# 2. openpyxl==3.0.9 https://github.com/XLSForm/pyxform/blob/f71955/setup.py#L24
+#     - pandas ≥ 2.1 require openpyxl > 3.0.9
+#     - we are stuck with Pandas < 2.1
+#
+# Since pyxform is used 2 times in Iaso for `create_survey_from_xls`, we should
+# get rid of it to upgrade to newer versions of Python and Pandas.
+# ------------------------------------------------------------------------------
+pyxform==2.0.0  # https://github.com/XLSForm/pyxform/tags
 
+# Bug fix for: "App Engine" was removed from `requests_toolbelt`.
+# ------------------------------------------------------------------------------
+# Google App Engine was removed from requests-toolbelt in 1.0.0:
+# https://github.com/requests/toolbelt/blob/c62d97/HISTORY.rst#100----2023-05-01
+# Stick to a previous version, otherwise this wouldn't work:
+# https://github.com/BLSQ/iaso/blob/a52af7/plugins/polio/tasks/api/refresh_lqas_data.py#L3
+#     gql > requests_toolbelt > appengine
+# ------------------------------------------------------------------------------
+urllib3<2
+requests-toolbelt==0.9.1
 
-# exporting tools
-xlsxwriter==1.2.7
-beautifulsoup4==4.7.1
-lxml==4.9.1
-djangorestframework-csv==2.1.1
-openpyxl==3.0.10
-
-# dhis2 api wrapper
-dhis2.py==2.0.2
-
-# odk-specific libraries
-pyxform==1.1.0
-
-
-ipython==8.12.2
-django-extensions==2.2.8
-lxml==4.9.1
-xlrd==1.2.0
-pyjwt==1.7.1
-djangorestframework_simplejwt==4.4.0
-
-sentry-sdk==1.5.11
-django-lazy-services==0.0.3
-dateparser==1.0.0
-
-gspread==5.0.0
-gspread-formatting==1.0.5
-oauth2client==4.1.3
-
-django-contrib-comments~=2.1.0
-django-sql-dashboard~=1.1
-redis==4.6.0
-django-redis==4.12.1
-
-# Allauth for wfp
-django-allauth==0.54.0
-
-
-django-json-widget==1.1.1
-
-# Seems to be required to run the project
-django-stubs==1.9.0
-
-gql[requests]==3.4.0
-
-#only used for wfp plugin
-celery==5.3.1
-SQLAlchemy==2.0.19
-
-django-celery-results==2.4.0
-django-celery-beat==2.5.0
+# Tools.
+# ------------------------------------------------------------------------------
+ipython==8.18.1  # https://github.com/ipython/ipython/tags
+django-extensions==3.2.3  # https://github.com/django-extensions/django-extensions/tags

@@ -4,16 +4,17 @@ import { Select, useSafeIntl } from 'bluesquare-components';
 import { withRouter } from 'react-router';
 import { useDispatch } from 'react-redux';
 import { replace } from 'react-router-redux';
-// Uncomment when OpenHExa pipeline is available for IM
-// import RefreshIcon from '@material-ui/icons/Refresh';
 
-import { Box, Grid, IconButton } from '@material-ui/core';
+import { Box, Grid, IconButton } from '@mui/material';
 
-import OpenInNewIcon from '@material-ui/icons/OpenInNew';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { userHasPermission } from '../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 import MESSAGES from '../../../constants/messages';
 import { makeCampaignsDropDown } from '../../../utils/index';
 import { genUrl } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import { useGetLqasImCountriesOptions } from './hooks/api/useGetLqasImCountriesOptions';
+import { RefreshLqasData } from './RefreshLqasData';
 
 type Params = {
     campaign: string | undefined;
@@ -51,6 +52,7 @@ const Filters: FunctionComponent<Props> = ({
         country: params.country ? parseInt(params.country, 10) : undefined,
     });
     const { campaign, country } = filters;
+    const currentUser = useCurrentUser();
 
     const { data: countriesOptions, isFetching: countriesLoading } =
         useGetLqasImCountriesOptions(category);
@@ -64,7 +66,8 @@ const Filters: FunctionComponent<Props> = ({
     const onChange = (key, value) => {
         const newFilters = {
             ...filters,
-            rounds: '1,2',
+            rounds: undefined, // This
+            // rounds: '1,2', // This
             [key]: value,
         };
         if (key === 'country') {
@@ -79,12 +82,6 @@ const Filters: FunctionComponent<Props> = ({
     const campaignLink = campaignObj
         ? `/dashboard/polio/list/campaignId/${campaignObj.id}/search/${campaignObj.obr_name}`
         : null;
-    // Uncomment when OpenHExa pipeline is available for IM
-    // const queryClient = useQueryClient();
-    // const handleRefresh = useCallback(
-    //     () => queryClient.resetQueries(),
-    //     [queryClient],
-    // );
     return (
         <Box mt={2} width="100%">
             <Grid container item spacing={2}>
@@ -125,22 +122,16 @@ const Filters: FunctionComponent<Props> = ({
                         </IconButton>
                     </Grid>
                 )}
-                {/* Uncomment when OpenHexa pipeline will ba active for IM */}
-                {/* <Grid item md={campaignLink ? 3 : 4}>
-                    <Box display="flex" justifyContent="flex-end" width="100%">
-                        <Button
-                            size="small"
-                            variant="contained"
-                            color="primary"
-                            onClick={handleRefresh}
-                        >
-                            <Box mr={1} pt={1}>
-                                <RefreshIcon fontSize="small" />
-                            </Box>
-                            {formatMessage(MESSAGES.refreshPage)}
-                        </Button>
-                    </Box>
-                </Grid> */}
+                {/* remove condition when IM pipeline is ready */}
+                {category === 'lqas' &&
+                    userHasPermission('iaso_polio_config', currentUser) && (
+                        <Grid item md={campaignLink ? 3 : 4}>
+                            <RefreshLqasData
+                                category={category}
+                                countryId={country}
+                            />
+                        </Grid>
+                    )}
             </Grid>
         </Box>
     );

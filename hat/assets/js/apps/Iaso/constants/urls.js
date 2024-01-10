@@ -1,5 +1,10 @@
+export const CHANGE_REQUEST = 'changeRequest';
+const ORG_UNITS = 'orgunits';
+const ORG_UNITS_CHANGE_REQUEST = `${ORG_UNITS}/${CHANGE_REQUEST}`;
+
 export const baseUrls = {
     setupAccount: 'setupAccount',
+    home: 'home',
     forms: 'forms/list',
     formDetail: 'forms/detail',
     mappings: 'forms/mappings',
@@ -10,6 +15,8 @@ export const baseUrls = {
     compareInstances: 'forms/compare',
     compareInstanceLogs: 'forms/compareInstanceLogs',
     orgUnits: 'orgunits/list',
+    orgUnitsChangeRequest: ORG_UNITS_CHANGE_REQUEST,
+    // orgUnitsChangeRequestList: `${ORG_UNITS_CHANGE_REQUEST}/list`,
     registry: 'orgunits/registry',
     registryDetail: 'orgunits/registry/details',
     groups: 'orgunits/groups',
@@ -46,4 +53,6 @@ export const baseUrls = {
     error403: '403',
     error404: '404',
     error500: '500',
+    modules: 'settings/modules',
+    login: 'login',
 };

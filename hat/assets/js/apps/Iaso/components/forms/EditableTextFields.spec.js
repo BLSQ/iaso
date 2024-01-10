@@ -1,4 +1,5 @@
 import React from 'react';
+import { renderWithMuiTheme } from '../../../../test/utils/muiTheme';
 import { EditableTextFields } from './EditableTextFields';
 import { renderWithIntl } from '../../../../test/utils/intl';
 import InputComponent from './InputComponent';
@@ -30,7 +31,11 @@ let component;
 let inputs;
 
 const renderComponent = props => {
-    return mount(renderWithIntl(<EditableTextFields fields={props} />));
+    return mount(
+        renderWithIntl(
+            renderWithMuiTheme(<EditableTextFields fields={props} />),
+        ),
+    );
 };
 
 describe('EditableTextFields', () => {

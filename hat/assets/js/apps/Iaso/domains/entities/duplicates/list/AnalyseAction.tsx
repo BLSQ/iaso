@@ -1,14 +1,15 @@
 import React, { FunctionComponent, useCallback } from 'react';
 import moment from 'moment';
-import { Button, Box, Tooltip } from '@material-ui/core';
-import Autorenew from '@material-ui/icons/Autorenew';
-import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
+import { Button, Box, Tooltip, Grid } from '@mui/material';
+import Autorenew from '@mui/icons-material/Autorenew';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 import { useSafeIntl } from 'bluesquare-components';
 import { useStartAnalyse } from '../hooks/api/analyzes';
 import { AnalysisTooltipTitle } from './AnalysisTooltipTitle';
 import MESSAGES from '../messages';
 import { Analysis } from '../types';
+import { AnalysisModal } from './AnalysisModal';
 
 type Props = {
     latestAnalysis: Analysis | undefined;
@@ -66,18 +67,31 @@ export const AnalyseAction: FunctionComponent<Props> = ({
                             </Tooltip>
                         </Box>
                     </Box>
-                    <Button
-                        disabled={!latestAnalysis.finished_at || isSaving}
-                        variant="contained"
-                        color="primary"
-                        onClick={handleClick}
-                        size="small"
-                    >
-                        <Box display="inline-block" mr={1} pt="6px">
-                            <Autorenew fontSize="small" />
-                        </Box>
-                        {formatMessage(MESSAGES.relaunchAnalysis)}
-                    </Button>
+                    <Grid container spacing={1} justifyContent="flex-end">
+                        <Grid item>
+                            <Box mb={2} mt={2}>
+                                <Button
+                                    disabled={
+                                        !latestAnalysis.finished_at || isSaving
+                                    }
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={handleClick}
+                                    size="small"
+                                >
+                                    <Box display="inline-block" mr={1} pt="6px">
+                                        <Autorenew fontSize="small" />
+                                    </Box>
+                                    {formatMessage(MESSAGES.relaunchAnalysis)}
+                                </Button>
+                            </Box>
+                        </Grid>
+                        <Grid item>
+                            <Box mb={2} mt={2}>
+                                <AnalysisModal iconProps={{}} />
+                            </Box>
+                        </Grid>
+                    </Grid>
                 </>
             )}
         </Box>

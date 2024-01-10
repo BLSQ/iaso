@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import isEqual from 'lodash/isEqual';
 import { useSafeIntl } from 'bluesquare-components';
-import { Tabs, Tab, Box, Button, Tooltip, IconButton } from '@material-ui/core';
-import AddIcon from '@material-ui/icons/Add';
-import RemoveIcon from '@material-ui/icons/Clear';
+import { Tabs, Tab, Box, Button, Tooltip, IconButton } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Clear';
 import { useFormikContext } from 'formik';
 
 import MESSAGES from '../../../constants/messages';
@@ -106,7 +106,7 @@ export const RoundsForm = () => {
         <>
             <Box mt={rounds.length > 0 ? -4 : 0} display="flex">
                 {displayAddZeroRound && (
-                    <Box mr={rounds.length === 0 ? 2 : 0}>
+                    <Box mr={rounds.length === 0 ? 2 : 0} mt={2}>
                         <Button
                             className={
                                 rounds.length > 0 ? classes.addRoundButton : ''
@@ -186,18 +186,20 @@ export const RoundsForm = () => {
                     )}
                 </Box>
                 {(!lastRound || lastRound?.number < maxRoundsCount) && (
-                    <Button
-                        className={
-                            rounds.length > 0 ? classes.addRoundButton : ''
-                        }
-                        size="small"
-                        color="secondary"
-                        onClick={() => handleAddRound(newRoundNumber)}
-                        startIcon={<AddIcon fontSize="small" />}
-                        variant="outlined"
-                    >
-                        {formatMessage(MESSAGES.round)} {newRoundNumber}
-                    </Button>
+                    <Box mt={2}>
+                        <Button
+                            className={
+                                rounds.length > 0 ? classes.addRoundButton : ''
+                            }
+                            size="small"
+                            color="secondary"
+                            onClick={() => handleAddRound(newRoundNumber)}
+                            startIcon={<AddIcon fontSize="small" />}
+                            variant="outlined"
+                        >
+                            {formatMessage(MESSAGES.round)} {newRoundNumber}
+                        </Button>
+                    </Box>
                 )}
             </Box>
             {currentRoundNumber !== undefined && (

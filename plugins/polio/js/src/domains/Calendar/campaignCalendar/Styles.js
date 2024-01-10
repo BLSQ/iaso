@@ -1,5 +1,5 @@
-import { makeStyles } from '@material-ui/core';
-import red from '@material-ui/core/colors/red';
+import { makeStyles } from '@mui/styles';
+import { red } from '@mui/material/colors';
 
 const cellHeight = 50;
 const smallCellHeight = 20;
@@ -30,28 +30,28 @@ export const useStyles = makeStyles(theme => ({
     },
     tableCell: {
         height: cellHeight,
-        padding: 0,
-        margin: 0,
+        padding: '0 !important',
+        margin: '0 !important',
         position: 'relative',
         borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
     },
     tableCellHead: {
         height: cellHeight,
-        padding: 0,
-        margin: 0,
+        padding: '0 !important',
+        margin: '0 !important',
         position: 'sticky',
         borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
     },
     tableCellTopBordered: {
         height: cellHeight,
-        padding: 0,
-        margin: 0,
+        padding: '0 !important',
+        margin: '0 !important',
         position: 'sticky',
         borderTop: `1px solid ${theme.palette.ligthGray.border}`,
     },
     tableCellTitle: {
-        padding: 0,
-        margin: 0,
+        padding: '0 !important',
+        margin: '0 !important',
         position: 'sticky',
         height: cellHeight,
         borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
@@ -61,7 +61,7 @@ export const useStyles = makeStyles(theme => ({
         width: '30px',
     },
     tableCellTitleEmpty: {
-        border: 'none',
+        border: 'none !important',
         backgroundColor: theme.palette.common.white,
     },
     tableCellBordered: {
@@ -75,9 +75,11 @@ export const useStyles = makeStyles(theme => ({
     },
     tableRowHidden: {
         visibility: 'collapse',
+        height: 0,
     },
     tableCellHidden: {
-        border: `1px solid white`,
+        height: 0,
+        border: `1px solid #fafafa`,
         borderBottom: `1px solid ${theme.palette.ligthGray.border}`,
     },
     round: {
@@ -104,10 +106,10 @@ export const useStyles = makeStyles(theme => ({
         },
     },
     navButton: {
-        margin: theme.spacing(1.5),
-        borderRadius: 100,
-        padding: theme.spacing(1),
-        minWidth: 0,
+        margin: `${theme.spacing(1.5)} !important`,
+        borderRadius: '100% !important',
+        padding: `${theme.spacing(1)} !important`,
+        minWidth: '0 !important',
     },
     weeksCell: {
         fontSize: 9,
@@ -115,8 +117,8 @@ export const useStyles = makeStyles(theme => ({
     tableCellSpan: {
         position: 'absolute',
         display: 'flex',
-        top: 0,
-        left: 0,
+        top: '0px',
+        left: '0px',
         width: '100%',
         height: '100%',
         justifyContent: 'center',

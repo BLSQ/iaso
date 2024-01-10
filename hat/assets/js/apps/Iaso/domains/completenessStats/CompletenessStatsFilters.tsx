@@ -1,4 +1,4 @@
-import { Box, Grid } from '@material-ui/core';
+import { Box, Grid } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import React, {
     FunctionComponent,
@@ -21,7 +21,6 @@ import { baseUrls } from '../../constants/urls';
 import { useFilterState } from '../../hooks/useFilterState';
 import { OrgUnitTreeviewModal } from '../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../orgUnits/components/TreeView/requests';
-import { useGetFormsOptions } from './hooks/api/useGetFormsOptions';
 import { useGetOrgUnitTypesOptions } from './hooks/api/useGetOrgUnitTypesOptions';
 import MESSAGES from './messages';
 import PeriodPicker from '../periods/components/PeriodPicker';
@@ -32,21 +31,23 @@ import { PERIOD_TYPE_PLACEHOLDER } from '../periods/constants';
 import { useGetValidationStatus } from '../forms/hooks/useGetValidationStatus';
 import { redirectToReplace } from '../../routing/actions';
 import { InputWithInfos } from '../../components/InputWithInfos';
+import { DropdownOptionsWithOriginal } from '../../types/utils';
 
 type Props = {
     params: UrlParams & any;
+    forms?: DropdownOptionsWithOriginal<number>[];
+    fetchingForms: boolean;
 };
 
 const baseUrl = baseUrls.completenessStats;
 
 export const CompletenessStatsFilters: FunctionComponent<Props> = ({
     params,
+    forms,
+    fetchingForms,
 }) => {
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
-    const { data: forms, isFetching: fetchingForms } = useGetFormsOptions([
-        'period_type',
-    ]);
 
     const { filters, handleChange, filtersUpdated, setFiltersUpdated } =
         useFilterState({

@@ -1,12 +1,8 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import {
-    FormLabel,
-    Box,
-    makeStyles,
-    Popper,
-    ClickAwayListener,
-} from '@material-ui/core';
+import { FormLabel, Box, Popper, ClickAwayListener } from '@mui/material';
+
+import { makeStyles } from '@mui/styles';
 import { FormattedMessage, defineMessages } from 'react-intl';
 import { TwitterPicker } from 'react-color';
 
@@ -30,7 +26,7 @@ const useStyles = makeStyles(theme => ({
         outline: 'none !important',
     },
     popper: {
-        zIndex: 1001,
+        zIndex: 1300,
         width: 300,
         paddingTop: theme.spacing(2),
         marginLeft: -10,

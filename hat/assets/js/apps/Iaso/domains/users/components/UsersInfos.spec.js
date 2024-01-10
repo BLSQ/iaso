@@ -1,6 +1,7 @@
 import React from 'react';
 import { Select, PasswordInput } from 'bluesquare-components';
 import { expect } from 'chai';
+import { renderWithMuiTheme } from '../../../../../test/utils/muiTheme';
 import { renderWithIntl } from '../../../../../test/utils/intl';
 import UsersInfos from './UsersInfos';
 import MESSAGES from '../messages';
@@ -30,13 +31,15 @@ const currentUser = {
 const renderComponent = initialData => {
     component = mount(
         renderWithIntl(
-            withQueryClientProvider(
-                renderWithStore(
-                    <UsersInfos
-                        currentUser={currentUser}
-                        setFieldValue={setFieldValue}
-                        initialData={initialData}
-                    />,
+            renderWithMuiTheme(
+                withQueryClientProvider(
+                    renderWithStore(
+                        <UsersInfos
+                            currentUser={currentUser}
+                            setFieldValue={setFieldValue}
+                            initialData={initialData}
+                        />,
+                    ),
                 ),
             ),
         ),

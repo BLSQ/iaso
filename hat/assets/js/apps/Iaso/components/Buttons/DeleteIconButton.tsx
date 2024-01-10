@@ -1,9 +1,9 @@
 import React, { FunctionComponent } from 'react';
-import { IconButton } from 'bluesquare-components';
+import { IconButton, IntlMessage } from 'bluesquare-components';
 import { defineMessages } from 'react-intl';
-import DeleteIcon from '@material-ui/icons/Delete';
+import DeleteIcon from '@mui/icons-material/Delete';
 
-const message = defineMessages({
+const messages = defineMessages({
     delete: {
         id: 'iaso.label.delete',
         defaultMessage: 'Delete',
@@ -12,14 +12,18 @@ const message = defineMessages({
 
 type Props = {
     onClick: () => void;
+    message?: IntlMessage;
 };
 
-export const DeleteIconButton: FunctionComponent<Props> = ({ onClick }) => {
+export const DeleteIconButton: FunctionComponent<Props> = ({
+    onClick,
+    message,
+}) => {
     return (
         <IconButton
             onClick={onClick}
             overrideIcon={DeleteIcon}
-            tooltipMessage={message.delete}
+            tooltipMessage={message ?? messages.delete}
         />
     );
 };

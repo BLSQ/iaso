@@ -1,6 +1,7 @@
 import React from 'react';
 import { FormattedMessage } from 'react-intl';
-import { Box, Typography, makeStyles } from '@material-ui/core';
+import { Box, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import PropTypes from 'prop-types';
 
@@ -33,11 +34,11 @@ const EditOrgUnitOptionComponent = ({
     canEditLocation,
     canEditCatchment,
     isCreatingMarker,
+    errorsCoordinates,
+    setErrorsCoordinates,
 }) => {
     const classes = useStyles();
-    const hasMarker =
-        Boolean(orgUnit.latitude !== null) &&
-        Boolean(orgUnit.longitude !== null);
+    const hasMarker = orgUnit.latitude !== null || orgUnit.longitude !== null;
     return (
         <Box
             display="flex"
@@ -63,6 +64,8 @@ const EditOrgUnitOptionComponent = ({
                         </Typography>
                     </Box>
                     <MarkerInputs
+                        errorsCoordinates={errorsCoordinates}
+                        setErrorsCoordinates={setErrorsCoordinates}
                         orgUnit={orgUnit}
                         onChangeLocation={onChangeLocation}
                         toggleAddMarker={toggleAddMarker}
@@ -159,6 +162,8 @@ EditOrgUnitOptionComponent.propTypes = {
     canEditLocation: PropTypes.bool.isRequired,
     canEditCatchment: PropTypes.bool.isRequired,
     isCreatingMarker: PropTypes.bool.isRequired,
+    errorsCoordinates: PropTypes.object.isRequired,
+    setErrorsCoordinates: PropTypes.func.isRequired,
 };
 
 export default EditOrgUnitOptionComponent;

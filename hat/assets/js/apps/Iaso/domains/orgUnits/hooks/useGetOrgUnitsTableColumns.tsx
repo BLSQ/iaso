@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { makeStyles } from '@material-ui/core';
+import { makeStyles } from '@mui/styles';
 import Color from 'color';
 import {
     commonStyles,
@@ -136,13 +136,6 @@ export const useGetOrgUnitsTableColumns = (searches: [Search]): Column[] => {
             });
         }
         return columns;
-    }, [
-        classes.roundColor,
-        classes.statusNew,
-        classes.statusRejected,
-        classes.statusValidated,
-        formatMessage,
-        searches,
-    ]);
+    }, [classes.roundColor, formatMessage, getStatusMessage, searches]);
     return cols;
 };

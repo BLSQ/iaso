@@ -1,20 +1,25 @@
+import json
 import operator
 import typing
+import uuid
+from copy import deepcopy
 from functools import reduce
 
 import django_cte
+from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
-from django.contrib.postgres.fields import ArrayField, CITextField
+from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.indexes import GistIndex
-from django.core.exceptions import ValidationError
 from django.db import models, transaction
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Q
 from django.db.models.expressions import RawSQL
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_ltree.fields import PathField  # type: ignore
 from django_ltree.models import TreeModel  # type: ignore
 
+from hat.audit.models import log_modification, ORG_UNIT_CHANGE_REQUEST
 from iaso.models.data_source import SourceVersion
 from .project import Project
 from ..utils.expressions import ArraySubquery
@@ -192,7 +197,7 @@ class OrgUnitQuerySet(django_cte.CTEQuerySet):
         if user and user.is_anonymous and app_id is None:
             return self.none()
 
-        queryset: OrgUnitQuerySet = self.all()
+        queryset: OrgUnitQuerySet = self.defer("geom", "simplified_geom")
 
         if user and user.is_authenticated:
             account = user.iaso_profile.account
@@ -226,7 +231,17 @@ class OrgUnitQuerySet(django_cte.CTEQuerySet):
         return queryset
 
 
-OrgUnitManager = models.Manager.from_queryset(OrgUnitQuerySet)
+class OrgUnitManager(models.Manager):
+    def parents_q(self, org_units) -> Q:
+        """Create Q query object for all the parents for all the org units present
+
+        This fix the problem in django query that it would otherwise only give the intersection
+        """
+        if not org_units:
+            return Q(pk=None)
+        queries = [Q(path__ancestors=org_unit.path) for org_unit in org_units]
+        q = reduce(operator.or_, queries)
+        return q
 
 
 def get_creator_name(creator):
@@ -258,7 +273,9 @@ class OrgUnit(TreeModel):
     version = models.ForeignKey("SourceVersion", null=True, blank=True, on_delete=models.CASCADE)
     parent = models.ForeignKey("OrgUnit", on_delete=models.CASCADE, null=True, blank=True)
     path = PathField(null=True, blank=True, unique=True)
-    aliases = ArrayField(CITextField(max_length=255, blank=True), size=100, null=True, blank=True)
+    aliases = ArrayField(
+        models.CharField(max_length=255, blank=True, db_collation="case_insensitive"), size=100, null=True, blank=True
+    )
 
     org_unit_type = models.ForeignKey(OrgUnitType, on_delete=models.CASCADE, null=True, blank=True)
 
@@ -276,7 +293,9 @@ class OrgUnit(TreeModel):
     updated_at = models.DateTimeField(auto_now=True)
     creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
 
-    objects = OrgUnitManager()  # type: ignore
+    opening_date = models.DateField(blank=True, null=True)  # Start date of activities of the organisation unit
+    closed_date = models.DateField(blank=True, null=True)  # End date of activities of the organisation unit
+    objects = OrgUnitManager.from_queryset(OrgUnitQuerySet)()  # type: ignore
 
     class Meta:
         indexes = [GistIndex(fields=["path"], buffering=True)]
@@ -401,6 +420,8 @@ class OrgUnit(TreeModel):
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "version": self.version.number if self.version else None,
+            "opening_date": self.opening_date.strftime("%d/%m/%Y") if self.opening_date else None,
+            "closed_date": self.closed_date.strftime("%d/%m/%Y") if self.closed_date else None,
         }
 
         if hasattr(self, "search_index"):
@@ -433,6 +454,8 @@ class OrgUnit(TreeModel):
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "creator": get_creator_name(self.creator),
+            "opening_date": self.opening_date.strftime("%d/%m/%Y") if self.opening_date else None,
+            "closed_date": self.closed_date.strftime("%d/%m/%Y") if self.closed_date else None,
         }
         if not light:  # avoiding joins here
             res["groups"] = [group.as_dict(with_counts=False) for group in self.groups.all()]
@@ -460,6 +483,8 @@ class OrgUnit(TreeModel):
             "source_ref": self.source_ref,
             "parent": self.parent.as_small_dict() if self.parent else None,
             "org_unit_type_name": self.org_unit_type.name if self.org_unit_type else None,
+            "opening_date": self.opening_date.strftime("%d/%m/%Y") if self.opening_date else None,
+            "closed_date": self.closed_date.strftime("%d/%m/%Y") if self.closed_date else None,
         }
         if hasattr(self, "search_index"):
             res["search_index"] = self.search_index
@@ -526,6 +551,37 @@ class OrgUnit(TreeModel):
     def get_reference_instances_details_for_api(self) -> list:
         return [instance.as_full_model() for instance in self.reference_instances.all()]
 
+    def get_extra_fields(self):
+        from iaso.models import Account
+        from iaso.models.data_store import JsonDataStore
+
+        try:
+            datastore = self.jsondatastore_set.get(
+                account=Account.objects.filter(default_version=self.version).first(),
+                slug="extra_fields",
+            )
+            return datastore.content
+        except JsonDataStore.DoesNotExist:
+            return {}
+
+    def set_extra_fields(self, content):
+        from iaso.models import Account
+        from iaso.models.data_store import JsonDataStore
+
+        try:
+            datastore = self.jsondatastore_set.get(
+                account=Account.objects.filter(default_version=self.version).first(),
+                slug="extra_fields",
+            )
+            datastore.content = {**datastore.content, **content}
+            datastore.save()
+        except JsonDataStore.DoesNotExist:
+            self.jsondatastore_set.create(
+                account=Account.objects.filter(default_version=self.version).first(),
+                slug="extra_fields",
+                content=content,
+            )
+
 
 class OrgUnitReferenceInstance(models.Model):
     """
@@ -552,3 +608,158 @@ class OrgUnitReferenceInstance(models.Model):
     class Meta:
         # Only one `instance` by pair of org_unit/form.
         unique_together = ("org_unit", "form")
+
+
+class OrgUnitChangeRequest(models.Model):
+    """
+    A request to change an OrgUnit.
+
+    It can also be a request to create an OrgUnit. In this case the OrgUnit
+    already exists in DB with `OrgUnit.validation_status == VALIDATION_NEW`.
+    The change request will change `validation_status` to either
+    `VALIDATION_REJECTED` or `VALIDATION_VALID`.
+    """
+
+    class Statuses(models.TextChoices):
+        NEW = "new", _("New")
+        REJECTED = "rejected", _("Rejected")
+        APPROVED = "approved", _("Approved")
+
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False)
+    org_unit = models.ForeignKey("OrgUnit", on_delete=models.CASCADE)
+    status = models.CharField(choices=Statuses.choices, default=Statuses.NEW, max_length=40)
+
+    # Metadata.
+
+    created_at = models.DateTimeField(default=timezone.now)
+    created_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="org_unit_change_created_set"
+    )
+    updated_at = models.DateTimeField(blank=True, null=True)
+    updated_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="org_unit_change_updated_set"
+    )
+    reviewed_at = models.DateTimeField(blank=True, null=True)
+    reviewed_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="org_unit_change_reviewed_set"
+    )
+    rejection_comment = models.TextField(blank=True)
+
+    # Fields for which a change can be requested.
+
+    new_parent = models.ForeignKey(
+        "OrgUnit", null=True, blank=True, on_delete=models.CASCADE, related_name="org_unit_change_parents_set"
+    )
+    new_name = models.CharField(max_length=255, blank=True)
+    new_org_unit_type = models.ForeignKey(OrgUnitType, on_delete=models.CASCADE, null=True, blank=True)
+    new_groups = models.ManyToManyField("Group", blank=True)
+    new_location = PointField(null=True, blank=True, geography=True, dim=3, srid=4326)
+    # `new_location_accuracy` is only used to help decision-making during validation: is the accuracy
+    # good enough to change the location? The field doesn't exist on `OrgUnit`.
+    new_location_accuracy = models.DecimalField(decimal_places=2, max_digits=7, blank=True, null=True)
+    new_opening_date = models.DateField(blank=False, null=True)
+    new_closed_date = models.DateField(blank=True, null=True)
+    new_reference_instances = models.ManyToManyField("Instance", blank=True)
+
+    # Stores approved fields (only a subset can be approved).
+    approved_fields = ArrayField(
+        models.CharField(max_length=30, blank=True),
+        default=list,
+        blank=True,
+    )
+
+    class Meta:
+        verbose_name = _("Org unit change request")
+        indexes = [
+            models.Index(fields=["created_at"]),
+            models.Index(fields=["updated_at"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"ID #{self.id} - Org unit #{self.org_unit_id} - {self.get_status_display()}"
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
+    def clean(self, *args, **kwargs):
+        super().clean()
+        self.approved_fields = list(set(self.approved_fields))
+        self.clean_approved_fields()
+        self.clean_new_dates()
+
+    @property
+    def requested_fields(self) -> typing.List[str]:
+        """
+        Returns the list of fields names for which a change was requested.
+        `prefetch_related` of m2m are required when used in bulk.
+        """
+        requested = []
+        for name in self.get_new_fields():
+            field = getattr(self, name)
+            is_m2m = field.__class__.__name__ == "ManyRelatedManager"
+            is_requested = field.exists() if is_m2m else field
+            if is_requested:
+                requested.append(name)
+        return requested
+
+    def clean_approved_fields(self) -> None:
+        for name in self.approved_fields:
+            if name not in self.get_new_fields():
+                raise ValidationError({"approved_fields": f"Value {name} is not a valid choice."})
+
+    def clean_new_dates(self) -> None:
+        if (self.new_opening_date and self.new_closed_date) and (self.new_closed_date <= self.new_opening_date):
+            raise ValidationError("Closing date must be later than opening date.")
+
+    def reject(self, user: User, rejection_comment: str) -> None:
+        self.reviewed_at = timezone.now()
+        self.reviewed_by = user
+        self.status = self.Statuses.REJECTED
+        self.rejection_comment = rejection_comment
+        self.save()
+
+    def approve(self, user: User, approved_fields: typing.List[str]) -> None:
+        self.__apply_changes(user, approved_fields)
+        self.reviewed_at = timezone.now()
+        self.reviewed_by = user
+        self.status = self.Statuses.APPROVED
+        self.approved_fields = approved_fields
+        self.save()
+
+    def __apply_changes(self, user: User, approved_fields: typing.List[str]) -> None:
+        initial_org_unit = deepcopy(self.org_unit)
+
+        for field_name in approved_fields:
+            if field_name == "new_location_accuracy":
+                continue
+            elif field_name == "new_groups":
+                self.org_unit.groups.set(self.new_groups.all())
+            elif field_name == "new_reference_instances":
+                # Delete old ones.
+                self.org_unit.reference_instances.clear()
+                for instance in self.new_reference_instances.all():
+                    OrgUnitReferenceInstance.objects.create(
+                        org_unit=self.org_unit,
+                        form=instance.form,
+                        instance=instance,
+                    )
+            # Handle non m2m fields.
+            else:
+                new_value = getattr(self, field_name)
+                org_unit_field_name = field_name.replace("new_", "")
+                setattr(self.org_unit, org_unit_field_name, new_value)
+
+        if self.org_unit.validation_status == self.org_unit.VALIDATION_NEW:
+            self.org_unit.validation_status = self.org_unit.VALIDATION_VALID
+
+        self.org_unit.save()
+
+        log_modification(initial_org_unit, self.org_unit, source=ORG_UNIT_CHANGE_REQUEST, user=user)
+
+    @classmethod
+    def get_new_fields(cls) -> typing.List[str]:
+        """
+        Returns the list of fields names which can store a change request.
+        """
+        return [field.name for field in cls._meta.get_fields() if field.name.startswith("new_")]

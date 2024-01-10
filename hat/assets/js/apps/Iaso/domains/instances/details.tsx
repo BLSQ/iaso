@@ -2,8 +2,9 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Link } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
-import Alert from '@material-ui/lab/Alert';
-import { Box, Grid, makeStyles, Typography } from '@material-ui/core';
+import Alert from '@mui/lab/Alert';
+import { Box, Grid, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import {
     // @ts-ignore

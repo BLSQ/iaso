@@ -8,13 +8,15 @@ import React, {
 } from 'react';
 import { MapContainer, GeoJSON, ScaleControl, Pane } from 'react-leaflet';
 import 'leaflet-draw';
-import pink from '@material-ui/core/colors/pink';
-import { Grid, makeStyles, useTheme } from '@material-ui/core';
+import { pink } from '@mui/material/colors';
+import { Grid, useTheme } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { useSafeIntl, useSkipEffectOnMount } from 'bluesquare-components';
 import {
     mapOrgUnitByLocation,
     getleafletGeoJson,
     orderOrgUnitTypeByDepth,
+    isValidCoordinate,
 } from '../../../../../utils/map/mapUtils';
 import EditOrgUnitOptionComponent from '../EditOrgUnitOptionComponent';
 import OrgunitOptionSaveComponent from '../../OrgunitOptionSaveComponent';
@@ -234,11 +236,12 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
 
     const updateOrgUnitLocation = useCallback(
         newOrgUnit => {
-            if (newOrgUnit.latitude && newOrgUnit.longitude) {
+            const { latitude, longitude, altitude } = newOrgUnit;
+            if (isValidCoordinate(latitude, longitude)) {
                 onChangeLocation({
-                    lat: newOrgUnit.latitude,
-                    lng: newOrgUnit.longitude,
-                    alt: newOrgUnit.altitude,
+                    latitude,
+                    longitude,
+                    altitude,
                 });
             } else if (newOrgUnit.has_geo_json) {
                 setOrgUnitLocationModified(false); // What's the right value, the initial code passed nothing
@@ -249,7 +252,8 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     );
 
     const hasMarker =
-        Boolean(currentOrgUnit.latitude) && Boolean(currentOrgUnit.longitude);
+        !Number.isNaN(currentOrgUnit.latitude) &&
+        !Number.isNaN(currentOrgUnit.longitude);
 
     if (map.current) {
         map.current.options.maxZoom = currentTile.maxZoom;
@@ -373,6 +377,11 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
         state.catchmentGroup.value,
         state.locationGroup.value,
     ]);
+
+    const [errorsCoordinates, setErrorsCoordinates] = useState({
+        latitude: [],
+        longitude: [],
+    });
     return (
         <Grid container spacing={0}>
             <InnerDrawer
@@ -385,7 +394,12 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                     <OrgunitOptionSaveComponent
                         orgUnit={currentOrgUnit}
                         resetOrgUnit={() => handleReset()}
-                        saveDisabled={actionBusy || !orgUnitLocationModified}
+                        saveDisabled={
+                            actionBusy ||
+                            !orgUnitLocationModified ||
+                            errorsCoordinates.latitude.length > 0 ||
+                            errorsCoordinates.longitude.length > 0
+                        }
                         saveOrgUnit={saveOrgUnit}
                     />
                 }
@@ -408,7 +422,10 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                                 setStateField('orgUnitTypesSelected', outypes);
                             }}
                         />
-                        {userHasPermission(Permission.SUBMISSIONS, currentUser) && (
+                        {userHasPermission(
+                            Permission.SUBMISSIONS,
+                            currentUser,
+                        ) && (
                             <FormsFilterComponent
                                 currentOrgUnit={currentOrgUnit}
                                 formsSelected={state.formsSelected.value}
@@ -441,6 +458,8 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                             setIsCreatingMarker(false);
                             onChangeLocation(latLong);
                         }}
+                        errorsCoordinates={errorsCoordinates}
+                        setErrorsCoordinates={setErrorsCoordinates}
                     />
                 }
                 commentsOptionComponent={

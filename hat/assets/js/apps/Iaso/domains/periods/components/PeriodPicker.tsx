@@ -4,17 +4,12 @@ import React, {
     useEffect,
     useState,
 } from 'react';
-import {
-    Box,
-    FormHelperText,
-    FormLabel,
-    Grid,
-    makeStyles,
-} from '@material-ui/core';
+import { Box, FormHelperText, FormLabel, Grid } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 // @ts-ignore
 import { commonStyles, DatePicker, useSafeIntl } from 'bluesquare-components';
-import Typography from '@material-ui/core/Typography';
+import Typography from '@mui/material/Typography';
 import InputComponent from '../../../components/forms/InputComponent';
 
 import { getYears } from '../../../utils';

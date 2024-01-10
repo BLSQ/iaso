@@ -2,7 +2,7 @@
 # Then transfert it in the filan django image
 ############ NPM Builder ######################################################################
 
-FROM node:14-bullseye-slim as npmbuilder
+FROM node:14.17-bullseye-slim as npmbuilder
 ENV PROJECT_ROOT /opt
 
 WORKDIR /opt/app
@@ -17,7 +17,7 @@ COPY package.json .
 COPY package-lock.json .
 
 
-RUN npm install -g npm@8.5
+RUN npm install -g npm@8.5.5
 
 RUN rm -rf node_modules
 RUN npm cache clean --force
@@ -35,7 +35,7 @@ RUN ls ./hat/assets
 
 
 ########### Django Builder ########################################################################
-FROM python:3.8 as base
+FROM python:3.9 as base
 
 RUN apt-get update && apt-get --yes  --no-install-recommends install \
     gettext \
@@ -47,7 +47,6 @@ RUN apt-get update && apt-get --yes  --no-install-recommends install \
 WORKDIR /opt/app
 COPY requirements.txt /opt/app/requirements.txt
 COPY requirements-dev.txt /opt/app/requirements-dev.txt
-RUN pip install -r requirements.txt
 RUN pip install -r requirements-dev.txt
 
 COPY --from=npmbuilder /opt/app/hat/assets /opt/app/hat/assets

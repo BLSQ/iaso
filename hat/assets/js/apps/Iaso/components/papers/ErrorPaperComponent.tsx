@@ -1,9 +1,9 @@
 import React, { FunctionComponent } from 'react';
 
-import { makeStyles } from '@material-ui/core';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
-import Warning from '@material-ui/icons/Warning';
+import { makeStyles } from '@mui/styles';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import Warning from '@mui/icons-material/Warning';
 
 import { commonStyles } from 'bluesquare-components';
 

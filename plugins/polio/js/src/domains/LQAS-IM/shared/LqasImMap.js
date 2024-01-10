@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import { oneOf, string, array, number, bool, object } from 'prop-types';
-import { Box } from '@material-ui/core';
+import { Box } from '@mui/material';
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 import { any } from 'lodash/fp';
 import { MapComponent } from '../../Campaigns/MapComponent/MapComponent';
@@ -9,7 +9,8 @@ import { MapLegendContainer } from '../../Campaigns/MapComponent/MapLegendContai
 import { makePopup } from './LqasImPopUp';
 import { makeImMapLegendItems, getLqasImMapLayer } from '../IM/utils.ts';
 import { makeLqasMapLegendItems } from '../LQAS/utils.ts';
-import { imDistrictColors, lqasDistrictColors } from './constants.ts';
+import { imDistrictColors } from './constants.ts';
+import { lqasDistrictColors } from '../LQAS/constants.ts';
 import { defaultShapeStyle } from '../../../utils/index';
 import MESSAGES from '../../../constants/messages';
 import { useGetGeoJson } from '../../Campaigns/Scope/hooks/useGetGeoJson.ts';

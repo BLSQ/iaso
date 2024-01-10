@@ -1,13 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
-    withStyles,
     Table,
     TableBody,
     TableCell,
     TableRow,
     TableHead,
-} from '@material-ui/core';
+} from '@mui/material';
+import { withStyles } from '@mui/styles';
 import { FormattedMessage } from 'react-intl';
 import { textPlaceholder } from 'bluesquare-components';
 import MESSAGES from '../messages';

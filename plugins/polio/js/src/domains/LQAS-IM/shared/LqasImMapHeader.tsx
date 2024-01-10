@@ -1,6 +1,8 @@
 import React, { FunctionComponent } from 'react';
-import { Box, makeStyles, Divider, Grid, Typography } from '@material-ui/core';
+import { Box, Divider, Grid, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
+import classNames from 'classnames';
 import MESSAGES from '../../../constants/messages';
 import { LqasImDates } from './LqasImDates';
 import { DropdownOptions } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
@@ -18,15 +20,33 @@ type Props = {
     options: DropdownOptions<number>[];
     // eslint-disable-next-line no-unused-vars
     onRoundSelect: (round: number) => void;
+    campaignObrName?: string;
+    isFetching: boolean;
 };
 
 const styles = theme => ({
-    lqasImMapHeader: {
-        padding: theme.spacing(2),
+    placeHolderContainer: {
+        marginTop: theme.spacing(2),
+        textAlign: 'center',
+    },
+    lqasImMapHeaderPlaceholder: {
+        // padding: theme.spacing(2),
         fontWeight: 'bold',
     },
     // setting marginRight to prevent Divider from breaking the grid, marginLeft to prevent misalignment
-    verticalDivider: { marginRight: -1, marginLeft: -1 },
+    verticalDivider: {
+        marginRight: '-1px !important',
+        marginLeft: '-1px !important',
+    },
+    // This is to align the divider.There's a 2px misalignment for some reason
+    dividerOffset: {
+        marginRight: '2px',
+    },
+    // The padding is compensate when there's no round and keep the general height of the component
+    paddingY: {
+        paddingTop: theme.spacing(2),
+        paddingBottom: theme.spacing(2),
+    },
 });
 // @ts-ignore
 const useStyles = makeStyles(styles);
@@ -36,85 +56,83 @@ export const LqasImMapHeader: FunctionComponent<Props> = ({
     endDate,
     options,
     onRoundSelect,
+    campaignObrName,
+    isFetching,
 }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
+    if (!campaignObrName || isFetching) return null;
     return (
         <Box>
-            {options.length > 0 && (
-                <Grid container direction="row">
-                    <Grid container item xs={6} direction="row">
-                        {options.length <= 2 && (
-                            <Typography
-                                variant="h5"
-                                className={classes.lqasImMapHeader}
-                                color="primary"
-                            >
-                                {`${formatMessage(MESSAGES.round)} ${round}`}
-                            </Typography>
-                        )}
-                        {options.length > 2 && (
-                            <Grid item xs={12}>
-                                <Box ml={2} mr={2}>
-                                    <InputComponent
-                                        type="select"
-                                        keyValue="lqasImHeader"
-                                        options={options.map(o => ({
-                                            ...o,
-                                            value: `${o.value}`,
-                                        }))}
-                                        value={`${round}`}
-                                        onChange={(_keyValue, value) =>
-                                            onRoundSelect(parseInt(value, 10))
-                                        }
-                                        labelString={formatMessage(
-                                            MESSAGES.round,
-                                        )}
-                                        clearable={false}
-                                    />
-                                </Box>
-                            </Grid>
-                        )}
-                    </Grid>
-                    {startDate && endDate && (
-                        <>
-                            <Divider
-                                orientation="vertical"
-                                className={classes.verticalDivider}
-                                flexItem
-                            />
-                            <Grid container item xs={6}>
-                                <Grid
-                                    container
-                                    item
-                                    direction="row"
-                                    xs={6}
-                                    alignItems="center"
-                                >
-                                    <LqasImDates
-                                        type="start"
-                                        date={startDate}
-                                    />
-                                </Grid>
-                                <Divider
-                                    orientation="vertical"
-                                    className={classes.verticalDivider}
-                                    flexItem
+            <Grid container direction="row">
+                <Grid container item xs={6} direction="row">
+                    <Grid item xs={12}>
+                        <Box ml={2} mr={2} mb={2}>
+                            {options.length > 0 && (
+                                <InputComponent
+                                    type="select"
+                                    keyValue="lqasImHeader"
+                                    options={options.map(o => ({
+                                        ...o,
+                                        value: `${o.value}`,
+                                    }))}
+                                    value={round ? `${round}` : ''}
+                                    onChange={(_keyValue, value) =>
+                                        onRoundSelect(parseInt(value, 10))
+                                    }
+                                    labelString={formatMessage(MESSAGES.round)}
+                                    clearable={false}
                                 />
-                                <Grid
-                                    container
-                                    item
-                                    direction="row"
-                                    xs={6}
-                                    alignItems="center"
-                                >
-                                    <LqasImDates type="end" date={endDate} />
-                                </Grid>
-                            </Grid>
-                        </>
-                    )}
+                            )}
+                            {options.length <= 0 && (
+                                <Box className={classes.placeHolderContainer}>
+                                    <Typography
+                                        className={
+                                            classes.lqasImMapHeaderPlaceholder
+                                        }
+                                    >
+                                        {formatMessage(MESSAGES.noRoundFound)}
+                                    </Typography>
+                                </Box>
+                            )}
+                        </Box>
+                    </Grid>
                 </Grid>
-            )}
+                <Divider
+                    orientation="vertical"
+                    className={classes.verticalDivider}
+                    flexItem
+                />
+
+                <Grid
+                    container
+                    item
+                    direction="row"
+                    xs={3}
+                    alignItems="center"
+                    className={classNames(
+                        classes.dividerOffset,
+                        classes.paddingY,
+                    )}
+                >
+                    <LqasImDates type="start" date={startDate} />
+                </Grid>
+                <Divider
+                    orientation="vertical"
+                    className={classes.verticalDivider}
+                    flexItem
+                />
+                <Grid
+                    container
+                    item
+                    direction="row"
+                    xs={3}
+                    alignItems="center"
+                    className={classes.paddingY}
+                >
+                    <LqasImDates type="end" date={endDate} />
+                </Grid>
+            </Grid>
         </Box>
     );
 };

@@ -1,6 +1,8 @@
 import json
 from copy import deepcopy
 from time import gmtime, strftime
+from datetime import datetime
+import typing
 
 from django.conf import settings
 from django.contrib.gis.geos import Point
@@ -211,6 +213,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 {"title": "Type", "width": 15},
                 {"title": "Latitude", "width": 15},
                 {"title": "Longitude", "width": 15},
+                {"title": "Date d'ouverture", "width": 20},
+                {"title": "Date de fermeture", "width": 20},
                 {"title": "Date de création", "width": 20},
                 {"title": "Date de modification", "width": 20},
                 {"title": "Source", "width": 20},
@@ -251,6 +255,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 *parent_field_names,
                 *counts_by_forms,
                 "instances_count",
+                "opening_date",
+                "closed_date",
             )
 
             user_account_name = profile.account.name if profile else ""
@@ -266,6 +272,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     org_unit.get("org_unit_type__name"),
                     location.y if location else None,
                     location.x if location else None,
+                    org_unit.get("opening_date").strftime("%Y-%m-%d")
+                    if org_unit.get("opening_date") is not None
+                    else None,
+                    org_unit.get("closed_date").strftime("%Y-%m-%d") if org_unit.get("closed_date") else None,
                     org_unit.get("created_at").strftime("%Y-%m-%d %H:%M"),
                     org_unit.get("updated_at").strftime("%Y-%m-%d %H:%M"),
                     org_unit.get("version__data_source__name"),
@@ -412,7 +422,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             latitude = request.data["latitude"]
             longitude = request.data["longitude"]
             altitude = request.data["altitude"]
-            if latitude and longitude:
+            if latitude is not None and longitude is not None:
                 org_unit.location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
             else:
                 org_unit.location = None
@@ -481,6 +491,12 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     continue
                 new_groups.append(temp_group)
 
+        opening_date = request.data.get("opening_date", None)
+        org_unit.opening_date = None if not opening_date else self.get_date(opening_date)
+
+        closed_date = request.data.get("closed_date", None)
+        org_unit.closed_date = None if not closed_date else self.get_date(closed_date)
+
         if not errors:
             org_unit.save()
             if new_groups is not None:
@@ -502,6 +518,15 @@ class OrgUnitViewSet(viewsets.ViewSet):
             return Response(res)
         else:
             return Response(errors, status=400)
+
+    def get_date(self, date: str) -> typing.Union[datetime.date, None]:
+        date_input_formats = ["%d-%m-%Y", "%d/%m/%Y"]
+        for date_input_format in date_input_formats:
+            try:
+                return datetime.strptime(date, date_input_format).date()
+            except ValueError:
+                pass
+        return None
 
     @action(detail=False, methods=["POST"], permission_classes=[permissions.IsAuthenticated, HasOrgUnitPermission])
     def create_org_unit(self, request):
@@ -551,6 +576,19 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         org_unit.short_name = request.data.get("short_name", "")
         org_unit.source = request.data.get("source", "")
+
+        opening_date = request.data.get("opening_date", None)
+        closed_date = request.data.get("closed_date", None)
+
+        if opening_date:
+            org_unit.opening_date = datetime.strptime(opening_date, "%d-%m-%Y").date()
+
+        if closed_date:
+            org_unit.closed_date = datetime.strptime(closed_date, "%d-%m-%Y").date()
+            if org_unit.opening_date > org_unit.closed_date:
+                errors.append(
+                    {"errorKey": "closed_date", "errorMessage": _("Opening date must be anterior to closed date")}
+                )
 
         validation_status = request.data.get("validation_status", None)
         if validation_status is None:

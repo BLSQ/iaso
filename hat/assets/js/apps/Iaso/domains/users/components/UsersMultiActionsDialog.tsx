@@ -12,17 +12,17 @@ import {
     DialogContent,
     DialogActions,
     Button,
-    makeStyles,
     Box,
     Typography,
-} from '@material-ui/core';
+} from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     commonStyles,
     formatThousand,
     useSafeIntl,
     selectionInitialState,
 } from 'bluesquare-components';
-import ReportIcon from '@material-ui/icons/Report';
+import ReportIcon from '@mui/icons-material/Report';
 import { UseMutateAsyncFunction } from 'react-query';
 
 import { isEqual } from 'lodash';

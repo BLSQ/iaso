@@ -3,11 +3,13 @@ import React, {
     FunctionComponent,
     useCallback,
     useMemo,
+    useEffect,
 } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { Grid, Button, makeStyles, Box } from '@material-ui/core';
-import SearchIcon from '@material-ui/icons/Search';
+import { Grid, Button, Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import SearchIcon from '@mui/icons-material/Search';
 
 import {
     // @ts-ignore
@@ -67,6 +69,18 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
         submitterTeamId: params.submitterTeamId,
         entityTypeIds: params.entityTypeIds,
     });
+
+    useEffect(() => {
+        setFilters({
+            search: params.search,
+            location: params.location,
+            dateFrom: params.dateFrom,
+            dateTo: params.dateTo,
+            submitterId: params.submitterId,
+            submitterTeamId: params.submitterTeamId,
+            entityTypeIds: params.entityTypeIds,
+        });
+    }, [params]);
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.location);
     const [textSearchError, setTextSearchError] = useState<boolean>(false);

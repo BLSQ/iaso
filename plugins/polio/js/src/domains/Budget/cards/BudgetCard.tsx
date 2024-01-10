@@ -1,14 +1,14 @@
 /* eslint-disable camelcase */
 import React, { FunctionComponent } from 'react';
 import {
-    makeStyles,
     Typography,
     Card,
     Grid,
     Divider,
     Box,
     CardContent,
-} from '@material-ui/core';
+} from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     useSafeIntl,
     IconButton as IconButtonComponent,
@@ -89,6 +89,7 @@ export const BudgetCard: FunctionComponent<Props> = ({ budget }) => {
                     xs={2}
                     direction="column"
                     justifyContent="center"
+                    alignItems="flex-start"
                 >
                     <Divider orientation="vertical" />
 

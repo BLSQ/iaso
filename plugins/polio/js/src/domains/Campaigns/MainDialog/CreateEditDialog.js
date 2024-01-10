@@ -15,7 +15,7 @@ import {
     Grid,
     Typography,
     Box,
-} from '@material-ui/core';
+} from '@mui/material';
 
 import {
     useSafeIntl,
@@ -35,10 +35,6 @@ import { BudgetForm, budgetFormFields } from '../Budget/BudgetForm.tsx';
 import { PreparednessForm } from '../Preparedness/PreparednessForm';
 import { Form } from '../../../components/Form';
 import { RoundsForm, roundFormFields } from '../Rounds/RoundsForm';
-import {
-    VaccineManagementForm,
-    vaccineManagementFormFields,
-} from '../VaccineManagement/VaccineManagementForm.tsx';
 
 import { useSaveCampaign } from '../hooks/api/useSaveCampaign';
 import { useGetCampaignLogs } from '../campaignHistory/hooks/useGetCampaignHistory.ts';
@@ -173,15 +169,6 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
                 title: formatMessage(MESSAGES.preparedness),
                 form: PreparednessForm,
                 key: 'preparedness',
-            },
-            {
-                title: formatMessage(MESSAGES.vaccineManagement),
-                form: VaccineManagementForm,
-                key: 'vaccineManagement',
-                hasTabError: compareArraysValues(
-                    vaccineManagementFormFields(selectedCampaign?.rounds ?? []),
-                    formik.errors,
-                ),
             },
         ];
     }, [

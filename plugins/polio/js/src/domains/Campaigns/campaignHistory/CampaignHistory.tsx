@@ -11,7 +11,8 @@ import {
 } from 'bluesquare-components';
 import { useSelector, useDispatch } from 'react-redux';
 
-import { Box, Grid, makeStyles, Theme, Typography } from '@material-ui/core';
+import { Box, Grid, Theme, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import { CampaignLogDetail } from './CampaignLogDetail';
 
@@ -32,6 +33,7 @@ import {
     CampaignLogDetailResult,
     initialLogDetail,
 } from './hooks/useGetCampaignHistory';
+import { DropdownOptions } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 type RouterCustom = {
     prevPathname?: string;
@@ -65,7 +67,7 @@ export const CampaignHistory: FunctionComponent<Props> = ({
         data: campaignLogsDropdown,
         isFetching: isFetchingCampaignLogsDropdown,
     }: {
-        data?: Record<string, any> | undefined;
+        data?: DropdownOptions<number>[];
         isFetching: boolean;
         isError: boolean;
     } = useGetCampaignLogs(params.campaignId);

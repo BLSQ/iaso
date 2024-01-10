@@ -250,7 +250,7 @@ class EntityViewSet(ModelViewSet):
             # TODO: see if we use created_at as reference date (or latest instance creation, update, ...)
             queryset = queryset.filter(created_at__gte=date_from)
         if date_to:
-            queryset = queryset.filter(created_at__lte=date_to)
+            queryset = queryset.filter(created_at__date__lte=date_to)
         if show_deleted:
             queryset = queryset.filter(deleted_at__isnull=True)
         if created_by_id:
@@ -259,7 +259,6 @@ class EntityViewSet(ModelViewSet):
             queryset = queryset.filter(attributes__created_by__teams__id=created_by_team_id)
 
         # location
-
         return queryset
 
     def create(self, request, *args, **kwargs):
@@ -347,91 +346,54 @@ class EntityViewSet(ModelViewSet):
             total_count = entities.count()
             num_pages = math.ceil(total_count / limit_int)
             entities = entities[start_int:end_int]
-            results_count = entities.count()
 
-        if entity_type_ids is None or (entity_type_ids is not None and len(entity_type_ids.split(",")) > 1):
-            for entity in entities:
-                attributes = entity.attributes
-                attributes_pk = None
-                attributes_ou = None
-                # FIXME
-                file_content = None  # type: ignore
-                if attributes is not None and entity.attributes is not None:
-                    file_content = entity.attributes.get_and_save_json_of_xml().get(
-                        "file_content", None
-                    )  # type: ignore
-                    attributes_pk = attributes.pk
-                    attributes_ou = entity.attributes.org_unit.as_location(with_parents=True)  # type: ignore
-                name = None
-                program = None
-
-                if file_content is not None:
-                    name = file_content.get("name")
-                    program = file_content.get("program")
-                result = {
-                    "id": entity.id,
-                    "uuid": entity.uuid,
-                    "name": name,
-                    "created_at": entity.created_at,
-                    "updated_at": entity.updated_at,
-                    "attributes": attributes_pk,
-                    "entity_type": entity.entity_type.name,
-                    # TODO: investigate typing issue on next line
-                    "last_saved_instance": entity.last_saved_instance,  # type: ignore
-                    "org_unit": attributes_ou,
-                    "program": program,
-                    "duplicates": get_duplicates(entity),
-                }
-                result_list.append(result)
-        else:
-            for entity in entities:
-                attributes = entity.attributes
-                attributes_ou = None
-                file_content = None
-                if attributes is not None and entity.attributes is not None:  # type: ignore
-                    # FIXME: what if entity.attributes is None?
-                    file_content = entity.attributes.get_and_save_json_of_xml().get(
-                        "file_content", None
-                    )  # type: ignore
-                    # FIXME: what if entity.attributes.org_unit is None?
-                    attributes_ou = entity.attributes.org_unit.as_location(with_parents=True)  # type: ignore
+        for entity in entities:
+            attributes = entity.attributes
+            attributes_pk = None
+            attributes_ou = None
+            attributes_latitude = None
+            attributes_longitude = None
+            file_content = None
+            if attributes is not None and entity.attributes is not None:
+                file_content = entity.attributes.get_and_save_json_of_xml().get("file_content", None)
+                attributes_pk = attributes.pk
+                attributes_ou = entity.attributes.org_unit.as_location(with_parents=True) if entity.attributes.org_unit else None  # type: ignore
+                attributes_latitude = attributes.location.y if attributes.location else None  # type: ignore
+                attributes_longitude = attributes.location.x if attributes.location else None  # type: ignore
+            name = None
+            program = None
+            if file_content is not None:
+                name = file_content.get("name")
+                program = file_content.get("program")
+            result = {
+                "id": entity.id,
+                "uuid": entity.uuid,
+                "name": name,
+                "created_at": entity.created_at,
+                "updated_at": entity.updated_at,
+                "attributes": attributes_pk,
+                "entity_type": entity.entity_type.name,
+                "last_saved_instance": entity.last_saved_instance,
+                "org_unit": attributes_ou,
+                "program": program,
+                "duplicates": get_duplicates(entity),
+                "latitude": attributes_latitude,
+                "longitude": attributes_longitude,
+            }
+            if entity_type_ids is not None and len(entity_type_ids.split(",")) == 1:
                 columns_list = []
-                program = None
-                if file_content is not None:
-                    program = file_content.get("program")
-                # FIXME: what if entity.entity_type.reference_form is None?
-                possible_fields_list = entity.entity_type.reference_form.possible_fields or []  # type: ignore
-                # FIXME: investigate typing error on next line
-                for items in possible_fields_list:  # type: ignore
+                possible_fields_list = entity.entity_type.reference_form.possible_fields or []
+                for items in possible_fields_list:
                     for k, v in items.items():
-                        if k == "name":
-                            # FIXME: investigate typing error on next line
-                            if v in entity.entity_type.fields_list_view:  # type: ignore
-                                columns_list.append(items)
-                result = {
-                    "id": entity.pk,
-                    "uuid": str(entity.uuid),
-                    "entity_type": entity.entity_type.name,
-                    "created_at": entity.created_at,
-                    "updated_at": entity.updated_at,
-                    "org_unit": attributes_ou,
-                    # FIXME: investigate typing error on next line
-                    "last_saved_instance": entity.last_saved_instance,  # type: ignore
-                    "program": program,
-                    "duplicates": get_duplicates(entity),
-                }
-
-                # Get data from xlsform
+                        if k == "name" and v in entity.entity_type.fields_list_view:
+                            columns_list.append(items)
                 if attributes is not None and attributes.json is not None:
-                    # TODO: investigate typing error on next line
-                    for k, v in entity.attributes.json.items():  # type: ignore
-                        if k in list(entity.entity_type.fields_list_view):  # type: ignore
+                    for k, v in entity.attributes.json.items():
+                        if k in list(entity.entity_type.fields_list_view):
                             result[k] = v
-                    result_list.append(result)
-
-            columns_list = [i for n, i in enumerate(columns_list) if i not in columns_list[n + 1 :]]
-            columns_list = [c for c in columns_list if len(c) > 2]
-
+                columns_list = [i for n, i in enumerate(columns_list) if i not in columns_list[n + 1 :]]
+                columns_list = [c for c in columns_list if len(c) > 2]
+            result_list.append(result)
         if xlsx_format or csv_format:
             columns = [
                 {"title": "ID", "width": 20},

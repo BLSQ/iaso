@@ -6,7 +6,8 @@ import React, {
 } from 'react';
 import classnames from 'classnames';
 import mapValues from 'lodash/mapValues';
-import { Grid, Box, makeStyles } from '@material-ui/core';
+import { Grid, Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import { commonStyles } from 'bluesquare-components';
 import { isEqual } from 'lodash';
@@ -29,6 +30,8 @@ const initialFormState = (orgUnit: OrgUnit): OrgunitInititialState => ({
     parent: orgUnit.parent,
     source_ref: orgUnit.source_ref,
     reference_instance_id: orgUnit.reference_instance_id,
+    opening_date: orgUnit.opening_date ? orgUnit.opening_date : undefined,
+    closed_date: orgUnit.closed_date ? orgUnit.closed_date : undefined,
 });
 
 const useStyles = makeStyles(theme => ({

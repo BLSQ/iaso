@@ -2,15 +2,9 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 
-import {
-    Grid,
-    Button,
-    makeStyles,
-    Box,
-    useTheme,
-    useMediaQuery,
-} from '@material-ui/core';
-import SearchIcon from '@material-ui/icons/Search';
+import { Grid, Button, Box, useTheme, useMediaQuery } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import SearchIcon from '@mui/icons-material/Search';
 
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 

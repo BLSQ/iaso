@@ -17,7 +17,7 @@ admin.site.site_title = "Iaso"
 admin.site.index_title = "Administration de Iaso"
 
 urlpatterns = [
-    path("", RedirectView.as_view(pattern_name="dashboard:iaso", permanent=False), name="index"),
+    path("", RedirectView.as_view(pattern_name="dashboard:home_iaso", permanent=False), name="index"),
     path("_health/", health),
     path("_health", health),  # same without slash otherwise AWS complain about redirect
     path("health/", health),  # alias since current apache config hide _health/
@@ -73,8 +73,8 @@ schema_view = get_schema_view(
 
 urlpatterns = urlpatterns + [
     re_path(r"^swagger(?P<format>\.json|\.yaml)$", schema_view.without_ui(cache_timeout=0), name="schema-json"),
-    re_path(r"^swagger/$", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
-    re_path(r"^redoc/$", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
+    path("swagger/", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
+    path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
 ]
 
 if settings.BEANSTALK_WORKER or settings.DEBUG or settings.IN_TESTS:

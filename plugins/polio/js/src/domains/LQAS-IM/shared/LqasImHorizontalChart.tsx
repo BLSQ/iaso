@@ -2,7 +2,7 @@ import React, { FunctionComponent, useMemo } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import { isEqual } from 'lodash';
-import { Box } from '@material-ui/core';
+import { Box } from '@mui/material';
 
 import { ConvertedLqasImData } from '../../../constants/types';
 import { PercentageChartWithTitle } from './PercentageChartWithTitle';
@@ -12,8 +12,9 @@ import {
     formatLqasDataForChart,
     lqasChartTooltipFormatter,
 } from '../LQAS/utils';
-import { imBarColorTresholds, lqasBarColorTresholds } from './constants';
+import { imBarColorTresholds } from './constants';
 import { NoData } from './NoData';
+import { lqasBarColorTresholds } from '../LQAS/constants';
 
 type Props = {
     type: 'imGlobal' | 'imIHH' | 'imOHH' | 'lqas';

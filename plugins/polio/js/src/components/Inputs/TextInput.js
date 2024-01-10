@@ -1,19 +1,19 @@
 import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { TextField } from '@material-ui/core';
+import { TextField } from '@mui/material';
 import { get } from 'lodash';
-import { isTouched } from '../../utils';
 
 export const TextInput = ({
     field = {},
     form = {},
     value,
     touchOnFocus = true,
+    shrinkLabel = true,
     ...props
 } = {}) => {
     const hasError =
         form.errors &&
-        Boolean(get(form.errors, field.name) && isTouched(form.touched));
+        Boolean(get(form.errors, field.name) && get(form.touched, field.name));
 
     const handleChangeAndFocus = useCallback(
         e => {
@@ -26,7 +26,7 @@ export const TextInput = ({
     return (
         <TextField
             InputLabelProps={{
-                shrink: true,
+                shrink: Boolean(field.value ?? value ?? '') || shrinkLabel,
             }}
             fullWidth
             variant="outlined"
@@ -52,6 +52,7 @@ TextInput.defaultProps = {
     form: {},
     value: undefined,
     touchOnFocus: true,
+    shrinkLabel: true,
 };
 
 TextInput.propTypes = {
@@ -59,4 +60,5 @@ TextInput.propTypes = {
     form: PropTypes.object,
     value: PropTypes.any,
     touchOnFocus: PropTypes.bool,
+    shrinkLabel: PropTypes.bool,
 };

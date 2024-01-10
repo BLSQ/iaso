@@ -3,7 +3,7 @@ from io import BytesIO
 from timeit import default_timer as timer
 from uuid import uuid4
 
-from django.contrib.postgres.fields.jsonb import KeyTextTransform
+from django.db.models.fields.json import KeyTextTransform
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.core.paginator import Paginator
 from django.db import transaction

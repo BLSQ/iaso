@@ -173,6 +173,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Latest analysis completed: {finishedAt}',
         id: 'iaso.duplicate.latestAnalysis',
     },
+    launchAnalysis: {
+        defaultMessage: 'Launch analysis',
+        id: 'iaso.duplicate.launchAnalysis',
+    },
     relaunchAnalysis: {
         defaultMessage: 'Relaunch Analysis',
         id: 'iaso.duplicate.relaunchAnalysis',
@@ -184,6 +188,19 @@ const MESSAGES = defineMessages({
     analysisBusy: {
         defaultMessage: 'Analysis in progress',
         id: 'iaso.duplicate.analysisBusy',
+    },
+    confirm: {
+        defaultMessage: 'Confirm',
+        id: 'iaso.label.confirm',
+    },
+    cancel: {
+        defaultMessage: 'Cancel',
+        id: 'iaso.label.cancel',
+    },
+    messageErrorMissingFields: {
+        defaultMessage:
+            'No fields to analyse. You can set them up in the beneficiaries types page',
+        id: 'iaso.duplicate.messageErrorMissingFields',
     },
 });
 

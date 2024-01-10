@@ -4,16 +4,10 @@ import {
     useSkipEffectOnMount,
     LoadingSpinner,
 } from 'bluesquare-components';
-import {
-    Box,
-    useMediaQuery,
-    useTheme,
-    Collapse,
-    makeStyles,
-    Grid,
-} from '@material-ui/core';
-import SearchIcon from '@material-ui/icons/Search';
-import { Pagination } from '@material-ui/lab';
+import { Box, useMediaQuery, useTheme, Collapse, Grid } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import SearchIcon from '@mui/icons-material/Search';
+import { Pagination } from '@mui/lab';
 
 // @ts-ignore
 import TopBar from 'Iaso/components/nav/TopBarComponent';

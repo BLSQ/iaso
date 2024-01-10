@@ -1,9 +1,9 @@
 /* eslint-disable camelcase */
 import React, { FunctionComponent } from 'react';
 
-import { Box, Button, Grid } from '@material-ui/core';
+import { Box, Button, Grid } from '@mui/material';
 
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles } from '@mui/styles';
 
 import {
     useSafeIntl,
@@ -21,13 +21,14 @@ import { OrgunitType } from '../types/orgunitTypes';
 import { Instance } from '../../instances/types/instance';
 import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
 import { OrgUnitMultiReferenceInstances } from './OrgUnitMultiReferenceInstances';
+import DatesRange from '../../../components/filters/DatesRange';
 
 const useStyles = makeStyles(theme => ({
     speedDialTop: {
         top: theme.spacing(12.5),
     },
     marginLeft: {
-        marginLeft: '8px',
+        marginLeft: `${theme.spacing(2)} !important`,
     },
 }));
 
@@ -188,7 +189,16 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                         resetTrigger={resetTrigger}
                     />
                 </FormControlComponent>
-
+                <DatesRange
+                    keyDateFrom="opening_date"
+                    keyDateTo="closed_date"
+                    onChangeDate={onChangeInfo}
+                    dateFrom={orgUnitState.opening_date.value}
+                    dateTo={orgUnitState.closed_date.value}
+                    labelFrom={MESSAGES.openingDate}
+                    labelTo={MESSAGES.closingDate}
+                    marginTop={0}
+                />
                 <Grid
                     container
                     item

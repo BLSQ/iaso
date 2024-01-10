@@ -1,6 +1,6 @@
 import React from 'react';
 import { FormattedMessage } from 'react-intl';
-import { Grid, Paper, Box, Typography } from '@material-ui/core';
+import { Grid, Paper, Box, Typography } from '@mui/material';
 import { useStyles } from '../Styles';
 
 import MESSAGES from '../../../../constants/messages';
@@ -18,23 +18,30 @@ const VaccinesLegend = () => {
                     <FormattedMessage {...MESSAGES.vaccines} />
                 </Typography>
                 {polioVaccines.map(vaccine => (
-                    <Grid container spacing={1} key={vaccine.value}>
-                        <Grid item sm={6} container justifyContent="flex-start">
-                            <span
-                                className={classes.roundColor}
-                                style={{ backgroundColor: vaccine.color }}
-                            />
+                    <Box mt={1}>
+                        <Grid container spacing={1} key={vaccine.value}>
+                            <Grid
+                                item
+                                sm={6}
+                                container
+                                justifyContent="flex-start"
+                            >
+                                <span
+                                    className={classes.roundColor}
+                                    style={{ backgroundColor: vaccine.color }}
+                                />
+                            </Grid>
+                            <Grid
+                                item
+                                sm={6}
+                                container
+                                justifyContent="flex-end"
+                                alignItems="center"
+                            >
+                                {vaccine.label}
+                            </Grid>
                         </Grid>
-                        <Grid
-                            item
-                            sm={6}
-                            container
-                            justifyContent="flex-end"
-                            alignItems="center"
-                        >
-                            {vaccine.label}
-                        </Grid>
-                    </Grid>
+                    </Box>
                 ))}
             </Box>
         </Paper>

@@ -5,36 +5,39 @@ import re
 import typing
 from copy import copy
 from functools import reduce
+from io import StringIO
 from logging import getLogger
 from urllib.request import urlopen
 
-from bs4 import BeautifulSoup as Soup  # type: ignore
-from io import StringIO
-
 import django_cte
-from django.contrib.auth.models import User
+from bs4 import BeautifulSoup as Soup  # type: ignore
+from django import forms as dj_forms
 from django.contrib import auth
+from django.contrib.auth import models as authModels
+from django.contrib.auth.models import User
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.paginator import Paginator
 from django.core.validators import MinLengthValidator
 from django.db import models
-from django.contrib.auth import models as authModels
-from django.db.models import Q, FilteredRelation, Count
+from django.db.models import Count, FilteredRelation, Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
-from hat.audit.models import log_modification, INSTANCE_API
-from iaso.models.data_source import SourceVersion, DataSource
+from hat.audit.models import INSTANCE_API, log_modification
+from hat.menupermissions.constants import MODULES
+from iaso.models.data_source import DataSource, SourceVersion
 from iaso.models.org_unit import OrgUnit, OrgUnitReferenceInstance
-from iaso.utils import flat_parse_xml_soup, extract_form_version_id
-from .device import DeviceOwnership, Device
-from .forms import Form, FormVersion
+from iaso.utils import extract_form_version_id, flat_parse_xml_soup
+
 from .. import periods
 from ..utils.jsonlogic import jsonlogic_to_q
+from .device import Device, DeviceOwnership
+from .forms import Form, FormVersion
 
 logger = getLogger(__name__)
 
@@ -100,6 +103,28 @@ class AccountFeatureFlag(models.Model):
         return f"{self.name} ({self.code})"
 
 
+class ChoiceArrayField(ArrayField):
+    """
+    A field that allows us to store an array of choices.
+    Uses Django's Postgres ArrayField
+    and a MultipleChoiceField for its formfield.
+    """
+
+    def formfield(self, **kwargs):
+        defaults = {
+            "form_class": dj_forms.MultipleChoiceField,
+            "choices": self.base_field.choices,
+        }
+        defaults.update(kwargs)
+        # Skip our parent's formfield implementation completely as we don't
+        # care for it.
+        # pylint:disable=bad-super-call
+        return super(ArrayField, self).formfield(**defaults)
+
+
+MODULE_CHOICES = ((modu["codename"], modu["name"]) for modu in MODULES)
+
+
 class Account(models.Model):
     """Account represent a tenant (=roughly a client organisation or a country)"""
 
@@ -109,6 +134,10 @@ class Account(models.Model):
     default_version = models.ForeignKey("SourceVersion", null=True, blank=True, on_delete=models.SET_NULL)
     feature_flags = models.ManyToManyField(AccountFeatureFlag)
     user_manual_path = models.TextField(null=True, blank=True)
+    modules = ChoiceArrayField(
+        models.CharField(max_length=100, choices=MODULE_CHOICES), blank=True, null=True, default=list
+    )
+    analytics_script = models.TextField(blank=True, null=True)
 
     def as_dict(self):
         return {
@@ -119,6 +148,7 @@ class Account(models.Model):
             "default_version": self.default_version.as_dict() if self.default_version else None,
             "feature_flags": [flag.code for flag in self.feature_flags.all()],
             "user_manual_path": self.user_manual_path,
+            "analytics_script": self.analytics_script,
         }
 
     def __str__(self):
@@ -299,10 +329,6 @@ class Task(models.Model):
         self.ended_at = timezone.now()
         self.result = {"result": SUCCESS, "message": message}
         self.save()
-
-    def kill_if_external(self):
-        if self.external:
-            self.stop_if_killed()
 
 
 class Link(models.Model):
@@ -882,9 +908,7 @@ class Instance(models.Model):
     device = models.ForeignKey("Device", null=True, blank=True, on_delete=models.DO_NOTHING)
     period = models.TextField(null=True, blank=True, db_index=True)
     entity = models.ForeignKey("Entity", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="instances")
-    planning = models.ForeignKey(
-        "Planning", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="instances"
-    )
+    planning = models.ForeignKey("Planning", null=True, blank=True, on_delete=models.SET_NULL, related_name="instances")
     form_version = models.ForeignKey(
         "FormVersion", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="form_version"
     )
@@ -1031,10 +1055,7 @@ class Instance(models.Model):
 
     def export(self, launcher=None, force_export=False):
         from iaso.dhis2.datavalue_exporter import DataValueExporter
-        from iaso.dhis2.export_request_builder import (
-            ExportRequestBuilder,
-            NothingToExportError,
-        )
+        from iaso.dhis2.export_request_builder import ExportRequestBuilder, NothingToExportError
 
         try:
             export_request = ExportRequestBuilder().build_export_request(
@@ -1388,6 +1409,7 @@ class FeatureFlag(models.Model):
     REQUIRE_AUTHENTICATION = "REQUIRE_AUTHENTICATION"
     FORMS_AUTO_UPLOAD = "FORMS_AUTO_UPLOAD"
     LIMIT_OU_DOWNLOAD_TO_ROOTS = "LIMIT_OU_DOWNLOAD_TO_ROOTS"
+    HOME_OFFLINE = "HOME_OFFLINE"
 
     FEATURE_FLAGS = {
         (INSTANT_EXPORT, "Instant export", _("Immediate export of instances to DHIS2")),
@@ -1403,19 +1425,19 @@ class FeatureFlag(models.Model):
             _("Require authentication on mobile"),
         ),
         (
-            FORMS_AUTO_UPLOAD,
-            "",
-            False,
-            _(
-                "Saving a form as finalized on mobile triggers an upload attempt immediately + everytime network becomes available"
-            ),
-        ),
-        (
             LIMIT_OU_DOWNLOAD_TO_ROOTS,
             False,
             "Mobile: Limit download of orgunit to what the user has access to",
             _(
                 "Mobile: Limit download of orgunit to what the user has access to",
+            ),
+        ),
+        (
+            FORMS_AUTO_UPLOAD,
+            "",
+            False,
+            _(
+                "Saving a form as finalized on mobile triggers an upload attempt immediately + everytime network becomes available"
             ),
         ),
     }

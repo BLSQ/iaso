@@ -1,9 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import { FormikProps, FieldInputProps } from 'formik';
-import { CircularProgress, Box } from '@material-ui/core';
+import { CircularProgress, Box } from '@mui/material';
+import { get } from 'lodash';
 import { useGetOrgUnit } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/components/TreeView/requests';
 import { OrgUnitTreeviewModal } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/components/TreeView/OrgUnitTreeviewModal';
-import { isTouched } from '../../utils';
 
 type Props = {
     field: FieldInputProps<string>;
@@ -11,11 +11,13 @@ type Props = {
     label: string;
     required?: boolean;
     clearable?: boolean;
+    disabled?: boolean;
+    allowedTypes?: number[];
     errors?: string[];
 };
 
 const getErrors = (touched, formErrors, name) => {
-    return isTouched(touched) && formErrors?.[name] ? [formErrors[name]] : [];
+    return get(touched, name) && formErrors?.[name] ? [formErrors[name]] : [];
 };
 
 export const OrgUnitsLevels: FunctionComponent<Props> = ({
@@ -24,6 +26,8 @@ export const OrgUnitsLevels: FunctionComponent<Props> = ({
     label,
     required = false,
     clearable = true,
+    disabled = false,
+    allowedTypes = [],
     errors: backendErrors = undefined,
 }) => {
     const { name } = field;
@@ -37,7 +41,6 @@ export const OrgUnitsLevels: FunctionComponent<Props> = ({
     const initialOrgUnitId = values[name];
     const errors = backendErrors ?? getErrors(touched, formErrors, name);
     const { data: initialOrgUnit, isLoading } = useGetOrgUnit(initialOrgUnitId);
-
     return (
         <Box position="relative">
             <OrgUnitTreeviewModal
@@ -53,6 +56,8 @@ export const OrgUnitsLevels: FunctionComponent<Props> = ({
                 errors={errors}
                 required={required}
                 clearable={clearable}
+                disabled={disabled}
+                allowedTypes={allowedTypes}
             />
             {isLoading && (
                 <Box

@@ -6,7 +6,8 @@ import {
     commonStyles,
 } from 'bluesquare-components';
 // @ts-ignore
-import { Box, Divider, Grid, makeStyles } from '@material-ui/core';
+import { Box, Divider, Grid } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { useDispatch, useSelector } from 'react-redux';
 import TopBar from '../../components/nav/TopBarComponent';
 import { Infos } from './components/Infos';

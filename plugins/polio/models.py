@@ -1,23 +1,36 @@
-from datetime import date
 import datetime
 import json
-from typing import Union
+from datetime import date
+from collections import defaultdict
+from typing import Any, Tuple, Union
 from uuid import uuid4
 
+import pandas as pd
+
+from beanstalk_worker import task_decorator
+
 import django.db.models.manager
-from django.contrib.auth.models import User, AnonymousUser
+from django.contrib.auth.models import AnonymousUser, User
+from django.core.files.base import File
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
-from django.db.models import Count, Q
+from django.db.models import Q, Sum, QuerySet
 from django.db.models.expressions import RawSQL
+from django.db.models.functions import Coalesce
 from django.utils.translation import gettext as _
 from gspread.utils import extract_id_from_url  # type: ignore
-
+from django.utils import timezone
+from django.core.validators import RegexValidator
 from iaso.models import Group, OrgUnit
+from iaso.models.base import Account, Task
 from iaso.models.microplanning import Team
-from iaso.utils.models.soft_deletable import SoftDeletableModel
+from iaso.utils.models.soft_deletable import SoftDeletableModel, DefaultSoftDeletableManager
 from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
+from translated_fields import TranslatedField
+
+from django.contrib.postgres.fields import ArrayField
+
 
 # noinspection PyUnresolvedReferences
 # from .budget.models import BudgetStep, BudgetStepFile
@@ -35,6 +48,12 @@ VACCINES = [
     ("nOPV2", _("nOPV2")),
     ("bOPV", _("bOPV")),
 ]
+
+DOSES_PER_VIAL = {
+    "mOPV2": 20,
+    "nOPV2": 20,
+    "bOPV": 20,
+}
 
 LANGUAGES = [
     ("FR", "Français"),
@@ -91,6 +110,9 @@ class DelayReasons(models.TextChoices):
     VRF_NOT_SIGNED = "VRF_NOT_SIGNED", _("vrf_not_signed")
     FOUR_WEEKS_GAP_BETWEEN_ROUNDS = "FOUR_WEEKS_GAP_BETWEEN_ROUNDS", _("four_weeks_gap_betwenn_rounds")
     OTHER_VACCINATION_CAMPAIGNS = "OTHER_VACCINATION_CAMPAIGNS", _("other_vaccination_campaigns")
+    PENDING_LIQUIDATION_OF_PREVIOUS_SIA_FUNDING = "PENDING_LIQUIDATION_OF_PREVIOUS_SIA_FUNDING", _(
+        "pending_liquidation_of_previous_sia_funding"
+    )
 
 
 def make_group_round_scope():
@@ -130,36 +152,6 @@ class CampaignScope(models.Model):
         ordering = ["campaign", "vaccine"]
 
 
-class Destruction(models.Model):
-    vials_destroyed = models.IntegerField(null=True, blank=True)
-    date_report_received = models.DateField(null=True, blank=True)
-    date_report = models.DateField(null=True, blank=True)
-    comment = models.TextField(null=True, blank=True)
-    round = models.ForeignKey("Round", related_name="destructions", on_delete=models.CASCADE, null=True)
-
-
-class Shipment(models.Model):
-    vaccine_name = models.CharField(max_length=5, choices=VACCINES)
-    po_numbers = models.IntegerField(null=True, blank=True)
-    vials_received = models.IntegerField(null=True, blank=True)
-    estimated_arrival_date = models.DateField(null=True, blank=True)
-    reception_pre_alert = models.DateField(null=True, blank=True)
-    date_reception = models.DateField(null=True, blank=True)
-    comment = models.TextField(null=True, blank=True)
-    round = models.ForeignKey("Round", related_name="shipments", on_delete=models.CASCADE, null=True)
-
-
-class RoundVaccine(models.Model):
-    class Meta:
-        unique_together = [("name", "round")]
-        ordering = ["name"]
-
-    name = models.CharField(max_length=5, choices=VACCINES)
-    round = models.ForeignKey("Round", on_delete=models.CASCADE, related_name="vaccines", null=True, blank=True)
-    doses_per_vial = models.IntegerField(null=True, blank=True)
-    wastage_ratio_forecast = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-
-
 class RoundDateHistoryEntryQuerySet(models.QuerySet):
     def filter_for_user(self, user: Union[User, AnonymousUser]):
         from plugins.polio.models import Campaign
@@ -174,10 +166,32 @@ class RoundDateHistoryEntry(models.Model):
     previous_ended_at = models.DateField(null=True, blank=True)
     started_at = models.DateField(null=True, blank=True)
     ended_at = models.DateField(null=True, blank=True)
+    # Deprecated. Cannot be deleted until the PowerBI dashboards are updated to use reason_for_delay instead
     reason = models.CharField(null=True, blank=True, choices=DelayReasons.choices, max_length=200)
+    reason_for_delay = models.ForeignKey(
+        "ReasonForDelay", on_delete=models.PROTECT, null=True, blank=True, related_name="round_history_entries"
+    )
     round = models.ForeignKey("Round", on_delete=models.CASCADE, related_name="datelogs", null=True, blank=True)
     modified_by = models.ForeignKey("auth.User", on_delete=models.PROTECT, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class ReasonForDelay(SoftDeletableModel):
+    name = TranslatedField(models.CharField(_("name"), max_length=200), {"fr": {"blank": True}})
+    # key_name is necessary for the current implementation of powerBi dashboards
+    # and for the front-end to be able to prevent users from selecting "INITIAL_DATA"
+    # when updating round dates
+    key_name = models.CharField(blank=True, max_length=200, validators=[RegexValidator(r"^[A-Z_]+$")])
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    account = models.ForeignKey(Account, models.CASCADE, related_name="reasons_for_delay")
+
+    class Meta:
+        # This will prevent sharing reasons across accounts, but it can be annoying if 2 accounts need INITIAL_DATA
+        unique_together = ["key_name", "account"]
+
+    def __str__(self):
+        return self.name
 
 
 class Round(models.Model):
@@ -269,7 +283,9 @@ class CampaignQuerySet(models.QuerySet):
 
             # Restrict Campaign to the OrgUnit on the country he can access
             if user.iaso_profile.org_units.count():
-                org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
+                org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all()).defer(
+                    "geom", "simplified_geom"
+                )
                 qs = qs.filter(Q(country__in=org_units) | Q(initial_org_unit__in=org_units))
         return qs
 
@@ -550,8 +566,9 @@ class Campaign(SoftDeletableModel):
                 OrgUnit.objects.filter(groups__roundScope__round__number=round_number)
                 .filter(groups__roundScope__round__campaign=self)
                 .distinct()
+                .defer("geom", "simplified_geom")
             )
-        return self.get_campaign_scope_districts()
+        return self.get_campaign_scope_districts_qs()
 
     def get_districts_for_round(self, round):
         districts = []
@@ -569,7 +586,10 @@ class Campaign(SoftDeletableModel):
     def get_districts_for_round_qs(self, round):
         if self.separate_scopes_per_round:
             districts = (
-                OrgUnit.objects.filter(groups__roundScope__round=round).filter(validation_status="VALID").distinct()
+                OrgUnit.objects.filter(groups__roundScope__round=round)
+                .filter(validation_status="VALID")
+                .distinct()
+                .defer("geom", "simplified_geom")
             )
         else:
             districts = self.get_campaign_scope_districts_qs()
@@ -589,7 +609,11 @@ class Campaign(SoftDeletableModel):
 
     def get_campaign_scope_districts_qs(self):
         # Get districts on campaign scope, make only sense if separate_scopes_per_round=True
-        return OrgUnit.objects.filter(groups__campaignScope__campaign=self).filter(validation_status="VALID")
+        return (
+            OrgUnit.objects.filter(groups__campaignScope__campaign=self)
+            .filter(validation_status="VALID")
+            .defer("geom", "simplified_geom")
+        )
 
     def get_all_districts(self):
         """District from all round merged as one"""
@@ -598,6 +622,7 @@ class Campaign(SoftDeletableModel):
                 OrgUnit.objects.filter(groups__roundScope__round__campaign=self)
                 .filter(validation_status="VALID")
                 .distinct()
+                .defer("geom", "simplified_geom")
             )
         return self.get_campaign_scope_districts()
 
@@ -608,6 +633,7 @@ class Campaign(SoftDeletableModel):
                 OrgUnit.objects.filter(groups__roundScope__round__campaign=self)
                 .filter(validation_status="VALID")
                 .distinct()
+                .defer("geom", "simplified_geom")
             )
         return self.get_campaign_scope_districts_qs()
 
@@ -791,14 +817,6 @@ class CountryUsersGroup(models.Model):
         return str(self.country)
 
 
-class LineListImport(models.Model):
-    file = models.FileField(upload_to="uploads/linelist/% Y/% m/% d/")
-    import_result = models.JSONField()
-    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
-
-
 class URLCache(models.Model):
     url = models.URLField(unique=True)
     content = models.TextField()
@@ -934,3 +952,454 @@ class VaccineAuthorization(SoftDeletableModel):
 
     def __str__(self):
         return f"{self.country}-{self.expiration_date}"
+
+
+class NotificationManager(models.Manager):
+    def get_countries_for_account(self, account: Account) -> QuerySet[OrgUnit]:
+        """
+        Returns a queryset of unique countries used in notifications for the given account.
+        """
+        countries_pk = self.filter(account=account, org_unit__version_id=account.default_version_id).values_list(
+            "org_unit__parent__parent__id", flat=True
+        )
+        return OrgUnit.objects.filter(pk__in=countries_pk).defer("geom", "simplified_geom").order_by("name")
+
+
+## Terminology
+# VRF = Vaccine Request Form
+# VPA = Vaccine Pre Alert
+# VAR = Vaccine Arrival Report
+
+
+class VaccineRequestForm(SoftDeletableModel):
+    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
+    vaccine_type = models.CharField(max_length=5, choices=VACCINES)
+    rounds = models.ManyToManyField(Round)
+    date_vrf_signature = models.DateField()
+    date_vrf_reception = models.DateField()
+    date_dg_approval = models.DateField()
+    quantities_ordered_in_doses = models.PositiveIntegerField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    # optional fields
+    wastage_rate_used_on_vrf = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    date_vrf_submission_to_orpg = models.DateField(null=True, blank=True)
+    quantities_approved_by_orpg_in_doses = models.PositiveIntegerField(null=True, blank=True)
+    date_rrt_orpg_approval = models.DateField(null=True, blank=True)
+    date_vrf_submitted_to_dg = models.DateField(null=True, blank=True)
+    quantities_approved_by_dg_in_doses = models.PositiveIntegerField(null=True, blank=True)
+    comment = models.TextField(blank=True, null=True)
+
+    objects = DefaultSoftDeletableManager()
+
+    def get_country(self):
+        return self.campaign.country
+
+    def count_pre_alerts(self):
+        return self.vaccineprealert_set.count()
+
+    def count_arrival_reports(self):
+        return self.vaccinearrivalreport_set.count()
+
+    def total_doses_shipped(self):
+        return self.vaccineprealert_set.all().aggregate(total_doses_shipped=Coalesce(Sum("doses_shipped"), 0))[
+            "total_doses_shipped"
+        ]
+
+    def __str__(self):
+        return f"VRF for {self.get_country()} {self.campaign} {self.vaccine_type} #VPA {self.count_pre_alerts()} #VAR {self.count_arrival_reports()}"
+
+
+class VaccinePreAlert(SoftDeletableModel):
+    request_form = models.ForeignKey(VaccineRequestForm, on_delete=models.CASCADE)
+    date_pre_alert_reception = models.DateField()
+    po_number = models.CharField(max_length=200, blank=True, null=True, default=None)
+    estimated_arrival_time = models.DateField(blank=True, null=True, default=None)
+    lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
+    expiration_date = models.DateField(blank=True, null=True, default=None)
+    doses_shipped = models.PositiveIntegerField(blank=True, null=True, default=None)
+    doses_per_vial = models.PositiveIntegerField(blank=True, null=True, default=None)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    objects = DefaultSoftDeletableManager()
+
+    def get_doses_per_vial(self):
+        return DOSES_PER_VIAL[self.request_form.vaccine_type]
+
+
+class VaccineArrivalReport(SoftDeletableModel):
+    request_form = models.ForeignKey(VaccineRequestForm, on_delete=models.CASCADE)
+    arrival_report_date = models.DateField()
+    doses_received = models.PositiveIntegerField()
+    po_number = models.CharField(max_length=200, blank=True, null=True, default=None)
+    lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
+    expiration_date = models.DateField(blank=True, null=True, default=None)
+    doses_shipped = models.PositiveIntegerField(blank=True, null=True, default=None)
+    doses_per_vial = models.PositiveIntegerField(blank=True, null=True, default=None)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    objects = DefaultSoftDeletableManager()
+
+
+class VaccineStock(models.Model):
+    account = models.ForeignKey("iaso.account", on_delete=models.CASCADE, related_name="vaccine_stocks")
+    country = models.ForeignKey(
+        "iaso.orgunit",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="vaccine_stocks",
+        help_text="Unique (Country, Vaccine) pair",
+    )
+    vaccine = models.CharField(max_length=5, choices=VACCINES)
+
+    class Meta:
+        unique_together = ("country", "vaccine")
+
+
+# Form A
+class OutgoingStockMovement(models.Model):
+    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
+    vaccine_stock = models.ForeignKey(
+        VaccineStock, on_delete=models.CASCADE
+    )  # Country can be deduced from the campaign
+    report_date = models.DateField()
+    form_a_reception_date = models.DateField()
+    usable_vials_used = models.PositiveIntegerField()
+    unusable_vials = models.PositiveIntegerField()
+    lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
+    missing_vials = models.PositiveIntegerField()
+
+
+class DestructionReport(models.Model):
+    vaccine_stock = models.ForeignKey(VaccineStock, on_delete=models.CASCADE)
+    action = models.TextField()
+    rrt_destruction_report_reception_date = models.DateField()
+    destruction_report_date = models.DateField()
+    unusable_vials_destroyed = models.PositiveIntegerField()
+    lot_number = models.CharField(max_length=200)
+
+
+class IncidentReport(models.Model):
+    class StockCorrectionChoices(models.TextChoices):
+        VVM_REACHED_DISCARD_POINT = "vvm_reached_discard_point", _("VVM reached the discard point")
+        VACCINE_EXPIRED = "vaccine_expired", _("Vaccine expired")
+        LOSSES = "losses", _("Losses")
+        RETURN = "return", _("Return")
+        STEALING = "stealing", _("Stealing")
+        PHYSICAL_INVENTORY = "physical_inventory", _("Physical Inventory")
+
+    vaccine_stock = models.ForeignKey(VaccineStock, on_delete=models.CASCADE)
+
+    stock_correction = models.CharField(
+        max_length=50, choices=StockCorrectionChoices.choices, default=StockCorrectionChoices.VVM_REACHED_DISCARD_POINT
+    )
+    date_of_incident_report = models.DateField()  # Date du document
+    incident_report_received_by_rrt = models.DateField()  # Date reception document
+    unusable_vials = models.PositiveIntegerField()
+    usable_vials = models.PositiveIntegerField()
+
+
+class Notification(models.Model):
+    """
+    List of notifications of polio virus outbreaks.
+    I.e. we found a case in this place on this day.
+
+    Also called "line list": a table that summarizes key
+    information about each case in an outbreak.
+
+    Notifications can also be imported in bulk (see NotificationImport).
+    """
+
+    class VdpvCategories(models.TextChoices):
+        """
+        Vaccine-Derived PolioVirus categories.
+        """
+
+        AVDPV = "avdpv", _("aVDPV")
+        CVDPV1 = "cvdpv1", _("cVDPV1")
+        CVDPV2 = "cvdpv2", _("cVDPV2")
+        NOPV2 = "nopv2", _("nOPV2")
+        SABIN = "sabin", _("Sabin")
+        SABIN1 = "sabin1", _("SABIN 1")
+        SABIN2 = "sabin2", _("SABIN 2")
+        SABIN3 = "sabin3", _("SABIN 3")
+        VDPV = "vdpv", _("VDPV")
+        VDPV1 = "vdpv1", _("VDPV1")
+        VDPV2 = "vdpv2", _("VDPV2")
+        VDPV3 = "vdpv3", _("VDPV3")
+        VPV2 = "vpv2", _("VPV2")
+        WPV1 = "wpv1", _("WPV1")
+
+    class Sources(models.TextChoices):
+        AFP = "accute_flaccid_paralysis", _(
+            "Accute Flaccid Paralysis"
+        )  # A case of someone who got paralyzed because of polio.
+        CC = "contact_case", _("Contact Case")
+        COMMUNITY = "community", _("Community")
+        CONTACT = "contact", _("Contact")
+        ENV = "environmental", _("Environmental")  # They found a virus in the environment.
+        HC = "healthy_children", _("Healthy Children")
+        OTHER = "other", _("Other")
+
+    account = models.ForeignKey("iaso.account", on_delete=models.CASCADE)
+    # EPID number = epidemiological number = unique identifier of a case per disease.
+    epid_number = models.CharField(max_length=50, unique=True)
+    vdpv_category = models.CharField(max_length=20, choices=VdpvCategories.choices, default=VdpvCategories.AVDPV)
+    source = models.CharField(max_length=50, choices=Sources.choices, default=Sources.AFP)
+    vdpv_nucleotide_diff_sabin2 = models.CharField(max_length=10, blank=True)
+    # Lineage possible values: NIE-ZAS-1, RDC-MAN-3, Ambiguous, etc.
+    lineage = models.CharField(max_length=150, blank=True)
+    closest_match_vdpv2 = models.CharField(max_length=150, blank=True)
+    date_of_onset = models.DateField(null=True, blank=True)
+    date_results_received = models.DateField(null=True, blank=True)
+
+    # Country / province / district are modelized as a hierarchy of OrgUnits.
+    org_unit = models.ForeignKey(
+        "iaso.orgunit", null=True, blank=True, on_delete=models.SET_NULL, related_name="polio_notifications"
+    )
+    site_name = models.CharField(max_length=255, blank=True)
+
+    created_at = models.DateTimeField(default=timezone.now)
+    created_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="polio_notification_created_set"
+    )
+    updated_at = models.DateTimeField(blank=True, null=True)
+    updated_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="polio_notification_updated_set"
+    )
+
+    # `import_*` fields are populated when the data come from an .xlsx file.
+    import_source = models.ForeignKey("NotificationImport", null=True, blank=True, on_delete=models.SET_NULL)
+    import_raw_data = models.JSONField(null=True, blank=True, encoder=DjangoJSONEncoder)
+
+    objects = NotificationManager()
+
+    class Meta:
+        verbose_name = _("Notification")
+
+    def __str__(self) -> str:
+        return f"{self.epid_number}"
+
+
+class NotificationImport(models.Model):
+    """
+    Handle bulk import of polio virus outbreaks notifications via .xlsx files.
+    This model stores .xlsx files and use them to populate `Notification`.
+    """
+
+    XLSX_TEMPLATE_PATH = "plugins/polio/fixtures/notifications_template.xlsx"
+
+    EXPECTED_XLSX_COL_NAMES = [
+        "EPID_NUMBER",
+        "VDPV_CATEGORY",
+        "SOURCE(AFP/ENV/CONTACT/HC)",
+        "VDPV_NUCLEOTIDE_DIFF_SABIN2",
+        "COUNTRY",
+        "PROVINCE",
+        "DISTRICT",
+        "SITE_NAME/GEOCODE",
+        "DATE_COLLECTION/DATE_OF_ONSET_(M/D/YYYY)",
+        "LINEAGE",
+        "CLOSEST_MATCH_VDPV2",
+        "DATE_RESULTS_RECEIVED",
+    ]
+
+    class Status(models.TextChoices):
+        NEW = "new", _("New")
+        PENDING = "pending", _("Pending")
+        DONE = "done", _("Done")
+
+    account = models.ForeignKey("iaso.account", on_delete=models.CASCADE)
+    file = models.FileField(upload_to="uploads/polio_notifications/%Y-%m-%d-%H-%M/")
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.NEW)
+    errors = models.JSONField(null=True, blank=True, encoder=DjangoJSONEncoder)
+    created_at = models.DateTimeField(default=timezone.now)
+    created_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="polio_notification_import_created_set"
+    )
+    updated_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        verbose_name = _("Notification import")
+
+    def __str__(self) -> str:
+        return f"{self.file.name} - {self.status}"
+
+    @classmethod
+    def read_excel(cls, file: File) -> pd.DataFrame:
+        try:
+            df = pd.read_excel(file, keep_default_na=False)
+        except Exception as err:
+            raise ValueError(f"Invalid Excel file {file}.")
+
+        # Normalize xlsx header's names.
+        df.rename(columns=lambda name: name.upper().strip().replace(" ", "_"), inplace=True)
+        for name in cls.EXPECTED_XLSX_COL_NAMES:
+            if name not in df.columns:
+                raise ValueError(f"Missing column {name}.")
+
+        return df
+
+    def create_notifications(self, created_by: User) -> None:
+        """
+        Can be launched async, see `create_polio_notifications_async`.
+        """
+        df = self.read_excel(self.file)
+        self.status = self.Status.PENDING
+        self.save()
+
+        errors = []
+        importer = NotificationXlsxImporter(
+            org_units=OrgUnit.objects.filter(version_id=self.account.default_version_id).defer(
+                "geom", "simplified_geom"
+            )
+        )
+
+        for idx, row in df.iterrows():
+            try:
+                epid_number = importer.clean_str(row["EPID_NUMBER"])
+                org_unit = importer.find_org_unit_in_caches(
+                    country_name=importer.clean_str(row["COUNTRY"]),
+                    region_name=importer.clean_str(row["PROVINCE"]),
+                    district_name=importer.clean_str(row["DISTRICT"]),
+                )
+                defaults = {
+                    "account": self.account,
+                    "closest_match_vdpv2": importer.clean_str(row["CLOSEST_MATCH_VDPV2"]),
+                    "date_of_onset": importer.clean_date(row["DATE_COLLECTION/DATE_OF_ONSET_(M/D/YYYY)"]),
+                    "date_results_received": importer.clean_date(row["DATE_RESULTS_RECEIVED"]),
+                    "import_raw_data": row.to_dict(),
+                    "import_source": self,
+                    "lineage": importer.clean_str(row["LINEAGE"]),
+                    "org_unit": org_unit,
+                    "site_name": importer.clean_str(row["SITE_NAME/GEOCODE"]),
+                    "source": importer.clean_source(row["SOURCE(AFP/ENV/CONTACT/HC)"]),
+                    "vdpv_category": importer.clean_vdpv_category(row["VDPV_CATEGORY"]),
+                    "vdpv_nucleotide_diff_sabin2": importer.clean_str(row["VDPV_NUCLEOTIDE_DIFF_SABIN2"]),
+                }
+                notification = Notification.objects.filter(epid_number=epid_number).first()
+                if not notification:
+                    notification = Notification(**defaults)
+                    notification.epid_number = epid_number
+                    notification.created_by = created_by
+                    notification.save()
+                else:
+                    # If there is an import with an existing EPID, then we take the data
+                    # as an update of the existing one.
+                    for key, value in defaults.items():
+                        setattr(notification, key, value)
+                    notification.updated_by = created_by
+                    notification.updated_at = timezone.now()
+                    notification.save()
+            except Exception:
+                errors.append(row.to_dict())
+
+        self.status = self.Status.DONE
+        self.errors = errors
+        self.updated_at = timezone.now()
+        self.save()
+
+
+@task_decorator(task_name="create_polio_notifications_async")
+def create_polio_notifications_async(pk: int, task: Task = None) -> None:
+    task.report_progress_and_stop_if_killed(progress_message="Importing polio notifications…")
+    user = task.launcher
+    notification_import = NotificationImport.objects.get(pk=pk)
+    notification_import.create_notifications(created_by=user)
+    num_created = Notification.objects.filter(import_source=notification_import).count()
+    task.report_success(message=f"{num_created} polio notifications created.")
+
+
+class NotificationXlsxImporter:
+    def __init__(self, org_units: QuerySet[OrgUnit]):
+        self.org_units = org_units
+        self.countries_cache = None
+        self.regions_cache = None
+        self.districts_cache = None
+
+    def build_org_unit_caches(self) -> Tuple[defaultdict, defaultdict, defaultdict]:
+        from plugins.polio.api.common import make_orgunits_cache
+
+        districts = (
+            self.org_units.filter(org_unit_type__category="DISTRICT", validation_status=OrgUnit.VALIDATION_VALID)
+            .defer("geom", "simplified_geom")
+            .select_related("org_unit_type")
+        )
+
+        regions = (
+            self.org_units.filter(
+                OrgUnit.objects.parents_q(districts),
+                org_unit_type__category="REGION",
+                validation_status=OrgUnit.VALIDATION_VALID,
+                path__depth=2,
+            )
+            .defer("geom", "simplified_geom")
+            .select_related("org_unit_type")
+        )
+
+        countries = (
+            self.org_units.filter(
+                OrgUnit.objects.parents_q(districts),
+                org_unit_type__category="COUNTRY",
+                validation_status=OrgUnit.VALIDATION_VALID,
+                path__depth=1,
+            )
+            .defer("geom", "simplified_geom")
+            .select_related("org_unit_type")
+        )
+
+        districts_cache = make_orgunits_cache(districts)
+        regions_cache = make_orgunits_cache(regions)
+        countries_cache = make_orgunits_cache(countries)
+
+        return countries_cache, regions_cache, districts_cache
+
+    def find_org_unit_in_caches(self, country_name: str, region_name: str, district_name: str) -> Union[None, OrgUnit]:
+        from plugins.polio.api.common import find_orgunit_in_cache
+
+        if not self.countries_cache:
+            self.countries_cache, self.regions_cache, self.districts_cache = self.build_org_unit_caches()
+
+        country = find_orgunit_in_cache(self.countries_cache, country_name)
+        region = None
+        if country:
+            region = find_orgunit_in_cache(self.regions_cache, region_name, country.name)
+        if region:
+            return find_orgunit_in_cache(self.districts_cache, district_name, region.name)
+        return None
+
+    def clean_str(self, data: Any) -> str:
+        return str(data).strip()
+
+    def clean_date(self, data: Any) -> Union[None, datetime.date]:
+        try:
+            return data.date()
+        except AttributeError:
+            return None
+
+    def clean_vdpv_category(self, vdpv_category: str) -> Notification.VdpvCategories:
+        vdpv_category = self.clean_str(vdpv_category).upper()
+        vdpv_category = "".join(char for char in vdpv_category if char.isalnum())
+        return Notification.VdpvCategories[vdpv_category]
+
+    def clean_source(self, source: str) -> Notification.Sources:
+        source = self.clean_str(source)
+        try:
+            # Find member by value.
+            return Notification.Sources[source.upper()]
+        except KeyError:
+            pass
+        try:
+            # Find member by name.
+            return Notification.Sources(source.lower().replace(" ", "_"))
+        except Exception:
+            pass
+        if source.upper().startswith("CONT"):
+            return Notification.Sources["CONTACT"]
+        return Notification.Sources["OTHER"]

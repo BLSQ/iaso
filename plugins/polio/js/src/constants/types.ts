@@ -238,7 +238,8 @@ export type RoundDateHistoryEntry = {
     previous_ended_at: string; // DATE
     started_at: string; // DATE
     ended_at: string; // DATE
-    reason: ReasonForDelay;
+    reason?: ReasonForDelay;
+    reason_for_delay: number; // an id
     user: { first_name: string; last_name: string; username: string };
     created_at: string; // DATE
 };
@@ -256,6 +257,7 @@ export type Round = {
     target_population: Nullable<number>;
     doses_requested: Nullable<number>;
     cost: Nullable<string>;
+    vaccine_names: string;
     im_percentage_children_missed_in_household: Nullable<string>;
     im_percentage_children_missed_out_household: Nullable<string>;
     im_percentage_children_missed_in_plus_out_household: Nullable<string>;
@@ -431,3 +433,7 @@ export type MapColor = {
     opacity: string; // a number as string: "2"
     zIndex: number;
 };
+
+export type Side = 'left' | 'right';
+
+export const Sides = { left: 'left', right: 'right' };

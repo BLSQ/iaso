@@ -1,4 +1,4 @@
-import { makeStyles } from '@material-ui/core';
+import { makeStyles } from '@mui/styles';
 
 export const useStyles = makeStyles(theme => ({
     root: {
@@ -15,6 +15,12 @@ export const useStyles = makeStyles(theme => ({
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
+    },
+    stepDivider: {
+        width: `1px !important`,
+        height: `30px !important`,
+        margin: `auto !important`,
+        borderColor: '#666 !important',
     },
     checkboxWrapper: {
         display: 'flex',

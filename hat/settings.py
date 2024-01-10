@@ -20,11 +20,13 @@ import urllib.parse
 from datetime import timedelta
 from typing import Any, Dict
 from urllib.parse import urlparse
+from requests.exceptions import HTTPError
 
 import sentry_sdk
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import gettext_lazy as _
 from sentry_sdk.integrations.django import DjangoIntegration
+from sentry_sdk.integrations.logging import ignore_logger
 
 from plugins.wfp.wfp_pkce_generator import generate_pkce
 
@@ -165,7 +167,7 @@ INSTALLED_APPS = [
     "webpack_loader",
     "django_ltree",
     "hat.sync",
-    "hat.vector_control",
+    "hat.api_import",
     "hat.audit",
     "hat.menupermissions",
     "iaso",
@@ -328,7 +330,18 @@ TIME_ZONE = "UTC"
 
 USE_I18N = True
 
-USE_L10N = True
+
+# We need a custom setting, because when USE_L10N is True, the locale-dictated
+# `DATE_INPUT_FORMATS` has higher precedence and will be applied instead.
+# https://docs.djangoproject.com/en/dev/ref/settings/#date-input-formats
+API_DATE_INPUT_FORMATS = [
+    "%d-%m-%Y",  # '25-10-2006'
+    "%d/%m/%Y",  # '25/10/2006'
+    "%Y-%m-%d",  # '2006-10-25'
+    "%Y/%m/%d",  # '2006/10/25'
+    "%m-%d-%Y",  # '10-25-2006'
+    "%m/%d/%Y",  # '10/25/2006'
+]
 
 USE_TZ = True
 
@@ -352,6 +365,7 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": AUTH_CLASSES,
     "DEFAULT_PERMISSION_CLASSES": ("hat.api.authentication.UserAccessPermission",),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
+    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     "PAGE_SIZE": None,
     "ORDERING_PARAM": "order",
     "DEFAULT_THROTTLE_RATES": {"anon": "200/day"},
@@ -436,12 +450,17 @@ except Exception as e:
     print("error importing hat.__version", e)
     VERSION = "undetected_version"
 
-if SENTRY_URL:
-    traces_sample_rate_str: str = os.environ.get("SENTRY_TRACES_SAMPLE_RATE", "0.1")
+
+def get_env_as_float(variable_name: str, default_str: str) -> float:
+    var_str: str = os.environ.get(variable_name, default_str)
     try:
-        traces_sample_rate = float(traces_sample_rate_str)
+        return float(var_str)
     except ValueError:
-        raise Exception(f"Error wrong SENTRY_TRACES_SAMPLE_RATE value {traces_sample_rate_str}, should be float")
+        raise Exception(f"Error wrong {variable_name} value {var_str}, should be float")
+
+
+if SENTRY_URL:
+    traces_sample_rate = get_env_as_float("SENTRY_TRACES_SAMPLE_RATE", "0.1")
 
     # from OpenHexa
     # Exclude /_health/ from sentry  as it fill the quota
@@ -458,10 +477,28 @@ if SENTRY_URL:
             if path.startswith("/_health"):
                 return 0
 
+    ignore_logger("django.security.DisallowedHost")
+
+    errors_sample_rate = get_env_as_float("SENTRY_ERRORS_SAMPLE_RATE", "1.0")
+
+    httperror_errors_sample_rate = get_env_as_float("SENTRY_ERRORS_HTTPERROR_SAMPLE_RATE", "0.8")
+
+    # Helps reducing sentry quota usage when bad request/connectivity issue with external api
+    def sentry_error_sampler(_, hint):
+        exception_sampler_values = {
+            HTTPError: httperror_errors_sample_rate,
+        }
+
+        try:
+            return exception_sampler_values[hint["exc_info"][0]]
+        except (IndexError, KeyError, TypeError):
+            return errors_sample_rate
+
     sentry_sdk.init(
         SENTRY_URL,
         traces_sample_rate=traces_sample_rate,
         traces_sampler=sentry_tracer_sampler,
+        error_sampler=sentry_error_sampler,
         integrations=[DjangoIntegration()],
         send_default_pii=True,
         release=VERSION,
@@ -571,5 +608,6 @@ CACHES = {
 
 # sample celery configuration
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379")
-# CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://localhost:6379")
-CELERY_RESULT_BACKEND = "django-db"
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://localhost:6379")
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_RESULT_EXTENDED = True

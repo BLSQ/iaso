@@ -1,6 +1,7 @@
 /* eslint-disable react/require-default-props */
 import React, { FunctionComponent } from 'react';
-import { makeStyles, Button } from '@material-ui/core';
+import { Button } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import ExcellSvg from '../svg/ExcellSvgComponent';
 
 type Props = {

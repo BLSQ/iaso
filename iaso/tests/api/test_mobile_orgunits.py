@@ -1,8 +1,23 @@
+import time_machine
+
 from django.contrib.gis.geos import Polygon, MultiPolygon, Point
 from django.core.cache import cache
 
 from iaso.api.query_params import APP_ID, LIMIT, PAGE
-from iaso.models import Account, OrgUnit, OrgUnitType, Project, SourceVersion, DataSource, FeatureFlag
+from iaso.models import (
+    Account,
+    DataSource,
+    FeatureFlag,
+    Form,
+    FormVersion,
+    Group,
+    Instance,
+    OrgUnit,
+    OrgUnitReferenceInstance,
+    OrgUnitType,
+    Project,
+    SourceVersion,
+)
 from iaso.test import APITestCase
 
 BASE_URL = "/api/mobile/orgunits/"
@@ -18,9 +33,14 @@ class MobileOrgUnitAPITestCase(APITestCase):
         cls.user = user = cls.create_user_with_profile(username="user", account=account, permissions=["iaso_org_units"])
         cls.sw_source = sw_source = DataSource.objects.create(name="Vegeta Planet")
         sw_source.projects.add(project)
-        cls.sw_version = sw_version = SourceVersion.objects.create(data_source=sw_source, number=1)
+        cls.sw_version_1 = sw_version_1 = SourceVersion.objects.create(data_source=sw_source, number=1)
+        cls.sw_version_2 = sw_version_2 = SourceVersion.objects.create(data_source=sw_source, number=2)
+        sw_version = sw_version_2
         account.default_version = sw_version
         account.save()
+
+        cls.group_1 = Group.objects.create(name="Old parent", source_version=sw_version_1)
+        cls.group_2 = group_2 = Group.objects.create(name="Parent", source_version=sw_version_2)
 
         cls.warriors = warriors = OrgUnitType.objects.create(name="Warriors")
         warriors.projects.add(project)
@@ -34,6 +54,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         super_saiyans.sub_unit_types.add(on_earth)
 
         cls.raditz = raditz = OrgUnit.objects.create(
+            uuid="702dbae8-0f47-4065-ad0c-b2557f31cc96",
             org_unit_type=super_saiyans,
             version=sw_version,
             name="Raditz",
@@ -82,6 +103,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
             location=Point(-4, -5, 0),
         )
 
+        group_2.org_units.set([bardock, goku])
         user.iaso_profile.org_units.set([raditz, goku])
 
     def test_org_unit_have_correct_parent_id_without_limit(self):
@@ -96,12 +118,17 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.assertEqual(len(response.json()["orgUnits"]), 4)
         self.assertEqual(response.json()["orgUnits"][0]["name"], "Bardock")
         self.assertEqual(response.json()["orgUnits"][0]["parent_id"], None)
+        self.assertEqual(1, len(response.json()["orgUnits"][0]["groups"]))
+        self.assertEqual(response.json()["orgUnits"][0]["groups"][0], self.group_2.id)
         self.assertEqual(response.json()["orgUnits"][1]["name"], "Raditz")
         self.assertEqual(response.json()["orgUnits"][1]["parent_id"], self.bardock.id)
+        self.assertEqual(0, len(response.json()["orgUnits"][1]["groups"]))
         self.assertEqual(response.json()["orgUnits"][2]["name"], "Son Gohan")
         self.assertEqual(response.json()["orgUnits"][2]["parent_id"], None)
+        self.assertEqual(0, len(response.json()["orgUnits"][2]["groups"]))
         self.assertEqual(response.json()["orgUnits"][3]["name"], "Son Goten")
         self.assertEqual(response.json()["orgUnits"][3]["parent_id"], None)
+        self.assertEqual(0, len(response.json()["orgUnits"][3]["groups"]))
 
     def test_org_unit_have_correct_parent_id_with_limit(self):
         self.client.force_authenticate(self.user)
@@ -211,3 +238,66 @@ class MobileOrgUnitAPITestCase(APITestCase):
         # set limit on user
         bbox = j["results"][0]
         self.assertEqual(bbox, {"east": -5.024, "northern": -4.024, "south": -3.976, "west": -4.976})
+
+    @time_machine.travel("2023-10-26T09:00:00.000Z", tick=False)
+    def test_reference_instances(self):
+        # Instance 1.
+        form1 = Form.objects.create(name="Form 1")
+        form_version1 = FormVersion.objects.create(form=form1, version_id=1)
+        instance1 = Instance.objects.create(
+            form=form1, org_unit=self.raditz, json={"key": "foo"}, form_version=form_version1
+        )
+        # Instance 2.
+        form2 = Form.objects.create(name="Form 2")
+        form_version2 = FormVersion.objects.create(form=form2, version_id=5)
+        instance2 = Instance.objects.create(
+            form=form2, org_unit=self.raditz, json={"key": "bar"}, form_version=form_version2
+        )
+        # Mark instances as reference instances.
+        OrgUnitReferenceInstance.objects.create(org_unit=self.raditz, instance=instance1, form=form1)
+        OrgUnitReferenceInstance.objects.create(org_unit=self.raditz, instance=instance2, form=form2)
+
+        self.client.force_authenticate(self.user)
+
+        params = {APP_ID: BASE_APP_ID}
+
+        # Fetch OrgUnit by ID.
+        response1 = self.client.get(f"{BASE_URL}{self.raditz.pk}/reference_instances/", data=params)
+        self.assertJSONResponse(response1, 200)
+
+        # Fetch OrgUnit by UUID.
+        response2 = self.client.get(f"{BASE_URL}{self.raditz.uuid}/reference_instances/", data=params)
+        self.assertJSONResponse(response2, 200)
+
+        self.assertEqual(response1.data, response2.data)
+        self.assertEqual(
+            response1.data,
+            {
+                "count": 2,
+                "instances": [
+                    {
+                        "id": instance1.pk,
+                        "uuid": None,
+                        "form_id": form1.id,
+                        "form_version_id": form_version1.id,
+                        "created_at": 1698310800.0,
+                        "updated_at": 1698310800.0,
+                        "json": {"key": "foo"},
+                    },
+                    {
+                        "id": instance2.pk,
+                        "uuid": None,
+                        "form_id": form2.id,
+                        "form_version_id": form_version2.id,
+                        "created_at": 1698310800.0,
+                        "updated_at": 1698310800.0,
+                        "json": {"key": "bar"},
+                    },
+                ],
+                "has_next": False,
+                "has_previous": False,
+                "page": 1,
+                "pages": 1,
+                "limit": 10,
+            },
+        )

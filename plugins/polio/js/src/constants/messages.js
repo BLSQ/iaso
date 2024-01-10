@@ -49,6 +49,11 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Preparedness status',
         id: 'iaso.polio.label.preparednesSyncStatus',
     },
+    preparednessSomeWarningsDuringTheParsing: {
+        defaultMessage:
+            'Warning the application encountered problems while parsing the preparedness sheet',
+        id: 'iaso.polio.label.preparednessSomeWarningsDuringTheParsing',
+    },
     helpTextEditVaccineViaScope: {
         defaultMessage: 'The list of vaccines comes from the scope',
         id: 'iaso.polio.label.helpTextEditVaccineViaScope',
@@ -837,6 +842,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.failed',
         defaultMessage: 'Failed',
     },
+    inScope: {
+        id: 'iaso.polio.label.inScope',
+        defaultMessage: 'No data found',
+    },
     districtsNotFound: {
         id: 'iaso.polio.label.districtsNotFound',
         defaultMessage: 'Districts not found',
@@ -1214,7 +1223,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Forms with the wrong round number',
     },
     groupedCampaigns: {
-        defaultMessage: 'Grouped campaigns',
+        defaultMessage: 'EPID Groups',
         id: 'iaso.polio.label.groupedCampaigns',
     },
     countryBlock: {
@@ -1586,6 +1595,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.exportToExcel',
         defaultMessage: 'Export to XLSX',
     },
+    downloadScopesToCsv: {
+        id: 'iaso.polio.label.downloadScopesToCsv',
+        defaultMessage: 'Download scopes',
+    },
     userWithoutTeam: {
         id: 'iaso.polio.error.label.userWithoutTeam',
         defaultMessage: 'User should be part of a team',
@@ -1595,6 +1608,7 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'You need to be part of a team to create or edit budget events',
     },
+    // DEPRECATED
     vialsDestroyed: {
         id: 'iaso.polio.label.vialsDestroyed',
         defaultMessage: 'Unusable vials destroyed',
@@ -1622,14 +1636,6 @@ const MESSAGES = defineMessages({
     date_signed_vrf_received: {
         id: 'iaso.polio.label.dateSignedVrf',
         defaultMessage: 'Date signed VRF received',
-    },
-    wastageRatio: {
-        id: 'iaso.polio.label.wastageRatio',
-        defaultMessage: 'Wastage ratio',
-    },
-    dosesPerVial: {
-        id: 'iaso.polio.label.dosesPerVial',
-        defaultMessage: 'Doses per vial',
     },
     reportingDelays: {
         id: 'iaso.polio.label.reportingDelays',
@@ -1667,10 +1673,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.receptionVaccineArrivalReport',
         defaultMessage: 'Reception of Arrival Report',
     },
-    estimatedDateOfArrival: {
-        id: 'iaso.polio.label.estimatedDateOfArrival',
-        defaultMessage: 'Estimated date of arrival',
-    },
+
     vialsShipped: {
         id: 'iaso.polio.label.vialsShipped',
         defaultMessage: 'Vials shipped',
@@ -1735,6 +1738,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.formAMissingVials',
         defaultMessage: 'Number of missing vials from the national form',
     },
+    // END DEPRECATED
     days: {
         id: 'iaso.polio.label.days',
         defaultMessage: 'Days',
@@ -2141,14 +2145,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.import_file.label',
         defaultMessage: 'Excel Line File',
     },
-    importLineList: {
-        id: 'iaso.polio.import_line_list',
-        defaultMessage: 'Import Line List',
-    },
-    campaignImportSuccess: {
-        id: 'iaso.polio.import_line_list.successMessage',
-        defaultMessage: 'Imported successfully {amount} campaign(s)',
-    },
     futureDateError: {
         id: 'iaso.polio.validation.futureDateError',
         defaultMessage: 'This date should not be in the future',
@@ -2238,6 +2234,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.OTHER_VACCINATION_CAMPAIGNS',
         defaultMessage: 'Other vaccination campaigns',
     },
+    PENDING_LIQUIDATION_OF_PREVIOUS_SIA_FUNDING: {
+        id: 'iaso.polio.label.PENDING_LIQUIDATION_OF_PREVIOUS_SIA_FUNDING',
+        defaultMessage: 'Pending liquidation of previous SIA funding',
+    },
     previousEndDate: {
         id: 'iaso.polio.label.previousEndDate',
         defaultMessage: 'Previous end date',
@@ -2306,9 +2306,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.chooseDates',
         defaultMessage: 'Choose dates',
     },
-    refreshPage: {
-        id: 'iaso.polio.label.refreshPage',
-        defaultMessage: 'Refresh page',
+    refreshLqasData: {
+        id: 'iaso.polio.label.refreshLqasData',
+        defaultMessage: 'Refresh LQAS data',
     },
     districtsInScope: {
         id: 'iaso.polio.label.districtsInScope',
@@ -2382,6 +2382,107 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.afroMapfilterInfo',
         defaultMessage:
             'The latest campaign is the campaign with the round that started the most recently within the chosen time frame',
+    },
+    vaccineSupplyChain: {
+        id: 'iaso.polio.menu.vaccineSupplyChain',
+        defaultMessage: 'Supply chain',
+    },
+    vaccineStockManagement: {
+        id: 'iaso.polio.menu.vaccineStockManagement',
+        defaultMessage: 'Stock management',
+    },
+    latestManualRefresh: {
+        id: 'iaso.polio.label.latestManualRefresh',
+        defaultMessage: 'Latest manual refresh',
+    },
+    SUCCESS: {
+        id: 'iaso.task.label.SUCCESS',
+        defaultMessage: 'Success',
+    },
+    ERRORED: {
+        id: 'iaso.task.label.ERRORED',
+        defaultMessage: 'Errored',
+    },
+    RUNNING: {
+        id: 'iaso.task.label.RUNNING',
+        defaultMessage: 'Running',
+    },
+    QUEUED: {
+        id: 'iaso.task.label.QUEUED',
+        defaultMessage: 'Queued',
+    },
+    SKIPPED: {
+        id: 'iaso.task.label.SKIPPED',
+        defaultMessage: 'Skipped',
+    },
+    KILLED: {
+        id: 'iaso.task.label.KILLED',
+        defaultMessage: 'Killed',
+    },
+    EXPORTED: {
+        id: 'iaso.task.label.EXPORTED',
+        defaultMessage: 'Exported',
+    },
+    gotoLqasForCountry: {
+        id: 'iaso.task.label.gotoLqasForCountry',
+        defaultMessage: 'See LQAS page',
+    },
+    list: {
+        defaultMessage: 'List',
+        id: 'iaso.label.list',
+    },
+    reasonsForDelay: {
+        id: 'iaso.polio.label.reasonsForDelay',
+        defaultMessage: 'Reasons for delay',
+    },
+    name_fr: {
+        id: 'iaso.polio.label.name_fr',
+        defaultMessage: 'French text',
+    },
+    name_en: {
+        id: 'iaso.polio.label.name_en',
+        defaultMessage: 'English text',
+    },
+    keyName: {
+        id: 'iaso.polio.label.keyName',
+        defaultMessage: 'Key',
+    },
+    createReasonForDelay: {
+        id: 'iaso.polio.label.createReasonForDelay',
+        defaultMessage: 'Create reason for delay',
+    },
+    editReasonForDelay: {
+        id: 'iaso.polio.label.editReasonForDelay',
+        defaultMessage: 'Edit reason for delay',
+    },
+    wrongUserAccount: {
+        id: 'iaso.polio.forms.error.wrongUserAccount',
+        defaultMessage: 'Wrong user account',
+    },
+    incorrectFormat: {
+        id: 'iaso.polio.forms.error.incorrectFormat',
+        defaultMessage: 'Incorrect format',
+    },
+    keyNameFormat: {
+        id: 'iaso.polio.forms.error.keyNameFormat',
+        defaultMessage:
+            'Unique identifier. Use all caps letters separated by an underscore. No numbers or special characters',
+    },
+    result: {
+        id: 'iaso.polio.label.result',
+        defaultMessage: 'Result',
+    },
+    noRoundFound: {
+        id: 'iaso.polio.label.noRoundFound',
+        defaultMessage: 'No round found',
+    },
+    dateRangeTitle: {
+        id: 'iaso.polio.label.dateRangeTitle',
+        defaultMessage: 'Enter date range',
+    },
+    notifications: {
+        id: 'iaso.polio.label.notifications',
+        defaultMessage: 'Virus notification',
     },
 });
 

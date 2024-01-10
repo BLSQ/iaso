@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Table, TableBody, TableCell, TableRow } from '@material-ui/core';
+import { Table, TableBody, TableCell, TableRow } from '@mui/material';
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 import { StarsComponent } from '../../../../components/stars/StarsComponent';
 import MESSAGES from '../messages';

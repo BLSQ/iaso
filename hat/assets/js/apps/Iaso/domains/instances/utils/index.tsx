@@ -7,9 +7,9 @@ import React, {
 } from 'react';
 import { Link } from 'react-router';
 import moment from 'moment';
-import { Tooltip } from '@material-ui/core';
-import CompareArrowsIcon from '@material-ui/icons/CompareArrows';
-import CallMade from '@material-ui/icons/CallMade';
+import { Tooltip } from '@mui/material';
+import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
+import CallMade from '@mui/icons-material/CallMade';
 import {
     truncateText,
     useSafeIntl,

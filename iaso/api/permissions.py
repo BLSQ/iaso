@@ -3,6 +3,7 @@ from operator import itemgetter
 from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.utils.translation import gettext as _
+from iaso.utils.module_permissions import account_module_permissions
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 
@@ -28,7 +29,13 @@ class PermissionsViewSet(viewsets.ViewSet):
         else:
             perms = request.user.user_permissions
 
-        perms = CustomPermissionSupport.filter_permissions(perms, settings)
+        account = request.user.iaso_profile.account
+        account_modules = account.modules if account.modules else []
+
+        # Get all permissions linked to the modules
+        modules_permissions = account_module_permissions(account_modules)
+
+        perms = CustomPermissionSupport.filter_permissions(perms, modules_permissions, settings)
 
         result = []
         for permission in perms:

@@ -17,8 +17,11 @@ const PAGE_WRITE = 'iaso_page_write';
 const PLANNINGS = 'iaso_planning';
 const POLIO = 'iaso_polio';
 const POLIO_CONFIG = 'iaso_polio_config';
+const POLIO_SUPPLY_CHAIN_READ = 'iaso_polio_vaccine_supply_chain_read';
+const POLIO_SUPPLY_CHAIN_WRITE = 'iaso_polio_vaccine_supply_chain_write';
 const PROJECTS = 'iaso_projects';
 const REGISTRY = 'iaso_registry';
+const ORG_UNITS_CHANGE_REQUEST_REVIEW = 'iaso_org_unit_change_request_review';
 const SOURCES = 'iaso_sources';
 const SOURCE_WRITE = 'iaso_write_sources';
 const STORAGES = 'iaso_storages';
@@ -29,6 +32,8 @@ const USER_ROLES = 'iaso_user_roles';
 const USERS_ADMIN = 'iaso_users';
 const USERS_MANAGEMENT = 'iaso_users_managed';
 const WORKFLOWS = 'iaso_workflows';
+const MODULES = 'iaso_modules';
+const POLIO_NOTIFICATIONS = 'iaso_polio_notifications';
 
 export {
     COMPLETENESS,
@@ -42,6 +47,7 @@ export {
     FORMS,
     LINKS,
     MAPPINGS,
+    ORG_UNITS_CHANGE_REQUEST_REVIEW,
     ORG_UNIT_GROUPS,
     ORG_UNIT_TYPES,
     ORG_UNITS,
@@ -50,6 +56,9 @@ export {
     PLANNINGS,
     POLIO,
     POLIO_CONFIG,
+    POLIO_SUPPLY_CHAIN_READ,
+    POLIO_SUPPLY_CHAIN_WRITE,
+    POLIO_NOTIFICATIONS,
     PROJECTS,
     REGISTRY,
     SOURCES,
@@ -62,4 +71,5 @@ export {
     USERS_ADMIN,
     USERS_MANAGEMENT,
     WORKFLOWS,
+    MODULES,
 };

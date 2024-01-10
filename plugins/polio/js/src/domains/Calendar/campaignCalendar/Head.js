@@ -2,7 +2,13 @@ import React from 'react';
 
 import classnames from 'classnames';
 import PropTypes from 'prop-types';
-import { TableHead, TableRow, TableCell, Typography } from '@material-ui/core';
+import {
+    TableHead,
+    TableRow,
+    TableCell,
+    Typography,
+    Box,
+} from '@mui/material';
 
 import { useStyles } from './Styles';
 
@@ -36,12 +42,14 @@ const Head = ({ headers, orders, currentWeekIndex, isPdf }) => {
                         align="center"
                         colSpan={year.daysCount}
                     >
-                        <Typography
-                            className={classes.tableCellSpan}
-                            variant="h5"
-                        >
-                            {year.value}
-                        </Typography>
+                        <Box position="relative" width="100%" height="100%">
+                            <Typography
+                                className={classes.tableCellSpan}
+                                variant="h5"
+                            >
+                                {year.value}
+                            </Typography>
+                        </Box>
                     </TableCell>
                 ))}
             </TableRow>
@@ -70,9 +78,11 @@ const Head = ({ headers, orders, currentWeekIndex, isPdf }) => {
                         align="center"
                         colSpan={month.daysCount}
                     >
-                        <span className={classes.tableCellSpan}>
-                            {month.value}
-                        </span>
+                        <Box position="relative" width="100%" height="100%">
+                            <span className={classes.tableCellSpan}>
+                                {month.value}
+                            </span>
+                        </Box>
                     </TableCell>
                 ))}
             </TableRow>
@@ -83,7 +93,11 @@ const Head = ({ headers, orders, currentWeekIndex, isPdf }) => {
                 {headers.weeks.map((week, weekIndex) => (
                     <TableCell
                         className={classnames(
-                            [classes.tableCellHead, classes.tableCellSmall],
+                            [
+                                classes.tableCellHead,
+                                classes.tableCellSmall,
+                                classes.tableCellNoBorderBottom,
+                            ],
                             {
                                 [classes.currentWeek]:
                                     weekIndex + 1 === currentWeekIndex,
@@ -94,9 +108,11 @@ const Head = ({ headers, orders, currentWeekIndex, isPdf }) => {
                         align="center"
                         colSpan={7}
                     >
-                        <span className={classes.tableCellSpan}>
-                            {week.value}
-                        </span>
+                        <Box position="relative" width="100%" height="100%">
+                            <span className={classes.tableCellSpan}>
+                                {week.value}
+                            </span>
+                        </Box>
                     </TableCell>
                 ))}
             </TableRow>
@@ -106,7 +122,10 @@ const Head = ({ headers, orders, currentWeekIndex, isPdf }) => {
                 {fields.map(f => (
                     <TableCell
                         key={f.key}
-                        className={classes.tableCellTitle}
+                        className={classnames([
+                            classes.tableCellTitle,
+                            classes.tableCellHidden,
+                        ])}
                         colSpan={colSpanTitle}
                     />
                 ))}

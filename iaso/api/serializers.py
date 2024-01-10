@@ -3,6 +3,7 @@ from django.db.models import Q
 from rest_framework import serializers
 
 from iaso.api.common import TimestampField
+from iaso.api.query_params import APP_ID
 from iaso.models import OrgUnit, OrgUnitType, Group
 
 
@@ -17,7 +18,22 @@ class TimestampSerializerMixin:
 
 
 class AppIdSerializer(serializers.Serializer):
+    """
+    Serializer for `Project.app_id` when passed in query_params.
+
+    Used to handle parsing and errors:
+
+        serializer = AppIdSerializer(data=self.request.query_params)
+        serializer.is_valid(raise_exception=True)
+        app_id = serializer.validated_data["app_id"]
+    """
+
     app_id = serializers.CharField(allow_blank=False)
+
+    def get_app_id(self, raise_exception: bool):
+        if not self.is_valid(raise_exception=raise_exception):
+            return None
+        return self.data[APP_ID]
 
 
 class GroupSerializer(TimestampSerializerMixin, serializers.ModelSerializer):
@@ -201,14 +217,16 @@ class OrgUnitSearchSerializer(OrgUnitSerializer):
 
 # noinspection PyMethodMayBeStatic
 class OrgUnitTreeSearchSerializer(TimestampSerializerMixin, serializers.ModelSerializer):
-    # If in a subclass this will correctly use the subclass own serializer
-
     has_children = serializers.SerializerMethodField()
+    org_unit_type_short_name = serializers.SerializerMethodField()  # new field
 
     @classmethod
     def get_has_children(cls, org_unit):
         return org_unit.children_count > 0
 
+    def get_org_unit_type_short_name(self, org_unit):
+        return org_unit.org_unit_type.short_name if org_unit.org_unit_type else None  # new method
+
     class Meta:
         model = OrgUnit
-        fields = ["id", "name", "validation_status", "has_children", "org_unit_type_id"]
+        fields = ["id", "name", "validation_status", "has_children", "org_unit_type_id", "org_unit_type_short_name"]

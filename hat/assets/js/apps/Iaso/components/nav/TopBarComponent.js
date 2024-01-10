@@ -1,38 +1,28 @@
 import React, { useCallback, useContext } from 'react';
 import { useDispatch } from 'react-redux';
-import {
-    IconButton,
-    makeStyles,
-    Grid,
-    useMediaQuery,
-    useTheme,
-    Box,
-    Tooltip,
-} from '@material-ui/core';
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
+import { IconButton, Grid, useMediaQuery, useTheme, Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 
-import MenuIcon from '@material-ui/icons/Menu';
-import ArrowBackIcon from '@material-ui/icons/ArrowBack';
-
-import ExitIcon from '@material-ui/icons/ExitToApp';
+import MenuIcon from '@mui/icons-material/Menu';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 import PropTypes from 'prop-types';
 
-import { useSafeIntl } from 'bluesquare-components';
 import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
 import { ThemeConfigContext } from '../../domains/app/contexts/ThemeConfigContext.tsx';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
 
 import { CurrentUserInfos } from './CurrentUser/index.tsx';
-import MESSAGES from './messages';
+import { LogoutButton } from './LogoutButton.tsx';
 
 const styles = theme => ({
     menuButton: {
         [theme.breakpoints.up('md')]: {
-            marginRight: theme.spacing(2),
-            marginLeft: theme.spacing(1),
+            marginRight: `${theme.spacing(2)} !important`,
+            marginLeft: `${theme.spacing(1)} !important`,
         },
     },
     version: {
@@ -56,9 +46,7 @@ const useStyles = makeStyles(styles);
 function TopBar(props) {
     const { title, children, displayBackButton, goBack, displayMenuButton } =
         props;
-    // const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const { formatMessage } = useSafeIntl();
 
     const { APP_TITLE } = useContext(ThemeConfigContext);
     // Set the page title from the top bar title.
@@ -139,24 +127,13 @@ function TopBar(props) {
                                         version={window.IASO_VERSION}
                                     />
                                 </Box>
+
                                 <Box
                                     display="flex"
                                     justifyContent="center"
                                     pl={2}
                                 >
-                                    <Tooltip
-                                        arrow
-                                        title={formatMessage(MESSAGES.logout)}
-                                    >
-                                        <IconButton
-                                            className={classes.logoutButton}
-                                            color="inherit"
-                                            href="/logout-iaso"
-                                            id="top-bar-logout-button"
-                                        >
-                                            <ExitIcon />
-                                        </IconButton>
-                                    </Tooltip>
+                                    <LogoutButton />
                                 </Box>
                             </Grid>
                         )}

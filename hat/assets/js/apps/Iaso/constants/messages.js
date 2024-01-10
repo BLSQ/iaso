@@ -122,7 +122,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.polio',
     },
     pages: {
-        defaultMessage: 'Pages',
+        defaultMessage: 'Embedded links',
         id: 'iaso.label.pages',
     },
     planning: {
@@ -176,6 +176,14 @@ const MESSAGES = defineMessages({
     entityDuplicatesTitle: {
         defaultMessage: 'Duplicates',
         id: 'iaso.label.duplicates',
+    },
+    modules: {
+        defaultMessage: 'Modules',
+        id: 'iaso.label.modules',
+    },
+    reviewChangeProposals: {
+        defaultMessage: 'Review change proposals',
+        id: 'iaso.label.reviewChangeProposals',
     },
 });
 

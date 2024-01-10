@@ -1,5 +1,6 @@
 import React, { useCallback, useState, useMemo } from 'react';
-import { Box, Grid, makeStyles } from '@material-ui/core';
+import { Box, Grid } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { useDispatch } from 'react-redux';
 
 import PropTypes from 'prop-types';
@@ -42,6 +43,10 @@ import snackMessages from '../../components/snackBars/messages';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink.tsx';
 import { PaginatedInstanceFiles } from './components/PaginatedInstancesFiles';
 import { useGetPossibleFields } from '../forms/hooks/useGetPossibleFields.ts';
+import { userHasPermission } from '../users/utils';
+import { useCurrentUser } from '../../utils/usersUtils.ts';
+
+import * as Permission from '../../utils/permissions.ts';
 
 const baseUrl = baseUrls.instances;
 
@@ -144,6 +149,8 @@ const Instances = ({ params }) => {
         [dispatch],
     );
     const isSingleFormSearch = params.formIds?.split(',').length === 1;
+    const currentUser = useCurrentUser();
+
     return (
         <section className={classes.relativeContainer}>
             <TopBar
@@ -169,36 +176,42 @@ const Instances = ({ params }) => {
                 {tab === 'list' && isSingleFormSearch && (
                     <Grid container spacing={0} alignItems="center">
                         <Grid xs={12} item className={classes.textAlignRight}>
-                            <Box
-                                display="flex"
-                                justifyContent="flex-end"
-                                mb={2}
-                            >
-                                <CreateReAssignDialog
-                                    titleMessage={
-                                        MESSAGES.instanceCreationDialogTitle
-                                    }
-                                    confirmMessage={
-                                        MESSAGES.instanceCreateAction
-                                    }
-                                    formType={{
-                                        periodType,
-                                        id: params.formIds,
-                                    }}
-                                    orgUnitTypes={orgUnitTypes}
-                                    onCreateOrReAssign={(
-                                        currentForm,
-                                        payload,
-                                    ) =>
-                                        dispatch(
-                                            createInstance(
-                                                currentForm,
-                                                payload,
-                                            ),
-                                        )
-                                    }
-                                />
-                            </Box>
+                            {userHasPermission(
+                                Permission.SUBMISSIONS_UPDATE,
+                                currentUser,
+                            ) && (
+                                <Box
+                                    display="flex"
+                                    justifyContent="flex-end"
+                                    mb={2}
+                                >
+                                    <CreateReAssignDialog
+                                        titleMessage={
+                                            MESSAGES.instanceCreationDialogTitle
+                                        }
+                                        confirmMessage={
+                                            MESSAGES.instanceCreateAction
+                                        }
+                                        formType={{
+                                            periodType,
+                                            id: params.formIds,
+                                        }}
+                                        orgUnitTypes={orgUnitTypes}
+                                        onCreateOrReAssign={(
+                                            currentForm,
+                                            payload,
+                                        ) =>
+                                            dispatch(
+                                                createInstance(
+                                                    currentForm,
+                                                    payload,
+                                                ),
+                                            )
+                                        }
+                                    />
+                                </Box>
+                            )}
+
                             <Box display="flex" justifyContent="flex-end">
                                 <DownloadButtonsComponent
                                     csvUrl={getExportUrl(params, 'csv')}

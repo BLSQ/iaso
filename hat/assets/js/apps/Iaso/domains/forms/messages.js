@@ -6,7 +6,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.title',
     },
     pages: {
-        defaultMessage: 'Pages',
+        defaultMessage: 'Embedded links',
         id: 'iaso.pages.title',
     },
     detailTitle: {
@@ -182,8 +182,8 @@ const MESSAGES = defineMessages({
         defaultMessage: 'No',
     },
     validated: {
-        id: 'iaso.forms.validated',
-        defaultMessage: 'Validated',
+        id: 'iaso.forms.valid',
+        defaultMessage: 'Valid',
     },
     rejected: {
         id: 'iaso.forms.rejectedCap',
@@ -589,6 +589,54 @@ const MESSAGES = defineMessages({
     instanceCreationDialogTitle: {
         defaultMessage: 'Create submission',
         id: 'iaso.instance.instanceCreationDialogTitle',
+    },
+    geom: {
+        id: 'iaso.forms.geom',
+        defaultMessage: 'Coordinates',
+    },
+    path: {
+        id: 'iaso.forms.path',
+        defaultMessage: 'Path',
+    },
+    custom: {
+        id: 'iaso.forms.custom',
+        defaultMessage: 'Custom',
+    },
+    creator: {
+        id: 'iaso.forms.creator',
+        defaultMessage: 'Creator',
+    },
+    geom_ref: {
+        id: 'iaso.forms.geom_ref',
+        defaultMessage: 'Reference coordinates',
+    },
+    gps_source: {
+        id: 'iaso.forms.gps_source',
+        defaultMessage: 'Gps source',
+    },
+    sub_source: {
+        id: 'iaso.forms.sub_source',
+        defaultMessage: 'Sub source',
+    },
+    org_unit_type: {
+        id: 'iaso.forms.org_unit_type',
+        defaultMessage: 'Organisation unit type',
+    },
+    validation_status: {
+        id: 'iaso.forms.validation_status',
+        defaultMessage: 'Status',
+    },
+    legend: {
+        id: 'iaso.forms.legend',
+        defaultMessage: 'Legend',
+    },
+    createLegend: {
+        defaultMessage: 'Create legend',
+        id: 'iaso.forms.createLegend',
+    },
+    instance_defining: {
+        id: 'iaso.forms.instance_defining',
+        defaultMessage: 'Instance definition',
     },
 });
 

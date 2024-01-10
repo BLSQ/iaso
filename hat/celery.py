@@ -11,5 +11,6 @@ if settings.USE_CELERY:
     app.config_from_object("django.conf:settings", namespace="CELERY")
 
     app.conf.update(timezone="Europe/Rome")
+
     # Celery Beat Settings
     app.autodiscover_tasks(lambda: settings.INSTALLED_APPS, force=False)

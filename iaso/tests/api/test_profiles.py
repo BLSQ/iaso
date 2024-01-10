@@ -8,6 +8,7 @@ from django.contrib.gis.geos import Polygon, Point, MultiPolygon
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.contrib.auth.models import Group, Permission
+from hat.menupermissions.constants import MODULES
 
 from iaso import models as m
 from iaso.models import Profile
@@ -19,7 +20,8 @@ from hat.menupermissions import models as permission
 class ProfileAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.ghi = m.Account.objects.create(name="Global Health Initiative")
+        cls.MODULES = [module["codename"] for module in MODULES]
+        cls.ghi = m.Account.objects.create(name="Global Health Initiative", modules=cls.MODULES)
         cls.another_account = m.Account.objects.create(name="Another account")
 
         # TODO : make the org unit creations shorter and reusable
@@ -43,7 +45,6 @@ class ProfileAPITestCase(APITestCase):
         sw_version_1 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
         cls.ghi.default_version = sw_version_1
         cls.ghi.save()
-
         cls.jedi_squad_1 = m.OrgUnit.objects.create(
             org_unit_type=cls.jedi_squad,
             version=sw_version_1,
@@ -459,7 +460,7 @@ class ProfileAPITestCase(APITestCase):
         user = profile.user
         self.assertEqual(user.username, data["user_name"])
         self.assertEqual(user.first_name, data["first_name"])
-        self.assertQuerysetEqual(user.user_permissions.all(), [])
+        self.assertQuerySetEqual(user.user_permissions.all(), [])
         self.assertEqual(m.User.objects.filter(username=data["user_name"]).count(), 1)
         # check that we have copied the account from the creator account
         self.assertEqual(profile.account, self.ghi)
@@ -469,8 +470,8 @@ class ProfileAPITestCase(APITestCase):
         response = self.client.delete(f"/api/profiles/{profile_id}/")
 
         self.assertEqual(response.status_code, 200)
-        self.assertQuerysetEqual(m.User.objects.filter(id=user_id), [])
-        self.assertQuerysetEqual(m.Profile.objects.filter(id=profile_id), [])
+        self.assertQuerySetEqual(m.User.objects.filter(id=user_id), [])
+        self.assertQuerySetEqual(m.Profile.objects.filter(id=profile_id), [])
 
     def test_create_profile_with_org_units_and_perms(self):
         self.client.force_authenticate(self.jim)
@@ -499,9 +500,10 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(m.User.objects.filter(username=data["user_name"]).count(), 1)
         self.assertEqual(profile.account, self.ghi)
 
-        self.assertQuerysetEqual(
+        self.assertQuerySetEqual(
             user.user_permissions.all(),
             ["<Permission: menupermissions | custom permission support | Formulaires>"],
+            transform=repr,
         )
         org_units = profile.org_units.all()
         self.assertEqual(org_units.count(), 1)

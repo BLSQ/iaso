@@ -11,6 +11,7 @@ from django.db import IntegrityError, transaction
 from django.db.models import Q
 from django.http import FileResponse
 from drf_yasg.utils import swagger_auto_schema, no_body
+from iaso.utils.module_permissions import account_module_permissions
 from rest_framework import serializers, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -318,9 +319,11 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                     )
                     try:
                         user_permissions = row[csv_indexes.index("permissions")].split(value_splitter)
+                        current_account = request.user.iaso_profile.account
+                        module_permissions = self.module_permissions(current_account)
                         for perm in user_permissions:
                             perm = perm[1::] if perm[:1] == " " else perm
-                            if perm:
+                            if perm and perm in module_permissions:
                                 try:
                                     perm = Permission.objects.get(codename=perm)
                                     user.user_permissions.add(perm)
@@ -355,6 +358,13 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     csv_indexes = row
         response = {"Accounts created": user_created_count}
         return Response(response)
+
+    @staticmethod
+    def module_permissions(current_account):
+        # Get all modules linked to the current account
+        account_modules = current_account.modules if current_account.modules else []
+        # Get and return all permissions linked to the modules
+        return account_module_permissions(account_modules)
 
     @swagger_auto_schema(request_body=no_body)
     @action(detail=False, methods=["get"], url_path="getsample")

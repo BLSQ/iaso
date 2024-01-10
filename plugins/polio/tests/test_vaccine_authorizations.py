@@ -3,15 +3,18 @@ from datetime import date
 
 from django.contrib.auth.models import User
 from django.core import mail
+from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import get_object_or_404
 from django.utils.timezone import now
 from rest_framework.test import APIClient
 
 from beanstalk_worker.services import TestTaskService
 from hat import settings
 from iaso import models as m
-from iaso.models import Account, Group, OrgUnitType, Team
+from iaso.models import Account, Group, OrgUnitType, Team, Profile
 from iaso.test import APITestCase
 from plugins.polio.models import VaccineAuthorization
+from plugins.polio.settings import NOPV2_VACCINE_TEAM_NAME
 from plugins.polio.tasks.vaccine_authorizations_mail_alerts import (
     expired_vaccine_authorizations_email_alert,
     vaccine_authorization_update_expired_entries,
@@ -43,6 +46,20 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             permissions=["iaso_polio_vaccine_authorizations_admin", "iaso_polio_vaccine_authorizations_read_only"],
             email="XlfeeekfdpppZ@somemailzz.io",
         )
+
+        cls.gpei_coordinator_A = cls.create_user_with_profile(
+            username="gpeicoordinator_A",
+            account=cls.account,
+            permissions=["iaso_polio_vaccine_authorizations_admin", "iaso_polio_vaccine_authorizations_read_only"],
+            email="gpeicoordinator@somemailzz.iox",
+        )
+        cls.gpei_coordinator_B = cls.create_user_with_profile(
+            username="gpeicoordinator_B",
+            account=cls.account,
+            permissions=["iaso_polio_vaccine_authorizations_admin", "iaso_polio_vaccine_authorizations_read_only"],
+            email="gpeicoordinator@somemailzz.iox",
+        )
+
         cls.user_2 = cls.create_user_with_profile(
             username="user_2", account=cls.account, permissions=["iaso_polio_vaccine_authorizations_read_only"]
         )
@@ -545,7 +562,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             f"ALERT: Vaccine Authorization {sixty_days_expiration_auth} arrives to expiration date in 2 months",
         )
         self.assertEqual(mail.outbox[0].from_email, from_email)
-        self.assertEqual(mail.outbox[0].to, ["XlfeeekfdpppZ@somemailzz.io"])
+        self.assertEqual(response["vacc_auth_mail_sent_to"], [self.user_1.email])
 
         # test the task
 
@@ -556,6 +573,50 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         task_service.run_all()
         task.refresh_from_db()
         self.assertEqual(task.status, "SUCCESS")
+
+    def test_send_email_vaccine_authorizations_mailing_list_builder(self):
+        """This test only purpose is to check that the code building the mailing list do it correctly"""
+        self.client.force_authenticate(self.user_1)
+        self.user_1.iaso_profile.org_units.set([self.org_unit_DRC.pk])
+        self.gpei_coordinator_A.iaso_profile.org_units.set([self.org_unit_DRC.pk])
+
+        self.team.users.set([self.user_1])
+
+        sixty_days_date = datetime.date.today() + datetime.timedelta(days=60)
+
+        VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_DRC,
+            status="VALIDATED",
+            quantity=1000000,
+            comment="Validated for 1M",
+            expiration_date=sixty_days_date,
+        )
+
+        VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_DRC,
+            status="ONGOING",
+            quantity=1000000,
+            comment="Validated for 1M",
+            expiration_date=datetime.date.today() + datetime.timedelta(days=100),
+        )
+
+        future_date = datetime.date.today() + datetime.timedelta(days=60)
+        vaccine_auths = VaccineAuthorization.objects.filter(expiration_date=future_date)
+
+        team = get_object_or_404(Team, name=NOPV2_VACCINE_TEAM_NAME)
+
+        mailing_list = [user.email for user in User.objects.filter(pk__in=team.users.all())]
+
+        for i, vacc_auth in enumerate(vaccine_auths):
+            try:
+                gpei_coordinator = Profile.objects.get(user__username__istartswith="gpei", org_units=vacc_auth.country)
+                mailing_list.append(gpei_coordinator.user.email)
+            except ObjectDoesNotExist:
+                pass
+
+        self.assertEqual(mailing_list, [self.user_1.email, self.gpei_coordinator_A.email])
 
     def test_expired_vaccine_authorizations_email_alert(self):
         self.client.force_authenticate(self.user_1)
@@ -998,3 +1059,66 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         )
 
         self.assertEqual(len(response.data), 7)
+
+    def test_cant_create_multiple_validated_vaccine_auth(self):
+        self.client.force_authenticate(self.user_1)
+        self.user_1.iaso_profile.org_units.set([self.org_unit_DRC.pk])
+
+        VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_DRC,
+            status="VALIDATED",
+            quantity=40000,
+            expiration_date=date.today() + datetime.timedelta(days=120),
+            start_date=date.today(),
+        )
+
+        data = {
+            "account": self.user_1.iaso_profile.account.pk,
+            "country": self.org_unit_DRC.pk,
+            "status": "VALIDATED",
+            "expiration_date": "2223-01-01",
+            "start_date": "2222-01-01",
+        }
+
+        response = self.client.post("/api/polio/vaccineauthorizations/", data=data)
+
+        print("RESPONSE: ", response.data)
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.data["error"], "A vaccine authorization is already validated for this country")
+
+    def test_cant_update_to_validate_if_another_validate(self):
+        self.client.force_authenticate(self.user_1)
+        self.user_1.iaso_profile.org_units.set([self.org_unit_DRC.pk])
+
+        VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_DRC,
+            status="VALIDATED",
+            quantity=40000,
+            expiration_date=date.today() + datetime.timedelta(days=120),
+            start_date=date.today(),
+        )
+
+        ongoing_auth = VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_DRC,
+            status="ONGOING",
+            quantity=40000,
+            expiration_date=date.today() + datetime.timedelta(days=200),
+            start_date=date.today(),
+        )
+
+        data = {
+            "pk": ongoing_auth.pk,
+            "account": self.user_1.iaso_profile.account.pk,
+            "country": self.org_unit_DRC.pk,
+            "status": "VALIDATED",
+            "expiration_date": "2223-01-01",
+            "start_date": "2222-01-01",
+        }
+
+        response = self.client.patch(f"/api/polio/vaccineauthorizations/{ongoing_auth.pk}/", data=data)
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.data["error"], "A vaccine authorization is already validated for this country")

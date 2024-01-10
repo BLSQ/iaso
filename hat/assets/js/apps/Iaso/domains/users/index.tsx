@@ -5,7 +5,8 @@ import React, {
     useCallback,
 } from 'react';
 import { useDispatch } from 'react-redux';
-import { makeStyles, Box, Grid } from '@material-ui/core';
+import { Box, Grid } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import {
     commonStyles,
@@ -16,13 +17,16 @@ import {
     LoadingSpinner,
 } from 'bluesquare-components';
 
-import EditIcon from '@material-ui/icons/Settings';
+import EditIcon from '@mui/icons-material/Settings';
 import TopBar from '../../components/nav/TopBarComponent';
 import Filters from './components/Filters';
 import { AddUsersDialog } from './components/UsersDialog';
 
 import { baseUrls } from '../../constants/urls';
-import { useGetProfilesApiParams, useGetProfiles } from './hooks/useGetProfiles';
+import {
+    useGetProfilesApiParams,
+    useGetProfiles,
+} from './hooks/useGetProfiles';
 import { useDeleteProfile } from './hooks/useDeleteProfile';
 import { useSaveProfile } from './hooks/useSaveProfile';
 
@@ -129,8 +133,8 @@ export const Users: FunctionComponent<Props> = ({ params }) => {
                     <Grid
                         container
                         spacing={0}
-                        justifyContent='flex-end'
-                        alignItems='center'
+                        justifyContent="flex-end"
+                        alignItems="center"
                         className={classes.marginTop}
                     >
                         <AddUsersDialog

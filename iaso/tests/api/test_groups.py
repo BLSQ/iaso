@@ -157,8 +157,8 @@ class GroupsAPITestCase(APITestCase):
         self.assertValidGroupData(response_data)
 
         self.group_1.refresh_from_db()
-        self.assertEquals("test group (updated)", self.group_1.name)
-        self.assertEquals(1, self.group_1.source_version.number)
+        self.assertEqual("test group (updated)", self.group_1.name)
+        self.assertEqual(1, self.group_1.source_version.number)
 
     def test_groups_update_not_implemented(self):
         """PUT /groups/<group_id>: 405"""

@@ -1,4 +1,5 @@
 import traceback
+import datetime
 from collections import defaultdict
 
 import django
@@ -21,7 +22,7 @@ from iaso.models.base import Task, QUEUED, KILLED
 from iaso.models.entity import Entity, EntityType
 from iaso.models.forms import Form
 from iaso.models.microplanning import Assignment, Team, Planning
-from iaso.models.org_unit import OrgUnit
+from iaso.models.org_unit import OrgUnit, OrgUnitReferenceInstance
 from iaso.models.pages import Page
 from iaso.models.project import Project
 from iaso.models.device import Device
@@ -119,9 +120,9 @@ class Command(BaseCommand):
 
                 print(
                     "OrgUnit remove reference_instance",
-                    OrgUnit.objects.filter(reference_instance__in=Instance.objects.filter(project=project)).update(
-                        reference_instance=None
-                    ),
+                    OrgUnitReferenceInstance.objects.filter(
+                        instance__in=Instance.objects.filter(project=project)
+                    ).delete(),
                 )
                 print("Instance update", Instance.objects.filter(project=project).update(entity=None))
 
@@ -269,10 +270,31 @@ class Command(BaseCommand):
 
         Instance.objects.raw("delete from vector_control_apiimport")
 
-    def delete_modification_logs_and_comments(self):
+    def delete_modification_logs_and_comments(self, cursor):
         dump_modification_stats()
-
         # this part is a bit brittle, may should become a loop on ContentType.objects.all() ?
+
+        # apparently this query does the same thing as the one below
+        # but in batches so we can delete as much as we can with this one
+        # and keep the last as "last measure" to be sure
+        instance_content_type = ContentType.objects.get_by_natural_key(app_label="iaso", model="instance")
+        pages = 2000
+        sql = "".join(
+            [
+                "WITH cte AS ( ",
+                'SELECT "id" FROM "audit_modification" WHERE "content_type_id" =' + str(instance_content_type.id) + "",
+                ' AND NOT ("object_id" IN (SELECT CAST(U0."id" AS text) AS "id_as_str" FROM "iaso_instance" U0)) ORDER BY "id" LIMIT 20000 ) ',
+                ' DELETE FROM "audit_modification" WHERE "id" IN (SELECT "id" FROM cte)',
+            ]
+        )
+        # speedup the delete by setting the work_mem to a much higher value
+        # the 20000 limit looks a good thread of between speed and seing progress
+        cursor.execute("SET work_mem = '1GB'")
+        for i in range(pages):
+            cursor.execute(sql)
+            print(i, cursor.rowcount, datetime.datetime.now())
+            if cursor.rowcount == 0:
+                break
 
         print(
             "instance related",
@@ -422,7 +444,7 @@ class Command(BaseCommand):
         print(Device.objects.filter(projects=None).delete())
 
         for f in forms_without_projects:
-            print(OrgUnitType.objects.filter(reference_form=f).update(reference_form=None))
+            print(OrgUnitType.reference_forms.through.objects.filter(form=f).delete())
             f.org_unit_types.clear()
             print("deleting hard", f.name)
             f.delete_hard()
@@ -430,12 +452,12 @@ class Command(BaseCommand):
         print("sql dashboard", Dashboard.objects.all().delete())
 
         cursor.execute(
-            "delete from iaso_exportrequest where id not in ( select export_request_id from iaso_exportstatus )"
+            "delete from iaso_exportrequest where id not in ( select distinct export_request_id from iaso_exportstatus )"
         )
 
         print("******* Deleting Modification (might take a while too)")
 
-        self.delete_modification_logs_and_comments()
+        self.delete_modification_logs_and_comments(cursor)
 
         print("******* Starting delete of orphaned export log")
 

@@ -4,7 +4,8 @@ import {
     commonStyles,
     LoadingSpinner,
 } from 'bluesquare-components';
-import { Box, Grid, makeStyles } from '@material-ui/core';
+import { Box, Grid } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { orderBy } from 'lodash';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';

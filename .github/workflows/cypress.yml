@@ -154,10 +154,10 @@ jobs:
         with:
           ref: ${{ steps.get-branch.outputs.branch }}
 
-      - name: Use node.js 14
+      - name: Use node.js 14.17
         uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: '14.17'
           cache: npm
 
       - name: Cache dependencies
@@ -169,21 +169,18 @@ jobs:
 
       - name: upgrade npm
         run: |
-          npm install --global npm@8.5
+          npm install --global npm@8.5.5
 
       - run: npm ci
         if: steps.cache.outputs.cache-hit != 'true'
 
-      - name: Cypress run
-        uses: cypress-io/github-action@v6
-        with:
-          browser: chrome
-          wait-on: 'http://localhost:8081'
-          spec: hat/assets/js/cypress/integration/**/*.spec.js
+      - name: Run Cypress tests
+        run: npx cypress run --browser chrome --config baseUrl=http://localhost:8081 --spec 'hat/assets/js/cypress/integration/**/*.spec.js'
         env:
           CYPRESS_USERNAME: "test"
           CYPRESS_PASSWORD: "test"
           CYPRESS_BASE_URL: "http://localhost:8081"
+
       - uses: actions/upload-artifact@v2
         if: failure()
         with:

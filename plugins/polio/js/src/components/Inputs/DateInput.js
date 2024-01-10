@@ -1,12 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Box } from '@material-ui/core';
+import { Box } from '@mui/material';
 import { DatePicker } from 'bluesquare-components';
 import { get } from 'lodash';
 import { apiDateFormat } from 'Iaso/utils/dates.ts';
 
 import MESSAGES from '../../constants/messages';
-import { isTouched } from '../../utils';
 
 export const DateInput = ({
     field,
@@ -20,7 +19,7 @@ export const DateInput = ({
 }) => {
     const hasError =
         form.errors &&
-        Boolean(get(form.errors, field.name) && isTouched(form.touched));
+        Boolean(get(form.errors, field.name) && get(form.touched, field.name));
     return (
         <Box mb={2}>
             <DatePicker

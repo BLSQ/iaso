@@ -55,11 +55,7 @@ class MobileGroupsViewSet(ListModelMixin, GenericViewSet):
         return super().list(request, *args, **kwargs)
 
     def get_queryset(self) -> QuerySet:
-        app_id_serializer = AppIdSerializer(data=self.request.query_params)
-        app_id_serializer.is_valid(raise_exception=True)
-        self.app_id_param = app_id_serializer.data[APP_ID]
-
+        app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
         project_qs = Project.objects.select_related("account__default_version")
-        project = get_object_or_404(project_qs, app_id=self.app_id_param)
-
+        project = get_object_or_404(project_qs, app_id=app_id)
         return Group.objects.filter(source_version=project.account.default_version)

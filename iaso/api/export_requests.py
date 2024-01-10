@@ -7,11 +7,12 @@ from django.utils.timezone import now
 logger = logging.getLogger(__name__)
 from iaso.models import ExportRequest, KILLED, QUEUED
 from rest_framework import serializers, permissions
+from rest_framework import status
 
 from iaso.dhis2.export_request_builder import ExportRequestBuilder
 from .common import ModelViewSet
 from .instance_filters import parse_instance_filters
-from iaso.dhis2.datavalue_exporter import DataValueExporter  # type: ignore
+from iaso.dhis2.datavalue_exporter import DataValueExporter, InstanceExportError  # type: ignore
 
 
 class ExportRequestSerializer(serializers.ModelSerializer):
@@ -65,9 +66,13 @@ class ExportRequestSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"code": type(e).__name__, "message": str(e)})
 
     def update(self, export_request, validated_data):
-        DataValueExporter().export_instances(export_request)
-        # this has a highly probable chance to timeout but the export will continue to be processed
-        # still return the export request
+        try:
+            DataValueExporter().export_instances(export_request)
+        except InstanceExportError as e:
+            # IA-2497 change "PUT" to not return 500.
+            res = serializers.ValidationError({"code": type(e).__name__, "message": str(e)})
+            res.status_code = status.HTTP_409_CONFLICT
+            raise res
         return export_request
 
 

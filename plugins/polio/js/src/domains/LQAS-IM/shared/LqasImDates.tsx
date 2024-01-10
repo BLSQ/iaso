@@ -1,7 +1,8 @@
-import { makeStyles, Grid, Tooltip } from '@material-ui/core';
+import { Grid, Tooltip } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import MESSAGES from '../../../constants/messages';
 import { OK_COLOR, FAIL_COLOR } from '../../../styles/constants';
 import { LqasImRefDate } from './LqasImMapHeader';
@@ -14,13 +15,15 @@ type Props = {
 const styles = theme => ({
     labelStart: {
         fontWeight: 'bold',
-        marginLeft: theme.spacing(2),
+        marginLeft: `${theme.spacing(2)} !important`,
         fontSize: '1rem',
+        paddingBottom: `${theme.spacing(2)} !important`,
     },
     labelEnd: {
         fontWeight: 'bold',
-        marginLeft: theme.spacing(2),
+        marginLeft: `${theme.spacing(2)} !important`,
         fontSize: '1rem',
+        paddingBottom: `${theme.spacing(2)} !important`,
     },
     infoIcon: {
         fontSize: 14,
@@ -29,12 +32,12 @@ const styles = theme => ({
     dateTextOK: {
         color: OK_COLOR,
         fontSize: '1rem',
-        marginLeft: theme.spacing(2),
+        marginLeft: `${theme.spacing(2)} !important`,
     },
     dateTextDefault: {
         color: FAIL_COLOR,
         fontSize: '1rem',
-        marginLeft: theme.spacing(2),
+        marginLeft: `${theme.spacing(2)} !important`,
     },
 });
 // @ts-ignore
@@ -45,6 +48,7 @@ export const LqasImDates: FunctionComponent<Props> = ({ type, date }) => {
     const { formatMessage } = useSafeIntl();
     const label = type === 'start' ? MESSAGES.startDate : MESSAGES.endDate;
     const displayedDate = date?.date ?? formatMessage(MESSAGES.noDateFound);
+    const isDateOk = date && !date?.isDefault;
     return (
         <>
             <Grid
@@ -59,9 +63,7 @@ export const LqasImDates: FunctionComponent<Props> = ({ type, date }) => {
             <Grid
                 item
                 className={
-                    date?.isDefault
-                        ? classes.dateTextDefault
-                        : classes.dateTextOK
+                    isDateOk ? classes.dateTextOK : classes.dateTextDefault
                 }
             >
                 {`${displayedDate}`}

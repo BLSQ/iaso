@@ -405,7 +405,7 @@ class MobileFormsAPITestCase(APITestCase):
         response = self.client.patch(
             f"/api/mobile/forms/{self.form_2.id}/?only_deleted=1",
             format="json",
-            HTTP_ACCEPT="application/json",
+            headers={"accept": "application/json"},
             data={
                 "deleted_at": None,
             },

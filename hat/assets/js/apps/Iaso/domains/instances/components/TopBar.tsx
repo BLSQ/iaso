@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
 
-import { makeStyles, Grid, Tabs, Tab } from '@material-ui/core';
+import { Grid, Tabs, Tab } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 // @ts-ignore
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import TopBar from '../../../components/nav/TopBarComponent';
@@ -41,6 +42,8 @@ export const InstancesTopBar: FunctionComponent<Props> = ({
             <Grid container spacing={0}>
                 <Grid xs={10} item>
                     <Tabs
+                        textColor="inherit"
+                        indicatorColor="secondary"
                         value={tab}
                         classes={{
                             root: classes.tabs,
@@ -49,6 +52,7 @@ export const InstancesTopBar: FunctionComponent<Props> = ({
                     >
                         <Tab
                             value="list"
+                            className={classes.tab}
                             label={formatMessage(MESSAGES.list)}
                         />
                         <Tab value="map" label={formatMessage(MESSAGES.map)} />

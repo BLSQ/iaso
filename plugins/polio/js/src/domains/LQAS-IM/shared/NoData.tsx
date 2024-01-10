@@ -1,4 +1,5 @@
-import { Box, Grid, makeStyles, Typography } from '@material-ui/core';
+import { Box, Grid, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../../constants/messages';

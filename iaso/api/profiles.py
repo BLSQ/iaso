@@ -17,6 +17,7 @@ from django.utils.translation import gettext as _
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.html import strip_tags
 from django.template import Context, Template
+from iaso.utils.module_permissions import account_module_permissions
 from rest_framework import viewsets, permissions, status
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
@@ -359,7 +360,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         user = profile.user
 
         self.update_password(user, request)
-        self.update_permissions(user, request)
+        self.update_permissions(self, user, request)
 
         self.update_org_units(profile, request)
         self.update_user_roles(profile, request)
@@ -407,12 +408,22 @@ class ProfilesViewSet(viewsets.ViewSet):
         return profile
 
     @staticmethod
-    def update_permissions(user, request):
+    def update_permissions(self, user, request):
         user.user_permissions.clear()
+        current_account = user.iaso_profile.account
+        module_permissions = self.module_permissions(current_account)
         for permission_codename in request.data.get("user_permissions", []):
-            CustomPermissionSupport.assert_right_to_assign(request.user, permission_codename)
-            user.user_permissions.add(get_object_or_404(Permission, codename=permission_codename))
+            if permission_codename in module_permissions:
+                CustomPermissionSupport.assert_right_to_assign(request.user, permission_codename)
+                user.user_permissions.add(get_object_or_404(Permission, codename=permission_codename))
         user.save()
+
+    @staticmethod
+    def module_permissions(current_account):
+        # Get all modules linked to the current account
+        account_modules = current_account.modules if current_account.modules else []
+        # Get and return all permissions linked to the modules
+        return account_module_permissions(account_modules)
 
     @staticmethod
     def update_password(user, request):
@@ -554,12 +565,19 @@ class ProfilesViewSet(viewsets.ViewSet):
         user.username = username
         user.email = request.data.get("email", "")
         permissions = request.data.get("user_permissions", [])
+
+        current_profile = request.user.iaso_profile
+        current_account = current_profile.account
+
+        modules_permissions = self.module_permissions(current_account)
+
         if password != "":
             user.set_password(password)
         user.save()
         for permission_codename in permissions:
-            permission = get_object_or_404(Permission, codename=permission_codename)
-            user.user_permissions.add(permission)
+            if permission_codename in modules_permissions:
+                permission = get_object_or_404(Permission, codename=permission_codename)
+                user.user_permissions.add(permission)
         if permissions != []:
             user.save()
 
@@ -568,7 +586,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         current_profile = request.user.iaso_profile
         user.profile = Profile.objects.create(
             user=user,
-            account=current_profile.account,
+            account=current_account,
             language=request.data.get("language", ""),
             home_page=request.data.get("home_page", ""),
         )

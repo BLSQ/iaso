@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const path = require('path');
 const webpack = require('webpack');
 const BundleTracker = require('webpack-bundle-tracker');
@@ -9,13 +11,126 @@ const LOCALE = 'fr';
 // If you launch the dev server with `WEBPACK_HOST=192.168.1.XXX  npm run dev`
 // where 192.168.1.XXX is your local IP address, you can access the dev server
 // from another device on the same network, typically from a mobile device or tablet
-if (process.env.WEBPACK_HOST !== undefined) {
-    WEBPACK_HOST = process.env.WEBPACK_HOST;
-} else {
-    WEBPACK_HOST = 'localhost';
-}
+const WEBPACK_HOST = process.env.WEBPACK_HOST || 'localhost';
+const WEBPACK_PORT = process.env.WEBPACK_PORT || '3000';
+const WEBPACK_PROTOCOL = process.env.WEBPACK_PROTOCOL || 'http';
+const WEBPACK_URL = `${WEBPACK_PROTOCOL}://${WEBPACK_HOST}:${WEBPACK_PORT}`;
+const WEBPACK_PATH =
+    process.env.WEBPACK_PATH || path.resolve(__dirname, './assets/webpack/');
 
-const WEBPACK_URL = `http://${WEBPACK_HOST}:3000`;
+const oldBrowsersConfig = [
+    {
+        test: /\.(ts|tsx)?$/,
+        exclude: /node_modules/,
+        use: [
+            {
+                loader: 'babel-loader',
+                options: {
+                    cacheDirectory: true,
+                    presets: [
+                        [
+                            '@babel/preset-env',
+                            {
+                                targets: {
+                                    node: '12',
+                                    chrome: '55',
+                                    ie: '11',
+                                },
+                                include: [
+                                    '@babel/plugin-proposal-optional-chaining',
+                                    '@babel/plugin-proposal-nullish-coalescing-operator',
+                                    '@babel/plugin-proposal-numeric-separator',
+                                    '@babel/plugin-proposal-logical-assignment-operators',
+                                    '@babel/plugin-transform-destructuring',
+                                ],
+                            },
+                        ],
+                        '@babel/preset-react',
+                        [
+                            '@babel/preset-typescript',
+                            { isTSX: true, allExtensions: true },
+                        ],
+                    ],
+                    plugins: ['@babel/transform-runtime', 'formatjs'],
+                },
+            },
+        ],
+    },
+    {
+        test: /\.js?$/,
+        include: [
+            path.resolve(__dirname, '../node_modules/react-leaflet'),
+            path.resolve(__dirname, '../node_modules/@react-leaflet'),
+            path.resolve(__dirname, '../node_modules/@dnd-kit'),
+            path.resolve(__dirname, '../plugins'),
+            path.resolve(__dirname, 'assets'),
+        ],
+        use: [
+            {
+                loader: 'babel-loader',
+                options: {
+                    presets: [
+                        [
+                            '@babel/preset-env',
+                            {
+                                targets: {
+                                    node: '12',
+                                    chrome: '55',
+                                    ie: '11',
+                                },
+                                include: [
+                                    '@babel/plugin-proposal-optional-chaining',
+                                    '@babel/plugin-proposal-nullish-coalescing-operator',
+                                    '@babel/plugin-proposal-numeric-separator',
+                                    '@babel/plugin-proposal-logical-assignment-operators',
+                                    '@babel/plugin-transform-destructuring',
+                                ],
+                            },
+                        ],
+                        '@babel/preset-react',
+                    ],
+                    plugins: ['@babel/transform-runtime', 'formatjs'],
+                },
+            },
+        ],
+    },
+];
+const newBrowsersConfig = [
+    {
+        test: /\.(ts|tsx)?$/,
+        exclude: /node_modules/,
+        use: [
+            {
+                loader: 'babel-loader',
+                options: {
+                    cacheDirectory: true,
+                    presets: [
+                        ['@babel/preset-env', { targets: { node: '14' } }],
+                        '@babel/preset-react',
+                        [
+                            '@babel/preset-typescript',
+                            { isTSX: true, allExtensions: true },
+                        ],
+                    ],
+                    plugins: ['@babel/transform-runtime', 'formatjs'],
+                },
+            },
+        ],
+    },
+    {
+        test: /\.js?$/,
+        exclude: /node_modules/,
+        use: [
+            {
+                loader: 'babel-loader',
+                options: {
+                    presets: ['@babel/preset-env', '@babel/preset-react'],
+                    plugins: ['@babel/transform-runtime', 'formatjs'],
+                },
+            },
+        ],
+    },
+];
 
 module.exports = {
     context: __dirname,
@@ -28,11 +143,11 @@ module.exports = {
             'bluesquare-components',
             'react-dom',
             'react-intl',
-            '@material-ui/core',
+            '@mui/material',
             // Don't include, it packs all the icon instead of actually used one
-            // '@material-ui/icons',
-            '@material-ui/lab',
-            '@material-ui/pickers',
+            // '@mui/icons-material',
+            '@mui/lab',
+            '@mui/x-date-pickers',
             'lodash',
             'moment',
             'leaflet',
@@ -50,7 +165,7 @@ module.exports = {
     },
 
     output: {
-        path: path.resolve(__dirname, './assets/webpack/'),
+        path: WEBPACK_PATH,
         filename: '[name].js',
         sourceMapFilename: '[name].js.map',
         publicPath: `${WEBPACK_URL}/static/`, // Tell django to use this URL to load packages and not use STATIC_URL + bundle_name
@@ -60,27 +175,12 @@ module.exports = {
     // config for webpack-dev-server
     devServer: {
         historyApiFallback: true,
-        noInfo: false,
-        // needed so we can load the js from django (on another port or docker)
+        writeToDisk: true,
         headers: {
             'Access-Control-Allow-Origin': '*',
         },
         host: '0.0.0.0',
         port: 3000,
-        // It suppresses error shown in console, so it has to be set to false.
-        quiet: false,
-        // It suppresses everything except error, so it has to be set to false as well
-        // to see success build.
-        stats: {
-            // Config for minimal console.log mess.
-            assets: true,
-            colors: true,
-            version: false,
-            hash: false,
-            timings: true,
-            chunks: true,
-            chunkModules: false,
-        },
     },
 
     plugins: [
@@ -94,14 +194,14 @@ module.exports = {
         ),
         new webpack.NoEmitOnErrorsPlugin(), // don't reload if there is an error
         new BundleTracker({
-            path: __dirname,
-            filename: './assets/webpack/webpack-stats.json',
+            path: WEBPACK_PATH,
+            filename: 'webpack-stats.json',
         }),
         new webpack.DefinePlugin({
             __LOCALE: JSON.stringify(LOCALE),
         }),
         // XLSX
-        new webpack.IgnorePlugin(/cptable/),
+        new webpack.IgnorePlugin({ resourceRegExp: /cptable/ }),
         new webpack.WatchIgnorePlugin({
             paths: [/\.d\.ts$/],
         }),
@@ -115,48 +215,9 @@ module.exports = {
                 use: ['source-map-loader'],
                 exclude: /node_modules/,
             },
-            {
-                test: /\.(ts|tsx)?$/,
-                exclude: /node_modules/,
-                use: [
-                    {
-                        loader: 'babel-loader',
-                        options: {
-                            cacheDirectory: true,
-                            presets: [
-                                [
-                                    '@babel/preset-env',
-                                    { targets: { node: '14' } },
-                                ],
-                                '@babel/preset-react',
-                                [
-                                    '@babel/preset-typescript',
-                                    { isTSX: true, allExtensions: true },
-                                ],
-                            ],
-                            plugins: ['@babel/transform-runtime', 'formatjs'],
-                            // include: ['../plugins/polio/js/']
-                        },
-                    },
-                ],
-            },
-            {
-                test: /\.js?$/,
-                exclude: /node_modules/,
-                use: [
-                    {
-                        loader: 'babel-loader',
-                        options: {
-                            presets: [
-                                '@babel/preset-env',
-                                '@babel/preset-react',
-                            ],
-                            plugins: ['@babel/transform-runtime', 'formatjs'],
-                            // include: ['../plugins/polio/js/']
-                        },
-                    },
-                ],
-            },
+            ...(process.env.OLD_BROWSER === 'true'
+                ? oldBrowsersConfig
+                : newBrowsersConfig),
             {
                 test: /\.css$/,
                 use: [{ loader: 'style-loader' }, { loader: 'css-loader' }],

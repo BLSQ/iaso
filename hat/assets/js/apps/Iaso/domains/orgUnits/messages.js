@@ -62,8 +62,8 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.valid',
     },
     validated: {
-        id: 'iaso.forms.validated',
-        defaultMessage: 'Validated',
+        id: 'iaso.forms.valid',
+        defaultMessage: 'Valid',
     },
     notValidated: {
         id: 'iaso.forms.notValidated',
@@ -534,6 +534,14 @@ const MESSAGES = defineMessages({
     multiReferenceInstancesLabel: {
         id: 'iaso.orgUnits.MultiReferenceInstancesLabel',
         defaultMessage: 'Reference submissions',
+    },
+    openingDate: {
+        id: 'iaso.orgUnits.openingDate',
+        defaultMessage: 'Opening date',
+    },
+    closingDate: {
+        id: 'iaso.orgUnits.closingDate',
+        defaultMessage: 'Closing date',
     },
 });
 

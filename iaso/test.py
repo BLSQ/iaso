@@ -10,7 +10,7 @@ from django.test import TestCase as BaseTestCase
 from rest_framework.test import APITestCase as BaseAPITestCase, APIClient
 
 from hat.menupermissions.models import CustomPermissionSupport
-from hat.vector_control.models import APIImport
+from hat.api_import.models import APIImport
 from iaso import models as m
 
 
@@ -116,7 +116,7 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
         self.assertEqual(expected_content_type, response["Content-Type"])
 
         if expected_attachment_filename is not None:
-            self.assertEquals(
+            self.assertEqual(
                 response.get("Content-Disposition"), f"attachment; filename={expected_attachment_filename}"
             )
 

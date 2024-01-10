@@ -548,7 +548,7 @@ class OrgUnitAPITestCase(APITestCase):
         for model in new_counts.keys():
             diff[model] = new_counts[model] - self.old_counts[model]
 
-        self.assertDictContainsSubset(createds, diff)
+        self.assertTrue(set(createds.items()).issubset(set(diff.items())))
 
     def test_create_org_unit(self):
         self.client.force_authenticate(self.yoda)
@@ -567,6 +567,7 @@ class OrgUnitAPITestCase(APITestCase):
                 "parent_id": "",
                 "source_ref": "",
                 "creation_source": "dashboard",
+                "opening_date": "01-01-2024",
             },
         )
         self.assertJSONResponse(response, 200)
@@ -578,15 +579,35 @@ class OrgUnitAPITestCase(APITestCase):
             }
         )
 
-    def test_create_org_unit_minimal(self):
+    def test_create_org_unit_opening_date_not_anterior_to_closed_date(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
             f"/api/orgunits/create_org_unit/",
             format="json",
             data={
+                "id": None,
                 "name": "Test ou",
                 "org_unit_type_id": self.jedi_council.pk,
+                "groups": [],
+                "sub_source": "",
+                "status": False,
+                "aliases": ["my alias"],
+                "validation_status": "NEW",
+                "parent_id": "",
+                "source_ref": "",
+                "creation_source": "dashboard",
+                "opening_date": "01-01-2024",
+                "closed_date": "01-12-2023",
             },
+        )
+        self.assertJSONResponse(response, 400)
+
+    def test_create_org_unit_minimal(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            f"/api/orgunits/create_org_unit/",
+            format="json",
+            data={"name": "Test ou", "org_unit_type_id": self.jedi_council.pk, "opening_date": "01-01-2024"},
         )
 
         jr = self.assertJSONResponse(response, 200)
@@ -635,7 +656,12 @@ class OrgUnitAPITestCase(APITestCase):
         response = self.client.post(
             f"/api/orgunits/create_org_unit/",
             format="json",
-            data={"name": "Test ou", "org_unit_type_id": self.jedi_council.pk, "groups": [group.pk]},
+            data={
+                "name": "Test ou",
+                "org_unit_type_id": self.jedi_council.pk,
+                "groups": [group.pk],
+                "opening_date": "01-01-2024",
+            },
         )
         jr = self.assertJSONResponse(response, 400)
         self.assertEqual(jr[0]["errorKey"], "groups")
@@ -649,7 +675,12 @@ class OrgUnitAPITestCase(APITestCase):
         response = self.client.post(
             f"/api/orgunits/create_org_unit/",
             format="json",
-            data={"name": "Test ou", "org_unit_type_id": self.jedi_council.pk, "groups": [group.pk]},
+            data={
+                "name": "Test ou",
+                "org_unit_type_id": self.jedi_council.pk,
+                "groups": [group.pk],
+                "opening_date": "01-01-2024",
+            },
         )
         jr = self.assertJSONResponse(response, 400)
         self.assertEqual(jr[0]["errorKey"], "groups")
@@ -664,7 +695,12 @@ class OrgUnitAPITestCase(APITestCase):
         response = self.client.post(
             f"/api/orgunits/create_org_unit/",
             format="json",
-            data={"name": "Test ou", "org_unit_type_id": self.jedi_council.pk, "groups": [group_1.pk, group_2.pk]},
+            data={
+                "name": "Test ou",
+                "org_unit_type_id": self.jedi_council.pk,
+                "groups": [group_1.pk, group_2.pk],
+                "opening_date": "01-01-2024",
+            },
         )
 
         jr = self.assertJSONResponse(response, 200)
@@ -675,8 +711,10 @@ class OrgUnitAPITestCase(APITestCase):
             }
         )
         ou = m.OrgUnit.objects.get(id=jr["id"])
-        self.assertQuerysetEqual(
-            ou.groups.all().order_by("name"), ["<Group: bla | Evil Empire  1 >", "<Group: bla2 | Evil Empire  1 >"]
+        self.assertQuerySetEqual(
+            ou.groups.all().order_by("name"),
+            ["<Group: bla | Evil Empire  1 >", "<Group: bla2 | Evil Empire  1 >"],
+            transform=repr,
         )
 
     def test_create_org_unit_with_reference_instance(self):
@@ -697,6 +735,7 @@ class OrgUnitAPITestCase(APITestCase):
                 "parent_id": "",
                 "source_ref": "",
                 "creation_source": "dashboard",
+                "opening_date": "01-01-2024",
             },
         )
         jr = self.assertJSONResponse(response, 200)
@@ -722,6 +761,7 @@ class OrgUnitAPITestCase(APITestCase):
                 "parent_id": "",
                 "source_ref": "",
                 "creation_source": "dashboard",
+                "opening_date": "01-01-2024",
             },
         )
         jr = self.assertJSONResponse(response, 200)
@@ -750,7 +790,9 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(response.data["reference_instances"], [])
         self.assertCreated({Modification: 1})
         ou = m.OrgUnit.objects.get(id=jr["id"])
-        self.assertQuerysetEqual(ou.groups.all().order_by("name"), ["<Group: Elite councils | Evil Empire  1 >"])
+        self.assertQuerySetEqual(
+            ou.groups.all().order_by("name"), ["<Group: Elite councils | Evil Empire  1 >"], transform=repr
+        )
         self.assertEqual(ou.id, old_ou.id)
         self.assertEqual(ou.name, old_ou.name)
         self.assertEqual(ou.parent, old_ou.parent)
@@ -848,7 +890,7 @@ class OrgUnitAPITestCase(APITestCase):
         ou.save()
         old_modification_date = ou.updated_at
         self.client.force_authenticate(self.yoda)
-        data = {"source_ref": "new source ref"}
+        data = {"source_ref": "new source ref", "opening_date": "01-01-2024"}
         response = self.client.patch(
             f"/api/orgunits/{ou.id}/",
             format="json",
@@ -860,7 +902,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertGreater(ou.updated_at, old_modification_date)
         self.assertEqual(ou.name, "test ou")
         self.assertEqual(ou.source_ref, "new source ref")
-        self.assertQuerysetEqual(ou.groups.all().order_by("name"), [group_a, group_b])
+        self.assertQuerySetEqual(ou.groups.all().order_by("name"), [group_a, group_b])
         self.assertEqual(ou.geom.wkt, MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])).wkt)
         self.assertEqual(response.data["reference_instances"], [])
 
@@ -898,8 +940,8 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertCreated({Modification: 1})
         ou = m.OrgUnit.objects.get(id=old_ou.id)
         # Verify group was not modified but the rest was modified
-        self.assertQuerysetEqual(
-            ou.groups.all().order_by("name"), ["<Group:  | Evil Empire  1 >", "<Group: bad | None >"]
+        self.assertQuerySetEqual(
+            ou.groups.all().order_by("name"), ["<Group:  | Evil Empire  1 >", "<Group: bad | None >"], transform=repr
         )
         self.assertEqual(ou.id, old_ou.id)
         self.assertEqual(ou.name, "new name")
@@ -924,6 +966,7 @@ class OrgUnitAPITestCase(APITestCase):
         data["altitude"] = form_altitude
         data["latitude"] = form_latitude
         data["longitude"] = form_longitude
+        data["opening_date"] = "01-01-2024"
 
         response = self.client.patch(
             f"/api/orgunits/{org_unit.id}/",

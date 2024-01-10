@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 import { Pane } from 'react-leaflet';
 
 import { orgunitsPane } from './constants';
@@ -16,12 +16,23 @@ export const CurrentOrgUnitMarker: FunctionComponent<Props> = ({
     currentOrgUnit,
     onChangeLocation,
 }) => {
+    const handleChangeLocation = useCallback(
+        newMarker => {
+            const { lat, lng, alt = 0 } = newMarker.getLatLng();
+            onChangeLocation({
+                latitude: lat,
+                longitude: lng,
+                altitude: alt,
+            });
+        },
+        [onChangeLocation],
+    );
     return (
         <Pane name={`${orgunitsPane}-current-marker`} style={{ zIndex: 699 }}>
             <MarkerComponent
                 item={currentOrgUnit}
                 draggable={isEdit}
-                onDragend={newMarker => onChangeLocation(newMarker.getLatLng())}
+                onDragend={handleChangeLocation}
             />
         </Pane>
     );

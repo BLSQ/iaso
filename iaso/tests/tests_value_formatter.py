@@ -49,7 +49,7 @@ class ValueFormatterTests(TestCase):
         )
 
         for testcase in testcases:
-            self.assertEquals(
+            self.assertEqual(
                 value_formatter.format_value(buid_de(testcase[0]), testcase[1], orgunit_resolver), testcase[2], testcase
             )
 
@@ -57,9 +57,9 @@ class ValueFormatterTests(TestCase):
         de = buid_de(
             "TEXT", {"options": [{"code": "HIV prevention", "odk": "1"}, {"code": "Malaria preventation", "odk": "20"}]}
         )
-        self.assertEquals(value_formatter.format_value(de, "1", orgunit_resolver), "HIV prevention")
-        self.assertEquals(value_formatter.format_value(de, "20", orgunit_resolver), "Malaria preventation")
-        self.assertEquals(value_formatter.format_value(de, "", orgunit_resolver), None)
+        self.assertEqual(value_formatter.format_value(de, "1", orgunit_resolver), "HIV prevention")
+        self.assertEqual(value_formatter.format_value(de, "20", orgunit_resolver), "Malaria preventation")
+        self.assertEqual(value_formatter.format_value(de, "", orgunit_resolver), None)
 
         with self.assertRaises(Exception) as context:
             value_formatter.format_value(de, "unknown value", orgunit_resolver)
@@ -71,11 +71,11 @@ class ValueFormatterTests(TestCase):
 
     def test_formats_options_with_only_codes(self):
         de = buid_de("TEXT", {"options": [{"code": "HIV prevention"}, {"code": "Malaria preventation"}]})
-        self.assertEquals(value_formatter.format_value(de, "HIV prevention", orgunit_resolver), "HIV prevention")
-        self.assertEquals(
+        self.assertEqual(value_formatter.format_value(de, "HIV prevention", orgunit_resolver), "HIV prevention")
+        self.assertEqual(
             value_formatter.format_value(de, "Malaria preventation", orgunit_resolver), "Malaria preventation"
         )
-        self.assertEquals(value_formatter.format_value(de, "", orgunit_resolver), None)
+        self.assertEqual(value_formatter.format_value(de, "", orgunit_resolver), None)
 
         with self.assertRaises(Exception) as context:
             value_formatter.format_value(de, "unknown value", orgunit_resolver)

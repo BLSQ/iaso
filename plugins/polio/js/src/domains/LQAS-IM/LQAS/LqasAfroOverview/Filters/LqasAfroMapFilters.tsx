@@ -5,7 +5,7 @@ import {
     FormGroup,
     Grid,
     Switch,
-} from '@material-ui/core';
+} from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { InputWithInfos } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/InputWithInfos';
 import { LQAS_AFRO_MAP_URL } from '../../../../../constants/routes';
@@ -32,7 +32,9 @@ export const LqasAfroMapFilters: FunctionComponent<Props> = ({ params }) => {
         setFilters,
     } = useFilterState({ baseUrl, params, withPagination: false });
     const periodOptions = usePeriodOptions();
-    const [chooseDates, setChooseDates] = useState<boolean>(false);
+    const [chooseDates, setChooseDates] = useState<boolean>(
+        Boolean(params.startDate) || Boolean(params.endDate),
+    );
 
     const onSwitchChange = useCallback(() => {
         setFilters({
@@ -104,8 +106,22 @@ export const LqasAfroMapFilters: FunctionComponent<Props> = ({ params }) => {
                             />
                         </InputWithInfos>
                     )}
+                    <FormGroup>
+                        <FormControlLabel
+                            label={formatMessage(MESSAGES.chooseDates)}
+                            style={{ width: 'max-content' }}
+                            control={
+                                <Switch
+                                    size="medium"
+                                    checked={chooseDates}
+                                    onChange={onSwitchChange}
+                                    color="primary"
+                                />
+                            }
+                        />
+                    </FormGroup>
                 </Grid>
-                <Grid container item xs={12} md={6} justifyContent="flex-end">
+                <Grid container item xs={12} sm={6} justifyContent="flex-end">
                     <Box mt={2}>
                         <FilterButton
                             disabled={!filtersUpdated}
@@ -114,20 +130,6 @@ export const LqasAfroMapFilters: FunctionComponent<Props> = ({ params }) => {
                     </Box>
                 </Grid>
             </Grid>
-            <FormGroup>
-                <FormControlLabel
-                    label={formatMessage(MESSAGES.chooseDates)}
-                    style={{ width: 'max-content' }}
-                    control={
-                        <Switch
-                            size="medium"
-                            checked={chooseDates}
-                            onChange={onSwitchChange}
-                            color="primary"
-                        />
-                    }
-                />
-            </FormGroup>
         </>
     );
 };

@@ -10,10 +10,12 @@ import {
 import { withRouter } from 'react-router';
 import { useDispatch } from 'react-redux';
 import { push } from 'react-router-redux';
-import { Box, Tooltip } from '@material-ui/core';
-import AddIcon from '@material-ui/icons/Add';
-import DownloadIcon from '@material-ui/icons/GetApp';
+import { Box, Tooltip } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import DownloadIcon from '@mui/icons-material/GetApp';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
+import { userHasPermission } from '../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils.ts';
 import { TableWithDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink.tsx';
 import { PolioCreateEditDialog as CreateEditDialog } from './MainDialog/CreateEditDialog';
 import { PageAction } from '../../components/Buttons/PageAction';
@@ -33,7 +35,6 @@ import { convertObjectToString } from '../../utils';
 import { DASHBOARD_BASE_URL } from '../../constants/routes';
 import { useSingleTableParams } from '../../../../../../hat/assets/js/apps/Iaso/components/tables/SingleTable';
 import { PageActionWithLink } from '../../components/Buttons/PageActionWithLink.tsx';
-import { ImportLine } from './ImportLine/ImportLine.tsx';
 
 const Dashboard = ({ router }) => {
     const { params } = router;
@@ -46,7 +47,7 @@ const Dashboard = ({ router }) => {
     const [isRestoreDialogOpen, setIsRestoreDialogOpen] = useState(false);
     const [selectedCampaignId, setSelectedCampaignId] = useState();
     const classes = useStyles();
-
+    const currentUser = useCurrentUser();
     const paramsToUse = useSingleTableParams(params);
     const apiParams = useCampaignParams(paramsToUse);
 
@@ -149,6 +150,8 @@ const Dashboard = ({ router }) => {
         setSelectedCampaignId(undefined);
         openCreateEditDialog();
     };
+
+    const isUserAdmin = userHasPermission('iaso_polio_config', currentUser);
 
     useEffect(() => {
         if (params.campaignId) {
@@ -264,10 +267,11 @@ const Dashboard = ({ router }) => {
         }
         return cols;
     }, [
-        handleClickDeleteRow,
-        handleClickEditRow,
         formatMessage,
         params.showOnlyDeleted,
+        handleClickEditRow,
+        handleClickDeleteRow,
+        handleClickRestoreRow,
     ]);
 
     return (
@@ -295,16 +299,17 @@ const Dashboard = ({ router }) => {
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <PageActions params={params}>
-                    <PageAction
-                        icon={AddIcon}
-                        onClick={handleClickCreateButton}
-                    >
-                        {formatMessage(MESSAGES.create)}
-                    </PageAction>
+                    {isUserAdmin && (
+                        <PageAction
+                            icon={AddIcon}
+                            onClick={handleClickCreateButton}
+                        >
+                            {formatMessage(MESSAGES.create)}
+                        </PageAction>
+                    )}
                     <PageActionWithLink icon={DownloadIcon} url={exportToCSV}>
                         {formatMessage(MESSAGES.csv)}
                     </PageActionWithLink>
-                    <ImportLine />
                 </PageActions>
                 <TableWithDeepLink
                     data={campaigns?.campaigns ?? []}

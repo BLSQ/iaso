@@ -6,6 +6,7 @@ import L from 'leaflet';
 import { makeStyles } from '@mui/styles';
 import { commonStyles } from 'bluesquare-components';
 
+import { Box } from '@mui/material';
 import { CustomTileLayer } from './tools/CustomTileLayer';
 
 import tiles from '../../constants/mapTiles';
@@ -26,11 +27,15 @@ const useStyles = makeStyles(theme => ({
 type Props = {
     latitude: number | undefined;
     longitude: number | undefined;
+    maxZoom?: number;
+    mapHeight?: number;
 };
 
 export const MarkerMap: FunctionComponent<Props> = ({
     latitude,
     longitude,
+    maxZoom,
+    mapHeight = 400,
 }) => {
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
 
@@ -38,7 +43,7 @@ export const MarkerMap: FunctionComponent<Props> = ({
 
     const boundsOptions: Record<string, [number, number] | number> = {
         padding: [500, 500],
-        maxZoom: currentTile.maxZoom,
+        maxZoom: maxZoom || currentTile.maxZoom,
     };
 
     const bounds = useMemo(() => {
@@ -48,7 +53,7 @@ export const MarkerMap: FunctionComponent<Props> = ({
 
     if (!latitude || !longitude) return null;
     return (
-        <div className={classes.mapContainer}>
+        <Box className={classes.mapContainer} height={mapHeight}>
             <MapContainer
                 doubleClickZoom={false}
                 scrollWheelZoom={false}
@@ -74,8 +79,11 @@ export const MarkerMap: FunctionComponent<Props> = ({
                         latitude,
                         longitude,
                     }}
+                    markerProps={() => ({
+                        fillColor: 'red',
+                    })}
                 />
             </MapContainer>
-        </div>
+        </Box>
     );
 };

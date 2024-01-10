@@ -2,7 +2,6 @@ import React, { FunctionComponent, useState } from 'react';
 import { Collapse, Grid, Box } from '@mui/material';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { BudgetDetailsFilters } from '../BudgetDetailsFilters';
-import { LinkToProcedure } from '../LinkToProcedure';
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 type Props = {
@@ -21,10 +20,8 @@ export const BudgetDetailsFiltersMobile: FunctionComponent<Props> = ({
 }) => {
     const [expand, setExpand] = useState<boolean>(false);
     return (
-        <Box width="100%">
+        <Box width="100%" mb={2}>
             <Grid container justifyContent="space-between">
-                {/* The Link crashes the view */}
-                <Grid item>{/* <LinkToProcedure /> */}</Grid>
                 <Grid item>
                     <MoreHorizIcon
                         color="action"

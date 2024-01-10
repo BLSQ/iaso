@@ -24,7 +24,7 @@ def task(request):
 
 @csrf_exempt
 def cron(request):
-    module, method = request.META["HTTP_X_AWS_SQSD_TASKNAME"].rsplit(".", 1)
+    module, method = request.headers["x-aws-sqsd-taskname"].rsplit(".", 1)
     task_service.run(module, method, [], {})
     return HttpResponse()
 

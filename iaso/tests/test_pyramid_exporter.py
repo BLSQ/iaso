@@ -187,7 +187,7 @@ class CommandTests(TestCase):
         new_chief_dom = OrgUnit.objects.get(name="new Chiefdom", version=version_ref)
         new_children = OrgUnit.objects.get(name="new children", version=version_ref)
 
-        self.assertEquals(
+        self.assertEqual(
             posted_request,
             [
                 {

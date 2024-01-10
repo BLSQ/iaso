@@ -2,12 +2,12 @@ import { useSelector } from 'react-redux';
 import { useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { Locale } from '../types/general';
-import { THOUSAND_GROUP_STYLES } from '../domains/app/constants';
+import { THOUSAND, THOUSAND_GROUP_STYLES } from '../domains/app/constants';
 
 export const useThousandGroupStyle = (): 'thousand' | 'lakh' | 'wan' => {
     // @ts-ignore
     const activeLocale: Locale = useSelector(state => state.app.locale);
-    return THOUSAND_GROUP_STYLES[activeLocale.code];
+    return THOUSAND_GROUP_STYLES[activeLocale.code] ?? THOUSAND;
 };
 
 export const useNumberSeparatorsFromLocale = (): {

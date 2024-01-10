@@ -16,7 +16,10 @@ import {
 } from 'bluesquare-components';
 import MESSAGES from '../../domains/forms/messages';
 import { DropdownOptions } from '../../types/utils';
-import { useNumberSeparatorsFromLocale } from '../../hooks/useNumberSeparatorsFromLocale';
+import {
+    useNumberSeparatorsFromLocale,
+    useThousandGroupStyle,
+} from '../../hooks/useNumberSeparatorsFromLocale';
 
 type Option = DropdownOptions<string | number>;
 
@@ -37,6 +40,7 @@ export type NumberInputOptions = {
     decimalScale?: number;
     decimalSeparator?: '.' | ',';
     thousandSeparator?: '.' | ',';
+    thousandsGroupStyle?: 'thousand' | 'lakh' | 'wan';
 };
 
 export type InputComponentProps = {
@@ -93,14 +97,17 @@ const useLocalizedNumberInputOptions = (
     numberInputOptions: NumberInputOptions,
 ): NumberInputOptions => {
     const { thousand, decimal } = useNumberSeparatorsFromLocale();
+    const thousandGroupStyle = useThousandGroupStyle();
     return useMemo(
         () => ({
             ...numberInputOptions,
             decimalSeparator: numberInputOptions?.decimalSeparator ?? decimal,
             thousandSeparator:
                 numberInputOptions?.thousandSeparator ?? thousand,
+            thousandGroupStyle:
+                numberInputOptions?.thousandsGroupStyle ?? thousandGroupStyle,
         }),
-        [decimal, numberInputOptions, thousand],
+        [decimal, numberInputOptions, thousand, thousandGroupStyle],
     );
 };
 

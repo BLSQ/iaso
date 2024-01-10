@@ -1,15 +1,22 @@
 import { useSelector } from 'react-redux';
 import { useMemo } from 'react';
-import { determineSeparatorsFromLocale } from '../utils/dataManipulation';
+import { useSafeIntl } from 'bluesquare-components';
+import { Locale } from '../types/general';
+import { THOUSAND_GROUP_STYLES } from '../domains/app/constants';
+
+export const useThousandGroupStyle = (): 'thousand' | 'lakh' | 'wan' => {
+    // @ts-ignore
+    const activeLocale: Locale = useSelector(state => state.app.locale);
+    return THOUSAND_GROUP_STYLES[activeLocale.code];
+};
 
 export const useNumberSeparatorsFromLocale = (): {
     thousand: '.' | ',';
     decimal: '.' | ',';
 } => {
-    // @ts-ignore
-    const activeLocale = useSelector(state => state.app.locale);
-    return useMemo(
-        () => determineSeparatorsFromLocale(activeLocale),
-        [activeLocale],
-    );
+    const { formatNumber } = useSafeIntl();
+    const decimal = formatNumber(1.1).charAt(1);
+    const thousand = formatNumber(1000).charAt(1);
+
+    return useMemo(() => ({ decimal, thousand }), [decimal, thousand]);
 };

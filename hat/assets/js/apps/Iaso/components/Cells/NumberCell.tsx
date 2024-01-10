@@ -1,6 +1,9 @@
 import { FormattedNumber } from 'bluesquare-components';
 import React, { FunctionComponent, ReactElement, useMemo } from 'react';
-import { useNumberSeparatorsFromLocale } from '../../hooks/useNumberSeparatorsFromLocale';
+import {
+    useNumberSeparatorsFromLocale,
+    useThousandGroupStyle,
+} from '../../hooks/useNumberSeparatorsFromLocale';
 
 type Props = {
     value?: number;
@@ -15,18 +18,30 @@ type Props = {
 const useSeparators = ({
     thousand,
     decimal,
+    thousandsGroupStyle,
 }: {
     thousand?: ',' | '.';
     decimal?: ',' | '.';
+    thousandsGroupStyle?: 'thousand' | 'lakh' | 'wan';
 }) => {
     const { thousand: localeThousand, decimal: localeDecimal } =
         useNumberSeparatorsFromLocale();
+    const localeThousandGroupStyle = useThousandGroupStyle();
+
     return useMemo(() => {
         return {
             thousandSeparator: thousand ?? localeThousand,
             decimalSeparator: decimal ?? localeDecimal,
+            thousandGroupStyle: thousandsGroupStyle ?? localeThousandGroupStyle,
         };
-    }, [decimal, localeDecimal, localeThousand, thousand]);
+    }, [
+        decimal,
+        localeDecimal,
+        localeThousand,
+        localeThousandGroupStyle,
+        thousand,
+        thousandsGroupStyle,
+    ]);
 };
 
 export const NumberCell: FunctionComponent<Props> = ({
@@ -39,16 +54,21 @@ export const NumberCell: FunctionComponent<Props> = ({
     decimalScale, // default value is already set by FormattedNumber
     placeholder, // default value is already set by FormattedNumber
 }) => {
-    const { thousandSeparator, decimalSeparator } = useSeparators({
+    const {
+        thousandSeparator,
+        decimalSeparator,
+        thousandGroupStyle: localeThousandGroupStyle,
+    } = useSeparators({
         thousand,
         decimal,
+        thousandsGroupStyle,
     });
     return (
         <FormattedNumber
             value={value}
             prefix={prefix}
             suffix={suffix}
-            thousandsGroupStyle={thousandsGroupStyle}
+            thousandsGroupStyle={localeThousandGroupStyle}
             thousandSeparator={thousandSeparator}
             decimalSeparator={decimalSeparator}
             decimalScale={decimalScale}

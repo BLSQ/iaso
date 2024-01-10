@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import React, { useMemo } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { withRouter } from 'react-router';
 import { Box } from '@mui/material';
@@ -20,8 +20,11 @@ import { useSingleTableParams } from '../../../../../../../hat/assets/js/apps/Ia
 import { useCampaignsTableColumns } from './useCampaignsTableColumns';
 import { Filters } from '../../Calendar/campaignCalendar/Filters';
 import { DashboardButtons } from './DashboardButtons';
+import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
 
-const Dashboard = ({ router }) => {
+type Props = { router: Router };
+
+const Dashboard: FunctionComponent<Props> = ({ router }) => {
     const { params } = router;
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();

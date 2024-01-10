@@ -11,9 +11,9 @@ import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/gener
 type Args = {
     showOnlyDeleted: boolean;
     // eslint-disable-next-line no-unused-vars
-    handleClickRestoreRow: (value: any) => void;
+    handleClickRestoreRow: (value: number) => void;
     // eslint-disable-next-line no-unused-vars
-    handleClickDeleteRow: (value: any) => void;
+    handleClickDeleteRow: (value: number) => void;
     router: Router;
 };
 
@@ -45,10 +45,10 @@ export const useCampaignsTableColumns = ({
             {
                 Header: formatMessage(MESSAGES.lastRound),
                 id: `last_round_started_at`,
-                accessor: row => {
+                Cell: settings => {
                     const allRounds = (
                         <>
-                            {row.rounds.map(r => (
+                            {settings.row.original.rounds.map(r => (
                                 <li key={`${r.number}-${r.started_at}`}>
                                     {`${r.number}. ${r.started_at} -> ${r.ended_at}`}
                                     <br />
@@ -59,9 +59,10 @@ export const useCampaignsTableColumns = ({
                     return (
                         <Tooltip title={allRounds}>
                             <span>
-                                {row.rounds &&
-                                    row.rounds[row.rounds.length - 1]
-                                        ?.started_at}
+                                {settings.row.original.rounds &&
+                                    settings.row.original.rounds[
+                                        settings.row.original.rounds.length - 1
+                                    ]?.started_at}
                             </span>
                         </Tooltip>
                     );
@@ -70,7 +71,7 @@ export const useCampaignsTableColumns = ({
             {
                 Header: formatMessage(MESSAGES.status),
                 sortable: false,
-                accessor: row => row.general_status,
+                accessor: 'general_status',
             },
             {
                 Header: formatMessage(MESSAGES.actions),

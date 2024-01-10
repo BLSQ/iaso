@@ -162,33 +162,43 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                 closeDialog={() => setIsBackdropOpen(false)}
                 onConfirm={() => handleClose()}
             />
-
-            <Grid container>
-                <Grid item xs={12} md={6}>
-                    <Box pr={4} justifyContent="center" alignContent="center">
-                        <DialogTitle className={classes.title}>
-                            {selectedCampaign?.id
-                                ? formatMessage(MESSAGES.editCampaign)
-                                : formatMessage(MESSAGES.createCampaign)}
-                        </DialogTitle>
-                    </Box>
-                </Grid>
-
-                {selectedCampaign && campaignLogs?.length && (
-                    <Grid item xs={12} md={6} className={classes.historyLink}>
-                        <Box pr={4} alignItems="center">
-                            <IconButtonComponent
-                                url={`${CAMPAIGN_HISTORY_URL}/campaignId/${selectedCampaign?.id}`}
-                                icon="history"
-                                tooltipMessage={MESSAGES.campaignHistory}
-                                classes={{
-                                    linkButton: classes.linkButton,
-                                }}
-                            />
+            <Box pt={1}>
+                <Grid container>
+                    <Grid item xs={12} md={6}>
+                        <Box
+                            pr={4}
+                            justifyContent="center"
+                            alignContent="center"
+                        >
+                            <DialogTitle className={classes.title}>
+                                {selectedCampaign?.id
+                                    ? formatMessage(MESSAGES.editCampaign)
+                                    : formatMessage(MESSAGES.createCampaign)}
+                            </DialogTitle>
                         </Box>
                     </Grid>
-                )}
-            </Grid>
+
+                    {selectedCampaign && campaignLogs?.length && (
+                        <Grid
+                            item
+                            xs={12}
+                            md={6}
+                            className={classes.historyLink}
+                        >
+                            <Box pr={4} alignItems="center">
+                                <IconButtonComponent
+                                    url={`${CAMPAIGN_HISTORY_URL}/campaignId/${selectedCampaign?.id}`}
+                                    icon="history"
+                                    tooltipMessage={MESSAGES.campaignHistory}
+                                    classes={{
+                                        linkButton: classes.linkButton,
+                                    }}
+                                />
+                            </Box>
+                        </Grid>
+                    )}
+                </Grid>
+            </Box>
 
             <DialogContent className={classes.content}>
                 <PolioDialogTabs

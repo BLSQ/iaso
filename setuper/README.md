@@ -1,4 +1,4 @@
-Iaso Demo Setup script
+Iaso Demo Setup Script
 ----------------------
 
 # Introduction 
@@ -10,6 +10,7 @@ It will:
 - import an org unit sample 
 - import a test form
 - create a few submissions of this form 
+- create a few entities
 
 Once the script has run, you can log in to your server using the account name as login and password. 
 

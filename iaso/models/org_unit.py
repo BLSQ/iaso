@@ -639,10 +639,6 @@ class OrgUnitChangeRequest(models.Model):
     updated_by = models.ForeignKey(
         User, null=True, blank=True, on_delete=models.SET_NULL, related_name="org_unit_change_updated_set"
     )
-    reviewed_at = models.DateTimeField(blank=True, null=True)
-    reviewed_by = models.ForeignKey(
-        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="org_unit_change_reviewed_set"
-    )
     rejection_comment = models.TextField(blank=True)
 
     # Fields for which a change can be requested.
@@ -713,16 +709,16 @@ class OrgUnitChangeRequest(models.Model):
             raise ValidationError("Closing date must be later than opening date.")
 
     def reject(self, user: User, rejection_comment: str) -> None:
-        self.reviewed_at = timezone.now()
-        self.reviewed_by = user
+        self.updated_at = timezone.now()
+        self.updated_by = user
         self.status = self.Statuses.REJECTED
         self.rejection_comment = rejection_comment
         self.save()
 
     def approve(self, user: User, approved_fields: typing.List[str]) -> None:
         self.__apply_changes(user, approved_fields)
-        self.reviewed_at = timezone.now()
-        self.reviewed_by = user
+        self.updated_at = timezone.now()
+        self.updated_by = user
         self.status = self.Statuses.APPROVED
         self.approved_fields = approved_fields
         self.save()

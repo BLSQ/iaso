@@ -78,6 +78,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         response = self.client.get(f"/api/orgunits/changes/{change_request.pk}/")
         self.assertJSONResponse(response, 403)
 
+    @time_machine.travel(DT, tick=False)
     def test_create_ok(self):
         self.client.force_authenticate(self.user)
         data = {
@@ -90,8 +91,11 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         change_request = m.OrgUnitChangeRequest.objects.get(new_name=data["new_name"])
         self.assertEqual(change_request.new_name, data["new_name"])
         self.assertEqual(change_request.new_org_unit_type, self.org_unit_type)
+        self.assertEqual(change_request.created_at, self.DT)
         self.assertEqual(change_request.created_by, self.user)
+        self.assertIsNone(change_request.updated_at)
 
+    @time_machine.travel(DT, tick=False)
     def test_create_ok_using_uuid_as_for_org_unit_id(self):
         self.client.force_authenticate(self.user)
         data = {
@@ -104,8 +108,11 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         change_request = m.OrgUnitChangeRequest.objects.get(new_name=data["new_name"])
         self.assertEqual(change_request.new_name, data["new_name"])
         self.assertEqual(change_request.new_org_unit_type, self.org_unit_type)
+        self.assertEqual(change_request.created_at, self.DT)
         self.assertEqual(change_request.created_by, self.user)
+        self.assertIsNone(change_request.updated_at)
 
+    @time_machine.travel(DT, tick=False)
     def test_create_ok_from_mobile(self):
         """
         The mobile adds `?app_id=.bar.baz` in the query params.
@@ -120,7 +127,9 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 201)
         change_request = m.OrgUnitChangeRequest.objects.get(uuid=data["uuid"])
         self.assertEqual(change_request.new_name, data["new_name"])
+        self.assertEqual(change_request.created_at, self.DT)
         self.assertEqual(change_request.created_by, self.user)
+        self.assertIsNone(change_request.updated_at)
 
     def test_create_without_auth(self):
         data = {

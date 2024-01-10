@@ -659,7 +659,6 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
         "org_unit",
         "created_by",
         "updated_by",
-        "reviewed_by",
         "new_parent",
         "new_org_unit_type",
         "new_groups",
@@ -702,8 +701,6 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
                     "created_by",
                     "updated_at",
                     "updated_by",
-                    "reviewed_at",
-                    "reviewed_by",
                     "rejection_comment",
                 )
             },

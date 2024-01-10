@@ -9,11 +9,12 @@ import { baseUrls } from '../../../constants/urls';
 import { userHasPermission } from '../../users/utils';
 import MESSAGES from '../messages';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
-import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
+import { DateTimeCell } from '../../../components/Cells/DateTimeCell.tsx';
 import { YesNoCell } from '../../../components/Cells/YesNoCell';
 import { CreateSubmissionModal } from '../components/CreateSubmissionModal/CreateSubmissionModal.tsx';
 import { createInstance } from '../../instances/actions';
 import * as Permission from '../../../utils/permissions.ts';
+import { BreakWordCell } from '../../../components/Cells/BreakWordCell';
 
 export const baseUrl = baseUrls.forms;
 
@@ -141,6 +142,7 @@ const formsTableColumns = ({
             Header: formatMessage(MESSAGES.form_id),
             accessor: 'form_id',
             sortable: false,
+            Cell: BreakWordCell,
         },
         {
             Header: formatMessage(MESSAGES.latest_version_files),

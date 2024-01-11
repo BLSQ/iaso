@@ -15,6 +15,8 @@ class ETL:
             .filter(json__isnull=False)
             .filter(form__isnull=False)
             .filter(updated_at__gte=updated_at)
+            .exclude(deleted=False)
+            .exclude(entity__deleted_at__isnull=False)
             .exclude(id__in=steps_id)
             .values(
                 "id",
@@ -26,6 +28,7 @@ class ETL:
                 "org_unit_id",
                 "updated_at",
                 "form",
+                "entity__deleted_at",
             )
             .order_by("entity_id", "created_at")
         )

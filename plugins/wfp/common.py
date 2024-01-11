@@ -15,7 +15,7 @@ class ETL:
             .filter(json__isnull=False)
             .filter(form__isnull=False)
             .filter(updated_at__gte=updated_at)
-            .exclude(deleted=False)
+            .exclude(deleted=True)
             .exclude(entity__deleted_at__isnull=False)
             .exclude(id__in=steps_id)
             .values(

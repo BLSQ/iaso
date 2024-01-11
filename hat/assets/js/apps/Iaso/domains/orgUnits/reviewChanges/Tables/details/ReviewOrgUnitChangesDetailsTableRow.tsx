@@ -22,24 +22,27 @@ const useStyles = makeStyles(theme => ({
     },
     cellRejected: {
         '& > a': {
-            color: theme.palette.error.main,
+            color: `${theme.palette.error.main}! important`,
         },
         '& > span': {
-            color: theme.palette.error.main,
+            color: `${theme.palette.error.main}! important`,
+        },
+        '& > span a': {
+            color: `${theme.palette.error.main}! important`,
         },
         '& .marker-custom.primary svg': {
-            fill: theme.palette.error.main,
+            fill: `${theme.palette.error.main}! important`,
         },
     },
     cellApproved: {
         '& > a': {
-            color: theme.palette.success.main,
+            color: `${theme.palette.success.main}! important`,
         },
         '& > span': {
-            color: theme.palette.success.main,
+            color: `${theme.palette.success.main}! important`,
         },
         '& .marker-custom.primary svg': {
-            fill: theme.palette.success.main,
+            fill: `${theme.palette.success.main}! important`,
         },
     },
     checkBoxContainer: {

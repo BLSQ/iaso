@@ -19,6 +19,7 @@ import { ApproveOrgUnitChangesButtons } from './ReviewOrgUnitChangesButtons';
 import { ChangeRequestValidationStatus } from '../types';
 import { useSaveChangeRequest } from '../hooks/api/useSaveChangeRequest';
 import { ReviewOrgUnitChangesDetailsTable } from '../Tables/details/ReviewOrgUnitChangesDetailsTable';
+import { ReviewOrgUnitChangesComment } from './ReviewOrgUnitChangesComment';
 
 type Props = {
     isOpen: boolean;
@@ -78,6 +79,9 @@ export const ReviewOrgUnitChangesDialog: FunctionComponent<Props> = ({
                 newFields={newFields}
                 setSelected={setSelected}
             />
+            {changeRequest?.status === 'rejected' && (
+                <ReviewOrgUnitChangesComment changeRequest={changeRequest} />
+            )}
         </SimpleModal>
     );
 };

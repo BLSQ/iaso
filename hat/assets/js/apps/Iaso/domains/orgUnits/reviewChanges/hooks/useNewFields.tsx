@@ -52,7 +52,7 @@ const ReferenceInstances: FunctionComponent<ReferenceInstancesProps> = ({
                 <Fragment key={instance.id}>
                     {index > 0 && ', '}
                     <span>
-                        {LinkToInstance({ instanceId: `${instance.id}` })}
+                        <LinkToInstance instanceId={`${instance.id}`} />
                     </span>
                 </Fragment>
             ))}

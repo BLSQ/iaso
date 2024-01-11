@@ -202,7 +202,7 @@ class OrgUnitChangeRequestRetrieveSerializer(serializers.ModelSerializer):
 
 class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
     """
-    Used to create or update one `OrgUnitChangeRequest` instance.
+    Used to create one `OrgUnitChangeRequest` instance.
     """
 
     uuid = serializers.UUIDField(required=False, default=uuid.uuid4)
@@ -222,7 +222,6 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
         required=False,
     )
     new_location = ThreeDimPointField(required=False)
-    updated_at = TimestampField(required=False)
     new_reference_instances = IdOrUuidRelatedField(
         many=True,
         queryset=Instance.objects.all(),
@@ -233,7 +232,6 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
         model = OrgUnitChangeRequest
         fields = [
             "uuid",
-            "updated_at",
             "org_unit_id",
             "new_parent_id",
             "new_name",

@@ -40,7 +40,7 @@ const useStyles = makeStyles(theme => ({
         right: 0,
         boxShadow: 'none',
         // @ts-ignore
-        color: `${theme.textColor}! important`,
+        color: `${theme.textColor} !important`,
     },
     container: {
         backgroundColor: 'white',

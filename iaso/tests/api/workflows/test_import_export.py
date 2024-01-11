@@ -1,4 +1,4 @@
-from iaso.models import Workflow
+from iaso.models import Workflow, WorkflowVersion
 from iaso.models.workflow import WorkflowVersionsStatus
 from iaso.tests.api.workflows.base import BaseWorkflowsAPITestCase
 from iaso.tests.utils.test_utils import var_dump, obj_compare
@@ -211,3 +211,87 @@ class WorkflowsImportExportAPITestCase(BaseWorkflowsAPITestCase):
         r2 = self.client.post(f"{BASE_API}import/", format="json", data=r.data)
         self.assertJSONResponse(r2, 200)
         self.assertEqual(r2.data["status"], f"Workflow {r.data['uuid']} imported successfully")
+
+    # To verify that we are fixing bug WC2-301 part 1
+    # it should fail if we try to import a JSON with multiple PUBLISHED versions
+    def test_simulate_import_with_multiple_version_with_status_published(self):
+        self.client.force_authenticate(user=self.blue_adult_1)
+
+        r = self.client.get(
+            f"{BASE_API}export/{self.workflow_et_adults_blue_with_followups_and_changes.pk}/", format="json"
+        )
+
+        orig_wf = self.workflow_et_adults_blue_with_followups_and_changes
+        orig_versions_count = orig_wf.workflow_versions.count()
+
+        print("orig_versions_count", orig_versions_count)
+
+        self.assertJSONResponse(r, 200)
+
+        r.data["versions"][0]["status"] = WorkflowVersionsStatus.PUBLISHED.value
+        r.data["versions"][1]["status"] = WorkflowVersionsStatus.PUBLISHED.value
+
+        r2 = self.client.post(f"{BASE_API}import/", format="json", data=r.data)
+        self.assertJSONResponse(r2, 400)
+        self.assertEqual(r2.data["error"], "There can only be one published version in the workflow data.")
+
+    def test_import_with_one_published_version_and_one_published_locally(self):
+        self.client.force_authenticate(user=self.blue_adult_1)
+
+        # Step 1: Export a workflow to a JSON with at least 2 workflow versions
+        r = self.client.get(
+            f"{BASE_API}export/{self.workflow_et_adults_blue_with_followups_and_changes.pk}/", format="json"
+        )
+        self.assertJSONResponse(r, 200)
+
+        # Step 2: Modify the exported data to have only one version with status PUBLISHED
+        r.data["versions"][0]["status"] = WorkflowVersionsStatus.UNPUBLISHED.value
+        r.data["versions"][1]["status"] = WorkflowVersionsStatus.PUBLISHED.value
+
+        # Step 3: Create a local version with status PUBLISHED
+        WorkflowVersion.objects.create(
+            uuid=uuid4(),
+            workflow=self.workflow_et_adults_blue_with_followups_and_changes,
+            name="Local Published Version",
+            status=WorkflowVersionsStatus.PUBLISHED.value,
+        )
+
+        # Step 4: Import the workflow JSON with one published version
+        r2 = self.client.post(f"{BASE_API}import/", format="json", data=r.data)
+        self.assertJSONResponse(r2, 200)
+        self.assertEqual(r2.data["status"], f"Workflow {r.data['uuid']} imported successfully")
+
+        # Step 5: Verify that the local published version status has been set to UNPUBLISHED
+        local_published_version = WorkflowVersion.objects.get(
+            name="Local Published Version", workflow=self.workflow_et_adults_blue_with_followups_and_changes
+        )
+        self.assertEqual(local_published_version.status, WorkflowVersionsStatus.UNPUBLISHED.value)
+
+    def test_import_workflow_after_a_version_was_soft_deleted_on_the_destination(self):
+        self.client.force_authenticate(user=self.blue_adult_1)
+
+        # Step 1: Export a workflow to a JSON with at least 2 workflow versions
+        r = self.client.get(
+            f"{BASE_API}export/{self.workflow_et_adults_blue_with_followups_and_changes.pk}/", format="json"
+        )
+        self.assertJSONResponse(r, 200)
+        exported_workflow_data = r.data
+
+        # Change the name to trigger a change in the version and so it will undelete it
+        exported_workflow_data["versions"][0]["name"] = "New Name"
+
+        # Step 2: (soft) Delete a workflow version on the workflow and save it
+        workflow = Workflow.objects.get(pk=self.workflow_et_adults_blue_with_followups_and_changes.pk)
+        version_to_delete = workflow.workflow_versions.get(uuid=exported_workflow_data["versions"][0]["uuid"])
+        version_to_delete.delete()
+        workflow.save()
+
+        # Step 3: Import the workflow JSON and verify that it (previously it was throwing an 500 error)
+        r2 = self.client.post(f"{BASE_API}import/", format="json", data=exported_workflow_data)
+        self.assertJSONResponse(r2, 200)
+        self.assertEqual(r2.data["status"], f"Workflow {r.data['uuid']} imported successfully")
+
+        # Step 4: Verify if the previously soft deleted workflow version is was undeleted
+        last_version_from_db = WorkflowVersion.objects.get(pk=version_to_delete.pk)
+        print("last_version_from_db", last_version_from_db)
+        self.assertEqual(last_version_from_db.deleted_at, None)

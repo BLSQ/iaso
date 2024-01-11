@@ -9,7 +9,7 @@ from iaso.api.common import HasPermission
 from iaso.models import Account, Workflow
 from iaso.models.entity import EntityType
 from iaso.models.forms import Form
-from iaso.models.workflow import Workflow, WorkflowChange, WorkflowFollowup, WorkflowVersion
+from iaso.models.workflow import Workflow, WorkflowChange, WorkflowFollowup, WorkflowVersion, WorkflowVersionsStatus
 
 
 def export_workflow_real(workflow: Workflow) -> typing.Dict:
@@ -77,9 +77,9 @@ def import_workflow_real(workflow_data: typing.Dict, account: Account) -> Workfl
         wf = Workflow.objects.create(uuid=workflow_data["uuid"], entity_type=entity_type)
 
     # Set all related WorkflowVersion objects' status to UNPUBLISHED if they are currently PUBLISHED
-    published_versions = wf.versions.filter(status=WorkflowVersion.WorkflowVersionsStatus.PUBLISHED)
+    published_versions = wf.workflow_versions.filter(status=WorkflowVersionsStatus.PUBLISHED.value)
     for version in published_versions:
-        version.status = WorkflowVersion.WorkflowVersionsStatus.UNPUBLISHED
+        version.status = WorkflowVersionsStatus.UNPUBLISHED.value
         version.save()
 
     for version_data in workflow_data["versions"]:
@@ -96,6 +96,8 @@ def import_workflow_real(workflow_data: typing.Dict, account: Account) -> Workfl
                 wv_changed = True
 
             if wv_changed:
+                if version.deleted_at is not None:
+                    version.deleted_at = None
                 version.save()
 
         except WorkflowVersion.DoesNotExist:
@@ -154,9 +156,7 @@ def import_workflow(request):
     workflow_data = request.data
 
     published_versions = [
-        version
-        for version in workflow_data["versions"]
-        if version["status"] == WorkflowVersion.WorkflowVersionsStatus.PUBLISHED
+        version for version in workflow_data["versions"] if version["status"] == WorkflowVersionsStatus.PUBLISHED.value
     ]
     if len(published_versions) > 1:
         return Response(

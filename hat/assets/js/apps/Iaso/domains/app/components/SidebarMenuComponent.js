@@ -90,7 +90,7 @@ const styles = theme => ({
 // not removing the function (or the locale argument) because we will want to link to localized version of the doc website
 // eslint-disable-next-line no-unused-vars
 const localizedManualUrl = locale => {
-    return 'https://iaso.readthedocs.io/';
+    return 'https://iaso.readthedocs.io/en/latest/pages/users/reference/user_guide/user_guide/';
 };
 
 const SidebarMenu = ({

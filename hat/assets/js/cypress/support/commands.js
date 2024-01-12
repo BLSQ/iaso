@@ -142,7 +142,9 @@ Cypress.Commands.add(
                 .click();
         }
         selectedOptions.forEach((selectedOption, index) => {
-            cy.get(`${id}-option-${selectedOption}`).click();
+            cy.get(`${id}-option-${selectedOption}`).as('btn').click()
+
+            // cy.get('@btn').click();
             if (index + 1 < selectedOptions.length) {
                 cy.get('@multiSelect').click();
             }

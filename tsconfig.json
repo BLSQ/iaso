@@ -14,7 +14,8 @@
         "esModuleInterop": true,                  // allow import syntax with default exports (2/2)
         "skipLibCheck": true,                     // don't typecheck dependencies
         "noEmit": true,                           // don't emit files as babel will do it
-        "lib":["ES2021", "DOM"]                   // prevent some linter errors
+        "lib":["ES2021", "DOM"],                  // prevent some linter errors
+        "resolveJsonModule": true,                // enable import from json
 
     },
     "exclude":["node_modules"],

@@ -1,11 +1,6 @@
 import React, { FunctionComponent, useCallback, ChangeEvent } from 'react';
-import {
-    Paper,
-    makeStyles,
-    Radio,
-    RadioGroup,
-    FormControlLabel,
-} from '@material-ui/core';
+import { Paper, Radio, RadioGroup, FormControlLabel } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { useDispatch } from 'react-redux';
 
 import { useSafeIntl } from 'bluesquare-components';

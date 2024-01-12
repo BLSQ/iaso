@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Button, Dialog, DialogActions, DialogTitle } from '@material-ui/core';
+import { Button, Dialog, DialogActions, DialogTitle } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../constants/messages';

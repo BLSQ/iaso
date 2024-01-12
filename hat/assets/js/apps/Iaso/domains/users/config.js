@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
-import { Switch } from '@material-ui/core';
+import { Switch } from '@mui/material';
 import {
     HighlightOffOutlined as NotCheckedIcon,
     CheckCircleOutlineOutlined as CheckedIcon,
-} from '@material-ui/icons';
+} from '@mui/icons-material';
 
 import { EditUsersDialog } from './components/UsersDialog.tsx';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';

@@ -1,14 +1,8 @@
 import React, { useState, FunctionComponent } from 'react';
 
-import {
-    Grid,
-    Button,
-    Box,
-    makeStyles,
-    useMediaQuery,
-    useTheme,
-} from '@material-ui/core';
-import SearchIcon from '@material-ui/icons/Search';
+import { Grid, Button, Box, useMediaQuery, useTheme } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import SearchIcon from '@mui/icons-material/Search';
 // @ts-ignore
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 

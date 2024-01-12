@@ -29,7 +29,7 @@ class MobileOrgUnitsSetPagination(Paginator):
     page_query_param = PAGE
     page_size = None  # None to disable pagination by default.
 
-    def get_page_number(self, request):
+    def get_iaso_page_number(self, request):
         return int(request.query_params.get(self.page_query_param, 1))
 
 
@@ -232,7 +232,7 @@ class MobileOrgUnitViewSet(ModelViewSet):
             roots_key = "|".join([str(root) for root in roots])
 
         page_size = self.paginator.get_page_size(request)
-        page_number = self.paginator.get_page_number(request)
+        page_number = self.paginator.get_iaso_page_number(request)
 
         include_geo_json = self.check_include_geo_json()
 
@@ -292,17 +292,11 @@ class MobileOrgUnitViewSet(ModelViewSet):
 
         filtered_reference_instances = ReferenceInstancesFilter(request.query_params, reference_instances).qs
 
-        page_size = self.paginator.get_page_size(request)
-
-        if page_size:
-            self.paginator.results_key = "instances"
-            self.paginator.page_size = page_size
-            paginated_reference_instances = self.paginate_queryset(filtered_reference_instances)
-            serializer = ReferenceInstancesSerializer(paginated_reference_instances, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = ReferenceInstancesSerializer(filtered_reference_instances, many=True)
-        return Response(serializer.data)
+        self.paginator.results_key = "instances"
+        self.paginator.page_size = self.paginator.get_page_size(request) or 10
+        paginated_reference_instances = self.paginate_queryset(filtered_reference_instances)
+        serializer = ReferenceInstancesSerializer(paginated_reference_instances, many=True)
+        return self.get_paginated_response(serializer.data)
 
 
 def bbox_merge(a: Optional[tuple], b: Optional[tuple]) -> Optional[tuple]:

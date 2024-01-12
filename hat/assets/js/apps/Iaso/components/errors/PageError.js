@@ -1,16 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
-import {
-    Paper,
-    Container,
-    Box,
-    Typography,
-    makeStyles,
-} from '@material-ui/core';
-import ErrorOutline from '@material-ui/icons/ErrorOutline';
-import NotAuthorized from '@material-ui/icons/NotInterested';
-import HelpOutline from '@material-ui/icons/HelpOutline';
+import { Paper, Container, Box, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import ErrorOutline from '@mui/icons-material/ErrorOutline';
+import NotAuthorized from '@mui/icons-material/NotInterested';
+import HelpOutline from '@mui/icons-material/HelpOutline';
 import TopBar from '../nav/TopBarComponent';
 
 import MESSAGES from './messages';

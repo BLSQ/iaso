@@ -6,9 +6,9 @@ import {
     CardContent,
     Divider,
     Grid,
-    makeStyles,
     Typography,
-} from '@material-ui/core';
+} from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import React, { FunctionComponent, useCallback, useState } from 'react';
 import {
     // @ts-ignore
@@ -16,8 +16,8 @@ import {
 } from 'bluesquare-components';
 import moment from 'moment';
 import classNames from 'classnames';
-import RemoveCircleIcon from '@material-ui/icons/RemoveCircle';
-import { PlaylistAdd } from '@material-ui/icons';
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
+import { PlaylistAdd } from '@mui/icons-material';
 import MESSAGES from '../../../constants/messages';
 
 import { BudgetFilesModalForCards } from '../pop-ups/BudgetFilesModalForCards';
@@ -159,6 +159,7 @@ export const BudgetEventCard: FunctionComponent<Props> = ({ step }) => {
                     xs={2}
                     direction="column"
                     justifyContent="center"
+                    alignItems="flex-start"
                     onClick={toggleStepStatus}
                 >
                     <Divider orientation="vertical" />

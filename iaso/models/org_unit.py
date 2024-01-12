@@ -9,7 +9,7 @@ import django_cte
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
-from django.contrib.postgres.fields import ArrayField, CITextField
+from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.indexes import GistIndex
 from django.db import models, transaction
 from django.db.models import QuerySet, Q
@@ -197,7 +197,7 @@ class OrgUnitQuerySet(django_cte.CTEQuerySet):
         if user and user.is_anonymous and app_id is None:
             return self.none()
 
-        queryset: OrgUnitQuerySet = self.all()
+        queryset: OrgUnitQuerySet = self.defer("geom", "simplified_geom")
 
         if user and user.is_authenticated:
             account = user.iaso_profile.account
@@ -273,7 +273,9 @@ class OrgUnit(TreeModel):
     version = models.ForeignKey("SourceVersion", null=True, blank=True, on_delete=models.CASCADE)
     parent = models.ForeignKey("OrgUnit", on_delete=models.CASCADE, null=True, blank=True)
     path = PathField(null=True, blank=True, unique=True)
-    aliases = ArrayField(CITextField(max_length=255, blank=True), size=100, null=True, blank=True)
+    aliases = ArrayField(
+        models.CharField(max_length=255, blank=True, db_collation="case_insensitive"), size=100, null=True, blank=True
+    )
 
     org_unit_type = models.ForeignKey(OrgUnitType, on_delete=models.CASCADE, null=True, blank=True)
 
@@ -637,10 +639,6 @@ class OrgUnitChangeRequest(models.Model):
     updated_by = models.ForeignKey(
         User, null=True, blank=True, on_delete=models.SET_NULL, related_name="org_unit_change_updated_set"
     )
-    reviewed_at = models.DateTimeField(blank=True, null=True)
-    reviewed_by = models.ForeignKey(
-        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="org_unit_change_reviewed_set"
-    )
     rejection_comment = models.TextField(blank=True)
 
     # Fields for which a change can be requested.
@@ -711,16 +709,16 @@ class OrgUnitChangeRequest(models.Model):
             raise ValidationError("Closing date must be later than opening date.")
 
     def reject(self, user: User, rejection_comment: str) -> None:
-        self.reviewed_at = timezone.now()
-        self.reviewed_by = user
+        self.updated_at = timezone.now()
+        self.updated_by = user
         self.status = self.Statuses.REJECTED
         self.rejection_comment = rejection_comment
         self.save()
 
     def approve(self, user: User, approved_fields: typing.List[str]) -> None:
         self.__apply_changes(user, approved_fields)
-        self.reviewed_at = timezone.now()
-        self.reviewed_by = user
+        self.updated_at = timezone.now()
+        self.updated_by = user
         self.status = self.Statuses.APPROVED
         self.approved_fields = approved_fields
         self.save()

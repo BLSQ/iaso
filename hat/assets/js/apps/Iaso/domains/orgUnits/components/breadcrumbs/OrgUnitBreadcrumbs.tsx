@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Breadcrumbs, makeStyles } from '@material-ui/core';
+import { Breadcrumbs } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { OrgUnit } from '../../types/orgUnit';
 import { LinkToOrgUnit } from '../LinkToOrgUnit';
 import { LinkToRegistry } from '../../../registry/components/LinkToRegistry';

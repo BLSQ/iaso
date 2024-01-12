@@ -57,6 +57,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.downloadXml',
         defaultMessage: 'Download XML',
     },
+    download: {
+        id: 'iaso.label.download',
+        defaultMessage: 'Download',
+    },
     viewOrgUnit: {
         id: 'iaso.label.viewOrgUnit',
         defaultMessage: 'View Org Unit',

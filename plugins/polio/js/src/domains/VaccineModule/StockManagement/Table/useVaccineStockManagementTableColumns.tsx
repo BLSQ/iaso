@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { Column, IconButton, useSafeIntl } from 'bluesquare-components';
+import { STOCK_MANAGEMENT_DETAILS } from '../../../../constants/routes';
 import MESSAGES from '../messages';
 
 export const useVaccineStockManagementTableColumns = (): Column[] => {
@@ -53,14 +54,14 @@ export const useVaccineStockManagementTableColumns = (): Column[] => {
                 Header: formatMessage(MESSAGES.actions),
                 accessor: 'account',
                 sortable: false,
-                Cell: () => {
+                Cell: settings => {
                     return (
                         <>
                             <IconButton
                                 icon="edit"
                                 tooltipMessage={MESSAGES.edit}
-                                disabled
-                                onClick={() => null}
+                                // disabled
+                                url={`${STOCK_MANAGEMENT_DETAILS}/id/${settings.row.original.id}`}
                             />
                         </>
                     );

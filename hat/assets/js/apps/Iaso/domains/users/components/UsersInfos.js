@@ -2,7 +2,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import isEmpty from 'lodash/isEmpty';
-import { Grid } from '@material-ui/core';
+import { Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 import { APP_LOCALES } from '../../app/constants';

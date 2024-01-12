@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl, ExpandableItem } from 'bluesquare-components';
-import { Divider } from '@material-ui/core';
+import { Divider } from '@mui/material';
 import { InstanceDetailRaw } from '../../../../instances/compare/components/InstanceDetailRaw';
 import { useGetInstancesForEntity } from '../hooks/useGetInstancesForEntity';
 import MESSAGES from '../../messages';

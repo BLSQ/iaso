@@ -2,9 +2,11 @@ import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { Box, Button, Grid, makeStyles, Typography } from '@material-ui/core';
+import { Box, Button, Grid, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
-import Search from '@material-ui/icons/Search';
+import Search from '@mui/icons-material/Search';
+import Download from '@mui/icons-material/Download';
 import {
     commonStyles,
     useSafeIntl,
@@ -57,6 +59,10 @@ const useStyles = makeStyles(theme => ({
         flex: '1',
         cursor: 'pointer',
     },
+    downloadButton: {
+        margin: theme.spacing(1),
+        //marginLeft: theme.spacing(1),
+    },
 }));
 
 const filterDefault = params => ({
@@ -78,6 +84,7 @@ const InstancesFiltersComponent = ({
     tableColumns,
     tab,
 }) => {
+    console.info('GOT TAB ...:', tab);
     const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
@@ -255,6 +262,8 @@ const InstancesFiltersComponent = ({
         startPeriodError ||
         endPeriodError ||
         hasLocationLimitError;
+
+    //const isPictureSelected =
 
     return (
         <div className={classes.marginBottom}>
@@ -559,6 +568,16 @@ const InstancesFiltersComponent = ({
                             <Search className={classes.buttonIcon} />
                             {formatMessage(MESSAGES.search)}
                         </Button>
+                        {/*tab === 'files' && (
+                            <Button
+                                variant="contained"
+                                className={classes.downloadButton}
+                                color="primary"
+                            >
+                                <Download className={classes.buttonIcon} />{' '}
+                                {formatMessage(MESSAGES.download)}
+                            </Button>
+                        )*/}
                     </Box>
                 </Grid>
             </Grid>

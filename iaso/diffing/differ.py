@@ -54,7 +54,7 @@ class Differ:
         field_names=None,
     ):
         if field_names is None:
-            field_names = ["name", "geometry", "parent"]
+            field_names = ["name", "geometry", "parent", "opening_date", "closed_date"]
         if not ignore_groups:
             for group_set in GroupSet.objects.filter(source_version=version):
                 field_names.append("groupset:" + group_set.source_ref + ":" + group_set.name)

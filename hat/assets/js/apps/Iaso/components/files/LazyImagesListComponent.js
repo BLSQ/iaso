@@ -1,15 +1,16 @@
 import React, { Component } from 'react';
 import isEqual from 'lodash/isEqual';
 
-import { Grid, withStyles } from '@material-ui/core';
-import grey from '@material-ui/core/colors/grey';
+import { Grid, Checkbox } from '@mui/material';
+import { withStyles } from '@mui/styles';
+import { grey } from '@mui/material/colors';
 
 import PropTypes from 'prop-types';
 
 import { LoadingSpinner, LazyImage } from 'bluesquare-components';
 import { getFileName } from '../../utils/filesUtils';
 
-const styles = () => ({
+const styles = (theme) => ({
     imageItem: {
         width: '100%',
         height: '200px',
@@ -24,7 +25,10 @@ const styles = () => ({
         backgroundRepeat: 'no-repeat',
         backgroundPosition: 'center center',
         cursor: 'pointer',
-    },
+    }, 
+    imageCheckBox: {
+        left: theme.spacing(50),
+    }
 });
 
 class LazyImagesList extends Component {
@@ -32,8 +36,21 @@ class LazyImagesList extends Component {
         return !isEqual(nextProps.imageList, this.props.imageList);
     }
 
+    checkedImage(event, index) {
+        console.info(
+            'EVENT ...:',
+            event,
+            event.target.value,
+            event.target.checked,
+        );
+        console.info('INDEX ...:', index);
+        let checked = event.target.checked;
+        this.props.onSelectedImage(index, checked);
+    }
+
     render() {
         const { imageList, classes, onImageClick } = this.props;
+        console.info('IMAGE LIST ...:', imageList);
         return (
             <Grid container spacing={2}>
                 {imageList.map((file, index) => (
@@ -43,6 +60,12 @@ class LazyImagesList extends Component {
                         key={`${file.itemId}-${getFileName(file.path).name}`}
                         className={classes.imageItem}
                     >
+                        <Checkbox
+                            className={classes.imageCheckBox}
+                            checked={file.checked}
+                            onChange={event => this.checkedImage(event, index)}
+                        />
+
                         <LazyImage
                             src={file.path}
                             visibilitySensorProps={{

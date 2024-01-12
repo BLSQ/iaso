@@ -5,7 +5,7 @@ from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.utils.translation import gettext_lazy as _
 
-from iaso.models import OrgUnitChangeRequest
+from iaso.models import OrgUnitChangeRequest, OrgUnit
 
 
 class MobileOrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
@@ -28,7 +28,13 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
         fields = ["status"]
 
     def filter_parent_id(self, queryset: QuerySet, _, value: str) -> QuerySet:
-        return queryset.filter(Q(org_unit__parent_id=value) | Q(new_parent_id=value))
+        try:
+            parent = OrgUnit.objects.get(id=value)
+            parent_qs = OrgUnit.objects.filter(id=parent.id)
+            descendants_qs = OrgUnit.objects.hierarchy(parent_qs).values_list("id", flat=True)
+            return queryset.filter(Q(org_unit_id__in=descendants_qs) | Q(new_parent_id__in=descendants_qs))
+        except OrgUnit.DoesNotExist:
+            raise ValidationError({"parent_id": [f"OrgUnit with id {value} does not exist."]})
 
     def filter_org_unit_type_id(self, queryset: QuerySet, _, value: str) -> QuerySet:
         return queryset.filter(Q(org_unit__org_unit_type_id=value) | Q(new_org_unit_type_id=value))

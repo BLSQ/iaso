@@ -4,7 +4,7 @@ import {
     // Table,
     AddButton as AddButtonComponent,
 } from 'bluesquare-components';
-import { Box, Grid } from '@material-ui/core';
+import { Box, Grid } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 

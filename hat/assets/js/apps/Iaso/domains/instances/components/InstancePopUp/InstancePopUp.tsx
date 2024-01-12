@@ -4,15 +4,8 @@ import { useSelector } from 'react-redux';
 import { Popup, useMap } from 'react-leaflet';
 import { Link } from 'react-router';
 
-import {
-    Card,
-    CardMedia,
-    CardContent,
-    Button,
-    Grid,
-    Box,
-    makeStyles,
-} from '@material-ui/core';
+import { Card, CardMedia, CardContent, Button, Grid, Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import {
     useSafeIntl,

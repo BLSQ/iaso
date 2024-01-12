@@ -14,7 +14,7 @@ import {
     // @ts-ignore
     makeFullModal,
 } from 'bluesquare-components';
-import { Box } from '@material-ui/core';
+import { Box } from '@mui/material';
 import { Storage, StorageStatus } from '../types/storages';
 import { useSaveStatus } from '../hooks/requests/useSaveStatus';
 

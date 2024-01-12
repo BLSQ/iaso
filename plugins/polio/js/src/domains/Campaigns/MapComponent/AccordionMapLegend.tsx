@@ -9,8 +9,8 @@ import {
     AccordionSummary,
     AccordionDetails,
     Box,
-} from '@material-ui/core';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+} from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { IntlMessage } from 'bluesquare-components';
 import { useStyles } from '../../Calendar/campaignCalendar/Styles';
 

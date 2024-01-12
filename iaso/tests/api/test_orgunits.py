@@ -548,7 +548,7 @@ class OrgUnitAPITestCase(APITestCase):
         for model in new_counts.keys():
             diff[model] = new_counts[model] - self.old_counts[model]
 
-        self.assertDictContainsSubset(createds, diff)
+        self.assertTrue(set(createds.items()).issubset(set(diff.items())))
 
     def test_create_org_unit(self):
         self.client.force_authenticate(self.yoda)
@@ -711,8 +711,10 @@ class OrgUnitAPITestCase(APITestCase):
             }
         )
         ou = m.OrgUnit.objects.get(id=jr["id"])
-        self.assertQuerysetEqual(
-            ou.groups.all().order_by("name"), ["<Group: bla | Evil Empire  1 >", "<Group: bla2 | Evil Empire  1 >"]
+        self.assertQuerySetEqual(
+            ou.groups.all().order_by("name"),
+            ["<Group: bla | Evil Empire  1 >", "<Group: bla2 | Evil Empire  1 >"],
+            transform=repr,
         )
 
     def test_create_org_unit_with_reference_instance(self):
@@ -788,7 +790,9 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(response.data["reference_instances"], [])
         self.assertCreated({Modification: 1})
         ou = m.OrgUnit.objects.get(id=jr["id"])
-        self.assertQuerysetEqual(ou.groups.all().order_by("name"), ["<Group: Elite councils | Evil Empire  1 >"])
+        self.assertQuerySetEqual(
+            ou.groups.all().order_by("name"), ["<Group: Elite councils | Evil Empire  1 >"], transform=repr
+        )
         self.assertEqual(ou.id, old_ou.id)
         self.assertEqual(ou.name, old_ou.name)
         self.assertEqual(ou.parent, old_ou.parent)
@@ -898,7 +902,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertGreater(ou.updated_at, old_modification_date)
         self.assertEqual(ou.name, "test ou")
         self.assertEqual(ou.source_ref, "new source ref")
-        self.assertQuerysetEqual(ou.groups.all().order_by("name"), [group_a, group_b])
+        self.assertQuerySetEqual(ou.groups.all().order_by("name"), [group_a, group_b])
         self.assertEqual(ou.geom.wkt, MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])).wkt)
         self.assertEqual(response.data["reference_instances"], [])
 
@@ -936,8 +940,8 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertCreated({Modification: 1})
         ou = m.OrgUnit.objects.get(id=old_ou.id)
         # Verify group was not modified but the rest was modified
-        self.assertQuerysetEqual(
-            ou.groups.all().order_by("name"), ["<Group:  | Evil Empire  1 >", "<Group: bad | None >"]
+        self.assertQuerySetEqual(
+            ou.groups.all().order_by("name"), ["<Group:  | Evil Empire  1 >", "<Group: bad | None >"], transform=repr
         )
         self.assertEqual(ou.id, old_ou.id)
         self.assertEqual(ou.name, "new name")

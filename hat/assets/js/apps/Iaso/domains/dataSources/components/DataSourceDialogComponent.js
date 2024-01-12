@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { Box, Button, Grid, Typography } from '@material-ui/core';
+import { Box, Button, Grid, Typography } from '@mui/material';
 
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { merge } from 'lodash';

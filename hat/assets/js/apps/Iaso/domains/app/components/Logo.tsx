@@ -1,5 +1,7 @@
 import React, { FunctionComponent, useContext } from 'react';
-import { Box, makeStyles, Theme } from '@material-ui/core';
+import { Theme } from '@mui/material';
+
+import { makeStyles } from '@mui/styles';
 import { LogoSvg } from './LogoSvg';
 import { ThemeConfigContext } from '../contexts/ThemeConfigContext';
 

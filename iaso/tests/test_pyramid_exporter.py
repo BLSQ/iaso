@@ -21,7 +21,7 @@ class CommandTests(TestCase):
         responses.add(
             responses.GET,
             "https://play.dhis2.org/2.30/api/organisationUnits.json"
-            "?fields=id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name],level"
+            "?fields=id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name],level,openingDate,closedDate"
             "&pageSize=500&page=1&totalPages=True",
             json=self.fixture_json("orgunits"),
             status=200,
@@ -187,7 +187,7 @@ class CommandTests(TestCase):
         new_chief_dom = OrgUnit.objects.get(name="new Chiefdom", version=version_ref)
         new_children = OrgUnit.objects.get(name="new children", version=version_ref)
 
-        self.assertEquals(
+        self.assertEqual(
             posted_request,
             [
                 {

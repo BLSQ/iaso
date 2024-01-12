@@ -6,7 +6,7 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { Box, Grid, useMediaQuery, useTheme } from '@material-ui/core';
+import { Box, Grid, useMediaQuery, useTheme } from '@mui/material';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { groupBy } from 'lodash';

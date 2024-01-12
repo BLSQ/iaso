@@ -1,14 +1,9 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
 import { FormattedMessage } from 'react-intl';
-import {
-    Box,
-    Container,
-    makeStyles,
-    Paper,
-    Typography,
-} from '@material-ui/core';
-import Info from '@material-ui/icons/Info';
+import { Box, Container, Paper, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import Info from '@mui/icons-material/Info';
 import { ClassNameMap } from 'notistack';
 import TopBar from '../nav/TopBarComponent';
 

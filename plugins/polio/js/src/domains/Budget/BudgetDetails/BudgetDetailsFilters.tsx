@@ -3,7 +3,7 @@
 import React, { FunctionComponent } from 'react';
 // @ts-ignore
 import { useSafeIntl, UrlParams } from 'bluesquare-components';
-import { Box, Grid, useMediaQuery, useTheme } from '@material-ui/core';
+import { Box, Grid, useMediaQuery, useTheme } from '@mui/material';
 import { BUDGET_DETAILS } from '../../../constants/routes';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useFilterState } from '../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';

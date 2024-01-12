@@ -1,12 +1,18 @@
+import django_filters
+
+from rest_framework import filters
 from rest_framework import status
 from rest_framework import viewsets
 from rest_framework.decorators import action
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 
 from django.db.models import F
 from django.http import FileResponse
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
+
+from iaso.api.common import Paginator
+from iaso.models import OrgUnitType
 
 from plugins.polio.api.notifications.filters import NotificationFilter
 from plugins.polio.api.notifications.permissions import HasNotificationPermission
@@ -14,11 +20,12 @@ from plugins.polio.api.notifications.serializers import NotificationSerializer, 
 from plugins.polio.models import Notification, NotificationImport, create_polio_notifications_async
 
 
-class NotificationPagination(LimitOffsetPagination):
-    default_limit = 20
+class NotificationPagination(Paginator):
+    page_size = 20
 
 
 class NotificationViewSet(viewsets.ModelViewSet):
+    filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     filterset_class = NotificationFilter
     pagination_class = NotificationPagination
     permission_classes = [HasNotificationPermission]
@@ -31,6 +38,28 @@ class NotificationViewSet(viewsets.ModelViewSet):
             annotated_province=F("org_unit__parent__name"),
             annotated_country=F("org_unit__parent__parent__name"),
         )
+
+    def options(self, request, *args, **kwargs):
+        """
+        Add custom metadata about the API.
+        It's used by the front-end to build the UI.
+        """
+        if self.metadata_class is None:
+            return self.http_method_not_allowed(request, *args, **kwargs)
+        data = self.metadata_class().determine_metadata(request, self)
+
+        try:
+            countries_for_account = Notification.objects.get_countries_for_account(request.user.iaso_profile.account)
+            country_choices = [{"display_name": ou.name, "value": ou.pk} for ou in countries_for_account]
+            data["actions"]["POST"]["country"]["choices"] = country_choices
+        except AttributeError:
+            data["actions"]["POST"]["country"]["choices"] = []
+
+        data["actions"]["POST"]["org_unit"]["allowed_ids"] = OrgUnitType.objects.filter(
+            category="DISTRICT"
+        ).values_list(flat=True)
+
+        return Response(data, status=status.HTTP_200_OK)
 
     def perform_create(self, serializer):
         user = self.request.user
@@ -55,3 +84,13 @@ class NotificationViewSet(viewsets.ModelViewSet):
         notification_import = serializer.save(account=account, created_by=user)
         create_polio_notifications_async(pk=notification_import.pk, user=user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["get"])
+    def get_import_details(self, request, pk=None):
+        """
+        Get the details of an import task.
+        """
+        account = request.user.iaso_profile.account
+        notification_import = get_object_or_404(NotificationImport, account=account, pk=pk)
+        serializer = NotificationImportSerializer(notification_import)
+        return Response(serializer.data, status=status.HTTP_200_OK)

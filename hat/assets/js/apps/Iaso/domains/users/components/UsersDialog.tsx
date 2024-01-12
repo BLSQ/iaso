@@ -1,7 +1,8 @@
 /* eslint-disable camelcase */
 import React, { useState, FunctionComponent, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
-import { Tabs, Tab, makeStyles } from '@material-ui/core';
+import { Tabs, Tab } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     IntlMessage,
     useSafeIntl,

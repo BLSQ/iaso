@@ -100,12 +100,12 @@ class DataValueExporterTests(TestCase):
                 dump_attributes(export_request)
 
         for export_status in ExportStatus.objects.all():
-            self.assertEquals(status, export_status.status)
+            self.assertEqual(status, export_status.status)
 
         for export_request in ExportRequest.objects.all():
             self.assertIsNotNone(export_request.started_at)
             self.assertIsNotNone(export_request.ended_at)
-            self.assertEquals(status, export_request.status)
+            self.assertEqual(status, export_request.status)
 
     def setUp(self):
         form, created = Form.objects.get_or_create(
@@ -211,8 +211,8 @@ class DataValueExporterTests(TestCase):
 
         for testcase in testcases:
             error = AggregateHandler().handle_exception(load_dhis2_fixture(testcase.fixture), "error")
-            self.assertEquals(testcase.expected_counts, error.counts)
-            self.assertEquals(testcase.expected_messages, error.descriptions)
+            self.assertEqual(testcase.expected_counts, error.counts)
+            self.assertEqual(testcase.expected_messages, error.descriptions)
 
     def test_handle_exception_internal_server_error(self):
         resp = {
@@ -224,7 +224,7 @@ class DataValueExporterTests(TestCase):
             }
         }
         error = AggregateHandler().handle_exception(resp, "error")
-        self.assertEquals(error.message, "error : JDBC begin transaction failed: ")
+        self.assertEqual(error.message, "error : JDBC begin transaction failed: ")
 
     def test_handle_exception_real_life_error(self):
         resp = {
@@ -270,13 +270,13 @@ class DataValueExporterTests(TestCase):
             }
         }
         error = AggregateHandler().handle_exception(resp, "error")
-        self.assertEquals(error.message, "error : Category option combo not found or not accessible")
+        self.assertEqual(error.message, "error : Category option combo not found or not accessible")
 
     def test_aggregate_mapping_works(self):
         instance = self.build_instance(self.form)
         event, errors = AggregateHandler().map_to_values(instance, build_form_mapping())
         self.assertIsNone(errors)
-        self.assertEquals(
+        self.assertEqual(
             event,
             {
                 "completeDate": "2018-02-16",
@@ -296,7 +296,7 @@ class DataValueExporterTests(TestCase):
 
         event, errors = AggregateHandler().map_to_values(instance, mapping)
 
-        self.assertEquals(
+        self.assertEqual(
             event,
             {
                 "completeDate": "2018-02-16",
@@ -428,7 +428,7 @@ class DataValueExporterTests(TestCase):
 
         self.expect_logs(ERRORED)
 
-        self.assertEquals(
+        self.assertEqual(
             "ERROR while processing page 1/1 : Data element: FC3nR54yGUx must be assigned through data sets to organisation unit: t3kZ5ksd8IR",
             context.exception.message,
         )
@@ -466,7 +466,7 @@ class DataValueExporterTests(TestCase):
 
         self.expect_logs(ERRORED)
 
-        self.assertEquals(
+        self.assertEqual(
             "ERROR while processing page 1/1 : Value must match data element's `nymNRxmnj4z` type constraints: Data value is not an integer",
             context.exception.message,
         )
@@ -560,7 +560,7 @@ class DataValueExporterTests(TestCase):
 
         self.expect_logs(ERRORED)
 
-        self.assertEquals(
+        self.assertEqual(
             "ERROR while processing page 1/1, instance_id "
             + str(instance.id)
             + " : question1 (\"Bad value for int 'badvalue'\", {'id': 'DE_DHIS2_ID', 'valueType': 'INTEGER', 'question_key': 'question1'})",
@@ -596,7 +596,7 @@ class DataValueExporterTests(TestCase):
 
         self.expect_logs(ERRORED)
 
-        self.assertEquals(
+        self.assertEqual(
             "ERROR while processing page 1/1 : non json response return by server", context.exception.message
         )
         instance.refresh_from_db()

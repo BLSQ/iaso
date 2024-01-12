@@ -148,7 +148,7 @@ class Exporter:
             payload["featureType"] = to_dhis2_feature_type(geometry["type"])
 
     def update_orgunits(self, api: Api, diffs, task=None):
-        support_by_update_fields = ("name", "parent", "geometry")
+        support_by_update_fields = ("name", "parent", "geometry", "opening_date", "closed_date")
         to_update_diffs = list(
             filter(lambda x: x.status == "modified" and x.are_fields_modified(support_by_update_fields), diffs)
         )
@@ -233,6 +233,15 @@ class Exporter:
         if comparison.field == "parent" and comparison.after:
             self.fill_parent_id(comparison, payload)
             return
+
+        if comparison.field == "opening_date":
+            payload["openingDate"] = comparison.after.strftime("%Y-%m-%dT%H:%M:%S")
+            return
+
+        if comparison.field == "closed_date":
+            payload["closedDate"] = comparison.after.strftime("%Y-%m-%dT%H:%M:%S")
+            return
+
         raise Exception("unsupported field", comparison.field)
 
     def fill_parent_id(self, comparison, payload):

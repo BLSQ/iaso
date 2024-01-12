@@ -1,8 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Collapse, Grid, Box } from '@material-ui/core';
-import MoreHorizIcon from '@material-ui/icons/MoreHoriz';
+import { Collapse, Grid, Box } from '@mui/material';
+import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import { BudgetDetailsFilters } from '../BudgetDetailsFilters';
-import { LinkToProcedure } from '../LinkToProcedure';
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 type Props = {
@@ -21,11 +20,8 @@ export const BudgetDetailsFiltersMobile: FunctionComponent<Props> = ({
 }) => {
     const [expand, setExpand] = useState<boolean>(false);
     return (
-        <Box width="100%">
+        <Box width="100%" mb={2}>
             <Grid container justifyContent="space-between">
-                <Grid item>
-                    <LinkToProcedure />
-                </Grid>
                 <Grid item>
                     <MoreHorizIcon
                         color="action"

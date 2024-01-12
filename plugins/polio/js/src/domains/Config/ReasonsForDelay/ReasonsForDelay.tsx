@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import { Grid, Box } from '@material-ui/core';
+import { Grid, Box } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import { useUrlParams } from '../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
 import { useStyles } from '../../../styles/theme';

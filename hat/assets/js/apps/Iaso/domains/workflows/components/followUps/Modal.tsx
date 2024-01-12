@@ -14,7 +14,7 @@ import {
     AddButton,
 } from 'bluesquare-components';
 
-import { Grid, Box, useTheme } from '@material-ui/core';
+import { Grid, Box, useTheme } from '@mui/material';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { EditIconButton } from '../ModalButtons';
 import { commaSeparatedIdsToArray } from '../../../../utils/forms';

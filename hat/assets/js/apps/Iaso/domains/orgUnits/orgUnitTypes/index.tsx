@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Grid, makeStyles } from '@material-ui/core';
+import { Box, Grid } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { useDispatch } from 'react-redux';
 import {
     commonStyles,

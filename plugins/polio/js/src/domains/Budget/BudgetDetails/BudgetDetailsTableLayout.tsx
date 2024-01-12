@@ -1,11 +1,10 @@
-import { Box, Divider, Grid, Paper } from '@material-ui/core';
+import { Box, Divider, Paper } from '@mui/material';
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl, Column, Paginated } from 'bluesquare-components';
 import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 
 import { BudgetDetailsFilters } from './BudgetDetailsFilters';
 
-import { LinkToProcedure } from './LinkToProcedure';
 import MESSAGES from '../../../constants/messages';
 import { BUDGET_DETAILS } from '../../../constants/routes';
 
@@ -42,22 +41,10 @@ export const BudgetDetailsTableLayout: FunctionComponent<Props> = ({
             <Paper elevation={2}>
                 <Box pt={2} pb={budgetDetails?.results.length === 0 ? 1 : 0}>
                     <Box px={2}>
-                        <Grid container justifyContent="space-between">
-                            <Grid item lg={8}>
-                                <GraphTitle
-                                    text={formatMessage(MESSAGES.steps)}
-                                    displayTrigger
-                                />
-                            </Grid>
-                            <Grid
-                                container
-                                item
-                                xs={4}
-                                justifyContent="flex-end"
-                            >
-                                <LinkToProcedure />
-                            </Grid>
-                        </Grid>
+                        <GraphTitle
+                            text={formatMessage(MESSAGES.steps)}
+                            displayTrigger
+                        />
                     </Box>
                     <Box mt={2} mb={1}>
                         <Divider />
@@ -71,6 +58,7 @@ export const BudgetDetailsTableLayout: FunctionComponent<Props> = ({
                         />
                     </Box>
                     <Divider />
+                    {/* @ts-ignore */}
                     <TableWithDeepLink
                         countOnTop={false}
                         data={budgetDetails?.results ?? []}

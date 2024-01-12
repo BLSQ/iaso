@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 
 import PropTypes from 'prop-types';
 
-import { Box, Typography } from '@material-ui/core';
+import { Box, Typography } from '@mui/material';
 
 import { Select, useSafeIntl, renderTags } from 'bluesquare-components';
 

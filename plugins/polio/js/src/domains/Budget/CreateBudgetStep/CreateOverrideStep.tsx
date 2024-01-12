@@ -18,7 +18,8 @@ import {
     // @ts-ignore
     makeFullModal,
 } from 'bluesquare-components';
-import { Box, Chip, Divider, makeStyles, Typography } from '@material-ui/core';
+import { Box, Chip, Divider, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { useDispatch } from 'react-redux';
 import MESSAGES from '../../../constants/messages';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';

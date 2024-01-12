@@ -2,7 +2,7 @@ import React, { useState, useContext, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
-import { TableCell, Box } from '@material-ui/core';
+import { TableCell, Box } from '@mui/material';
 
 import { isEqual } from 'lodash';
 import { useSelector } from 'react-redux';

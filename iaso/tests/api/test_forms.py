@@ -484,7 +484,7 @@ class FormsAPITestCase(APITestCase):
         response = self.client.patch(
             f"/api/forms/{self.form_1.id}/?only_deleted=1",
             format="json",
-            HTTP_ACCEPT="application/json",
+            headers={"accept": "application/json"},
             data={
                 "deleted_at": None,
             },

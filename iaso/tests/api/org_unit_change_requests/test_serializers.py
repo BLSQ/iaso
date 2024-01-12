@@ -1,3 +1,4 @@
+import collections
 import datetime
 import time_machine
 import uuid
@@ -5,6 +6,7 @@ import uuid
 from django.contrib.gis.geos import Point
 from rest_framework.exceptions import ValidationError
 from rest_framework.test import APIRequestFactory
+from collections import OrderedDict
 
 from iaso.api.org_unit_change_requests.serializers import (
     InstanceForChangeRequestSerializer,
@@ -58,7 +60,7 @@ class OrgUnitForChangeRequestSerializerTestCase(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
+        org_unit_type = m.OrgUnitType.objects.create(name="Org unit type", short_name="short_name")
         org_unit = m.OrgUnit.objects.create(
             org_unit_type=org_unit_type,
             location=Point(-2.4747713, 47.3358576, 10.0),
@@ -86,10 +88,13 @@ class OrgUnitForChangeRequestSerializerTestCase(TestCase):
             serializer.data,
             {
                 "id": self.org_unit.pk,
-                "parent": "",
+                "parent": None,
                 "name": "",
-                "org_unit_type_id": self.org_unit_type.pk,
-                "org_unit_type_name": "Org unit type",
+                "org_unit_type": {
+                    "id": self.org_unit_type.pk,
+                    "name": self.org_unit_type.name,
+                    "short_name": self.org_unit_type.short_name,
+                },
                 "groups": [
                     {"id": self.group1.id, "name": "Group 1"},
                     {"id": self.group2.id, "name": "Group 2"},
@@ -131,7 +136,9 @@ class OrgUnitChangeRequestListSerializerTestCase(TestCase):
         org_unit.groups.set([group])
 
         account = m.Account.objects.create(name="Account")
-        user = cls.create_user_with_profile(username="user", account=account)
+        user = cls.create_user_with_profile(
+            username="user", first_name="first_name", last_name="last_name", account=account
+        )
 
         cls.group = group
         cls.org_unit = org_unit
@@ -149,7 +156,6 @@ class OrgUnitChangeRequestListSerializerTestCase(TestCase):
         change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
 
         serializer = OrgUnitChangeRequestListSerializer(change_request)
-
         self.assertEqual(
             serializer.data,
             {
@@ -167,9 +173,14 @@ class OrgUnitChangeRequestListSerializerTestCase(TestCase):
                 "requested_fields": serializer.data["requested_fields"],
                 "approved_fields": serializer.data["approved_fields"],
                 "rejection_comment": "",
-                "created_by": "user",
+                "created_by": {
+                    "id": self.user.pk,
+                    "username": self.user.username,
+                    "first_name": self.user.first_name,
+                    "last_name": self.user.last_name,
+                },
                 "created_at": 1696856400.0,
-                "updated_by": "",
+                "updated_by": None,
                 "updated_at": None,
             },
         )
@@ -189,10 +200,12 @@ class MobileOrgUnitChangeRequestListSerializerTestCase(TestCase):
         org_unit = m.OrgUnit.objects.create(org_unit_type=org_unit_type)
 
         form = m.Form.objects.create(name="Vaccine form")
+        form_version = m.FormVersion.objects.create(form=form)
         account = m.Account.objects.create(name="Account")
         user = cls.create_user_with_profile(username="user", account=account)
 
         cls.form = form
+        cls.form_version = form_version
         cls.org_unit = org_unit
         cls.org_unit_type = org_unit_type
         cls.user = user
@@ -210,7 +223,13 @@ class MobileOrgUnitChangeRequestListSerializerTestCase(TestCase):
         change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
         new_group = m.Group.objects.create(name="new group")
         change_request.new_groups.set([new_group])
-        new_instance = m.Instance.objects.create(form=self.form, org_unit=self.org_unit)
+        new_instance = m.Instance.objects.create(
+            form=self.form,
+            org_unit=self.org_unit,
+            uuid=uuid.uuid4(),
+            json={"Foo": "Bar"},
+            form_version=self.form_version,
+        )
         change_request.new_reference_instances.set([new_instance])
 
         serializer = MobileOrgUnitChangeRequestListSerializer(change_request)
@@ -239,7 +258,19 @@ class MobileOrgUnitChangeRequestListSerializerTestCase(TestCase):
                 "new_location_accuracy": None,
                 "new_opening_date": "2022-10-27",
                 "new_closed_date": "2024-10-27",
-                "new_reference_instances": [new_instance.pk],
+                "new_reference_instances": [
+                    collections.OrderedDict(
+                        {
+                            "id": new_instance.id,
+                            "uuid": str(new_instance.uuid),
+                            "form_id": self.form.id,
+                            "form_version_id": self.form.latest_version.id,
+                            "created_at": 1697202000.0,
+                            "updated_at": 1697202000.0,
+                            "json": {"Foo": "Bar"},
+                        }
+                    )
+                ],
             },
         )
 
@@ -257,7 +288,9 @@ class OrgUnitChangeRequestRetrieveSerializerTestCase(TestCase):
 
         form = m.Form.objects.create(name="Vaccine form")
         account = m.Account.objects.create(name="Account")
-        user = cls.create_user_with_profile(username="user", account=account)
+        user = cls.create_user_with_profile(
+            username="user", first_name="first_name", last_name="last_name", account=account
+        )
 
         cls.form = form
         cls.org_unit = org_unit
@@ -284,29 +317,51 @@ class OrgUnitChangeRequestRetrieveSerializerTestCase(TestCase):
                 "id": change_request.pk,
                 "uuid": str(change_request.uuid),
                 "status": "new",
-                "created_by": "user",
+                "created_by": OrderedDict(
+                    [
+                        ("id", self.user.pk),
+                        ("username", self.user.username),
+                        ("first_name", self.user.first_name),
+                        ("last_name", self.user.last_name),
+                    ]
+                ),
                 "created_at": 1697734800.0,
-                "updated_by": "",
+                "updated_by": None,
                 "updated_at": None,
                 "requested_fields": ["new_org_unit_type", "new_opening_date", "new_closed_date", "new_groups"],
                 "approved_fields": [],
                 "rejection_comment": "",
-                "org_unit": {
-                    "id": self.org_unit.pk,
-                    "parent": "",
-                    "name": "",
-                    "org_unit_type_id": self.org_unit_type.pk,
-                    "org_unit_type_name": self.org_unit_type.name,
-                    "groups": [],
-                    "location": None,
-                    "opening_date": None,
-                    "closed_date": None,
-                    "reference_instances": [],
-                },
-                "new_parent": "",
+                "org_unit": OrderedDict(
+                    [
+                        ("id", self.org_unit.pk),
+                        ("parent", None),
+                        ("name", ""),
+                        (
+                            "org_unit_type",
+                            OrderedDict(
+                                [
+                                    ("id", self.org_unit_type.pk),
+                                    ("name", self.org_unit_type.name),
+                                    ("short_name", self.org_unit_type.short_name),
+                                ]
+                            ),
+                        ),
+                        ("groups", []),
+                        ("location", None),
+                        ("opening_date", None),
+                        ("closed_date", None),
+                        ("reference_instances", []),
+                    ]
+                ),
+                "new_parent": None,
                 "new_name": "",
-                "new_org_unit_type_id": self.org_unit_type.pk,
-                "new_org_unit_type_name": "Org unit type",
+                "new_org_unit_type": OrderedDict(
+                    [
+                        ("id", self.org_unit_type.pk),
+                        ("name", self.org_unit_type.name),
+                        ("short_name", self.org_unit_type.short_name),
+                    ]
+                ),
                 "new_groups": [
                     {
                         "id": new_group.pk,
@@ -445,9 +500,9 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
         group2 = m.Group.objects.create(name="Group 2")
 
         form1 = m.Form.objects.create(name="Vaccine form 1")
-        instance1 = m.Instance.objects.create(form=form1, org_unit=self.org_unit)
+        instance1 = m.Instance.objects.create(form=form1, org_unit=self.org_unit, uuid=uuid.uuid4())
         form2 = m.Form.objects.create(name="Vaccine form 2")
-        instance2 = m.Instance.objects.create(form=form2, org_unit=self.org_unit)
+        instance2 = m.Instance.objects.create(form=form2, org_unit=self.org_unit, uuid=uuid.uuid4())
 
         parent_org_unit = m.OrgUnit.objects.create(org_unit_type=self.org_unit_type)
 
@@ -466,7 +521,7 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
             "new_location_accuracy": 4.0,
             "new_opening_date": "2022-10-27",
             "new_closed_date": "2024-10-27",
-            "new_reference_instances": [instance1.id, instance2.id],
+            "new_reference_instances": [instance1.id, instance2.uuid],
         }
         serializer = OrgUnitChangeRequestWriteSerializer(data=data)
 

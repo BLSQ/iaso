@@ -17,7 +17,7 @@ import uuid
 import json
 
 from django.contrib.auth.models import AnonymousUser, User
-from django.contrib.postgres.fields import ArrayField, CITextField
+from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Prefetch
@@ -45,11 +45,17 @@ class EntityType(models.Model):
     account = models.ForeignKey(Account, on_delete=models.PROTECT, blank=True, null=True)
     is_active = models.BooleanField(default=False)
     # Fields (subset of the fields from the reference form) that will be shown in the UI - entity list view
-    fields_list_view = ArrayField(CITextField(max_length=255, blank=True), size=100, null=True, blank=True)
+    fields_list_view = ArrayField(
+        models.CharField(max_length=255, blank=True, db_collation="case_insensitive"), size=100, null=True, blank=True
+    )
     # Fields (subset of the fields from the reference form) that will be shown in the UI - entity detail view
-    fields_detail_info_view = ArrayField(CITextField(max_length=255, blank=True), size=100, null=True, blank=True)
+    fields_detail_info_view = ArrayField(
+        models.CharField(max_length=255, blank=True, db_collation="case_insensitive"), size=100, null=True, blank=True
+    )
     # Fields (subset of the fields from the reference form) that will be used to search for duplicate entities
-    fields_duplicate_search = ArrayField(CITextField(max_length=255, blank=True), size=100, null=True, blank=True)
+    fields_duplicate_search = ArrayField(
+        models.CharField(max_length=255, blank=True, db_collation="case_insensitive"), size=100, null=True, blank=True
+    )
 
     class Meta:
         unique_together = ["name", "account"]

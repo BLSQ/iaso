@@ -9,7 +9,7 @@ import React, {
     useEffect,
     useState,
 } from 'react';
-import { Alert } from '@material-ui/lab';
+import Alert from '@mui/lab/Alert';
 import MESSAGES from '../messages';
 import { AnalysisModalButton } from './AnalysisModalButton';
 import InputComponent from '../../../../components/forms/InputComponent';

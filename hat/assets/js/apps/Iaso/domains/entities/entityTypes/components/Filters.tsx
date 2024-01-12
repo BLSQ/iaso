@@ -1,8 +1,9 @@
 import React, { useState, FunctionComponent, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { Grid, Button, makeStyles } from '@material-ui/core';
-import SearchIcon from '@material-ui/icons/Search';
+import { Grid, Button } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import SearchIcon from '@mui/icons-material/Search';
 // @ts-ignore
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 

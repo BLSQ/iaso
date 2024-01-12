@@ -29,7 +29,8 @@ The Django model that stores "Change Requests" is `OrgUnitChangeRequest`.
   "new_name": "String? - Name of the OrgUnit, may be null or omitted.",
   "new_org_unit_type_id": "Int? - id of the OrgUnitType, may be null or omitted",
   "new_groups": "Array of Group ids? - can be empty, null or omitted. Empty means we want to remove all values",
-  "new_location": { "": "New geopoint for the OrgUnit, may be null or omitted",
+  "new_location": {
+    "": "New geopoint for the OrgUnit, may be null or omitted",
     "latitude": "Double - New latitude of the OrgUnit",
     "longitude": "Double - New longitude of the OrgUnit",
     "altitude": "Double - New altitude of the OrgUnit"
@@ -37,7 +38,7 @@ The Django model that stores "Change Requests" is `OrgUnitChangeRequest`.
   "new_location_accuracy": "Double - New accuracy of the OrgUnit",
   "new_opening_date": "Timestamp",
   "new_closed_date": "Timestamp",
-  "new_reference_instances": "Array of instance ids? - may be null or omitted, cannot be empty"
+  "new_reference_instances": "Array of instance ids or UUIDs? - may be null or omitted, cannot be empty"
 }
 ```
 
@@ -115,16 +116,29 @@ The Django model that stores "Change Requests" is `OrgUnitChangeRequest`.
       "org_unit_type_id": "Int - id of the current OrgUnitType",
       "org_unit_type_name": "String - name of the current OrgUnitType",
       "status": "Enum<Status> - one of `new`, `validated`, `rejected`",
-      "groups": [{
-        "id": "Int - id of the Group",
-        "name": "String - name of the Group"
-      }],
+      "groups": [
+        {
+          "id": "Int - id of the Group",
+          "name": "String - name of the Group"
+        }
+      ],
       "requested_fields": "Array<String> - name of the properties that were requested to change",
       "approved_fields": "Array<String>? - name of the properties that were approved to change",
       "rejection_comment": "String? - Comment about why the changes were rejected",
-      "created_by": "String - username of creator",
+      "created_by": {
+        "id": "Int - id of the User who created that request",
+        "username": "String?",
+        "first_name": "String?",
+        "last_name": "String?"
+      },
       "created_at": "Timestamp",
-      "update_by": "String? - username of updater",
+      "updated_by": {
+        "": "May be null",
+        "id": "Int - id of the User",
+        "username": "String?",
+        "first_name": "String?",
+        "last_name": "String?"
+      },
       "updated_at": "Timestamp?"
     }
   ]
@@ -196,7 +210,8 @@ The Django model that stores "Change Requests" is `OrgUnitChangeRequest`.
       "new_name": "String? - Name of the OrgUnit, may be null or omitted.",
       "new_org_unit_type_id": "Int? - id of the OrgUnitType, may be null or omitted",
       "new_groups": "Array of Group ids? - can be empty, null or omitted. Empty means we want to remove all values",
-      "new_location": { "": "New geopoint for the OrgUnit, may be null or omitted",
+      "new_location": {
+        "": "New geopoint for the OrgUnit, may be null or omitted",
         "latitude": "Double - New latitude of the OrgUnit",
         "longitude": "Double - New longitude of the OrgUnit",
         "altitude": "Double - New altitude of the OrgUnit"
@@ -204,7 +219,17 @@ The Django model that stores "Change Requests" is `OrgUnitChangeRequest`.
       "new_location_accuracy": "Double - New accuracy of the OrgUnit",
       "new_opening_date": "Timestamp in double",
       "new_closed_date": "Timestamp in double",
-      "new_reference_instances": "Array of instance ids? - may be null or omitted, cannot be empty"
+      "new_reference_instances": [
+        {
+          "id": "Int",
+          "uuid": "UUID - provided by the client",
+          "form_id": "Int",
+          "form_version_id": "Int",
+          "created_at": "Timestamp in double",
+          "updated_at": "Timestamp in double",
+          "json": "JSONObject - contains the key/value of the instance"
+        }
+      ]
     }
   ]
 }
@@ -240,33 +265,52 @@ The Django model that stores "Change Requests" is `OrgUnitChangeRequest`.
   "id": "Int - id in the database",
   "uuid": "UUID - uuid in the database",
   "status": "Enum<Status> - one of `new`, `validated`, `rejected`",
-  "created_by": "String - username of the user who created that request",
+  "created_by": {
+    "id": "Int - id of the User who created that request",
+    "username": "String?",
+    "first_name": "String?",
+    "last_name": "String?"
+  },
   "created_at": "Timestamp",
-  "update_by": "String? - username of the user who accepted/rejected that request",
+  "updated_by": {
+    "": "May be null",
+    "id": "Int - id of the User who updated that request",
+    "username": "String?",
+    "first_name": "String?",
+    "last_name": "String?"
+  },
   "updated_at": "Timestamp?",
-  "requested_fields": "Array<String> - name of the properties that were requested to change", 
+  "requested_fields": "Array<String> - name of the properties that were requested to change",
   "approved_fields": "Array<String>? - name of the properties that were approved to change",
   "rejection_comment": "String? - Comment about why the changes were rejected",
   "org_unit": {
     "id": "Int - id in the database",
-    "parent": "String - Name of the parent OrgUnit.",
+    "parent": {
+      "id": "Int - id of the parent OrgUnit",
+      "name": "String - name of the parent OrgUnit"
+    },
     "name": "String - Name of the OrgUnit.",
-    "org_unit_type_id": "Int - id of the OrgUnitType",
-    "org_unit_type_name": "String - Name of the OrgUnitType",
+    "org_unit_type": {
+      "id": "Int - id of the OrgUnitType",
+      "name": "String - name of the OrgUnitType",
+      "short_name": "String - short name of the OrgUnitType"
+    },
     "groups": [
       {
         "id": "Int - id of the Group",
         "name": "String - name of the Group"
       }
     ],
-    "location": { "": "Geopoint for the OrgUnit",
+    "location": {
+      "": "Geopoint for the OrgUnit",
       "latitude": "Double - New latitude of the OrgUnit",
       "longitude": "Double - New longitude of the OrgUnit",
       "altitude": "Double - New altitude of the OrgUnit"
     },
     "opening_date": "Timestamp?",
     "closed_date": "Timestamp?",
-    "reference_instances": [ "Array of form objects - can be empty",
+    "reference_instances": [
+      "Array of form objects - can be empty",
       {
         "id": "Int - id in the database",
         "form_id": "id of the form",
@@ -281,15 +325,26 @@ The Django model that stores "Change Requests" is `OrgUnitChangeRequest`.
       }
     ]
   },
-  "new_parent": "String? - Name of the new parent OrgUnit, may be null or omitted.",
-  "new_name": "String? - New name of the OrgUnit, may be null or omitted.",
-  "new_org_unit_type_id": "Int? - id of the new OrgUnitType, may be null or omitted",
-  "new_org_unit_type_name": "String? - Name of the new OrgUnitType, may be null or omitted",
-  "new_groups": [{
-    "id": "Int - id of the Group",
-    "name": "String - name of the Group"
-  }],
-  "new_location": { "": "New GeoPoint? for the OrgUnit, may be null or omitted",
+  "new_parent": {
+    "": "May be null",
+    "id": "Int - id of the new parent OrgUnit in the database",
+    "name": "String? - name of the new parent OrgUnit"
+  },
+  "new_name": "String? - New name of the OrgUnit, may be null or omitted",
+  "new_org_unit_type": {
+    "": "May be null",
+    "id": "Int? - id of the new OrgUnitType",
+    "name": "String? - name of the new OrgUnitType",
+    "short_name": "String? - short name of the new OrgUnitType"
+  },
+  "new_groups": [
+    {
+      "id": "Int - id of the Group",
+      "name": "String - name of the Group"
+    }
+  ],
+  "new_location": {
+    "": "New GeoPoint? for the OrgUnit, may be null or omitted",
     "latitude": "Double - New latitude of the OrgUnit",
     "longitude": "Double - New longitude of the OrgUnit",
     "altitude": "Double - New altitude of the OrgUnit"
@@ -297,7 +352,8 @@ The Django model that stores "Change Requests" is `OrgUnitChangeRequest`.
   "new_location_accuracy": "Double? - New accuracy of the OrgUnit",
   "new_opening_date": "Timestamp?",
   "new_closed_date": "Timestamp?",
-  "new_reference_instances": [ "Array of form objects? - may be null or omitted, cannot be empty",
+  "new_reference_instances": [
+    "Array of form objects? - may be null or omitted, cannot be empty",
     {
       "id": "Int - id in the database",
       "form_id": "id of the form",
@@ -400,13 +456,13 @@ Returns `Instance` objects marked as `reference_instances` for an `OrgUnit` from
   "count": "Long",
   "instances": [
     {
-        "id": "Int",
-        "uuid": "UUID - provided by the client",
-        "form_id": "Int",
-        "form_version_id": "Int",
-        "created_at": "Timestamp in double",
-        "updated_at": "Timestamp in double",
-        "json":  "JSONObject - contains the key/value of the instance"
+      "id": "Int",
+      "uuid": "UUID - provided by the client",
+      "form_id": "Int",
+      "form_version_id": "Int",
+      "created_at": "Timestamp in double",
+      "updated_at": "Timestamp in double",
+      "json": "JSONObject - contains the key/value of the instance"
     }
   ],
   "has_next": "Boolean",

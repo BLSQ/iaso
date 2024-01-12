@@ -1,9 +1,8 @@
 import React from 'react';
-import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
-import HighlightOffIcon from '@material-ui/icons/HighlightOff';
-import FlareIcon from '@material-ui/icons/Flare';
-// import FiberNewIcon from '@material-ui/icons/FiberNew';
-import { Tooltip } from '@material-ui/core';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import HighlightOffIcon from '@mui/icons-material/HighlightOff';
+import FlareIcon from '@mui/icons-material/Flare';
+import { Tooltip } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { getOrgUnitAncestors } from '../../utils';
 import OrgUnitTooltip from '../OrgUnitTooltip';

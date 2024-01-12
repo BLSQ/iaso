@@ -30,21 +30,21 @@ import { getCoordinates } from './utils';
  * @param {string} username - by default then env username specified
  * @param {string} password - by default then env password specified
  */
-Cypress.Commands.add(
-    'login',
-    (
-        username = Cypress.env('username'),
-        password = Cypress.env('password'),
-    ) => {
-        cy.session([username], () => {
-            cy.clearCookie(Cypress.env('sessionCookie'));
-            cy.visit(`${Cypress.env('siteBaseUrl')}/login`);
-            cy.get('#id_username').type(username, { log: false });
-            cy.get('#id_password').type(password, { log: false });
-            cy.get('#submit').click();
-        });
-    },
-);
+
+Cypress.Commands.add('login', () => {
+    const username = Cypress.env('username');
+    const password = Cypress.env('password');
+    const loginUrl = `${Cypress.env('siteBaseUrl')}/login`;
+    const sessionCookie = Cypress.env('sessionCookie');
+
+    cy.session([username, password], () => {
+        cy.clearCookie(sessionCookie);
+        cy.visit(loginUrl);
+        cy.get('#id_username').type(username, { log: false });
+        cy.get('#id_password').type(password, { log: false });
+        cy.get('#submit').click();
+    });
+});
 
 /**
  * @param {string} username - by default then env username specified
@@ -142,7 +142,7 @@ Cypress.Commands.add(
                 .click();
         }
         selectedOptions.forEach((selectedOption, index) => {
-            cy.get(`${id}-option-${selectedOption}`).click()
+            cy.get(`${id}-option-${selectedOption}`).click();
 
             // cy.get('@btn').click();
             if (index + 1 < selectedOptions.length) {

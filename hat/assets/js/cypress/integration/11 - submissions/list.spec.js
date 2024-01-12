@@ -148,7 +148,7 @@ describe('Submissions', () => {
         });
     });
 
-    it.only('change filters should deep link and call api with correct params', () => {
+    it('change filters should deep link and call api with correct params', () => {
         goToPage();
         cy.intercept(
             'GET',
@@ -470,9 +470,12 @@ describe('Submissions', () => {
         };
         cy.wait('@getSubmissions').then(() => {
             // TODO: test new period type day
-            testPeriod(1, '201401', '201501');
-            testPeriod(2, '2014Q1', '2015Q1');
-            testPeriod(3, '2014', '2015');
+            const currentYear = new Date().getFullYear();
+            const startYear = currentYear - 9;
+            const endYear = currentYear - 8;
+            testPeriod(1, `${startYear}01`, `${endYear}01`);
+            testPeriod(2, `${startYear}Q1`, `${endYear}Q1`);
+            testPeriod(3, `${startYear}`, `${endYear}`);
         });
     });
 

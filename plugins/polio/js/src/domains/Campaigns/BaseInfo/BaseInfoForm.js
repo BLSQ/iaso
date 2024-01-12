@@ -96,6 +96,7 @@ export const BaseInfoForm = () => {
                             name="virus"
                             className={classes.input}
                             options={polioViruses}
+                            required
                             component={Select}
                         />
                         <Field

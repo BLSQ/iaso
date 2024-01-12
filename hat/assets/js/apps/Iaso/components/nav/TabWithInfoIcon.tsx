@@ -17,7 +17,7 @@ export const useStyles = makeStyles(theme => ({
         },
     },
     tabError: {
-        // color: `${theme.palette.error.main} !important`,
+        color: `${theme.palette.error.main} !important`,
     },
     tabDisabled: {
         cursor: 'default',
@@ -78,9 +78,8 @@ export const TabWithInfoIcon: FunctionComponent<Props> = ({
         <Tab
             label={title}
             className={classnames(
-                classes.tab,
-                hasTabError && classes.tabError,
                 disabled && classes.tabDisabled,
+                hasTabError && classes.tabError,
             )}
             disableFocusRipple={disabled}
             disableRipple={disabled}

@@ -151,12 +151,12 @@ class RefreshLQASDataTestCase(APITestCase):
         response = self.client.get(f"{self.action_url}?country_id={self.country_org_unit.id}")
         response = self.assertJSONResponse(response, 200)
         task = response["task"]
-        self.assertEquals(task["id"], self.task1.id)
-        self.assertEquals(task["ended_at"], self.task1.ended_at)
-        self.assertEquals(task["status"], self.task1.status)
+        self.assertEqual(task["id"], self.task1.id)
+        self.assertEqual(task["ended_at"], self.task1.ended_at)
+        self.assertEqual(task["status"], self.task1.status)
 
     def test_restrict_user_country(self):
         self.client.force_authenticate(self.limited_user)
         response = self.client.get(f"{self.action_url}?country_id={self.country_org_unit.id}")
         response = self.assertJSONResponse(response, 400)
-        self.assertEquals(response, {"country_id": ["No authorised org unit found for user"]})
+        self.assertEqual(response, {"country_id": ["No authorised org unit found for user"]})

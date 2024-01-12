@@ -102,12 +102,12 @@ class DataValueExporterTests(TestCase):
                 dump_attributes(export_request)
 
         for export_status in ExportStatus.objects.all():
-            self.assertEquals(status, export_status.status)
+            self.assertEqual(status, export_status.status)
 
         for export_request in ExportRequest.objects.all():
             self.assertIsNotNone(export_request.started_at)
             self.assertIsNotNone(export_request.ended_at)
-            self.assertEquals(status, export_request.status)
+            self.assertEqual(status, export_request.status)
 
     def setUp(self):
         form, created = Form.objects.get_or_create(
@@ -163,7 +163,7 @@ class DataValueExporterTests(TestCase):
     def test_event_mapping_works(self):
         event, errors = EventHandler().map_to_values(self.build_instance(self.form), build_form_mapping())
 
-        self.assertEquals(
+        self.assertEqual(
             {
                 "dataValues": [{"dataElement": "DE_DHIS2_ID", "value": 1}],
                 "event": "EVENT_DHIS2_UID",
@@ -182,7 +182,7 @@ class DataValueExporterTests(TestCase):
         instance.save()
 
         event, errors = EventHandler().map_to_values(instance, build_form_mapping())
-        self.assertEquals(
+        self.assertEqual(
             {
                 "dataValues": [{"dataElement": "DE_DHIS2_ID", "value": None}],
                 "event": "EVENT_DHIS2_UID",
@@ -202,7 +202,7 @@ class DataValueExporterTests(TestCase):
 
         event, errors = EventHandler().map_to_values(instance, build_form_mapping())
 
-        self.assertEquals(
+        self.assertEqual(
             event,
             {
                 "program": "PROGRAM_DHIS2_ID",
@@ -277,7 +277,7 @@ class DataValueExporterTests(TestCase):
 
         self.expect_logs(ERRORED)
 
-        self.assertEquals(
+        self.assertEqual(
             "ERROR while processing page 1/1 : Program is not assigned to this organisation unit: YuQRtpLP10I",
             context.exception.message,
         )

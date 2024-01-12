@@ -117,7 +117,7 @@ class CommandTests(TestCase, DHIS2TestMixin):
         created_orgunits = [entry for entry in created_orgunits_qs.values("source_ref", "name")]
 
         # assert the pyramid imported seem okish
-        self.assertEquals(
+        self.assertEqual(
             created_orgunits,
             [
                 {"name": "Sierra Leone", "source_ref": "ImspTQPwCqd"},
@@ -134,7 +134,7 @@ class CommandTests(TestCase, DHIS2TestMixin):
         self.assertAlmostEqual(location_coords[0], -11.3596)
         self.assertAlmostEqual(location_coords[1], 8.5317)
         self.assertEqual(location_coords[2], 0)
-        self.assertEquals(healthcenter.parent.name, "Gorama Mende")
+        self.assertEqual(healthcenter.parent.name, "Gorama Mende")
 
         # assert has a simplified geometry
         zone = created_orgunits_qs.get(name="Gorama Mende")
@@ -142,11 +142,11 @@ class CommandTests(TestCase, DHIS2TestMixin):
 
         # assert groups are created and assigned to orgunits
         group = Group.objects.get(name="CHP")
-        self.assertEquals([entry for entry in group.org_units.values("name")], [{"name": "Bambara Kaima CHP"}])
+        self.assertEqual([entry for entry in group.org_units.values("name")], [{"name": "Bambara Kaima CHP"}])
 
         groupsets_qs = GroupSet.objects.order_by("id")
         created_groupsets = [entry for entry in groupsets_qs.values("source_ref", "name")]
-        self.assertEquals(
+        self.assertEqual(
             created_groupsets,
             [
                 {"name": "Area", "source_ref": "uIuxlbV1vRT"},
@@ -156,14 +156,14 @@ class CommandTests(TestCase, DHIS2TestMixin):
             ],
         )
         facility_type = groupsets_qs.get(name="Facility Type")
-        self.assertQuerysetEqual(
+        self.assertQuerySetEqual(
             facility_type.groups.all().order_by("name"),
             ["CHC", "CHP", "Clinic", "Hospital", "MCHP"],
             transform=lambda x: x.name,
         )
 
         # assert that path has been generated for all org units
-        self.assertEquals(0, OrgUnit.objects.filter(path=None).count())
+        self.assertEqual(0, OrgUnit.objects.filter(path=None).count())
 
     @responses.activate
     def test_stranges_geom(self):
@@ -251,7 +251,7 @@ class TaskTests(TestCase, DHIS2TestMixin):
         )
 
         task.refresh_from_db()
-        self.assertEquals(task.status, SUCCESS, task.result)
+        self.assertEqual(task.status, SUCCESS, task.result)
 
         self.assertCreated(
             {
@@ -266,7 +266,7 @@ class TaskTests(TestCase, DHIS2TestMixin):
         created_orgunits = [entry for entry in created_orgunits_qs.values("source_ref", "name")]
 
         # assert the pyramid imported seem okish
-        self.assertEquals(
+        self.assertEqual(
             created_orgunits,
             [
                 {"name": "Sierra Leone", "source_ref": "ImspTQPwCqd"},
@@ -282,7 +282,7 @@ class TaskTests(TestCase, DHIS2TestMixin):
         self.assertAlmostEqual(location_coords[0], -11.3596)
         self.assertAlmostEqual(location_coords[1], 8.5317)
         self.assertEqual(location_coords[2], 0)
-        self.assertEquals(healthcenter.parent.name, "Gorama Mende")
+        self.assertEqual(healthcenter.parent.name, "Gorama Mende")
 
         # assert has a simplified geometry
         zone = created_orgunits_qs.get(name="Gorama Mende")
@@ -290,11 +290,11 @@ class TaskTests(TestCase, DHIS2TestMixin):
 
         # assert groups are created and assigned to orgunits
         group = Group.objects.get(name="CHP")
-        self.assertEquals([entry for entry in group.org_units.values("name")], [{"name": "Bambara Kaima CHP"}])
+        self.assertEqual([entry for entry in group.org_units.values("name")], [{"name": "Bambara Kaima CHP"}])
 
         groupsets_qs = GroupSet.objects.order_by("id")
         created_groupsets = [entry for entry in groupsets_qs.values("source_ref", "name")]
-        self.assertEquals(
+        self.assertEqual(
             created_groupsets,
             [
                 {"name": "Area", "source_ref": "uIuxlbV1vRT"},
@@ -304,7 +304,7 @@ class TaskTests(TestCase, DHIS2TestMixin):
             ],
         )
         facility_type = groupsets_qs.get(name="Facility Type")
-        self.assertQuerysetEqual(
+        self.assertQuerySetEqual(
             facility_type.groups.all(),
             ["CHP", "MCHP", "Clinic", "Hospital", "CHC"],
             transform=lambda x: x.name,
@@ -312,7 +312,7 @@ class TaskTests(TestCase, DHIS2TestMixin):
         )
 
         # assert that path has been generated for all org units
-        self.assertEquals(0, OrgUnit.objects.filter(path=None).count())
+        self.assertEqual(0, OrgUnit.objects.filter(path=None).count())
 
     @responses.activate
     def test_update(self):

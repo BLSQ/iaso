@@ -62,8 +62,8 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.valid',
     },
     validated: {
-        id: 'iaso.forms.validated',
-        defaultMessage: 'Validated',
+        id: 'iaso.forms.valid',
+        defaultMessage: 'Valid',
     },
     notValidated: {
         id: 'iaso.forms.notValidated',

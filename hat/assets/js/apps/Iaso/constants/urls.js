@@ -1,3 +1,7 @@
+export const CHANGE_REQUEST = 'changeRequest';
+const ORG_UNITS = 'orgunits';
+const ORG_UNITS_CHANGE_REQUEST = `${ORG_UNITS}/${CHANGE_REQUEST}`;
+
 export const baseUrls = {
     setupAccount: 'setupAccount',
     home: 'home',
@@ -11,6 +15,8 @@ export const baseUrls = {
     compareInstances: 'forms/compare',
     compareInstanceLogs: 'forms/compareInstanceLogs',
     orgUnits: 'orgunits/list',
+    orgUnitsChangeRequest: ORG_UNITS_CHANGE_REQUEST,
+    // orgUnitsChangeRequestList: `${ORG_UNITS_CHANGE_REQUEST}/list`,
     registry: 'orgunits/registry',
     registryDetail: 'orgunits/registry/details',
     groups: 'orgunits/groups',

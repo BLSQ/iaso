@@ -117,7 +117,7 @@ class FormsVersionAPITestCase(APITestCase):
                 f"/api/formversions/",
                 data={"form_id": self.form_1.id, "xls_file": xls_file},
                 format="multipart",
-                HTTP_ACCEPT="application/json",
+                headers={"accept": "application/json"},
             )
         self.assertJSONResponse(response, 201)
         response_data = response.json()
@@ -144,7 +144,7 @@ class FormsVersionAPITestCase(APITestCase):
                 f"/api/formversions/",
                 data={"form_id": self.form_2.id, "xls_file": xls_file},
                 format="multipart",
-                HTTP_ACCEPT="application/json",
+                headers={"accept": "application/json"},
             )
         self.assertJSONResponse(response, 201)
         response_data = response.json()
@@ -189,7 +189,7 @@ class FormsVersionAPITestCase(APITestCase):
                 f"/api/formversions/",
                 data={"form_id": self.form_2.id, "xls_file": xls_file},
                 format="multipart",
-                HTTP_ACCEPT="application/json",
+                headers={"accept": "application/json"},
             )
         self.assertJSONResponse(response, 201)
         response_data = response.json()
@@ -218,7 +218,7 @@ class FormsVersionAPITestCase(APITestCase):
                 f"/api/formversions/",
                 data={"form_id": self.form_1.id, "xls_file": xls_file},
                 format="multipart",
-                HTTP_ACCEPT="application/json",
+                headers={"accept": "application/json"},
             )
         self.assertJSONResponse(response, 400)
         self.assertHasError(response.json(), "xls_file", "The form_id is already used in another form.")
@@ -232,7 +232,7 @@ class FormsVersionAPITestCase(APITestCase):
                 f"/api/formversions/",
                 data={"form_id": self.form_2.id, "xls_file": xls_file},
                 format="multipart",
-                HTTP_ACCEPT="application/json",
+                headers={"accept": "application/json"},
             )
         self.assertJSONResponse(response, 400)
         self.assertHasError(response.json(), "xls_file", "Form id should stay constant across form versions.")
@@ -246,7 +246,7 @@ class FormsVersionAPITestCase(APITestCase):
                 f"/api/formversions/",
                 data={"form_id": self.form_2.id, "xls_file": xls_file},
                 format="multipart",
-                HTTP_ACCEPT="application/json",
+                headers={"accept": "application/json"},
             )
         self.assertJSONResponse(response, 400)
         self.assertHasError(
@@ -262,7 +262,7 @@ class FormsVersionAPITestCase(APITestCase):
                 f"/api/formversions/",
                 data={"form_id": self.form_1.id, "xls_file": xls_file},
                 format="multipart",
-                HTTP_ACCEPT="application/json",
+                headers={"accept": "application/json"},
             )
         self.assertJSONResponse(response, 400)
         self.assertHasError(
@@ -275,7 +275,9 @@ class FormsVersionAPITestCase(APITestCase):
         """POST /form-versions/, missing params"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.post(f"/api/formversions/", data={}, format="multipart", HTTP_ACCEPT="application/json")
+        response = self.client.post(
+            f"/api/formversions/", data={}, format="multipart", headers={"accept": "application/json"}
+        )
         self.assertJSONResponse(response, 400)
         response_data = response.json()
         self.assertHasError(response_data, "form_id")
@@ -288,7 +290,7 @@ class FormsVersionAPITestCase(APITestCase):
                 f"/api/formversions/",
                 data={"form_id": self.form_1.id, "xls_file": xls_file},
                 format="multipart",
-                HTTP_ACCEPT="application/json",
+                headers={"accept": "application/json"},
             )
         self.assertJSONResponse(response, 403)
 

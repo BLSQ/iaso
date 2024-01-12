@@ -1,4 +1,5 @@
-FROM python:3.8
+# https://hub.docker.com/_/python
+FROM python:3.9
 
 RUN apt-get update && apt-get --yes install \
 		curl \
@@ -13,8 +14,7 @@ WORKDIR /opt/app
 # install python dependencies
 COPY requirements.txt /opt/app/requirements.txt
 COPY requirements-dev.txt /opt/app/requirements-dev.txt
-RUN pip install --quiet -r requirements.txt
-RUN pip install --quiet -r requirements-dev.txt
+RUN pip install -r requirements-dev.txt
 
 # don't copy app we mount everything afterwards for hot reloading anyway
 #COPY . /opt/app

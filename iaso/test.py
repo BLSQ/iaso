@@ -116,7 +116,7 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
         self.assertEqual(expected_content_type, response["Content-Type"])
 
         if expected_attachment_filename is not None:
-            self.assertEquals(
+            self.assertEqual(
                 response.get("Content-Disposition"), f"attachment; filename={expected_attachment_filename}"
             )
 

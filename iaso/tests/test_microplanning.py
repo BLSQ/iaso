@@ -22,10 +22,10 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         team1 = Team.objects.create(project=project1, name="team1", manager=user)
         team2 = Team.objects.create(project=project2, name="team2", manager=user)
         teams = Team.objects.filter(project__account=user.iaso_profile.account)
-        self.assertQuerysetEqual(teams.order_by("name"), [team1, team2])
+        self.assertQuerySetEqual(teams.order_by("name"), [team1, team2])
 
         teams = Team.objects.filter_for_user(user)
-        self.assertQuerysetEqual(teams, [team1, team2])
+        self.assertQuerySetEqual(teams, [team1, team2])
 
     def test_serializer_team(self):
         account = Account.objects.get(name="test")
@@ -35,7 +35,7 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         data = {"name": "hello", "project": project.id, "users": [], "manager": user.id, "sub_teams": []}
 
         serializer = TeamSerializer(context={"request": request}, data=data)
-        self.assertTrue(serializer.is_valid(()), serializer.errors)
+        self.assertTrue(serializer.is_valid(), serializer.errors)
         serializer.save()
 
     def test_serializer_subteam(self):
@@ -56,11 +56,11 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         }
 
         serializer = TeamSerializer(context={"request": request}, data=data, instance=team1)
-        self.assertTrue(serializer.is_valid(()), serializer.errors)
+        self.assertTrue(serializer.is_valid(), serializer.errors)
         serializer.save()
         team1.refresh_from_db()
         team2.refresh_from_db()
-        self.assertQuerysetEqual(team1.sub_teams.all(), [team2])
+        self.assertQuerySetEqual(team1.sub_teams.all(), [team2])
         self.assertEqual(team2.parent, team1)
 
     def test_serializer_invalid_because_subteam_loop(self):
@@ -82,7 +82,7 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         }
 
         serializer = TeamSerializer(context={"request": request}, data=data, instance=team1)
-        self.assertFalse(serializer.is_valid(()), serializer.validated_data)
+        self.assertFalse(serializer.is_valid(), serializer.validated_data)
         self.assertIn("sub_teams", serializer.errors)
 
     def test_serializer_valid_parent_no_loop(self):
@@ -99,7 +99,7 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         data = {"parent": parent.id}
 
         serializer = TeamSerializer(context={"request": request}, data=data, instance=team, partial=True)
-        self.assertTrue(serializer.is_valid(()), serializer.errors)
+        self.assertTrue(serializer.is_valid(), serializer.errors)
         serializer.save()
 
     def test_serializer_invalid_because_parent_loop(self):
@@ -117,7 +117,7 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         data = {"name": "team with subteams", "project": project.id, "users": [], "manager": user.id, "parent": team.id}
 
         serializer = TeamSerializer(context={"request": request}, data=data, instance=grand_parent, partial=True)
-        self.assertFalse(serializer.is_valid(()), serializer.validated_data)
+        self.assertFalse(serializer.is_valid(), serializer.validated_data)
         self.assertIn("parent", serializer.errors)
 
     def test_serializer_invalid_because_parent_wrong_type(self):
@@ -133,7 +133,7 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         data = {"parent": parent.id}
 
         serializer = TeamSerializer(context={"request": request}, data=data, instance=team, partial=True)
-        self.assertFalse(serializer.is_valid(()), serializer.validated_data)
+        self.assertFalse(serializer.is_valid(), serializer.validated_data)
         self.assertIn("parent", serializer.errors)
 
     def test_serializer_invalid_because_subteam_loop2(self):
@@ -153,7 +153,7 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         data = {"sub_teams": [root.pk]}
 
         serializer = TeamSerializer(context={"request": request}, data=data, instance=sub_sub_team, partial=True)
-        self.assertFalse(serializer.is_valid(()), serializer.validated_data)
+        self.assertFalse(serializer.is_valid(), serializer.validated_data)
         self.assertIn("sub_teams", serializer.errors)
 
     def test_serializer_team_users(self):
@@ -173,7 +173,7 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         }
 
         serializer = TeamSerializer(context={"request": request}, data=data)
-        self.assertTrue(serializer.is_valid(()), serializer.errors)
+        self.assertTrue(serializer.is_valid(), serializer.errors)
         new_team = serializer.save()
         self.assertEqual(new_team.type, TeamType.TEAM_OF_USERS)
 
@@ -182,7 +182,7 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         serializer = TeamSerializer(
             context={"request": request}, instance=new_team, data={"users": [user1.id]}, partial=True
         )
-        self.assertTrue(serializer.is_valid(()), serializer.errors)
+        self.assertTrue(serializer.is_valid(), serializer.errors)
         serializer.save()
 
     def test_serializer_invalid_user(self):
@@ -204,7 +204,7 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         }
 
         serializer = TeamSerializer(context={"request": request}, data=data)
-        self.assertFalse(serializer.is_valid(()), serializer.validated_data)
+        self.assertFalse(serializer.is_valid(), serializer.validated_data)
         self.assertIn("users", serializer.errors)
 
     def test_serializer_invalid_manager(self):
@@ -226,7 +226,7 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         }
 
         serializer = TeamSerializer(context={"request": request}, data=data)
-        self.assertFalse(serializer.is_valid(()), serializer.validated_data)
+        self.assertFalse(serializer.is_valid(), serializer.validated_data)
         self.assertIn("manager", serializer.errors)
 
     def test_serializer_invalid_project(self):
@@ -249,7 +249,7 @@ class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
         }
 
         serializer = TeamSerializer(context={"request": request}, data=data)
-        self.assertFalse(serializer.is_valid(()), serializer.validated_data)
+        self.assertFalse(serializer.is_valid(), serializer.validated_data)
         self.assertIn("project", serializer.errors)
 
 
@@ -372,7 +372,7 @@ class TeamAPITestCase(APITestCase):
         response = self.client.patch(f"/api/microplanning/teams/{team_id}/", data=update_data, format="json")
         self.assertJSONResponse(response, 200)
         self.assertTrue(Team.objects.filter(name="hello").exists())
-        self.assertQuerysetEqual(Team.objects.get(name="hello").sub_teams.all(), [sub_team1])
+        self.assertQuerySetEqual(Team.objects.get(name="hello").sub_teams.all(), [sub_team1])
         sub_team1.refresh_from_db()
         self.assertEqual(sub_team1.path, PathValue((team_id, sub_team1.id)))
 
@@ -385,8 +385,8 @@ class TeamAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertTrue(Team.objects.filter(name="hello").exists())
         team = Team.objects.get(name="hello")
-        self.assertQuerysetEqual(team.sub_teams.all(), [])
-        self.assertQuerysetEqual(team.users.all(), [team_member])
+        self.assertQuerySetEqual(team.sub_teams.all(), [])
+        self.assertQuerySetEqual(team.users.all(), [team_member])
         self.assertEqual(Modification.objects.count(), 3)
         mod = Modification.objects.last()
         self.assertEqual(mod.user, user_with_perms)
@@ -589,7 +589,7 @@ class PlanningTestCase(APITestCase):
         self.assertEqual(Modification.objects.all().count(), 1)
         planning.refresh_from_db()
         self.assertEqual(planning.name, "My Planning")
-        self.assertQuerysetEqual(planning.forms.all(), [self.form1, self.form2], ordered=False)
+        self.assertQuerySetEqual(planning.forms.all(), [self.form1, self.form2], ordered=False)
 
         mod = Modification.objects.last()
         self.assertEqual(mod.past_value[0]["forms"], [])
@@ -750,7 +750,7 @@ class AssignmentAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         assignments = Assignment.objects.filter(planning=self.planning)
         self.assertEqual(assignments.count(), 3)
-        self.assertQuerysetEqual(
+        self.assertQuerySetEqual(
             assignments, [self.child1, self.child3, self.child4], lambda x: x.org_unit, ordered=False
         )
         self.assertEqual(Modification.objects.count(), 2)

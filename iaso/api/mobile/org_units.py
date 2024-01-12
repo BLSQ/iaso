@@ -79,7 +79,6 @@ class MobileOrgUnitSerializer(serializers.ModelSerializer):
             "latitude",
             "longitude",
             "altitude",
-            "reference_instances",
             "uuid",
             "aliases",
             "geo_json",

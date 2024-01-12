@@ -25,6 +25,7 @@ cd geos-3.9.4
 make
 sudo make install
 cd ..
+rm -rf geos-3.9.4/
 
 # sqlite
 wget https://www.sqlite.org/2022/sqlite-autoconf-3400100.tar.gz
@@ -50,6 +51,7 @@ cd ~/proj-7.2.1/
 make -j4
 sudo make install
 cd ..
+rm -rf proj-7.2.1/
 
 # spatialite
 cd
@@ -62,6 +64,8 @@ sudo yum install -y zlib-devel libxml2-devel
 ./configure  --enable-freexl=no --enable-rttopo=no --enable-minizip=no
 make -j4
 sudo make install
+cd ..
+rm -rf libspatialite-5.0.1/
 
 #
 cd
@@ -71,6 +75,9 @@ cd gdal-3.2.3/
 ./configure  --without-python -with-sqlite3 --with-spatialite
 make -j4
 sudo make install
+cd ..
+rm -rf gdal-3.2.3/
+
 # to check
 /usr/local/bin/gdalinfo  --version
 

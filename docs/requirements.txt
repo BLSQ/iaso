@@ -59,8 +59,6 @@ mkdocs==1.4.2
     #   mkdocstrings
 mkdocs-autorefs==0.4.1
     # via mkdocstrings
-mkdocs-awesome-pages-plugin==2.8.0
-    # via -r ./docs/requirements.in
 mkdocs-material==9.1.1
     # via mkdocs-mermaid2-plugin
 mkdocs-material-extensions==1.1.1

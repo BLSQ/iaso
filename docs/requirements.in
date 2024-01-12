@@ -2,4 +2,3 @@ mkdocs
 mkdocstrings[python]
 markdown-include
 mkdocs-mermaid2-plugin
-mkdocs-awesome-pages-plugin

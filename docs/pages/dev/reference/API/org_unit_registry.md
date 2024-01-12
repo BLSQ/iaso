@@ -219,7 +219,17 @@ The Django model that stores "Change Requests" is `OrgUnitChangeRequest`.
       "new_location_accuracy": "Double - New accuracy of the OrgUnit",
       "new_opening_date": "Timestamp in double",
       "new_closed_date": "Timestamp in double",
-      "new_reference_instances": "Array of instance UUIDs? - may be null or omitted, cannot be empty"
+      "new_reference_instances": [
+        {
+          "id": "Int",
+          "uuid": "UUID - provided by the client",
+          "form_id": "Int",
+          "form_version_id": "Int",
+          "created_at": "Timestamp in double",
+          "updated_at": "Timestamp in double",
+          "json": "JSONObject - contains the key/value of the instance"
+        }
+      ]
     }
   ]
 }

@@ -654,7 +654,19 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
     list_display = ("pk", "org_unit", "created_at", "status")
     list_display_links = ("pk", "org_unit")
     list_filter = ("status",)
-    readonly_fields = ("uuid", "created_at", "created_by")
+    readonly_fields = (
+        "uuid",
+        "created_at",
+        "created_by",
+        "old_parent",
+        "old_name",
+        "old_org_unit_type",
+        "old_groups",
+        "old_location",
+        "old_reference_instances",
+        "old_opening_date",
+        "old_closed_date",
+    )
     raw_id_fields = (
         "org_unit",
         "created_by",
@@ -686,6 +698,8 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
                     "new_location",
                     "new_location_accuracy",
                     "new_reference_instances",
+                    "new_opening_date",
+                    "new_closed_date",
                 )
             },
         ),
@@ -702,6 +716,21 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
                     "updated_at",
                     "updated_by",
                     "rejection_comment",
+                )
+            },
+        ),
+        (
+            "Old values",
+            {
+                "fields": (
+                    "old_parent",
+                    "old_name",
+                    "old_org_unit_type",
+                    "old_groups",
+                    "old_location",
+                    "old_reference_instances",
+                    "old_opening_date",
+                    "old_closed_date",
                 )
             },
         ),

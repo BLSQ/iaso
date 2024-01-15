@@ -48,7 +48,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user)
 
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(8):
             # filter_for_user_and_app_id
             #   1. SELECT OrgUnit
             # get_queryset
@@ -57,6 +57,8 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
             #   4. PREFETCH OrgUnit.groups
             #   5. PREFETCH OrgUnitChangeRequest.new_groups
             #   6. PREFETCH OrgUnitChangeRequest.new_reference_instances
+            #   7. PREFETCH OrgUnitChangeRequest.old_groups
+            #   8. PREFETCH OrgUnitChangeRequest.old_reference_instances
             response = self.client.get("/api/orgunits/changes/")
             self.assertJSONResponse(response, 200)
             self.assertEqual(2, len(response.data["results"]))
@@ -68,7 +70,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
     def test_retrieve_ok(self):
         change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
         self.client.force_authenticate(self.user)
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(8):
             response = self.client.get(f"/api/orgunits/changes/{change_request.pk}/")
         self.assertJSONResponse(response, 200)
         self.assertEqual(response.data["id"], change_request.pk)

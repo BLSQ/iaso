@@ -11,11 +11,7 @@ import { Box } from '@mui/material';
 import { Vaccine } from '../../../../../constants/types';
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import MESSAGES from '../../messages';
-import {
-    TextInput,
-    DateInput,
-    NumberInput,
-} from '../../../../../components/Inputs';
+import { DateInput, NumberInput } from '../../../../../components/Inputs';
 import { useSaveIncident } from '../../hooks/api';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import { useIncidentOptions } from './useIncidentOptions';
@@ -55,7 +51,7 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
     const titleMessage = incident?.id ? MESSAGES.edit : MESSAGES.create;
     const title = `${countryName} - ${vaccine}: ${formatMessage(
         titleMessage,
-    )} ${formatMessage(MESSAGES.formA)}`;
+    )} ${formatMessage(MESSAGES.incidentReports)}`;
     const allowConfirm = formik.isValid && !isEqual(formik.touched, {});
 
     return (
@@ -106,8 +102,7 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                     <Field
                         label={formatMessage(MESSAGES.unusable_vials)}
                         name="unusable_vials"
-                        component={TextInput}
-                        shrinkLabel={false}
+                        component={NumberInput}
                     />
                 </Box>
             </ConfirmCancelModal>

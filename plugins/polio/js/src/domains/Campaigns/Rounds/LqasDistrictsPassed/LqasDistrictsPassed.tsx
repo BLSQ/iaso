@@ -18,15 +18,15 @@ export const LqasDistrictsPassed: FunctionComponent<Props> = ({
         <>
             <Divider />
             <Box ml={2} mb={2} mt={2}>
-                <Grid container>
-                    <Grid item xs={6} lg={4}>
+                <Grid container justifyContent="flex-start">
+                    <Grid item xs={6} lg={5}>
                         <Typography variant="button">
                             {`${formatMessage(
                                 MESSAGES.lqas_district_passing,
                             )}: `}
                         </Typography>
                     </Grid>
-                    <Grid item xs={6} lg={8}>
+                    <Grid item xs={6} lg={7}>
                         <Typography variant="button">
                             {`${lqasDistrictsPassing ?? '--'}`}
                         </Typography>
@@ -35,14 +35,14 @@ export const LqasDistrictsPassed: FunctionComponent<Props> = ({
             </Box>
             <Box ml={2} mb={2} mt={2}>
                 <Grid container>
-                    <Grid item xs={6} lg={4}>
+                    <Grid item xs={6} lg={5}>
                         <Typography variant="button">
                             {`${formatMessage(
                                 MESSAGES.lqas_district_failing,
                             )}: `}
                         </Typography>
                     </Grid>
-                    <Grid item xs={6} lg={8}>
+                    <Grid item xs={6} lg={7}>
                         <Typography variant="button">
                             {`${lqasDistrictsFailing ?? '--'}`}
                         </Typography>

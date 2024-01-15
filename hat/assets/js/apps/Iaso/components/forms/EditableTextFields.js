@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import InputComponent from './InputComponent';
+import InputComponent from './InputComponent.tsx';
 
 const EditableTextFields = ({ fields }) => {
     return fields.map(field => (

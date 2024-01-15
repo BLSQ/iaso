@@ -213,4 +213,7 @@ export const useStyles = makeStyles(() => ({
         color: theme.palette.primary.main,
         cursor: 'pointer',
     },
+    marginTop: {
+        marginTop: `${theme.spacing(2)} !important`,
+    },
 }));

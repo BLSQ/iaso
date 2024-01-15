@@ -12,9 +12,5 @@ const useStyles = makeStyles(() => ({
 export const BreakWordCell = (cellInfo: { value?: string }): ReactElement => {
     const value = cellInfo?.value;
     const classes = useStyles();
-    return (
-        <Box className={classes.root} style={{}}>
-            {value || '--'}
-        </Box>
-    );
+    return <Box className={classes.root}>{value || '--'}</Box>;
 };

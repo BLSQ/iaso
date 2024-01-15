@@ -787,29 +787,11 @@ class PolioAPICampaignCsvTestCase(APITestCase):
 
         cls.c = create_campaign(cls.org_unit.id, "orb campaign", cls.account)
         cls.c2 = create_campaign(cls.org_unit_2.id, "orb campaign 2", cls.account)
-
-    def create_campaign(self, id, obr_name, account):
-        return Campaign.objects.create(
-            country_id=id,
-            obr_name=obr_name,
-            account=account,
-            onset_at=datetime.date(2022, 1, 1),
-            cvdpv2_notified_at=datetime.date(2022, 1, 20),
-            risk_assessment_first_draft_submitted_at=datetime.date(2022, 2, 1),
-            risk_assessment_rrt_oprtt_approval_at=datetime.date(2022, 2, 25),
-            submitted_to_rrt_at_WFEDITABLE=datetime.date(2022, 3, 1),
-            approved_at_WFEDITABLE=datetime.date(2022, 3, 10),
-            who_disbursed_to_co_at=datetime.date(2022, 3, 5),
-            who_disbursed_to_moh_at=datetime.date(2022, 3, 8),
-            unicef_disbursed_to_co_at=datetime.date(2022, 3, 4),
-            unicef_disbursed_to_moh_at=datetime.date(2022, 3, 5),
-            gpei_coordinator="Test coordinator",
-            doses_requested=500,
-        )
+        cls.c3 = create_campaign(None, "orb campaign 3", cls.account)
 
     def row_data(self, campaign, round):
         return [
-            campaign.country.name,
+            campaign.country.name if campaign.country else "",
             campaign.obr_name,
             campaign.vaccines,
             campaign.onset_at.strftime("%Y-%m-%d"),
@@ -934,6 +916,54 @@ class PolioAPICampaignCsvTestCase(APITestCase):
         )
         first_data_row = data[1]
         row_data = self.row_data(self.c2, c_round_2)
+        self.assertEqual(
+            first_data_row,
+            row_data,
+        )
+
+    def test_csv_campaigns_export_campaing_with_no_country(self):
+        """
+        It tests the whole the csv campaigns file feature and check campaign with no country:
+            1. If the export succeed
+            2. If it return the right header
+            3. If the columns names are correct
+            4. If the data in cells are correct
+            5. Display also campaigns not linked to country
+        """
+
+        self.c3.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2))
+        self.c3.rounds.create(number=2, started_at=datetime.date(2022, 3, 1), ended_at=datetime.date(2022, 3, 2))
+
+        c_round_2 = self.c3.rounds.create(
+            number=1,
+            started_at=datetime.date(2021, 12, 1),
+            ended_at=datetime.date(2021, 12, 31),
+            target_population=1500,
+            cost=15,
+            lqas_district_passing=16,
+            lqas_district_failing=3,
+            preparedness_spreadsheet_url="https://docs.google.com/spreadsheets/d/test3",
+            preparedness_sync_status="FINISHED",
+        )
+        self.c3.rounds.create(number=2, started_at=datetime.date(2022, 1, 4), ended_at=datetime.date(2022, 1, 7))
+        response = self.client.get("/api/polio/campaigns/csv_campaigns_export/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.get("Content-Disposition"),
+            "attachment; filename=campaigns-rounds--" + strftime("%Y-%m-%d-%H-%M", gmtime()) + ".csv",
+        )
+
+        response_string = "\n".join(s.decode("U8") for s in response).replace("\r\n\n", "\r\n")
+        reader = csv.reader(io.StringIO(response_string), delimiter=",")
+        data = list(reader)
+        self.assertEqual(len(data), 5)
+        data_headers = data[0]
+        self.assertEqual(
+            data_headers,
+            self.campaign_csv_columns,
+        )
+        first_data_row = data[3]
+        row_data = self.row_data(self.c3, c_round_2)
         self.assertEqual(
             first_data_row,
             row_data,

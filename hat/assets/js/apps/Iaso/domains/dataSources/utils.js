@@ -67,7 +67,11 @@ export const useFieldsToExport = () => {
         },
     ];
 
-    return fields.sort((a, b) => a.label.localeCompare(b.label));
+    return fields.sort((a, b) =>
+        a.label.localeCompare(b.label, undefined, {
+            sensitivity: 'accent',
+        }),
+    );
 };
 
 export const credentialsAsOptions = credentials => {

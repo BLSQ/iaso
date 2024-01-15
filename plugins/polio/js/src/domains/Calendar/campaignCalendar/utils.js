@@ -478,7 +478,7 @@ const getCells = (campaign, currentWeekIndex, firstMonday, lastSunday) => {
                     currentWeekIndex,
                 });
             }
-        } else if (previousRound.end) {
+        } else if (previousRound?.end) {
             // add an additional day for positioning if the next round has a start date
             if (round.started_at) {
                 dateUntilNextRound = previousRound.end

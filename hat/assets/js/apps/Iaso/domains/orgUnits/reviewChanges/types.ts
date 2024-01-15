@@ -43,9 +43,9 @@ export type OrgUnitChangeRequest = {
     approved_fields: string[];
     rejection_comment?: string;
     created_by: NestedUser;
-    created_at: string;
+    created_at: number;
     updated_by: NestedUser;
-    updated_at: string;
+    updated_at: number;
 };
 export type OrgUnitChangeRequests = Array<OrgUnitChangeRequest>;
 
@@ -58,9 +58,9 @@ export type OrgUnitChangeRequestDetails = {
     uuid: string;
     status: ChangeRequestValidationStatus;
     created_by: NestedUser;
-    created_at: string;
+    created_at: number;
     updated_by: NestedUser;
-    updated_at: string;
+    updated_at: number;
     requested_fields: string;
     approved_fields: string[];
     rejection_comment?: string;

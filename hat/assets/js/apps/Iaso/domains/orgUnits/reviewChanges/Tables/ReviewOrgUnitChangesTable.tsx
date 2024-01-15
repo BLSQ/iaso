@@ -26,21 +26,9 @@ import {
     IconButton,
 } from '../Dialogs/ReviewOrgUnitChangesDialog';
 import { UserCell } from '../../../../components/Cells/UserCell';
+import { colorCodes } from '../Dialogs/ReviewOrgUnitChangesInfos';
 
 type ColumnCell<T> = { row: { original: T; index: number } };
-
-const getStatusColor = (status: ChangeRequestValidationStatus) => {
-    switch (status) {
-        case 'new':
-            return 'warning.main';
-        case 'approved':
-            return 'success.main';
-        case 'rejected':
-            return 'error.main';
-        default:
-            return 'inherit';
-    }
-};
 
 const useColumns = (
     setSelectedChangeRequest: Dispatch<SetStateAction<SelectedChangeRequest>>,
@@ -105,7 +93,7 @@ const useColumns = (
                 return (
                     <>
                         {status && MESSAGES[status] ? (
-                            <Box sx={{ color: getStatusColor(status) }}>
+                            <Box sx={{ color: `${colorCodes[status]}.main` }}>
                                 {formatMessage(MESSAGES[status])}
                             </Box>
                         ) : (

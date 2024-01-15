@@ -380,3 +380,5 @@ export const useMenuItems = (): MenuItems => {
     }, [admin, basicItems, currentUser, pluginsMenu]);
     return items;
 };
+export const RDC_USER_MANUAL =
+    'https://docs.google.com/document/d/1eSJWotpTn4OtI1TV9OjJeF0hIa8W_1nUtpg9tmEgCkw/edit?usp=sharing';

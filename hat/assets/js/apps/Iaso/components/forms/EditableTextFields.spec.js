@@ -2,7 +2,8 @@ import React from 'react';
 import { renderWithMuiTheme } from '../../../../test/utils/muiTheme';
 import { EditableTextFields } from './EditableTextFields';
 import { renderWithIntl } from '../../../../test/utils/intl';
-import InputComponent from './InputComponent';
+import InputComponent from './InputComponent.tsx';
+import { renderWithStore } from '../../../../test/utils/redux';
 
 const onChange1 = sinon.spy();
 const onChange2 = sinon.spy();
@@ -33,7 +34,9 @@ let inputs;
 const renderComponent = props => {
     return mount(
         renderWithIntl(
-            renderWithMuiTheme(<EditableTextFields fields={props} />),
+            renderWithMuiTheme(
+                renderWithStore(<EditableTextFields fields={props} />),
+            ),
         ),
     );
 };

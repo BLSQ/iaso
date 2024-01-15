@@ -8,7 +8,7 @@ type Props = {
     icon: any;
 };
 
-export const PageActionWithLink: FunctionComponent<Props> = ({
+export const LinkButton: FunctionComponent<Props> = ({
     icon: Icon,
     children,
     url,
@@ -16,12 +16,7 @@ export const PageActionWithLink: FunctionComponent<Props> = ({
     const classes: Record<string, string> = useStyles();
     return (
         <Link download href={url}>
-            <Button
-                variant="contained"
-                color="primary"
-                className={classes.pageAction}
-                component="div"
-            >
+            <Button variant="contained" color="primary" component="div">
                 <Icon className={classes.buttonIcon} />
                 {children}
             </Button>

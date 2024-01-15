@@ -7,6 +7,11 @@ export type PostArg = {
     signal?: AbortSignal | null;
 };
 
+export type Locale = {
+    code: string;
+    label: string;
+};
+
 export type RouterLocation = {
     action: string; // Probably "REDIRECT" or "REPLACE"
     basename: string; // eg "/dashboard"

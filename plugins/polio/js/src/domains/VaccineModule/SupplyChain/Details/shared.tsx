@@ -11,7 +11,7 @@ import {
 export const useSharedStyles = makeStyles({
     scrollableForm: {
         height: `calc(100vh - ${MENU_HEIGHT_WITH_TABS + 200}px)`,
-        overflow: 'scroll',
+        overflowY: 'auto',
     },
 });
 

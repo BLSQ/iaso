@@ -1,11 +1,11 @@
-import React, { FunctionComponent, ReactNode } from 'react';
+import React, { FunctionComponent } from 'react';
 import { Tab, Tabs } from '@mui/material';
 import { useStyles } from '../../../styles/theme';
 import { PolioDialogTab } from './PolioDialogTab';
 
-type Tab = {
+export type Tab = {
     title: string;
-    form: ReactNode;
+    form: FunctionComponent;
     hasTabError: boolean;
     key: string;
     disabled?: boolean;

@@ -21,10 +21,10 @@ export const colorCodes: Record<ChangeRequestValidationStatus, string> = {
     approved: 'success',
 };
 
-const useStatusStyles = (status: ChangeRequestValidationStatus) => {
+const useStatusStyles = (status?: ChangeRequestValidationStatus) => {
     return useMemo(() => ({
         infoCard: {
-            backgroundColor: `${colorCodes[status]}.background`,
+            backgroundColor: status ? `${colorCodes[status]}.background` : 'inherit',
         },
         label: {
             fontWeight: 'bold',
@@ -35,7 +35,7 @@ const useStatusStyles = (status: ChangeRequestValidationStatus) => {
         },
         status: {
             textAlign: 'left',
-            color: `${colorCodes[status]}.main`,
+            color: status ? `${colorCodes[status]}.main` : 'inherit',
         },
     }), [status]);
 };
@@ -46,9 +46,9 @@ export const ReviewOrgUnitChangesInfos: FunctionComponent<Props> = ({
     isFetchingChangeRequest,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const styles= useStatusStyles(changeRequest?.status);
     if (isFetchingChangeRequest || !changeRequest) return null;
     const { status } = changeRequest;
-    const styles= useStatusStyles(status);
     return (
         <Card sx={styles.infoCard}>
             <CardContent>

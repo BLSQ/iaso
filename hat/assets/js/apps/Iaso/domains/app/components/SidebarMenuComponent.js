@@ -89,8 +89,14 @@ const styles = theme => ({
 
 // not removing the function (or the locale argument) because we will want to link to localized version of the doc website
 // eslint-disable-next-line no-unused-vars
-const localizedManualUrl = locale => {
-    return 'https://iaso.readthedocs.io/en/latest/pages/users/reference/user_guide/user_guide/';
+const localizedManualUrl = (locale, account) => {
+    if (locale === 'fr' && account.name === 'RDC') {
+        return 'https://docs.google.com/document/d/1lKyhbKDLZpHtAsf3K6pRs0_EAXWdSDsL76Ohv0cyZQc/edit';
+    }
+
+    return account.user_manual_path
+        ? account.user_manual_path
+        : 'https://iaso.readthedocs.io/en/latest/pages/users/reference/user_guide/user_guide/';
 };
 
 const SidebarMenu = ({

@@ -946,7 +946,7 @@ class CampaignViewSet(ModelViewSet):
         for round in rounds:
             item = {}
             campaign = campaigns.get(pk=round.campaign_id)
-            country = campaign.country.name
+            country = campaign.country.name if campaign.country else ""
             obr_name = campaign.obr_name
             vaccine_types = campaign.vaccines
             onset_date = campaign.onset_at

@@ -117,20 +117,22 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
         isLoading: isLoadingValidationStatusOptions,
     } = useGetValidationStatus(true);
     const handleChange = (key, value) => {
+        const newFilters: Record<string, unknown> = {
+            ...filters,
+        };
         if (key === 'version') {
             setSourceVersionId(parseInt(value, 10));
         }
         if (key === 'source') {
+            console.log('Reset');
             setInitialOrgUnitId(undefined);
             setSourceVersionId(undefined);
             setDataSourceId(parseInt(value, 10));
+            delete newFilters.levels;
         }
         if (key === 'levels') {
             setInitialOrgUnitId(value);
         }
-        const newFilters: Record<string, unknown> = {
-            ...filters,
-        };
         if (key === 'project') {
             setInitialOrgUnitId(undefined);
             newFilters.orgUnitTypeId = undefined;

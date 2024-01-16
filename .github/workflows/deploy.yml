@@ -62,10 +62,10 @@ jobs:
       - name: upgrade npm
         run: |
           npm install --global npm@8.5
-      - name: Set up Python 3.8
+      - name: Set up Python 3.9
         uses: actions/setup-python@v1
         with:
-          python-version: 3.8
+          python-version: 3.9
 
       - name: Setup beanstalk
         # the specification of botocore is due to a deployment problem with 1.21 to remove later

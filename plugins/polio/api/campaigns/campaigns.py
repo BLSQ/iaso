@@ -2,6 +2,7 @@ from datetime import datetime
 import json
 from time import gmtime, strftime
 from typing import Any, List, Union
+from tempfile import NamedTemporaryFile
 
 from django.conf import settings
 from django.core.cache import cache
@@ -17,7 +18,7 @@ from django.utils.timezone import make_aware, now
 from django.utils.translation import gettext as _
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from gspread.exceptions import APIError  # type: ignore
-from openpyxl.writer.excel import save_virtual_workbook  # type: ignore
+from openpyxl import Workbook
 from rest_framework import filters, permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.fields import Field
@@ -822,10 +823,12 @@ class CampaignViewSet(ModelViewSet):
         filename = xlsx_file_name("calendar", params)
         xlsx_file = generate_xlsx_campaigns_calendar(filename, calendar_data)
 
-        response = HttpResponse(
-            save_virtual_workbook(xlsx_file),
-            content_type=CONTENT_TYPE_XLSX,
-        )
+        with NamedTemporaryFile() as tmp:
+            xlsx_file.save(tmp.name)
+            tmp.seek(0)
+            stream = tmp.read()
+
+        response = HttpResponse(stream, content_type=CONTENT_TYPE_XLSX)
         response["Content-Disposition"] = "attachment; filename=%s" % filename + ".xlsx"
         return response
 
@@ -943,7 +946,7 @@ class CampaignViewSet(ModelViewSet):
         for round in rounds:
             item = {}
             campaign = campaigns.get(pk=round.campaign_id)
-            country = campaign.country.name
+            country = campaign.country.name if campaign.country else ""
             obr_name = campaign.obr_name
             vaccine_types = campaign.vaccines
             onset_date = campaign.onset_at

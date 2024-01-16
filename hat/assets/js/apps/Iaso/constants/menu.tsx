@@ -50,6 +50,7 @@ import { useGetBeneficiaryTypesDropdown } from '../domains/entities/hooks/reques
 import { DropdownOptions } from '../types/utils';
 import { Plugins } from '../domains/app/types';
 import { useGetOrgunitsExtraPath } from '../domains/home/hooks/useGetOrgunitsExtraPath';
+import { CHANGE_REQUEST } from './urls';
 
 type MenuItem = {
     label: string;
@@ -147,6 +148,12 @@ const menuItems = (
                     extraPath: orgUnitExtraPath,
                     key: 'list',
                     icon: props => <FormatListBulleted {...props} />,
+                },
+                {
+                    label: formatMessage(MESSAGES.reviewChangeProposals),
+                    permissions: paths.orgUnitChangeRequestPath.permissions,
+                    key: CHANGE_REQUEST,
+                    icon: props => <CategoryIcon {...props} />,
                 },
                 {
                     label: formatMessage(MESSAGES.registry),
@@ -373,3 +380,5 @@ export const useMenuItems = (): MenuItems => {
     }, [admin, basicItems, currentUser, pluginsMenu]);
     return items;
 };
+export const RDC_USER_MANUAL =
+    'https://docs.google.com/document/d/1eSJWotpTn4OtI1TV9OjJeF0hIa8W_1nUtpg9tmEgCkw/edit?usp=sharing';

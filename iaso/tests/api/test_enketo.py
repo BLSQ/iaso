@@ -95,7 +95,7 @@ class EnketoAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f"/api/enketo/edit/{instance.uuid}/")
         resp = response.json()
-        self.assertEquals({"error": "Enketo is not available"}, resp)
+        self.assertEqual({"error": "Enketo is not available"}, resp)
 
     @override_settings(ENKETO=enketo_test_settings)
     @responses.activate
@@ -267,7 +267,7 @@ class EnketoAPITestCase(APITestCase):
                 "</xforms>",
             ]
         )
-        self.assertEquals(response.content.decode("utf-8"), expected_list)
+        self.assertEqual(response.content.decode("utf-8"), expected_list)
 
     def test_when_anonymous_get_formList_should_work_2(self):
         with open("iaso/tests/fixtures/hydroponics_test_upload_modified.xml") as modified_xml:
@@ -521,7 +521,7 @@ class EnketoAPITestCase(APITestCase):
                 "</xforms>",
             ]
         )
-        self.assertEquals(response.content.decode("utf-8"), expected_list)
+        self.assertEqual(response.content.decode("utf-8"), expected_list)
 
     def test_duplicate_instance_download(self):
         "form download works if there is two instance"

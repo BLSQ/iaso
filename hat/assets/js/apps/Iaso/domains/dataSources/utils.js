@@ -43,7 +43,7 @@ export const FIELDS_TO_EXPORT = {
 
 export const useFieldsToExport = () => {
     const { formatMessage } = useSafeIntl();
-    return [
+    const fields = [
         {
             label: formatMessage(MESSAGES.geometry),
             value: FIELDS_TO_EXPORT.geometry,
@@ -66,7 +66,14 @@ export const useFieldsToExport = () => {
             value: FIELDS_TO_EXPORT.parent,
         },
     ];
+
+    return fields.sort((a, b) =>
+        a.label.localeCompare(b.label, undefined, {
+            sensitivity: 'accent',
+        }),
+    );
 };
+
 export const credentialsAsOptions = credentials => {
     if (!credentials) return [];
     return credentials.map(credential => ({

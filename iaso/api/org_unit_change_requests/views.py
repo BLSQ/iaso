@@ -26,6 +26,7 @@ from iaso.models import OrgUnitChangeRequest, OrgUnit
 class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     filterset_class = OrgUnitChangeRequestListFilter
+    http_method_names = ["get", "options", "patch", "post", "head", "trace"]
     pagination_class = OrgUnitChangeRequestPagination
 
     def get_permissions(self):
@@ -36,7 +37,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
         return [permission() for permission in permission_classes]
 
     def get_serializer_class(self):
-        if self.action in ["create", "update"]:
+        if self.action in ["create"]:
             return OrgUnitChangeRequestWriteSerializer
         if self.action in ["list", "metadata"]:
             return OrgUnitChangeRequestListSerializer
@@ -77,17 +78,6 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
         org_unit_to_change = serializer.validated_data["org_unit"]
         self.has_org_unit_permission(org_unit_to_change)
         serializer.validated_data["created_by"] = self.request.user
-        serializer.save()
-
-    def perform_update(self, serializer):
-        """
-        PUT to update an `OrgUnitChangeRequest`.
-        """
-        org_unit_to_change = serializer.validated_data.get("org_unit")
-        if org_unit_to_change:
-            self.has_org_unit_permission(org_unit_to_change)
-        serializer.validated_data["updated_by"] = self.request.user
-        serializer.validated_data["updated_at"] = timezone.now()
         serializer.save()
 
     def partial_update(self, request, *args, **kwargs):

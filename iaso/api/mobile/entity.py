@@ -119,7 +119,7 @@ class MobileEntitiesSetPagination(Paginator):
     page_size = 1000
     max_page_size = 1000
 
-    def get_page_number(self, request):
+    def get_iaso_page_number(self, request):
         return int(request.query_params.get(self.page_query_param, 1))
 
 

@@ -354,18 +354,18 @@ class PolioLqasAfroMapTestCase(APITestCase):
         )
         country_data = {"rounds": []}
         result = get_data_for_round(country_data, 1)
-        self.assertEquals(result["data"], {})
+        self.assertEqual(result["data"], {})
 
     def test_calculate_country_status(self):
         country_data = self.country1_data_store_content["stats"][self.campaign_1.obr_name]
         scope = self.campaign_1.get_all_districts()
         round_number = 1
         result = calculate_country_status(country_data, scope, round_number)
-        self.assertEquals(result, LQASStatus.Pass)
+        self.assertEqual(result, LQASStatus.Pass)
         result = calculate_country_status({}, scope, round_number)
-        self.assertEquals(result, LQASStatus.InScope)
+        self.assertEqual(result, LQASStatus.InScope)
         result = calculate_country_status({}, CampaignScope.objects.filter(campaign__obr_name="NOTHING"), round_number)
-        self.assertEquals(result, LQASStatus.InScope)
+        self.assertEqual(result, LQASStatus.InScope)
 
     def test_is_round_over(self):
         # Accessing the round directly will cause the date to be of type str
@@ -387,18 +387,18 @@ class PolioLqasAfroMapTestCase(APITestCase):
         content = json.loads(response.content)
         results = content["results"]
         # Test details of data for first country
-        self.assertEquals(len(results), 2)
+        self.assertEqual(len(results), 2)
         results_for_first_country = next(
             (country_data for country_data in results if country_data["id"] == self.country_org_unit_1.id), None
         )
         self.assertTrue(results_for_first_country is not None)
-        self.assertEquals(results_for_first_country["data"]["campaign"], self.campaign_1.obr_name)
-        self.assertEquals(len(results_for_first_country["data"]["rounds"]), self.campaign_1.rounds.count())
-        self.assertEquals(
+        self.assertEqual(results_for_first_country["data"]["campaign"], self.campaign_1.obr_name)
+        self.assertEqual(len(results_for_first_country["data"]["rounds"]), self.campaign_1.rounds.count())
+        self.assertEqual(
             results_for_first_country["data"]["rounds"][0]["data"],
             self.country1_data_store_content["stats"][self.campaign_1.obr_name]["rounds"][0]["data"],
         )
-        self.assertEquals(results_for_first_country["status"], LQASStatus.Fail)
+        self.assertEqual(results_for_first_country["status"], LQASStatus.Fail)
 
         # Test that second country is there as well
         results_for_second_country = next(
@@ -419,18 +419,18 @@ class PolioLqasAfroMapTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
         results = content["results"]
-        self.assertEquals(len(results), 2)
+        self.assertEqual(len(results), 2)
         results_for_first_country = next(
             (country_data for country_data in results if country_data["id"] == self.country_org_unit_1.id), None
         )
         self.assertTrue(results_for_first_country is not None)
         # Only status changes
-        self.assertEquals(results_for_first_country["status"], LQASStatus.Pass)
+        self.assertEqual(results_for_first_country["status"], LQASStatus.Pass)
         results_for_second_country = next(
             (country_data for country_data in results if country_data["id"] == self.country_org_unit_2.id), None
         )
         self.assertTrue(results_for_second_country is not None)
-        self.assertEquals(results_for_second_country["status"], LQASStatus.Pass)
+        self.assertEqual(results_for_second_country["status"], LQASStatus.Pass)
 
     def test_lqas_global_end_date_filter(self):
         c = APIClient()
@@ -445,13 +445,13 @@ class PolioLqasAfroMapTestCase(APITestCase):
             (country_data for country_data in results if country_data["id"] == self.country_org_unit_1.id), None
         )
         self.assertTrue(results_for_first_country is not None)
-        self.assertEquals(results_for_first_country["status"], LQASStatus.Fail)
+        self.assertEqual(results_for_first_country["status"], LQASStatus.Fail)
 
         results_for_second_country = next(
             (country_data for country_data in results if country_data["id"] == self.country_org_unit_2.id), None
         )
         self.assertTrue(results_for_second_country is not None)
-        self.assertEquals(results_for_second_country["status"], LQASStatus.Fail)
+        self.assertEqual(results_for_second_country["status"], LQASStatus.Fail)
 
     def test_lqas_global_start_date_filter(self):
         c = APIClient()
@@ -486,7 +486,7 @@ class PolioLqasAfroMapTestCase(APITestCase):
             (country_data for country_data in results if country_data["id"] == self.country_org_unit_1.id), None
         )
         self.assertTrue(results_for_first_country is not None)
-        self.assertEquals(results_for_first_country["status"], LQASStatus.Pass)
+        self.assertEqual(results_for_first_country["status"], LQASStatus.Pass)
 
         results_for_second_country = next(
             (country_data for country_data in results if country_data["id"] == self.country_org_unit_2.id), None
@@ -512,7 +512,7 @@ class PolioLqasAfroMapTestCase(APITestCase):
             (country_data for country_data in results if country_data["id"] == self.country_org_unit_2.id), None
         )
         self.assertTrue(results_for_second_country is not None)
-        self.assertEquals(results_for_second_country["status"], LQASStatus.Pass)
+        self.assertEqual(results_for_second_country["status"], LQASStatus.Pass)
 
     def lqas_global_start_and_end_date_filters(self):
         c = APIClient()
@@ -530,13 +530,13 @@ class PolioLqasAfroMapTestCase(APITestCase):
             (country_data for country_data in results if country_data["id"] == self.country_org_unit_1.id), None
         )
         self.assertTrue(results_for_first_country is not None)
-        self.assertEquals(results_for_first_country["status"], LQASStatus.InScope)
+        self.assertEqual(results_for_first_country["status"], LQASStatus.InScope)
 
         results_for_second_country = next(
             (country_data for country_data in results if country_data["id"] == self.country_org_unit_2.id), None
         )
         self.assertTrue(results_for_second_country is not None)
-        self.assertEquals(results_for_second_country["status"], LQASStatus.InScope)
+        self.assertEqual(results_for_second_country["status"], LQASStatus.InScope)
 
     def test_lqas_global_period_filter(self):
         c = APIClient()
@@ -548,7 +548,7 @@ class PolioLqasAfroMapTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
         results = content["results"]
-        self.assertEquals(len(results), 2)
+        self.assertEqual(len(results), 2)
         response = c.get(
             "/api/polio/lqasmap/global/?category=lqas&period=1months",
             accept="application/json",
@@ -556,7 +556,7 @@ class PolioLqasAfroMapTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
         results = content["results"]
-        self.assertEquals(len(results), 0)
+        self.assertEqual(len(results), 0)
 
     def test_lqas_zoomed_in(self):
         c = APIClient()
@@ -567,28 +567,28 @@ class PolioLqasAfroMapTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
         results = content["results"]
-        self.assertEquals(len(results), 3)
+        self.assertEqual(len(results), 3)
         results_for_first_district = next(
             (district_data for district_data in results if district_data["id"] == self.district_org_unit_1.id), None
         )
         self.assertTrue(results_for_first_district is not None)
-        self.assertEquals(results_for_first_district["data"]["campaign"], self.campaign_1.obr_name)
-        self.assertEquals(
+        self.assertEqual(results_for_first_district["data"]["campaign"], self.campaign_1.obr_name)
+        self.assertEqual(
             results_for_first_district["data"]["district_name"],
             self.district_org_unit_1.name,
         )
-        self.assertEquals(results_for_first_district["status"], LQASStatus.Fail)
+        self.assertEqual(results_for_first_district["status"], LQASStatus.Fail)
 
         results_for_second_district = next(
             (district_data for district_data in results if district_data["id"] == self.district_org_unit_2.id), None
         )
         self.assertTrue(results_for_second_district is not None)
-        self.assertEquals(results_for_second_district["data"]["campaign"], self.campaign_1.obr_name)
-        self.assertEquals(
+        self.assertEqual(results_for_second_district["data"]["campaign"], self.campaign_1.obr_name)
+        self.assertEqual(
             results_for_second_district["data"]["district_name"],
             self.district_org_unit_2.name,
         )
-        self.assertEquals(results_for_second_district["status"], LQASStatus.Fail)
+        self.assertEqual(results_for_second_district["status"], LQASStatus.Fail)
 
         # Third district has no data for latest round, ie round 2
         results_for_third_district = next(
@@ -600,12 +600,12 @@ class PolioLqasAfroMapTestCase(APITestCase):
             (district_data for district_data in results if district_data["id"] == self.district_org_unit_4.id), None
         )
         self.assertTrue(results_for_fourth_district is not None)
-        self.assertEquals(results_for_fourth_district["data"]["campaign"], self.campaign_2.obr_name)
-        self.assertEquals(
+        self.assertEqual(results_for_fourth_district["data"]["campaign"], self.campaign_2.obr_name)
+        self.assertEqual(
             results_for_fourth_district["data"]["district_name"],
             self.district_org_unit_4.name,
         )
-        self.assertEquals(results_for_fourth_district["status"], LQASStatus.Fail)
+        self.assertEqual(results_for_fourth_district["status"], LQASStatus.Fail)
 
     def test_lqas_zoomin_round_filter(self):
         c = APIClient()
@@ -616,39 +616,39 @@ class PolioLqasAfroMapTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
         results = content["results"]
-        self.assertEquals(len(results), 3)
+        self.assertEqual(len(results), 3)
         results_for_first_district = next(
             (district_data for district_data in results if district_data["id"] == self.district_org_unit_1.id), None
         )
         self.assertTrue(results_for_first_district is not None)
-        self.assertEquals(results_for_first_district["data"]["campaign"], self.campaign_1.obr_name)
-        self.assertEquals(
+        self.assertEqual(results_for_first_district["data"]["campaign"], self.campaign_1.obr_name)
+        self.assertEqual(
             results_for_first_district["data"]["district_name"],
             self.district_org_unit_1.name,
         )
-        self.assertEquals(results_for_first_district["status"], LQASStatus.Pass)
+        self.assertEqual(results_for_first_district["status"], LQASStatus.Pass)
 
         results_for_second_district = next(
             (district_data for district_data in results if district_data["id"] == self.district_org_unit_2.id), None
         )
         self.assertTrue(results_for_second_district is not None)
-        self.assertEquals(results_for_second_district["data"]["campaign"], self.campaign_1.obr_name)
-        self.assertEquals(
+        self.assertEqual(results_for_second_district["data"]["campaign"], self.campaign_1.obr_name)
+        self.assertEqual(
             results_for_second_district["data"]["district_name"],
             self.district_org_unit_2.name,
         )
-        self.assertEquals(results_for_second_district["status"], LQASStatus.Pass)
+        self.assertEqual(results_for_second_district["status"], LQASStatus.Pass)
 
         results_for_third_district = next(
             (district_data for district_data in results if district_data["id"] == self.district_org_unit_3.id), None
         )
         self.assertTrue(results_for_third_district is not None)
-        self.assertEquals(results_for_third_district["data"]["campaign"], self.campaign_2.obr_name)
-        self.assertEquals(
+        self.assertEqual(results_for_third_district["data"]["campaign"], self.campaign_2.obr_name)
+        self.assertEqual(
             results_for_third_district["data"]["district_name"],
             self.district_org_unit_3.name,
         )
-        self.assertEquals(results_for_third_district["status"], LQASStatus.Pass)
+        self.assertEqual(results_for_third_district["status"], LQASStatus.Pass)
 
         # fourth district is out of scope for round 1
         results_for_fourth_district = next(
@@ -671,9 +671,9 @@ class PolioLqasAfroMapTestCase(APITestCase):
         # There's no guarantee on the order of the districts
         sorted_results = sorted(results, key=lambda k: k["data"]["district_name"])
 
-        self.assertEquals(len(results), 3)
-        self.assertEquals(sorted_results[0]["data"]["campaign"], self.campaign_1.obr_name)
-        self.assertEquals(sorted_results[0]["data"]["round_number"], 2)
+        self.assertEqual(len(results), 3)
+        self.assertEqual(sorted_results[0]["data"]["campaign"], self.campaign_1.obr_name)
+        self.assertEqual(sorted_results[0]["data"]["round_number"], 2)
 
     def test_lqas_zoomedin_start_date_filter(self):
         c = APIClient()
@@ -688,7 +688,7 @@ class PolioLqasAfroMapTestCase(APITestCase):
         content = json.loads(response.content)
         results = content["results"]
         # There's no round date that starts after 07-06-2023
-        self.assertEquals(len(results), 0)
+        self.assertEqual(len(results), 0)
 
     def test_lqas_zoomin_round_with_start_date_filters(self):
         c = APIClient()
@@ -701,15 +701,15 @@ class PolioLqasAfroMapTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
         results = content["results"]
-        self.assertEquals(len(results), 3)
+        self.assertEqual(len(results), 3)
         # There's no guarantee on the order of the districts
         sorted_results = sorted(results, key=lambda k: k["data"]["district_name"])
-        self.assertEquals(sorted_results[0]["data"]["campaign"], self.campaign_1.obr_name)
-        self.assertEquals(sorted_results[0]["data"]["district_name"], self.district_org_unit_1.name)
-        self.assertEquals(sorted_results[0]["status"], LQASStatus.Pass)
-        self.assertEquals(sorted_results[1]["data"]["campaign"], self.campaign_1.obr_name)
-        self.assertEquals(sorted_results[1]["data"]["district_name"], self.district_org_unit_2.name)
-        self.assertEquals(sorted_results[1]["status"], LQASStatus.Pass)
+        self.assertEqual(sorted_results[0]["data"]["campaign"], self.campaign_1.obr_name)
+        self.assertEqual(sorted_results[0]["data"]["district_name"], self.district_org_unit_1.name)
+        self.assertEqual(sorted_results[0]["status"], LQASStatus.Pass)
+        self.assertEqual(sorted_results[1]["data"]["campaign"], self.campaign_1.obr_name)
+        self.assertEqual(sorted_results[1]["data"]["district_name"], self.district_org_unit_2.name)
+        self.assertEqual(sorted_results[1]["status"], LQASStatus.Pass)
 
     def test_lqas_zoomin_round_with_end_date_filters(self):
         c = APIClient()
@@ -722,10 +722,10 @@ class PolioLqasAfroMapTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
         results = content["results"]
-        self.assertEquals(len(results), 1)
-        self.assertEquals(results[0]["data"]["campaign"], self.campaign_2.obr_name)
-        self.assertEquals(results[0]["data"]["district_name"], self.district_org_unit_3.name)
-        self.assertEquals(results[0]["status"], LQASStatus.Pass)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]["data"]["campaign"], self.campaign_2.obr_name)
+        self.assertEqual(results[0]["data"]["district_name"], self.district_org_unit_3.name)
+        self.assertEqual(results[0]["status"], LQASStatus.Pass)
 
     def test_lqas_zoomin_start_and_end_date_filters(self):
         c = APIClient()
@@ -739,7 +739,7 @@ class PolioLqasAfroMapTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
         results = content["results"]
-        self.assertEquals(len(results), 0)
+        self.assertEqual(len(results), 0)
 
     def test_lqas_zoomed_in_period_filter(self):
         c = APIClient()
@@ -751,7 +751,7 @@ class PolioLqasAfroMapTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
         results = content["results"]
-        self.assertEquals(len(results), 3)
+        self.assertEqual(len(results), 3)
         response = c.get(
             f"/api/polio/lqasmap/zoomin/?category=lqas&bounds={self.url_bounds}&period=1months",
             accept="application/json",
@@ -759,4 +759,4 @@ class PolioLqasAfroMapTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
         results = content["results"]
-        self.assertEquals(len(results), 0)
+        self.assertEqual(len(results), 0)

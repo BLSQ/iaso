@@ -16,6 +16,12 @@ export const useStyles = makeStyles(theme => ({
         flexDirection: 'column',
         alignItems: 'center',
     },
+    stepDivider: {
+        width: `1px !important`,
+        height: `30px !important`,
+        margin: `auto !important`,
+        borderColor: '#666 !important',
+    },
     checkboxWrapper: {
         display: 'flex',
         alignItems: 'center',

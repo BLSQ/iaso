@@ -4,7 +4,7 @@ import { Field, useFormikContext } from 'formik';
 import { useSafeIntl } from 'bluesquare-components';
 import { useStyles } from '../../../styles/theme';
 import MESSAGES from '../../../constants/messages';
-import { DateInput, TextInput, NumberInput } from '../../../components/Inputs';
+import { DateInput, NumberInput } from '../../../components/Inputs';
 
 export const riskAssessmentFormFields = [
     'risk_assessment_status',
@@ -203,8 +203,9 @@ export const RiskAssessmentForm = () => {
                                     MESSAGES.target_population,
                                 )} ${round.number}`}
                                 name={`rounds[${i}].target_population`}
-                                component={TextInput}
+                                component={NumberInput}
                                 className={classes.input}
+                                shrinkLabel={false}
                             />
                         );
                     })}
@@ -218,8 +219,9 @@ export const RiskAssessmentForm = () => {
                                     round.number
                                 }`}
                                 name={`rounds[${i}].doses_requested`}
-                                component={TextInput}
+                                component={NumberInput}
                                 className={classes.input}
+                                withMarginTop
                             />
                         );
                     })}

@@ -66,8 +66,8 @@ export const MESSAGES = defineMessages({
         id: 'iaso.forms.newCap',
     },
     VALID: {
-        defaultMessage: 'Validated',
-        id: 'iaso.forms.validated',
+        defaultMessage: 'Valid',
+        id: 'iaso.forms.valid',
     },
 });
 

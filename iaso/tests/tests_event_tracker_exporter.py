@@ -256,12 +256,12 @@ class DataValueExporterTests(TestCase):
                 dump_attributes(export_request)
 
         for export_status in ExportStatus.objects.all():
-            self.assertEquals(status, export_status.status)
+            self.assertEqual(status, export_status.status)
 
         for export_request in ExportRequest.objects.all():
             self.assertIsNotNone(export_request.started_at)
             self.assertIsNotNone(export_request.ended_at)
-            self.assertEquals(status, export_request.status)
+            self.assertEqual(status, export_request.status)
 
     def setUp(self):
         form, created = Form.objects.get_or_create(
@@ -341,7 +341,7 @@ class DataValueExporterTests(TestCase):
 
         trackedentity, errors = EventTrackerHandler().map_to_values(instance, build_form_mapping())
 
-        self.assertEquals(
+        self.assertEqual(
             {
                 "orgUnit": "OU_DHIS2_ID",
                 "trackedEntityType": "54dfg45re",
@@ -420,7 +420,7 @@ class DataValueExporterTests(TestCase):
 
         trackedentity, errors = EventTrackerHandler().map_to_values(instance, build_form_mapping())
 
-        self.assertEquals(
+        self.assertEqual(
             {
                 "orgUnit": "OU_DHIS2_ID",
                 "trackedEntityType": "54dfg45re",
@@ -500,7 +500,7 @@ class DataValueExporterTests(TestCase):
 
         trackedentity, errors = EventTrackerHandler().map_to_values(instance, mapping_json)
 
-        self.assertEquals(
+        self.assertEqual(
             {
                 "orgUnit": "OU_DHIS2_ID",
                 "trackedEntityType": "54dfg45re",

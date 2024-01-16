@@ -3,6 +3,7 @@ import { Button, useMediaQuery, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
+import classNames from 'classnames';
 import MESSAGES from '../../../constants/messages';
 
 const style = theme => {
@@ -13,14 +14,14 @@ const style = theme => {
             },
         },
         green: {
-            backgroundColor: theme.palette.success.main,
+            backgroundColor: `${theme.palette.success.main} !important`,
             color: 'white',
             '&.MuiButton-contained:hover': {
                 backgroundColor: theme.palette.success.main,
             },
         },
         red: {
-            backgroundColor: theme.palette.error.main,
+            backgroundColor: `${theme.palette.error.main} !important`,
             color: 'white',
             '&.MuiButton-contained:hover': {
                 backgroundColor: theme.palette.error.main,
@@ -29,13 +30,13 @@ const style = theme => {
         repeatIcon: {
             marginRight: theme.spacing(1),
         },
+        marginRight: { marginRight: theme.spacing(2) },
     };
 };
 
 export const useButtonStyles = makeStyles(style);
 
 type OverrideStepButtonProps = {
-    label: string;
     onClick: () => void;
     disabled?: boolean;
 };
@@ -52,7 +53,7 @@ export const OverrideStepButton: FunctionComponent<OverrideStepButtonProps> = ({
 
     // The div prevents the Button from being too big on small screens
     return (
-        <div className={classes.addButton}>
+        <div className={classNames(classes.addButton, classes.marginRight)}>
             <Button
                 onClick={onClick}
                 size={isMobileLayout ? 'small' : 'medium'}

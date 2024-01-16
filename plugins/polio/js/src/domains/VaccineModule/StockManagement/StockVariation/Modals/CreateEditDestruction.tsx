@@ -53,7 +53,7 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
     const titleMessage = destruction?.id ? MESSAGES.edit : MESSAGES.create;
     const title = `${countryName} - ${vaccine}: ${formatMessage(
         titleMessage,
-    )} ${formatMessage(MESSAGES.formA)}`;
+    )} ${formatMessage(MESSAGES.destructionReports)}`;
     const allowConfirm = formik.isValid && !isEqual(formik.touched, {});
 
     return (

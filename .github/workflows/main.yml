@@ -103,10 +103,10 @@ jobs:
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.8
+      - name: Set up Python 3.9
         uses: actions/setup-python@v2
         with:
-          python-version: 3.8
+          python-version: 3.9
       - name: Install GDAL
         run: sudo apt-get update && sudo apt install gdal-bin 
       - uses: actions/cache@v2
@@ -119,7 +119,7 @@ jobs:
             ${{ runner.os }}-venv-
           # Build a virtualenv, but only if it doesn't already exist
       - run: python -v && python -m venv ./venv && . ./venv/bin/activate && pip install -U pip &&
-          pip install -r requirements.txt && pip install -r requirements-dev.txt
+          pip install -r requirements-dev.txt
         if: steps.cache-venv.outputs.cache-hit != 'true'
       - name: Environment info
         run: |

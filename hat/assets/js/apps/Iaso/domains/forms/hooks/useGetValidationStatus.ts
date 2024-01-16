@@ -21,11 +21,17 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.newCap',
     },
     VALID: {
-        defaultMessage: 'Validated',
-        id: 'iaso.forms.validated',
+        defaultMessage: 'Valid',
+        id: 'iaso.forms.valid',
     },
 });
-
+/** @deprecated
+ *
+ * use orgUnits/hooks/utils/useGetOrgUnitValidationStatus instead
+ *
+ * Will be removed: IA-2545
+ *
+ */
 export const useGetValidationStatus = (
     includeAll = false,
     enabled = true,

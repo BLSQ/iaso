@@ -55,9 +55,10 @@ Read [AWS documentation on creating adn using a custom AMI](
 https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/using-features.customenv.html)
 but in summary:
 
-1. First identify the AMI of the Elastic Beanstalk EC2 server.
-2. In EC2, launch a new instance based on that AMI. 
-3. Don't forget to set in the advanced section:
+1. In EC2 -> AMIs, identify the AMI of the Elastic Beanstalk EC2 server(Ex: Choose a public AMI in which python3.9 installed with Amazon Linux 2).
+2. Select the AMI and launch a new instance based on it. 
+3. Specify the instance name and choose a key pair.
+4. Don't forget to set in the advanced section:
 ```yaml
 #cloud-config
   repo_releasever: repository version number

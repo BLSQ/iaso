@@ -32,6 +32,12 @@ const initialState = {
     links: linksInitialState,
     users: usersInitialState,
     mappings: mappingsInitialState,
+    app: {
+        locale: {
+            code: 'en',
+            label: 'English version',
+        },
+    },
 };
 
 export const renderWithStore = (component, state = null) => (

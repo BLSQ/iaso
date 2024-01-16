@@ -654,12 +654,11 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
     list_display = ("pk", "org_unit", "created_at", "status")
     list_display_links = ("pk", "org_unit")
     list_filter = ("status",)
-    readonly_fields = ("uuid",)
+    readonly_fields = ("uuid", "created_at", "created_by")
     raw_id_fields = (
         "org_unit",
         "created_by",
         "updated_by",
-        "reviewed_by",
         "new_parent",
         "new_org_unit_type",
         "new_groups",
@@ -702,8 +701,6 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
                     "created_by",
                     "updated_at",
                     "updated_by",
-                    "reviewed_at",
-                    "reviewed_by",
                     "rejection_comment",
                 )
             },

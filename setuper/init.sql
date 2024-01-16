@@ -1,0 +1,2 @@
+SELECT 'CREATE DATABASE iaso'
+WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'iaso');

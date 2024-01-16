@@ -184,5 +184,7 @@ pyvenv.cfg
 originals
 
 *.code-workspace
-
+/setuper/credentials.py
+/setuper/generated/
 plugins/trypelim
+

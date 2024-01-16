@@ -318,9 +318,20 @@ export const useFormValidator = () => {
 
     return yup.object().shape({
         epid: yup.string().nullable(),
-        obr_name: yup.string().trim().required(),
-        initial_org_unit: yup.number().positive().integer().required(),
+        obr_name: yup
+            .string()
+            .trim()
+            .required(formatMessage(MESSAGES.requiredField)),
+        initial_org_unit: yup
+            .number()
+            .positive()
+            .integer()
+            .required(formatMessage(MESSAGES.requiredField)),
         grouped_campaigns: yup.array(yup.number()).nullable(),
+        virus: yup
+            .string()
+            .nullable()
+            .required(formatMessage(MESSAGES.requiredField)),
         description: yup.string().nullable(),
         onset_at: yup
             .date()

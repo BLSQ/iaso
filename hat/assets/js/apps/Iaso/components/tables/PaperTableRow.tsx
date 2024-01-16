@@ -3,6 +3,7 @@ import { makeStyles } from '@mui/styles';
 import { LoadingSpinner } from 'bluesquare-components';
 import classNames from 'classnames';
 import React, { FunctionComponent } from 'react';
+import { NumberCell } from '../Cells/NumberCell';
 
 const useStyles = makeStyles(theme => ({
     withBorder: {
@@ -48,7 +49,10 @@ export const PaperTableRow: FunctionComponent<RowProps> = ({
                         size={25}
                     />
                 )}
-                {!isLoading && value}
+                {!isLoading && typeof value === 'string' && value}
+                {!isLoading && (
+                    <NumberCell value={value as number | undefined} />
+                )}
             </TableCell>
         </TableRow>
     );

@@ -11,7 +11,7 @@ export const CAMPAIGNS_ENDPOINT = '/api/polio/campaigns/';
 
 export type CampaignType = 'all' | 'preventive' | 'test' | 'regular';
 
-type Options = {
+export type Options = {
     pageSize?: number;
     page?: number;
     order?: string;
@@ -109,7 +109,7 @@ export const useGetCampaigns = (
     url: string | undefined = CAMPAIGNS_ENDPOINT,
     queryKey?: string | unknown[],
     queryOptions?: Record<string, any>,
-): UseQueryResult => {
+): UseQueryResult<any, any> => {
     const params: GetCampaignsParams = useGetCampaignsOptions(options);
     // adding the params to the queryKey to make sure it fetches when the query changes
     const effectiveQueryKey: QueryKey = useMemo(() => {
@@ -127,6 +127,7 @@ export const useGetCampaigns = (
         queryFn: () => getRequest(getURL(params, url)),
         options: {
             cacheTime: Infinity,
+            staleTime: 1000 * 60 * 15,
             structuralSharing: false,
             refetchOnWindowFocus: false,
             enabled: !!params.enabled,

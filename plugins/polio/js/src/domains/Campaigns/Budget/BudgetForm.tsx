@@ -5,7 +5,11 @@ import { Field, FormikErrors, FormikTouched, useFormikContext } from 'formik';
 import { useSafeIntl, ExpandableItem } from 'bluesquare-components';
 import { useStyles } from '../../../styles/theme';
 import MESSAGES from '../../../constants/messages';
-import { DateInput, TextInput, PaymentField } from '../../../components/Inputs';
+import {
+    DateInput,
+    PaymentField,
+    NumberInput,
+} from '../../../components/Inputs';
 import {
     BUDGET_STATES,
     BUDGET_REQUEST,
@@ -338,6 +342,7 @@ export const BudgetForm: FunctionComponent = () => {
                             name="payment_mode"
                             component={PaymentField}
                             fullWidth
+                            shrinkLabel={false}
                         />
                     </Box>
                     <Field
@@ -367,15 +372,16 @@ export const BudgetForm: FunctionComponent = () => {
                     <Field
                         label={formatMessage(MESSAGES.district_count)}
                         name="district_count"
-                        component={TextInput}
+                        component={NumberInput}
                         className={classes.input}
                     />
 
                     <Field
                         label={formatMessage(MESSAGES.noRegretFund)}
                         name="no_regret_fund_amount"
-                        component={TextInput}
+                        component={NumberInput}
                         className={classes.input}
+                        withMarginTop
                     />
                 </Grid>
             </Grid>
@@ -398,7 +404,7 @@ export const BudgetForm: FunctionComponent = () => {
                                         round.number
                                     }`}
                                     name={`rounds[${i}].cost`}
-                                    component={TextInput}
+                                    component={NumberInput}
                                     className={classes.input}
                                 />
                                 <Box mb={2}>

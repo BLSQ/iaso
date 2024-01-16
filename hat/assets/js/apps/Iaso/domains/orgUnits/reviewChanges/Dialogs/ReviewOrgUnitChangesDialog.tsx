@@ -11,6 +11,7 @@ import {
     SimpleModal,
     IconButton as IconButtonBlsq,
 } from 'bluesquare-components';
+import { Grid } from '@mui/material';
 import MESSAGES from '../messages';
 import { useGetApprovalProposal } from '../hooks/api/useGetApprovalProposal';
 import { SelectedChangeRequest } from '../Tables/ReviewOrgUnitChangesTable';
@@ -19,6 +20,7 @@ import { ApproveOrgUnitChangesButtons } from './ReviewOrgUnitChangesButtons';
 import { ChangeRequestValidationStatus } from '../types';
 import { useSaveChangeRequest } from '../hooks/api/useSaveChangeRequest';
 import { ReviewOrgUnitChangesDetailsTable } from '../Tables/details/ReviewOrgUnitChangesDetailsTable';
+import { ReviewOrgUnitChangesInfos } from './ReviewOrgUnitChangesInfos';
 
 type Props = {
     isOpen: boolean;
@@ -53,7 +55,7 @@ export const ReviewOrgUnitChangesDialog: FunctionComponent<Props> = ({
     return (
         <SimpleModal
             open={isOpen}
-            maxWidth="lg"
+            maxWidth="xl"
             onClose={() => null}
             id="approve-orgunit-changes-dialog"
             dataTestId="approve-orgunit-changes-dialog"
@@ -72,12 +74,23 @@ export const ReviewOrgUnitChangesDialog: FunctionComponent<Props> = ({
                 )
             }
         >
-            <ReviewOrgUnitChangesDetailsTable
-                isSaving={isSaving}
-                selectedChangeRequest={selectedChangeRequest}
-                newFields={newFields}
-                setSelected={setSelected}
-            />
+            <Grid container spacing={2}>
+                <Grid item xs={3}>
+                    <ReviewOrgUnitChangesInfos
+                        changeRequest={changeRequest}
+                        isFetchingChangeRequest={isFetchingChangeRequest}
+                    />
+                </Grid>
+                <Grid item xs={9}>
+                    <ReviewOrgUnitChangesDetailsTable
+                        isSaving={isSaving}
+                        changeRequest={changeRequest}
+                        isFetchingChangeRequest={isFetchingChangeRequest}
+                        newFields={newFields}
+                        setSelected={setSelected}
+                    />
+                </Grid>
+            </Grid>
         </SimpleModal>
     );
 };

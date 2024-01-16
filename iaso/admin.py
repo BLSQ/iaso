@@ -658,6 +658,8 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
         "uuid",
         "created_at",
         "created_by",
+        "updated_at",
+        "updated_by",
         "old_parent",
         "old_name",
         "old_org_unit_type",
@@ -669,8 +671,6 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
     )
     raw_id_fields = (
         "org_unit",
-        "created_by",
-        "updated_by",
         "new_parent",
         "new_org_unit_type",
         "new_groups",

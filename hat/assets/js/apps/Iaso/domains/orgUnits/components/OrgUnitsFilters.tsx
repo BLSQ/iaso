@@ -258,7 +258,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                     label={MESSAGES.search}
                     blockForbiddenChars
                     onEnterPressed={onSearch}
-                    onErrorChange={setTextSearchError}
+                    onErrorChange={(hasError) => setTextSearchError(hasError)}
                 />
                 <InputComponent
                     type="select"

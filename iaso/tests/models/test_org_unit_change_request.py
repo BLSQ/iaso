@@ -22,7 +22,15 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
         org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
-        org_unit = m.OrgUnit.objects.create(org_unit_type=org_unit_type)
+        parent = m.OrgUnit.objects.create(org_unit_type=org_unit_type)
+        org_unit = m.OrgUnit.objects.create(
+            org_unit_type=org_unit_type,
+            name="Hôpital Général",
+            parent=parent,
+            location=Point(-1.1111111, 1.1111111, 1.1111111),
+            opening_date=datetime.date(2020, 1, 1),
+            closed_date=datetime.date(2055, 1, 1),
+        )
 
         form = m.Form.objects.create(name="Vaccine form")
 
@@ -34,10 +42,12 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
 
         new_group1 = m.Group.objects.create(name="Group 1")
         new_group2 = m.Group.objects.create(name="Group 2")
+        org_unit.groups.set([new_group1])
 
         other_form = m.Form.objects.create(name="Other form")
         new_instance1 = m.Instance.objects.create(form=form, org_unit=org_unit)
         new_instance2 = m.Instance.objects.create(form=other_form, org_unit=org_unit)
+        m.OrgUnitReferenceInstance.objects.create(org_unit=org_unit, form=form, instance=new_instance1)
 
         cls.form = form
         cls.org_unit = org_unit
@@ -49,6 +59,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         cls.new_instance1 = new_instance1
         cls.new_instance2 = new_instance2
         cls.new_org_unit_type = new_org_unit_type
+        cls.parent = parent
         cls.new_parent = new_parent
 
     @time_machine.travel(DT, tick=False)
@@ -183,6 +194,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
             "new_reference_instances",
         ]
         change_request.approve(user=self.user, approved_fields=approved_fields)
+        change_request.refresh_from_db()
 
         # Change request.
         self.assertEqual(change_request.status, change_request.Statuses.APPROVED)
@@ -190,6 +202,15 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         self.assertEqual(change_request.updated_at, self.DT)
         self.assertEqual(change_request.updated_by, self.user)
         self.assertCountEqual(change_request.approved_fields, approved_fields)
+        # Change request old values.
+        self.assertEqual(change_request.old_parent, self.parent)
+        self.assertEqual(change_request.old_name, "Hôpital Général")
+        self.assertEqual(change_request.old_org_unit_type, self.org_unit_type)
+        self.assertCountEqual(change_request.old_groups.all(), [self.new_group1])
+        self.assertEqual(change_request.old_location, "SRID=4326;POINT Z (-1.1111111 1.1111111 1.1111111)")
+        self.assertEqual(change_request.old_opening_date, datetime.date(2020, 1, 1))
+        self.assertEqual(change_request.old_closed_date, datetime.date(2055, 1, 1))
+        self.assertCountEqual(change_request.old_reference_instances.all(), [self.new_instance1])
 
         # Org Unit.
         self.assertEqual(self.org_unit.validation_status, self.org_unit.VALIDATION_VALID)
@@ -211,5 +232,5 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         self.assertIn("location", diff["modified"])
         self.assertIn("validation_status", diff["modified"])
 
-        self.assertEqual(diff["modified"]["name"]["before"], "")
+        self.assertEqual(diff["modified"]["name"]["before"], "Hôpital Général")
         self.assertEqual(diff["modified"]["name"]["after"], "New name given in a change request")

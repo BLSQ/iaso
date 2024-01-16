@@ -373,6 +373,14 @@ class OrgUnitChangeRequestRetrieveSerializerTestCase(TestCase):
                 "new_opening_date": "2022-10-27",
                 "new_closed_date": "2024-10-27",
                 "new_reference_instances": [],
+                "old_parent": None,
+                "old_name": "",
+                "old_org_unit_type": None,
+                "old_groups": [],
+                "old_location": None,
+                "old_opening_date": None,
+                "old_closed_date": None,
+                "old_reference_instances": [],
             },
         )
 

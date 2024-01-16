@@ -653,7 +653,7 @@ class OrgUnitChangeRequest(models.Model):
     # `new_location_accuracy` is only used to help decision-making during validation: is the accuracy
     # good enough to change the location? The field doesn't exist on `OrgUnit`.
     new_location_accuracy = models.DecimalField(decimal_places=2, max_digits=7, blank=True, null=True)
-    new_opening_date = models.DateField(blank=False, null=True)
+    new_opening_date = models.DateField(blank=True, null=True)
     new_closed_date = models.DateField(blank=True, null=True)
     new_reference_instances = models.ManyToManyField("Instance", blank=True)
 
@@ -663,6 +663,19 @@ class OrgUnitChangeRequest(models.Model):
         default=list,
         blank=True,
     )
+
+    # Old values are populated after a change has been approved.
+
+    old_parent = models.ForeignKey("OrgUnit", null=True, blank=True, on_delete=models.CASCADE, related_name="+")
+    old_name = models.CharField(max_length=255, blank=True)
+    old_org_unit_type = models.ForeignKey(
+        OrgUnitType, on_delete=models.CASCADE, null=True, blank=True, related_name="+"
+    )
+    old_groups = models.ManyToManyField("Group", blank=True, related_name="+")
+    old_location = PointField(null=True, blank=True, geography=True, dim=3, srid=4326)
+    old_opening_date = models.DateField(blank=True, null=True)
+    old_closed_date = models.DateField(blank=True, null=True)
+    old_reference_instances = models.ManyToManyField("Instance", blank=True, related_name="+")
 
     class Meta:
         verbose_name = _("Org unit change request")
@@ -725,6 +738,16 @@ class OrgUnitChangeRequest(models.Model):
 
     def __apply_changes(self, user: User, approved_fields: typing.List[str]) -> None:
         initial_org_unit = deepcopy(self.org_unit)
+
+        # Save old values.
+        self.old_parent = initial_org_unit.parent
+        self.old_name = initial_org_unit.name
+        self.old_org_unit_type = initial_org_unit.org_unit_type
+        self.old_groups.set(initial_org_unit.groups.all())
+        self.old_location = initial_org_unit.location
+        self.old_opening_date = initial_org_unit.opening_date
+        self.old_closed_date = initial_org_unit.closed_date
+        self.old_reference_instances.set(initial_org_unit.reference_instances.all())
 
         for field_name in approved_fields:
             if field_name == "new_location_accuracy":

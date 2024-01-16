@@ -366,6 +366,43 @@ The Django model that stores "Change Requests" is `OrgUnitChangeRequest`.
         }
       ]
     }
+  ],
+  "old_name": "String? - Old name of the OrgUnit, may be an empty",
+  "old_org_unit_type": {
+    "": "May be null",
+    "id": "Int? - id of the old OrgUnitType",
+    "name": "String? - name of the old OrgUnitType",
+    "short_name": "String? - short name of the old OrgUnitType"
+  },
+  "old_groups": [
+    "Array of old groups objects? - may be empty",
+    {
+      "id": "Int - id of the Group",
+      "name": "String - name of the Group"
+    }
+  ],
+  "old_location": {
+    "": "Old GeoPoint? for the OrgUnit, may be null",
+    "latitude": "Double - New latitude of the OrgUnit",
+    "longitude": "Double - New longitude of the OrgUnit",
+    "altitude": "Double - New altitude of the OrgUnit"
+  },
+  "old_opening_date": "Timestamp? - may be null",
+  "old_closed_date": "Timestamp? - may be null",
+  "old_reference_instances": [
+    "Array of old form instance objects? - may be empty",
+    {
+      "id": "Int - id in the database",
+      "form_id": "id of the form",
+      "form_name": "Name of the form",
+      "values": [
+        {
+          "key": "String",
+          "label": "String or translated object",
+          "value": "String"
+        }
+      ]
+    }
   ]
 }
 ```

@@ -95,7 +95,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertEqual(change_request.new_org_unit_type, self.org_unit_type)
         self.assertEqual(change_request.created_at, self.DT)
         self.assertEqual(change_request.created_by, self.user)
-        self.assertIsNone(change_request.updated_at)
+        self.assertEqual(change_request.updated_at, self.DT)
 
     @time_machine.travel(DT, tick=False)
     def test_create_ok_using_uuid_as_for_org_unit_id(self):
@@ -112,7 +112,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertEqual(change_request.new_org_unit_type, self.org_unit_type)
         self.assertEqual(change_request.created_at, self.DT)
         self.assertEqual(change_request.created_by, self.user)
-        self.assertIsNone(change_request.updated_at)
+        self.assertEqual(change_request.updated_at, self.DT)
 
     @time_machine.travel(DT, tick=False)
     def test_create_ok_from_mobile(self):
@@ -131,7 +131,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertEqual(change_request.new_name, data["new_name"])
         self.assertEqual(change_request.created_at, self.DT)
         self.assertEqual(change_request.created_by, self.user)
-        self.assertIsNone(change_request.updated_at)
+        self.assertEqual(change_request.updated_at, self.DT)
 
     def test_create_without_auth(self):
         data = {

@@ -77,6 +77,10 @@ type Locales = {
     fr: string;
     en: string;
 };
+type File = {
+    path: string;
+    name: string;
+};
 const labelLocales: Locales = { fr: 'French', en: 'English' };
 
 const localizeLabel = (field: Field): string => {
@@ -523,4 +527,25 @@ export const getFileUrl = (
         ...getFilters(params),
     };
     return getTableUrl('instances/attachments', urlParams);
+};
+
+export const downloadMultipleFiles = async (selectedFiles: [File]) => {
+    for (let file of selectedFiles) {
+        let fileSrc = file?.path;
+        let fileName = file?.name;
+
+        const response = await fetch(fileSrc);
+        const blobFile = await response.blob();
+        const fileUrl = window.URL.createObjectURL(blobFile);
+
+        const anchorElement = document.createElement('a');
+        anchorElement.href = fileUrl;
+        anchorElement.download = fileName;
+
+        document.body.appendChild(anchorElement);
+        anchorElement.click();
+
+        document.body.removeChild(anchorElement);
+        window.URL.revokeObjectURL(fileUrl);
+    }
 };

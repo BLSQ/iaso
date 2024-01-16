@@ -17,6 +17,7 @@ import InstancePopover from './InstancePopoverComponent.tsx';
 import DownloadIcon from '@mui/icons-material/Download';
 import { sortFilesType } from '../../../utils/filesUtils';
 import { fetchInstanceDetail } from '../../../utils/requests';
+import { downloadMultipleFiles } from '../utils';
 import MESSAGES from '../messages';
 
 const minTabHeight = 'calc(100vh - 500px)';
@@ -45,8 +46,8 @@ const styles = theme => ({
     },
     downloadFabIcon: {
         position: 'relative',
-        left: theme.spacing(215)
-    }
+        left: theme.spacing(210),
+    },
 });
 
 class InstancesFilesList extends Component {
@@ -58,7 +59,7 @@ class InstancesFilesList extends Component {
             sortedFiles: sortFilesType(props.files ? props.files : []),
             instanceDetail: props.instanceDetail,
             tab: 'images',
-            checkedImages: [],
+            selectedFiles: [],
         };
     }
 
@@ -126,24 +127,35 @@ class InstancesFilesList extends Component {
         onLightBoxToggled(false);
     }
 
-    checkedImage(index, checked) {
-        // console.info("EVENT ...:", event, event.target.value, event.target.checked);
-        console.info('CURRENT INDEX ...:', index, checked);
-        //let checkedImages = this.state.checkedImages;
-        let images = this.state.sortedFiles.images;
-        if (checked === true) {
-            console.info('CHECKED IMAGE ', index, checked);
-        } else {
-            checked = false;
-            console.info('UNCHECKED IMAGE ', index, checked);
-        }
-        images = images.map((image, currentIndex) => {
+    selectedFiles(index, checked, fileType) {
+        let sortedFiles = this.state.sortedFiles;
+        let files = sortedFiles[fileType].map((image, currentIndex) => {
             return {
                 ...image,
                 checked: currentIndex === index ? checked : image?.checked,
             };
         });
-        this.setState({ sortedFiles: { images: images } });
+        switch (fileType) {
+            case 'images':
+                sortedFiles.images = files;
+                break;
+            case 'documents':
+                sortedFiles.documents = files;
+                break;
+            case 'videos':
+                sortedFiles.videos = files;
+                break;
+            case 'others':
+                sortedFiles.others = files;
+                break;
+            default:
+                this.setState({ sortedFiles });
+                break;
+        }
+        this.setState({
+            sortedFiles,
+            selectedFiles: files.filter(image => image.checked === true),
+        });
     }
 
     render() {
@@ -153,9 +165,6 @@ class InstancesFilesList extends Component {
             classes,
             intl: { formatMessage },
         } = this.props;
-
-        console.info('PROPS ...:', this.props);
-        console.info('Cheched images ...:', this.state);
 
         const {
             currentImageIndex,
@@ -219,24 +228,39 @@ class InstancesFilesList extends Component {
                     <LazyImagesList
                         imageList={sortedFiles.images}
                         onImageClick={index => this.openLightbox(index)}
-                        onSelectedImage={(index, checked) =>
-                            this.checkedImage(index, checked)
+                        onSelectedFiles={(index, checked) =>
+                            this.selectedFiles(index, checked, tab)
                         }
                     />
                 </div>
                 {tab === 'videos' && (
                     <div className={classes.tabContainer}>
-                        <VideosList videoList={sortedFiles.videos} />
+                        <VideosList
+                            videoList={sortedFiles.videos}
+                            onSelectedFiles={(index, checked) =>
+                                this.selectedFiles(index, checked, tab)
+                            }
+                        />
                     </div>
                 )}
                 {tab === 'documents' && (
                     <div className={classes.tabContainer}>
-                        <DocumentsList docsList={sortedFiles.documents} />
+                        <DocumentsList
+                            docsList={sortedFiles.documents}
+                            onSelectedFiles={(index, checked) =>
+                                this.selectedFiles(index, checked, tab)
+                            }
+                        />
                     </div>
                 )}
                 {tab === 'others' && (
                     <div className={classes.tabContainer}>
-                        <DocumentsList docsList={sortedFiles.others} />
+                        <DocumentsList
+                            docsList={sortedFiles.others}
+                            onSelectedFiles={(index, checked) =>
+                                this.selectedFiles(index, checked, tab)
+                            }
+                        />
                     </div>
                 )}
                 {viewerIsOpen && (
@@ -252,11 +276,18 @@ class InstancesFilesList extends Component {
                         )}
                     />
                 )}
-                
-
-                <Fab color="primary" aria-label="download" className={classes.downloadFabIcon}>
-                    <DownloadIcon />
-                </Fab>
+                {this.state.selectedFiles?.length > 0 && (
+                    <Fab
+                        color="primary"
+                        aria-label="download"
+                        className={classes.downloadFabIcon}
+                        onClick={() =>
+                            downloadMultipleFiles(this.state.selectedFiles)
+                        }
+                    >
+                        <DownloadIcon />
+                    </Fab>
+                )}
             </section>
         );
     }

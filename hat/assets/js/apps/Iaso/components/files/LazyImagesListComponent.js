@@ -27,7 +27,7 @@ const styles = (theme) => ({
         cursor: 'pointer',
     }, 
     imageCheckBox: {
-        left: theme.spacing(50),
+        left: theme.spacing(56),
     }
 });
 
@@ -36,21 +36,13 @@ class LazyImagesList extends Component {
         return !isEqual(nextProps.imageList, this.props.imageList);
     }
 
-    checkedImage(event, index) {
-        console.info(
-            'EVENT ...:',
-            event,
-            event.target.value,
-            event.target.checked,
-        );
-        console.info('INDEX ...:', index);
+    selectedImages(event, index) {
         let checked = event.target.checked;
-        this.props.onSelectedImage(index, checked);
+        this.props.onSelectedFiles(index, checked);
     }
 
     render() {
         const { imageList, classes, onImageClick } = this.props;
-        console.info('IMAGE LIST ...:', imageList);
         return (
             <Grid container spacing={2}>
                 {imageList.map((file, index) => (
@@ -63,7 +55,7 @@ class LazyImagesList extends Component {
                         <Checkbox
                             className={classes.imageCheckBox}
                             checked={file.checked}
-                            onChange={event => this.checkedImage(event, index)}
+                            onChange={event => this.selectedImages(event, index)}
                         />
 
                         <LazyImage

@@ -23,6 +23,6 @@ export const useSaveWorkflowChange = (
             data.id
                 ? updateWorkflowChange(data)
                 : createWorkflowChange(data, versionId),
-        invalidateQueryKey: 'workflowVersion',
+        invalidateQueryKey: ['workflowVersions','workflowVersionsChanges'],
         options: { onSuccess: () => closeDialog() },
     });

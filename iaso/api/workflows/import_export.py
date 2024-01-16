@@ -76,11 +76,19 @@ def import_workflow_real(workflow_data: typing.Dict, account: Account) -> Workfl
     except Workflow.DoesNotExist:
         wf = Workflow.objects.create(uuid=workflow_data["uuid"], entity_type=entity_type)
 
-    # Set all related WorkflowVersion objects' status to UNPUBLISHED if they are currently PUBLISHED
-    published_versions = wf.workflow_versions.filter(status=WorkflowVersionsStatus.PUBLISHED.value)
-    for version in published_versions:
-        version.status = WorkflowVersionsStatus.UNPUBLISHED.value
-        version.save()
+    # Ensure only one WorkflowVersion is PUBLISHED after import
+    db_published_versions = wf.workflow_versions.filter(status=WorkflowVersionsStatus.PUBLISHED.value)
+    data_published_versions = [
+        v for v in workflow_data["versions"] if v["status"] == WorkflowVersionsStatus.PUBLISHED.value
+    ]
+    total_published_versions = len(db_published_versions) + len(data_published_versions)
+
+    # If we don't find too many PUBLISHED versions, we don't touch anything.
+    if total_published_versions > 1:
+        # Priority is given to the versions in workflow_data, so unpublish versions in the DB
+        for version in db_published_versions:
+            version.status = WorkflowVersionsStatus.UNPUBLISHED.value
+            version.save()
 
     for version_data in workflow_data["versions"]:
         try:

@@ -14,8 +14,8 @@ const styles = theme => ({
         marginTop: theme.spacing(2),
         marginBottom: theme.spacing(2),
     },
-    imageCheckBox: {
-        left: theme.spacing(12),
+    fileCheckBox: {
+        left: theme.spacing(15),
     }
 });
 
@@ -23,13 +23,17 @@ class DocumentsListComponent extends Component {
     shouldComponentUpdate(nextProps) {
         return !isEqual(nextProps.docsList, this.props.docsList);
     }
+    selectedDocuments(event, index) {
+        let checked = event.target.checked;
+        this.props.onSelectedFiles(index, checked);
+    }
 
     render() {
         const { docsList, classes } = this.props;
         return (
             <>
                 <Grid container spacing={2} className={classes.root}>
-                    {docsList.map(file => (
+                    {docsList.map((file,index) => (
                         <Grid
                             item
                             sm={2}
@@ -38,7 +42,7 @@ class DocumentsListComponent extends Component {
                                 getFileName(file.path).name
                             }`}
                         >
-                            <Checkbox className={classes.imageCheckBox} />
+                            <Checkbox className={classes.fileCheckBox} onChange={event => this.selectedDocuments(event, index)}/>
                             <DocumentsItem file={file} />
                         </Grid>
                     ))}

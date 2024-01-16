@@ -568,16 +568,6 @@ const InstancesFiltersComponent = ({
                             <Search className={classes.buttonIcon} />
                             {formatMessage(MESSAGES.search)}
                         </Button>
-                        {/*tab === 'files' && (
-                            <Button
-                                variant="contained"
-                                className={classes.downloadButton}
-                                color="primary"
-                            >
-                                <Download className={classes.buttonIcon} />{' '}
-                                {formatMessage(MESSAGES.download)}
-                            </Button>
-                        )*/}
                     </Box>
                 </Grid>
             </Grid>

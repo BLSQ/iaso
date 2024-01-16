@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import isEqual from 'lodash/isEqual';
 
-import { Grid } from '@mui/material';
+import { Grid, Checkbox } from '@mui/material';
 import { withStyles } from '@mui/styles';
 
 import PropTypes from 'prop-types';
@@ -14,11 +14,18 @@ const styles = theme => ({
         marginTop: theme.spacing(2),
         marginBottom: theme.spacing(2),
     },
+    fileCheckBox: {
+        left: theme.spacing(105),
+    }
 });
 
 class VideosListComponent extends Component {
     shouldComponentUpdate(nextProps) {
         return !isEqual(nextProps.videoList, this.props.videoList);
+    }
+    selectedVideos(event, index) {
+        let checked = event.target.checked;
+        this.props.onSelectedFiles(index, checked);
     }
 
     render() {
@@ -26,7 +33,7 @@ class VideosListComponent extends Component {
         return (
             <>
                 <Grid container spacing={2} className={classes.root}>
-                    {videoList.map(file => (
+                    {videoList.map((file,index) => (
                         <Grid
                             item
                             md={6}
@@ -34,6 +41,7 @@ class VideosListComponent extends Component {
                                 getFileName(file.path).name
                             }`}
                         >
+                             <Checkbox className={classes.fileCheckBox} onChange={event => this.selectedVideos(event, index)}/>
                             <VideoItem videoItem={file} />
                         </Grid>
                     ))}

@@ -97,7 +97,7 @@ const localizedManualUrl = (locale, account) => {
 
     return account.user_manual_path
         ? account.user_manual_path
-        : 'https://iaso.readthedocs.io/en/latest/pages/users/reference/user_guide/user_guide/';
+        : 'https://iaso.readthedocs.io/en/latest/pages/users/reference/user_guide/user_guide.html';
 };
 
 const SidebarMenu = ({

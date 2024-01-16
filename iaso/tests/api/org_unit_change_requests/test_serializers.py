@@ -181,7 +181,7 @@ class OrgUnitChangeRequestListSerializerTestCase(TestCase):
                 },
                 "created_at": 1696856400.0,
                 "updated_by": None,
-                "updated_at": None,
+                "updated_at": 1696856400.0,
             },
         )
         self.assertCountEqual(serializer.data["requested_fields"], ["new_org_unit_type", "new_location"])
@@ -245,7 +245,7 @@ class MobileOrgUnitChangeRequestListSerializerTestCase(TestCase):
                 "approved_fields": ["new_org_unit_type"],
                 "rejection_comment": "",
                 "created_at": 1697202000.0,
-                "updated_at": None,
+                "updated_at": 1697202000.0,
                 "new_parent_id": None,
                 "new_name": "",
                 "new_org_unit_type_id": self.org_unit_type.pk,
@@ -327,7 +327,7 @@ class OrgUnitChangeRequestRetrieveSerializerTestCase(TestCase):
                 ),
                 "created_at": 1697734800.0,
                 "updated_by": None,
-                "updated_at": None,
+                "updated_at": 1697734800.0,
                 "requested_fields": ["new_org_unit_type", "new_opening_date", "new_closed_date", "new_groups"],
                 "approved_fields": [],
                 "rejection_comment": "",

@@ -96,7 +96,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         self.assertEqual(change_request.org_unit, self.org_unit)
         self.assertEqual(change_request.created_at, self.DT)
         self.assertEqual(change_request.created_by, self.user)
-        self.assertIsNone(change_request.updated_at)
+        self.assertEqual(change_request.updated_at, self.DT)
         self.assertIsNone(change_request.updated_by)
         self.assertEqual(change_request.new_parent, self.new_parent)
         self.assertEqual(change_request.new_name, "New name")
@@ -154,20 +154,16 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
 
     @time_machine.travel(DT, tick=False)
     def test_reject(self):
-        prev_day = self.DT - datetime.timedelta(days=1)
-        change_request = m.OrgUnitChangeRequest.objects.create(
-            org_unit=self.org_unit, new_name="New name", created_at=prev_day
-        )
+        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="New name")
         change_request.reject(user=self.user, rejection_comment="Foo Bar Baz.")
         self.assertEqual(change_request.status, change_request.Statuses.REJECTED)
-        self.assertEqual(change_request.created_at, prev_day)
+        self.assertEqual(change_request.created_at, self.DT)
         self.assertEqual(change_request.updated_at, self.DT)
         self.assertEqual(change_request.updated_by, self.user)
         self.assertEqual(change_request.rejection_comment, "Foo Bar Baz.")
 
     @time_machine.travel(DT, tick=False)
     def test_approve(self):
-        prev_day = self.DT - datetime.timedelta(days=1)
         change_request = m.OrgUnitChangeRequest.objects.create(
             org_unit=self.org_unit,
             new_name="New name given in a change request",
@@ -177,7 +173,6 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
             new_location_accuracy=None,
             new_opening_date=datetime.date(2023, 10, 27),
             new_closed_date=datetime.date(2025, 10, 27),
-            created_at=prev_day,
         )
         change_request.new_groups.set([self.new_group1, self.new_group2])
         change_request.new_reference_instances.set([self.new_instance1, self.new_instance2])
@@ -198,7 +193,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
 
         # Change request.
         self.assertEqual(change_request.status, change_request.Statuses.APPROVED)
-        self.assertEqual(change_request.created_at, prev_day)
+        self.assertEqual(change_request.created_at, self.DT)
         self.assertEqual(change_request.updated_at, self.DT)
         self.assertEqual(change_request.updated_by, self.user)
         self.assertCountEqual(change_request.approved_fields, approved_fields)

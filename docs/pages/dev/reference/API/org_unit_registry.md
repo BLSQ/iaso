@@ -6,10 +6,9 @@ This API allows the DHIS2 Health pyramid to be updated using Iaso.
 
 The Django model that stores "Change Requests" is `OrgUnitChangeRequest`.
 
-# Create or update an `OrgUnitChangeRequest` object - Web + Mobile (IA-2421)
+# Create an `OrgUnitChangeRequest` object - Web + Mobile (IA-2421)
 
 - `POST /api/orgunits/changes/?app_id=…`
-- `PUT /api/orgunits/changes/?app_id=…`
 
 ## Permissions
 

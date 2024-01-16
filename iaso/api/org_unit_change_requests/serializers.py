@@ -227,7 +227,7 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
         queryset=OrgUnit.objects.all(),
         required=False,
     )
-    new_parent_id = serializers.PrimaryKeyRelatedField(
+    new_parent_id = IdOrUuidRelatedField(
         source="new_parent",
         queryset=OrgUnit.objects.all(),
         required=False,

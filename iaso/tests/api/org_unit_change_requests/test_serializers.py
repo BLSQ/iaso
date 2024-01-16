@@ -427,12 +427,14 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
         data_source = m.DataSource.objects.create(name="Data source")
         version1 = m.SourceVersion.objects.create(number=1, data_source=data_source)
         version2 = m.SourceVersion.objects.create(number=2, data_source=data_source)
-        parent_org_unit = m.OrgUnit.objects.create(org_unit_type=self.org_unit_type, version=version2)
+        parent_org_unit = m.OrgUnit.objects.create(
+            org_unit_type=self.org_unit_type, version=version2, uuid=uuid.uuid4()
+        )
         self.org_unit.version = version1
         self.org_unit.save()
         data = {
             "org_unit_id": self.org_unit.id,
-            "new_parent_id": parent_org_unit.id,
+            "new_parent_id": str(parent_org_unit.uuid),
         }
         serializer = OrgUnitChangeRequestWriteSerializer(data=data)
         self.assertFalse(serializer.is_valid())

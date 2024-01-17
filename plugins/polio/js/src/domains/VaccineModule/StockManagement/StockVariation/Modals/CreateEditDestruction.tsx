@@ -17,6 +17,7 @@ import {
 } from '../../../../../components/Inputs';
 import { useSaveDestruction } from '../../hooks/api';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
+import { useDestructionValidation } from './validation';
 
 type Props = {
     destruction?: any;
@@ -36,6 +37,7 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSaveDestruction();
+    const validationSchema = useDestructionValidation();
     const formik = useFormik<any>({
         initialValues: {
             id: destruction?.id,
@@ -46,8 +48,7 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
             lot_numbers: destruction?.lot_numbers,
         },
         onSubmit: values => save(values),
-        // TODO add validation
-        // validationSchema,
+        validationSchema,
     });
 
     const titleMessage = destruction?.id ? MESSAGES.edit : MESSAGES.create;
@@ -78,6 +79,7 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                         label={formatMessage(MESSAGES.action)}
                         name="action"
                         component={TextInput}
+                        required
                         shrinkLabel={false}
                     />
                 </Box>

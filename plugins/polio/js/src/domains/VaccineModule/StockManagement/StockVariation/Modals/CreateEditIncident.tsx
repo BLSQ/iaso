@@ -15,6 +15,7 @@ import { DateInput, NumberInput } from '../../../../../components/Inputs';
 import { useSaveIncident } from '../../hooks/api';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import { useIncidentOptions } from './useIncidentOptions';
+import { useIncidentValidation } from './validation';
 
 type Props = {
     incident?: any;
@@ -34,6 +35,7 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSaveIncident();
+    const validationSchema = useIncidentValidation();
     const formik = useFormik<any>({
         initialValues: {
             id: incident?.id,
@@ -44,8 +46,7 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
             unusable_vials: incident?.unusable_vials,
         },
         onSubmit: values => save(values),
-        // TODO add validation
-        // validationSchema,
+        validationSchema,
     });
     const incidentTypeOptions = useIncidentOptions();
     const titleMessage = incident?.id ? MESSAGES.edit : MESSAGES.create;

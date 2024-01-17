@@ -230,6 +230,22 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Create',
         id: 'iaso.label.create',
     },
+    positiveInteger: {
+        id: 'iaso.polio.form.validator.error.positiveInteger',
+        defaultMessage: 'Please use a positive integer',
+    },
+    positiveNumber: {
+        id: 'iaso.polio.form.validator.error.positiveNumber',
+        defaultMessage: 'Please use a positive number',
+    },
+    invalidDate: {
+        id: 'iaso.polio.form.invalidDate',
+        defaultMessage: 'Date is invalid',
+    },
+    requiredField: {
+        id: 'iaso.forms.error.fieldRequired',
+        defaultMessage: 'This field is required',
+    },
 });
 
 export default MESSAGES;

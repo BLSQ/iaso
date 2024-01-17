@@ -86,6 +86,7 @@ const Calendar = ({ params }) => {
 
     const [isCalendarAndMapLoaded, setCalendarAndMapLoaded] = useState(false);
     const [isPdf, setPdf] = useState(false);
+    const [analysticsScript, setAnalysticsScript] = useState([]);
 
     const currentMonday = currentDate.clone().startOf('isoWeek');
     const calendarData = useMemo(
@@ -153,6 +154,34 @@ const Calendar = ({ params }) => {
     }, [filteredCampaigns, mappedCampaigns, isLoading]);
 
     const currentUser = useCurrentUser();
+
+    useEffect(() => {
+        if (!isFetching) {
+            // it creates an array of distincts analytics script
+            setAnalysticsScript([
+                ...new Set(
+                    filteredCampaigns
+                        .filter(
+                            campaign =>
+                                campaign.original.account_analytics_script,
+                        )
+                        .map(camp => camp.original.account_analytics_script),
+                ),
+            ]);
+        }
+    }, [isFetching]);
+
+    useEffect(() => {
+        if (analysticsScript.length > 0) {
+            // It loops on analytics scripts from filtered campain and append them to head tag
+            analysticsScript.forEach(analyticScript => {
+                const placeholder = document.createElement('div');
+                placeholder.innerHTML = analyticScript;
+                const script = placeholder.firstElementChild;
+                document.querySelector('head').append(script);
+            });
+        }
+    }, [analysticsScript]);
 
     return (
         <div>

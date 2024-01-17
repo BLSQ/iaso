@@ -83,6 +83,8 @@ export type InputComponentProps = {
     blockForbiddenChars?: boolean;
     onErrorChange?: () => void;
     numberInputOptions?: {
+        prefix?: string;
+        suffix?: string;
         min?: number;
         max?: number;
         decimalScale?: number;
@@ -146,7 +148,6 @@ const InputComponent: React.FC<InputComponentProps> = ({
 
     const localizedNumberOptions =
         useLocalizedNumberInputOptions(numberInputOptions);
-
     const toggleDisplayPassword = () => {
         setDisplayPassword(!displayPassword);
     };

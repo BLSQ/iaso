@@ -10,6 +10,15 @@ type Props = {
     max?: number;
     disabled?: boolean;
     withMarginTop?: boolean;
+    numberInputOptions?: {
+        prefix?: string;
+        suffix?: string;
+        min?: number;
+        max?: number;
+        decimalScale?: number;
+        decimalSeparator?: '.' | ',';
+        thousandSeparator?: '.' | ',';
+    };
 };
 
 export const NumberInput: FunctionComponent<Props> = ({
@@ -18,6 +27,7 @@ export const NumberInput: FunctionComponent<Props> = ({
     form,
     min,
     max,
+    numberInputOptions = {},
     withMarginTop = false,
     disabled = false,
 }) => {
@@ -39,6 +49,7 @@ export const NumberInput: FunctionComponent<Props> = ({
             max={max}
             errors={hasError ? [get(form.errors, field.name)] : []}
             disabled={disabled}
+            numberInputOptions={numberInputOptions}
         />
     );
 };

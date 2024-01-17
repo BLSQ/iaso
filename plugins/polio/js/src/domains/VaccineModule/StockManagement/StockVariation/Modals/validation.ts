@@ -2,6 +2,38 @@ import { useSafeIntl } from 'bluesquare-components';
 import * as yup from 'yup';
 import MESSAGES from '../../messages';
 
+yup.addMethod(
+    yup.mixed,
+    'isNumbersArrayString',
+    function isNumbersArrayString(formatMessage) {
+        return this.test('isNumbersArrayString', '', (value, context) => {
+            const { path, createError } = context;
+            let errorMessage;
+            if (value) {
+                const regexp = /^\d*$/;
+
+                const valuesArray = Array.isArray(value)
+                    ? value
+                    : value
+                          .split(',')
+                          .map((v: string | number) => `${v}`.trim());
+                const hasOtherChar = valuesArray.some(v => !regexp.test(v));
+                if (hasOtherChar) {
+                    errorMessage = formatMessage(MESSAGES.lotNumberError);
+                }
+            }
+
+            if (errorMessage) {
+                return createError({
+                    path,
+                    message: errorMessage,
+                });
+            }
+            return true;
+        });
+    },
+);
+
 export const useFormAValidation = () => {
     const { formatMessage } = useSafeIntl();
     return yup.object().shape({
@@ -9,7 +41,12 @@ export const useFormAValidation = () => {
             .string()
             .nullable()
             .required(formatMessage(MESSAGES.requiredField)),
-        lot_numbers_for_usable_vials: yup.string().nullable(), // actually an array of numbers in string form. custom test should be added
+        lot_numbers_for_usable_vials: yup
+            .mixed()
+            .nullable()
+            // TS can't detect the added method
+            // @ts-ignore
+            .isNumbersArrayString(formatMessage),
         date_of_report: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
@@ -60,7 +97,12 @@ export const useDestructionValidation = () => {
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
-        lot_numbers: yup.string().nullable(), // actually an array of numbers in string form. custom test should be added
+        lot_numbers: yup
+            .mixed()
+            .nullable()
+            // TS can't detect the added method
+            // @ts-ignore
+            .isNumbersArrayString(formatMessage),
     });
 };
 export const useIncidentValidation = () => {

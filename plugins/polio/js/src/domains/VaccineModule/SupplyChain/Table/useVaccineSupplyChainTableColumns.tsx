@@ -10,7 +10,6 @@ import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/
 import {
     DateCell,
     MultiDateCell,
-    MultiDateTimeCellRfc,
 } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import MESSAGES from '../messages';
 import DeleteDialog from '../../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
@@ -90,7 +89,7 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
             {
                 Header: formatMessage(MESSAGES.estimatedDateOfArrival),
                 accessor: 'eta',
-                Cell: MultiDateTimeCellRfc,
+                Cell: MultiDateCell,
             },
             {
                 Header: 'VAR',

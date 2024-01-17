@@ -78,6 +78,12 @@ export const useIncidentValidation = () => {
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
+        usable_vials: yup
+            .number()
+            .nullable()
+            .min(0, formatMessage(MESSAGES.positiveInteger))
+            .integer()
+            .typeError(formatMessage(MESSAGES.positiveInteger)),
         unusable_vials: yup
             .number()
             .nullable()

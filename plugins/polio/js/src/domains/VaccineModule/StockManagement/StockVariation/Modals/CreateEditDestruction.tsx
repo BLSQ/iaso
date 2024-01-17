@@ -74,7 +74,7 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                 confirmMessage={MESSAGES.save}
                 cancelMessage={MESSAGES.cancel}
             >
-                <Box mb={2}>
+                <Box mb={2} mt={2}>
                     <Field
                         label={formatMessage(MESSAGES.action)}
                         name="action"
@@ -100,7 +100,7 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                         component={NumberInput}
                     />
                 </Box>
-                <Box mb={2}>
+                <Box>
                     <Field
                         label={formatMessage(MESSAGES.lot_numbers)}
                         name="lot_numbers"

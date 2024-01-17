@@ -253,13 +253,18 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                     </Grid>
                     <Grid container item xs={12} md={9} lg={6} spacing={2}>
                         <Grid item xs={12}>
-                            <TextArea
-                                value={values?.vrf?.comment ?? ''}
-                                // errors={errors.comment ? errors.comment : []}
-                                label={formatMessage(MESSAGES.comments)}
-                                onChange={onCommentChange}
-                                debounceTime={0}
-                            />
+                            {/* With MUI 5, the spacing isn't taken into account if there's only one <Grid> item
+                              so the <Box> is used to compensate and align the TextArea with the other fields
+                            */}
+                            <Box mr={1}>
+                                <TextArea
+                                    value={values?.vrf?.comment ?? ''}
+                                    // errors={errors.comment ? errors.comment : []}
+                                    label={formatMessage(MESSAGES.comments)}
+                                    onChange={onCommentChange}
+                                    debounceTime={0}
+                                />
+                            </Box>
                         </Grid>
                     </Grid>
                 </Grid>

@@ -73,9 +73,12 @@ export const ReviewOrgUnitChangesDetailsTableRow: FunctionComponent<Props> = ({
             changeRequest.approved_fields.includes(field.key));
     return (
         <TableRow key={field.key}>
-            <TableCell>{field.label}</TableCell>
-            <TableCell>{field.oldValue}</TableCell>
+            <TableCell sx={{ verticalAlign: 'top' }}>{field.label}</TableCell>
+            <TableCell sx={{ verticalAlign: 'top' }}>
+                {field.oldValue}
+            </TableCell>
             <TableCell
+                sx={{ verticalAlign: 'top' }}
                 className={classNames(
                     !isFetchingChangeRequest &&
                         isCellRejected &&

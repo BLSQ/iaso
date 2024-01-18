@@ -19,6 +19,7 @@ import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
 import { ShortOrgUnit } from '../../types/orgUnit';
 import MESSAGES from '../messages';
 import { LinkToInstance } from '../../../instances/components/LinkToInstance';
+import InstanceDetail from '../../../instances/compare/components/InstanceDetail';
 
 export type NewOrgUnitField = {
     key: string;
@@ -48,13 +49,18 @@ const ReferenceInstances: FunctionComponent<ReferenceInstancesProps> = ({
 
     return (
         <>
-            {instances.map((instance, index) => (
-                <Fragment key={instance.id}>
-                    {index > 0 && ', '}
-                    <span>
-                        <LinkToInstance instanceId={`${instance.id}`} />
-                    </span>
-                </Fragment>
+            {instances.map(instance => (
+                <InstanceDetail
+                    instanceId={`${instance.id}`}
+                    key={instance.id}
+                    showTitle={false}
+                />
+                // <Fragment key={instance.id}>
+                //     {index > 0 && ', '}
+                //     <span>
+                //         <LinkToInstance instanceId={`${instance.id}`} />
+                //     </span>
+                // </Fragment>
             ))}
         </>
     );

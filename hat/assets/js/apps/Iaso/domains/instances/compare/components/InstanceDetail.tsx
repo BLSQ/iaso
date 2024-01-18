@@ -5,9 +5,13 @@ import { InstanceDetailRaw } from './InstanceDetailRaw';
 
 type Props = {
     instanceId: string | undefined;
+    showTitle?: boolean;
 };
 
-const InstanceDetail: FunctionComponent<Props> = ({ instanceId }) => {
+const InstanceDetail: FunctionComponent<Props> = ({
+    instanceId,
+    showTitle = true,
+}) => {
     const {
         data,
         isLoading,
@@ -20,6 +24,7 @@ const InstanceDetail: FunctionComponent<Props> = ({ instanceId }) => {
             data={data}
             isLoading={isLoading}
             isError={isError}
+            showTitle={showTitle}
         />
     );
 };

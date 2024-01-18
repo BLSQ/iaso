@@ -5,7 +5,6 @@ import {
     LoadingSpinner,
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
-import { makeStyles } from '@mui/styles';
 import WidgetPaper from '../../../../components/papers/WidgetPaperComponent';
 import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
 import MESSAGES from '../messages';
@@ -13,15 +12,8 @@ import InstanceDetailsInfos from '../../components/InstanceDetailsInfos';
 import InstanceDetailsLocation from '../../components/InstanceDetailsLocation';
 import InstanceFileContent from '../../components/InstanceFileContent';
 import { Instance } from '../../types/instance';
-import { Link } from 'react-router';
-
-const useStyles = makeStyles({
-    linkButton: {
-        color: 'inherit',
-        textDecoration: 'none',
-        display: 'flex',
-    },
-});
+import InstancesFilesListComponent from '../../components/InstancesFilesListComponent';
+import { getInstancesFilesList } from '../../utils';
 
 type Props = {
     data?: Instance;
@@ -39,7 +31,6 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
     elevation = 1,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const classes = useStyles();
 
     if (isLoading)
         return (
@@ -76,7 +67,7 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
             )}
             <WidgetPaper
                 expandable
-                isExpanded={false}
+                isExpanded={!showTitle}
                 title={formatMessage(MESSAGES.infos)}
                 padded
                 elevation={elevation}
@@ -96,6 +87,19 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
                 elevation={elevation}
             >
                 <InstanceFileContent instance={data} />
+            </WidgetPaper>
+            <WidgetPaper
+                expandable
+                isExpanded
+                title={formatMessage(MESSAGES.files)}
+                padded
+                elevation={elevation}
+            >
+                <InstancesFilesListComponent
+                    fetchDetails={false}
+                    instanceDetail={data}
+                    files={getInstancesFilesList(data ? [data] : [])}
+                />
             </WidgetPaper>
         </>
     );

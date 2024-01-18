@@ -5,11 +5,11 @@ from django.db import migrations
 
 def create_feature_flags(apps, schema_editor):
     FeatureFlag = apps.get_model("iaso", "FeatureFlag")
-    FeatureFlag.objects.create(
+    FeatureFlag.objects.get_or_create(
         code="MOBILE_ORG_UNIT_REGISTRY",
         name="Mobile: Change requests.",
     )
-    FeatureFlag.objects.create(
+    FeatureFlag.objects.get_or_create(
         code="MOBILE_ENTITY_LIMITED_SEARCH",
         name="Mobile: Limit entities search.",
     )

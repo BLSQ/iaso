@@ -67,7 +67,7 @@ const useVrfShape = () => {
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
-        date_vrf_submission_to_orpg: yup
+        date_vrf_submission_orpg: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
@@ -81,7 +81,7 @@ const useVrfShape = () => {
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
-        date_vrf_submitted_to_dg: yup
+        date_vrf_submission_dg: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
@@ -143,12 +143,6 @@ const useArrivalReportShape = () => {
             // TS can't detect the added method
             // @ts-ignore
             .isNumbersArrayString(formatMessage),
-        doses_per_vial: yup
-            .number()
-            .nullable()
-            .min(0, formatMessage(MESSAGES.positiveInteger))
-            .integer()
-            .typeError(formatMessage(MESSAGES.positiveInteger)),
         expiration_date: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))

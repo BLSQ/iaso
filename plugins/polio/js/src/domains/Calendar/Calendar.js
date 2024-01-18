@@ -207,6 +207,7 @@ const Calendar = props => {
                     className={classnames(
                         classes.containerFullHeightNoTabPadded,
                         !isPdf && classes.isNotPdf,
+                        isPdf && classes.isPdf,
                     )}
                 >
                     {!isPdf && (

@@ -1,4 +1,5 @@
 import logging
+from django.shortcuts import get_object_or_404
 from gql import Client, gql
 from gql.transport.requests import RequestsHTTPTransport
 from datetime import datetime
@@ -13,6 +14,8 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend  # type:ignore
 from django.db.models import Q
 from rest_framework.decorators import action
+
+from plugins.polio.models import Config
 
 logger = logging.getLogger(__name__)
 TASK_NAME = "Refresh LQAS data"
@@ -136,10 +139,17 @@ class RefreshLQASDataViewset(ModelViewSet):
         return Response({"task": TaskSerializer(instance=task).data})
 
     def refresh_lqas_data(self, country_id=None, task_id=None):
+        config = get_object_or_404(Config, slug="lqas-pipeline-config")
+        lqas_pipeline_version=config.content["lqas_pipeline_version"]
+        oh_pipeline_target=config.content["oh_pipeline_target"]
+        lqas_pipeline=config.content["lqas_pipeline"]
+        openhexa_url=config.content["openhexa_url"]
+        openhexa_token=config.content["openhexa_token"]
+        
         transport = RequestsHTTPTransport(
-            url=settings.OPENHEXA_URL,
+            url=openhexa_url,
             verify=True,
-            headers={"Authorization": f"Bearer {settings.OPENHEXA_TOKEN}"},
+            headers={"Authorization": f"Bearer {openhexa_token}"},
         )
         client = Client(transport=transport, fetch_schema_from_transport=True)
         get_runs = gql(
@@ -156,7 +166,7 @@ class RefreshLQASDataViewset(ModelViewSet):
             }
         }
         """
-            % (settings.LQAS_PIPELINE)
+            % (lqas_pipeline)
         )
         try:
             latest_runs = client.execute(get_runs)
@@ -176,7 +186,7 @@ class RefreshLQASDataViewset(ModelViewSet):
             logger.exception("Could not fetch pipeline runs")
             return ERRORED
 
-        config = {"target": settings.OH_PIPELINE_TARGET}
+        config = {"target": oh_pipeline_target}
 
         if country_id:
             config["country_id"] = country_id
@@ -184,9 +194,9 @@ class RefreshLQASDataViewset(ModelViewSet):
             config["task_id"] = task_id
         # We can specify a version in the env in case the latest version gets bugged
         mutation_input = (
-            {"id": settings.LQAS_PIPELINE, "version": int(settings.LQAS_PIPELINE_VERSION), "config": config}
-            if settings.LQAS_PIPELINE_VERSION
-            else {"id": settings.LQAS_PIPELINE, "config": config}
+            {"id": lqas_pipeline, "version": int(lqas_pipeline_version), "config": config}
+            if lqas_pipeline_version
+            else {"id": lqas_pipeline, "config": config}
         )
         try:
             run_mutation = gql(

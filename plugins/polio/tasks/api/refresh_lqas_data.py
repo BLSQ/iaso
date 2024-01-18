@@ -140,12 +140,12 @@ class RefreshLQASDataViewset(ModelViewSet):
 
     def refresh_lqas_data(self, country_id=None, task_id=None):
         config = get_object_or_404(Config, slug="lqas-pipeline-config")
-        lqas_pipeline_version=config.content["lqas_pipeline_version"]
-        oh_pipeline_target=config.content["oh_pipeline_target"]
-        lqas_pipeline=config.content["lqas_pipeline"]
-        openhexa_url=config.content["openhexa_url"]
-        openhexa_token=config.content["openhexa_token"]
-        
+        lqas_pipeline_version = config.content["lqas_pipeline_version"]
+        oh_pipeline_target = config.content["oh_pipeline_target"]
+        lqas_pipeline = config.content["lqas_pipeline"]
+        openhexa_url = config.content["openhexa_url"]
+        openhexa_token = config.content["openhexa_token"]
+
         transport = RequestsHTTPTransport(
             url=openhexa_url,
             verify=True,

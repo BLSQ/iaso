@@ -265,7 +265,7 @@ To toggle an Account Feature flag, it is in the django Admin
 
 Adding a new Feature Flag via a Migration
 -----------------------------------------
-For example a a Project Feature Flag
+For example a Project Feature Flag
 
 
 1. Create an empty migration:

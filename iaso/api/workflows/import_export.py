@@ -1,6 +1,6 @@
 import typing
 
-from rest_framework import permissions
+from rest_framework import permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
@@ -9,7 +9,7 @@ from iaso.api.common import HasPermission
 from iaso.models import Account, Workflow
 from iaso.models.entity import EntityType
 from iaso.models.forms import Form
-from iaso.models.workflow import Workflow, WorkflowChange, WorkflowFollowup, WorkflowVersion
+from iaso.models.workflow import Workflow, WorkflowChange, WorkflowFollowup, WorkflowVersion, WorkflowVersionsStatus
 
 
 def export_workflow_real(workflow: Workflow) -> typing.Dict:
@@ -76,9 +76,23 @@ def import_workflow_real(workflow_data: typing.Dict, account: Account) -> Workfl
     except Workflow.DoesNotExist:
         wf = Workflow.objects.create(uuid=workflow_data["uuid"], entity_type=entity_type)
 
+    # Ensure only one WorkflowVersion is PUBLISHED after import
+    db_published_versions = wf.workflow_versions.filter(status=WorkflowVersionsStatus.PUBLISHED.value)
+    data_published_versions = [
+        v for v in workflow_data["versions"] if v["status"] == WorkflowVersionsStatus.PUBLISHED.value
+    ]
+    total_published_versions = len(db_published_versions) + len(data_published_versions)
+
+    # If we don't find too many PUBLISHED versions, we don't touch anything.
+    if total_published_versions > 1:
+        # Priority is given to the versions in workflow_data, so unpublish versions in the DB
+        for version in db_published_versions:
+            version.status = WorkflowVersionsStatus.UNPUBLISHED.value
+            version.save()
+
     for version_data in workflow_data["versions"]:
         try:
-            version = WorkflowVersion.objects.get(uuid=version_data["uuid"])
+            version = WorkflowVersion.objects_include_deleted.get(uuid=version_data["uuid"])
             wv_changed = False
 
             if version.name != version_data["name"]:
@@ -90,6 +104,8 @@ def import_workflow_real(workflow_data: typing.Dict, account: Account) -> Workfl
                 wv_changed = True
 
             if wv_changed:
+                if version.deleted_at is not None:
+                    version.deleted_at = None
                 version.save()
 
         except WorkflowVersion.DoesNotExist:
@@ -146,5 +162,15 @@ def import_workflow(request):
     Imports the workflow version given by from a JSON body containing an export workflow.
     """
     workflow_data = request.data
+
+    published_versions = [
+        version for version in workflow_data["versions"] if version["status"] == WorkflowVersionsStatus.PUBLISHED.value
+    ]
+    if len(published_versions) > 1:
+        return Response(
+            {"error": "There can only be one published version in the workflow data."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
     workflow = import_workflow_real(workflow_data, request.user.iaso_profile.account)
     return Response({"status": f"Workflow {workflow.uuid} imported successfully"})

@@ -3,7 +3,7 @@ import { LoadingSpinner } from 'bluesquare-components';
 import PropTypes from 'prop-types';
 import React from 'react';
 import { TablePagination } from '@mui/material';
-import InstancesFilesList from './InstancesFilesListComponent';
+import InstancesFilesList from './InstancesFilesListComponent.tsx';
 import { useGetInstancesFiles } from '../requests';
 
 const DEFAULT_FILES_PER_PAGES = 100;

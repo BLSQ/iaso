@@ -12,7 +12,7 @@ import InstanceDetailsInfos from '../../components/InstanceDetailsInfos';
 import InstanceDetailsLocation from '../../components/InstanceDetailsLocation';
 import InstanceFileContent from '../../components/InstanceFileContent';
 import { Instance } from '../../types/instance';
-import InstancesFilesListComponent from '../../components/InstancesFilesListComponent';
+import InstancesFilesList from '../../components/InstancesFilesListComponent';
 import { getInstancesFilesList } from '../../utils';
 
 type Props = {
@@ -95,7 +95,7 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
                 padded
                 elevation={elevation}
             >
-                <InstancesFilesListComponent
+                <InstancesFilesList
                     fetchDetails={false}
                     instanceDetail={data}
                     files={getInstancesFilesList(data ? [data] : [])}

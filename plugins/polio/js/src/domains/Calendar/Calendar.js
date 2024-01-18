@@ -32,7 +32,6 @@ import { Filters } from './campaignCalendar/Filters';
 import { ExportCsvModal } from './ExportCsvModal.tsx';
 import { userHasPermission } from '../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils.ts';
-import { prop } from 'lodash/fp';
 
 const pageWidth = 1980;
 

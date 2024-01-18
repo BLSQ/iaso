@@ -78,6 +78,6 @@ export const useCreateTask = ({
     return useSnackMutation({
         mutationFn: request => createTask(request, endpoint, key),
         showSucessSnackBar: false,
-        invalidateQueryKey: ['task-monitor'],
+        invalidateQueryKey: ['get-latest-task-run'],
     });
 };

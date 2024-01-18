@@ -32,6 +32,7 @@ import { Filters } from './campaignCalendar/Filters';
 import { ExportCsvModal } from './ExportCsvModal.tsx';
 import { userHasPermission } from '../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils.ts';
+import { prop } from 'lodash/fp';
 
 const pageWidth = 1980;
 
@@ -50,7 +51,8 @@ const useStyles = makeStyles(theme => ({
     exportIcon: { marginRight: '8px' },
 }));
 
-const Calendar = ({ params }) => {
+const Calendar = props => {
+    const { params, embedded } = props;
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const isLogged = useSelector(state => Boolean(state.users.current));
@@ -168,7 +170,7 @@ const Calendar = ({ params }) => {
 
     useEffect(() => {
         // It loops on analytics scripts from filtered campain and append them to head tag
-        if (analysticsScript.length > 0) {
+        if (analysticsScript.length > 0 && embedded) {
             const existingScripts = Array.from(document.scripts).map(
                 script => script.outerHTML,
             );

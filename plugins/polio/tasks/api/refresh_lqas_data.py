@@ -8,7 +8,7 @@ from iaso.models.base import RUNNING, SKIPPED, ERRORED, SUCCESS, Task
 from iaso.models.org_unit import OrgUnit
 from rest_framework import permissions, serializers, filters
 from hat.menupermissions import models as permission
-from iaso.api.common import HasPermission, ModelViewSet
+from iaso.api.common import ExternalTaskModelViewSet, HasPermission
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend  # type:ignore
 from django.db.models import Q
@@ -57,7 +57,7 @@ class CustomTaskSearchFilterBackend(filters.BaseFilterBackend):
         return queryset
 
 
-class RefreshLQASDataViewset(ModelViewSet):
+class RefreshLQASDataViewset(ExternalTaskModelViewSet):
     permission_classes = [permissions.IsAuthenticated, HasPermission(permission.POLIO, permission.POLIO_CONFIG)]  # type: ignore
     http_method_names = ["get", "post", "patch"]
     model = Task
@@ -74,6 +74,10 @@ class RefreshLQASDataViewset(ModelViewSet):
         if self.request.method == "POST":
             return RefreshLQASDataSerializer
         return ExternalTaskSerializer
+    
+    def get_task_name(self, data):
+        country_id = data.get("country_id", None)
+        return f"{TASK_NAME}-{country_id}" if country_id is not None else TASK_NAME
 
     def get_queryset(self):
         user = self.request.user
@@ -85,27 +89,27 @@ class RefreshLQASDataViewset(ModelViewSet):
             queryset = queryset.filter(name__in=authorized_names)
         return queryset
 
-    def create(self, request):
-        serializer = RefreshLQASDataSerializer(data=request.data, context={"request": request})
-        serializer.is_valid(raise_exception=True)
-        user = request.user
-        data = serializer.validated_data
-        started_at = datetime.now()
-        country_id = data.get("country_id", None)
-        name = f"{TASK_NAME}-{country_id}" if country_id is not None else TASK_NAME
-        task = Task.objects.create(
-            launcher=user,
-            account=user.iaso_profile.account,
-            name=name,
-            status=RUNNING,
-            external=True,
-            started_at=started_at,
-            should_be_killed=False,
-        )
-        status = self.refresh_lqas_data(country_id, task.id)
-        task.status = status
-        task.save()
-        return Response({"task": TaskSerializer(instance=task).data})
+    # def create(self, request):
+    #     serializer = RefreshLQASDataSerializer(data=request.data, context={"request": request})
+    #     serializer.is_valid(raise_exception=True)
+    #     user = request.user
+    #     data = serializer.validated_data
+    #     started_at = datetime.now()
+    #     country_id = data.get("country_id", None)
+    #     name = f"{TASK_NAME}-{country_id}" if country_id is not None else TASK_NAME
+    #     task = Task.objects.create(
+    #         launcher=user,
+    #         account=user.iaso_profile.account,
+    #         name=name,
+    #         status=RUNNING,
+    #         external=True,
+    #         started_at=started_at,
+    #         should_be_killed=False,
+    #     )
+    #     status = self.refresh_lqas_data(country_id, task.id)
+    #     task.status = status
+    #     task.save()
+    #     return Response({"task": TaskSerializer(instance=task).data})
 
     def refresh_lqas_data(self, country_id=None, task_id=None):
         try:

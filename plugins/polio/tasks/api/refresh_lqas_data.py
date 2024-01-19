@@ -3,9 +3,8 @@ from django.shortcuts import get_object_or_404
 from gql import Client, gql
 from gql.transport.requests import RequestsHTTPTransport
 from datetime import datetime
-from hat import settings
-from iaso.api.tasks import TaskSerializer
-from iaso.models.base import RUNNING, SKIPPED, KILLED, ERRORED, SUCCESS, Task
+from iaso.api.tasks import ExternalTaskSerializer, TaskSerializer
+from iaso.models.base import RUNNING, SKIPPED, ERRORED, SUCCESS, Task
 from iaso.models.org_unit import OrgUnit
 from rest_framework import permissions, serializers, filters
 from hat.menupermissions import models as permission
@@ -40,36 +39,6 @@ class RefreshLQASDataSerializer(serializers.Serializer):
             if not user_has_access:
                 raise serializers.ValidationError(NO_AUTHORIZED_COUNTRY_ERROR)
         return validated_data
-
-
-class ExternalTaskSerializer(TaskSerializer):
-    def update(self, task, validated_data):
-        has_progress_message = validated_data.get("progress_message", None) is not None
-        has_status = validated_data.get("status", None) is not None
-        has_progress_value = validated_data.get("progress_value", None) is not None
-        has_end_value = validated_data.get("end_value", None) is not None
-        if (has_status or has_progress_value or has_progress_message or has_end_value) and not task.external:
-            raise serializers.ValidationError({"external": "Cannot modify non external tasks"})
-        if validated_data.get("should_be_killed", None) is not None:
-            task.should_be_killed = validated_data["should_be_killed"]
-            if validated_data["should_be_killed"]:
-                task.status = KILLED
-        if has_status:
-            task.status = validated_data["status"]
-            if (
-                validated_data["status"] == SUCCESS
-                or validated_data["status"] == ERRORED
-                or validated_data["status"] == KILLED
-            ):
-                task.ended_at = datetime.now()
-        if has_progress_message:
-            task.progress_message = validated_data["progress_message"]
-        if has_progress_value:
-            task.progress_value = validated_data["progress_value"]
-        if has_end_value:
-            task.end_value = validated_data["end_value"]
-        task.save()
-        return task
 
 
 class CustomTaskSearchFilterBackend(filters.BaseFilterBackend):

@@ -109,15 +109,15 @@ class RefreshLQASDataViewset(ModelViewSet):
 
     def refresh_lqas_data(self, country_id=None, task_id=None):
         try:
-            config = get_object_or_404(Config, slug="lqas-pipeline-config")
+            pipeline_config = get_object_or_404(Config, slug="lqas-pipeline-config")
         except:
             logger.exception("Could not fetch openhexa config")
             return ERRORED
-        lqas_pipeline_version = config.content["lqas_pipeline_version"]
-        oh_pipeline_target = config.content["oh_pipeline_target"]
-        lqas_pipeline = config.content["lqas_pipeline"]
-        openhexa_url = config.content["openhexa_url"]
-        openhexa_token = config.content["openhexa_token"]
+        lqas_pipeline_version = pipeline_config.content["lqas_pipeline_version"]
+        oh_pipeline_target = pipeline_config.content["oh_pipeline_target"]
+        lqas_pipeline = pipeline_config.content["lqas_pipeline"]
+        openhexa_url = pipeline_config.content["openhexa_url"]
+        openhexa_token = pipeline_config.content["openhexa_token"]
 
         transport = RequestsHTTPTransport(
             url=openhexa_url,

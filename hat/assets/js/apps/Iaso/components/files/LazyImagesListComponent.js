@@ -8,7 +8,7 @@ import { grey } from '@mui/material/colors';
 import PropTypes from 'prop-types';
 
 import { LoadingSpinner, LazyImage } from 'bluesquare-components';
-import { getFileName } from '../../utils/filesUtils';
+import { getFileName } from '../../utils/filesUtils.ts';
 
 const styles = () => ({
     imageItem: {
@@ -40,7 +40,7 @@ class LazyImagesList extends Component {
                 {imageList.map((file, index) => (
                     <Grid
                         item
-                        xs={3}
+                        xs={4}
                         key={`${file.itemId}-${getFileName(file.path).name}`}
                         className={classes.imageItem}
                     >

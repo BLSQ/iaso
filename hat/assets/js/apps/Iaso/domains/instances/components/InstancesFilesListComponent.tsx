@@ -13,7 +13,7 @@ import DocumentsList from '../../../components/files/DocumentsListComponent';
 import VideosList from '../../../components/files/VideosListComponent';
 import InstancePopover from './InstancePopoverComponent';
 
-import { sortFilesType } from '../../../utils/filesUtils';
+import { SortedFiles, sortFilesType } from '../../../utils/filesUtils';
 import { fetchInstanceDetail } from '../../../utils/requests';
 import MESSAGES from '../messages';
 import { Instance, ShortFile } from '../types/instance';
@@ -62,8 +62,8 @@ const InstancesFilesList: FunctionComponent<Props> = ({
     const intl = useIntl();
     const dispatch = useDispatch();
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    const [viewerIsOpen, setViewerIsOpen] = useState(false);
-    const [sortedFiles, setSortedFiles] = useState(sortFilesType(files || []));
+    const [viewerIsOpen, setViewerIsOpen] = useState<boolean>(false);
+    const [sortedFiles, setSortedFiles] = useState<SortedFiles>(sortFilesType(files || []));
     const [currentInstance, setCurrentInstance] = useState(instanceDetail);
     const [tab, setTab] = useState('images');
 
@@ -124,6 +124,7 @@ const InstancesFilesList: FunctionComponent<Props> = ({
     return (
         <section className={classes.root}>
             <Tabs
+                variant="fullWidth"
                 indicatorColor="primary"
                 value={tab}
                 onChange={(event, newTab) => handleChangeTab(newTab)}
@@ -142,6 +143,7 @@ const InstancesFilesList: FunctionComponent<Props> = ({
                         <Tab
                             disabled={filesCount === 0}
                             key={fileKey}
+                            sx={{padding: theme => theme.spacing(1), fontSize: 12}}
                             value={fileKey}
                             label={`${intl.formatMessage(
                                 MESSAGES[fileKey],
@@ -165,9 +167,9 @@ const InstancesFilesList: FunctionComponent<Props> = ({
                     <VideosList videoList={sortedFiles.videos} />
                 </div>
             )}
-            {tab === 'documents' && (
+            {tab === 'docs' && (
                 <div className={classes.tabContainer}>
-                    <DocumentsList docsList={sortedFiles.documents} />
+                    <DocumentsList docsList={sortedFiles.docs} />
                 </div>
             )}
             {tab === 'others' && (

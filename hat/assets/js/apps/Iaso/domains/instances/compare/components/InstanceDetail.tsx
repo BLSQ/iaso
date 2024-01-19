@@ -6,11 +6,13 @@ import { InstanceDetailRaw } from './InstanceDetailRaw';
 type Props = {
     instanceId: string | undefined;
     showTitle?: boolean;
+    displayLinktoInstance?: boolean;
 };
 
 const InstanceDetail: FunctionComponent<Props> = ({
     instanceId,
     showTitle = true,
+    displayLinktoInstance = false,
 }) => {
     const {
         data,
@@ -25,6 +27,7 @@ const InstanceDetail: FunctionComponent<Props> = ({
             isLoading={isLoading}
             isError={isError}
             showTitle={showTitle}
+            displayLinktoInstance={displayLinktoInstance}
         />
     );
 };

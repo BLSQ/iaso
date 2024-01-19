@@ -21,6 +21,7 @@ type Props = {
     isError: boolean;
     showTitle?: boolean;
     elevation?: number;
+    displayLinktoInstance?: boolean;
 };
 
 export const InstanceDetailRaw: FunctionComponent<Props> = ({
@@ -29,6 +30,7 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
     isError,
     showTitle = true,
     elevation = 1,
+    displayLinktoInstance = false,
 }) => {
     const { formatMessage } = useSafeIntl();
 
@@ -72,7 +74,10 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
                 padded
                 elevation={elevation}
             >
-                <InstanceDetailsInfos currentInstance={data} />
+                <InstanceDetailsInfos
+                    currentInstance={data}
+                    displayLinktoInstance={displayLinktoInstance}
+                />
             </WidgetPaper>
             <WidgetPaper
                 expandable
@@ -80,6 +85,7 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
                 title={formatMessage(MESSAGES.location)}
                 elevation={elevation}
             >
+                {/* @ts-ignore */}
                 <InstanceDetailsLocation currentInstance={data} />
             </WidgetPaper>
             <WidgetPaper

@@ -22,31 +22,35 @@ export const colorCodes: Record<ChangeRequestValidationStatus, string> = {
 };
 
 const useStatusStyles = (status?: ChangeRequestValidationStatus) => {
-    return useMemo(() => ({
-        infoCard: {
-            backgroundColor: status ? `${colorCodes[status]}.background` : 'inherit',
-        },
-        label: {
-            fontWeight: 'bold',
-            textAlign: 'right',
-        },
-        value: {
-            textAlign: 'left',
-        },
-        status: {
-            textAlign: 'left',
-            color: status ? `${colorCodes[status]}.main` : 'inherit',
-        },
-    }), [status]);
+    return useMemo(
+        () => ({
+            infoCard: {
+                backgroundColor: status
+                    ? `${colorCodes[status]}.background`
+                    : 'inherit',
+            },
+            label: {
+                fontWeight: 'bold',
+                textAlign: 'right',
+            },
+            value: {
+                textAlign: 'left',
+            },
+            status: {
+                textAlign: 'left',
+                color: status ? `${colorCodes[status]}.main` : 'inherit',
+            },
+        }),
+        [status],
+    );
 };
-
 
 export const ReviewOrgUnitChangesInfos: FunctionComponent<Props> = ({
     changeRequest,
     isFetchingChangeRequest,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const styles= useStatusStyles(changeRequest?.status);
+    const styles = useStatusStyles(changeRequest?.status);
     if (isFetchingChangeRequest || !changeRequest) return null;
     const { status } = changeRequest;
     return (

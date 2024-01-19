@@ -1,8 +1,23 @@
-const imgExtensions = ['jpg', 'jpeg', 'JPG', 'png'];
-const videoExtensions = ['mp4'];
-const documentExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'txt'];
+import { ShortFile } from '../domains/instances/types/instance';
 
-export const getFileName = path => {
+const imgExtensions: string[] = ['jpg', 'jpeg', 'JPG', 'png'];
+const videoExtensions: string[] = ['mp4'];
+const documentExtensions: string[] = [
+    'pdf',
+    'doc',
+    'docx',
+    'xls',
+    'xlsx',
+    'csv',
+    'txt',
+];
+
+export type FileName = {
+    name: string;
+    extension: string;
+};
+
+export const getFileName = (path: string): FileName => {
     let tempPath = path;
     if (tempPath.includes('?')) {
         [tempPath] = tempPath.split('?').slice(0);
@@ -24,25 +39,32 @@ export const getFileName = path => {
     };
 };
 
-export const sortFilesType = files => {
-    const filesList = {
+export type SortedFiles = {
+    images: ShortFile[];
+    videos: ShortFile[];
+    docs: ShortFile[];
+    others: ShortFile[];
+};
+
+export const sortFilesType = (files: ShortFile[]): SortedFiles => {
+    const filesList: SortedFiles = {
         images: [],
         videos: [],
-        documents: [],
+        docs: [],
         others: [],
     };
     files.forEach(f => {
         const fileName = getFileName(f.path);
-        const fullFile = {
+        const fullFile: ShortFile = {
             ...f,
             ...fileName,
         };
-        if (imgExtensions.indexOf(fileName.extension) !== -1) {
+        if (imgExtensions.includes(fileName.extension)) {
             filesList.images.push(fullFile);
-        } else if (videoExtensions.indexOf(fileName.extension) !== -1) {
+        } else if (videoExtensions.includes(fileName.extension)) {
             filesList.videos.push(fullFile);
-        } else if (documentExtensions.indexOf(fileName.extension) !== -1) {
-            filesList.documents.push(fullFile);
+        } else if (documentExtensions.includes(fileName.extension)) {
+            filesList.docs.push(fullFile);
         } else {
             filesList.others.push(fullFile);
         }

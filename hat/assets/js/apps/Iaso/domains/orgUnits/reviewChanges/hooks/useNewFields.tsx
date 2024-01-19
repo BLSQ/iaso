@@ -18,7 +18,6 @@ import { MarkerMap } from '../../../../components/maps/MarkerMapComponent';
 import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
 import { ShortOrgUnit } from '../../types/orgUnit';
 import MESSAGES from '../messages';
-import { LinkToInstance } from '../../../instances/components/LinkToInstance';
 import InstanceDetail from '../../../instances/compare/components/InstanceDetail';
 
 export type NewOrgUnitField = {
@@ -54,13 +53,8 @@ const ReferenceInstances: FunctionComponent<ReferenceInstancesProps> = ({
                     instanceId={`${instance.id}`}
                     key={instance.id}
                     showTitle={false}
+                    displayLinktoInstance
                 />
-                // <Fragment key={instance.id}>
-                //     {index > 0 && ', '}
-                //     <span>
-                //         <LinkToInstance instanceId={`${instance.id}`} />
-                //     </span>
-                // </Fragment>
             ))}
         </>
     );

@@ -2,7 +2,6 @@ import React from 'react';
 
 import { Paper } from '@mui/material';
 import { withStyles } from '@mui/styles';
-import { Link } from 'react-router';
 
 import PropTypes from 'prop-types';
 
@@ -16,7 +15,7 @@ import {
     ExcellSvg,
     CsvSvg,
 } from 'bluesquare-components';
-import { getFileName } from '../../utils/filesUtils';
+import { getFileName } from '../../utils/filesUtils.ts';
 
 const styles = theme => ({
     paper: {
@@ -87,7 +86,12 @@ function DocumentsItemComponent(props) {
     const { classes, file } = props;
     const fileName = getFileName(file.path);
     return (
-        <a href={file.path} target="_blank" className={classes.link}>
+        <a
+            href={file.path}
+            target="_blank"
+            className={classes.link}
+            rel="noreferrer"
+        >
             <Paper className={classes.paper}>
                 {renderIcon(file, classes)}
                 <span className={classes.fileInfo}>

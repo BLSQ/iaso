@@ -6,7 +6,7 @@ import { withStyles } from '@mui/styles';
 
 import PropTypes from 'prop-types';
 
-import { getFileName } from '../../utils/filesUtils';
+import { getFileName } from '../../utils/filesUtils.ts';
 import VideoItem from './VideoItemComponent';
 
 const styles = theme => ({

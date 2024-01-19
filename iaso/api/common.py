@@ -304,7 +304,7 @@ class ModelViewSet(BaseModelViewSet):
 
 
 class ExternalTaskModelViewSet(ModelViewSet):
-    def get_task_name(self,data):
+    def get_task_name(self, data):
         return None
 
     def create(self, request):

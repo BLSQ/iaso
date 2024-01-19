@@ -74,7 +74,7 @@ class RefreshLQASDataViewset(ExternalTaskModelViewSet):
         if self.request.method == "POST":
             return RefreshLQASDataSerializer
         return ExternalTaskSerializer
-    
+
     def get_task_name(self, data):
         country_id = data.get("country_id", None)
         return f"{TASK_NAME}-{country_id}" if country_id is not None else TASK_NAME

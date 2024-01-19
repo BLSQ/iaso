@@ -71,7 +71,6 @@ const Dhis2Search = props => {
                     const finalOptions = mapOptions
                         ? mapOptions(union, input.input)
                         : union;
-                    debugger;
                     setOptions(finalOptions);
                 });
             }, 200),
@@ -133,13 +132,11 @@ const Dhis2Search = props => {
                     variant="outlined"
                 />
             )}
-            renderOption={(props, option) => {
-                return (
-                    <>
-                        <li {...props} name={name}>{option.displayName || option.name}</li>
-                    </>
-                );
-            }}
+            renderOption={(props, option) => (
+                <li {...props} name={name}>
+                    {option.displayName || option.name}
+                </li>
+            )}
         />
     );
 };

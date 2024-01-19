@@ -218,7 +218,7 @@ class Command(BaseCommand):
             credentials,
             mapping_type="EVENT",
             mapping_file="./testdata/seed-data-command-cvs_survey-mapping.json",
-            xls_file="./testdata/seed-data-command-cvs_survey.xls",
+            xls_file="./testdata/seed-data-command-cvs_survey.xlsx",
         )
         project.forms.add(cvs_form)
 
@@ -239,7 +239,7 @@ class Command(BaseCommand):
             credentials,
             mapping_type="DERIVED",
             mapping_file="./testdata/seed-data-command-cvs-form-mapping.json",
-            xls_file="./testdata/seed-data-command-form-cvs-stats.xls",
+            xls_file="./testdata/seed-data-command-form-cvs-stats.xlsx",
         )
 
         project.forms.add(cvs_stat_form)

@@ -50,6 +50,7 @@ type Props = {
     onLightBoxToggled?: (value: boolean) => void;
     fetchDetails?: boolean;
     fetching?: boolean;
+    xs?: number;
 };
 const InstancesFilesList: FunctionComponent<Props> = ({
     instanceDetail,
@@ -57,13 +58,16 @@ const InstancesFilesList: FunctionComponent<Props> = ({
     fetchDetails = false,
     onLightBoxToggled = () => null,
     fetching = false,
+    xs = 3,
 }) => {
     const classes = useStyles();
     const intl = useIntl();
     const dispatch = useDispatch();
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [viewerIsOpen, setViewerIsOpen] = useState<boolean>(false);
-    const [sortedFiles, setSortedFiles] = useState<SortedFiles>(sortFilesType(files || []));
+    const [sortedFiles, setSortedFiles] = useState<SortedFiles>(
+        sortFilesType(files || []),
+    );
     const [currentInstance, setCurrentInstance] = useState(instanceDetail);
     const [tab, setTab] = useState('images');
 
@@ -143,7 +147,10 @@ const InstancesFilesList: FunctionComponent<Props> = ({
                         <Tab
                             disabled={filesCount === 0}
                             key={fileKey}
-                            sx={{padding: theme => theme.spacing(1), fontSize: 12}}
+                            sx={{
+                                padding: theme => theme.spacing(1),
+                                fontSize: 12,
+                            }}
                             value={fileKey}
                             label={`${intl.formatMessage(
                                 MESSAGES[fileKey],
@@ -158,6 +165,7 @@ const InstancesFilesList: FunctionComponent<Props> = ({
                 }
             >
                 <LazyImagesList
+                    xs={xs}
                     imageList={sortedFiles.images}
                     onImageClick={index => handleOpenLightbox(index)}
                 />

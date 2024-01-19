@@ -85,7 +85,6 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
                 title={formatMessage(MESSAGES.location)}
                 elevation={elevation}
             >
-                {/* @ts-ignore */}
                 <InstanceDetailsLocation currentInstance={data} />
             </WidgetPaper>
             <WidgetPaper
@@ -101,11 +100,14 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
                 padded
                 elevation={elevation}
             >
-                <InstancesFilesList
-                    fetchDetails={false}
-                    instanceDetail={data}
-                    files={getInstancesFilesList(data ? [data] : [])}
-                />
+                <Box mt={-4}>
+                    <InstancesFilesList
+                        fetchDetails={false}
+                        instanceDetail={data}
+                        files={getInstancesFilesList(data ? [data] : [])}
+                        xs={6}
+                    />
+                </Box>
             </WidgetPaper>
         </>
     );

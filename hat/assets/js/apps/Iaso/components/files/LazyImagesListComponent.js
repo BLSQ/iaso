@@ -34,13 +34,13 @@ class LazyImagesList extends Component {
     }
 
     render() {
-        const { imageList, classes, onImageClick } = this.props;
+        const { imageList, classes, onImageClick, xs } = this.props;
         return (
             <Grid container spacing={2}>
                 {imageList.map((file, index) => (
                     <Grid
                         item
-                        xs={4}
+                        xs={xs}
                         key={`${file.itemId}-${getFileName(file.path).name}`}
                         className={classes.imageItem}
                     >
@@ -80,10 +80,15 @@ class LazyImagesList extends Component {
     }
 }
 
+LazyImagesList.defaultProps = {
+    xs: 3,
+};
+
 LazyImagesList.propTypes = {
     imageList: PropTypes.array.isRequired,
     onImageClick: PropTypes.func.isRequired,
     classes: PropTypes.object.isRequired,
+    xs: PropTypes.number,
 };
 
 export default withStyles(styles)(LazyImagesList);

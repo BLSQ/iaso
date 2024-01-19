@@ -1,7 +1,6 @@
 import React, { FunctionComponent } from 'react';
 
-import { Paper } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { Paper, Box } from '@mui/material';
 
 import AttachFile from '@mui/icons-material/AttachFile';
 
@@ -16,11 +15,11 @@ import {
 import { getFileName } from '../../utils/filesUtils';
 import { ShortFile } from '../../domains/instances/types/instance';
 
-const useStyles = makeStyles(theme => ({
+const styles = {
     paper: {
         width: '100%',
         height: 120,
-        padding: theme.spacing(1),
+        padding: 1,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -37,9 +36,9 @@ const useStyles = makeStyles(theme => ({
         height: 'auto',
         display: 'block',
     },
-    muiIconb: {
+    muiIcon: {
         width: 50,
-        margin: theme.spacing(1, 0),
+        margin: 1,
         height: 'auto',
         display: 'block',
     },
@@ -52,26 +51,24 @@ const useStyles = makeStyles(theme => ({
         height: '20px',
         whiteSpace: 'nowrap',
     },
-}));
+};
 
-const renderIcon = (fileExtension: string, classes: any) => {
+const renderIcon = (fileExtension: string) => {
     switch (fileExtension) {
         case 'pdf':
-            return <PdfSvg color="secondary" className={classes.icon} />;
+            return <PdfSvg color="secondary" sx={styles.icon} />;
         case 'csv':
-            return <CsvSvg color="secondary" className={classes.icon} />;
+            return <CsvSvg color="secondary" sx={styles.icon} />;
         case 'doc':
         case 'docx':
-            return <WordSvg color="secondary" className={classes.icon} />;
+            return <WordSvg color="secondary" sx={styles.icon} />;
         case 'xls':
         case 'xlsx':
-            return <ExcellSvg color="secondary" className={classes.icon} />;
+            return <ExcellSvg color="secondary" sx={styles.icon} />;
         case 'txt':
-            return <TextSvg color="secondary" className={classes.icon} />;
+            return <TextSvg color="secondary" sx={styles.icon} />;
         default:
-            return (
-                <AttachFile color="secondary" className={classes.muiIconb} />
-            );
+            return <AttachFile color="secondary" sx={styles.muiIcon} />;
     }
 };
 
@@ -80,25 +77,25 @@ type Props = {
 };
 
 const DocumentsItemComponent: FunctionComponent<Props> = ({ file }) => {
-    const classes = useStyles();
     const fileName = getFileName(file.path);
     return (
-        <a
+        <Box
+            component="a"
             href={file.path}
             target="_blank"
-            className={classes.link}
+            sx={styles.link}
             rel="noreferrer"
         >
-            <Paper className={classes.paper}>
-                {renderIcon(fileName.extension, classes)}
-                <span className={classes.fileInfo}>
+            <Paper sx={styles.paper}>
+                {renderIcon(fileName.extension)}
+                <Box sx={styles.fileInfo}>
                     {displayDateFromTimestamp(file.createdAt)}
-                </span>
-                <span className={classes.fileInfo}>
+                </Box>
+                <Box sx={styles.fileInfo}>
                     {`${fileName.name}.${fileName.extension}`}
-                </span>
+                </Box>
             </Paper>
-        </a>
+        </Box>
     );
 };
 

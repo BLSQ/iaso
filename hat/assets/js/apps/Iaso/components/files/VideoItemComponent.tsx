@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, FunctionComponent } from 'react';
 import videojs from 'video.js';
 import moment from 'moment';
-import { IconButton } from '@mui/material';
+import { Box, IconButton } from '@mui/material';
 import PlayIcon from '@mui/icons-material/PlayCircleFilled';
 import PauseIcon from '@mui/icons-material/PauseCircleFilled';
 
@@ -9,69 +9,81 @@ import 'video.js/dist/video-js.min.css';
 import { ShortFile } from '../../domains/instances/types/instance';
 import { getFileName } from '../../utils/filesUtils';
 
-const useStyles = makeStyles(theme => ({
+const styles = {
     root: {
         position: 'relative',
-        '&>div': {
+        '& > div': {
             width: '100%',
             height: '30vw',
         },
         '& .video-js .vjs-big-play-button': {
             display: 'none',
         },
-        '&:hover>button, &:hover>span': {
+        '&:hover > button, &:hover > span': {
             display: 'block',
         },
     },
-    playButton: {
+    playButton: theme => ({
         display: 'block',
+        position: 'absolute',
         top: 'calc(50% - 3rem)',
         left: 'calc(50% - 3rem)',
-        position: 'absolute',
-    },
-    pauseButton: {
+        color: theme.palette.secondary.main,
+        zIndex: 1000,
+        backgroundColor: 'white !important',
+        width: 80,
+        height: 80,
+    }),
+    pauseButton: theme => ({
         display: 'none',
+        position: 'absolute',
         top: 'calc(50% - 3rem)',
         left: 'calc(50% - 3rem)',
-        position: 'absolute',
-    },
-    fileInfo: {
-        textAlign: 'right',
-        display: 'block',
-        textOverflow: 'ellipsis',
-        overflow: 'hidden',
-        width: '100%',
-        height: 30,
-        whiteSpace: 'nowrap',
-        top: theme.spacing(1),
-        right: theme.spacing(2),
-        position: 'absolute',
-        color: 'white',
-    },
-    fileInfoHidden: {
-        textAlign: 'right',
-        display: 'none',
-        textOverflow: 'ellipsis',
-        overflow: 'hidden',
-        width: '100%',
-        height: 30,
-        whiteSpace: 'nowrap',
-        top: theme.spacing(1),
-        right: theme.spacing(2),
-        position: 'absolute',
-        color: 'white',
-    },
-    icon: {
+        color: theme.palette.secondary.main,
+        zIndex: 1000,
+        backgroundColor: 'white !important',
+        width: 80,
+        height: 80,
+    }),
+    icon: theme => ({
         fontSize: '6rem',
-    },
-}));
+        position: 'absolute',
+        top: theme.spacing(-1),
+        left: theme.spacing(-1),
+    }),
+    fileInfo: theme => ({
+        textAlign: 'right',
+        display: 'block',
+        textOverflow: 'ellipsis',
+        overflow: 'hidden',
+        width: '100%',
+        height: 30,
+        whiteSpace: 'nowrap',
+        position: 'absolute',
+        color: 'white',
+        top: theme.spacing(1),
+        right: theme.spacing(2),
+    }),
+    fileInfoHidden: theme => ({
+        display: 'none',
+        textAlign: 'right',
+        textOverflow: 'ellipsis',
+        overflow: 'hidden',
+        width: '100%',
+        height: 30,
+        whiteSpace: 'nowrap',
+        position: 'absolute',
+        color: 'white',
+        top: theme.spacing(1),
+        right: theme.spacing(2),
+    }),
+};
 
 type Props = {
     videoItem: ShortFile;
 };
 
 const VideoItemComponent: FunctionComponent<Props> = ({ videoItem }) => {
-    const classes = useStyles();
     const [playerPaused, setPlayerPaused] = useState(true);
     const playerRef = useRef<videojs.Player | null>(null);
     const videoNodeRef = useRef<HTMLVideoElement | null>(null);
@@ -106,7 +118,7 @@ const VideoItemComponent: FunctionComponent<Props> = ({ videoItem }) => {
     };
 
     return (
-        <section className={classes.root}>
+        <Box sx={styles.root}>
             <div data-vjs-player>
                 <video
                     ref={videoNodeRef}
@@ -119,27 +131,20 @@ const VideoItemComponent: FunctionComponent<Props> = ({ videoItem }) => {
             </div>
             <IconButton
                 onClick={togglePlayback}
-                className={
-                    !playerPaused ? classes.pauseButton : classes.playButton
-                }
-                color="secondary"
+                sx={playerPaused ? styles.playButton : styles.pauseButton}
             >
                 {playerPaused ? (
-                    <PlayIcon className={classes.icon} />
+                    <PlayIcon sx={styles.icon} />
                 ) : (
-                    <PauseIcon className={classes.icon} />
+                    <PauseIcon sx={styles.icon} />
                 )}
             </IconButton>
-            <span
-                className={
-                    !playerPaused ? classes.fileInfoHidden : classes.fileInfo
-                }
-            >
+            <Box sx={playerPaused ? styles.fileInfo : styles.fileInfoHidden}>
                 {`${moment.unix(videoItem.createdAt).format('LTS')} - ${
                     fileName.name
                 }.${fileName.extension}`}
-            </span>
-        </section>
+            </Box>
+        </Box>
     );
 };
 

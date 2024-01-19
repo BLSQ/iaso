@@ -1,13 +1,12 @@
-import React, { FunctionComponent } from 'react';
-import { Grid } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import React, { FunctionComponent, useRef, useState, useEffect } from 'react';
+import { Box, Grid } from '@mui/material';
 import { grey } from '@mui/material/colors';
 
 import { LoadingSpinner, LazyImage } from 'bluesquare-components';
 import { getFileName } from '../../utils/filesUtils';
 import { ShortFile } from '../../domains/instances/types/instance';
 
-const useStyles = makeStyles(() => ({
+const styles = {
     imageItem: {
         width: '100%',
         height: '200px',
@@ -23,62 +22,72 @@ const useStyles = makeStyles(() => ({
         backgroundPosition: 'center center',
         cursor: 'pointer',
     },
-}));
+};
 
 type Props = {
     imageList: ShortFile[];
     // eslint-disable-next-line no-unused-vars
     onImageClick: (index: number) => void;
-    xs: number;
 };
 
 const LazyImagesList: FunctionComponent<Props> = ({
     imageList,
     onImageClick,
-    xs = 3,
 }) => {
-    const classes = useStyles();
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [width, setWidth] = useState<number | undefined>(undefined);
+    useEffect(() => {
+        if (containerRef.current) {
+            setWidth(containerRef.current.offsetWidth);
+        }
+    }, []);
     return (
-        <Grid container spacing={2}>
-            {imageList.map((file, index) => (
-                <Grid
-                    item
-                    xs={xs}
-                    key={`${file.itemId}-${getFileName(file.path).name}`}
-                    className={classes.imageItem}
-                >
-                    <LazyImage
-                        src={file.path}
-                        visibilitySensorProps={{
-                            partialVisibility: true,
-                        }}
-                    >
-                        {(src, loading, isVisible) => (
-                            <div
-                                onClick={() => onImageClick(index)}
-                                role="button"
-                                tabIndex={0}
-                                className={classes.imageContainer}
-                                style={{
-                                    backgroundImage: loading
-                                        ? 'none'
-                                        : `url('${src}')`,
+        <Box ref={containerRef}>
+            {width && (
+                <Grid container spacing={2}>
+                    {imageList.map((file, index) => (
+                        <Grid
+                            item
+                            xs={width < 500 ? 6 : 3}
+                            key={`${file.itemId}-${
+                                getFileName(file.path).name
+                            }`}
+                            sx={styles.imageItem}
+                        >
+                            <LazyImage
+                                src={file.path}
+                                visibilitySensorProps={{
+                                    partialVisibility: true,
                                 }}
                             >
-                                {loading && isVisible && (
-                                    <LoadingSpinner
-                                        fixed={false}
-                                        transparent
-                                        padding={4}
-                                        size={25}
-                                    />
+                                {(src, loading, isVisible) => (
+                                    <Box
+                                        onClick={() => onImageClick(index)}
+                                        role="button"
+                                        tabIndex={0}
+                                        sx={styles.imageContainer}
+                                        style={{
+                                            backgroundImage: loading
+                                                ? 'none'
+                                                : `url('${src}')`,
+                                        }}
+                                    >
+                                        {loading && isVisible && (
+                                            <LoadingSpinner
+                                                fixed={false}
+                                                transparent
+                                                padding={4}
+                                                size={25}
+                                            />
+                                        )}
+                                    </Box>
                                 )}
-                            </div>
-                        )}
-                    </LazyImage>
+                            </LazyImage>
+                        </Grid>
+                    ))}
                 </Grid>
-            ))}
-        </Grid>
+            )}
+        </Box>
     );
 };
 

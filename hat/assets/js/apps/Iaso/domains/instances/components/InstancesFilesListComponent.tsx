@@ -49,7 +49,6 @@ type Props = {
     onLightBoxToggled?: (value: boolean) => void;
     fetchDetails?: boolean;
     fetching?: boolean;
-    xs?: number;
 };
 const InstancesFilesList: FunctionComponent<Props> = ({
     instanceDetail,
@@ -57,7 +56,6 @@ const InstancesFilesList: FunctionComponent<Props> = ({
     fetchDetails = false,
     onLightBoxToggled = () => null,
     fetching = false,
-    xs = 3,
 }) => {
     const classes = useStyles();
     const intl = useSafeIntl();
@@ -159,7 +157,6 @@ const InstancesFilesList: FunctionComponent<Props> = ({
                 }
             >
                 <LazyImagesList
-                    xs={xs}
                     imageList={sortedFiles.images}
                     onImageClick={index => handleOpenLightbox(index)}
                 />

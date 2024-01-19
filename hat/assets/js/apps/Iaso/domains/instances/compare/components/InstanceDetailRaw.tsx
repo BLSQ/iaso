@@ -105,7 +105,6 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
                         fetchDetails={false}
                         instanceDetail={data}
                         files={getInstancesFilesList(data ? [data] : [])}
-                        xs={6}
                     />
                 </Box>
             </WidgetPaper>

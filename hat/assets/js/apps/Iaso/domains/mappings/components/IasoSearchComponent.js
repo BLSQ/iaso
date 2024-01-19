@@ -103,8 +103,10 @@ const IasoSearchComponent = props => {
                     value={inputValue}
                 />
             )}
-            renderOption={option => (
-                <span name={name}>{option.displayName || option.name}</span>
+            renderOption={(props, option) => (
+                <li {...props} name={name}>
+                    {option.displayName || option.name}
+                </li>
             )}
         />
     );

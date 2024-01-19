@@ -90,7 +90,7 @@ const DocumentsItemComponent: FunctionComponent<Props> = ({ file }) => {
             rel="noreferrer"
         >
             <Paper className={classes.paper}>
-                {renderIcon(file.extension, classes)}
+                {renderIcon(fileName.extension, classes)}
                 <span className={classes.fileInfo}>
                     {displayDateFromTimestamp(file.createdAt)}
                 </span>

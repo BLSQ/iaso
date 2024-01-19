@@ -1,11 +1,10 @@
-import React, { useState, useEffect, FunctionComponent } from 'react';
+import React, { useState, FunctionComponent, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
-import isEqual from 'lodash/isEqual';
 
 import { Grid, Tabs, Tab } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
-import { useIntl } from 'react-intl';
+import { useSafeIntl } from 'bluesquare-components';
 import ErrorPaperComponent from '../../../components/papers/ErrorPaperComponent';
 import ImageGallery from '../../../components/dialogs/ImageGalleryComponent';
 import LazyImagesList from '../../../components/files/LazyImagesListComponent';
@@ -61,21 +60,16 @@ const InstancesFilesList: FunctionComponent<Props> = ({
     xs = 3,
 }) => {
     const classes = useStyles();
-    const intl = useIntl();
+    const intl = useSafeIntl();
     const dispatch = useDispatch();
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [viewerIsOpen, setViewerIsOpen] = useState<boolean>(false);
-    const [sortedFiles, setSortedFiles] = useState<SortedFiles>(
-        sortFilesType(files || []),
+    const sortedFiles: SortedFiles = useMemo(
+        () => sortFilesType(files || []),
+        [files],
     );
     const [currentInstance, setCurrentInstance] = useState(instanceDetail);
     const [tab, setTab] = useState('images');
-
-    useEffect(() => {
-        if (files && !isEqual(files, sortedFiles)) {
-            setSortedFiles(sortFilesType(files));
-        }
-    }, [files, sortedFiles]);
 
     const handleChangeTab = newTab => {
         setTab(newTab);

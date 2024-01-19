@@ -29,11 +29,13 @@ type Props = {
     imageList: ShortFile[];
     // eslint-disable-next-line no-unused-vars
     onImageClick: (index: number) => void;
+    xs: number;
 };
 
 const LazyImagesList: FunctionComponent<Props> = ({
     imageList,
     onImageClick,
+    xs = 3,
 }) => {
     const classes = useStyles();
     return (
@@ -41,7 +43,7 @@ const LazyImagesList: FunctionComponent<Props> = ({
             {imageList.map((file, index) => (
                 <Grid
                     item
-                    xs={4}
+                    xs={xs}
                     key={`${file.itemId}-${getFileName(file.path).name}`}
                     className={classes.imageItem}
                 >

@@ -1,11 +1,10 @@
 import React, { useState, FunctionComponent, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { Grid, Tabs, Tab } from '@mui/material';
+import { Tabs, Tab, Paper } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import { useSafeIntl } from 'bluesquare-components';
-import ErrorPaperComponent from '../../../components/papers/ErrorPaperComponent';
 import ImageGallery from '../../../components/dialogs/ImageGalleryComponent';
 import LazyImagesList from '../../../components/files/LazyImagesListComponent';
 import DocumentsList from '../../../components/files/DocumentsListComponent';
@@ -58,7 +57,7 @@ const InstancesFilesList: FunctionComponent<Props> = ({
     fetching = false,
 }) => {
     const classes = useStyles();
-    const intl = useSafeIntl();
+    const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [viewerIsOpen, setViewerIsOpen] = useState<boolean>(false);
@@ -106,15 +105,9 @@ const InstancesFilesList: FunctionComponent<Props> = ({
     if (fetching || !files) return null;
     if (files.length === 0) {
         return (
-            <Grid container spacing={0}>
-                <Grid item xs={5} />
-                <Grid item xs={2}>
-                    <ErrorPaperComponent
-                        message={intl.formatMessage(MESSAGES.missingFile)}
-                    />
-                </Grid>
-                <Grid item xs={5} />
-            </Grid>
+            <Paper elevation={1} sx={{ padding: theme => theme.spacing(1) }}>
+                {formatMessage(MESSAGES.missingFile)}
+            </Paper>
         );
     }
     return (
@@ -123,7 +116,7 @@ const InstancesFilesList: FunctionComponent<Props> = ({
                 variant="fullWidth"
                 indicatorColor="primary"
                 value={tab}
-                onChange={(event, newTab) => handleChangeTab(newTab)}
+                onChange={(_, newTab) => handleChangeTab(newTab)}
             >
                 {Object.keys(sortedFiles).map(fileKey => {
                     const filesByType = sortedFiles[fileKey];
@@ -144,7 +137,7 @@ const InstancesFilesList: FunctionComponent<Props> = ({
                                 fontSize: 12,
                             }}
                             value={fileKey}
-                            label={`${intl.formatMessage(
+                            label={`${formatMessage(
                                 MESSAGES[fileKey],
                             )} (${filesCount})`}
                         />

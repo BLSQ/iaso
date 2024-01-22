@@ -1,15 +1,8 @@
 import React, { FunctionComponent, useRef, useState, useEffect } from 'react';
-import { Grid, Box } from '@mui/material';
-import { getFileName } from '../../utils/filesUtils';
+import { Box } from '@mui/material';
+import { Masonry } from '@mui/lab';
 import VideoItem from './VideoItemComponent';
 import { ShortFile } from '../../domains/instances/types/instance';
-
-const styles = {
-    root: {
-        marginTop: theme => theme.spacing(2),
-        marginBottom: theme => theme.spacing(2),
-    },
-};
 
 type Props = {
     videoList: ShortFile[];
@@ -17,28 +10,22 @@ type Props = {
 
 const VideosListComponent: FunctionComponent<Props> = ({ videoList }) => {
     const containerRef = useRef<HTMLDivElement>(null);
-    const [width, setWidth] = useState<number | undefined>(undefined);
+    const [width, setWidth] = useState<number>(0);
     useEffect(() => {
         if (containerRef.current) {
             setWidth(containerRef.current.offsetWidth);
         }
     }, []);
     return (
-        <Box ref={containerRef}>
-            {width && (
-                <Grid container spacing={2} sx={styles.root}>
+        <Box ref={containerRef} overflow="hidden">
+            {width > 0 && (
+                <Masonry columns={width < 500 ? 1 : 3} spacing={2}>
                     {videoList.map(file => (
-                        <Grid
-                            item
-                            xs={width < 500 ? 12 : 6}
-                            key={`${file.itemId}-${
-                                getFileName(file.path).name
-                            }`}
-                        >
+                        <Box key={file.itemId}>
                             <VideoItem videoItem={file} />
-                        </Grid>
+                        </Box>
                     ))}
-                </Grid>
+                </Masonry>
             )}
         </Box>
     );

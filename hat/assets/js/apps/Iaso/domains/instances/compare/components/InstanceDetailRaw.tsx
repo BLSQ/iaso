@@ -22,6 +22,7 @@ type Props = {
     showTitle?: boolean;
     elevation?: number;
     displayLinktoInstance?: boolean;
+    minHeight?: string | number;
 };
 
 export const InstanceDetailRaw: FunctionComponent<Props> = ({
@@ -31,12 +32,13 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
     showTitle = true,
     elevation = 1,
     displayLinktoInstance = false,
+    minHeight = '70vh',
 }) => {
     const { formatMessage } = useSafeIntl();
 
     if (isLoading)
         return (
-            <Box height="70vh">
+            <Box height={minHeight}>
                 <LoadingSpinner
                     fixed={false}
                     transparent
@@ -75,7 +77,7 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
                 elevation={elevation}
             >
                 <InstanceDetailsInfos
-                    currentInstance={data}
+                    currentInstance={data as any}
                     displayLinktoInstance={displayLinktoInstance}
                 />
             </WidgetPaper>

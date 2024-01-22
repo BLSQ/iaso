@@ -12,15 +12,21 @@ import { getFileName } from '../../utils/filesUtils';
 const styles = {
     root: {
         position: 'relative',
+        height: '100%',
         '& > div': {
             width: '100%',
-            height: '30vw',
+            height: '100%',
         },
         '& .video-js .vjs-big-play-button': {
             display: 'none',
         },
         '&:hover > button, &:hover > span': {
             display: 'block',
+        },
+        '& .video-js .vjs-tech': {
+            position: 'relative',
+            top: 'auto',
+            left: 'auto',
         },
     },
     playButton: theme => ({
@@ -29,7 +35,7 @@ const styles = {
         top: 'calc(50% - 3rem)',
         left: 'calc(50% - 3rem)',
         color: theme.palette.secondary.main,
-        zIndex: 1000,
+        zIndex: 1,
         backgroundColor: 'white !important',
         width: 80,
         height: 80,
@@ -40,7 +46,7 @@ const styles = {
         top: 'calc(50% - 3rem)',
         left: 'calc(50% - 3rem)',
         color: theme.palette.secondary.main,
-        zIndex: 1000,
+        zIndex: 1,
         backgroundColor: 'white !important',
         width: 80,
         height: 80,

@@ -18,9 +18,11 @@ type Props = {
 
 const useStyles = makeStyles(theme => ({
     cell: {
+        verticalAlign: 'top',
         color: 'inherit',
     },
     cellRejected: {
+        verticalAlign: 'top',
         '& > a': {
             color: `${theme.palette.error.main} !important`,
         },
@@ -35,6 +37,7 @@ const useStyles = makeStyles(theme => ({
         },
     },
     cellApproved: {
+        verticalAlign: 'top',
         '& > a': {
             color: `${theme.palette.success.main} !important`,
         },
@@ -73,12 +76,17 @@ export const ReviewOrgUnitChangesDetailsTableRow: FunctionComponent<Props> = ({
             changeRequest.approved_fields.includes(field.key));
     return (
         <TableRow key={field.key}>
-            <TableCell sx={{ verticalAlign: 'top' }}>{field.label}</TableCell>
-            <TableCell sx={{ verticalAlign: 'top' }}>
+            <TableCell sx={{ verticalAlign: 'top', width: '5vw' }}>
+                {field.label}
+            </TableCell>
+            <TableCell
+                sx={{
+                    verticalAlign: 'top',
+                }}
+            >
                 {field.oldValue}
             </TableCell>
             <TableCell
-                sx={{ verticalAlign: 'top' }}
                 className={classNames(
                     !isFetchingChangeRequest &&
                         isCellRejected &&

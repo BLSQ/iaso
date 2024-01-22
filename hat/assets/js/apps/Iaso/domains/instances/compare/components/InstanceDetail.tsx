@@ -7,12 +7,14 @@ type Props = {
     instanceId: string | undefined;
     showTitle?: boolean;
     displayLinktoInstance?: boolean;
+    minHeight?: string | number;
 };
 
 const InstanceDetail: FunctionComponent<Props> = ({
     instanceId,
     showTitle = true,
     displayLinktoInstance = false,
+    minHeight,
 }) => {
     const {
         data,
@@ -28,6 +30,7 @@ const InstanceDetail: FunctionComponent<Props> = ({
             isError={isError}
             showTitle={showTitle}
             displayLinktoInstance={displayLinktoInstance}
+            minHeight={minHeight}
         />
     );
 };

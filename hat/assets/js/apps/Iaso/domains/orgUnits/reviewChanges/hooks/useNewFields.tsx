@@ -2,7 +2,6 @@ import React, {
     ReactElement,
     useMemo,
     useState,
-    Fragment,
     FunctionComponent,
 } from 'react';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
@@ -42,18 +41,16 @@ type ReferenceInstancesProps = {
 const ReferenceInstances: FunctionComponent<ReferenceInstancesProps> = ({
     instances,
 }) => {
-    if (!instances || instances.length === 0) {
-        return <>{textPlaceholder}</>;
-    }
-
     return (
         <>
+            {!instances || (instances.length === 0 && textPlaceholder)}
             {instances.map(instance => (
                 <InstanceDetail
-                    instanceId={`${instance.id}`}
                     key={instance.id}
+                    instanceId={`${instance.id}`}
                     showTitle={false}
                     displayLinktoInstance
+                    minHeight="150px"
                 />
             ))}
         </>

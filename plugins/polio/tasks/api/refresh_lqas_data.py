@@ -1,35 +1,26 @@
-import logging
-from django.shortcuts import get_object_or_404
-from gql import Client, gql
-from gql.transport.requests import RequestsHTTPTransport
-from datetime import datetime
-from iaso.api.tasks import ExternalTaskSerializer, TaskSerializer
+from iaso.api.tasks import ExternalTaskModelViewSet, ExternalTaskPostSerializer, ExternalTaskSerializer, TaskSerializer
 from iaso.models.base import RUNNING, SKIPPED, ERRORED, SUCCESS, Task
 from iaso.models.org_unit import OrgUnit
 from rest_framework import permissions, serializers, filters
 from hat.menupermissions import models as permission
-from iaso.api.common import ExternalTaskModelViewSet, HasPermission
+from iaso.api.common import HasPermission
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend  # type:ignore
 from django.db.models import Q
 from rest_framework.decorators import action
 
-from plugins.polio.models import Config
-
-logger = logging.getLogger(__name__)
 TASK_NAME = "Refresh LQAS data"
-NO_AUTHORIZED_COUNTRY_ERROR = {"country_id": "No authorised org unit found for user"}
+NO_AUTHORIZED_COUNTRY_ERROR_MESSAGE = "No authorised org unit found for user"
+NO_AUTHORIZED_COUNTRY_ERROR = {"country_id": NO_AUTHORIZED_COUNTRY_ERROR_MESSAGE}
 
 
-class RefreshLQASDataSerializer(serializers.Serializer):
+class RefreshLQASDataGetSerializer(serializers.Serializer):
     country_id = serializers.IntegerField(required=False)
 
     def validate(self, attrs):
         validated_data = super().validate(attrs)
         request = self.context["request"]
-        country_id = request.data.get("country_id", None)
-        if request.method == "GET":
-            country_id = request.query_params.get("country_id", None)
+        country_id = request.query_params.get("country_id", None)
         # It seems a bit stange to limit the access on country id
         # but to launch the refresh for all countries if no id is passed
         if country_id is not None:
@@ -39,6 +30,39 @@ class RefreshLQASDataSerializer(serializers.Serializer):
             if not user_has_access:
                 raise serializers.ValidationError(NO_AUTHORIZED_COUNTRY_ERROR)
         return validated_data
+
+
+class RefreshLQASDataPostSerializer(ExternalTaskPostSerializer):
+    def validate(self, attrs):
+        validated_data = super().validate(attrs)
+        request = self.context["request"]
+        config = validated_data.get("config", None)
+        id_field = validated_data.get("id_field", None)
+        error = {}
+        if config is None:
+            error["config"] = "This field is mandatory"
+        if id_field is None:
+            error["id_field"] = "This field is mandatory"
+        country_id = id_field.get("country_id", None)
+        if country_id is None:
+            error["id_field"] = "id_field should contain field 'country_id"
+        # It seems a bit stange to limit the access on country id
+        # but to launch the refresh for all countries if no id is passed
+        if country_id is not None:
+            user = request.user
+            try:
+                country_id = int(country_id)
+                user_has_access = OrgUnit.objects.filter_for_user(user).filter(id=country_id).count() > 0
+                if not user_has_access:
+                    error["id_field"] = NO_AUTHORIZED_COUNTRY_ERROR_MESSAGE
+            except:
+                error["id_field"] = f"Expected int, got {country_id}"
+        if error:
+            raise serializers.ValidationError(error)
+        res = {**validated_data}
+        res["config"] = config  # is this safe?
+        res["id_field"] = id_field
+        return res
 
 
 class CustomTaskSearchFilterBackend(filters.BaseFilterBackend):
@@ -72,12 +96,8 @@ class RefreshLQASDataViewset(ExternalTaskModelViewSet):
 
     def get_serializer_class(self):
         if self.request.method == "POST":
-            return RefreshLQASDataSerializer
+            return RefreshLQASDataPostSerializer
         return ExternalTaskSerializer
-
-    def get_task_name(self, data):
-        country_id = data.get("country_id", None)
-        return f"{TASK_NAME}-{country_id}" if country_id is not None else TASK_NAME
 
     def get_queryset(self):
         user = self.request.user
@@ -89,119 +109,9 @@ class RefreshLQASDataViewset(ExternalTaskModelViewSet):
             queryset = queryset.filter(name__in=authorized_names)
         return queryset
 
-    # def create(self, request):
-    #     serializer = RefreshLQASDataSerializer(data=request.data, context={"request": request})
-    #     serializer.is_valid(raise_exception=True)
-    #     user = request.user
-    #     data = serializer.validated_data
-    #     started_at = datetime.now()
-    #     country_id = data.get("country_id", None)
-    #     name = f"{TASK_NAME}-{country_id}" if country_id is not None else TASK_NAME
-    #     task = Task.objects.create(
-    #         launcher=user,
-    #         account=user.iaso_profile.account,
-    #         name=name,
-    #         status=RUNNING,
-    #         external=True,
-    #         started_at=started_at,
-    #         should_be_killed=False,
-    #     )
-    #     status = self.refresh_lqas_data(country_id, task.id)
-    #     task.status = status
-    #     task.save()
-    #     return Response({"task": TaskSerializer(instance=task).data})
-
-    def refresh_lqas_data(self, country_id=None, task_id=None):
-        try:
-            pipeline_config = get_object_or_404(Config, slug="lqas-pipeline-config")
-        except:
-            logger.exception("Could not fetch openhexa config")
-            return ERRORED
-        lqas_pipeline_version = pipeline_config.content["lqas_pipeline_version"]
-        oh_pipeline_target = pipeline_config.content["oh_pipeline_target"]
-        lqas_pipeline = pipeline_config.content["lqas_pipeline"]
-        openhexa_url = pipeline_config.content["openhexa_url"]
-        openhexa_token = pipeline_config.content["openhexa_token"]
-
-        transport = RequestsHTTPTransport(
-            url=openhexa_url,
-            verify=True,
-            headers={"Authorization": f"Bearer {openhexa_token}"},
-        )
-        client = Client(transport=transport, fetch_schema_from_transport=True)
-        get_runs = gql(
-            """
-        query pipeline {
-            pipeline(id: "%s"){
-                runs{
-                    items{
-                        run_id
-                        status
-                        config
-                    }
-                }
-            }
-        }
-        """
-            % (lqas_pipeline)
-        )
-        try:
-            latest_runs = client.execute(get_runs)
-            # Warning the query will only return the last 10 runs
-            active_runs = [
-                run
-                for run in latest_runs["pipeline"]["runs"]["items"]
-                if (run["status"] not in ["queued", "success", "failed"])
-                and run.get("config", {}).get("country_id", None) == country_id
-            ]
-            # Don't create a task if there's already an ongoing run for the country
-            if len(active_runs) > 0:
-                logger.debug("ACTIVE RUNS", active_runs, country_id)
-                logger.warning("Found active run for config")
-                return SKIPPED
-        except:
-            logger.exception("Could not fetch pipeline runs")
-            return ERRORED
-
-        config = {"target": oh_pipeline_target}
-
-        if country_id:
-            config["country_id"] = country_id
-        if task_id:
-            config["task_id"] = task_id
-        # We can specify a version in the env in case the latest version gets bugged
-        mutation_input = (
-            {"id": lqas_pipeline, "version": int(lqas_pipeline_version), "config": config}
-            if lqas_pipeline_version
-            else {"id": lqas_pipeline, "config": config}
-        )
-        try:
-            run_mutation = gql(
-                """
-            mutation runPipeline($input: RunPipelineInput) {
-            runPipeline(input: $input) {
-                success
-                run {
-                id
-                }
-            }
-            }
-        """
-            )
-            run_result = client.execute(
-                run_mutation,
-                variable_values={"input": mutation_input},
-            )["runPipeline"]
-            # The SUCCESS state will be set by the OpenHexa pipeline
-            if run_result["success"]:
-                return RUNNING
-        except:
-            logger.exception("Could not launch pipeline")
-            return ERRORED
-
     @action(detail=False, methods=["get"], serializer_class=TaskSerializer)
     def last_run_for_country(self, request):
-        serializer = RefreshLQASDataSerializer(data=request.data, context={"request": request})
+        serializer = RefreshLQASDataGetSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         country_id = request.query_params.get("country_id", None)
         status_query = Q(status=SUCCESS) | Q(status=RUNNING) | Q(status=ERRORED)

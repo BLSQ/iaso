@@ -3,7 +3,6 @@ import logging
 from datetime import date, datetime
 from functools import wraps
 from traceback import format_exc
-from django.shortcuts import get_object_or_404
 
 import pytz
 from django.contrib.auth.models import User
@@ -18,14 +17,8 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet as BaseModelViewSet
 from rest_framework_csv.renderers import CSVRenderer
-
 from hat.api_import.models import APIImport
 from iaso.models import OrgUnit, OrgUnitType
-from iaso.models.base import ERRORED, RUNNING, SKIPPED, Task
-from iaso.api.tasks import TaskSerializer
-from plugins.polio.models import Config
-from gql.transport.requests import RequestsHTTPTransport
-from gql import Client, gql
 
 
 logger = logging.getLogger(__name__)
@@ -301,140 +294,6 @@ class ModelViewSet(BaseModelViewSet):
                 self.request.method,
                 f"Cannot delete {instance_model_name} as it is linked to one or more {linked_model_name}s",
             )
-
-
-class ExternalTaskModelViewSet(ModelViewSet):
-    def get_task_name(self, data):
-        return None
-
-    def create(self, request):
-        serializer = self.get_serializer_class()(data=request.data, context={"request": request})
-        serializer.is_valid(raise_exception=True)
-        user = request.user
-        data = serializer.validated_data
-        config = data.get("config", None)
-        slug = data.get("slug", None)
-        id_field = data.get("id_field", None)
-        started_at = datetime.now()
-        name = self.get_task_name(data)
-        if name is None:
-            name = slug
-        task = Task.objects.create(
-            launcher=user,
-            account=user.iaso_profile.account,
-            name=name,
-            status=RUNNING,
-            external=True,
-            started_at=started_at,
-            should_be_killed=False,
-        )
-        status = self.launch_task(slug=slug, config=config, id_field=id_field, task_id=task.id)
-        task.status = status
-        task.save()
-        return Response({"task": TaskSerializer(instance=task).data})
-
-    # slug is the slug of the Config object
-    # config is the pipeline specific config (the args of the pipeline method grouped in a dict)
-    # task_id will be passed by the task decorator
-    # id_field is a field to filter from to find the relevant active run, eg: a country id for lqas refresh
-    def launch_task(self, slug, config, task_id=None, id_field=None):
-        try:
-            # The config Model should be moved to Iaso as well
-            pipeline_config = get_object_or_404(Config, slug=slug)
-            pipeline_version = pipeline_config.content["pipeline_version"]
-            pipeline = pipeline_config.content["pipeline"]
-            openhexa_url = pipeline_config.content["openhexa_url"]
-            openhexa_token = pipeline_config.content["openhexa_token"]
-        except:
-            logger.exception("Could not fetch openhexa config")
-            return ERRORED
-
-        id_field_key = ""
-        id_field_value = None
-
-        if id_field:
-            try:
-                id_field_key = id_field.keys()[0]
-                id_field_value = id_field.values()[0]
-            except:
-                logger.exception(f"Bad id_field configuration.Expected dict, got {id_field}")
-            return ERRORED
-
-        transport = RequestsHTTPTransport(
-            url=openhexa_url,
-            verify=True,
-            headers={"Authorization": f"Bearer {openhexa_token}"},
-        )
-        client = Client(transport=transport, fetch_schema_from_transport=True)
-        get_runs = gql(
-            """
-        query pipeline {
-            pipeline(id: "%s"){
-                runs{
-                    items{
-                        run_id
-                        status
-                        config
-                    }
-                }
-            }
-        }
-        """
-            % (pipeline)
-        )
-        try:
-            latest_runs = client.execute(get_runs)
-            # Warning the query will only return the last 10 runs
-            active_runs = [
-                run
-                for run in latest_runs["pipeline"]["runs"]["items"]
-                if (run["status"] not in ["queued", "success", "failed"])
-                # Not sure this check is really solid
-                and run.get("config", {}).get(id_field_key, None) == id_field_value
-            ]
-            # Don't create a task if there's already an ongoing run for the country
-            if len(active_runs) > 0:
-                logger.debug("ACTIVE RUNS", active_runs, id_field_key)
-                logger.warning("Found active run for config")
-                return SKIPPED
-        except:
-            logger.exception("Could not fetch pipeline runs")
-            return ERRORED
-
-        oh_config = {**config}
-
-        if task_id:
-            # task_id will be added by the task decorator
-            oh_config["task_id"] = task_id
-        # We can specify a version in case the latest version gets bugged
-        mutation_input = (
-            {"id": pipeline, "version": int(pipeline_version), "config": oh_config}
-            if pipeline_version
-            else {"id": pipeline, "config": config}
-        )
-        try:
-            run_mutation = gql(
-                """
-            mutation runPipeline($input: RunPipelineInput) {
-            runPipeline(input: $input) {
-                success
-                run {
-                id
-                }
-            }
-            }
-        """
-            )
-            run_result = client.execute(
-                run_mutation,
-                variable_values={"input": mutation_input},
-            )["runPipeline"]
-            # The SUCCESS state will be set by the OpenHexa pipeline
-            if run_result["success"]:
-                return RUNNING
-        except:
-            logger.exception("Could not launch pipeline")
-            return ERRORED
 
 
 class ChoiceEnum(enum.Enum):

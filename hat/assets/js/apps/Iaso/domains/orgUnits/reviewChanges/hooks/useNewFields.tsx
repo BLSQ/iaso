@@ -153,9 +153,13 @@ export const useNewFields = (
                     }
                     case 'new_location': {
                         const location = value as NestedLocation | undefined;
-                        const oldValue = orgUnit.location
-                            ? getLocationValue(orgUnit.location)
-                            : textPlaceholder;
+                        const oldValue = orgUnit.location ? (
+                            getLocationValue(orgUnit.location)
+                        ) : (
+                            <Box px="6px" py={2}>
+                                {textPlaceholder}
+                            </Box>
+                        );
                         return {
                             key: originalKey,
                             label: formatMessage(MESSAGES.location),

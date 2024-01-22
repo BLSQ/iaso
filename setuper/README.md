@@ -1,10 +1,15 @@
-Iaso Demo Setup Script
-----------------------
+# Iaso Demo Setup Script
 
-# Introduction 
-The setuper.py script exists to help users or developer kickstart a fully working Iaso environment. 
+## Introduction
+
+The setuper.py script:
+
+- kickstarts a fully working Iaso environment
+- by generating contents for the database
+- using the Iaso API
 
 It will:
+
 - generate a random account name
 - create the corresponding account, data source, source version, first user 
 - import an org unit sample 
@@ -14,34 +19,52 @@ It will:
 
 Once the script has run, you can log in to your server using the account name as login and password. 
 
-# How To Use
+## How To Use
 
-```
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-cp data/sample-credentials.py credentials.py
-#edit credentials.py with your own admin user credentials here and server url
-python3 setuper.py
-```
+1. Backup your DB
 
+        docker-compose exec db pg_dump -U postgres iaso  -Fc > ~/Desktop/iaso.dump
 
+1. Use an empty DB
 
-## Development
+        # Find your Iaso DB.
+        docker-compose exec db psql -U postgres -l
 
+        # Delete your Iaso DB.
+        docker-compose exec db psql -U postgres -c "drop database if exists iaso"
 
-in a first terminal 
-```
-docker-compose up
-```
-in a second terminal launch the worker
+        # Create your Iaso DB.
+        docker-compose exec db psql -U postgres -c "create database iaso"
 
-```
-docker-compose run iaso manage tasks_worker
-```
+1. Run the Django server in a first terminal (this will run DB migrations)
 
-then launch the setuper
+        docker-compose up iaso
 
-```
-python3 setuper.py
-```
+1. Run a worker in a second terminal
+
+        docker-compose run iaso manage tasks_worker
+
+1. Create a superuser
+
+        docker-compose exec iaso ./manage.py createsuperuser
+
+1. Prepare the setuper
+
+        cd setuper
+
+    - Create a virtual env for your local Python:
+
+           python3 -m venv venv
+           source venv/bin/activate
+
+   - Install requirements:
+
+           pip install -r requirements.txt
+
+    - Update `credentials.py` because we need a user with API access (use your superuser credentials)
+
+          cp data/sample-credentials.py credentials.py
+
+1. Run the setuper (it requires a local Python 3)
+
+        python3 setuper.py

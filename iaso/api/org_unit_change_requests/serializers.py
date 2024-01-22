@@ -170,6 +170,11 @@ class OrgUnitChangeRequestRetrieveSerializer(serializers.ModelSerializer):
     new_reference_instances = InstanceForChangeRequestSerializer(many=True)
     created_at = TimestampField()
     updated_at = TimestampField()
+    old_parent = OrgUnitNestedSerializer()
+    old_org_unit_type = OrgUnitTypeNestedSerializer()
+    old_groups = serializers.SerializerMethodField(method_name="get_old_groups")
+    old_location = ThreeDimPointField()
+    old_reference_instances = InstanceForChangeRequestSerializer(many=True)
 
     class Meta:
         model = OrgUnitChangeRequest
@@ -194,10 +199,21 @@ class OrgUnitChangeRequestRetrieveSerializer(serializers.ModelSerializer):
             "new_opening_date",
             "new_closed_date",
             "new_reference_instances",
+            "old_parent",
+            "old_name",
+            "old_org_unit_type",
+            "old_groups",
+            "old_location",
+            "old_opening_date",
+            "old_closed_date",
+            "old_reference_instances",
         ]
 
-    def get_new_groups(self, obj: OrgUnitChangeRequest):
+    def get_new_groups(self, obj: OrgUnitChangeRequest) -> list[dict]:
         return [{"id": group.id, "name": group.name} for group in obj.new_groups.all()]
+
+    def get_old_groups(self, obj: OrgUnitChangeRequest) -> list[dict]:
+        return [{"id": group.id, "name": group.name} for group in obj.old_groups.all()]
 
 
 class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
@@ -211,7 +227,7 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
         queryset=OrgUnit.objects.all(),
         required=False,
     )
-    new_parent_id = serializers.PrimaryKeyRelatedField(
+    new_parent_id = IdOrUuidRelatedField(
         source="new_parent",
         queryset=OrgUnit.objects.all(),
         required=False,

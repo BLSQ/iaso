@@ -18,8 +18,8 @@ const VaccinesLegend = () => {
                     <FormattedMessage {...MESSAGES.vaccines} />
                 </Typography>
                 {polioVaccines.map(vaccine => (
-                    <Box mt={1}>
-                        <Grid container spacing={1} key={vaccine.value}>
+                    <Box mt={1} key={vaccine.value}>
+                        <Grid container spacing={1}>
                             <Grid
                                 item
                                 sm={6}

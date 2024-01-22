@@ -1,5 +1,7 @@
 {
     "blsq.buttons.label.close": "Fermer",
+    "blsq.buttons.label.no": "Non",
+    "blsq.buttons.label.yes": "Oui",
     "blsq.label.clickOrDragFile": "Déposez des fichiers ou cliquez pour ouvrir la sélection de fichiers",
     "blsq.label.clicktoOpenFileSelect": "Cliquer pour sélectionner des fichiers",
     "blsq.label.dropHere": "Déposez les fichiers ici",
@@ -605,6 +607,7 @@
     "iaso.label.reAssignInstanceAction": "Assigner",
     "iaso.label.refresh": "Actualiser",
     "iaso.label.renderError": "Erreur de rendu de la valeur",
+    "iaso.label.restore": "Restaurer",
     "iaso.label.resultsLower": "résultat(s)",
     "iaso.label.reviewChangeProposals": "Examiner les propositions de changement",
     "iaso.label.save": "Sauver",

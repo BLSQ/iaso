@@ -27,9 +27,13 @@ def load_powerbi_config_for_page(page: Page):
 
 
 def page(request, page_slug):
-    current_account = request.user.iaso_profile.account
-    analytics_script = current_account.analytics_script
     content = {}
+
+    try:
+        analytics_script = request.user.iaso_profile.account.analytics_script
+    except AttributeError:
+        analytics_script = None
+
     if analytics_script:
         content["analytics_script"] = analytics_script
     page = get_object_or_404(Page, slug=page_slug)

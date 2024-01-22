@@ -18,12 +18,6 @@ export const useStyles = makeStyles(() => ({
     tableRow: {
         display: 'flex',
     },
-    pageActions: {
-        marginBottom: `${theme.spacing(0)} !important`,
-    },
-    pageAction: {
-        marginRight: `${theme.spacing(1)} !important`,
-    },
     form: {
         marginTop: `${theme.spacing(4)} !important`,
         display: 'flex',
@@ -218,5 +212,8 @@ export const useStyles = makeStyles(() => ({
     tabIcon: {
         color: theme.palette.primary.main,
         cursor: 'pointer',
+    },
+    marginTop: {
+        marginTop: `${theme.spacing(2)} !important`,
     },
 }));

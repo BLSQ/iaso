@@ -50,8 +50,8 @@ export const mockUnusableVials: any = {
 export const mockSummary = {
     country_name: 'CAMEROON',
     vaccine_type: 'bOPV',
-    total_usable_doses: 500,
-    total_usable_vials: 25,
-    total_unusable_doses: 100,
-    total_unusable_vials: 5,
+    total_usable_doses: 5000,
+    total_usable_vials: 2550,
+    total_unusable_doses: 1000,
+    total_unusable_vials: 550,
 };

@@ -5,6 +5,7 @@ import {
     textPlaceholder,
     useSafeIntl,
 } from 'bluesquare-components';
+import { NumberCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import {
     DateCell,
@@ -82,6 +83,9 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
             {
                 Header: formatMessage(MESSAGES.dosesShipped),
                 accessor: 'doses_shipped',
+                Cell: settings => (
+                    <NumberCell value={settings.row.original.doses_shipped} />
+                ),
             },
             {
                 Header: formatMessage(MESSAGES.estimatedDateOfArrival),

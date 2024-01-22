@@ -181,7 +181,7 @@ class OrgUnitChangeRequestListSerializerTestCase(TestCase):
                 },
                 "created_at": 1696856400.0,
                 "updated_by": None,
-                "updated_at": None,
+                "updated_at": 1696856400.0,
             },
         )
         self.assertCountEqual(serializer.data["requested_fields"], ["new_org_unit_type", "new_location"])
@@ -245,7 +245,7 @@ class MobileOrgUnitChangeRequestListSerializerTestCase(TestCase):
                 "approved_fields": ["new_org_unit_type"],
                 "rejection_comment": "",
                 "created_at": 1697202000.0,
-                "updated_at": None,
+                "updated_at": 1697202000.0,
                 "new_parent_id": None,
                 "new_name": "",
                 "new_org_unit_type_id": self.org_unit_type.pk,
@@ -327,7 +327,7 @@ class OrgUnitChangeRequestRetrieveSerializerTestCase(TestCase):
                 ),
                 "created_at": 1697734800.0,
                 "updated_by": None,
-                "updated_at": None,
+                "updated_at": 1697734800.0,
                 "requested_fields": ["new_org_unit_type", "new_opening_date", "new_closed_date", "new_groups"],
                 "approved_fields": [],
                 "rejection_comment": "",
@@ -373,6 +373,14 @@ class OrgUnitChangeRequestRetrieveSerializerTestCase(TestCase):
                 "new_opening_date": "2022-10-27",
                 "new_closed_date": "2024-10-27",
                 "new_reference_instances": [],
+                "old_parent": None,
+                "old_name": "",
+                "old_org_unit_type": None,
+                "old_groups": [],
+                "old_location": None,
+                "old_opening_date": None,
+                "old_closed_date": None,
+                "old_reference_instances": [],
             },
         )
 
@@ -419,12 +427,14 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
         data_source = m.DataSource.objects.create(name="Data source")
         version1 = m.SourceVersion.objects.create(number=1, data_source=data_source)
         version2 = m.SourceVersion.objects.create(number=2, data_source=data_source)
-        parent_org_unit = m.OrgUnit.objects.create(org_unit_type=self.org_unit_type, version=version2)
+        parent_org_unit = m.OrgUnit.objects.create(
+            org_unit_type=self.org_unit_type, version=version2, uuid=uuid.uuid4()
+        )
         self.org_unit.version = version1
         self.org_unit.save()
         data = {
             "org_unit_id": self.org_unit.id,
-            "new_parent_id": parent_org_unit.id,
+            "new_parent_id": str(parent_org_unit.uuid),
         }
         serializer = OrgUnitChangeRequestWriteSerializer(data=data)
         self.assertFalse(serializer.is_valid())

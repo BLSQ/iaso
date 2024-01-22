@@ -176,6 +176,7 @@ const Calendar = ({ params }) => {
                     className={classnames(
                         classes.containerFullHeightNoTabPadded,
                         !isPdf && classes.isNotPdf,
+                        isPdf && classes.isPdf,
                     )}
                 >
                     {!isPdf && (

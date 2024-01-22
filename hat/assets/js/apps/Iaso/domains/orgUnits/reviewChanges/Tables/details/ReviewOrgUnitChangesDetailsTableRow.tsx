@@ -33,6 +33,9 @@ const useStyles = makeStyles(theme => ({
         '& .marker-custom.primary svg': {
             fill: `${theme.palette.error.main} !important`,
         },
+        '& h6': {
+            color: `${theme.palette.error.main} !important`,
+        },
     },
     cellApproved: {
         '& > a': {
@@ -43,6 +46,9 @@ const useStyles = makeStyles(theme => ({
         },
         '& .marker-custom.primary svg': {
             fill: `${theme.palette.success.main} !important`,
+        },
+        '& h6': {
+            color: `${theme.palette.success.main} !important`,
         },
     },
     checkBoxContainer: {
@@ -72,7 +78,7 @@ export const ReviewOrgUnitChangesDetailsTableRow: FunctionComponent<Props> = ({
             changeRequest?.status === 'approved' &&
             changeRequest.approved_fields.includes(field.key));
 
-    const celcStyles = useMemo(
+    const cellStyles = useMemo(
         () => ({
             verticalAlign: 'top',
             padding: theme =>
@@ -87,9 +93,9 @@ export const ReviewOrgUnitChangesDetailsTableRow: FunctionComponent<Props> = ({
             <TableCell sx={{ verticalAlign: 'top', width: '5vw' }}>
                 {field.label}
             </TableCell>
-            <TableCell sx={celcStyles}>{field.oldValue}</TableCell>
+            <TableCell sx={cellStyles}>{field.oldValue}</TableCell>
             <TableCell
-                sx={celcStyles}
+                sx={cellStyles}
                 className={classNames(
                     !isFetchingChangeRequest &&
                         isCellRejected &&

@@ -10,7 +10,7 @@ from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 
 from iaso.views import health, page
-
+from plugins.wfp.urls import urlpatterns as wfp_plugins_urlpatterns
 
 admin.site.site_header = "Administration de Iaso"
 admin.site.site_title = "Iaso"
@@ -57,6 +57,7 @@ urlpatterns = [
         name="reset_password_complete",
     ),
     path("sync/", include("hat.sync.urls")),
+    path("wfpdebug/", include(wfp_plugins_urlpatterns)),
 ]
 
 # Swagger config

@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import { TypographyVariant } from '@mui/material';
 import { useGetInstance } from '../hooks/useGetInstance';
 import { Instance } from '../../types/instance';
 import { InstanceDetailRaw } from './InstanceDetailRaw';
@@ -6,15 +7,15 @@ import { InstanceDetailRaw } from './InstanceDetailRaw';
 type Props = {
     instanceId: string | undefined;
     showTitle?: boolean;
-    displayLinktoInstance?: boolean;
     minHeight?: string | number;
+    titleVariant?: TypographyVariant;
 };
 
 const InstanceDetail: FunctionComponent<Props> = ({
     instanceId,
     showTitle = true,
-    displayLinktoInstance = false,
     minHeight,
+    titleVariant,
 }) => {
     const {
         data,
@@ -29,8 +30,8 @@ const InstanceDetail: FunctionComponent<Props> = ({
             isLoading={isLoading}
             isError={isError}
             showTitle={showTitle}
-            displayLinktoInstance={displayLinktoInstance}
             minHeight={minHeight}
+            titleVariant={titleVariant}
         />
     );
 };

@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import { Box, TableCell, TableRow } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import classNames from 'classnames';
@@ -18,11 +18,9 @@ type Props = {
 
 const useStyles = makeStyles(theme => ({
     cell: {
-        verticalAlign: 'top',
         color: 'inherit',
     },
     cellRejected: {
-        verticalAlign: 'top',
         '& > a': {
             color: `${theme.palette.error.main} !important`,
         },
@@ -37,7 +35,6 @@ const useStyles = makeStyles(theme => ({
         },
     },
     cellApproved: {
-        verticalAlign: 'top',
         '& > a': {
             color: `${theme.palette.success.main} !important`,
         },
@@ -74,19 +71,25 @@ export const ReviewOrgUnitChangesDetailsTableRow: FunctionComponent<Props> = ({
         (!isNew &&
             changeRequest?.status === 'approved' &&
             changeRequest.approved_fields.includes(field.key));
+
+    const celcStyles = useMemo(
+        () => ({
+            verticalAlign: 'top',
+            padding: theme =>
+                !field.removePadding
+                    ? `6px ${theme.spacing(1)}`
+                    : `0 ${theme.spacing(1)} 0 0`,
+        }),
+        [field.removePadding],
+    );
     return (
         <TableRow key={field.key}>
             <TableCell sx={{ verticalAlign: 'top', width: '5vw' }}>
                 {field.label}
             </TableCell>
+            <TableCell sx={celcStyles}>{field.oldValue}</TableCell>
             <TableCell
-                sx={{
-                    verticalAlign: 'top',
-                }}
-            >
-                {field.oldValue}
-            </TableCell>
-            <TableCell
+                sx={celcStyles}
                 className={classNames(
                     !isFetchingChangeRequest &&
                         isCellRejected &&
@@ -101,7 +104,12 @@ export const ReviewOrgUnitChangesDetailsTableRow: FunctionComponent<Props> = ({
                 {field.newValue}
             </TableCell>
             {isNew && (
-                <TableCell>
+                <TableCell
+                    sx={{
+                        padding: 0,
+                        width: 30,
+                    }}
+                >
                     {field.isChanged && (
                         <Box
                             display="flex"

@@ -6,6 +6,7 @@ import React, {
 } from 'react';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
+import { Box } from '@mui/material';
 import {
     InstanceForChangeRequest,
     NestedGroup,
@@ -26,6 +27,7 @@ export type NewOrgUnitField = {
     newValue: ReactElement | string;
     oldValue: ReactElement | string;
     label: string;
+    removePadding?: boolean;
 };
 
 type UseNewFields = {
@@ -45,13 +47,14 @@ const ReferenceInstances: FunctionComponent<ReferenceInstancesProps> = ({
         <>
             {!instances || (instances.length === 0 && textPlaceholder)}
             {instances.map(instance => (
-                <InstanceDetail
-                    key={instance.id}
-                    instanceId={`${instance.id}`}
-                    showTitle={false}
-                    displayLinktoInstance
-                    minHeight="150px"
-                />
+                <Box mb={1}>
+                    <InstanceDetail
+                        key={instance.id}
+                        instanceId={`${instance.id}`}
+                        minHeight="150px"
+                        titleVariant="subtitle1"
+                    />
+                </Box>
             ))}
         </>
     );
@@ -162,6 +165,7 @@ export const useNewFields = (
                                 ? getLocationValue(location)
                                 : oldValue,
                             oldValue,
+                            removePadding: true,
                         };
                     }
                     case 'new_opening_date':
@@ -228,6 +232,7 @@ export const useNewFields = (
                                     instances={orgUnit.reference_instances}
                                 />
                             ),
+                            removePadding: true,
                         };
                     }
                     default:

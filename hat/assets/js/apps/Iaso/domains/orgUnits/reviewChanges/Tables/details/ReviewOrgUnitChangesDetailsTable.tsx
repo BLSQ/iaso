@@ -28,7 +28,7 @@ export const ReviewOrgUnitChangesDetailsTable: FunctionComponent<Props> = ({
 
     return (
         <Paper sx={{ mb: -2 }}>
-            <TableContainer sx={{ maxHeight: '60vh', minHeight: 300 }}>
+            <TableContainer sx={{ maxHeight: '75vh', minHeight: 300 }}>
                 {(isFetchingChangeRequest || isSaving) && (
                     <LoadingSpinner absolute />
                 )}

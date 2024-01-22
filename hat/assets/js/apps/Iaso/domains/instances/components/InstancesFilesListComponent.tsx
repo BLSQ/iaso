@@ -1,7 +1,7 @@
 import React, { useState, FunctionComponent, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { Tabs, Tab, Paper } from '@mui/material';
+import { Tabs, Tab, Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import { useSafeIntl } from 'bluesquare-components';
@@ -38,7 +38,6 @@ const useStyles = makeStyles(theme => ({
     tabContainer: {
         minHeight: minTabHeight,
         backgroundColor: 'white',
-        marginTop: theme.spacing(2),
     },
 }));
 type Props = {
@@ -104,11 +103,7 @@ const InstancesFilesList: FunctionComponent<Props> = ({
 
     if (fetching || !files) return null;
     if (files.length === 0) {
-        return (
-            <Paper elevation={1} sx={{ padding: theme => theme.spacing(1) }}>
-                {formatMessage(MESSAGES.missingFile)}
-            </Paper>
-        );
+        return <Box p={2}>{formatMessage(MESSAGES.missingFile)}</Box>;
     }
     return (
         <section className={classes.root}>

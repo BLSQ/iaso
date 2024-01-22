@@ -6,13 +6,11 @@ import { injectIntl } from 'bluesquare-components';
 import InstanceDetailsField from './InstanceDetailsField';
 import { INSTANCE_METAS_FIELDS } from '../constants';
 import MESSAGES from '../messages';
-import { LinkToInstance } from './LinkToInstance.tsx';
 
 const InstanceDetailsInfos = ({
     currentInstance,
     intl: { formatMessage },
     fieldsToHide,
-    displayLinktoInstance,
 }) => {
     const fields = INSTANCE_METAS_FIELDS.filter(
         f =>
@@ -21,14 +19,6 @@ const InstanceDetailsInfos = ({
     );
     return (
         <>
-            {displayLinktoInstance && (
-                <InstanceDetailsField
-                    renderValue={() => (
-                        <LinkToInstance instanceId={currentInstance.id} />
-                    )}
-                    label={formatMessage(MESSAGES.submission)}
-                />
-            )}
             {fields.map(f => {
                 const value = get(currentInstance, f.key);
 
@@ -60,13 +50,11 @@ const InstanceDetailsInfos = ({
 
 InstanceDetailsInfos.defaultProps = {
     fieldsToHide: [],
-    displayLinktoInstance: false,
 };
 
 InstanceDetailsInfos.propTypes = {
     currentInstance: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     fieldsToHide: PropTypes.array,
-    displayLinktoInstance: PropTypes.bool,
 };
 export default injectIntl(InstanceDetailsInfos);

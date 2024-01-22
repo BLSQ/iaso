@@ -1,11 +1,11 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, TypographyVariant } from '@mui/material';
 import {
     useSafeIntl,
     LoadingSpinner,
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
-import WidgetPaper from '../../../../components/papers/WidgetPaperComponent';
+
 import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
 import MESSAGES from '../messages';
 import InstanceDetailsInfos from '../../components/InstanceDetailsInfos';
@@ -14,15 +14,17 @@ import InstanceFileContent from '../../components/InstanceFileContent';
 import { Instance } from '../../types/instance';
 import InstancesFilesList from '../../components/InstancesFilesListComponent';
 import { getInstancesFilesList } from '../../utils';
+import { Accordion } from '../../../../components/Accordion/Accordion';
+import { AccordionSummary } from '../../../../components/Accordion/AccordionSummary';
+import { AccordionDetails } from '../../../../components/Accordion/AccordionDetails';
 
 type Props = {
     data?: Instance;
     isLoading: boolean;
     isError: boolean;
     showTitle?: boolean;
-    elevation?: number;
-    displayLinktoInstance?: boolean;
     minHeight?: string | number;
+    titleVariant?: TypographyVariant;
 };
 
 export const InstanceDetailRaw: FunctionComponent<Props> = ({
@@ -30,9 +32,8 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
     isLoading,
     isError,
     showTitle = true,
-    elevation = 1,
-    displayLinktoInstance = false,
     minHeight = '70vh',
+    titleVariant = 'h5',
 }) => {
     const { formatMessage } = useSafeIntl();
 
@@ -54,62 +55,89 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
     return (
         <>
             {showTitle && (
-                <Box mb={4}>
-                    <Typography variant="h5" color="secondary">
-                        <section>
-                            {`${formatMessage(MESSAGES.submissionTitle)} - ${
-                                data?.id
-                            }`}
-                            <IconButtonComponent
-                                url={`/forms/submission/instanceId/${data?.id}`}
-                                icon="remove-red-eye"
-                                tooltipMessage={MESSAGES.viewSubmissionDetails}
-                            />
-                        </section>
+                <Box display="flex" alignItems="center">
+                    <Typography variant={titleVariant} color="secondary">
+                        {`${formatMessage(MESSAGES.submissionTitle)} - ${
+                            data?.id
+                        }`}
                     </Typography>
+                    <Box
+                        display="inline-block"
+                        ml={1}
+                        sx={{
+                            display: 'inline-block',
+                            ml: 1,
+                            '& button a': {
+                                width: '30px',
+                                height: '30px',
+                            },
+                        }}
+                    >
+                        <IconButtonComponent
+                            size="small"
+                            iconSize="small"
+                            url={`/forms/submission/instanceId/${data?.id}`}
+                            icon="remove-red-eye"
+                            tooltipMessage={MESSAGES.viewSubmissionDetails}
+                        />
+                    </Box>
                 </Box>
             )}
-            <WidgetPaper
-                expandable
-                isExpanded={!showTitle}
-                title={formatMessage(MESSAGES.infos)}
-                padded
-                elevation={elevation}
-            >
-                <InstanceDetailsInfos
-                    currentInstance={data as any}
-                    displayLinktoInstance={displayLinktoInstance}
-                />
-            </WidgetPaper>
-            <WidgetPaper
-                expandable
-                isExpanded={false}
-                title={formatMessage(MESSAGES.location)}
-                elevation={elevation}
-            >
-                <InstanceDetailsLocation currentInstance={data} />
-            </WidgetPaper>
-            <WidgetPaper
-                title={formatMessage(MESSAGES.form)}
-                elevation={elevation}
-            >
-                <InstanceFileContent instance={data} />
-            </WidgetPaper>
-            <WidgetPaper
-                expandable
-                isExpanded
-                title={formatMessage(MESSAGES.files)}
-                padded
-                elevation={elevation}
-            >
-                <Box mt={-4}>
-                    <InstancesFilesList
-                        fetchDetails={false}
-                        instanceDetail={data}
-                        files={getInstancesFilesList(data ? [data] : [])}
-                    />
-                </Box>
-            </WidgetPaper>
+            <Box>
+                <Accordion defaultExpanded>
+                    <AccordionSummary
+                        aria-controls="instance-infos"
+                        id="instance-infos"
+                    >
+                        {formatMessage(MESSAGES.infos)}
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <Box p={2}>
+                            <InstanceDetailsInfos currentInstance={data} />
+                        </Box>
+                    </AccordionDetails>
+                </Accordion>
+
+                <Accordion>
+                    <AccordionSummary
+                        aria-controls="instance-location"
+                        id="instance-location"
+                    >
+                        {formatMessage(MESSAGES.location)}
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <Box p={2}>
+                            <InstanceDetailsLocation currentInstance={data} />
+                        </Box>
+                    </AccordionDetails>
+                </Accordion>
+                <Accordion>
+                    <AccordionSummary
+                        aria-controls="instance-form"
+                        id="instance-form"
+                    >
+                        {formatMessage(MESSAGES.form)}
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <InstanceFileContent instance={data} />
+                    </AccordionDetails>
+                </Accordion>
+                <Accordion>
+                    <AccordionSummary
+                        aria-controls="instance-files"
+                        id="instance-files"
+                    >
+                        {formatMessage(MESSAGES.files)}
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <InstancesFilesList
+                            fetchDetails={false}
+                            instanceDetail={data}
+                            files={getInstancesFilesList(data ? [data] : [])}
+                        />
+                    </AccordionDetails>
+                </Accordion>
+            </Box>
         </>
     );
 };

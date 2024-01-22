@@ -620,6 +620,7 @@
     "iaso.label.seeParent": "Voir le parent",
     "iaso.label.selectAll": "Tout sélectionner",
     "iaso.label.selection": "Selection",
+    "iaso.label.selectionShort": "Sel.",
     "iaso.label.selectParentOrgUnit": "Sélectionner l'unité d'org. parent",
     "iaso.label.sentEmailInvitation": "Envoyer un courrier d'invitation",
     "iaso.label.sentEmailInvitationWhenAdresseExist": "Saisissez l'adresse e-mail avant d'envoyer un e-mail d'invitation",

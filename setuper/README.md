@@ -48,7 +48,7 @@ Once the script has run, you can log in to your server using the account name as
 
         docker-compose exec iaso ./manage.py createsuperuser
 
-1. Prepare the setuper
+1. Prepare the setuper (it requires a local Python 3)
 
         cd setuper
 
@@ -65,6 +65,6 @@ Once the script has run, you can log in to your server using the account name as
 
           cp data/sample-credentials.py credentials.py
 
-1. Run the setuper (it requires a local Python 3)
+1. Run the setuper
 
         python3 setuper.py

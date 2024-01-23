@@ -65,7 +65,7 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
                                 label={formatMessage(MESSAGES.doses_per_vial)}
                                 name={`${VAR}[${index}].doses_per_vial`}
                                 component={NumberInput}
-                                disabled={markedForDeletion}
+                                disabled={true}
                             />
                         </Grid>
                     </Grid>
@@ -89,12 +89,32 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
 
                         <Grid item xs={6} md={3}>
                             <Field
+                                label={formatMessage(MESSAGES.vials_shipped)}
+                                name={`${VAR}[${index}].vials_shipped`}
+                                component={NumberInput}
+                                disabled={true}
+                            />
+                        </Grid>
+
+
+                        <Grid item xs={6} md={3}>
+                            <Field
                                 label={formatMessage(MESSAGES.doses_received)}
                                 name={`${VAR}[${index}].doses_received`}
                                 component={NumberInput}
                                 disabled={markedForDeletion}
                             />
                         </Grid>
+
+                        <Grid item xs={6} md={3}>
+                            <Field
+                                label={formatMessage(MESSAGES.vials_received)}
+                                name={`${VAR}[${index}].vials_received`}
+                                component={NumberInput}
+                                disabled={true}
+                            />
+                        </Grid>
+
                     </Grid>
                 </Grid>
             </Paper>

@@ -22,7 +22,6 @@ class VaccineStockSerializer(serializers.ModelSerializer):
     vials_received = serializers.SerializerMethodField()
     vials_used = serializers.SerializerMethodField()
     stock_of_usable_vials = serializers.SerializerMethodField()
-    leftover_ratio = serializers.SerializerMethodField()
     stock_of_unusable_vials = serializers.SerializerMethodField()
     vials_destroyed = serializers.SerializerMethodField()
 
@@ -36,7 +35,6 @@ class VaccineStockSerializer(serializers.ModelSerializer):
             "vials_received",
             "vials_used",
             "stock_of_usable_vials",
-            "leftover_ratio",
             "stock_of_unusable_vials",
             "vials_destroyed",
         ]
@@ -53,13 +51,6 @@ class VaccineStockSerializer(serializers.ModelSerializer):
 
     def get_stock_of_usable_vials(self, obj):
         return self.get_vials_received(obj) - self.get_vials_used(obj)
-
-    # Hide this field for now
-    def get_leftover_ratio(self, obj):
-        # Assuming leftover_ratio is the percentage of vials_used out of vials_received
-        vials_received = self.get_vials_received(obj)
-        vials_used = self.get_vials_used(obj)
-        return (vials_used / vials_received * 100) if vials_received else 0
 
     def get_stock_of_unusable_vials(self, obj):
         destruction_reports = DestructionReport.objects.filter(vaccine_stock=obj)

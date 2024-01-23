@@ -1,36 +1,34 @@
 import datetime
 import json
-from datetime import date
+import math
 from collections import defaultdict
+from datetime import date
 from typing import Any, Tuple, Union
 from uuid import uuid4
 
-import pandas as pd
-
-from beanstalk_worker import task_decorator
-
 import django.db.models.manager
+import pandas as pd
 from django.contrib.auth.models import AnonymousUser, User
+from django.contrib.postgres.fields import ArrayField
 from django.core.files.base import File
 from django.core.serializers.json import DjangoJSONEncoder
+from django.core.validators import RegexValidator
 from django.db import models
-from django.db.models import Q, Sum, QuerySet
+from django.db.models import Q, QuerySet, Sum
 from django.db.models.expressions import RawSQL
 from django.db.models.functions import Coalesce
+from django.utils import timezone
 from django.utils.translation import gettext as _
 from gspread.utils import extract_id_from_url  # type: ignore
-from django.utils import timezone
-from django.core.validators import RegexValidator
+from translated_fields import TranslatedField
+
+from beanstalk_worker import task_decorator
 from iaso.models import Group, OrgUnit
 from iaso.models.base import Account, Task
 from iaso.models.microplanning import Team
-from iaso.utils.models.soft_deletable import SoftDeletableModel, DefaultSoftDeletableManager
+from iaso.utils.models.soft_deletable import DefaultSoftDeletableManager, SoftDeletableModel
 from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
-from translated_fields import TranslatedField
-
-from django.contrib.postgres.fields import ArrayField
-
 
 # noinspection PyUnresolvedReferences
 # from .budget.models import BudgetStep, BudgetStepFile
@@ -1021,10 +1019,20 @@ class VaccinePreAlert(SoftDeletableModel):
     expiration_date = models.DateField(blank=True, null=True, default=None)
     doses_shipped = models.PositiveIntegerField(blank=True, null=True, default=None)
     doses_per_vial = models.PositiveIntegerField(blank=True, null=True, default=None)
+    vials_shipped = models.PositiveIntegerField(blank=True, null=True, default=None)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     objects = DefaultSoftDeletableManager()
+
+    def save(self, *args, **kwargs):
+        if self.doses_per_vial is None:
+            self.doses_per_vial = self.get_doses_per_vial()
+
+        if self.vials_shipped is None:
+            self.vials_shipped = math.ceil(self.doses_shipped / self.doses_per_vial)
+
+        super().save(*args, **kwargs)
 
     def get_doses_per_vial(self):
         return DOSES_PER_VIAL[self.request_form.vaccine_type]
@@ -1039,11 +1047,28 @@ class VaccineArrivalReport(SoftDeletableModel):
     expiration_date = models.DateField(blank=True, null=True, default=None)
     doses_shipped = models.PositiveIntegerField(blank=True, null=True, default=None)
     doses_per_vial = models.PositiveIntegerField(blank=True, null=True, default=None)
+    vials_shipped = models.PositiveIntegerField(blank=True, null=True, default=None)
+    vials_received = models.PositiveIntegerField(blank=True, null=True, default=None)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     objects = DefaultSoftDeletableManager()
+
+    def get_doses_per_vial(self):
+        return DOSES_PER_VIAL[self.request_form.vaccine_type]
+
+    def save(self, *args, **kwargs):
+        if self.doses_per_vial is None:
+            self.doses_per_vial = self.get_doses_per_vial()
+
+        if self.vials_shipped is None:
+            self.vials_shipped = math.ceil(self.doses_shipped / self.doses_per_vial)
+
+        if self.vials_received is None:
+            self.vials_received = math.ceil(self.doses_received / self.doses_per_vial)
+
+        super().save(*args, **kwargs)
 
 
 class VaccineStock(models.Model):

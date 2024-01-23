@@ -136,7 +136,6 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.assertEqual(stock["vials_received"], 40)  # 400 doses / 10 doses per vial
         self.assertEqual(stock["vials_used"], 10)
         self.assertEqual(stock["stock_of_usable_vials"], 30)  # 40 received - 10 used
-        self.assertEqual(stock["leftover_ratio"], 25)  # 10 used / 40 received * 100
         self.assertEqual(stock["stock_of_unusable_vials"], 9)  # 5 unusable + 3 destroyed + 1 incident
         self.assertEqual(stock["vials_destroyed"], 3)
 

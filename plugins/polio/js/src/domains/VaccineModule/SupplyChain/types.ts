@@ -46,6 +46,7 @@ export type PreAlert = {
     doses_shipped: number;
     doses_recieved: number;
     doses_per_vial: number;
+    vials_shipped: number;
     to_delete?: boolean;
 };
 
@@ -58,6 +59,8 @@ export type VAR = {
     doses_shipped: number;
     doses_received: number;
     doses_per_vial: number;
+    vials_shipped: number;
+    vials_received: number;
     to_delete?: boolean;
 };
 

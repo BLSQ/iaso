@@ -45,6 +45,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.dosesShipped',
         defaultMessage: 'Doses shipped',
     },
+    vials_shipped: {
+        id: 'iaso.polio.label.vialsShipped',
+        defaultMessage: 'Vials shipped',
+    },
+    vials_received: {
+        id: 'iaso.polio.label.vialsReceived',
+        defaultMessage: 'Vials received',
+    },
     actions: {
         defaultMessage: 'Action(s)',
         id: 'iaso.label.actions',

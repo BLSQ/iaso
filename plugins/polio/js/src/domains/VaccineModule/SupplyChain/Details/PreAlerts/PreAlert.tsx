@@ -107,6 +107,15 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                         </Grid>
 
                         <Grid item xs={6} md={3}>
+                            <Field
+                                label={formatMessage(MESSAGES.vials_shipped)}
+                                name={`pre_alerts[${index}].vials_shipped`}
+                                component={NumberInput}
+                                disabled={true}
+                            />
+                        </Grid>
+
+                        <Grid item xs={6} md={3}>
                             <Box>
                                 <Field
                                     label={formatMessage(
@@ -114,7 +123,7 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                                     )}
                                     name={`pre_alerts[${index}].doses_per_vial`}
                                     component={NumberInput}
-                                    disabled={markedForDeletion}
+                                    disabled={true}
                                 />
                             </Box>
                         </Grid>

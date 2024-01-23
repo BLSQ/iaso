@@ -121,7 +121,7 @@ class ExternalTaskPostSerializer(serializers.Serializer):
         request = self.context["request"]
         slug = request.data.get("slug", None)
         config = request.data.get("config", None)
-        id_field = request.data.get("id_field", None)
+        id_field = request.data.get("id_field", {})
         error = {}
 
         if slug is None:
@@ -181,6 +181,7 @@ class ExternalTaskModelViewSet(ModelViewSet):
         task.save()
         return Response({"task": TaskSerializer(instance=task).data})
 
+    # Override this method to use another 3rd party than OpenHexa
     # slug is the slug of the Config object
     # config is the pipeline specific config (the args of the pipeline method grouped in a dict)
     # task_id will be passed by the task decorator
@@ -208,7 +209,7 @@ class ExternalTaskModelViewSet(ModelViewSet):
             except:
                 logger.exception(f"Bad id_field configuration.Expected non-empty dict, got {id_field}")
                 return ERRORED
-
+        run_statuses = ["queued", "success", "failed"]
         transport = RequestsHTTPTransport(
             url=openhexa_url,
             verify=True,
@@ -237,7 +238,7 @@ class ExternalTaskModelViewSet(ModelViewSet):
             active_runs = [
                 run
                 for run in latest_runs["pipeline"]["runs"]["items"]
-                if (run["status"] not in ["queued", "success", "failed"])
+                if (run["status"] not in run_statuses)
                 # Not sure this check is really solid
                 and run.get("config", {}).get(id_field_key, None) == id_field_value
             ]

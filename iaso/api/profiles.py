@@ -325,21 +325,28 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         pk = kwargs.get("pk")
+        user = request.user
         if pk == PK_ME:
             try:
-                profile = request.user.iaso_profile
-                return Response(profile.as_dict())
+                profile_dict = user.iaso_profile.as_dict()
+
+                for plugin in settings.PLUGINS:
+                    if hasattr(user, f"{plugin}_profile"):
+                        plugin_profile = getattr(user, f"{plugin}_profile")
+                        profile_dict = {**profile_dict, **plugin_profile.as_dict()}
+
+                return Response(profile_dict)
             except ObjectDoesNotExist:
                 return Response(
                     {
-                        "first_name": request.user.first_name,
-                        "user_name": request.user.username,
-                        "last_name": request.user.last_name,
-                        "email": request.user.email,
-                        "user_id": request.user.id,
+                        "first_name": user.first_name,
+                        "user_name": user.username,
+                        "last_name": user.last_name,
+                        "email": user.email,
+                        "user_id": user.id,
                         "projects": [],
-                        "is_staff": request.user.is_staff,
-                        "is_superuser": request.user.is_superuser,
+                        "is_staff": user.is_staff,
+                        "is_superuser": user.is_superuser,
                         "account": None,
                     }
                 )

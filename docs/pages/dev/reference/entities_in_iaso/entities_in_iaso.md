@@ -187,6 +187,58 @@ In order for you to choose which forms should be presented next and what
 values override the properties of the profile, you can define a
 workflow.
 
+## High Level Schema of the workflow's models
+
+```mermaid
+classDiagram
+class WorkflowVersion {
+  Workflow workflow
+  String name
+  Form reference_form
+  Enum status
+}
+class Workflow {
+  EntityType entity_type
+}
+class EntityType {
+  String name
+  Form reference_form
+  Account account
+  Bool is_active
+}
+
+class Form {
+ String form_id
+ String namer
+ String device_field
+ String location_field
+ String correlation_field
+ Bool correlatable
+ JSON possible_fields
+ String period_ty pe
+ Bool single_per_period
+ Int periods_before_allowed
+ Int periods_after_allowed
+ Bool derived
+ UUID uuid
+}
+
+class FormVersion {
+  Form form
+  File file
+  File xls_file
+  JSON form_descriptor
+  String version_id
+}
+
+WorkflowVersion --> Form : Foreign Key (reference_form)
+EntityType --> Form : Foreign Key (reference_form)
+EntityType -- Workflow : One To One (entity_type)
+WorkflowVersion --> Workflow : Foreign Key (form) 
+FormVersion --> Form : Foreign Key (form)
+```
+
+
 ## Create a workflow
 
 In the entity types’ list, click on the workflow icon

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.urls import path
-from .views import debug, index
+from .views import debug
 
 
 urlpatterns = [

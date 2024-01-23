@@ -27,3 +27,8 @@ Both have default value of `redis://localhost:6379`
 ```
 
 7. Run python test `docker-compose run iaso manage test -k ETL`
+
+
+Once the ETL has run, users having access to the admin interface can also use the 
+debug interface located at /wfp/debug/id_of_an_entity/ to see the data computed 
+by the ETL for a given entity. 

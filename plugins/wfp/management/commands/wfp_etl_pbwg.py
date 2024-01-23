@@ -15,10 +15,11 @@ class PBWG:
         entities = sorted(list(beneficiaries), key=itemgetter("entity_id"))
         existing_beneficiaries = ETL().existing_beneficiaries()
         instances = self.group_visit_by_entity(entities)
+        print("INSTANCE ...:", instances)
 
         for index, instance in enumerate(instances):
             logger.info(
-                f"---------------------------------------- Beneficiary N° {(index+1)} -----------------------------------"
+                f"---------------------------------------- Beneficiary N° {(index+1)} {instance['entity_id']}-----------------------------------"
             )
             beneficiary = Beneficiary()
             if instance["entity_id"] not in existing_beneficiaries:
@@ -30,6 +31,9 @@ class PBWG:
                     logger.info(f"Created new beneficiary")
             else:
                 beneficiary = Beneficiary.objects.get(entity_id=instance["entity_id"])
+            
+            if instance['entity_id'] == 195:
+                print("SELECTED VISIT ...:", instance)
             instance["journey"] = self.journeyMapper(instance["visits"])
 
             logger.info("Retrieving journey linked to beneficiary")
@@ -98,6 +102,10 @@ class PBWG:
 
             for visit in entity:
                 current_record = visit.get("json", None)
+                if(entity_id == 195):
+                    print("VISIT LINKED TO ENTITY ", visit)
+                    print("CURRENT RECORD LINKED TO ENTITY ", current_record)
+                    
                 instances[i]["program"] = ETL().program_mapper(current_record)
                 if current_record is not None and current_record != None:
                     if current_record.get("actual_birthday__date__") is not None:
@@ -117,12 +125,19 @@ class PBWG:
                     form_id = visit.get("form__form_id")
                     current_record["org_unit_id"] = visit.get("org_unit_id", None)
 
-                    if visit.get("updated_at"):
-                        current_record["date"] = visit.get("updated_at").strftime("%Y-%m-%d")
+                    if visit.get("created_at"):
+                        #current_record["date"] = visit.get("updated_at").strftime("%Y-%m-%d")
+                        current_record["date"] = visit.get("created_at").strftime("%Y-%m-%d")
+                        
 
                     current_record["instance_id"] = visit["id"]
                     current_record["form_id"] = form_id
                     instances[i]["visits"].append(current_record)
+
+                if entity_id == 195:
+                    print("INSTANCE AND LINKED VISIT ...:", visit)
+            if entity_id == 195:
+                print("LINKED VISITS ...:", instances[i]["visits"])
 
             i = i + 1
         return instances

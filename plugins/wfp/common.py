@@ -59,8 +59,13 @@ class ETL:
     def program_mapper(self, visit):
         program = None
         if visit:
-            if visit.get("programme") is not None and visit.get("programme") != "NONE":
-                program = visit.get("programme")
+            if visit.get("program") is not None:
+                if visit.get("program") == "NONE": 
+                    program = "TSFP"
+                elif visit.get("program") != "NONE":
+                    program = visit.get("program")
+            #if visit.get("programme") is not None and visit.get("programme") != "NONE":
+            #    program = visit.get("programme")
             elif visit.get("program") is not None and visit.get("program") != "NONE":
                 program = visit.get("program")
             elif visit.get("program_two") is not None and visit.get("program_two") != "NONE":
@@ -71,6 +76,8 @@ class ETL:
                 program = visit.get("_programme")
             elif visit.get("new_programme") is not None and visit.get("new_programme") != "NONE":
                 program = visit.get("new_programme")
+            elif visit.get("program") is not None and visit.get("program") == "NONE" and visit.get("physiology_status") is not None and visit.get("physiology_status") != "":
+                program = "TSFP"
         return program
 
     def admission_type(self, visit):
@@ -108,6 +115,11 @@ class ETL:
 
     def exit_type(self, visit):
         exit_type = None
+        print("WHOLE VISIT ", visit)
+        if(visit.get("new_next_visit__date__") is not None and visit.get("new_next_visit__date__") != ""):
+            print("VISIT with next visit date ", visit.get("new_next_visit__date__"))
+            exit()
+
         if (
             (visit.get("_Xfinal_color_result") is not None and visit.get("_Xfinal_color_result") == "Y")
             and (visit.get("previous_child_color") is not None and visit.get("previous_child_color") == "Y")
@@ -192,7 +204,8 @@ class ETL:
     def journey_Formatter(self, visit, anthropometric_visit_form, followup_forms, current_journey):
         current_journey["instance_id"] = visit.get("instance_id", None)
         if visit["form_id"] == anthropometric_visit_form:
-            current_journey["date"] = visit.get("date", None)
+            #current_journey["date"] = visit.get("date", None)
+            current_journey["date"] = visit.get("registration_date", None)
             current_journey["admission_criteria"] = self.admission_criteria(visit)
             current_journey["admission_type"] = self.admission_type(visit)
             current_journey["programme_type"] = self.program_mapper(visit)

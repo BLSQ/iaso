@@ -33,7 +33,7 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
     const handleConfirm = useCallback(() => {
         submitChangeRequest({
             status: 'approved',
-            approved_fields: selectedFields.map(field => field.key),
+            approved_fields: selectedFields.map(field => `new_${field.key}`),
         });
     }, [selectedFields, submitChangeRequest]);
     return (

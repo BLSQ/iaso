@@ -560,6 +560,7 @@ if SENTRY_URL:
         integrations=[DjangoIntegration()],
         send_default_pii=True,
         release=VERSION,
+        ignore_errors=["django.security.DisallowedHost"],
     )
 
 # Workers configuration

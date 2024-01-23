@@ -143,10 +143,15 @@ class ExternalTaskPostSerializer(serializers.Serializer):
     def create(self, validated_data):
         request = self.context["request"]
         user = request.user
+        name = (
+            f'{validated_data["slug"]}-{list(validated_data["id_field"].values())[0]}'
+            if validated_data.get("id_field", None)
+            else f'{validated_data["slug"]}'
+        )
         task = Task.objects.create(
             launcher=user,
             account=user.iaso_profile.account,
-            name=validated_data["slug"],
+            name=name,
             status=RUNNING,
             external=True,
             started_at=datetime.now(),

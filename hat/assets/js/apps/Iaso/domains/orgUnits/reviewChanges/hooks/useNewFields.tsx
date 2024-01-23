@@ -54,7 +54,7 @@ const ReferenceInstances: FunctionComponent<ReferenceInstancesProps> = ({
                         key={instance.id}
                         instanceId={`${instance.id}`}
                         minHeight="150px"
-                        titleVariant="subtitle1"
+                        titleVariant="subtitle2"
                     />
                 </Box>
             ))}
@@ -151,9 +151,19 @@ export const useNewFields = (
                     const originalKey = key.replace('new_', '');
                     const fieldDef = fieldDefinitions[key];
                     if (fieldDef) {
-                        const oldValue = orgUnit[originalKey]
-                            ? fieldDef.formatValue(orgUnit[originalKey])
-                            : textPlaceholder;
+                        let oldValue = textPlaceholder;
+                        if (
+                            changeRequest.status === 'approved' &&
+                            changeRequest[`old_${originalKey}`]
+                        ) {
+                            oldValue = fieldDef.formatValue(
+                                changeRequest[`old_${originalKey}`],
+                            );
+                        } else if (orgUnit[originalKey]) {
+                            oldValue = fieldDef.formatValue(
+                                orgUnit[originalKey],
+                            );
+                        }
                         const newValue = value
                             ? fieldDef.formatValue(value)
                             : oldValue;

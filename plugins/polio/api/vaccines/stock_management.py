@@ -1,5 +1,7 @@
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.filters import SearchFilter
+from rest_framework import filters
 from rest_framework.response import Response
 
 from hat.menupermissions import models as permission
@@ -72,10 +74,40 @@ class VaccineStockManagementReadWritePerm(GenericReadWritePerm):
     write_perm = permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE
 
 
+class StockManagementCustomFilter(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, _view):
+        country_id = request.GET.get("country_id")
+        vaccine_type = request.GET.get("vaccine_type")
+
+        if country_id:
+            queryset = queryset.filter(country_id=country_id)
+        if vaccine_type:
+            queryset = queryset.filter(vaccine=vaccine_type)
+
+        current_order = request.GET.get("order")
+
+        if current_order:
+            if current_order == "country_name":
+                queryset = queryset.order_by("country__name")
+            elif current_order == "-country_name":
+                queryset = queryset.order_by("-country__name")
+            elif current_order == "vaccine_type":
+                queryset = queryset.order_by("vaccine")
+            elif current_order == "-vaccine_type":
+                queryset = queryset.order_by("-vaccine")
+
+        return queryset
+
+
 class VaccineStockManagementViewSet(ModelViewSet):
     permission_classes = [VaccineStockManagementReadWritePerm]
     serializer_class = VaccineStockSerializer
     http_method_names = ["get", "head", "options"]
+
+    model = VaccineStock
+
+    filter_backends = [SearchFilter, StockManagementCustomFilter]
+    search_fields = ["vaccine", "country__name"]
 
     @action(detail=True, methods=["get"])
     def usable_vials(self, request, pk=None):

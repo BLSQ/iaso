@@ -45,7 +45,7 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
             const newVialsReceived = Math.ceil(Number(newDosesReceived) / doses_per_vial);
             setVialsReceived(newVialsReceived);
         },
-        [setFieldValue, values],
+        [setFieldValue, values, doses_per_vial],
     );
 
     return (

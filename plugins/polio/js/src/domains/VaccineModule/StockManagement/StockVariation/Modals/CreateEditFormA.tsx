@@ -18,6 +18,7 @@ import {
 } from '../../../../../components/Inputs';
 import { useCampaignOptions, useSaveFormA } from '../../hooks/api';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
+import { useFormAValidation } from './validation';
 
 type Props = {
     formA?: any;
@@ -37,6 +38,7 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSaveFormA();
+    const validationSchema = useFormAValidation();
     const formik = useFormik<any>({
         initialValues: {
             id: formA?.id,
@@ -50,8 +52,7 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
             vials_missing: formA?.vials_missing,
         },
         onSubmit: values => save(values),
-        // TODO add validation
-        // validationSchema,
+        validationSchema,
     });
     const { data: campaignOptions, isFetching: isFetchingCampaigns } =
         useCampaignOptions(countryName, vaccine);

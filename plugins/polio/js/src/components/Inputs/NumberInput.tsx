@@ -11,6 +11,15 @@ type Props = {
     disabled?: boolean;
     withMarginTop?: boolean;
     externalOnChange?: (value: any) => void;
+    numberInputOptions?: {
+        prefix?: string;
+        suffix?: string;
+        min?: number;
+        max?: number;
+        decimalScale?: number;
+        decimalSeparator?: '.' | ',';
+        thousandSeparator?: '.' | ',';
+    };
 };
 
 export const NumberInput: FunctionComponent<Props> = ({
@@ -19,6 +28,7 @@ export const NumberInput: FunctionComponent<Props> = ({
     form,
     min,
     max,
+    numberInputOptions = {},
     withMarginTop = false,
     disabled = false,
     externalOnChange,
@@ -34,7 +44,6 @@ export const NumberInput: FunctionComponent<Props> = ({
             value={field.value}
             labelString={label}
             onChange={(_keyValue, value) => {
-                console.log("NumberInput onChange")
                 form.setFieldTouched(field.name, true);
                 form.setFieldValue(field.name, value);
                 if (externalOnChange) { // Add this block
@@ -45,6 +54,7 @@ export const NumberInput: FunctionComponent<Props> = ({
             max={max}
             errors={hasError ? [get(form.errors, field.name)] : []}
             disabled={disabled}
+            numberInputOptions={numberInputOptions}
         />
     );
 };

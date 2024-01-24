@@ -28,7 +28,6 @@ export type NewOrgUnitField = {
     newValue: ReactElement | string;
     oldValue: ReactElement | string;
     label: string;
-    removePadding?: boolean;
     order: number;
 };
 
@@ -49,9 +48,8 @@ const ReferenceInstances: FunctionComponent<ReferenceInstancesProps> = ({
         <>
             {!instances || (instances.length === 0 && textPlaceholder)}
             {instances.map(instance => (
-                <Box mb={1}>
+                <Box mb={1} key={instance.id}>
                     <InstanceDetail
-                        key={instance.id}
                         instanceId={`${instance.id}`}
                         minHeight="150px"
                         titleVariant="subtitle2"
@@ -83,7 +81,6 @@ export const useNewFields = (
 ): UseNewFields => {
     const { formatMessage } = useSafeIntl();
     const [fields, setFields] = useState<NewOrgUnitField[]>([]);
-
     useMemo(() => {
         if (!changeRequest) {
             setFields([]);
@@ -121,7 +118,6 @@ export const useNewFields = (
                 label: formatMessage(MESSAGES.location),
                 order: 5,
                 formatValue: val => getLocationValue(val as NestedLocation),
-                removePadding: true,
             },
             new_opening_date: {
                 label: formatMessage(MESSAGES.openingDate),
@@ -141,7 +137,6 @@ export const useNewFields = (
                         instances={val as InstanceForChangeRequest[]}
                     />
                 ),
-                removePadding: true,
             },
         };
 
@@ -164,10 +159,12 @@ export const useNewFields = (
                                 orgUnit[originalKey],
                             );
                         }
-                        const newValue = value
+                        const isChanged = Array.isArray(value)
+                            ? value.length > 0
+                            : Boolean(value);
+                        const newValue = isChanged
                             ? fieldDef.formatValue(value)
                             : oldValue;
-                        const isChanged = Boolean(value);
                         const { label, order } = fieldDef;
                         acc.push({
                             key: originalKey,
@@ -177,9 +174,6 @@ export const useNewFields = (
                             newValue,
                             oldValue,
                             order,
-                            ...(fieldDef.removePadding && {
-                                removePadding: true,
-                            }),
                         });
                     }
                     return acc;

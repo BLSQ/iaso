@@ -132,8 +132,10 @@ const Dhis2Search = props => {
                     variant="outlined"
                 />
             )}
-            renderOption={option => (
-                <span name={name}>{option.displayName || option.name}</span>
+            renderOption={(props, option) => (
+                <li {...props} name={name}>
+                    {option.displayName || option.name}
+                </li>
             )}
         />
     );

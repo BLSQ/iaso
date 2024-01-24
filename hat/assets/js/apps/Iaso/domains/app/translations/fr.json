@@ -76,6 +76,7 @@
     "iaso.completenessStats.itselfNoSubmissionExcepted": "Aucune soumission n'est attendue à ce niveau",
     "iaso.completenessStats.itselfSubmissionCount": "Total soumissions: {value}",
     "iaso.completenessStats.notCompleted": "Non terminé",
+    "iaso.completenessStats.selectAForm": "Sélectionnez un formulaire pour voir la carte",
     "iaso.completenessStats.title": "Statistiques de complétude",
     "iaso.datasource.gpkg.title.update": "Mise à jour {sourceName} - {versionNumber}",
     "iaso.datasources.addAskTitle": "{title} - Source: {source} - Version: {version}",

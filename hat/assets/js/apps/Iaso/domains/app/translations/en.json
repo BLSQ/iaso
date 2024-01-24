@@ -76,6 +76,7 @@
     "iaso.completenessStats.itselfNoSubmissionExcepted": "No submission is expected on this level for this form",
     "iaso.completenessStats.itselfSubmissionCount": "Total submissions: {value}",
     "iaso.completenessStats.notCompleted": "Not completed",
+    "iaso.completenessStats.selectAForm": "Please select a Form to watch completeness with the map view",
     "iaso.completenessStats.title": "Completeness stats",
     "iaso.datasource.gpkg.title.update": "Update {sourceName} - {versionNumber}",
     "iaso.datasources.addAskTitle": "{title} - Source: {source} - Version: {version}",

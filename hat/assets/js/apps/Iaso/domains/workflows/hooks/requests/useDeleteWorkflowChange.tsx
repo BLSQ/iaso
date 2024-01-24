@@ -8,6 +8,6 @@ const deleteWorkflowChange = async (changeId: number): Promise<any> => {
 export const useDeleteWorkflowChange = (): UseMutationResult =>
     useSnackMutation({
         mutationFn: deleteWorkflowChange,
-        invalidateQueryKey: 'workflowVersion',
+        invalidateQueryKey: ['workflowVersions','workflowVersionsChanges'],
         snackSuccessMessage: MESSAGES.changeDeleted,
     });

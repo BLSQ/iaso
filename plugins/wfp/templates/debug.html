@@ -1,0 +1,51 @@
+<html>
+<head>
+    <style>
+        th, td {border: 1px black solid; padding: 5px;}
+        th { text-align: right}
+    </style>
+</head>
+<body>
+<h1>Debug Page</h1>
+
+<h2>Entity {{entity.id}}</h2>
+<table>
+    <tr><th>UUID</th><td>{{ entity.uuid}}</td></tr>
+    <tr><th>First Name</th><td>{{ entity.attributes.json.first_name}}</td></tr>
+    <tr><th>Last Name</th><td>{{ entity.attributes.json.last_name}}</td></tr>
+    <tr><th>Link</th><td><a href="/dashboard/entities/details/accountId/1/entityId/{{entity.id}}">/dashboard/entities/details/accountId/1/entityId/{{entity.id}}</a> </td></tr>
+</table>
+</body>
+<h2>Beneficiary {{beneficiary.id}}</h2>
+{% for journey in beneficiary.journey_set.all %}
+<h3>Journey {{ journey.id }}</h3>
+<table>
+    <tr><th>admission_criteria</th><td>{{journey.admission_criteria}}</td></tr>
+    <tr><th>admission_type</th><td>{{journey.admission_type}}</td></tr>
+    <tr><th>nutrition_programme</th><td>{{journey.nutrition_programme}}</td></tr>
+    <tr><th>programme_type</th><td>{{journey.programme_type}}</td></tr>
+    <tr><th>exit_type</th><td>{{journey.exit_type}}</td></tr>
+    <tr><th>weight_gain</th><td>{{journey.weight_gain}}</td></tr>
+</table>
+
+{% for visit in journey.visit_set.all %}
+<div style="padding-left:30px">
+    <h4>Visit {{ visit.id }}</h4>
+<table>
+    <tr><th>date</th><td>{{visit.date | date}}</td></tr>
+    <tr><th>number</th><td>{{visit.number}}</td></tr>
+    <tr><th>org_unit</th><td>{{visit.org_unit.name}}</td></tr>
+</table>
+</div>
+{% for step in visit.step_set.all %}
+<div style="padding-left:60px">
+    <h5>Step {{ step.id }}</h5>
+    <table>
+    <tr><th>assistance_type</th><td>{{step.assistance_type}}</td></tr>
+    <tr><th>quantity_given</th><td>{{step.quantity_given}}</td></tr>
+    </table>
+</div>
+{% endfor %}
+{% endfor %}
+{% endfor %}
+</html>

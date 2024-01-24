@@ -3,10 +3,10 @@ theme:
   name: readthedocs
   highlightjs: true
 plugins:
-  - search
-  - mermaid2
+  - search #built-in search input in the theme
+  - mermaid2 #enables rendering mermaid diagrams
   - awesome-pages:
-          collapse_single_pages: true
+          collapse_single_pages: true # prevents all sub menus to be open by default
   - mkdocstrings:
       handlers:
         # See: https://mkdocstrings.gipip3 thub.io/python/usage/
@@ -14,15 +14,15 @@ plugins:
           options:
             docstring_style: sphinx
 markdown_extensions:
-  - markdown_include.include:
+  - markdown_include.include: # "import" bits of text in yout md file
       base_path: .
-  - admonition
+  - admonition  # add rst style admonitions to md. Useful when converting old rst docs
   - toc:
-      permalink: "#"
-repo_url: https://github.com/BLSQ/iaso
-edit_uri: edit/main/docs
-use_directory_urls: false
-nav:
+      permalink: "#" # adds a link to headers
+repo_url: https://github.com/BLSQ/iaso 
+edit_uri: edit/main/docs # for the edit on github button
+use_directory_urls: false # IMPORTANT: without this the paths to pictures will break on build
+nav: # nav configures the side bar menu
   - Home: index.md
   - Users: 
     - References:

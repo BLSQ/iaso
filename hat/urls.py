@@ -8,7 +8,7 @@ from django.views.generic import RedirectView
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
-
+import importlib
 from iaso.views import health, page
 
 
@@ -58,6 +58,16 @@ urlpatterns = [
     ),
     path("sync/", include("hat.sync.urls")),
 ]
+
+for plugin_name in settings.PLUGINS:
+    urls_module_name = "plugins." + plugin_name + ".urls"
+    urls_module = importlib.util.find_spec(urls_module_name)  # checking if the urls module exists for this plugin
+    if urls_module:
+        print("importing urls for plugin", plugin_name)
+        urlpatterns = urlpatterns + [
+            path(plugin_name + "/", include(urls_module_name)),
+        ]
+
 
 # Swagger config
 schema_view = get_schema_view(

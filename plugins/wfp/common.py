@@ -115,11 +115,6 @@ class ETL:
 
     def exit_type(self, visit):
         exit_type = None
-        print("WHOLE VISIT ", visit)
-        if(visit.get("new_next_visit__date__") is not None and visit.get("new_next_visit__date__") != ""):
-            print("VISIT with next visit date ", visit.get("new_next_visit__date__"))
-            exit()
-
         if (
             (visit.get("_Xfinal_color_result") is not None and visit.get("_Xfinal_color_result") == "Y")
             and (visit.get("previous_child_color") is not None and visit.get("previous_child_color") == "Y")
@@ -204,7 +199,6 @@ class ETL:
     def journey_Formatter(self, visit, anthropometric_visit_form, followup_forms, current_journey):
         current_journey["instance_id"] = visit.get("instance_id", None)
         if visit["form_id"] == anthropometric_visit_form:
-            #current_journey["date"] = visit.get("date", None)
             current_journey["date"] = visit.get("registration_date", None)
             current_journey["admission_criteria"] = self.admission_criteria(visit)
             current_journey["admission_type"] = self.admission_type(visit)
@@ -333,3 +327,17 @@ class ETL:
             visit.save()
             visit_number += 1
         return saved_visits
+
+    def followup_visits_at_next_visit_date(self, visits, formIds, next_visit__date__, secondNextVisitDate):
+        followup_visits_in_period = []
+
+        for visit in visits:
+            currentVisitDate = ""
+            if visit["form_id"] in formIds:
+                if visit.get("visit_date") is not None:
+                    currentVisitDate = visit.get("visit_date", None)[:10]
+                elif visit.get("date", None) is not None:
+                    currentVisitDate = visit.get("date", None)[:10]
+                if next_visit__date__ == currentVisitDate or currentVisitDate == secondNextVisitDate:
+                    followup_visits_in_period.append(visit)
+        return followup_visits_in_period

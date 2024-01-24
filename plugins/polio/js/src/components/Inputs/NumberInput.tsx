@@ -10,6 +10,7 @@ type Props = {
     max?: number;
     disabled?: boolean;
     withMarginTop?: boolean;
+    externalOnChange?: (value: any) => void;
 };
 
 export const NumberInput: FunctionComponent<Props> = ({
@@ -20,6 +21,7 @@ export const NumberInput: FunctionComponent<Props> = ({
     max,
     withMarginTop = false,
     disabled = false,
+    externalOnChange,
 }) => {
     const hasError =
         form.errors &&
@@ -32,8 +34,12 @@ export const NumberInput: FunctionComponent<Props> = ({
             value={field.value}
             labelString={label}
             onChange={(_keyValue, value) => {
+                console.log("NumberInput onChange")
                 form.setFieldTouched(field.name, true);
                 form.setFieldValue(field.name, value);
+                if (externalOnChange) { // Add this block
+                    externalOnChange(value);
+                }
             }}
             min={min}
             max={max}

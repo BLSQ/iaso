@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
-import React, { FunctionComponent } from 'react';
-import { Box, Grid, Paper } from '@mui/material';
+import React, { FunctionComponent, useCallback, useState } from 'react';
+import { Box, Grid, Paper, Typography } from '@mui/material';
 import { Field, useFormikContext } from 'formik';
 import classNames from 'classnames';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
@@ -15,6 +15,8 @@ import { usePaperStyles } from '../shared';
 
 type Props = { index: number };
 
+
+
 export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
     const classes: Record<string, string> = usePaperStyles();
     const { formatMessage } = useSafeIntl();
@@ -22,6 +24,30 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
         useFormikContext<SupplyChainFormData>();
     const { arrival_reports } = values as SupplyChainFormData;
     const markedForDeletion = arrival_reports?.[index].to_delete ?? false;
+
+    const doses_per_vial = arrival_reports?.[index].doses_per_vial ?? 20;
+    const initial_vials_shipped = (arrival_reports?.[index].doses_shipped ?? 0) / doses_per_vial;
+    const initial_vials_received = (arrival_reports?.[index].doses_received ?? 0) / doses_per_vial;
+
+    const [vialsShipped, setVialsShipped] = useState(initial_vials_shipped);
+    const [vialsReceived, setVialsReceived] = useState(initial_vials_received);
+
+    const updateVialsShipped = useCallback(
+        (newDosesShipped: any) => {
+            const newVialsShipped = Math.ceil(Number(newDosesShipped) / doses_per_vial);
+            setVialsShipped(newVialsShipped);
+        },
+        [setFieldValue, values, doses_per_vial],
+    );
+
+    const updateVialsReceived = useCallback(
+        (newDosesReceived: any) => {
+            const newVialsReceived = Math.ceil(Number(newDosesReceived) / doses_per_vial);
+            setVialsReceived(newVialsReceived);
+        },
+        [setFieldValue, values],
+    );
+
     return (
         <div className={classes.container}>
             <Paper
@@ -32,7 +58,7 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
             >
                 <Grid container>
                     <Grid container item xs={12} spacing={2}>
-                        <Grid item xs={6} md={3}>
+                        <Grid item xs={6} md={4}>
                             <Field
                                 label={formatMessage(
                                     MESSAGES.arrival_report_date,
@@ -42,7 +68,7 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
                                 disabled={markedForDeletion}
                             />
                         </Grid>
-                        <Grid item xs={6} md={3}>
+                        <Grid item xs={6} md={4}>
                             <Field
                                 label={formatMessage(MESSAGES.po_number)}
                                 name={`${VAR}[${index}].po_number`}
@@ -51,7 +77,7 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
                                 disabled={markedForDeletion}
                             />
                         </Grid>
-                        <Grid item xs={6} md={3}>
+                        <Grid item xs={6} md={4}>
                             <Field
                                 label={formatMessage(MESSAGES.lot_numbers)}
                                 name={`${VAR}[${index}].lot_numbers`}
@@ -60,17 +86,9 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
                                 shrinkLabel={false}
                             />
                         </Grid>
-                        <Grid item xs={6} md={3}>
-                            <Field
-                                label={formatMessage(MESSAGES.doses_per_vial)}
-                                name={`${VAR}[${index}].doses_per_vial`}
-                                component={NumberInput}
-                                disabled={true}
-                            />
-                        </Grid>
                     </Grid>
                     <Grid container item xs={12} spacing={2}>
-                        <Grid item xs={6} md={3}>
+                        <Grid item xs={6} md={4}>
                             <Field
                                 label={formatMessage(MESSAGES.expirationDate)}
                                 name={`${VAR}[${index}].expiration_date`}
@@ -78,43 +96,44 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
                                 disabled={markedForDeletion}
                             />
                         </Grid>
-                        <Grid item xs={6} md={3}>
+
+                        <Grid item xs={6} md={4}>
                             <Field
                                 label={formatMessage(MESSAGES.doses_shipped)}
                                 name={`${VAR}[${index}].doses_shipped`}
                                 component={NumberInput}
                                 disabled={markedForDeletion}
+                                externalOnChange={updateVialsShipped}
                             />
                         </Grid>
 
-                        <Grid item xs={6} md={3}>
-                            <Field
-                                label={formatMessage(MESSAGES.vials_shipped)}
-                                name={`${VAR}[${index}].vials_shipped`}
-                                component={NumberInput}
-                                disabled={true}
-                            />
-                        </Grid>
-
-
-                        <Grid item xs={6} md={3}>
+                        <Grid item xs={6} md={4}>
                             <Field
                                 label={formatMessage(MESSAGES.doses_received)}
                                 name={`${VAR}[${index}].doses_received`}
                                 component={NumberInput}
                                 disabled={markedForDeletion}
+                                externalOnChange={updateVialsReceived}
                             />
                         </Grid>
+                    </Grid>
 
-                        <Grid item xs={6} md={3}>
-                            <Field
-                                label={formatMessage(MESSAGES.vials_received)}
-                                name={`${VAR}[${index}].vials_received`}
-                                component={NumberInput}
-                                disabled={true}
-                            />
+                    <Grid container item xs={12} spacing={2}>
+                        <Grid item xs={6} md={4}>
+                            <Typography variant="button">
+                                {`${formatMessage(MESSAGES.doses_per_vial)}: ${doses_per_vial}`}
+                            </Typography>
                         </Grid>
-
+                        <Grid item xs={6} md={4}>
+                            <Typography variant="button">
+                                {`${formatMessage(MESSAGES.vials_shipped)}: ${vialsShipped}`}
+                            </Typography>
+                        </Grid>
+                        <Grid item xs={6} md={4}>
+                            <Typography variant="button">
+                                {`${formatMessage(MESSAGES.vials_received)}: ${vialsReceived}`}
+                            </Typography>
+                        </Grid>
                     </Grid>
                 </Grid>
             </Paper>

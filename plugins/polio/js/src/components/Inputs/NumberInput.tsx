@@ -46,7 +46,7 @@ export const NumberInput: FunctionComponent<Props> = ({
             onChange={(_keyValue, value) => {
                 form.setFieldTouched(field.name, true);
                 form.setFieldValue(field.name, value);
-                if (externalOnChange) { // Add this block
+                if (externalOnChange) {
                     externalOnChange(value);
                 }
             }}

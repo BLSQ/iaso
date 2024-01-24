@@ -140,11 +140,15 @@ class ETL:
             visit.get("non_respondent__int__") is not None and visit.get("non_respondent__int__") == "1"
         ):
             exit_type = "non_respondent"
-        elif (visit.get("discharge_note") is not None and visit.get("discharge_note") == "yes") or (
-            visit.get("discharge_note__int__") is not None and visit.get("discharge_note__int__") == "1"
+        elif (
+            (visit.get("discharge_note") is not None and visit.get("discharge_note") == "yes")
+            or (visit.get("discharge_note__int__") is not None and visit.get("discharge_note__int__") == "1")
+            or (visit.get("_cured") is not None and visit.get("_cured") == "1")
         ):
             exit_type = "cured"
-        elif visit.get("_defaulter_admission_type") is not None and visit.get("_defaulter_admission_type") != "":
+        elif (visit.get("_defaulter_admission_type") is not None and visit.get("_defaulter_admission_type") != "") or (
+            visit.get("_defaulter") is not None and visit.get("_defaulter") == "1"
+        ):
             exit_type = "defaulter"
         exit_type = self.exit_type_converter(exit_type)
         return exit_type

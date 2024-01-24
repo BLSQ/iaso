@@ -4,6 +4,7 @@ from itertools import groupby
 from operator import itemgetter
 from ...common import ETL
 import logging
+from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -53,8 +54,8 @@ class Under5:
                         instances[i]["initial_weight"] = initial_weight
 
                     current_record["weight_gain"] = self.compute_gained_weight(initial_weight, current_weight)
-                    if visit.get("updated_at"):
-                        current_record["date"] = visit.get("updated_at").strftime("%Y-%m-%d")
+                    if visit.get("created_at"):
+                        current_record["date"] = visit.get("created_at").strftime("%Y-%m-%d")
 
                     current_record["instance_id"] = visit["id"]
                     current_record["form_id"] = form_id
@@ -83,16 +84,48 @@ class Under5:
 
                 if visit["form_id"] == "Anthropometric visit child":
                     current_journey["nutrition_programme"] = ETL().program_mapper(visit)
+                anthropometric_visit_forms = ["child_antropometric_followUp_tsfp","child_antropometric_followUp_otp"]
 
                 current_journey = ETL().journey_Formatter(
                     visit,
                     "Anthropometric visit child",
-                    [
-                        "child_antropometric_followUp_tsfp",
-                        "child_antropometric_followUp_otp",
-                    ],
+                    anthropometric_visit_forms,
                     current_journey,
                 )
+
+                if visit["form_id"] in ["child_assistance_follow_up", "child_assistance_admission"]:
+                    next_visit_date = ""
+                    next_visit_days = 0
+                    nextSecondVisitDate = ""
+
+                    if (
+                        visit.get("next_visit__date__", None) is not None
+                        and visit.get("next_visit__date__", None) != ""
+                    ):
+                        next_visit_date = visit.get("next_visit__date__", None)
+                    elif (
+                        visit.get("new_next_visit__date__", None) is not None
+                        and visit.get("new_next_visit__date__", None) != ""
+                    ):
+                        next_visit_date = visit.get("new_next_visit__date__", None)
+
+                    if visit.get("next_visit_days", None) is not None and visit.get("next_visit_days", None) != "":
+                        next_visit_days = visit.get("next_visit_days", None)
+                        if next_visit_date is not None and next_visit_date != "":
+                            nextSecondVisitDate = datetime.strptime(
+                                next_visit_date[:10], "%Y-%m-%d"
+                            ).date() + timedelta(days=int(next_visit_days))
+
+                    followUpVisitsAtNextVisit = ETL().followup_visits_at_next_visit_date(
+                        visits,
+                        anthropometric_visit_forms,
+                        next_visit_date[:10],
+                        nextSecondVisitDate,
+                    )
+                    # Missed 2 consecutives visits
+                    if len(followUpVisitsAtNextVisit) < 2:
+                        current_journey["exit_type"] = "defaulter"
+
 
                 current_journey["steps"].append(visit)
 

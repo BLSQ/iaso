@@ -4,6 +4,7 @@ from itertools import groupby
 from operator import itemgetter
 from ...common import ETL
 import logging
+from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +16,6 @@ class PBWG:
         entities = sorted(list(beneficiaries), key=itemgetter("entity_id"))
         existing_beneficiaries = ETL().existing_beneficiaries()
         instances = self.group_visit_by_entity(entities)
-        print("INSTANCE ...:", instances)
 
         for index, instance in enumerate(instances):
             logger.info(
@@ -31,9 +31,7 @@ class PBWG:
                     logger.info(f"Created new beneficiary")
             else:
                 beneficiary = Beneficiary.objects.get(entity_id=instance["entity_id"])
-            
-            if instance['entity_id'] == 195:
-                print("SELECTED VISIT ...:", instance)
+
             instance["journey"] = self.journeyMapper(instance["visits"])
 
             logger.info("Retrieving journey linked to beneficiary")
@@ -79,15 +77,48 @@ class PBWG:
                 if visit["form_id"] == "wfp_coda_pbwg_registration":
                     current_journey["nutrition_programme"] = visit.get("physiology_status", None)
 
+                anthropometric_visit_forms = [
+                    "wfp_coda_pbwg_luctating_followup_anthro",
+                    "wfp_coda_pbwg_followup_anthro",
+                ]
                 current_journey = ETL().journey_Formatter(
                     visit,
                     "wfp_coda_pbwg_anthropometric",
-                    [
-                        "wfp_coda_pbwg_luctating_followup_anthro",
-                        "wfp_coda_pbwg_followup_anthro",
-                    ],
+                    anthropometric_visit_forms,
                     current_journey,
                 )
+
+                if visit["form_id"] in ["wfp_coda_pbwg_assistance", "wfp_coda_pbwg_assistance_followup"]:
+                    next_visit_date = ""
+                    next_visit_days = 0
+                    nextSecondVisitDate = ""
+                    if (
+                        visit.get("next_visit__date__", None) is not None
+                        and visit.get("next_visit__date__", None) != ""
+                    ):
+                        next_visit_date = visit.get("next_visit__date__", None)
+                    elif (
+                        visit.get("new_next_visit__date__", None) is not None
+                        and visit.get("new_next_visit__date__", None) != ""
+                    ):
+                        next_visit_date = visit.get("new_next_visit__date__", None)
+
+                    if visit.get("next_visit_days", None) is not None and visit.get("next_visit_days", None) != "":
+                        next_visit_days = visit.get("next_visit_days", None)
+                        if next_visit_date is not None and next_visit_date != "":
+                            nextSecondVisitDate = datetime.strptime(
+                                next_visit_date[:10], "%Y-%m-%d"
+                            ).date() + timedelta(days=int(next_visit_days))
+
+                    followUpVisitsAtNextVisit = ETL().followup_visits_at_next_visit_date(
+                        visits,
+                        anthropometric_visit_forms,
+                        next_visit_date[:10],
+                        nextSecondVisitDate,
+                    )
+                    # Missed 2 consecutives visits
+                    if len(followUpVisitsAtNextVisit) < 2:
+                        current_journey["exit_type"] = "defaulter"
                 current_journey["steps"].append(visit)
         journey.append(current_journey)
         return journey
@@ -102,10 +133,7 @@ class PBWG:
 
             for visit in entity:
                 current_record = visit.get("json", None)
-                if(entity_id == 195):
-                    print("VISIT LINKED TO ENTITY ", visit)
-                    print("CURRENT RECORD LINKED TO ENTITY ", current_record)
-                    
+
                 instances[i]["program"] = ETL().program_mapper(current_record)
                 if current_record is not None and current_record != None:
                     if current_record.get("actual_birthday__date__") is not None:
@@ -126,18 +154,10 @@ class PBWG:
                     current_record["org_unit_id"] = visit.get("org_unit_id", None)
 
                     if visit.get("created_at"):
-                        #current_record["date"] = visit.get("updated_at").strftime("%Y-%m-%d")
                         current_record["date"] = visit.get("created_at").strftime("%Y-%m-%d")
-                        
 
                     current_record["instance_id"] = visit["id"]
                     current_record["form_id"] = form_id
                     instances[i]["visits"].append(current_record)
-
-                if entity_id == 195:
-                    print("INSTANCE AND LINKED VISIT ...:", visit)
-            if entity_id == 195:
-                print("LINKED VISITS ...:", instances[i]["visits"])
-
             i = i + 1
         return instances

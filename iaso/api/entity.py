@@ -232,6 +232,8 @@ class EntityViewSet(ModelViewSet):
         created_by_team_id = self.request.query_params.get("created_by_team_id", None)
 
         queryset = Entity.objects.filter(account=self.request.user.iaso_profile.account)
+
+        queryset = queryset.annotate(last_saved_instance=Max("instances__created_at"))
         if form_name:
             queryset = queryset.filter(attributes__form__name__icontains=form_name)
         if search:
@@ -247,10 +249,9 @@ class EntityViewSet(ModelViewSet):
         if org_unit_id:
             queryset = queryset.filter(attributes__org_unit__id=org_unit_id)
         if date_from:
-            # TODO: see if we use created_at as reference date (or latest instance creation, update, ...)
-            queryset = queryset.filter(created_at__gte=date_from)
+            queryset = queryset.filter(last_saved_instance__gte=date_from)
         if date_to:
-            queryset = queryset.filter(created_at__date__lte=date_to)
+            queryset = queryset.filter(last_saved_instance__date__lte=date_to)
         if show_deleted:
             queryset = queryset.filter(deleted_at__isnull=True)
         if created_by_id:

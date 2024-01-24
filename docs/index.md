@@ -1,4 +1,4 @@
-## Welcome to the documentation of Iaso
+## Welcome to the documentation of IASO
 
 Iaso is a georegistry, data collection and planning web platform structured around trees of organization units (also known a master lists)
 

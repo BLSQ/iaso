@@ -124,11 +124,11 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
             setSourceVersionId(parseInt(value, 10));
         }
         if (key === 'source') {
-            console.log('Reset');
             setInitialOrgUnitId(undefined);
             setSourceVersionId(undefined);
             setDataSourceId(parseInt(value, 10));
             delete newFilters.levels;
+            delete newFilters.orgUnitParentId;
         }
         if (key === 'levels') {
             setInitialOrgUnitId(value);

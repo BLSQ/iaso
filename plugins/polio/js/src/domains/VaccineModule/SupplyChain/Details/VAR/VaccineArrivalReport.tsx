@@ -12,10 +12,9 @@ import MESSAGES from '../../messages';
 import { SupplyChainFormData } from '../../types';
 import { VAR } from '../../constants';
 import { usePaperStyles } from '../shared';
+import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 
 type Props = { index: number };
-
-
 
 export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
     const classes: Record<string, string> = usePaperStyles();
@@ -26,27 +25,8 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
     const markedForDeletion = arrival_reports?.[index].to_delete ?? false;
 
     const doses_per_vial = arrival_reports?.[index].doses_per_vial ?? 20;
-    const initial_vials_shipped = (arrival_reports?.[index].doses_shipped ?? 0) / doses_per_vial;
-    const initial_vials_received = (arrival_reports?.[index].doses_received ?? 0) / doses_per_vial;
-
-    const [vialsShipped, setVialsShipped] = useState(initial_vials_shipped);
-    const [vialsReceived, setVialsReceived] = useState(initial_vials_received);
-
-    const updateVialsShipped = useCallback(
-        (newDosesShipped: any) => {
-            const newVialsShipped = Math.ceil(Number(newDosesShipped) / doses_per_vial);
-            setVialsShipped(newVialsShipped);
-        },
-        [setFieldValue, values, doses_per_vial],
-    );
-
-    const updateVialsReceived = useCallback(
-        (newDosesReceived: any) => {
-            const newVialsReceived = Math.ceil(Number(newDosesReceived) / doses_per_vial);
-            setVialsReceived(newVialsReceived);
-        },
-        [setFieldValue, values, doses_per_vial],
-    );
+    const current_vials_shipped = Math.ceil((arrival_reports?.[index].doses_shipped ?? 0) / doses_per_vial);
+    const current_vials_received = Math.ceil((arrival_reports?.[index].doses_received ?? 0) / doses_per_vial);
 
     return (
         <div className={classes.container}>
@@ -103,7 +83,6 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
                                 name={`${VAR}[${index}].doses_shipped`}
                                 component={NumberInput}
                                 disabled={markedForDeletion}
-                                externalOnChange={updateVialsShipped}
                             />
                         </Grid>
 
@@ -113,7 +92,6 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
                                 name={`${VAR}[${index}].doses_received`}
                                 component={NumberInput}
                                 disabled={markedForDeletion}
-                                externalOnChange={updateVialsReceived}
                             />
                         </Grid>
                     </Grid>
@@ -121,17 +99,18 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
                     <Grid container item xs={12} spacing={2}>
                         <Grid item xs={6} md={4}>
                             <Typography variant="button">
-                                {`${formatMessage(MESSAGES.doses_per_vial)}: ${doses_per_vial}`}
+                                {`${formatMessage(MESSAGES.doses_per_vial)}:`} <NumberCell value={doses_per_vial} />
+                            </Typography>
+
+                        </Grid>
+                        <Grid item xs={6} md={4}>
+                            <Typography variant="button">
+                                {`${formatMessage(MESSAGES.vials_shipped)}:`} <NumberCell value={current_vials_shipped} />
                             </Typography>
                         </Grid>
                         <Grid item xs={6} md={4}>
                             <Typography variant="button">
-                                {`${formatMessage(MESSAGES.vials_shipped)}: ${vialsShipped}`}
-                            </Typography>
-                        </Grid>
-                        <Grid item xs={6} md={4}>
-                            <Typography variant="button">
-                                {`${formatMessage(MESSAGES.vials_received)}: ${vialsReceived}`}
+                                {`${formatMessage(MESSAGES.vials_received)}:`} <NumberCell value={current_vials_received} />
                             </Typography>
                         </Grid>
                     </Grid>

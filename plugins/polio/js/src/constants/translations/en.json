@@ -574,6 +574,7 @@
     "iaso.polio.label.varTitle": "Vaccine arrival reports",
     "iaso.polio.label.vials_destroyed": "Vials destroyed",
     "iaso.polio.label.vialsDestroyed": "Unusable vials destroyed",
+    "iaso.polio.label.vialsReceived": "Vials received",
     "iaso.polio.label.vialsShipped": "Vials shipped",
     "iaso.polio.label.viewFiles": "View files",
     "iaso.polio.label.VM_REACHED_DISCARD_POINT": "VM reached discard point",

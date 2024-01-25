@@ -60,12 +60,12 @@ class ETL:
         program = None
         if visit:
             if visit.get("program") is not None:
-                if visit.get("program") == "NONE": 
+                if visit.get("program") == "NONE":
                     program = "TSFP"
                 elif visit.get("program") != "NONE":
                     program = visit.get("program")
-            #if visit.get("programme") is not None and visit.get("programme") != "NONE":
-            #    program = visit.get("programme")
+            if visit.get("programme") is not None and visit.get("programme") != "NONE":
+                program = visit.get("programme")
             elif visit.get("program") is not None and visit.get("program") != "NONE":
                 program = visit.get("program")
             elif visit.get("program_two") is not None and visit.get("program_two") != "NONE":
@@ -76,7 +76,12 @@ class ETL:
                 program = visit.get("_programme")
             elif visit.get("new_programme") is not None and visit.get("new_programme") != "NONE":
                 program = visit.get("new_programme")
-            elif visit.get("program") is not None and visit.get("program") == "NONE" and visit.get("physiology_status") is not None and visit.get("physiology_status") != "":
+            elif (
+                visit.get("program") is not None
+                and visit.get("program") == "NONE"
+                and visit.get("physiology_status") is not None
+                and visit.get("physiology_status") != ""
+            ):
                 program = "TSFP"
         return program
 
@@ -147,16 +152,17 @@ class ETL:
             visit.get("non_respondent__int__") is not None and visit.get("non_respondent__int__") == "1"
         ):
             exit_type = "non_respondent"
-        elif (
-            (visit.get("discharge_note") is not None and visit.get("discharge_note") == "yes")
-            or (visit.get("discharge_note__int__") is not None and visit.get("discharge_note__int__") == "1")
-            or (visit.get("_cured") is not None and visit.get("_cured") == "1")
+        elif (visit.get("discharge_note") is not None and visit.get("discharge_note") == "yes") or (
+            visit.get("discharge_note__int__") is not None and visit.get("discharge_note__int__") == "1"
         ):
             exit_type = "cured"
         elif (visit.get("_defaulter_admission_type") is not None and visit.get("_defaulter_admission_type") != "") or (
             visit.get("_defaulter") is not None and visit.get("_defaulter") == "1"
         ):
             exit_type = "defaulter"
+
+        elif visit.get("_cured") is not None and visit.get("_cured") == "1":
+            exit_type = "cured"
         exit_type = self.exit_type_converter(exit_type)
         return exit_type
 
@@ -295,8 +301,9 @@ class ETL:
 
     def save_steps(self, visits, steps):
         all_steps = []
-        for visit in visits:
-            for step in steps:
+        if len(visits) == len(steps):
+            for index, step in enumerate(steps):
+                visit = visits[index]
                 given_assistance = []
                 for sub_step in step:
                     current_step = None
@@ -340,4 +347,5 @@ class ETL:
                     currentVisitDate = visit.get("date", None)[:10]
                 if next_visit__date__ == currentVisitDate or currentVisitDate == secondNextVisitDate:
                     followup_visits_in_period.append(visit)
+
         return followup_visits_in_period

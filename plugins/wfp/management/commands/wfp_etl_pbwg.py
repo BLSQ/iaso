@@ -117,8 +117,9 @@ class PBWG:
                         nextSecondVisitDate,
                     )
                     # Missed 2 consecutives visits
-                    if len(followUpVisitsAtNextVisit) < 2:
+                    if current_journey.get("exit_type", None) != "cured" and len(followUpVisitsAtNextVisit) < 2:
                         current_journey["exit_type"] = "defaulter"
+
                 current_journey["steps"].append(visit)
         journey.append(current_journey)
         return journey

@@ -84,7 +84,7 @@ class Under5:
 
                 if visit["form_id"] == "Anthropometric visit child":
                     current_journey["nutrition_programme"] = ETL().program_mapper(visit)
-                anthropometric_visit_forms = ["child_antropometric_followUp_tsfp","child_antropometric_followUp_otp"]
+                anthropometric_visit_forms = ["child_antropometric_followUp_tsfp", "child_antropometric_followUp_otp"]
 
                 current_journey = ETL().journey_Formatter(
                     visit,
@@ -122,10 +122,9 @@ class Under5:
                         next_visit_date[:10],
                         nextSecondVisitDate,
                     )
-                    # Missed 2 consecutives visits
-                    if len(followUpVisitsAtNextVisit) < 2:
+                    # Missed 2 consecutives visits(exit type is set to defaulter)
+                    if current_journey.get("exit_type", None) is None and len(followUpVisitsAtNextVisit) < 2:
                         current_journey["exit_type"] = "defaulter"
-
 
                 current_journey["steps"].append(visit)
 
@@ -154,7 +153,7 @@ class Under5:
 
         for index, instance in enumerate(instances):
             logger.info(
-                f"---------------------------------------- Beneficiary N° {(index+1)} -----------------------------------"
+                f"---------------------------------------- Beneficiary N° {(index+1)} {instance['entity_id']}-----------------------------------"
             )
             beneficiary = Beneficiary()
             if instance["entity_id"] not in existing_beneficiaries:
@@ -170,16 +169,17 @@ class Under5:
 
             for journey_instance in instance["journey"]:
                 if len(journey_instance["visits"]) > 0 and journey_instance.get("nutrition_programme") is not None:
-                    journey = self.save_journey(beneficiary, journey_instance)
-                    visits = ETL().save_visit(journey_instance["visits"], journey)
-                    logger.info(f"Inserted {len(visits)} Visits")
-                    grouped_steps = ETL().get_admission_steps(journey_instance["steps"])
-                    admission_step = grouped_steps[0]
+                    if journey_instance.get("admission_criteria") is not None:
+                        journey = self.save_journey(beneficiary, journey_instance)
+                        visits = ETL().save_visit(journey_instance["visits"], journey)
+                        logger.info(f"Inserted {len(visits)} Visits")
+                        grouped_steps = ETL().get_admission_steps(journey_instance["steps"])
+                        admission_step = grouped_steps[0]
 
-                    followUpVisits = ETL().group_followup_steps(grouped_steps, admission_step)
+                        followUpVisits = ETL().group_followup_steps(grouped_steps, admission_step)
 
-                    steps = ETL().save_steps(visits, followUpVisits)
-                    logger.info(f"Inserted {len(steps)} Steps")
+                        steps = ETL().save_steps(visits, followUpVisits)
+                        logger.info(f"Inserted {len(steps)} Steps")
                 else:
                     logger.info("No new journey")
             logger.info(

@@ -793,17 +793,6 @@ class Preparedness(models.Model):
         return f"{self.campaign} - {self.created_at}"
 
 
-class Config(models.Model):
-    slug = models.SlugField(unique=True)
-    content = models.JSONField()
-    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    users = models.ManyToManyField(User, related_name="polioconfigs", blank=True)
-
-    def __str__(self):
-        return self.slug
-
-
 class CountryUsersGroup(models.Model):
     users = models.ManyToManyField(User, blank=True)
     country = models.OneToOneField(OrgUnit, on_delete=models.CASCADE)

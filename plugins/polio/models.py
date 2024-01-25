@@ -1082,6 +1082,9 @@ class VaccineStock(models.Model):
     class Meta:
         unique_together = ("country", "vaccine")
 
+    def __str__(self):
+        return f"{self.country} - {self.vaccine}"
+
 
 # Form A
 class OutgoingStockMovement(models.Model):

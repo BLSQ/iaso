@@ -14,6 +14,7 @@ from plugins.polio.models import (
     VaccineArrivalReport,
     VaccineRequestForm,
     VaccineStock,
+    DOSES_PER_VIAL,
 )
 
 
@@ -139,8 +140,6 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
         # Use the doses_per_vial from the latest VaccineArrivalReport for all calculations
         latest_arrival_report = arrival_reports.latest("arrival_report_date")
-        doses_per_vial = latest_arrival_report.doses_per_vial
-        # take default value ???? hardcoded ?
 
         destruction_reports = DestructionReport.objects.filter(vaccine_stock=vaccine_stock).order_by(
             "destruction_report_date"
@@ -156,8 +155,8 @@ class VaccineStockManagementViewSet(ModelViewSet):
             results.append(
                 {
                     "date": report.arrival_report_date,
-                    "action": report.po_number if report.po_number else "Stock Arrival",
-                    "vials_in": report.doses_received // report.doses_per_vial,
+                    "action": "PO #" + report.po_number if report.po_number else "Stock Arrival",
+                    "vials_in": report.vials_received,
                     "doses_in": report.doses_received,
                     "vials_out": None,
                     "doses_out": None,
@@ -174,7 +173,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
                     "vials_in": None,
                     "doses_in": None,
                     "vials_out": report.unusable_vials_destroyed,
-                    "doses_out": report.unusable_vials_destroyed * doses_per_vial,
+                    "doses_out": report.unusable_vials_destroyed * DOSES_PER_VIAL[report.request_form.vaccine_type],
                 }
             )
 
@@ -186,7 +185,8 @@ class VaccineStockManagementViewSet(ModelViewSet):
                     "vials_in": None,
                     "doses_in": None,
                     "vials_out": report.unusable_vials + report.usable_vials,
-                    "doses_out": (report.unusable_vials + report.usable_vials) * doses_per_vial,
+                    "doses_out": (report.unusable_vials + report.usable_vials)
+                    * DOSES_PER_VIAL[report.request_form.vaccine_type],
                 }
             )
 
@@ -199,7 +199,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
                         "vials_in": None,
                         "doses_in": None,
                         "vials_out": movement.usable_vials_used,
-                        "doses_out": movement.usable_vials_used * doses_per_vial,
+                        "doses_out": "N/A",  # can't compute with current model
                     }
                 )
             elif movement.unusable_vials > 0:
@@ -210,7 +210,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
                         "vials_in": None,
                         "doses_in": None,
                         "vials_out": movement.unusable_vials,
-                        "doses_out": movement.unusable_vials * doses_per_vial,
+                        "doses_out": "N/A",  # can't compute with current model
                     }
                 )
             elif movement.missing_vials > 0:
@@ -221,7 +221,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
                         "vials_in": None,
                         "doses_in": None,
                         "vials_out": movement.missing_vials,
-                        "doses_out": movement.missing_vials * doses_per_vial,
+                        "doses_out": "N/A",  # can't compute with current model
                     }
                 )
 

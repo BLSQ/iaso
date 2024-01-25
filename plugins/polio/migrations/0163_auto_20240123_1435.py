@@ -4,25 +4,24 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('polio', '0162_merge_20231215_1118'),
+        ("polio", "0162_merge_20231215_1118"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='vaccinearrivalreport',
-            name='vials_received',
+            model_name="vaccinearrivalreport",
+            name="vials_received",
             field=models.PositiveIntegerField(blank=True, default=None, null=True),
         ),
         migrations.AddField(
-            model_name='vaccinearrivalreport',
-            name='vials_shipped',
+            model_name="vaccinearrivalreport",
+            name="vials_shipped",
             field=models.PositiveIntegerField(blank=True, default=None, null=True),
         ),
         migrations.AddField(
-            model_name='vaccineprealert',
-            name='vials_shipped',
+            model_name="vaccineprealert",
+            name="vials_shipped",
             field=models.PositiveIntegerField(blank=True, default=None, null=True),
         ),
     ]

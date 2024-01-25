@@ -48,6 +48,7 @@ import {
     useGetAssignments,
 } from '../../assignments/hooks/requests/useGetAssignments';
 import { ScaleThreshold } from '../../../components/LegendBuilder/types';
+import { useEffectiveThreshold } from '../hooks/useEffectiveThreshold';
 
 const defaultViewport = {
     center: [1, 20],
@@ -84,6 +85,7 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
+
 export const Map: FunctionComponent<Props> = ({
     locations,
     isLoading,
@@ -92,10 +94,7 @@ export const Map: FunctionComponent<Props> = ({
     router,
     threshold,
 }) => {
-    const effectiveThreshold: ScaleThreshold =
-        !threshold || isEqual(threshold, {})
-            ? defaultScaleThreshold
-            : threshold;
+    const effectiveThreshold = useEffectiveThreshold(threshold);
     const { planningId } = params;
     const classes: Record<string, string> = useStyles();
     const getLegend = useGetLegend(effectiveThreshold);

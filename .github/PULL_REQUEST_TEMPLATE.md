@@ -12,6 +12,9 @@ Related JIRA tickets : IA-XXX, WC2-XXX, POLIO-XXX
 - [ ] Are there enough tests
 - [ ] Documentation has been included (for new feature)
 
+## Doc
+- Tell us where the doc can be found (docs folder, wiki, in the code...)
+
 ## Changes
 
 Explain the changes that were made. The idea is not to list exhaustively all the changes made (GitHub already provides a full diff), but to help the reviewers better understand:

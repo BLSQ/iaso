@@ -14,12 +14,24 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend  # type:ignore
 from django.db.models import Q
 from rest_framework.decorators import action
+import jsonschema
 
 from plugins.polio.models import Config
 
 logger = logging.getLogger(__name__)
 TASK_NAME = "Refresh LQAS data"
 NO_AUTHORIZED_COUNTRY_ERROR = {"country_id": "No authorised org unit found for user"}
+pipeline_config_schema = {
+    "type": "object",
+    "properties": {
+        "openhexa_token": {"type": "string"},
+        "openhexa_url": {"type": "string"},
+        "lqas_pipeline": {"type": "string"},
+        "oh_pipeline_target": {"type": "string"},
+        "lqas_pipeline_version": {"type": "number"},
+    },
+    "required": ["openhexa_token", "openhexa_url", "lqas_pipeline", "oh_pipeline_target", "lqas_pipeline_version"],
+}
 
 
 class RefreshLQASDataSerializer(serializers.Serializer):
@@ -144,11 +156,16 @@ class RefreshLQASDataViewset(ModelViewSet):
         except:
             logger.exception("Could not fetch openhexa config")
             return ERRORED
-        lqas_pipeline_version = pipeline_config.content["lqas_pipeline_version"]
-        oh_pipeline_target = pipeline_config.content["oh_pipeline_target"]
-        lqas_pipeline = pipeline_config.content["lqas_pipeline"]
-        openhexa_url = pipeline_config.content["openhexa_url"]
-        openhexa_token = pipeline_config.content["openhexa_token"]
+        try:
+            jsonschema.validate(instance=pipeline_config.content, schema=pipeline_config_schema)
+            lqas_pipeline_version = pipeline_config.content["lqas_pipeline_version"]
+            oh_pipeline_target = pipeline_config.content["oh_pipeline_target"]
+            lqas_pipeline = pipeline_config.content["lqas_pipeline"]
+            openhexa_url = pipeline_config.content["openhexa_url"]
+            openhexa_token = pipeline_config.content["openhexa_token"]
+        except:
+            logger.exception("Invalid openhexa config")
+            return ERRORED
 
         transport = RequestsHTTPTransport(
             url=openhexa_url,

@@ -72,6 +72,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             date_dg_approval=cls.now - datetime.timedelta(days=10),
             quantities_ordered_in_doses=500,
         )
+
         cls.vaccine_arrival_report = pm.VaccineArrivalReport.objects.create(
             request_form=cls.vaccine_request_form,
             arrival_report_date=cls.now - datetime.timedelta(days=5),
@@ -80,7 +81,10 @@ class VaccineStockManagementAPITestCase(APITestCase):
             po_number="PO123",
             lot_numbers=["LOT123", "LOT456"],
             expiration_date=cls.now + datetime.timedelta(days=180),
+            # the Model on save will implicitly set doses_per_vial to pm.DOSES_PER_VIAL[vaccine_type]
+            # and calculated vials_received and vials_shipped
         )
+
         cls.vaccine_stock = pm.VaccineStock.objects.create(
             account=cls.account,
             country=cls.country,
@@ -133,9 +137,9 @@ class VaccineStockManagementAPITestCase(APITestCase):
         stock = results[0]
         self.assertEqual(stock["country_name"], "Testland")
         self.assertEqual(stock["vaccine_type"], pm.VACCINES[0][0])
-        self.assertEqual(stock["vials_received"], 40)  # 400 doses / 10 doses per vial
+        self.assertEqual(stock["vials_received"], 20)  # 400 doses / 20 doses per vial
         self.assertEqual(stock["vials_used"], 10)
-        self.assertEqual(stock["stock_of_usable_vials"], 30)  # 40 received - 10 used
+        self.assertEqual(stock["stock_of_usable_vials"], 10)  # 20 received - 10 used
         self.assertEqual(stock["stock_of_unusable_vials"], 9)  # 5 unusable + 3 destroyed + 1 incident
         self.assertEqual(stock["vials_destroyed"], 3)
 

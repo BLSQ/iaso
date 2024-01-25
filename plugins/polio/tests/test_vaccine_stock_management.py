@@ -1,5 +1,6 @@
 import datetime
 
+import jsonschema
 from django.contrib.auth.models import AnonymousUser
 from django.utils import timezone
 from rest_framework.test import APIClient
@@ -77,7 +78,6 @@ class VaccineStockManagementAPITestCase(APITestCase):
             doses_received=400,
             doses_shipped=400,
             po_number="PO123",
-            doses_per_vial=10,
             lot_numbers=["LOT123", "LOT456"],
             expiration_date=cls.now + datetime.timedelta(days=180),
         )
@@ -139,7 +139,45 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.assertEqual(stock["stock_of_unusable_vials"], 9)  # 5 unusable + 3 destroyed + 1 incident
         self.assertEqual(stock["vials_destroyed"], 3)
 
-    def test_usable_vials(self):
+    def test_usable_vials_endpoint(self):
+        # Authenticate and make request to the API
         self.client.force_authenticate(user=self.user_ro_perms)
         response = self.client.get(f"{BASE_URL}{self.vaccine_stock.id}/usable_vials/")
-        print(response.json())
+
+        # Assert the response status code
+        self.assertEqual(response.status_code, 200)
+
+        # Parse the response data
+        data = response.json()
+
+        # Define the JSON schema for the response
+        usable_vials_schema = {
+            "type": "object",
+            "properties": {
+                "results": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "date": {"type": "string"},
+                            "action": {"type": "string"},
+                            "vials_in": {"type": ["integer", "null"]},
+                            "doses_in": {"type": ["integer", "null"]},
+                            "vials_out": {"type": ["integer", "null"]},
+                            "doses_out": {"type": ["string", "null"]},
+                        },
+                        "required": ["date", "action", "vials_in", "doses_in", "vials_out", "doses_out"],
+                    },
+                },
+            },
+            "required": ["results"],
+        }
+
+        # Check that we have 4 entries in the results array
+        self.assertEqual(len(data["results"]), 4)
+
+        # Validate the response data against the schema
+        try:
+            jsonschema.validate(instance=data, schema=usable_vials_schema)
+        except jsonschema.exceptions.ValidationError as ex:
+            self.fail(msg=str(ex))

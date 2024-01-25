@@ -173,7 +173,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
                     "vials_in": None,
                     "doses_in": None,
                     "vials_out": report.unusable_vials_destroyed,
-                    "doses_out": report.unusable_vials_destroyed * DOSES_PER_VIAL[report.request_form.vaccine_type],
+                    "doses_out": "N/A",
                 }
             )
 
@@ -185,8 +185,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
                     "vials_in": None,
                     "doses_in": None,
                     "vials_out": report.unusable_vials + report.usable_vials,
-                    "doses_out": (report.unusable_vials + report.usable_vials)
-                    * DOSES_PER_VIAL[report.request_form.vaccine_type],
+                    "doses_out": "N/A",
                 }
             )
 

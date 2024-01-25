@@ -5,7 +5,8 @@ from rest_framework.test import APIClient
 
 from iaso.models.base import Account
 from iaso.test import APITestCase
-from plugins.polio.models import Config
+
+from iaso.models.json_config import Config
 
 content = {"beurk": "lol"}
 

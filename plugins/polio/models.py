@@ -1061,8 +1061,16 @@ class VaccineArrivalReport(SoftDeletableModel):
     def save(self, *args, **kwargs):
         # We overwrite these values because they are not editable by the user
         self.doses_per_vial = self.get_doses_per_vial()
-        self.vials_shipped = math.ceil(self.doses_shipped / self.doses_per_vial)
-        self.vials_received = math.ceil(self.doses_received / self.doses_per_vial)
+
+        if self.doses_shipped is None:
+            self.vials_shipped = None
+        else:
+            self.vials_shipped = math.ceil(self.doses_shipped / self.doses_per_vial)
+
+        if self.doses_received is None:
+            self.vials_received = None
+        else:
+            self.vials_received = math.ceil(self.doses_received / self.doses_per_vial)
 
         super().save(*args, **kwargs)
 

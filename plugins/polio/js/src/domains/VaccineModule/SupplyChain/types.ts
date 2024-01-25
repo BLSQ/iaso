@@ -44,7 +44,7 @@ export type PreAlert = {
     lot_number: number;
     expiration_date: string; // date in string form
     doses_shipped: number;
-    doses_recieved: number;
+    doses_received: number;
     doses_per_vial: number;
     vials_shipped: number;
     to_delete?: boolean;

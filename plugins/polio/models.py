@@ -1026,10 +1026,11 @@ class VaccinePreAlert(SoftDeletableModel):
     objects = DefaultSoftDeletableManager()
 
     def save(self, *args, **kwargs):
-        if self.doses_per_vial is None:
-            self.doses_per_vial = self.get_doses_per_vial()
+        self.doses_per_vial = self.get_doses_per_vial()
 
-        if self.vials_shipped is None:
+        if self.doses_shipped is None:
+            self.vials_shipped = None
+        else:
             self.vials_shipped = math.ceil(self.doses_shipped / self.doses_per_vial)
 
         super().save(*args, **kwargs)

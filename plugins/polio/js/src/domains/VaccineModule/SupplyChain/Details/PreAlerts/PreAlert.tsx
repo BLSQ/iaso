@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import React, { FunctionComponent, useCallback } from 'react';
-import { Box, Grid, Paper } from '@mui/material';
+import { Box, Grid, Paper, Typography } from '@mui/material';
 import { Field, useFormikContext } from 'formik';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
@@ -11,6 +11,7 @@ import { NumberInput, TextInput } from '../../../../../components/Inputs';
 import MESSAGES from '../../messages';
 import { SupplyChainFormData } from '../../types';
 import { usePaperStyles } from '../shared';
+import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 
 type Props = {
     index: number;
@@ -23,6 +24,9 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
         useFormikContext<SupplyChainFormData>();
     const { pre_alerts } = values as SupplyChainFormData;
     const markedForDeletion = pre_alerts?.[index].to_delete ?? false;
+
+    const doses_per_vial = pre_alerts?.[index].doses_per_vial ?? 20;
+    const current_vials_shipped = Math.ceil((pre_alerts?.[index].doses_shipped ?? 0) / doses_per_vial);
 
     const onDelete = useCallback(() => {
         if (values?.pre_alerts?.[index].id) {
@@ -48,7 +52,7 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
             >
                 <Grid container>
                     <Grid container item xs={12} spacing={2}>
-                        <Grid item xs={6} md={3}>
+                        <Grid item xs={6} md={4}>
                             <Field
                                 label={formatMessage(
                                     MESSAGES.date_pre_alert_reception,
@@ -58,7 +62,7 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                                 disabled={markedForDeletion}
                             />
                         </Grid>
-                        <Grid item xs={6} md={3}>
+                        <Grid item xs={6} md={4}>
                             <Field
                                 label={formatMessage(MESSAGES.po_number)}
                                 name={`pre_alerts[${index}].po_number`}
@@ -68,7 +72,7 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                             />
                         </Grid>
                         {/* TODO make list */}
-                        <Grid item xs={6} md={3}>
+                        <Grid item xs={6} md={4}>
                             <Field
                                 label={formatMessage(MESSAGES.lot_numbers)}
                                 name={`pre_alerts[${index}].lot_numbers`}
@@ -77,7 +81,9 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                                 disabled={markedForDeletion}
                             />
                         </Grid>
-                        <Grid item xs={6} md={3}>
+                    </Grid>
+                    <Grid container item xs={12} spacing={2}>
+                        <Grid item xs={6} md={4}>
                             <Field
                                 label={formatMessage(
                                     MESSAGES.estimated_arrival_time,
@@ -87,9 +93,7 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                                 disabled={markedForDeletion}
                             />
                         </Grid>
-                    </Grid>
-                    <Grid container item xs={12} spacing={2}>
-                        <Grid item xs={6} md={3}>
+                        <Grid item xs={6} md={4}>
                             <Field
                                 label={formatMessage(MESSAGES.expirationDate)}
                                 name={`pre_alerts[${index}].expiration_date`}
@@ -97,7 +101,7 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                                 disabled={markedForDeletion}
                             />
                         </Grid>
-                        <Grid item xs={6} md={3}>
+                        <Grid item xs={6} md={4}>
                             <Field
                                 label={formatMessage(MESSAGES.doses_shipped)}
                                 name={`pre_alerts[${index}].doses_shipped`}
@@ -105,27 +109,24 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                                 disabled={markedForDeletion}
                             />
                         </Grid>
+                    </Grid>
 
-                        <Grid item xs={6} md={3}>
-                            <Field
-                                label={formatMessage(MESSAGES.vials_shipped)}
-                                name={`pre_alerts[${index}].vials_shipped`}
-                                component={NumberInput}
-                                disabled={true}
-                            />
+                    <Grid container item xs={12} spacing={2}>
+
+                        <Grid item xs={6} md={4} />
+
+                        <Grid item xs={6} md={4}>
+                            <Typography variant="button">
+                                {`${formatMessage(MESSAGES.doses_per_vial)}:`} <NumberCell value={doses_per_vial} />
+                            </Typography>
+
                         </Grid>
 
-                        <Grid item xs={6} md={3}>
-                            <Box>
-                                <Field
-                                    label={formatMessage(
-                                        MESSAGES.doses_per_vial,
-                                    )}
-                                    name={`pre_alerts[${index}].doses_per_vial`}
-                                    component={NumberInput}
-                                    disabled={true}
-                                />
-                            </Box>
+                        <Grid item xs={6} md={4}>
+                            <Typography variant="button">
+                                {`${formatMessage(MESSAGES.vials_shipped)}:`} <NumberCell value={current_vials_shipped} />
+                            </Typography>
+
                         </Grid>
                     </Grid>
                 </Grid>

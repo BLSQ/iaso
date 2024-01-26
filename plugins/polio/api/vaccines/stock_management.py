@@ -1,8 +1,10 @@
 import enum
-from rest_framework import serializers, status, viewsets
+from typing import Union
+
+from django.db.models import QuerySet
+from rest_framework import filters, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
-from rest_framework import filters
 from rest_framework.response import Response
 
 from hat.menupermissions import models as permission
@@ -23,6 +25,43 @@ class MovementTypeEnum(enum.Enum):
     INCIDENT_REPORT = "incident_report"
     OUTGOING_STOCK_MOVEMENT = "outgoing_stock_movement"
     VACCINE_ARRIVAL_REPORT = "vaccine_arrival_report"
+
+
+class VaccineStockCalculator:
+    def __init__(self, vaccine_stock: Union[VaccineStock, QuerySet]):
+        if isinstance(vaccine_stock, QuerySet):
+            vaccine_stock = vaccine_stock.first()
+
+        self.vaccine_stock = vaccine_stock
+        self.arrival_reports = VaccineArrivalReport.objects.filter(
+            request_form__campaign__country=vaccine_stock.country, request_form__vaccine_type=vaccine_stock.vaccine
+        )
+        self.destruction_reports = DestructionReport.objects.filter(vaccine_stock=vaccine_stock).order_by(
+            "destruction_report_date"
+        )
+        self.incident_reports = IncidentReport.objects.filter(vaccine_stock=vaccine_stock).order_by(
+            "date_of_incident_report"
+        )
+        self.stock_movements = OutgoingStockMovement.objects.filter(vaccine_stock=vaccine_stock).order_by("report_date")
+
+    def get_vials_received(self):
+        return sum(report.vials_received for report in self.arrival_reports)
+
+    def get_vials_used(self):
+        return sum(movement.usable_vials_used for movement in self.stock_movements)
+
+    def get_stock_of_usable_vials(self):
+        return self.get_vials_received() - self.get_vials_used()
+
+    def get_stock_of_unusable_vials(self):
+        return (
+            # sum(report.unusable_vials_destroyed for report in self.destruction_reports) +
+            sum(report.unusable_vials for report in self.incident_reports)
+            + sum(movement.unusable_vials for movement in self.stock_movements)
+        )
+
+    def get_vials_destroyed(self):
+        return sum(report.unusable_vials_destroyed for report in self.destruction_reports)
 
 
 class VaccineStockSerializer(serializers.ModelSerializer):
@@ -49,32 +88,24 @@ class VaccineStockSerializer(serializers.ModelSerializer):
             "vials_destroyed",
         ]
 
+    def __init__(self, instance=None, data=None, **kwargs):
+        super().__init__(instance, data, **kwargs)
+        self.calculator = VaccineStockCalculator(self.instance)
+
     def get_vials_received(self, obj):
-        arrival_reports = VaccineArrivalReport.objects.filter(
-            request_form__campaign__country=obj.country, request_form__vaccine_type=obj.vaccine
-        )
-        return sum(report.doses_received // report.doses_per_vial for report in arrival_reports)
+        return self.calculator.get_vials_received()
 
     def get_vials_used(self, obj):
-        stock_movements = OutgoingStockMovement.objects.filter(vaccine_stock=obj)
-        return sum(movement.usable_vials_used for movement in stock_movements)
+        return self.calculator.get_vials_used()
 
     def get_stock_of_usable_vials(self, obj):
-        return self.get_vials_received(obj) - self.get_vials_used(obj)
+        return self.calculator.get_stock_of_usable_vials()
 
     def get_stock_of_unusable_vials(self, obj):
-        destruction_reports = DestructionReport.objects.filter(vaccine_stock=obj)
-        incident_reports = IncidentReport.objects.filter(vaccine_stock=obj)
-        stock_movements = OutgoingStockMovement.objects.filter(vaccine_stock=obj)
-        return (
-            sum(report.unusable_vials_destroyed for report in destruction_reports)
-            + sum(report.unusable_vials for report in incident_reports)
-            + sum(movement.unusable_vials for movement in stock_movements)
-        )
+        return self.calculator.get_stock_of_unusable_vials()
 
     def get_vials_destroyed(self, obj):
-        destruction_reports = DestructionReport.objects.filter(vaccine_stock=obj)
-        return sum(report.unusable_vials_destroyed for report in destruction_reports)
+        return self.calculator.get_vials_destroyed()
 
 
 class VaccineStockManagementReadWritePerm(GenericReadWritePerm):
@@ -117,29 +148,25 @@ class VaccineStockManagementViewSet(ModelViewSet):
     filter_backends = [SearchFilter, StockManagementCustomFilter]
     search_fields = ["vaccine", "country__name"]
 
-    @action(detail=False, methods=["get"])
-    def summary(self, request):
-        vaccine_stock_id = request.GET.get("id")
-        account = request.user.iaso_profile.account
+    @action(detail=True, methods=["get"])
+    def summary(self, request, pk=None):
+        if pk is None:
+            return Response({"error": "No VaccineStock ID provided"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            vaccine_stock = VaccineStock.objects.get(id=vaccine_stock_id, account=account)
+            vaccine_stock = self.get_queryset().get(id=pk)
         except VaccineStock.DoesNotExist:
             return Response({"error": "VaccineStock not found for "}, status=status.HTTP_404_NOT_FOUND)
 
-        # Aggregate the data for the summary
-        total_usable_vials = sum(stock.usable_vials for stock in vaccine_stocks)
-        total_unusable_vials = sum(stock.unusable_vials for stock in vaccine_stocks)
-        total_usable_doses = sum(stock.usable_doses for stock in vaccine_stocks)
-        total_unusable_doses = sum(stock.unusable_doses for stock in vaccine_stocks)
+        calculator = VaccineStockCalculator(vaccine_stock)
 
         summary_data = {
-            "country_name": vaccine_stocks.first().country.name,
-            "vaccine_type": vaccine_type,
-            "total_usable_vials": total_usable_vials,
-            "total_unusable_vials": total_unusable_vials,
-            "total_usable_doses": total_usable_doses,
-            "total_unusable_doses": total_unusable_doses,
+            "country_name": vaccine_stock.country.name,
+            "vaccine_type": vaccine_stock.vaccine,
+            "total_usable_vials": calculator.get_stock_of_usable_vials(),
+            "total_unusable_vials": calculator.get_stock_of_unusable_vials(),
+            "total_usable_doses": calculator.get_stock_of_usable_vials() * 10,
+            "total_unusable_doses": calculator.get_stock_of_unusable_vials() * 10,
         }
 
         return Response(summary_data, status=status.HTTP_200_OK)
@@ -266,10 +293,6 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
     @action(detail=True, methods=["get"])
     def get_unusable_vials(self, request, pk=None):
-        pass
-
-    @action(detail=True, methods=["get"])
-    def get_summary(self, request, pk=None):
         pass
 
     def get_queryset(self):

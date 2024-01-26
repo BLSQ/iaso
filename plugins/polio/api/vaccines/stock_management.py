@@ -1,3 +1,4 @@
+import enum
 from rest_framework import serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
@@ -14,8 +15,14 @@ from plugins.polio.models import (
     VaccineArrivalReport,
     VaccineRequestForm,
     VaccineStock,
-    DOSES_PER_VIAL,
 )
+
+
+class MovementTypeEnum(enum.Enum):
+    DESTRUCTION_REPORT = "destruction_report"
+    INCIDENT_REPORT = "incident_report"
+    OUTGOING_STOCK_MOVEMENT = "outgoing_stock_movement"
+    VACCINE_ARRIVAL_REPORT = "vaccine_arrival_report"
 
 
 class VaccineStockSerializer(serializers.ModelSerializer):
@@ -133,13 +140,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
         # Then find the corresponding VaccineArrivalReports
         arrival_reports = VaccineArrivalReport.objects.filter(request_form__in=vrfs)
         if not arrival_reports.exists():
-            return Response(
-                {"error": "No VaccineArrivalReport found for the given VaccineStock Country and Vaccine Type"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        # Use the doses_per_vial from the latest VaccineArrivalReport for all calculations
-        latest_arrival_report = arrival_reports.latest("arrival_report_date")
+            arrival_reports = []
 
         destruction_reports = DestructionReport.objects.filter(vaccine_stock=vaccine_stock).order_by(
             "destruction_report_date"
@@ -160,6 +161,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
                     "doses_in": report.doses_received,
                     "vials_out": None,
                     "doses_out": None,
+                    "type": MovementTypeEnum.VACCINE_ARRIVAL_REPORT.value,
                 }
             )
 
@@ -173,7 +175,8 @@ class VaccineStockManagementViewSet(ModelViewSet):
                     "vials_in": None,
                     "doses_in": None,
                     "vials_out": report.unusable_vials_destroyed,
-                    "doses_out": "N/A",
+                    "doses_out": "N/A",  # can't compute with current model
+                    "type": MovementTypeEnum.DESTRUCTION_REPORT.value,
                 }
             )
 
@@ -185,7 +188,8 @@ class VaccineStockManagementViewSet(ModelViewSet):
                     "vials_in": None,
                     "doses_in": None,
                     "vials_out": report.unusable_vials + report.usable_vials,
-                    "doses_out": "N/A",
+                    "doses_out": "N/A",  # can't compute with current model
+                    "type": MovementTypeEnum.INCIDENT_REPORT.value,
                 }
             )
 
@@ -199,6 +203,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
                         "doses_in": None,
                         "vials_out": movement.usable_vials_used,
                         "doses_out": "N/A",  # can't compute with current model
+                        "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
                     }
                 )
             elif movement.unusable_vials > 0:
@@ -210,6 +215,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
                         "doses_in": None,
                         "vials_out": movement.unusable_vials,
                         "doses_out": "N/A",  # can't compute with current model
+                        "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
                     }
                 )
             elif movement.missing_vials > 0:
@@ -221,6 +227,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
                         "doses_in": None,
                         "vials_out": movement.missing_vials,
                         "doses_out": "N/A",  # can't compute with current model
+                        "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
                     }
                 )
 

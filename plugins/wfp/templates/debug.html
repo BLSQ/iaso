@@ -39,7 +39,7 @@
 </div>
 {% for step in visit.step_set.all %}
 <div style="padding-left:60px">
-    <h5>Step {{ step.id }}</h5>
+    <h5>Step {{ step.id }} <a href="/dashboard/forms/submission/instanceId/{{step.instance_id}}">View submission</a></h5>
     <table>
     <tr><th>assistance_type</th><td>{{step.assistance_type}}</td></tr>
     <tr><th>quantity_given</th><td>{{step.quantity_given}}</td></tr>

@@ -281,6 +281,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Documents',
         id: 'iaso.label.documents',
     },
+    docs: {
+        defaultMessage: 'Docs',
+        id: 'iaso.label.docs',
+    },
     others: {
         defaultMessage: 'Others',
         id: 'iaso.label.others',

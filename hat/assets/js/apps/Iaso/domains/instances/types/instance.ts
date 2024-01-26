@@ -11,6 +11,11 @@ type Lock = {
         name: string;
     };
 };
+export type ShortFile = {
+    itemId: number;
+    createdAt: number;
+    path: string;
+};
 export type Instance = {
     uuid: string;
     id: number;
@@ -25,7 +30,7 @@ export type Instance = {
     longitude: number;
     altitude: number;
     accuracy: number;
-    files: Array<string>;
+    files: ShortFile[];
     status: string;
     export_statuses: Array<string>;
     correlation_id?: string;

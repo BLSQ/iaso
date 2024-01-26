@@ -186,15 +186,12 @@ class VaccineStockManagementViewSet(ModelViewSet):
             campaign__country=vaccine_stock.country, vaccine_type=vaccine_stock.vaccine
         )
         if not vrfs.exists():
-            return Response(
-                {"error": "No VaccineRequestForm found for the given VaccineStock Country and Vaccine Type"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        # Then find the corresponding VaccineArrivalReports
-        arrival_reports = VaccineArrivalReport.objects.filter(request_form__in=vrfs)
-        if not arrival_reports.exists():
             arrival_reports = []
+        else:
+            # Then find the corresponding VaccineArrivalReports
+            arrival_reports = VaccineArrivalReport.objects.filter(request_form__in=vrfs)
+            if not arrival_reports.exists():
+                arrival_reports = []
 
         destruction_reports = DestructionReport.objects.filter(vaccine_stock=vaccine_stock).order_by(
             "destruction_report_date"

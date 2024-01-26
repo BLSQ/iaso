@@ -110,6 +110,33 @@ class VaccineStockManagementViewSet(ModelViewSet):
     filter_backends = [SearchFilter, StockManagementCustomFilter]
     search_fields = ["vaccine", "country__name"]
 
+    @action(detail=False, methods=["get"])
+    def summary(self, request):
+        vaccine_stock_id = request.GET.get("id")
+        account = request.user.iaso_profile.account
+
+        try:
+            vaccine_stock = VaccineStock.objects.get(id=vaccine_stock_id, account=account)
+        except VaccineStock.DoesNotExist:
+            return Response({"error": "VaccineStock not found for "}, status=status.HTTP_404_NOT_FOUND)
+
+        # Aggregate the data for the summary
+        total_usable_vials = sum(stock.usable_vials for stock in vaccine_stocks)
+        total_unusable_vials = sum(stock.unusable_vials for stock in vaccine_stocks)
+        total_usable_doses = sum(stock.usable_doses for stock in vaccine_stocks)
+        total_unusable_doses = sum(stock.unusable_doses for stock in vaccine_stocks)
+
+        summary_data = {
+            "country_name": vaccine_stocks.first().country.name,
+            "vaccine_type": vaccine_type,
+            "total_usable_vials": total_usable_vials,
+            "total_unusable_vials": total_unusable_vials,
+            "total_usable_doses": total_usable_doses,
+            "total_unusable_doses": total_unusable_doses,
+        }
+
+        return Response(summary_data, status=status.HTTP_200_OK)
+
     @action(detail=True, methods=["get"])
     def usable_vials(self, request, pk=None):
         if pk is None:

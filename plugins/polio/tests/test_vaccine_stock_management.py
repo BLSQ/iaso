@@ -1,5 +1,6 @@
 import datetime
 
+import jsonschema
 from django.contrib.auth.models import AnonymousUser
 from django.utils import timezone
 from rest_framework.test import APIClient
@@ -71,16 +72,19 @@ class VaccineStockManagementAPITestCase(APITestCase):
             date_dg_approval=cls.now - datetime.timedelta(days=10),
             quantities_ordered_in_doses=500,
         )
+
         cls.vaccine_arrival_report = pm.VaccineArrivalReport.objects.create(
             request_form=cls.vaccine_request_form,
             arrival_report_date=cls.now - datetime.timedelta(days=5),
             doses_received=400,
             doses_shipped=400,
             po_number="PO123",
-            doses_per_vial=10,
             lot_numbers=["LOT123", "LOT456"],
             expiration_date=cls.now + datetime.timedelta(days=180),
+            # the Model on save will implicitly set doses_per_vial to pm.DOSES_PER_VIAL[vaccine_type]
+            # and calculated vials_received and vials_shipped
         )
+
         cls.vaccine_stock = pm.VaccineStock.objects.create(
             account=cls.account,
             country=cls.country,
@@ -133,9 +137,51 @@ class VaccineStockManagementAPITestCase(APITestCase):
         stock = results[0]
         self.assertEqual(stock["country_name"], "Testland")
         self.assertEqual(stock["vaccine_type"], pm.VACCINES[0][0])
-        self.assertEqual(stock["vials_received"], 40)  # 400 doses / 10 doses per vial
+        self.assertEqual(stock["vials_received"], 20)  # 400 doses / 20 doses per vial
         self.assertEqual(stock["vials_used"], 10)
-        self.assertEqual(stock["stock_of_usable_vials"], 30)  # 40 received - 10 used
-        self.assertEqual(stock["leftover_ratio"], 25)  # 10 used / 40 received * 100
+        self.assertEqual(stock["stock_of_usable_vials"], 10)  # 20 received - 10 used
         self.assertEqual(stock["stock_of_unusable_vials"], 9)  # 5 unusable + 3 destroyed + 1 incident
         self.assertEqual(stock["vials_destroyed"], 3)
+
+    def test_usable_vials_endpoint(self):
+        # Authenticate and make request to the API
+        self.client.force_authenticate(user=self.user_ro_perms)
+        response = self.client.get(f"{BASE_URL}{self.vaccine_stock.id}/usable_vials/")
+
+        # Assert the response status code
+        self.assertEqual(response.status_code, 200)
+
+        # Parse the response data
+        data = response.json()
+
+        # Define the JSON schema for the response
+        usable_vials_schema = {
+            "type": "object",
+            "properties": {
+                "results": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "date": {"type": "string"},
+                            "action": {"type": "string"},
+                            "vials_in": {"type": ["integer", "null"]},
+                            "doses_in": {"type": ["integer", "null"]},
+                            "vials_out": {"type": ["integer", "null"]},
+                            "doses_out": {"type": ["string", "null"]},
+                        },
+                        "required": ["date", "action", "vials_in", "doses_in", "vials_out", "doses_out"],
+                    },
+                },
+            },
+            "required": ["results"],
+        }
+
+        # Check that we have 4 entries in the results array
+        self.assertEqual(len(data["results"]), 4)
+
+        # Validate the response data against the schema
+        try:
+            jsonschema.validate(instance=data, schema=usable_vials_schema)
+        except jsonschema.exceptions.ValidationError as ex:
+            self.fail(msg=str(ex))

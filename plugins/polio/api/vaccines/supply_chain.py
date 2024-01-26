@@ -20,7 +20,6 @@ from plugins.polio.models import (
     VaccineArrivalReport,
     VaccinePreAlert,
     VaccineRequestForm,
-    DOSES_PER_VIAL,
 )
 
 logger = getLogger(__name__)
@@ -114,6 +113,7 @@ class NestedVaccinePreAlertSerializerForPost(BasePostPatchSerializer):
             "expiration_date",
             "doses_shipped",
             "doses_per_vial",
+            "vials_shipped",
         ]
 
 
@@ -125,7 +125,8 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
     estimated_arrival_time = serializers.DateField(required=False)
     expiration_date = serializers.DateField(required=False)
     doses_shipped = serializers.IntegerField(required=False)
-    doses_per_vial = serializers.IntegerField(required=False)
+    doses_per_vial = serializers.IntegerField(required=False, read_only=True)
+    vials_shipped = serializers.IntegerField(required=False, read_only=True)
 
     class Meta(NestedVaccinePreAlertSerializerForPost.Meta):
         fields = NestedVaccinePreAlertSerializerForPost.Meta.fields + ["id"]
@@ -139,14 +140,14 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
 
 
 class NestedVaccineArrivalReportSerializerForPost(BasePostPatchSerializer):
-    # doses_per_vial = serializers.SerializerMethodField()
-
     class Meta:
         model = VaccineArrivalReport
         fields = [
             "arrival_report_date",
             "doses_received",
             "doses_per_vial",
+            "vials_received",
+            "vials_shipped",
             "lot_numbers",
             "expiration_date",
             "doses_shipped",
@@ -162,7 +163,9 @@ class NestedVaccineArrivalReportSerializerForPatch(NestedVaccineArrivalReportSer
     lot_numbers = serializers.ListField(child=serializers.CharField(), required=False)
     doses_received = serializers.IntegerField(required=False)
     doses_shipped = serializers.IntegerField(required=False)
-    doses_per_vial = serializers.IntegerField(required=False)
+    doses_per_vial = serializers.IntegerField(required=False, read_only=True)
+    vials_received = serializers.IntegerField(required=False, read_only=True)
+    vials_shipped = serializers.IntegerField(required=False, read_only=True)
 
     class Meta(NestedVaccineArrivalReportSerializerForPost.Meta):
         fields = NestedVaccineArrivalReportSerializerForPost.Meta.fields + ["id"]
@@ -539,7 +542,7 @@ class VaccineRequestFormViewSet(ModelViewSet):
         "rounds__ended_at": ["exact", "gte", "lte", "range"],
     }
     ordering_fields = ["created_at", "updated_at"]
-    search_fields = ["campaign__obr_name", "vaccine_type", "campaign__country__name"]
+    search_fields = ["campaign__obr_name", "vaccine_type", "campaign__country__name", "vaccineprealert__po_number"]
 
     model = VaccineRequestForm
 

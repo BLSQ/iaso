@@ -110,6 +110,15 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         self.assertEqual(change_request.new_reference_instances.count(), 1)
         self.assertEqual(change_request.new_reference_instances.first(), self.new_instance1)
         self.assertCountEqual(change_request.approved_fields, kwargs["approved_fields"])
+        # Change request old values.
+        self.assertEqual(change_request.old_parent, self.org_unit.parent)
+        self.assertEqual(change_request.old_name, "Hôpital Général")
+        self.assertEqual(change_request.old_org_unit_type, self.org_unit.org_unit_type)
+        self.assertCountEqual(change_request.old_groups.all(), [self.new_group1])
+        self.assertEqual(change_request.old_location, "SRID=4326;POINT Z (-1.1111111 1.1111111 1.1111111)")
+        self.assertEqual(change_request.old_opening_date, datetime.date(2020, 1, 1))
+        self.assertEqual(change_request.old_closed_date, datetime.date(2055, 1, 1))
+        self.assertCountEqual(change_request.old_reference_instances.all(), [self.new_instance1])
 
     def test_clean_approved_fields(self):
         approved_fields = ["new_name", "foo"]
@@ -197,15 +206,6 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         self.assertEqual(change_request.updated_at, self.DT)
         self.assertEqual(change_request.updated_by, self.user)
         self.assertCountEqual(change_request.approved_fields, approved_fields)
-        # Change request old values.
-        self.assertEqual(change_request.old_parent, self.parent)
-        self.assertEqual(change_request.old_name, "Hôpital Général")
-        self.assertEqual(change_request.old_org_unit_type, self.org_unit_type)
-        self.assertCountEqual(change_request.old_groups.all(), [self.new_group1])
-        self.assertEqual(change_request.old_location, "SRID=4326;POINT Z (-1.1111111 1.1111111 1.1111111)")
-        self.assertEqual(change_request.old_opening_date, datetime.date(2020, 1, 1))
-        self.assertEqual(change_request.old_closed_date, datetime.date(2055, 1, 1))
-        self.assertCountEqual(change_request.old_reference_instances.all(), [self.new_instance1])
 
         # Org Unit.
         self.assertEqual(self.org_unit.validation_status, self.org_unit.VALIDATION_VALID)

@@ -2,16 +2,13 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import get from 'lodash/get';
 
-import { injectIntl } from 'bluesquare-components';
+import { injectIntl, useSafeIntl } from 'bluesquare-components';
 import InstanceDetailsField from './InstanceDetailsField';
 import { INSTANCE_METAS_FIELDS } from '../constants';
 import MESSAGES from '../messages';
 
-const InstanceDetailsInfos = ({
-    currentInstance,
-    intl: { formatMessage },
-    fieldsToHide,
-}) => {
+const InstanceDetailsInfos = ({ currentInstance, fieldsToHide }) => {
+    const { formatMessage } = useSafeIntl();
     const fields = INSTANCE_METAS_FIELDS.filter(
         f =>
             f.type === 'info' &&
@@ -54,7 +51,6 @@ InstanceDetailsInfos.defaultProps = {
 
 InstanceDetailsInfos.propTypes = {
     currentInstance: PropTypes.object.isRequired,
-    intl: PropTypes.object.isRequired,
     fieldsToHide: PropTypes.array,
 };
 export default injectIntl(InstanceDetailsInfos);

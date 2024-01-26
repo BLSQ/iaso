@@ -52,8 +52,11 @@ const styles = {
         whiteSpace: 'nowrap',
     },
 };
+type IconProps = {
+    fileExtension: string;
+};
 
-const renderIcon = (fileExtension: string) => {
+const ExtensionIcon: FunctionComponent<IconProps> = ({ fileExtension }) => {
     switch (fileExtension) {
         case 'pdf':
             return <PdfSvg color="secondary" sx={styles.icon} />;
@@ -87,7 +90,7 @@ const DocumentsItemComponent: FunctionComponent<Props> = ({ file }) => {
             rel="noreferrer"
         >
             <Paper sx={styles.paper}>
-                {renderIcon(fileName.extension)}
+                <ExtensionIcon fileExtension={fileName.extension} />
                 <Box sx={styles.fileInfo}>
                     {displayDateFromTimestamp(file.createdAt)}
                 </Box>

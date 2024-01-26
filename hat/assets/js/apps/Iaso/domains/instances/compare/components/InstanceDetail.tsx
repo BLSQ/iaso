@@ -30,7 +30,7 @@ const InstanceDetail: FunctionComponent<Props> = ({
             isLoading={isLoading}
             isError={isError}
             showTitle={showTitle}
-            minHeight={minHeight}
+            height={minHeight}
             titleVariant={titleVariant}
         />
     );

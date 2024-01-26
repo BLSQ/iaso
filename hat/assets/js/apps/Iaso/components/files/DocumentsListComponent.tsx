@@ -25,7 +25,6 @@ const DocumentsListComponent: FunctionComponent<Props> = ({ docsList }) => {
                     sm={2}
                     md={1}
                     key={`${file.itemId}-${getFileName(file.path).name}`}
-                    sx={{ width: '100%' }} // Assuming you want a style here, adjust as needed
                 >
                     <DocumentsItem file={file} />
                 </Grid>

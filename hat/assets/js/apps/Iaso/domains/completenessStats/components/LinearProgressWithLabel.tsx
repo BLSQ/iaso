@@ -24,7 +24,7 @@ const styles = {
         color:  color || 'primary.main',
     }),
     progressBar: (color?: string) => ({
-        backgroundColor: theme => theme.palette.ligthGray.background ,
+        backgroundColor: 'white',
         height: '8px',
         boxShadow: theme => `0px 0px 0px 1px ${theme.palette.ligthGray.border} inset`,
         '& .MuiLinearProgress-bar': {

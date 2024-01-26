@@ -117,6 +117,9 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
         isLoading: isLoadingValidationStatusOptions,
     } = useGetValidationStatus(true);
     const handleChange = (key, value) => {
+        const newFilters: Record<string, unknown> = {
+            ...filters,
+        };
         if (key === 'version') {
             setSourceVersionId(parseInt(value, 10));
         }
@@ -124,13 +127,12 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
             setInitialOrgUnitId(undefined);
             setSourceVersionId(undefined);
             setDataSourceId(parseInt(value, 10));
+            delete newFilters.levels;
+            delete newFilters.orgUnitParentId;
         }
         if (key === 'levels') {
             setInitialOrgUnitId(value);
         }
-        const newFilters: Record<string, unknown> = {
-            ...filters,
-        };
         if (key === 'project') {
             setInitialOrgUnitId(undefined);
             newFilters.orgUnitTypeId = undefined;
@@ -258,7 +260,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                     label={MESSAGES.search}
                     blockForbiddenChars
                     onEnterPressed={onSearch}
-                    onErrorChange={setTextSearchError}
+                    onErrorChange={(hasError) => setTextSearchError(hasError)}
                 />
                 <InputComponent
                     type="select"

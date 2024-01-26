@@ -1,6 +1,10 @@
 import { isEqual } from 'lodash';
 import { ScaleThreshold } from '../../../components/LegendBuilder/types';
-import { defaultScaleThreshold } from '../components/MapLegend';
+
+const defaultScaleThreshold = {
+    domain: [70, 90],
+    range: ['red', 'orange', 'green'],
+};
 
 export const useEffectiveThreshold = (
     threshold?: ScaleThreshold,

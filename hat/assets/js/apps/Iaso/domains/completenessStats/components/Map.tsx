@@ -13,7 +13,6 @@ import {
     LoadingSpinner,
     IconButton,
 } from 'bluesquare-components';
-import { isEqual } from 'lodash';
 import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
 import { PopupComponent as Popup } from './Popup';
 
@@ -35,7 +34,7 @@ import {
 import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
 import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
 
-import { defaultScaleThreshold, getDirectLegend, MapLegend } from './MapLegend';
+import { getDirectLegend, MapLegend } from './MapLegend';
 import { useGetLegend } from '../../../components/LegendBuilder/Legend';
 import { CompletenessSelect } from './CompletenessSelect';
 
@@ -84,7 +83,6 @@ const useStyles = makeStyles(theme => ({
         right: 0,
     },
 }));
-
 
 export const Map: FunctionComponent<Props> = ({
     locations,

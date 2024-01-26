@@ -3,6 +3,7 @@
 
 # Please refer to the diagram in ../docs/test_completeness_stats.png to understand the expected results
 
+import pprint
 from typing import Any
 
 from django.contrib.auth.models import User, Permission
@@ -175,6 +176,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                     "form_stats": {
                         # "Hydroponics study 1" applies to OUt "District" and "Hospital"
                         f"form_{self.form_hs_1.id}": {
+                            "id": self.form_hs_1.id,
                             "name": "Hydroponics study 1",
                             "percent": 33.333333333333336,
                             "descendants": 3,
@@ -185,9 +187,10 @@ class CompletenessStatsAPITestCase(APITestCase):
                             "itself_has_instances": 0,
                             # No forms/instances are directly associated to "LaLaland" (only to its children)
                             "itself_instances_count": 0,
-                            "legend_threshold": {},
+                            "legend_threshold": None,
                         },
                         f"form_{self.form_hs_2.id}": {
+                            "id": self.form_hs_2.id,
                             "name": "Hydroponics study 2",
                             "percent": 0,
                             "descendants": 1,
@@ -196,9 +199,10 @@ class CompletenessStatsAPITestCase(APITestCase):
                             "total_instances": 0,
                             "itself_has_instances": 0,
                             "itself_instances_count": 0,
-                            "legend_threshold": {},
+                            "legend_threshold": None,
                         },
                         f"form_{self.form_hs_4.id}": {
+                            "id": self.form_hs_4.id,
                             "name": "Hydroponics study 4",
                             "percent": 33.333333333333336,
                             "descendants": 3,
@@ -207,7 +211,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                             "total_instances": 2,
                             "itself_has_instances": 0,
                             "itself_instances_count": 0,
-                            "legend_threshold": {},
+                            "legend_threshold": None,
                         },
                     },
                     "has_geo_json": True,
@@ -248,6 +252,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                     "id": 9,
                     "form_stats": {
                         f"form_{self.form_hs_1.id}": {
+                            "id": self.form_hs_1.id,
                             "name": "Hydroponics study 1",
                             "percent": 0,
                             "descendants": 0,
@@ -256,9 +261,10 @@ class CompletenessStatsAPITestCase(APITestCase):
                             "total_instances": 0,
                             "itself_has_instances": 0,
                             "itself_instances_count": 0,
-                            "legend_threshold": {},
+                            "legend_threshold": None,
                         },
                         f"form_{self.form_hs_2.id}": {
+                            "id": self.form_hs_2.id,
                             "name": "Hydroponics study 2",
                             "percent": 0,
                             "descendants": 0,
@@ -267,9 +273,10 @@ class CompletenessStatsAPITestCase(APITestCase):
                             "total_instances": 0,
                             "itself_has_instances": 0,
                             "itself_instances_count": 0,
-                            "legend_threshold": {},
+                            "legend_threshold": None,
                         },
                         f"form_{self.form_hs_4.id}": {
+                            "id": self.form_hs_4.id,
                             "name": "Hydroponics study 4",
                             "percent": 0,
                             "descendants": 0,
@@ -278,7 +285,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                             "total_instances": 0,
                             "itself_has_instances": 0,
                             "itself_instances_count": 0,
-                            "legend_threshold": {},
+                            "legend_threshold": None,
                         },
                     },
                     "has_geo_json": True,
@@ -316,6 +323,12 @@ class CompletenessStatsAPITestCase(APITestCase):
                 },
             ],
         }
+
+        pp = pprint.PrettyPrinter(indent=4)
+        print("expected_result:")
+        pp.pprint(expected_result)
+        print("\nj:")
+        pp.pprint(j)
         self.assertAlmostEqualRecursive(
             expected_result,
             j,
@@ -343,6 +356,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                     "form_stats": {
                         # "Hydroponics study 1" applies to OUt "District" and "Hospital"
                         f"form_{self.form_hs_1.id}": {
+                            "id": self.form_hs_1.id,
                             "name": "Hydroponics study 1",
                             "percent": 33.333333333333336,
                             "descendants": 3,
@@ -353,9 +367,10 @@ class CompletenessStatsAPITestCase(APITestCase):
                             "itself_has_instances": 0,
                             # No forms/instances are directly associated to "LaLaland" (only to its children)
                             "itself_instances_count": 0,
-                            "legend_threshold": {},
+                            "legend_threshold": None,
                         },
                         f"form_{self.form_hs_2.id}": {
+                            "id": self.form_hs_2.id,
                             "name": "Hydroponics study 2",
                             "percent": 0,
                             "descendants": 1,
@@ -364,9 +379,10 @@ class CompletenessStatsAPITestCase(APITestCase):
                             "total_instances": 0,
                             "itself_has_instances": 0,
                             "itself_instances_count": 0,
-                            "legend_threshold": {},
+                            "legend_threshold": None,
                         },
                         f"form_{self.form_hs_4.id}": {
+                            "id": self.form_hs_4.id,
                             "name": "Hydroponics study 4",
                             "percent": 33.333333333333336,
                             "descendants": 3,
@@ -375,7 +391,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                             "total_instances": 2,
                             "itself_has_instances": 0,
                             "itself_instances_count": 0,
-                            "legend_threshold": {},
+                            "legend_threshold": None,
                         },
                     },
                     "org_unit_type": {"name": "Country", "id": 1},
@@ -388,6 +404,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                     "org_unit": {"name": "Not yet validated country", "id": 9},
                     "form_stats": {
                         f"form_{self.form_hs_1.id}": {
+                            "id": self.form_hs_1.id,
                             "name": "Hydroponics study 1",
                             "percent": 0,
                             "descendants": 0,
@@ -396,9 +413,10 @@ class CompletenessStatsAPITestCase(APITestCase):
                             "total_instances": 0,
                             "itself_has_instances": 0,
                             "itself_instances_count": 0,
-                            "legend_threshold": {},
+                            "legend_threshold": None,
                         },
                         f"form_{self.form_hs_2.id}": {
+                            "id": self.form_hs_2.id,
                             "name": "Hydroponics study 2",
                             "percent": 0,
                             "descendants": 0,
@@ -407,9 +425,10 @@ class CompletenessStatsAPITestCase(APITestCase):
                             "total_instances": 0,
                             "itself_has_instances": 0,
                             "itself_instances_count": 0,
-                            "legend_threshold": {},
+                            "legend_threshold": None,
                         },
                         f"form_{self.form_hs_4.id}": {
+                            "id": self.form_hs_4.id,
                             "name": "Hydroponics study 4",
                             "percent": 0,
                             "descendants": 0,
@@ -418,7 +437,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                             "total_instances": 0,
                             "itself_has_instances": 0,
                             "itself_instances_count": 0,
-                            "legend_threshold": {},
+                            "legend_threshold": None,
                         },
                     },
                     "org_unit_type": {"name": "Country", "id": 1},
@@ -674,6 +693,7 @@ class CompletenessStatsAPITestCase(APITestCase):
 
         expected_before = {
             _slug(self.form_hs_4): {
+                "id": self.form_hs_4.id,
                 "name": "Hydroponics study 4",
                 "percent": 33.333333333333336,
                 "descendants": 3,
@@ -682,7 +702,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                 "total_instances": 3,
                 "itself_has_instances": 0,
                 "itself_instances_count": 0,
-                "legend_threshold": {},
+                "legend_threshold": None,
             }
         }
         self.assertAlmostEqualRecursive(form_stats, expected_before)
@@ -710,6 +730,7 @@ class CompletenessStatsAPITestCase(APITestCase):
 
         expected = {
             _slug(self.form_hs_4): {
+                "id": self.form_hs_4.id,
                 "name": "Hydroponics study 4",
                 "percent": 0,
                 "descendants": 2,  # one less because AS A.B.B is not included since its status is rejected
@@ -718,7 +739,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                 "total_instances": 0,
                 "itself_has_instances": 0,
                 "itself_instances_count": 0,
-                "legend_threshold": {},
+                "legend_threshold": None,
             }
         }
         self.assertEqual(form_stats, expected)

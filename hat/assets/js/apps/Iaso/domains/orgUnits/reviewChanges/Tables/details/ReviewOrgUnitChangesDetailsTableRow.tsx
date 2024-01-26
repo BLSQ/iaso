@@ -71,7 +71,10 @@ export const ReviewOrgUnitChangesDetailsTableRow: FunctionComponent<Props> = ({
     const classes = useStyles();
     const isCellRejected =
         (field.isChanged && !field.isSelected && isNew) ||
-        (field.isChanged && changeRequest?.status === 'rejected');
+        (field.isChanged && changeRequest?.status === 'rejected') ||
+        (field.isChanged &&
+            changeRequest?.status === 'approved' &&
+            !changeRequest.approved_fields.includes(`new_${field.key}`));
     const isCellApproved =
         (field.isChanged && field.isSelected) ||
         (!isNew &&

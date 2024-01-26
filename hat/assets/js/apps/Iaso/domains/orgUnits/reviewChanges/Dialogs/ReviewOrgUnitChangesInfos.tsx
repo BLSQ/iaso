@@ -1,6 +1,13 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import { Card, CardContent, Grid } from '@mui/material';
+import {
+    Card,
+    CardContent,
+    Table,
+    TableBody,
+    TableCell,
+    TableRow,
+} from '@mui/material';
 
 import MESSAGES from '../messages';
 import {
@@ -25,9 +32,19 @@ const useStatusStyles = (status?: ChangeRequestValidationStatus) => {
     return useMemo(
         () => ({
             infoCard: {
+                fontSize: 14,
                 backgroundColor: status
                     ? `${colorCodes[status]}.background`
                     : 'inherit',
+            },
+            cardContent: {
+                px: 2,
+                pt: theme => `${theme.spacing(1)} !important}`,
+                pb: theme => `${theme.spacing(1)} !important}`,
+            },
+            cell: {
+                borderBottom: 'none',
+                p: 0.25,
             },
             label: {
                 fontWeight: 'bold',
@@ -53,56 +70,72 @@ export const ReviewOrgUnitChangesInfos: FunctionComponent<Props> = ({
     const styles = useStatusStyles(changeRequest?.status);
     if (isFetchingChangeRequest || !changeRequest) return null;
     const { status } = changeRequest;
+    const labelStyle = { ...styles.label, ...styles.cell };
+    const valueStyle = { ...styles.value, ...styles.cell };
     return (
         <Card sx={styles.infoCard}>
-            <CardContent>
-                <Grid container spacing={1}>
-                    <Grid item xs={4} sx={styles.label}>
-                        {formatMessage(MESSAGES.status)}:
-                    </Grid>
-                    <Grid item xs={8} sx={styles.status}>
-                        {formatMessage(MESSAGES[status])}
-                    </Grid>
+            <CardContent sx={styles.cardContent}>
+                <Table size="small">
+                    <TableBody>
+                        <TableRow>
+                            <TableCell sx={labelStyle}>
+                                {formatMessage(MESSAGES.status)}:
+                            </TableCell>
+                            <TableCell
+                                sx={{ ...styles.status, ...styles.cell }}
+                            >
+                                {formatMessage(MESSAGES[status])}
+                            </TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell sx={labelStyle}>
+                                {formatMessage(MESSAGES.updated_at)}:
+                            </TableCell>
+                            <TableCell sx={valueStyle}>
+                                {DateTimeCell({
+                                    value: changeRequest.updated_at,
+                                })}
+                            </TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell sx={labelStyle}>
+                                {formatMessage(MESSAGES.created_at)}:
+                            </TableCell>
+                            <TableCell sx={valueStyle}>
+                                {DateTimeCell({
+                                    value: changeRequest.created_at,
+                                })}
+                            </TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell sx={labelStyle}>
+                                {formatMessage(MESSAGES.updated_by)}:
+                            </TableCell>
+                            <TableCell sx={valueStyle}>
+                                <UserCell value={changeRequest.updated_by} />
+                            </TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell sx={labelStyle}>
+                                {formatMessage(MESSAGES.created_by)}:
+                            </TableCell>
+                            <TableCell sx={valueStyle}>
+                                <UserCell value={changeRequest.created_by} />
+                            </TableCell>
+                        </TableRow>
 
-                    <Grid item xs={4} sx={styles.label}>
-                        {formatMessage(MESSAGES.created_at)}:
-                    </Grid>
-                    <Grid item xs={8} sx={styles.value}>
-                        {DateTimeCell({ value: changeRequest.created_at })}
-                    </Grid>
-
-                    <Grid item xs={4} sx={styles.label}>
-                        {formatMessage(MESSAGES.created_by)}:
-                    </Grid>
-                    <Grid item xs={8} sx={styles.value}>
-                        <UserCell value={changeRequest.created_by} />
-                    </Grid>
-
-                    <Grid item xs={4} sx={styles.label}>
-                        {formatMessage(MESSAGES.updated_at)}:
-                    </Grid>
-                    <Grid item xs={8} sx={styles.value}>
-                        {DateTimeCell({ value: changeRequest.updated_at })}
-                    </Grid>
-
-                    <Grid item xs={4} sx={styles.label}>
-                        {formatMessage(MESSAGES.updated_by)}:
-                    </Grid>
-                    <Grid item xs={8} sx={styles.value}>
-                        <UserCell value={changeRequest.updated_by} />
-                    </Grid>
-
-                    {changeRequest.status === 'rejected' && (
-                        <>
-                            <Grid item xs={4} sx={styles.label}>
-                                {formatMessage(MESSAGES.comment)}:
-                            </Grid>
-                            <Grid item xs={8} sx={styles.value}>
-                                {changeRequest.rejection_comment}
-                            </Grid>
-                        </>
-                    )}
-                </Grid>
+                        {changeRequest.status === 'rejected' && (
+                            <TableRow>
+                                <TableCell sx={labelStyle}>
+                                    {formatMessage(MESSAGES.comment)}:
+                                </TableCell>
+                                <TableCell sx={valueStyle}>
+                                    {changeRequest.rejection_comment}
+                                </TableCell>
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
             </CardContent>
         </Card>
     );

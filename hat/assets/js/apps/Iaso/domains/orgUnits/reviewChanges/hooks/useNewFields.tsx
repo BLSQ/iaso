@@ -122,12 +122,12 @@ export const useNewFields = (
             new_opening_date: {
                 label: formatMessage(MESSAGES.openingDate),
                 order: 6,
-                formatValue: val => <span>{moment(val).format('LTS')}</span>,
+                formatValue: val => <span>{moment(val).format('L')}</span>,
             },
             new_closed_date: {
                 label: formatMessage(MESSAGES.closingDate),
                 order: 7,
-                formatValue: val => <span>{moment(val).format('LTS')}</span>,
+                formatValue: val => <span>{moment(val).format('L')}</span>,
             },
             new_reference_instances: {
                 label: formatMessage(MESSAGES.multiReferenceInstancesLabel),
@@ -148,7 +148,7 @@ export const useNewFields = (
                     if (fieldDef) {
                         let oldValue = textPlaceholder;
                         if (
-                            changeRequest.status === 'approved' &&
+                            changeRequest.status !== 'new' &&
                             changeRequest[`old_${originalKey}`]
                         ) {
                             oldValue = fieldDef.formatValue(

@@ -7,14 +7,14 @@ import { InstanceDetailRaw } from './InstanceDetailRaw';
 type Props = {
     instanceId: string | undefined;
     showTitle?: boolean;
-    minHeight?: string | number;
+    height?: string | number;
     titleVariant?: TypographyVariant;
 };
 
 const InstanceDetail: FunctionComponent<Props> = ({
     instanceId,
     showTitle = true,
-    minHeight,
+    height,
     titleVariant,
 }) => {
     const {
@@ -30,7 +30,7 @@ const InstanceDetail: FunctionComponent<Props> = ({
             isLoading={isLoading}
             isError={isError}
             showTitle={showTitle}
-            height={minHeight}
+            height={height}
             titleVariant={titleVariant}
         />
     );

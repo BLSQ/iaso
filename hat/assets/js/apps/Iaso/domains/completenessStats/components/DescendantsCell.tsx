@@ -1,14 +1,15 @@
 import React, { ReactElement } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import { Tooltip, Box, Theme, SxProps } from '@mui/material';
+import { Tooltip, Box, Theme } from '@mui/material';
 
 import { FormStatRow } from '../types';
 import MESSAGES from '../messages';
 import { LinearProgressWithLabel } from './LinearProgressWithLabel';
 import { useEffectiveThreshold } from '../hooks/useEffectiveThreshold';
 import { Legend, useGetLegend } from '../../../components/LegendBuilder/Legend';
+import { SxStyles } from '../../../types/general';
 
-const styles: SxProps<Theme> = {
+const styles: SxStyles = {
     root: {
         cursor: 'pointer',
     },

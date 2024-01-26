@@ -10,12 +10,6 @@ import InfoIcon from '@mui/icons-material/Info';
 import classnames from 'classnames';
 
 export const useStyles = makeStyles(theme => ({
-    tab: {
-        '&.MuiTab-root': {
-            display: 'inline-flex',
-            flexDirection: 'row-reverse',
-        },
-    },
     tabError: {
         color: `${theme.palette.error.main} !important`,
     },
@@ -23,9 +17,6 @@ export const useStyles = makeStyles(theme => ({
         cursor: 'default',
     },
     tabIcon: {
-        position: 'relative',
-        top: 3,
-        left: theme.spacing(0.5),
         cursor: 'pointer',
     },
 }));
@@ -83,6 +74,7 @@ export const TabWithInfoIcon: FunctionComponent<Props> = ({
             )}
             disableFocusRipple={disabled}
             disableRipple={disabled}
+            iconPosition="end"
             icon={
                 (showIcon && (
                     <Tooltip title={tooltipMessage}>

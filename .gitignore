@@ -115,7 +115,7 @@ pip-selfcheck.json
 data
 
 # dev environment
-.env
+.env*
 \.idea/*
 
 

@@ -51,7 +51,7 @@ const ReferenceInstances: FunctionComponent<ReferenceInstancesProps> = ({
                     <InstanceDetail
                         key={instance.id}
                         instanceId={`${instance.id}`}
-                        minHeight="150px"
+                        height="150px"
                         titleVariant="subtitle1"
                     />
                 </Box>

@@ -23,8 +23,19 @@ type Props = {
     isLoading: boolean;
     isError: boolean;
     showTitle?: boolean;
-    minHeight?: string | number;
     titleVariant?: TypographyVariant;
+    height?: string | number;
+};
+
+const styles = {
+    iconContainer: {
+        display: 'inline-block',
+        ml: 1,
+        '& button a': {
+            width: '30px',
+            height: '30px',
+        },
+    },
 };
 
 export const InstanceDetailRaw: FunctionComponent<Props> = ({
@@ -32,14 +43,14 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
     isLoading,
     isError,
     showTitle = true,
-    minHeight = '70vh',
     titleVariant = 'h5',
+    height = '70vh',
 }) => {
     const { formatMessage } = useSafeIntl();
 
     if (isLoading)
         return (
-            <Box height={minHeight}>
+            <Box height={height}>
                 <LoadingSpinner
                     fixed={false}
                     transparent
@@ -64,14 +75,7 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
                     <Box
                         display="inline-block"
                         ml={1}
-                        sx={{
-                            display: 'inline-block',
-                            ml: 1,
-                            '& button a': {
-                                width: '30px',
-                                height: '30px',
-                            },
-                        }}
+                        sx={styles.iconContainer}
                     >
                         <IconButtonComponent
                             size="small"

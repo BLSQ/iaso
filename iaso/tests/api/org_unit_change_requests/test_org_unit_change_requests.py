@@ -243,3 +243,24 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
         response = self.client.delete(f"/api/orgunits/changes/{change_request.pk}/", format="json")
         self.assertEqual(response.status_code, 405)
+
+    def test_filterchange_request_on_date_created_from_and_date_created_to(self):
+        self.client.force_authenticate(self.user_with_review_perm)
+        changeRequest1 = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            new_name="Foo",
+        )
+        changeRequest1.created_at = datetime.datetime(2023, 10, 17, 17, 0, 0, 0, tzinfo=datetime.timezone.utc)
+        changeRequest1.save()
+
+        changeRequest2 = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Bar")
+        changeRequest2.created_at = datetime.datetime(2022, 10, 17, 17, 0, 0, 0, tzinfo=datetime.timezone.utc)
+        changeRequest2.save()
+
+        response = self.client.get("/api/orgunits/changes/?created_date_from=2023-10-17&created_date_to=2023-10-17")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(1, len(response.data["results"]))
+
+        response = self.client.get("/api/orgunits/changes/?created_date_from=2022-10-17")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(2, len(response.data["results"]))

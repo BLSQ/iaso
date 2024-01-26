@@ -17,6 +17,7 @@ from plugins.polio.models import (
     VaccineArrivalReport,
     VaccineRequestForm,
     VaccineStock,
+    DOSES_PER_VIAL,
 )
 
 
@@ -43,6 +44,9 @@ class VaccineStockCalculator:
             "date_of_incident_report"
         )
         self.stock_movements = OutgoingStockMovement.objects.filter(vaccine_stock=vaccine_stock).order_by("report_date")
+
+    def get_doses_per_vial(self):
+        return DOSES_PER_VIAL[self.vaccine_stock.vaccine]
 
     def get_vials_received(self):
         return sum(report.vials_received for report in self.arrival_reports)
@@ -165,8 +169,8 @@ class VaccineStockManagementViewSet(ModelViewSet):
             "vaccine_type": vaccine_stock.vaccine,
             "total_usable_vials": calculator.get_stock_of_usable_vials(),
             "total_unusable_vials": calculator.get_stock_of_unusable_vials(),
-            "total_usable_doses": calculator.get_stock_of_usable_vials() * 10,
-            "total_unusable_doses": calculator.get_stock_of_unusable_vials() * 10,
+            "total_usable_doses": calculator.get_stock_of_usable_vials() * calculator.get_doses_per_vial(),
+            "total_unusable_doses": calculator.get_stock_of_unusable_vials() * calculator.get_doses_per_vial(),
         }
 
         return Response(summary_data, status=status.HTTP_200_OK)
@@ -180,6 +184,8 @@ class VaccineStockManagementViewSet(ModelViewSet):
             vaccine_stock = self.get_queryset().get(id=pk)
         except VaccineStock.DoesNotExist:
             return Response({"error": "VaccineStock not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        calc = VaccineStockCalculator(vaccine_stock)
 
         # First find the corresponding VaccineRequestForms
         vrfs = VaccineRequestForm.objects.filter(
@@ -226,7 +232,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
                     "vials_in": None,
                     "doses_in": None,
                     "vials_out": report.unusable_vials_destroyed,
-                    "doses_out": "N/A",  # can't compute with current model
+                    "doses_out": report.unusable_vials_destroyed * calc.get_doses_per_vial(),
                     "type": MovementTypeEnum.DESTRUCTION_REPORT.value,
                 }
             )
@@ -239,7 +245,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
                     "vials_in": None,
                     "doses_in": None,
                     "vials_out": report.unusable_vials + report.usable_vials,
-                    "doses_out": "N/A",  # can't compute with current model
+                    "doses_out": (report.unusable_vials + report.usable_vials) * calc.get_doses_per_vial(),
                     "type": MovementTypeEnum.INCIDENT_REPORT.value,
                 }
             )
@@ -253,7 +259,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
                         "vials_in": None,
                         "doses_in": None,
                         "vials_out": movement.usable_vials_used,
-                        "doses_out": "N/A",  # can't compute with current model
+                        "doses_out": movement.usable_vials_used * calc.get_doses_per_vial(),
                         "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
                     }
                 )
@@ -265,7 +271,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
                         "vials_in": None,
                         "doses_in": None,
                         "vials_out": movement.unusable_vials,
-                        "doses_out": "N/A",  # can't compute with current model
+                        "doses_out": movement.unusable_vials * calc.get_doses_per_vial(),
                         "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
                     }
                 )
@@ -277,7 +283,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
                         "vials_in": None,
                         "doses_in": None,
                         "vials_out": movement.missing_vials,
-                        "doses_out": "N/A",  # can't compute with current model
+                        "doses_out": movement.missing_vials * calc.get_doses_per_vial(),
                         "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
                     }
                 )

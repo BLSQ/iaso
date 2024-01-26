@@ -140,8 +140,8 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.assertEqual(stock["vials_received"], 20)  # 400 doses / 20 doses per vial
         self.assertEqual(stock["vials_used"], 10)
         self.assertEqual(stock["stock_of_usable_vials"], 10)  # 20 received - 10 used
-        self.assertEqual(stock["stock_of_unusable_vials"], 9)  # 5 unusable + 3 destroyed + 1 incident
-        self.assertEqual(stock["vials_destroyed"], 3)
+        self.assertEqual(stock["stock_of_unusable_vials"], 6)  # 5 unusable + 1 incident
+        self.assertEqual(stock["vials_destroyed"], 3)  # 3 destroyed
 
     def test_usable_vials_endpoint(self):
         # Authenticate and make request to the API
@@ -168,7 +168,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
                             "vials_in": {"type": ["integer", "null"]},
                             "doses_in": {"type": ["integer", "null"]},
                             "vials_out": {"type": ["integer", "null"]},
-                            "doses_out": {"type": ["string", "null"]},
+                            "doses_out": {"type": ["integer", "null"]},
                         },
                         "required": ["date", "action", "vials_in", "doses_in", "vials_out", "doses_out"],
                     },
@@ -229,7 +229,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
         # Check that the values match what is expected
         self.assertEqual(data["country_name"], self.vaccine_stock.country.name)
         self.assertEqual(data["vaccine_type"], self.vaccine_stock.vaccine)
-        self.assertEqual(data["total_usable_vials"], 10)  # Assuming no stock movements have been recorded yet
-        self.assertEqual(data["total_unusable_vials"], 9)  # Assuming no stock movements have been recorded yet
-        self.assertEqual(data["total_usable_doses"], 0)  # Assuming no stock movements have been recorded yet
-        self.assertEqual(data["total_unusable_doses"], 0)  # Assuming no stock movements have been recorded yet
+        self.assertEqual(data["total_usable_vials"], 10)
+        self.assertEqual(data["total_unusable_vials"], 6)
+        self.assertEqual(data["total_usable_doses"], 200)
+        self.assertEqual(data["total_unusable_doses"], 120)

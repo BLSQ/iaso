@@ -264,3 +264,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         response = self.client.get("/api/orgunits/changes/?created_date_from=2022-10-17")
         self.assertJSONResponse(response, 200)
         self.assertEqual(2, len(response.data["results"]))
+
+        response = self.client.get("/api/orgunits/changes/?created_date_to=2022-10-17")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(1, len(response.data["results"]))

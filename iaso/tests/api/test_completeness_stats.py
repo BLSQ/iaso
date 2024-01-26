@@ -185,6 +185,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                             "itself_has_instances": 0,
                             # No forms/instances are directly associated to "LaLaland" (only to its children)
                             "itself_instances_count": 0,
+                            "legend_threshold": {},
                         },
                         f"form_{self.form_hs_2.id}": {
                             "name": "Hydroponics study 2",
@@ -195,6 +196,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                             "total_instances": 0,
                             "itself_has_instances": 0,
                             "itself_instances_count": 0,
+                            "legend_threshold": {},
                         },
                         f"form_{self.form_hs_4.id}": {
                             "name": "Hydroponics study 4",
@@ -205,6 +207,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                             "total_instances": 2,
                             "itself_has_instances": 0,
                             "itself_instances_count": 0,
+                            "legend_threshold": {},
                         },
                     },
                     "has_geo_json": True,
@@ -253,6 +256,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                             "total_instances": 0,
                             "itself_has_instances": 0,
                             "itself_instances_count": 0,
+                            "legend_threshold": {},
                         },
                         f"form_{self.form_hs_2.id}": {
                             "name": "Hydroponics study 2",
@@ -263,6 +267,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                             "total_instances": 0,
                             "itself_has_instances": 0,
                             "itself_instances_count": 0,
+                            "legend_threshold": {},
                         },
                         f"form_{self.form_hs_4.id}": {
                             "name": "Hydroponics study 4",
@@ -273,6 +278,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                             "total_instances": 0,
                             "itself_has_instances": 0,
                             "itself_instances_count": 0,
+                            "legend_threshold": {},
                         },
                     },
                     "has_geo_json": True,
@@ -347,6 +353,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                             "itself_has_instances": 0,
                             # No forms/instances are directly associated to "LaLaland" (only to its children)
                             "itself_instances_count": 0,
+                            "legend_threshold": {},
                         },
                         f"form_{self.form_hs_2.id}": {
                             "name": "Hydroponics study 2",
@@ -357,6 +364,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                             "total_instances": 0,
                             "itself_has_instances": 0,
                             "itself_instances_count": 0,
+                            "legend_threshold": {},
                         },
                         f"form_{self.form_hs_4.id}": {
                             "name": "Hydroponics study 4",
@@ -367,6 +375,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                             "total_instances": 2,
                             "itself_has_instances": 0,
                             "itself_instances_count": 0,
+                            "legend_threshold": {},
                         },
                     },
                     "org_unit_type": {"name": "Country", "id": 1},
@@ -387,6 +396,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                             "total_instances": 0,
                             "itself_has_instances": 0,
                             "itself_instances_count": 0,
+                            "legend_threshold": {},
                         },
                         f"form_{self.form_hs_2.id}": {
                             "name": "Hydroponics study 2",
@@ -397,6 +407,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                             "total_instances": 0,
                             "itself_has_instances": 0,
                             "itself_instances_count": 0,
+                            "legend_threshold": {},
                         },
                         f"form_{self.form_hs_4.id}": {
                             "name": "Hydroponics study 4",
@@ -407,6 +418,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                             "total_instances": 0,
                             "itself_has_instances": 0,
                             "itself_instances_count": 0,
+                            "legend_threshold": {},
                         },
                     },
                     "org_unit_type": {"name": "Country", "id": 1},
@@ -670,6 +682,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                 "total_instances": 3,
                 "itself_has_instances": 0,
                 "itself_instances_count": 0,
+                "legend_threshold": {},
             }
         }
         self.assertAlmostEqualRecursive(form_stats, expected_before)
@@ -705,6 +718,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                 "total_instances": 0,
                 "itself_has_instances": 0,
                 "itself_instances_count": 0,
+                "legend_threshold": {},
             }
         }
         self.assertEqual(form_stats, expected)

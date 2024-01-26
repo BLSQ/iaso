@@ -298,6 +298,61 @@ class VaccineStockManagementViewSet(ModelViewSet):
     def get_unusable_vials(self, request, pk=None):
         pass
 
+    @action(detail=True, methods=["get"])
+    def get_unusable_vials(self, request, pk=None):
+        if pk is None:
+            return Response({"error": "No VaccineStock ID provided"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            vaccine_stock = self.get_queryset().get(id=pk)
+        except VaccineStock.DoesNotExist:
+            return Response({"error": "VaccineStock not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        calc = VaccineStockCalculator(vaccine_stock)
+
+        # Get all OutgoingStockMovements and IncidentReports for the VaccineStock
+        outgoing_movements = OutgoingStockMovement.objects.filter(vaccine_stock=vaccine_stock)
+        incident_reports = IncidentReport.objects.filter(vaccine_stock=vaccine_stock)
+
+        # Prepare the results list
+        results = []
+
+        # Add unusable vials from OutgoingStockMovements
+        for movement in outgoing_movements:
+            if movement.unusable_vials > 0:
+                results.append(
+                    {
+                        "date": movement.report_date,
+                        "action": "Outgoing Movement",
+                        "vials_in": None,
+                        "doses_in": None,
+                        "vials_out": movement.unusable_vials,
+                        "doses_out": movement.unusable_vials * calc.get_doses_per_vial(),
+                        "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
+                    }
+                )
+
+        # Add unusable vials from IncidentReports
+        for report in incident_reports:
+            if report.unusable_vials > 0:
+                results.append(
+                    {
+                        "date": report.date_of_incident_report,
+                        "action": report.get_stock_correction_display(),
+                        "vials_in": None,
+                        "doses_in": None,
+                        "vials_out": report.unusable_vials,
+                        "doses_out": report.unusable_vials * calc.get_doses_per_vial(),
+                        "type": MovementTypeEnum.INCIDENT_REPORT.value,
+                    }
+                )
+
+        paginator = Paginator()
+        page = paginator.paginate_queryset(sorted(results, key=lambda x: x["date"]), request)
+        if page is not None:
+            return paginator.get_paginated_response(page)
+        return Response({"results": results})
+
     def get_queryset(self):
         return (
             VaccineStock.objects.filter(account=self.request.user.iaso_profile.account)

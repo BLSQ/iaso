@@ -689,7 +689,17 @@ class OrgUnitChangeRequest(models.Model):
 
     def save(self, *args, **kwargs):
         self.clean()
+        # Save old values.
+        self.old_parent = self.org_unit.parent
+        self.old_name = self.org_unit.name
+        self.old_org_unit_type = self.org_unit.org_unit_type
+        self.old_location = self.org_unit.location
+        self.old_opening_date = self.org_unit.opening_date
+        self.old_closed_date = self.org_unit.closed_date
         super().save(*args, **kwargs)
+        # Wait for the instance to have an ID to save m2m relations.
+        self.old_groups.set(self.org_unit.groups.all())
+        self.old_reference_instances.set(self.org_unit.reference_instances.all())
 
     def clean(self, *args, **kwargs):
         super().clean()
@@ -736,16 +746,6 @@ class OrgUnitChangeRequest(models.Model):
 
     def __apply_changes(self, user: User, approved_fields: typing.List[str]) -> None:
         initial_org_unit = deepcopy(self.org_unit)
-
-        # Save old values.
-        self.old_parent = initial_org_unit.parent
-        self.old_name = initial_org_unit.name
-        self.old_org_unit_type = initial_org_unit.org_unit_type
-        self.old_groups.set(initial_org_unit.groups.all())
-        self.old_location = initial_org_unit.location
-        self.old_opening_date = initial_org_unit.opening_date
-        self.old_closed_date = initial_org_unit.closed_date
-        self.old_reference_instances.set(initial_org_unit.reference_instances.all())
 
         for field_name in approved_fields:
             if field_name == "new_location_accuracy":

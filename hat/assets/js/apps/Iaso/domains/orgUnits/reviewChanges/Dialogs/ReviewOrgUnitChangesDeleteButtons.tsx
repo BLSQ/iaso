@@ -40,7 +40,6 @@ export const ReviewOrgUnitChangesDeleteButtons: FunctionComponent<Props> = ({
                 <Button
                     data-test="cancel-reject-button"
                     onClick={() => setIsRejectDialogOpen(false)}
-                    variant="contained"
                     autoFocus
                 >
                     {formatMessage(MESSAGES.cancel)}
@@ -51,7 +50,7 @@ export const ReviewOrgUnitChangesDeleteButtons: FunctionComponent<Props> = ({
                     data-test="confirm-reject-button"
                     onClick={handleReject}
                     variant="contained"
-                    color="error"
+                    color="primary"
                     autoFocus
                     disabled={!rejectedReason || rejectedReason.length === 0}
                 >

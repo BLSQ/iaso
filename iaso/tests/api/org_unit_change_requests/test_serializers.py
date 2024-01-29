@@ -375,7 +375,13 @@ class OrgUnitChangeRequestRetrieveSerializerTestCase(TestCase):
                 "new_reference_instances": [],
                 "old_parent": None,
                 "old_name": "",
-                "old_org_unit_type": None,
+                "old_org_unit_type": OrderedDict(
+                    [
+                        ("id", self.org_unit_type.pk),
+                        ("name", self.org_unit_type.name),
+                        ("short_name", self.org_unit_type.short_name),
+                    ]
+                ),
                 "old_groups": [],
                 "old_location": None,
                 "old_opening_date": None,

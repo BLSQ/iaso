@@ -12,11 +12,6 @@ import {
 } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { waitFor } from '../../../../../../../../hat/assets/js/apps/Iaso/utils';
 import {
-    mockSummary,
-    mockUnusableVials,
-    mockUsableVials,
-} from '../mocks/mockVaccineStockDetails';
-import {
     StockManagementListParams,
     StockManagementDetailsParams,
     StockVariationParams,
@@ -76,10 +71,8 @@ export const useGetVaccineStockList = (
 };
 
 // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-const getUsableVials = async (queryString: string) => {
-    console.log('usable vials', queryString);
-    await waitFor(750);
-    return mockUsableVials;
+const getUsableVials = async (id: string, queryString: string) => {
+    return getRequest(`${apiUrl}${id}/usable_vials/?${queryString}`);
 };
 
 // Need to pass id to apiUrl
@@ -98,19 +91,18 @@ export const useGetUsableVials = (
         pageSize,
     } as Partial<UrlParams>);
     const apiParams = useApiParams(safeParams);
+    const { id } = params;
     const queryString = new URLSearchParams(apiParams).toString();
     return useSnackQuery({
-        queryKey: ['usable-vials', queryString],
-        queryFn: () => getUsableVials(queryString),
+        queryKey: ['usable-vials', queryString, id],
+        queryFn: () => getUsableVials(id, queryString),
         options: { ...options, enabled },
     });
 };
 
 // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-const getUnusableVials = async (queryString: string) => {
-    console.log('unusable vials', queryString);
-    await waitFor(750);
-    return mockUnusableVials;
+const getUnusableVials = async (id: string, queryString: string) => {
+    return getRequest(`${apiUrl}${id}/get_unusable_vials/?${queryString}`);
 };
 // Need to pass id to apiUrl
 // Splitting both hooks to be able to store both payloads in the cache and avoid refteching with each tab change
@@ -128,20 +120,19 @@ export const useGetUnusableVials = (
         page,
         pageSize,
     } as Partial<UrlParams>);
+    const { id } = params;
     const apiParams = useApiParams(safeParams);
     const queryString = new URLSearchParams(apiParams).toString();
     return useSnackQuery({
-        queryKey: ['unusable-vials', queryString],
-        queryFn: () => getUnusableVials(queryString),
+        queryKey: ['unusable-vials', queryString, id],
+        queryFn: () => getUnusableVials(id, queryString),
         options: { ...options, enabled },
     });
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
 const getStockManagementSummary = async (id?: string) => {
-    console.log('vaccine stock id', id);
-    await waitFor(500);
-    return mockSummary;
+    return getRequest(`${apiUrl}${id}/summary/`);
 };
 
 export const useGetStockManagementSummary = (

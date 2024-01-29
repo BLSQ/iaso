@@ -126,7 +126,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                         </Grid>
                         <Grid item xs={6} md={3}>
                             <Field
-                                label={formatMessage(MESSAGES.rounds)}
+                                label={formatMessage(MESSAGES.roundNumbers)}
                                 name="vrf.rounds"
                                 component={MultiSelect}
                                 disabled={!values?.vrf?.vaccine_type}

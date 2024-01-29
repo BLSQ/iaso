@@ -23,7 +23,7 @@ import {
 import instancesTableColumns from '../config';
 import MESSAGES from '../messages';
 import { VisibleColumn } from '../types/visibleColumns';
-import { Instance } from '../types/instance';
+import { Instance, ShortFile } from '../types/instance';
 
 import {
     apiDateTimeFormat,
@@ -316,11 +316,6 @@ export const useGetInstancesVisibleColumns = ({
     return getInstancesVisibleColumns;
 };
 
-type ShortFile = {
-    itemId: number;
-    createdAt: number;
-    path: string;
-};
 export const getInstancesFilesList = (instances?: Instance[]): ShortFile[] => {
     const filesList: ShortFile[] = [];
     instances?.forEach(i => {
@@ -329,7 +324,7 @@ export const getInstancesFilesList = (instances?: Instance[]): ShortFile[] => {
                 const file = {
                     itemId: i.id,
                     createdAt: i.created_at,
-                    path,
+                    path: `${path}`,
                 };
                 filesList.push(file);
             });

@@ -13,7 +13,6 @@ const MESSAGES = defineMessages({
         defaultMessage: 'View submission details',
         id: 'iaso.instance.details',
     },
-    
     instanceLogsTitle: {
         id: 'iaso.instance.logs',
         defaultMessage: 'Compare all versions',
@@ -73,6 +72,10 @@ const MESSAGES = defineMessages({
     fetchLogDetailError: {
         defaultMessage: 'An error occurred while fetching log details',
         id: 'iaso.snackBar.fetchingLogDetailError',
+    },
+    files: {
+        id: 'iaso.instance.files',
+        defaultMessage: 'Files',
     },
 });
 

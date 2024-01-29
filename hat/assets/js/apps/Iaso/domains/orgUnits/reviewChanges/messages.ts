@@ -122,8 +122,8 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Reject all',
     },
     selection: {
-        id: 'iaso.label.selection',
-        defaultMessage: 'Selection',
+        id: 'iaso.label.selectionShort',
+        defaultMessage: 'Sel.',
     },
     seeRejectedChanges: {
         id: 'iaso.changeRequest.seeRejectedChanges',

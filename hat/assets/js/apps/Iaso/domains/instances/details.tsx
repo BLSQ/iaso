@@ -228,7 +228,6 @@ const InstanceDetails: FunctionComponent<Props> = props => {
                                     id="files"
                                 >
                                     <InstancesFilesList
-                                        // @ts-ignore
                                         fetchDetails={false}
                                         instanceDetail={currentInstance}
                                         files={getInstancesFilesList([

@@ -2,11 +2,11 @@ import React, {
     ReactElement,
     useMemo,
     useState,
-    Fragment,
     FunctionComponent,
 } from 'react';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
+import { Box } from '@mui/material';
 import {
     InstanceForChangeRequest,
     NestedGroup,
@@ -18,7 +18,7 @@ import { MarkerMap } from '../../../../components/maps/MarkerMapComponent';
 import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
 import { ShortOrgUnit } from '../../types/orgUnit';
 import MESSAGES from '../messages';
-import { LinkToInstance } from '../../../instances/components/LinkToInstance';
+import InstanceDetail from '../../../instances/compare/components/InstanceDetail';
 
 export type NewOrgUnitField = {
     key: string;
@@ -27,6 +27,7 @@ export type NewOrgUnitField = {
     newValue: ReactElement | string;
     oldValue: ReactElement | string;
     label: string;
+    removePadding?: boolean;
 };
 
 type UseNewFields = {
@@ -42,19 +43,18 @@ type ReferenceInstancesProps = {
 const ReferenceInstances: FunctionComponent<ReferenceInstancesProps> = ({
     instances,
 }) => {
-    if (!instances || instances.length === 0) {
-        return <>{textPlaceholder}</>;
-    }
-
     return (
         <>
-            {instances.map((instance, index) => (
-                <Fragment key={instance.id}>
-                    {index > 0 && ', '}
-                    <span>
-                        <LinkToInstance instanceId={`${instance.id}`} />
-                    </span>
-                </Fragment>
+            {!instances || (instances.length === 0 && textPlaceholder)}
+            {instances.map(instance => (
+                <Box mb={1}>
+                    <InstanceDetail
+                        key={instance.id}
+                        instanceId={`${instance.id}`}
+                        height="150px"
+                        titleVariant="subtitle1"
+                    />
+                </Box>
             ))}
         </>
     );
@@ -153,9 +153,13 @@ export const useNewFields = (
                     }
                     case 'new_location': {
                         const location = value as NestedLocation | undefined;
-                        const oldValue = orgUnit.location
-                            ? getLocationValue(orgUnit.location)
-                            : textPlaceholder;
+                        const oldValue = orgUnit.location ? (
+                            getLocationValue(orgUnit.location)
+                        ) : (
+                            <Box px="6px" py={2}>
+                                {textPlaceholder}
+                            </Box>
+                        );
                         return {
                             key: originalKey,
                             label: formatMessage(MESSAGES.location),
@@ -165,6 +169,7 @@ export const useNewFields = (
                                 ? getLocationValue(location)
                                 : oldValue,
                             oldValue,
+                            removePadding: true,
                         };
                     }
                     case 'new_opening_date':
@@ -231,6 +236,7 @@ export const useNewFields = (
                                     instances={orgUnit.reference_instances}
                                 />
                             ),
+                            removePadding: true,
                         };
                     }
                     default:

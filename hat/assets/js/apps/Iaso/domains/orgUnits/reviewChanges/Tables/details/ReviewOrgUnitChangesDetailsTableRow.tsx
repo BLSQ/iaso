@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import { Box, TableCell, TableRow } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import classNames from 'classnames';
@@ -33,6 +33,9 @@ const useStyles = makeStyles(theme => ({
         '& .marker-custom.primary svg': {
             fill: `${theme.palette.error.main} !important`,
         },
+        '& h6': {
+            color: `${theme.palette.error.main} !important`,
+        },
     },
     cellApproved: {
         '& > a': {
@@ -43,6 +46,9 @@ const useStyles = makeStyles(theme => ({
         },
         '& .marker-custom.primary svg': {
             fill: `${theme.palette.success.main} !important`,
+        },
+        '& h6': {
+            color: `${theme.palette.success.main} !important`,
         },
     },
     checkBoxContainer: {
@@ -71,11 +77,25 @@ export const ReviewOrgUnitChangesDetailsTableRow: FunctionComponent<Props> = ({
         (!isNew &&
             changeRequest?.status === 'approved' &&
             changeRequest.approved_fields.includes(field.key));
+
+    const cellStyles = useMemo(
+        () => ({
+            verticalAlign: 'top',
+            padding: theme =>
+                !field.removePadding
+                    ? `6px ${theme.spacing(1)}`
+                    : `0 ${theme.spacing(1)} 0 0`,
+        }),
+        [field.removePadding],
+    );
     return (
         <TableRow key={field.key}>
-            <TableCell>{field.label}</TableCell>
-            <TableCell>{field.oldValue}</TableCell>
+            <TableCell sx={{ verticalAlign: 'top', width: '5vw' }}>
+                {field.label}
+            </TableCell>
+            <TableCell sx={cellStyles}>{field.oldValue}</TableCell>
             <TableCell
+                sx={cellStyles}
                 className={classNames(
                     !isFetchingChangeRequest &&
                         isCellRejected &&
@@ -90,7 +110,12 @@ export const ReviewOrgUnitChangesDetailsTableRow: FunctionComponent<Props> = ({
                 {field.newValue}
             </TableCell>
             {isNew && (
-                <TableCell>
+                <TableCell
+                    sx={{
+                        padding: 0,
+                        width: 30,
+                    }}
+                >
                     {field.isChanged && (
                         <Box
                             display="flex"

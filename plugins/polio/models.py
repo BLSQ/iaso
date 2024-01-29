@@ -1295,6 +1295,8 @@ class NotificationImport(models.Model):
         )
 
         for idx, row in df.iterrows():
+            # Remove columns not in `EXPECTED_XLSX_COL_NAMES`.
+            row_data_as_dict = {k: v for k, v in row.to_dict().items() if k in self.EXPECTED_XLSX_COL_NAMES}
             try:
                 epid_number = importer.clean_str(row["EPID_NUMBER"])
                 org_unit = importer.find_org_unit_in_caches(
@@ -1307,7 +1309,7 @@ class NotificationImport(models.Model):
                     "closest_match_vdpv2": importer.clean_str(row["CLOSEST_MATCH_VDPV2"]),
                     "date_of_onset": importer.clean_date(row["DATE_COLLECTION/DATE_OF_ONSET_(M/D/YYYY)"]),
                     "date_results_received": importer.clean_date(row["DATE_RESULTS_RECEIVED"]),
-                    "import_raw_data": row.to_dict(),
+                    "import_raw_data": row_data_as_dict,
                     "import_source": self,
                     "lineage": importer.clean_str(row["LINEAGE"]),
                     "org_unit": org_unit,
@@ -1331,7 +1333,7 @@ class NotificationImport(models.Model):
                     notification.updated_at = timezone.now()
                     notification.save()
             except Exception:
-                errors.append(row.to_dict())
+                errors.append(row_data_as_dict)
 
         self.status = self.Status.DONE
         self.errors = errors

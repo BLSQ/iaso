@@ -59,6 +59,14 @@ const useStyles = makeStyles(theme => ({
             fontSize: 20,
         },
     },
+    verticalTop: {
+        verticalAlign: 'top',
+    },
+    checkBoxCell: {
+        padding: 0,
+        width: 30,
+    },
+    labelCell: { verticalAlign: 'top', width: '5vw' },
 }));
 
 export const ReviewOrgUnitChangesDetailsTableRow: FunctionComponent<Props> = ({
@@ -82,20 +90,11 @@ export const ReviewOrgUnitChangesDetailsTableRow: FunctionComponent<Props> = ({
             changeRequest.approved_fields.includes(`new_${field.key}`));
     return (
         <TableRow key={field.key}>
-            <TableCell sx={{ verticalAlign: 'top', width: '5vw' }}>
-                {field.label}
-            </TableCell>
-            <TableCell
-                sx={{
-                    verticalAlign: 'top',
-                }}
-            >
+            <TableCell className={classes.labelCell}>{field.label}</TableCell>
+            <TableCell className={classes.verticalTop}>
                 {field.oldValue}
             </TableCell>
             <TableCell
-                sx={{
-                    verticalAlign: 'top',
-                }}
                 className={classNames(
                     !isFetchingChangeRequest &&
                         isCellRejected &&
@@ -103,19 +102,14 @@ export const ReviewOrgUnitChangesDetailsTableRow: FunctionComponent<Props> = ({
                     !isFetchingChangeRequest &&
                         isCellApproved &&
                         classes.cellApproved,
-
                     !isCellApproved && !isCellRejected && classes.cell,
+                    classes.verticalTop,
                 )}
             >
                 {field.newValue}
             </TableCell>
             {isNew && (
-                <TableCell
-                    sx={{
-                        padding: 0,
-                        width: 30,
-                    }}
-                >
+                <TableCell className={classes.checkBoxCell}>
                     {field.isChanged && (
                         <Box
                             display="flex"

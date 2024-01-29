@@ -139,47 +139,40 @@ export const useNewFields = (
                 ),
             },
         };
-
         const newFields = orderBy(
-            Object.entries(changeRequest).reduce<NewOrgUnitField[]>(
-                (acc, [key, value]) => {
+            Object.entries(changeRequest)
+                .filter(([key]) => fieldDefinitions[key]) // Filter entries that are defined in fieldDefinitions
+                .map(([key, value]) => {
                     const originalKey = key.replace('new_', '');
                     const fieldDef = fieldDefinitions[key];
-                    if (fieldDef) {
-                        let oldValue = textPlaceholder;
-                        if (
-                            changeRequest.status !== 'new' &&
-                            changeRequest[`old_${originalKey}`]
-                        ) {
-                            oldValue = fieldDef.formatValue(
-                                changeRequest[`old_${originalKey}`],
-                            );
-                        } else if (orgUnit[originalKey]) {
-                            oldValue = fieldDef.formatValue(
-                                orgUnit[originalKey],
-                            );
-                        }
-                        const isChanged = Array.isArray(value)
-                            ? value.length > 0
-                            : Boolean(value);
-                        const newValue = isChanged
-                            ? fieldDef.formatValue(value)
-                            : oldValue;
-                        const { label, order } = fieldDef;
-                        acc.push({
-                            key: originalKey,
-                            label,
-                            isChanged,
-                            isSelected: false,
-                            newValue,
-                            oldValue,
-                            order,
-                        });
+                    let oldValue = textPlaceholder;
+                    if (
+                        changeRequest.status !== 'new' &&
+                        changeRequest[`old_${originalKey}`]
+                    ) {
+                        oldValue = fieldDef.formatValue(
+                            changeRequest[`old_${originalKey}`],
+                        );
+                    } else if (orgUnit[originalKey]) {
+                        oldValue = fieldDef.formatValue(orgUnit[originalKey]);
                     }
-                    return acc;
-                },
-                [],
-            ),
+                    const isChanged = Array.isArray(value)
+                        ? value.length > 0
+                        : Boolean(value);
+                    const newValue = isChanged
+                        ? fieldDef.formatValue(value)
+                        : oldValue;
+                    const { label, order } = fieldDef;
+                    return {
+                        key: originalKey,
+                        label,
+                        isChanged,
+                        isSelected: false,
+                        newValue,
+                        oldValue,
+                        order,
+                    };
+                }),
             ['order'],
             ['asc'],
         );

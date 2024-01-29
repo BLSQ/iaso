@@ -51,7 +51,9 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
                     color="primary"
                     data-test="cancel-button"
                 >
-                    {formatMessage(MESSAGES.cancel)}
+                    {isNew
+                        ? formatMessage(MESSAGES.cancel)
+                        : formatMessage(MESSAGES.close)}
                 </Button>
                 {isNew && (
                     <>

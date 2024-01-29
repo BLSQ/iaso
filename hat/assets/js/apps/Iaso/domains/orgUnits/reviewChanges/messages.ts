@@ -141,6 +141,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.changeRequest.comment',
         defaultMessage: 'Comment',
     },
+    close: {
+        id: 'iaso.label.close',
+        defaultMessage: 'Close',
+    },
 });
 
 export default MESSAGES;

@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Box, Typography, IconButton, Popover } from '@mui/material';
+import { Box, IconButton, Popover } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
 import { OrgUnitChangeRequestDetails } from '../types';
 import {
@@ -36,9 +36,7 @@ export const ReviewOrgUnitChangesDialogTitle: FunctionComponent<Props> = ({
             : 'inherit';
 
     return (
-        <Typography
-            variant="h5"
-            color="primary"
+        <Box
             sx={{
                 color: statusColor,
             }}
@@ -70,6 +68,6 @@ export const ReviewOrgUnitChangesDialogTitle: FunctionComponent<Props> = ({
                     />
                 </Popover>
             </Box>
-        </Typography>
+        </Box>
     );
 };

@@ -29,9 +29,9 @@ class MovementTypeEnum(enum.Enum):
 
 
 class VaccineStockCalculator:
-    def __init__(self, vaccine_stock: Union[VaccineStock, QuerySet]):
-        if isinstance(vaccine_stock, QuerySet):
-            vaccine_stock = vaccine_stock.first()
+    def __init__(self, vaccine_stock: VaccineStock):
+        if not isinstance(vaccine_stock, VaccineStock):
+            raise TypeError("vaccine_stock must be a VaccineStock object")
 
         self.vaccine_stock = vaccine_stock
         self.arrival_reports = VaccineArrivalReport.objects.filter(
@@ -68,6 +68,21 @@ class VaccineStockCalculator:
         return sum(report.unusable_vials_destroyed for report in self.destruction_reports)
 
 
+class VaccineStockListSerializer(serializers.ListSerializer):
+    @staticmethod
+    def calculate_for_instance(instance):
+        instance.calculator = VaccineStockCalculator(instance)
+
+    def to_representation(self, data):
+        """
+        List of object instances -> List of dicts of primitive datatypes.
+        """
+        # Calculate once for each instance
+        for instance in data:
+            self.calculate_for_instance(instance)
+        return [VaccineStockSerializer(instance).data for instance in data]
+
+
 class VaccineStockSerializer(serializers.ModelSerializer):
     country_name = serializers.CharField(source="country.name")
     country_id = serializers.IntegerField(source="country.id")
@@ -91,25 +106,22 @@ class VaccineStockSerializer(serializers.ModelSerializer):
             "stock_of_unusable_vials",
             "vials_destroyed",
         ]
-
-    def __init__(self, instance=None, data=None, **kwargs):
-        super().__init__(instance, data, **kwargs)
-        self.calculator = VaccineStockCalculator(self.instance)
+        list_serializer_class = VaccineStockListSerializer
 
     def get_vials_received(self, obj):
-        return self.calculator.get_vials_received()
+        return obj.calculator.get_vials_received()
 
     def get_vials_used(self, obj):
-        return self.calculator.get_vials_used()
+        return obj.calculator.get_vials_used()
 
     def get_stock_of_usable_vials(self, obj):
-        return self.calculator.get_stock_of_usable_vials()
+        return obj.calculator.get_stock_of_usable_vials()
 
     def get_stock_of_unusable_vials(self, obj):
-        return self.calculator.get_stock_of_unusable_vials()
+        return obj.calculator.get_stock_of_unusable_vials()
 
     def get_vials_destroyed(self, obj):
-        return self.calculator.get_vials_destroyed()
+        return obj.calculator.get_vials_destroyed()
 
 
 class VaccineStockManagementReadWritePerm(GenericReadWritePerm):
@@ -143,6 +155,33 @@ class StockManagementCustomFilter(filters.BaseFilterBackend):
 
 
 class VaccineStockManagementViewSet(ModelViewSet):
+    """
+    ViewSet for managing Vaccine Stock data.
+
+    This ViewSet provides actions to retrieve and manage stock information
+    for vaccines, including summaries of usable and unusable vials, and
+    detailed movements such as arrivals, destructions, and incidents.
+
+    Available endpoints :
+
+    GET /api/polio/vaccine/vaccine_stock/
+    Return a list of summary informations for a VaccineStock. (Used by the Vaccine Stock list view)
+
+    GET /api/polio/vaccine/vaccine_stock/{id}/
+    Return a specific item from the previous list.
+
+    GET /api/polio/vaccine/vaccine_stock/{id}/summary/
+    Return a summary of vaccine stock for a given VaccineStock ID (Used on detail page)
+
+    GET /api/polio/vaccine/vaccine_stock/{id}/usable_vials/
+    Return a detailed list of movements for usable vials associated with a given VaccineStock ID.
+
+    GET /api/polio/vaccine/vaccine_stock/{id}/unusable_vials/
+    Return a detailed list of movements for unusable vials associated with a given VaccineStock ID.
+
+
+    """
+
     permission_classes = [VaccineStockManagementReadWritePerm]
     serializer_class = VaccineStockSerializer
     http_method_names = ["get", "head", "options"]
@@ -152,8 +191,24 @@ class VaccineStockManagementViewSet(ModelViewSet):
     filter_backends = [SearchFilter, StockManagementCustomFilter]
     search_fields = ["vaccine", "country__name"]
 
+    # We need to override this method to add the calculator on the instance
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if isinstance(instance, VaccineStock):
+            instance.calculator = VaccineStockCalculator(instance)
+        else:
+            return Response({"error": "VaccineStock not found"}, status=status.HTTP_404_NOT_FOUND)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
     @action(detail=True, methods=["get"])
     def summary(self, request, pk=None):
+        """
+        Retrieve a summary of vaccine stock for a given VaccineStock ID.
+
+        The summary includes the country name, vaccine type, total usable and unusable vials,
+        and corresponding doses.
+        """
         if pk is None:
             return Response({"error": "No VaccineStock ID provided"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -177,6 +232,12 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
     @action(detail=True, methods=["get"])
     def usable_vials(self, request, pk=None):
+        """
+        Retrieve a detailed list of movements for usable vials associated with a given VaccineStock ID.
+
+        This includes information on stock arrivals, destructions, incidents, and outgoing stock movements.
+        Each movement is timestamped and includes the number of vials and doses affected.
+        """
         if pk is None:
             return Response({"error": "No VaccineStock ID provided"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -296,10 +357,13 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
     @action(detail=True, methods=["get"])
     def get_unusable_vials(self, request, pk=None):
-        pass
+        """
+        Retrieve a detailed list of movements for unusable vials associated with a given VaccineStock ID.
 
-    @action(detail=True, methods=["get"])
-    def get_unusable_vials(self, request, pk=None):
+        This includes information on outgoing stock movements and incident reports
+        that resulted in unusable vials, with each movement timestamped and including
+        the number of vials and doses affected.
+        """
         if pk is None:
             return Response({"error": "No VaccineStock ID provided"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -354,6 +418,13 @@ class VaccineStockManagementViewSet(ModelViewSet):
         return Response({"results": results})
 
     def get_queryset(self):
+        """
+        Get the queryset for VaccineStock objects.
+
+        The queryset is filtered by the account of the logged-in user and includes
+        related destruction reports, incident reports, and outgoing stock movements.
+        It is ordered by the VaccineStock ID.
+        """
         return (
             VaccineStock.objects.filter(account=self.request.user.iaso_profile.account)
             .prefetch_related("destructionreport_set", "incidentreport_set", "outgoingstockmovement_set")

@@ -689,17 +689,20 @@ class OrgUnitChangeRequest(models.Model):
 
     def save(self, *args, **kwargs):
         self.clean()
-        # Save old values.
-        self.old_parent = self.org_unit.parent
-        self.old_name = self.org_unit.name
-        self.old_org_unit_type = self.org_unit.org_unit_type
-        self.old_location = self.org_unit.location
-        self.old_opening_date = self.org_unit.opening_date
-        self.old_closed_date = self.org_unit.closed_date
+        is_new = self.pk is None
+        if is_new:
+            # Save old values.
+            self.old_parent = self.org_unit.parent
+            self.old_name = self.org_unit.name
+            self.old_org_unit_type = self.org_unit.org_unit_type
+            self.old_location = self.org_unit.location
+            self.old_opening_date = self.org_unit.opening_date
+            self.old_closed_date = self.org_unit.closed_date
         super().save(*args, **kwargs)
-        # Wait for the instance to have an ID to save m2m relations.
-        self.old_groups.set(self.org_unit.groups.all())
-        self.old_reference_instances.set(self.org_unit.reference_instances.all())
+        if is_new:
+            # Wait for the instance to have an ID to save old m2m relations.
+            self.old_groups.set(self.org_unit.groups.all())
+            self.old_reference_instances.set(self.org_unit.reference_instances.all())
 
     def clean(self, *args, **kwargs):
         super().clean()

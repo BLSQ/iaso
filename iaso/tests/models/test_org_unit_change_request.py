@@ -120,6 +120,12 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         self.assertEqual(change_request.old_closed_date, datetime.date(2055, 1, 1))
         self.assertCountEqual(change_request.old_reference_instances.all(), [self.new_instance1])
 
+        # Ensure updating a change_request won't override old values.
+        change_request.org_unit.name = "Another name"
+        change_request.org_unit.save()
+        change_request.save()
+        self.assertEqual(change_request.old_name, "Hôpital Général")
+
     def test_clean_approved_fields(self):
         approved_fields = ["new_name", "foo"]
         change_request = m.OrgUnitChangeRequest(org_unit=self.org_unit, approved_fields=approved_fields)

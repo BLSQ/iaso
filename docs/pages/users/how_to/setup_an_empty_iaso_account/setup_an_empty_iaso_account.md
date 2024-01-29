@@ -56,7 +56,7 @@ Make the source the default one
 
 
 
-# 6. Create a new (first) Version of the
+# 6. Create a new (first) Version of the data source
 
 
 You can import this first version 

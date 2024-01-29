@@ -22,8 +22,12 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
     parent_id = django_filters.NumberFilter(method="filter_parent_id", label=_("Parent ID"))
     groups = django_filters.CharFilter(method="filter_groups", label=_("Groups IDs (comma-separated)"))
     project = django_filters.NumberFilter(field_name="org_unit__org_unit_type__projects", label=_("Project ID"))
-    created_date_from = django_filters.CharFilter(lookup_expr="gte", field_name="created_at")
-    created_date_to = django_filters.CharFilter(lookup_expr="lte", field_name="created_at__date")
+    created_date_from = django_filters.DateFilter(
+        lookup_expr="gte", field_name="created_at__date", input_formats=["%d-%m-%Y"]
+    )
+    created_date_to = django_filters.DateFilter(
+        lookup_expr="lte", field_name="created_at__date", input_formats=["%d-%m-%Y"]
+    )
 
     class Meta:
         model = OrgUnitChangeRequest

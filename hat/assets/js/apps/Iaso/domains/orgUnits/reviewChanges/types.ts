@@ -10,6 +10,8 @@ export type ApproveOrgUnitParams = UrlParams & {
     groups?: string;
     org_unit_type_id?: string;
     status?: ChangeRequestValidationStatus;
+    created_date_from?: string;
+    created_date_to?: string;
 };
 export type Group = {
     id: number;

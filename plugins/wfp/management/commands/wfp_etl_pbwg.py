@@ -4,7 +4,7 @@ from itertools import groupby
 from operator import itemgetter
 from ...common import ETL
 import logging
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 

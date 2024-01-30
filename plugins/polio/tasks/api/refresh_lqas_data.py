@@ -8,11 +8,24 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend  # type:ignore
 from django.db.models import Q
 from rest_framework.decorators import action
+import jsonschema
 
 TASK_NAME = "Refresh LQAS data"
 NO_AUTHORIZED_COUNTRY_ERROR_MESSAGE = "No authorised org unit found for user"
 NO_AUTHORIZED_COUNTRY_ERROR = {"country_id": NO_AUTHORIZED_COUNTRY_ERROR_MESSAGE}
 LQAS_CONFIG_SLUG = "lqas-pipeline-config"
+NO_AUTHORIZED_COUNTRY_ERROR = {"country_id": "No authorised org unit found for user"}
+pipeline_config_schema = {
+    "type": "object",
+    "properties": {
+        "openhexa_token": {"type": "string"},
+        "openhexa_url": {"type": "string"},
+        "lqas_pipeline": {"type": "string"},
+        "oh_pipeline_target": {"type": "string"},
+        "lqas_pipeline_version": {"type": "number"},
+    },
+    "required": ["openhexa_token", "openhexa_url", "lqas_pipeline", "oh_pipeline_target", "lqas_pipeline_version"],
+}
 
 
 class RefreshLQASDataGetSerializer(serializers.Serializer):

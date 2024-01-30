@@ -209,6 +209,9 @@ class VaccineStockManagementViewSet(ModelViewSet):
     GET /api/polio/vaccine/vaccine_stock/
     Return a list of summary informations for a VaccineStock. (Used by the Vaccine Stock list view)
 
+    POST /api/polio/vaccine/vaccine_stock/
+    Add a new VaccineStock.
+
     GET /api/polio/vaccine/vaccine_stock/{id}/
     Return a specific item from the previous list.
 

@@ -6,7 +6,7 @@ import { Project } from '../../types/project';
 import MESSAGES from '../../../plannings/messages';
 
 export const useGetProjectsDropDown = (): UseQueryResult<
-    DropdownOptions<number>,
+    DropdownOptions<number>[],
     Error
 > => {
     return useSnackQuery({

@@ -29,6 +29,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.rounds',
         defaultMessage: 'Rounds',
     },
+    roundNumbers: {
+        id: 'iaso.polio.form.label.roundNumbers',
+        defaultMessage: 'Round number(s)',
+    },
     startDate: {
         id: 'iaso.label.dateFrom',
         defaultMessage: 'Start date',
@@ -44,6 +48,14 @@ const MESSAGES = defineMessages({
     doses_shipped: {
         id: 'iaso.polio.label.dosesShipped',
         defaultMessage: 'Doses shipped',
+    },
+    vials_shipped: {
+        id: 'iaso.polio.label.vialsShipped',
+        defaultMessage: 'Vials shipped',
+    },
+    vials_received: {
+        id: 'iaso.polio.label.vialsReceived',
+        defaultMessage: 'Vials received',
     },
     actions: {
         defaultMessage: 'Action(s)',

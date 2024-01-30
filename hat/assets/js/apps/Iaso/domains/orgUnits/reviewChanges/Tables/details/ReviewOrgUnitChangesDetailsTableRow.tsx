@@ -33,6 +33,9 @@ const useStyles = makeStyles(theme => ({
         '& .marker-custom.primary svg': {
             fill: `${theme.palette.error.main} !important`,
         },
+        '& h6': {
+            color: `${theme.palette.error.main} !important`,
+        },
     },
     cellApproved: {
         '& > a': {
@@ -44,6 +47,9 @@ const useStyles = makeStyles(theme => ({
         '& .marker-custom.primary svg': {
             fill: `${theme.palette.success.main} !important`,
         },
+        '& h6': {
+            color: `${theme.palette.success.main} !important`,
+        },
     },
     checkBoxContainer: {
         '& label': {
@@ -53,6 +59,14 @@ const useStyles = makeStyles(theme => ({
             fontSize: 20,
         },
     },
+    verticalTop: {
+        verticalAlign: 'top',
+    },
+    checkBoxCell: {
+        padding: 0,
+        width: 30,
+    },
+    labelCell: { verticalAlign: 'top', width: '5vw' },
 }));
 
 export const ReviewOrgUnitChangesDetailsTableRow: FunctionComponent<Props> = ({
@@ -65,16 +79,21 @@ export const ReviewOrgUnitChangesDetailsTableRow: FunctionComponent<Props> = ({
     const classes = useStyles();
     const isCellRejected =
         (field.isChanged && !field.isSelected && isNew) ||
-        changeRequest?.status === 'rejected';
+        (field.isChanged && changeRequest?.status === 'rejected') ||
+        (field.isChanged &&
+            changeRequest?.status === 'approved' &&
+            !changeRequest.approved_fields.includes(`new_${field.key}`));
     const isCellApproved =
         (field.isChanged && field.isSelected) ||
         (!isNew &&
             changeRequest?.status === 'approved' &&
-            changeRequest.approved_fields.includes(field.key));
+            changeRequest.approved_fields.includes(`new_${field.key}`));
     return (
         <TableRow key={field.key}>
-            <TableCell>{field.label}</TableCell>
-            <TableCell>{field.oldValue}</TableCell>
+            <TableCell className={classes.labelCell}>{field.label}</TableCell>
+            <TableCell className={classes.verticalTop}>
+                {field.oldValue}
+            </TableCell>
             <TableCell
                 className={classNames(
                     !isFetchingChangeRequest &&
@@ -83,14 +102,14 @@ export const ReviewOrgUnitChangesDetailsTableRow: FunctionComponent<Props> = ({
                     !isFetchingChangeRequest &&
                         isCellApproved &&
                         classes.cellApproved,
-
                     !isCellApproved && !isCellRejected && classes.cell,
+                    classes.verticalTop,
                 )}
             >
                 {field.newValue}
             </TableCell>
             {isNew && (
-                <TableCell>
+                <TableCell className={classes.checkBoxCell}>
                     {field.isChanged && (
                         <Box
                             display="flex"

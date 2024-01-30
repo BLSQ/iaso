@@ -126,7 +126,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                         </Grid>
                         <Grid item xs={6} md={3}>
                             <Field
-                                label={formatMessage(MESSAGES.rounds)}
+                                label={formatMessage(MESSAGES.roundNumbers)}
                                 name="vrf.rounds"
                                 component={MultiSelect}
                                 disabled={!values?.vrf?.vaccine_type}
@@ -172,6 +172,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                     name="vrf.wastage_rate_used_on_vrf"
                                     component={NumberInput}
                                     disabled={false}
+                                    numberInputOptions={{ suffix: '%' }}
                                 />
                             </Box>
                         </Grid>
@@ -252,13 +253,18 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                     </Grid>
                     <Grid container item xs={12} md={9} lg={6} spacing={2}>
                         <Grid item xs={12}>
-                            <TextArea
-                                value={values?.vrf?.comment ?? ''}
-                                // errors={errors.comment ? errors.comment : []}
-                                label={formatMessage(MESSAGES.comments)}
-                                onChange={onCommentChange}
-                                debounceTime={0}
-                            />
+                            {/* With MUI 5, the spacing isn't taken into account if there's only one <Grid> item
+                              so the <Box> is used to compensate and align the TextArea with the other fields
+                            */}
+                            <Box mr={1}>
+                                <TextArea
+                                    value={values?.vrf?.comment ?? ''}
+                                    // errors={errors.comment ? errors.comment : []}
+                                    label={formatMessage(MESSAGES.comments)}
+                                    onChange={onCommentChange}
+                                    debounceTime={0}
+                                />
+                            </Box>
                         </Grid>
                     </Grid>
                 </Grid>

@@ -2,11 +2,12 @@ import React, {
     ReactElement,
     useMemo,
     useState,
-    Fragment,
     FunctionComponent,
 } from 'react';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
+import orderBy from 'lodash/orderBy';
+import { Box } from '@mui/material';
 import {
     InstanceForChangeRequest,
     NestedGroup,
@@ -18,7 +19,7 @@ import { MarkerMap } from '../../../../components/maps/MarkerMapComponent';
 import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
 import { ShortOrgUnit } from '../../types/orgUnit';
 import MESSAGES from '../messages';
-import { LinkToInstance } from '../../../instances/components/LinkToInstance';
+import InstanceDetail from '../../../instances/compare/components/InstanceDetail';
 
 export type NewOrgUnitField = {
     key: string;
@@ -27,6 +28,7 @@ export type NewOrgUnitField = {
     newValue: ReactElement | string;
     oldValue: ReactElement | string;
     label: string;
+    order: number;
 };
 
 type UseNewFields = {
@@ -42,19 +44,17 @@ type ReferenceInstancesProps = {
 const ReferenceInstances: FunctionComponent<ReferenceInstancesProps> = ({
     instances,
 }) => {
-    if (!instances || instances.length === 0) {
-        return <>{textPlaceholder}</>;
-    }
-
     return (
         <>
-            {instances.map((instance, index) => (
-                <Fragment key={instance.id}>
-                    {index > 0 && ', '}
-                    <span>
-                        <LinkToInstance instanceId={`${instance.id}`} />
-                    </span>
-                </Fragment>
+            {!instances || (instances.length === 0 && textPlaceholder)}
+            {instances.map(instance => (
+                <Box mb={1} key={instance.id}>
+                    <InstanceDetail
+                        instanceId={`${instance.id}`}
+                        height="150px"
+                        titleVariant="subtitle2"
+                    />
+                </Box>
             ))}
         </>
     );
@@ -81,167 +81,106 @@ export const useNewFields = (
 ): UseNewFields => {
     const { formatMessage } = useSafeIntl();
     const [fields, setFields] = useState<NewOrgUnitField[]>([]);
-
     useMemo(() => {
         if (!changeRequest) {
             setFields([]);
             return;
         }
         const orgUnit = changeRequest.org_unit;
-        const newFields = Object.entries(changeRequest)
-
-            .map(([key, value]) => {
-                const originalKey = key.replace('_new', '');
-                switch (key) {
-                    case 'new_parent': {
-                        const oldValue = orgUnit?.parent ? (
-                            <LinkToOrgUnit orgUnit={orgUnit.parent} />
-                        ) : (
-                            textPlaceholder
+        const fieldDefinitions = {
+            new_name: {
+                label: formatMessage(MESSAGES.name),
+                order: 1,
+                formatValue: val => <span>{val.toString()}</span>,
+            },
+            new_parent: {
+                label: formatMessage(MESSAGES.parent),
+                order: 3,
+                formatValue: val => (
+                    <LinkToOrgUnit orgUnit={val as ShortOrgUnit} />
+                ),
+            },
+            new_org_unit_type: {
+                label: formatMessage(MESSAGES.orgUnitsType),
+                order: 2,
+                formatValue: val => (
+                    <span>{(val as NestedOrgUnitType).short_name}</span>
+                ),
+            },
+            new_groups: {
+                label: formatMessage(MESSAGES.groups),
+                order: 4,
+                formatValue: val => (
+                    <span>{getGroupsValue(val as NestedGroup[])}</span>
+                ),
+            },
+            new_location: {
+                label: formatMessage(MESSAGES.location),
+                order: 5,
+                formatValue: val => getLocationValue(val as NestedLocation),
+            },
+            new_opening_date: {
+                label: formatMessage(MESSAGES.openingDate),
+                order: 6,
+                formatValue: val => <span>{moment(val).format('L')}</span>,
+            },
+            new_closed_date: {
+                label: formatMessage(MESSAGES.closingDate),
+                order: 7,
+                formatValue: val => <span>{moment(val).format('L')}</span>,
+            },
+            new_reference_instances: {
+                label: formatMessage(MESSAGES.multiReferenceInstancesLabel),
+                order: 8,
+                formatValue: val => (
+                    <ReferenceInstances
+                        instances={val as InstanceForChangeRequest[]}
+                    />
+                ),
+            },
+        };
+        const newFields = orderBy(
+            Object.entries(changeRequest)
+                .filter(([key]) => fieldDefinitions[key]) // Filter entries that are defined in fieldDefinitions
+                .map(([key, value]) => {
+                    const originalKey = key.replace('new_', '');
+                    const fieldDef = fieldDefinitions[key];
+                    let oldValue = textPlaceholder;
+                    if (
+                        changeRequest.status !== 'new' &&
+                        changeRequest[`old_${originalKey}`]
+                    ) {
+                        oldValue = fieldDef.formatValue(
+                            changeRequest[`old_${originalKey}`],
                         );
-                        return {
-                            key: originalKey,
-                            label: formatMessage(MESSAGES.parent),
-                            isChanged: Boolean(value),
-                            isSelected: false,
-                            newValue: value ? (
-                                <LinkToOrgUnit
-                                    orgUnit={value as ShortOrgUnit}
-                                />
-                            ) : (
-                                oldValue
-                            ),
-                            oldValue,
-                        };
+                    } else if (orgUnit[originalKey]) {
+                        oldValue = fieldDef.formatValue(orgUnit[originalKey]);
                     }
-                    case 'new_org_unit_type': {
-                        const type = value as NestedOrgUnitType;
-                        const oldValue = orgUnit.org_unit_type
-                            ? orgUnit.org_unit_type.short_name
-                            : textPlaceholder;
-                        return {
-                            key: originalKey,
-                            label: formatMessage(MESSAGES.orgUnitsType),
-                            isChanged: Boolean(value),
-                            isSelected: false,
-                            newValue: type ? (
-                                <span>{type.short_name}</span>
-                            ) : (
-                                oldValue
-                            ),
-                            oldValue,
-                        };
-                    }
-                    case 'new_groups': {
-                        const groups = value as NestedGroup[];
-                        return {
-                            key: originalKey,
-                            label: formatMessage(MESSAGES.groups),
-                            isChanged: groups.length > 0,
-                            isSelected: false,
-                            newValue: (
-                                <span>
-                                    {getGroupsValue(
-                                        groups.length > 0
-                                            ? groups
-                                            : orgUnit.groups,
-                                    )}
-                                </span>
-                            ),
-                            oldValue: getGroupsValue(orgUnit.groups),
-                        };
-                    }
-                    case 'new_location': {
-                        const location = value as NestedLocation | undefined;
-                        const oldValue = orgUnit.location
-                            ? getLocationValue(orgUnit.location)
-                            : textPlaceholder;
-                        return {
-                            key: originalKey,
-                            label: formatMessage(MESSAGES.location),
-                            isChanged: Boolean(value),
-                            isSelected: false,
-                            newValue: location
-                                ? getLocationValue(location)
-                                : oldValue,
-                            oldValue,
-                        };
-                    }
-                    case 'new_opening_date':
-                    case 'new_closed_date': {
-                        const date = value as string | undefined;
-                        const oldValue = orgUnit[originalKey]
-                            ? moment(orgUnit[originalKey]).format('LTS')
-                            : textPlaceholder;
-                        return {
-                            key: originalKey,
-                            label:
-                                key === 'new_opening_date'
-                                    ? formatMessage(MESSAGES.openingDate)
-                                    : formatMessage(MESSAGES.closingDate),
-                            isChanged: Boolean(value),
-                            isSelected: false,
-                            newValue: date ? (
-                                <span>{moment(date).format('LTS')}</span>
-                            ) : (
-                                oldValue
-                            ),
-                            oldValue,
-                        };
-                    }
-                    // case 'new_location_accuracy': Org unit does not have accuracy in his payload
-                    case 'new_name': {
-                        const val = value as string | number | undefined;
-                        const oldValue = orgUnit[originalKey]
-                            ? orgUnit[originalKey]
-                            : textPlaceholder;
-                        return {
-                            key: originalKey,
-                            label: formatMessage(MESSAGES.name),
-                            isChanged: Boolean(value),
-                            isSelected: false,
-                            newValue: val ? (
-                                <span>{val.toString()}</span>
-                            ) : (
-                                oldValue
-                            ),
-                            oldValue,
-                        };
-                    }
-                    case 'new_reference_instances': {
-                        const instances = value as InstanceForChangeRequest[];
-                        return {
-                            key: originalKey,
-                            label: formatMessage(
-                                MESSAGES.multiReferenceInstancesLabel,
-                            ),
-                            isChanged: instances.length > 0,
-                            isSelected: false,
-                            newValue: (
-                                <ReferenceInstances
-                                    instances={
-                                        instances.length > 0
-                                            ? instances
-                                            : orgUnit.reference_instances
-                                    }
-                                />
-                            ),
-                            oldValue: (
-                                <ReferenceInstances
-                                    instances={orgUnit.reference_instances}
-                                />
-                            ),
-                        };
-                    }
-                    default:
-                        return null;
-                }
-            })
-            .filter(field => field !== null) as NewOrgUnitField[];
+                    const isChanged = Array.isArray(value)
+                        ? value.length > 0
+                        : Boolean(value);
+                    const newValue = isChanged
+                        ? fieldDef.formatValue(value)
+                        : oldValue;
+                    const { label, order } = fieldDef;
+                    return {
+                        key: originalKey,
+                        label,
+                        isChanged,
+                        isSelected: false,
+                        newValue,
+                        oldValue,
+                        order,
+                    };
+                }),
+            ['order'],
+            ['asc'],
+        );
+
         setFields(newFields);
     }, [changeRequest, formatMessage]);
 
-    const setSelected: UseNewFields['setSelected'] = key => {
+    const setSelected = key => {
         setFields(currentFields =>
             currentFields.map(field =>
                 field.key === key
@@ -250,6 +189,5 @@ export const useNewFields = (
             ),
         );
     };
-
     return { newFields: fields, setSelected };
 };

@@ -1,16 +1,19 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 
-import PropTypes from 'prop-types';
 import ArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
 import ArrowRight from '@mui/icons-material/KeyboardArrowRight';
 import Close from '@mui/icons-material/Close';
 
-import { Dialog, DialogContent, IconButton, Typography } from '@mui/material';
-import { withStyles } from '@mui/styles';
-import { commonStyles } from 'bluesquare-components';
+import {
+    Box,
+    Dialog,
+    DialogContent,
+    IconButton,
+    Typography,
+} from '@mui/material';
+import { ShortFile } from '../../domains/instances/types/instance';
 
-const styles = theme => ({
-    ...commonStyles(theme),
+const styles = {
     paper: {
         boxShadow: 'none',
         backgroundColor: 'transparent',
@@ -26,58 +29,67 @@ const styles = theme => ({
     image: {
         width: '110%',
         height: '95%',
-        objectFit: 'contain',
+        objectFit: 'contain' as const, // Explicitly cast the string to the 'contain' literal type
         maxWidth: '80vw',
     },
     prevButton: {
         position: 'fixed',
         top: '50%',
-        left: theme.spacing(2),
+        left: theme => theme.spacing(2),
         cursor: 'pointer',
-        marginTop: -35,
+        marginTop: '-35px',
     },
     nextButton: {
         position: 'fixed',
         top: '50%',
-        right: theme.spacing(2),
+        right: theme => theme.spacing(2),
         cursor: 'pointer',
-        marginTop: -35,
+        marginTop: '-35px',
     },
     closeButton: {
         position: 'fixed',
-        top: theme.spacing(2),
-        right: theme.spacing(2),
+        top: theme => theme.spacing(2),
+        right: theme => theme.spacing(2),
         cursor: 'pointer',
     },
     navIcon: {
-        fontSize: 50,
+        fontSize: '50px',
         color: 'white',
     },
     closeIcon: {
-        fontSize: 30,
+        fontSize: '30px',
         color: 'white',
     },
     count: {
         color: 'white',
         position: 'fixed',
-        bottom: theme.spacing(2),
-        right: theme.spacing(2),
+        bottom: theme => theme.spacing(2),
+        right: theme => theme.spacing(2),
     },
     infos: {
         color: 'white',
         position: 'fixed',
-        bottom: theme.spacing(2),
-        left: theme.spacing(2),
+        bottom: theme => theme.spacing(2),
+        left: theme => theme.spacing(2),
     },
-});
+};
 
-const ImageGallery = ({
+type Props = {
+    closeLightbox: () => void;
+    imageList: ShortFile[];
+    currentIndex: number;
+    // eslint-disable-next-line no-unused-vars
+    setCurrentIndex: (index: number) => void;
+    // eslint-disable-next-line no-unused-vars
+    getExtraInfos?: (image: ShortFile) => React.ReactNode;
+};
+
+const ImageGallery: FunctionComponent<Props> = ({
     closeLightbox,
-    classes,
     imageList,
     currentIndex,
     setCurrentIndex,
-    getExtraInfos,
+    getExtraInfos = () => null,
 }) => {
     const currentImg = imageList[currentIndex];
     if (!currentImg) return null;
@@ -86,7 +98,7 @@ const ImageGallery = ({
         <>
             <Dialog
                 classes={{
-                    paper: classes.paper,
+                    paper: styles.paper as any,
                 }}
                 open
                 onClose={(event, reason) => {
@@ -96,63 +108,41 @@ const ImageGallery = ({
                 }}
                 maxWidth="xl"
             >
-                <DialogContent className={classes.content}>
+                <DialogContent sx={styles.content}>
                     {currentIndex > 0 && (
                         <IconButton
                             color="primary"
-                            className={classes.prevButton}
+                            sx={styles.prevButton}
                             onClick={() => setCurrentIndex(currentIndex - 1)}
                         >
-                            <ArrowLeft className={classes.navIcon} />
+                            <ArrowLeft sx={styles.navIcon} />
                         </IconButton>
                     )}
                     {currentIndex + 1 < imageList.length && (
                         <IconButton
                             color="primary"
-                            className={classes.nextButton}
+                            sx={styles.nextButton}
                             onClick={() => setCurrentIndex(currentIndex + 1)}
                         >
-                            <ArrowRight className={classes.navIcon} />
+                            <ArrowRight sx={styles.navIcon} />
                         </IconButton>
                     )}
                     <IconButton
                         color="primary"
-                        className={classes.closeButton}
+                        sx={styles.closeButton}
                         onClick={() => closeLightbox()}
                     >
-                        <Close className={classes.closeIcon} />
+                        <Close sx={styles.closeIcon} />
                     </IconButton>
-                    {}
-                    <div className={classes.infos}>
-                        {getExtraInfos(currentImg)}
-                    </div>
-                    <Typography
-                        color="primary"
-                        type="h6"
-                        className={classes.count}
-                    >
+                    <Box sx={styles.infos}>{getExtraInfos(currentImg)}</Box>
+                    <Typography color="primary" variant="h6" sx={styles.count}>
                         {`${currentIndex + 1} / ${imageList.length}`}
                     </Typography>
-                    <img className={classes.image} alt="" src={currentImgSrc} />
+                    <img style={styles.image} alt="" src={currentImgSrc} />
                 </DialogContent>
             </Dialog>
         </>
     );
 };
 
-ImageGallery.defaultProps = {
-    imageList: [],
-    currentIndex: 0,
-    getExtraInfos: () => null,
-};
-
-ImageGallery.propTypes = {
-    classes: PropTypes.object.isRequired,
-    closeLightbox: PropTypes.func.isRequired,
-    setCurrentIndex: PropTypes.func.isRequired,
-    imageList: PropTypes.array,
-    currentIndex: PropTypes.number,
-    getExtraInfos: PropTypes.func,
-};
-
-export default withStyles(styles)(ImageGallery);
+export default ImageGallery;

@@ -1,34 +1,41 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, TypographyVariant } from '@mui/material';
 import {
     useSafeIntl,
     LoadingSpinner,
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
-import { makeStyles } from '@mui/styles';
-import WidgetPaper from '../../../../components/papers/WidgetPaperComponent';
+
 import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
 import MESSAGES from '../messages';
 import InstanceDetailsInfos from '../../components/InstanceDetailsInfos';
 import InstanceDetailsLocation from '../../components/InstanceDetailsLocation';
 import InstanceFileContent from '../../components/InstanceFileContent';
 import { Instance } from '../../types/instance';
-import { Link } from 'react-router';
-
-const useStyles = makeStyles({
-    linkButton: {
-        color: 'inherit',
-        textDecoration: 'none',
-        display: 'flex',
-    },
-});
+import InstancesFilesList from '../../components/InstancesFilesListComponent';
+import { getInstancesFilesList } from '../../utils';
+import { Accordion } from '../../../../components/Accordion/Accordion';
+import { AccordionSummary } from '../../../../components/Accordion/AccordionSummary';
+import { AccordionDetails } from '../../../../components/Accordion/AccordionDetails';
 
 type Props = {
     data?: Instance;
     isLoading: boolean;
     isError: boolean;
     showTitle?: boolean;
-    elevation?: number;
+    titleVariant?: TypographyVariant;
+    height?: string | number;
+};
+
+const styles = {
+    iconContainer: {
+        display: 'inline-block',
+        ml: 1,
+        '& button a': {
+            width: '30px',
+            height: '30px',
+        },
+    },
 };
 
 export const InstanceDetailRaw: FunctionComponent<Props> = ({
@@ -36,14 +43,14 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
     isLoading,
     isError,
     showTitle = true,
-    elevation = 1,
+    titleVariant = 'h5',
+    height = '70vh',
 }) => {
     const { formatMessage } = useSafeIntl();
-    const classes = useStyles();
 
     if (isLoading)
         return (
-            <Box height="70vh">
+            <Box height={height}>
                 <LoadingSpinner
                     fixed={false}
                     transparent
@@ -59,44 +66,82 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
     return (
         <>
             {showTitle && (
-                <Box mb={4}>
-                    <Typography variant="h5" color="secondary">
-                        <section>
-                            {`${formatMessage(MESSAGES.submissionTitle)} - ${
-                                data?.id
-                            }`}
-                            <IconButtonComponent
-                                url={`/forms/submission/instanceId/${data?.id}`}
-                                icon="remove-red-eye"
-                                tooltipMessage={MESSAGES.viewSubmissionDetails}
-                            />
-                        </section>
+                <Box display="flex" alignItems="center">
+                    <Typography variant={titleVariant} color="secondary">
+                        {`${formatMessage(MESSAGES.submissionTitle)} - ${
+                            data?.id
+                        }`}
                     </Typography>
+                    <Box
+                        display="inline-block"
+                        ml={1}
+                        sx={styles.iconContainer}
+                    >
+                        <IconButtonComponent
+                            size="small"
+                            iconSize="small"
+                            url={`/forms/submission/instanceId/${data?.id}`}
+                            icon="remove-red-eye"
+                            tooltipMessage={MESSAGES.viewSubmissionDetails}
+                        />
+                    </Box>
                 </Box>
             )}
-            <WidgetPaper
-                expandable
-                isExpanded={false}
-                title={formatMessage(MESSAGES.infos)}
-                padded
-                elevation={elevation}
-            >
-                <InstanceDetailsInfos currentInstance={data} />
-            </WidgetPaper>
-            <WidgetPaper
-                expandable
-                isExpanded={false}
-                title={formatMessage(MESSAGES.location)}
-                elevation={elevation}
-            >
-                <InstanceDetailsLocation currentInstance={data} />
-            </WidgetPaper>
-            <WidgetPaper
-                title={formatMessage(MESSAGES.form)}
-                elevation={elevation}
-            >
-                <InstanceFileContent instance={data} />
-            </WidgetPaper>
+            <Box>
+                <Accordion defaultExpanded>
+                    <AccordionSummary
+                        aria-controls="instance-infos"
+                        id="instance-infos"
+                    >
+                        {formatMessage(MESSAGES.infos)}
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <Box p={2}>
+                            <InstanceDetailsInfos currentInstance={data} />
+                        </Box>
+                    </AccordionDetails>
+                </Accordion>
+
+                <Accordion>
+                    <AccordionSummary
+                        aria-controls="instance-location"
+                        id="instance-location"
+                    >
+                        {formatMessage(MESSAGES.location)}
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <Box p={2}>
+                            <InstanceDetailsLocation currentInstance={data} />
+                        </Box>
+                    </AccordionDetails>
+                </Accordion>
+                <Accordion>
+                    <AccordionSummary
+                        aria-controls="instance-form"
+                        id="instance-form"
+                    >
+                        {formatMessage(MESSAGES.form)}
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <InstanceFileContent instance={data} />
+                    </AccordionDetails>
+                </Accordion>
+                <Accordion>
+                    <AccordionSummary
+                        aria-controls="instance-files"
+                        id="instance-files"
+                    >
+                        {formatMessage(MESSAGES.files)}
+                    </AccordionSummary>
+                    <AccordionDetails>
+                        <InstancesFilesList
+                            fetchDetails={false}
+                            instanceDetail={data}
+                            files={getInstancesFilesList(data ? [data] : [])}
+                        />
+                    </AccordionDetails>
+                </Accordion>
+            </Box>
         </>
     );
 };

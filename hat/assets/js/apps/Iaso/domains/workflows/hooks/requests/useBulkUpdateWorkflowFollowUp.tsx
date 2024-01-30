@@ -12,6 +12,6 @@ export const useBulkUpdateWorkflowFollowUp = (
 ): UseMutationResult =>
     useSnackMutation({
         mutationFn: (data: FollowUps[]) => bulkUpdateWorkflowFollowUp(data),
-        invalidateQueryKey: ['workflowVersion'],
+        invalidateQueryKey: ['workflowVersions'],
         options: { onSuccess: onSuccess || (() => null) },
     });

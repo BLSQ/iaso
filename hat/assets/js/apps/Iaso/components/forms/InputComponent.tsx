@@ -81,8 +81,10 @@ export type InputComponentProps = {
     min?: number;
     max?: number;
     blockForbiddenChars?: boolean;
-    onErrorChange?: () => void;
+    onErrorChange?: (hasError: boolean) => void;
     numberInputOptions?: {
+        prefix?: string;
+        suffix?: string;
         min?: number;
         max?: number;
         decimalScale?: number;
@@ -91,6 +93,7 @@ export type InputComponentProps = {
     };
     // eslint-disable-next-line no-unused-vars
     setFieldError?: (keyValue: string, message: string) => void;
+    autoComplete?: string;
 };
 
 const useLocalizedNumberInputOptions = (
@@ -140,13 +143,13 @@ const InputComponent: React.FC<InputComponentProps> = ({
     onErrorChange = () => null,
     numberInputOptions = {},
     setFieldError = () => null,
+    autoComplete = 'off',
 }) => {
     const [displayPassword, setDisplayPassword] = useState(false);
     const { formatMessage } = useSafeIntl();
 
     const localizedNumberOptions =
         useLocalizedNumberInputOptions(numberInputOptions);
-
     const toggleDisplayPassword = () => {
         setDisplayPassword(!displayPassword);
     };
@@ -240,7 +243,6 @@ const InputComponent: React.FC<InputComponentProps> = ({
                     <ArrayFieldInput
                         label={labelText}
                         fieldList={value}
-                        name={keyValue}
                         baseId={keyValue}
                         updateList={list => onChange(keyValue, list)}
                     />
@@ -259,6 +261,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
                         value={value}
                         blockForbiddenChars={blockForbiddenChars}
                         onErrorChange={onErrorChange}
+                        autoComplete={autoComplete}
                     />
                 );
             case 'checkbox':
@@ -278,7 +281,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
                         className={className}
                         name={keyValue}
                         label={labelText}
-                        error={errors}
+                        errors={errors}
                         onChange={newValue => onChange(keyValue, newValue)}
                         options={options}
                         value={value}

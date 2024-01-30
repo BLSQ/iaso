@@ -101,6 +101,98 @@ from (select TO_CHAR(gen_date.generate_series, 'YYYY/MM') as line_label,
                cross join (VALUES ('foo'), ('bar'), ('baz')) as categories (name)) as data
 ```
 
+# Searching in Org Units, Org Unit Types
+Here are some examples of queries to find Org Units, their types, reference forms and everything linked to the hierarchy of a specific Org Unit.
+
+As we are using Postgre's [ltree extension](https://www.postgresql.org/docs/9.6/ltree.html) and [django-ltree](https://github.com/mariocesar/django-ltree) to modelize this hierarchy, specific SQL operators are available to search in a performant way and queries can be cumbersome.
+
+Let's say you have a OrgUnit with ID : **XXXXXX**
+
+### Find the hierarchy linked to this Org Unit.
+```SQL
+SELECT * FROM iaso_orgunit WHERE path ~ '*.XXXXXX.*'
+```
+
+### Find the related Org Unit Types :
+```sql
+SELECT * FROM iaso_orgunittype WHERE id IN 
+	(SELECT org_unit_type_id FROM iaso_orgunit WHERE path ~ '*.XXXXXX.*')
+```
+
+### Reference forms of these Org Unit Types
+```sql
+SELECT * FROM iaso_form WHERE id IN 
+	(SELECT reference_form_id FROM iaso_orgunittype WHERE id IN 
+		(SELECT org_unit_type_id FROM iaso_orgunit WHERE path ~ '*.XXXXXX.*'))
+```
+
+### Find the Form Versions of these Reference Forms.
+```sql
+SELECT * FROM iaso_formversion WHERE id IN 
+	(SELECT id FROM iaso_form WHERE id IN 
+		(SELECT reference_form_id FROM iaso_orgunittype WHERE id IN 
+			(SELECT org_unit_type_id FROM iaso_orgunit WHERE path ~ '*.XXXXXX.*')))
+```
+
+### The Instances linked to that hierarchy
+```sql
+SELECT * FROM iaso_instance WHERE org_unit_id IN 
+	(SELECT id FROM iaso_orgunit WHERE path ~ '*.104133.*')
+```
+
+### Finding the projects linked to that hierarchy
+```sql
+SELECT * FROM iaso_project WHERE id in 
+	(SELECT project_id FROM iaso_instance WHERE org_unit_id IN 
+		(SELECT id FROM iaso_orgunit WHERE path ~ '*.104133.*'))
+```
+
+### Devices linked to that hierarchy
+```sql
+SELECT * FROM iaso_device WHERE id in 
+	(SELECT device_id FROM iaso_instance WHERE org_unit_id IN 
+		(SELECT id FROM iaso_orgunit WHERE path ~ '*.104133.*'))
+```
+
+### Accounts linked to these projects
+```sql
+SELECT * FROM iaso_account WHERE id IN 
+	(SELECT account_id FROM iaso_project WHERE id in 
+		(SELECT project_id FROM iaso_instance WHERE org_unit_id IN 
+			(SELECT id FROM iaso_orgunit WHERE path ~ '*.104133.*')))
+```
+
+### Source versions linked to these projects
+```sql
+SELECT * FROM iaso_sourceversion WHERE id IN
+	(SELECT default_version_id FROM iaso_account WHERE id IN 
+		(SELECT account_id FROM iaso_project WHERE id in 
+			(SELECT project_id FROM iaso_instance WHERE org_unit_id IN 
+				(SELECT id FROM iaso_orgunit WHERE path ~ '*.104133.*'))))
+```
+
+### Datasources linked to these versions
+
+```sql
+SELECT * FROM iaso_datasource WHERE id IN (SELECT data_source_id FROM iaso_sourceversion WHERE id IN
+(SELECT default_version_id FROM iaso_account WHERE id IN 
+	(SELECT account_id FROM iaso_project WHERE id in 
+		(SELECT project_id FROM iaso_instance WHERE org_unit_id IN 
+			(SELECT id FROM iaso_orgunit WHERE path ~ '*.104133.*')))))
+```
+
+
+### Credentials linked these datasources
+
+```sql
+SELECT * FROM iaso_externalcredentials WHERE id IN (SELECT credentials_id FROM iaso_datasource WHERE id IN (SELECT data_source_id FROM iaso_sourceversion WHERE id IN
+(SELECT default_version_id FROM iaso_account WHERE id IN 
+	(SELECT account_id FROM iaso_project WHERE id in 
+		(SELECT project_id FROM iaso_instance WHERE org_unit_id IN 
+			(SELECT id FROM iaso_orgunit WHERE path ~ '*.104133.*'))))))
+```
+
+
 
 # Restrictions
 This functionality is severly restricted to prevent the risk of data leak and security issues:

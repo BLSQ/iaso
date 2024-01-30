@@ -16,7 +16,7 @@ class Command(BaseCommand):
             form.save()
             project.forms.set([form])
             project.save()
-            with open("testdata/seed-data-command-cvs_survey.xls", "rb") as form_1_version_1_file:
+            with open("testdata/seed-data-command-cvs_survey.xlsx", "rb") as form_1_version_1_file:
                 survey = parsing.parse_xls_form(form_1_version_1_file)
                 form_version_1 = FormVersion.objects.create_for_form_and_survey(
                     form=form, survey=survey, xls_file=File(form_1_version_1_file)

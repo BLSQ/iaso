@@ -28,18 +28,18 @@ export const ReviewOrgUnitChangesDetailsTableHead: FunctionComponent<Props> = ({
                         {formatMessage(MESSAGES.label)}
                     </Box>
                 </TableCell>
-                <TableCell width={300}>
+                <TableCell width={350}>
                     <Box className={classes.head}>
                         {formatMessage(MESSAGES.oldValue)}
                     </Box>
                 </TableCell>
-                <TableCell width={300}>
+                <TableCell width={350}>
                     <Box className={classes.head}>
                         {formatMessage(MESSAGES.newValue)}
                     </Box>
                 </TableCell>
                 {isNew && (
-                    <TableCell width={100}>
+                    <TableCell width={30}>
                         <Box
                             className={classes.head}
                             display="flex"

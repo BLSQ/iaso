@@ -33,7 +33,7 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
     const handleConfirm = useCallback(() => {
         submitChangeRequest({
             status: 'approved',
-            approved_fields: selectedFields.map(field => field.key),
+            approved_fields: selectedFields.map(field => `new_${field.key}`),
         });
     }, [selectedFields, submitChangeRequest]);
     return (
@@ -51,7 +51,9 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
                     color="primary"
                     data-test="cancel-button"
                 >
-                    {formatMessage(MESSAGES.cancel)}
+                    {isNew
+                        ? formatMessage(MESSAGES.cancel)
+                        : formatMessage(MESSAGES.close)}
                 </Button>
                 {isNew && (
                     <>

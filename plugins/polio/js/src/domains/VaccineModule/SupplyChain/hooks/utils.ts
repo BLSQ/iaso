@@ -84,7 +84,7 @@ const canSaveTab = (
         return canSaveArrayTab(PREALERT, initialValues, values);
     }
     if (tab === VAR) {
-        return canSaveArrayTab(PREALERT, initialValues, values);
+        return canSaveArrayTab(VAR, initialValues, values);
     }
     return false;
 };

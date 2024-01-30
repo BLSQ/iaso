@@ -202,6 +202,7 @@ class Round(models.Model):
     started_at = models.DateField(null=True, blank=True)
     number = models.IntegerField(null=True, blank=True)
     campaign = models.ForeignKey("Campaign", related_name="rounds", on_delete=models.PROTECT, null=True)
+    budget = models.ForeignKey("Budget", related_name="rounds", on_delete=models.PROTECT, null=True)
     # With the current situation/UI, all rounds must have an end date. However, there might be legacy campaigns/rounds
     # floating around in production, and therefore consumer code must assume that this field might be NULL
     ended_at = models.DateField(null=True, blank=True)
@@ -476,6 +477,12 @@ class Campaign(SoftDeletableModel):
     preperadness_spreadsheet_url = models.URLField(null=True, blank=True)
     # DEPRECATED -> Moved to round.
     preperadness_sync_status = models.CharField(max_length=10, default="FINISHED", choices=PREPAREDNESS_SYNC_STATUS)
+
+    # ----------------------------------------------------------------------------------------
+    # START fields moved to the `Budget` model. **********************************************
+    # NOTE: "deprecated" fields were not moved.
+    # TODO: migrate data from `Campaign` to `Budget`, adapt code, then remove those fields.
+
     # Budget
     budget_status = models.CharField(max_length=100, null=True, blank=True)
     # Deprecated
@@ -581,6 +588,9 @@ class Campaign(SoftDeletableModel):
         verbose_name=_("Budget Submission"),
     )
     ## End of budget form
+
+    # END fields moved to the `Budget` model. ************************************************
+    # ----------------------------------------------------------------------------------------
 
     def __str__(self):
         return f"{self.epid} {self.obr_name}"

@@ -93,9 +93,7 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
 
     @action(detail=False, methods=["POST"], serializer_class=TransitionToSerializer)
     def transition_to(self, request):
-        "Transition campaign to next state. Use multipart/form-data to send files"
-        # data = request.data.dict()
-        # data['links'] = request.data.getlist('links')
+        """Transition campaign to next state. Use multipart/form-data to send files."""
         data = request.data
         serializer = TransitionToSerializer(data=data, context={"request": request})
         serializer.is_valid(raise_exception=True)

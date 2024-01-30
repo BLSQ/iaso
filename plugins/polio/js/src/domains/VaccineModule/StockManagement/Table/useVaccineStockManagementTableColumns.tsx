@@ -24,7 +24,7 @@ export const useVaccineStockManagementTableColumns = (): Column[] => {
             {
                 Header: formatMessage(MESSAGES.vialsReceived),
                 accessor: 'vials_received',
-                sortable: true,
+                sortable: false,
                 Cell: settings => (
                     <NumberCell value={settings.row.original.vials_received} />
                 ),
@@ -32,7 +32,7 @@ export const useVaccineStockManagementTableColumns = (): Column[] => {
             {
                 Header: formatMessage(MESSAGES.vialsUsed),
                 accessor: 'vials_used',
-                sortable: true,
+                sortable: false,
                 Cell: settings => (
                     <NumberCell value={settings.row.original.vials_used} />
                 ),
@@ -40,7 +40,7 @@ export const useVaccineStockManagementTableColumns = (): Column[] => {
             {
                 Header: formatMessage(MESSAGES.stockUsableVials),
                 accessor: 'stock_of_usable_vials',
-                sortable: true,
+                sortable: false,
                 Cell: settings => (
                     <NumberCell
                         value={settings.row.original.stock_of_usable_vials}
@@ -48,20 +48,9 @@ export const useVaccineStockManagementTableColumns = (): Column[] => {
                 ),
             },
             {
-                Header: formatMessage(MESSAGES.leftoverPercentage),
-                accessor: 'leftover_ratio',
-                sortable: true,
-                Cell: settings => (
-                    <NumberCell
-                        value={settings.row.original.leftover_ratio}
-                        decimalScale={2}
-                    />
-                ),
-            },
-            {
                 Header: formatMessage(MESSAGES.stockUnusableVials),
                 accessor: 'stock_of_unusable_vials',
-                sortable: true,
+                sortable: false,
                 Cell: settings => (
                     <NumberCell
                         value={settings.row.original.stock_of_unusable_vials}
@@ -71,7 +60,7 @@ export const useVaccineStockManagementTableColumns = (): Column[] => {
             {
                 Header: formatMessage(MESSAGES.vialsDestroyed),
                 accessor: 'vials_destroyed',
-                sortable: true,
+                sortable: false,
                 Cell: settings => (
                     <NumberCell value={settings.row.original.vials_destroyed} />
                 ),

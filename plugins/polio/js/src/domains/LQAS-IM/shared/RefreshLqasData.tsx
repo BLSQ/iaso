@@ -9,15 +9,9 @@ import moment from 'moment';
 import { Box, Button } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { useQueryClient } from 'react-query';
-import {
-    Task,
-    TaskApiResponse,
-} from '../../../../../../../hat/assets/js/apps/Iaso/domains/tasks/types';
+import { Task } from '../../../../../../../hat/assets/js/apps/Iaso/domains/tasks/types';
 import { useGetLatestLQASIMUpdate } from '../../../hooks/useGetLatestLQASIMUpdate';
-import {
-    useCreateTask,
-    useTaskMonitor,
-} from '../../../../../../../hat/assets/js/apps/Iaso/hooks/taskMonitor';
+import { useCreateTask } from '../../../../../../../hat/assets/js/apps/Iaso/hooks/taskMonitor';
 import MESSAGES from '../../../constants/messages';
 
 type Props = {
@@ -57,15 +51,8 @@ export const RefreshLqasData: FunctionComponent<Props> = ({
 }) => {
     const taskUrl = category === 'lqas' ? LQAS_TASK_ENDPOINT : undefined;
     const { formatMessage } = useSafeIntl();
-    const [taskId, setTaskId] = useState<number>();
     const [lastTaskStatus, setlastTaskStatus] = useState<string | undefined>();
     const queryClient = useQueryClient();
-    const { data: isDataUpdating, isFetching: isFetchingTaskStatus } =
-        useTaskMonitor({
-            taskId,
-            endpoint: taskUrl,
-            invalidateQueries: [category, 'get-latest-task-run'],
-        });
     const { mutateAsync: createRefreshTask } = useCreateTask({
         endpoint: taskUrl,
     });
@@ -78,11 +65,7 @@ export const RefreshLqasData: FunctionComponent<Props> = ({
         useLastUpdate(latestManualRefresh);
     const launchRefresh = useCallback(() => {
         if (countryId) {
-            createRefreshTask({ country_id: countryId }).then(
-                (task: TaskApiResponse<any>) => {
-                    setTaskId(task.task.id);
-                },
-            );
+            createRefreshTask({ country_id: countryId });
         }
     }, [countryId, createRefreshTask]);
 
@@ -95,10 +78,7 @@ export const RefreshLqasData: FunctionComponent<Props> = ({
         }
     }, [lastTaskStatus, latestManualRefresh?.status, queryClient]);
 
-    const disableButton =
-        isDataUpdating ||
-        isFetchingTaskStatus ||
-        Boolean(latestManualRefresh?.status === 'RUNNING'); // TODO make enum with statuses
+    const disableButton = Boolean(latestManualRefresh?.status === 'RUNNING'); // TODO make enum with statuses
     return (
         <>
             {countryId && (

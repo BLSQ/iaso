@@ -62,10 +62,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.usable',
         defaultMessage: 'Usable',
     },
-    leftoverPercentage: {
-        id: 'iaso.label.leftoverPercentage',
-        defaultMessage: '% leftover on quantities ordered',
-    },
     vialsUsed: {
         id: 'iaso.label.vialsUsed',
         defaultMessage: 'Vials used',

@@ -24,7 +24,6 @@ const useStyle = makeStyles(theme => ({
         borderLeft: 'none !important',
         borderRight: 'none !important',
         borderBottom: `1px solid ${theme.palette.ligthGray.border}  !important`,
-        minWidth: '200px',
     },
     tableCellCalculated: {
         color: theme.palette.gray.main,

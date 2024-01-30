@@ -1,36 +1,34 @@
 import datetime
 import json
-from datetime import date
+import math
 from collections import defaultdict
+from datetime import date
 from typing import Any, Tuple, Union
 from uuid import uuid4
 
-import pandas as pd
-
-from beanstalk_worker import task_decorator
-
 import django.db.models.manager
+import pandas as pd
 from django.contrib.auth.models import AnonymousUser, User
+from django.contrib.postgres.fields import ArrayField
 from django.core.files.base import File
 from django.core.serializers.json import DjangoJSONEncoder
+from django.core.validators import RegexValidator
 from django.db import models
-from django.db.models import Q, Sum, QuerySet
+from django.db.models import Q, QuerySet, Sum
 from django.db.models.expressions import RawSQL
 from django.db.models.functions import Coalesce
+from django.utils import timezone
 from django.utils.translation import gettext as _
 from gspread.utils import extract_id_from_url  # type: ignore
-from django.utils import timezone
-from django.core.validators import RegexValidator
+from translated_fields import TranslatedField
+
+from beanstalk_worker import task_decorator
 from iaso.models import Group, OrgUnit
 from iaso.models.base import Account, Task
 from iaso.models.microplanning import Team
-from iaso.utils.models.soft_deletable import SoftDeletableModel, DefaultSoftDeletableManager
+from iaso.utils.models.soft_deletable import DefaultSoftDeletableManager, SoftDeletableModel
 from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
-from translated_fields import TranslatedField
-
-from django.contrib.postgres.fields import ArrayField
-
 
 # noinspection PyUnresolvedReferences
 # from .budget.models import BudgetStep, BudgetStepFile
@@ -1021,10 +1019,21 @@ class VaccinePreAlert(SoftDeletableModel):
     expiration_date = models.DateField(blank=True, null=True, default=None)
     doses_shipped = models.PositiveIntegerField(blank=True, null=True, default=None)
     doses_per_vial = models.PositiveIntegerField(blank=True, null=True, default=None)
+    vials_shipped = models.PositiveIntegerField(blank=True, null=True, default=None)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     objects = DefaultSoftDeletableManager()
+
+    def save(self, *args, **kwargs):
+        self.doses_per_vial = self.get_doses_per_vial()
+
+        if self.doses_shipped is None:
+            self.vials_shipped = None
+        else:
+            self.vials_shipped = math.ceil(self.doses_shipped / self.doses_per_vial)
+
+        super().save(*args, **kwargs)
 
     def get_doses_per_vial(self):
         return DOSES_PER_VIAL[self.request_form.vaccine_type]
@@ -1039,11 +1048,32 @@ class VaccineArrivalReport(SoftDeletableModel):
     expiration_date = models.DateField(blank=True, null=True, default=None)
     doses_shipped = models.PositiveIntegerField(blank=True, null=True, default=None)
     doses_per_vial = models.PositiveIntegerField(blank=True, null=True, default=None)
+    vials_shipped = models.PositiveIntegerField(blank=True, null=True, default=None)
+    vials_received = models.PositiveIntegerField(blank=True, null=True, default=None)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     objects = DefaultSoftDeletableManager()
+
+    def get_doses_per_vial(self):
+        return DOSES_PER_VIAL[self.request_form.vaccine_type]
+
+    def save(self, *args, **kwargs):
+        # We overwrite these values because they are not editable by the user
+        self.doses_per_vial = self.get_doses_per_vial()
+
+        if self.doses_shipped is None:
+            self.vials_shipped = None
+        else:
+            self.vials_shipped = math.ceil(self.doses_shipped / self.doses_per_vial)
+
+        if self.doses_received is None:
+            self.vials_received = None
+        else:
+            self.vials_received = math.ceil(self.doses_received / self.doses_per_vial)
+
+        super().save(*args, **kwargs)
 
 
 class VaccineStock(models.Model):
@@ -1060,6 +1090,9 @@ class VaccineStock(models.Model):
 
     class Meta:
         unique_together = ("country", "vaccine")
+
+    def __str__(self):
+        return f"{self.country} - {self.vaccine}"
 
 
 # Form A
@@ -1262,6 +1295,8 @@ class NotificationImport(models.Model):
         )
 
         for idx, row in df.iterrows():
+            # Remove columns not in `EXPECTED_XLSX_COL_NAMES`.
+            row_data_as_dict = {k: v for k, v in row.to_dict().items() if k in self.EXPECTED_XLSX_COL_NAMES}
             try:
                 epid_number = importer.clean_str(row["EPID_NUMBER"])
                 org_unit = importer.find_org_unit_in_caches(
@@ -1274,7 +1309,7 @@ class NotificationImport(models.Model):
                     "closest_match_vdpv2": importer.clean_str(row["CLOSEST_MATCH_VDPV2"]),
                     "date_of_onset": importer.clean_date(row["DATE_COLLECTION/DATE_OF_ONSET_(M/D/YYYY)"]),
                     "date_results_received": importer.clean_date(row["DATE_RESULTS_RECEIVED"]),
-                    "import_raw_data": row.to_dict(),
+                    "import_raw_data": row_data_as_dict,
                     "import_source": self,
                     "lineage": importer.clean_str(row["LINEAGE"]),
                     "org_unit": org_unit,
@@ -1298,7 +1333,7 @@ class NotificationImport(models.Model):
                     notification.updated_at = timezone.now()
                     notification.save()
             except Exception:
-                errors.append(row.to_dict())
+                errors.append(row_data_as_dict)
 
         self.status = self.Status.DONE
         self.errors = errors

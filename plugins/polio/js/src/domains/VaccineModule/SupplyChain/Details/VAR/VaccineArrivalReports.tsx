@@ -14,7 +14,7 @@ const emptyArrivalReport = {
     expiration_date: undefined,
     doses_shipped: undefined,
     doses_received: undefined,
-    doses_per_vial: 20,
+    doses_per_vial: 20, //this is hardcoded in backend too, we need to think about it.
 };
 export const VaccineArrivalReports: FunctionComponent<Props> = ({
     className,

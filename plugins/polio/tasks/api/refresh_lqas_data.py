@@ -1,4 +1,5 @@
 import logging
+from django.shortcuts import get_object_or_404
 from gql import Client, gql
 from gql.transport.requests import RequestsHTTPTransport
 from datetime import datetime
@@ -13,10 +14,24 @@ from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend  # type:ignore
 from django.db.models import Q
 from rest_framework.decorators import action
+import jsonschema
+
+from plugins.polio.models import Config
 
 logger = logging.getLogger(__name__)
 TASK_NAME = "Refresh LQAS data"
 NO_AUTHORIZED_COUNTRY_ERROR = {"country_id": "No authorised org unit found for user"}
+pipeline_config_schema = {
+    "type": "object",
+    "properties": {
+        "openhexa_token": {"type": "string"},
+        "openhexa_url": {"type": "string"},
+        "lqas_pipeline": {"type": "string"},
+        "oh_pipeline_target": {"type": "string"},
+        "lqas_pipeline_version": {"type": "number"},
+    },
+    "required": ["openhexa_token", "openhexa_url", "lqas_pipeline", "oh_pipeline_target", "lqas_pipeline_version"],
+}
 
 
 class RefreshLQASDataSerializer(serializers.Serializer):
@@ -136,10 +151,26 @@ class RefreshLQASDataViewset(ModelViewSet):
         return Response({"task": TaskSerializer(instance=task).data})
 
     def refresh_lqas_data(self, country_id=None, task_id=None):
+        try:
+            pipeline_config = get_object_or_404(Config, slug="lqas-pipeline-config")
+        except:
+            logger.exception("Could not fetch openhexa config")
+            return ERRORED
+        try:
+            jsonschema.validate(instance=pipeline_config.content, schema=pipeline_config_schema)
+            lqas_pipeline_version = pipeline_config.content["lqas_pipeline_version"]
+            oh_pipeline_target = pipeline_config.content["oh_pipeline_target"]
+            lqas_pipeline = pipeline_config.content["lqas_pipeline"]
+            openhexa_url = pipeline_config.content["openhexa_url"]
+            openhexa_token = pipeline_config.content["openhexa_token"]
+        except:
+            logger.exception("Invalid openhexa config")
+            return ERRORED
+
         transport = RequestsHTTPTransport(
-            url=settings.OPENHEXA_URL,
+            url=openhexa_url,
             verify=True,
-            headers={"Authorization": f"Bearer {settings.OPENHEXA_TOKEN}"},
+            headers={"Authorization": f"Bearer {openhexa_token}"},
         )
         client = Client(transport=transport, fetch_schema_from_transport=True)
         get_runs = gql(
@@ -156,7 +187,7 @@ class RefreshLQASDataViewset(ModelViewSet):
             }
         }
         """
-            % (settings.LQAS_PIPELINE)
+            % (lqas_pipeline)
         )
         try:
             latest_runs = client.execute(get_runs)
@@ -176,7 +207,7 @@ class RefreshLQASDataViewset(ModelViewSet):
             logger.exception("Could not fetch pipeline runs")
             return ERRORED
 
-        config = {"target": settings.OH_PIPELINE_TARGET}
+        config = {"target": oh_pipeline_target}
 
         if country_id:
             config["country_id"] = country_id
@@ -184,9 +215,9 @@ class RefreshLQASDataViewset(ModelViewSet):
             config["task_id"] = task_id
         # We can specify a version in the env in case the latest version gets bugged
         mutation_input = (
-            {"id": settings.LQAS_PIPELINE, "version": int(settings.LQAS_PIPELINE_VERSION), "config": config}
-            if settings.LQAS_PIPELINE_VERSION
-            else {"id": settings.LQAS_PIPELINE, "config": config}
+            {"id": lqas_pipeline, "version": int(lqas_pipeline_version), "config": config}
+            if lqas_pipeline_version
+            else {"id": lqas_pipeline, "config": config}
         )
         try:
             run_mutation = gql(

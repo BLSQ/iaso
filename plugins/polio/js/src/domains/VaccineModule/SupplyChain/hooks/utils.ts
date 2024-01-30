@@ -40,11 +40,13 @@ const areArrayElementsChanged = (
 ): boolean => {
     return Boolean(
         newElements.find(el => {
+            // We need to loop on object keys because when setting a field to undefined
+            // formik may remove it from the form state, so we can't use isEqual or structuredClone
             const keys = Object.keys(el);
             const result = keys.find(
                 key =>
-                    key !== 'doses_per_vial' &&
-                    key !== 'vials_shipped' &&
+                    key !== 'doses_per_vial' && // this key is not sent to the backend so it's not relevant
+                    key !== 'vials_shipped' && // idem
                     el[key] !== undefined,
             );
 
@@ -62,9 +64,11 @@ const canSaveArrayTab = (
         ? // @ts-ignore we check that values[tab] is not undefined, so the ts error is wrong
           values[tab].slice(values[tab].length - 1)
         : [];
+    // If there's no new preAlert/arrivalReport, we just check that values have changed
     if (newElements.length === 0) {
         return !isEqual(initialValues[tab], values[tab]);
     }
+    // If an element has been added, we check that it's not empty
     return areArrayElementsChanged(newElements);
 };
 

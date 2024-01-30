@@ -124,6 +124,17 @@ class VaccineStockSerializer(serializers.ModelSerializer):
         return obj.calculator.get_vials_destroyed()
 
 
+class VaccineStockCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VaccineStock
+        fields = ["country", "vaccine"]
+
+    def create(self, validated_data):
+        validated_data["account"] = self.context["request"].user.iaso_profile.account
+
+        return VaccineStock.objects.create(**validated_data)
+
+
 class VaccineStockManagementReadWritePerm(GenericReadWritePerm):
     read_perm = permission.POLIO_VACCINE_STOCK_MANAGEMENT_READ
     write_perm = permission.POLIO_VACCINE_STOCK_MANAGEMENT_WRITE
@@ -164,18 +175,25 @@ class OutgoingStockMovementViewSet(ModelViewSet):
     serializer_class = OutgoingStockMovementSerializer
     allowed_methods = ["get", "post", "head", "options", "patch", "delete"]
 
-    def create(self, request, vaccine_stock_pk=None):
-        serializer = OutgoingStockMovementSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(vaccine_stock_id=vaccine_stock_pk)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    # def create(self, request, vaccine_stock_pk=None):
+    #     vaccine_stock_id = self.request.query_params.get("vaccine_stock_id")
+
+    #     serializer = OutgoingStockMovementSerializer(data=request.data)
+    #     if serializer.is_valid():
+    #         serializer.save(vaccine_stock_id=vaccine_stock_id)
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #     else:
+    #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get_queryset(self):
-        return OutgoingStockMovement.objects.filter(
-            vaccine_stock=self.kwargs["vaccine_stock_pk"], vaccine_stock__account=self.request.user.iaso_profile.account
-        )
+        vaccine_stock_id = self.request.query_params.get("vaccine_stock_id")
+
+        if vaccine_stock_id is None:
+            return OutgoingStockMovement.objects.filter(vaccine_stock__account=self.request.user.iaso_profile.account)
+        else:
+            return OutgoingStockMovement.objects.filter(
+                vaccine_stock=vaccine_stock_id, vaccine_stock__account=self.request.user.iaso_profile.account
+            )
 
 
 class VaccineStockManagementViewSet(ModelViewSet):
@@ -209,7 +227,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
     permission_classes = [VaccineStockManagementReadWritePerm]
     serializer_class = VaccineStockSerializer
-    http_method_names = ["get", "head", "options"]
+    http_method_names = ["get", "head", "options", "post"]
 
     model = VaccineStock
 
@@ -225,6 +243,20 @@ class VaccineStockManagementViewSet(ModelViewSet):
             return Response({"error": "VaccineStock not found"}, status=status.HTTP_404_NOT_FOUND)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+
+    def create(self, request):
+        """
+        Add a new VaccineStock.
+
+        This endpoint is used to add a new VaccineStock to the database.
+        The request body should include the country ID and vaccine type.
+        """
+        serializer = VaccineStockCreateSerializer(data=request.data, context={"request": request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response({"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=["get"])
     def summary(self, request, pk=None):
@@ -441,6 +473,12 @@ class VaccineStockManagementViewSet(ModelViewSet):
         if page is not None:
             return paginator.get_paginated_response(page)
         return Response({"results": results})
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return VaccineStockCreateSerializer
+        else:
+            return VaccineStockSerializer
 
     def get_queryset(self):
         """

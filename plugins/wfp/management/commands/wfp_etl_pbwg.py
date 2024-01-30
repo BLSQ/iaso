@@ -4,7 +4,7 @@ from itertools import groupby
 from operator import itemgetter
 from ...common import ETL
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 logger = logging.getLogger(__name__)
 
@@ -110,14 +110,11 @@ class PBWG:
                                 next_visit_date[:10], "%Y-%m-%d"
                             ).date() + timedelta(days=int(next_visit_days))
 
-                    followUpVisitsAtNextVisit = ETL().followup_visits_at_next_visit_date(
-                        visits,
-                        anthropometric_visit_forms,
-                        next_visit_date[:10],
-                        nextSecondVisitDate,
+                    missed_followup_visit = ETL().missed_followup_visit(
+                        visits, anthropometric_visit_forms, next_visit_date[:10], nextSecondVisitDate, next_visit_days
                     )
-                    # Missed 2 consecutives visits
-                    if current_journey.get("exit_type", None) != "cured" and len(followUpVisitsAtNextVisit) < 2:
+
+                    if current_journey.get("exit_type", None) is None and missed_followup_visit > 1:
                         current_journey["exit_type"] = "defaulter"
 
                 current_journey["steps"].append(visit)

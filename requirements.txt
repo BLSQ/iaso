@@ -19,8 +19,6 @@ djangorestframework_simplejwt==5.3.1  # https://github.com/jazzband/djangorestfr
 drf-yasg==1.21.7  # https://github.com/axnsan12/drf-yasg/tags
 pyjwt==1.7.1  # https://github.com/jpadilla/pyjwt/tags
 
-drf-nested-routers==0.93.5 # https://github.com/alanjds/drf-nested-routers
-
 # Redis.
 # ------------------------------------------------------------------------------
 redis==4.6.0  # https://github.com/redis/redis/tags

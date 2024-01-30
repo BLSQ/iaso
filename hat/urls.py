@@ -63,19 +63,10 @@ for plugin_name in settings.PLUGINS:
     urls_module_name = "plugins." + plugin_name + ".urls"
     urls_module = importlib.util.find_spec(urls_module_name)  # checking if the urls module exists for this plugin
     if urls_module:
-        urls_imported_module = importlib.import_module(urls_module_name)
         print("importing urls for plugin", plugin_name)
-        if (
-            hasattr(urls_imported_module, "no_plugin_name_in_path")
-            and urls_imported_module.no_plugin_name_in_path is True
-        ):
-            urlpatterns = urlpatterns + [
-                path("", include(urls_module_name)),
-            ]
-        else:
-            urlpatterns = urlpatterns + [
-                path(plugin_name + "/", include(urls_module_name)),
-            ]
+        urlpatterns = urlpatterns + [
+            path(plugin_name + "/", include(urls_module_name)),
+        ]
 
 
 # Swagger config

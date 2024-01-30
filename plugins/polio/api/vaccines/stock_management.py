@@ -154,6 +154,30 @@ class StockManagementCustomFilter(filters.BaseFilterBackend):
         return queryset
 
 
+class OutgoingStockMovementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OutgoingStockMovement
+        fields = "__all__"
+
+
+class OutgoingStockMovementViewSet(ModelViewSet):
+    serializer_class = OutgoingStockMovementSerializer
+    allowed_methods = ["get", "post", "head", "options", "patch", "delete"]
+
+    def create(self, request, vaccine_stock_pk=None):
+        serializer = OutgoingStockMovementSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(vaccine_stock_id=vaccine_stock_pk)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get_queryset(self):
+        return OutgoingStockMovement.objects.filter(
+            vaccine_stock=self.kwargs["vaccine_stock_pk"], vaccine_stock__account=self.request.user.iaso_profile.account
+        )
+
+
 class VaccineStockManagementViewSet(ModelViewSet):
     """
     ViewSet for managing Vaccine Stock data.
@@ -178,6 +202,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
     GET /api/polio/vaccine/vaccine_stock/{id}/unusable_vials/
     Return a detailed list of movements for unusable vials associated with a given VaccineStock ID.
+
 
 
     """

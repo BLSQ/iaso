@@ -1,4 +1,5 @@
-from rest_framework import routers
+# from rest_framework import routers
+from rest_framework_nested import routers
 
 from plugins.polio.api.campaigns.campaign_groups import CampaignGroupViewSet
 from plugins.polio.api.campaigns.campaigns import CampaignViewSet
@@ -24,38 +25,49 @@ from plugins.polio.api.vaccines.vaccine_authorization import VaccineAuthorizatio
 from plugins.polio.budget.api import BudgetCampaignViewSet, BudgetStepViewSet, WorkflowViewSet
 from plugins.polio.tasks.api.create_refresh_preparedness_data import RefreshPreparednessLaucherViewSet
 from plugins.polio.api.vaccines.supply_chain import VaccineRequestFormViewSet
-from plugins.polio.api.vaccines.stock_management import VaccineStockManagementViewSet
+from plugins.polio.api.vaccines.stock_management import VaccineStockManagementViewSet, OutgoingStockMovementViewSet
 
 from plugins.polio.tasks.api.refresh_lqas_data import RefreshLQASDataViewset
 
-
 router = routers.SimpleRouter()
-router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")
-router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
-router.register(r"polio/budget", BudgetCampaignViewSet, basename="BudgetCampaign")
-router.register(r"polio/budgetsteps", BudgetStepViewSet, basename="BudgetStep")
-router.register(r"polio/workflow", WorkflowViewSet, basename="BudgetWorkflow")
-router.register(r"polio/campaignsgroup", CampaignGroupViewSet, basename="campaigngroup")
-router.register(r"polio/preparedness_dashboard", PreparednessDashboardViewSet, basename="preparedness_dashboard")
-router.register(r"polio/imstats", IMStatsViewSet, basename="imstats")
-router.register(r"polio/vaccines", VaccineStocksViewSet, basename="vaccines")
-router.register(r"polio/forma", FormAStocksViewSet, basename="forma")
-router.register(r"polio/v2/forma", FormAStocksViewSetV2, basename="forma")
-router.register(r"polio/countryusersgroup", CountryUsersGroupViewSet, basename="countryusersgroup")
-router.register(r"polio/orgunitspercampaign", OrgUnitsPerCampaignViewset, basename="orgunitspercampaign")
-router.register(r"polio/configs", ConfigViewSet, basename="polioconfigs")
-router.register(r"polio/datelogs", RoundDateHistoryEntryViewset, basename="datelogs")
-router.register(r"polio/lqasim/countries", CountriesWithLqasIMConfigViewSet, basename="lqasimcountries")
-router.register(r"polio/lqasmap/country", LQASCountryViewset, basename="lqascountry")
-router.register(r"polio/lqasmap/global", LQASIMGlobalMapViewSet, basename="lqasmapglobal")
-router.register(r"polio/lqasmap/zoomin", LQASIMZoominMapViewSet, basename="lqasmapzoomin")
-router.register(r"polio/lqasmap/zoominbackground", LQASIMZoominMapBackgroundViewSet, basename="lqasmapzoominbackground")
-router.register(r"polio/vaccineauthorizations", VaccineAuthorizationViewSet, basename="vaccine_authorizations")
-router.register(r"polio/powerbirefresh", LaunchPowerBIRefreshViewSet, basename="powerbirefresh")
-router.register(r"tasks/create/refreshpreparedness", RefreshPreparednessLaucherViewSet, basename="refresh_preparedness")
-router.register(r"polio/rounds", RoundViewSet, basename="rounds")
-router.register(r"polio/reasonsfordelay", ReasonForDelayViewSet, basename="reasonsfordelay")
-router.register(r"polio/tasks/refreshlqas", RefreshLQASDataViewset, basename="refreshlqas")
-router.register(r"polio/vaccine/request_forms", VaccineRequestFormViewSet, basename="vaccine_request_forms")
-router.register(r"polio/vaccine/vaccine_stock", VaccineStockManagementViewSet, basename="vaccine_stocks")
-router.register(r"polio/notifications", NotificationViewSet, basename="notifications")
+router.register(r"api/polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")
+router.register(r"api/polio/campaigns", CampaignViewSet, basename="Campaign")
+router.register(r"api/polio/budget", BudgetCampaignViewSet, basename="BudgetCampaign")
+router.register(r"api/polio/budgetsteps", BudgetStepViewSet, basename="BudgetStep")
+router.register(r"api/polio/workflow", WorkflowViewSet, basename="BudgetWorkflow")
+router.register(r"api/polio/campaignsgroup", CampaignGroupViewSet, basename="campaigngroup")
+router.register(r"api/polio/preparedness_dashboard", PreparednessDashboardViewSet, basename="preparedness_dashboard")
+router.register(r"api/polio/imstats", IMStatsViewSet, basename="imstats")
+router.register(r"api/polio/vaccines", VaccineStocksViewSet, basename="vaccines")
+router.register(r"api/polio/forma", FormAStocksViewSet, basename="forma")
+router.register(r"api/polio/v2/forma", FormAStocksViewSetV2, basename="forma")
+router.register(r"api/polio/countryusersgroup", CountryUsersGroupViewSet, basename="countryusersgroup")
+router.register(r"api/polio/orgunitspercampaign", OrgUnitsPerCampaignViewset, basename="orgunitspercampaign")
+router.register(r"api/polio/configs", ConfigViewSet, basename="polioconfigs")
+router.register(r"api/polio/datelogs", RoundDateHistoryEntryViewset, basename="datelogs")
+router.register(r"api/polio/lqasim/countries", CountriesWithLqasIMConfigViewSet, basename="lqasimcountries")
+router.register(r"api/polio/lqasmap/country", LQASCountryViewset, basename="lqascountry")
+router.register(r"api/polio/lqasmap/global", LQASIMGlobalMapViewSet, basename="lqasmapglobal")
+router.register(r"api/polio/lqasmap/zoomin", LQASIMZoominMapViewSet, basename="lqasmapzoomin")
+router.register(
+    r"api/polio/lqasmap/zoominbackground", LQASIMZoominMapBackgroundViewSet, basename="lqasmapzoominbackground"
+)
+router.register(r"api/polio/vaccineauthorizations", VaccineAuthorizationViewSet, basename="vaccine_authorizations")
+router.register(r"api/polio/powerbirefresh", LaunchPowerBIRefreshViewSet, basename="powerbirefresh")
+router.register(r"api/polio/rounds", RoundViewSet, basename="rounds")
+router.register(r"api/polio/reasonsfordelay", ReasonForDelayViewSet, basename="reasonsfordelay")
+router.register(r"api/polio/tasks/refreshlqas", RefreshLQASDataViewset, basename="refreshlqas")
+router.register(r"api/polio/vaccine/request_forms", VaccineRequestFormViewSet, basename="vaccine_request_forms")
+router.register(r"api/polio/vaccine/vaccine_stock", VaccineStockManagementViewSet, basename="vaccine_stocks")
+router.register(r"api/polio/notifications", NotificationViewSet, basename="notifications")
+
+router.register(
+    r"api/tasks/create/refreshpreparedness", RefreshPreparednessLaucherViewSet, basename="refresh_preparedness"
+)
+
+nested_router = routers.NestedSimpleRouter(router, r"api/polio/vaccine/vaccine_stock", lookup="vaccine_stock")
+nested_router.register(
+    r"outgoing_stock_movement",
+    OutgoingStockMovementViewSet,
+    basename="outgoing-stock-movement",
+)

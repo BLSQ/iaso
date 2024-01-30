@@ -157,48 +157,57 @@ class TeamAPITestCase(APITestCase):
         self.assertEqual(file["filename"], fake_file.name)
 
     def test_step_files(self):
-        "With file and links"
+        """With file and links."""
         self.client.force_login(self.user)
         prev_budget_step_count = BudgetStep.objects.count()
-        r = self.client.get("/api/polio/budget/")
-        j = self.assertJSONResponse(r, 200)
-        campaigns = j["results"]
+        response = self.client.get("/api/polio/budget/")
+        response_data = self.assertJSONResponse(response, 200)
+
+        campaigns = response_data["results"]
         for c in campaigns:
             self.assertEqual(c["obr_name"], "test campaign")
 
         fake_file = StringIO("hello world")
         fake_file.name = "mon_fichier.txt"
-        r = self.client.post(
+
+        response = self.client.post(
             "/api/polio/budget/transition_to/",
             data={
                 "transition_key": "submit_budget",
-                "campaign": self.campaign.id,
+                "round": self.round.id,
                 "comment": "hello world2",
                 "files": [fake_file],
             },
         )
-        j = self.assertJSONResponse(r, 201)
-        self.assertEqual(j["result"], "success")
-        step_id = j["id"]
-        s = BudgetStep.objects.get(id=step_id)
+        response_data = self.assertJSONResponse(response, 201)
+        self.assertEqual(response_data["result"], "success")
 
-        # check that we have only created one step
+        step_id = response_data["id"]
+        budget_step = BudgetStep.objects.get(id=step_id)
+
+        # Check the relation: BudgetStep ----> Budget <---- Round
+        self.round.refresh_from_db()
+        self.assertEqual(budget_step.budget, self.round.budget)
+
+        # Check that we have only created one step.
         new_budget_step_count = BudgetStep.objects.count()
         self.assertEqual(prev_budget_step_count + 1, new_budget_step_count)
 
-        self.assertEqual(s.files.count(), 1)
-        r = self.client.get(f"/api/polio/budgetsteps/{s.id}/")
-        j = self.assertJSONResponse(r, 200)
-        f = j["files"][0]
-        self.assertTrue(f["file"].startswith("http"))  # should be an url
-        self.assertEqual(f["filename"], fake_file.name)
-        file_id = s.files.first().id
-        self.assertEqual(f["id"], file_id)
-        self.assertEqual(f["permanent_url"], f"/api/polio/budgetsteps/{s.id}/files/{file_id}/")
-        r = self.client.get(f"/api/polio/budgetsteps/{s.id}/files/{file_id}/")
-        self.assertIsInstance(r, HttpResponse)
-        self.assertEqual(r.status_code, status.HTTP_302_FOUND, r)
-        self.assertTrue(len(r.url) > 0)
+        self.assertEqual(budget_step.files.count(), 1)
+        response = self.client.get(f"/api/polio/budgetsteps/{budget_step.id}/")
+        response_data = self.assertJSONResponse(response, 200)
+        file = response_data["files"][0]
+        self.assertTrue(file["file"].startswith("http"))  # should be an url
+        self.assertEqual(file["filename"], fake_file.name)
+
+        file_id = budget_step.files.first().id
+        self.assertEqual(file["id"], file_id)
+        self.assertEqual(file["permanent_url"], f"/api/polio/budgetsteps/{budget_step.id}/files/{file_id}/")
+
+        response = self.client.get(f"/api/polio/budgetsteps/{budget_step.id}/files/{file_id}/")
+        self.assertIsInstance(response, HttpResponse)
+        self.assertEqual(response.status_code, status.HTTP_302_FOUND, response)
+        self.assertTrue(len(response.url) > 0)
 
     def test_transition_to_link(self):
         self.client.force_login(self.user)

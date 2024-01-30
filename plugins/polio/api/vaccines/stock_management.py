@@ -174,16 +174,7 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
 class OutgoingStockMovementViewSet(ModelViewSet):
     serializer_class = OutgoingStockMovementSerializer
     allowed_methods = ["get", "post", "head", "options", "patch", "delete"]
-
-    # def create(self, request, vaccine_stock_pk=None):
-    #     vaccine_stock_id = self.request.query_params.get("vaccine_stock_id")
-
-    #     serializer = OutgoingStockMovementSerializer(data=request.data)
-    #     if serializer.is_valid():
-    #         serializer.save(vaccine_stock_id=vaccine_stock_id)
-    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
-    #     else:
-    #         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    permission_classes = [VaccineStockManagementReadWritePerm]
 
     def get_queryset(self):
         vaccine_stock_id = self.request.query_params.get("vaccine_stock_id")
@@ -192,6 +183,50 @@ class OutgoingStockMovementViewSet(ModelViewSet):
             return OutgoingStockMovement.objects.filter(vaccine_stock__account=self.request.user.iaso_profile.account)
         else:
             return OutgoingStockMovement.objects.filter(
+                vaccine_stock=vaccine_stock_id, vaccine_stock__account=self.request.user.iaso_profile.account
+            )
+
+
+class IncidentReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = IncidentReport
+        fields = "__all__"
+
+
+class IncidentReportViewSet(ModelViewSet):
+    serializer_class = IncidentReportSerializer
+    allowed_methods = ["get", "post", "head", "options", "patch", "delete"]
+    permission_classes = [VaccineStockManagementReadWritePerm]
+
+    def get_queryset(self):
+        vaccine_stock_id = self.request.query_params.get("vaccine_stock_id")
+
+        if vaccine_stock_id is None:
+            return IncidentReport.objects.filter(vaccine_stock__account=self.request.user.iaso_profile.account)
+        else:
+            return IncidentReport.objects.filter(
+                vaccine_stock=vaccine_stock_id, vaccine_stock__account=self.request.user.iaso_profile.account
+            )
+
+
+class DestructionReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DestructionReport
+        fields = "__all__"
+
+
+class DestructionReportViewSet(ModelViewSet):
+    serializer_class = DestructionReportSerializer
+    allowed_methods = ["get", "post", "head", "options", "patch", "delete"]
+    permission_classes = [VaccineStockManagementReadWritePerm]
+
+    def get_queryset(self):
+        vaccine_stock_id = self.request.query_params.get("vaccine_stock_id")
+
+        if vaccine_stock_id is None:
+            return DestructionReport.objects.filter(vaccine_stock__account=self.request.user.iaso_profile.account)
+        else:
+            return DestructionReport.objects.filter(
                 vaccine_stock=vaccine_stock_id, vaccine_stock__account=self.request.user.iaso_profile.account
             )
 

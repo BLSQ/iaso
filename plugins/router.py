@@ -11,6 +11,3 @@ for plugin_name in settings.PLUGINS:
         router.registry.extend(api.router.registry)
     else:
         print(f"No router for plugin {plugin_name}")
-
-    if hasattr(api, "nested_router"):
-        router.registry.extend(api.nested_router.registry)

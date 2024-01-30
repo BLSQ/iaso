@@ -9,10 +9,18 @@ from rest_framework import serializers
 
 from iaso.api.common import DynamicFieldsModelSerializer
 from iaso.models.microplanning import Team
-from plugins.polio.models import Campaign
+from plugins.polio.models import Campaign, Round
 from plugins.polio.api.campaigns.campaigns import CampaignSerializer
 from plugins.polio.api.shared_serializers import UserSerializer
-from .models import BudgetStep, BudgetStepFile, BudgetStepLink, model_field_exists, send_budget_mails, get_workflow
+from .models import (
+    BudgetStep,
+    BudgetStepFile,
+    BudgetStepLink,
+    model_field_exists,
+    send_budget_mails,
+    get_workflow,
+    Budget,
+)
 from .workflow import next_transitions, can_user_transition, Category, effective_teams
 
 
@@ -361,7 +369,7 @@ class BudgetLinkSerializer(serializers.ModelSerializer):
 
 class TransitionToSerializer(serializers.Serializer):
     transition_key = serializers.CharField()
-    campaign = serializers.PrimaryKeyRelatedField(queryset=Campaign.objects.all())
+    round = serializers.PrimaryKeyRelatedField(queryset=Round.objects.all())
     comment = serializers.CharField(required=False)
     files = serializers.ListField(child=serializers.FileField(), required=False)
     links = serializers.JSONField(required=False)
@@ -369,21 +377,20 @@ class TransitionToSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         return attrs
-        pass
 
     def validate_links(self, value):
         return value
 
     def save(self, **kwargs):
         data = self.validated_data
-        campaign: Campaign = data["campaign"]
+        round: Round = data["round"]
+        campaign: Campaign = round.campaign
         user = self.context["request"].user
         transition_key = data["transition_key"]
 
         workflow = get_workflow()
 
         n_transitions = next_transitions(workflow.transitions, campaign.budget_current_state_key)
-        # find transition
         transitions = [t for t in n_transitions if t.key == transition_key]
         if not transitions:
             raise serializers.ValidationError(
@@ -411,17 +418,25 @@ class TransitionToSerializer(serializers.Serializer):
             created_by_team = Team.objects.filter(id__in=transition.teams_ids_can_transition).filter(users=user).first()
         if not created_by_team:
             created_by_team = Team.objects.filter(users=user).first()
-        # this will raise if not found, should only happen for invalid workflow.
+
+        # This will raise if not found, should only happen for invalid workflow.
         node = workflow.get_node_by_key(transition.to_node)
+
         with transaction.atomic():
+            budget: Budget = round.budget
+            if not budget:
+                budget = Budget.objects.create(created_by=user, created_by_team=created_by_team)
+                round.budget = budget
+                round.save()
+
             step = BudgetStep.objects.create(
                 amount=data.get("amount"),
                 created_by=user,
                 created_by_team=created_by_team,
-                campaign=campaign,
+                budget=budget,
                 comment=data.get("comment"),
                 transition_key=transition.key,
-                node_key_from=campaign.budget_current_state_key,
+                node_key_from=budget.current_state_key,
                 node_key_to=transition.to_node,
             )
             for link_data in data.get("links", []):
@@ -429,36 +444,38 @@ class TransitionToSerializer(serializers.Serializer):
                 link_serializer.is_valid(raise_exception=True)
                 link_serializer.save(step=step)
 
-            campaign.budget_current_state_key = transition.to_node
             for file in data.get("files", []):
                 step.files.create(file=file, filename=file.name)
-            campaign.budget_current_state_label = node.label
-            campaign.save()
+
+            budget.current_state_key = transition.to_node
+            budget.current_state_label = node.label
+            budget.save()
 
             send_budget_mails(step, transition, self.context["request"])
             step.is_email_sent = True
             step.save()
+
             with transaction.atomic():
                 field = transition.to_node + "_at_WFEDITABLE"
-                if model_field_exists(campaign, field):
+                if model_field_exists(budget, field):
                     # Write the value only if doesn't exist yet, this way we keep track of when a step was first submitted
-                    if not getattr(campaign, field, None):
-                        setattr(campaign, field, step.created_at)
-                        setattr(campaign, "budget_status", transition.to_node)
+                    if not getattr(budget, field, None):
+                        setattr(budget, field, step.created_at)
+                        setattr(budget, "status", transition.to_node)
                         # Custom checks for current workflow. Since we're checking the destination, we'll miss the data for the "concurrent steps".
                         # eg: if we move from state "who_sent_budget" to "gpei_consolidated_budgets", we will miss "unicef_sent_budget" without this check
                         # Needs to be updated when state key names change
                         if transition.to_node == "gpei_consolidated_budgets":
-                            if campaign.who_sent_budget_at_WFEDITABLE is None:
-                                setattr(campaign, "who_sent_budget_at_WFEDITABLE", step.created_at)
-                            elif campaign.unicef_sent_budget_at_WFEDITABLE is None:
-                                setattr(campaign, "unicef_sent_budget_at_WFEDITABLE", step.created_at)
+                            if budget.who_sent_budget_at_WFEDITABLE is None:
+                                setattr(budget, "who_sent_budget_at_WFEDITABLE", step.created_at)
+                            elif budget.unicef_sent_budget_at_WFEDITABLE is None:
+                                setattr(budget, "unicef_sent_budget_at_WFEDITABLE", step.created_at)
                         if transition.to_node == "approved":
-                            if campaign.approved_by_who_at_WFEDITABLE is None:
-                                setattr(campaign, "approved_by_who_at_WFEDITABLE", step.created_at)
-                            elif campaign.approved_by_unicef_at_WFEDITABLE is None:
-                                setattr(campaign, "approved_by_unicef_at_WFEDITABLE", step.created_at)
-                        campaign.save()
+                            if budget.approved_by_who_at_WFEDITABLE is None:
+                                setattr(budget, "approved_by_who_at_WFEDITABLE", step.created_at)
+                            elif budget.approved_by_unicef_at_WFEDITABLE is None:
+                                setattr(budget, "approved_by_unicef_at_WFEDITABLE", step.created_at)
+                        budget.save()
 
         return step
 
@@ -478,7 +495,6 @@ class TransitionOverrideSerializer(serializers.Serializer):
         node_keys = data["new_state_key"]
         workflow = get_workflow()
 
-        n_transitions = next_transitions(workflow.transitions, campaign.budget_current_state_key)
         # find the override transition in the workflow
         transition_as_list = list(filter(lambda tr: tr.key == "override", workflow.transitions))
         if len(transition_as_list) == 0:

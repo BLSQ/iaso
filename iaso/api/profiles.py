@@ -333,7 +333,7 @@ class ProfilesViewSet(viewsets.ViewSet):
                 for plugin in settings.PLUGINS:
                     if hasattr(user, f"{plugin}_profile"):
                         plugin_profile = getattr(user, f"{plugin}_profile")
-                        profile_dict = {**profile_dict, **plugin_profile.as_dict()}
+                        profile_dict = {**profile_dict, **plugin_profile.as_iaso_enhancement_dict()}
 
                 return Response(profile_dict)
             except ObjectDoesNotExist:

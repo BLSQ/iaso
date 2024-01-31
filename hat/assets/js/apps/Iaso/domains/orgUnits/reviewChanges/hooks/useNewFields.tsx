@@ -213,10 +213,6 @@ export const useNewFields = (
                         fieldKey,
                         value,
                     );
-
-                    if (fieldKey === 'groups') {
-                        console.log(isChanged);
-                    }
                     const { label, order } = fieldDef;
                     return {
                         key: fieldKey,

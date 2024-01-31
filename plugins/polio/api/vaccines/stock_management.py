@@ -1,7 +1,8 @@
 import enum
 from typing import Union
-
+from drf_yasg import openapi
 from django.db.models import QuerySet
+from drf_yasg.utils import swagger_auto_schema, no_body
 from rest_framework import filters, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
@@ -18,6 +19,14 @@ from plugins.polio.models import (
     VaccineRequestForm,
     VaccineStock,
     DOSES_PER_VIAL,
+)
+
+vaccine_stock_id_param = openapi.Parameter(
+    name="vaccine_stock",
+    in_=openapi.IN_QUERY,
+    description="The Vaccine Stock id related to the current object",
+    type=openapi.TYPE_INTEGER,
+    required=False,
 )
 
 
@@ -49,22 +58,34 @@ class VaccineStockCalculator:
         return DOSES_PER_VIAL[self.vaccine_stock.vaccine]
 
     def get_vials_received(self):
+        if not self.arrival_reports.exists():
+            return 0
         return sum(report.vials_received for report in self.arrival_reports)
 
     def get_vials_used(self):
+        if not self.stock_movements.exists():
+            return 0
         return sum(movement.usable_vials_used for movement in self.stock_movements)
 
     def get_stock_of_usable_vials(self):
         return self.get_vials_received() - self.get_vials_used()
 
     def get_stock_of_unusable_vials(self):
-        return (
-            # sum(report.unusable_vials_destroyed for report in self.destruction_reports) +
-            sum(report.unusable_vials for report in self.incident_reports)
-            + sum(movement.unusable_vials for movement in self.stock_movements)
-        )
+        if self.incident_reports.exists():
+            ir_sum = sum(report.unusable_vials for report in self.incident_reports)
+        else:
+            ir_sum = 0
+
+        if self.stock_movements.exists():
+            sm_sum = sum(movement.unusable_vials for movement in self.stock_movements)
+        else:
+            sm_sum = 0
+
+        return ir_sum + sm_sum
 
     def get_vials_destroyed(self):
+        if not self.destruction_reports.exists():
+            return 0
         return sum(report.unusable_vials_destroyed for report in self.destruction_reports)
 
 
@@ -171,20 +192,34 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class OutgoingStockMovementViewSet(ModelViewSet):
-    serializer_class = OutgoingStockMovementSerializer
+class VaccineStockSubitemBase(ModelViewSet):
     allowed_methods = ["get", "post", "head", "options", "patch", "delete"]
     permission_classes = [VaccineStockManagementReadWritePerm]
+    model_class = None
+
+    @swagger_auto_schema(
+        manual_parameters=[vaccine_stock_id_param],
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
     def get_queryset(self):
-        vaccine_stock_id = self.request.query_params.get("vaccine_stock_id")
+        vaccine_stock_id = self.request.query_params.get("vaccine_stock")
+
+        if self.model_class is None:
+            raise NotImplementedError("model_class must be defined")
 
         if vaccine_stock_id is None:
-            return OutgoingStockMovement.objects.filter(vaccine_stock__account=self.request.user.iaso_profile.account)
+            return self.model_class.objects.filter(vaccine_stock__account=self.request.user.iaso_profile.account)
         else:
-            return OutgoingStockMovement.objects.filter(
+            return self.model_class.objects.filter(
                 vaccine_stock=vaccine_stock_id, vaccine_stock__account=self.request.user.iaso_profile.account
             )
+
+
+class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
+    serializer_class = OutgoingStockMovementSerializer
+    model_class = OutgoingStockMovement
 
 
 class IncidentReportSerializer(serializers.ModelSerializer):
@@ -193,20 +228,9 @@ class IncidentReportSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class IncidentReportViewSet(ModelViewSet):
+class IncidentReportViewSet(VaccineStockSubitemBase):
     serializer_class = IncidentReportSerializer
-    allowed_methods = ["get", "post", "head", "options", "patch", "delete"]
-    permission_classes = [VaccineStockManagementReadWritePerm]
-
-    def get_queryset(self):
-        vaccine_stock_id = self.request.query_params.get("vaccine_stock_id")
-
-        if vaccine_stock_id is None:
-            return IncidentReport.objects.filter(vaccine_stock__account=self.request.user.iaso_profile.account)
-        else:
-            return IncidentReport.objects.filter(
-                vaccine_stock=vaccine_stock_id, vaccine_stock__account=self.request.user.iaso_profile.account
-            )
+    model_class = IncidentReport
 
 
 class DestructionReportSerializer(serializers.ModelSerializer):
@@ -215,20 +239,9 @@ class DestructionReportSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class DestructionReportViewSet(ModelViewSet):
+class DestructionReportViewSet(VaccineStockSubitemBase):
     serializer_class = DestructionReportSerializer
-    allowed_methods = ["get", "post", "head", "options", "patch", "delete"]
-    permission_classes = [VaccineStockManagementReadWritePerm]
-
-    def get_queryset(self):
-        vaccine_stock_id = self.request.query_params.get("vaccine_stock_id")
-
-        if vaccine_stock_id is None:
-            return DestructionReport.objects.filter(vaccine_stock__account=self.request.user.iaso_profile.account)
-        else:
-            return DestructionReport.objects.filter(
-                vaccine_stock=vaccine_stock_id, vaccine_stock__account=self.request.user.iaso_profile.account
-            )
+    model_class = DestructionReport
 
 
 class VaccineStockManagementViewSet(ModelViewSet):

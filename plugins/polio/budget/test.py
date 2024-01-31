@@ -137,7 +137,7 @@ class TeamAPITestCase(APITestCase):
         step_id = response_data["id"]
         budget_step = BudgetStep.objects.get(id=step_id)
 
-        # Check the relation: BudgetStep ----> Budget <---- Round
+        # Check the relations: BudgetStep ----> Budget <---- Round
         self.round.refresh_from_db()
         self.assertEqual(budget_step.budget, self.round.budget)
 
@@ -185,7 +185,7 @@ class TeamAPITestCase(APITestCase):
         step_id = response_data["id"]
         budget_step = BudgetStep.objects.get(id=step_id)
 
-        # Check the relation: BudgetStep ----> Budget <---- Round
+        # Check the relations: BudgetStep ----> Budget <---- Round
         self.round.refresh_from_db()
         self.assertEqual(budget_step.budget, self.round.budget)
 
@@ -212,19 +212,21 @@ class TeamAPITestCase(APITestCase):
     def test_transition_to_link(self):
         self.client.force_login(self.user)
         prev_budget_step_count = BudgetStep.objects.count()
-        r = self.client.get("/api/polio/budget/")
-        j = self.assertJSONResponse(r, 200)
-        campaigns = j["results"]
+        response = self.client.get("/api/polio/budget/")
+        response_data = self.assertJSONResponse(response, 200)
+
+        campaigns = response_data["results"]
         for c in campaigns:
             self.assertEqual(c["obr_name"], "test campaign")
 
         fake_file = StringIO("hello world")
         fake_file.name = "mon_fichier.txt"
-        r = self.client.post(
+
+        response = self.client.post(
             "/api/polio/budget/transition_to/",
             data={
                 "transition_key": "submit_budget",
-                "campaign": self.campaign.id,
+                "round": self.round.id,
                 "comment": "hello world2",
                 "files": [fake_file],
                 "links": json.dumps(
@@ -241,34 +243,39 @@ class TeamAPITestCase(APITestCase):
                 ),
             },
         )
-        j = self.assertJSONResponse(r, 201)
-        self.assertEqual(j["result"], "success")
-        step_id = j["id"]
-        s = BudgetStep.objects.get(id=step_id)
+        response_data = self.assertJSONResponse(response, 201)
+        self.assertEqual(response_data["result"], "success")
 
-        # check the new state of campaign
-        c = self.campaign
-        c.refresh_from_db()
-        self.assertEqual(c.budget_current_state_key, "budget_submitted")
-        r = self.client.get(f"/api/polio/budget/{c.id}/")
-        j = self.assertJSONResponse(r, 200)
+        step_id = response_data["id"]
+        budget_step = BudgetStep.objects.get(id=step_id)
 
-        self.assertEqual(j["current_state"]["key"], "budget_submitted")
-        # fixme serialization
-        # self.assertEqual(j['budget_last_updated_at'], s.created_at.isoformat())
+        # Check the relations: BudgetStep ----> Budget <---- Round
+        self.round.refresh_from_db()
+        self.assertEqual(budget_step.budget, self.round.budget)
 
-        # check that we have only created one step
+        # Check the new state of budget.
+        budget = self.round.budget
+        budget.refresh_from_db()
+        self.assertEqual(budget.current_state_key, "budget_submitted")
+
+        # TODO: current state has been moved in `Budget`, what should we do with `/api/polio/budget/{self.campaign.id}/`
+        # response = self.client.get(f"/api/polio/budget/{self.campaign.id}/")
+        # response_data = self.assertJSONResponse(response, 200)
+        # self.assertEqual(response_data["current_state"]["key"], "budget_submitted")
+
+        # Check that we have only created one step.
         new_budget_step_count = BudgetStep.objects.count()
         self.assertEqual(prev_budget_step_count + 1, new_budget_step_count)
 
-        self.assertEqual(s.files.count(), 1)
-        r = self.client.get(f"/api/polio/budgetsteps/{s.id}/")
-        j = self.assertJSONResponse(r, 200)
-        f = j["files"][0]
-        self.assertTrue(f["file"].startswith("http"))  # should be an url
-        self.assertEqual(f["filename"], fake_file.name)
+        self.assertEqual(budget_step.files.count(), 1)
 
-        links = j["links"]
+        response = self.client.get(f"/api/polio/budgetsteps/{budget_step.id}/")
+        response_data = self.assertJSONResponse(response, 200)
+        file = response_data["files"][0]
+        self.assertTrue(file["file"].startswith("http"))  # should be an url
+        self.assertEqual(file["filename"], fake_file.name)
+
+        links = response_data["links"]
         self.jsonListContains(
             links,
             [

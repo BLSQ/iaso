@@ -1,9 +1,10 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { FunctionComponent, useState, useMemo } from 'react';
-import { MapContainer, ScaleControl } from 'react-leaflet';
+import { GeoJSON, MapContainer, ScaleControl } from 'react-leaflet';
 import L from 'leaflet';
 
 import { makeStyles } from '@mui/styles';
+import { pink } from '@mui/material/colors';
 import { commonStyles } from 'bluesquare-components';
 
 import { Box } from '@mui/material';
@@ -13,6 +14,7 @@ import tiles from '../../constants/mapTiles';
 import MarkerComponent from './markers/MarkerComponent';
 import { Tile } from './tools/TilesSwitchControl';
 import { CustomZoomControl } from './tools/CustomZoomControl';
+import { GeoJson } from './types';
 
 const useStyles = makeStyles(theme => ({
     mapContainer: {
@@ -29,6 +31,7 @@ type Props = {
     longitude: number | undefined;
     maxZoom?: number;
     mapHeight?: number;
+    parentGeoJson?: GeoJson;
 };
 
 export const MarkerMap: FunctionComponent<Props> = ({
@@ -36,22 +39,29 @@ export const MarkerMap: FunctionComponent<Props> = ({
     longitude,
     maxZoom,
     mapHeight = 400,
+    parentGeoJson,
 }) => {
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
 
     const classes: Record<string, string> = useStyles();
 
     const boundsOptions: Record<string, [number, number] | number> = {
-        padding: [500, 500],
+        padding: [50, 50],
         maxZoom: maxZoom || currentTile.maxZoom,
     };
 
     const bounds = useMemo(() => {
-        const latlng = [L.latLng(latitude, longitude)];
-        return L.latLngBounds(latlng);
-    }, [latitude, longitude]);
+        let newBounds = L.latLngBounds([L.latLng(latitude, longitude)]);
+        if (parentGeoJson) {
+            const parentBounds = L.geoJSON(parentGeoJson).getBounds();
+            newBounds = newBounds.isValid()
+                ? newBounds.extend(parentBounds)
+                : parentBounds;
+        }
+        return newBounds;
+    }, [latitude, longitude, parentGeoJson]);
 
-    if (!latitude || !longitude) return null;
+    if (latitude === undefined || longitude === undefined) return null;
     return (
         <Box className={classes.mapContainer} height={mapHeight}>
             <MapContainer
@@ -83,6 +93,14 @@ export const MarkerMap: FunctionComponent<Props> = ({
                         fillColor: 'red',
                     })}
                 />
+                {parentGeoJson && (
+                    <GeoJSON
+                        data={parentGeoJson}
+                        pathOptions={{
+                            color: pink['300'],
+                        }}
+                    />
+                )}
             </MapContainer>
         </Box>
     );

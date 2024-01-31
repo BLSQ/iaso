@@ -1,8 +1,8 @@
 /* eslint-disable camelcase */
 import { Pagination, UrlParams } from 'bluesquare-components';
 import { User } from '../../../utils/usersUtils';
-import { ShortOrgUnit } from '../types/orgUnit';
 import { OrgunitType } from '../types/orgunitTypes';
+import { GeoJson } from '../../../components/maps/types';
 
 export type ChangeRequestValidationStatus = 'new' | 'rejected' | 'approved';
 export type ApproveOrgUnitParams = UrlParams & {
@@ -52,7 +52,11 @@ export type OrgUnitChangeRequests = Array<OrgUnitChangeRequest>;
 export interface OrgUnitChangeRequestsPaginated extends Pagination {
     results: OrgUnitChangeRequest[];
 }
-
+export type ShortOrgUnit = {
+    name: string;
+    id: number;
+    geo_json?: GeoJson;
+};
 export type OrgUnitChangeRequestDetails = {
     id: number;
     uuid: string;

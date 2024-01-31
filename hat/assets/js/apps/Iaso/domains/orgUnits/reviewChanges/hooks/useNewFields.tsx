@@ -14,10 +14,10 @@ import {
     NestedOrgUnitType,
     NestedLocation,
     OrgUnitChangeRequestDetails,
+    ShortOrgUnit,
 } from '../types';
 import { MarkerMap } from '../../../../components/maps/MarkerMapComponent';
 import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
-import { ShortOrgUnit } from '../../types/orgUnit';
 import MESSAGES from '../messages';
 import InstanceDetail from '../../../instances/compare/components/InstanceDetail';
 
@@ -25,10 +25,20 @@ export type NewOrgUnitField = {
     key: string;
     isChanged: boolean;
     isSelected: boolean;
-    newValue: ReactElement | string;
-    oldValue: ReactElement | string;
+    newValue: ReactElement;
+    oldValue: ReactElement;
     label: string;
     order: number;
+};
+type FieldDefinition = {
+    label: string;
+    order: number;
+    formatValue: (
+        // eslint-disable-next-line no-unused-vars
+        val: any,
+        // eslint-disable-next-line no-unused-vars
+        isOld: boolean,
+    ) => ReactElement;
 };
 
 type UseNewFields = {
@@ -59,23 +69,35 @@ const ReferenceInstances: FunctionComponent<ReferenceInstancesProps> = ({
         </>
     );
 };
-const getGroupsValue = (groups: NestedGroup[]): ReactElement | string => {
-    return groups && groups.length > 0
-        ? groups.map(group => group.name).join(', ')
-        : textPlaceholder;
+const getGroupsValue = (groups: NestedGroup[]): ReactElement => {
+    return (
+        <>
+            {groups && groups.length > 0
+                ? groups.map(group => group.name).join(', ')
+                : textPlaceholder}
+        </>
+    );
 };
 
-const getLocationValue = (location: NestedLocation): ReactElement => {
+const getLocationValue = (
+    location: NestedLocation,
+    changeRequest: OrgUnitChangeRequestDetails,
+    isOld: boolean,
+): ReactElement => {
+    const parent =
+        !isOld && Boolean(changeRequest?.new_parent)
+            ? changeRequest?.new_parent
+            : changeRequest?.old_parent;
     return (
         <MarkerMap
             longitude={location.longitude}
             latitude={location.latitude}
             maxZoom={8}
             mapHeight={300}
+            parentGeoJson={parent?.geo_json}
         />
     );
 };
-
 export const useNewFields = (
     changeRequest?: OrgUnitChangeRequestDetails,
 ): UseNewFields => {
@@ -86,8 +108,8 @@ export const useNewFields = (
             setFields([]);
             return;
         }
-        const orgUnit = changeRequest.org_unit;
-        const fieldDefinitions = {
+        type FieldDefinitions = Record<string, FieldDefinition>;
+        const fieldDefinitions: FieldDefinitions = {
             new_name: {
                 label: formatMessage(MESSAGES.name),
                 order: 1,
@@ -117,7 +139,12 @@ export const useNewFields = (
             new_location: {
                 label: formatMessage(MESSAGES.location),
                 order: 5,
-                formatValue: val => getLocationValue(val as NestedLocation),
+                formatValue: (val, isOld) =>
+                    getLocationValue(
+                        val as NestedLocation,
+                        changeRequest,
+                        isOld,
+                    ),
             },
             new_opening_date: {
                 label: formatMessage(MESSAGES.openingDate),
@@ -139,32 +166,60 @@ export const useNewFields = (
                 ),
             },
         };
+        const getValues = (
+            key: string,
+            value: any,
+        ): {
+            oldValue: ReactElement;
+            newValue: ReactElement;
+            isChanged: boolean;
+        } => {
+            const fieldDef = fieldDefinitions[`new_${key}`];
+            const oldValue: ReactElement = changeRequest[`old_${key}`] ? (
+                fieldDef.formatValue(changeRequest[`old_${key}`], true)
+            ) : (
+                <>{textPlaceholder}</>
+            );
+            let newValue = <>{textPlaceholder}</>;
+            const isChanged = Array.isArray(value)
+                ? value.length > 0
+                : Boolean(value);
+            if (isChanged && changeRequest[`new_${key}`]) {
+                newValue = fieldDef.formatValue(
+                    changeRequest[`new_${key}`],
+                    false,
+                );
+            }
+            if (!isChanged && changeRequest[`old_${key}`]) {
+                newValue = fieldDef.formatValue(
+                    changeRequest[`old_${key}`],
+                    false,
+                );
+            }
+
+            return {
+                oldValue,
+                newValue,
+                isChanged,
+            };
+        };
         const newFields = orderBy(
             Object.entries(changeRequest)
                 .filter(([key]) => fieldDefinitions[key]) // Filter entries that are defined in fieldDefinitions
                 .map(([key, value]) => {
-                    const originalKey = key.replace('new_', '');
+                    const fieldKey = key.replace('new_', '');
                     const fieldDef = fieldDefinitions[key];
-                    let oldValue = textPlaceholder;
-                    if (
-                        changeRequest.status !== 'new' &&
-                        changeRequest[`old_${originalKey}`]
-                    ) {
-                        oldValue = fieldDef.formatValue(
-                            changeRequest[`old_${originalKey}`],
-                        );
-                    } else if (orgUnit[originalKey]) {
-                        oldValue = fieldDef.formatValue(orgUnit[originalKey]);
+                    const { oldValue, newValue, isChanged } = getValues(
+                        fieldKey,
+                        value,
+                    );
+
+                    if (fieldKey === 'groups') {
+                        console.log(isChanged);
                     }
-                    const isChanged = Array.isArray(value)
-                        ? value.length > 0
-                        : Boolean(value);
-                    const newValue = isChanged
-                        ? fieldDef.formatValue(value)
-                        : oldValue;
                     const { label, order } = fieldDef;
                     return {
-                        key: originalKey,
+                        key: fieldKey,
                         label,
                         isChanged,
                         isSelected: false,

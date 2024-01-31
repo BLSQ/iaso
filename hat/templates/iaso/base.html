@@ -26,6 +26,11 @@
   <meta property="og:image" content="" />
   <meta property="og:url" content="{{ request.build_absolute_uri }} " />
   {% endif %}
+  {% if ANALYTICS_SCRIPTS %}
+    {% for analytic_script in ANALYTICS_SCRIPTS %}
+      {{ analytic_script | safe }}
+    {% endfor %} 
+  {% endif %}
 </head>
 
 <body class="iaso">

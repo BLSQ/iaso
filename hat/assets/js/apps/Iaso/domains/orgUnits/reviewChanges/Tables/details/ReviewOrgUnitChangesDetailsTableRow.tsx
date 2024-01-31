@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import React, { FunctionComponent, useMemo } from 'react';
+import React, { FunctionComponent } from 'react';
 import { Box, TableCell, TableRow } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import classNames from 'classnames';
@@ -59,6 +59,14 @@ const useStyles = makeStyles(theme => ({
             fontSize: 20,
         },
     },
+    verticalTop: {
+        verticalAlign: 'top',
+    },
+    checkBoxCell: {
+        padding: 0,
+        width: 30,
+    },
+    labelCell: { verticalAlign: 'top', width: '5vw' },
 }));
 
 export const ReviewOrgUnitChangesDetailsTableRow: FunctionComponent<Props> = ({
@@ -71,31 +79,22 @@ export const ReviewOrgUnitChangesDetailsTableRow: FunctionComponent<Props> = ({
     const classes = useStyles();
     const isCellRejected =
         (field.isChanged && !field.isSelected && isNew) ||
-        changeRequest?.status === 'rejected';
+        (field.isChanged && changeRequest?.status === 'rejected') ||
+        (field.isChanged &&
+            changeRequest?.status === 'approved' &&
+            !changeRequest.approved_fields.includes(`new_${field.key}`));
     const isCellApproved =
         (field.isChanged && field.isSelected) ||
         (!isNew &&
             changeRequest?.status === 'approved' &&
-            changeRequest.approved_fields.includes(field.key));
-
-    const cellStyles = useMemo(
-        () => ({
-            verticalAlign: 'top',
-            padding: theme =>
-                !field.removePadding
-                    ? `6px ${theme.spacing(1)}`
-                    : `0 ${theme.spacing(1)} 0 0`,
-        }),
-        [field.removePadding],
-    );
+            changeRequest.approved_fields.includes(`new_${field.key}`));
     return (
         <TableRow key={field.key}>
-            <TableCell sx={{ verticalAlign: 'top', width: '5vw' }}>
-                {field.label}
+            <TableCell className={classes.labelCell}>{field.label}</TableCell>
+            <TableCell className={classes.verticalTop}>
+                {field.oldValue}
             </TableCell>
-            <TableCell sx={cellStyles}>{field.oldValue}</TableCell>
             <TableCell
-                sx={cellStyles}
                 className={classNames(
                     !isFetchingChangeRequest &&
                         isCellRejected &&
@@ -103,19 +102,14 @@ export const ReviewOrgUnitChangesDetailsTableRow: FunctionComponent<Props> = ({
                     !isFetchingChangeRequest &&
                         isCellApproved &&
                         classes.cellApproved,
-
                     !isCellApproved && !isCellRejected && classes.cell,
+                    classes.verticalTop,
                 )}
             >
                 {field.newValue}
             </TableCell>
             {isNew && (
-                <TableCell
-                    sx={{
-                        padding: 0,
-                        width: 30,
-                    }}
-                >
+                <TableCell className={classes.checkBoxCell}>
                     {field.isChanged && (
                         <Box
                             display="flex"

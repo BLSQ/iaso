@@ -1,6 +1,13 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import { Card, CardContent, Grid } from '@mui/material';
+import {
+    Card,
+    CardContent,
+    Table,
+    TableBody,
+    TableCell,
+    TableRow,
+} from '@mui/material';
 
 import MESSAGES from '../messages';
 import {
@@ -22,27 +29,60 @@ export const colorCodes: Record<ChangeRequestValidationStatus, string> = {
 };
 
 const useStatusStyles = (status?: ChangeRequestValidationStatus) => {
-    return useMemo(
+    const baseStyle = useMemo(
         () => ({
-            infoCard: {
-                backgroundColor: status
-                    ? `${colorCodes[status]}.background`
-                    : 'inherit',
-            },
-            label: {
-                fontWeight: 'bold',
-                textAlign: 'right',
-            },
-            value: {
-                textAlign: 'left',
-            },
-            status: {
-                textAlign: 'left',
-                color: status ? `${colorCodes[status]}.main` : 'inherit',
-            },
+            borderBottom: 'none',
+            p: 0.25,
+        }),
+        [],
+    );
+
+    const infoCard = useMemo(
+        () => ({
+            fontSize: 14,
+            backgroundColor: status
+                ? `${colorCodes[status]}.background`
+                : 'inherit',
         }),
         [status],
     );
+
+    const cardContent = useMemo(
+        () => ({
+            px: 2,
+            pt: theme => `${theme.spacing(1)} !important}`,
+            pb: theme => `${theme.spacing(1)} !important}`,
+        }),
+        [],
+    );
+
+    const label = useMemo(
+        () => ({
+            ...baseStyle,
+            fontWeight: 'bold',
+            textAlign: 'right',
+        }),
+        [baseStyle],
+    );
+
+    const value = useMemo(
+        () => ({
+            ...baseStyle,
+            textAlign: 'left',
+        }),
+        [baseStyle],
+    );
+
+    const statusStyle = useMemo(
+        () => ({
+            ...baseStyle,
+            textAlign: 'left',
+            color: status ? `${colorCodes[status]}.main` : 'inherit',
+        }),
+        [status, baseStyle],
+    );
+
+    return { infoCard, cardContent, label, value, status: statusStyle };
 };
 
 export const ReviewOrgUnitChangesInfos: FunctionComponent<Props> = ({
@@ -55,54 +95,66 @@ export const ReviewOrgUnitChangesInfos: FunctionComponent<Props> = ({
     const { status } = changeRequest;
     return (
         <Card sx={styles.infoCard}>
-            <CardContent>
-                <Grid container spacing={1}>
-                    <Grid item xs={4} sx={styles.label}>
-                        {formatMessage(MESSAGES.status)}:
-                    </Grid>
-                    <Grid item xs={8} sx={styles.status}>
-                        {formatMessage(MESSAGES[status])}
-                    </Grid>
+            <CardContent sx={styles.cardContent}>
+                <Table size="small">
+                    <TableBody>
+                        <TableRow>
+                            <TableCell sx={styles.label}>
+                                {formatMessage(MESSAGES.status)}:
+                            </TableCell>
+                            <TableCell sx={styles.status}>
+                                {formatMessage(MESSAGES[status])}
+                            </TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell sx={styles.label}>
+                                {formatMessage(MESSAGES.updated_at)}:
+                            </TableCell>
+                            <TableCell sx={styles.value}>
+                                {DateTimeCell({
+                                    value: changeRequest.updated_at,
+                                })}
+                            </TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell sx={styles.label}>
+                                {formatMessage(MESSAGES.created_at)}:
+                            </TableCell>
+                            <TableCell sx={styles.value}>
+                                {DateTimeCell({
+                                    value: changeRequest.created_at,
+                                })}
+                            </TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell sx={styles.label}>
+                                {formatMessage(MESSAGES.updated_by)}:
+                            </TableCell>
+                            <TableCell sx={styles.value}>
+                                <UserCell value={changeRequest.updated_by} />
+                            </TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell sx={styles.label}>
+                                {formatMessage(MESSAGES.created_by)}:
+                            </TableCell>
+                            <TableCell sx={styles.value}>
+                                <UserCell value={changeRequest.created_by} />
+                            </TableCell>
+                        </TableRow>
 
-                    <Grid item xs={4} sx={styles.label}>
-                        {formatMessage(MESSAGES.created_at)}:
-                    </Grid>
-                    <Grid item xs={8} sx={styles.value}>
-                        {DateTimeCell({ value: changeRequest.created_at })}
-                    </Grid>
-
-                    <Grid item xs={4} sx={styles.label}>
-                        {formatMessage(MESSAGES.created_by)}:
-                    </Grid>
-                    <Grid item xs={8} sx={styles.value}>
-                        <UserCell value={changeRequest.created_by} />
-                    </Grid>
-
-                    <Grid item xs={4} sx={styles.label}>
-                        {formatMessage(MESSAGES.updated_at)}:
-                    </Grid>
-                    <Grid item xs={8} sx={styles.value}>
-                        {DateTimeCell({ value: changeRequest.updated_at })}
-                    </Grid>
-
-                    <Grid item xs={4} sx={styles.label}>
-                        {formatMessage(MESSAGES.updated_by)}:
-                    </Grid>
-                    <Grid item xs={8} sx={styles.value}>
-                        <UserCell value={changeRequest.updated_by} />
-                    </Grid>
-
-                    {changeRequest.status === 'rejected' && (
-                        <>
-                            <Grid item xs={4} sx={styles.label}>
-                                {formatMessage(MESSAGES.comment)}:
-                            </Grid>
-                            <Grid item xs={8} sx={styles.value}>
-                                {changeRequest.rejection_comment}
-                            </Grid>
-                        </>
-                    )}
-                </Grid>
+                        {changeRequest.status === 'rejected' && (
+                            <TableRow>
+                                <TableCell sx={styles.label}>
+                                    {formatMessage(MESSAGES.comment)}:
+                                </TableCell>
+                                <TableCell sx={styles.value}>
+                                    {changeRequest.rejection_comment}
+                                </TableCell>
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
             </CardContent>
         </Card>
     );

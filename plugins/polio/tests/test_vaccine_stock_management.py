@@ -140,8 +140,8 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.assertEqual(stock["vials_received"], 20)  # 400 doses / 20 doses per vial
         self.assertEqual(stock["vials_used"], 10)
         self.assertEqual(stock["stock_of_usable_vials"], 10)  # 20 received - 10 used
-        self.assertEqual(stock["stock_of_unusable_vials"], 9)  # 5 unusable + 3 destroyed + 1 incident
-        self.assertEqual(stock["vials_destroyed"], 3)
+        self.assertEqual(stock["stock_of_unusable_vials"], 6)  # 5 unusable + 1 incident
+        self.assertEqual(stock["vials_destroyed"], 3)  # 3 destroyed
 
     def test_usable_vials_endpoint(self):
         # Authenticate and make request to the API
@@ -168,9 +168,10 @@ class VaccineStockManagementAPITestCase(APITestCase):
                             "vials_in": {"type": ["integer", "null"]},
                             "doses_in": {"type": ["integer", "null"]},
                             "vials_out": {"type": ["integer", "null"]},
-                            "doses_out": {"type": ["string", "null"]},
+                            "doses_out": {"type": ["integer", "null"]},
+                            "type": {"type": "string"},
                         },
-                        "required": ["date", "action", "vials_in", "doses_in", "vials_out", "doses_out"],
+                        "required": ["date", "action", "vials_in", "doses_in", "vials_out", "doses_out", "type"],
                     },
                 },
             },
@@ -185,3 +186,102 @@ class VaccineStockManagementAPITestCase(APITestCase):
             jsonschema.validate(instance=data, schema=usable_vials_schema)
         except jsonschema.exceptions.ValidationError as ex:
             self.fail(msg=str(ex))
+
+    def test_unusable_vials_endpoint(self):
+        # Authenticate and make request to the API
+        self.client.force_authenticate(user=self.user_ro_perms)
+        response = self.client.get(f"{BASE_URL}{self.vaccine_stock.id}/get_unusable_vials/")
+
+        # Assert the response status code
+        self.assertEqual(response.status_code, 200)
+
+        # Parse the response data
+        data = response.json()
+
+        # Define the JSON schema for the response
+        unusable_vials_schema = {
+            "type": "object",
+            "properties": {
+                "results": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "date": {"type": "string"},
+                            "action": {"type": "string"},
+                            "vials_in": {"type": ["integer", "null"]},
+                            "doses_in": {"type": ["integer", "null"]},
+                            "vials_out": {"type": ["integer", "null"]},
+                            "doses_out": {"type": ["integer", "null"]},
+                            "type": {"type": "string"},
+                        },
+                        "required": ["date", "action", "vials_in", "doses_in", "vials_out", "doses_out"],
+                    },
+                },
+            },
+            "required": ["results"],
+        }
+
+        # Validate the response data against the schema
+        try:
+            jsonschema.validate(instance=data, schema=unusable_vials_schema)
+        except jsonschema.exceptions.ValidationError as ex:
+            self.fail(msg=str(ex))
+
+        # Check that the response contains the expected number of unusable vials entries
+        self.assertEqual(len(data["results"]), 2)
+
+        self.assertEqual(data["results"][0]["vials_out"], 5)
+        self.assertEqual(data["results"][0]["doses_out"], 100)
+        self.assertEqual(data["results"][0]["type"], "outgoing_stock_movement")
+        self.assertEqual(data["results"][1]["vials_out"], 1)
+        self.assertEqual(data["results"][1]["doses_out"], 20)
+        self.assertEqual(data["results"][1]["type"], "incident_report")
+
+    def test_summary_endpoint(self):
+        # Authenticate as a user with read/write permissions
+        self.client.force_authenticate(user=self.user_ro_perms)
+
+        # Make a GET request to the summary endpoint
+        response = self.client.get(f"{BASE_URL}{self.vaccine_stock.id}/summary/")
+
+        # Check that the response status code is 200
+        self.assertEqual(response.status_code, 200)
+
+        # Parse the response data
+        data = response.json()
+
+        # Check that the response data contains the expected keys
+        summary_schema = {
+            "type": "object",
+            "properties": {
+                "country_name": {"type": "string"},
+                "vaccine_type": {"type": "string"},
+                "total_usable_vials": {"type": "integer"},
+                "total_unusable_vials": {"type": "integer"},
+                "total_usable_doses": {"type": "integer"},
+                "total_unusable_doses": {"type": "integer"},
+            },
+            "required": [
+                "country_name",
+                "vaccine_type",
+                "total_usable_vials",
+                "total_unusable_vials",
+                "total_usable_doses",
+                "total_unusable_doses",
+            ],
+        }
+
+        # Validate the response data against the schema
+        try:
+            jsonschema.validate(instance=data, schema=summary_schema)
+        except jsonschema.exceptions.ValidationError as ex:
+            self.fail(msg=str(ex))
+
+        # Check that the values match what is expected
+        self.assertEqual(data["country_name"], self.vaccine_stock.country.name)
+        self.assertEqual(data["vaccine_type"], self.vaccine_stock.vaccine)
+        self.assertEqual(data["total_usable_vials"], 10)
+        self.assertEqual(data["total_unusable_vials"], 6)
+        self.assertEqual(data["total_usable_doses"], 200)
+        self.assertEqual(data["total_unusable_doses"], 120)

@@ -51,7 +51,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const Calendar = props => {
-    const { params, embedded } = props;
+    const { params } = props;
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const isLogged = useSelector(state => Boolean(state.users.current));
@@ -154,36 +154,6 @@ const Calendar = props => {
     }, [filteredCampaigns, mappedCampaigns, isLoading]);
 
     const currentUser = useCurrentUser();
-    const analysticsScript = useMemo(() => {
-        // it returns an array of distincts analytics script
-        return [
-            ...new Set(
-                filteredCampaigns
-                    .filter(
-                        campaign => campaign.original.account_analytics_script,
-                    )
-                    .map(camp => camp.original.account_analytics_script),
-            ),
-        ];
-    }, [filteredCampaigns]);
-
-    useEffect(() => {
-        // It loops on analytics scripts from filtered campain and append them to head tag
-        if (analysticsScript.length > 0 && embedded) {
-            const existingScripts = Array.from(document.scripts).map(
-                script => script.outerHTML,
-            );
-            analysticsScript.forEach(analyticScript => {
-                const placeholder = document.createElement('div');
-                placeholder.innerHTML = analyticScript;
-                const script = placeholder.firstElementChild;
-                if (!existingScripts.includes(script.outerHTML)) {
-                    document.querySelector('head').append(script);
-                }
-            });
-        }
-    }, [analysticsScript]);
-
     return (
         <div>
             {isLogged && !isPdf && (

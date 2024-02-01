@@ -229,14 +229,27 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
             "missing_vials",
         ]
 
+    def extract_campaign_data(self, validated_data):
+        campaign_data = validated_data.pop("campaign", None)
+        if campaign_data:
+            campaign_obr_name = campaign_data.get("obr_name")
+            campaign = Campaign.objects.get(
+                obr_name=campaign_obr_name, account=self.context["request"].user.iaso_profile.account
+            )
+            return campaign
+        return None
+
     def create(self, validated_data):
-        campaign_obrname_dict = validated_data.pop("campaign")
-        campaign_obrname = campaign_obrname_dict["obr_name"]
-        campaign = Campaign.objects.get(
-            obr_name=campaign_obrname, account=self.context["request"].user.iaso_profile.account
-        )
-        validated_data["campaign"] = campaign
+        campaign = self.extract_campaign_data(validated_data)
+        if campaign:
+            validated_data["campaign"] = campaign
         return OutgoingStockMovement.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        campaign = self.extract_campaign_data(validated_data)
+        if campaign:
+            instance.campaign = campaign
+        return super().update(instance, validated_data)
 
 
 class OutgoingStockMovementViewSet(VaccineStockSubitemBase):
@@ -390,9 +403,6 @@ class VaccineStockManagementViewSet(ModelViewSet):
             if not arrival_reports.exists():
                 arrival_reports = []
 
-        destruction_reports = DestructionReport.objects.filter(vaccine_stock=vaccine_stock).order_by(
-            "destruction_report_date"
-        )
         incident_reports = IncidentReport.objects.filter(vaccine_stock=vaccine_stock).order_by(
             "date_of_incident_report"
         )
@@ -410,21 +420,6 @@ class VaccineStockManagementViewSet(ModelViewSet):
                     "vials_out": None,
                     "doses_out": None,
                     "type": MovementTypeEnum.VACCINE_ARRIVAL_REPORT.value,
-                }
-            )
-
-        for report in destruction_reports:
-            results.append(
-                {
-                    "date": report.destruction_report_date,
-                    "action": f"{report.action} ({report.lot_numbers})"
-                    if len(report.action) > 0
-                    else f"Stock Destruction ({report.lot_numbers})",
-                    "vials_in": None,
-                    "doses_in": None,
-                    "vials_out": report.unusable_vials_destroyed,
-                    "doses_out": report.unusable_vials_destroyed * calc.get_doses_per_vial(),
-                    "type": MovementTypeEnum.DESTRUCTION_REPORT.value,
                 }
             )
 
@@ -454,7 +449,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
                         "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
                     }
                 )
-            elif movement.unusable_vials > 0:
+            if movement.unusable_vials > 0:
                 results.append(
                     {
                         "date": movement.report_date,
@@ -466,7 +461,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
                         "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
                     }
                 )
-            elif movement.missing_vials > 0:
+            if movement.missing_vials > 0:
                 results.append(
                     {
                         "date": movement.report_date,
@@ -507,6 +502,9 @@ class VaccineStockManagementViewSet(ModelViewSet):
         # Get all OutgoingStockMovements and IncidentReports for the VaccineStock
         outgoing_movements = OutgoingStockMovement.objects.filter(vaccine_stock=vaccine_stock)
         incident_reports = IncidentReport.objects.filter(vaccine_stock=vaccine_stock)
+        destruction_reports = DestructionReport.objects.filter(vaccine_stock=vaccine_stock).order_by(
+            "destruction_report_date"
+        )
 
         # Prepare the results list
         results = []
@@ -518,13 +516,28 @@ class VaccineStockManagementViewSet(ModelViewSet):
                     {
                         "date": movement.report_date,
                         "action": "Outgoing Movement",
-                        "vials_in": None,
-                        "doses_in": None,
-                        "vials_out": movement.unusable_vials,
-                        "doses_out": movement.unusable_vials * calc.get_doses_per_vial(),
+                        "vials_in": movement.unusable_vials,
+                        "doses_in": movement.unusable_vials * calc.get_doses_per_vial(),
+                        "vials_out": None,
+                        "doses_out": None,
                         "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
                     }
                 )
+
+        for report in destruction_reports:
+            results.append(
+                {
+                    "date": report.destruction_report_date,
+                    "action": f"{report.action} ({report.lot_number})"
+                    if len(report.action) > 0
+                    else f"Stock Destruction ({report.lot_number})",
+                    "vials_in": None,
+                    "doses_in": None,
+                    "vials_out": report.unusable_vials_destroyed,
+                    "doses_out": report.unusable_vials_destroyed * calc.get_doses_per_vial(),
+                    "type": MovementTypeEnum.DESTRUCTION_REPORT.value,
+                }
+            )
 
         # Add unusable vials from IncidentReports
         for report in incident_reports:

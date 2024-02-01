@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
-import { Box, Grid, useTheme, Tabs, Tab } from '@mui/material';
+import { Box, Grid, useTheme, Tabs, Tab, Paper } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import Color from 'color';
 
@@ -174,29 +174,36 @@ export const CompletenessStats: FunctionComponent<Props> = ({
                         <CsvButton csvUrl={csvUrl} />
                     </Grid>
                 </Grid>
-                {selectedFormsIds.length === 1 && (
-                    <Box mt={2}>
-                        <Tabs
-                            value={tab}
-                            onChange={(_, newtab) => handleChangeTab(newtab)}
-                        >
-                            <Tab
-                                value="list"
-                                label={formatMessage(MESSAGES.list)}
-                            />
-                            <Tab
-                                value="map"
-                                label={formatMessage(MESSAGES.map)}
-                            />
-                        </Tabs>
-                    </Box>
-                )}
-
-                {selectedFormsIds.length === 1 && (
-                    <Box
-                        width="100%"
-                        className={tab === 'map' ? '' : classes.hiddenOpacity}
+                <Box mt={2}>
+                    <Tabs
+                        value={tab}
+                        onChange={(_, newtab) => handleChangeTab(newtab)}
                     >
+                        <Tab
+                            value="list"
+                            label={formatMessage(MESSAGES.list)}
+                        />
+                        <Tab value="map" label={formatMessage(MESSAGES.map)} />
+                    </Tabs>
+                </Box>
+
+                <Box
+                    width="100%"
+                    className={tab === 'map' ? '' : classes.hiddenOpacity}
+                >
+                    {selectedFormsIds.length !== 1 && (
+                        <Paper
+                            sx={{
+                                mt: 2,
+                                p: 2,
+                                display: 'flex',
+                                justifyContent: 'center',
+                            }}
+                        >
+                            {formatMessage(MESSAGES.selectAForm)}
+                        </Paper>
+                    )}
+                    {selectedFormsIds.length === 1 && (
                         <Map
                             locations={completenessMapStats || []}
                             isLoading={isFetchingMapStats}
@@ -205,8 +212,8 @@ export const CompletenessStats: FunctionComponent<Props> = ({
                             router={router}
                             threshold={selectedForm?.original.legend_threshold}
                         />
-                    </Box>
-                )}
+                    )}
+                </Box>
                 {tab === 'list' && (
                     <Box mt={selectedFormsIds.length === 1 ? 0 : 2}>
                         <TableWithDeepLink

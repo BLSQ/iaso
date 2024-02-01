@@ -143,6 +143,11 @@ const MESSAGES = defineMessages({
             'Please select one form to enable completeness map view',
         id: 'iaso.completenessStats.formsInfos',
     },
+    selectAForm: {
+        defaultMessage:
+            'Please select a Form to watch completeness with the map view',
+        id: 'iaso.completenessStats.selectAForm',
+    },
 });
 
 export default MESSAGES;

@@ -26,6 +26,15 @@ from iaso.models import OrgUnitChangeRequest, OrgUnit
 class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     filterset_class = OrgUnitChangeRequestListFilter
+    ordering_fields = [
+        "org_unit__name",
+        "org_unit__org_unit_type__name",
+        "groups",
+        "created_at",
+        "updated_at" "status",
+        "created_by__username",
+        "updated_by__username",
+    ]
     http_method_names = ["get", "options", "patch", "post", "head", "trace"]
     pagination_class = OrgUnitChangeRequestPagination
 

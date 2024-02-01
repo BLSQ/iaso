@@ -217,6 +217,7 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
     class Meta:
         model = OutgoingStockMovement
         fields = [
+            "id",
             "campaign",
             "vaccine_stock",
             "report_date",

@@ -1,5 +1,6 @@
 from typing import Type
-from django.db.models import QuerySet, Max
+from django.db.models import QuerySet, Max, F, OuterRef, Subquery
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
@@ -11,7 +12,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
 from iaso.api.common import CSVExportMixin, ModelViewSet, DeletionFilterBackend, HasPermission
-from plugins.polio.budget.models import BudgetStep, MailTemplate, get_workflow, BudgetStepFile
+from plugins.polio.budget.models import BudgetStep, MailTemplate, get_workflow, BudgetStepFile, BudgetProcess
 from plugins.polio.budget.serializers import (
     CampaignBudgetSerializer,
     ExportCampaignBudgetSerializer,
@@ -22,7 +23,7 @@ from plugins.polio.budget.serializers import (
     TransitionOverrideSerializer,
 )
 from iaso.api.common import CustomFilterBackend
-from plugins.polio.models import Campaign
+from plugins.polio.models import Campaign, Round
 from hat.menupermissions import models as permission
 
 
@@ -55,8 +56,16 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
     def get_queryset(self) -> QuerySet:
         user = self.request.user
         campaigns = Campaign.objects.filter_for_user(user)
-        campaigns = campaigns.annotate(budget_last_updated_at=Max("budget_steps__created_at"))
-        return campaigns
+        budget_processes = (
+            BudgetProcess.objects.filter(rounds__campaign__in=campaigns)
+            .distinct()
+            .annotate(
+                obr_name=F("rounds__campaign__obr_name"),
+                country_name=F("rounds__campaign__country__name"),
+                round_numbers=ArrayAgg("rounds__number"),
+            )
+        )
+        return budget_processes
 
     def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)
@@ -67,29 +76,29 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
 
         return queryset
 
-    ordering_fields = [
-        "obr_name",
-        "cvdpv2_notified_at",
-        "detection_status",
-        "first_round_started_at",
-        "last_round_started_at",
-        "country__name",
-        "last_budget_event__created_at",
-        "last_budget_event__type",
-        "last_budget_event__status",
-        "budget_current_state_key",
-    ]
-    filterset_fields = {
-        "last_budget_event__status": ["exact"],
-        "country__name": ["exact"],
-        "country__id": ["in"],
-        "grouped_campaigns__id": ["in", "exact"],
-        "obr_name": ["exact", "contains"],
-        "cvdpv2_notified_at": ["gte", "lte", "range"],
-        "created_at": ["gte", "lte", "range"],
-        "rounds__started_at": ["gte", "lte", "range"],
-        "budget_current_state_key": ["exact", "in"],
-    }
+    # ordering_fields = [
+    #     "obr_name",
+    #     "cvdpv2_notified_at",
+    #     "detection_status",
+    #     "first_round_started_at",
+    #     "last_round_started_at",
+    #     "country__name",
+    #     "last_budget_event__created_at",
+    #     "last_budget_event__type",
+    #     "last_budget_event__status",
+    #     "budget_current_state_key",
+    # ]
+    # filterset_fields = {
+    #     "last_budget_event__status": ["exact"],
+    #     "country__name": ["exact"],
+    #     "country__id": ["in"],
+    #     "grouped_campaigns__id": ["in", "exact"],
+    #     "obr_name": ["exact", "contains"],
+    #     "cvdpv2_notified_at": ["gte", "lte", "range"],
+    #     "created_at": ["gte", "lte", "range"],
+    #     "rounds__started_at": ["gte", "lte", "range"],
+    #     "budget_current_state_key": ["exact", "in"],
+    # }
 
     @action(detail=False, methods=["POST"], serializer_class=TransitionToSerializer)
     def transition_to(self, request):

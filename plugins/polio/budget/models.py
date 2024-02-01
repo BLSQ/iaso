@@ -118,7 +118,9 @@ class BudgetStep(SoftDeletableModel):
     # TODO: remove the `campaign` field
     campaign = models.ForeignKey("Campaign", on_delete=models.PROTECT, related_name="budget_steps", null=True)
     # TODO: remove null=True
-    budget_process = models.ForeignKey("BudgetProcess", on_delete=models.PROTECT, related_name="budgets", null=True)
+    budget_process = models.ForeignKey(
+        "BudgetProcess", on_delete=models.PROTECT, related_name="budget_steps", null=True
+    )
     transition_key = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey("auth.User", on_delete=models.PROTECT)

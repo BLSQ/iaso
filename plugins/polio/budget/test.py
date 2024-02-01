@@ -9,6 +9,7 @@ from django.http import HttpResponse
 from django.template import Engine, Context
 from rest_framework import status
 
+from iaso.models import OrgUnit, OrgUnitType
 from iaso.test import APITestCase
 from plugins.polio.budget.models import BudgetProcess, BudgetStep, MailTemplate
 from plugins.polio.budget.workflow import Transition, Node, Workflow
@@ -84,40 +85,130 @@ class TeamAPITestCase(APITestCase):
     def setUpTestData(cls) -> None:
         cls.user = User.objects.get(username="test")
         cls.user.user_permissions.add(Permission.objects.get(codename="iaso_polio_budget"))
-
-        cls.campaign = Campaign.objects.create(obr_name="test campaign", account=cls.user.iaso_profile.account)
-        cls.round = Round.objects.create(number=1, campaign=cls.campaign)
+        # Campaign.
+        cls.campaign = Campaign.objects.create(
+            obr_name="test campaign",
+            account=cls.user.iaso_profile.account,
+            country=OrgUnit.objects.create(name="ANGOLA"),
+        )
+        # Budget Processes.
+        cls.budget_process_1 = BudgetProcess.objects.create(created_by=cls.user)
+        cls.budget_process_2 = BudgetProcess.objects.create(created_by=cls.user)
+        # Rounds.
+        cls.round_1 = Round.objects.create(number=1, campaign=cls.campaign, budget_process=cls.budget_process_1)
+        cls.round_2 = Round.objects.create(number=2, campaign=cls.campaign, budget_process=cls.budget_process_1)
+        cls.round_3 = Round.objects.create(number=3, campaign=cls.campaign, budget_process=cls.budget_process_2)
+        # Budget Steps.
+        cls.budget_step_1 = BudgetStep.objects.create(budget_process=cls.budget_process_1, created_by=cls.user)
+        cls.budget_step_2 = BudgetStep.objects.create(budget_process=cls.budget_process_1, created_by=cls.user)
 
     def test_simple_get_list(self):
         self.client.force_login(self.user)
+        response = self.client.get("/api/polio/budget/")
+        response_data = self.assertJSONResponse(response, 200)
 
-        r = self.client.get("/api/polio/budget/")
-        j = self.assertJSONResponse(r, 200)
-        campaigns = j["results"]
-        for c in campaigns:
-            self.assertEqual(c["obr_name"], "test campaign")
+        budget_processes = response_data["results"]
+        for budget_process in budget_processes:
+            self.assertEqual(len(budget_process.keys()), 7)
+            self.assertIn("created_at", budget_process)
+            self.assertIn("updated_at", budget_process)
+            self.assertIn("id", budget_process)
+            self.assertEqual(budget_process["obr_name"], "test campaign")
+            self.assertEqual(budget_process["country_name"], "ANGOLA")
+            self.assertEqual(budget_process["current_state"], {"key": "-", "label": "-"})
+            self.assertIn("round_numbers", budget_process)
+
+        self.assertEqual(budget_processes[0]["round_numbers"], [1, 2])
+        self.assertEqual(budget_processes[1]["round_numbers"], [3])
+
+    def test_simple_get_list_with_all_fields(self):
+        self.client.force_login(self.user)
+        response = self.client.get("/api/polio/budget/?fields=:all")
+        response_data = self.assertJSONResponse(response, 200)
+
+        expected_possible_states = [
+            {"key": None, "label": "No budget"},
+            {"key": "budget_submitted", "label": "Budget submitted"},
+            {"key": "accepted", "label": "Budget accepted"},
+            {"key": "rejected", "label": "Budget rejected"},
+        ]
+        expected_next_transitions = [
+            {
+                "key": "submit_budget",
+                "label": "Submit budget",
+                "help_text": "",
+                "allowed": True,
+                "reason_not_allowed": None,
+                "required_fields": [],
+                "displayed_fields": ["comment"],
+                "color": None,
+                "emails_destination_team_ids": [],
+            }
+        ]
+        expected_possible_transitions = [
+            {
+                "key": "submit_budget",
+                "label": "Submit budget",
+                "help_text": "",
+                "allowed": None,
+                "reason_not_allowed": None,
+                "required_fields": [],
+                "displayed_fields": ["comment"],
+                "color": None,
+            },
+            {
+                "key": "accept_budget",
+                "label": "Accept budget",
+                "help_text": "",
+                "allowed": None,
+                "reason_not_allowed": None,
+                "required_fields": [],
+                "displayed_fields": ["comment"],
+                "color": "green",
+            },
+            {
+                "key": "reject_budget",
+                "label": "Provide feedback",
+                "help_text": "",
+                "allowed": None,
+                "reason_not_allowed": None,
+                "required_fields": [],
+                "displayed_fields": ["comment"],
+                "color": "primary",
+            },
+        ]
+        expected_timeline = {"categories": []}
+        for budget_process in response_data["results"]:
+            self.assertEqual(len(budget_process.keys()), 11)
+            self.assertIn("created_at", budget_process)
+            self.assertIn("updated_at", budget_process)
+            self.assertIn("id", budget_process)
+            self.assertEqual(budget_process["obr_name"], "test campaign")
+            self.assertEqual(budget_process["country_name"], "ANGOLA")
+            self.assertEqual(budget_process["current_state"], {"key": "-", "label": "-"})
+            self.assertEqual(budget_process["possible_states"], expected_possible_states)
+            self.assertEqual(budget_process["next_transitions"], expected_next_transitions)
+            self.assertEqual(budget_process["possible_transitions"], expected_possible_transitions)
+            self.assertEqual(budget_process["timeline"], expected_timeline)
+            self.assertIn("round_numbers", budget_process)
 
     def test_list_select_fields(self):
         self.client.force_login(self.user)
-
-        r = self.client.get("/api/polio/budget/?fields=obr_name,country_name")
-        j = self.assertJSONResponse(r, 200)
-        campaigns = j["results"]
-        for c in campaigns:
-            self.assertEqual(c["obr_name"], "test campaign")
-            self.assertEqual(c["country_name"], None)
-            self.assertEqual(list(c.keys()), ["obr_name", "country_name"])
+        response = self.client.get("/api/polio/budget/?fields=obr_name,country_name")
+        response_data = self.assertJSONResponse(response, 200)
+        for budget_process in response_data["results"]:
+            self.assertEqual(budget_process["obr_name"], "test campaign")
+            self.assertEqual(budget_process["country_name"], "ANGOLA")
+            self.assertEqual(list(budget_process.keys()), ["obr_name", "country_name"])
 
     def test_transition_to(self):
-        """With file and links."""
         self.client.force_login(self.user)
         prev_budget_step_count = BudgetStep.objects.count()
         response = self.client.get("/api/polio/budget/")
         response_data = self.assertJSONResponse(response, 200)
 
-        campaigns = response_data["results"]
-        for c in campaigns:
-            self.assertEqual(c["obr_name"], "test campaign")
+        for budget_process in response_data["results"]:
+            self.assertEqual(budget_process["obr_name"], "test campaign")
 
         fake_file = StringIO("hello world")
         fake_file.name = "mon_fichier.txt"
@@ -126,7 +217,7 @@ class TeamAPITestCase(APITestCase):
             "/api/polio/budget/transition_to/",
             data={
                 "transition_key": "submit_budget",
-                "round": self.round.id,
+                "budget_process": self.budget_process_1.id,
                 "comment": "hello world2",
                 "files": [fake_file],
             },
@@ -138,8 +229,8 @@ class TeamAPITestCase(APITestCase):
         budget_step = BudgetStep.objects.get(id=step_id)
 
         # Check the relations: BudgetStep ----> BudgetProcess <---- Round
-        self.round.refresh_from_db()
-        self.assertEqual(budget_step.budget_process, self.round.budget_process)
+        self.round_1.refresh_from_db()
+        self.assertEqual(budget_step.budget_process, self.round_1.budget_process)
 
         budget_process = BudgetProcess.objects.get(id=budget_step.budget_process.pk)
         self.assertEqual(budget_process.current_state_key, "budget_submitted")
@@ -157,7 +248,6 @@ class TeamAPITestCase(APITestCase):
         self.assertEqual(file["filename"], fake_file.name)
 
     def test_step_files(self):
-        """With file and links."""
         self.client.force_login(self.user)
         prev_budget_step_count = BudgetStep.objects.count()
         response = self.client.get("/api/polio/budget/")
@@ -174,7 +264,7 @@ class TeamAPITestCase(APITestCase):
             "/api/polio/budget/transition_to/",
             data={
                 "transition_key": "submit_budget",
-                "round": self.round.id,
+                "budget_process": self.budget_process_1.id,
                 "comment": "hello world2",
                 "files": [fake_file],
             },
@@ -186,8 +276,8 @@ class TeamAPITestCase(APITestCase):
         budget_step = BudgetStep.objects.get(id=step_id)
 
         # Check the relations: BudgetStep ----> BudgetProcess <---- Round
-        self.round.refresh_from_db()
-        self.assertEqual(budget_step.budget_process, self.round.budget_process)
+        self.round_1.refresh_from_db()
+        self.assertEqual(budget_step.budget_process, self.round_1.budget_process)
 
         # Check that we have only created one step.
         new_budget_step_count = BudgetStep.objects.count()
@@ -226,7 +316,7 @@ class TeamAPITestCase(APITestCase):
             "/api/polio/budget/transition_to/",
             data={
                 "transition_key": "submit_budget",
-                "round": self.round.id,
+                "budget_process": self.budget_process_1.id,
                 "comment": "hello world2",
                 "files": [fake_file],
                 "links": json.dumps(
@@ -250,19 +340,15 @@ class TeamAPITestCase(APITestCase):
         budget_step = BudgetStep.objects.get(id=step_id)
 
         # Check the relations: BudgetStep ----> BudgetProcess <---- Round
-        self.round.refresh_from_db()
-        self.assertEqual(budget_step.budget_process, self.round.budget_process)
+        self.round_1.refresh_from_db()
+        self.assertEqual(budget_step.budget_process, self.round_1.budget_process)
 
         # Check the new state of `BudgetProcess`.
-        budget_process = self.round.budget_process
-        budget_process.refresh_from_db()
-        self.assertEqual(budget_process.current_state_key, "budget_submitted")
-
-        # TODO: current state has been moved in `Budget`, what should we do with `/api/polio/budget/{self.campaign.id}/`
-        # response = self.client.get(f"/api/polio/budget/{self.campaign.id}/")
-        # response_data = self.assertJSONResponse(response, 200)
-        # self.assertEqual(response_data["current_state"]["key"], "budget_submitted")
-        # self.assertEqual(response_data['budget_last_updated_at'], s.created_at.isoformat())
+        budget_process = self.round_1.budget_process
+        response = self.client.get(f"/api/polio/budget/{budget_process.id}/")
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertEqual(response_data["current_state"]["key"], "budget_submitted")
+        self.assertEqual(response_data["updated_at"], budget_process.updated_at.isoformat().replace("+00:00", "Z"))
 
         # Check that we have only created one step.
         new_budget_step_count = BudgetStep.objects.count()
@@ -286,7 +372,7 @@ class TeamAPITestCase(APITestCase):
         )
 
     def test_transition_to_link_json(self):
-        # check it work when sending json too
+        # Check it work when sending JSON too.
         self.client.force_login(self.user)
         prev_budget_step_count = BudgetStep.objects.count()
         response = self.client.get("/api/polio/budget/")
@@ -300,7 +386,7 @@ class TeamAPITestCase(APITestCase):
             "/api/polio/budget/transition_to/",
             data={
                 "transition_key": "submit_budget",
-                "round": self.round.id,
+                "budget_process": self.budget_process_1.id,
                 "comment": "hello world2",
                 "links": [
                     {
@@ -322,19 +408,15 @@ class TeamAPITestCase(APITestCase):
         budget_step = BudgetStep.objects.get(id=step_id)
 
         # Check the relations: BudgetStep ----> BudgetProcess <---- Round
-        self.round.refresh_from_db()
-        self.assertEqual(budget_step.budget_process, self.round.budget_process)
+        self.round_1.refresh_from_db()
+        self.assertEqual(budget_step.budget_process, self.round_1.budget_process)
 
         # Check the new state of `BudgetProcess`.
-        budget_process = self.round.budget_process
-        budget_process.refresh_from_db()
-        self.assertEqual(budget_process.current_state_key, "budget_submitted")
-
-        # TODO: current state has been moved in `Budget`, what should we do with `/api/polio/budget/{self.campaign.id}/`
-        # response = self.client.get(f"/api/polio/budget/{self.campaign.id}/")
-        # response_data = self.assertJSONResponse(response, 200)
-        # self.assertEqual(response_data["current_state"]["key"], "budget_submitted")
-        # self.assertEqual(response_data['budget_last_updated_at'], s.created_at.isoformat())
+        budget_process = self.round_1.budget_process
+        response = self.client.get(f"/api/polio/budget/{budget_process.id}/")
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertEqual(response_data["current_state"]["key"], "budget_submitted")
+        self.assertEqual(response_data["updated_at"], budget_process.updated_at.isoformat().replace("+00:00", "Z"))
 
         # Check that we have only created one step.
         new_budget_step_count = BudgetStep.objects.count()
@@ -353,43 +435,44 @@ class TeamAPITestCase(APITestCase):
         )
 
     def test_next_steps_after_transition(self):
+        budget_process = self.budget_process_2
+        round = self.round_3
         self.client.force_login(self.user)
         prev_budget_step_count = BudgetStep.objects.count()
-        c = self.campaign
-        r = self.client.get(f"/api/polio/budget/{c.id}/?fields=:all")
-        j = self.assertJSONResponse(r, 200)
 
-        # check initial status and possible transition on campaign
-        self.assertEqual(j["obr_name"], "test campaign")
-        self.assertEqual(j["current_state"]["key"], "-")
-        self.assertTrue(isinstance(j["next_transitions"], list))
-        transitions = j["next_transitions"]
+        response = self.client.get(f"/api/polio/budget/{budget_process.id}/?fields=:all")
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertEqual(response_data["obr_name"], "test campaign")
+
+        self.assertEqual(response_data["current_state"]["key"], "-")
+        self.assertTrue(isinstance(response_data["next_transitions"], list))
+        transitions = response_data["next_transitions"]
         self.assertEqual(len(transitions), 1)
         self.assertEqual(transitions[0]["key"], "submit_budget")
         self.assertEqual(transitions[0]["allowed"], True)
 
         # Post to change status
-        r = self.client.post(
+        response = self.client.post(
             "/api/polio/budget/transition_to/",
             data={
                 "transition_key": "submit_budget",
-                "campaign": self.campaign.id,
+                "budget_process": budget_process.id,
                 "comment": "hello world2",
             },
         )
-        j = self.assertJSONResponse(r, 201)
-        self.assertEqual(j["result"], "success")
-        step_id = j["id"]
+        response_data = self.assertJSONResponse(response, 201)
+        self.assertEqual(response_data["result"], "success")
+        step_id = response_data["id"]
 
         # Check new status on campaign
-        r = self.client.get(f"/api/polio/budget/{c.id}/?fields=:all")
-        j = self.assertJSONResponse(r, 200)
+        response = self.client.get(f"/api/polio/budget/{budget_process.id}/?fields=:all")
+        response_data = self.assertJSONResponse(response, 200)
 
-        self.assertEqual(j["obr_name"], "test campaign")
-        self.assertEqual(j["current_state"]["key"], "budget_submitted")
-        self.assertTrue(isinstance(j["budget_last_updated_at"], str) and len(j["budget_last_updated_at"]) > 0)
-        self.assertTrue(isinstance(j["next_transitions"], list))
-        transitions = j["next_transitions"]
+        self.assertEqual(response_data["obr_name"], "test campaign")
+        self.assertEqual(response_data["current_state"]["key"], "budget_submitted")
+        self.assertTrue(isinstance(response_data["updated_at"], str) and len(response_data["updated_at"]) > 0)
+        self.assertTrue(isinstance(response_data["next_transitions"], list))
+        transitions = response_data["next_transitions"]
         self.assertEqual(len(transitions), 2)
         self.jsonListContains(
             transitions,
@@ -404,32 +487,33 @@ class TeamAPITestCase(APITestCase):
                 },
             ],
         )
-        # do a second transition
-        r = self.client.post(
+
+        # Do a second transition.
+        response = self.client.post(
             "/api/polio/budget/transition_to/",
             data={
                 "transition_key": "accept_budget",
-                "campaign": self.campaign.id,
+                "budget_process": budget_process.id,
                 "comment": "I'm accepting the budget",
             },
         )
-        j = self.assertJSONResponse(r, 201)
-        self.assertEqual(j["result"], "success")
-        # check that we have only created one step
+        response_data = self.assertJSONResponse(response, 201)
+        self.assertEqual(response_data["result"], "success")
+        # Check that we have only created one step.
         new_budget_step_count = BudgetStep.objects.count()
         self.assertEqual(prev_budget_step_count + 2, new_budget_step_count)
 
         # Check new status on campaign
-        r = self.client.get(f"/api/polio/budget/{c.id}/?fields=:all")
-        j = self.assertJSONResponse(r, 200)
+        response = self.client.get(f"/api/polio/budget/{budget_process.id}/?fields=:all")
+        response_data = self.assertJSONResponse(response, 200)
 
-        self.assertEqual(j["obr_name"], "test campaign")
-        self.assertEqual(j["current_state"]["key"], "accepted")
-        self.assertTrue(isinstance(j["budget_last_updated_at"], str) and len(j["budget_last_updated_at"]) > 0)
-        self.assertTrue(isinstance(j["next_transitions"], list))
+        self.assertEqual(response_data["obr_name"], "test campaign")
+        self.assertEqual(response_data["current_state"]["key"], "accepted")
+        self.assertTrue(isinstance(response_data["updated_at"], str) and len(response_data["updated_at"]) > 0)
+        self.assertTrue(isinstance(response_data["next_transitions"], list))
 
         # Final transition there is none after
-        self.assertEqual(len(j["next_transitions"]), 0)
+        self.assertEqual(len(response_data["next_transitions"]), 0)
 
     def test_mail_template_init(self):
         text = """
@@ -471,7 +555,6 @@ class TeamAPITestCase(APITestCase):
         template = Engine.get_default().from_string(mt.template)
         context = Context({"user": "olivier", "files": [{"path": "http://example.com/test.txt", "name": "test.txt"}]})
         r = template.render(context)
-        print(r)
         self.assertEqual(
             r,
             """

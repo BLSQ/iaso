@@ -602,29 +602,23 @@ class UpdateBudgetStepSerializer(serializers.ModelSerializer):
         ]
 
 
-class LastBudgetAnnotation(TypedDict):
-    budget_last_updated_at: datetime
-
-
 # noinspection PyMethodMayBeStatic
 class ExportCampaignBudgetSerializer(CampaignBudgetSerializer):
     class Meta:
-        model = Campaign
-        fields = ["obr_name", "budget_current_state_label", "country", "cvdpv2_notified_at", "budget_last_updated_at"]
+        model = BudgetProcess
+        fields = ["obr_name", "current_state_label", "country", "updated_at"]
         labels = {
             "obr_name": "OBR name",
-            "budget_last_updated_at": "Last update",
-            "cvdpv2_notified_at": "Notification date",
+            "updated_at": "Last update",
             "country": "Country",
-            "budget_current_state_label": "Budget state",
+            "current_state_label": "Budget state",
         }
 
     country = serializers.SerializerMethodField()
-    budget_last_updated_at = serializers.SerializerMethodField()  # type: ignore
+    updated_at = serializers.SerializerMethodField()
 
-    def get_country(self, campaign: Campaign):
-        return campaign.country.name if campaign.country else None
+    def get_country(self, budget_process: BudgetProcess):
+        return budget_process.country_name
 
-    def get_budget_last_updated_at(self, campaign: Annotated[Campaign, LastBudgetAnnotation]):
-        if campaign.budget_last_updated_at:
-            return campaign.budget_last_updated_at.strftime("%Y-%m-%d")
+    def get_updated_at(self, budget_process: BudgetProcess):
+        return budget_process.updated_at.strftime("%Y-%m-%d")

@@ -500,6 +500,14 @@ export const orgUnitChangeRequestPath = {
             key: 'status',
             isRequired: false,
         },
+        {
+            key: 'created_at_after',
+            isRequired: false,
+        },
+        {
+            key: 'created_at_before',
+            isRequired: false,
+        },
     ],
 };
 export const registryPath = {

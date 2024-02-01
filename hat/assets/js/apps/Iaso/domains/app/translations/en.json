@@ -433,6 +433,8 @@
     "iaso.label.created": "Creation",
     "iaso.label.created_at": "Created",
     "iaso.label.created_by": "Created by",
+    "iaso.label.createdDateFrom": "Creation date from",
+    "iaso.label.createdDateTo": "Creation date to",
     "iaso.label.createPlanning": "Create planning",
     "iaso.label.creationDateFrom": "Creation from",
     "iaso.label.creationDateTo": "Creation until",

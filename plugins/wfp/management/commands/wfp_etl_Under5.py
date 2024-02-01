@@ -84,7 +84,10 @@ class Under5:
 
                 if visit["form_id"] == "Anthropometric visit child":
                     current_journey["nutrition_programme"] = ETL().program_mapper(visit)
-                anthropometric_visit_forms = ["child_antropometric_followUp_tsfp", "child_antropometric_followUp_otp"]
+                anthropometric_visit_forms = [
+                    "child_antropometric_followUp_tsfp",
+                    "child_antropometric_followUp_otp",
+                ]
 
                 current_journey = ETL().journey_Formatter(
                     visit,
@@ -111,19 +114,33 @@ class Under5:
 
                     if visit.get("next_visit_days", None) is not None and visit.get("next_visit_days", None) != "":
                         next_visit_days = visit.get("next_visit_days", None)
-                        if next_visit_date is not None and next_visit_date != "":
-                            nextSecondVisitDate = datetime.strptime(
-                                next_visit_date[:10], "%Y-%m-%d"
-                            ).date() + timedelta(days=int(next_visit_days))
+                    elif (
+                        visit.get("number_of_days__int__", None) is not None
+                        and visit.get("number_of_days__int__", None) != ""
+                    ):
+                        next_visit_days = visit.get("number_of_days__int__", None)
+                    elif (
+                        visit.get("OTP_next_visit", None) is not None
+                        and visit.get("OTP_next_visit", None) != ""
+                        and visit.get("OTP_next_visit") != "--"
+                    ):
+                        next_visit_days = visit.get("OTP_next_visit", None)
+                    elif (
+                        visit.get("TSFP_next_visit", None) is not None
+                        and visit.get("TSFP_next_visit", None) != ""
+                        and visit.get("TSFP_next_visit") != "--"
+                    ):
+                        next_visit_days = visit.get("TSFP_next_visit", None)
 
-                    followUpVisitsAtNextVisit = ETL().followup_visits_at_next_visit_date(
-                        visits,
-                        anthropometric_visit_forms,
-                        next_visit_date[:10],
-                        nextSecondVisitDate,
+                    if next_visit_date is not None and next_visit_date != "":
+                        nextSecondVisitDate = datetime.strptime(next_visit_date[:10], "%Y-%m-%d").date() + timedelta(
+                            days=int(next_visit_days)
+                        )
+
+                    missed_followup_visit = ETL().missed_followup_visit(
+                        visits, anthropometric_visit_forms, next_visit_date[:10], nextSecondVisitDate, next_visit_days
                     )
-                    # Missed 2 consecutives visits(exit type is set to defaulter)
-                    if current_journey.get("exit_type", None) is None and len(followUpVisitsAtNextVisit) < 2:
+                    if current_journey.get("exit_type", None) is None and missed_followup_visit > 1:
                         current_journey["exit_type"] = "defaulter"
 
                 current_journey["steps"].append(visit)

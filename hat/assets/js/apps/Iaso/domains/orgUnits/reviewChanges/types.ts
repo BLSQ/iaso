@@ -67,15 +67,24 @@ export type OrgUnitChangeRequestDetails = {
     approved_fields: string[];
     rejection_comment?: string;
     org_unit: OrgUnitForChangeRequest;
-    new_parent?: ShortOrgUnit;
-    new_name?: string;
-    new_org_unit_type: NestedOrgUnitType;
+    new_closed_date?: string;
     new_groups: NestedGroup[];
     new_location?: NestedLocation;
     new_location_accuracy?: number;
+    new_name?: string;
     new_opening_date?: string;
-    new_closed_date?: string;
+    new_org_unit_type: NestedOrgUnitType;
+    new_parent?: ShortOrgUnit;
     new_reference_instances: InstanceForChangeRequest[];
+    old_closed_date?: string;
+    old_groups: NestedGroup[];
+    old_location?: NestedLocation;
+    old_location_accuracy?: number;
+    old_name?: string;
+    old_opening_date?: string;
+    old_org_unit_type: NestedOrgUnitType;
+    old_parent?: ShortOrgUnit;
+    old_reference_instances: InstanceForChangeRequest[];
 };
 
 type OrgUnitForChangeRequest = {

@@ -149,6 +149,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.createdDateTo',
         defaultMessage: 'Creation date to',
     },
+    close: {
+        id: 'iaso.label.close',
+        defaultMessage: 'Close',
+    },
 });
 
 export default MESSAGES;

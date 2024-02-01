@@ -60,7 +60,7 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
                 },
             },
             {
-                Header: formatMessage(MESSAGES.rounds),
+                Header: formatMessage(MESSAGES.roundNumbers),
                 id: 'rounds',
                 Cell: settings => {
                     const { rounds } = settings.row.original;

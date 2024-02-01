@@ -25,6 +25,7 @@ import {
     CAMPAIGNS_ENDPOINT,
     useGetCampaigns,
 } from '../../../Campaigns/hooks/api/useGetCampaigns';
+import { commaSeparatedIdsToStringArray } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
 
 const defaults = {
     order: 'country',
@@ -253,42 +254,81 @@ export const useCampaignOptions = (countryName: string): UseQueryResult => {
 };
 
 const createEditFormA = async (body: any) => {
+    const copy = { ...body };
+    const { lot_numbers } = body;
+    if (lot_numbers && !Array.isArray(lot_numbers)) {
+        const lotNumbersArray = commaSeparatedIdsToStringArray(lot_numbers);
+        copy.lot_numbers = lotNumbersArray;
+    }
     if (body.id) {
         return patchRequest(
-            `${modalUrl}outgoing_stock_movement/${body.id}`,
-            body,
+            `${modalUrl}outgoing_stock_movement/${body.id}/`,
+            copy,
         );
     }
-    return postRequest(`${modalUrl}outgoing_stock_movement/`, body);
+    return postRequest(`${modalUrl}outgoing_stock_movement/`, copy);
 };
 
 export const useSaveFormA = () => {
     return useSnackMutation({
         mutationFn: body => createEditFormA(body),
+        invalidateQueryKey: [
+            'formA',
+            'vaccine-stock-list',
+            'usable-vials',
+            'stock-management-summary',
+            'unusable-vials',
+        ],
     });
 };
 const createEditDestruction = async (body: any) => {
-    if (body.id) {
-        return patchRequest(`${modalUrl}destruction_report/${body.id}`, body);
+    const copy = { ...body };
+    const { lot_numbers } = body;
+    if (lot_numbers && !Array.isArray(lot_numbers)) {
+        const lotNumbersArray = commaSeparatedIdsToStringArray(lot_numbers);
+        copy.lot_numbers = lotNumbersArray;
     }
-    return postRequest(`${modalUrl}destruction_report/`, body);
+    if (body.id) {
+        return patchRequest(`${modalUrl}destruction_report/${body.id}/`, copy);
+    }
+    return postRequest(`${modalUrl}destruction_report/`, copy);
 };
 
 export const useSaveDestruction = () => {
     return useSnackMutation({
         mutationFn: body => createEditDestruction(body),
+        invalidateQueryKey: [
+            'destruction',
+            'vaccine-stock-list',
+            'usable-vials',
+            'stock-management-summary',
+            'unusable-vials',
+        ],
     });
 };
 const createEditIncident = async (body: any) => {
-    if (body.id) {
-        return patchRequest(`${modalUrl}incident_report/${body.id}`, body);
+    const copy = { ...body };
+    const { lot_numbers } = body;
+    if (lot_numbers && !Array.isArray(lot_numbers)) {
+        const lotNumbersArray = commaSeparatedIdsToStringArray(lot_numbers);
+        copy.lot_numbers = lotNumbersArray;
     }
-    return postRequest(`${modalUrl}incident_report/`, body);
+    if (body.id) {
+        return patchRequest(`${modalUrl}incident_report/${body.id}/`, copy);
+    }
+    return postRequest(`${modalUrl}incident_report/`, copy);
 };
 
 export const useSaveIncident = () => {
     return useSnackMutation({
         mutationFn: body => createEditIncident(body),
+        invalidateQueryKey: [
+            'incidents',
+            'vaccine-stock-list',
+            'usable-vials',
+            'stock-management-summary',
+            'unusable-vials',
+        ],
     });
 };
 

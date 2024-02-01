@@ -24,6 +24,7 @@ type Props = {
     closeDialog: () => void;
     countryName: string;
     vaccine: Vaccine;
+    vaccineStockId: string;
 };
 
 export const CreateEditIncident: FunctionComponent<Props> = ({
@@ -32,6 +33,7 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
     closeDialog,
     countryName,
     vaccine,
+    vaccineStockId,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSaveIncident();
@@ -45,6 +47,7 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
             date_of_report: incident?.date_of_report,
             usable_vials: incident?.usable_vials,
             unusable_vials: incident?.unusable_vials,
+            vaccine_stock: vaccineStockId,
         },
         onSubmit: values => save(values),
         validationSchema,

@@ -90,6 +90,7 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                         component={SingleSelect}
                         required
                         options={
+                            // @ts-ignore
                             (campaignOptions ?? []).length > 0
                                 ? campaignOptions
                                 : [
@@ -109,7 +110,7 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                         label={formatMessage(
                             MESSAGES.lot_numbers_for_usable_vials,
                         )}
-                        name="lot_numbers_for_usable_vials"
+                        name="lot_numbers"
                         component={TextInput}
                         shrinkLabel={false}
                     />

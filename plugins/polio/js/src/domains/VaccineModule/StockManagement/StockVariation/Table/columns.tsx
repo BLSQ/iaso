@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import React, { useMemo } from 'react';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
@@ -39,15 +40,28 @@ export const useFormATableColumns = (
             {
                 // Not formatting lot numbers as it's not clear how they will be formatted
                 Header: formatMessage(MESSAGES.lot_numbers_for_usable_vials),
-                accessor: 'lot_numbers_for_usable_vials',
-                id: 'lot_numbers_for_usable_vials',
+                accessor: 'lot_numbers',
+                id: 'lot_numbers',
                 sortable: true,
-                Cell: settings => (
-                    <span>
-                        {settings.row.original.lot_numbers_for_usable_vials ??
-                            textPlaceholder}
-                    </span>
-                ),
+                Cell: settings => {
+                    const { lot_numbers } = settings.row.original;
+                    if ((lot_numbers ?? []).length === 0) {
+                        return <span>{textPlaceholder}</span>;
+                    }
+                    return (
+                        <>
+                            {lot_numbers.map((lotNumber, index) => (
+                                <div key={`${lotNumber}-${index}`}>
+                                    {lotNumber ?? textPlaceholder}
+                                </div>
+                            ))}
+                        </>
+                    );
+                    // <span>
+                    //     {settings.row.original.lot_numbers ?? textPlaceholder}
+
+                    // </span>
+                },
             },
             {
                 Header: formatMessage(MESSAGES.forma_unusable_vials),
@@ -135,9 +149,11 @@ export const useDestructionTableColumns = (
                 sortable: true,
             },
             {
-                Header: formatMessage(MESSAGES.destruction_reception_rrt),
-                accessor: 'destruction_reception_rrt',
-                id: 'destruction_reception_rrt',
+                Header: formatMessage(
+                    MESSAGES.rrt_destruction_report_reception_date,
+                ),
+                accessor: 'rrt_destruction_report_reception_date',
+                id: 'rrt_destruction_report_reception_date',
                 sortable: true,
                 Cell: DateCell,
             },
@@ -172,6 +188,9 @@ export const useDestructionTableColumns = (
                                 iconProps={{}}
                                 countryName={countryName}
                                 vaccine={vaccine}
+                                vaccineStockId={
+                                    settings.row.original.vaccine_stock
+                                }
                             />
                             {/* <DeleteDialog
                                 titleMessage={MESSAGES.deleteVRF}
@@ -251,6 +270,9 @@ export const useIncidentTableColumns = (
                                 iconProps={{}}
                                 countryName={countryName}
                                 vaccine={vaccine}
+                                vaccineStockId={
+                                    settings.row.original.vaccine_stock
+                                }
                             />
                             {/* <DeleteDialog
                                 titleMessage={MESSAGES.deleteVRF}

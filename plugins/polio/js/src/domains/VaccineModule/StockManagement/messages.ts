@@ -169,8 +169,8 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.incident_report_received_by_rrt',
         defaultMessage: 'Incident report received by RRT',
     },
-    destruction_reception_rrt: {
-        id: 'iaso.polio.label.destruction_reception_rrt',
+    rrt_destruction_report_reception_date: {
+        id: 'iaso.polio.label.rrt_destruction_report_reception_date',
         defaultMessage: 'Destruction report received by RRT',
     },
     formaReports: {

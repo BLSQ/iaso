@@ -108,11 +108,11 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                 </Grid>
                 <Grid item xs={12} md={6}>
                     <DatesRange
-                        keyDateFrom="created_date_from"
-                        keyDateTo="created_date_to"
+                        keyDateFrom="created_at_after"
+                        keyDateTo="created_at_before"
                         onChangeDate={handleChange}
-                        dateFrom={filters.created_date_from}
-                        dateTo={filters.created_date_to}
+                        dateFrom={filters.created_at_after}
+                        dateTo={filters.created_at_before}
                         labelFrom={MESSAGES.createdDateFrom}
                         labelTo={MESSAGES.createdDateTo}
                     />

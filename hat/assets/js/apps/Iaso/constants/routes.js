@@ -501,11 +501,11 @@ export const orgUnitChangeRequestPath = {
             isRequired: false,
         },
         {
-            key: 'created_date_from',
+            key: 'created_at_after',
             isRequired: false,
         },
         {
-            key: 'created_date_to',
+            key: 'created_at_before',
             isRequired: false,
         },
     ],

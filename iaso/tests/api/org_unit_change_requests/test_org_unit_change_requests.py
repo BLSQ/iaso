@@ -257,14 +257,14 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         changeRequest2.created_at = datetime.datetime(2022, 10, 17, 17, 0, 0, 0, tzinfo=datetime.timezone.utc)
         changeRequest2.save()
 
-        response = self.client.get("/api/orgunits/changes/?created_date_from=17-10-2023&created_date_to=17-10-2023")
+        response = self.client.get("/api/orgunits/changes/?created_at_after=17-10-2023&created_at_before=17-10-2023")
         self.assertJSONResponse(response, 200)
         self.assertEqual(1, len(response.data["results"]))
 
-        response = self.client.get("/api/orgunits/changes/?created_date_from=17-10-2022")
+        response = self.client.get("/api/orgunits/changes/?created_at_after=17-10-2022")
         self.assertJSONResponse(response, 200)
         self.assertEqual(2, len(response.data["results"]))
 
-        response = self.client.get("/api/orgunits/changes/?created_date_to=17-10-2022")
+        response = self.client.get("/api/orgunits/changes/?created_at_before=17-10-2022")
         self.assertJSONResponse(response, 200)
         self.assertEqual(1, len(response.data["results"]))

@@ -18,8 +18,8 @@ const getOrgUnitChangeProposals = (options: ApproveOrgUnitParams) => {
         order: options.order || '-updated_at',
         limit: options.pageSize || 10,
         page: options.page,
-        created_date_from: options.created_date_from,
-        created_date_to: options.created_date_to,
+        created_at_after: options.created_at_after,
+        created_at_before: options.created_at_before,
     };
 
     const url = makeUrlWithParams(apiUrl, apiParams);

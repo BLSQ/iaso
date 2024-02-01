@@ -44,32 +44,38 @@ export const useFormAValidation = () => {
         lot_numbers_for_usable_vials: yup
             .mixed()
             .nullable()
+            .required(formatMessage(MESSAGES.requiredField))
             // TS can't detect the added method
             // @ts-ignore
             .isNumbersArrayString(formatMessage),
-        date_of_report: yup
+        report_date: yup
             .date()
+            .required(formatMessage(MESSAGES.requiredField))
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
         form_a_reception_date: yup
             .date()
+            .required(formatMessage(MESSAGES.requiredField))
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
         vials_used: yup
             .number()
             .nullable()
+            .required(formatMessage(MESSAGES.requiredField))
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
-        vials_missing: yup
+        missing_vials: yup
             .number()
             .nullable()
+            .required(formatMessage(MESSAGES.requiredField))
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
         unusable_vials: yup
             .number()
             .nullable()
+            .required(formatMessage(MESSAGES.requiredField))
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
@@ -83,17 +89,20 @@ export const useDestructionValidation = () => {
             .string()
             .nullable()
             .required(formatMessage(MESSAGES.requiredField)),
-        destruction_reception_rrt: yup
+        rrt_destruction_report_reception_date: yup
             .date()
+            .required()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
-        date_of_report: yup
+        destruction_report_date: yup
             .date()
+            .required(formatMessage(MESSAGES.requiredField))
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
-        vials_destroyed: yup
+        unusable_vials_destroyed: yup
             .number()
             .nullable()
+            .required(formatMessage(MESSAGES.requiredField))
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
@@ -114,20 +123,24 @@ export const useIncidentValidation = () => {
             .required(formatMessage(MESSAGES.requiredField)), // can be made more strict witha ccepted values from dropdown
         incident_report_received_by_rrt: yup
             .date()
+            .required(formatMessage(MESSAGES.requiredField))
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
-        date_of_report: yup
+        date_of_incident_report: yup
             .date()
+            .required(formatMessage(MESSAGES.requiredField))
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
         usable_vials: yup
             .number()
+            .required(formatMessage(MESSAGES.requiredField))
             .nullable()
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
         unusable_vials: yup
             .number()
+            .required(formatMessage(MESSAGES.requiredField))
             .nullable()
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()

@@ -93,17 +93,20 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                     )}
                     name="rrt_destruction_report_reception_date"
                     component={DateInput}
+                    required
                 />
                 <Field
                     label={formatMessage(MESSAGES.report_date)}
                     name="destruction_report_date"
                     component={DateInput}
+                    required
                 />
                 <Box mb={2}>
                     <Field
                         label={formatMessage(MESSAGES.vials_destroyed)}
                         name="unusable_vials_destroyed"
                         component={NumberInput}
+                        required
                     />
                 </Box>
                 <Box>

@@ -44,7 +44,7 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
             stock_correction: incident?.stock_correction,
             incident_report_received_by_rrt:
                 incident?.incident_report_received_by_rrt,
-            date_of_report: incident?.date_of_report,
+            date_of_incident_report: incident?.date_of_incident_report,
             usable_vials: incident?.usable_vials,
             unusable_vials: incident?.unusable_vials,
             vaccine_stock: vaccineStockId,
@@ -92,17 +92,20 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                     )}
                     name="incident_report_received_by_rrt"
                     component={DateInput}
+                    required
                 />
                 <Field
                     label={formatMessage(MESSAGES.report_date)}
                     name="date_of_incident_report"
                     component={DateInput}
+                    required
                 />
                 <Box mb={2}>
                     <Field
                         label={formatMessage(MESSAGES.usable_vials)}
                         name="usable_vials"
                         component={NumberInput}
+                        required
                     />
                 </Box>
                 <Box mb={2}>
@@ -110,6 +113,7 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                         label={formatMessage(MESSAGES.unusable_vials)}
                         name="unusable_vials"
                         component={NumberInput}
+                        required
                     />
                 </Box>
             </ConfirmCancelModal>

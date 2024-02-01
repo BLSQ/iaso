@@ -119,17 +119,20 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                     label={formatMessage(MESSAGES.report_date)}
                     name="report_date"
                     component={DateInput}
+                    required
                 />
                 <Field
                     label={formatMessage(MESSAGES.form_a_reception_date)}
                     name="form_a_reception_date"
                     component={DateInput}
+                    required
                 />
                 <Box mb={2}>
                     <Field
                         label={formatMessage(MESSAGES.forma_vials_used)}
                         name="usable_vials_used"
                         component={NumberInput}
+                        required
                     />
                 </Box>
                 <Box mb={2}>
@@ -137,6 +140,7 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                         label={formatMessage(MESSAGES.forma_vials_missing)}
                         name="missing_vials"
                         component={NumberInput}
+                        required
                     />
                 </Box>
                 <Box mb={2}>
@@ -144,6 +148,7 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                         label={formatMessage(MESSAGES.forma_unusable_vials)}
                         name="unusable_vials"
                         component={NumberInput}
+                        required
                     />
                 </Box>
             </ConfirmCancelModal>

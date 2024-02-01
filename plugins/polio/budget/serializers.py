@@ -19,7 +19,7 @@ from .models import (
     model_field_exists,
     send_budget_mails,
     get_workflow,
-    Budget,
+    BudgetProcess,
 )
 from .workflow import next_transitions, can_user_transition, Category, effective_teams
 
@@ -413,7 +413,7 @@ class TransitionToSerializer(serializers.Serializer):
                 raise Exception(TransitionError.MISSING_FIELD)
 
         created_by_team = None
-        # first team the user belong to that can make the event
+        # First team the user belong to that can make the event.
         if transition.teams_ids_can_transition:
             created_by_team = Team.objects.filter(id__in=transition.teams_ids_can_transition).filter(users=user).first()
         if not created_by_team:
@@ -423,20 +423,20 @@ class TransitionToSerializer(serializers.Serializer):
         node = workflow.get_node_by_key(transition.to_node)
 
         with transaction.atomic():
-            budget: Budget = round.budget
-            if not budget:
-                budget = Budget.objects.create(created_by=user, created_by_team=created_by_team)
-                round.budget = budget
+            budget_process: BudgetProcess = round.budget_process
+            if not budget_process:
+                budget_process = BudgetProcess.objects.create(created_by=user, created_by_team=created_by_team)
+                round.budget_process = budget_process
                 round.save()
 
             step = BudgetStep.objects.create(
                 amount=data.get("amount"),
                 created_by=user,
                 created_by_team=created_by_team,
-                budget=budget,
+                budget_process=budget_process,
                 comment=data.get("comment"),
                 transition_key=transition.key,
-                node_key_from=budget.current_state_key,
+                node_key_from=budget_process.current_state_key,
                 node_key_to=transition.to_node,
             )
             for link_data in data.get("links", []):
@@ -447,9 +447,9 @@ class TransitionToSerializer(serializers.Serializer):
             for file in data.get("files", []):
                 step.files.create(file=file, filename=file.name)
 
-            budget.current_state_key = transition.to_node
-            budget.current_state_label = node.label
-            budget.save()
+            budget_process.current_state_key = transition.to_node
+            budget_process.current_state_label = node.label
+            budget_process.save()
 
             send_budget_mails(step, transition, self.context["request"])
             step.is_email_sent = True
@@ -457,25 +457,25 @@ class TransitionToSerializer(serializers.Serializer):
 
             with transaction.atomic():
                 field = transition.to_node + "_at_WFEDITABLE"
-                if model_field_exists(budget, field):
+                if model_field_exists(budget_process, field):
                     # Write the value only if doesn't exist yet, this way we keep track of when a step was first submitted
-                    if not getattr(budget, field, None):
-                        setattr(budget, field, step.created_at)
-                        setattr(budget, "status", transition.to_node)
+                    if not getattr(budget_process, field, None):
+                        setattr(budget_process, field, step.created_at)
+                        setattr(budget_process, "status", transition.to_node)
                         # Custom checks for current workflow. Since we're checking the destination, we'll miss the data for the "concurrent steps".
                         # eg: if we move from state "who_sent_budget" to "gpei_consolidated_budgets", we will miss "unicef_sent_budget" without this check
                         # Needs to be updated when state key names change
                         if transition.to_node == "gpei_consolidated_budgets":
-                            if budget.who_sent_budget_at_WFEDITABLE is None:
-                                setattr(budget, "who_sent_budget_at_WFEDITABLE", step.created_at)
-                            elif budget.unicef_sent_budget_at_WFEDITABLE is None:
-                                setattr(budget, "unicef_sent_budget_at_WFEDITABLE", step.created_at)
+                            if budget_process.who_sent_budget_at_WFEDITABLE is None:
+                                setattr(budget_process, "who_sent_budget_at_WFEDITABLE", step.created_at)
+                            elif budget_process.unicef_sent_budget_at_WFEDITABLE is None:
+                                setattr(budget_process, "unicef_sent_budget_at_WFEDITABLE", step.created_at)
                         if transition.to_node == "approved":
-                            if budget.approved_by_who_at_WFEDITABLE is None:
-                                setattr(budget, "approved_by_who_at_WFEDITABLE", step.created_at)
-                            elif budget.approved_by_unicef_at_WFEDITABLE is None:
-                                setattr(budget, "approved_by_unicef_at_WFEDITABLE", step.created_at)
-                        budget.save()
+                            if budget_process.approved_by_who_at_WFEDITABLE is None:
+                                setattr(budget_process, "approved_by_who_at_WFEDITABLE", step.created_at)
+                            elif budget_process.approved_by_unicef_at_WFEDITABLE is None:
+                                setattr(budget_process, "approved_by_unicef_at_WFEDITABLE", step.created_at)
+                        budget_process.save()
 
         return step
 

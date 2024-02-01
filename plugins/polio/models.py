@@ -202,7 +202,7 @@ class Round(models.Model):
     started_at = models.DateField(null=True, blank=True)
     number = models.IntegerField(null=True, blank=True)
     campaign = models.ForeignKey("Campaign", related_name="rounds", on_delete=models.PROTECT, null=True)
-    budget = models.ForeignKey("Budget", related_name="rounds", on_delete=models.PROTECT, null=True)
+    budget_process = models.ForeignKey("BudgetProcess", related_name="rounds", on_delete=models.PROTECT, null=True)
     # With the current situation/UI, all rounds must have an end date. However, there might be legacy campaigns/rounds
     # floating around in production, and therefore consumer code must assume that this field might be NULL
     ended_at = models.DateField(null=True, blank=True)

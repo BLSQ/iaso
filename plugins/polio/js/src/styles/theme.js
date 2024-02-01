@@ -107,7 +107,6 @@ export const useStyles = makeStyles(() => ({
     subTab: {
         fontSize: 12,
         minWidth: 100,
-        width: 100,
     },
     addRoundButton: {
         fontSize: 10,

@@ -172,7 +172,10 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                     name="vrf.wastage_rate_used_on_vrf"
                                     component={NumberInput}
                                     disabled={false}
-                                    numberInputOptions={{ suffix: '%' }}
+                                    numberInputOptions={{
+                                        suffix: '%',
+                                        max: 100,
+                                    }}
                                 />
                             </Box>
                         </Grid>

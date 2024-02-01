@@ -157,7 +157,7 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
                                 paramsPrefix={tab}
                                 isFetching={isFetchingFormA}
                                 defaultSorted={[
-                                    { id: 'forma_reception_rrt', desc: true },
+                                    { id: 'form_a_reception_date', desc: true },
                                 ]}
                             />
                         )}
@@ -185,7 +185,7 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
                                 isFetching={isFetchingIncidents}
                                 defaultSorted={[
                                     {
-                                        id: 'incident_reception_rrt',
+                                        id: 'incident_report_received_by_rrt',
                                         desc: true,
                                     },
                                 ]}

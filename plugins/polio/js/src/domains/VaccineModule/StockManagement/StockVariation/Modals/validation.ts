@@ -37,7 +37,7 @@ yup.addMethod(
 export const useFormAValidation = () => {
     const { formatMessage } = useSafeIntl();
     return yup.object().shape({
-        obr_name: yup
+        campaign: yup
             .string()
             .nullable()
             .required(formatMessage(MESSAGES.requiredField)),
@@ -51,7 +51,7 @@ export const useFormAValidation = () => {
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
-        forma_reception_rrt: yup
+        form_a_reception_date: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
@@ -112,7 +112,7 @@ export const useIncidentValidation = () => {
             .string()
             .nullable()
             .required(formatMessage(MESSAGES.requiredField)), // can be made more strict witha ccepted values from dropdown
-        incident_reception_rrt: yup
+        incident_report_received_by_rrt: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),

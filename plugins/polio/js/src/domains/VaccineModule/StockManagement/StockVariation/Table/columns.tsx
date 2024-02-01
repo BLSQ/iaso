@@ -17,26 +17,20 @@ export const useFormATableColumns = (
     return useMemo(() => {
         return [
             {
-                Header: formatMessage(MESSAGES.action),
-                accessor: 'action',
-                id: 'action',
+                Header: formatMessage(MESSAGES.campaign),
+                accessor: 'campaign',
+                id: 'campaign',
                 sortable: true,
             },
             {
-                Header: formatMessage(MESSAGES.obrName),
-                accessor: 'obr_name',
-                id: 'obr_name',
-                sortable: true,
-            },
-            {
-                Header: formatMessage(MESSAGES.forma_reception_rrt),
-                accessor: 'forma_reception_rrt',
-                id: 'forma_reception_rrt',
+                Header: formatMessage(MESSAGES.form_a_reception_date),
+                accessor: 'form_a_reception_date',
+                id: 'form_a_reception_date',
                 sortable: true,
                 Cell: DateCell,
             },
             {
-                Header: formatMessage(MESSAGES.date_of_report),
+                Header: formatMessage(MESSAGES.report_date),
                 accessor: 'date_of_report',
                 id: 'date_of_report',
                 sortable: true,
@@ -125,19 +119,21 @@ export const useDestructionTableColumns = (
                 Cell: DateCell,
             },
             {
-                Header: formatMessage(MESSAGES.date_of_report),
-                accessor: 'date_of_report',
-                id: 'date_of_report',
+                Header: formatMessage(MESSAGES.report_date),
+                accessor: 'destruction_report_date',
+                id: 'destruction_report_date',
                 sortable: true,
                 Cell: DateCell,
             },
             {
                 Header: formatMessage(MESSAGES.vials_destroyed),
-                accessor: 'vials_destroyed',
-                id: 'vials_destroyed',
+                accessor: 'unusable_vials_destroyed',
+                id: 'unusable_vials_destroyed',
                 sortable: true,
                 Cell: settings => (
-                    <NumberCell value={settings.row.original.vials_destroyed} />
+                    <NumberCell
+                        value={settings.row.original.unusable_vials_destroyed}
+                    />
                 ),
             },
             {
@@ -188,9 +184,16 @@ export const useIncidentTableColumns = (
                         : textPlaceholder,
             },
             {
-                Header: formatMessage(MESSAGES.incident_reception_rrt),
-                accessor: 'incident_reception_rrt',
-                id: 'incident_reception_rrt',
+                Header: formatMessage(MESSAGES.incident_report_received_by_rrt),
+                accessor: 'incident_report_received_by_rrt',
+                id: 'incident_report_received_by_rrt',
+                sortable: true,
+                Cell: DateCell,
+            },
+            {
+                Header: formatMessage(MESSAGES.report_date),
+                accessor: 'date_of_incident_report',
+                id: 'date_of_incident_report',
                 sortable: true,
                 Cell: DateCell,
             },

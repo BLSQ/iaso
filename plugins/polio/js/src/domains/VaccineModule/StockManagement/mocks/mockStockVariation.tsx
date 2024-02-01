@@ -54,7 +54,7 @@ export const mockDestructionsList: any = {
             destruction_reception_rrt: '2023-09-02', // "rrt_destruction_report_reception_date"
             date_of_report: '2023-09-01', // destruction_report_date
             vials_destroyed: 12, // unusable_vials_destroyed
-            // lot_number: "LOT_123" // present on API
+            // lot_number: "LOT_123" // present on API MUST BE CHANGED to lot_numbers (multiple)
             // vaccine_stock : 2 // id of connected vaccine_stock is present in API
         },
         {
@@ -78,7 +78,7 @@ export const mockIncidentsList: any = {
     results: [
         {
             id: 1,
-            stock_correction: VACCINE_EXPIRED, // this is ok but the values returnes by API are actually in lowerwase like vvm_reached_discard_point
+            stock_correction: VACCINE_EXPIRED, // this is ok but the values returnes by API are actually in lowercase like vvm_reached_discard_point
             incident_reception_rrt: '2023-09-02', // incident_report_received_by_rrt
             date_of_report: '2023-09-21', // date_of_incident_report
             unusable_vials: 7, // ok

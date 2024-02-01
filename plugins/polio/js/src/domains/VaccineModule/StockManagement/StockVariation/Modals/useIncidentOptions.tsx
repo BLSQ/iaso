@@ -10,6 +10,16 @@ export const RETURN_TO_SUPPLIER = 'RETURN_TO_SUPPLIER';
 export const STEALING = 'STEALING';
 export const PHYSICAL_INVENTORY = 'PHYSICAL_INVENTORY';
 
+// from backend model.
+// class StockCorrectionChoices(models.TextChoices):
+// VVM_REACHED_DISCARD_POINT = "vvm_reached_discard_point", _("VVM reached the discard point")
+// VACCINE_EXPIRED = "vaccine_expired", _("Vaccine expired")
+// LOSSES = "losses", _("Losses")
+// RETURN = "return", _("Return")
+// STEALING = "stealing", _("Stealing")
+// PHYSICAL_INVENTORY = "physical_inventory", _("Physical Inventory")
+
+
 type IncidentType =
     | 'VACCINE_EXPIRED'
     | 'VM_REACHED_DISCARD_POINT'

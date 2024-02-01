@@ -10,7 +10,6 @@ type Props = {
     paramsPrefix: TabValue;
     data: any;
     isFetching: boolean;
-    tab: TabValue;
 };
 
 export const VaccineStockManagementDetailsTable: FunctionComponent<Props> = ({
@@ -18,9 +17,8 @@ export const VaccineStockManagementDetailsTable: FunctionComponent<Props> = ({
     paramsPrefix,
     data,
     isFetching,
-    tab,
 }) => {
-    const columns = useVaccineStockManagementDetailsColumns(tab);
+    const columns = useVaccineStockManagementDetailsColumns();
 
     return (
         // @ts-ignore

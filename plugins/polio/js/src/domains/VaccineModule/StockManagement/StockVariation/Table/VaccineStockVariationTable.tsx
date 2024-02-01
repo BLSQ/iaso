@@ -36,6 +36,7 @@ export const VaccineStockVariationTable: FunctionComponent<Props> = ({
                 loading: isFetching,
                 params,
                 defaultPageSize: 20,
+                columns,
             }}
         />
     );

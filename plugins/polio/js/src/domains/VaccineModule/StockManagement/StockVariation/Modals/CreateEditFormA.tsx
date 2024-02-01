@@ -27,6 +27,7 @@ type Props = {
     closeDialog: () => void;
     countryName: string;
     vaccine: Vaccine;
+    vaccineStockId: string;
 };
 
 export const CreateEditFormA: FunctionComponent<Props> = ({
@@ -35,6 +36,7 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
     closeDialog,
     countryName,
     vaccine,
+    vaccineStockId,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSaveFormA();
@@ -45,11 +47,12 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
             campaign: formA?.campaign,
             lot_numbers_for_usable_vials:
                 formA?.lot_numbers_for_usable_vials ?? '',
-            date_of_report: formA?.date_of_report,
+            report_date: formA?.report_date,
             form_a_reception_date: formA?.form_a_reception_date,
-            vials_used: formA?.vials_used,
+            usable_vials_used: formA?.usable_vials_used,
             unusable_vials: formA?.unusable_vials,
-            vials_missing: formA?.vials_missing,
+            missing_vials: formA?.missing_vials,
+            vaccine_stock: vaccineStockId,
         },
         onSubmit: values => save(values),
         validationSchema,
@@ -86,9 +89,19 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                         name="campaign"
                         component={SingleSelect}
                         required
-                        options={campaignOptions}
+                        options={
+                            (campaignOptions ?? []).length > 0
+                                ? campaignOptions
+                                : [
+                                      {
+                                          label: formik.values.campaign,
+                                          value: formik.values.campaign,
+                                      },
+                                  ]
+                        }
                         withMarginTop
                         isLoading={isFetchingCampaigns}
+                        disabled={!countryName}
                     />
                 </Box>
                 <Box mb={2}>

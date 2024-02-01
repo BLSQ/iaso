@@ -60,26 +60,32 @@ export const useFormATableColumns = (
             },
             {
                 Header: formatMessage(MESSAGES.forma_vials_missing),
-                accessor: 'vials_missing',
-                id: 'vials_missing',
+                accessor: 'missing_vials',
+                id: 'missing_vials',
                 sortable: true,
                 Cell: settings => {
-                    if (settings.row.original.vials_missing) {
-                        <NumberCell
-                            value={settings.row.original.vials_missing}
-                        />;
+                    if (settings.row.original.missing_vials) {
+                        return (
+                            <NumberCell
+                                value={settings.row.original.missing_vials}
+                            />
+                        );
                     }
                     return textPlaceholder;
                 },
             },
             {
                 Header: formatMessage(MESSAGES.forma_vials_used),
-                accessor: 'vials_used',
-                id: 'vials_used',
+                accessor: 'usable_vials_used',
+                id: 'usable_vials_used',
                 sortable: true,
                 Cell: settings => {
-                    if (settings.row.original.vials_used) {
-                        <NumberCell value={settings.row.original.vials_used} />;
+                    if (settings.row.original.usable_vials_used) {
+                        return (
+                            <NumberCell
+                                value={settings.row.original.usable_vials_used}
+                            />
+                        );
                     }
                     return textPlaceholder;
                 },
@@ -97,6 +103,9 @@ export const useFormATableColumns = (
                                 iconProps={{}}
                                 countryName={countryName}
                                 vaccine={vaccine}
+                                vaccineStockId={
+                                    settings.row.original.vaccine_stock
+                                }
                             />
                             {/* <DeleteDialog
                                 titleMessage={MESSAGES.deleteVRF}

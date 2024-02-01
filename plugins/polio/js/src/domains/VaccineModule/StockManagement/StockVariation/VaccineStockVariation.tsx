@@ -73,10 +73,10 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
             tab === INCIDENT,
         );
     const { data: summary } = useGetStockManagementSummary(router.params.id);
-
     const title = `${formatMessage(MESSAGES.stockVariation)}: ${
         summary?.country_name ?? textPlaceholder
     } - ${summary?.vaccine_type ?? textPlaceholder}`;
+
     const formAColumns = useFormATableColumns(
         summary?.country_name,
         summary?.vaccine_type,
@@ -132,6 +132,7 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
                                     iconProps={{}}
                                     countryName={summary?.country_name}
                                     vaccine={summary?.vaccine_type}
+                                    vaccineStockId={router.params.id as string}
                                 />
                             )}
                             {tab === DESTRUCTION && (
@@ -139,6 +140,7 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
                                     iconProps={{}}
                                     countryName={summary?.country_name}
                                     vaccine={summary?.vaccine_type}
+                                    vaccineStockId={router.params.id}
                                 />
                             )}
                             {tab === INCIDENT && (
@@ -146,6 +148,7 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
                                     iconProps={{}}
                                     countryName={summary?.country_name}
                                     vaccine={summary?.vaccine_type}
+                                    vaccineStockId={router.params.id}
                                 />
                             )}
                         </Grid>

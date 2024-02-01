@@ -557,8 +557,6 @@ class CalendarCampaignSerializer(CampaignSerializer):
     """This serializer contains juste enough data for the Calendar view in the web ui. Read only.
     Used by both anonymous and non-anonymous user"""
 
-    account_analytics_script = serializers.SerializerMethodField("get_account_analytics_script")
-
     class NestedListRoundSerializer(RoundSerializer):
         class NestedScopeSerializer(RoundScopeSerializer):
             class NestedGroupSerializer(GroupSerializer):
@@ -611,12 +609,8 @@ class CalendarCampaignSerializer(CampaignSerializer):
             "risk_assessment_status",
             "budget_status",
             "vaccines",
-            "account_analytics_script",
         ]
         read_only_fields = fields
-
-    def get_account_analytics_script(self, obj):
-        return obj.account.analytics_script
 
 
 def preparedness_from_url(spreadsheet_url, force_refresh=False):

@@ -4,9 +4,90 @@ import { FormikProps } from 'formik';
 import { useDispatch } from 'react-redux';
 import { redirectToReplace } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 import { PREALERT, VAR, VRF } from '../constants';
-import { SupplyChainFormData, TabValue, UseHandleSubmitArgs } from '../types';
+import {
+    PreAlert,
+    VAR as VARType,
+    SupplyChainFormData,
+    TabValue,
+    UseHandleSubmitArgs,
+} from '../types';
 import { makeHandleSubmit } from '../Details/utils';
 import { Optional } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+
+export const emptyArrivalReport = {
+    report_date: undefined,
+    po_number: undefined,
+    lot_numbers: undefined,
+    expiration_date: undefined,
+    doses_shipped: undefined,
+    doses_received: undefined,
+    doses_per_vial: 20, // this is hardcoded in backend too, we need to think about it.
+};
+
+export const emptyPreAlert = {
+    date_pre_alert_reception: undefined,
+    po_number: undefined,
+    estimated_arrival_time: undefined,
+    expiration_date: undefined,
+    doses_shipped: undefined,
+    doses_per_vial: 20,
+    lot_numbers: undefined,
+    id: undefined,
+};
+
+const areArrayElementsChanged = (
+    newElements: Array<Partial<PreAlert>> | Array<Partial<VARType>>,
+): boolean => {
+    return Boolean(
+        newElements.find(el => {
+            // We need to loop on object keys because when setting a field to undefined
+            // formik may remove it from the form state, so we can't use isEqual or structuredClone
+            const keys = Object.keys(el);
+            const result = keys.find(
+                key =>
+                    key !== 'doses_per_vial' && // this key is not sent to the backend so it's not relevant
+                    key !== 'vials_shipped' && // idem
+                    el[key] !== undefined,
+            );
+
+            return Boolean(result);
+        }),
+    );
+};
+
+const canSaveArrayTab = (
+    tab: 'pre_alerts' | 'arrival_reports',
+    initialValues: SupplyChainFormData,
+    values: SupplyChainFormData,
+) => {
+    const newElements = values[tab]
+        ? // @ts-ignore we check that values[tab] is not undefined, so the ts error is wrong
+          values[tab].slice(values[tab].length - 1)
+        : [];
+    // If there's no new preAlert/arrivalReport, we just check that values have changed
+    if (newElements.length === 0) {
+        return !isEqual(initialValues[tab], values[tab]);
+    }
+    // If an element has been added, we check that it's not empty
+    return areArrayElementsChanged(newElements);
+};
+
+const canSaveTab = (
+    tab: TabValue,
+    initialValues: SupplyChainFormData,
+    values: SupplyChainFormData,
+): boolean => {
+    if (tab === VRF) {
+        return !isEqual(initialValues[tab], values[tab]);
+    }
+    if (tab === PREALERT) {
+        return canSaveArrayTab(PREALERT, initialValues, values);
+    }
+    if (tab === VAR) {
+        return canSaveArrayTab(VAR, initialValues, values);
+    }
+    return false;
+};
 
 type Args = {
     formik: FormikProps<SupplyChainFormData>;
@@ -22,14 +103,16 @@ export const useEnableSaveButtons = ({
     tab,
 }: Args): Result => {
     const { isValid, isSubmitting, values, touched, errors } = formik;
+    const isPreAlertChanged = canSaveTab(PREALERT, initialValues, values);
+    const isVARChanged = canSaveTab(VAR, initialValues, values);
     const allowSaveAll =
         isValid &&
         !isSaving &&
         !isSubmitting &&
         !isEqual(touched, {}) &&
         (!isEqual(initialValues[VRF], values[VRF]) ||
-            !isEqual(initialValues[PREALERT], values[PREALERT]) ||
-            !isEqual(initialValues[VAR], values[VAR]));
+            isPreAlertChanged ||
+            isVARChanged);
 
     const isTabTouched = Boolean(touched[tab]);
     const isTabValid = !errors[tab];
@@ -38,7 +121,7 @@ export const useEnableSaveButtons = ({
         isTabValid &&
         !isSaving &&
         !isSubmitting &&
-        !isEqual(initialValues[tab], values[tab]);
+        canSaveTab(tab, initialValues, values);
     return useMemo(() => {
         return { allowSaveAll, allowSaveTab };
     }, [allowSaveAll, allowSaveTab]);

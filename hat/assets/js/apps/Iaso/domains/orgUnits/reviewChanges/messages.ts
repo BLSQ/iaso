@@ -141,6 +141,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.changeRequest.comment',
         defaultMessage: 'Comment',
     },
+    createdDateFrom: {
+        id: 'iaso.label.createdDateFrom',
+        defaultMessage: 'Creation date from',
+    },
+    createdDateTo: {
+        id: 'iaso.label.createdDateTo',
+        defaultMessage: 'Creation date to',
+    },
     close: {
         id: 'iaso.label.close',
         defaultMessage: 'Close',

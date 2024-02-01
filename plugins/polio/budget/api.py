@@ -76,18 +76,18 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
 
         return queryset
 
-    # ordering_fields = [
-    #     "obr_name",
-    #     "cvdpv2_notified_at",
-    #     "detection_status",
-    #     "first_round_started_at",
-    #     "last_round_started_at",
-    #     "country__name",
-    #     "last_budget_event__created_at",
-    #     "last_budget_event__type",
-    #     "last_budget_event__status",
-    #     "budget_current_state_key",
-    # ]
+    ordering_fields = [
+        "obr_name",
+        # "cvdpv2_notified_at",
+        # "detection_status",
+        # "first_round_started_at",
+        # "last_round_started_at",
+        "country_name",
+        # "last_budget_event__created_at",
+        # "last_budget_event__type",
+        # "last_budget_event__status",
+        # "budget_current_state_key",
+    ]
     # filterset_fields = {
     #     "last_budget_event__status": ["exact"],
     #     "country__name": ["exact"],
@@ -117,7 +117,7 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
         permission_classes=[HasPermission("iaso_polio_budget_admin")],
     )
     def override(self, request):
-        "Transition campaign to next state. Use multipart/form-data to send files"
+        """Transition campaign to next state. Use multipart/form-data to send files."""
         data = request.data
         serializer = TransitionOverrideSerializer(data=data, context={"request": request})
         serializer.is_valid(raise_exception=True)

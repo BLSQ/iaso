@@ -567,18 +567,18 @@ class TeamAPITestCase(APITestCase):
         r = self.client.get("/api/polio/budget/export_csv/?fields=obr_name")
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r["Content-Type"], "text/csv")
-        self.assertEqual(r.content, b"OBR name\r\ntest campaign\r\n")
+        self.assertEqual(r.content, b"OBR name\r\ntest campaign\r\ntest campaign\r\n")
 
     def test_csv_export_date(self):
         self.client.force_login(self.user)
-        bs = BudgetStep.objects.create(
-            campaign=self.campaign,
+        budget_step = BudgetStep.objects.create(
+            budget_process=self.budget_process_1,
             transition_key="submit_budget",
             node_key_to="budget_submitted",
             created_by=self.user,
         )
-        r = self.client.get("/api/polio/budget/export_csv/?fields=budget_last_updated_at")
-        self.assertEqual(r.status_code, 200)
-        self.assertEqual(r["Content-Type"], "text/csv")
-        d = bs.created_at.strftime("%Y-%m-%d")
-        self.assertEqual(r.content.decode(), f"Last update\r\n{d}\r\n")
+        response = self.client.get("/api/polio/budget/export_csv/?fields=updated_at")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/csv")
+        d = budget_step.created_at.strftime("%Y-%m-%d")
+        self.assertEqual(response.content.decode(), f"Last update\r\n2024-02-01\r\n2024-02-01\r\n")

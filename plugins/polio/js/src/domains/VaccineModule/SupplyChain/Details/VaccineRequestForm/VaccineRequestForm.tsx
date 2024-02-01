@@ -149,6 +149,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                     name="vrf.date_vrf_signature"
                                     component={DateInput}
                                     disabled={false}
+                                    required
                                 />
                             </Box>
                         </Grid>
@@ -161,6 +162,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                     name="vrf.quantities_ordered_in_doses"
                                     component={NumberInput}
                                     disabled={false}
+                                    required
                                 />
                             </Box>
                         </Grid>
@@ -188,6 +190,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                     name="vrf.date_vrf_reception"
                                     component={DateInput}
                                     disabled={false}
+                                    required
                                 />
                             </Box>
                         </Grid>
@@ -251,6 +254,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                 name="vrf.date_dg_approval"
                                 component={DateInput}
                                 disabled={false}
+                                required
                             />
                         </Grid>
                     </Grid>

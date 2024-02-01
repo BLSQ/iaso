@@ -41,7 +41,7 @@ const useVrfShape = () => {
         id: yup.string().nullable(),
         country: yup
             .number()
-            .required()
+            .required(formatMessage(MESSAGES.requiredField))
             .nullable()
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
@@ -51,11 +51,13 @@ const useVrfShape = () => {
         rounds: yup.mixed().nullable().required(),
         date_vrf_signature: yup
             .date()
+            .required(formatMessage(MESSAGES.requiredField))
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
         quantities_ordered_in_doses: yup
             .number()
             .nullable()
+            .required(formatMessage(MESSAGES.requiredField))
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
@@ -65,6 +67,7 @@ const useVrfShape = () => {
             .min(0, formatMessage(MESSAGES.positiveNumber)),
         date_vrf_reception: yup
             .date()
+            .required(formatMessage(MESSAGES.requiredField))
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
         date_vrf_submission_to_orpg: yup
@@ -93,6 +96,7 @@ const useVrfShape = () => {
             .typeError(formatMessage(MESSAGES.positiveInteger)),
         date_dg_approval: yup
             .date()
+            .required(formatMessage(MESSAGES.requiredField))
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
         comments: yup.string().nullable(),
@@ -104,26 +108,31 @@ const usePreAlertShape = () => {
     return yup.object().shape({
         date_pre_alert_reception: yup
             .date()
+            .required(formatMessage(MESSAGES.requiredField))
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
         po_number: yup.string().nullable(),
         lot_numbers: yup
             .mixed()
             .nullable()
+            .required(formatMessage(MESSAGES.requiredField))
             // TS can't detect the added method
             // @ts-ignore
             .isNumbersArrayString(formatMessage),
         estimated_arrival_time: yup
             .date()
+            .required(formatMessage(MESSAGES.requiredField))
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
         expiration_date: yup
             .date()
+            .required(formatMessage(MESSAGES.requiredField))
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
         doses_shipped: yup
             .number()
             .nullable()
+            .required(formatMessage(MESSAGES.requiredField))
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
@@ -134,9 +143,13 @@ const useArrivalReportShape = () => {
     return yup.object().shape({
         arrival_report_date: yup
             .date()
+            .required(formatMessage(MESSAGES.requiredField))
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
-        po_number: yup.string().nullable(),
+        po_number: yup
+            .string()
+            .nullable()
+            .required(formatMessage(MESSAGES.requiredField)),
         lot_numbers: yup
             .mixed()
             .nullable()
@@ -162,6 +175,7 @@ const useArrivalReportShape = () => {
         doses_received: yup
             .number()
             .nullable()
+            .required(formatMessage(MESSAGES.requiredField))
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),

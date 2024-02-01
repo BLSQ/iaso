@@ -62,6 +62,7 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                                 name={`pre_alerts[${index}].date_pre_alert_reception`}
                                 component={DateInput}
                                 disabled={markedForDeletion}
+                                required
                             />
                         </Grid>
                         <Grid item xs={6} md={4}>
@@ -71,6 +72,7 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                                 component={TextInput}
                                 disabled={markedForDeletion}
                                 shrinkLabel={false}
+                                required
                             />
                         </Grid>
                         {/* TODO make list */}
@@ -93,6 +95,7 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                                 name={`pre_alerts[${index}].estimated_arrival_time`}
                                 component={DateInput}
                                 disabled={markedForDeletion}
+                                required
                             />
                         </Grid>
                         <Grid item xs={6} md={4}>
@@ -101,6 +104,7 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                                 name={`pre_alerts[${index}].expiration_date`}
                                 component={DateInput}
                                 disabled={markedForDeletion}
+                                required
                             />
                         </Grid>
                         <Grid item xs={6} md={4}>
@@ -109,6 +113,7 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                                 name={`pre_alerts[${index}].doses_shipped`}
                                 component={NumberInput}
                                 disabled={markedForDeletion}
+                                required
                             />
                         </Grid>
                     </Grid>

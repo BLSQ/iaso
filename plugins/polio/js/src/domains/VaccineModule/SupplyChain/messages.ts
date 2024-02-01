@@ -298,6 +298,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.error.lotNumberError',
         defaultMessage: 'Please input numbers separated by a comma',
     },
+    requiredField: {
+        id: 'iaso.forms.error.fieldRequired',
+        defaultMessage: 'This field is required',
+    },
 });
 
 export default MESSAGES;

@@ -1,6 +1,9 @@
 import { UseQueryResult } from 'react-query';
 import { UrlParams } from 'bluesquare-components';
-import { getRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
+import {
+    getRequest,
+    postRequest,
+} from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useUrlParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
 import {
     FormattedApiParams,
@@ -302,5 +305,16 @@ const createEditIncident = async (body: any) => {
 export const useSaveIncident = () => {
     return useSnackMutation({
         mutationFn: body => createEditIncident(body),
+    });
+};
+
+const saveVaccineStock = body => {
+    return postRequest(apiUrl, body);
+};
+
+export const useSaveVaccineStock = () => {
+    return useSnackMutation({
+        mutationFn: body => saveVaccineStock(body),
+        invalidateQueryKey: 'vaccine-stock-list',
     });
 };

@@ -30,7 +30,7 @@ import {
 } from '../../../../Campaigns/hooks/api/useGetCampaigns';
 import { Campaign } from '../../../../../constants/types';
 import { enqueueSnackbar } from '../../../../../../../../../hat/assets/js/apps/Iaso/redux/snackBarsReducer';
-import { apiUrl } from '../../constants';
+import { apiUrl, defaultVaccineOptions } from '../../constants';
 import {
     CampaignDropdowns,
     ParsedSettledPromise,
@@ -105,22 +105,6 @@ export const useGetCountriesOptions = (
         return { data: options, isFetching };
     }, [countries, isFetching]);
 };
-
-// This is just to avoid a warning polluting the console
-const defaultVaccineOptions = [
-    {
-        label: 'nOPV2',
-        value: 'nOPV2',
-    },
-    {
-        label: 'mOPV2',
-        value: 'mOPV2',
-    },
-    {
-        label: 'bOPV',
-        value: 'bOPV',
-    },
-];
 
 export const useCampaignDropDowns = (
     countryId?: number,

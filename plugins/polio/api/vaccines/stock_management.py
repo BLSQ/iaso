@@ -186,12 +186,6 @@ class StockManagementCustomFilter(filters.BaseFilterBackend):
         return queryset
 
 
-class OutgoingStockMovementSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = OutgoingStockMovement
-        fields = "__all__"
-
-
 class VaccineStockSubitemBase(ModelViewSet):
     allowed_methods = ["get", "post", "head", "options", "patch", "delete"]
     permission_classes = [VaccineStockManagementReadWritePerm]
@@ -215,6 +209,23 @@ class VaccineStockSubitemBase(ModelViewSet):
             return self.model_class.objects.filter(
                 vaccine_stock=vaccine_stock_id, vaccine_stock__account=self.request.user.iaso_profile.account
             )
+
+
+class OutgoingStockMovementSerializer(serializers.ModelSerializer):
+    campaign = serializers.CharField(source="campaign.obr_name")
+
+    class Meta:
+        model = OutgoingStockMovement
+        fields = [
+            "campaign",
+            "vaccine_stock",
+            "report_date",
+            "form_a_reception_date",
+            "usable_vials_used",
+            "unusable_vials",
+            "lot_numbers",
+            "missing_vials",
+        ]
 
 
 class OutgoingStockMovementViewSet(VaccineStockSubitemBase):

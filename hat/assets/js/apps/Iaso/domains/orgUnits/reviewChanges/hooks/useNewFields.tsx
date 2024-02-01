@@ -14,12 +14,12 @@ import {
     NestedOrgUnitType,
     NestedLocation,
     OrgUnitChangeRequestDetails,
-    ShortOrgUnit,
 } from '../types';
 import { MarkerMap } from '../../../../components/maps/MarkerMapComponent';
 import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
 import MESSAGES from '../messages';
 import InstanceDetail from '../../../instances/compare/components/InstanceDetail';
+import { ShortOrgUnit } from '../../types/orgUnit';
 
 export type NewOrgUnitField = {
     key: string;
@@ -94,7 +94,7 @@ const getLocationValue = (
             latitude={location.latitude}
             maxZoom={8}
             mapHeight={300}
-            parentGeoJson={parent?.geo_json}
+            parent={parent}
         />
     );
 };

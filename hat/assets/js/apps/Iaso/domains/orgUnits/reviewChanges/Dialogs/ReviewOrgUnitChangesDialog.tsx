@@ -29,7 +29,7 @@ Org Unit Change Request
 - Rejected → red
 
 If new:
-Left side: current org unit values (fetched from org unit API)
+Left side: old org unit values: org unit values at request creation time  Comes from change request API (old_value field)
 Right side: proposed changes. Red if not selected, green if selected
 
 

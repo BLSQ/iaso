@@ -717,6 +717,7 @@
     "iaso.map.location": "Localisation",
     "iaso.map.locationLimit": "Nombre max de résultats",
     "iaso.map.locationLimit.error": "Veuillez entrer une valeur correcte",
+    "iaso.map.locationNotInShape": "La localisation ne se trouve pas dans la limite de son parent",
     "iaso.map.marker.delete": "Effacer le marqueur",
     "iaso.map.shape.addLocation": "Ajouter un marqueur",
     "iaso.map.shape.editCatchmentDisabled": "L'édition du rayon est désactivée sur ce compte",

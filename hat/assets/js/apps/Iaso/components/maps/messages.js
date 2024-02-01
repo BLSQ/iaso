@@ -33,6 +33,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.map.title.markerClustering',
         defaultMessage: 'Clustering',
     },
+    parent: {
+        id: 'iaso.label.parent',
+        defaultMessage: 'Parent',
+    },
+    locationNotInShape: {
+        id: 'iaso.map.locationNotInShape',
+        defaultMessage: 'The location is not within the bounds of the shape.',
+    },
 });
 
 export default MESSAGES;

@@ -57,10 +57,6 @@ export const useFormATableColumns = (
                             ))}
                         </>
                     );
-                    // <span>
-                    //     {settings.row.original.lot_numbers ?? textPlaceholder}
-
-                    // </span>
                 },
             },
             {

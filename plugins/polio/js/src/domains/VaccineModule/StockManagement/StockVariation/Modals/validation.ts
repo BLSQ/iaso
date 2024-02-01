@@ -41,7 +41,7 @@ export const useFormAValidation = () => {
             .string()
             .nullable()
             .required(formatMessage(MESSAGES.requiredField)),
-        lot_numbers_for_usable_vials: yup
+        lot_numbers: yup
             .mixed()
             .nullable()
             .required(formatMessage(MESSAGES.requiredField))
@@ -58,7 +58,7 @@ export const useFormAValidation = () => {
             .required(formatMessage(MESSAGES.requiredField))
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
-        vials_used: yup
+        usable_vials_used: yup
             .number()
             .nullable()
             .required(formatMessage(MESSAGES.requiredField))

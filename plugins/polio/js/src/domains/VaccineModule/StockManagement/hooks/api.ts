@@ -47,6 +47,7 @@ const options = {
 };
 
 const apiUrl = '/api/polio/vaccine/vaccine_stock/';
+const modalUrl = '/api/polio/vaccine/stock/';
 
 // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 const getVaccineStockList = async (params: FormattedApiParams) => {
@@ -149,9 +150,10 @@ export const useGetStockManagementSummary = (
 };
 
 const getFormAList = async (queryString: string) => {
-    await waitFor(750);
-    console.log('forma params', queryString);
-    return mockFormAList;
+    // await waitFor(750);
+    // console.log('forma params', queryString);
+    // return mockFormAList;
+    return getRequest(`${modalUrl}outgoing_stock_movement/?${queryString}`);
 };
 
 export const useGetFormAList = (

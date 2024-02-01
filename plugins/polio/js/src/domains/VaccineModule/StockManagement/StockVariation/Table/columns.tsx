@@ -31,8 +31,8 @@ export const useFormATableColumns = (
             },
             {
                 Header: formatMessage(MESSAGES.report_date),
-                accessor: 'date_of_report',
-                id: 'date_of_report',
+                accessor: 'report_date',
+                id: 'report_date',
                 sortable: true,
                 Cell: DateCell,
             },
@@ -42,6 +42,12 @@ export const useFormATableColumns = (
                 accessor: 'lot_numbers_for_usable_vials',
                 id: 'lot_numbers_for_usable_vials',
                 sortable: true,
+                Cell: settings => (
+                    <span>
+                        {settings.row.original.lot_numbers_for_usable_vials ??
+                            textPlaceholder}
+                    </span>
+                ),
             },
             {
                 Header: formatMessage(MESSAGES.forma_unusable_vials),
@@ -57,18 +63,26 @@ export const useFormATableColumns = (
                 accessor: 'vials_missing',
                 id: 'vials_missing',
                 sortable: true,
-                Cell: settings => (
-                    <NumberCell value={settings.row.original.vials_missing} />
-                ),
+                Cell: settings => {
+                    if (settings.row.original.vials_missing) {
+                        <NumberCell
+                            value={settings.row.original.vials_missing}
+                        />;
+                    }
+                    return textPlaceholder;
+                },
             },
             {
                 Header: formatMessage(MESSAGES.forma_vials_used),
                 accessor: 'vials_used',
                 id: 'vials_used',
                 sortable: true,
-                Cell: settings => (
-                    <NumberCell value={settings.row.original.vials_used} />
-                ),
+                Cell: settings => {
+                    if (settings.row.original.vials_used) {
+                        <NumberCell value={settings.row.original.vials_used} />;
+                    }
+                    return textPlaceholder;
+                },
             },
             {
                 Header: formatMessage(MESSAGES.actions),

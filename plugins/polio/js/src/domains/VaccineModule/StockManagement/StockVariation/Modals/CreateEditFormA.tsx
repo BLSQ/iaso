@@ -55,7 +55,7 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
         validationSchema,
     });
     const { data: campaignOptions, isFetching: isFetchingCampaigns } =
-        useCampaignOptions(countryName, vaccine);
+        useCampaignOptions(countryName);
     const titleMessage = formA?.id ? MESSAGES.edit : MESSAGES.create;
     const title = `${countryName} - ${vaccine}: ${formatMessage(
         titleMessage,

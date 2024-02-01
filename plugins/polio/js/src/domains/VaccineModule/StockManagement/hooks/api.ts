@@ -3,6 +3,7 @@ import { UseQueryResult } from 'react-query';
 import { UrlParams } from 'bluesquare-components';
 import {
     getRequest,
+    patchRequest,
     postRequest,
 } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useUrlParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
@@ -14,17 +15,12 @@ import {
     useSnackMutation,
     useSnackQuery,
 } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
-import { waitFor } from '../../../../../../../../hat/assets/js/apps/Iaso/utils';
 import {
     StockManagementListParams,
     StockManagementDetailsParams,
     StockVariationParams,
 } from '../types';
-import {
-    mockDestructionsList,
-    mockFormAList,
-    mockIncidentsList,
-} from '../mocks/mockStockVariation';
+
 import {
     CAMPAIGNS_ENDPOINT,
     useGetCampaigns,
@@ -235,7 +231,8 @@ export const useGetIncidentList = (
     });
 };
 
-export const useCampaignOptions = (countryName, vaccine) => {
+// TODO get list of campaigns filtered by active vacccine
+export const useCampaignOptions = (countryName: string): UseQueryResult => {
     const queryOptions = {
         select: data => {
             if (!data) return [];
@@ -244,7 +241,7 @@ export const useCampaignOptions = (countryName, vaccine) => {
                 .map(c => {
                     return {
                         label: c.obr_name,
-                        value: c.id,
+                        value: c.obr_name,
                     };
                 });
         },
@@ -256,13 +253,13 @@ export const useCampaignOptions = (countryName, vaccine) => {
 };
 
 const createEditFormA = async (body: any) => {
-    await waitFor(500);
     if (body.id) {
-        console.log('PATCH', body);
-    } else {
-        console.log('POST', body);
+        return patchRequest(
+            `${modalUrl}outgoing_stock_movement/${body.id}`,
+            body,
+        );
     }
-    return null;
+    return postRequest(`${modalUrl}outgoing_stock_movement/`, body);
 };
 
 export const useSaveFormA = () => {
@@ -271,13 +268,10 @@ export const useSaveFormA = () => {
     });
 };
 const createEditDestruction = async (body: any) => {
-    await waitFor(500);
     if (body.id) {
-        console.log('PATCH', body);
-    } else {
-        console.log('POST', body);
+        return patchRequest(`${modalUrl}destruction_report/${body.id}`, body);
     }
-    return null;
+    return postRequest(`${modalUrl}destruction_report/`, body);
 };
 
 export const useSaveDestruction = () => {
@@ -286,13 +280,10 @@ export const useSaveDestruction = () => {
     });
 };
 const createEditIncident = async (body: any) => {
-    await waitFor(500);
     if (body.id) {
-        console.log('PATCH', body);
-    } else {
-        console.log('POST', body);
+        return patchRequest(`${modalUrl}incident_report/${body.id}`, body);
     }
-    return null;
+    return postRequest(`${modalUrl}incident_report/`, body);
 };
 
 export const useSaveIncident = () => {

@@ -260,7 +260,6 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                                 <Pane name="no-org-unit-type" key={o.id}>
                                     <GeoJSON
                                         key={`${o.id}-${o.search_index}`}
-                                        // @ts-ignore TODO: fix this type problem
                                         style={{
                                             color: getSearchColor(
                                                 o.search_index || 0,
@@ -275,7 +274,6 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                                         <OrgUnitPopupComponent
                                             currentOrgUnit={currentOrgUnit}
                                         />
-                                        {/* @ts-ignore TODO: fix this type problem */}
                                         <Tooltip pane="popupPane">
                                             {o.name}
                                         </Tooltip>
@@ -301,7 +299,6 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                                     .map(o => (
                                         <GeoJSON
                                             key={`${o.id}-${o.search_index}`}
-                                            // @ts-ignore TODO: fix this type problem
                                             style={{
                                                 color: getSearchColor(
                                                     o.search_index || 0,

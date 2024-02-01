@@ -79,19 +79,19 @@ class TimelineSerializer(serializers.Serializer):
 
 
 # noinspection PyMethodMayBeStatic
-class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer):
+class CampaignBudgetSerializer(DynamicFieldsModelSerializer, serializers.ModelSerializer):
     class Meta:
-        model = Campaign
+        model = BudgetProcess
         fields = [
             "created_at",
             "id",
-            "obr_name",
-            "country_name",
+            "obr_name",  # Added via `annotate`.
+            "country_name",  # Added via `annotate`.
+            "round_numbers",  # Added via `annotate`.
             "current_state",
-            "next_transitions",
-            "budget_last_updated_at",
+            "updated_at",
             "possible_states",
-            "cvdpv2_notified_at",
+            "next_transitions",
             "possible_transitions",
             "timeline",
         ]
@@ -100,50 +100,46 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
             "id",
             "obr_name",
             "country_name",
+            "round_numbers",
             "current_state",
-            "budget_last_updated_at",
+            "updated_at",
         ]
 
-    # added via annotation
-    budget_last_updated_at = serializers.DateTimeField(required=False, help_text="Last budget update on the campaign")
+    obr_name = serializers.CharField()
+    country_name = serializers.CharField()
+    round_numbers = serializers.ListField()
     current_state = serializers.SerializerMethodField()
-    # To be used for override
     possible_states = serializers.SerializerMethodField()
     possible_transitions = serializers.SerializerMethodField()
     timeline = serializers.SerializerMethodField()
-
     next_transitions = serializers.SerializerMethodField()
-    # will need to use country__name for sorting
-    country_name: serializers.SlugRelatedField = serializers.SlugRelatedField(
-        source="country", slug_field="name", read_only=True
-    )
 
-    def get_current_state(self, campaign: Campaign):
+    def get_current_state(self, budget_process: BudgetProcess):
         workflow = get_workflow()
         try:
-            node = workflow.get_node_by_key(campaign.budget_current_state_key)
+            node = workflow.get_node_by_key(budget_process.current_state_key)
         except:
             return {
-                "key": campaign.budget_current_state_key,
-                "label": campaign.budget_current_state_key,
+                "key": budget_process.current_state_key,
+                "label": budget_process.current_state_key,
             }
         else:
             return {
-                "key": campaign.budget_current_state_key,
+                "key": budget_process.current_state_key,
                 "label": node.label,
             }
 
     @swagger_serializer_method(serializer_or_field=TransitionSerializer(many=True))
-    def get_next_transitions(self, campaign):
+    def get_next_transitions(self, budget_process: BudgetProcess):
         # // get transition from workflow engine.
         workflow = get_workflow()
-        transitions = next_transitions(workflow.transitions, campaign.budget_current_state_key)
+        transitions = next_transitions(workflow.transitions, budget_process.current_state_key)
         user = self.context["request"].user
         for transition in transitions:
-            allowed = can_user_transition(transition, user, campaign)
+            allowed = can_user_transition(transition, user, budget_process)
             transition.allowed = allowed
             if not allowed:
-                if not effective_teams(campaign, transition.teams_ids_can_transition):
+                if not effective_teams(budget_process, transition.teams_ids_can_transition):
                     reason = "No team configured for this country and transition"
                 else:
                     reason = "User doesn't have permission"
@@ -152,27 +148,27 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
             # FIXME: filter on effective teams, need campaign
             teams = []
             for _, teams_ids in transition.emails_to_send:
-                teams += effective_teams(campaign, teams_ids).values_list("id", flat=True)
+                teams += effective_teams(budget_process, teams_ids).values_list("id", flat=True)
             transition.emails_destination_team_ids = set(teams)
 
         return TransitionSerializer(transitions, many=True).data
 
     # this is used for filter dropdown
     @swagger_serializer_method(serializer_or_field=NodeSerializer(many=True))
-    def get_possible_states(self, _campaign):
+    def get_possible_states(self, _budget_process: BudgetProcess):
         workflow = get_workflow()
         nodes = workflow.nodes
         return NodeSerializer(nodes, many=True).data
 
     # this is used for filter dropdown
     @swagger_serializer_method(serializer_or_field=TransitionSerializer(many=True))
-    def get_possible_transitions(self, _campaign):
+    def get_possible_transitions(self, _budget_process: BudgetProcess):
         workflow = get_workflow()
         transitions = workflow.transitions
         return NestedTransitionSerializer(transitions, many=True).data
 
     @swagger_serializer_method(serializer_or_field=TimelineSerializer())
-    def get_timeline(self, campaign):
+    def get_timeline(self, budget_process: BudgetProcess):
         """Represent the progression of the budget process, per category
 
         State/Nodes are stored in category.
@@ -195,10 +191,10 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
         workflow = get_workflow()
         r = []
         c: Category
-        steps = list(campaign.budget_steps.filter(deleted_at__isnull=True).order_by("created_at"))
+        steps = list(budget_process.budget_steps.filter(deleted_at__isnull=True).order_by("created_at"))
 
         override_steps = list(
-            campaign.budget_steps.filter(deleted_at__isnull=True)
+            budget_process.budget_steps.filter(deleted_at__isnull=True)
             .filter(transition_key="override")
             .order_by("created_at")
         )
@@ -369,7 +365,7 @@ class BudgetLinkSerializer(serializers.ModelSerializer):
 
 class TransitionToSerializer(serializers.Serializer):
     transition_key = serializers.CharField()
-    round = serializers.PrimaryKeyRelatedField(queryset=Round.objects.all())
+    budget_process = serializers.PrimaryKeyRelatedField(queryset=BudgetProcess.objects.all())
     comment = serializers.CharField(required=False)
     files = serializers.ListField(child=serializers.FileField(), required=False)
     links = serializers.JSONField(required=False)
@@ -383,14 +379,13 @@ class TransitionToSerializer(serializers.Serializer):
 
     def save(self, **kwargs):
         data = self.validated_data
-        round: Round = data["round"]
-        campaign: Campaign = round.campaign
+        budget_process: BudgetProcess = data["budget_process"]
         user = self.context["request"].user
         transition_key = data["transition_key"]
 
         workflow = get_workflow()
 
-        n_transitions = next_transitions(workflow.transitions, campaign.budget_current_state_key)
+        n_transitions = next_transitions(workflow.transitions, budget_process.current_state_key)
         transitions = [t for t in n_transitions if t.key == transition_key]
         if not transitions:
             raise serializers.ValidationError(
@@ -402,7 +397,8 @@ class TransitionToSerializer(serializers.Serializer):
                 }
             )
         transition = transitions[0]
-        if not can_user_transition(transition, user, campaign):
+
+        if not can_user_transition(transition, user, budget_process.rounds.first().campaign):
             raise serializers.ValidationError({"transition_key": [TransitionError.NOT_ALLOWED]})
 
         for field in transition.required_fields:
@@ -423,12 +419,6 @@ class TransitionToSerializer(serializers.Serializer):
         node = workflow.get_node_by_key(transition.to_node)
 
         with transaction.atomic():
-            budget_process: BudgetProcess = round.budget_process
-            if not budget_process:
-                budget_process = BudgetProcess.objects.create(created_by=user, created_by_team=created_by_team)
-                round.budget_process = budget_process
-                round.save()
-
             step = BudgetStep.objects.create(
                 amount=data.get("amount"),
                 created_by=user,

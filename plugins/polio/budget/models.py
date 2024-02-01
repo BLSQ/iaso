@@ -24,8 +24,8 @@ class BudgetStepQuerySet(models.QuerySet):
     def filter_for_user(self, user: Union[User, AnonymousUser]):
         campaigns = Campaign.objects.filter_for_user(user)  # type: ignore
         rounds = Round.objects.filter(campaign__in=campaigns)
-        budgets = rounds.values_list("budget", flat=True)
-        return self.filter(budget__in=budgets)
+        budget_processes = rounds.values_list("budget_process", flat=True)
+        return self.filter(budget_process__in=budget_processes)
 
 
 # workaround for MyPy
@@ -39,7 +39,7 @@ def model_field_exists(campaign, field):
     return True if field in campaign_fields else False
 
 
-class Budget(SoftDeletableModel):
+class BudgetProcess(SoftDeletableModel):
     """
     The budget for a `Round` of a `Campaign`.
     """
@@ -118,7 +118,7 @@ class BudgetStep(SoftDeletableModel):
     # TODO: remove the `campaign` field
     campaign = models.ForeignKey("Campaign", on_delete=models.PROTECT, related_name="budget_steps", null=True)
     # TODO: remove null=True
-    budget = models.ForeignKey("Budget", on_delete=models.PROTECT, related_name="budgets", null=True)
+    budget_process = models.ForeignKey("BudgetProcess", on_delete=models.PROTECT, related_name="budgets", null=True)
     transition_key = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey("auth.User", on_delete=models.PROTECT)

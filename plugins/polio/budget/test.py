@@ -10,7 +10,7 @@ from django.template import Engine, Context
 from rest_framework import status
 
 from iaso.test import APITestCase
-from plugins.polio.budget.models import Budget, BudgetStep, MailTemplate
+from plugins.polio.budget.models import BudgetProcess, BudgetStep, MailTemplate
 from plugins.polio.budget.workflow import Transition, Node, Workflow
 from plugins.polio.models import Campaign, Round
 
@@ -137,13 +137,13 @@ class TeamAPITestCase(APITestCase):
         step_id = response_data["id"]
         budget_step = BudgetStep.objects.get(id=step_id)
 
-        # Check the relations: BudgetStep ----> Budget <---- Round
+        # Check the relations: BudgetStep ----> BudgetProcess <---- Round
         self.round.refresh_from_db()
-        self.assertEqual(budget_step.budget, self.round.budget)
+        self.assertEqual(budget_step.budget_process, self.round.budget_process)
 
-        budget = Budget.objects.get(id=budget_step.budget.pk)
-        self.assertEqual(budget.current_state_key, "budget_submitted")
-        self.assertEqual(budget.current_state_label, "Budget submitted")
+        budget_process = BudgetProcess.objects.get(id=budget_step.budget_process.pk)
+        self.assertEqual(budget_process.current_state_key, "budget_submitted")
+        self.assertEqual(budget_process.current_state_label, "Budget submitted")
 
         # Check that we have only created one step.
         new_budget_step_count = BudgetStep.objects.count()
@@ -185,9 +185,9 @@ class TeamAPITestCase(APITestCase):
         step_id = response_data["id"]
         budget_step = BudgetStep.objects.get(id=step_id)
 
-        # Check the relations: BudgetStep ----> Budget <---- Round
+        # Check the relations: BudgetStep ----> BudgetProcess <---- Round
         self.round.refresh_from_db()
-        self.assertEqual(budget_step.budget, self.round.budget)
+        self.assertEqual(budget_step.budget_process, self.round.budget_process)
 
         # Check that we have only created one step.
         new_budget_step_count = BudgetStep.objects.count()
@@ -249,14 +249,14 @@ class TeamAPITestCase(APITestCase):
         step_id = response_data["id"]
         budget_step = BudgetStep.objects.get(id=step_id)
 
-        # Check the relations: BudgetStep ----> Budget <---- Round
+        # Check the relations: BudgetStep ----> BudgetProcess <---- Round
         self.round.refresh_from_db()
-        self.assertEqual(budget_step.budget, self.round.budget)
+        self.assertEqual(budget_step.budget_process, self.round.budget_process)
 
-        # Check the new state of budget.
-        budget = self.round.budget
-        budget.refresh_from_db()
-        self.assertEqual(budget.current_state_key, "budget_submitted")
+        # Check the new state of `BudgetProcess`.
+        budget_process = self.round.budget_process
+        budget_process.refresh_from_db()
+        self.assertEqual(budget_process.current_state_key, "budget_submitted")
 
         # TODO: current state has been moved in `Budget`, what should we do with `/api/polio/budget/{self.campaign.id}/`
         # response = self.client.get(f"/api/polio/budget/{self.campaign.id}/")
@@ -321,14 +321,14 @@ class TeamAPITestCase(APITestCase):
         step_id = response_data["id"]
         budget_step = BudgetStep.objects.get(id=step_id)
 
-        # Check the relations: BudgetStep ----> Budget <---- Round
+        # Check the relations: BudgetStep ----> BudgetProcess <---- Round
         self.round.refresh_from_db()
-        self.assertEqual(budget_step.budget, self.round.budget)
+        self.assertEqual(budget_step.budget_process, self.round.budget_process)
 
-        # Check the new state of budget.
-        budget = self.round.budget
-        budget.refresh_from_db()
-        self.assertEqual(budget.current_state_key, "budget_submitted")
+        # Check the new state of `BudgetProcess`.
+        budget_process = self.round.budget_process
+        budget_process.refresh_from_db()
+        self.assertEqual(budget_process.current_state_key, "budget_submitted")
 
         # TODO: current state has been moved in `Budget`, what should we do with `/api/polio/budget/{self.campaign.id}/`
         # response = self.client.get(f"/api/polio/budget/{self.campaign.id}/")

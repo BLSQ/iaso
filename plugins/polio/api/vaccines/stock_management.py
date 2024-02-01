@@ -12,6 +12,7 @@ from hat.menupermissions import models as permission
 from iaso.api.common import GenericReadWritePerm, ModelViewSet, Paginator
 from iaso.models import OrgUnit
 from plugins.polio.models import (
+    Campaign,
     DestructionReport,
     IncidentReport,
     OutgoingStockMovement,
@@ -227,6 +228,15 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
             "lot_numbers",
             "missing_vials",
         ]
+
+    def create(self, validated_data):
+        campaign_obrname_dict = validated_data.pop("campaign")
+        campaign_obrname = campaign_obrname_dict["obr_name"]
+        campaign = Campaign.objects.get(
+            obr_name=campaign_obrname, account=self.context["request"].user.iaso_profile.account
+        )
+        validated_data["campaign"] = campaign
+        return OutgoingStockMovement.objects.create(**validated_data)
 
 
 class OutgoingStockMovementViewSet(VaccineStockSubitemBase):

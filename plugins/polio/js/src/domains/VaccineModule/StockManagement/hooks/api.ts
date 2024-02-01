@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import { UseQueryResult } from 'react-query';
 import { UrlParams } from 'bluesquare-components';
 import {
@@ -150,9 +151,6 @@ export const useGetStockManagementSummary = (
 };
 
 const getFormAList = async (queryString: string) => {
-    // await waitFor(750);
-    // console.log('forma params', queryString);
-    // return mockFormAList;
     return getRequest(`${modalUrl}outgoing_stock_movement/?${queryString}`);
 };
 
@@ -164,24 +162,24 @@ export const useGetFormAList = (
         formaOrder: order,
         formaPage: page,
         formaPageSize: pageSize,
+        id: vaccine_stock,
     } = params;
     const safeParams = useUrlParams({
         order,
         page,
         pageSize,
+        vaccine_stock,
     } as Partial<UrlParams>);
     const apiParams = useApiParams(safeParams);
     const queryString = new URLSearchParams(apiParams).toString();
     return useSnackQuery({
-        queryKey: ['formA', queryString],
+        queryKey: ['formA', queryString, vaccine_stock],
         queryFn: () => getFormAList(queryString),
         options: { ...options, enabled },
     });
 };
 const getDestructionList = async (queryString: string) => {
-    await waitFor(750);
-    console.log('destruction params', queryString);
-    return mockDestructionsList;
+    return getRequest(`${modalUrl}destruction_report/?${queryString}`);
 };
 
 export const useGetDestructionList = (
@@ -192,24 +190,24 @@ export const useGetDestructionList = (
         destructionOrder: order,
         destructionPage: page,
         destructionPageSize: pageSize,
+        id: vaccine_stock,
     } = params;
     const safeParams = useUrlParams({
         order,
         page,
         pageSize,
+        vaccine_stock,
     } as Partial<UrlParams>);
     const apiParams = useApiParams(safeParams);
     const queryString = new URLSearchParams(apiParams).toString();
     return useSnackQuery({
-        queryKey: ['destruction', queryString],
+        queryKey: ['destruction', queryString, vaccine_stock],
         queryFn: () => getDestructionList(queryString),
         options: { ...options, enabled },
     });
 };
 const getIncidentList = async (queryString: string) => {
-    await waitFor(750);
-    console.log('incidents params', queryString);
-    return mockIncidentsList;
+    return getRequest(`${modalUrl}incident_report/?${queryString}`);
 };
 
 export const useGetIncidentList = (
@@ -220,16 +218,18 @@ export const useGetIncidentList = (
         incidentOrder: order,
         incidentPage: page,
         incidentPageSize: pageSize,
+        id: vaccine_stock,
     } = params;
     const safeParams = useUrlParams({
         order,
         page,
         pageSize,
+        vaccine_stock,
     } as Partial<UrlParams>);
     const apiParams = useApiParams(safeParams);
     const queryString = new URLSearchParams(apiParams).toString();
     return useSnackQuery({
-        queryKey: ['incidents', queryString],
+        queryKey: ['incidents', queryString, vaccine_stock],
         queryFn: () => getIncidentList(queryString),
         options: { ...options, enabled },
     });
@@ -244,7 +244,7 @@ export const useCampaignOptions = (countryName, vaccine) => {
                 .map(c => {
                     return {
                         label: c.obr_name,
-                        value: c.obr_name,
+                        value: c.id,
                     };
                 });
         },

@@ -25,7 +25,6 @@ const CreateVaccineStock: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSaveVaccineStock();
-    // const validationSchema = useVaccineStockValidation();
     const { data: countriesOptions, isFetching: isFetchingCountries } =
         useGetCountriesOptions();
 
@@ -35,7 +34,6 @@ const CreateVaccineStock: FunctionComponent<Props> = ({
             vaccine: undefined,
         },
         onSubmit: values => save(values),
-        // validationSchema,
     });
     const title = formatMessage(MESSAGES.create);
     const allowConfirm = formik.isValid && !isEqual(formik.touched, {});

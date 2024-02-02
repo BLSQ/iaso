@@ -6,6 +6,7 @@ import {
 } from 'bluesquare-components';
 import { Grid, Box, Paper, Tab, Tabs, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import {
     STOCK_MANAGEMENT_DETAILS,
     STOCK_VARIATION,
@@ -33,6 +34,8 @@ import {
 import { CreateFormA } from './Modals/CreateEditFormA';
 import { CreateDestruction } from './Modals/CreateEditDestruction';
 import { CreateIncident } from './Modals/CreateEditIncident';
+import { userHasPermission } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import { POLIO_VACCINE_STOCK_WRITE } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
 
 type Props = { router: Router };
 
@@ -50,6 +53,7 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
         id: router.params.id as string,
     });
     const { formatMessage } = useSafeIntl();
+    const currentUser = useCurrentUser();
     const classes: Record<string, string> = useStyles();
     const initialTab = (router.params.tab as StockVariationTab) ?? FORM_A;
     const { tab, handleChangeTab } = useTabs<StockVariationTab>({
@@ -127,30 +131,48 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
                             <Typography variant="h5" color="primary">
                                 {formatMessage(MESSAGES[`${tab}Reports`])}
                             </Typography>
-                            {tab === FORM_A && (
-                                <CreateFormA
-                                    iconProps={{}}
-                                    countryName={summary?.country_name}
-                                    vaccine={summary?.vaccine_type}
-                                    vaccineStockId={router.params.id as string}
-                                />
-                            )}
-                            {tab === DESTRUCTION && (
-                                <CreateDestruction
-                                    iconProps={{}}
-                                    countryName={summary?.country_name}
-                                    vaccine={summary?.vaccine_type}
-                                    vaccineStockId={router.params.id}
-                                />
-                            )}
-                            {tab === INCIDENT && (
-                                <CreateIncident
-                                    iconProps={{}}
-                                    countryName={summary?.country_name}
-                                    vaccine={summary?.vaccine_type}
-                                    vaccineStockId={router.params.id}
-                                />
-                            )}
+                            {userHasPermission(
+                                POLIO_VACCINE_STOCK_WRITE,
+                                currentUser,
+                            ) &&
+                                tab === FORM_A && (
+                                    <CreateFormA
+                                        iconProps={{}}
+                                        countryName={summary?.country_name}
+                                        vaccine={summary?.vaccine_type}
+                                        vaccineStockId={
+                                            router.params.id as string
+                                        }
+                                    />
+                                )}
+                            {userHasPermission(
+                                POLIO_VACCINE_STOCK_WRITE,
+                                currentUser,
+                            ) &&
+                                tab === DESTRUCTION && (
+                                    <CreateDestruction
+                                        iconProps={{}}
+                                        countryName={summary?.country_name}
+                                        vaccine={summary?.vaccine_type}
+                                        vaccineStockId={
+                                            router.params.id as string
+                                        }
+                                    />
+                                )}
+                            {userHasPermission(
+                                POLIO_VACCINE_STOCK_WRITE,
+                                currentUser,
+                            ) &&
+                                tab === INCIDENT && (
+                                    <CreateIncident
+                                        iconProps={{}}
+                                        countryName={summary?.country_name}
+                                        vaccine={summary?.vaccine_type}
+                                        vaccineStockId={
+                                            router.params.id as string
+                                        }
+                                    />
+                                )}
                         </Grid>
                         {tab === FORM_A && (
                             <VaccineStockVariationTable

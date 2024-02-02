@@ -9,14 +9,19 @@ import { EditFormA } from '../Modals/CreateEditFormA';
 import { Vaccine } from '../../../../../constants/types';
 import { EditDestruction } from '../Modals/CreateEditDestruction';
 import { EditIncident } from '../Modals/CreateEditIncident';
+import { useCurrentUser } from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { userHasPermission } from '../../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import { POLIO_VACCINE_STOCK_WRITE } from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
 
 export const useFormATableColumns = (
     countryName: string,
     vaccine: Vaccine,
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
+    const currentUser = useCurrentUser();
+
     return useMemo(() => {
-        return [
+        const columns = [
             {
                 Header: formatMessage(MESSAGES.campaign),
                 accessor: 'campaign',
@@ -100,8 +105,11 @@ export const useFormATableColumns = (
                     return textPlaceholder;
                 },
             },
-            {
+        ];
+        if (userHasPermission(POLIO_VACCINE_STOCK_WRITE, currentUser)) {
+            columns.push({
                 Header: formatMessage(MESSAGES.actions),
+                id: 'account',
                 accessor: 'account',
                 sortable: false,
                 Cell: settings => {
@@ -127,17 +135,20 @@ export const useFormATableColumns = (
                         </>
                     );
                 },
-            },
-        ];
-    }, [countryName, formatMessage, vaccine]);
+            });
+        }
+        return columns;
+    }, [countryName, formatMessage, vaccine, currentUser]);
 };
 export const useDestructionTableColumns = (
     countryName: string,
     vaccine: Vaccine,
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
+    const currentUser = useCurrentUser();
+
     return useMemo(() => {
-        return [
+        const columns = [
             {
                 Header: formatMessage(MESSAGES.action),
                 accessor: 'action',
@@ -171,9 +182,12 @@ export const useDestructionTableColumns = (
                     />
                 ),
             },
-            {
+        ];
+        if (userHasPermission(POLIO_VACCINE_STOCK_WRITE, currentUser)) {
+            columns.push({
                 Header: formatMessage(MESSAGES.actions),
                 accessor: 'account',
+                id: 'account',
                 sortable: false,
                 Cell: settings => {
                     return (
@@ -198,17 +212,19 @@ export const useDestructionTableColumns = (
                         </>
                     );
                 },
-            },
-        ];
-    }, [countryName, formatMessage, vaccine]);
+            });
+        }
+        return columns;
+    }, [countryName, formatMessage, vaccine, currentUser]);
 };
 export const useIncidentTableColumns = (
     countryName: string,
     vaccine: Vaccine,
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
+    const currentUser = useCurrentUser();
     return useMemo(() => {
-        return [
+        const columns = [
             {
                 Header: formatMessage(MESSAGES.stockCorrection),
                 accessor: 'stock_correction',
@@ -253,9 +269,12 @@ export const useIncidentTableColumns = (
                     <NumberCell value={settings.row.original.unusable_vials} />
                 ),
             },
-            {
+        ];
+        if (userHasPermission(POLIO_VACCINE_STOCK_WRITE, currentUser)) {
+            columns.push({
                 Header: formatMessage(MESSAGES.actions),
                 accessor: 'account',
+                id: 'account',
                 sortable: false,
                 Cell: settings => {
                     return (
@@ -280,7 +299,8 @@ export const useIncidentTableColumns = (
                         </>
                     );
                 },
-            },
-        ];
-    }, [countryName, formatMessage, vaccine]);
+            });
+        }
+        return columns;
+    }, [countryName, formatMessage, vaccine, currentUser]);
 };

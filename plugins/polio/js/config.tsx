@@ -461,7 +461,10 @@ const routes = [
     {
         baseUrl: STOCK_MANAGEMENT,
         component: props => <VaccineStockManagement {...props} />,
-        permissions: ['iaso_polio'],
+        permissions: [
+            'iaso_polio_vaccine_stock_management_read',
+            'iaso_polio_vaccine_stock_management_write',
+        ],
         params: [
             ...paginationPathParams,
             {
@@ -481,7 +484,10 @@ const routes = [
     {
         baseUrl: STOCK_MANAGEMENT_DETAILS,
         component: props => <VaccineStockManagementDetails {...props} />,
-        permissions: ['iaso_polio'],
+        permissions: [
+            'iaso_polio_vaccine_stock_management_read',
+            'iaso_polio_vaccine_stock_management_write',
+        ],
         params: [
             {
                 isRequired: false,
@@ -520,7 +526,10 @@ const routes = [
     {
         baseUrl: STOCK_VARIATION,
         component: props => <VaccineStockVariation {...props} />,
-        permissions: ['iaso_polio'],
+        permissions: [
+            'iaso_polio_vaccine_stock_management_read',
+            'iaso_polio_vaccine_stock_management_write',
+        ],
         params: [
             {
                 isRequired: false,

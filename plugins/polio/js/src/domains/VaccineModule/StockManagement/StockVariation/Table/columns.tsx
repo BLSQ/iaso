@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import React, { useMemo } from 'react';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
@@ -17,37 +18,46 @@ export const useFormATableColumns = (
     return useMemo(() => {
         return [
             {
-                Header: formatMessage(MESSAGES.action),
-                accessor: 'action',
-                id: 'action',
+                Header: formatMessage(MESSAGES.campaign),
+                accessor: 'campaign',
+                id: 'campaign',
                 sortable: true,
             },
             {
-                Header: formatMessage(MESSAGES.obrName),
-                accessor: 'obr_name',
-                id: 'obr_name',
-                sortable: true,
-            },
-            {
-                Header: formatMessage(MESSAGES.forma_reception_rrt),
-                accessor: 'forma_reception_rrt',
-                id: 'forma_reception_rrt',
+                Header: formatMessage(MESSAGES.form_a_reception_date),
+                accessor: 'form_a_reception_date',
+                id: 'form_a_reception_date',
                 sortable: true,
                 Cell: DateCell,
             },
             {
-                Header: formatMessage(MESSAGES.date_of_report),
-                accessor: 'date_of_report',
-                id: 'date_of_report',
+                Header: formatMessage(MESSAGES.report_date),
+                accessor: 'report_date',
+                id: 'report_date',
                 sortable: true,
                 Cell: DateCell,
             },
             {
                 // Not formatting lot numbers as it's not clear how they will be formatted
                 Header: formatMessage(MESSAGES.lot_numbers_for_usable_vials),
-                accessor: 'lot_numbers_for_usable_vials',
-                id: 'lot_numbers_for_usable_vials',
+                accessor: 'lot_numbers',
+                id: 'lot_numbers',
                 sortable: true,
+                Cell: settings => {
+                    const { lot_numbers } = settings.row.original;
+                    if ((lot_numbers ?? []).length === 0) {
+                        return <span>{textPlaceholder}</span>;
+                    }
+                    return (
+                        <>
+                            {lot_numbers.map((lotNumber, index) => (
+                                <div key={`${lotNumber}-${index}`}>
+                                    {lotNumber ?? textPlaceholder}
+                                </div>
+                            ))}
+                        </>
+                    );
+                },
             },
             {
                 Header: formatMessage(MESSAGES.forma_unusable_vials),
@@ -60,21 +70,35 @@ export const useFormATableColumns = (
             },
             {
                 Header: formatMessage(MESSAGES.forma_vials_missing),
-                accessor: 'vials_missing',
-                id: 'vials_missing',
+                accessor: 'missing_vials',
+                id: 'missing_vials',
                 sortable: true,
-                Cell: settings => (
-                    <NumberCell value={settings.row.original.vials_missing} />
-                ),
+                Cell: settings => {
+                    if (settings.row.original.missing_vials) {
+                        return (
+                            <NumberCell
+                                value={settings.row.original.missing_vials}
+                            />
+                        );
+                    }
+                    return textPlaceholder;
+                },
             },
             {
                 Header: formatMessage(MESSAGES.forma_vials_used),
-                accessor: 'vials_used',
-                id: 'vials_used',
+                accessor: 'usable_vials_used',
+                id: 'usable_vials_used',
                 sortable: true,
-                Cell: settings => (
-                    <NumberCell value={settings.row.original.vials_used} />
-                ),
+                Cell: settings => {
+                    if (settings.row.original.usable_vials_used) {
+                        return (
+                            <NumberCell
+                                value={settings.row.original.usable_vials_used}
+                            />
+                        );
+                    }
+                    return textPlaceholder;
+                },
             },
             {
                 Header: formatMessage(MESSAGES.actions),
@@ -89,6 +113,9 @@ export const useFormATableColumns = (
                                 iconProps={{}}
                                 countryName={countryName}
                                 vaccine={vaccine}
+                                vaccineStockId={
+                                    settings.row.original.vaccine_stock
+                                }
                             />
                             {/* <DeleteDialog
                                 titleMessage={MESSAGES.deleteVRF}
@@ -118,26 +145,30 @@ export const useDestructionTableColumns = (
                 sortable: true,
             },
             {
-                Header: formatMessage(MESSAGES.destruction_reception_rrt),
-                accessor: 'destruction_reception_rrt',
-                id: 'destruction_reception_rrt',
+                Header: formatMessage(
+                    MESSAGES.rrt_destruction_report_reception_date,
+                ),
+                accessor: 'rrt_destruction_report_reception_date',
+                id: 'rrt_destruction_report_reception_date',
                 sortable: true,
                 Cell: DateCell,
             },
             {
-                Header: formatMessage(MESSAGES.date_of_report),
-                accessor: 'date_of_report',
-                id: 'date_of_report',
+                Header: formatMessage(MESSAGES.report_date),
+                accessor: 'destruction_report_date',
+                id: 'destruction_report_date',
                 sortable: true,
                 Cell: DateCell,
             },
             {
                 Header: formatMessage(MESSAGES.vials_destroyed),
-                accessor: 'vials_destroyed',
-                id: 'vials_destroyed',
+                accessor: 'unusable_vials_destroyed',
+                id: 'unusable_vials_destroyed',
                 sortable: true,
                 Cell: settings => (
-                    <NumberCell value={settings.row.original.vials_destroyed} />
+                    <NumberCell
+                        value={settings.row.original.unusable_vials_destroyed}
+                    />
                 ),
             },
             {
@@ -153,6 +184,9 @@ export const useDestructionTableColumns = (
                                 iconProps={{}}
                                 countryName={countryName}
                                 vaccine={vaccine}
+                                vaccineStockId={
+                                    settings.row.original.vaccine_stock
+                                }
                             />
                             {/* <DeleteDialog
                                 titleMessage={MESSAGES.deleteVRF}
@@ -188,9 +222,16 @@ export const useIncidentTableColumns = (
                         : textPlaceholder,
             },
             {
-                Header: formatMessage(MESSAGES.incident_reception_rrt),
-                accessor: 'incident_reception_rrt',
-                id: 'incident_reception_rrt',
+                Header: formatMessage(MESSAGES.incident_report_received_by_rrt),
+                accessor: 'incident_report_received_by_rrt',
+                id: 'incident_report_received_by_rrt',
+                sortable: true,
+                Cell: DateCell,
+            },
+            {
+                Header: formatMessage(MESSAGES.report_date),
+                accessor: 'date_of_incident_report',
+                id: 'date_of_incident_report',
                 sortable: true,
                 Cell: DateCell,
             },
@@ -225,6 +266,9 @@ export const useIncidentTableColumns = (
                                 iconProps={{}}
                                 countryName={countryName}
                                 vaccine={vaccine}
+                                vaccineStockId={
+                                    settings.row.original.vaccine_stock
+                                }
                             />
                             {/* <DeleteDialog
                                 titleMessage={MESSAGES.deleteVRF}

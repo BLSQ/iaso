@@ -61,24 +61,24 @@ class VaccineStockCalculator:
     def get_vials_received(self):
         if not self.arrival_reports.exists():
             return 0
-        return sum(report.vials_received for report in self.arrival_reports)
+        return sum(report.vials_received or 0 for report in self.arrival_reports)
 
     def get_vials_used(self):
         if not self.stock_movements.exists():
             return 0
-        return sum(movement.usable_vials_used for movement in self.stock_movements)
+        return sum(movement.usable_vials_used or 0 for movement in self.stock_movements)
 
     def get_stock_of_usable_vials(self):
         return self.get_vials_received() - self.get_vials_used()
 
     def get_stock_of_unusable_vials(self):
         if self.incident_reports.exists():
-            ir_sum = sum(report.unusable_vials for report in self.incident_reports)
+            ir_sum = sum(report.unusable_vials or 0 for report in self.incident_reports)
         else:
             ir_sum = 0
 
         if self.stock_movements.exists():
-            sm_sum = sum(movement.unusable_vials for movement in self.stock_movements)
+            sm_sum = sum(movement.unusable_vials or 0 for movement in self.stock_movements)
         else:
             sm_sum = 0
 
@@ -87,7 +87,7 @@ class VaccineStockCalculator:
     def get_vials_destroyed(self):
         if not self.destruction_reports.exists():
             return 0
-        return sum(report.unusable_vials_destroyed for report in self.destruction_reports)
+        return sum(report.unusable_vials_destroyed or 0 for report in self.destruction_reports)
 
 
 class VaccineStockListSerializer(serializers.ListSerializer):
@@ -415,8 +415,8 @@ class VaccineStockManagementViewSet(ModelViewSet):
                 {
                     "date": report.arrival_report_date,
                     "action": "PO #" + report.po_number if report.po_number else "Stock Arrival",
-                    "vials_in": report.vials_received,
-                    "doses_in": report.doses_received,
+                    "vials_in": report.vials_received or 0,
+                    "doses_in": report.doses_received or 0,
                     "vials_out": None,
                     "doses_out": None,
                     "type": MovementTypeEnum.VACCINE_ARRIVAL_REPORT.value,
@@ -430,8 +430,9 @@ class VaccineStockManagementViewSet(ModelViewSet):
                     "action": report.stock_correction,
                     "vials_in": None,
                     "doses_in": None,
-                    "vials_out": report.unusable_vials + report.usable_vials,
-                    "doses_out": (report.unusable_vials + report.usable_vials) * calc.get_doses_per_vial(),
+                    "vials_out": (report.unusable_vials or 0) + (report.usable_vials or 0),
+                    "doses_out": ((report.unusable_vials or 0) + (report.usable_vials or 0))
+                    * calc.get_doses_per_vial(),
                     "type": MovementTypeEnum.INCIDENT_REPORT.value,
                 }
             )
@@ -444,8 +445,8 @@ class VaccineStockManagementViewSet(ModelViewSet):
                         "action": "Form A - Vials Used",
                         "vials_in": None,
                         "doses_in": None,
-                        "vials_out": movement.usable_vials_used,
-                        "doses_out": movement.usable_vials_used * calc.get_doses_per_vial(),
+                        "vials_out": movement.usable_vials_used or 0,
+                        "doses_out": (movement.usable_vials_used or 0) * calc.get_doses_per_vial(),
                         "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
                     }
                 )
@@ -456,8 +457,8 @@ class VaccineStockManagementViewSet(ModelViewSet):
                         "action": "Form A - Unusable Vials",
                         "vials_in": None,
                         "doses_in": None,
-                        "vials_out": movement.unusable_vials,
-                        "doses_out": movement.unusable_vials * calc.get_doses_per_vial(),
+                        "vials_out": movement.unusable_vials or 0,
+                        "doses_out": (movement.unusable_vials or 0) * calc.get_doses_per_vial(),
                         "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
                     }
                 )
@@ -468,8 +469,8 @@ class VaccineStockManagementViewSet(ModelViewSet):
                         "action": "Form A - Missing Vials",
                         "vials_in": None,
                         "doses_in": None,
-                        "vials_out": movement.missing_vials,
-                        "doses_out": movement.missing_vials * calc.get_doses_per_vial(),
+                        "vials_out": movement.missing_vials or 0,
+                        "doses_out": (movement.missing_vials or 0) * calc.get_doses_per_vial(),
                         "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
                     }
                 )
@@ -516,8 +517,8 @@ class VaccineStockManagementViewSet(ModelViewSet):
                     {
                         "date": movement.report_date,
                         "action": "Outgoing Movement",
-                        "vials_in": movement.unusable_vials,
-                        "doses_in": movement.unusable_vials * calc.get_doses_per_vial(),
+                        "vials_in": movement.unusable_vials or 0,
+                        "doses_in": (movement.unusable_vials or 0) * calc.get_doses_per_vial(),
                         "vials_out": None,
                         "doses_out": None,
                         "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
@@ -533,8 +534,8 @@ class VaccineStockManagementViewSet(ModelViewSet):
                     else f"Stock Destruction ({report.lot_numbers})",
                     "vials_in": None,
                     "doses_in": None,
-                    "vials_out": report.unusable_vials_destroyed,
-                    "doses_out": report.unusable_vials_destroyed * calc.get_doses_per_vial(),
+                    "vials_out": report.unusable_vials_destroyed or 0,
+                    "doses_out": (report.unusable_vials_destroyed or 0) * calc.get_doses_per_vial(),
                     "type": MovementTypeEnum.DESTRUCTION_REPORT.value,
                 }
             )
@@ -548,8 +549,8 @@ class VaccineStockManagementViewSet(ModelViewSet):
                         "action": report.get_stock_correction_display(),
                         "vials_in": None,
                         "doses_in": None,
-                        "vials_out": report.unusable_vials,
-                        "doses_out": report.unusable_vials * calc.get_doses_per_vial(),
+                        "vials_out": report.unusable_vials or 0,
+                        "doses_out": (report.unusable_vials or 0) * calc.get_doses_per_vial(),
                         "type": MovementTypeEnum.INCIDENT_REPORT.value,
                     }
                 )

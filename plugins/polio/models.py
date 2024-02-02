@@ -374,7 +374,7 @@ class Campaign(SoftDeletableModel):
         null=True, blank=True, help_text="When and if we sent an email for creation"
     )
 
-    # Campaign group
+    # Campaign group.
     group = models.ForeignKey(
         Group,
         null=True,
@@ -397,13 +397,7 @@ class Campaign(SoftDeletableModel):
         verbose_name=_("Outbreak declaration date"),
     )
 
-    # Deprecated
-    cvdpv_notified_at = models.DateField(
-        null=True,
-        blank=True,
-        verbose_name=_("cVDPV Notification"),
-    )
-    # This is considered The "first" date
+    # This is considered the "first" date.
     cvdpv2_notified_at = models.DateField(
         null=True,
         blank=True,
@@ -423,10 +417,8 @@ class Campaign(SoftDeletableModel):
     )
 
     virus = models.CharField(max_length=6, choices=VIRUSES, null=True, blank=True)
-    # Deprecated. replaced by the vaccines property
-    vacine = models.CharField(max_length=5, choices=VACCINES, null=True, blank=True)
 
-    # Detection
+    # Detection.
     detection_status = models.CharField(default="PENDING", max_length=10, choices=STATUS)
     detection_responsible = models.CharField(max_length=10, choices=RESPONSIBLES, null=True, blank=True)
     detection_first_draft_submitted_at = models.DateField(
@@ -434,14 +426,8 @@ class Campaign(SoftDeletableModel):
         blank=True,
         verbose_name=_("1st Draft Submission"),
     )
-    # Deprecated
-    detection_rrt_oprtt_approval_at = models.DateField(
-        null=True,
-        blank=True,
-        verbose_name=_("RRT/OPRTT Approval"),
-    )
 
-    # Risk Assessment
+    # Risk Assessment.
     risk_assessment_status = models.CharField(max_length=10, choices=RA_BUDGET_STATUSES, null=True, blank=True)
     risk_assessment_responsible = models.CharField(max_length=10, choices=RESPONSIBLES, null=True, blank=True)
     investigation_at = models.DateField(
@@ -470,30 +456,12 @@ class Campaign(SoftDeletableModel):
         verbose_name=_("DG Authorization"),
     )
     verification_score = models.IntegerField(null=True, blank=True)
-    # DEPRECATED -> Moved to round.
-    doses_requested = models.IntegerField(null=True, blank=True)
     # END OF Risk assessment field
-    # Preparedness DEPRECATED -> Moved to round
-    preperadness_spreadsheet_url = models.URLField(null=True, blank=True)
-    # DEPRECATED -> Moved to round.
-    preperadness_sync_status = models.CharField(max_length=10, default="FINISHED", choices=PREPAREDNESS_SYNC_STATUS)
 
     # ----------------------------------------------------------------------------------------
     # START fields moved to the `Budget` model. **********************************************
-    # NOTE: "deprecated" fields were not moved.
     # TODO: migrate data from `Campaign` to `Budget`, adapt code, then remove those fields.
-
-    # Budget
     budget_status = models.CharField(max_length=100, null=True, blank=True)
-    # Deprecated
-    budget_responsible = models.CharField(max_length=10, choices=RESPONSIBLES, null=True, blank=True)
-
-    # Deprecated
-    last_budget_event = models.ForeignKey(
-        "BudgetEvent", null=True, blank=True, on_delete=models.SET_NULL, related_name="lastbudgetevent"
-    )
-
-    # For budget workflow
     budget_current_state_key = models.CharField(max_length=100, default="-")
     budget_current_state_label = models.CharField(max_length=100, null=True, blank=True)
 
@@ -520,11 +488,6 @@ class Campaign(SoftDeletableModel):
     approved_by_unicef_at_WFEDITABLE = models.DateField(null=True, blank=True)
     approved_at_WFEDITABLE = models.DateField(null=True, blank=True)
     approval_confirmed_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    # LEGACY deprecated fields
-    budget_requested_at_WFEDITABLE_old = models.DateField(null=True, blank=True)
-    feedback_sent_to_rrt3_at_WFEDITABLE_old = models.DateField(null=True, blank=True)
-    re_submitted_to_orpg_at_WFEDITABLE_old = models.DateField(null=True, blank=True)
-    # END Deprecated
 
     # Fund release part of the budget form. Will be migrated to workflow fields later.
     who_disbursed_to_co_at = models.DateField(
@@ -532,31 +495,22 @@ class Campaign(SoftDeletableModel):
         blank=True,
         verbose_name=_("Disbursed to CO (WHO)"),
     )
-
     who_disbursed_to_moh_at = models.DateField(
         null=True,
         blank=True,
         verbose_name=_("Disbursed to MOH (WHO)"),
     )
-
     unicef_disbursed_to_co_at = models.DateField(
         null=True,
         blank=True,
         verbose_name=_("Disbursed to CO (UNICEF)"),
     )
-
     unicef_disbursed_to_moh_at = models.DateField(
         null=True,
         blank=True,
         verbose_name=_("Disbursed to MOH (UNICEF)"),
     )
 
-    # DEPRECATED was removed in PR POLIO-614
-    eomg = models.DateField(
-        null=True,
-        blank=True,
-        verbose_name=_("EOMG"),
-    )
     no_regret_fund_amount = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -564,17 +518,51 @@ class Campaign(SoftDeletableModel):
         blank=True,
     )
     payment_mode = models.CharField(max_length=30, choices=PAYMENT, null=True, blank=True)
-    # DEPRECATED. moved to Rounds
+    district_count = models.IntegerField(null=True, blank=True)
+    # END fields moved to the `Budget` model. ************************************************
+    # ----------------------------------------------------------------------------------------
+
+    # ----------------------------------------------------------------------------------------
+    # START deprecated fields. ***************************************************************
+    cvdpv_notified_at = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_("cVDPV Notification"),
+    )
+    # Replaced by the vaccines property.
+    vacine = models.CharField(max_length=5, choices=VACCINES, null=True, blank=True)
+    # Deprecated
+    detection_rrt_oprtt_approval_at = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_("RRT/OPRTT Approval"),
+    )
+    # Moved to round.
+    doses_requested = models.IntegerField(null=True, blank=True)
+    # Preparedness deprecated fields -> Moved to round
+    preperadness_spreadsheet_url = models.URLField(null=True, blank=True)
+    preperadness_sync_status = models.CharField(max_length=10, default="FINISHED", choices=PREPAREDNESS_SYNC_STATUS)
+    # Budget deprecated fields.
+    budget_requested_at_WFEDITABLE_old = models.DateField(null=True, blank=True)
+    feedback_sent_to_rrt3_at_WFEDITABLE_old = models.DateField(null=True, blank=True)
+    re_submitted_to_orpg_at_WFEDITABLE_old = models.DateField(null=True, blank=True)
+    budget_responsible = models.CharField(max_length=10, choices=RESPONSIBLES, null=True, blank=True)
+    last_budget_event = models.ForeignKey(
+        "BudgetEvent", null=True, blank=True, on_delete=models.SET_NULL, related_name="lastbudgetevent"
+    )
+    # Removed in PR POLIO-614.
+    eomg = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_("EOMG"),
+    )
+    # Moved to Rounds
     round_one = models.OneToOneField(
         Round, on_delete=models.PROTECT, related_name="campaign_round_one", null=True, blank=True
     )
-    # DEPRECATED
     round_two = models.OneToOneField(
         Round, on_delete=models.PROTECT, related_name="campaign_round_two", null=True, blank=True
     )
-
-    # Additional fields
-    district_count = models.IntegerField(null=True, blank=True)
     # budget form, DEPRECATED
     budget_rrt_oprtt_approval_at = models.DateField(
         null=True,
@@ -587,9 +575,7 @@ class Campaign(SoftDeletableModel):
         blank=True,
         verbose_name=_("Budget Submission"),
     )
-    ## End of budget form
-
-    # END fields moved to the `Budget` model. ************************************************
+    # END deprecated fields. *****************************************************************
     # ----------------------------------------------------------------------------------------
 
     def __str__(self):

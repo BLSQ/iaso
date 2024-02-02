@@ -581,4 +581,4 @@ class TeamAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "text/csv")
         d = budget_step.created_at.strftime("%Y-%m-%d")
-        self.assertEqual(response.content.decode(), f"Last update\r\n2024-02-01\r\n2024-02-01\r\n")
+        self.assertEqual(response.content.decode(), f"Last update\r\n{d}\r\n{d}\r\n")

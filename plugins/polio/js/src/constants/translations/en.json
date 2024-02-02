@@ -571,7 +571,7 @@
     "iaso.polio.label.vaccineManagement": "Vaccine management",
     "iaso.polio.label.VACCINES_NOT_ARRIVED_IN_COUNTRY": "Vaccines not arrived in country",
     "iaso.polio.label.VACCINES_NOT_DELIVERED_OPS_LEVEL": "Vaccines not delivered at operational level",
-    "iaso.polio.label.VAR": "VARs",
+    "iaso.polio.label.VAR": "Vaccines arrival reports",
     "iaso.polio.label.varTitle": "Vaccine arrival reports",
     "iaso.polio.label.vials_destroyed": "Vials destroyed",
     "iaso.polio.label.vialsDestroyed": "Unusable vials destroyed",

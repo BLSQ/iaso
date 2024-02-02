@@ -25,8 +25,12 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
     const markedForDeletion = arrival_reports?.[index].to_delete ?? false;
 
     const doses_per_vial = arrival_reports?.[index].doses_per_vial ?? 20;
-    const current_vials_shipped = Math.ceil((arrival_reports?.[index].doses_shipped ?? 0) / doses_per_vial);
-    const current_vials_received = Math.ceil((arrival_reports?.[index].doses_received ?? 0) / doses_per_vial);
+    const current_vials_shipped = Math.ceil(
+        (arrival_reports?.[index].doses_shipped ?? 0) / doses_per_vial,
+    );
+    const current_vials_received = Math.ceil(
+        (arrival_reports?.[index].doses_received ?? 0) / doses_per_vial,
+    );
 
     return (
         <div className={classes.container}>
@@ -55,6 +59,7 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
                                 component={TextInput}
                                 shrinkLabel={false}
                                 disabled={markedForDeletion}
+                                required
                             />
                         </Grid>
                         <Grid item xs={6} md={4}>
@@ -83,6 +88,7 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
                                 name={`${VAR}[${index}].doses_shipped`}
                                 component={NumberInput}
                                 disabled={markedForDeletion}
+                                required
                             />
                         </Grid>
 
@@ -92,6 +98,7 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
                                 name={`${VAR}[${index}].doses_received`}
                                 component={NumberInput}
                                 disabled={markedForDeletion}
+                                required
                             />
                         </Grid>
                     </Grid>
@@ -99,18 +106,20 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
                     <Grid container item xs={12} spacing={2}>
                         <Grid item xs={6} md={4}>
                             <Typography variant="button">
-                                {`${formatMessage(MESSAGES.doses_per_vial)}:`} <NumberCell value={doses_per_vial} />
-                            </Typography>
-
-                        </Grid>
-                        <Grid item xs={6} md={4}>
-                            <Typography variant="button">
-                                {`${formatMessage(MESSAGES.vials_shipped)}:`} <NumberCell value={current_vials_shipped} />
+                                {`${formatMessage(MESSAGES.doses_per_vial)}:`}{' '}
+                                <NumberCell value={doses_per_vial} />
                             </Typography>
                         </Grid>
                         <Grid item xs={6} md={4}>
                             <Typography variant="button">
-                                {`${formatMessage(MESSAGES.vials_received)}:`} <NumberCell value={current_vials_received} />
+                                {`${formatMessage(MESSAGES.vials_shipped)}:`}{' '}
+                                <NumberCell value={current_vials_shipped} />
+                            </Typography>
+                        </Grid>
+                        <Grid item xs={6} md={4}>
+                            <Typography variant="button">
+                                {`${formatMessage(MESSAGES.vials_received)}:`}{' '}
+                                <NumberCell value={current_vials_received} />
                             </Typography>
                         </Grid>
                     </Grid>

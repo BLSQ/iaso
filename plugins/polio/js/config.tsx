@@ -742,14 +742,20 @@ const menu = [
                         key: 'supplychain',
                         // using read permission to grant access
                         // because backend won't accept fetching with write permission only
-                        permissions: ['iaso_polio_vaccine_supply_chain_read'],
+                        permissions: [
+                            'iaso_polio_vaccine_supply_chain_read',
+                            'iaso_polio_vaccine_supply_chain_write',
+                        ],
                         icon: props => <LocalShippingIcon {...props} />,
                     },
                     {
                         label: MESSAGES.vaccineStockManagement,
                         key: 'stockmanagement',
                         dev: true,
-                        permissions: ['iaso_polio'],
+                        permissions: [
+                            'iaso_polio_vaccine_stock_management_read',
+                            'iaso_polio_vaccine_stock_management_write',
+                        ],
                         icon: props => <StorageIcon {...props} />,
                     },
                 ],

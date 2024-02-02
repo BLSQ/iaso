@@ -73,8 +73,8 @@ export const useVaccineStockManagementTableColumns = (): Column[] => {
                     return (
                         <>
                             <IconButton
-                                icon="edit"
-                                tooltipMessage={MESSAGES.edit}
+                                icon="remove-red-eye"
+                                tooltipMessage={MESSAGES.view}
                                 // disabled
                                 url={`${STOCK_MANAGEMENT_DETAILS}/id/${settings.row.original.id}`}
                             />

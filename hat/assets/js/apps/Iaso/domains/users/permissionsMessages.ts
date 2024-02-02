@@ -495,6 +495,23 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.tooltip.iaso_org_unit_change_request_review',
         defaultMessage: 'Org unit change request review',
     },
+    iaso_polio_vaccine_stock_management_write: {
+        id: 'iaso.permissions.iaso_polio_vaccine_stock_management_write',
+        defaultMessage: 'Polio vaccine stock management - Write',
+    },
+    iaso_polio_vaccine_stock_management_read: {
+        id: 'iaso.permissions.iaso_polio_vaccine_stock_management_read',
+        defaultMessage: 'Polio vaccine stock management - Read',
+    },
+    iaso_polio_vaccine_stock_management_read_tooltip: {
+        id: 'iaso.permissions.iaso_polio_vaccine_stock_management_read_tooltip',
+        defaultMessage:
+            'See summary of vaccine stock management, by country and vaccine',
+    },
+    iaso_polio_vaccine_stock_management_write_tooltip: {
+        id: 'iaso.permissions.iaso_polio_vaccine_stock_management_write_tooltip',
+        defaultMessage: 'Edit and add vaccine stock management data',
+    },
 });
 
 export default PERMISSIONS_MESSAGES;

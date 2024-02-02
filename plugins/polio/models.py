@@ -1115,7 +1115,7 @@ class DestructionReport(models.Model):
     rrt_destruction_report_reception_date = models.DateField()
     destruction_report_date = models.DateField()
     unusable_vials_destroyed = models.PositiveIntegerField()
-    lot_number = models.CharField(max_length=200)
+    lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
 
 
 class IncidentReport(models.Model):

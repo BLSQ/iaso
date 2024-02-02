@@ -8,6 +8,7 @@ import MESSAGES from './messages';
 import { VaccineStockManagementFilters } from './Filters/VaccineStockManagementFilters';
 import { VaccineStockManagementTable } from './Table/VaccineStockManagementTable';
 import { StockManagementListParams } from './types';
+import { CreateVaccineStock } from './CreateVaccineStock/CreateVaccineStock';
 
 type Props = { router: Router };
 
@@ -26,6 +27,9 @@ export const VaccineStockManagement: FunctionComponent<Props> = ({
                 <VaccineStockManagementFilters
                     params={router.params as StockManagementListParams}
                 />
+                <Box mt={2} justifyContent="flex-end" display="flex">
+                    <CreateVaccineStock iconProps={{}} />
+                </Box>
                 <VaccineStockManagementTable
                     params={router.params as StockManagementListParams}
                 />

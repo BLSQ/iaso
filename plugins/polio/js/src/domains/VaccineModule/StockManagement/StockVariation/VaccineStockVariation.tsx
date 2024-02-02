@@ -73,10 +73,10 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
             tab === INCIDENT,
         );
     const { data: summary } = useGetStockManagementSummary(router.params.id);
-
     const title = `${formatMessage(MESSAGES.stockVariation)}: ${
         summary?.country_name ?? textPlaceholder
     } - ${summary?.vaccine_type ?? textPlaceholder}`;
+
     const formAColumns = useFormATableColumns(
         summary?.country_name,
         summary?.vaccine_type,
@@ -132,6 +132,7 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
                                     iconProps={{}}
                                     countryName={summary?.country_name}
                                     vaccine={summary?.vaccine_type}
+                                    vaccineStockId={router.params.id as string}
                                 />
                             )}
                             {tab === DESTRUCTION && (
@@ -139,6 +140,7 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
                                     iconProps={{}}
                                     countryName={summary?.country_name}
                                     vaccine={summary?.vaccine_type}
+                                    vaccineStockId={router.params.id}
                                 />
                             )}
                             {tab === INCIDENT && (
@@ -146,6 +148,7 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
                                     iconProps={{}}
                                     countryName={summary?.country_name}
                                     vaccine={summary?.vaccine_type}
+                                    vaccineStockId={router.params.id}
                                 />
                             )}
                         </Grid>
@@ -157,7 +160,7 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
                                 paramsPrefix={tab}
                                 isFetching={isFetchingFormA}
                                 defaultSorted={[
-                                    { id: 'forma_reception_rrt', desc: true },
+                                    { id: 'form_a_reception_date', desc: true },
                                 ]}
                             />
                         )}
@@ -185,7 +188,7 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
                                 isFetching={isFetchingIncidents}
                                 defaultSorted={[
                                     {
-                                        id: 'incident_reception_rrt',
+                                        id: 'incident_report_received_by_rrt',
                                         desc: true,
                                     },
                                 ]}

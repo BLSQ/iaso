@@ -27,6 +27,7 @@ type Props = {
     closeDialog: () => void;
     countryName: string;
     vaccine: Vaccine;
+    vaccineStockId: string;
 };
 
 export const CreateEditFormA: FunctionComponent<Props> = ({
@@ -35,6 +36,7 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
     closeDialog,
     countryName,
     vaccine,
+    vaccineStockId,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSaveFormA();
@@ -42,25 +44,24 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
     const formik = useFormik<any>({
         initialValues: {
             id: formA?.id,
-            obr_name: formA?.obr_name,
-            lot_numbers_for_usable_vials:
-                formA?.lot_numbers_for_usable_vials ?? '',
-            date_of_report: formA?.date_of_report,
-            forma_reception_rrt: formA?.forma_reception_rrt,
-            vials_used: formA?.vials_used,
+            campaign: formA?.campaign,
+            lot_numbers: formA?.lot_numbers ?? '',
+            report_date: formA?.report_date,
+            form_a_reception_date: formA?.form_a_reception_date,
+            usable_vials_used: formA?.usable_vials_used,
             unusable_vials: formA?.unusable_vials,
-            vials_missing: formA?.vials_missing,
+            missing_vials: formA?.missing_vials,
+            vaccine_stock: vaccineStockId,
         },
         onSubmit: values => save(values),
         validationSchema,
     });
     const { data: campaignOptions, isFetching: isFetchingCampaigns } =
-        useCampaignOptions(countryName, vaccine);
+        useCampaignOptions(countryName);
     const titleMessage = formA?.id ? MESSAGES.edit : MESSAGES.create;
     const title = `${countryName} - ${vaccine}: ${formatMessage(
         titleMessage,
     )} ${formatMessage(MESSAGES.formA)}`;
-    // TODO add conditions
     const allowConfirm = formik.isValid && !isEqual(formik.touched, {});
 
     return (
@@ -82,13 +83,24 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
             >
                 <Box mb={2}>
                     <Field
-                        label={formatMessage(MESSAGES.obrName)}
-                        name="obr_name"
+                        label={formatMessage(MESSAGES.campaign)}
+                        name="campaign"
                         component={SingleSelect}
                         required
-                        options={campaignOptions}
+                        options={
+                            // @ts-ignore
+                            (campaignOptions ?? []).length > 0
+                                ? campaignOptions
+                                : [
+                                      {
+                                          label: formik.values.campaign,
+                                          value: formik.values.campaign,
+                                      },
+                                  ]
+                        }
                         withMarginTop
                         isLoading={isFetchingCampaigns}
+                        disabled={!countryName}
                     />
                 </Box>
                 <Box mb={2}>
@@ -96,33 +108,37 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                         label={formatMessage(
                             MESSAGES.lot_numbers_for_usable_vials,
                         )}
-                        name="lot_numbers_for_usable_vials"
+                        name="lot_numbers"
                         component={TextInput}
                         shrinkLabel={false}
                     />
                 </Box>
                 <Field
-                    label={formatMessage(MESSAGES.date_of_report)}
-                    name="date_of_report"
+                    label={formatMessage(MESSAGES.report_date)}
+                    name="report_date"
                     component={DateInput}
+                    required
                 />
                 <Field
-                    label={formatMessage(MESSAGES.forma_reception_rrt)}
-                    name="forma_reception_rrt"
+                    label={formatMessage(MESSAGES.form_a_reception_date)}
+                    name="form_a_reception_date"
                     component={DateInput}
+                    required
                 />
                 <Box mb={2}>
                     <Field
                         label={formatMessage(MESSAGES.forma_vials_used)}
-                        name="vials_used"
+                        name="usable_vials_used"
                         component={NumberInput}
+                        required
                     />
                 </Box>
                 <Box mb={2}>
                     <Field
                         label={formatMessage(MESSAGES.forma_vials_missing)}
-                        name="vials_missing"
+                        name="missing_vials"
                         component={NumberInput}
+                        required
                     />
                 </Box>
                 <Box mb={2}>
@@ -130,6 +146,7 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                         label={formatMessage(MESSAGES.forma_unusable_vials)}
                         name="unusable_vials"
                         component={NumberInput}
+                        required
                     />
                 </Box>
             </ConfirmCancelModal>

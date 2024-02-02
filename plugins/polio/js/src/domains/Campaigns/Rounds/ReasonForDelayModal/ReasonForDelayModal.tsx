@@ -4,7 +4,7 @@ import {
     ConfirmCancelModal,
     makeFullModal,
 } from 'bluesquare-components';
-import { Divider } from '@mui/material';
+import { Box, Divider } from '@mui/material';
 import { Field, useFormikContext } from 'formik';
 import { useSelector } from 'react-redux';
 import MESSAGES from '../../../../constants/messages';
@@ -46,13 +46,15 @@ const ReasonForDelayModal: FunctionComponent<Props> = ({
             allowConfirm={allowConfirm}
         >
             <Divider />
-            <Field
-                label={formatMessage(MESSAGES.startDate)}
-                name="startDate"
-                component={DateInput}
-                fullWidth
-                clearable={false}
-            />
+            <Box mt={2}>
+                <Field
+                    label={formatMessage(MESSAGES.startDate)}
+                    name="startDate"
+                    component={DateInput}
+                    fullWidth
+                    clearable={false}
+                />
+            </Box>
             <Field
                 label={formatMessage(MESSAGES.endDate)}
                 name="endDate"

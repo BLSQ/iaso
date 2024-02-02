@@ -26,7 +26,9 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
     const markedForDeletion = pre_alerts?.[index].to_delete ?? false;
 
     const doses_per_vial = pre_alerts?.[index].doses_per_vial ?? 20;
-    const current_vials_shipped = Math.ceil((pre_alerts?.[index].doses_shipped ?? 0) / doses_per_vial);
+    const current_vials_shipped = Math.ceil(
+        (pre_alerts?.[index].doses_shipped ?? 0) / doses_per_vial,
+    );
 
     const onDelete = useCallback(() => {
         if (values?.pre_alerts?.[index].id) {
@@ -112,21 +114,20 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                     </Grid>
 
                     <Grid container item xs={12} spacing={2}>
-
                         <Grid item xs={6} md={4} />
 
                         <Grid item xs={6} md={4}>
                             <Typography variant="button">
-                                {`${formatMessage(MESSAGES.doses_per_vial)}:`} <NumberCell value={doses_per_vial} />
+                                {`${formatMessage(MESSAGES.doses_per_vial)}:`}{' '}
+                                <NumberCell value={doses_per_vial} />
                             </Typography>
-
                         </Grid>
 
                         <Grid item xs={6} md={4}>
                             <Typography variant="button">
-                                {`${formatMessage(MESSAGES.vials_shipped)}:`} <NumberCell value={current_vials_shipped} />
+                                {`${formatMessage(MESSAGES.vials_shipped)}:`}{' '}
+                                <NumberCell value={current_vials_shipped} />
                             </Typography>
-
                         </Grid>
                     </Grid>
                 </Grid>

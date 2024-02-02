@@ -751,7 +751,6 @@ const menu = [
                     {
                         label: MESSAGES.vaccineStockManagement,
                         key: 'stockmanagement',
-                        dev: true,
                         permissions: [
                             'iaso_polio_vaccine_stock_management_read',
                             'iaso_polio_vaccine_stock_management_write',

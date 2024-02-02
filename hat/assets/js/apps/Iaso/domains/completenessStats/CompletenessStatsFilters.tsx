@@ -60,10 +60,6 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
             const tempParams = {
                 ...params,
                 ...filters,
-                tab:
-                    filters.formId?.split(',').length !== 1
-                        ? 'list'
-                        : params.tab,
             };
             tempParams.page = '1';
             dispatch(redirectToReplace(baseUrl, tempParams));

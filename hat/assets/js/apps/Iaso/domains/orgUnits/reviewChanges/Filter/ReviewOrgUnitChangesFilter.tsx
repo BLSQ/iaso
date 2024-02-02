@@ -11,6 +11,7 @@ import { useGetOrgUnit } from '../../components/TreeView/requests';
 import { useGetGroupDropdown } from '../../hooks/requests/useGetGroups';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { DropdownOptions } from '../../../../types/utils';
+import DatesRange from '../../../../components/filters/DatesRange';
 
 const baseUrl = baseUrls.orgUnitsChangeRequest;
 type Props = { params: any };
@@ -104,6 +105,17 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                             initialSelection={initialOrgUnit}
                         />
                     </Box>
+                </Grid>
+                <Grid item xs={12} md={6}>
+                    <DatesRange
+                        keyDateFrom="created_at_after"
+                        keyDateTo="created_at_before"
+                        onChangeDate={handleChange}
+                        dateFrom={filters.created_at_after}
+                        dateTo={filters.created_at_before}
+                        labelFrom={MESSAGES.createdDateFrom}
+                        labelTo={MESSAGES.createdDateTo}
+                    />
                 </Grid>
             </Grid>
 

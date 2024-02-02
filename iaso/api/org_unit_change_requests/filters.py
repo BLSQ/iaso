@@ -1,6 +1,7 @@
 import django_filters
 from rest_framework.exceptions import ValidationError
 
+from django.conf import settings
 from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.utils.translation import gettext_lazy as _
@@ -22,6 +23,12 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
     parent_id = django_filters.NumberFilter(method="filter_parent_id", label=_("Parent ID"))
     groups = django_filters.CharFilter(method="filter_groups", label=_("Groups IDs (comma-separated)"))
     project = django_filters.NumberFilter(field_name="org_unit__org_unit_type__projects", label=_("Project ID"))
+    created_at = django_filters.DateFromToRangeFilter()
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.form.fields["created_at"].fields[0].input_formats = settings.API_DATE_INPUT_FORMATS
+        self.form.fields["created_at"].fields[-1].input_formats = settings.API_DATE_INPUT_FORMATS
 
     class Meta:
         model = OrgUnitChangeRequest

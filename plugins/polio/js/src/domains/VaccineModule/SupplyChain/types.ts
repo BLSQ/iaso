@@ -38,7 +38,7 @@ export type VRFFormData = Omit<VRF, 'rounds'> & {
 
 export type PreAlert = {
     id?: number;
-    date_reception: string; // date in string form
+    date_pre_alert_reception: string; // date in string form
     po_number: string;
     eta: string;
     lot_number: number;

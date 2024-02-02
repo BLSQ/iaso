@@ -23,9 +23,7 @@ from plugins.polio.models import Campaign, PAYMENT, Round
 class BudgetStepQuerySet(models.QuerySet):
     def filter_for_user(self, user: Union[User, AnonymousUser]):
         campaigns = Campaign.objects.filter_for_user(user)  # type: ignore
-        rounds = Round.objects.filter(campaign__in=campaigns)
-        budget_processes = rounds.values_list("budget_process", flat=True)
-        return self.filter(budget_process__in=budget_processes)
+        return self.filter(rounds__campaign__in=campaigns)
 
 
 # workaround for MyPy

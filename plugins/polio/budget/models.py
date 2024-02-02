@@ -52,7 +52,7 @@ class BudgetProcess(SoftDeletableModel):
 
     status = models.CharField(max_length=100, null=True, blank=True)
     current_state_key = models.CharField(max_length=100, default="-")
-    current_state_label = models.CharField(max_length=100, null=True, blank=True)
+    current_state_label = models.CharField(max_length=100, blank=True)
 
     # Budget tab.
     # These fields can be either filled manually or via the budget workflow when a step is done.
@@ -77,7 +77,7 @@ class BudgetProcess(SoftDeletableModel):
     approved_by_unicef_at_WFEDITABLE = models.DateField(null=True, blank=True)
     approved_at_WFEDITABLE = models.DateField(null=True, blank=True)
     approval_confirmed_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    payment_mode = models.CharField(max_length=30, choices=PAYMENT, null=True, blank=True)
+    payment_mode = models.CharField(max_length=30, choices=PAYMENT, blank=True)
     district_count = models.IntegerField(null=True, blank=True)
 
     # Fund release part of the budget form. Will be migrated to workflow fields later.

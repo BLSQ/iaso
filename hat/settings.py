@@ -73,7 +73,7 @@ USE_CELERY = os.environ.get("USE_CELERY", "")
 # to setup Redis, use django_redis.cache.RedisCache as CACHE_BACKEND and something like "redis://127.0.0.1:6379" as CACHE_LOCATION
 CACHE_BACKEND = os.environ.get("CACHE_BACKEND", "django.core.cache.backends.db.DatabaseCache")
 CACHE_LOCATION = os.environ.get("CACHE_LOCATION", "django_cache_table")
-
+CACHE_MAX_ENTRIES = os.environ.get("CACHE_MAX_ENTRIES", 300)
 
 ALLOWED_HOSTS = ["*"]
 
@@ -603,6 +603,7 @@ CACHES = {
     "default": {
         "BACKEND": CACHE_BACKEND,
         "LOCATION": CACHE_LOCATION,
+        "OPTIONS": {"MAX_ENTRIES": CACHE_MAX_ENTRIES},
     }
 }
 

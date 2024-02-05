@@ -1,3 +1,4 @@
+import { SxProps, Theme } from '@mui/material';
 import { GenericObject, Optional } from './utils';
 
 export type PostArg = {
@@ -6,6 +7,8 @@ export type PostArg = {
     fileData?: Record<string, Blob | Blob[]>;
     signal?: AbortSignal | null;
 };
+
+export type SxStyles = Record<string, SxProps<Theme>>;
 
 export type Locale = {
     code: string;

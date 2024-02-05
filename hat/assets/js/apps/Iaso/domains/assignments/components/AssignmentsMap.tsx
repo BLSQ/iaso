@@ -196,7 +196,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                     doubleClickZoom
                     isLoading={isLoading}
                     maxZoom={currentTile.maxZoom}
-                    style={{ height: '72vh' }}
+                    style={{ height: '70vh' }}
                     bounds={bounds}
                     boundsOptions={boundsOptions}
                     center={defaultViewport.center}

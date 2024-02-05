@@ -38,8 +38,8 @@ export const AssignmentsFilters: FunctionComponent<Props> = ({
         });
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
     return (
-        <Grid container spacing={2}>
-            <Grid item xs={4} lg={3} xl={2}>
+        <Grid container spacing={{ xs: 0, lg: 2 }}>
+            <Grid item xs={12} lg={3}>
                 <InputComponent
                     type="select"
                     keyValue="team"
@@ -52,7 +52,7 @@ export const AssignmentsFilters: FunctionComponent<Props> = ({
                     clearable={false}
                 />
             </Grid>
-            <Grid item xs={4} lg={3} xl={2}>
+            <Grid item xs={12} lg={3}>
                 <InputComponent
                     type="select"
                     disabled={isFetchingOrgUnitTypes}
@@ -69,7 +69,7 @@ export const AssignmentsFilters: FunctionComponent<Props> = ({
                     clearable={false}
                 />
             </Grid>
-            <Grid item xs={4} lg={3} xl={2}>
+            <Grid item xs={12} lg={3}>
                 <InputComponent
                     keyValue="search"
                     onChange={handleChange}
@@ -83,12 +83,12 @@ export const AssignmentsFilters: FunctionComponent<Props> = ({
             </Grid>
             <Grid
                 item
-                xs={4}
+                xs={12}
                 lg={3}
-                xl={2}
+                justifyContent={{ xs: 'flex-end', lg: 'flex-start' }}
                 container
-                justifyContent="flex-end"
-                alignContent="center"
+                alignItems="center"
+                mt={{ xs: 2, lg: 0 }}
             >
                 <Button
                     disabled={textSearchError || !filtersUpdated}

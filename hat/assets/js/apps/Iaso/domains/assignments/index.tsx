@@ -4,7 +4,7 @@ import React, {
     useEffect,
     useCallback,
 } from 'react';
-import { Box, Tabs, Tab, Grid } from '@mui/material';
+import { Box, Tabs, Tab, Grid, Paper } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useDispatch } from 'react-redux';
 
@@ -29,8 +29,7 @@ import { ParentDialog } from './components/ParentDialog';
 import { AssignmentParams, AssignmentApi } from './types/assigment';
 import { Team, SubTeam, User } from './types/team';
 import { AssignmentUnit } from './types/locations';
-import { ParentOrgUnit } from './types/orgUnit';
-
+import { ParentOrgUnit } from '../orgUnits/types/orgUnit';
 import { useGetAssignmentData } from './hooks/useGetAssignmentData';
 
 import { getSaveParams } from './utils';
@@ -109,8 +108,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
         search: params.search,
         selectedItem,
     });
-    const isLoading =
-        isLoadingPlanning || isSaving || isFetchingChildrenOrgunits;
+    const isLoading = isLoadingPlanning || isSaving;
 
     const handleSaveAssignment = useCallback(
         (selectedOrgUnit: AssignmentUnit) => {
@@ -274,7 +272,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                 <Box mt={2}>
                     <>
                         <Grid container spacing={2}>
-                            <Grid item xs={5}>
+                            <Grid item xs={12} lg={5}>
                                 <Sidebar
                                     params={params}
                                     data={sidebarData || []}
@@ -296,85 +294,93 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                                     }
                                 />
                             </Grid>
-                            <Grid item xs={7}>
-                                <Box ml={-4}>
-                                    <Tabs
-                                        textColor="inherit"
-                                        indicatorColor="secondary"
-                                        value={tab}
-                                        classes={{
-                                            root: classes.tabs,
-                                            indicator: classes.indicator,
-                                        }}
-                                        onChange={(_, newtab) =>
-                                            handleChangeTab(newtab)
-                                        }
-                                    >
-                                        <Tab
-                                            value="map"
-                                            label={formatMessage(MESSAGES.map)}
-                                        />
-                                        <Tab
-                                            value="list"
-                                            label={formatMessage(MESSAGES.list)}
-                                        />
-                                    </Tabs>
-                                </Box>
-                                <Box position="relative" width="100%">
-                                    <Box
-                                        width="100%"
-                                        className={
-                                            tab === 'map'
-                                                ? ''
-                                                : classes.hiddenOpacity
-                                        }
-                                    >
-                                        {!isLoadingAssignments && (
-                                            <AssignmentsMapTab
-                                                planning={planning}
-                                                currentTeam={currentTeam}
+                            <Grid item xs={12} lg={7}>
+                                <Paper>
+                                    <Box ml={-4}>
+                                        <Tabs
+                                            textColor="inherit"
+                                            indicatorColor="secondary"
+                                            value={tab}
+                                            classes={{
+                                                root: classes.tabs,
+                                                indicator: classes.indicator,
+                                            }}
+                                            onChange={(_, newtab) =>
+                                                handleChangeTab(newtab)
+                                            }
+                                        >
+                                            <Tab
+                                                value="map"
+                                                label={formatMessage(
+                                                    MESSAGES.map,
+                                                )}
+                                            />
+                                            <Tab
+                                                value="list"
+                                                label={formatMessage(
+                                                    MESSAGES.list,
+                                                )}
+                                            />
+                                        </Tabs>
+                                    </Box>
+                                    <Box position="relative" width="100%">
+                                        <Box
+                                            width="100%"
+                                            className={
+                                                tab === 'map'
+                                                    ? ''
+                                                    : classes.hiddenOpacity
+                                            }
+                                        >
+                                            {!isLoadingAssignments && (
+                                                <AssignmentsMapTab
+                                                    planning={planning}
+                                                    currentTeam={currentTeam}
+                                                    teams={teams || []}
+                                                    profiles={profiles}
+                                                    params={params}
+                                                    allAssignments={
+                                                        allAssignments
+                                                    }
+                                                    setParentSelected={
+                                                        setParentSelected
+                                                    }
+                                                    locations={orgUnits}
+                                                    isFetchingLocations={
+                                                        isFetchingOrgUnits
+                                                    }
+                                                    handleSaveAssignment={
+                                                        handleSaveAssignment
+                                                    }
+                                                    isLoadingAssignments={
+                                                        isLoadingAssignments
+                                                    }
+                                                />
+                                            )}
+                                        </Box>
+                                        {tab === 'list' && (
+                                            <AssignmentsListTab
+                                                assignments={allAssignments}
+                                                params={params}
                                                 teams={teams || []}
                                                 profiles={profiles}
-                                                params={params}
-                                                allAssignments={allAssignments}
-                                                setParentSelected={
-                                                    setParentSelected
-                                                }
-                                                locations={orgUnits}
-                                                isFetchingLocations={
-                                                    isFetchingOrgUnits
-                                                }
+                                                currentTeam={currentTeam}
+                                                orgUnits={orgUnitsList || []}
                                                 handleSaveAssignment={
                                                     handleSaveAssignment
                                                 }
-                                                isLoadingAssignments={
-                                                    isLoadingAssignments
+                                                isFetchingOrgUnits={
+                                                    isLoadingAssignments ||
+                                                    isFetchingOrgUnitsList
+                                                }
+                                                selectedItem={selectedItem}
+                                                setParentSelected={
+                                                    setParentSelected
                                                 }
                                             />
                                         )}
                                     </Box>
-                                    {tab === 'list' && (
-                                        <AssignmentsListTab
-                                            assignments={allAssignments}
-                                            params={params}
-                                            teams={teams || []}
-                                            profiles={profiles}
-                                            currentTeam={currentTeam}
-                                            orgUnits={orgUnitsList || []}
-                                            handleSaveAssignment={
-                                                handleSaveAssignment
-                                            }
-                                            isFetchingOrgUnits={
-                                                isLoadingAssignments ||
-                                                isFetchingOrgUnitsList
-                                            }
-                                            selectedItem={selectedItem}
-                                            setParentSelected={
-                                                setParentSelected
-                                            }
-                                        />
-                                    )}
-                                </Box>
+                                </Paper>
                             </Grid>
                         </Grid>
                     </>

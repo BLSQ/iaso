@@ -249,21 +249,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                     planning?.name ?? ''
                 }`}
                 displayBackButton={false}
-            >
-                <Tabs
-                    textColor="inherit"
-                    indicatorColor="secondary"
-                    value={tab}
-                    classes={{
-                        root: classes.tabs,
-                        indicator: classes.indicator,
-                    }}
-                    onChange={(_, newtab) => handleChangeTab(newtab)}
-                >
-                    <Tab value="map" label={formatMessage(MESSAGES.map)} />
-                    <Tab value="list" label={formatMessage(MESSAGES.list)} />
-                </Tabs>
-            </TopBar>
+            />
             <ParentDialog
                 childrenOrgunits={childrenOrgunits}
                 parentSelected={parentSelected}
@@ -311,6 +297,29 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                                 />
                             </Grid>
                             <Grid item xs={7}>
+                                <Box ml={-4}>
+                                    <Tabs
+                                        textColor="inherit"
+                                        indicatorColor="secondary"
+                                        value={tab}
+                                        classes={{
+                                            root: classes.tabs,
+                                            indicator: classes.indicator,
+                                        }}
+                                        onChange={(_, newtab) =>
+                                            handleChangeTab(newtab)
+                                        }
+                                    >
+                                        <Tab
+                                            value="map"
+                                            label={formatMessage(MESSAGES.map)}
+                                        />
+                                        <Tab
+                                            value="list"
+                                            label={formatMessage(MESSAGES.list)}
+                                        />
+                                    </Tabs>
+                                </Box>
                                 <Box position="relative" width="100%">
                                     <Box
                                         width="100%"

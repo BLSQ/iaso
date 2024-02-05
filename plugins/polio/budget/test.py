@@ -186,6 +186,16 @@ class BudgetCampaignViewSetTestCase(APITestCase):
                 "displayed_fields": ["comment"],
                 "color": "primary",
             },
+            {
+                "key": "override",
+                "label": "Override",
+                "help_text": "",
+                "allowed": None,
+                "reason_not_allowed": None,
+                "required_fields": [],
+                "displayed_fields": [],
+                "color": "red",
+            },
         ]
         expected_timeline = {"categories": []}
         for budget_process in response_data["results"]:

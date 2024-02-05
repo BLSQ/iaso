@@ -27,14 +27,12 @@ from plugins.polio.models import Campaign, Round
 from hat.menupermissions import models as permission
 
 
-# FIXME maybe: Maybe we should inherit from CampaignViewSet directly to not duplicate all the order and filter logic
-# But then we would inherit all the other actions too
 @swagger_auto_schema(tags=["budget"])
 class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
     """
-    Campaign endpoint with budget information.
+    Budget information endpoint.
 
-    You can request specific field by using the ?fields parameter
+    You can request specific field by using the `?fields` parameter.
     """
 
     serializer_class = CampaignBudgetSerializer
@@ -43,8 +41,6 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
     permission_classes = [HasPermission(permission.POLIO_BUDGET)]  # type: ignore
     use_field_order = True
 
-    # Make this read only
-    # FIXME : remove POST
     http_method_names = ["get", "head", "post"]
     filter_backends = [
         filters.OrderingFilter,
@@ -75,30 +71,6 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
             queryset = queryset.filter(country__groups__in=org_unit_groups.split(","))
 
         return queryset
-
-    ordering_fields = [
-        "obr_name",
-        # "cvdpv2_notified_at",
-        # "detection_status",
-        # "first_round_started_at",
-        # "last_round_started_at",
-        "country_name",
-        # "last_budget_event__created_at",
-        # "last_budget_event__type",
-        # "last_budget_event__status",
-        # "budget_current_state_key",
-    ]
-    # filterset_fields = {
-    #     "last_budget_event__status": ["exact"],
-    #     "country__name": ["exact"],
-    #     "country__id": ["in"],
-    #     "grouped_campaigns__id": ["in", "exact"],
-    #     "obr_name": ["exact", "contains"],
-    #     "cvdpv2_notified_at": ["gte", "lte", "range"],
-    #     "created_at": ["gte", "lte", "range"],
-    #     "rounds__started_at": ["gte", "lte", "range"],
-    #     "budget_current_state_key": ["exact", "in"],
-    # }
 
     @action(detail=False, methods=["POST"], serializer_class=TransitionToSerializer)
     def transition_to(self, request):

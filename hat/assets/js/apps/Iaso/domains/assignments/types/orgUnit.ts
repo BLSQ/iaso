@@ -16,9 +16,3 @@ export type ChildrenOrgUnits = {
     orgUnits: ChildrenOrgUnitsArray;
     orgUnitsToUpdate: Array<number>;
 };
-
-export type ParentOrgUnit = {
-    id: number;
-    name: string;
-    parent: ParentOrgUnit;
-};

@@ -39,11 +39,12 @@ export type OrgunitInititialState = {
 
 export type OrgUnitStatus = 'VALID' | 'NEW' | 'REJECTED';
 
-type ParentOrgUnit = {
+export type ParentOrgUnit = {
     name: string;
     id: number;
     org_unit_type_name: string;
     org_unit_type_id: number;
+    parent: ParentOrgUnit;
 };
 
 export type OrgUnit = {

@@ -13,6 +13,7 @@ import { UsersTeamsCell } from '../components/UsersTeamsCell';
 import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
 
 import MESSAGES from '../messages';
+import { ParentOrgUnit } from '../../orgUnits/types/orgUnit';
 
 type Props = {
     orgUnits: Array<AssignmentUnit>;
@@ -22,7 +23,10 @@ type Props = {
     currentTeam?: Team;
 };
 
-const getParentCount = (orgUnit: AssignmentUnit, count = 0): number => {
+const getParentCount = (
+    orgUnit: AssignmentUnit | ParentOrgUnit,
+    count = 0,
+): number => {
     let newCount = count;
     if (orgUnit.parent) {
         newCount += 1 + getParentCount(orgUnit.parent, newCount);
@@ -56,9 +60,19 @@ export const useColumns = ({
             .fill(null)
             .forEach((_, index) => {
                 columns.push({
-                    Header: formatMessage(MESSAGES.orgUnitsParent, {
-                        index: index + 1,
-                    }),
+                    // @ts-ignore
+                    Header: settings => {
+                        const orgUnit = settings.data[index];
+                        const parent = get(
+                            orgUnit,
+                            `parent${'.parent'.repeat(index)}`,
+                        );
+                        return parent
+                            ? parent.org_unit_type_name
+                            : formatMessage(MESSAGES.orgUnitsParent, {
+                                  index: index + 1,
+                              });
+                    },
                     id: `parent__${'parent__'.repeat(index)}name`,
                     accessor: `parent.${'parent.'.repeat(index)}name`,
                     align: 'center',

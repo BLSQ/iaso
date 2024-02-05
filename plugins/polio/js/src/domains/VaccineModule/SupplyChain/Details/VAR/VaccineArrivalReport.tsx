@@ -70,6 +70,7 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
                                 component={TextInput}
                                 disabled={markedForDeletion}
                                 shrinkLabel={false}
+                                required
                             />
                         </Grid>
                     </Grid>
@@ -80,6 +81,7 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
                                 name={`${VAR}[${index}].expiration_date`}
                                 component={DateInput}
                                 disabled={markedForDeletion}
+                                required
                             />
                         </Grid>
 

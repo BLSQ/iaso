@@ -83,6 +83,7 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                                 component={TextInput}
                                 shrinkLabel={false}
                                 disabled={markedForDeletion}
+                                required
                             />
                         </Grid>
                     </Grid>
@@ -95,7 +96,6 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                                 name={`pre_alerts[${index}].estimated_arrival_time`}
                                 component={DateInput}
                                 disabled={markedForDeletion}
-                                required
                             />
                         </Grid>
                         <Grid item xs={6} md={4}>

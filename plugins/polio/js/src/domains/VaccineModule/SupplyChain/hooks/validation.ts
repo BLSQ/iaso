@@ -86,7 +86,7 @@ const useVrfShape = () => {
         quantities_approved_by_orpg_in_doses: yup
             .number()
             .nullable()
-            .required(formatMessage(MESSAGES.requiredField))
+            // .required(formatMessage(MESSAGES.requiredField))
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
@@ -101,7 +101,7 @@ const useVrfShape = () => {
         quantities_approved_by_dg_in_doses: yup
             .number()
             .nullable()
-            .required(formatMessage(MESSAGES.requiredField))
+            // .required(formatMessage(MESSAGES.requiredField))
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
@@ -135,7 +135,7 @@ const usePreAlertShape = () => {
             .isNumbersArrayString(formatMessage),
         estimated_arrival_time: yup
             .date()
-            .required(formatMessage(MESSAGES.requiredField))
+            // .required(formatMessage(MESSAGES.requiredField))
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
         expiration_date: yup
@@ -167,6 +167,7 @@ const useArrivalReportShape = () => {
         lot_numbers: yup
             .mixed()
             .nullable()
+            .required(formatMessage(MESSAGES.requiredField))
             // TS can't detect the added method
             // @ts-ignore
             .isNumbersArrayString(formatMessage),
@@ -178,6 +179,7 @@ const useArrivalReportShape = () => {
             .typeError(formatMessage(MESSAGES.positiveInteger)),
         expiration_date: yup
             .date()
+            .required(formatMessage(MESSAGES.requiredField))
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
         doses_shipped: yup

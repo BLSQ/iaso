@@ -64,7 +64,7 @@ def get_workflow():
 
 @mock.patch("plugins.polio.budget.models.get_workflow", get_workflow)
 @mock.patch("plugins.polio.budget.serializers.get_workflow", get_workflow)
-class TeamAPITestCase(APITestCase):
+class BudgetCampaignViewSetTestCase(APITestCase):
     fixtures = ["user.yaml"]
     c: Campaign
     user: User

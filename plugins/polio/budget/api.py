@@ -74,7 +74,9 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
 
     @action(detail=False, methods=["POST"], serializer_class=TransitionToSerializer)
     def transition_to(self, request):
-        """Transition campaign to next state. Use multipart/form-data to send files."""
+        """
+        Transition `BudgetProcess` to next state. Use multipart/form-data to send files.
+        """
         data = request.data
         serializer = TransitionToSerializer(data=data, context={"request": request})
         serializer.is_valid(raise_exception=True)
@@ -86,10 +88,12 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
         detail=False,
         methods=["POST"],
         serializer_class=TransitionOverrideSerializer,
-        permission_classes=[HasPermission("iaso_polio_budget_admin")],
+        permission_classes=[HasPermission(permission.POLIO_BUDGET_ADMIN)],
     )
     def override(self, request):
-        """Transition campaign to next state. Use multipart/form-data to send files."""
+        """
+        Override `BudgetProcess` state.
+        """
         data = request.data
         serializer = TransitionOverrideSerializer(data=data, context={"request": request})
         serializer.is_valid(raise_exception=True)

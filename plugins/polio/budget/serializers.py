@@ -472,7 +472,7 @@ class TransitionToSerializer(serializers.Serializer):
 
 class TransitionOverrideSerializer(serializers.Serializer):
     new_state_key = serializers.CharField()
-    campaign = serializers.PrimaryKeyRelatedField(queryset=Campaign.objects.all())
+    budget_process = serializers.PrimaryKeyRelatedField(queryset=BudgetProcess.objects.all())
     comment = serializers.CharField(required=False)
     files = serializers.ListField(child=serializers.FileField(), required=False)
     links = serializers.JSONField(required=False)
@@ -480,71 +480,67 @@ class TransitionOverrideSerializer(serializers.Serializer):
 
     def save(self, **kwargs):
         data = self.validated_data
-        campaign: Campaign = data["campaign"]
+        budget_process: BudgetProcess = data["budget_process"]
         user = self.context["request"].user
         node_keys = data["new_state_key"]
         workflow = get_workflow()
 
-        # find the override transition in the workflow
+        # Find the override transition in the workflow.
         transition_as_list = list(filter(lambda tr: tr.key == "override", workflow.transitions))
+
         if len(transition_as_list) == 0:
             raise Exception("override step not found in workflow")
-        transition = transition_as_list[0]
 
-        created_by_team = None
-        if not created_by_team:
-            created_by_team = Team.objects.filter(users=user).first()
-        # we can get several keys aggregated eg: "submitted_to_rrt,re_submitted_to_rrt", so we split and keep the first one
+        transition = transition_as_list[0]
+        created_by_team = Team.objects.filter(users=user).first()
+        # We can get several keys aggregated eg: "submitted_to_rrt,re_submitted_to_rrt", so we split and keep the first one.
         node_key = node_keys.split(",")[0]
-        # this will raise if not found, should only happen for invalid workflow.
+
+        # This will raise if not found, should only happen for invalid workflow.
         to_node = workflow.get_node_by_key(node_key)
+
         with transaction.atomic():
             step = BudgetStep.objects.create(
                 amount=data.get("amount"),
                 created_by=user,
                 created_by_team=created_by_team,
-                campaign=campaign,
+                budget_process=budget_process,
                 comment=data.get("comment"),
                 transition_key="override",
+                node_key_from=budget_process.current_state_key,
                 node_key_to=to_node.key,
-                node_key_from=campaign.budget_current_state_key,
             )
             for link_data in data.get("links", []):
                 link_serializer = BudgetLinkSerializer(data=link_data)
                 link_serializer.is_valid(raise_exception=True)
                 link_serializer.save(step=step)
 
-            # campaign.budget_current_state_key = node_key
-            # for file in data.get("files", []):
-            #     step.files.create(file=file, filename=file.name)
-            # campaign.budget_current_state_label = to_node.label
-            # campaign.save()
-            # saving step before sending email to allow send_budget_emails to have access to the step's transition_key
-            step.save()
+            for file in data.get("files", []):
+                step.files.create(file=file, filename=file.name)
+
+            budget_process.current_state_key = node_key
+            budget_process.current_state_label = to_node.label
+            budget_process.save()
+
             send_budget_mails(step, transition, self.context["request"])
             step.is_email_sent = True
             step.save()
+
             with transaction.atomic():
                 field = to_node.key + "_at_WFEDITABLE"
-                if model_field_exists(campaign, field):
-                    # since we override, we don't check that the field is empty
-                    setattr(campaign, field, step.created_at)
-                    setattr(campaign, "budget_status", to_node.key)
+                if model_field_exists(budget_process, field):
+                    # Since we override, we don't check that the field is empty.
+                    setattr(budget_process, field, step.created_at)
+                    setattr(budget_process, "status", to_node.key)
                     order = to_node.order
                     nodes_to_cancel = workflow.get_nodes_after(order)
                     campaign_fields_to_cancel = [node.key + "_at_WFEDITABLE" for node in nodes_to_cancel]
-                    # steps that come after the step we override to are cancelled
+                    # Steps that come after the step we override are cancelled.
                     for field_to_cancel in campaign_fields_to_cancel:
-                        if model_field_exists(campaign, field):
-                            if getattr(campaign, field_to_cancel, None):
-                                setattr(campaign, field_to_cancel, None)
-                    campaign.save()
-
-            campaign.budget_current_state_key = node_key
-            for file in data.get("files", []):
-                step.files.create(file=file, filename=file.name)
-            campaign.budget_current_state_label = to_node.label
-            campaign.save()
+                        if model_field_exists(budget_process, field):
+                            if getattr(budget_process, field_to_cancel, None):
+                                setattr(budget_process, field_to_cancel, None)
+                    budget_process.save()
 
         return step
 

@@ -159,7 +159,13 @@ class OrgUnitSmallSearchSerializer(OrgUnitSerializer):
 class OrgUnitSearchParentSerializer(OrgUnitSerializer):
     class Meta:
         model = OrgUnit
-        fields = ["id", "name", "parent"]
+        fields = [
+            "id",
+            "name",
+            "parent",
+            "org_unit_type_id",
+            "org_unit_type_name",
+        ]
 
 
 class OrgUnitDropdownSerializer(OrgUnitSerializer):

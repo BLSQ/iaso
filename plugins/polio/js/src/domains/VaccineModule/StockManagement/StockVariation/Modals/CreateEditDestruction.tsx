@@ -26,6 +26,7 @@ type Props = {
     closeDialog: () => void;
     countryName: string;
     vaccine: Vaccine;
+    vaccineStockId: string;
 };
 
 export const CreateEditDestruction: FunctionComponent<Props> = ({
@@ -34,6 +35,7 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
     closeDialog,
     countryName,
     vaccine,
+    vaccineStockId,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSaveDestruction();
@@ -42,10 +44,12 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
         initialValues: {
             id: destruction?.id,
             action: destruction?.action,
-            destruction_reception_rrt: destruction?.destruction_reception_rrt,
-            date_of_report: destruction?.date_of_report,
-            vials_destroyed: destruction?.vials_destroyed,
+            rrt_destruction_report_reception_date:
+                destruction?.rrt_destruction_report_reception_date,
+            destruction_report_date: destruction?.destruction_report_date,
+            unusable_vials_destroyed: destruction?.unusable_vials_destroyed,
             lot_numbers: destruction?.lot_numbers,
+            vaccine_stock: vaccineStockId,
         },
         onSubmit: values => save(values),
         validationSchema,
@@ -84,20 +88,25 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                     />
                 </Box>
                 <Field
-                    label={formatMessage(MESSAGES.destruction_reception_rrt)}
-                    name="destruction_reception_rrt"
+                    label={formatMessage(
+                        MESSAGES.rrt_destruction_report_reception_date,
+                    )}
+                    name="rrt_destruction_report_reception_date"
                     component={DateInput}
+                    required
                 />
                 <Field
-                    label={formatMessage(MESSAGES.date_of_report)}
-                    name="date_of_report"
+                    label={formatMessage(MESSAGES.report_date)}
+                    name="destruction_report_date"
                     component={DateInput}
+                    required
                 />
                 <Box mb={2}>
                     <Field
                         label={formatMessage(MESSAGES.vials_destroyed)}
-                        name="vials_destroyed"
+                        name="unusable_vials_destroyed"
                         component={NumberInput}
+                        required
                     />
                 </Box>
                 <Box>

@@ -89,6 +89,7 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
                                 name={`${VAR}[${index}].doses_shipped`}
                                 component={NumberInput}
                                 disabled={markedForDeletion}
+                                required
                             />
                         </Grid>
 

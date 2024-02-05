@@ -108,7 +108,7 @@ const MESSAGES = defineMessages({
     },
     arrival_reports: {
         id: 'iaso.polio.label.VAR',
-        defaultMessage: 'VARs',
+        defaultMessage: 'Vaccines arrival reports',
     },
     vrf: {
         id: 'iaso.polio.label.VRF',

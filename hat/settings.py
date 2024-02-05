@@ -73,7 +73,7 @@ USE_CELERY = os.environ.get("USE_CELERY", "")
 # to setup Redis, use django_redis.cache.RedisCache as CACHE_BACKEND and something like "redis://127.0.0.1:6379" as CACHE_LOCATION
 CACHE_BACKEND = os.environ.get("CACHE_BACKEND", "django.core.cache.backends.db.DatabaseCache")
 CACHE_LOCATION = os.environ.get("CACHE_LOCATION", "django_cache_table")
-
+CACHE_MAX_ENTRIES = os.environ.get("CACHE_MAX_ENTRIES", 300)
 
 ALLOWED_HOSTS = ["*"]
 
@@ -556,6 +556,16 @@ THEME_PRIMARY_COLOR = os.environ.get("THEME_PRIMARY_COLOR", "#006699")
 THEME_SECONDARY_COLOR = os.environ.get("THEME_SECONDARY_COLOR", "#0066CC")
 THEME_PRIMARY_BACKGROUND_COLOR = os.environ.get("THEME_PRIMARY_BACKGROUND_COLOR", "#F5F5F5")
 SHOW_NAME_WITH_LOGO = os.environ.get("SHOW_NAME_WITH_LOGO", "yes")
+# OpenHexa API url
+OPENHEXA_URL = os.environ.get("OPENHEXA_URL", None)
+# OpenHexa api token
+OPENHEXA_TOKEN = os.environ.get("OPENHEXA_TOKEN", "token")
+# "prod", "staging" or "custom". Use "custom" for local testing
+OH_PIPELINE_TARGET = os.environ.get("OH_PIPELINE_TARGET", "staging")
+# uuid of the OH pipeline
+LQAS_PIPELINE = os.environ.get("LQAS_PIPELINE", "pipeline")
+# Optional: the version of the pipeline to run (number)
+LQAS_PIPELINE_VERSION = os.environ.get("LQAS_PIPELINE_VERSION", None)
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
@@ -593,6 +603,7 @@ CACHES = {
     "default": {
         "BACKEND": CACHE_BACKEND,
         "LOCATION": CACHE_LOCATION,
+        "OPTIONS": {"MAX_ENTRIES": CACHE_MAX_ENTRIES},
     }
 }
 

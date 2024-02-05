@@ -19,6 +19,8 @@ const POLIO = 'iaso_polio';
 const POLIO_CONFIG = 'iaso_polio_config';
 const POLIO_SUPPLY_CHAIN_READ = 'iaso_polio_vaccine_supply_chain_read';
 const POLIO_SUPPLY_CHAIN_WRITE = 'iaso_polio_vaccine_supply_chain_write';
+const POLIO_VACCINE_STOCK_READ = 'iaso_polio_vaccine_stock_management_read';
+const POLIO_VACCINE_STOCK_WRITE = 'iaso_polio_vaccine_stock_management_write';
 const PROJECTS = 'iaso_projects';
 const REGISTRY = 'iaso_registry';
 const ORG_UNITS_CHANGE_REQUEST_REVIEW = 'iaso_org_unit_change_request_review';
@@ -58,6 +60,8 @@ export {
     POLIO_CONFIG,
     POLIO_SUPPLY_CHAIN_READ,
     POLIO_SUPPLY_CHAIN_WRITE,
+    POLIO_VACCINE_STOCK_READ,
+    POLIO_VACCINE_STOCK_WRITE,
     POLIO_NOTIFICATIONS,
     PROJECTS,
     REGISTRY,

@@ -144,7 +144,6 @@ export const VaccineStockManagementDetails: FunctionComponent<Props> = ({
                                 paramsPrefix={tab}
                                 data={usableVials}
                                 isFetching={isFetchingUsable}
-                                tab={tab}
                             />
                         )}
                         {tab === UNUSABLE_VIALS && (
@@ -153,7 +152,6 @@ export const VaccineStockManagementDetails: FunctionComponent<Props> = ({
                                 paramsPrefix={tab}
                                 data={unusableVials}
                                 isFetching={isFetchingUnusable}
-                                tab={tab}
                             />
                         )}
                     </Box>

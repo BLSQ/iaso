@@ -46,9 +46,18 @@ const useVrfShape = () => {
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
-        campaign: yup.string().required().nullable(),
-        vaccine_type: yup.string().required().nullable(),
-        rounds: yup.mixed().nullable().required(),
+        campaign: yup
+            .string()
+            .required(formatMessage(MESSAGES.requiredField))
+            .nullable(),
+        vaccine_type: yup
+            .string()
+            .required(formatMessage(MESSAGES.requiredField))
+            .nullable(),
+        rounds: yup
+            .mixed()
+            .nullable()
+            .required(formatMessage(MESSAGES.requiredField)),
         date_vrf_signature: yup
             .date()
             .required(formatMessage(MESSAGES.requiredField))
@@ -77,6 +86,7 @@ const useVrfShape = () => {
         quantities_approved_by_orpg_in_doses: yup
             .number()
             .nullable()
+            .required(formatMessage(MESSAGES.requiredField))
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
@@ -91,6 +101,7 @@ const useVrfShape = () => {
         quantities_approved_by_dg_in_doses: yup
             .number()
             .nullable()
+            .required(formatMessage(MESSAGES.requiredField))
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
@@ -111,7 +122,10 @@ const usePreAlertShape = () => {
             .required(formatMessage(MESSAGES.requiredField))
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
-        po_number: yup.string().nullable(),
+        po_number: yup
+            .string()
+            .nullable()
+            .required(formatMessage(MESSAGES.requiredField)),
         lot_numbers: yup
             .mixed()
             .nullable()
@@ -169,6 +183,7 @@ const useArrivalReportShape = () => {
         doses_shipped: yup
             .number()
             .nullable()
+            .required(formatMessage(MESSAGES.requiredField))
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),

@@ -169,7 +169,7 @@ class StockManagementCustomFilter(filters.BaseFilterBackend):
         country_blocks = request.GET.get("country_blocks", None)
 
         if country_id:
-            queryset = queryset.filter(country_id=country_id)
+            queryset = queryset.filter(country_id__in=country_id.split(","))
         if vaccine_type:
             queryset = queryset.filter(vaccine=vaccine_type)
         if country_blocks:

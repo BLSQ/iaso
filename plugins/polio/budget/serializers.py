@@ -78,8 +78,7 @@ class TimelineSerializer(serializers.Serializer):
     categories = CategorySerializer(many=True)
 
 
-# noinspection PyMethodMayBeStatic
-class CampaignBudgetSerializer(DynamicFieldsModelSerializer, serializers.ModelSerializer):
+class BudgetProcessSerializer(DynamicFieldsModelSerializer, serializers.ModelSerializer):
     class Meta:
         model = BudgetProcess
         fields = [
@@ -598,8 +597,7 @@ class UpdateBudgetStepSerializer(serializers.ModelSerializer):
         ]
 
 
-# noinspection PyMethodMayBeStatic
-class ExportCampaignBudgetSerializer(CampaignBudgetSerializer):
+class ExportBudgetProcessSerializer(BudgetProcessSerializer):
     class Meta:
         model = BudgetProcess
         fields = ["obr_name", "current_state_label", "country", "updated_at"]

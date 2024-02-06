@@ -14,8 +14,8 @@ from rest_framework.viewsets import ViewSet
 from iaso.api.common import CSVExportMixin, ModelViewSet, DeletionFilterBackend, HasPermission
 from plugins.polio.budget.models import BudgetStep, MailTemplate, get_workflow, BudgetStepFile, BudgetProcess
 from plugins.polio.budget.serializers import (
-    CampaignBudgetSerializer,
-    ExportCampaignBudgetSerializer,
+    BudgetProcessSerializer,
+    ExportBudgetProcessSerializer,
     TransitionToSerializer,
     BudgetStepSerializer,
     UpdateBudgetStepSerializer,
@@ -35,8 +35,8 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
     You can request specific field by using the `?fields` parameter.
     """
 
-    serializer_class = CampaignBudgetSerializer
-    exporter_serializer_class = ExportCampaignBudgetSerializer
+    serializer_class = BudgetProcessSerializer
+    exporter_serializer_class = ExportBudgetProcessSerializer
     export_filename = "campaigns_budget_list_{date}.csv"
     permission_classes = [HasPermission(permission.POLIO_BUDGET)]  # type: ignore
     use_field_order = True

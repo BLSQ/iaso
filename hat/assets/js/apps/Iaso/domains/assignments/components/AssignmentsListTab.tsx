@@ -3,6 +3,7 @@ import { Box, Divider } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import get from 'lodash/get';
 
+import Color from 'color';
 import { Column, Table } from 'bluesquare-components';
 
 import { AssignmentsApi, AssignmentParams } from '../types/assigment';
@@ -87,6 +88,7 @@ export const AssignmentsListTab: FunctionComponent<Props> = ({
         teams,
         profiles,
         currentTeam,
+        params,
     });
     const dispatch = useDispatch();
 
@@ -133,7 +135,7 @@ export const AssignmentsListTab: FunctionComponent<Props> = ({
                     `${parent.org_unit_type_id}` === params.parentOrgunitType &&
                     params.parentPicking === 'true'
                 ) {
-                    backgroundColor = parentColor;
+                    backgroundColor = Color(parentColor).fade(0.7);
                 }
             }
             return {

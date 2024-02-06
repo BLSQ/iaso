@@ -48,7 +48,7 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
     orgunitTypes,
     isFetchingOrgUnitTypes,
 }) => {
-    const { parentPicking, parentOrgunitType } = params;
+    const { parentOrgunitType } = params;
 
     const { data: parentLocations, isFetching: isFetchingParentLocations } =
         useGetOrgUnitParentLocations({
@@ -58,8 +58,7 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
                 planning,
                 isLoadingAssignments,
             }),
-            baseOrgunitType:
-                parentPicking === 'true' ? parentOrgunitType : undefined,
+            baseOrgunitType: parentOrgunitType,
         });
     return (
         <AssignmentsMap

@@ -23,6 +23,7 @@ import { redirectTo } from '../../../routing/actions';
 import MESSAGES from '../messages';
 import { OrgUnit, ParentOrgUnit } from '../../orgUnits/types/orgUnit';
 import { baseUrls } from '../../../constants/urls';
+import { SxStyles } from '../../../types/general';
 
 const getParentCount = (
     orgUnit: AssignmentUnit | ParentOrgUnit,
@@ -42,6 +43,15 @@ type ParentHeadCellProps = {
 };
 
 const baseUrl = baseUrls.assignments;
+
+const styles: SxStyles = {
+    checkBox: {
+        position: 'relative',
+        top: -2,
+        p: 0.5,
+        ml: 1,
+    },
+};
 
 const ParentHeadCell: FunctionComponent<ParentHeadCellProps> = ({
     settings,
@@ -63,7 +73,6 @@ const ParentHeadCell: FunctionComponent<ParentHeadCellProps> = ({
             dispatch(
                 redirectTo(baseUrl, {
                     ...params,
-                    parentPicking: isActive ? 'false' : 'true',
                     parentOrgunitType: isActive
                         ? ''
                         : `${parent.org_unit_type_id}`,
@@ -83,16 +92,10 @@ const ParentHeadCell: FunctionComponent<ParentHeadCellProps> = ({
                     {parent.org_unit_type_name}
                     <Tooltip title={formatMessage(MESSAGES.parentOrgunitType)}>
                         <Checkbox
-                            sx={{
-                                position: 'relative',
-                                top: -2,
-                                p: 0.5,
-                                ml: 1,
-                            }}
+                            sx={styles.checkBox}
                             size="small"
-                            onBlur={e => e.stopPropagation()}
                             checked={
-                                isActive && params.parentPicking === 'true'
+                                isActive && Boolean(params.parentOrgunitType)
                             }
                             onClick={toggleParentPicking}
                         />

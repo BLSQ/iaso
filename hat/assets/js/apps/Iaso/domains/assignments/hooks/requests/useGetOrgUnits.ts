@@ -219,6 +219,7 @@ export const useGetOrgUnits = ({
                 Boolean(params.orgUnitParentIds) && Boolean(baseOrgunitType),
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
+            keepPreviousData: true,
             select,
         },
     });
@@ -280,6 +281,7 @@ export const useGetOrgUnitsList = ({
                 Boolean(params.orgUnitParentIds) && Boolean(baseOrgunitType),
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
+            keepPreviousData: true,
             select,
         },
     });

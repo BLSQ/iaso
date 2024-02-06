@@ -1,4 +1,4 @@
-import { Grid, FormControlLabel, Switch, Box } from '@mui/material';
+import { Paper, FormControlLabel, Switch, Box } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import React, { FunctionComponent, useEffect } from 'react';
 import {
@@ -17,11 +17,42 @@ import { AssignmentParams } from '../types/assigment';
 import MESSAGES from '../messages';
 
 import { redirectTo } from '../../../routing/actions';
+import { SxStyles } from '../../../types/general';
 
 type Props = {
     params: AssignmentParams;
     orgunitTypes: Array<DropdownOptions<string>>;
     isFetchingOrgUnitTypes: boolean;
+};
+
+const styles: SxStyles = {
+    root: {
+        position: 'absolute',
+        top: theme => theme.spacing(1),
+        right: theme => theme.spacing(1),
+        zIndex: 401,
+        p: 1,
+        width: 200,
+    },
+    dropdown: {
+        mt: 1,
+        '& .MuiAutocomplete-input': {
+            height: '8px',
+            padding: '5px',
+        },
+        '& .MuiFormLabel-root ': {
+            height: '38px',
+        },
+        '& .MuiFormLabel-root.MuiInputLabel-outlined.MuiInputLabel-shrink ': {
+            height: '25px',
+        },
+    },
+    checboxLabel: {
+        fontSize: 12,
+    },
+    formControl: {
+        m: 0,
+    },
 };
 
 const baseUrl = baseUrls.assignments;
@@ -53,74 +84,51 @@ export const AssignmentsMapSelectors: FunctionComponent<Props> = ({
     }, [dispatch, filters]);
 
     return (
-        <Box p={2}>
-            <Grid container spacing={2}>
-                <Grid item xs={6}>
-                    <Box
-                        display="flex"
-                        alignItems="center"
-                        height="100%"
-                        justifyContent="flex-end"
-                    >
-                        <FormControlLabel
-                            control={
-                                <Switch
-                                    checked={Boolean(
-                                        filters.parentPicking === 'true',
-                                    )}
-                                    onChange={e =>
-                                        handleChange(
-                                            'parentPicking',
-                                            // @ts-ignore
-                                            e.target.checked ? 'true' : 'false',
-                                        )
-                                    }
-                                    name="parentPicking"
-                                    color="primary"
-                                />
-                            }
-                            label={formatMessage(MESSAGES.parentPicking)}
-                        />
-                    </Box>
-                </Grid>
-                <Grid
-                    item
-                    xs={6}
-                    sx={{
-                        '& .MuiAutocomplete-input': {
-                            height: '8px',
-                            padding: '5px',
-                        },
-                        '& .MuiFormLabel-root ': {
-                            height: '38px',
-                        },
-                        '& .MuiFormLabel-root.MuiInputLabel-outlined.MuiInputLabel-shrink ':
-                            {
-                                height: '25px',
-                            },
-                    }}
-                >
-                    <InputComponent
-                        type="select"
-                        disabled={
-                            Boolean(filters.parentPicking === 'false') ||
-                            isFetchingOrgUnitTypes
+        <Paper sx={styles.root}>
+            <FormControlLabel
+                sx={styles.formControl}
+                control={
+                    <Switch
+                        checked={Boolean(filters.parentPicking === 'true')}
+                        onChange={e =>
+                            handleChange(
+                                'parentPicking',
+                                // @ts-ignore
+                                e.target.checked ? 'true' : 'false',
+                            )
                         }
-                        keyValue="parentOrgunitType"
-                        onChange={handleChange}
-                        value={
-                            isFetchingOrgUnitTypes
-                                ? undefined
-                                : filters.parentOrgunitType
-                        }
-                        label={MESSAGES.parentOrgunitType}
-                        options={orgunitTypes}
-                        loading={isFetchingOrgUnitTypes}
-                        clearable={false}
-                        withMarginTop={false}
+                        name="parentPicking"
+                        color="primary"
+                        size="small"
                     />
-                </Grid>
-            </Grid>
-        </Box>
+                }
+                label={
+                    <Box sx={styles.checboxLabel}>
+                        {formatMessage(MESSAGES.parentPicking)}
+                    </Box>
+                }
+            />
+            <Box sx={styles.dropdown}>
+                <InputComponent
+                    type="select"
+                    disabled={
+                        Boolean(filters.parentPicking === 'false') ||
+                        isFetchingOrgUnitTypes
+                    }
+                    keyValue="parentOrgunitType"
+                    onChange={handleChange}
+                    value={
+                        isFetchingOrgUnitTypes
+                            ? undefined
+                            : filters.parentOrgunitType
+                    }
+                    label={MESSAGES.parentOrgunitType}
+                    options={orgunitTypes}
+                    loading={isFetchingOrgUnitTypes}
+                    clearable={false}
+                    withMarginTop={false}
+                />
+            </Box>
+        </Paper>
     );
 };

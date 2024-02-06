@@ -13,7 +13,7 @@ import { UsersTeamsCell } from '../components/UsersTeamsCell';
 import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
 
 import MESSAGES from '../messages';
-import { ParentOrgUnit } from '../../orgUnits/types/orgUnit';
+import { OrgUnit, ParentOrgUnit } from '../../orgUnits/types/orgUnit';
 
 type Props = {
     orgUnits: Array<AssignmentUnit>;
@@ -44,8 +44,11 @@ const ParentHeadCell: FunctionComponent<ParentHeadCellProps> = ({
     index,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const orgUnit = settings.data[index];
-    const parent = get(orgUnit, `parent${'.parent'.repeat(index)}`);
+    const orgUnit = settings.data[index] as OrgUnit;
+    const parent = get(
+        orgUnit,
+        `parent${'.parent'.repeat(index)}`,
+    ) as ParentOrgUnit;
     return parent
         ? parent.org_unit_type_name
         : formatMessage(MESSAGES.orgUnitsParent, {

@@ -35,7 +35,6 @@ import { useGetAssignmentData } from './hooks/useGetAssignmentData';
 import { getSaveParams } from './utils';
 
 import MESSAGES from './messages';
-import { AssignmentsMapSelectors } from './components/AssignmentsMapSelectors';
 
 type Props = {
     params: AssignmentParams;
@@ -330,6 +329,12 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                                         >
                                             {!isLoadingAssignments && (
                                                 <AssignmentsMapTab
+                                                    orgunitTypes={
+                                                        orgunitTypes || []
+                                                    }
+                                                    isFetchingOrgUnitTypes={
+                                                        isFetchingOrgunitTypes
+                                                    }
                                                     planning={planning}
                                                     currentTeam={currentTeam}
                                                     teams={teams || []}
@@ -361,7 +366,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                                                 teams={teams || []}
                                                 profiles={profiles}
                                                 currentTeam={currentTeam}
-                                                orgUnits={orgUnitsList || []}
+                                                orgUnits={orgUnitsList}
                                                 handleSaveAssignment={
                                                     handleSaveAssignment
                                                 }
@@ -375,13 +380,6 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                                                 }
                                             />
                                         )}
-                                        <AssignmentsMapSelectors
-                                            params={params}
-                                            orgunitTypes={orgunitTypes || []}
-                                            isFetchingOrgUnitTypes={
-                                                isFetchingOrgunitTypes
-                                            }
-                                        />
                                     </Box>
                                 </Paper>
                             </Grid>

@@ -34,9 +34,11 @@ import {
 import { Profile } from '../../../utils/usersUtils';
 
 import { DropdownTeamsOptions } from '../types/team';
-import { AssignmentsApi } from '../types/assigment';
+import { AssignmentParams, AssignmentsApi } from '../types/assigment';
 import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
 import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
+import { AssignmentsMapSelectors } from './AssignmentsMapSelectors';
+import { DropdownOptions } from '../../../types/utils';
 
 const defaultViewport = {
     center: [1, 20],
@@ -57,6 +59,9 @@ type Props = {
     isFetchingParentLocations: boolean;
     assignments: AssignmentsApi;
     profiles: Profile[];
+    orgunitTypes: Array<DropdownOptions<string>>;
+    isFetchingOrgUnitTypes: boolean;
+    params: AssignmentParams;
 };
 
 const boundsOptions = {
@@ -101,6 +106,9 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
     isFetchingParentLocations,
     assignments,
     profiles,
+    orgunitTypes,
+    isFetchingOrgUnitTypes,
+    params,
 }) => {
     const mapContainer: any = useRef();
     const [selectedLocation, setSelectedLocation] = useState<
@@ -176,6 +184,11 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
     return (
         <section ref={mapContainer}>
             <Box position="relative">
+                <AssignmentsMapSelectors
+                    params={params}
+                    orgunitTypes={orgunitTypes}
+                    isFetchingOrgUnitTypes={isFetchingOrgUnitTypes}
+                />
                 <MapLegend />
                 <MapInfo />
                 {selectedLocation && (
@@ -196,7 +209,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                     doubleClickZoom
                     isLoading={isLoading}
                     maxZoom={currentTile.maxZoom}
-                    style={{ height: '65vh' }}
+                    style={{ height: '68vh' }}
                     bounds={bounds}
                     boundsOptions={boundsOptions}
                     center={defaultViewport.center}
@@ -215,6 +228,12 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                     <CustomTileLayer
                         currentTile={currentTile}
                         setCurrentTile={setCurrentTile}
+                        styles={{
+                            top: 'auto',
+                            left: 16,
+                            bottom: 74,
+                            right: 'auto',
+                        }}
                     />
                     {locations && (
                         <>

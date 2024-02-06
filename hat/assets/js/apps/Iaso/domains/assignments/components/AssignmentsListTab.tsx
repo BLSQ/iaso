@@ -1,8 +1,9 @@
 import React, { FunctionComponent, MouseEvent, useCallback } from 'react';
 import { Box, Divider } from '@mui/material';
 import { useDispatch } from 'react-redux';
+import get from 'lodash/get';
 
-import { Table } from 'bluesquare-components';
+import { Column, Table } from 'bluesquare-components';
 
 import { AssignmentsApi, AssignmentParams } from '../types/assigment';
 import { AssignmentUnit } from '../types/locations';
@@ -12,8 +13,9 @@ import { Profile } from '../../../utils/usersUtils';
 
 import { baseUrls } from '../../../constants/urls';
 import { redirectTo } from '../../../routing/actions';
-import { ParentOrgUnit } from '../../orgUnits/types/orgUnit';
+import { OrgUnit, ParentOrgUnit } from '../../orgUnits/types/orgUnit';
 import { getStickyTableHeadStyles } from '../../../styles/utils';
+import { parentColor } from '../constants/colors';
 
 type Order = {
     id: string;
@@ -37,7 +39,7 @@ const getOrderArray = (orders: string | undefined): Orders => {
 };
 
 type Props = {
-    orgUnits: Array<AssignmentUnit>;
+    orgUnits?: Array<AssignmentUnit>;
     assignments: AssignmentsApi;
     isFetchingOrgUnits: boolean;
     params: AssignmentParams;
@@ -80,7 +82,7 @@ export const AssignmentsListTab: FunctionComponent<Props> = ({
     setParentSelected,
 }: Props) => {
     const columns = useColumns({
-        orgUnits,
+        orgUnits: orgUnits || [],
         assignments,
         teams,
         profiles,
@@ -116,31 +118,50 @@ export const AssignmentsListTab: FunctionComponent<Props> = ({
         ],
     );
 
-    const getCellProps = useCallback(cell => {
-        console.log('cell', cell);
-        return {
-            style: {
-                backgroundColor: 'red',
-            },
-        };
-    }, []);
+    const getCellProps = useCallback(
+        cell => {
+            const { id } = cell.column as Column;
+            let backgroundColor = 'inherit';
+            if (id?.includes('parent__')) {
+                const orgUnit = cell.row.original as OrgUnit;
+                const parent = get(
+                    orgUnit,
+                    id.replaceAll('__', '.').replace('.name', ''),
+                ) as ParentOrgUnit;
+                if (
+                    parent &&
+                    `${parent.org_unit_type_id}` === params.parentOrgunitType &&
+                    params.parentPicking === 'true'
+                ) {
+                    backgroundColor = parentColor;
+                }
+            }
+            return {
+                style: {
+                    backgroundColor,
+                },
+            };
+        },
+        [params.parentOrgunitType, params.parentPicking],
+    );
     return (
-        <Box sx={getStickyTableHeadStyles('64.8vh')}>
+        <Box sx={getStickyTableHeadStyles('67.8vh')}>
             <Divider />
             <Table
                 elevation={0}
-                data={orgUnits}
+                data={orgUnits || []}
                 showPagination={false}
                 defaultSorted={getOrderArray(params.order)}
                 countOnTop={false}
                 marginTop={false}
                 marginBottom={false}
+                // @ts-ignore
                 cellProps={getCellProps}
                 columns={columns}
                 count={orgUnits?.length ?? 0}
                 extraProps={{
                     orgUnits,
-                    loading: isFetchingOrgUnits,
+                    loading: isFetchingOrgUnits || !orgUnits,
                     teams,
                     profiles,
                     assignments,

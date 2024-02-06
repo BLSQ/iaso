@@ -81,6 +81,7 @@ export type InputComponentProps = {
     min?: number;
     max?: number;
     blockForbiddenChars?: boolean;
+    // eslint-disable-next-line no-unused-vars
     onErrorChange?: (hasError: boolean) => void;
     numberInputOptions?: {
         prefix?: string;
@@ -94,6 +95,8 @@ export type InputComponentProps = {
     // eslint-disable-next-line no-unused-vars
     setFieldError?: (keyValue: string, message: string) => void;
     autoComplete?: string;
+    // eslint-disable-next-line no-unused-vars
+    renderTags?: (tagValue: Array<any>, getTagProps: any) => Array<any>;
 };
 
 const useLocalizedNumberInputOptions = (
@@ -135,6 +138,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
     getOptionLabel,
     getOptionSelected,
     renderOption,
+    renderTags,
     className = '',
     helperText,
     min,
@@ -153,7 +157,6 @@ const InputComponent: React.FC<InputComponentProps> = ({
     const toggleDisplayPassword = () => {
         setDisplayPassword(!displayPassword);
     };
-
     const inputValue =
         value === null || typeof value === 'undefined' ? '' : value;
     const labelText =
@@ -235,6 +238,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
                         onChange={newValue => {
                             onChange(keyValue, newValue);
                         }}
+                        renderTags={renderTags}
                         helperText={helperText}
                     />
                 );

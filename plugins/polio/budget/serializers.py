@@ -1,7 +1,4 @@
-from datetime import date, datetime
 from enum import Enum
-from typing import TypedDict
-from typing_extensions import Annotated
 
 from django.db import transaction
 from drf_yasg.utils import swagger_serializer_method
@@ -9,8 +6,6 @@ from rest_framework import serializers
 
 from iaso.api.common import DynamicFieldsModelSerializer
 from iaso.models.microplanning import Team
-from plugins.polio.models import Campaign, Round
-from plugins.polio.api.campaigns.campaigns import CampaignSerializer
 from plugins.polio.api.shared_serializers import UserSerializer
 from .models import (
     BudgetStep,

@@ -9,7 +9,7 @@ from django.http import HttpResponse
 from django.template import Engine, Context
 from rest_framework import status
 
-from iaso.models import OrgUnit, OrgUnitType
+from iaso.models import OrgUnit
 from iaso.test import APITestCase
 from plugins.polio.budget.models import BudgetProcess, BudgetStep, MailTemplate
 from plugins.polio.budget.workflow import Category, Transition, Node, Workflow

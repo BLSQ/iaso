@@ -138,15 +138,7 @@ export const AssignmentsListTab: FunctionComponent<Props> = ({
         [params.parentOrgunitType],
     );
     return (
-        <Box
-            sx={{
-                ...getStickyTableHeadStyles('67.8vh'),
-                '& [title]': {
-                    pointerEvents: 'none',
-                    cursor: 'pointer',
-                },
-            }}
-        >
+        <Box sx={getStickyTableHeadStyles('67.8vh')}>
             <Divider />
             <Table
                 elevation={0}

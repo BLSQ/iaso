@@ -458,7 +458,6 @@ class Campaign(SoftDeletableModel):
 
     # ----------------------------------------------------------------------------------------
     # START fields moved to the `Budget` model. **********************************************
-    # TODO: migrate data from `Campaign` to `Budget`, adapt code, then remove those fields.
     budget_status = models.CharField(max_length=100, null=True, blank=True)
     budget_current_state_key = models.CharField(max_length=100, default="-")
     budget_current_state_label = models.CharField(max_length=100, null=True, blank=True)

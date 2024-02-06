@@ -1201,10 +1201,6 @@ export const assignmentsPath = {
         },
         {
             isRequired: false,
-            key: 'parentPicking',
-        },
-        {
-            isRequired: false,
             key: 'tab',
         },
         {

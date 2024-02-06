@@ -96,10 +96,7 @@ export const AssignmentsListTab: FunctionComponent<Props> = ({
         (row: AssignmentUnit, event: MouseEvent<HTMLElement>) => {
             const target = event.target as HTMLElement;
             if (!(target instanceof HTMLAnchorElement) || !target.href) {
-                if (
-                    params.parentPicking === 'true' &&
-                    params.parentOrgunitType
-                ) {
+                if (params.parentOrgunitType) {
                     const matchingParent = findParentWithOrgUnitTypeId(
                         row.parent,
                         params.parentOrgunitType,
@@ -112,12 +109,7 @@ export const AssignmentsListTab: FunctionComponent<Props> = ({
                 }
             }
         },
-        [
-            handleSaveAssignment,
-            params.parentOrgunitType,
-            params.parentPicking,
-            setParentSelected,
-        ],
+        [handleSaveAssignment, params.parentOrgunitType, setParentSelected],
     );
 
     const getCellProps = useCallback(
@@ -132,8 +124,7 @@ export const AssignmentsListTab: FunctionComponent<Props> = ({
                 ) as ParentOrgUnit;
                 if (
                     parent &&
-                    `${parent.org_unit_type_id}` === params.parentOrgunitType &&
-                    params.parentPicking === 'true'
+                    `${parent.org_unit_type_id}` === params.parentOrgunitType
                 ) {
                     backgroundColor = Color(parentColor).fade(0.7);
                 }
@@ -144,10 +135,18 @@ export const AssignmentsListTab: FunctionComponent<Props> = ({
                 },
             };
         },
-        [params.parentOrgunitType, params.parentPicking],
+        [params.parentOrgunitType],
     );
     return (
-        <Box sx={getStickyTableHeadStyles('67.8vh')}>
+        <Box
+            sx={{
+                ...getStickyTableHeadStyles('67.8vh'),
+                '& [title]': {
+                    pointerEvents: 'none',
+                    cursor: 'pointer',
+                },
+            }}
+        >
             <Divider />
             <Table
                 elevation={0}
@@ -169,7 +168,6 @@ export const AssignmentsListTab: FunctionComponent<Props> = ({
                     assignments,
                     selectedItem,
                     parentOrgunitType: params.parentOrgunitType,
-                    parentPicking: params.parentPicking,
                 }}
                 params={{ order: params.order }}
                 // @ts-ignore

@@ -65,7 +65,6 @@ export const AssignmentsMapSelectors: FunctionComponent<Props> = ({
             dispatch(
                 redirectTo(baseUrl, {
                     ...params,
-                    parentPicking: newOrgUnitTypeId ? 'true' : 'false',
                     parentOrgunitType: newOrgUnitTypeId,
                 }),
             );

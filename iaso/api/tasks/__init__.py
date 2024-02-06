@@ -5,10 +5,11 @@ from rest_framework import permissions, serializers
 from datetime import datetime
 from rest_framework.response import Response
 from iaso.models import Task
+from iaso.models.json_config import Config
 from ..common import ModelViewSet, TimestampField, UserSerializer, HasPermission
 from hat.menupermissions import models as permission
 from iaso.models.base import ERRORED, RUNNING, SKIPPED, KILLED, SUCCESS, Task
-from plugins.polio.models import Config
+
 from gql.transport.requests import RequestsHTTPTransport
 from gql import Client, gql
 from django.utils.text import slugify

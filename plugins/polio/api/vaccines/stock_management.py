@@ -174,7 +174,7 @@ class StockManagementCustomFilter(filters.BaseFilterBackend):
             queryset = queryset.filter(vaccine=vaccine_type)
         if country_blocks:
             try:
-                queryset = queryset.filter(campaign__country__groups__in=country_blocks.split(","))
+                queryset = queryset.filter(country__groups__in=country_blocks.split(","))
             except:
                 pass
 

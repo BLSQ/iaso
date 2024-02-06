@@ -209,7 +209,26 @@ class BudgetCampaignViewSetTestCase(APITestCase):
                 "color": "red",
             },
         ]
-        expected_timeline = {"categories": []}
+        expected_timeline = {
+            "categories": [
+                {
+                    "key": "category_1",
+                    "label": "Category 1",
+                    "color": "green",
+                    "items": [],
+                    "completed": True,
+                    "active": False,
+                },
+                {
+                    "key": "category_2",
+                    "label": "Category 2",
+                    "color": "green",
+                    "items": [],
+                    "completed": True,
+                    "active": False,
+                },
+            ]
+        }
         for budget_process in response_data["results"]:
             self.assertEqual(len(budget_process.keys()), 11)
             self.assertIn("created_at", budget_process)

@@ -10,7 +10,7 @@ import { Profile } from '../../../utils/usersUtils';
 
 import { useGetOrgUnitParentLocations } from '../hooks/requests/useGetOrgUnitParentLocations';
 import { useGetOrgUnitParentIds } from '../hooks/useGetOrgUnitParentIds';
-import { ParentOrgUnit } from '../types/orgUnit';
+import { ParentOrgUnit } from '../../orgUnits/types/orgUnit';
 
 type Props = {
     allAssignments: AssignmentsApi;

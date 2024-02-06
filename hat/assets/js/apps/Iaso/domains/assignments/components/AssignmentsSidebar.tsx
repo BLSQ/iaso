@@ -6,17 +6,15 @@ import {
     Table,
 } from 'bluesquare-components';
 
-import { AssignmentsMapSelectors } from './AssignmentsMapSelectors';
-
-import { AssignmentsApi, AssignmentParams } from '../types/assigment';
+import { AssignmentsApi } from '../types/assigment';
 import { Team, DropdownTeamsOptions, SubTeam, User } from '../types/team';
-import { DropdownOptions } from '../../../types/utils';
 
 import { Profile } from '../../../utils/usersUtils';
 
 import { useColumns } from '../configs/AssignmentsMapTabColumns';
 
 import { AssignmentUnit } from '../types/locations';
+import { getStickyTableHeadStyles } from '../../../styles/utils';
 
 type Props = {
     data: SubTeam[] | User[];
@@ -26,9 +24,6 @@ type Props = {
     profiles: Profile[];
     // eslint-disable-next-line no-unused-vars
     setItemColor: (color: string, teamId: number) => void;
-    params: AssignmentParams;
-    orgunitTypes: Array<DropdownOptions<string>>;
-    isFetchingOrgUnitTypes: boolean;
     selectedItem: SubTeam | User | undefined;
     // eslint-disable-next-line no-unused-vars
     setSelectedItem: (newSelectedTeam: SubTeam) => void;
@@ -42,9 +37,6 @@ export const Sidebar: FunctionComponent<Props> = ({
     teams,
     profiles,
     setItemColor,
-    params,
-    orgunitTypes,
-    isFetchingOrgUnitTypes,
     currentTeam,
     selectedItem,
     setSelectedItem,
@@ -64,9 +56,11 @@ export const Sidebar: FunctionComponent<Props> = ({
     });
     return (
         <Paper>
-            <Box maxHeight="70vh" overflow="auto">
+            <Box sx={getStickyTableHeadStyles('70vh')}>
+                {/* @ts-ignore */}
                 <Table
                     data={data}
+                    elevation={0}
                     showPagination={false}
                     defaultSorted={[{ id: 'name', desc: false }]}
                     countOnTop={false}
@@ -84,13 +78,6 @@ export const Sidebar: FunctionComponent<Props> = ({
                         loading: !currentTeam,
                         orgUnits,
                     }}
-                />
-            </Box>
-            <Box px={2} pb={2}>
-                <AssignmentsMapSelectors
-                    params={params}
-                    orgunitTypes={orgunitTypes}
-                    isFetchingOrgUnitTypes={isFetchingOrgUnitTypes}
                 />
             </Box>
         </Paper>

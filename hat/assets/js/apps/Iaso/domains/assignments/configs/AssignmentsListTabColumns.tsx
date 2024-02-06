@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import get from 'lodash/get';
 import { useSafeIntl, Column } from 'bluesquare-components';
 
@@ -34,6 +34,25 @@ const getParentCount = (
     return newCount;
 };
 
+type ParentHeadCellProps = {
+    settings: any;
+    index: number;
+};
+
+const ParentHeadCell: FunctionComponent<ParentHeadCellProps> = ({
+    settings,
+    index,
+}) => {
+    const { formatMessage } = useSafeIntl();
+    const orgUnit = settings.data[index];
+    const parent = get(orgUnit, `parent${'.parent'.repeat(index)}`);
+    return parent
+        ? parent.org_unit_type_name
+        : formatMessage(MESSAGES.orgUnitsParent, {
+              index: index + 1,
+          });
+};
+
 export const useColumns = ({
     orgUnits,
     assignments,
@@ -61,18 +80,9 @@ export const useColumns = ({
             .forEach((_, index) => {
                 columns.push({
                     // @ts-ignore
-                    Header: settings => {
-                        const orgUnit = settings.data[index];
-                        const parent = get(
-                            orgUnit,
-                            `parent${'.parent'.repeat(index)}`,
-                        );
-                        return parent
-                            ? parent.org_unit_type_name
-                            : formatMessage(MESSAGES.orgUnitsParent, {
-                                  index: index + 1,
-                              });
-                    },
+                    Header: settings => (
+                        <ParentHeadCell index={index} settings={settings} />
+                    ),
                     id: `parent__${'parent__'.repeat(index)}name`,
                     accessor: `parent.${'parent.'.repeat(index)}name`,
                     align: 'center',

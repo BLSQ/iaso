@@ -479,6 +479,10 @@ const routes = [
                 isRequired: false,
                 key: 'vaccine_type',
             },
+            {
+                isRequired: false,
+                key: 'country_blocks',
+            },
         ],
     },
     {

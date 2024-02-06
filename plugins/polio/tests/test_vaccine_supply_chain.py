@@ -227,7 +227,7 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         self.assertEqual(len(res), 3)
         self.assertEqual(len(res[0]["rounds"]), 2)
         self.assertEqual(len(res[1]["rounds"]), 1)
-        self.assertEqual(res[0]["start_date"], datetime.date(2021, 2, 1))
+        self.assertEqual(res[0]["start_date"], datetime.date(2021, 1, 1))
         self.assertEqual(res[0]["end_date"], datetime.date(2021, 2, 28))
         self.assertEqual(res[1]["start_date"], datetime.date(2021, 3, 1))
         self.assertEqual(res[1]["end_date"], datetime.date(2021, 3, 31))

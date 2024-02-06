@@ -4,7 +4,7 @@ import { Planning } from '../types/planning';
 import { SubTeam, User, Team, DropdownTeamsOptions } from '../types/team';
 import { Locations } from '../types/locations';
 import { DropdownOptions } from '../../../types/utils';
-import { ChildrenOrgUnits, ParentOrgUnit } from '../types/orgUnit';
+import { ChildrenOrgUnits } from '../types/orgUnit';
 import { AssignmentApi, SaveAssignmentQuery } from '../types/assigment';
 
 import { useGetTeams } from './requests/useGetTeams';
@@ -24,7 +24,7 @@ import {
 } from './requests/useGetAssignments';
 
 import { useBoundState } from '../../../hooks/useBoundState';
-import { OrgUnit } from '../../orgUnits/types/orgUnit';
+import { OrgUnit, ParentOrgUnit } from '../../orgUnits/types/orgUnit';
 
 type Props = {
     planningId: string;

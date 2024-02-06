@@ -1,6 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, SxProps, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import { Theme } from '@mui/material/styles';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
 import Layers from '@mui/icons-material/Layers';
 import classNames from 'classnames';
@@ -12,8 +13,6 @@ import MESSAGES from '../messages';
 const useStyles = makeStyles(theme => ({
     legendLayers: {
         position: 'absolute',
-        right: theme.spacing(1),
-        top: theme.spacing(1),
         zIndex: 500,
         borderRadius: 4,
         border: '2px solid rgba(0,0,0,0.2)',
@@ -66,15 +65,23 @@ export type Tile = {
     url: string;
     attribution?: string;
 };
+
 type Props = {
     currentTile: Tile;
     // eslint-disable-next-line no-unused-vars
     setCurrentTile: (newTile: Tile) => void;
+    styles?: SxProps<Theme>;
 };
 
 export const TilesSwitchControl: FunctionComponent<Props> = ({
     currentTile,
     setCurrentTile,
+    styles = {
+        top: (theme: Theme) => theme.spacing(1),
+        right: (theme: Theme) => theme.spacing(1),
+        left: 'auto',
+        bottom: 'auto',
+    },
 }) => {
     const { formatMessage } = useSafeIntl();
     const [tilePopup, setTilePopup] = useState<boolean>(false);
@@ -87,11 +94,12 @@ export const TilesSwitchControl: FunctionComponent<Props> = ({
 
     return (
         <>
-            <div
+            <Box
                 className={classNames(
                     classes.legendLayers,
                     'tile-switch-control',
                 )}
+                sx={styles}
             >
                 {!tilePopup && (
                     <span
@@ -135,7 +143,7 @@ export const TilesSwitchControl: FunctionComponent<Props> = ({
                         </Box>
                     )}
                 </Box>
-            </div>
+            </Box>
         </>
     );
 };

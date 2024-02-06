@@ -9,7 +9,7 @@ from django.http import HttpResponse
 from django.template import Engine, Context
 from rest_framework import status
 
-from iaso.models import OrgUnit
+from iaso.models import Group, OrgUnit
 from iaso.test import APITestCase
 from plugins.polio.budget.models import BudgetProcess, BudgetStep, MailTemplate
 from plugins.polio.budget.workflow import Category, Transition, Node, Workflow
@@ -254,6 +254,23 @@ class BudgetCampaignViewSetTestCase(APITestCase):
             self.assertEqual(budget_process["obr_name"], "test campaign")
             self.assertEqual(budget_process["country_name"], "ANGOLA")
             self.assertEqual(list(budget_process.keys()), ["obr_name", "country_name"])
+
+    def test_list_filter(self):
+        """
+        GET /api/polio/budget/?orgUnitGroups=x
+        """
+        group_1 = Group.objects.create(name="Group 1")
+        group_2 = Group.objects.create(name="Group 2")
+        self.campaign.country.groups.set([group_1])
+        self.client.force_login(self.user)
+
+        response = self.client.get(f"/api/polio/budget/?orgUnitGroups={group_1.id}")
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response_data["results"]), 2)
+
+        response = self.client.get(f"/api/polio/budget/?orgUnitGroups={group_2.id}")
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response_data["results"]), 0)
 
     def test_transition_to(self):
         """

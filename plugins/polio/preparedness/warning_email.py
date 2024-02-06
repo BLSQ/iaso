@@ -9,7 +9,7 @@ import logging
 from django.core.mail import send_mail
 from django.template import Engine, Context
 
-from plugins.polio.models import Config
+from iaso.models.json_config import Config
 from plugins.polio.preparedness.summary import get_or_set_preparedness_cache_for_round
 
 

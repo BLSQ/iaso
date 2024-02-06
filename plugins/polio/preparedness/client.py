@@ -84,7 +84,7 @@ class IasoClient(Client):
 
 
 def get_google_config(slug):
-    from plugins.polio.models import Config
+    from iaso.models.json_config import Config
 
     try:
         return Config.objects.get(slug=slug).content

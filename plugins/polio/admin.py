@@ -14,7 +14,6 @@ from .budget.models import BudgetStep, BudgetStepFile, BudgetStepLink, MailTempl
 from .models import (
     Campaign,
     CampaignGroup,
-    Config,
     CountryUsersGroup,
     DestructionReport,
     IncidentReport,
@@ -136,12 +135,6 @@ class BudgetStepAdmin(admin.ModelAdmin):
 
 @admin.register(WorkflowModel)
 class WorkflowAdmin(admin.ModelAdmin):
-    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
-
-
-@admin.register(Config)
-class ConfigAdmin(admin.ModelAdmin):
-    raw_id_fields = ["users"]
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 

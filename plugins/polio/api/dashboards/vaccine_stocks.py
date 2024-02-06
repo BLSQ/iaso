@@ -25,7 +25,8 @@ from plugins.polio.api.common import (
     get_url_content,
 )
 from plugins.polio.api.common import make_orgunits_cache
-from plugins.polio.models import Campaign, Config
+from plugins.polio.models import Campaign
+from iaso.models.json_config import Config
 from plugins.polio.vaccines_email import send_vaccines_notification_email
 
 logger = getLogger(__name__)

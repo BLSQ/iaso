@@ -123,8 +123,10 @@ class BudgetCampaignViewSetTestCase(APITestCase):
         GET /api/polio/budget/
         """
         self.client.force_login(self.user)
-        response = self.client.get("/api/polio/budget/")
-        response_data = self.assertJSONResponse(response, 200)
+
+        with self.assertNumQueries(8):
+            response = self.client.get("/api/polio/budget/")
+            response_data = self.assertJSONResponse(response, 200)
 
         budget_processes = response_data["results"]
         for budget_process in budget_processes:

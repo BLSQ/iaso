@@ -1,5 +1,5 @@
 from typing import Type
-from django.db.models import QuerySet, Max, F, OuterRef, Subquery
+from django.db.models import QuerySet, F
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.http import HttpResponse
 from django.shortcuts import redirect

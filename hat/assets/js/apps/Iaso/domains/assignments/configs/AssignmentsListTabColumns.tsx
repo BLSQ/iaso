@@ -7,7 +7,7 @@ import React, {
 import get from 'lodash/get';
 import { useSafeIntl, Column } from 'bluesquare-components';
 
-import { Checkbox, Box } from '@mui/material';
+import { Checkbox, Box, Tooltip } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import { AssignmentParams, AssignmentsApi } from '../types/assigment';
 import { AssignmentUnit } from '../types/locations';
@@ -56,25 +56,21 @@ const ParentHeadCell: FunctionComponent<ParentHeadCellProps> = ({
         `parent${'.parent'.repeat(index)}`,
     ) as ParentOrgUnit;
     const isActive = `${parent?.org_unit_type_id}` === params.parentOrgunitType;
-    const handleClick = useCallback(
+
+    const toggleParentPicking = useCallback(
         (e: MouseEvent<HTMLElement>) => {
             e.stopPropagation();
-            const newParams = {
-                ...params,
-            };
-            if (params.parentPicking === 'true') {
-                if (isActive) {
-                    newParams.parentPicking = 'false';
-                } else {
-                    newParams.parentOrgunitType = `${parent.org_unit_type_id}`;
-                }
-            } else {
-                newParams.parentPicking = 'true';
-                newParams.parentOrgunitType = `${parent.org_unit_type_id}`;
-            }
-            dispatch(redirectTo(baseUrl, newParams));
+            dispatch(
+                redirectTo(baseUrl, {
+                    ...params,
+                    parentPicking: isActive ? 'false' : 'true',
+                    parentOrgunitType: isActive
+                        ? ''
+                        : `${parent.org_unit_type_id}`,
+                }),
+            );
         },
-        [dispatch, isActive, params, parent.org_unit_type_id],
+        [dispatch, isActive, params, parent?.org_unit_type_id],
     );
     return (
         <>
@@ -83,14 +79,24 @@ const ParentHeadCell: FunctionComponent<ParentHeadCellProps> = ({
                     index: index + 1,
                 })}
             {parent && (
-                <Box>
+                <Box display="inline-block">
                     {parent.org_unit_type_name}
-                    <Checkbox
-                        sx={{ position: 'relative', top: -2 }}
-                        size="small"
-                        checked={isActive && params.parentPicking === 'true'}
-                        onClick={handleClick}
-                    />
+                    <Tooltip title={formatMessage(MESSAGES.parentOrgunitType)}>
+                        <Checkbox
+                            sx={{
+                                position: 'relative',
+                                top: -2,
+                                p: 0.5,
+                                ml: 1,
+                            }}
+                            size="small"
+                            onBlur={e => e.stopPropagation()}
+                            checked={
+                                isActive && params.parentPicking === 'true'
+                            }
+                            onClick={toggleParentPicking}
+                        />
+                    </Tooltip>
                 </Box>
             )}
         </>

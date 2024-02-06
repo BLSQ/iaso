@@ -1,15 +1,9 @@
-import { Paper, FormControlLabel, Switch, Box } from '@mui/material';
+import { Paper, Box } from '@mui/material';
 import { useDispatch } from 'react-redux';
-import React, { FunctionComponent, useEffect } from 'react';
-import {
-    // @ts-ignore
-    useSafeIntl,
-} from 'bluesquare-components';
+import React, { FunctionComponent, useCallback } from 'react';
 
 import { baseUrls } from '../../../constants/urls';
 import InputComponent from '../../../components/forms/InputComponent';
-
-import { useFilterState } from '../../../hooks/useFilterState';
 
 import { DropdownOptions } from '../../../types/utils';
 import { AssignmentParams } from '../types/assigment';
@@ -32,26 +26,30 @@ const styles: SxStyles = {
         right: theme => theme.spacing(1),
         zIndex: 401,
         p: 1,
-        width: 200,
+        width: 250,
     },
     dropdown: {
-        mt: 1,
         '& .MuiAutocomplete-input': {
-            height: '8px',
-            padding: '5px',
+            height: 8,
+            padding: 5,
         },
         '& .MuiFormLabel-root ': {
-            height: '38px',
+            height: 38,
+            fontSize: 13,
         },
         '& .MuiFormLabel-root.MuiInputLabel-outlined.MuiInputLabel-shrink ': {
-            height: '25px',
+            height: 25,
+            top: 1,
         },
-    },
-    checboxLabel: {
-        fontSize: 12,
-    },
-    formControl: {
-        m: 0,
+        '& .MuiFormControl-root fieldset legend': {
+            fontSize: 9.5,
+        },
+        '& .MuiFormControl-root .MuiAutocomplete-clearIndicator ': {
+            top: -2,
+        },
+        '& .MuiFormControl-root .MuiAutocomplete-popupIndicator ': {
+            top: -2,
+        },
     },
 };
 
@@ -61,71 +59,37 @@ export const AssignmentsMapSelectors: FunctionComponent<Props> = ({
     orgunitTypes,
     isFetchingOrgUnitTypes,
 }) => {
-    const { filters, handleChange } = useFilterState({
-        baseUrl,
-        params,
-        withPagination: false,
-    });
     const dispatch = useDispatch();
-    const { formatMessage } = useSafeIntl();
-
-    useEffect(() => {
-        if (
-            filters.parentPicking !== params.parentPicking ||
-            filters.parentOrgunitType !== params.parentOrgunitType
-        ) {
-            const tempParams = {
-                ...params,
-                ...filters,
-            };
-            dispatch(redirectTo(baseUrl, tempParams));
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dispatch, filters]);
+    const handleChange = useCallback(
+        (_, newOrgUnitTypeId) => {
+            dispatch(
+                redirectTo(baseUrl, {
+                    ...params,
+                    parentPicking: newOrgUnitTypeId ? 'true' : 'false',
+                    parentOrgunitType: newOrgUnitTypeId,
+                }),
+            );
+        },
+        [dispatch, params],
+    );
 
     return (
         <Paper sx={styles.root}>
-            <FormControlLabel
-                sx={styles.formControl}
-                control={
-                    <Switch
-                        checked={Boolean(filters.parentPicking === 'true')}
-                        onChange={e =>
-                            handleChange(
-                                'parentPicking',
-                                // @ts-ignore
-                                e.target.checked ? 'true' : 'false',
-                            )
-                        }
-                        name="parentPicking"
-                        color="primary"
-                        size="small"
-                    />
-                }
-                label={
-                    <Box sx={styles.checboxLabel}>
-                        {formatMessage(MESSAGES.parentPicking)}
-                    </Box>
-                }
-            />
             <Box sx={styles.dropdown}>
                 <InputComponent
                     type="select"
-                    disabled={
-                        Boolean(filters.parentPicking === 'false') ||
-                        isFetchingOrgUnitTypes
-                    }
+                    disabled={isFetchingOrgUnitTypes}
                     keyValue="parentOrgunitType"
                     onChange={handleChange}
                     value={
                         isFetchingOrgUnitTypes
                             ? undefined
-                            : filters.parentOrgunitType
+                            : params.parentOrgunitType
                     }
                     label={MESSAGES.parentOrgunitType}
                     options={orgunitTypes}
                     loading={isFetchingOrgUnitTypes}
-                    clearable={false}
+                    clearable
                     withMarginTop={false}
                 />
             </Box>

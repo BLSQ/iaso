@@ -12,7 +12,7 @@ from rest_framework import status
 from iaso.models import OrgUnit, OrgUnitType
 from iaso.test import APITestCase
 from plugins.polio.budget.models import BudgetProcess, BudgetStep, MailTemplate
-from plugins.polio.budget.workflow import Transition, Node, Workflow
+from plugins.polio.budget.workflow import Category, Transition, Node, Workflow
 from plugins.polio.models import Campaign, Round
 
 # Hardcoded workflow for testing.
@@ -59,17 +59,23 @@ transition_defs = [
 ]
 
 node_defs = [
-    {"key": None, "label": "No budget"},
-    {"key": "budget_submitted", "label": "Budget submitted"},
-    {"key": "accepted", "label": "Budget accepted"},
-    {"key": "rejected", "label": "Budget rejected"},
+    {"key": None, "label": "No budget", "category_key": "category_1"},
+    {"key": "budget_submitted", "label": "Budget submitted", "category_key": "category_1"},
+    {"key": "accepted", "label": "Budget accepted", "category_key": "category_2"},
+    {"key": "rejected", "label": "Budget rejected", "category_key": "category_2"},
+]
+
+categories_defs = [
+    {"key": "category_1", "label": "Category 1"},
+    {"key": "category_2", "label": "Category 2"},
 ]
 
 
 def get_workflow():
     transitions = [Transition(**transition_def) for transition_def in transition_defs]
     nodes = [Node(**node_def) for node_def in node_defs]
-    return Workflow(transitions=transitions, nodes=nodes, categories=[])
+    categories = [Category(**categories_def) for categories_def in categories_defs]
+    return Workflow(transitions=transitions, nodes=nodes, categories=categories)
 
 
 @mock.patch("plugins.polio.budget.models.get_workflow", get_workflow)
@@ -113,6 +119,9 @@ class BudgetCampaignViewSetTestCase(APITestCase):
         cls.budget_step_2 = BudgetStep.objects.create(budget_process=cls.budget_process_1, created_by=cls.user)
 
     def test_simple_get_list(self):
+        """
+        GET /api/polio/budget/
+        """
         self.client.force_login(self.user)
         response = self.client.get("/api/polio/budget/")
         response_data = self.assertJSONResponse(response, 200)
@@ -132,6 +141,9 @@ class BudgetCampaignViewSetTestCase(APITestCase):
         self.assertEqual(budget_processes[1]["round_numbers"], [3])
 
     def test_simple_get_list_with_all_fields(self):
+        """
+        GET /api/polio/budget/?fields=:all
+        """
         self.client.force_login(self.user)
         response = self.client.get("/api/polio/budget/?fields=:all")
         response_data = self.assertJSONResponse(response, 200)
@@ -213,6 +225,9 @@ class BudgetCampaignViewSetTestCase(APITestCase):
             self.assertIn("round_numbers", budget_process)
 
     def test_list_select_fields(self):
+        """
+        GET /api/polio/budget/?fields=obr_name,country_name
+        """
         self.client.force_login(self.user)
         response = self.client.get("/api/polio/budget/?fields=obr_name,country_name")
         response_data = self.assertJSONResponse(response, 200)
@@ -222,16 +237,12 @@ class BudgetCampaignViewSetTestCase(APITestCase):
             self.assertEqual(list(budget_process.keys()), ["obr_name", "country_name"])
 
     def test_transition_to(self):
+        """
+        POST /api/polio/budget/transition_to/
+        Transition to `budget_submitted`.
+        """
         self.client.force_login(self.user)
         prev_budget_step_count = BudgetStep.objects.count()
-        response = self.client.get("/api/polio/budget/")
-        response_data = self.assertJSONResponse(response, 200)
-
-        for budget_process in response_data["results"]:
-            self.assertEqual(budget_process["obr_name"], "test campaign")
-
-        fake_file = StringIO("hello world")
-        fake_file.name = "mon_fichier.txt"
 
         response = self.client.post(
             "/api/polio/budget/transition_to/",
@@ -239,7 +250,7 @@ class BudgetCampaignViewSetTestCase(APITestCase):
                 "transition_key": "submit_budget",
                 "budget_process": self.budget_process_1.id,
                 "comment": "hello world2",
-                "files": [fake_file],
+                "files": [],
             },
         )
         response_data = self.assertJSONResponse(response, 201)
@@ -247,8 +258,12 @@ class BudgetCampaignViewSetTestCase(APITestCase):
 
         step_id = response_data["id"]
         budget_step = BudgetStep.objects.get(id=step_id)
+        self.assertEqual(budget_step.files.count(), 0)
+        # Check that we have only created one step.
+        new_budget_step_count = BudgetStep.objects.count()
+        self.assertEqual(prev_budget_step_count + 1, new_budget_step_count)
 
-        # Check the relations: BudgetStep ----> BudgetProcess <---- Round
+        # Check DB relations: BudgetStep -> BudgetProcess <- Round
         self.round_1.refresh_from_db()
         self.assertEqual(budget_step.budget_process, self.round_1.budget_process)
 
@@ -256,26 +271,13 @@ class BudgetCampaignViewSetTestCase(APITestCase):
         self.assertEqual(budget_process.current_state_key, "budget_submitted")
         self.assertEqual(budget_process.current_state_label, "Budget submitted")
 
-        # Check that we have only created one step.
-        new_budget_step_count = BudgetStep.objects.count()
-        self.assertEqual(prev_budget_step_count + 1, new_budget_step_count)
-
-        self.assertEqual(budget_step.files.count(), 1)
-        response = self.client.get(f"/api/polio/budgetsteps/{budget_step.id}/")
-        response_data = self.assertJSONResponse(response, 200)
-        file = response_data["files"][0]
-        self.assertTrue(file["file"].startswith("http"))  # Should be an url.
-        self.assertEqual(file["filename"], fake_file.name)
-
-    def test_step_files(self):
+    def test_transition_to_with_files(self):
+        """
+        POST /api/polio/budget/transition_to/
+        Transition to `budget_submitted` with files.
+        """
         self.client.force_login(self.user)
         prev_budget_step_count = BudgetStep.objects.count()
-        response = self.client.get("/api/polio/budget/")
-        response_data = self.assertJSONResponse(response, 200)
-
-        campaigns = response_data["results"]
-        for c in campaigns:
-            self.assertEqual(c["obr_name"], "test campaign")
 
         fake_file = StringIO("hello world")
         fake_file.name = "mon_fichier.txt"
@@ -294,14 +296,13 @@ class BudgetCampaignViewSetTestCase(APITestCase):
 
         step_id = response_data["id"]
         budget_step = BudgetStep.objects.get(id=step_id)
-
-        # Check the relations: BudgetStep ----> BudgetProcess <---- Round
-        self.round_1.refresh_from_db()
-        self.assertEqual(budget_step.budget_process, self.round_1.budget_process)
-
         # Check that we have only created one step.
         new_budget_step_count = BudgetStep.objects.count()
         self.assertEqual(prev_budget_step_count + 1, new_budget_step_count)
+
+        # Check DB relations: BudgetStep -> BudgetProcess <- Round
+        self.round_1.refresh_from_db()
+        self.assertEqual(budget_step.budget_process, self.round_1.budget_process)
 
         self.assertEqual(budget_step.files.count(), 1)
         response = self.client.get(f"/api/polio/budgetsteps/{budget_step.id}/")
@@ -319,15 +320,13 @@ class BudgetCampaignViewSetTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_302_FOUND, response)
         self.assertTrue(len(response.url) > 0)
 
-    def test_transition_to_link(self):
+    def test_transition_to_with_files_and_link(self):
+        """
+        POST /api/polio/budget/transition_to/
+        Transition to `budget_submitted` with files and link.
+        """
         self.client.force_login(self.user)
         prev_budget_step_count = BudgetStep.objects.count()
-        response = self.client.get("/api/polio/budget/")
-        response_data = self.assertJSONResponse(response, 200)
-
-        campaigns = response_data["results"]
-        for c in campaigns:
-            self.assertEqual(c["obr_name"], "test campaign")
 
         fake_file = StringIO("hello world")
         fake_file.name = "mon_fichier.txt"
@@ -359,9 +358,12 @@ class BudgetCampaignViewSetTestCase(APITestCase):
         step_id = response_data["id"]
         budget_step = BudgetStep.objects.get(id=step_id)
 
-        # Check the relations: BudgetStep ----> BudgetProcess <---- Round
+        # Check DB relations: BudgetStep -> BudgetProcess <- Round
         self.round_1.refresh_from_db()
         self.assertEqual(budget_step.budget_process, self.round_1.budget_process)
+        # Check that we have only created one step.
+        new_budget_step_count = BudgetStep.objects.count()
+        self.assertEqual(prev_budget_step_count + 1, new_budget_step_count)
 
         # Check the new state of `BudgetProcess`.
         budget_process = self.round_1.budget_process
@@ -369,10 +371,6 @@ class BudgetCampaignViewSetTestCase(APITestCase):
         response_data = self.assertJSONResponse(response, 200)
         self.assertEqual(response_data["current_state"]["key"], "budget_submitted")
         self.assertEqual(response_data["updated_at"], budget_process.updated_at.isoformat().replace("+00:00", "Z"))
-
-        # Check that we have only created one step.
-        new_budget_step_count = BudgetStep.objects.count()
-        self.assertEqual(prev_budget_step_count + 1, new_budget_step_count)
 
         self.assertEqual(budget_step.files.count(), 1)
 
@@ -391,16 +389,13 @@ class BudgetCampaignViewSetTestCase(APITestCase):
             ],
         )
 
-    def test_transition_to_link_json(self):
-        # Check it work when sending JSON too.
+    def test_transition_to_with_link_in_json(self):
+        """
+        POST /api/polio/budget/transition_to/
+        Transition to `budget_submitted` with link in JSON format.
+        """
         self.client.force_login(self.user)
         prev_budget_step_count = BudgetStep.objects.count()
-        response = self.client.get("/api/polio/budget/")
-        response_data = self.assertJSONResponse(response, 200)
-
-        campaigns = response_data["results"]
-        for c in campaigns:
-            self.assertEqual(c["obr_name"], "test campaign")
 
         response = self.client.post(
             "/api/polio/budget/transition_to/",
@@ -426,8 +421,11 @@ class BudgetCampaignViewSetTestCase(APITestCase):
 
         step_id = response_data["id"]
         budget_step = BudgetStep.objects.get(id=step_id)
+        # Check that we have only created one step.
+        new_budget_step_count = BudgetStep.objects.count()
+        self.assertEqual(prev_budget_step_count + 1, new_budget_step_count)
 
-        # Check the relations: BudgetStep ----> BudgetProcess <---- Round
+        # Check DB relations: BudgetStep -> BudgetProcess <- Round
         self.round_1.refresh_from_db()
         self.assertEqual(budget_step.budget_process, self.round_1.budget_process)
 
@@ -437,10 +435,6 @@ class BudgetCampaignViewSetTestCase(APITestCase):
         response_data = self.assertJSONResponse(response, 200)
         self.assertEqual(response_data["current_state"]["key"], "budget_submitted")
         self.assertEqual(response_data["updated_at"], budget_process.updated_at.isoformat().replace("+00:00", "Z"))
-
-        # Check that we have only created one step.
-        new_budget_step_count = BudgetStep.objects.count()
-        self.assertEqual(prev_budget_step_count + 1, new_budget_step_count)
 
         response = self.client.get(f"/api/polio/budgetsteps/{budget_step.id}/")
         response_data = self.assertJSONResponse(response, 200)
@@ -455,23 +449,14 @@ class BudgetCampaignViewSetTestCase(APITestCase):
         )
 
     def test_next_steps_after_transition(self):
+        """
+        Do `POST /api/polio/budget/transition_to/` twice.
+        """
         budget_process = self.budget_process_2
-        round = self.round_3
         self.client.force_login(self.user)
         prev_budget_step_count = BudgetStep.objects.count()
 
-        response = self.client.get(f"/api/polio/budget/{budget_process.id}/?fields=:all")
-        response_data = self.assertJSONResponse(response, 200)
-        self.assertEqual(response_data["obr_name"], "test campaign")
-
-        self.assertEqual(response_data["current_state"]["key"], "-")
-        self.assertTrue(isinstance(response_data["next_transitions"], list))
-        transitions = response_data["next_transitions"]
-        self.assertEqual(len(transitions), 1)
-        self.assertEqual(transitions[0]["key"], "submit_budget")
-        self.assertEqual(transitions[0]["allowed"], True)
-
-        # Post to change status
+        # First transition.
         response = self.client.post(
             "/api/polio/budget/transition_to/",
             data={
@@ -482,33 +467,16 @@ class BudgetCampaignViewSetTestCase(APITestCase):
         )
         response_data = self.assertJSONResponse(response, 201)
         self.assertEqual(response_data["result"], "success")
-        step_id = response_data["id"]
-
-        # Check new status on campaign
+        budget_step_1 = BudgetStep.objects.get(id=response_data["id"])
+        # Check steps number.
+        new_budget_step_count = BudgetStep.objects.count()
+        self.assertEqual(prev_budget_step_count + 1, new_budget_step_count)
+        # Check new `BudgetProcess` status.
         response = self.client.get(f"/api/polio/budget/{budget_process.id}/?fields=:all")
         response_data = self.assertJSONResponse(response, 200)
-
-        self.assertEqual(response_data["obr_name"], "test campaign")
         self.assertEqual(response_data["current_state"]["key"], "budget_submitted")
-        self.assertTrue(isinstance(response_data["updated_at"], str) and len(response_data["updated_at"]) > 0)
-        self.assertTrue(isinstance(response_data["next_transitions"], list))
-        transitions = response_data["next_transitions"]
-        self.assertEqual(len(transitions), 2)
-        self.jsonListContains(
-            transitions,
-            [
-                {
-                    "key": "accept_budget",
-                    "allowed": True,
-                },
-                {
-                    "key": "reject_budget",
-                    "allowed": True,
-                },
-            ],
-        )
 
-        # Do a second transition.
+        # Second transition.
         response = self.client.post(
             "/api/polio/budget/transition_to/",
             data={
@@ -519,21 +487,110 @@ class BudgetCampaignViewSetTestCase(APITestCase):
         )
         response_data = self.assertJSONResponse(response, 201)
         self.assertEqual(response_data["result"], "success")
-        # Check that we have only created one step.
+        budget_step_2 = BudgetStep.objects.get(id=response_data["id"])
+        # Check steps number.
         new_budget_step_count = BudgetStep.objects.count()
         self.assertEqual(prev_budget_step_count + 2, new_budget_step_count)
-
-        # Check new status on campaign
+        # Check `BudgetProcess`.
         response = self.client.get(f"/api/polio/budget/{budget_process.id}/?fields=:all")
         response_data = self.assertJSONResponse(response, 200)
-
-        self.assertEqual(response_data["obr_name"], "test campaign")
-        self.assertEqual(response_data["current_state"]["key"], "accepted")
-        self.assertTrue(isinstance(response_data["updated_at"], str) and len(response_data["updated_at"]) > 0)
-        self.assertTrue(isinstance(response_data["next_transitions"], list))
-
-        # Final transition there is none after
+        budget_process = response_data
+        self.assertEqual(budget_process["current_state"]["key"], "accepted")
+        self.assertEqual(budget_process["obr_name"], "test campaign")
+        self.assertEqual(budget_process["current_state"]["key"], "accepted")
+        self.assertTrue(isinstance(budget_process["updated_at"], str) and len(budget_process["updated_at"]) > 0)
+        self.assertTrue(isinstance(budget_process["next_transitions"], list))
+        # Final transition there is none after.
         self.assertEqual(len(response_data["next_transitions"]), 0)
+        # Check timeline.
+        expected_timeline = {
+            "categories": [
+                {
+                    "key": "category_1",
+                    "label": "Category 1",
+                    "color": "green",
+                    "items": [
+                        {
+                            "label": "Budget submitted",
+                            "performed_by": {"first_name": "test", "last_name": "test", "username": "test"},
+                            "performed_at": budget_step_1.created_at.isoformat().replace("+00:00", "Z"),
+                            "step_id": budget_step_1.pk,
+                        }
+                    ],
+                    "completed": True,
+                    "active": False,
+                },
+                {
+                    "key": "category_2",
+                    "label": "Category 2",
+                    "color": "green",
+                    "items": [
+                        {
+                            "label": "Budget accepted",
+                            "performed_by": {"first_name": "test", "last_name": "test", "username": "test"},
+                            "performed_at": budget_step_2.created_at.isoformat().replace("+00:00", "Z"),
+                            "step_id": budget_step_2.pk,
+                        }
+                    ],
+                    "completed": True,
+                    "active": False,
+                },
+            ]
+        }
+        self.assertEqual(budget_process["timeline"], expected_timeline)
+
+    def test_transition_override_to(self):
+        """
+        POST /api/polio/budget/override/
+        Force state to `rejected`.
+        """
+        self.user.user_permissions.add(Permission.objects.get(codename="iaso_polio_budget_admin"))
+        self.client.force_login(self.user)
+        prev_budget_step_count = BudgetStep.objects.count()
+
+        fake_file = StringIO("hello world")
+        fake_file.name = "mon_fichier.txt"
+
+        response = self.client.post(
+            "/api/polio/budget/override/",
+            data={
+                "new_state_key": "rejected",
+                "budget_process": self.budget_process_1.id,
+                "comment": "override me",
+                "files": [fake_file],
+            },
+        )
+        response_data = self.assertJSONResponse(response, 201)
+        self.assertEqual(response_data["result"], "success")
+
+        step_id = response_data["id"]
+        budget_step = BudgetStep.objects.get(id=step_id)
+        self.assertEqual(budget_step.transition_key, "override")
+        self.assertEqual(budget_step.node_key_from, "-")
+        self.assertEqual(budget_step.node_key_to, "rejected")
+
+        # Check DB relations: BudgetStep -> BudgetProcess <- Round
+        self.round_1.refresh_from_db()
+        self.assertEqual(budget_step.budget_process, self.round_1.budget_process)
+
+        # Check the new state of `BudgetProcess`.
+        budget_process = self.round_1.budget_process
+        response = self.client.get(f"/api/polio/budget/{budget_process.id}/")
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertEqual(response_data["current_state"]["key"], "rejected")
+        self.assertEqual(response_data["updated_at"], budget_process.updated_at.isoformat().replace("+00:00", "Z"))
+
+        # Check that we have only created one step.
+        new_budget_step_count = BudgetStep.objects.count()
+        self.assertEqual(prev_budget_step_count + 1, new_budget_step_count)
+
+        self.assertEqual(budget_step.files.count(), 1)
+
+        response = self.client.get(f"/api/polio/budgetsteps/{budget_step.id}/")
+        response_data = self.assertJSONResponse(response, 200)
+        file = response_data["files"][0]
+        self.assertTrue(file["file"].startswith("http"))  # Should be an url.
+        self.assertEqual(file["filename"], fake_file.name)
 
     def test_mail_template_init(self):
         text = """
@@ -602,57 +659,3 @@ class BudgetCampaignViewSetTestCase(APITestCase):
         self.assertEqual(response["Content-Type"], "text/csv")
         d = budget_step.created_at.strftime("%Y-%m-%d")
         self.assertEqual(response.content.decode(), f"Last update\r\n{d}\r\n{d}\r\n")
-
-    def test_transition_override_to(self):
-        self.user.user_permissions.add(Permission.objects.get(codename="iaso_polio_budget_admin"))
-        self.client.force_login(self.user)
-        prev_budget_step_count = BudgetStep.objects.count()
-        response = self.client.get("/api/polio/budget/")
-        response_data = self.assertJSONResponse(response, 200)
-
-        for budget_process in response_data["results"]:
-            self.assertEqual(budget_process["current_state"], {"key": "-", "label": "-"})
-
-        fake_file = StringIO("hello world")
-        fake_file.name = "mon_fichier.txt"
-
-        response = self.client.post(
-            "/api/polio/budget/override/",
-            data={
-                "new_state_key": "rejected",
-                "budget_process": self.budget_process_1.id,
-                "comment": "override me",
-                "files": [fake_file],
-            },
-        )
-        response_data = self.assertJSONResponse(response, 201)
-        self.assertEqual(response_data["result"], "success")
-
-        step_id = response_data["id"]
-        budget_step = BudgetStep.objects.get(id=step_id)
-        self.assertEqual(budget_step.transition_key, "override")
-        self.assertEqual(budget_step.node_key_from, "-")
-        self.assertEqual(budget_step.node_key_to, "rejected")
-
-        # Check the relations: BudgetStep ----> BudgetProcess <---- Round
-        self.round_1.refresh_from_db()
-        self.assertEqual(budget_step.budget_process, self.round_1.budget_process)
-
-        # Check the new state of `BudgetProcess`.
-        budget_process = self.round_1.budget_process
-        response = self.client.get(f"/api/polio/budget/{budget_process.id}/")
-        response_data = self.assertJSONResponse(response, 200)
-        self.assertEqual(response_data["current_state"]["key"], "rejected")
-        self.assertEqual(response_data["updated_at"], budget_process.updated_at.isoformat().replace("+00:00", "Z"))
-
-        # Check that we have only created one step.
-        new_budget_step_count = BudgetStep.objects.count()
-        self.assertEqual(prev_budget_step_count + 1, new_budget_step_count)
-
-        self.assertEqual(budget_step.files.count(), 1)
-
-        response = self.client.get(f"/api/polio/budgetsteps/{budget_step.id}/")
-        response_data = self.assertJSONResponse(response, 200)
-        file = response_data["files"][0]
-        self.assertTrue(file["file"].startswith("http"))  # Should be an url.
-        self.assertEqual(file["filename"], fake_file.name)

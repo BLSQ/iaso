@@ -35,6 +35,7 @@ import { useGetAssignmentData } from './hooks/useGetAssignmentData';
 import { getSaveParams } from './utils';
 
 import MESSAGES from './messages';
+import { AssignmentsMapSelectors } from './components/AssignmentsMapSelectors';
 
 type Props = {
     params: AssignmentParams;
@@ -274,7 +275,6 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                         <Grid container spacing={2}>
                             <Grid item xs={12} lg={5}>
                                 <Sidebar
-                                    params={params}
                                     data={sidebarData || []}
                                     assignments={assignments}
                                     selectedItem={selectedItem}
@@ -284,10 +284,6 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                                     setItemColor={setItemColor}
                                     teams={teams || []}
                                     profiles={profiles}
-                                    orgunitTypes={orgunitTypes || []}
-                                    isFetchingOrgUnitTypes={
-                                        isFetchingOrgunitTypes
-                                    }
                                     isLoadingAssignments={
                                         isLoadingAssignments ||
                                         isFetchingOrgUnitsList
@@ -379,6 +375,13 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                                                 }
                                             />
                                         )}
+                                        <AssignmentsMapSelectors
+                                            params={params}
+                                            orgunitTypes={orgunitTypes || []}
+                                            isFetchingOrgUnitTypes={
+                                                isFetchingOrgunitTypes
+                                            }
+                                        />
                                     </Box>
                                 </Paper>
                             </Grid>

@@ -102,10 +102,6 @@ export const AssignmentsListTab: FunctionComponent<Props> = ({
                     );
                     if (matchingParent) {
                         setParentSelected(matchingParent);
-                    } else {
-                        console.error(
-                            'No parent with the specified org unit type id found',
-                        );
                     }
                 } else {
                     handleSaveAssignment(row);
@@ -119,8 +115,17 @@ export const AssignmentsListTab: FunctionComponent<Props> = ({
             setParentSelected,
         ],
     );
+
+    const getCellProps = useCallback(cell => {
+        console.log('cell', cell);
+        return {
+            style: {
+                backgroundColor: 'red',
+            },
+        };
+    }, []);
     return (
-        <Box sx={getStickyTableHeadStyles('70vh')}>
+        <Box sx={getStickyTableHeadStyles('64.8vh')}>
             <Divider />
             <Table
                 elevation={0}
@@ -130,6 +135,7 @@ export const AssignmentsListTab: FunctionComponent<Props> = ({
                 countOnTop={false}
                 marginTop={false}
                 marginBottom={false}
+                cellProps={getCellProps}
                 columns={columns}
                 count={orgUnits?.length ?? 0}
                 extraProps={{
@@ -153,6 +159,7 @@ export const AssignmentsListTab: FunctionComponent<Props> = ({
                     dispatch(redirectTo(baseUrl, newParams));
                 }}
             />
+            <Divider />
         </Box>
     );
 };

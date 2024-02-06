@@ -53,15 +53,14 @@ export const AssignmentsMapSelectors: FunctionComponent<Props> = ({
     }, [dispatch, filters]);
 
     return (
-        <>
+        <Box p={2}>
             <Grid container spacing={2}>
                 <Grid item xs={6}>
                     <Box
                         display="flex"
                         alignItems="center"
                         height="100%"
-                        justifyContent="center"
-                        mt={1}
+                        justifyContent="flex-end"
                     >
                         <FormControlLabel
                             control={
@@ -84,7 +83,23 @@ export const AssignmentsMapSelectors: FunctionComponent<Props> = ({
                         />
                     </Box>
                 </Grid>
-                <Grid item xs={6}>
+                <Grid
+                    item
+                    xs={6}
+                    sx={{
+                        '& .MuiAutocomplete-input': {
+                            height: '8px',
+                            padding: '5px',
+                        },
+                        '& .MuiFormLabel-root ': {
+                            height: '38px',
+                        },
+                        '& .MuiFormLabel-root.MuiInputLabel-outlined.MuiInputLabel-shrink ':
+                            {
+                                height: '25px',
+                            },
+                    }}
+                >
                     <InputComponent
                         type="select"
                         disabled={
@@ -102,9 +117,10 @@ export const AssignmentsMapSelectors: FunctionComponent<Props> = ({
                         options={orgunitTypes}
                         loading={isFetchingOrgUnitTypes}
                         clearable={false}
+                        withMarginTop={false}
                     />
                 </Grid>
             </Grid>
-        </>
+        </Box>
     );
 };

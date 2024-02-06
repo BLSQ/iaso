@@ -13,7 +13,6 @@ import {
     LoadingSpinner,
     IconButton,
 } from 'bluesquare-components';
-import { isEqual } from 'lodash';
 import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
 import { PopupComponent as Popup } from './Popup';
 
@@ -35,7 +34,7 @@ import {
 import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
 import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
 
-import { defaultScaleThreshold, getDirectLegend, MapLegend } from './MapLegend';
+import { getDirectLegend, MapLegend } from './MapLegend';
 import { useGetLegend } from '../../../components/LegendBuilder/Legend';
 import { CompletenessSelect } from './CompletenessSelect';
 
@@ -48,6 +47,7 @@ import {
     useGetAssignments,
 } from '../../assignments/hooks/requests/useGetAssignments';
 import { ScaleThreshold } from '../../../components/LegendBuilder/types';
+import { useEffectiveThreshold } from '../hooks/useEffectiveThreshold';
 
 const defaultViewport = {
     center: [1, 20],
@@ -92,10 +92,7 @@ export const Map: FunctionComponent<Props> = ({
     router,
     threshold,
 }) => {
-    const effectiveThreshold: ScaleThreshold =
-        !threshold || isEqual(threshold, {})
-            ? defaultScaleThreshold
-            : threshold;
+    const effectiveThreshold = useEffectiveThreshold(threshold);
     const { planningId } = params;
     const classes: Record<string, string> = useStyles();
     const getLegend = useGetLegend(effectiveThreshold);

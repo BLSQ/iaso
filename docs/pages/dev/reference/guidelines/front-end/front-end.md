@@ -55,11 +55,38 @@ config: used to store constants like defaultOrder, columns, 'baseUrls'
 
 ## Styling components
 
-To create custom styles in js for your component you can use `makeStyles` from material ui:
+In our effort to maintain readability and conciseness in our code, we are transitioning away from the `makeStyles` hook and adopting a new approach for styling our components. We will now use a separate object, `styles`, to define our styles outside of the component function. This object will then be referenced within the `sx` prop in our JSX.
 
-    const useStyles =  makeStyles((theme: Theme) => ({
-        ... your custom classes
-    }));
+Here's how to apply this approach:
+
+1. Define your styles in a `styles` object using the `SxStyles` type from `hat/assets/js/apps/Iaso/types/general.ts`. This helps with readability and keeps the component code clean.
+2. Apply styles to your components using the `sx` prop by referencing the `styles` object properties.
+
+Example:
+
+
+    const styles: SxStyles = {
+        root: {
+            cursor: 'pointer',
+        },
+        tooltip: {
+            color: 'text.primary',
+            bgcolor: 'background.paper',
+            boxShadow: (theme: Theme) => theme.shadows[1],
+            '& .MuiTooltip-arrow': {
+                color: 'background.paper',
+            },
+        },
+        noResult: {
+            textDecoration: 'underline dotted',
+        },
+    };
+
+    ...
+     <Box sx={styles.root}>
+     ...
+
+
 
 ## Maps
 
@@ -68,11 +95,11 @@ To use latest version of react-leaflet we need to upgrade to react 18.
 
 Styles are located in `bluesquare-components`, you have to import it on each map:
 
-    const useStyles = makeStyles((theme: Theme)=> ({
+    const styles = (theme) => ({
         mapContainer: {
             ...commonStyles(theme).mapContainer,
         },
-    }));
+    });
 
 ### From react-leaflet
 

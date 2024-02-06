@@ -257,6 +257,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Country block',
         id: 'iaso.polio.label.countryBlock',
     },
+    seeSupplyChainForCountry: {
+        id: 'iaso.polio.label.seeSupplyChainForCountry',
+        defaultMessage: 'See supply chain for country',
+    },
 });
 
 export default MESSAGES;

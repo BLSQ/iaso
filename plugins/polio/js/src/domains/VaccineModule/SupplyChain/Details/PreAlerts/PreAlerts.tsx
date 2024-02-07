@@ -4,19 +4,9 @@ import { PreAlert } from './PreAlert';
 import MESSAGES from '../../messages';
 import { MultiFormTab } from '../shared';
 import { PREALERT } from '../../constants';
+import { emptyPreAlert } from '../../hooks/utils';
 
 type Props = { className?: string; items?: any[] };
-
-const emptyPreAlert = {
-    date_pre_alert_reception: undefined,
-    po_number: undefined,
-    estimated_arrival_time: undefined,
-    expiration_date: undefined,
-    doses_shipped: undefined,
-    doses_per_vial: 20,
-    lot_numbers: undefined,
-    id: undefined,
-};
 
 export const PreAlerts: FunctionComponent<Props> = ({
     className,
@@ -27,6 +17,7 @@ export const PreAlerts: FunctionComponent<Props> = ({
     const onClick = useCallback(() => {
         setFieldValue(PREALERT, [...values[PREALERT], emptyPreAlert]);
     }, [setFieldValue, values]);
+
     return (
         <MultiFormTab
             className={className}

@@ -31,7 +31,7 @@ def get_powerbi_report_token_with_sp(sp_access_token, group_id, report_id):
 
 def get_powerbi_report_token(group_id, report_id):
     # FIXME : import is not extra but will do till we move this model
-    from plugins.polio.models import Config
+    from iaso.models.json_config import Config
 
     conf = get_object_or_404(Config, slug="powerbi_sp")
     config = conf.content

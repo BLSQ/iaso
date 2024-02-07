@@ -31,7 +31,8 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
         "org_unit__org_unit_type__name",
         "groups",
         "created_at",
-        "updated_at" "status",
+        "updated_at",
+        "status",
         "created_by__username",
         "updated_by__username",
     ]

@@ -50,7 +50,7 @@ export const PaperTableRow: FunctionComponent<RowProps> = ({
                     />
                 )}
                 {!isLoading && typeof value === 'string' && value}
-                {!isLoading && (
+                {!isLoading && typeof value === 'number' && (
                     <NumberCell value={value as number | undefined} />
                 )}
             </TableCell>

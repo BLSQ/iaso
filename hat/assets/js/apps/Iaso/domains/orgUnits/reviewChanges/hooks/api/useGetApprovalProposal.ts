@@ -5,21 +5,15 @@ import { OrgUnitChangeRequestDetails } from '../../types';
 
 const apiUrl = '/api/orgunits/changes/';
 
-const getOrgUnitChangeProposal = (id?: number) => {
-    const url = `${apiUrl}${id}/`;
-
-    return getRequest(url) as Promise<OrgUnitChangeRequestDetails>;
-};
-
 export const useGetApprovalProposal = (
     id?: number,
 ): UseQueryResult<OrgUnitChangeRequestDetails, Error> => {
     return useSnackQuery({
         queryKey: ['getApprovalProposal', id],
-        queryFn: () => getOrgUnitChangeProposal(id),
+        queryFn: () => getRequest(`${apiUrl}${id}/`),
         options: {
             enabled: Boolean(id),
-            staleTime: 1000 * 60 * 15, // in MS
+            staleTime: 1000 * 60 * 15,
             cacheTime: 1000 * 60 * 5,
         },
     });

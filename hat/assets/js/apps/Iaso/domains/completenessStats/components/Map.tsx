@@ -13,7 +13,6 @@ import {
     LoadingSpinner,
     IconButton,
 } from 'bluesquare-components';
-import { isEqual } from 'lodash';
 import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
 import { PopupComponent as Popup } from './Popup';
 
@@ -29,13 +28,14 @@ import {
 import {
     circleColorMarkerOptions,
     Bounds,
+    getEffectiveThreshold,
     getOrgUnitsBounds,
 } from '../../../utils/map/mapUtils';
 
 import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
 import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
 
-import { defaultScaleThreshold, getDirectLegend, MapLegend } from './MapLegend';
+import { getDirectLegend, MapLegend } from './MapLegend';
 import { useGetLegend } from '../../../components/LegendBuilder/Legend';
 import { CompletenessSelect } from './CompletenessSelect';
 
@@ -92,10 +92,10 @@ export const Map: FunctionComponent<Props> = ({
     router,
     threshold,
 }) => {
-    const effectiveThreshold: ScaleThreshold =
-        !threshold || isEqual(threshold, {})
-            ? defaultScaleThreshold
-            : threshold;
+    const effectiveThreshold = useMemo(
+        () => getEffectiveThreshold(threshold),
+        [threshold],
+    );
     const { planningId } = params;
     const classes: Record<string, string> = useStyles();
     const getLegend = useGetLegend(effectiveThreshold);

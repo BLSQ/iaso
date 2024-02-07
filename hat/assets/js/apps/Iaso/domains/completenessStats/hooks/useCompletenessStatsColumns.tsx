@@ -20,21 +20,9 @@ import {
 } from '../types';
 import * as Permission from '../../../utils/permissions';
 import { usetGetParentPageUrl } from '../utils';
+import { DescendantsCell } from '../components/DescendantsCell';
+import { ItselfCell } from '../components/ItselfCell';
 
-// From https://v4.mui.com/components/progress/
-const LinearProgressWithLabel = props => (
-    <Box display="flex" alignItems="center" flexDirection="column">
-        <Box minWidth={35}>
-            <Typography variant="body2" color="textSecondary">
-                {`${Math.round(props.value)}%`}
-            </Typography>
-        </Box>
-        <Box width="100%" mr={1}>
-            {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-            <LinearProgress variant="determinate" {...props} />
-        </Box>
-    </Box>
-);
 
 export const useCompletenessStatsColumns = (
     router: Router,
@@ -59,9 +47,9 @@ export const useCompletenessStatsColumns = (
                 align: 'left',
                 Cell: settings => {
                     return (
-                        <span>
+                        <>
                             {settings.row.original.org_unit?.name ?? '--'}
-                        </span>
+                        </>
                     );
                 },
             },
@@ -72,9 +60,9 @@ export const useCompletenessStatsColumns = (
                 sortable: true,
                 Cell: settings => {
                     return (
-                        <span>
+                        <>
                             {settings.row.original.org_unit_type?.name ?? '--'}
-                        </span>
+                        </>
                     );
                 },
             },
@@ -84,9 +72,9 @@ export const useCompletenessStatsColumns = (
                 accessor: 'parent__org_unit__name',
                 sortable: true,
                 Cell: settings => (
-                    <span>
+                    <>
                         {settings.row.original.parent_org_unit?.name ?? '--'}
-                    </span>
+                    </>
                 ),
             },
             // {
@@ -127,71 +115,14 @@ export const useCompletenessStatsColumns = (
                                 ),
                                 id: `form_stats__${form.slug}__itself_has_instances`,
                                 accessor: `form_stats[${form.slug}]`,
-                                Cell: ({
-                                    value,
-                                }: FormStatRow): ReactElement => {
-                                    return value.itself_target > 0 ? (
-                                        <>
-                                            {value.itself_has_instances ? (
-                                                <span
-                                                    title={formatMessage(
-                                                        MESSAGES.itselfSubmissionCount,
-                                                        {
-                                                            value: value.itself_instances_count,
-                                                        },
-                                                    )}
-                                                >
-                                                    ✅
-                                                </span>
-                                            ) : (
-                                                <>❌</>
-                                            )}
-                                        </>
-                                    ) : (
-                                        <div
-                                            title={formatMessage(
-                                                MESSAGES.itselfNoSubmissionExpected,
-                                            )}
-                                            style={{
-                                                textDecoration:
-                                                    'underline dotted',
-                                            }}
-                                        >
-                                            N/A
-                                        </div>
-                                    );
-                                },
+                                Cell: ItselfCell,
                                 sortable: true,
                             },
                             {
                                 Header: formatMessage(MESSAGES.descendants),
                                 id: `form_stats__${form.slug}__percent`,
                                 accessor: `form_stats[${form.slug}]`,
-                                Cell: ({
-                                    value,
-                                }: FormStatRow): ReactElement => {
-                                    return value.descendants > 0 ? (
-                                        <>
-                                            <LinearProgressWithLabel
-                                                value={value.percent}
-                                            />
-                                            {value.descendants_ok} /
-                                            {value.descendants}
-                                        </>
-                                    ) : (
-                                        <div
-                                            title={formatMessage(
-                                                MESSAGES.descendantsNoSubmissionExpected,
-                                            )}
-                                            style={{
-                                                textDecoration:
-                                                    'underline dotted',
-                                            }}
-                                        >
-                                            N/A
-                                        </div>
-                                    );
-                                },
+                                Cell: DescendantsCell,
                                 sortable: true,
                             },
                         ],

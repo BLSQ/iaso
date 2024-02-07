@@ -62,6 +62,7 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                                 name={`pre_alerts[${index}].date_pre_alert_reception`}
                                 component={DateInput}
                                 disabled={markedForDeletion}
+                                required
                             />
                         </Grid>
                         <Grid item xs={6} md={4}>
@@ -74,18 +75,6 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                                 required
                             />
                         </Grid>
-                        {/* TODO make list */}
-                        <Grid item xs={6} md={4}>
-                            <Field
-                                label={formatMessage(MESSAGES.lot_numbers)}
-                                name={`pre_alerts[${index}].lot_numbers`}
-                                component={TextInput}
-                                shrinkLabel={false}
-                                disabled={markedForDeletion}
-                            />
-                        </Grid>
-                    </Grid>
-                    <Grid container item xs={12} spacing={2}>
                         <Grid item xs={6} md={4}>
                             <Field
                                 label={formatMessage(
@@ -96,14 +85,8 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                                 disabled={markedForDeletion}
                             />
                         </Grid>
-                        <Grid item xs={6} md={4}>
-                            <Field
-                                label={formatMessage(MESSAGES.expirationDate)}
-                                name={`pre_alerts[${index}].expiration_date`}
-                                component={DateInput}
-                                disabled={markedForDeletion}
-                            />
-                        </Grid>
+                    </Grid>
+                    <Grid container item xs={12} spacing={2}>
                         <Grid item xs={6} md={4}>
                             <Field
                                 label={formatMessage(MESSAGES.doses_shipped)}
@@ -113,23 +96,37 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                                 required
                             />
                         </Grid>
-                    </Grid>
-
-                    <Grid container item xs={12} spacing={2}>
-                        <Grid item xs={6} md={4} />
-
-                        <Grid item xs={6} md={4}>
-                            <Typography variant="button">
-                                {`${formatMessage(MESSAGES.doses_per_vial)}:`}{' '}
-                                <NumberCell value={doses_per_vial} />
-                            </Typography>
+                        <Grid
+                            container
+                            item
+                            xs={6}
+                            md={4}
+                            alignContent="center"
+                        >
+                            <Box>
+                                <Typography variant="button">
+                                    {`${formatMessage(
+                                        MESSAGES.doses_per_vial,
+                                    )}:`}{' '}
+                                    <NumberCell value={doses_per_vial} />
+                                </Typography>
+                            </Box>
                         </Grid>
-
-                        <Grid item xs={6} md={4}>
-                            <Typography variant="button">
-                                {`${formatMessage(MESSAGES.vials_shipped)}:`}{' '}
-                                <NumberCell value={current_vials_shipped} />
-                            </Typography>
+                        <Grid
+                            container
+                            item
+                            xs={6}
+                            md={4}
+                            alignContent="center"
+                        >
+                            <Box>
+                                <Typography variant="button">
+                                    {`${formatMessage(
+                                        MESSAGES.vials_shipped,
+                                    )}:`}{' '}
+                                    <NumberCell value={current_vials_shipped} />
+                                </Typography>
+                            </Box>
                         </Grid>
                     </Grid>
                 </Grid>

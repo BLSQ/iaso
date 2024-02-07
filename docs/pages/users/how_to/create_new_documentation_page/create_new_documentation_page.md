@@ -75,6 +75,9 @@ The markdown syntax is less cumbersome if the image is already at the right size
 <img src="./attachments/image49.png" style="width:50px;height:50px" />
 ```
 
+**Note:** Add the `/attachments/` folder even if the document doesn't contain any images yet. It will make it easier for others to add them later.
+
+
 ## 5. Push the changes on Github
 
 Once the document is ready, the changes need to be saved on the git branch, then pushed on Github, so they can be reviewed and merged.

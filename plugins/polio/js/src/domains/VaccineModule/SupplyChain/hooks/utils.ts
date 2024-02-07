@@ -102,22 +102,18 @@ export const useEnableSaveButtons = ({
     initialValues,
     tab,
 }: Args): Result => {
-    const { isValid, isSubmitting, values, touched, errors } = formik;
+    const { isValid, isSubmitting, values, errors } = formik;
     const isPreAlertChanged = canSaveTab(PREALERT, initialValues, values);
     const isVARChanged = canSaveTab(VAR, initialValues, values);
+    const isVRFChanged = canSaveTab(VRF, initialValues, values);
     const allowSaveAll =
         isValid &&
         !isSaving &&
         !isSubmitting &&
-        !isEqual(touched, {}) &&
-        (!isEqual(initialValues[VRF], values[VRF]) ||
-            isPreAlertChanged ||
-            isVARChanged);
+        (isVRFChanged || isPreAlertChanged || isVARChanged);
 
-    const isTabTouched = Boolean(touched[tab]);
     const isTabValid = !errors[tab];
     const allowSaveTab =
-        isTabTouched &&
         isTabValid &&
         !isSaving &&
         !isSubmitting &&
@@ -219,7 +215,13 @@ export const useInitializeValueOnFetch = ({
             // set InitialValues so we can compare with form values and enables/disabel dave button accordingly
             if (key === VRF) {
                 setInitialValues({
-                    [key]: value,
+                    [key]: {
+                        ...value,
+                        // parsing the value, as NumberInput will automatically do it in the form, which will make theinterface believe the value has been changed
+                        wastage_rate_used_on_vrf: parseFloat(
+                            value.wastage_rate_used_on_vrf,
+                        ),
+                    },
                 });
             } else {
                 setInitialValues({

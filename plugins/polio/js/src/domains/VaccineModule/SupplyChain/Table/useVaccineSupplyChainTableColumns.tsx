@@ -70,13 +70,13 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
             {
                 Header: formatMessage(MESSAGES.startDate),
                 accessor: 'start_date',
-                sortable: false,
+                sortable: true,
                 Cell: DateCell,
             },
             {
                 Header: formatMessage(MESSAGES.endDate),
                 accessor: 'end_date',
-                sortable: false,
+                sortable: true,
                 Cell: DateCell,
             },
             {

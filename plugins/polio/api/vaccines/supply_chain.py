@@ -2,7 +2,7 @@ from logging import getLogger
 from typing import Any
 
 from django import forms
-from django.db.models import Sum
+from django.db.models import Max, Min, Sum
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
@@ -10,18 +10,11 @@ from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
-from django.db.models import Max, Min
 
 from hat.menupermissions import models as permission
 from iaso.api.common import GenericReadWritePerm, ModelViewSet
 from iaso.models import OrgUnit
-from plugins.polio.models import (
-    Campaign,
-    Round,
-    VaccineArrivalReport,
-    VaccinePreAlert,
-    VaccineRequestForm,
-)
+from plugins.polio.models import Campaign, Round, VaccineArrivalReport, VaccinePreAlert, VaccineRequestForm
 
 logger = getLogger(__name__)
 
@@ -414,10 +407,14 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
 
     def get_start_date(self, obj):
         rounds = obj.rounds.all()
+        if not rounds:
+            return timezone.now().date()
         return min(rounds, key=lambda round: round.started_at).started_at
 
     def get_end_date(self, obj):
         rounds = obj.rounds.all()
+        if not rounds:
+            return timezone.now().date()
         return max(rounds, key=lambda round: round.ended_at).ended_at
 
     def get_doses_shipped(self, obj):
@@ -462,14 +459,24 @@ class VRFCustomOrderingFilter(filters.BaseFilterBackend):
             queryset = queryset.order_by("vaccine_type")
         elif current_order == "-vaccine_type":
             queryset = queryset.order_by("-vaccine_type")
+
+        # handle the case where there are no rounds
         elif current_order == "start_date":
-            queryset = queryset.annotate(start_date=Min("rounds__started_at")).order_by("start_date")
+            queryset = queryset.annotate(
+                start_date=Coalesce(Min("rounds__started_at"), timezone.now().date())
+            ).order_by("start_date")
         elif current_order == "-start_date":
-            queryset = queryset.annotate(start_date=Min("rounds__started_at")).order_by("-start_date")
+            queryset = queryset.annotate(
+                start_date=Coalesce(Min("rounds__started_at"), timezone.now().date())
+            ).order_by("-start_date")
         elif current_order == "end_date":
-            queryset = queryset.annotate(end_date=Max("rounds__ended_at")).order_by("end_date")
+            queryset = queryset.annotate(end_date=Coalesce(Max("rounds__ended_at"), timezone.now().date())).order_by(
+                "end_date"
+            )
         elif current_order == "-end_date":
-            queryset = queryset.annotate(end_date=Max("rounds__ended_at")).order_by("-end_date")
+            queryset = queryset.annotate(end_date=Coalesce(Max("rounds__ended_at"), timezone.now().date())).order_by(
+                "-end_date"
+            )
 
         return queryset
 

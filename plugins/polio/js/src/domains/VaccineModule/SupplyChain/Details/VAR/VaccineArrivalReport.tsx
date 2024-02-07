@@ -42,7 +42,7 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
             >
                 <Grid container>
                     <Grid container item xs={12} spacing={2}>
-                        <Grid item xs={6} md={4}>
+                        <Grid item xs={6} md={3}>
                             <Field
                                 label={formatMessage(
                                     MESSAGES.arrival_report_date,
@@ -50,39 +50,10 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
                                 name={`${VAR}[${index}].arrival_report_date`}
                                 component={DateInput}
                                 disabled={markedForDeletion}
-                            />
-                        </Grid>
-                        <Grid item xs={6} md={4}>
-                            <Field
-                                label={formatMessage(MESSAGES.po_number)}
-                                name={`${VAR}[${index}].po_number`}
-                                component={TextInput}
-                                shrinkLabel={false}
-                                disabled={markedForDeletion}
                                 required
                             />
                         </Grid>
-                        <Grid item xs={6} md={4}>
-                            <Field
-                                label={formatMessage(MESSAGES.lot_numbers)}
-                                name={`${VAR}[${index}].lot_numbers`}
-                                component={TextInput}
-                                disabled={markedForDeletion}
-                                shrinkLabel={false}
-                            />
-                        </Grid>
-                    </Grid>
-                    <Grid container item xs={12} spacing={2}>
-                        <Grid item xs={6} md={4}>
-                            <Field
-                                label={formatMessage(MESSAGES.expirationDate)}
-                                name={`${VAR}[${index}].expiration_date`}
-                                component={DateInput}
-                                disabled={markedForDeletion}
-                            />
-                        </Grid>
-
-                        <Grid item xs={6} md={4}>
+                        <Grid item xs={6} md={3}>
                             <Field
                                 label={formatMessage(MESSAGES.doses_shipped)}
                                 name={`${VAR}[${index}].doses_shipped`}
@@ -92,7 +63,7 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
                             />
                         </Grid>
 
-                        <Grid item xs={6} md={4}>
+                        <Grid item xs={6} md={3}>
                             <Field
                                 label={formatMessage(MESSAGES.doses_received)}
                                 name={`${VAR}[${index}].doses_received`}
@@ -101,22 +72,31 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
                                 required
                             />
                         </Grid>
+                        <Grid item xs={6} md={3}>
+                            <Field
+                                label={formatMessage(MESSAGES.po_number)}
+                                name={`${VAR}[${index}].po_number`}
+                                component={TextInput}
+                                shrinkLabel={false}
+                                disabled={markedForDeletion}
+                                required
+                            />
+                        </Grid>
                     </Grid>
-
                     <Grid container item xs={12} spacing={2}>
-                        <Grid item xs={6} md={4}>
+                        <Grid item xs={6} md={3}>
                             <Typography variant="button">
                                 {`${formatMessage(MESSAGES.doses_per_vial)}:`}{' '}
                                 <NumberCell value={doses_per_vial} />
                             </Typography>
                         </Grid>
-                        <Grid item xs={6} md={4}>
+                        <Grid item xs={6} md={3}>
                             <Typography variant="button">
                                 {`${formatMessage(MESSAGES.vials_shipped)}:`}{' '}
                                 <NumberCell value={current_vials_shipped} />
                             </Typography>
                         </Grid>
-                        <Grid item xs={6} md={4}>
+                        <Grid item xs={6} md={3}>
                             <Typography variant="button">
                                 {`${formatMessage(MESSAGES.vials_received)}:`}{' '}
                                 <NumberCell value={current_vials_received} />

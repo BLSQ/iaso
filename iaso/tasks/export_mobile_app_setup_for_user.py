@@ -34,7 +34,7 @@ logger = logging.getLogger(__name__)
 # - Make only accessible for super admin
 
 # SERVER = "http://localhost:8081"
-SERVER = "https://0e11020afdca.ngrok.app"
+SERVER = "https://512459b08c7f.ngrok.app"
 ADMIN_USER_NAME = ""
 ADMIN_PASSWORD = ""
 
@@ -60,6 +60,10 @@ def export_mobile_app_setup_for_user(
     # Public endpoint, no auth needed
     app_info = iaso_client.get(f"/api/apps/current/?app_id={project.app_id}")
 
+    if "app_id" not in app_info:
+        # TODO: handle error
+        breakpoint()
+
     tmp_folder_name = f"mobile-app-export-{uuid.uuid4()}"
     tmp_dir = os.path.join("/tmp", tmp_folder_name)
     logger.info(f"-- Writing results to {tmp_dir}")
@@ -77,7 +81,7 @@ def export_mobile_app_setup_for_user(
     logger.info(f"\tName: {app_info['name']}")
     logger.info(f"\tApp id: {app_info['app_id']}")
     logger.info(f"\tNeeds authentication: {app_info['needs_authentication']}")
-    logger.info(f"\tMin version: {app_info['min_version']}")
+    logger.info(f"\tMin version: {app_info.get('min_version', None)}")
     logger.info("\tFeature flags:")
     for flag in app_info["feature_flags"]:
         logger.info(f"\t\t{flag['code']}: {flag['name']}")
@@ -155,14 +159,14 @@ def export_mobile_app_setup_for_user(
 
     zipfile_name = f"{tmp_folder_name}.zip"
     logger.info(f"-- Creating zipfile {zipfile_name}")
-    with zipfile.ZipFile(zipfile_name, "w", zipfile.ZIP_DEFLATED) as zipf:
+    with zipfile.ZipFile(os.path.join(tmp_dir, zipfile_name), "w", zipfile.ZIP_DEFLATED) as zipf:
         # add all files in /tmp directory to the .zip file
         # the arcname param makes sure we add all files in the root of the .zip
         for file in os.listdir(tmp_dir):
             zipf.write(os.path.join(tmp_dir, file), arcname=file)
 
     logger.info("-- Uploading zipfile to S3")
-    upload_file_to_s3(zipfile_name, object_name=f"export-files/{zipfile_name}")
+    upload_file_to_s3(os.path.join(tmp_dir, zipfile_name), object_name=f"export-files/{zipfile_name}")
 
     the_task.report_success_with_result(
         message=f"Mobile app setup zipfile was created for user {user.username} and project {project.name}.",

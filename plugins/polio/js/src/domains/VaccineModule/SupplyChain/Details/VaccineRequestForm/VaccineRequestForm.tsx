@@ -63,8 +63,6 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
         setFieldValue('vrf.rounds', undefined);
     }, [setFieldValue]);
     const resetOnVaccineChange = useCallback(() => {
-        setFieldValue('vrf.campaign', undefined);
-        setFieldValue('vrf.vaccine_type', undefined);
         setFieldValue('vrf.rounds', undefined);
     }, [setFieldValue]);
 
@@ -150,6 +148,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                     name="vrf.date_vrf_signature"
                                     component={DateInput}
                                     disabled={false}
+                                    required
                                 />
                             </Box>
                         </Grid>
@@ -190,6 +189,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                     name="vrf.date_vrf_reception"
                                     component={DateInput}
                                     disabled={false}
+                                    required
                                 />
                             </Box>
                         </Grid>
@@ -213,7 +213,6 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                 name="vrf.quantities_approved_by_orpg_in_doses"
                                 component={NumberInput}
                                 disabled={false}
-                                required
                             />
                         </Grid>
                         <Grid item xs={6} md={3}>
@@ -246,7 +245,6 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                 name="vrf.quantities_approved_by_dg_in_doses"
                                 component={NumberInput}
                                 disabled={false}
-                                required
                             />
                         </Grid>
                         <Grid item xs={6} md={3}>
@@ -255,6 +253,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                 name="vrf.date_dg_approval"
                                 component={DateInput}
                                 disabled={false}
+                                required
                             />
                         </Grid>
                     </Grid>

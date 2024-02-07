@@ -21,7 +21,6 @@ export const SourceShape: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     return (
         <GeoJSON
-            // @ts-ignore TODO: fix this type problem
             style={{
                 color: source.color,
             }}

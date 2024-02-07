@@ -27,7 +27,6 @@ export const CalendarMapPanesRegular: FunctionComponent<Props> = ({
                             <GeoJSON
                                 key={shape.id}
                                 data={shape.geo_json}
-                                // @ts-ignore TODO: fix this type problem
                                 style={() =>
                                     getGeoJsonStyle(
                                         campaignShape.color || color,

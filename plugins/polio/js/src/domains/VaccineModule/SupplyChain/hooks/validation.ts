@@ -60,6 +60,7 @@ const useVrfShape = () => {
             .required(formatMessage(MESSAGES.requiredField)),
         date_vrf_signature: yup
             .date()
+            .required(formatMessage(MESSAGES.requiredField))
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
         quantities_ordered_in_doses: yup
@@ -75,6 +76,7 @@ const useVrfShape = () => {
             .min(0, formatMessage(MESSAGES.positiveNumber)),
         date_vrf_reception: yup
             .date()
+            .required(formatMessage(MESSAGES.requiredField))
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
         date_vrf_submission_to_orpg: yup
@@ -84,7 +86,6 @@ const useVrfShape = () => {
         quantities_approved_by_orpg_in_doses: yup
             .number()
             .nullable()
-            .required(formatMessage(MESSAGES.requiredField))
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
@@ -99,12 +100,12 @@ const useVrfShape = () => {
         quantities_approved_by_dg_in_doses: yup
             .number()
             .nullable()
-            .required(formatMessage(MESSAGES.requiredField))
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
         date_dg_approval: yup
             .date()
+            .required(formatMessage(MESSAGES.requiredField))
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
         comments: yup.string().nullable(),
@@ -116,23 +117,14 @@ const usePreAlertShape = () => {
     return yup.object().shape({
         date_pre_alert_reception: yup
             .date()
+            .required(formatMessage(MESSAGES.requiredField))
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
         po_number: yup
             .string()
             .nullable()
             .required(formatMessage(MESSAGES.requiredField)),
-        lot_numbers: yup
-            .mixed()
-            .nullable()
-            // TS can't detect the added method
-            // @ts-ignore
-            .isNumbersArrayString(formatMessage),
         estimated_arrival_time: yup
-            .date()
-            .typeError(formatMessage(MESSAGES.invalidDate))
-            .nullable(),
-        expiration_date: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
@@ -150,28 +142,19 @@ const useArrivalReportShape = () => {
     return yup.object().shape({
         arrival_report_date: yup
             .date()
+            .required(formatMessage(MESSAGES.requiredField))
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
         po_number: yup
             .string()
             .nullable()
             .required(formatMessage(MESSAGES.requiredField)),
-        lot_numbers: yup
-            .mixed()
-            .nullable()
-            // TS can't detect the added method
-            // @ts-ignore
-            .isNumbersArrayString(formatMessage),
         doses_per_vial: yup
             .number()
             .nullable()
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
-        expiration_date: yup
-            .date()
-            .typeError(formatMessage(MESSAGES.invalidDate))
-            .nullable(),
         doses_shipped: yup
             .number()
             .nullable()

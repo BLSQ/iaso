@@ -21,6 +21,7 @@ const useStyles = makeStyles(theme => ({
         color: 'inherit',
     },
     cellRejected: {
+        maxWidth: 350,
         '& > a': {
             color: `${theme.palette.error.main} !important`,
         },
@@ -38,6 +39,7 @@ const useStyles = makeStyles(theme => ({
         },
     },
     cellApproved: {
+        maxWidth: 350,
         '& > a': {
             color: `${theme.palette.success.main} !important`,
         },

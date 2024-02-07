@@ -1,8 +1,8 @@
 /* eslint-disable camelcase */
 import { Pagination, UrlParams } from 'bluesquare-components';
 import { User } from '../../../utils/usersUtils';
-import { ShortOrgUnit } from '../types/orgUnit';
 import { OrgunitType } from '../types/orgunitTypes';
+import { ShortOrgUnit } from '../types/orgUnit';
 
 export type ChangeRequestValidationStatus = 'new' | 'rejected' | 'approved';
 export type ApproveOrgUnitParams = UrlParams & {

@@ -11,7 +11,6 @@ import {
     IconButton as IconButtonBlsq,
 } from 'bluesquare-components';
 import MESSAGES from '../messages';
-import { useGetApprovalProposal } from '../hooks/api/useGetApprovalProposal';
 import { SelectedChangeRequest } from '../Tables/ReviewOrgUnitChangesTable';
 import { useNewFields } from '../hooks/useNewFields';
 import { ApproveOrgUnitChangesButtons } from './ReviewOrgUnitChangesButtons';
@@ -19,6 +18,7 @@ import { ChangeRequestValidationStatus } from '../types';
 import { useSaveChangeRequest } from '../hooks/api/useSaveChangeRequest';
 import { ReviewOrgUnitChangesDetailsTable } from '../Tables/details/ReviewOrgUnitChangesDetailsTable';
 import { ReviewOrgUnitChangesDialogTitle } from './ReviewOrgUnitChangesDialogTitle';
+import { useGetApprovalProposal } from '../hooks/api/useGetApprovalProposal';
 
 /*
 Org Unit Change Request
@@ -29,7 +29,7 @@ Org Unit Change Request
 - Rejected → red
 
 If new:
-Left side: current org unit values (fetched from org unit API)
+Left side: old org unit values: org unit values at request creation time  Comes from change request API (old_value field)
 Right side: proposed changes. Red if not selected, green if selected
 
 
@@ -45,7 +45,7 @@ Right side: proposed changes in red
 type Props = {
     isOpen: boolean;
     closeDialog: () => void;
-    selectedChangeRequest?: SelectedChangeRequest;
+    selectedChangeRequest: SelectedChangeRequest;
 };
 
 export const ReviewOrgUnitChangesDialog: FunctionComponent<Props> = ({
@@ -54,8 +54,9 @@ export const ReviewOrgUnitChangesDialog: FunctionComponent<Props> = ({
     selectedChangeRequest,
 }) => {
     const { formatMessage } = useSafeIntl();
+
     const { data: changeRequest, isFetching: isFetchingChangeRequest } =
-        useGetApprovalProposal(selectedChangeRequest?.id);
+        useGetApprovalProposal(selectedChangeRequest.id);
     const isNew: boolean =
         !isFetchingChangeRequest && changeRequest?.status === 'new';
     const { newFields, setSelected } = useNewFields(changeRequest);
@@ -69,8 +70,7 @@ export const ReviewOrgUnitChangesDialog: FunctionComponent<Props> = ({
         return formatMessage(MESSAGES.validateOrRejectChanges);
     }, [changeRequest?.status, formatMessage]);
     const { mutate: submitChangeRequest, isLoading: isSaving } =
-        useSaveChangeRequest(closeDialog, selectedChangeRequest?.id);
-    if (!selectedChangeRequest) return null;
+        useSaveChangeRequest(closeDialog, selectedChangeRequest.id);
 
     return (
         <SimpleModal

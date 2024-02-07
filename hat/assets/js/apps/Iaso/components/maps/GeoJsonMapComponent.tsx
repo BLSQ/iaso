@@ -66,7 +66,6 @@ export const GeoJsonMap: FunctionComponent<Props> = ({ geoJson }) => {
                 />
 
                 <GeoJSON
-                    // @ts-ignore TODO: fix this type problem
                     style={{
                         color: theme.palette.secondary.main,
                     }}

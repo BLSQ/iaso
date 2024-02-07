@@ -35,8 +35,9 @@ export const VaccineSupplyChainConfirmButtons: FunctionComponent<Props> = ({
                     className={className}
                     color="primary"
                     onClick={onCancel}
+                    disabled={!allowSaveAll}
                 >
-                    {formatMessage(MESSAGES.cancel)}
+                    {formatMessage(MESSAGES.cancelChanges)}
                 </Button>
             </Box>
             <Box ml={2} mt={4}>

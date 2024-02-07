@@ -46,7 +46,6 @@ export const CalendarMap: FunctionComponent<Props> = ({
                 scrollWheelZoom={false}
             >
                 <TileLayer
-                    // @ts-ignore TODO: fix this type problem
                     attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     position="bottomleft"

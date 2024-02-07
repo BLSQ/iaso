@@ -4,13 +4,14 @@ import { Shape } from './shapes';
 import { Nullable } from '../../../types/utils';
 import { Instance } from '../../instances/types/instance';
 import { OrgunitType } from './orgunitTypes';
+import { GeoJson } from '../../../components/maps/types';
 
 /* eslint-disable camelcase */
 export type ShortOrgUnit = {
     name: string;
     id: number;
+    geo_json?: GeoJson;
 };
-
 export type Group = {
     created_at: number;
     updated_at: number;

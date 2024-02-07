@@ -55,7 +55,6 @@ export const OrgUnitTypesSelectedShapes: FunctionComponent<Props> = ({
                                             click: () =>
                                                 fetchSubOrgUnitDetail(o),
                                         }}
-                                        // @ts-ignore TODO: fix this type problem
                                         style={() => ({
                                             color: ot.color,
                                         })}

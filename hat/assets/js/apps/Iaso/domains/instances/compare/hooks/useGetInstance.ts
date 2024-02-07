@@ -14,6 +14,8 @@ export const useGetInstance = (
         {
             enabled: Boolean(instanceId),
             retry: false,
+            staleTime: 1000 * 60 * 15,
+            cacheTime: 1000 * 60 * 5,
         },
     );
 };

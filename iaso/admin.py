@@ -7,7 +7,9 @@ from django.contrib.gis.db import models as geomodels
 from django.db import models
 from django.utils.html import format_html_join, format_html
 from django.utils.safestring import mark_safe
-from django_json_widget.widgets import JSONEditorWidget  # type: ignore
+from django_json_widget.widgets import JSONEditorWidget
+
+from iaso.models.json_config import Config  # type: ignore
 
 
 class IasoJSONEditorWidget(JSONEditorWidget):
@@ -738,6 +740,12 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related("org_unit")
+
+
+@admin.register(Config)
+class ConfigAdmin(admin.ModelAdmin):
+    raw_id_fields = ["users"]
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
 admin.site.register(Account)

@@ -9,6 +9,7 @@ type Props = {
     min?: number;
     max?: number;
     disabled?: boolean;
+    required?: boolean;
     withMarginTop?: boolean;
     numberInputOptions?: {
         prefix?: string;
@@ -30,6 +31,7 @@ export const NumberInput: FunctionComponent<Props> = ({
     numberInputOptions = {},
     withMarginTop = false,
     disabled = false,
+    required,
 }) => {
     const hasError =
         form.errors &&
@@ -49,6 +51,7 @@ export const NumberInput: FunctionComponent<Props> = ({
             max={max}
             errors={hasError ? [get(form.errors, field.name)] : []}
             disabled={disabled}
+            required={required}
             numberInputOptions={numberInputOptions}
         />
     );

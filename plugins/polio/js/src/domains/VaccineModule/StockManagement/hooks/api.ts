@@ -1,5 +1,11 @@
+/* eslint-disable camelcase */
 import { UseQueryResult } from 'react-query';
 import { UrlParams } from 'bluesquare-components';
+import {
+    getRequest,
+    patchRequest,
+    postRequest,
+} from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useUrlParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
 import {
     FormattedApiParams,
@@ -9,27 +15,17 @@ import {
     useSnackMutation,
     useSnackQuery,
 } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
-import { waitFor } from '../../../../../../../../hat/assets/js/apps/Iaso/utils';
-import { mockVaccineStockList } from '../mocks/mockVaccineStockList';
-import {
-    mockSummary,
-    mockUnusableVials,
-    mockUsableVials,
-} from '../mocks/mockVaccineStockDetails';
 import {
     StockManagementListParams,
     StockManagementDetailsParams,
     StockVariationParams,
 } from '../types';
-import {
-    mockDestructionsList,
-    mockFormAList,
-    mockIncidentsList,
-} from '../mocks/mockStockVariation';
+
 import {
     CAMPAIGNS_ENDPOINT,
     useGetCampaigns,
 } from '../../../Campaigns/hooks/api/useGetCampaigns';
+import { commaSeparatedIdsToStringArray } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
 
 const defaults = {
     order: 'country',
@@ -48,12 +44,13 @@ const options = {
     refetchInterval: 1000 * 60 * 5,
 };
 
+const apiUrl = '/api/polio/vaccine/vaccine_stock/';
+const modalUrl = '/api/polio/vaccine/stock/';
+
 // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 const getVaccineStockList = async (params: FormattedApiParams) => {
     const queryString = new URLSearchParams(params).toString();
-    await waitFor(750);
-    console.log('list params', queryString);
-    return mockVaccineStockList;
+    return getRequest(`${apiUrl}?${queryString}`);
 };
 
 export const useGetVaccineStockList = (
@@ -76,10 +73,8 @@ export const useGetVaccineStockList = (
 };
 
 // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-const getUsableVials = async (queryString: string) => {
-    console.log('usable vials', queryString);
-    await waitFor(750);
-    return mockUsableVials;
+const getUsableVials = async (id: string, queryString: string) => {
+    return getRequest(`${apiUrl}${id}/usable_vials/?${queryString}`);
 };
 
 // Need to pass id to apiUrl
@@ -98,19 +93,18 @@ export const useGetUsableVials = (
         pageSize,
     } as Partial<UrlParams>);
     const apiParams = useApiParams(safeParams);
+    const { id } = params;
     const queryString = new URLSearchParams(apiParams).toString();
     return useSnackQuery({
-        queryKey: ['usable-vials', queryString],
-        queryFn: () => getUsableVials(queryString),
+        queryKey: ['usable-vials', queryString, id],
+        queryFn: () => getUsableVials(id, queryString),
         options: { ...options, enabled },
     });
 };
 
 // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-const getUnusableVials = async (queryString: string) => {
-    console.log('unusable vials', queryString);
-    await waitFor(750);
-    return mockUnusableVials;
+const getUnusableVials = async (id: string, queryString: string) => {
+    return getRequest(`${apiUrl}${id}/get_unusable_vials/?${queryString}`);
 };
 // Need to pass id to apiUrl
 // Splitting both hooks to be able to store both payloads in the cache and avoid refteching with each tab change
@@ -128,20 +122,19 @@ export const useGetUnusableVials = (
         page,
         pageSize,
     } as Partial<UrlParams>);
+    const { id } = params;
     const apiParams = useApiParams(safeParams);
     const queryString = new URLSearchParams(apiParams).toString();
     return useSnackQuery({
-        queryKey: ['unusable-vials', queryString],
-        queryFn: () => getUnusableVials(queryString),
+        queryKey: ['unusable-vials', queryString, id],
+        queryFn: () => getUnusableVials(id, queryString),
         options: { ...options, enabled },
     });
 };
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
 const getStockManagementSummary = async (id?: string) => {
-    console.log('vaccine stock id', id);
-    await waitFor(500);
-    return mockSummary;
+    return getRequest(`${apiUrl}${id}/summary/`);
 };
 
 export const useGetStockManagementSummary = (
@@ -155,9 +148,7 @@ export const useGetStockManagementSummary = (
 };
 
 const getFormAList = async (queryString: string) => {
-    await waitFor(750);
-    console.log('forma params', queryString);
-    return mockFormAList;
+    return getRequest(`${modalUrl}outgoing_stock_movement/?${queryString}`);
 };
 
 export const useGetFormAList = (
@@ -168,24 +159,24 @@ export const useGetFormAList = (
         formaOrder: order,
         formaPage: page,
         formaPageSize: pageSize,
+        id: vaccine_stock,
     } = params;
     const safeParams = useUrlParams({
         order,
         page,
         pageSize,
+        vaccine_stock,
     } as Partial<UrlParams>);
     const apiParams = useApiParams(safeParams);
     const queryString = new URLSearchParams(apiParams).toString();
     return useSnackQuery({
-        queryKey: ['formA', queryString],
+        queryKey: ['formA', queryString, vaccine_stock],
         queryFn: () => getFormAList(queryString),
         options: { ...options, enabled },
     });
 };
 const getDestructionList = async (queryString: string) => {
-    await waitFor(750);
-    console.log('destruction params', queryString);
-    return mockDestructionsList;
+    return getRequest(`${modalUrl}destruction_report/?${queryString}`);
 };
 
 export const useGetDestructionList = (
@@ -196,24 +187,24 @@ export const useGetDestructionList = (
         destructionOrder: order,
         destructionPage: page,
         destructionPageSize: pageSize,
+        id: vaccine_stock,
     } = params;
     const safeParams = useUrlParams({
         order,
         page,
         pageSize,
+        vaccine_stock,
     } as Partial<UrlParams>);
     const apiParams = useApiParams(safeParams);
     const queryString = new URLSearchParams(apiParams).toString();
     return useSnackQuery({
-        queryKey: ['destruction', queryString],
+        queryKey: ['destruction', queryString, vaccine_stock],
         queryFn: () => getDestructionList(queryString),
         options: { ...options, enabled },
     });
 };
 const getIncidentList = async (queryString: string) => {
-    await waitFor(750);
-    console.log('incidents params', queryString);
-    return mockIncidentsList;
+    return getRequest(`${modalUrl}incident_report/?${queryString}`);
 };
 
 export const useGetIncidentList = (
@@ -224,22 +215,25 @@ export const useGetIncidentList = (
         incidentOrder: order,
         incidentPage: page,
         incidentPageSize: pageSize,
+        id: vaccine_stock,
     } = params;
     const safeParams = useUrlParams({
         order,
         page,
         pageSize,
+        vaccine_stock,
     } as Partial<UrlParams>);
     const apiParams = useApiParams(safeParams);
     const queryString = new URLSearchParams(apiParams).toString();
     return useSnackQuery({
-        queryKey: ['incidents', queryString],
+        queryKey: ['incidents', queryString, vaccine_stock],
         queryFn: () => getIncidentList(queryString),
         options: { ...options, enabled },
     });
 };
 
-export const useCampaignOptions = (countryName, vaccine) => {
+// TODO get list of campaigns filtered by active vacccine
+export const useCampaignOptions = (countryName: string): UseQueryResult => {
     const queryOptions = {
         select: data => {
             if (!data) return [];
@@ -260,47 +254,91 @@ export const useCampaignOptions = (countryName, vaccine) => {
 };
 
 const createEditFormA = async (body: any) => {
-    await waitFor(500);
-    if (body.id) {
-        console.log('PATCH', body);
-    } else {
-        console.log('POST', body);
+    const copy = { ...body };
+    const { lot_numbers } = body;
+    if (lot_numbers && !Array.isArray(lot_numbers)) {
+        const lotNumbersArray = commaSeparatedIdsToStringArray(lot_numbers);
+        copy.lot_numbers = lotNumbersArray;
     }
-    return null;
+    if (body.id) {
+        return patchRequest(
+            `${modalUrl}outgoing_stock_movement/${body.id}/`,
+            copy,
+        );
+    }
+    return postRequest(`${modalUrl}outgoing_stock_movement/`, copy);
 };
 
 export const useSaveFormA = () => {
     return useSnackMutation({
         mutationFn: body => createEditFormA(body),
+        invalidateQueryKey: [
+            'formA',
+            'vaccine-stock-list',
+            'usable-vials',
+            'stock-management-summary',
+            'unusable-vials',
+        ],
     });
 };
 const createEditDestruction = async (body: any) => {
-    await waitFor(500);
-    if (body.id) {
-        console.log('PATCH', body);
-    } else {
-        console.log('POST', body);
+    const copy = { ...body };
+    const { lot_numbers } = body;
+    if (lot_numbers && !Array.isArray(lot_numbers)) {
+        const lotNumbersArray = commaSeparatedIdsToStringArray(lot_numbers);
+        copy.lot_numbers = lotNumbersArray;
     }
-    return null;
+    if (body.id) {
+        return patchRequest(`${modalUrl}destruction_report/${body.id}/`, copy);
+    }
+    return postRequest(`${modalUrl}destruction_report/`, copy);
 };
 
 export const useSaveDestruction = () => {
     return useSnackMutation({
         mutationFn: body => createEditDestruction(body),
+        invalidateQueryKey: [
+            'destruction',
+            'vaccine-stock-list',
+            'usable-vials',
+            'stock-management-summary',
+            'unusable-vials',
+        ],
     });
 };
 const createEditIncident = async (body: any) => {
-    await waitFor(500);
-    if (body.id) {
-        console.log('PATCH', body);
-    } else {
-        console.log('POST', body);
+    const copy = { ...body };
+    const { lot_numbers } = body;
+    if (lot_numbers && !Array.isArray(lot_numbers)) {
+        const lotNumbersArray = commaSeparatedIdsToStringArray(lot_numbers);
+        copy.lot_numbers = lotNumbersArray;
     }
-    return null;
+    if (body.id) {
+        return patchRequest(`${modalUrl}incident_report/${body.id}/`, copy);
+    }
+    return postRequest(`${modalUrl}incident_report/`, copy);
 };
 
 export const useSaveIncident = () => {
     return useSnackMutation({
         mutationFn: body => createEditIncident(body),
+        invalidateQueryKey: [
+            'incidents',
+            'vaccine-stock-list',
+            'usable-vials',
+            'stock-management-summary',
+            'unusable-vials',
+        ],
+    });
+};
+
+const saveVaccineStock = body => {
+    return postRequest(apiUrl, body);
+};
+
+export const useSaveVaccineStock = () => {
+    return useSnackMutation({
+        mutationFn: body => saveVaccineStock(body),
+        invalidateQueryKey: 'vaccine-stock-list',
     });
 };

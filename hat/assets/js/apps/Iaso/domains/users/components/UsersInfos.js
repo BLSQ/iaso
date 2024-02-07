@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 import isEmpty from 'lodash/isEmpty';
 import { Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import InputComponent from '../../../components/forms/InputComponent';
+import InputComponent from '../../../components/forms/InputComponent.tsx';
 import { APP_LOCALES } from '../../app/constants';
 
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';

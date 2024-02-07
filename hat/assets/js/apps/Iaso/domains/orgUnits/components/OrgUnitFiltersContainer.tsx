@@ -62,7 +62,7 @@ const useStyles = makeStyles(theme => ({
         backgroundColor: `${theme.palette.primary.main} !important`,
         // to be over topbar shadow
         zIndex: '1101 fixed !important',
-        position: 'fixed !important',
+        position: 'fixed',
         top: '64px !important',
     },
     tabsContainerShadow: {

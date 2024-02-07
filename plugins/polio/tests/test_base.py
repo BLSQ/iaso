@@ -17,11 +17,12 @@ from rest_framework.test import APIClient
 
 from iaso import models as m
 from iaso.models import Account, Team
+from iaso.models.json_config import Config
 from iaso.test import APITestCase, TestCase
 from plugins.polio.api.campaigns.campaigns import CampaignSerializer, CampaignViewSet
 from plugins.polio.api.common import CACHE_VERSION
 from plugins.polio.export_utils import format_date
-from plugins.polio.models import CampaignScope, Config, ReasonForDelay, Round, RoundScope
+from plugins.polio.models import CampaignScope, ReasonForDelay, Round, RoundScope
 from plugins.polio.preparedness.calculator import get_preparedness_score
 from plugins.polio.preparedness.exceptions import InvalidFormatError
 from plugins.polio.preparedness.spreadsheet_manager import *

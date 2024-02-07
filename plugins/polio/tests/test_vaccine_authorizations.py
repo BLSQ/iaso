@@ -416,38 +416,41 @@ class VaccineAuthorizationAPITestCase(APITestCase):
 
         self.user_1.iaso_profile.org_units.set([self.org_unit_DRC.pk, self.org_unit_ALGERIA, self.org_unit_SOMALIA])
 
-        self.client.post(
+        response = self.client.post(
             "/api/polio/vaccineauthorizations/",
             data={
                 "country": self.org_unit_DRC.pk,
                 "quantity": 12346,
                 "status": "ONGOING",
                 "comment": "waiting for approval.",
-                "expiration_date": "2024-02-01",
+                "expiration_date": (datetime.date.today() + datetime.timedelta(days=1)).strftime("%Y-%m-%d"),
             },
         )
+        self.assertEqual(response.status_code, 201)
 
-        self.client.post(
+        response = self.client.post(
             "/api/polio/vaccineauthorizations/",
             data={
                 "country": self.org_unit_ALGERIA.pk,
                 "quantity": 12346,
                 "status": "ONGOING",
                 "comment": "new update",
-                "expiration_date": "2024-03-01",
+                "expiration_date": (datetime.date.today() + datetime.timedelta(days=1)).strftime("%Y-%m-%d"),
             },
         )
+        self.assertEqual(response.status_code, 201)
 
-        self.client.post(
+        response = self.client.post(
             "/api/polio/vaccineauthorizations/",
             data={
                 "country": self.org_unit_SOMALIA.pk,
                 "quantity": 12346,
                 "status": "VALIDATED",
                 "comment": "Approved.",
-                "expiration_date": "2024-04-01",
+                "expiration_date": (datetime.date.today() + datetime.timedelta(days=1)).strftime("%Y-%m-%d"),
             },
         )
+        self.assertEqual(response.status_code, 201)
 
         group = Group.objects.create(
             name="Sub-Saharian-Countries",
@@ -472,7 +475,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
                     "quantity": 12346,
                     "status": "ONGOING",
                     "comment": "waiting for approval.",
-                    "expiration_date": "2024-02-01",
+                    "expiration_date": (datetime.date.today() + datetime.timedelta(days=1)).strftime("%Y-%m-%d"),
                 },
             )
 
@@ -488,18 +491,20 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         self.client.force_authenticate(self.user_1)
         self.user_1.iaso_profile.org_units.set([self.org_unit_DRC.pk])
 
-        self.client.post(
+        response = self.client.post(
             "/api/polio/vaccineauthorizations/",
             data={
                 "country": self.org_unit_DRC.pk,
                 "quantity": 12346,
                 "status": "ONGOING",
                 "comment": "waiting for approval.",
-                "expiration_date": "2024-02-01",
+                "expiration_date": (datetime.date.today() + datetime.timedelta(days=1)).strftime("%Y-%m-%d"),
             },
         )
+        self.assertEqual(response.status_code, 201)
 
         response = self.client.get("/api/polio/vaccineauthorizations/")
+        self.assertEqual(response.status_code, 200)
 
         self.assertEqual(response.data[0]["comment"], "waiting for approval.")
 
@@ -515,6 +520,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         post_rep = self.client.put(f"/api/polio/vaccineauthorizations/{last_entry.pk}/", data=data)
 
         response = self.client.get("/api/polio/vaccineauthorizations/")
+        self.assertEqual(response.status_code, 200)
 
         self.assertEqual(response.data[0]["comment"], "Approved")
         self.assertEqual(response.data[0]["status"], "VALIDATED")

@@ -17,7 +17,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.obrName',
         defaultMessage: 'OBR Name',
     },
-
+    campaign: {
+        id: 'iaso.polio.form.label.obrName',
+        defaultMessage: 'OBR Name',
+    },
     actions: {
         defaultMessage: 'Action(s)',
         id: 'iaso.label.actions',
@@ -61,10 +64,6 @@ const MESSAGES = defineMessages({
     usable: {
         id: 'iaso.label.usable',
         defaultMessage: 'Usable',
-    },
-    leftoverPercentage: {
-        id: 'iaso.label.leftoverPercentage',
-        defaultMessage: '% leftover on quantities ordered',
     },
     vialsUsed: {
         id: 'iaso.label.vialsUsed',
@@ -146,12 +145,12 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.lot_numbers_for_usable_vials',
         defaultMessage: 'Lot numbers for usable vials',
     },
-    date_of_report: {
-        id: 'iaso.polio.label.date_of_report',
+    report_date: {
+        id: 'iaso.polio.label.report_date',
         defaultMessage: 'Date of report',
     },
-    forma_reception_rrt: {
-        id: 'iaso.polio.label.forma_reception_rrt',
+    form_a_reception_date: {
+        id: 'iaso.polio.label.form_a_reception_date',
         defaultMessage: 'Form A reception (RRT)',
     },
     unusable_vials: {
@@ -166,12 +165,12 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.vials_destroyed',
         defaultMessage: 'Vials destroyed',
     },
-    incident_reception_rrt: {
-        id: 'iaso.polio.label.incident_reception_rrt',
+    incident_report_received_by_rrt: {
+        id: 'iaso.polio.label.incident_report_received_by_rrt',
         defaultMessage: 'Incident report received by RRT',
     },
-    destruction_reception_rrt: {
-        id: 'iaso.polio.label.destruction_reception_rrt',
+    rrt_destruction_report_reception_date: {
+        id: 'iaso.polio.label.rrt_destruction_report_reception_date',
         defaultMessage: 'Destruction report received by RRT',
     },
     formaReports: {
@@ -190,28 +189,28 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.lot_numbers',
         defaultMessage: 'Lot numbers',
     },
-    PHYSICAL_INVENTORY: {
-        id: 'iaso.polio.label.PHYSICAL_INVENTORY',
+    physical_inventory: {
+        id: 'iaso.polio.label.physical_inventory',
         defaultMessage: 'Physical inventory',
     },
-    STEALING: {
-        id: 'iaso.polio.label.STEALING',
+    stealing: {
+        id: 'iaso.polio.label.stealing',
         defaultMessage: 'Theft',
     },
-    RETURN_TO_SUPPLIER: {
-        id: 'iaso.polio.label.RETURN_TO_SUPPLIER',
+    return: {
+        id: 'iaso.polio.label.return_to_supplier',
         defaultMessage: 'Return to supplier',
     },
-    LOSSES: {
-        id: 'iaso.polio.label.LOSSES',
+    losses: {
+        id: 'iaso.polio.label.losses',
         defaultMessage: 'Losses',
     },
-    VACCINE_EXPIRED: {
-        id: 'iaso.polio.label.VACCINE_EXPIRED',
+    vaccine_expired: {
+        id: 'iaso.polio.label.vaccine_expired',
         defaultMessage: 'Vaccine expired',
     },
-    VM_REACHED_DISCARD_POINT: {
-        id: 'iaso.polio.label.VM_REACHED_DISCARD_POINT',
+    vvm_reached_discard_point: {
+        id: 'iaso.polio.label.vvm_reached_discard_point',
         defaultMessage: 'VM reached discard point',
     },
     stockCorrection: {
@@ -249,6 +248,10 @@ const MESSAGES = defineMessages({
     lotNumberError: {
         id: 'iaso.polio.form.error.lotNumberError',
         defaultMessage: 'Please input numbers separated by a comma',
+    },
+    view: {
+        defaultMessage: 'View',
+        id: 'iaso.label.view',
     },
 });
 

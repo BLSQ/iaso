@@ -5,8 +5,6 @@ from rest_framework import filters, permissions
 from iaso.api.common import ModelViewSet
 from iaso.api.serializers import OrgUnitDropdownSerializer
 from iaso.models import OrgUnit
-from iaso.models.data_store import JsonDataStore
-from plugins.polio.models import Config
 
 
 @swagger_auto_schema(tags=["lqasimcountries"])

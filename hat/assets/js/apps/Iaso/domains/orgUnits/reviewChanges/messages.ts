@@ -122,8 +122,8 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Reject all',
     },
     selection: {
-        id: 'iaso.label.selection',
-        defaultMessage: 'Selection',
+        id: 'iaso.label.selectionShort',
+        defaultMessage: 'Sel.',
     },
     seeRejectedChanges: {
         id: 'iaso.changeRequest.seeRejectedChanges',
@@ -140,6 +140,18 @@ const MESSAGES = defineMessages({
     comment: {
         id: 'iaso.changeRequest.comment',
         defaultMessage: 'Comment',
+    },
+    createdDateFrom: {
+        id: 'iaso.label.createdDateFrom',
+        defaultMessage: 'Creation date from',
+    },
+    createdDateTo: {
+        id: 'iaso.label.createdDateTo',
+        defaultMessage: 'Creation date to',
+    },
+    close: {
+        id: 'iaso.label.close',
+        defaultMessage: 'Close',
     },
 });
 

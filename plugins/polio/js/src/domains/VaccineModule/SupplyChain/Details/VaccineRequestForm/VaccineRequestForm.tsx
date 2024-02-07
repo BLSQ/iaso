@@ -126,7 +126,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                         </Grid>
                         <Grid item xs={6} md={3}>
                             <Field
-                                label={formatMessage(MESSAGES.rounds)}
+                                label={formatMessage(MESSAGES.roundNumbers)}
                                 name="vrf.rounds"
                                 component={MultiSelect}
                                 disabled={!values?.vrf?.vaccine_type}
@@ -161,6 +161,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                     name="vrf.quantities_ordered_in_doses"
                                     component={NumberInput}
                                     disabled={false}
+                                    required
                                 />
                             </Box>
                         </Grid>
@@ -172,7 +173,10 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                     name="vrf.wastage_rate_used_on_vrf"
                                     component={NumberInput}
                                     disabled={false}
-                                    numberInputOptions={{ suffix: '%' }}
+                                    numberInputOptions={{
+                                        suffix: '%',
+                                        max: 100,
+                                    }}
                                 />
                             </Box>
                         </Grid>
@@ -208,6 +212,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                 name="vrf.quantities_approved_by_orpg_in_doses"
                                 component={NumberInput}
                                 disabled={false}
+                                required
                             />
                         </Grid>
                         <Grid item xs={6} md={3}>
@@ -240,6 +245,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                 name="vrf.quantities_approved_by_dg_in_doses"
                                 component={NumberInput}
                                 disabled={false}
+                                required
                             />
                         </Grid>
                         <Grid item xs={6} md={3}>

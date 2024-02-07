@@ -1,4 +1,4 @@
-from datetime import date, timedelta, datetime
+from datetime import date, timedelta
 from functools import lru_cache
 from logging import getLogger
 from typing import Any, Callable, Dict, Optional
@@ -18,7 +18,8 @@ from iaso.api.common import CONTENT_TYPE_CSV
 from iaso.models import OrgUnit
 from plugins.polio.api.common import find_orgunit_in_cache, get_url_content, make_orgunits_cache
 from plugins.polio.api.dashboards.vaccine_stocks import handle_ona_request_with_key
-from plugins.polio.models import Campaign, Config
+from plugins.polio.models import Campaign
+from iaso.models.json_config import Config
 
 logger = getLogger(__name__)
 

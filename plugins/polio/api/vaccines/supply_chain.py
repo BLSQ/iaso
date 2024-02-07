@@ -10,6 +10,7 @@ from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
+from django.db.models import Max, Min
 
 from hat.menupermissions import models as permission
 from iaso.api.common import GenericReadWritePerm, ModelViewSet
@@ -20,7 +21,6 @@ from plugins.polio.models import (
     VaccineArrivalReport,
     VaccinePreAlert,
     VaccineRequestForm,
-    DOSES_PER_VIAL,
 )
 
 logger = getLogger(__name__)
@@ -114,6 +114,7 @@ class NestedVaccinePreAlertSerializerForPost(BasePostPatchSerializer):
             "expiration_date",
             "doses_shipped",
             "doses_per_vial",
+            "vials_shipped",
         ]
 
 
@@ -125,7 +126,8 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
     estimated_arrival_time = serializers.DateField(required=False)
     expiration_date = serializers.DateField(required=False)
     doses_shipped = serializers.IntegerField(required=False)
-    doses_per_vial = serializers.IntegerField(required=False)
+    doses_per_vial = serializers.IntegerField(required=False, read_only=True)
+    vials_shipped = serializers.IntegerField(required=False, read_only=True)
 
     class Meta(NestedVaccinePreAlertSerializerForPost.Meta):
         fields = NestedVaccinePreAlertSerializerForPost.Meta.fields + ["id"]
@@ -139,14 +141,14 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
 
 
 class NestedVaccineArrivalReportSerializerForPost(BasePostPatchSerializer):
-    # doses_per_vial = serializers.SerializerMethodField()
-
     class Meta:
         model = VaccineArrivalReport
         fields = [
             "arrival_report_date",
             "doses_received",
             "doses_per_vial",
+            "vials_received",
+            "vials_shipped",
             "lot_numbers",
             "expiration_date",
             "doses_shipped",
@@ -162,7 +164,9 @@ class NestedVaccineArrivalReportSerializerForPatch(NestedVaccineArrivalReportSer
     lot_numbers = serializers.ListField(child=serializers.CharField(), required=False)
     doses_received = serializers.IntegerField(required=False)
     doses_shipped = serializers.IntegerField(required=False)
-    doses_per_vial = serializers.IntegerField(required=False)
+    doses_per_vial = serializers.IntegerField(required=False, read_only=True)
+    vials_received = serializers.IntegerField(required=False, read_only=True)
+    vials_shipped = serializers.IntegerField(required=False, read_only=True)
 
     class Meta(NestedVaccineArrivalReportSerializerForPost.Meta):
         fields = NestedVaccineArrivalReportSerializerForPost.Meta.fields + ["id"]
@@ -409,22 +413,12 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
         return ", ".join([pre_alert.po_number for pre_alert in pre_alerts])
 
     def get_start_date(self, obj):
-        # most recent (first in future or last in past) round's start date
         rounds = obj.rounds.all()
-        future_rounds = [round for round in rounds if round.started_at and round.started_at > timezone.now().date()]
-        if future_rounds:
-            return min(future_rounds, key=lambda round: round.started_at).started_at
-        else:
-            return max(rounds, key=lambda round: round.started_at).started_at
+        return min(rounds, key=lambda round: round.started_at).started_at
 
     def get_end_date(self, obj):
-        # most recent (first in future or last in past) round's start date
         rounds = obj.rounds.all()
-        future_rounds = [round for round in rounds if round.ended_at and round.ended_at > timezone.now().date()]
-        if future_rounds:
-            return min(future_rounds, key=lambda round: round.ended_at).ended_at
-        else:
-            return max(rounds, key=lambda round: round.ended_at).ended_at
+        return max(rounds, key=lambda round: round.ended_at).ended_at
 
     def get_doses_shipped(self, obj):
         return obj.total_doses_shipped()
@@ -468,6 +462,14 @@ class VRFCustomOrderingFilter(filters.BaseFilterBackend):
             queryset = queryset.order_by("vaccine_type")
         elif current_order == "-vaccine_type":
             queryset = queryset.order_by("-vaccine_type")
+        elif current_order == "start_date":
+            queryset = queryset.annotate(start_date=Min("rounds__started_at")).order_by("start_date")
+        elif current_order == "-start_date":
+            queryset = queryset.annotate(start_date=Min("rounds__started_at")).order_by("-start_date")
+        elif current_order == "end_date":
+            queryset = queryset.annotate(end_date=Max("rounds__ended_at")).order_by("end_date")
+        elif current_order == "-end_date":
+            queryset = queryset.annotate(end_date=Max("rounds__ended_at")).order_by("-end_date")
 
         return queryset
 
@@ -539,7 +541,7 @@ class VaccineRequestFormViewSet(ModelViewSet):
         "rounds__ended_at": ["exact", "gte", "lte", "range"],
     }
     ordering_fields = ["created_at", "updated_at"]
-    search_fields = ["campaign__obr_name", "vaccine_type", "campaign__country__name"]
+    search_fields = ["campaign__obr_name", "vaccine_type", "campaign__country__name", "vaccineprealert__po_number"]
 
     model = VaccineRequestForm
 

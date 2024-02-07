@@ -41,14 +41,23 @@ const useVrfShape = () => {
         id: yup.string().nullable(),
         country: yup
             .number()
-            .required()
+            .required(formatMessage(MESSAGES.requiredField))
             .nullable()
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
-        campaign: yup.string().required().nullable(),
-        vaccine_type: yup.string().required().nullable(),
-        rounds: yup.mixed().nullable().required(),
+        campaign: yup
+            .string()
+            .required(formatMessage(MESSAGES.requiredField))
+            .nullable(),
+        vaccine_type: yup
+            .string()
+            .required(formatMessage(MESSAGES.requiredField))
+            .nullable(),
+        rounds: yup
+            .mixed()
+            .nullable()
+            .required(formatMessage(MESSAGES.requiredField)),
         date_vrf_signature: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
@@ -56,6 +65,7 @@ const useVrfShape = () => {
         quantities_ordered_in_doses: yup
             .number()
             .nullable()
+            .required(formatMessage(MESSAGES.requiredField))
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
@@ -67,13 +77,14 @@ const useVrfShape = () => {
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
-        date_vrf_submission_orpg: yup
+        date_vrf_submission_to_orpg: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
         quantities_approved_by_orpg_in_doses: yup
             .number()
             .nullable()
+            .required(formatMessage(MESSAGES.requiredField))
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
@@ -81,13 +92,14 @@ const useVrfShape = () => {
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
-        date_vrf_submission_dg: yup
+        date_vrf_submitted_to_dg: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
         quantities_approved_by_dg_in_doses: yup
             .number()
             .nullable()
+            .required(formatMessage(MESSAGES.requiredField))
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
@@ -106,7 +118,10 @@ const usePreAlertShape = () => {
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
-        po_number: yup.string().nullable(),
+        po_number: yup
+            .string()
+            .nullable()
+            .required(formatMessage(MESSAGES.requiredField)),
         lot_numbers: yup
             .mixed()
             .nullable()
@@ -124,6 +139,7 @@ const usePreAlertShape = () => {
         doses_shipped: yup
             .number()
             .nullable()
+            .required(formatMessage(MESSAGES.requiredField))
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
@@ -136,13 +152,22 @@ const useArrivalReportShape = () => {
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
-        po_number: yup.string().nullable(),
+        po_number: yup
+            .string()
+            .nullable()
+            .required(formatMessage(MESSAGES.requiredField)),
         lot_numbers: yup
             .mixed()
             .nullable()
             // TS can't detect the added method
             // @ts-ignore
             .isNumbersArrayString(formatMessage),
+        doses_per_vial: yup
+            .number()
+            .nullable()
+            .min(0, formatMessage(MESSAGES.positiveInteger))
+            .integer()
+            .typeError(formatMessage(MESSAGES.positiveInteger)),
         expiration_date: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
@@ -150,12 +175,14 @@ const useArrivalReportShape = () => {
         doses_shipped: yup
             .number()
             .nullable()
+            .required(formatMessage(MESSAGES.requiredField))
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
         doses_received: yup
             .number()
             .nullable()
+            .required(formatMessage(MESSAGES.requiredField))
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),

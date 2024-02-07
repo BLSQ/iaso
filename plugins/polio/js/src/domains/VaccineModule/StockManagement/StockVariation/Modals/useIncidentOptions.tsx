@@ -3,19 +3,28 @@ import { useMemo } from 'react';
 import MESSAGES from '../../messages';
 import { DropdownOptions } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
-export const VM_REACHED_DISCARD_POINT = 'VM_REACHED_DISCARD_POINT';
-export const VACCINE_EXPIRED = 'VACCINE_EXPIRED';
-export const LOSSES = 'LOSSES';
-export const RETURN_TO_SUPPLIER = 'RETURN_TO_SUPPLIER';
-export const STEALING = 'STEALING';
-export const PHYSICAL_INVENTORY = 'PHYSICAL_INVENTORY';
+export const VM_REACHED_DISCARD_POINT = 'vvm_reached_discard_point';
+export const VACCINE_EXPIRED = 'vaccine_expired';
+export const LOSSES = 'losses';
+export const RETURN_TO_SUPPLIER = 'return';
+export const STEALING = 'stealing';
+export const PHYSICAL_INVENTORY = 'physical_inventory';
+
+// from backend model.
+// class StockCorrectionChoices(models.TextChoices):
+// VVM_REACHED_DISCARD_POINT = "vvm_reached_discard_point", _("VVM reached the discard point")
+// VACCINE_EXPIRED = "vaccine_expired", _("Vaccine expired")
+// LOSSES = "losses", _("Losses")
+// RETURN = "return", _("Return")
+// STEALING = "stealing", _("Stealing")
+// PHYSICAL_INVENTORY = "physical_inventory", _("Physical Inventory")
 
 type IncidentType =
-    | 'VACCINE_EXPIRED'
-    | 'VM_REACHED_DISCARD_POINT'
-    | 'LOSSES'
-    | 'STEALING'
-    | 'PHYSICAL_INVENTORY'
+    | 'vaccine_expired'
+    | 'vvm_reached_discard_point'
+    | 'losses'
+    | 'stealing'
+    | 'physical_inventory'
     | 'RETURN_TO_SUPPLIER';
 
 export const useIncidentOptions = (): DropdownOptions<IncidentType>[] => {

@@ -4,18 +4,10 @@ import { VaccineArrivalReport } from './VaccineArrivalReport';
 import MESSAGES from '../../messages';
 import { MultiFormTab } from '../shared';
 import { VAR } from '../../constants';
+import { emptyArrivalReport } from '../../hooks/utils';
 
 type Props = { className?: string; items?: any[] };
 
-const emptyArrivalReport = {
-    report_date: undefined,
-    po_number: undefined,
-    lot_numbers: undefined,
-    expiration_date: undefined,
-    doses_shipped: undefined,
-    doses_received: undefined,
-    doses_per_vial: 20,
-};
 export const VaccineArrivalReports: FunctionComponent<Props> = ({
     className,
     items = [],

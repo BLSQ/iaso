@@ -38,14 +38,15 @@ export type VRFFormData = Omit<VRF, 'rounds'> & {
 
 export type PreAlert = {
     id?: number;
-    date_reception: string; // date in string form
+    date_pre_alert_reception: string; // date in string form
     po_number: string;
     eta: string;
     lot_number: number;
     expiration_date: string; // date in string form
     doses_shipped: number;
-    doses_recieved: number;
+    doses_received: number;
     doses_per_vial: number;
+    vials_shipped: number;
     to_delete?: boolean;
 };
 
@@ -58,6 +59,8 @@ export type VAR = {
     doses_shipped: number;
     doses_received: number;
     doses_per_vial: number;
+    vials_shipped: number;
+    vials_received: number;
     to_delete?: boolean;
 };
 

@@ -1,6 +1,7 @@
 from .models import *
 from iaso.models import *
 import datetime
+from datetime import date
 
 
 class ETL:
@@ -30,7 +31,7 @@ class ETL:
                 "form",
                 "entity__deleted_at",
             )
-            .order_by("entity_id", "created_at")
+            .order_by("created_at", "entity_id")
         )
         return beneficiaries
 
@@ -61,8 +62,11 @@ class ETL:
         if visit:
             if visit.get("programme") is not None and visit.get("programme") != "NONE":
                 program = visit.get("programme")
-            elif visit.get("program") is not None and visit.get("program") != "NONE":
-                program = visit.get("program")
+            elif visit.get("program") is not None:
+                if visit.get("program") == "NONE":
+                    program = "TSFP"
+                elif visit.get("program") != "NONE":
+                    program = visit.get("program")
             elif visit.get("program_two") is not None and visit.get("program_two") != "NONE":
                 program = visit.get("program_two", None)
             elif visit.get("discharge_program") is not None and visit.get("discharge_program") != "NONE":
@@ -71,6 +75,13 @@ class ETL:
                 program = visit.get("_programme")
             elif visit.get("new_programme") is not None and visit.get("new_programme") != "NONE":
                 program = visit.get("new_programme")
+            elif (
+                visit.get("program") is not None
+                and visit.get("program") == "NONE"
+                and visit.get("physiology_status") is not None
+                and visit.get("physiology_status") != ""
+            ):
+                program = "TSFP"
         return program
 
     def admission_type(self, visit):
@@ -85,6 +96,11 @@ class ETL:
             admission_type = visit.get("admission_type_yellow")
         elif visit.get("_admission_type"):
             admission_type = visit.get("_admission_type")
+        elif (
+            visit.get("_defaulter_admission_type", None) is not None
+            and visit.get("_defaulter_admission_type", None) != ""
+        ):
+            admission_type = visit.get("_defaulter_admission_type")
         admission_type = self.admission_type_converter(admission_type)
         return admission_type
 
@@ -140,16 +156,15 @@ class ETL:
             visit.get("non_respondent__int__") is not None and visit.get("non_respondent__int__") == "1"
         ):
             exit_type = "non_respondent"
-        elif (
-            (visit.get("discharge_note") is not None and visit.get("discharge_note") == "yes")
-            or (visit.get("discharge_note__int__") is not None and visit.get("discharge_note__int__") == "1")
-            or (visit.get("_cured") is not None and visit.get("_cured") == "1")
+        elif (visit.get("discharge_note") is not None and visit.get("discharge_note") == "yes") or (
+            visit.get("discharge_note__int__") is not None and visit.get("discharge_note__int__") == "1"
         ):
             exit_type = "cured"
-        elif (visit.get("_defaulter_admission_type") is not None and visit.get("_defaulter_admission_type") != "") or (
-            visit.get("_defaulter") is not None and visit.get("_defaulter") == "1"
-        ):
+        elif visit.get("_defaulter") is not None and visit.get("_defaulter") == "1":
             exit_type = "defaulter"
+
+        elif visit.get("_cured") is not None and visit.get("_cured") == "1":
+            exit_type = "cured"
         exit_type = self.exit_type_converter(exit_type)
         return exit_type
 
@@ -190,9 +205,12 @@ class ETL:
         return followUp_steps
 
     def journey_Formatter(self, visit, anthropometric_visit_form, followup_forms, current_journey):
-        current_journey["instance_id"] = visit.get("instance_id", None)
         if visit["form_id"] == anthropometric_visit_form:
-            current_journey["date"] = visit.get("date", None)
+            current_journey["instance_id"] = visit.get("instance_id", None)
+            if visit.get("registration_date", None) is not None and visit.get("registration_date", None) != "":
+                current_journey["date"] = visit.get("registration_date", None)
+            elif visit.get("_visit_date", None) is not None and visit.get("_visit_date", None) != "":
+                current_journey["date"] = visit.get("_visit_date", None)
             current_journey["admission_criteria"] = self.admission_criteria(visit)
             current_journey["admission_type"] = self.admission_type(visit)
             current_journey["programme_type"] = self.program_mapper(visit)
@@ -200,8 +218,6 @@ class ETL:
 
         if visit["form_id"] in followup_forms:
             current_journey["exit_type"] = self.exit_type(visit)
-            if current_journey.get("exit_type") == "cured":
-                current_journey["nutrition_programme"] = visit.get("discharge_program")
 
         followup_forms.append(anthropometric_visit_form)
         if visit["form_id"] in followup_forms:
@@ -219,6 +235,7 @@ class ETL:
 
     def map_assistance_step(self, step, given_assistance):
         quantity = 1
+
         if (step.get("net_given") is not None and step.get("net_given") == "yes") or (
             step.get("net_given__bool__") is not None and step.get("net_given__bool__") == "1"
         ):
@@ -288,8 +305,9 @@ class ETL:
 
     def save_steps(self, visits, steps):
         all_steps = []
-        for visit in visits:
-            for step in steps:
+        if len(visits) == len(steps):
+            for index, step in enumerate(steps):
+                visit = visits[index]
                 given_assistance = []
                 for sub_step in step:
                     current_step = None
@@ -320,3 +338,50 @@ class ETL:
             visit.save()
             visit_number += 1
         return saved_visits
+
+    def followup_visits_at_next_visit_date(self, visits, formIds, next_visit__date__, secondNextVisitDate):
+        followup_visits_in_period = []
+
+        for visit in visits:
+            currentVisitDate = ""
+            if visit["form_id"] in formIds:
+                if visit.get("visit_date") is not None:
+                    currentVisitDate = visit.get("visit_date", None)[:10]
+                elif visit.get("date", None) is not None:
+                    currentVisitDate = visit.get("date", None)[:10]
+                elif visit.get("_visit_date", None) is not None:
+                    currentVisitDate = visit.get("_visit_date", None)[:10]
+
+                if next_visit__date__ == currentVisitDate or currentVisitDate == secondNextVisitDate:
+                    followup_visits_in_period.append(visit)
+        return followup_visits_in_period
+
+    def missed_followup_visit(self, visits, formIds, next_visit__date__, secondNextVisitDate, next_visit_days):
+        count_missed_visit = 0
+
+        for visit in visits:
+            currentVisitDate = ""
+            if visit["form_id"] in formIds:
+                if visit.get("visit_date") is not None:
+                    currentVisitDate = visit.get("visit_date", None)[:10]
+                elif visit.get("date", None) is not None:
+                    currentVisitDate = visit.get("date", None)[:10]
+                elif visit.get("_visit_date", None) is not None:
+                    currentVisitDate = visit.get("_visit_date", None)[:10]
+
+                today = date.today().strftime("%Y-%m-%d")
+                if next_visit__date__ == "" and secondNextVisitDate == "":
+                    count_missed_visit = count_missed_visit + 2
+                elif (
+                    next_visit_days == 0
+                    or next_visit__date__ == ""
+                    or secondNextVisitDate == ""
+                    or (
+                        secondNextVisitDate != ""
+                        and today > secondNextVisitDate.strftime("%Y-%m-%d")
+                        and next_visit__date__ != currentVisitDate
+                        and currentVisitDate != secondNextVisitDate
+                    )
+                ):
+                    count_missed_visit = count_missed_visit + 1
+        return count_missed_visit

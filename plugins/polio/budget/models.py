@@ -51,8 +51,6 @@ class BudgetProcess(SoftDeletableModel):
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey("auth.User", on_delete=models.PROTECT)
     updated_at = models.DateTimeField(auto_now=True)
-    # Keep trace of the Team the user was acting on behalf of in case they get remove from it.
-    created_by_team = models.ForeignKey("iaso.Team", on_delete=models.PROTECT, blank=True, null=True)
 
     status = models.CharField(max_length=100, null=True, blank=True)
     current_state_key = models.CharField(max_length=100, default="-")
@@ -119,9 +117,9 @@ class BudgetStep(SoftDeletableModel):
         ordering = ["-updated_at"]
 
     objects = BudgetManager()
-    # TODO: remove the `campaign` field
+    # TODO: remove the `campaign` field.
     campaign = models.ForeignKey("Campaign", on_delete=models.PROTECT, related_name="budget_steps", null=True)
-    # TODO: remove null=True
+    # TODO: remove null=True.
     budget_process = models.ForeignKey(
         "BudgetProcess", on_delete=models.PROTECT, related_name="budget_steps", null=True
     )

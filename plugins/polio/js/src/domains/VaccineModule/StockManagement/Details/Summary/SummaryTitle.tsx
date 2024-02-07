@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { Link } from 'react-router';
 import { IconButton, Box, Tooltip } from '@mui/material';
 import MESSAGES from '../../messages';
 
@@ -11,11 +12,13 @@ type LinkProps = { id: string };
 const LinkToSupplyChain: FunctionComponent<LinkProps> = ({ id }) => {
     const { formatMessage } = useSafeIntl();
     return (
-        <Tooltip title={formatMessage(MESSAGES.seeSupplyChainForCountry)}>
-            <IconButton target="_blank" href={`${route}${id}`} color="primary">
-                <OpenInNewIcon />
-            </IconButton>
-        </Tooltip>
+        <Link target="_blank" to={`${route}${id}`}>
+            <Tooltip title={formatMessage(MESSAGES.seeSupplyChainForCountry)}>
+                <IconButton color="primary">
+                    <OpenInNewIcon />
+                </IconButton>
+            </Tooltip>
+        </Link>
     );
 };
 

@@ -286,9 +286,23 @@ We also have a `useFilterState` hook that handles the state and update methods f
 
 ## Code style
 
-- prefer `type?:string` to `type: string | undefined`
-- prefer `const myVar = otherValue??"placeholder` to `let myVar = "placeholder" if(otherVAlue){myVar = otherValue}`
-- function names should include a verb:
+- Prefer `type?:string` to `type: string | undefined`
+- Prefer `const` to `let`:
+
+
+ ```javascript
+ // BAD
+let myVar = "placeholder" 
+if(otherVAlue) {
+    myVar = otherValue
+}
+
+// GOOD
+const myVar = otherValue ?? "placeholder 
+ 
+ ```
+
+- Function names should include a verb:
 ```javascript
 // BAD
 const username = user => user.firstname + user.lastname
@@ -296,7 +310,48 @@ const username = user => user.firstname + user.lastname
 // GOOD
 const makeUsername = user => user.firstname + user.lastname
 ```
+- Not all functions are hooks. Hooks should either have some sort of internal state or trigger a side-effect:
 
+```typescript
+// BAD, we're just returning a value
+const useMyValue = (value :string) => {
+    return parseInt(value,10)
+}
+
+// GOOD, because of useSafeIntl, the return value will change with user locale
+const useMyValue = (value :IntlMessage) => {
+    const { formatMessage } = useSafeIntl()
+    return formatMessage(value)
+}
+
+//GOOD, the returned object is memoized
+const useMyValue = (value: string) => {
+    return useMemo(() => {
+        const result = {
+            isNumber:false, 
+            value
+            }
+        if (parseFloat(value)){
+            result.isNumber = true
+        }
+        return result
+    },[value])
+}
+
+// GOOD, as side effect will be triggered after the first render
+export const useSkipEffectOnMount = (func:Function, deps:Array<unknown>) => {
+    const didMount = useRef(false);
+
+    useEffect(() => {
+        if (didMount.current) {
+            func();
+        } else {
+            didMount.current = true;
+        }
+    }, deps);
+};
+
+```
 
 
 ## Remarks

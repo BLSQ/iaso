@@ -296,6 +296,7 @@ class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
             "date_vrf_submitted_to_dg",
             "quantities_approved_by_dg_in_doses",
             "comment",
+            "target_population",
         ]
 
         read_only_fields = ["created_at", "updated_at"]

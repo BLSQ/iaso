@@ -634,3 +634,24 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         # Verify that the arrival_report was deleted
         with self.assertRaises(pm.VaccineArrivalReport.DoesNotExist):
             pm.VaccineArrivalReport.objects.get(id=arrival_report.id)
+
+    def test_target_population_field_accessible(self):
+        self.client.force_authenticate(user=self.user_rw_perm)
+
+        # Create a VaccineRequestForm instance
+        request_form = pm.VaccineRequestForm.objects.first()
+
+        # Update the target_population through the API
+        updated_population = 20000
+        response = self.client.patch(
+            BASE_URL + f"{request_form.id}/",
+            data={"target_population": updated_population},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["target_population"], updated_population)
+
+        # Retrieve the updated VaccineRequestForm and verify the target_population field
+        request_form.refresh_from_db()
+        self.assertEqual(request_form.target_population, updated_population)

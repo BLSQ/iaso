@@ -10,6 +10,7 @@ from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
+from django.db.models import Max, Min
 
 from hat.menupermissions import models as permission
 from iaso.api.common import GenericReadWritePerm, ModelViewSet
@@ -412,22 +413,12 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
         return ", ".join([pre_alert.po_number for pre_alert in pre_alerts])
 
     def get_start_date(self, obj):
-        # most recent (first in future or last in past) round's start date
         rounds = obj.rounds.all()
-        future_rounds = [round for round in rounds if round.started_at and round.started_at > timezone.now().date()]
-        if future_rounds:
-            return min(future_rounds, key=lambda round: round.started_at).started_at
-        else:
-            return max(rounds, key=lambda round: round.started_at).started_at
+        return min(rounds, key=lambda round: round.started_at).started_at
 
     def get_end_date(self, obj):
-        # most recent (first in future or last in past) round's start date
         rounds = obj.rounds.all()
-        future_rounds = [round for round in rounds if round.ended_at and round.ended_at > timezone.now().date()]
-        if future_rounds:
-            return min(future_rounds, key=lambda round: round.ended_at).ended_at
-        else:
-            return max(rounds, key=lambda round: round.ended_at).ended_at
+        return max(rounds, key=lambda round: round.ended_at).ended_at
 
     def get_doses_shipped(self, obj):
         return obj.total_doses_shipped()
@@ -471,6 +462,14 @@ class VRFCustomOrderingFilter(filters.BaseFilterBackend):
             queryset = queryset.order_by("vaccine_type")
         elif current_order == "-vaccine_type":
             queryset = queryset.order_by("-vaccine_type")
+        elif current_order == "start_date":
+            queryset = queryset.annotate(start_date=Min("rounds__started_at")).order_by("start_date")
+        elif current_order == "-start_date":
+            queryset = queryset.annotate(start_date=Min("rounds__started_at")).order_by("-start_date")
+        elif current_order == "end_date":
+            queryset = queryset.annotate(end_date=Max("rounds__ended_at")).order_by("end_date")
+        elif current_order == "-end_date":
+            queryset = queryset.annotate(end_date=Max("rounds__ended_at")).order_by("-end_date")
 
         return queryset
 

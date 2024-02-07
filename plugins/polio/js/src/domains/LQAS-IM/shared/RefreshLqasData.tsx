@@ -20,6 +20,7 @@ type Props = {
 };
 
 const LQAS_TASK_ENDPOINT = '/api/polio/tasks/refreshlqas/';
+const LQAS_CONFIG_SLUG = 'lqas-pipeline-config';
 
 const useLastUpdate = (
     lastUpdate: Task<any>,
@@ -65,7 +66,11 @@ export const RefreshLqasData: FunctionComponent<Props> = ({
         useLastUpdate(latestManualRefresh);
     const launchRefresh = useCallback(() => {
         if (countryId) {
-            createRefreshTask({ country_id: countryId });
+            createRefreshTask({
+                config: { country_id: countryId },
+                slug: LQAS_CONFIG_SLUG,
+                id_field: { country_id: countryId },
+            });
         }
     }, [countryId, createRefreshTask]);
 

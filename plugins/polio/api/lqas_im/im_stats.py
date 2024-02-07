@@ -18,7 +18,8 @@ from plugins.polio.api.common import (
     find_lqas_im_campaign,
     get_url_content,
 )
-from plugins.polio.models import Campaign, Config
+from plugins.polio.models import Campaign
+from iaso.models.json_config import Config
 
 
 class IMStatsViewSet(viewsets.ViewSet):

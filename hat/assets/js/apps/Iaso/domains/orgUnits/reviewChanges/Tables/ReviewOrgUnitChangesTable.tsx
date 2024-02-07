@@ -175,11 +175,13 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
     return (
         <>
             {/* This dialog is at this level to keep selected request in state and allow further multiaction/pagination feature */}
-            <ReviewOrgUnitChangesDialog
-                isOpen={Boolean(selectedChangeRequest)}
-                selectedChangeRequest={selectedChangeRequest}
-                closeDialog={handleCloseDialog}
-            />
+            {selectedChangeRequest && (
+                <ReviewOrgUnitChangesDialog
+                    isOpen
+                    selectedChangeRequest={selectedChangeRequest}
+                    closeDialog={handleCloseDialog}
+                />
+            )}
             {/* @ts-ignore */}
             <TableWithDeepLink
                 marginTop={false}

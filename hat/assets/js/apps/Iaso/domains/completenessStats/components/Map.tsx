@@ -28,6 +28,7 @@ import {
 import {
     circleColorMarkerOptions,
     Bounds,
+    getEffectiveThreshold,
     getOrgUnitsBounds,
 } from '../../../utils/map/mapUtils';
 
@@ -47,7 +48,6 @@ import {
     useGetAssignments,
 } from '../../assignments/hooks/requests/useGetAssignments';
 import { ScaleThreshold } from '../../../components/LegendBuilder/types';
-import { useEffectiveThreshold } from '../hooks/useEffectiveThreshold';
 
 const defaultViewport = {
     center: [1, 20],
@@ -92,7 +92,10 @@ export const Map: FunctionComponent<Props> = ({
     router,
     threshold,
 }) => {
-    const effectiveThreshold = useEffectiveThreshold(threshold);
+    const effectiveThreshold = useMemo(
+        () => getEffectiveThreshold(threshold),
+        [threshold],
+    );
     const { planningId } = params;
     const classes: Record<string, string> = useStyles();
     const getLegend = useGetLegend(effectiveThreshold);

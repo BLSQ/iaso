@@ -227,7 +227,6 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                     .map(shape => {
                                         return (
                                             <GeoJSON
-                                                // @ts-ignore TODO: fix this type problem
                                                 onEachFeature={(_, layer) =>
                                                     onEachFeature(
                                                         layer,
@@ -253,7 +252,6 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                     )
                                     .map(shape => (
                                         <GeoJSON
-                                            // @ts-ignore TODO: fix this type problem
                                             onEachFeature={(_, layer) =>
                                                 onEachFeature(layer, shape)
                                             }
@@ -271,7 +269,6 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                             <Pane name="shapes-selected">
                                 {locations.shapes.selected.map(shape => (
                                     <GeoJSON
-                                        // @ts-ignore TODO: fix this type problem
                                         onEachFeature={(_, layer) =>
                                             onEachFeature(layer, shape)
                                         }
@@ -355,7 +352,6 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                                     onParentClick(shape),
                                             }}
                                             data={shape.geoJson}
-                                            // @ts-ignore TODO: fix this type problem
                                             style={{
                                                 color: parentColor,
                                                 fillOpacity: '0',

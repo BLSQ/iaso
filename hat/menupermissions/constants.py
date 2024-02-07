@@ -39,6 +39,8 @@ MODULE_PERMISSIONS = {
         "iaso_polio_budget",
         "iaso_polio_vaccine_supply_chain_read",
         "iaso_polio_vaccine_supply_chain_write",
+        "iaso_polio_vaccine_stock_management_read",
+        "iaso_polio_vaccine_stock_management_write",
         "iaso_polio_notifications",
         "iaso_polio_vaccine_authorizations_read_only",
         "iaso_polio_vaccine_authorizations_admin",

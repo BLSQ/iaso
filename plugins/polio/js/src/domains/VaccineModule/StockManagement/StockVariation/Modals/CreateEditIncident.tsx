@@ -24,6 +24,7 @@ type Props = {
     closeDialog: () => void;
     countryName: string;
     vaccine: Vaccine;
+    vaccineStockId: string;
 };
 
 export const CreateEditIncident: FunctionComponent<Props> = ({
@@ -32,6 +33,7 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
     closeDialog,
     countryName,
     vaccine,
+    vaccineStockId,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: save } = useSaveIncident();
@@ -40,10 +42,12 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
         initialValues: {
             id: incident?.id,
             stock_correction: incident?.stock_correction,
-            incident_reception_rrt: incident?.incident_reception_rrt,
-            date_of_report: incident?.date_of_report,
+            incident_report_received_by_rrt:
+                incident?.incident_report_received_by_rrt,
+            date_of_incident_report: incident?.date_of_incident_report,
             usable_vials: incident?.usable_vials,
             unusable_vials: incident?.unusable_vials,
+            vaccine_stock: vaccineStockId,
         },
         onSubmit: values => save(values),
         validationSchema,
@@ -83,20 +87,25 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                     />
                 </Box>
                 <Field
-                    label={formatMessage(MESSAGES.incident_reception_rrt)}
-                    name="incident_reception_rrt"
+                    label={formatMessage(
+                        MESSAGES.incident_report_received_by_rrt,
+                    )}
+                    name="incident_report_received_by_rrt"
                     component={DateInput}
+                    required
                 />
                 <Field
-                    label={formatMessage(MESSAGES.date_of_report)}
-                    name="date_of_report"
+                    label={formatMessage(MESSAGES.report_date)}
+                    name="date_of_incident_report"
                     component={DateInput}
+                    required
                 />
                 <Box mb={2}>
                     <Field
                         label={formatMessage(MESSAGES.usable_vials)}
                         name="usable_vials"
                         component={NumberInput}
+                        required
                     />
                 </Box>
                 <Box mb={2}>
@@ -104,6 +113,7 @@ export const CreateEditIncident: FunctionComponent<Props> = ({
                         label={formatMessage(MESSAGES.unusable_vials)}
                         name="unusable_vials"
                         component={NumberInput}
+                        required
                     />
                 </Box>
             </ConfirmCancelModal>

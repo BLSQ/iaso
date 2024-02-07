@@ -71,6 +71,7 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                                 component={TextInput}
                                 disabled={markedForDeletion}
                                 shrinkLabel={false}
+                                required
                             />
                         </Grid>
                         {/* TODO make list */}
@@ -109,6 +110,7 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                                 name={`pre_alerts[${index}].doses_shipped`}
                                 component={NumberInput}
                                 disabled={markedForDeletion}
+                                required
                             />
                         </Grid>
                     </Grid>

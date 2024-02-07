@@ -106,7 +106,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
             rrt_destruction_report_reception_date=cls.now - datetime.timedelta(days=1),
             destruction_report_date=cls.now,
             unusable_vials_destroyed=3,
-            lot_number="LOT456",
+            lot_numbers=["LOT456"],
         )
         cls.incident_report = pm.IncidentReport.objects.create(
             vaccine_stock=cls.vaccine_stock,
@@ -179,7 +179,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
         }
 
         # Check that we have 4 entries in the results array
-        self.assertEqual(len(data["results"]), 4)
+        self.assertEqual(len(data["results"]), 5)
 
         # Validate the response data against the schema
         try:
@@ -229,14 +229,14 @@ class VaccineStockManagementAPITestCase(APITestCase):
             self.fail(msg=str(ex))
 
         # Check that the response contains the expected number of unusable vials entries
-        self.assertEqual(len(data["results"]), 2)
+        self.assertEqual(len(data["results"]), 3)
 
-        self.assertEqual(data["results"][0]["vials_out"], 5)
-        self.assertEqual(data["results"][0]["doses_out"], 100)
+        self.assertEqual(data["results"][0]["vials_in"], 5)
+        self.assertEqual(data["results"][0]["doses_in"], 100)
         self.assertEqual(data["results"][0]["type"], "outgoing_stock_movement")
-        self.assertEqual(data["results"][1]["vials_out"], 1)
-        self.assertEqual(data["results"][1]["doses_out"], 20)
-        self.assertEqual(data["results"][1]["type"], "incident_report")
+        self.assertEqual(data["results"][1]["vials_out"], 3)
+        self.assertEqual(data["results"][1]["doses_out"], 60)
+        self.assertEqual(data["results"][1]["type"], "destruction_report")
 
     def test_summary_endpoint(self):
         # Authenticate as a user with read/write permissions

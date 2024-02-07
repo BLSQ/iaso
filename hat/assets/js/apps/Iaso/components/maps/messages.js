@@ -39,7 +39,8 @@ const MESSAGES = defineMessages({
     },
     locationNotInShape: {
         id: 'iaso.map.locationNotInShape',
-        defaultMessage: 'The location is not within the bounds of the shape.',
+        defaultMessage:
+            "The location is not within the bounds of the parent's shape.",
     },
 });
 

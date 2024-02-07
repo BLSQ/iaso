@@ -3,6 +3,8 @@ import React, {
     useMemo,
     useState,
     FunctionComponent,
+    useCallback,
+    useEffect,
 } from 'react';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
@@ -40,6 +42,8 @@ type FieldDefinition = {
         isOld: boolean,
     ) => ReactElement;
 };
+
+type FieldDefinitions = Record<string, FieldDefinition>;
 
 type UseNewFields = {
     newFields: NewOrgUnitField[];
@@ -103,13 +107,8 @@ export const useNewFields = (
 ): UseNewFields => {
     const { formatMessage } = useSafeIntl();
     const [fields, setFields] = useState<NewOrgUnitField[]>([]);
-    useMemo(() => {
-        if (!changeRequest) {
-            setFields([]);
-            return;
-        }
-        type FieldDefinitions = Record<string, FieldDefinition>;
-        const fieldDefinitions: FieldDefinitions = {
+    const fieldDefinitions: FieldDefinitions = useMemo(
+        () => ({
             new_name: {
                 label: formatMessage(MESSAGES.name),
                 order: 1,
@@ -140,10 +139,14 @@ export const useNewFields = (
                 label: formatMessage(MESSAGES.location),
                 order: 5,
                 formatValue: (val, isOld) =>
-                    getLocationValue(
-                        val as NestedLocation,
-                        changeRequest,
-                        isOld,
+                    changeRequest ? (
+                        getLocationValue(
+                            val as NestedLocation,
+                            changeRequest,
+                            isOld,
+                        )
+                    ) : (
+                        <></>
                     ),
             },
             new_opening_date: {
@@ -165,8 +168,11 @@ export const useNewFields = (
                     />
                 ),
             },
-        };
-        const getValues = (
+        }),
+        [changeRequest, formatMessage],
+    );
+    const getValues = useCallback(
+        (
             key: string,
             value: any,
         ): {
@@ -175,26 +181,30 @@ export const useNewFields = (
             isChanged: boolean;
         } => {
             const fieldDef = fieldDefinitions[`new_${key}`];
-            const oldValue: ReactElement = changeRequest[`old_${key}`] ? (
-                fieldDef.formatValue(changeRequest[`old_${key}`], true)
-            ) : (
-                <>{textPlaceholder}</>
-            );
-            let newValue = <>{textPlaceholder}</>;
+            let oldValue: ReactElement = <>{textPlaceholder}</>;
+            let newValue: ReactElement = <>{textPlaceholder}</>;
             const isChanged = Array.isArray(value)
                 ? value.length > 0
                 : Boolean(value);
-            if (isChanged && changeRequest[`new_${key}`]) {
-                newValue = fieldDef.formatValue(
-                    changeRequest[`new_${key}`],
-                    false,
-                );
-            }
-            if (!isChanged && changeRequest[`old_${key}`]) {
-                newValue = fieldDef.formatValue(
-                    changeRequest[`old_${key}`],
-                    false,
-                );
+            if (changeRequest) {
+                if (isChanged && changeRequest[`new_${key}`]) {
+                    newValue = fieldDef.formatValue(
+                        changeRequest[`new_${key}`],
+                        false,
+                    );
+                }
+                if (changeRequest[`old_${key}`]) {
+                    oldValue = fieldDef.formatValue(
+                        changeRequest[`old_${key}`],
+                        true,
+                    );
+                    if (!isChanged) {
+                        newValue = fieldDef.formatValue(
+                            changeRequest[`old_${key}`],
+                            false,
+                        );
+                    }
+                }
             }
 
             return {
@@ -202,7 +212,14 @@ export const useNewFields = (
                 newValue,
                 isChanged,
             };
-        };
+        },
+        [changeRequest, fieldDefinitions],
+    );
+    useEffect(() => {
+        if (!changeRequest) {
+            setFields([]);
+            return;
+        }
         const newFields = orderBy(
             Object.entries(changeRequest)
                 .filter(([key]) => fieldDefinitions[key]) // Filter entries that are defined in fieldDefinitions
@@ -229,7 +246,7 @@ export const useNewFields = (
         );
 
         setFields(newFields);
-    }, [changeRequest, formatMessage]);
+    }, [changeRequest, fieldDefinitions, getValues]);
 
     const setSelected = key => {
         setFields(currentFields =>

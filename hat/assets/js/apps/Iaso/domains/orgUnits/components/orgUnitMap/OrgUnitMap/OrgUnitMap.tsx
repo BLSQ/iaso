@@ -488,7 +488,6 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                 />
                 <MapContainer
                     key={currentOrgUnit.id}
-                    // @ts-ignore TODO: fix this type problem
                     maxZoom={currentTile.maxZoom}
                     style={{ height: '100%' }}
                     center={[0, 0]}
@@ -523,7 +522,6 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                                     data={
                                         state.ancestorWithGeoJson.value.geo_json
                                     }
-                                    // @ts-ignore TODO: fix this type problem
                                     style={() => ({
                                         color: pink['300'],
                                     })}

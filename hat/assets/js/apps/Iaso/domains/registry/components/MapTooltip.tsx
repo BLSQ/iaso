@@ -13,11 +13,7 @@ export const MapToolTip: FunctionComponent<Props> = ({
     pane,
 }) => {
     return (
-        <Tooltip
-            // @ts-ignore TODO: fix this type problem
-            permanent={permanent}
-            pane={pane}
-        >
+        <Tooltip permanent={permanent} pane={pane}>
             {label}
         </Tooltip>
     );

@@ -31,7 +31,7 @@ export const NumberInput: FunctionComponent<Props> = ({
     numberInputOptions = {},
     withMarginTop = false,
     disabled = false,
-    required,
+    required = false,
 }) => {
     const hasError =
         form.errors &&
@@ -52,7 +52,7 @@ export const NumberInput: FunctionComponent<Props> = ({
             errors={hasError ? [get(form.errors, field.name)] : []}
             disabled={disabled}
             required={required}
-            numberInputOptions={numberInputOptions}
+            numberInputOptions={{ min, max, ...numberInputOptions }}
         />
     );
 };

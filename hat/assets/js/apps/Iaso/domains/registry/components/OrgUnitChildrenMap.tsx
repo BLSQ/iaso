@@ -201,7 +201,6 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                         {orgUnit.geo_json && (
                             <Pane name="orgunit-shapes">
                                 <GeoJSON
-                                    // @ts-ignore TODO: fix this type problem
                                     className="secondary"
                                     data={orgUnit.geo_json}
                                     style={() => ({
@@ -246,7 +245,6 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                                 {orgUnitsShapes.map(childrenOrgUnit => (
                                     <GeoJSON
                                         key={childrenOrgUnit.id}
-                                        // @ts-ignore TODO: fix this type problem
                                         style={() => ({
                                             color: subType.color || '',
                                         })}

@@ -8,6 +8,7 @@ from iaso.models import Instance, OrgUnit, OrgUnitChangeRequest, OrgUnitType
 from iaso.utils.serializer.id_or_uuid_field import IdOrUuidRelatedField
 from iaso.utils.serializer.three_dim_point_field import ThreeDimPointField
 from iaso.api.common import TimestampField
+from iaso.utils import geojson_queryset
 
 
 class UserNestedSerializer(serializers.ModelSerializer):
@@ -18,10 +19,18 @@ class UserNestedSerializer(serializers.ModelSerializer):
 
 
 class OrgUnitNestedSerializer(serializers.ModelSerializer):
+    geo_json = serializers.SerializerMethodField()
+
     class Meta:
         model = OrgUnit
-        fields = ["id", "name"]
+        fields = ["id", "name", "geo_json"]
         ref_name = "OrgUnitNestedSerializerForChangeRequest"
+
+    def get_geo_json(self, obj):
+        if obj.simplified_geom:
+            shape_queryset = OrgUnit.objects.filter(id=obj.id)
+            return geojson_queryset(shape_queryset, geometry_field="simplified_geom")
+        return None
 
 
 class OrgUnitTypeNestedSerializer(serializers.ModelSerializer):

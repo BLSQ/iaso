@@ -2,6 +2,7 @@ import { Paginated, UrlParams } from 'bluesquare-components';
 import { NameAndId } from '../../types/utils';
 import { OrgUnitStatus } from '../orgUnits/types/orgUnit';
 import { Shape } from '../orgUnits/types/shapes';
+import { ScaleThreshold } from '../../components/LegendBuilder/types';
 
 export type FormDesc = {
     id: number;
@@ -19,6 +20,7 @@ export type FormStat = {
     itself_target: number; // Does this orgunit need to fill 0 if No, 1 if yes
     itself_has_instances: number; // Does this orgunit has submission? (idem)
     itself_instances_count: number; // Number of submission on this orgunit
+    legend_threshold: ScaleThreshold; // Legend used to display colors per form
 };
 
 /* eslint-disable camelcase */

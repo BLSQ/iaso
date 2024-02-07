@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Paper, Box, useTheme } from '@mui/material';
+import { Paper, Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { scaleThreshold } from '@visx/scale';
 import { ScaleThreshold } from '../../../components/LegendBuilder/types';
@@ -19,11 +19,6 @@ const useStyles = makeStyles(theme => ({
         padding: theme.spacing(2, 2, 1, 2),
     },
 }));
-
-export const defaultScaleThreshold = {
-    domain: [70, 90],
-    range: ['red', 'orange', 'green'],
-};
 
 export const getDirectLegend = scaleThreshold({
     domain: [100],

@@ -1,5 +1,5 @@
 from credentials import *
-from iaso.utils.api_client import IasoClient
+from iaso.utils.iaso_api_client import IasoClient
 from micro_planning import setup_users_teams_micro_planning
 from data_collection import setup_instances
 from pyramid import setup_orgunits
@@ -8,7 +8,11 @@ from registry import setup_registry
 import string
 import random
 
-iaso_client = IasoClient(server_url=SERVER, user_name=ADMIN_USER_NAME, password=ADMIN_PASSWORD)
+iaso_admin_client = IasoClient(server_url=SERVER)
+iaso_admin_client.authenticate_with_username_and_password(
+    username=ADMIN_USER_NAME,
+    password=ADMIN_PASSWORD,
+)
 
 
 def setup_account(account_name):
@@ -21,10 +25,15 @@ def setup_account(account_name):
         "modules": ["DEFAULT", "REGISTRY", "PLANNING", "ENTITIES", "DATA_COLLECTION_FORMS"],
     }
 
-    iaso_client.post("/api/setupaccount/", json=data)
+    iaso_admin_client.post("/api/setupaccount/", json=data)
 
     # make sure we use that connection afterwards so we are connected as the account admin and not the ADMIN_USER_NAME
-    return IasoClient(server_url=SERVER, user_name=account_name, password=account_name)
+    iaso_client = IasoClient(server_url=SERVER)
+    iaso_client.authenticate_with_username_and_password(
+        username=account_name,
+        password=account_name,
+    )
+    return iaso_client
 
 
 seed_instances = True

@@ -3,24 +3,19 @@ import time
 
 
 class IasoClient:
-    def __init__(self, server_url, user_name, password):
+    def __init__(self, server_url):
         self.debug = False
-        self.user_name = user_name
-        self.password = password
         self.server_url = server_url
-        self.headers = self.init_auth_headers()
+        self.headers = {}
 
-    def get_api_url(self):
-        return self.server_url + "/api/"
-
-    def init_auth_headers(self):
-        creds = {"username": self.user_name, "password": self.password}
-
-        r = requests.post(self.get_api_url() + "token/", json=creds)
-
+    def authenticate_with_username_and_password(self, username, password):
+        credentials = {"username": username, "password": password}
+        r = requests.post(self.server_url + "/api/token/", json=credentials)
         token = r.json().get("access")
-        headers = {"Authorization": "Bearer %s" % token}
-        return headers
+        self.authenticate_with_token(token)
+
+    def authenticate_with_token(self, token):
+        self.headers["Authorization"] = "Bearer %s" % token
 
     def post(self, url, json=None, data=None, files=None):
         self.log(url, json)

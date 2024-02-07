@@ -6,7 +6,7 @@ import { IconButton, Box, Tooltip } from '@mui/material';
 import MESSAGES from '../../messages';
 
 const route =
-    '/dashboard/polio/vaccinemodule/supplychain/accountId/1/page/1/campaign__country/';
+    '/polio/vaccinemodule/supplychain/accountId/1/page/1/campaign__country/';
 
 type LinkProps = { id: string };
 const LinkToSupplyChain: FunctionComponent<LinkProps> = ({ id }) => {

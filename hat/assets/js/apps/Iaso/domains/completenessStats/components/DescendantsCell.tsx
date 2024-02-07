@@ -1,11 +1,11 @@
-import React, { ReactElement } from 'react';
+import React, { ReactElement, useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { Tooltip, Box, Theme } from '@mui/material';
 
 import { FormStatRow } from '../types';
 import MESSAGES from '../messages';
 import { LinearProgressWithLabel } from './LinearProgressWithLabel';
-import { useEffectiveThreshold } from '../hooks/useEffectiveThreshold';
+import { getEffectiveThreshold } from '../../../utils/map/mapUtils';
 import { Legend, useGetLegend } from '../../../components/LegendBuilder/Legend';
 import { SxStyles } from '../../../types/general';
 
@@ -28,7 +28,10 @@ const styles: SxStyles = {
 
 export const DescendantsCell = ({ value }: FormStatRow): ReactElement => {
     const { formatMessage } = useSafeIntl();
-    const effectiveThreshold = useEffectiveThreshold(value.legend_threshold);
+    const effectiveThreshold = useMemo(
+        () => getEffectiveThreshold(value.legend_threshold),
+        [value.legend_threshold],
+    );
     const getLegend = useGetLegend(effectiveThreshold);
     const color = getLegend(value.percent);
 

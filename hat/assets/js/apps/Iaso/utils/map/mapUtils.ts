@@ -3,6 +3,9 @@ import Color from 'color';
 import orderBy from 'lodash/orderBy';
 import isNumber from 'lodash/isNumber';
 import { Theme } from '@mui/material/styles';
+import { isEqual } from 'lodash';
+import { ScaleThreshold } from '../../components/LegendBuilder/types';
+
 import { OrgUnit } from '../../domains/orgUnits/types/orgUnit';
 import { OrgunitTypes } from '../../domains/orgUnits/types/orgunitTypes';
 import {
@@ -237,3 +240,12 @@ export const mergeBounds = (
     }
     return bounds;
 };
+
+const defaultScaleThreshold = {
+    domain: [70, 90],
+    range: ['red', 'orange', 'green'],
+};
+export const getEffectiveThreshold = (
+    threshold?: ScaleThreshold,
+): ScaleThreshold =>
+    !threshold || isEqual(threshold, {}) ? defaultScaleThreshold : threshold;

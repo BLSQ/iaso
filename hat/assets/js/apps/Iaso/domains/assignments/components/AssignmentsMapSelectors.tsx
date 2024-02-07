@@ -46,6 +46,7 @@ const styles: SxStyles = {
         },
         '& .MuiFormControl-root .MuiAutocomplete-clearIndicator ': {
             top: -2,
+            visibility: 'visible',
         },
         '& .MuiFormControl-root .MuiAutocomplete-popupIndicator ': {
             top: -2,

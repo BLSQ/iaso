@@ -253,6 +253,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'View',
         id: 'iaso.label.view',
     },
+    countryBlock: {
+        defaultMessage: 'Country block',
+        id: 'iaso.polio.label.countryBlock',
+    },
 });
 
 export default MESSAGES;

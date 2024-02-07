@@ -408,13 +408,13 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
     def get_start_date(self, obj):
         rounds = obj.rounds.all()
         if not rounds:
-            return timezone.now()
+            return timezone.now().date()
         return min(rounds, key=lambda round: round.started_at).started_at
 
     def get_end_date(self, obj):
         rounds = obj.rounds.all()
         if not rounds:
-            return timezone.now()
+            return timezone.now().date()
         return max(rounds, key=lambda round: round.ended_at).ended_at
 
     def get_doses_shipped(self, obj):

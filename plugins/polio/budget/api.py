@@ -1,6 +1,7 @@
 from typing import Type
-from django.db.models import QuerySet, F
+
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.db.models import QuerySet, F
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
@@ -11,20 +12,21 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
+from hat.menupermissions import models as permission
 from iaso.api.common import CSVExportMixin, ModelViewSet, DeletionFilterBackend, HasPermission
+from iaso.api.common import CustomFilterBackend
 from plugins.polio.budget.models import BudgetStep, MailTemplate, get_workflow, BudgetStepFile, BudgetProcess
 from plugins.polio.budget.serializers import (
     BudgetProcessSerializer,
-    ExportBudgetProcessSerializer,
-    TransitionToSerializer,
+    BudgetProcessWriteSerializer,
     BudgetStepSerializer,
+    ExportBudgetProcessSerializer,
+    TransitionOverrideSerializer,
+    TransitionToSerializer,
     UpdateBudgetStepSerializer,
     WorkflowSerializer,
-    TransitionOverrideSerializer,
 )
-from iaso.api.common import CustomFilterBackend
-from plugins.polio.models import Campaign, Round
-from hat.menupermissions import models as permission
+from plugins.polio.models import Campaign
 
 
 @swagger_auto_schema(tags=["budget"])
@@ -35,7 +37,6 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
     You can request specific field by using the `?fields` parameter.
     """
 
-    serializer_class = BudgetProcessSerializer
     exporter_serializer_class = ExportBudgetProcessSerializer
     export_filename = "campaigns_budget_list_{date}.csv"
     permission_classes = [HasPermission(permission.POLIO_BUDGET)]  # type: ignore
@@ -48,6 +49,11 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
         DeletionFilterBackend,
         CustomFilterBackend,
     ]
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return BudgetProcessWriteSerializer
+        return BudgetProcessSerializer
 
     def get_queryset(self) -> QuerySet:
         user = self.request.user

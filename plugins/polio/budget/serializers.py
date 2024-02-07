@@ -17,6 +17,7 @@ from .models import (
     BudgetProcess,
 )
 from .workflow import next_transitions, can_user_transition, Category, effective_teams
+from ..models import Round, Campaign
 
 
 class TransitionSerializer(serializers.Serializer):
@@ -71,6 +72,56 @@ class CategorySerializer(serializers.Serializer):
 
 class TimelineSerializer(serializers.Serializer):
     categories = CategorySerializer(many=True)
+
+
+class BudgetProcessWriteSerializer(serializers.ModelSerializer):
+    """
+    Create a `BudgetProcess` that is linked to one (or more) `Round`(s).
+    """
+
+    created_by = UserSerializer(read_only=True)
+    rounds = serializers.PrimaryKeyRelatedField(queryset=Round.objects.all(), many=True)
+
+    class Meta:
+        model = BudgetProcess
+        fields = [
+            "id",
+            "created_by",
+            "created_at",
+            "rounds",  # This is the only required field.
+        ]
+        extra_kwargs = {
+            "id": {"read_only": True},
+            "created_by": {"read_only": True},
+            "created_at": {"read_only": True},
+        }
+
+    def validate_rounds(self, submitted_rounds: list[Round]) -> list[Round]:
+        request = self.context["request"]
+
+        valid_rounds_ids = Campaign.objects.filter_for_user(request.user).values_list("rounds", flat=True)
+        invalid_rounds = [round for round in submitted_rounds if round.id not in valid_rounds_ids]
+        if invalid_rounds:
+            raise serializers.ValidationError(f"The user does not have the permissions for rounds: {invalid_rounds}.")
+
+        already_linked_rounds = [round for round in submitted_rounds if round.budget_process]
+        if already_linked_rounds:
+            raise serializers.ValidationError(f"A BudgetProcess already exists for rounds: {already_linked_rounds}.")
+
+        return submitted_rounds
+
+    def create(self, validated_data: dict) -> BudgetProcess:
+        request = self.context["request"]
+
+        # Create a new `BudgetProcess`.
+        validated_data["created_by"] = request.user
+        budget_process = super().create(validated_data)
+
+        # Link `Round`(s) to `BudgetProcess`.
+        rounds_ids = [round.id for round in self.validated_data["rounds"]]
+        Round.objects.filter(id__in=rounds_ids).update(budget_process=budget_process)
+
+        return budget_process
 
 
 class BudgetProcessSerializer(DynamicFieldsModelSerializer, serializers.ModelSerializer):

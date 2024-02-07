@@ -114,9 +114,34 @@ class BudgetCampaignViewSetTestCase(APITestCase):
         cls.round_1 = Round.objects.create(number=1, campaign=cls.campaign, budget_process=cls.budget_process_1)
         cls.round_2 = Round.objects.create(number=2, campaign=cls.campaign, budget_process=cls.budget_process_1)
         cls.round_3 = Round.objects.create(number=3, campaign=cls.campaign, budget_process=cls.budget_process_2)
+        cls.round_4 = Round.objects.create(number=4, campaign=cls.campaign, budget_process=None)
         # Budget Steps.
         cls.budget_step_1 = BudgetStep.objects.create(budget_process=cls.budget_process_1, created_by=cls.user)
         cls.budget_step_2 = BudgetStep.objects.create(budget_process=cls.budget_process_1, created_by=cls.user)
+
+    def test_create(self):
+        """
+        POST /api/polio/budget/
+        """
+        self.client.force_login(self.user)
+
+        response = self.client.post(
+            "/api/polio/budget/",
+            data={
+                "rounds": [self.round_4.pk],
+            },
+        )
+        response_data = self.assertJSONResponse(response, 201)
+        new_budget_process = BudgetProcess.objects.get(id=response_data["id"])
+        self.assertEqual(
+            response_data,
+            {
+                "id": new_budget_process.pk,
+                "created_by": {"first_name": "test", "last_name": "test", "username": "test"},
+                "created_at": new_budget_process.created_at.isoformat().replace("+00:00", "Z"),
+                "rounds": [self.round_4.pk],
+            },
+        )
 
     def test_simple_get_list(self):
         """

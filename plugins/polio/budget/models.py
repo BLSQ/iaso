@@ -39,7 +39,13 @@ def model_field_exists(campaign, field):
 
 class BudgetProcess(SoftDeletableModel):
     """
-    The budget for a `Round` of a `Campaign`.
+    A `Budget Process` for a `Round` of a `Campaign`.
+
+    DB relationships:
+
+    +---------------+      +---------------+      +----------+
+    | BudgetStep(s) |  ->  | BudgetProcess |  <-  | Round(s) |
+    +---------------+      +---------------+      +----------+
     """
 
     created_at = models.DateTimeField(auto_now_add=True)

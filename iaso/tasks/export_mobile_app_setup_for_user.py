@@ -46,36 +46,41 @@ def export_mobile_app_setup_for_user(
     task=None,
 ):
     the_task = task
-    user = User.objects.get(id=user_id)
-    project = Project.objects.get(id=project_id)
-
     the_task.report_progress_and_stop_if_killed(
         progress_value=0,
         progress_message=_("Starting"),
     )
+    user = User.objects.get(id=user_id)
+    project = Project.objects.get(id=project_id)
 
+    # setup
+    export_name = f"mobile-app-export-{uuid.uuid4()}"
+    tmp_dir = os.path.join("/tmp", export_name)
     iaso_client = IasoClient(server_url=SERVER)
 
+    app_info = _get_project_app_details(iaso_client, tmp_dir, project.app_id)
+
+    if app_info["needs_authentication"]:
+        _get_access_token_and_user_profile(iaso_client, tmp_dir, user)
+
+    _get_all_resources(iaso_client, tmp_dir, project.app_id, app_info)
+    _compress_and_upload_to_s3(tmp_dir, export_name)
+
+    the_task.report_success_with_result(
+        message=f"Mobile app setup zipfile was created for user {user.username} and project {project.name}.",
+        result_data=f"file:export-files/{export_name}.zip",
+    )
+    return the_task
+
+
+def _get_project_app_details(iaso_client, tmp_dir, app_id):
     logger.info("-- Getting app info (feature flags etc)")
     # Public endpoint, no auth needed
-    app_info = iaso_client.get(f"/api/apps/current/?app_id={project.app_id}")
+    app_info = iaso_client.get(f"/api/apps/current/?app_id={app_id}")
 
     if "app_id" not in app_info:
         # TODO: handle error
         breakpoint()
-
-    tmp_folder_name = f"mobile-app-export-{uuid.uuid4()}"
-    tmp_dir = os.path.join("/tmp", tmp_folder_name)
-    logger.info(f"-- Writing results to {tmp_dir}")
-    if not os.path.exists(tmp_dir):
-        os.makedirs(tmp_dir)
-
-    file_path = os.path.join(tmp_dir, "app.json")
-
-    with open(file_path, "w") as json_file:
-        json.dump(app_info, json_file, indent=4)
-
-    feature_flags = [flag["code"] for flag in app_info["feature_flags"]]
 
     logger.info("-- App summary:")
     logger.info(f"\tName: {app_info['name']}")
@@ -87,25 +92,37 @@ def export_mobile_app_setup_for_user(
         logger.info(f"\t\t{flag['code']}: {flag['name']}")
     logger.info("")
 
-    if app_info["needs_authentication"]:
-        logger.info("-- Authentication required,  app info (feature flags etc)")
-        refresh = RefreshToken.for_user(user)
-        access_token = str(refresh.access_token)
-        iaso_client.authenticate_with_token(access_token)
-        with open(os.path.join(tmp_dir, "access-token.txt"), "w") as f:
-            f.write(access_token)
+    logger.info(f"-- Writing results to {tmp_dir}")
+    if not os.path.exists(tmp_dir):
+        os.makedirs(tmp_dir)
 
-        profile = iaso_client.get("/api/profiles/me/")
-        with open(os.path.join(tmp_dir, "profile.json"), "w") as json_file:
-            json.dump(profile, json_file, indent=4)
+    with open(os.path.join(tmp_dir, "app.json"), "w") as json_file:
+        json.dump(app_info, json_file, indent=4)
 
+    return app_info
+
+
+def _get_access_token_and_user_profile(iaso_client, tmp_dir, user):
+    logger.info("-- Authentication required, getting token and profile settings")
+    refresh = RefreshToken.for_user(user)
+    access_token = str(refresh.access_token)
+    iaso_client.authenticate_with_token(access_token)
+    with open(os.path.join(tmp_dir, "access-token.txt"), "w") as f:
+        f.write(access_token)
+
+    profile = iaso_client.get("/api/profiles/me/")
+    with open(os.path.join(tmp_dir, "profile.json"), "w") as json_file:
+        json.dump(profile, json_file, indent=4)
+
+
+def _get_all_resources(iaso_client, tmp_dir, app_id, app_info):
     api_calls = [
         {
             "path": "/api/orgunittypes/",
             "filename": "orgunittypes.json",
         },
         {
-            "path": f"/api/mobile/groups/?app_id={project.app_id}",
+            "path": f"/api/mobile/groups/?app_id={app_id}",
             "filename": "groups.json",
         },
         {
@@ -127,7 +144,7 @@ def export_mobile_app_setup_for_user(
             "filename": "plannings.json",
         },
         {
-            "path": f"/api/mobile/storage/passwords/?app_id={project.app_id}",
+            "path": f"/api/mobile/storage/passwords/?app_id={app_id}",
             "required_feature_flag": "ENTITY",
             "filename": "storage-passwords.json",
         },
@@ -137,16 +154,17 @@ def export_mobile_app_setup_for_user(
             "filename": "storage-blacklisted.json",
         },
         {
-            "path": f"/api/mobile/entitytypes/?app_id={project.app_id}",
+            "path": f"/api/mobile/entitytypes/?app_id={app_id}",
             "required_feature_flag": "ENTITY",
             "filename": "entitytypes.json",
         },
         {
-            "path": f"/api/mobile/workflows/?app_id={project.app_id}",
+            "path": f"/api/mobile/workflows/?app_id={app_id}",
             "required_feature_flag": "ENTITY",
             "filename": "workflows.json",
         },
     ]
+    feature_flags = [flag["code"] for flag in app_info["feature_flags"]]
 
     for call in api_calls:
         if ("required_feature_flag" not in call) or call["required_feature_flag"] in feature_flags:
@@ -157,7 +175,9 @@ def export_mobile_app_setup_for_user(
         else:
             logger.info(f"-- {call['filename']}: not writing, feature flag missing.")
 
-    zipfile_name = f"{tmp_folder_name}.zip"
+
+def _compress_and_upload_to_s3(tmp_dir, export_name):
+    zipfile_name = f"{export_name}.zip"
     logger.info(f"-- Creating zipfile {zipfile_name}")
     with zipfile.ZipFile(os.path.join(tmp_dir, zipfile_name), "w", zipfile.ZIP_DEFLATED) as zipf:
         # add all files in /tmp directory to the .zip file
@@ -166,10 +186,7 @@ def export_mobile_app_setup_for_user(
             zipf.write(os.path.join(tmp_dir, file), arcname=file)
 
     logger.info("-- Uploading zipfile to S3")
-    upload_file_to_s3(os.path.join(tmp_dir, zipfile_name), object_name=f"export-files/{zipfile_name}")
-
-    the_task.report_success_with_result(
-        message=f"Mobile app setup zipfile was created for user {user.username} and project {project.name}.",
-        result_data=f"file:export-files/{zipfile_name}",
+    upload_file_to_s3(
+        os.path.join(tmp_dir, zipfile_name),
+        object_name=f"export-files/{zipfile_name}",
     )
-    return the_task

@@ -59,3 +59,9 @@ export type PaginationParams = {
     order: string;
     page: string;
 };
+
+declare global {
+    interface Window {
+        STATIC_URL?: string;
+    }
+}

@@ -456,6 +456,10 @@ const routes = [
                 isRequired: false,
                 key: 'rounds__started_at__lte',
             },
+            {
+                isRequired: false,
+                key: 'country_blocks',
+            },
         ],
     },
     {

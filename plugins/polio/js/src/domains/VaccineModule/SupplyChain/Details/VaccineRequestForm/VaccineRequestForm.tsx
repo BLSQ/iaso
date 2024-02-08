@@ -7,9 +7,9 @@ import { MultiSelect } from '../../../../../components/Inputs/MultiSelect';
 import { DateInput } from '../../../../../components/Inputs/DateInput';
 import { NumberInput } from '../../../../../components/Inputs';
 import { TextArea } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/forms/TextArea';
-
 import MESSAGES from '../../messages';
 import {
+    renderRoundTag,
     useCampaignDropDowns,
     useGetCountriesOptions,
 } from '../../hooks/api/vrf';
@@ -134,6 +134,7 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                 isLoading={
                                     isFetchingCountries || isFetchingDropDowns
                                 }
+                                renderTags={renderRoundTag}
                             />
                         </Grid>
                     </Grid>

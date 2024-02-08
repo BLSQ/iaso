@@ -1,7 +1,11 @@
 import { useMemo } from 'react';
 import { Dispatch } from 'redux';
 import { UseMutationResult, UseQueryResult } from 'react-query';
-import { UrlParams } from 'bluesquare-components';
+import {
+    UrlParams,
+    textPlaceholder,
+    renderTagsWithTooltip,
+} from 'bluesquare-components';
 import {
     deleteRequest,
     getRequest,
@@ -28,7 +32,7 @@ import {
     CampaignType,
     useGetCampaigns,
 } from '../../../../Campaigns/hooks/api/useGetCampaigns';
-import { Campaign } from '../../../../../constants/types';
+import { Campaign, Round } from '../../../../../constants/types';
 import { enqueueSnackbar } from '../../../../../../../../../hat/assets/js/apps/Iaso/redux/snackBarsReducer';
 import { apiUrl, defaultVaccineOptions } from '../../constants';
 import {
@@ -39,8 +43,10 @@ import {
 } from '../../types';
 import {
     DropdownOptions,
+    DropdownOptionsWithOriginal,
     Optional,
 } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { dateApiToDateRangePicker } from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/dates';
 
 const defaults = {
     order: 'country',
@@ -138,6 +144,7 @@ export const useCampaignDropDowns = (
                   .map(round => ({
                       label: `Round ${round.number}`,
                       value: `${round.number}`,
+                      original: round,
                   }))
             : [];
         return {
@@ -220,3 +227,18 @@ export const handleVrfPromiseErrors = (
         );
     }
 };
+
+export const getRoundTagTooltipTitle = (
+    option: DropdownOptionsWithOriginal<Round>,
+): string => {
+    const tooltip = `${dateApiToDateRangePicker(
+        option.original.started_at,
+    )} - ${
+        option.original.ended_at
+            ? dateApiToDateRangePicker(option.original.ended_at)
+            : textPlaceholder
+    }`;
+    return tooltip;
+};
+
+export const renderRoundTag = renderTagsWithTooltip(getRoundTagTooltipTitle);

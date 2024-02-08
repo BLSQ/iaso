@@ -21,7 +21,7 @@ def mocked_iaso_client_get(*args, **kwargs):
         }
     else:
         # for all other calls, return some random data
-        return {"foo": "bar"}
+        return {"foo": "bar", "has_next": False}
 
 
 def _get_files_in_zipfile(zip_path):

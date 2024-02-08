@@ -16,6 +16,7 @@ first login on the mobile app.
 import json
 import logging
 import os
+from urllib.parse import urlencode, urlunparse
 import uuid
 import zipfile
 
@@ -25,6 +26,7 @@ from django.utils.translation import gettext as _
 from rest_framework_simplejwt.tokens import RefreshToken  # type: ignore
 
 from iaso.models import Project
+from iaso.tasks.utils.mobile_app_setup_api_calls import API_CALLS
 from iaso.utils.iaso_api_client import IasoClient
 from iaso.utils.s3_client import upload_file_to_s3
 
@@ -33,10 +35,7 @@ logger = logging.getLogger(__name__)
 # TODO:
 # - Make only accessible for super admin
 
-# SERVER = "http://localhost:8081"
-SERVER = "https://512459b08c7f.ngrok.app"
-ADMIN_USER_NAME = ""
-ADMIN_PASSWORD = ""
+SERVER = "https://bram.ngrok.app"
 
 
 @task_decorator(task_name="export_mobile_app_setup")
@@ -59,11 +58,14 @@ def export_mobile_app_setup_for_user(
     iaso_client = IasoClient(server_url=SERVER)
 
     app_info = _get_project_app_details(iaso_client, tmp_dir, project.app_id)
+    feature_flags = [flag["code"] for flag in app_info["feature_flags"]]
 
     if app_info["needs_authentication"]:
         _get_access_token_and_user_profile(iaso_client, tmp_dir, user)
 
-    _get_all_resources(iaso_client, tmp_dir, project.app_id, app_info)
+    for call in API_CALLS:
+        _get_resource(iaso_client, call, tmp_dir, project.app_id, feature_flags)
+
     _compress_and_upload_to_s3(tmp_dir, export_name)
 
     the_task.report_success_with_result(
@@ -97,7 +99,7 @@ def _get_project_app_details(iaso_client, tmp_dir, app_id):
         os.makedirs(tmp_dir)
 
     with open(os.path.join(tmp_dir, "app.json"), "w") as json_file:
-        json.dump(app_info, json_file, indent=4)
+        json.dump(app_info, json_file)
 
     return app_info
 
@@ -112,78 +114,44 @@ def _get_access_token_and_user_profile(iaso_client, tmp_dir, user):
 
     profile = iaso_client.get("/api/profiles/me/")
     with open(os.path.join(tmp_dir, "profile.json"), "w") as json_file:
-        json.dump(profile, json_file, indent=4)
+        json.dump(profile, json_file)
 
 
-def _get_all_resources(iaso_client, tmp_dir, app_id, app_info):
-    api_calls = [
-        {
-            "path": "/api/orgunittypes/",
-            "filename": "orgunittypes.json",
-        },
-        {
-            "path": f"/api/mobile/groups/?app_id={app_id}",
-            "filename": "groups.json",
-        },
-        {
-            "path": "/api/mobile/forms/?fields=id,name,form_id,org_unit_types,period_type,single_per_period,periods_before_allowed,periods_after_allowed,latest_form_version,label_keys,possible_fields,predefined_filters,has_attachments,created_at,updated_at,reference_form_of_org_unit_types",
-            "filename": "forms.json",
-        },
-        {
-            "path": "/api/formversions/?fields=id,version_id,form_id,form_name,full_name,file,mapped,start_period,end_period,mapping_versions,descriptor,created_at,updated_at",
-            "filename": "formversions.json",
-        },
-        {
-            "path": "/api/mobile/orgunits/changes/",
-            "required_feature_flag": "MOBILE_ORG_UNIT_REGISTRY",
-            "filename": "orgunitchanges.json",
-        },
-        {
-            "path": "/api/mobile/plannings/",
-            "required_feature_flag": "PLANNING",
-            "filename": "plannings.json",
-        },
-        {
-            "path": f"/api/mobile/storage/passwords/?app_id={app_id}",
-            "required_feature_flag": "ENTITY",
-            "filename": "storage-passwords.json",
-        },
-        {
-            "path": "/api/mobile/storage/blacklisted/",
-            "required_feature_flag": "ENTITY",
-            "filename": "storage-blacklisted.json",
-        },
-        {
-            "path": f"/api/mobile/entitytypes/?app_id={app_id}",
-            "required_feature_flag": "ENTITY",
-            "filename": "entitytypes.json",
-        },
-        {
-            "path": f"/api/mobile/workflows/?app_id={app_id}",
-            "required_feature_flag": "ENTITY",
-            "filename": "workflows.json",
-        },
-    ]
-    feature_flags = [flag["code"] for flag in app_info["feature_flags"]]
+def _get_resource(iaso_client, call, tmp_dir, app_id, feature_flags):
+    if ("required_feature_flag" in call) and call["required_feature_flag"] not in feature_flags:
+        logger.info(f"-- {call['filename']}: not writing, feature flag missing.")
+        return
 
-    for call in api_calls:
-        if ("required_feature_flag" not in call) or call["required_feature_flag"] in feature_flags:
-            logger.info(f"-- {call['filename']}: GET {call['path']}")
-            result = iaso_client.get(call["path"])
-            with open(os.path.join(tmp_dir, call["filename"]), "w") as json_file:
-                json.dump(result, json_file, indent=4)
-        else:
-            logger.info(f"-- {call['filename']}: not writing, feature flag missing.")
+    page = 1
+    while page == 1 or (isinstance(result, dict) and result.get("has_next", False)):
+        query_params = call.get("query_params", {})
+        query_params = {**query_params, "app_id": app_id, "page": page}
+        if "page_size" in call:
+            query_params["limit"] = call["page_size"]
+        resource_url = urlunparse(("", "", call["path"], "", urlencode(query_params), ""))
 
+        logger.info(f"-- {call['filename']}: GET {resource_url}")
+        result = iaso_client.get(resource_url)
+
+        if isinstance(result, dict) and "count" in result:
+            logger.info(f"\tTotal count: {result['count']}")
+        if isinstance(result, dict) and "pages" in result:
+            logger.info(f"\tTotal pages: {result['pages']}")
+
+        with open(os.path.join(tmp_dir, f"{call['filename']}-{page}.json"), "w") as json_file:
+            json.dump(result, json_file)
+
+        page += 1
 
 def _compress_and_upload_to_s3(tmp_dir, export_name):
     zipfile_name = f"{export_name}.zip"
     logger.info(f"-- Creating zipfile {zipfile_name}")
-    with zipfile.ZipFile(os.path.join(tmp_dir, zipfile_name), "w", zipfile.ZIP_DEFLATED) as zipf:
+    with zipfile.ZipFile(os.path.join(tmp_dir, zipfile_name), "w") as zipf:
         # add all files in /tmp directory to the .zip file
         # the arcname param makes sure we add all files in the root of the .zip
         for file in os.listdir(tmp_dir):
-            zipf.write(os.path.join(tmp_dir, file), arcname=file)
+            if file.endswith(".json") or file.endswith(".txt"):
+                zipf.write(os.path.join(tmp_dir, file), arcname=file)
 
     logger.info("-- Uploading zipfile to S3")
     upload_file_to_s3(

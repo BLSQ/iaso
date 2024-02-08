@@ -29,7 +29,7 @@ class BudgetProcessWriteSerializerTestCase(TestCase):
         cls.request.user = cls.user
         # Campaign.
         cls.campaign = Campaign.objects.create(
-            obr_name="test campaign",
+            obr_name="Test Campaign",
             account=cls.user.iaso_profile.account,
             country=m.OrgUnit.objects.create(name="ANGOLA"),
         )
@@ -73,3 +73,16 @@ class BudgetProcessWriteSerializerTestCase(TestCase):
         serializer = BudgetProcessWriteSerializer(data=data, context={"request": self.request})
         self.assertFalse(serializer.is_valid())
         self.assertIn("A BudgetProcess already exists for rounds:", serializer.errors["rounds"][0])
+
+    def test_validate_raises_for_rounds_of_different_campaigns(self):
+        other_campaign = Campaign.objects.create(
+            obr_name="Test Other Campaign",
+            account=self.user.iaso_profile.account,
+        )
+        other_campaign_round = Round.objects.create(number=1, campaign=other_campaign, budget_process=None)
+        data = {
+            "rounds": [self.round_1.pk, other_campaign_round.pk],
+        }
+        serializer = BudgetProcessWriteSerializer(data=data, context={"request": self.request})
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("Rounds must be from the same campaign:", serializer.errors["rounds"][0])

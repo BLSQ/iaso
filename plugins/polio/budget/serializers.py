@@ -108,6 +108,10 @@ class BudgetProcessWriteSerializer(serializers.ModelSerializer):
         if already_linked_rounds:
             raise serializers.ValidationError(f"A BudgetProcess already exists for rounds: {already_linked_rounds}.")
 
+        rounds_campaigns = {round.campaign_id for round in submitted_rounds}
+        if len(rounds_campaigns) > 1:
+            raise serializers.ValidationError(f"Rounds must be from the same campaign: {submitted_rounds}.")
+
         return submitted_rounds
 
     def create(self, validated_data: dict) -> BudgetProcess:

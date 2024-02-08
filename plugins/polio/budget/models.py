@@ -124,9 +124,8 @@ class BudgetStep(SoftDeletableModel):
         ordering = ["-updated_at"]
 
     objects = BudgetManager()
-    # TODO: remove the `campaign` field.
+    # TODO: remove the `campaign` field after deployment of the "multi round budget".
     campaign = models.ForeignKey("Campaign", on_delete=models.PROTECT, related_name="budget_steps", null=True)
-    # TODO: remove null=True.
     budget_process = models.ForeignKey(
         "BudgetProcess", on_delete=models.PROTECT, related_name="budget_steps", null=True
     )

@@ -111,6 +111,13 @@ class BudgetProcess(SoftDeletableModel):
         blank=True,
     )
 
+    class Meta:
+        verbose_name = "Budget Process"
+        verbose_name_plural = "Budget Processes"
+
+    def __str__(self):
+        return f"{self.pk} - {self.status}"
+
 
 class BudgetStep(SoftDeletableModel):
     class Meta:

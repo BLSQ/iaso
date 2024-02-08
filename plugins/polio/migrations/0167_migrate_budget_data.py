@@ -51,14 +51,9 @@ def migrate_data_forward(apps, schema_editor):
             campaign.budget_steps.update(budget_process=budget_process)
 
 
-def migrate_data_backward(apps, schema_editor):
-    BudgetProcess = apps.get_model("polio", "BudgetProcess")
-    BudgetProcess.objects.all().delete()
-
-
 class Migration(migrations.Migration):
     dependencies = [
         ("polio", "0166_create_budgetprocess"),
     ]
 
-    operations = [migrations.RunPython(migrate_data_forward, migrate_data_backward, elidable=True)]
+    operations = [migrations.RunPython(migrate_data_forward, migrations.RunPython.noop, elidable=True)]

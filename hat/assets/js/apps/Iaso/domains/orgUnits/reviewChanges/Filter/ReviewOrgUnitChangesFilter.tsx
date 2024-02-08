@@ -71,35 +71,9 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     );
 
     return (
-        <>
+        <Box mb={4}>
             <Grid container spacing={2}>
                 <Grid item xs={12} md={4} lg={3}>
-                    <DatesRange
-                        xs={12}
-                        sm={12}
-                        md={12}
-                        lg={12}
-                        keyDateFrom="created_at_after"
-                        keyDateTo="created_at_before"
-                        onChangeDate={handleChange}
-                        dateFrom={filters.created_at_after}
-                        dateTo={filters.created_at_before}
-                        labelFrom={MESSAGES.createdDateFrom}
-                        labelTo={MESSAGES.createdDateTo}
-                    />
-                </Grid>
-                <Grid item xs={12} md={4} lg={3}>
-                    <InputComponent
-                        type="select"
-                        multi
-                        clearable
-                        keyValue="org_unit_type_id"
-                        value={filters.org_unit_type_id}
-                        onChange={handleChange}
-                        loading={isLoadingTypes}
-                        options={orgUnitTypeOptions}
-                        labelString={formatMessage(MESSAGES.orgUnitType)}
-                    />
                     <InputComponent
                         type="select"
                         multi
@@ -110,8 +84,6 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                         options={statusOptions}
                         labelString={formatMessage(MESSAGES.status)}
                     />
-                </Grid>
-                <Grid item xs={12} md={4} lg={3}>
                     <InputComponent
                         type="select"
                         multi
@@ -134,19 +106,7 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                         loading={isLoadingForms}
                         labelString={formatMessage(MESSAGES.forms)}
                     />
-                    <InputComponent
-                        type="select"
-                        multi
-                        clearable
-                        keyValue="userRoles"
-                        value={filters.userRoles}
-                        onChange={handleChange}
-                        loading={isFetchingUserRoles}
-                        options={userRoles}
-                        labelString={formatMessage(MESSAGES.userRoles)}
-                    />
                 </Grid>
-
                 <Grid item xs={12} md={4} lg={3}>
                     <OrgUnitTreeviewModal
                         toggleOnLabelClick={false}
@@ -155,6 +115,17 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                             handleChange('parent_id', orgUnit?.id);
                         }}
                         initialSelection={initialOrgUnit}
+                    />
+                    <InputComponent
+                        type="select"
+                        multi
+                        clearable
+                        keyValue="org_unit_type_id"
+                        value={filters.org_unit_type_id}
+                        onChange={handleChange}
+                        loading={isLoadingTypes}
+                        options={orgUnitTypeOptions}
+                        labelString={formatMessage(MESSAGES.orgUnitType)}
                     />
                     <InputComponent
                         keyValue="withLocation"
@@ -174,6 +145,8 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                         ]}
                         label={MESSAGES.location}
                     />
+                </Grid>
+                <Grid item xs={12} md={4} lg={3}>
                     <Box mt={2}>
                         <AsyncSelect
                             keyValue="userIds"
@@ -185,25 +158,41 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                             fetchOptions={input => getUsersDropDown(input)}
                         />
                     </Box>
+                    <InputComponent
+                        type="select"
+                        multi
+                        clearable
+                        keyValue="userRoles"
+                        value={filters.userRoles}
+                        onChange={handleChange}
+                        loading={isFetchingUserRoles}
+                        options={userRoles}
+                        labelString={formatMessage(MESSAGES.userRoles)}
+                    />
+                </Grid>
+
+                <Grid item xs={12} md={4} lg={3}>
+                    <DatesRange
+                        xs={12}
+                        sm={12}
+                        md={12}
+                        lg={12}
+                        keyDateFrom="created_at_after"
+                        keyDateTo="created_at_before"
+                        onChangeDate={handleChange}
+                        dateFrom={filters.created_at_after}
+                        dateTo={filters.created_at_before}
+                        labelFrom={MESSAGES.createdDateFrom}
+                        labelTo={MESSAGES.createdDateTo}
+                    />
+                    <Box mt={2} display="flex" justifyContent="flex-end">
+                        <FilterButton
+                            disabled={!filtersUpdated}
+                            onFilter={handleSearch}
+                        />
+                    </Box>
                 </Grid>
             </Grid>
-
-            <Box
-                display="flex"
-                justifyContent="flex-start"
-                alignItems="end"
-                flexDirection="column"
-                width="100%"
-                mb={3}
-                mt={-1}
-            >
-                <Box mt={2}>
-                    <FilterButton
-                        disabled={!filtersUpdated}
-                        onFilter={handleSearch}
-                    />
-                </Box>
-            </Box>
-        </>
+        </Box>
     );
 };

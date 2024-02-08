@@ -71,7 +71,7 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
     );
 
     return (
-        <Box mb={4}>
+        <>
             <Grid container spacing={2}>
                 <Grid item xs={12} md={4} lg={3}>
                     <InputComponent
@@ -193,6 +193,6 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                     </Box>
                 </Grid>
             </Grid>
-        </Box>
+        </>
     );
 };

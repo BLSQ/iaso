@@ -25,6 +25,9 @@ API_CALLS = [
         "path": "/api/mobile/orgunits/",
         "filename": "orgunits",
         "page_size": 25000,
+        "query_params": {
+          "shapes": 0
+        },
     },
     {
         "path": "/api/mobile/orgunits/changes/",
@@ -55,6 +58,11 @@ API_CALLS = [
         "path": "/api/mobile/entitytypes/",
         "required_feature_flag": "ENTITY",
         "filename": "entitytypes",
+    },
+    {
+        "path": "/api/mobile/reports/",
+        "required_feature_flag": "REPORTS",
+        "filename": "reports",
     },
     {
         "path": "/api/mobile/workflows/",

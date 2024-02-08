@@ -16,6 +16,7 @@ first login on the mobile app.
 import json
 import logging
 import os
+import requests
 from urllib.parse import urlencode, urlunparse
 import uuid
 import zipfile
@@ -133,6 +134,9 @@ def _get_resource(iaso_client, call, tmp_dir, app_id, feature_flags):
         logger.info(f"-- {call['filename']}: GET {resource_url}")
         result = iaso_client.get(resource_url)
 
+        if call["filename"] == "reports":
+            _download_reports(iaso_client, tmp_dir, result)
+
         if isinstance(result, dict) and "count" in result:
             logger.info(f"\tTotal count: {result['count']}")
         if isinstance(result, dict) and "pages" in result:
@@ -143,6 +147,17 @@ def _get_resource(iaso_client, call, tmp_dir, app_id, feature_flags):
 
         page += 1
 
+def _download_reports(iaso_client, tmp_dir, reports):
+    for report in reports:
+        path = report["url"]
+        filename = path.split("/")[-1]
+
+        logger.info(f"\tGET {path}")
+        response = requests.get(SERVER + path, headers=iaso_client.headers)
+
+        with open(os.path.join(tmp_dir, filename), mode="wb") as f:
+            f.write(response.content)
+
 def _compress_and_upload_to_s3(tmp_dir, export_name):
     zipfile_name = f"{export_name}.zip"
     logger.info(f"-- Creating zipfile {zipfile_name}")
@@ -150,7 +165,7 @@ def _compress_and_upload_to_s3(tmp_dir, export_name):
         # add all files in /tmp directory to the .zip file
         # the arcname param makes sure we add all files in the root of the .zip
         for file in os.listdir(tmp_dir):
-            if file.endswith(".json") or file.endswith(".txt"):
+            if file != zipfile_name:
                 zipf.write(os.path.join(tmp_dir, file), arcname=file)
 
     logger.info("-- Uploading zipfile to S3")

@@ -4,6 +4,12 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { Link } from 'react-router';
 import { IconButton, Box, Tooltip } from '@mui/material';
 import MESSAGES from '../../messages';
+import { useCurrentUser } from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { userHasOneOfPermissions } from '../../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import {
+    POLIO_SUPPLY_CHAIN_READ,
+    POLIO_SUPPLY_CHAIN_WRITE,
+} from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
 
 const route =
     '/polio/vaccinemodule/supplychain/accountId/1/page/1/campaign__country/';
@@ -24,10 +30,15 @@ const LinkToSupplyChain: FunctionComponent<LinkProps> = ({ id }) => {
 
 type Props = { title: string; id?: string };
 export const SummaryTitle: FunctionComponent<Props> = ({ title, id }) => {
+    const currentUser = useCurrentUser();
     return (
         <Box>
             <span>{title}</span>
-            {id && <LinkToSupplyChain id={id} />}
+            {id &&
+                userHasOneOfPermissions(
+                    [POLIO_SUPPLY_CHAIN_READ, POLIO_SUPPLY_CHAIN_WRITE],
+                    currentUser,
+                ) && <LinkToSupplyChain id={id} />}
         </Box>
     );
 };

@@ -33,6 +33,17 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
     user_roles = django_filters.CharFilter(method="filter_user_roles", label=_("User roles IDs (comma-separated)"))
     with_location = django_filters.CharFilter(method="filter_with_location", label=_("With or without location"))
 
+    @staticmethod
+    def parse_comma_separated_numeric_values(value: str, field_name: str) -> list:
+        """
+        Parses a comma-separated string of numeric values and returns a list of integers.
+        Raises a ValidationError if the input is not valid.
+        """
+        ids = [val for val in value.split(",") if val.isnumeric()]
+        if not ids:
+            raise ValidationError({field_name: ["Invalid value."]})
+        return [int(val) for val in ids]
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.form.fields["created_at"].fields[0].input_formats = settings.API_DATE_INPUT_FORMATS
@@ -52,47 +63,24 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
             raise ValidationError({"parent_id": [f"OrgUnit with id {value} does not exist."]})
 
     def filter_org_unit_type_id(self, queryset: QuerySet, _, value: str) -> QuerySet:
-        return queryset.filter(Q(old__org_unit_type_id=value) | Q(new_org_unit_type_id=value))
+        return queryset.filter(Q(old_org_unit_type_id=value) | Q(new_org_unit_type_id=value))
 
     def filter_groups(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
-        """
-        `value` is intended to be a comma-separated list of numeric chars.
-        """
-        groups_ids = [val for val in value.split(",") if val.isnumeric()]
-        if not groups_ids:
-            raise ValidationError({name: ["Invalid value."]})
+        groups_ids = self.parse_comma_separated_numeric_values(value, name)
         return queryset.filter(Q(old_groups__in=groups_ids) | Q(new_groups__in=groups_ids))
 
     def filter_forms(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
-        """
-        `value` is intended to be a comma-separated list of numeric chars.
-        """
-        forms_ids = [val for val in value.split(",") if val.isnumeric()]
-        if not forms_ids:
-            raise ValidationError({name: ["Invalid value."]})
-        forms_ids = [int(form_id) for form_id in forms_ids]
+        forms_ids = self.parse_comma_separated_numeric_values(value, name)
         return queryset.filter(
             Q(old_reference_instances__form_id__in=forms_ids) | Q(new_reference_instances__form_id__in=forms_ids)
         )
 
     def filter_users(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
-        """
-        `value` is intended to be a comma-separated list of numeric chars.
-        """
-        users_ids = [val for val in value.split(",") if val.isnumeric()]
-        if not users_ids:
-            raise ValidationError({name: ["Invalid value."]})
-        users_ids = [int(user_id) for user_id in users_ids]
+        users_ids = self.parse_comma_separated_numeric_values(value, name)
         return queryset.filter(Q(created_by_id__in=users_ids) | Q(updated_by__in=users_ids))
 
     def filter_user_roles(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
-        """
-        `value` is intended to be a comma-separated list of numeric chars.
-        """
-        users_roles_ids = [val for val in value.split(",") if val.isnumeric()]
-        if not users_roles_ids:
-            raise ValidationError({name: ["Invalid value."]})
-        users_roles_ids = [int(users_roles_id) for users_roles_id in users_roles_ids]
+        users_roles_ids = self.parse_comma_separated_numeric_values(value, name)
         return queryset.filter(
             Q(created_by__iaso_profile__user_roles__id__in=users_roles_ids)
             | Q(updated_by__iaso_profile__user_roles__id__in=users_roles_ids)

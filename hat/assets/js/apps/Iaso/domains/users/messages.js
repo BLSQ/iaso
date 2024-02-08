@@ -296,6 +296,33 @@ const MESSAGES = defineMessages({
         id: 'iaso.users.removeTeams',
         defaultMessage: 'Remove from team(s)',
     },
+    exportMobileAppTooltip: {
+        defaultMessage:
+            'Download a zip file to allow setting up the mobile application without Internet connection',
+        id: 'iaso.users.exportMobileAppTooltip',
+    },
+    exportMobileAppModalTitle: {
+        defaultMessage: 'Export zip file for mobile app setup',
+        id: 'iaso.users.exportMobileAppModalTitle',
+    },
+    exportMobileAppModalBody: {
+        defaultMessage:
+            'This will create a zip file containing all data needed to perform the initial set up for the mobile application for user {username}.',
+        id: 'iaso.users.exportMobileAppModalBody',
+    },
+    exportMobileAppModalBodyWarning: {
+        defaultMessage:
+            'Caution: This file will contain sensitive information such as an API access token as well as user profile details.',
+        id: 'iaso.users.exportMobileAppModalBodyWarning',
+    },
+    exportMobileAppModalBodySure: {
+        defaultMessage: 'Are you sure you wish to create the export file?',
+        id: 'iaso.users.exportMobileAppModalBodySure',
+    },
+    exportMobileAppModalBtn: {
+        defaultMessage: 'Generate export file',
+        id: 'iaso.users.exportMobileAppModalBtn',
+    },
 });
 
 export default MESSAGES;

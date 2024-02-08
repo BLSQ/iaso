@@ -11,7 +11,7 @@ API_CALLS = [
         "path": "/api/mobile/forms/",
         "filename": "forms",
         "query_params": {
-            "fields":"id,name,form_id,org_unit_types,period_type,single_per_period,periods_before_allowed,periods_after_allowed,latest_form_version,label_keys,possible_fields,predefined_filters,has_attachments,created_at,updated_at,reference_form_of_org_unit_types"
+            "fields": "id,name,form_id,org_unit_types,period_type,single_per_period,periods_before_allowed,periods_after_allowed,latest_form_version,label_keys,possible_fields,predefined_filters,has_attachments,created_at,updated_at,reference_form_of_org_unit_types"
         },
     },
     {
@@ -25,9 +25,7 @@ API_CALLS = [
         "path": "/api/mobile/orgunits/",
         "filename": "orgunits",
         "page_size": 25000,
-        "query_params": {
-          "shapes": 0
-        },
+        "query_params": {"shapes": 0},
     },
     {
         "path": "/api/mobile/orgunits/changes/",

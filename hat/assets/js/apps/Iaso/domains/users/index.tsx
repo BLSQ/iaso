@@ -29,6 +29,7 @@ import {
 } from './hooks/useGetProfiles';
 import { useDeleteProfile } from './hooks/useDeleteProfile';
 import { useSaveProfile } from './hooks/useSaveProfile';
+import { useCreateExportMobileSetup } from './hooks/useCreateExportMobileSetup';
 
 import { usersTableColumns } from './config';
 import MESSAGES from './messages';
@@ -105,6 +106,9 @@ export const Users: FunctionComponent<Props> = ({ params }) => {
     const { mutateAsync: bulkSave, isLoading: savingProfiles } =
         useBulkSaveProfiles();
 
+    const { mutate: exportMobileSetup, isLoading: exportingMobileSetup } =
+        useCreateExportMobileSetup();
+
     const isLoading =
         fetchingProfiles || deletingProfile || savingProfile || savingProfiles;
 
@@ -166,6 +170,8 @@ export const Users: FunctionComponent<Props> = ({ params }) => {
                         params,
                         currentUser,
                         saveProfile,
+                        exportMobileSetup,
+                        exportingMobileSetup,
                     })}
                     count={data?.count ?? 0}
                     baseUrl={baseUrl}

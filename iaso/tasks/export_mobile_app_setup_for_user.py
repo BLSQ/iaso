@@ -49,6 +49,7 @@ def export_mobile_app_setup_for_user(
     the_task.report_progress_and_stop_if_killed(
         progress_value=0,
         progress_message=_("Starting"),
+        end_value=len(API_CALLS) + 3,
     )
     user = User.objects.get(id=user_id)
     project = Project.objects.get(id=project_id)
@@ -61,11 +62,16 @@ def export_mobile_app_setup_for_user(
     app_info = _get_project_app_details(iaso_client, tmp_dir, project.app_id)
     feature_flags = [flag["code"] for flag in app_info["feature_flags"]]
 
+    the_task.report_progress_and_stop_if_killed(progress_value=1)
+
     if app_info["needs_authentication"]:
         _get_access_token_and_user_profile(iaso_client, tmp_dir, user)
 
+    the_task.report_progress_and_stop_if_killed(progress_value=2)
+
     for call in API_CALLS:
         _get_resource(iaso_client, call, tmp_dir, project.app_id, feature_flags)
+        the_task.report_progress_and_stop_if_killed(progress_value=the_task.progress_value + 1)
 
     _compress_and_upload_to_s3(tmp_dir, export_name)
 
@@ -147,6 +153,7 @@ def _get_resource(iaso_client, call, tmp_dir, app_id, feature_flags):
 
         page += 1
 
+
 def _download_reports(iaso_client, tmp_dir, reports):
     for report in reports:
         path = report["url"]
@@ -157,6 +164,7 @@ def _download_reports(iaso_client, tmp_dir, reports):
 
         with open(os.path.join(tmp_dir, filename), mode="wb") as f:
             f.write(response.content)
+
 
 def _compress_and_upload_to_s3(tmp_dir, export_name):
     zipfile_name = f"{export_name}.zip"

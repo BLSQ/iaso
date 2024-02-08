@@ -132,7 +132,7 @@ export const CompletenessStats: FunctionComponent<Props> = ({
                     style: {
                         backgroundColor: Color(
                             theme.palette.primary.main,
-                        ).lighten(0.9),
+                        ).lighten(2),
                     },
                 };
             }

@@ -28,7 +28,6 @@ export const CustomTileLayer: FunctionComponent<Props> = ({
             <TileLayer
                 ref={ref}
                 url={currentTile.url}
-                // @ts-ignore TODO: fix this type problem
                 attribution={currentTile.attribution || ''}
             />
             <TilesSwitchControl

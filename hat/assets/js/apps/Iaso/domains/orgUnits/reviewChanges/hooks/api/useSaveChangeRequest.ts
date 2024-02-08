@@ -11,7 +11,7 @@ export type UseSaveChangeRequestQueryData = {
 
 export const useSaveChangeRequest = (
     closeDialog: () => void,
-    id?: number,
+    id: number,
 ): UseMutationResult =>
     useSnackMutation({
         mutationFn: (data: UseSaveChangeRequestQueryData) =>

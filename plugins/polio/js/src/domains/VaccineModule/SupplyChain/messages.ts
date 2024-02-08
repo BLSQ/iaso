@@ -302,6 +302,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.error.fieldRequired',
         defaultMessage: 'This field is required',
     },
+    cancelChanges: {
+        id: 'iaso.polio.label.cancelChanges',
+        defaultMessage: 'Cancel changes',
+    },
 });
 
 export default MESSAGES;

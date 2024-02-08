@@ -6,27 +6,27 @@ This endpoint is used to display the completeness stats in the dashboard. Comple
  for that form see FormStatAnnotation
 
 ```json
-              "form_stats": {
-                "form_13": {
-                    "name": "Quality PCA form 2.38.2.1",
-                    "percent": 0,
-                    "descendants": 0,
-                    "itself_target": 0,
-                    "descendants_ok": 0,
-                    "total_instances": 0,
-                    "itself_has_instances": 0,
-                    "itself_instances_count": 0
-                },
-                "form_16": {
-                    "name": "Event Tracker 2.38.2.1",
-                    "percent": 0,
-                    "descendants": 0,
-                    "itself_target": 0,
-                    "descendants_ok": 0,
-                    "total_instances": 0,
-                    "itself_has_instances": 0,
-                    "itself_instances_count": 0
-                }
+    "form_stats": {
+    "form_13": {
+        "name": "Quality PCA form 2.38.2.1",
+        "percent": 0,
+        "descendants": 0,
+        "itself_target": 0,
+        "descendants_ok": 0,
+        "total_instances": 0,
+        "itself_has_instances": 0,
+        "itself_instances_count": 0
+    },
+    "form_16": {
+        "name": "Event Tracker 2.38.2.1",
+        "percent": 0,
+        "descendants": 0,
+        "itself_target": 0,
+        "descendants_ok": 0,
+        "total_instances": 0,
+        "itself_has_instances": 0,
+        "itself_instances_count": 0
+    }
 ```
 """
 from typing import Optional, Any
@@ -473,71 +473,65 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         return Response(serialized)
 
 
-# noinspection SqlResolve
-PIVOT_QUERY = """SELECT JSONB_OBJECT_AGG(
-                   'form_' || "iaso_form"."id", JSON_BUILD_OBJECT(
-                'descendants', COALESCE(count_per_root."descendants", 0),
-                'descendants_ok', COALESCE(count_per_root."descendants_ok", 0),
-                'percent', COALESCE(count_per_root."percent", 0),
-                'total_instances', COALESCE(count_per_root."total_instances", 0),
-                'itself_target', COALESCE(count_per_root."itself_target", 0),
-                'itself_has_instances', COALESCE(count_per_root."itself_has_instances", 0),
-                'itself_instances_count', COALESCE(count_per_root."itself_instances_count", 0),
-                'name', "iaso_form"."name"
-            )
-           )             AS "form_stats",
-       filtered_roots.id AS org_unit_id
-FROM filtered_roots
-         CROSS JOIN filtered_forms AS iaso_form
-         LEFT OUTER JOIN "count_per_root" ON (count_per_root.form_id = iaso_form.id AND
-                                              count_per_root.id = filtered_roots.id)
-GROUP BY filtered_roots.id
-               """
+PIVOT_QUERY = """
+    SELECT JSONB_OBJECT_AGG(
+        'form_' || "iaso_form"."id", JSON_BUILD_OBJECT(
+            'descendants', COALESCE(count_per_root."descendants", 0),
+            'descendants_ok', COALESCE(count_per_root."descendants_ok", 0),
+            'percent', COALESCE(count_per_root."percent", 0),
+            'total_instances', COALESCE(count_per_root."total_instances", 0),
+            'itself_target', COALESCE(count_per_root."itself_target", 0),
+            'itself_has_instances', COALESCE(count_per_root."itself_has_instances", 0),
+            'itself_instances_count', COALESCE(count_per_root."itself_instances_count", 0),
+            'name', "iaso_form"."name",
+            'id', "iaso_form"."id",
+            'legend_threshold', "iaso_form"."legend_threshold"
+        )
+    ) AS "form_stats",
+    filtered_roots.id AS org_unit_id
+    FROM filtered_roots
+    CROSS JOIN filtered_forms AS iaso_form
+    LEFT OUTER JOIN "count_per_root" ON (
+        count_per_root.form_id = iaso_form.id AND
+        count_per_root.id = filtered_roots.id
+    )
+    GROUP BY filtered_roots.id
+"""
 
-# noinspection SqlResolve
-OU_COUNT_QUERY = """ 
-SELECT "iaso_orgunit"."path",
-       "iaso_form"."id"                         AS "form_id",
-       COUNT("iaso_instance"."id") FILTER
-           (WHERE
-               ("iaso_instance"."file" IS NOT NULL AND NOT "iaso_instance"."file" = '') AND
-               NOT ("iaso_instance"."deleted")) AS "instances_count"
-FROM "filtered_forms" AS "iaso_form"
-         JOIN "iaso_form_org_unit_types"
-              ON "iaso_form"."id" = "iaso_form_org_unit_types"."form_id"
-         LEFT OUTER JOIN "filtered_orgunit"  AS "iaso_orgunit"
-                         ON ("iaso_orgunit"."org_unit_type_id" =
-                             "iaso_form_org_unit_types"."orgunittype_id")
-         LEFT OUTER JOIN "filtered_instance" AS iaso_instance
-                         ON ("iaso_orgunit"."id" =
-                             "iaso_instance"."org_unit_id" AND
-                             "iaso_form"."id" =
-                             "iaso_instance"."form_id")
-GROUP BY "iaso_orgunit"."path", "iaso_form"."id"
-                  """
+OU_COUNT_QUERY = """
+    SELECT "iaso_orgunit"."path",
+        "iaso_form"."id" AS "form_id",
+        COUNT("iaso_instance"."id") FILTER (
+            WHERE ("iaso_instance"."file" IS NOT NULL AND NOT "iaso_instance"."file" = '')
+            AND NOT ("iaso_instance"."deleted")
+        ) AS "instances_count"
+    FROM "filtered_forms" AS "iaso_form"
+    JOIN "iaso_form_org_unit_types"
+    ON "iaso_form"."id" = "iaso_form_org_unit_types"."form_id"
+    LEFT OUTER JOIN "filtered_orgunit" AS "iaso_orgunit"
+    ON ("iaso_orgunit"."org_unit_type_id" = "iaso_form_org_unit_types"."orgunittype_id")
+    LEFT OUTER JOIN "filtered_instance" AS "iaso_instance"
+    ON ("iaso_orgunit"."id" = "iaso_instance"."org_unit_id"
+    AND "iaso_form"."id" = "iaso_instance"."form_id")
+    GROUP BY "iaso_orgunit"."path", "iaso_form"."id"
+    """
 
-# noinspection SqlResolve
 COUNT_PER_ROOT_QUERY = """
-SELECT root.id,
-       "ou_count"."form_id" ,
-       COUNT(ou_count.path) FILTER (WHERE "root"."path" != ou_count."path")                         AS "descendants",
-       SUM(ou_count."instances_count")
-       FILTER (WHERE "root"."path" != ou_count."path")                                              AS "total_instances",
-       COUNT(NULLIF(ou_count."instances_count", 0))
-       FILTER (WHERE "root"."path" != ou_count."path")                                              AS "descendants_ok",
-       (COUNT(NULLIF(ou_count."instances_count", 0)) FILTER (WHERE "root"."path" != ou_count."path") ::float *
-        100 /
-        NULLIF(COUNT(ou_count) FILTER (WHERE "root"."path" != ou_count."path"),
-               0))                                                                                          AS "percent",
-
-       COUNT(NULLIF(ou_count."instances_count", 0))
-       FILTER (WHERE "root"."path" = ou_count."path")                                               AS "itself_has_instances",
-       SUM(ou_count."instances_count")
-       FILTER (WHERE "root"."path" = ou_count."path")                                               AS "itself_instances_count",
-       COUNT(ou_count) FILTER (WHERE "root"."path" = ou_count."path")                               AS "itself_target"
-FROM filtered_roots AS root
-         LEFT OUTER JOIN ou_count ON "root"."path" @> ou_count."path"
-GROUP BY root.id, ou_count.form_id"""
+    SELECT root.id,
+        "ou_count"."form_id",
+        COUNT(ou_count.path) FILTER (WHERE "root"."path" != ou_count."path") AS "descendants",
+        SUM(ou_count."instances_count") FILTER (WHERE "root"."path" != ou_count."path") AS "total_instances",
+        COUNT(NULLIF(ou_count."instances_count", 0)) FILTER (WHERE "root"."path" != ou_count."path") AS "descendants_ok",
+        (COUNT(NULLIF(ou_count."instances_count", 0)) FILTER (WHERE "root"."path" != ou_count."path")::float * 100 /
+            NULLIF(COUNT(ou_count) FILTER (WHERE "root"."path" != ou_count."path"), 0)
+        ) AS "percent",
+        COUNT(NULLIF(ou_count."instances_count", 0)) FILTER (WHERE "root"."path" = ou_count."path") AS "itself_has_instances",
+        SUM(ou_count."instances_count") FILTER (WHERE "root"."path" = ou_count."path") AS "itself_instances_count",
+        COUNT(ou_count) FILTER (WHERE "root"."path" = ou_count."path") AS "itself_target"
+    FROM filtered_roots AS root
+    LEFT OUTER JOIN ou_count ON "root"."path" @> ou_count."path"
+    GROUP BY root.id, ou_count.form_id
+    """
 
 
 def get_annotated_queryset(
@@ -558,7 +552,7 @@ def get_annotated_queryset(
 
     # Name are referenced by the other cte query so don't modify them
     root_ou_cte = With(root_qs, name="filtered_roots")
-    form_cte = With(form_qs.only("id", "name"), name="filtered_forms")
+    form_cte = With(form_qs.only("id", "name", "legend_threshold"), name="filtered_forms")
     instances_cte = With(instance_qs.only("id", "org_unit_id", "form_id", "file", "deleted"), name="filtered_instance")
     filter_ou_cte = With(orgunit_qs.only("id", "org_unit_type_id", "path"), name="filtered_orgunit")
 

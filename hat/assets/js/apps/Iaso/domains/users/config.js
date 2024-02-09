@@ -22,7 +22,6 @@ export const usersTableColumns = ({
     currentUser,
     saveProfile,
     exportMobileSetup,
-    exportingMobileSetup,
 }) => [
     {
         Header: formatMessage(MESSAGES.userName),
@@ -79,8 +78,7 @@ export const usersTableColumns = ({
                         selectedUser={settings.row.original}
                         titleMessage={MESSAGES.exportMobileAppModalTitle}
                         params={params}
-                        onConfirm={exportMobileSetup}
-                        exporting={exportingMobileSetup}
+                        onCreateExport={exportMobileSetup}
                     />
                 )}
             </section>

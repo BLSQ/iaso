@@ -16,12 +16,8 @@ class ExportMobileSetupViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated, HasPermission]
 
     def create(self, request):
-        print(request.data)
         user_id = request.data.get("user_id", None)
         project_id = request.data.get("project_id", None)
-
-        user_id = 315
-        project_id = 2
 
         current_user = self.request.user
 

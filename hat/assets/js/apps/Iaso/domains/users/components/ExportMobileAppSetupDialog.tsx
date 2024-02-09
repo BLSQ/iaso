@@ -1,5 +1,10 @@
 /* eslint-disable camelcase */
-import React, { FunctionComponent } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 import { Typography } from '@mui/material';
 import Alert from '@mui/material/Alert';
 import {
@@ -21,33 +26,44 @@ const styles: SxStyles = {
     },
     warning: {
         marginBottom: '1rem',
-    }
+    },
 };
 
 type Props = {
     titleMessage: IntlMessage;
     selectedUser: Profile;
-    onConfirm: MutateFunction<any>;
+    onCreateExport: MutateFunction<any>;
     isOpen: boolean;
     closeDialog: () => void;
-    exporting: boolean;
 };
 // Declaring defaultData here because using initialData={} in the props below will cause and infinite loop
 const ExportMobileAppSetupDialogComponent: FunctionComponent<Props> = ({
     titleMessage,
     isOpen,
     selectedUser,
-    onConfirm,
+    onCreateExport,
     closeDialog,
-    exporting,
 }) => {
-    const connectedUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
 
-    console.log('selectedUser', selectedUser);
-    console.log('connectedUser', connectedUser);
-    console.log('onConfirm', onConfirm);
-    console.log('exporting', exporting);
+    const [isExporting, setIsExporting] = useState(false);
+    const fullUserName = useMemo(
+        () =>
+            [
+                `${selectedUser.first_name} ${selectedUser.last_name}`,
+                selectedUser.user_name,
+                selectedUser.email,
+            ]
+                .filter(item => item?.trim() !== '')
+                .join(' - '),
+        [selectedUser],
+    );
+    const selectedProject = { id: 2 };
+
+    const onConfirm = useCallback(() => {
+        setIsExporting(true);
+        onCreateExport(selectedUser.user_id, selectedProject.id);
+    }, [selectedUser, selectedProject]);
 
     return (
         <ConfirmCancelModal
@@ -58,7 +74,7 @@ const ExportMobileAppSetupDialogComponent: FunctionComponent<Props> = ({
             maxWidth="md"
             open={isOpen}
             closeDialog={() => null}
-            allowConfirm={!exporting}
+            allowConfirm={!isExporting}
             onClose={() => null}
             onCancel={() => {
                 closeDialog();
@@ -70,7 +86,7 @@ const ExportMobileAppSetupDialogComponent: FunctionComponent<Props> = ({
                 {formatMessage(MESSAGES.exportMobileAppModalBody)}
             </Typography>
             <Typography mb={2} sx={styles.username}>
-                {selectedUser.first_name} {selectedUser.last_name} ({selectedUser.user_name})
+                {fullUserName}
             </Typography>
             <Alert severity="warning" sx={styles.warning}>
                 {formatMessage(MESSAGES.exportMobileAppModalBodyWarning)}

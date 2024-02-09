@@ -369,6 +369,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
         calculator = VaccineStockCalculator(vaccine_stock)
 
         summary_data = {
+            "country_id": vaccine_stock.country.id,
             "country_name": vaccine_stock.country.name,
             "vaccine_type": vaccine_stock.vaccine,
             "total_usable_vials": calculator.get_stock_of_usable_vials(),

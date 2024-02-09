@@ -1,6 +1,8 @@
 
 # `PaymentStatus` API
 
+[Mock-ups](https://whimsical.com/supervision-of-the-users-before-payment-9rNU57j31PnFykziJLocbZ)
+
 This API allows the status of payments linked to multiple `OrgUnitChangeRequest` by the same user to be updated and queried.
 
 The Django model that stores "Payment Status" is `PaymentStatus`.
@@ -14,7 +16,7 @@ The `PaymentStatus` model has a `status` field which can have one of the followi
 
 These statuses are stored as a list of tuples in the `STATUS_CHOICES` field.
 
-# Get an `PaymentStatus` list
+# Get a `PaymentStatus` list
 
 ## Permissions
 

@@ -18,7 +18,9 @@ import {
 import { MutateFunction } from 'react-query';
 
 import MESSAGES from '../messages';
+import { useTaskMonitor } from 'Iaso/hooks/taskMonitor';
 import { Profile, useCurrentUser } from '../../../utils/usersUtils';
+import { Task, TaskApiResponse } from 'Iaso/domains/tasks/types';
 
 const styles: SxStyles = {
     username: {
@@ -46,7 +48,8 @@ const ExportMobileAppSetupDialogComponent: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
 
-    const [isExporting, setIsExporting] = useState(false);
+    const [isExporting, setIsExporting] = useState<boolean>(false);
+    const [taskId, setTaskId] = useState<number>();
     const fullUserName = useMemo(
         () =>
             [
@@ -58,12 +61,23 @@ const ExportMobileAppSetupDialogComponent: FunctionComponent<Props> = ({
                 .join(' - '),
         [selectedUser],
     );
-    const selectedProject = { id: 2 };
 
     const onConfirm = useCallback(() => {
         setIsExporting(true);
-        onCreateExport(selectedUser.user_id, selectedProject.id);
-    }, [selectedUser, selectedProject]);
+        onCreateExport({ userId: selectedUser.user_id, projectId: 2 }).then(
+            (task: TaskApiResponse<any>) => {
+                setTaskId(task.task.id);
+            },
+        );
+    }, [selectedUser, onCreateExport]);
+
+    const { data: taskData, isFetching: isFetchingTaskStatus } = useTaskMonitor(
+        {
+            taskId,
+        },
+    );
+    console.log('isFetchingTaskStatus ', isFetchingTaskStatus);
+    console.log('taskData', taskData);
 
     return (
         <ConfirmCancelModal

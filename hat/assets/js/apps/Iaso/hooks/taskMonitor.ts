@@ -1,7 +1,9 @@
-import { UseMutationResult } from 'react-query';
-import { postRequest } from '../libs/Api';
-import { useSnackMutation } from '../libs/apiHooks';
+import { useEffect, useState } from 'react';
+import { UseMutationResult, UseQueryResult, useQueryClient } from 'react-query';
+import { getRequest, postRequest } from '../libs/Api';
+import { useSnackMutation, useSnackQuery } from '../libs/apiHooks';
 
+const TASK_ENDPOINT = '/api/tasks/';
 const TASK_CREATE_ENDPOINT = '/api/tasks/create/';
 
 const createTask = async (request, endpoint, key) => {
@@ -26,5 +28,49 @@ export const useCreateTask = ({
         mutationFn: request => createTask(request, endpoint, key),
         showSucessSnackBar: false,
         invalidateQueryKey: ['get-latest-task-run'],
+    });
+};
+
+const getTasks = (id?: number, endpoint = TASK_ENDPOINT) => {
+    const url = id ? `${endpoint}${id}/` : endpoint;
+    return getRequest(url);
+};
+
+export const useTaskMonitor = ({
+    taskId,
+    endpoint = TASK_ENDPOINT,
+    interval = 1000,
+}: {
+    taskId?: number;
+    endpoint?: string;
+    interval?: number;
+    invalidateQueries: any[];
+}): UseQueryResult<boolean, any> => {
+    const [enabled, setEnabled] = useState<boolean>(true);
+    useEffect(() => {
+        if (taskId) {
+            setEnabled(true);
+        }
+    }, [taskId]);
+    return useSnackQuery({
+        queryKey: ['task-monitor', taskId, endpoint],
+        queryFn: () => getTasks(taskId, endpoint),
+        options: {
+            refetchInterval: interval,
+            enabled: enabled && Boolean(taskId),
+            select: data => {
+                // Return a boolean that is true if task is not over
+                if (!data) return true;
+                // check if task is over
+                if (data.status === 'RUNNING' || data.status === 'QUEUED')
+                    return true;
+                return false;
+            },
+            onSuccess: data => {
+                if (!data) {
+                    setEnabled(false);
+                }
+            },
+        },
     });
 };

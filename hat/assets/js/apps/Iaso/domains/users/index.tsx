@@ -106,8 +106,7 @@ export const Users: FunctionComponent<Props> = ({ params }) => {
     const { mutateAsync: bulkSave, isLoading: savingProfiles } =
         useBulkSaveProfiles();
 
-    const { mutate: exportMobileSetup, isLoading: exportingMobileSetup } =
-        useCreateExportMobileSetup();
+    const { mutateAsync: exportMobileSetup } = useCreateExportMobileSetup();
 
     const isLoading =
         fetchingProfiles || deletingProfile || savingProfile || savingProfiles;
@@ -171,7 +170,6 @@ export const Users: FunctionComponent<Props> = ({ params }) => {
                         currentUser,
                         saveProfile,
                         exportMobileSetup,
-                        exportingMobileSetup,
                     })}
                     count={data?.count ?? 0}
                     baseUrl={baseUrl}

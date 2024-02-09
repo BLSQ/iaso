@@ -6,6 +6,7 @@ import classnames from 'classnames';
 import { PaperTableRow } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/tables/PaperTableRow';
 import WidgetPaper from '../../../../../../../../../hat/assets/js/apps/Iaso/components/papers/WidgetPaperComponent';
 import MESSAGES from '../../messages';
+import { SummaryTitle } from './SummaryTitle';
 
 const useStyles = makeStyles({
     paper: {
@@ -26,7 +27,12 @@ export const VaccineStockManagementSummary: FunctionComponent<Props> = ({
     return (
         <WidgetPaper
             className={classnames(classes.paper)}
-            title={formatMessage(MESSAGES.stockBalance)}
+            title={
+                <SummaryTitle
+                    title={formatMessage(MESSAGES.stockBalance)}
+                    id={data?.country_id}
+                />
+            }
         >
             <Table size="small">
                 <TableBody>

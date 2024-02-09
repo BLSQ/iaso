@@ -21,3 +21,17 @@ def upload_file_to_s3(file_name, object_name=None):
         settings.AWS_STORAGE_BUCKET_NAME,
         object_name,
     )
+
+
+def generate_presigned_url_from_s3(object_name, expires_in=3600):
+    """Generate a signed URL for a file on our S3 bucket
+    :param object_name: S3 object name.
+    :param expires_in: URL expiration time in seconds, 1 hour by default.
+    :return: string with the S3 URL
+    """
+
+    return boto3.client("s3").generate_presigned_url(
+        ClientMethod="get_object",
+        Params={"Bucket": settings.AWS_STORAGE_BUCKET_NAME, "Key": object_name},
+        ExpiresIn=expires_in,
+    )

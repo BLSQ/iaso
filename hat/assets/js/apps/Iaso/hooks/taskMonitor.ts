@@ -40,37 +40,26 @@ export const useTaskMonitor = ({
     taskId,
     endpoint = TASK_ENDPOINT,
     interval = 1000,
+    enabled = false,
 }: {
     taskId?: number;
     endpoint?: string;
     interval?: number;
-    invalidateQueries: any[];
-}): UseQueryResult<boolean, any> => {
-    const [enabled, setEnabled] = useState<boolean>(true);
-    useEffect(() => {
-        if (taskId) {
-            setEnabled(true);
-        }
-    }, [taskId]);
+    enabled?: boolean;
+}): UseQueryResult<any, any> => {
     return useSnackQuery({
         queryKey: ['task-monitor', taskId, endpoint],
         queryFn: () => getTasks(taskId, endpoint),
         options: {
-            refetchInterval: interval,
-            enabled: enabled && Boolean(taskId),
-            select: data => {
-                // Return a boolean that is true if task is not over
-                if (!data) return true;
-                // check if task is over
-                if (data.status === 'RUNNING' || data.status === 'QUEUED')
-                    return true;
-                return false;
+            refetchInterval: data => {
+                // return false if the task is over, this stops the refetch
+                return enabled &&
+                    data &&
+                    ['RUNNING', 'QUEUED'].includes(data.status)
+                    ? interval
+                    : false;
             },
-            onSuccess: data => {
-                if (!data) {
-                    setEnabled(false);
-                }
-            },
+            enabled: enabled,
         },
     });
 };

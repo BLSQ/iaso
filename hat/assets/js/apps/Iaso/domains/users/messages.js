@@ -320,8 +320,16 @@ const MESSAGES = defineMessages({
         id: 'iaso.users.exportMobileAppModalBodySure',
     },
     exportMobileAppModalBtn: {
-        defaultMessage: 'Generate export file',
+        defaultMessage: 'Generate file',
         id: 'iaso.users.exportMobileAppModalBtn',
+    },
+    exportMobileAppModalInProgress: {
+        defaultMessage: 'Generating export file, please wait...',
+        id: 'iaso.users.exportMobileAppModalInProgress',
+    },
+    exportMobileAppModalDownloadBtn: {
+        defaultMessage: 'Download file',
+        id: 'iaso.users.exportMobileAppModalDownloadBtn',
     },
 });
 

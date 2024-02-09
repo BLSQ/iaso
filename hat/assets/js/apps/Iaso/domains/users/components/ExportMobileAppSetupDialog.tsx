@@ -2,11 +2,15 @@
 import React, {
     FunctionComponent,
     useCallback,
+    useEffect,
     useMemo,
     useState,
 } from 'react';
-import { Typography } from '@mui/material';
-import Alert from '@mui/material/Alert';
+import { MutateFunction } from 'react-query';
+import { Alert, Box, Button, Typography } from '@mui/material';
+import LinearProgress, {
+    LinearProgressProps,
+} from '@mui/material/LinearProgress';
 import {
     ConfirmCancelModal,
     IconButton,
@@ -15,12 +19,11 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 
-import { MutateFunction } from 'react-query';
-
 import MESSAGES from '../messages';
 import { useTaskMonitor } from 'Iaso/hooks/taskMonitor';
-import { Profile, useCurrentUser } from '../../../utils/usersUtils';
-import { Task, TaskApiResponse } from 'Iaso/domains/tasks/types';
+import { getRequest } from 'Iaso/libs/Api';
+import { Profile } from '../../../utils/usersUtils';
+import { TaskApiResponse } from 'Iaso/domains/tasks/types';
 
 const styles: SxStyles = {
     username: {
@@ -28,6 +31,14 @@ const styles: SxStyles = {
     },
     warning: {
         marginBottom: '1rem',
+    },
+    progress: {
+        width: '100%',
+    },
+    downloadBtn: {
+        display: 'flex',
+        justifyContent: 'center',
+        marginTop: '1rem',
     },
 };
 
@@ -38,7 +49,25 @@ type Props = {
     isOpen: boolean;
     closeDialog: () => void;
 };
-// Declaring defaultData here because using initialData={} in the props below will cause and infinite loop
+
+function LinearProgressWithLabel(
+    props: LinearProgressProps & { value: number },
+) {
+    return (
+        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ width: '100%', mr: 1 }}>
+                <LinearProgress variant="determinate" {...props} />
+            </Box>
+            <Box sx={{ minWidth: 35 }}>
+                <Typography
+                    variant="body2"
+                    color="text.secondary"
+                >{`${Math.round(props.value)}%`}</Typography>
+            </Box>
+        </Box>
+    );
+}
+
 const ExportMobileAppSetupDialogComponent: FunctionComponent<Props> = ({
     titleMessage,
     isOpen,
@@ -50,6 +79,7 @@ const ExportMobileAppSetupDialogComponent: FunctionComponent<Props> = ({
 
     const [isExporting, setIsExporting] = useState<boolean>(false);
     const [taskId, setTaskId] = useState<number>();
+    const [presignedUrl, setPresignedUrl] = useState<string>();
     const fullUserName = useMemo(
         () =>
             [
@@ -71,13 +101,25 @@ const ExportMobileAppSetupDialogComponent: FunctionComponent<Props> = ({
         );
     }, [selectedUser, onCreateExport]);
 
-    const { data: taskData, isFetching: isFetchingTaskStatus } = useTaskMonitor(
-        {
-            taskId,
-        },
-    );
-    console.log('isFetchingTaskStatus ', isFetchingTaskStatus);
-    console.log('taskData', taskData);
+    const { data: taskData, isSuccess } = useTaskMonitor({
+        taskId,
+        enabled: isExporting,
+    });
+
+    let taskProgressValue;
+    if (isExporting && taskData) {
+        if (['RUNNING', 'QUEUED'].includes(taskData.status)) {
+            taskProgressValue =
+                (taskData.progress_value / taskData.end_value) * 100;
+        } else if (taskData.status === 'SUCCESS') {
+            taskProgressValue = 100;
+            getRequest(`/api/tasks/${taskId}/presigned-url/`).then(resp => {
+                setPresignedUrl(resp.presigned_url);
+            });
+        } else {
+            taskProgressValue = 0;
+        }
+    }
 
     return (
         <ConfirmCancelModal
@@ -102,12 +144,40 @@ const ExportMobileAppSetupDialogComponent: FunctionComponent<Props> = ({
             <Typography mb={2} sx={styles.username}>
                 {fullUserName}
             </Typography>
-            <Alert severity="warning" sx={styles.warning}>
-                {formatMessage(MESSAGES.exportMobileAppModalBodyWarning)}
-            </Alert>
-            <Typography mb={2}>
-                {formatMessage(MESSAGES.exportMobileAppModalBodySure)}
-            </Typography>
+            {isExporting && taskData && taskProgressValue ? (
+                <>
+                    <Typography mb={2}>
+                        {formatMessage(MESSAGES.exportMobileAppModalInProgress)}
+                    </Typography>
+                    <Box sx={styles.progress}>
+                        <LinearProgressWithLabel value={taskProgressValue} />
+                    </Box>
+                    {taskData.status === 'SUCCESS' && presignedUrl && (
+                        <Box sx={styles.downloadBtn}>
+                            <Button
+                                variant="contained"
+                                href={presignedUrl}
+                                target="_blank"
+                            >
+                                {formatMessage(
+                                    MESSAGES.exportMobileAppModalDownloadBtn,
+                                )}
+                            </Button>
+                        </Box>
+                    )}
+                </>
+            ) : (
+                <>
+                    <Alert severity="warning" sx={styles.warning}>
+                        {formatMessage(
+                            MESSAGES.exportMobileAppModalBodyWarning,
+                        )}
+                    </Alert>
+                    <Typography mb={2}>
+                        {formatMessage(MESSAGES.exportMobileAppModalBodySure)}
+                    </Typography>
+                </>
+            )}
         </ConfirmCancelModal>
     );
 };

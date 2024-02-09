@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("polio", "0165_merge_0164_auto_20240201_1207_0164_delete_config"),
     ]

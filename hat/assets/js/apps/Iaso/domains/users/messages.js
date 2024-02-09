@@ -307,7 +307,7 @@ const MESSAGES = defineMessages({
     },
     exportMobileAppModalBody: {
         defaultMessage:
-            'This will create a zip file containing all data needed to perform the initial set up for the mobile application for user {username}.',
+            'This will create a zip file containing all data needed to perform the initial set up for the mobile application for user:',
         id: 'iaso.users.exportMobileAppModalBody',
     },
     exportMobileAppModalBodyWarning: {

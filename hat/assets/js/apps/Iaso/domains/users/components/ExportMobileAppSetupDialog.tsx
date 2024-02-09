@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 import React, { FunctionComponent } from 'react';
 import { Typography } from '@mui/material';
+import Alert from '@mui/material/Alert';
 import {
     ConfirmCancelModal,
     IconButton,
@@ -15,9 +16,12 @@ import MESSAGES from '../messages';
 import { Profile, useCurrentUser } from '../../../utils/usersUtils';
 
 const styles: SxStyles = {
-    warning: {
-        fontWeight: 'bold !important',
+    username: {
+        fontWeight: 'bold',
     },
+    warning: {
+        marginBottom: '1rem',
+    }
 };
 
 type Props = {
@@ -39,7 +43,6 @@ const ExportMobileAppSetupDialogComponent: FunctionComponent<Props> = ({
 }) => {
     const connectedUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
-    // const classes: Record<string, string> = useStyles();
 
     console.log('selectedUser', selectedUser);
     console.log('connectedUser', connectedUser);
@@ -64,13 +67,14 @@ const ExportMobileAppSetupDialogComponent: FunctionComponent<Props> = ({
             dataTestId="export-dialog"
         >
             <Typography mb={2}>
-                {formatMessage(MESSAGES.exportMobileAppModalBody, {
-                    username: selectedUser.user_name,
-                })}
+                {formatMessage(MESSAGES.exportMobileAppModalBody)}
             </Typography>
-            <Typography mb={2} sx={styles.warning}>
+            <Typography mb={2} sx={styles.username}>
+                {selectedUser.first_name} {selectedUser.last_name} ({selectedUser.user_name})
+            </Typography>
+            <Alert severity="warning" sx={styles.warning}>
                 {formatMessage(MESSAGES.exportMobileAppModalBodyWarning)}
-            </Typography>
+            </Alert>
             <Typography mb={2}>
                 {formatMessage(MESSAGES.exportMobileAppModalBodySure)}
             </Typography>

@@ -29,6 +29,7 @@ export type VRF = {
     date_vrf_submitted_to_dg?: string; // date in string form
     quantities_approved_by_dg_in_doses?: number;
     date_dg_approval?: string; // date in string form
+    target_population?: number;
     comments?: string;
 };
 

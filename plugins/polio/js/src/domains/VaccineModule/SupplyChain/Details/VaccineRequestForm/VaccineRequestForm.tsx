@@ -225,6 +225,14 @@ export const VaccineRequestForm: FunctionComponent<Props> = ({
                                 disabled={false}
                             />
                         </Grid>
+                        <Grid item xs={6} md={3}>
+                            <Field
+                                label={formatMessage(MESSAGES.targetPopulation)}
+                                name="vrf.target_population"
+                                component={NumberInput}
+                                disabled={false}
+                            />
+                        </Grid>
                     </Grid>
                     <Grid container item xs={12} spacing={2}>
                         <Grid item xs={6} md={3}>

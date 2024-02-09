@@ -138,6 +138,7 @@ export const Users: FunctionComponent<Props> = ({ params }) => {
                         className={classes.marginTop}
                     >
                         <AddUsersDialog
+                            savingProfile={savingProfile}
                             titleMessage={MESSAGES.create}
                             saveProfile={saveProfile}
                             allowSendEmailInvitation
@@ -166,6 +167,7 @@ export const Users: FunctionComponent<Props> = ({ params }) => {
                         params,
                         currentUser,
                         saveProfile,
+                        savingProfile,
                     })}
                     count={data?.count ?? 0}
                     baseUrl={baseUrl}

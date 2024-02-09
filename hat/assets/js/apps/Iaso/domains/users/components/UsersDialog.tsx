@@ -53,6 +53,7 @@ type Props = {
     allowSendEmailInvitation?: boolean;
     isOpen: boolean;
     closeDialog: () => void;
+    savingProfile: boolean;
 };
 // Declaring defaultData here because using initialData={} in the props below will cause and infinite loop
 const defaultData: InitialUserData = {};
@@ -63,6 +64,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
     saveProfile,
     allowSendEmailInvitation = false,
     closeDialog,
+    savingProfile,
 }) => {
     const connectedUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
@@ -137,6 +139,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                 open={isOpen}
                 closeDialog={() => null}
                 allowConfirm={
+                    !savingProfile &&
                     !(
                         user.user_name.value === '' ||
                         (!user.id?.value && user.password.value === '')

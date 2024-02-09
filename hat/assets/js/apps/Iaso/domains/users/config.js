@@ -20,6 +20,7 @@ export const usersTableColumns = ({
     params,
     currentUser,
     saveProfile,
+    savingProfile,
 }) => [
     {
         Header: formatMessage(MESSAGES.userName),
@@ -59,6 +60,7 @@ export const usersTableColumns = ({
                     titleMessage={MESSAGES.updateUser}
                     params={params}
                     saveProfile={saveProfile}
+                    savingProfile={savingProfile}
                 />
                 {currentUser.id !== settings.row.original.id &&
                     userHasPermission(Permission.USERS_ADMIN, currentUser) && (

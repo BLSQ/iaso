@@ -19,5 +19,10 @@ def debug(request, id):
 
 @staff_member_required
 def delete_beneficiaries_analytics(request):
-    ETL().delete_beneficiaries()
-    return HttpResponse("ok")
+    if request.method == "POST":
+        ETL().delete_beneficiaries()
+        return HttpResponse("ok")
+
+    template = loader.get_template("delete_beneficiaries_analytics.html")
+
+    return HttpResponse(template.render({}, request))

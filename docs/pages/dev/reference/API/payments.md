@@ -98,11 +98,11 @@ These statuses are stored as a list of tuples in the `STATUS_CHOICES` field.
 - User doesn't have the proper permission to access this resource.
 
 
-### 404 - Forbidden
+### 404 - Not found
 
 - payment not fount
 - `user_id`, `user_role_id`, `org_unit_id` not found
-  
+
 
 # Model
 

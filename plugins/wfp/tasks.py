@@ -83,6 +83,5 @@ def etl():
     """Extract beneficiary data from Iaso tables and store them in the format expected by existing tableau dashboards"""
     logger.info("Starting ETL")
     # Before copying beneficiary data, clean all wfp table and reimport data!
-    ETL().delete_beneficiaries()
     Under5().run()
     PBWG().run()

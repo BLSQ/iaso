@@ -241,6 +241,12 @@ class ETL:
         current_step.instance_id = instance_id
         return current_step
 
+    def split_given_medication(self, medication, quantity):
+        given_medication = []
+
+        for medication in medication.split(" "):
+            given_medication.append({"type": medication, "quantity": quantity})
+        return given_medication
 
     def map_assistance_step(self, step, given_assistance):
         quantity = 1
@@ -266,16 +272,16 @@ class ETL:
             given_assistance.append(assistance)
 
         if step.get("medication", None) is not None and step.get("medication", None) != "":
-            assistance = {"type": step.get("medication"), "quantity": quantity}
-            given_assistance.append(assistance)
+            given_medication = self.split_given_medication(step.get("medication"), quantity)
+            given_assistance = given_assistance + given_medication
 
         if step.get("medicine_given_2") is not None:
             assistance = {"type": step.get("medicine_given_2"), "quantity": quantity}
             given_assistance.append(assistance)
 
         if step.get("medication_2", None) is not None and step.get("medication_2", None) != "":
-            assistance = {"type": step.get("medication_2"), "quantity": quantity}
-            given_assistance.append(assistance)
+            given_medication = self.split_given_medication(step.get("medication_2"), quantity)
+            given_assistance = given_assistance + given_medication
 
         if step.get("ration_to_distribute") is not None:
             quantity = 0

@@ -21,7 +21,7 @@ export type VRF = {
     rounds: { number: number }[];
     date_vrf_signature: string; // date in string form
     quantities_ordered_in_doses: number;
-    wastage_rate_used_on_vrf: number;
+    wastage_rate_used_on_vrf: number | string;
     date_vrf_reception: string; // date in string form
     date_vrf_submission_orpg?: string; // date in string form
     quantities_approved_by_orpg_in_doses?: number;
@@ -42,10 +42,8 @@ export type PreAlert = {
     date_pre_alert_reception: string; // date in string form
     po_number: string;
     eta: string;
-    lot_number: number;
-    expiration_date: string; // date in string form
-    doses_shipped: number;
-    doses_received: number;
+    doses_shipped: number | string;
+    doses_received: number | string;
     doses_per_vial: number;
     vials_shipped: number;
     to_delete?: boolean;
@@ -55,10 +53,8 @@ export type VAR = {
     id?: number;
     report_date: string; // date in string form
     po_number: number;
-    lot_number: number;
-    expiration_date: string; // date in string form
-    doses_shipped: number;
-    doses_received: number;
+    doses_shipped: number | string;
+    doses_received: number | string;
     doses_per_vial: number;
     vials_shipped: number;
     vials_received: number;
@@ -66,7 +62,7 @@ export type VAR = {
 };
 
 export type SupplyChainFormData = {
-    vrf: Optional<Partial<VRFFormData>>;
+    vrf: Optional<Partial<VRF>>;
     pre_alerts: Optional<Partial<PreAlert>[]>;
     arrival_reports: Optional<Partial<VAR>[]>;
     activeTab: TabValue;

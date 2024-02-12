@@ -10,8 +10,9 @@ import { DateInput } from '../../../../../components/Inputs/DateInput';
 import { NumberInput, TextInput } from '../../../../../components/Inputs';
 import MESSAGES from '../../messages';
 import { SupplyChainFormData } from '../../types';
-import { usePaperStyles } from '../shared';
+import { grayText, usePaperStyles } from '../shared';
 import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
+import { Optional } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 type Props = {
     index: number;
@@ -24,10 +25,11 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
         useFormikContext<SupplyChainFormData>();
     const { pre_alerts } = values as SupplyChainFormData;
     const markedForDeletion = pre_alerts?.[index].to_delete ?? false;
-
+    const uneditableTextStyling = markedForDeletion ? grayText : undefined;
     const doses_per_vial = pre_alerts?.[index].doses_per_vial ?? 20;
     const current_vials_shipped = Math.ceil(
-        (pre_alerts?.[index].doses_shipped ?? 0) / doses_per_vial,
+        ((pre_alerts?.[index].doses_shipped as Optional<number>) ?? 0) /
+            doses_per_vial,
     );
 
     const onDelete = useCallback(() => {
@@ -43,7 +45,6 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
             }
         }
     }, [index, setFieldTouched, setFieldValue, values?.pre_alerts]);
-
     return (
         <div className={classes.container}>
             <Paper
@@ -62,6 +63,7 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                                 name={`pre_alerts[${index}].date_pre_alert_reception`}
                                 component={DateInput}
                                 disabled={markedForDeletion}
+                                required
                             />
                         </Grid>
                         <Grid item xs={6} md={4}>
@@ -74,18 +76,6 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                                 required
                             />
                         </Grid>
-                        {/* TODO make list */}
-                        <Grid item xs={6} md={4}>
-                            <Field
-                                label={formatMessage(MESSAGES.lot_numbers)}
-                                name={`pre_alerts[${index}].lot_numbers`}
-                                component={TextInput}
-                                shrinkLabel={false}
-                                disabled={markedForDeletion}
-                            />
-                        </Grid>
-                    </Grid>
-                    <Grid container item xs={12} spacing={2}>
                         <Grid item xs={6} md={4}>
                             <Field
                                 label={formatMessage(
@@ -96,14 +86,8 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                                 disabled={markedForDeletion}
                             />
                         </Grid>
-                        <Grid item xs={6} md={4}>
-                            <Field
-                                label={formatMessage(MESSAGES.expirationDate)}
-                                name={`pre_alerts[${index}].expiration_date`}
-                                component={DateInput}
-                                disabled={markedForDeletion}
-                            />
-                        </Grid>
+                    </Grid>
+                    <Grid container item xs={12} spacing={2}>
                         <Grid item xs={6} md={4}>
                             <Field
                                 label={formatMessage(MESSAGES.doses_shipped)}
@@ -113,23 +97,43 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                                 required
                             />
                         </Grid>
-                    </Grid>
-
-                    <Grid container item xs={12} spacing={2}>
-                        <Grid item xs={6} md={4} />
-
-                        <Grid item xs={6} md={4}>
-                            <Typography variant="button">
-                                {`${formatMessage(MESSAGES.doses_per_vial)}:`}{' '}
-                                <NumberCell value={doses_per_vial} />
-                            </Typography>
+                        <Grid
+                            container
+                            item
+                            xs={6}
+                            md={4}
+                            alignContent="center"
+                        >
+                            <Box>
+                                <Typography
+                                    variant="button"
+                                    sx={uneditableTextStyling}
+                                >
+                                    {`${formatMessage(
+                                        MESSAGES.doses_per_vial,
+                                    )}:`}{' '}
+                                    <NumberCell value={doses_per_vial} />
+                                </Typography>
+                            </Box>
                         </Grid>
-
-                        <Grid item xs={6} md={4}>
-                            <Typography variant="button">
-                                {`${formatMessage(MESSAGES.vials_shipped)}:`}{' '}
-                                <NumberCell value={current_vials_shipped} />
-                            </Typography>
+                        <Grid
+                            container
+                            item
+                            xs={6}
+                            md={4}
+                            alignContent="center"
+                        >
+                            <Box>
+                                <Typography
+                                    variant="button"
+                                    sx={uneditableTextStyling}
+                                >
+                                    {`${formatMessage(
+                                        MESSAGES.vials_shipped,
+                                    )}:`}{' '}
+                                    <NumberCell value={current_vials_shipped} />
+                                </Typography>
+                            </Box>
                         </Grid>
                     </Grid>
                 </Grid>

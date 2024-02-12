@@ -253,6 +253,22 @@ const MESSAGES = defineMessages({
         defaultMessage: 'View',
         id: 'iaso.label.view',
     },
+    countryBlock: {
+        defaultMessage: 'Country block',
+        id: 'iaso.polio.label.countryBlock',
+    },
+    seeSupplyChainForCountry: {
+        id: 'iaso.polio.label.seeSupplyChainForCountry',
+        defaultMessage: 'See supply chain for country',
+    },
+    deleteStockWarning: {
+        id: 'iaso.polio.label.deleteStockWarning',
+        defaultMessage: 'Are you sure you want to delete this vaccine stock?',
+    },
+    deleteTextBody: {
+        id: 'iaso.label.deleteText',
+        defaultMessage: 'This operation cannot be undone.',
+    },
 });
 
 export default MESSAGES;

@@ -8,6 +8,14 @@ class ETL:
     def __init__(self, type=None):
         self.type = type
 
+    def delete_beneficiaries(self):
+        beneficiary = Beneficiary.objects.all().delete()
+
+        print("EXISTING BENEFICIARY DELETED", beneficiary[1]["wfp.Beneficiary"])
+        print("EXISTING STEPS DELETED", beneficiary[1]["wfp.Step"])
+        print("EXISTING VISITS DELETED", beneficiary[1]["wfp.Visit"])
+        print("EXISTING JOURNEY DELETED", beneficiary[1]["wfp.Journey"])
+
     def retrieve_entities(self):
         steps_id = ETL().steps_to_exclude()
         updated_at = datetime.date(2023, 7, 10)
@@ -233,6 +241,13 @@ class ETL:
         current_step.instance_id = instance_id
         return current_step
 
+    def split_given_medication(self, medication, quantity):
+        given_medication = []
+
+        for medication in medication.split(" "):
+            given_medication.append({"type": medication, "quantity": quantity})
+        return given_medication
+
     def map_assistance_step(self, step, given_assistance):
         quantity = 1
 
@@ -256,17 +271,17 @@ class ETL:
             assistance = {"type": step.get("medicine_given"), "quantity": quantity}
             given_assistance.append(assistance)
 
-        if step.get("medication") is not None:
-            assistance = {"type": step.get("medication"), "quantity": quantity}
-            given_assistance.append(assistance)
+        if step.get("medication", None) is not None and step.get("medication", None) != "":
+            given_medication = self.split_given_medication(step.get("medication"), quantity)
+            given_assistance = given_assistance + given_medication
 
         if step.get("medicine_given_2") is not None:
             assistance = {"type": step.get("medicine_given_2"), "quantity": quantity}
             given_assistance.append(assistance)
 
-        if step.get("medication_2") is not None:
-            assistance = {"type": step.get("medication_2"), "quantity": quantity}
-            given_assistance.append(assistance)
+        if step.get("medication_2", None) is not None and step.get("medication_2", None) != "":
+            given_medication = self.split_given_medication(step.get("medication_2"), quantity)
+            given_assistance = given_assistance + given_medication
 
         if step.get("ration_to_distribute") is not None:
             quantity = 0
@@ -308,11 +323,9 @@ class ETL:
         if len(visits) == len(steps):
             for index, step in enumerate(steps):
                 visit = visits[index]
-                given_assistance = []
                 for sub_step in step:
                     current_step = None
-                    given_assistance = ETL().map_assistance_step(sub_step, given_assistance)
-
+                    given_assistance = ETL().map_assistance_step(sub_step, [])
                     for assistance in given_assistance:
                         current_step = ETL().assistance_to_step(
                             assistance,

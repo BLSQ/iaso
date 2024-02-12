@@ -2,7 +2,7 @@ from logging import getLogger
 from typing import Any
 
 from django import forms
-from django.db.models import Sum
+from django.db.models import Max, Min, Sum
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
@@ -10,18 +10,11 @@ from rest_framework import filters, serializers, status
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
-from django.db.models import Max, Min
 
 from hat.menupermissions import models as permission
 from iaso.api.common import GenericReadWritePerm, ModelViewSet
 from iaso.models import OrgUnit
-from plugins.polio.models import (
-    Campaign,
-    Round,
-    VaccineArrivalReport,
-    VaccinePreAlert,
-    VaccineRequestForm,
-)
+from plugins.polio.models import Campaign, Round, VaccineArrivalReport, VaccinePreAlert, VaccineRequestForm
 
 logger = getLogger(__name__)
 
@@ -29,14 +22,15 @@ PA_SET = "vaccineprealert_set"
 AR_SET = "vaccinearrivalreport_set"
 
 
-def validate_rounds_and_campaign(data, current_user=None):
+def validate_rounds_and_campaign(data, current_user=None, force_rounds=True, force_campaign=True):
     rounds_data = data.get("rounds")
     campaign_obr_name = data.get("campaign")
+    new_campaign = None
 
-    if not rounds_data:
+    if force_rounds and not rounds_data:
         raise forms.ValidationError("At least one round must be attached.")
 
-    if not campaign_obr_name:
+    if force_campaign and not campaign_obr_name:
         raise forms.ValidationError("A campaign must be attached.")
 
     try:
@@ -46,7 +40,8 @@ def validate_rounds_and_campaign(data, current_user=None):
             new_campaign = Campaign.objects.get(obr_name=campaign_obr_name)
             data["campaign"] = new_campaign
     except Campaign.DoesNotExist:
-        raise forms.ValidationError(f"No campaign with obr_name {campaign_obr_name} found.")
+        if force_campaign:
+            raise forms.ValidationError(f"No campaign with obr_name {campaign_obr_name} found.")
 
     if isinstance(rounds_data, list):
         new_rounds = []
@@ -71,9 +66,10 @@ def validate_rounds_and_campaign(data, current_user=None):
                 new_rounds.append(round)
             data["rounds"] = new_rounds
         except AttributeError:
-            raise forms.ValidationError("Couldn't find any rounds.")
+            if force_rounds:
+                raise forms.ValidationError("Couldn't find any rounds.")
 
-    if current_user:
+    if current_user and new_campaign:
         if not current_user.iaso_profile.account == new_campaign.account:
             raise forms.ValidationError("The selected account must be the same as the user's account.")
 
@@ -110,8 +106,6 @@ class NestedVaccinePreAlertSerializerForPost(BasePostPatchSerializer):
             "date_pre_alert_reception",
             "po_number",
             "estimated_arrival_time",
-            "lot_numbers",
-            "expiration_date",
             "doses_shipped",
             "doses_per_vial",
             "vials_shipped",
@@ -122,9 +116,7 @@ class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerFor
     id = serializers.IntegerField(required=True, read_only=False)
     date_pre_alert_reception = serializers.DateField(required=False)
     po_number = serializers.CharField(required=False)
-    lot_numbers = serializers.ListField(child=serializers.CharField(), required=False)
     estimated_arrival_time = serializers.DateField(required=False)
-    expiration_date = serializers.DateField(required=False)
     doses_shipped = serializers.IntegerField(required=False)
     doses_per_vial = serializers.IntegerField(required=False, read_only=True)
     vials_shipped = serializers.IntegerField(required=False, read_only=True)
@@ -149,8 +141,6 @@ class NestedVaccineArrivalReportSerializerForPost(BasePostPatchSerializer):
             "doses_per_vial",
             "vials_received",
             "vials_shipped",
-            "lot_numbers",
-            "expiration_date",
             "doses_shipped",
             "po_number",
         ]
@@ -159,9 +149,7 @@ class NestedVaccineArrivalReportSerializerForPost(BasePostPatchSerializer):
 class NestedVaccineArrivalReportSerializerForPatch(NestedVaccineArrivalReportSerializerForPost):
     id = serializers.IntegerField(required=True, read_only=False)
     arrival_report_date = serializers.DateField(required=False)
-    expiration_date = serializers.DateField(required=False)
     po_number = serializers.CharField(required=False)
-    lot_numbers = serializers.ListField(child=serializers.CharField(), required=False)
     doses_received = serializers.IntegerField(required=False)
     doses_shipped = serializers.IntegerField(required=False)
     doses_per_vial = serializers.IntegerField(required=False, read_only=True)
@@ -297,12 +285,10 @@ class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
             "date_vrf_submitted_to_dg",
             "quantities_approved_by_dg_in_doses",
             "comment",
+            "target_population",
         ]
 
         read_only_fields = ["created_at", "updated_at"]
-
-    def validate(self, data):
-        return validate_rounds_and_campaign(data, self.context["request"].user)
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
@@ -312,6 +298,8 @@ class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
         return ret
 
     def create(self, validated_data):
+        validate_rounds_and_campaign(validated_data, self.context["request"].user)
+
         rounds = validated_data.pop("rounds")
         campaign = validated_data.pop("campaign")
         request_form = VaccineRequestForm.objects.create(**validated_data, campaign=campaign)
@@ -319,6 +307,9 @@ class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
         return request_form
 
     def update(self, instance, validated_data):
+        validate_rounds_and_campaign(
+            validated_data, self.context["request"].user, force_rounds=False, force_campaign=False
+        )
         rounds = validated_data.pop("rounds", None)
         campaign = validated_data.pop("campaign", None)
         modified = False
@@ -373,6 +364,7 @@ class VaccineRequestFormDetailSerializer(serializers.ModelSerializer):
             "country_name",
             "country_id",
             "obr_name",
+            "target_population",
         ]
 
 
@@ -414,10 +406,14 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
 
     def get_start_date(self, obj):
         rounds = obj.rounds.all()
+        if not rounds:
+            return timezone.now().date()
         return min(rounds, key=lambda round: round.started_at).started_at
 
     def get_end_date(self, obj):
         rounds = obj.rounds.all()
+        if not rounds:
+            return timezone.now().date()
         return max(rounds, key=lambda round: round.ended_at).ended_at
 
     def get_doses_shipped(self, obj):
@@ -462,16 +458,38 @@ class VRFCustomOrderingFilter(filters.BaseFilterBackend):
             queryset = queryset.order_by("vaccine_type")
         elif current_order == "-vaccine_type":
             queryset = queryset.order_by("-vaccine_type")
+
+        # handle the case where there are no rounds
         elif current_order == "start_date":
-            queryset = queryset.annotate(start_date=Min("rounds__started_at")).order_by("start_date")
+            queryset = queryset.annotate(
+                start_date=Coalesce(Min("rounds__started_at"), timezone.now().date())
+            ).order_by("start_date")
         elif current_order == "-start_date":
-            queryset = queryset.annotate(start_date=Min("rounds__started_at")).order_by("-start_date")
+            queryset = queryset.annotate(
+                start_date=Coalesce(Min("rounds__started_at"), timezone.now().date())
+            ).order_by("-start_date")
         elif current_order == "end_date":
-            queryset = queryset.annotate(end_date=Max("rounds__ended_at")).order_by("end_date")
+            queryset = queryset.annotate(end_date=Coalesce(Max("rounds__ended_at"), timezone.now().date())).order_by(
+                "end_date"
+            )
         elif current_order == "-end_date":
-            queryset = queryset.annotate(end_date=Max("rounds__ended_at")).order_by("-end_date")
+            queryset = queryset.annotate(end_date=Coalesce(Max("rounds__ended_at"), timezone.now().date())).order_by(
+                "-end_date"
+            )
 
         return queryset
+
+
+class VRFCustomFilter(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        country_blocks = request.GET.get("country_blocks", None)
+        if country_blocks is None:
+            return queryset
+        else:
+            try:
+                return queryset.filter(campaign__country__groups__in=country_blocks.split(","))
+            except:
+                return queryset
 
 
 # Otherwise the /api/ page generated by DRF is very slow
@@ -532,7 +550,13 @@ class VaccineRequestFormViewSet(ModelViewSet):
     permission_classes = [VaccineSupplyChainReadWritePerm]
     http_method_names = ["get", "post", "delete", "patch"]
 
-    filter_backends = [SearchFilter, NoFormDjangoFilterBackend, VRFCustomOrderingFilter, filters.OrderingFilter]
+    filter_backends = [
+        SearchFilter,
+        NoFormDjangoFilterBackend,
+        VRFCustomOrderingFilter,
+        VRFCustomFilter,
+        filters.OrderingFilter,
+    ]
     filterset_fields = {
         "campaign__obr_name": ["exact"],
         "campaign__country": ["exact"],

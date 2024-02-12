@@ -1,12 +1,18 @@
 import React, { useMemo } from 'react';
 import { Column, IconButton, useSafeIntl } from 'bluesquare-components';
+import { POLIO_VACCINE_STOCK_WRITE } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
+import { userHasPermission } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 import { STOCK_MANAGEMENT_DETAILS } from '../../../../constants/routes';
 import MESSAGES from '../messages';
 import { NumberCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
+import { useDeleteVaccineStock } from '../hooks/api';
+import { DeleteModal } from '../../../../../../../../hat/assets/js/apps/Iaso/components/DeleteRestoreModals/DeleteModal';
+import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 
 export const useVaccineStockManagementTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
-    // const { mutateAsync: deleteVrf } = useDeleteVrf();
+    const { mutateAsync: deleteStock } = useDeleteVaccineStock();
+    const currentUser = useCurrentUser();
     return useMemo(() => {
         return [
             {
@@ -75,13 +81,29 @@ export const useVaccineStockManagementTableColumns = (): Column[] => {
                             <IconButton
                                 icon="remove-red-eye"
                                 tooltipMessage={MESSAGES.view}
-                                // disabled
                                 url={`${STOCK_MANAGEMENT_DETAILS}/id/${settings.row.original.id}`}
                             />
+                            {userHasPermission(
+                                POLIO_VACCINE_STOCK_WRITE,
+                                currentUser,
+                            ) && (
+                                <DeleteModal
+                                    // Without the key prop, the modal won't close if we're not deleting the last item of the table
+                                    key={settings.row.original.id}
+                                    type="icon"
+                                    onConfirm={() =>
+                                        deleteStock(settings.row.original.id)
+                                    }
+                                    titleMessage={MESSAGES.deleteStockWarning}
+                                    iconProps={{}}
+                                >
+                                    {formatMessage(MESSAGES.deleteTextBody)}
+                                </DeleteModal>
+                            )}
                         </>
                     );
                 },
             },
         ];
-    }, [formatMessage]);
+    }, [deleteStock, formatMessage, currentUser]);
 };

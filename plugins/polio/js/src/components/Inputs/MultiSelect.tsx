@@ -14,6 +14,8 @@ type Props = {
     disabled?: boolean;
     // eslint-disable-next-line no-unused-vars
     onChange?: (_keyValue: string, value: any) => void;
+    // eslint-disable-next-line no-unused-vars
+    renderTags?: (tagValue: Array<any>, getTagProps: any) => Array<any>;
 };
 
 export const MultiSelect: FunctionComponent<Props> = ({
@@ -22,6 +24,7 @@ export const MultiSelect: FunctionComponent<Props> = ({
     field,
     form,
     onChange,
+    renderTags,
     disabled = false,
     clearable = true,
     withMarginTop = false,
@@ -43,6 +46,7 @@ export const MultiSelect: FunctionComponent<Props> = ({
             clearable={clearable}
             required={required}
             labelString={label}
+            renderTags={renderTags}
             onChange={(keyValue, value) => {
                 if (onChange) {
                     onChange(keyValue, value);

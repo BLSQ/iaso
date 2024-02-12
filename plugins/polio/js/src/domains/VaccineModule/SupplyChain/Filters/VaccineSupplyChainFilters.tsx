@@ -9,6 +9,7 @@ import MESSAGES from '../messages';
 import { polioVaccines } from '../../../../constants/virus';
 import { apiDateFormat } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/dates';
 import { useGetCountriesOptions } from '../hooks/api/vrf';
+import { useGetGroupDropdown } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
 
 type Props = { params: any };
 
@@ -19,6 +20,8 @@ export const VaccineSupplyChainFilters: FunctionComponent<Props> = ({
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl: VACCINE_SUPPLY_CHAIN, params });
     const { data: countries, isFetching } = useGetCountriesOptions();
+    const { data: groupedOrgUnits, isFetching: isFetchingGroupedOrgUnits } =
+        useGetGroupDropdown({ blockOfCountries: 'True' });
     return (
         <Grid container spacing={2}>
             <Grid item xs={6} md={3} lg={3}>
@@ -85,6 +88,17 @@ export const VaccineSupplyChainFilters: FunctionComponent<Props> = ({
                         value: vaccine.value,
                     }))}
                     labelString={formatMessage(MESSAGES.vaccine)}
+                />
+                <InputComponent
+                    type="select"
+                    clearable
+                    multi
+                    keyValue="country_blocks"
+                    value={filters.country_blocks}
+                    onChange={handleChange}
+                    options={groupedOrgUnits}
+                    loading={isFetchingGroupedOrgUnits}
+                    labelString={formatMessage(MESSAGES.countryBlock)}
                 />
             </Grid>
             <Grid container item xs={12} md={3} lg={3}>

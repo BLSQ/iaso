@@ -166,11 +166,17 @@ class StockManagementCustomFilter(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, _view):
         country_id = request.GET.get("country_id")
         vaccine_type = request.GET.get("vaccine_type")
+        country_blocks = request.GET.get("country_blocks", None)
 
         if country_id:
-            queryset = queryset.filter(country_id=country_id)
+            queryset = queryset.filter(country_id__in=country_id.split(","))
         if vaccine_type:
             queryset = queryset.filter(vaccine=vaccine_type)
+        if country_blocks:
+            try:
+                queryset = queryset.filter(country__groups__in=country_blocks.split(","))
+            except:
+                pass
 
         current_order = request.GET.get("order")
 
@@ -298,6 +304,9 @@ class VaccineStockManagementViewSet(ModelViewSet):
     GET /api/polio/vaccine/vaccine_stock/{id}/
     Return a specific item from the previous list.
 
+    DELETE /api/polio/vaccine/vaccine_stock/{id}/
+    Delete a vaccine stock. All related OutgoingMovements, IncidentReports and Destructions will also be deleted.
+
     GET /api/polio/vaccine/vaccine_stock/{id}/summary/
     Return a summary of vaccine stock for a given VaccineStock ID (Used on detail page)
 
@@ -313,7 +322,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
     permission_classes = [VaccineStockManagementReadWritePerm]
     serializer_class = VaccineStockSerializer
-    http_method_names = ["get", "head", "options", "post"]
+    http_method_names = ["get", "head", "options", "post", "delete"]
 
     model = VaccineStock
 
@@ -363,6 +372,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
         calculator = VaccineStockCalculator(vaccine_stock)
 
         summary_data = {
+            "country_id": vaccine_stock.country.id,
             "country_name": vaccine_stock.country.name,
             "vaccine_type": vaccine_stock.vaccine,
             "total_usable_vials": calculator.get_stock_of_usable_vials(),

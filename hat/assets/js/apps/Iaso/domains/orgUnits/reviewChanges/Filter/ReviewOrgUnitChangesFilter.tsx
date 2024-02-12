@@ -62,7 +62,7 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
         ],
         [formatMessage],
     );
-    const joinValuesBeforeHandleFormChange = useCallback(
+    const handleChangeUsers = useCallback(
         (keyValue, newValue) => {
             const joined = newValue?.map(r => r.value)?.join(',');
             handleChange(keyValue, joined);
@@ -152,7 +152,7 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                             keyValue="userIds"
                             label={MESSAGES.user}
                             value={selectedUsers ?? ''}
-                            onChange={joinValuesBeforeHandleFormChange}
+                            onChange={handleChangeUsers}
                             debounceTime={500}
                             multi
                             fetchOptions={input => getUsersDropDown(input)}

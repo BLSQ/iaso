@@ -191,7 +191,7 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
                 columns={columns}
                 count={data?.count ?? 0}
                 baseUrl={baseUrl}
-                countOnTop={false}
+                countOnTop
                 params={params}
                 extraProps={{ loading: isFetching, selectedChangeRequest }}
                 onTableParamsChange={p => {

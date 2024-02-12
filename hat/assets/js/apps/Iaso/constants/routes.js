@@ -508,6 +508,22 @@ export const orgUnitChangeRequestPath = {
             key: 'created_at_before',
             isRequired: false,
         },
+        {
+            key: 'forms',
+            isRequired: false,
+        },
+        {
+            key: 'userIds',
+            isRequired: false,
+        },
+        {
+            key: 'userRoles',
+            isRequired: false,
+        },
+        {
+            key: 'withLocation',
+            isRequired: false,
+        },
     ],
 };
 export const registryPath = {

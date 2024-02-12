@@ -214,13 +214,16 @@ export const useInitializeValueOnFetch = ({
             setFieldValue(key, value[key]);
             // set InitialValues so we can compare with form values and enables/disabel dave button accordingly
             if (key === VRF) {
+                const wastageRate =
+                    value.wastage_rate_used_on_vrf === null ||
+                    value.wastage_rate_used_on_vrf === undefined
+                        ? value.wastage_rate_used_on_vrf
+                        : parseFloat(value.wastage_rate_used_on_vrf);
                 setInitialValues({
                     [key]: {
                         ...value,
                         // parsing the value, as NumberInput will automatically do it in the form, which will make theinterface believe the value has been changed
-                        wastage_rate_used_on_vrf: parseFloat(
-                            value.wastage_rate_used_on_vrf,
-                        ),
+                        wastage_rate_used_on_vrf: wastageRate,
                     },
                 });
             } else {

@@ -364,6 +364,7 @@ class VaccineRequestFormDetailSerializer(serializers.ModelSerializer):
             "country_name",
             "country_id",
             "obr_name",
+            "target_population",
         ]
 
 

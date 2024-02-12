@@ -7,6 +7,7 @@ import {
     MENU_HEIGHT_WITH_TABS,
     useSafeIntl,
 } from 'bluesquare-components';
+import { grey } from '@mui/material/colors';
 
 export const useSharedStyles = makeStyles({
     scrollableForm: {
@@ -62,7 +63,9 @@ export const usePaperStyles = makeStyles((theme: Theme) => ({
         '&  label.MuiInputLabel-root': {
             backgroundColor: `${theme.palette.grey['200']} !important`,
         },
-        backgroundColor: theme.palette.grey['200'],
+        // Couldn't apply the color with bgColor and sx. Also theme.palette.grey['200'] woudln't work either
+        backgroundColor: `${theme.palette.grey['200']} !important`,
     },
     container: { display: 'inline-flex', width: '100%' },
 }));
+export const grayText = { color: grey[500] };

@@ -10,8 +10,9 @@ import { DateInput } from '../../../../../components/Inputs/DateInput';
 import { NumberInput, TextInput } from '../../../../../components/Inputs';
 import MESSAGES from '../../messages';
 import { SupplyChainFormData } from '../../types';
-import { usePaperStyles } from '../shared';
+import { grayText, usePaperStyles } from '../shared';
 import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
+import { Optional } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 type Props = {
     index: number;
@@ -24,10 +25,11 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
         useFormikContext<SupplyChainFormData>();
     const { pre_alerts } = values as SupplyChainFormData;
     const markedForDeletion = pre_alerts?.[index].to_delete ?? false;
-
+    const uneditableTextStyling = markedForDeletion ? grayText : undefined;
     const doses_per_vial = pre_alerts?.[index].doses_per_vial ?? 20;
     const current_vials_shipped = Math.ceil(
-        (pre_alerts?.[index].doses_shipped ?? 0) / doses_per_vial,
+        ((pre_alerts?.[index].doses_shipped as Optional<number>) ?? 0) /
+            doses_per_vial,
     );
 
     const onDelete = useCallback(() => {
@@ -43,7 +45,6 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
             }
         }
     }, [index, setFieldTouched, setFieldValue, values?.pre_alerts]);
-
     return (
         <div className={classes.container}>
             <Paper
@@ -104,7 +105,10 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                             alignContent="center"
                         >
                             <Box>
-                                <Typography variant="button">
+                                <Typography
+                                    variant="button"
+                                    sx={uneditableTextStyling}
+                                >
                                     {`${formatMessage(
                                         MESSAGES.doses_per_vial,
                                     )}:`}{' '}
@@ -120,7 +124,10 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                             alignContent="center"
                         >
                             <Box>
-                                <Typography variant="button">
+                                <Typography
+                                    variant="button"
+                                    sx={uneditableTextStyling}
+                                >
                                     {`${formatMessage(
                                         MESSAGES.vials_shipped,
                                     )}:`}{' '}

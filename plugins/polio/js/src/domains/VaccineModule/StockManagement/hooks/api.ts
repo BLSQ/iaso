@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 import { UseMutationResult, UseQueryResult } from 'react-query';
 import { UrlParams } from 'bluesquare-components';
+import { useMemo } from 'react';
 import {
     deleteRequest,
     getRequest,
@@ -27,6 +28,7 @@ import {
     useGetCampaigns,
 } from '../../../Campaigns/hooks/api/useGetCampaigns';
 import { commaSeparatedIdsToStringArray } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
+import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 const defaults = {
     order: 'country',
@@ -233,8 +235,15 @@ export const useGetIncidentList = (
     });
 };
 
+type UseCampaignOptionsResult = {
+    data: DropdownOptions<string>[];
+    isFetching: boolean;
+};
 // TODO get list of campaigns filtered by active vacccine
-export const useCampaignOptions = (countryName: string): UseQueryResult => {
+export const useCampaignOptions = (
+    countryName: string,
+    campaignName?: string,
+): UseCampaignOptionsResult => {
     const queryOptions = {
         select: data => {
             if (!data) return [];
@@ -251,7 +260,23 @@ export const useCampaignOptions = (countryName: string): UseQueryResult => {
         staleTime: 1000 * 60 * 15, // in MS
         cacheTime: 1000 * 60 * 5,
     };
-    return useGetCampaigns({}, CAMPAIGNS_ENDPOINT, undefined, queryOptions);
+    const { data: campaignsList, isFetching } = useGetCampaigns(
+        {},
+        CAMPAIGNS_ENDPOINT,
+        undefined,
+        queryOptions,
+    );
+    const defaultList = useMemo(
+        () => [{ label: campaignName, value: campaignName }],
+        [campaignName],
+    );
+    if ((campaignsList ?? []).length > 0) {
+        return { data: campaignsList, isFetching };
+    }
+    if ((campaignsList ?? []).length === 0 && campaignName) {
+        return { data: defaultList as DropdownOptions<string>[], isFetching };
+    }
+    return { data: [], isFetching };
 };
 
 const createEditFormA = async (body: any) => {

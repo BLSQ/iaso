@@ -304,6 +304,9 @@ class VaccineStockManagementViewSet(ModelViewSet):
     GET /api/polio/vaccine/vaccine_stock/{id}/
     Return a specific item from the previous list.
 
+    DELETE /api/polio/vaccine/vaccine_stock/{id}/
+    Delete a vaccine stock. All related OutgoingMovements, IncidentReports and Destructions will also be deleted.
+
     GET /api/polio/vaccine/vaccine_stock/{id}/summary/
     Return a summary of vaccine stock for a given VaccineStock ID (Used on detail page)
 
@@ -319,7 +322,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
     permission_classes = [VaccineStockManagementReadWritePerm]
     serializer_class = VaccineStockSerializer
-    http_method_names = ["get", "head", "options", "post"]
+    http_method_names = ["get", "head", "options", "post", "delete"]
 
     model = VaccineStock
 

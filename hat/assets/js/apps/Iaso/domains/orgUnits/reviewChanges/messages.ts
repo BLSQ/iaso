@@ -173,6 +173,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.without',
         defaultMessage: 'Without',
     },
+    newOrgUnit: {
+        id: 'iaso.label.newOrgUnit',
+        defaultMessage: 'New org. unit',
+    },
 });
 
 export default MESSAGES;

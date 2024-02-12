@@ -76,7 +76,7 @@ export const usersTableColumns = ({
                 {currentUser.is_superuser && (
                     <ExportMobileAppSetupDialog
                         selectedUser={settings.row.original}
-                        titleMessage={MESSAGES.exportMobileAppModalTitle}
+                        titleMessage={MESSAGES.exportMobileAppTitle}
                         params={params}
                         onCreateExport={exportMobileSetup}
                     />

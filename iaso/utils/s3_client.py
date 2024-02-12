@@ -16,7 +16,7 @@ def upload_file_to_s3(file_name, object_name=None):
         object_name = os.path.basename(file_name)
 
     # Upload the file
-    boto3.client("s3").upload_file(
+    boto3.client("s3", region_name=settings.AWS_S3_REGION_NAME).upload_file(
         file_name,
         settings.AWS_STORAGE_BUCKET_NAME,
         object_name,
@@ -30,7 +30,7 @@ def generate_presigned_url_from_s3(object_name, expires_in=3600):
     :return: string with the S3 URL
     """
 
-    return boto3.client("s3").generate_presigned_url(
+    return boto3.client("s3", region_name=settings.AWS_S3_REGION_NAME).generate_presigned_url(
         ClientMethod="get_object",
         Params={"Bucket": settings.AWS_STORAGE_BUCKET_NAME, "Key": object_name},
         ExpiresIn=expires_in,

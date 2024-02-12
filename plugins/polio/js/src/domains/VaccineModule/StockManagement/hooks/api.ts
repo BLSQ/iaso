@@ -1,7 +1,8 @@
 /* eslint-disable camelcase */
-import { UseQueryResult } from 'react-query';
+import { UseMutationResult, UseQueryResult } from 'react-query';
 import { UrlParams } from 'bluesquare-components';
 import {
+    deleteRequest,
     getRequest,
     patchRequest,
     postRequest,
@@ -339,6 +340,17 @@ const saveVaccineStock = body => {
 export const useSaveVaccineStock = () => {
     return useSnackMutation({
         mutationFn: body => saveVaccineStock(body),
+        invalidateQueryKey: 'vaccine-stock-list',
+    });
+};
+
+const deleteVaccineStock = (id: string) => {
+    return deleteRequest(`${apiUrl}${id}`);
+};
+
+export const useDeleteVaccineStock = (): UseMutationResult => {
+    return useSnackMutation({
+        mutationFn: deleteVaccineStock,
         invalidateQueryKey: 'vaccine-stock-list',
     });
 };

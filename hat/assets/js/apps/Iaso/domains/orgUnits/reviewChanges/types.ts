@@ -12,6 +12,10 @@ export type ApproveOrgUnitParams = UrlParams & {
     status?: ChangeRequestValidationStatus;
     created_at_after?: string;
     created_at_before?: string;
+    forms?: string;
+    userIds?: string;
+    userRoles?: string;
+    withLocation?: string;
 };
 export type Group = {
     id: number;

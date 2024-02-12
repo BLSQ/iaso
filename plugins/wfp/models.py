@@ -57,7 +57,7 @@ class Beneficiary(models.Model):
 
 
 class Journey(models.Model):
-    beneficiary = models.ForeignKey(Beneficiary, on_delete=models.DO_NOTHING, null=True, blank=True)
+    beneficiary = models.ForeignKey(Beneficiary, on_delete=models.CASCADE, null=True, blank=True)
     admission_criteria = models.CharField(max_length=255, choices=ADMISSION_CRITERIAS, null=True, blank=True)
     admission_type = models.CharField(max_length=255, choices=ADMISSION_TYPES, null=True, blank=True)
     nutrition_programme = models.CharField(max_length=255, choices=NUTRITION_PROGRAMMES, null=True, blank=True)
@@ -71,12 +71,12 @@ class Visit(models.Model):
     date = models.DateTimeField(null=True, blank=True)
     number = models.IntegerField(default=1)
     org_unit = models.ForeignKey(OrgUnit, on_delete=models.DO_NOTHING, null=True, blank=True)
-    journey = models.ForeignKey(Journey, on_delete=models.DO_NOTHING, null=True, blank=True)
+    journey = models.ForeignKey(Journey, on_delete=models.CASCADE, null=True, blank=True)
     instance_id = models.IntegerField(null=True, blank=True)
 
 
 class Step(models.Model):
     assistance_type = models.CharField(max_length=255)
     quantity_given = models.FloatField()
-    visit = models.ForeignKey(Visit, on_delete=models.DO_NOTHING, null=True, blank=True)
+    visit = models.ForeignKey(Visit, on_delete=models.CASCADE, null=True, blank=True)
     instance_id = models.IntegerField(null=True, blank=True)

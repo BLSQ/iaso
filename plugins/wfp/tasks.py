@@ -7,6 +7,7 @@ import datetime
 from .management.commands.wfp_etl_Under5 import Under5
 from .management.commands.wfp_etl_pbwg import PBWG
 import logging
+from .common import ETL
 
 logger = logging.getLogger(__name__)
 
@@ -81,5 +82,6 @@ def generate_random_data():
 def etl():
     """Extract beneficiary data from Iaso tables and store them in the format expected by existing tableau dashboards"""
     logger.info("Starting ETL")
+    # Before copying beneficiary data, clean all wfp table and reimport data!
     Under5().run()
     PBWG().run()

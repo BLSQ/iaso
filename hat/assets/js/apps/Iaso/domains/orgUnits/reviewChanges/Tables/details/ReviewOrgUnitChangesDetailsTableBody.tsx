@@ -39,7 +39,7 @@ export const ReviewOrgUnitChangesDetailsTableBody: FunctionComponent<Props> = ({
                     value={formatMessage(MESSAGES.name)}
                 />
             )}
-            {!isNewOrgUnit && !hasType && (
+            {isNewOrgUnit && !hasType && (
                 <ReviewOrgUnitChangeDetailsPlaceholderRow
                     fieldKey="org_unit_type"
                     value={formatMessage(MESSAGES.org_unit_type)}

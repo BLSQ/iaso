@@ -12,6 +12,7 @@ import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { baseUrls } from 'Iaso/constants/urls';
 import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
+import { TaskDetails } from 'Iaso/domains/tasks/components/TaskDetails';
 import tasksTableColumns from './config';
 import MESSAGES from './messages';
 import { POLIO_NOTIFICATIONS } from '../../utils/permissions.ts';
@@ -108,6 +109,10 @@ const Tasks = ({ params }) => {
                     baseUrl={baseUrl}
                     extraProps={{
                         loading: isLoading,
+                        SubComponent: task => {
+                            console.log('task', task);
+                            return task ? <TaskDetails task={task} /> : null;
+                        },
                     }}
                 />
             </Box>

@@ -53,7 +53,7 @@ def migrate_data_forward(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("polio", "0166_create_budgetprocess"),
+        ("polio", "0167_create_budgetprocess"),
     ]
 
     operations = [migrations.RunPython(migrate_data_forward, migrations.RunPython.noop, elidable=True)]

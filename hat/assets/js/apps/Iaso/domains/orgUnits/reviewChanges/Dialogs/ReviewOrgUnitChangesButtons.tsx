@@ -17,6 +17,7 @@ type Props = {
     newFields: NewOrgUnitField[];
     isNew: boolean;
     isNewOrgUnit: boolean;
+    canSaveNewOrgUnit: boolean;
     submitChangeRequest: SubmitChangeRequest;
 };
 
@@ -25,6 +26,7 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
     newFields,
     isNew,
     isNewOrgUnit,
+    canSaveNewOrgUnit,
     submitChangeRequest,
 }) => {
     const { formatMessage } = useSafeIntl();
@@ -38,6 +40,9 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
             approved_fields: selectedFields.map(field => `new_${field.key}`),
         });
     }, [selectedFields, submitChangeRequest]);
+    const allowConfirm = isNewOrgUnit
+        ? canSaveNewOrgUnit
+        : selectedFields.length > 0;
     return (
         <>
             <ReviewOrgUnitChangesDeleteDialog
@@ -77,7 +82,7 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
                                 variant="contained"
                                 color="primary"
                                 autoFocus
-                                disabled={selectedFields.length === 0}
+                                disabled={!allowConfirm}
                             >
                                 {isNewOrgUnit
                                     ? formatMessage(MESSAGES.createOrgUnit)

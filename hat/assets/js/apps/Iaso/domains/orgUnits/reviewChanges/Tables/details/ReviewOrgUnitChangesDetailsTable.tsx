@@ -14,6 +14,9 @@ type Props = {
     setSelected: (key: string) => void;
     changeRequest?: OrgUnitChangeRequestDetails;
     isFetchingChangeRequest: boolean;
+    isNewOrgUnit: boolean;
+    hasName: boolean;
+    hasType: boolean;
 };
 
 export const ReviewOrgUnitChangesDetailsTable: FunctionComponent<Props> = ({
@@ -22,10 +25,12 @@ export const ReviewOrgUnitChangesDetailsTable: FunctionComponent<Props> = ({
     setSelected,
     changeRequest,
     isFetchingChangeRequest,
+    isNewOrgUnit,
+    hasName,
+    hasType,
 }) => {
     const isNew: boolean =
         !isFetchingChangeRequest && changeRequest?.status === 'new';
-    const isNewOrgUnit = changeRequest ? !changeRequest.org_unit : false;
     return (
         <TableContainer sx={{ maxHeight: '75vh', minHeight: 300, mb: -2 }}>
             {(isFetchingChangeRequest || isSaving) && (
@@ -43,6 +48,8 @@ export const ReviewOrgUnitChangesDetailsTable: FunctionComponent<Props> = ({
                     setSelected={setSelected}
                     isNew={isNew}
                     isNewOrgUnit={isNewOrgUnit}
+                    hasName={hasName}
+                    hasType={hasType}
                 />
             </Table>
         </TableContainer>

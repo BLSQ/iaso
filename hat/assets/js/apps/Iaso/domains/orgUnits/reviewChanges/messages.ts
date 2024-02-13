@@ -189,6 +189,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.createOrgUnit',
         defaultMessage: 'Create org. unit',
     },
+    requiredField: {
+        id: 'iaso.forms.error.fieldRequired',
+        defaultMessage: 'This field is required',
+    },
 });
 
 export default MESSAGES;

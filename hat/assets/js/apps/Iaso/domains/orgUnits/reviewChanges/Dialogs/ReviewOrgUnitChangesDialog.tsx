@@ -61,6 +61,14 @@ export const ReviewOrgUnitChangesDialog: FunctionComponent<Props> = ({
         !isFetchingChangeRequest && changeRequest?.status === 'new';
     const isNewOrgUnit = changeRequest ? !changeRequest.org_unit : false;
     const { newFields, setSelected } = useNewFields(changeRequest);
+    const hasName = Boolean(
+        newFields.find(field => field.key === 'name')?.newValue,
+    );
+    const hasType = Boolean(
+        newFields.find(field => field.key === 'org_unit_type')?.newValue,
+    );
+    const hasNameAndType = hasName && hasType;
+    const canSaveNewOrgUnit = isNewOrgUnit && hasNameAndType;
     const titleMessage = useMemo(() => {
         if (changeRequest?.status === 'rejected') {
             return formatMessage(MESSAGES.seeRejectedChanges);
@@ -101,6 +109,7 @@ export const ReviewOrgUnitChangesDialog: FunctionComponent<Props> = ({
                         isNew={isNew}
                         submitChangeRequest={submitChangeRequest}
                         isNewOrgUnit={isNewOrgUnit}
+                        canSaveNewOrgUnit={canSaveNewOrgUnit}
                     />
                 )
             }
@@ -111,6 +120,9 @@ export const ReviewOrgUnitChangesDialog: FunctionComponent<Props> = ({
                 isFetchingChangeRequest={isFetchingChangeRequest}
                 newFields={newFields}
                 setSelected={setSelected}
+                isNewOrgUnit={isNewOrgUnit}
+                hasName={hasName}
+                hasType={hasType}
             />
         </SimpleModal>
     );

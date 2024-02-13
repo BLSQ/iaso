@@ -12,6 +12,7 @@ type Props = {
     // eslint-disable-next-line no-unused-vars
     setSelected: (key: string) => void;
     isNew: boolean;
+    isNewOrgUnit: boolean;
     isFetchingChangeRequest: boolean;
     changeRequest?: OrgUnitChangeRequestDetails;
 };
@@ -75,6 +76,7 @@ export const ReviewOrgUnitChangesDetailsTableRow: FunctionComponent<Props> = ({
     field,
     setSelected,
     isNew,
+    isNewOrgUnit,
     changeRequest,
     isFetchingChangeRequest,
 }) => {
@@ -93,9 +95,11 @@ export const ReviewOrgUnitChangesDetailsTableRow: FunctionComponent<Props> = ({
     return (
         <TableRow key={field.key}>
             <TableCell className={classes.labelCell}>{field.label}</TableCell>
-            <TableCell className={classes.verticalTop}>
-                {field.oldValue}
-            </TableCell>
+            {!isNewOrgUnit && (
+                <TableCell className={classes.verticalTop}>
+                    {field.oldValue}
+                </TableCell>
+            )}
             <TableCell
                 className={classNames(
                     !isFetchingChangeRequest &&

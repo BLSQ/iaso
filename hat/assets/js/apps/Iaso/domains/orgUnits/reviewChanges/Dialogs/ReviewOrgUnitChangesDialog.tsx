@@ -59,6 +59,7 @@ export const ReviewOrgUnitChangesDialog: FunctionComponent<Props> = ({
         useGetApprovalProposal(selectedChangeRequest.id);
     const isNew: boolean =
         !isFetchingChangeRequest && changeRequest?.status === 'new';
+    const isNewOrgUnit = changeRequest ? !changeRequest.org_unit : false;
     const { newFields, setSelected } = useNewFields(changeRequest);
     const titleMessage = useMemo(() => {
         if (changeRequest?.status === 'rejected') {
@@ -67,8 +68,11 @@ export const ReviewOrgUnitChangesDialog: FunctionComponent<Props> = ({
         if (changeRequest?.status === 'approved') {
             return formatMessage(MESSAGES.seeApprovedChanges);
         }
+        if (isNewOrgUnit) {
+            return formatMessage(MESSAGES.validateOrRejectNewOrgUnit);
+        }
         return formatMessage(MESSAGES.validateOrRejectChanges);
-    }, [changeRequest?.status, formatMessage]);
+    }, [changeRequest?.status, formatMessage, isNewOrgUnit]);
     const { mutate: submitChangeRequest, isLoading: isSaving } =
         useSaveChangeRequest(closeDialog, selectedChangeRequest.id);
 
@@ -96,6 +100,7 @@ export const ReviewOrgUnitChangesDialog: FunctionComponent<Props> = ({
                         newFields={newFields}
                         isNew={isNew}
                         submitChangeRequest={submitChangeRequest}
+                        isNewOrgUnit={isNewOrgUnit}
                     />
                 )
             }

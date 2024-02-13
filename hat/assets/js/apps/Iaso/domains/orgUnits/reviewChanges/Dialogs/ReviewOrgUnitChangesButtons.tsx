@@ -16,6 +16,7 @@ type Props = {
     closeDialog: () => void;
     newFields: NewOrgUnitField[];
     isNew: boolean;
+    isNewOrgUnit: boolean;
     submitChangeRequest: SubmitChangeRequest;
 };
 
@@ -23,6 +24,7 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
     closeDialog,
     newFields,
     isNew,
+    isNewOrgUnit,
     submitChangeRequest,
 }) => {
     const { formatMessage } = useSafeIntl();
@@ -77,7 +79,9 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
                                 autoFocus
                                 disabled={selectedFields.length === 0}
                             >
-                                {formatMessage(MESSAGES.validateSelected)}
+                                {isNewOrgUnit
+                                    ? formatMessage(MESSAGES.createOrgUnit)
+                                    : formatMessage(MESSAGES.validateSelected)}
                             </Button>
                         </Box>
                     </>

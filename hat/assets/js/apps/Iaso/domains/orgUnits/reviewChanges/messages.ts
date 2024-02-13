@@ -89,6 +89,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.validateOrRejectChanges',
         defaultMessage: 'Review changes',
     },
+    validateOrRejectNewOrgUnit: {
+        id: 'iaso.label.validateOrRejectNewOrgUnit',
+        defaultMessage: 'Review new org. unit',
+    },
     location: {
         id: 'iaso.label.location',
         defaultMessage: 'Location',
@@ -116,6 +120,10 @@ const MESSAGES = defineMessages({
     oldValue: {
         id: 'iaso.changeRequest.oldValue',
         defaultMessage: 'Initial version',
+    },
+    value: {
+        id: 'iaso.label.value',
+        defaultMessage: 'Value',
     },
     reject: {
         id: 'iaso.changeRequest.reject',
@@ -176,6 +184,10 @@ const MESSAGES = defineMessages({
     newOrgUnit: {
         id: 'iaso.label.newOrgUnit',
         defaultMessage: 'New org. unit',
+    },
+    createOrgUnit: {
+        id: 'iaso.label.createOrgUnit',
+        defaultMessage: 'Create org. unit',
     },
 });
 

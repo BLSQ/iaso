@@ -25,20 +25,24 @@ export const ReviewOrgUnitChangesDetailsTable: FunctionComponent<Props> = ({
 }) => {
     const isNew: boolean =
         !isFetchingChangeRequest && changeRequest?.status === 'new';
-
+    const isNewOrgUnit = changeRequest ? !changeRequest.org_unit : false;
     return (
         <TableContainer sx={{ maxHeight: '75vh', minHeight: 300, mb: -2 }}>
             {(isFetchingChangeRequest || isSaving) && (
                 <LoadingSpinner absolute />
             )}
             <Table size="small" stickyHeader>
-                <ReviewOrgUnitChangesDetailsTableHead isNew={isNew} />
+                <ReviewOrgUnitChangesDetailsTableHead
+                    isNew={isNew}
+                    isNewOrgUnit={isNewOrgUnit}
+                />
                 <ReviewOrgUnitChangesDetailsTableBody
                     isFetchingChangeRequest={isFetchingChangeRequest}
                     changeRequest={changeRequest}
                     newFields={newFields}
                     setSelected={setSelected}
                     isNew={isNew}
+                    isNewOrgUnit={isNewOrgUnit}
                 />
             </Table>
         </TableContainer>

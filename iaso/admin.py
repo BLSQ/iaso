@@ -84,6 +84,7 @@ from .models import (
     WorkflowFollowup,
     WorkflowVersion,
     OrgUnitReferenceInstance,
+    Payment,
 )
 from .models.microplanning import Team, Planning, Assignment
 from .models.data_store import JsonDataStore
@@ -747,6 +748,10 @@ class ConfigAdmin(admin.ModelAdmin):
     raw_id_fields = ["users"]
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    raw_id_fields = ["change_requests"]
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 admin.site.register(Account)
 admin.site.register(AccountFeatureFlag)

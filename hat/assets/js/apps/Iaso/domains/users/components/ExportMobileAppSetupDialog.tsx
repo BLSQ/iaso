@@ -2,6 +2,7 @@
 import React, {
     FunctionComponent,
     useCallback,
+    useEffect,
     useMemo,
     useState,
 } from 'react';
@@ -93,11 +94,11 @@ const ExportMobileAppSetupDialogComponent: FunctionComponent<Props> = ({
     );
 
     const onConfirm = useCallback(() => {
-        setIsExporting(true);
         onCreateExport({
             userId: selectedUser.user_id,
             projectId: selectedProject.id,
         }).then((task: TaskApiResponse<any>) => {
+            setIsExporting(true);
             setTaskId(task.task.id);
         });
     }, [selectedUser, selectedProject, onCreateExport]);
@@ -114,17 +115,18 @@ const ExportMobileAppSetupDialogComponent: FunctionComponent<Props> = ({
                 (taskData.progress_value / taskData.end_value) * 100;
         } else if (taskData.status === 'SUCCESS') {
             taskProgressValue = 100;
-            getRequest(`/api/tasks/${taskId}/presigned-url/`).then(resp => {
-                setPresignedUrl(resp.presigned_url);
-            });
         } else {
             taskProgressValue = 0;
         }
     }
 
-    console.log('isExporting ', isExporting);
-    console.log('taskData .status', taskData?.status);
-    console.log('taskProgressValue ', taskProgressValue);
+    useEffect(() => {
+        if (taskData?.status === 'SUCCESS') {
+            getRequest(`/api/tasks/${taskId}/presigned-url/`).then(resp =>
+                setPresignedUrl(resp.presigned_url),
+            );
+        }
+    }, [taskData]);
 
     return (
         <ConfirmCancelModal

@@ -93,7 +93,6 @@ class TaskSourceViewSet(ModelViewSet):
             try:
                 response = generate_presigned_url_from_s3(s3_object_name)
             except Exception as e:
-                # TODO: Add proper error handling here
                 return Response({"error": str(e)}, status=400)
 
             return Response({"presigned_url": response})

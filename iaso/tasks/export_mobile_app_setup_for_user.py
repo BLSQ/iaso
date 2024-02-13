@@ -22,6 +22,7 @@ import uuid
 import zipfile
 
 from beanstalk_worker import task_decorator
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.utils.translation import gettext as _
 from rest_framework_simplejwt.tokens import RefreshToken  # type: ignore
@@ -33,10 +34,7 @@ from iaso.utils.s3_client import upload_file_to_s3
 
 logger = logging.getLogger(__name__)
 
-# TODO:
-# - Make only accessible for super admin
-
-SERVER = "https://bram.ngrok.app"
+SERVER = f"https://{settings.DNS_DOMAIN}"
 
 
 @task_decorator(task_name="export_mobile_app_setup")
@@ -86,10 +84,6 @@ def _get_project_app_details(iaso_client, tmp_dir, app_id):
     logger.info("-- Getting app info (feature flags etc)")
     # Public endpoint, no auth needed
     app_info = iaso_client.get(f"/api/apps/current/?app_id={app_id}")
-
-    if "app_id" not in app_info:
-        # TODO: handle error
-        breakpoint()
 
     logger.info("-- App summary:")
     logger.info(f"\tName: {app_info['name']}")

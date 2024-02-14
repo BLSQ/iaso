@@ -285,3 +285,9 @@ class VaccineStockManagementAPITestCase(APITestCase):
         self.assertEqual(data["total_unusable_vials"], 6)
         self.assertEqual(data["total_usable_doses"], 200)
         self.assertEqual(data["total_unusable_doses"], 120)
+
+    def test_delete(self):
+        self.client.force_authenticate(self.user_rw_perms)
+        response = self.client.delete(f"{BASE_URL}{self.vaccine_stock.pk}/")
+        self.assertEqual(response.status_code, 204)
+        self.assertIsNone(pm.VaccineStock.objects.filter(pk=self.vaccine_stock.pk).first())

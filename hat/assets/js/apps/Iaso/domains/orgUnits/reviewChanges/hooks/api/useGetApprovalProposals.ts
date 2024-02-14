@@ -20,6 +20,10 @@ const getOrgUnitChangeProposals = (options: ApproveOrgUnitParams) => {
         page: options.page,
         created_at_after: options.created_at_after,
         created_at_before: options.created_at_before,
+        forms: options.forms,
+        users: options.userIds,
+        user_roles: options.userRoles,
+        with_location: options.withLocation,
     };
 
     const url = makeUrlWithParams(apiUrl, apiParams);

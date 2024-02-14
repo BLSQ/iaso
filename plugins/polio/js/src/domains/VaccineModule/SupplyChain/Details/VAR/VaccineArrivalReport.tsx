@@ -11,8 +11,9 @@ import { NumberInput, TextInput } from '../../../../../components/Inputs';
 import MESSAGES from '../../messages';
 import { SupplyChainFormData } from '../../types';
 import { VAR } from '../../constants';
-import { usePaperStyles } from '../shared';
+import { grayText, usePaperStyles } from '../shared';
 import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
+import { Optional } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 type Props = { index: number };
 
@@ -23,13 +24,16 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
         useFormikContext<SupplyChainFormData>();
     const { arrival_reports } = values as SupplyChainFormData;
     const markedForDeletion = arrival_reports?.[index].to_delete ?? false;
+    const uneditableTextStyling = markedForDeletion ? grayText : undefined;
 
     const doses_per_vial = arrival_reports?.[index].doses_per_vial ?? 20;
     const current_vials_shipped = Math.ceil(
-        (arrival_reports?.[index].doses_shipped ?? 0) / doses_per_vial,
+        ((arrival_reports?.[index].doses_shipped as Optional<number>) ?? 0) /
+            doses_per_vial,
     );
     const current_vials_received = Math.ceil(
-        (arrival_reports?.[index].doses_received ?? 0) / doses_per_vial,
+        ((arrival_reports?.[index].doses_received as Optional<number>) ?? 0) /
+            doses_per_vial,
     );
 
     return (
@@ -85,19 +89,28 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
                     </Grid>
                     <Grid container item xs={12} spacing={2}>
                         <Grid item xs={6} md={3}>
-                            <Typography variant="button">
+                            <Typography
+                                variant="button"
+                                sx={uneditableTextStyling}
+                            >
                                 {`${formatMessage(MESSAGES.doses_per_vial)}:`}{' '}
                                 <NumberCell value={doses_per_vial} />
                             </Typography>
                         </Grid>
                         <Grid item xs={6} md={3}>
-                            <Typography variant="button">
+                            <Typography
+                                variant="button"
+                                sx={uneditableTextStyling}
+                            >
                                 {`${formatMessage(MESSAGES.vials_shipped)}:`}{' '}
                                 <NumberCell value={current_vials_shipped} />
                             </Typography>
                         </Grid>
                         <Grid item xs={6} md={3}>
-                            <Typography variant="button">
+                            <Typography
+                                variant="button"
+                                sx={uneditableTextStyling}
+                            >
                                 {`${formatMessage(MESSAGES.vials_received)}:`}{' '}
                                 <NumberCell value={current_vials_received} />
                             </Typography>

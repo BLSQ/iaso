@@ -21,7 +21,13 @@ import { VaccineSupplyChainConfirmButtons } from './ConfirmButtons';
 import { useGetVrfDetails } from '../hooks/api/vrf';
 import { useGetPreAlertDetails } from '../hooks/api/preAlerts';
 import { useGetArrivalReportsDetails } from '../hooks/api/arrivalReports';
-import { SupplyChainFormData, TabValue, VRF as VrfType } from '../types';
+import {
+    PreAlert,
+    SupplyChainFormData,
+    TabValue,
+    VAR as VARType,
+    VRF as VrfType,
+} from '../types';
 import { PREALERT, VAR, VRF } from '../constants';
 import { useTopBarTitle } from '../hooks/useTopBarTitle';
 import { useSupplyChainFormValidator } from '../hooks/validation';
@@ -29,11 +35,14 @@ import { useObjectState } from '../../../../../../../../hat/assets/js/apps/Iaso/
 import {
     useEnableSaveButtons,
     useHandleSubmit,
-    useInitializeValueOnFetch,
+    useInitializeArrivalReportsOnFetch,
+    useInitializePreAlertsOnFetch,
+    useInitializeVRFOnFetch,
     useRedirectToReplace,
     useWatchChangedTabs,
 } from '../hooks/utils';
 import { SupplyChainTabs } from './SupplyChainTabs';
+import { Optional } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 type Props = { router: Router };
 
@@ -96,7 +105,6 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
         initialValues,
         tab,
     });
-
     const redirect = useRedirectToReplace();
 
     const onChangeTab = useCallback(
@@ -124,28 +132,26 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
     // Using formik's enableReinitialize would cause touched, errors etc to reset when changing tabs
     // So we set values with useEffect once data has been fetched in these custom hooks
 
-    useInitializeValueOnFetch({
-        key: VRF,
-        value: vrfDetails,
+    useInitializeVRFOnFetch({
+        vrf: vrfDetails as Optional<VrfType>,
         setFieldValue,
         setInitialValues,
     });
-    useInitializeValueOnFetch({
-        key: PREALERT,
-        value: preAlerts,
+
+    useInitializePreAlertsOnFetch({
+        preAlerts: preAlerts as Optional<PreAlert[]>,
         setFieldValue,
         setInitialValues,
     });
-    useInitializeValueOnFetch({
-        key: VAR,
-        value: arrivalReports,
+
+    useInitializeArrivalReportsOnFetch({
+        arrivalReports: arrivalReports as Optional<VARType[]>,
         setFieldValue,
         setInitialValues,
     });
 
     // list changed tabs to avoid patching unchanged tabs
     useWatchChangedTabs({ initialValues, values, setFieldValue });
-
     return (
         <FormikProvider value={formik}>
             <TopBar title={title} displayBackButton goBack={goBack}>

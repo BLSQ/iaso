@@ -7,7 +7,7 @@ import { getRequest } from '../../../libs/Api';
 import { makeUrlWithParams } from '../../../libs/utils';
 
 export const useGetProfilesDropdown = (
-    ids: string,
+    ids?: string,
 ): UseQueryResult<DropdownOptions<number>, Error> => {
     return useSnackQuery({
         queryKey: ['profiles', ids],

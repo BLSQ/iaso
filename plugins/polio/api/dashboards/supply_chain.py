@@ -17,6 +17,15 @@ class VaccineRequestFormDashboardSerializer(serializers.ModelSerializer):
 
 
 class VaccineRequestFormDashboardViewSet(ModelViewSet):
+    """
+    GET /api/polio/dashboards/vaccine_request_forms/
+    Returns all vaccine request forms for the user's account.
+    Simple endpoint that returns all model fields to facilitate data manipulation by OpenHexa or PowerBI
+    2 additional fields have been added:
+    - obr_name: the campaign's OBR name, that may need to be displayed
+    - country: the id of the vaccine request form's country
+    """
+
     http_method_names = ["get"]
     permission_classes = [VaccineSupplyChainReadWritePerm]
     model = VaccineRequestForm
@@ -35,6 +44,12 @@ class VaccinePreAlertDashboardSerializer(serializers.ModelSerializer):
 
 
 class PreAlertDashboardViewSet(ModelViewSet):
+    """
+    GET /api/polio/dashboards/pre_alerts/
+    Returns all vaccine pre alerts for the user's account.
+    Simple endpoint that returns all model fields to facilitate data manipulation by OpenHexa or PowerBI
+    """
+
     http_method_names = ["get"]
     permission_classes = [VaccineSupplyChainReadWritePerm]
     model = VaccinePreAlert
@@ -51,6 +66,12 @@ class VaccineArrivalReportDashboardSerializer(serializers.ModelSerializer):
 
 
 class VaccineArrivalReportDashboardViewSet(ModelViewSet):
+    """
+    GET /api/polio/dashboards/arrival_reports/
+    Returns all vaccine arrival reports for the user's account.
+    Simple endpoint that returns all model fields to facilitate data manipulation by OpenHexa or PowerBI
+    """
+
     http_method_names = ["get"]
     permission_classes = [VaccineSupplyChainReadWritePerm]
     model = VaccinePreAlert

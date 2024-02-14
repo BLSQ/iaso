@@ -17,6 +17,7 @@ import {
     PhoneInput,
     BaseCountryData,
 } from 'bluesquare-components';
+import { useSelector } from 'react-redux';
 import MESSAGES from '../../domains/forms/messages';
 import { DropdownOptions } from '../../types/utils';
 import {
@@ -53,6 +54,7 @@ export type PhoneInputOptions = {
     excludeCountries?: string[];
     country?: string | number;
     lang?: LangOptions;
+    countryCodeEditable?: boolean;
 };
 
 export type InputComponentProps = {
@@ -166,6 +168,8 @@ const InputComponent: React.FC<InputComponentProps> = ({
 }) => {
     const [displayPassword, setDisplayPassword] = useState(false);
     const { formatMessage } = useSafeIntl();
+    // @ts-ignore
+    const activeLocale = useSelector(state => state.app.locale);
 
     const localizedNumberOptions =
         useLocalizedNumberInputOptions(numberInputOptions);
@@ -316,6 +320,9 @@ const InputComponent: React.FC<InputComponentProps> = ({
                             onChange(keyValue, newValue, countryData)
                         }
                         value={value}
+                        lang={activeLocale.code}
+                        required={required}
+                        disabled={disabled}
                         {...phoneInputOptions}
                     />
                 );

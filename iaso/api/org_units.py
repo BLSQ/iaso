@@ -123,7 +123,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         searches = request.GET.get("searches", None)
         counts = []
-
+        queryset = queryset.select_related("parent__org_unit_type")
         if searches:
             search_index = 0
             base_queryset = queryset
@@ -138,7 +138,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         else:
             queryset = build_org_units_queryset(queryset, request.GET, profile)
 
-        queryset = queryset.select_related("parent__org_unit_type").order_by(*order)
+        queryset = queryset.order_by(*order)
 
         if not is_export:
             if limit and not as_location:

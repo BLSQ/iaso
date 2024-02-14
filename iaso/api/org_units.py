@@ -138,7 +138,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         else:
             queryset = build_org_units_queryset(queryset, request.GET, profile)
 
-        queryset = queryset.order_by(*order)
+        queryset = queryset.select_related("parent__org_unit_type").order_by(*order)
 
         if not is_export:
             if limit and not as_location:
@@ -272,9 +272,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     org_unit.get("org_unit_type__name"),
                     location.y if location else None,
                     location.x if location else None,
-                    org_unit.get("opening_date").strftime("%Y-%m-%d")
-                    if org_unit.get("opening_date") is not None
-                    else None,
+                    (
+                        org_unit.get("opening_date").strftime("%Y-%m-%d")
+                        if org_unit.get("opening_date") is not None
+                        else None
+                    ),
                     org_unit.get("closed_date").strftime("%Y-%m-%d") if org_unit.get("closed_date") else None,
                     org_unit.get("created_at").strftime("%Y-%m-%d %H:%M"),
                     org_unit.get("updated_at").strftime("%Y-%m-%d %H:%M"),

@@ -214,6 +214,29 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         change_request.refresh_from_db()
         self.assertEqual(change_request.status, change_request.Statuses.APPROVED)
 
+    def test_partial_update_approve_should_reset_closed_date(self):
+        self.org_unit.closed_date = datetime.date(2025, 10, 27)
+        self.org_unit.save()
+        self.client.force_authenticate(self.user_with_review_perm)
+
+        kwargs = {
+            "org_unit": self.org_unit,
+            "created_by": self.user,
+            "new_closed_date": None,
+        }
+        change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
+
+        data = {
+            "status": change_request.Statuses.APPROVED,
+            "approved_fields": ["new_closed_date"],
+        }
+        response = self.client.patch(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        change_request.refresh_from_db()
+        self.assertEqual(change_request.status, change_request.Statuses.APPROVED)
+        self.assertIsNone(change_request.org_unit.closed_date)
+
     def test_partial_update_approve_fail_wrong_status(self):
         self.client.force_authenticate(self.user_with_review_perm)
 

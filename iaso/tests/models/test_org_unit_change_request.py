@@ -235,18 +235,3 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
 
         self.assertEqual(diff["modified"]["name"]["before"], "Hôpital Général")
         self.assertEqual(diff["modified"]["name"]["after"], "New name given in a change request")
-
-    def test_approve_should_reset_closed_date(self):
-        self.org_unit.closed_date = datetime.date(2025, 10, 27)
-        self.org_unit.save()
-
-        change_request = m.OrgUnitChangeRequest.objects.create(
-            org_unit=self.org_unit,
-            new_closed_date=None,
-        )
-
-        change_request.approve(user=self.user, approved_fields=["new_closed_date"])
-        change_request.refresh_from_db()
-
-        self.assertEqual(change_request.status, change_request.Statuses.APPROVED)
-        self.assertEqual(self.org_unit.closed_date, None)

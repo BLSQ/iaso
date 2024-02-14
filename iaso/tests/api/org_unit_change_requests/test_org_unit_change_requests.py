@@ -12,7 +12,7 @@ from iaso import models as m
 
 class OrgUnitChangeRequestAPITestCase(APITestCase):
     """
-    Test ViewSet.
+    Test actions on the ViewSet.
     """
 
     DT = datetime.datetime(2023, 10, 17, 17, 0, 0, 0, tzinfo=datetime.timezone.utc)
@@ -26,11 +26,11 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
             org_unit_type=org_unit_type, version=version, uuid="1539f174-4c53-499c-85de-7a58458c49ef"
         )
 
-        cls.account = m.Account.objects.create(name="Account", default_version=version)
-        project = m.Project.objects.create(name="Project", account=cls.account, app_id="foo.bar.baz")
-        user = cls.create_user_with_profile(username="user", account=cls.account)
+        account = m.Account.objects.create(name="Account", default_version=version)
+        project = m.Project.objects.create(name="Project", account=account, app_id="foo.bar.baz")
+        user = cls.create_user_with_profile(username="user", account=account)
         user_with_review_perm = cls.create_user_with_profile(
-            username="user_with_review_perm", account=cls.account, permissions=["iaso_org_unit_change_request_review"]
+            username="user_with_review_perm", account=account, permissions=["iaso_org_unit_change_request_review"]
         )
 
         data_source.projects.set([project])
@@ -267,6 +267,41 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
         response = self.client.delete(f"/api/orgunits/changes/{change_request.pk}/", format="json")
         self.assertEqual(response.status_code, 405)
+
+
+class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
+    """
+    Test filtering on the ViewSet.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        data_source = m.DataSource.objects.create(name="Data source")
+        version = m.SourceVersion.objects.create(number=1, data_source=data_source)
+        org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
+        org_unit = m.OrgUnit.objects.create(
+            org_unit_type=org_unit_type, version=version, uuid="1539f174-4c53-499c-85de-7a58458c49ef"
+        )
+
+        account = m.Account.objects.create(name="Account", default_version=version)
+        project = m.Project.objects.create(name="Project", account=account, app_id="foo.bar.baz")
+        user = cls.create_user_with_profile(username="user", account=account)
+        user_with_review_perm = cls.create_user_with_profile(
+            username="user_with_review_perm",
+            account=account,
+            permissions=["iaso_org_unit_change_request_review"],
+        )
+
+        data_source.projects.set([project])
+        org_unit_type.projects.set([project])
+        user.iaso_profile.org_units.set([org_unit])
+
+        cls.account = account
+        cls.org_unit = org_unit
+        cls.org_unit_type = org_unit_type
+        cls.project = project
+        cls.user = user
+        cls.user_with_review_perm = user_with_review_perm
 
     def test_filterchange_request_on_date_created_from_and_date_created_to(self):
         self.client.force_authenticate(self.user_with_review_perm)

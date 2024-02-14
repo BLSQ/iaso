@@ -65,7 +65,12 @@ function TopBar(props) {
 
     return (
         <>
-            <AppBar position="relative" color="primary" id="top-bar">
+            <AppBar
+                position="relative"
+                color="primary"
+                id="top-bar"
+                sx={{ zIndex: 10 }}
+            >
                 <Toolbar className={classes.root}>
                     <Grid
                         container

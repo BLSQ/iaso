@@ -10,7 +10,8 @@ import { Profile } from '../../../utils/usersUtils';
 
 import { useGetOrgUnitParentLocations } from '../hooks/requests/useGetOrgUnitParentLocations';
 import { useGetOrgUnitParentIds } from '../hooks/useGetOrgUnitParentIds';
-import { ParentOrgUnit } from '../types/orgUnit';
+import { ParentOrgUnit } from '../../orgUnits/types/orgUnit';
+import { DropdownOptions } from '../../../types/utils';
 
 type Props = {
     allAssignments: AssignmentsApi;
@@ -28,6 +29,8 @@ type Props = {
         // eslint-disable-next-line no-unused-vars
         selectedOrgUnit: OrgUnitShape | OrgUnitMarker,
     ) => void;
+    orgunitTypes: Array<DropdownOptions<string>>;
+    isFetchingOrgUnitTypes: boolean;
 };
 
 export const AssignmentsMapTab: FunctionComponent<Props> = ({
@@ -42,8 +45,10 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
     locations,
     isFetchingLocations,
     isLoadingAssignments,
+    orgunitTypes,
+    isFetchingOrgUnitTypes,
 }) => {
-    const { parentPicking, parentOrgunitType } = params;
+    const { parentOrgunitType } = params;
 
     const { data: parentLocations, isFetching: isFetchingParentLocations } =
         useGetOrgUnitParentLocations({
@@ -53,8 +58,7 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
                 planning,
                 isLoadingAssignments,
             }),
-            baseOrgunitType:
-                parentPicking === 'true' ? parentOrgunitType : undefined,
+            baseOrgunitType: parentOrgunitType,
         });
     return (
         <AssignmentsMap
@@ -67,6 +71,9 @@ export const AssignmentsMapTab: FunctionComponent<Props> = ({
             teams={teams}
             profiles={profiles}
             assignments={allAssignments}
+            orgunitTypes={orgunitTypes}
+            isFetchingOrgUnitTypes={isFetchingOrgUnitTypes}
+            params={params}
         />
     );
 };

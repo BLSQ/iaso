@@ -91,7 +91,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
          These parameter can totally conflict and the result is undocumented
         """
-        queryset = self.get_queryset()
+        queryset = self.get_queryset().select_related("parent__org_unit_type")
         forms = Form.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)

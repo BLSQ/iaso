@@ -51,8 +51,8 @@ nav: # nav configures the side bar menu
       #   - ./pages/dev/reference/audit/audit.md
       # - Vector control:
       #   - ./pages/dev/reference/vector_control/vector_control.md
-      # - Models: 
-      #   - ./pages/dev/reference/API/entity.md
+      - Models: 
+        - ./pages/dev/reference/API/entity.md
     - How to:
       # - Contribute:
       - ./pages/dev/how_to/contribute/contribute.md 

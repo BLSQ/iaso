@@ -10,6 +10,7 @@ from plugins.polio.api.dashboards.forma import FormAStocksViewSetV2
 from plugins.polio.api.dashboards.launch_powerbi import LaunchPowerBIRefreshViewSet
 from plugins.polio.api.dashboards.preparedness_dashboard import PreparednessDashboardViewSet
 from plugins.polio.api.dashboards.rounds import RoundDashboardViewSet
+from plugins.polio.api.dashboards.spreadsheetimport import SpreadSheetImportViewSet
 from plugins.polio.api.dashboards.supply_chain import (
     PreAlertDashboardViewSet,
     VaccineArrivalReportDashboardViewSet,
@@ -98,4 +99,9 @@ router.register(
     r"polio/dashboards/rounds",
     RoundDashboardViewSet,
     basename="dashboard_rounds",
+)
+router.register(
+    r"polio/dashboards/preparedness_sheets",
+    SpreadSheetImportViewSet,
+    basename="dashboard_preparedness_sheets",
 )

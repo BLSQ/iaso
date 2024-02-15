@@ -414,12 +414,14 @@ class SourceVersionAdmin(admin.ModelAdmin):
 @admin.register(Entity)
 @admin_attr_decorator
 class EntityAdmin(admin.ModelAdmin):
+    search_fields = ["account__name", "entity_type__name", "attributes__json"]
+
     def get_form(self, request, obj=None, **kwargs):
         # In the <select> for the entity type, we also want to indicate the account name
         form = super().get_form(request, obj, **kwargs)
-        form.base_fields[
-            "entity_type"
-        ].label_from_instance = lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        form.base_fields["entity_type"].label_from_instance = (
+            lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        )
         return form
 
     readonly_fields = ("created_at",)
@@ -429,8 +431,11 @@ class EntityAdmin(admin.ModelAdmin):
         "account",
         "entity_type",
     )
-    list_filter = ("entity_type",)
+    list_filter = ("entity_type", "deleted_at")
     raw_id_fields = ("attributes",)
+
+    def get_queryset(self, request):
+        return Entity.objects_include_deleted.all()
 
 
 @admin.register(JsonDataStore)
@@ -584,9 +589,9 @@ class WorkflowAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         # In the <select> for the entity type, we also want to indicate the account name
         form = super().get_form(request, obj, **kwargs)
-        form.base_fields[
-            "entity_type"
-        ].label_from_instance = lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        form.base_fields["entity_type"].label_from_instance = (
+            lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        )
         return form
 
     def get_queryset(self, request):

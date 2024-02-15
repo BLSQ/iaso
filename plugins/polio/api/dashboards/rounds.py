@@ -3,6 +3,7 @@ from iaso.api.common import ModelViewSet
 from plugins.polio.api.permission_classes import PolioReadPermission
 from plugins.polio.models import Round
 
+
 class RoundDashboardSerializer(serializers.ModelSerializer):
     obr_name = serializers.CharField(source="campaign.obr_name")
 

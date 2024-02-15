@@ -24,15 +24,13 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
         cls.unauthorized_user = cls.create_user_with_profile(
             username="unAuthorized", account=cls.account, permissions=[]
         )
-        #We need the org unit type to be able to use campaign.country
+        # We need the org unit type to be able to use campaign.country
         cls.country_type = OrgUnitType.objects.create(name="country", category="COUNTRY")
         cls.country = OrgUnit.objects.create(name="Outsiplou", org_unit_type=cls.country_type)
         cls.campaign = Campaign.objects.create(
             obr_name="Outsiplou-2024", account=cls.account, initial_org_unit=cls.country
         )
-        cls.other_campaign = Campaign.objects.create(
-            obr_name="Not the expected result", account=cls.other_account
-        )
+        cls.other_campaign = Campaign.objects.create(obr_name="Not the expected result", account=cls.other_account)
         cls.vrf = VaccineRequestForm.objects.create(
             campaign=cls.campaign,
             date_vrf_signature=date.today(),
@@ -99,8 +97,8 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
         jr = self.assertJSONResponse(response, 200)
         results = jr["results"]
         self.assertEqual(len(results), 1)
-        vrf=results[0]
-        self.assertEqual(vrf["obr_name"],self.campaign.obr_name)
+        vrf = results[0]
+        self.assertEqual(vrf["obr_name"], self.campaign.obr_name)
 
     def test_pre_alerts_filters_by_account(self):
         self.client.force_authenticate(self.authorized_user_read)
@@ -108,14 +106,14 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
         jr = self.assertJSONResponse(response, 200)
         results = jr["results"]
         self.assertEqual(len(results), 1)
-        pre_alert=results[0]
-        self.assertEqual(pre_alert["request_form"],self.vrf.pk)
-        
+        pre_alert = results[0]
+        self.assertEqual(pre_alert["request_form"], self.vrf.pk)
+
     def test_arrival_reports_filters_by_account(self):
         self.client.force_authenticate(self.authorized_user_read)
         response = self.client.get(self.arrival_reports_url)
         jr = self.assertJSONResponse(response, 200)
         results = jr["results"]
         self.assertEqual(len(results), 1)
-        arrival_report=results[0]
-        self.assertEqual(arrival_report["request_form"],self.vrf.pk)
+        arrival_report = results[0]
+        self.assertEqual(arrival_report["request_form"], self.vrf.pk)

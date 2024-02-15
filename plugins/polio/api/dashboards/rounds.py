@@ -1,6 +1,8 @@
-from rest_framework import serializers, permissions
+from rest_framework import serializers
 from iaso.api.common import ModelViewSet
+from plugins.polio.api.permission_classes import PolioReadPermission
 from plugins.polio.models import Round
+from hat.menupermissions import models as permissions
 
 
 class RoundDashboardSerializer(serializers.ModelSerializer):
@@ -8,12 +10,12 @@ class RoundDashboardSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Round
-        fields = "__all__"
+        exclude = ["preparedness_spreadsheet_url"]
 
 
 class RoundDashboardViewSet(ModelViewSet):
     http_method_names = ["get"]
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [PolioReadPermission]
     model = Round
     serializer_class = RoundDashboardSerializer
 

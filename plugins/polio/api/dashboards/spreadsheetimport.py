@@ -9,6 +9,7 @@ class SpreadSheetImportDashboardSerializer(serializers.ModelSerializer):
         model = SpreadSheetImport
         fields = "__all__"
 
+
 class SpreadSheetImportViewSet(ModelViewSet):
     """
     GET /api/polio/dashboards/preparedness_sheets/
@@ -20,7 +21,7 @@ class SpreadSheetImportViewSet(ModelViewSet):
     permission_classes = [PolioReadPermission]
     model = SpreadSheetImport
     serializer_class = SpreadSheetImportDashboardSerializer
-    
+
     def get_queryset(self):
         # can't filter on account since model has no account field
         return SpreadSheetImport.objects.all().order_by("url")

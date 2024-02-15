@@ -29,7 +29,9 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
         cls.unauthorized_user = cls.create_user_with_profile(
             username="unAuthorized", account=cls.account, permissions=[]
         )
-        cls.spreadsheet = SpreadSheetImport.objects.create(url="https://baconipsum.com/", spread_id="spread_id", content=[{"hello":"world"}])
+        cls.spreadsheet = SpreadSheetImport.objects.create(
+            url="https://baconipsum.com/", spread_id="spread_id", content=[{"hello": "world"}]
+        )
 
     def test_user_has_permission(self):
         self.client.force_authenticate(self.unauthorized_user)
@@ -43,4 +45,3 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
         self.client.force_authenticate(self.authorized_user_admin)
         response = self.client.get(self.url)
         self.assertJSONResponse(response, 200)
-

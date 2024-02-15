@@ -294,14 +294,15 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
                 f"You must provide at least one of the following fields: {', '.join(new_fields_api)}."
             )
 
-        new_opening_date = validated_data.get("new_opening_date")
         new_closed_date = validated_data.get("new_closed_date")
+        new_opening_date = validated_data.get("new_opening_date")
+        new_parent = validated_data.get("new_parent")
+        org_unit = validated_data.get("org_unit")
 
         if (new_opening_date and new_closed_date) and (new_closed_date <= new_opening_date):
             raise serializers.ValidationError("`new_closed_date` must be later than `new_opening_date`.")
-
-        org_unit = validated_data.get("org_unit")
-        new_parent = validated_data.get("new_parent")
+        elif (org_unit.closed_date and new_opening_date) and (new_opening_date >= org_unit.closed_date):
+            raise serializers.ValidationError("`new_opening_date` must be before the current org_unit closed date.")
 
         if org_unit and new_parent:
             if new_parent.version_id != org_unit.version_id:

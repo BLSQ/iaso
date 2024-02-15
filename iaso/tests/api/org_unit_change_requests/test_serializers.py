@@ -496,6 +496,21 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
             "`new_closed_date` must be later than `new_opening_date`.", serializer.errors["non_field_errors"][0]
         )
 
+    def test_validate_opening_date(self):
+        self.org_unit.closed_date = datetime.date(2024, 2, 14)
+        self.org_unit.save()
+        one_day_after_org_unit_closed_date = self.org_unit.closed_date + datetime.timedelta(days=1)
+        data = {
+            "org_unit_id": self.org_unit.id,
+            "new_opening_date": one_day_after_org_unit_closed_date,
+        }
+        serializer = OrgUnitChangeRequestWriteSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(
+            "`new_opening_date` must be before the current org_unit closed date.",
+            serializer.errors["non_field_errors"][0],
+        )
+
     def test_validate_new_reference_instances(self):
         form = m.Form.objects.create(name="Vaccine form 1")
         instance1 = m.Instance.objects.create(form=form, org_unit=self.org_unit)

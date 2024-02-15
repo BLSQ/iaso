@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date
 from iaso.models.base import Account
 from iaso.models.org_unit import OrgUnit, OrgUnitType
 from iaso.test import APITestCase

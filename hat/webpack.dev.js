@@ -321,7 +321,7 @@ module.exports = {
                   ]
                 : /* assets/js/apps path allow using absolute import eg: from 'iaso/libs/Api' */
                   [
-                      path.resolve(__dirname, '../node_modules'),
+                      //   path.resolve(__dirname, '../node_modules'),
                       'node_modules',
                       path.resolve(__dirname, 'assets/js/apps/'),
                   ],

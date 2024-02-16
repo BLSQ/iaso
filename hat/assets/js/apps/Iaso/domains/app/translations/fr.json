@@ -249,7 +249,7 @@
     "iaso.forms.deviceOwnership": "Responsabilité appareil",
     "iaso.forms.dialog.deleteFormText": "Cette opération est définitive.",
     "iaso.forms.dialog.deleteFormTitle": "Etes-vous certain de vouloir effacer ce formulaire ?",
-    "iaso.forms.downloadTemplate": "Modèle pour un formulaire XLS",
+    "iaso.forms.downloadTemplate": "Modèle pour un formulaire XLSX",
     "iaso.forms.error.fieldRequired": "Ce champ est requis",
     "iaso.forms.form_id": "ID formulaire",
     "iaso.forms.geom": "Coordonnées",

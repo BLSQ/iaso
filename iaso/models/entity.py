@@ -12,6 +12,7 @@ age,... Because entities can be of very different natures, we avoid hardcoding t
 has a foreign key to a reference form, and each entity has a foreign key (attributes) to an instance/submission of that
 form.
 """
+
 import typing
 import uuid
 import json
@@ -149,7 +150,7 @@ class Entity(SoftDeletableModel):
     submission
     """
 
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, blank=True)
     uuid = models.UUIDField(default=uuid.uuid4, editable=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

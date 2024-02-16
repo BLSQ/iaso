@@ -49,7 +49,7 @@ VACCINES = [
 
 DOSES_PER_VIAL = {
     "mOPV2": 20,
-    "nOPV2": 20,
+    "nOPV2": 50,
     "bOPV": 20,
 }
 

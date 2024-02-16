@@ -14,10 +14,11 @@ import { VAR } from '../../constants';
 import { grayText, usePaperStyles } from '../shared';
 import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 import { Optional } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { dosesPerVial } from '../../hooks/utils';
 
-type Props = { index: number };
+type Props = { index: number, vaccine?: string };
 
-export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
+export const VaccineArrivalReport: FunctionComponent<Props> = ({ index, vaccine }) => {
     const classes: Record<string, string> = usePaperStyles();
     const { formatMessage } = useSafeIntl();
     const { values, setFieldValue, setFieldTouched } =
@@ -26,15 +27,16 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index }) => {
     const markedForDeletion = arrival_reports?.[index].to_delete ?? false;
     const uneditableTextStyling = markedForDeletion ? grayText : undefined;
 
-    const doses_per_vial = arrival_reports?.[index].doses_per_vial ?? 20;
-    const current_vials_shipped = Math.ceil(
+    const doses_per_vial_default = vaccine ? dosesPerVial[vaccine] : undefined;
+    const doses_per_vial = arrival_reports?.[index].doses_per_vial ?? doses_per_vial_default;
+    const current_vials_shipped = doses_per_vial ? Math.ceil(
         ((arrival_reports?.[index].doses_shipped as Optional<number>) ?? 0) /
-            doses_per_vial,
-    );
-    const current_vials_received = Math.ceil(
+        doses_per_vial,
+    ) : 0;
+    const current_vials_received = doses_per_vial ? Math.ceil(
         ((arrival_reports?.[index].doses_received as Optional<number>) ?? 0) /
-            doses_per_vial,
-    );
+        doses_per_vial,
+    ) : 0;
 
     return (
         <div className={classes.container}>

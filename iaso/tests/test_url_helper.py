@@ -4,7 +4,7 @@ from django.test import TestCase
 
 class Dhis2UrlHelperTests(TestCase):
     def test_none(self):
-        self.assertEqual(clean_url(None), None)
+        self.assertEqual(clean_url(None), "")
 
     def test_no_trailing_slash(self):
         self.assertEqual(clean_url("https://play.dhis2.org/2.37.10"), "https://play.dhis2.org/2.37.10")

@@ -191,6 +191,7 @@ class OrgUnitAPITestCase(APITestCase):
         )
 
         orgunit = self.jedi_squad_endor
+        parent = self.jedi_council_endor
         res = OrgUnitSearchSerializer(orgunit).data
         self.assertDictEqual(
             res,
@@ -217,7 +218,15 @@ class OrgUnitAPITestCase(APITestCase):
                 ),
                 "org_unit_type_id": orgunit.org_unit_type_id,
                 "org_unit_type_name": "Jedi Squad",
-                "parent": OrderedDict([("id", orgunit.parent_id), ("name", "Endor Jedi Council"), ("parent", None)]),
+                "parent": OrderedDict(
+                    [
+                        ("id", parent.id),
+                        ("name", "Endor Jedi Council"),
+                        ("parent", None),
+                        ("org_unit_type_id", parent.org_unit_type.id),
+                        ("org_unit_type_name", parent.org_unit_type.name),
+                    ]
+                ),
                 "parent_id": orgunit.parent_id,
                 "parent_name": "Endor Jedi Council",
                 "search_index": None,

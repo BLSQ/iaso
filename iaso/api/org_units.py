@@ -91,7 +91,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
          These parameter can totally conflict and the result is undocumented
         """
-        queryset = self.get_queryset()
+        queryset = self.get_queryset().select_related("parent__org_unit_type")
         forms = Form.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
@@ -123,7 +123,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         searches = request.GET.get("searches", None)
         counts = []
-
+        queryset = queryset.select_related("parent__org_unit_type")
         if searches:
             search_index = 0
             base_queryset = queryset
@@ -272,9 +272,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     org_unit.get("org_unit_type__name"),
                     location.y if location else None,
                     location.x if location else None,
-                    org_unit.get("opening_date").strftime("%Y-%m-%d")
-                    if org_unit.get("opening_date") is not None
-                    else None,
+                    (
+                        org_unit.get("opening_date").strftime("%Y-%m-%d")
+                        if org_unit.get("opening_date") is not None
+                        else None
+                    ),
                     org_unit.get("closed_date").strftime("%Y-%m-%d") if org_unit.get("closed_date") else None,
                     org_unit.get("created_at").strftime("%Y-%m-%d %H:%M"),
                     org_unit.get("updated_at").strftime("%Y-%m-%d %H:%M"),

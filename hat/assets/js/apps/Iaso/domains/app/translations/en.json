@@ -248,6 +248,7 @@
     "iaso.forms.deviceOwnership": "Device ownership",
     "iaso.forms.dialog.deleteFormText": "This operation cannot be undone.",
     "iaso.forms.dialog.deleteFormTitle": "Are you sure you want to delete this form?",
+    "iaso.forms.downloadTemplate": "Template for an XLSX form",
     "iaso.forms.error.fieldRequired": "This field is required",
     "iaso.forms.form_id": "Form id",
     "iaso.forms.geom": "Coordinates",

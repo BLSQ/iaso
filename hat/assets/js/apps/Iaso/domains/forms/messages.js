@@ -638,6 +638,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.instance_defining',
         defaultMessage: 'Instance definition',
     },
+    downloadTemplate: {
+        id: 'iaso.forms.downloadTemplate',
+        defaultMessage: 'Template for a XLS form',
+    },
 });
 
 export default MESSAGES;

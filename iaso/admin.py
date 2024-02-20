@@ -414,7 +414,14 @@ class SourceVersionAdmin(admin.ModelAdmin):
 @admin.register(Entity)
 @admin_attr_decorator
 class EntityAdmin(admin.ModelAdmin):
-    search_fields = ["account__name", "entity_type__name", "attributes__json"]
+    search_fields = [
+        "uuid",
+        "account__name",
+        "entity_type__name",
+        "attributes__json",
+        "attributes__id",
+        "attributes__uuid",
+    ]
 
     def get_form(self, request, obj=None, **kwargs):
         # In the <select> for the entity type, we also want to indicate the account name

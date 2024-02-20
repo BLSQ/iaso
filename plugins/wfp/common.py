@@ -136,7 +136,9 @@ class ETL:
             visit.get("_transfer_to_tsfp") is not None and visit.get("_transfer_to_tsfp") == "1"
         ):
             exit_type = "transfer_to_tsfp"
-        elif visit.get("_transfer_to_otp") is not None and visit.get("_transfer_to_otp") == "1":
+        elif (visit.get("_transfer_to_otp") is not None and visit.get("_transfer_to_otp") == "1") or (
+            visit.get("transfer_from_tsfp__bool__") is not None and visit.get("transfer_from_tsfp__bool__") == "1"
+        ):
             exit_type = "transfer_to_otp"
 
         elif visit.get("reason_for_not_continuing") is not None and visit.get("reason_for_not_continuing") != "":

@@ -18,7 +18,7 @@ import GroupsDialog from './components/GroupsDialog';
 import tableColumns, { baseUrl } from './config';
 import MESSAGES from './messages';
 
-import { redirectTo } from '../../../routing/actions';
+import { redirectTo } from '../../../routing/actions.ts';
 
 import { useGetGroups, useSaveGroups, useDeleteGroups } from './hooks/requests';
 
@@ -45,6 +45,26 @@ const Groups = ({ params }) => {
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Filters params={params} />
+                <Box
+                    mt={1}
+                    mp={2}
+                    display="flex"
+                    justifyContent="flex-end"
+                    alignItems="end"
+                >
+                    <GroupsDialog
+                        saveGroup={saveGroup}
+                        titleMessage={MESSAGES.create}
+                        renderTrigger={({ openDialog }) => (
+                            <AddButtonComponent
+                                dataTestId="add-group-button"
+                                onClick={openDialog}
+                            />
+                        )}
+                        params={params}
+                    />
+                </Box>
+
                 <Table
                     data={data?.groups ?? []}
                     pages={data?.pages ?? 1}
@@ -61,26 +81,8 @@ const Groups = ({ params }) => {
                     redirectTo={(_, newParams) =>
                         dispatch(redirectTo(baseUrl, newParams))
                     }
+                    marginTop={false}
                 />
-                <Grid
-                    container
-                    spacing={0}
-                    justifyContent="flex-end"
-                    alignItems="center"
-                    className={classes.marginTop}
-                >
-                    <GroupsDialog
-                        saveGroup={saveGroup}
-                        titleMessage={MESSAGES.create}
-                        renderTrigger={({ openDialog }) => (
-                            <AddButtonComponent
-                                dataTestId="add-group-button"
-                                onClick={openDialog}
-                            />
-                        )}
-                        params={params}
-                    />
-                </Grid>
             </Box>
         </>
     );

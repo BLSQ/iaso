@@ -15,8 +15,6 @@ type Props = {
     changeRequest?: OrgUnitChangeRequestDetails;
     isFetchingChangeRequest: boolean;
     isNewOrgUnit: boolean;
-    hasName: boolean;
-    hasType: boolean;
 };
 
 export const ReviewOrgUnitChangesDetailsTable: FunctionComponent<Props> = ({
@@ -26,8 +24,6 @@ export const ReviewOrgUnitChangesDetailsTable: FunctionComponent<Props> = ({
     changeRequest,
     isFetchingChangeRequest,
     isNewOrgUnit,
-    hasName,
-    hasType,
 }) => {
     const isNew: boolean =
         !isFetchingChangeRequest && changeRequest?.status === 'new';
@@ -48,8 +44,6 @@ export const ReviewOrgUnitChangesDetailsTable: FunctionComponent<Props> = ({
                     setSelected={setSelected}
                     isNew={isNew}
                     isNewOrgUnit={isNewOrgUnit}
-                    hasName={hasName}
-                    hasType={hasType}
                 />
             </Table>
         </TableContainer>

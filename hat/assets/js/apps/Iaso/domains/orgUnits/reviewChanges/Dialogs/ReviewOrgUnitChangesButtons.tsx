@@ -6,6 +6,7 @@ import MESSAGES from '../messages';
 import { NewOrgUnitField } from '../hooks/useNewFields';
 import { UseSaveChangeRequestQueryData } from '../hooks/api/useSaveChangeRequest';
 import { ReviewOrgUnitChangesDeleteDialog } from './ReviewOrgUnitChangesDeleteDialog';
+import { OrgUnitChangeRequestDetails } from '../types';
 
 type SubmitChangeRequest = (
     // eslint-disable-next-line no-unused-vars
@@ -17,8 +18,8 @@ type Props = {
     newFields: NewOrgUnitField[];
     isNew: boolean;
     isNewOrgUnit: boolean;
-    canSaveNewOrgUnit: boolean;
     submitChangeRequest: SubmitChangeRequest;
+    changeRequest?: OrgUnitChangeRequestDetails;
 };
 
 export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
@@ -26,8 +27,8 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
     newFields,
     isNew,
     isNewOrgUnit,
-    canSaveNewOrgUnit,
     submitChangeRequest,
+    changeRequest,
 }) => {
     const { formatMessage } = useSafeIntl();
     const selectedFields = newFields.filter(field => field.isSelected);
@@ -37,12 +38,13 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
     const handleConfirm = useCallback(() => {
         submitChangeRequest({
             status: 'approved',
-            approved_fields: selectedFields.map(field => `new_${field.key}`),
+            approved_fields:
+                isNewOrgUnit && changeRequest
+                    ? [...changeRequest.requested_fields]
+                    : selectedFields.map(field => `new_${field.key}`),
         });
-    }, [selectedFields, submitChangeRequest]);
-    const allowConfirm = isNewOrgUnit
-        ? canSaveNewOrgUnit
-        : selectedFields.length > 0;
+    }, [changeRequest, isNewOrgUnit, selectedFields, submitChangeRequest]);
+    const allowConfirm = isNewOrgUnit || selectedFields.length > 0;
     return (
         <>
             <ReviewOrgUnitChangesDeleteDialog

@@ -102,10 +102,12 @@ export const ReviewOrgUnitChangesDetailsTableRow: FunctionComponent<Props> = ({
             )}
             <TableCell
                 className={classNames(
-                    !isFetchingChangeRequest &&
+                    !isNewOrgUnit &&
+                        !isFetchingChangeRequest &&
                         isCellRejected &&
                         classes.cellRejected,
-                    !isFetchingChangeRequest &&
+                    !isNewOrgUnit &&
+                        !isFetchingChangeRequest &&
                         isCellApproved &&
                         classes.cellApproved,
                     !isCellApproved && !isCellRejected && classes.cell,
@@ -114,7 +116,7 @@ export const ReviewOrgUnitChangesDetailsTableRow: FunctionComponent<Props> = ({
             >
                 {field.newValue}
             </TableCell>
-            {isNew && (
+            {isNew && !isNewOrgUnit && (
                 <TableCell className={classes.checkBoxCell}>
                     {field.isChanged && (
                         <Box

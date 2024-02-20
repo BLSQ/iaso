@@ -117,6 +117,7 @@ class OrgUnitForChangeRequestSerializerTestCase(TestCase):
                         },
                     }
                 ],
+                "validation_status": "NEW",
             },
         )
 
@@ -166,6 +167,7 @@ class OrgUnitChangeRequestListSerializerTestCase(TestCase):
                 "org_unit_name": self.org_unit.name,
                 "org_unit_type_id": self.org_unit.org_unit_type.pk,
                 "org_unit_type_name": self.org_unit.org_unit_type.name,
+                "org_unit_validation_status": "NEW",
                 "status": change_request.status.value,
                 "groups": [
                     {"id": self.group.id, "name": "Group"},

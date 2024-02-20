@@ -5,6 +5,7 @@ import React, {
     Dispatch,
     SetStateAction,
 } from 'react';
+import Color from 'color';
 import { useDispatch } from 'react-redux';
 import { Column, useSafeIntl } from 'bluesquare-components';
 import { Box } from '@mui/material';
@@ -150,13 +151,16 @@ const useColumns = (
     ];
 };
 
-const getRowProps = row => {
-    if (!row.original.org_unit_id) {
+const getRowProps = (row: { original: OrgUnitChangeRequest }) => {
+    if (
+        row.original.org_unit_validation_status === 'NEW' &&
+        row.original.status === 'new'
+    ) {
         return {
             'data-test': 'new-org-unit-row',
             sx: {
                 backgroundColor: theme =>
-                    `${theme.palette.yellow.main} !important`,
+                    `${Color(theme.palette.yellow.main).fade(0.5)} !important`,
             },
         };
     }

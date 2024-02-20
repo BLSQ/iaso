@@ -44,7 +44,7 @@ export const ReviewOrgUnitChangesDetailsTableHead: FunctionComponent<Props> = ({
                             : formatMessage(MESSAGES.newValue)}
                     </Box>
                 </TableCell>
-                {isNew && (
+                {isNew && !isNewOrgUnit && (
                     <TableCell width={30}>
                         <Box
                             className={classes.head}

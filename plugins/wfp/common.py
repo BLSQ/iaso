@@ -132,18 +132,8 @@ class ETL:
 
     def exit_type(self, visit):
         exit_type = None
-        if (
-            (visit.get("_Xfinal_color_result") is not None and visit.get("_Xfinal_color_result") == "Y")
-            and (visit.get("previous_child_color") is not None and visit.get("previous_child_color") == "Y")
-            and (visit.get("_transfer_to_tsfp") is not None and visit.get("_transfer_to_tsfp") == "1")
-        ):
-            exit_type = "cured"
-        elif (
-            (visit.get("previous_whz_color") is not None and visit.get("previous_whz_color") == "R")
-            and (visit.get("_Xwhz_color") is not None and visit.get("_Xwhz_color") == "R")
-            and (visit.get("previous_muac_color") is not None and visit.get("previous_muac_color") == "R")
-            and (visit.get("_Xmuac_color") is not None and visit.get("_Xmuac_color") == "R")
-            and (visit.get("_transfer_to_tsfp") is not None and visit.get("_transfer_to_tsfp") == "1")
+        if (visit.get("_transfer") is not None and visit.get("_transfer") == "1") and (
+            visit.get("_transfer_to_tsfp") is not None and visit.get("_transfer_to_tsfp") == "1"
         ):
             exit_type = "transfer_to_tsfp"
         elif visit.get("_transfer_to_otp") is not None and visit.get("_transfer_to_otp") == "1":

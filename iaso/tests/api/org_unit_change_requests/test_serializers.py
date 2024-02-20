@@ -353,6 +353,7 @@ class OrgUnitChangeRequestRetrieveSerializerTestCase(TestCase):
                         ("opening_date", None),
                         ("closed_date", None),
                         ("reference_instances", []),
+                        ("validation_status", "NEW"),
                     ]
                 ),
                 "new_parent": None,

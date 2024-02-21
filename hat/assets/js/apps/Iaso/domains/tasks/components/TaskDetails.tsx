@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 import { defineMessages } from 'react-intl';
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import React, { FunctionComponent } from 'react';
+import { useQuery } from 'react-query';
 import { Button, Container } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 
@@ -29,18 +30,14 @@ type Props = {
 const TaskDetails: FunctionComponent<Props> = ({ task }) => {
     const { formatMessage } = useSafeIntl();
 
-    const [presignedUrl, setPresignedUrl] = useState(null);
-
     const taskHasDownloadableFile =
         task.result && task.result.data && task.result.data.startsWith('file:');
 
-    useEffect(() => {
-        if (taskHasDownloadableFile) {
-            getRequest(`/api/tasks/${task.id}/presigned-url/`).then(resp =>
-                setPresignedUrl(resp.presigned_url),
-            );
-        }
-    }, []);
+    const { data } = useQuery(
+        ['taskDetails', task.id],
+        () => getRequest(`/api/tasks/${task.id}/presigned-url/`),
+        { enabled: Boolean(taskHasDownloadableFile) },
+    );
 
     return (
         <Container maxWidth={false} sx={styles.root}>
@@ -48,9 +45,9 @@ const TaskDetails: FunctionComponent<Props> = ({ task }) => {
             {taskHasDownloadableFile && (
                 <Button
                     variant="contained"
-                    href={presignedUrl}
+                    href={data?.presigned_url}
                     target="_blank"
-                    disabled={!presignedUrl}
+                    disabled={!data || !data.presigned_url}
                 >
                     {formatMessage(MESSAGES.exportMobileAppDownloadBtn)}
                 </Button>

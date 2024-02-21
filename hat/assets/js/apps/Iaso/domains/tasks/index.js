@@ -110,7 +110,6 @@ const Tasks = ({ params }) => {
                     extraProps={{
                         loading: isLoading,
                         SubComponent: task => {
-                            console.log('task', task);
                             return task ? <TaskDetails task={task} /> : null;
                         },
                     }}

@@ -15,8 +15,8 @@ yup.addMethod(
                 const valuesArray = Array.isArray(value)
                     ? value
                     : value
-                          .split(',')
-                          .map((v: string | number) => `${v}`.trim());
+                        .split(',')
+                        .map((v: string | number) => `${v}`.trim());
                 const hasOtherChar = valuesArray.some(v => !regexp.test(v));
                 if (hasOtherChar) {
                     errorMessage = formatMessage(MESSAGES.lotNumberError);
@@ -44,7 +44,7 @@ export const useFormAValidation = () => {
         lot_numbers: yup
             .mixed()
             .nullable()
-            .required(formatMessage(MESSAGES.requiredField))
+            // .required(formatMessage(MESSAGES.requiredField))
             // TS can't detect the added method
             // @ts-ignore
             .isNumbersArrayString(formatMessage),

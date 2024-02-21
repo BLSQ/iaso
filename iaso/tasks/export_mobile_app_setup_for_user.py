@@ -115,33 +115,46 @@ def _get_resource(iaso_client, call, tmp_dir, app_id, feature_flags):
     page = 1
     while page == 1 or (isinstance(result, dict) and result.get("has_next", False)):
         query_params = call.get("query_params", {})
-        query_params = {**query_params, "app_id": app_id, "page": page}
-        if "page_size" in call:
-            query_params["limit"] = call["page_size"]
-        resource_url = urlunparse(("", "", call["path"], "", urlencode(query_params), ""))
+        query_params["app_id"] = app_id
 
-        logger.info(f"{call['filename']}: GET {resource_url}")
-        result = iaso_client.get(resource_url)
+        filename = None
+        if call.get("paginated", False):
+            query_params["page"] = page
+            if "page_size" in call:
+                query_params["limit"] = call["page_size"]
+            filename = f"{call['filename']}-{page}.json"
+        else:
+            filename = call["filename"] + ".json"
+
+        url = urlunparse(("", "", call["path"], "", urlencode(query_params), ""))
+        result = _call_endpoint_and_save_response(iaso_client, tmp_dir, url, filename)
 
         if call["filename"] == "formversions":
             _download_form_versions(iaso_client, tmp_dir, result["form_versions"])
         if call["filename"] == "reports":
             _download_reports(iaso_client, tmp_dir, result)
         if call["filename"] == "formattachments":
-            _download_form_attachments(iaso_client, tmp_dir, call, result["results"])
-
-        if isinstance(result, dict) and "count" in result:
-            logger.info(f"\tTotal count: {result['count']}")
-        if isinstance(result, dict) and "pages" in result:
-            logger.info(f"\tTotal pages: {result['pages']}")
-
-        with open(os.path.join(tmp_dir, f"{call['filename']}-{page}.json"), "w") as json_file:
-            json.dump(result, json_file)
+            _download_form_attachments(iaso_client, tmp_dir, result["results"])
 
         page += 1
 
 
-def _download_form_attachments(iaso_client, tmp_dir, call, resources):
+def _call_endpoint_and_save_response(iaso_client, tmp_dir, url, filename):
+    logger.info(f"{filename}: GET {url}")
+    result = iaso_client.get(url)
+
+    if isinstance(result, dict) and "count" in result:
+        logger.info(f"\tTotal count: {result['count']}")
+    if isinstance(result, dict) and "pages" in result:
+        logger.info(f"\tTotal pages: {result['pages']}")
+
+    with open(os.path.join(tmp_dir, filename), "w") as json_file:
+        json.dump(result, json_file)
+
+    return result
+
+
+def _download_form_attachments(iaso_client, tmp_dir, resources):
     if len(resources) == 0:
         return
 
@@ -203,7 +216,7 @@ def _compress_and_upload_to_s3(tmp_dir, export_name):
     zipfile_name = f"{export_name}.zip"
     logger.info(f"Creating zipfile {zipfile_name}")
 
-    with zipfile.ZipFile(os.path.join(tmp_dir, zipfile_name), "w") as zipf:
+    with zipfile.ZipFile(os.path.join(tmp_dir, zipfile_name), "w", zipfile.ZIP_DEFLATED) as zipf:
         # add all files in /tmp directory to the .zip file
         for root, _dirs, files in os.walk(tmp_dir):
             for file in files:

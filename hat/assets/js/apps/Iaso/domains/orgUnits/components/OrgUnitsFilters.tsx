@@ -253,8 +253,6 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                         }
                     />
                 </Box>
-
-
                 <InputWithInfos infos={formatMessage(MESSAGES.searchParams)}>
                     <InputComponent
                         keyValue="search"
@@ -267,7 +265,6 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                         onErrorChange={(hasError) => setTextSearchError(hasError)}
                     />
                 </InputWithInfos>
-
                 <InputComponent
                     type="select"
                     disabled={isFetchingDataSources}

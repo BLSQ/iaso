@@ -6,7 +6,6 @@ export type AssignmentParams = {
     team?: string;
     baseOrgunitType?: string;
     parentOrgunitType?: string;
-    parentPicking?: string;
     tab?: string;
     order?: string;
     search?: string;

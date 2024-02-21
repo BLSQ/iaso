@@ -49,7 +49,7 @@ VACCINES = [
 
 DOSES_PER_VIAL = {
     "mOPV2": 20,
-    "nOPV2": 20,
+    "nOPV2": 50,
     "bOPV": 20,
 }
 
@@ -978,6 +978,7 @@ class VaccineRequestForm(SoftDeletableModel):
     date_vrf_submitted_to_dg = models.DateField(null=True, blank=True)
     quantities_approved_by_dg_in_doses = models.PositiveIntegerField(null=True, blank=True)
     comment = models.TextField(blank=True, null=True)
+    target_population = models.PositiveIntegerField(null=True, blank=True)
 
     objects = DefaultSoftDeletableManager()
 

@@ -10,25 +10,30 @@ import { DateInput } from '../../../../../components/Inputs/DateInput';
 import { NumberInput, TextInput } from '../../../../../components/Inputs';
 import MESSAGES from '../../messages';
 import { SupplyChainFormData } from '../../types';
-import { usePaperStyles } from '../shared';
+import { grayText, usePaperStyles } from '../shared';
 import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
+import { Optional } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { dosesPerVial } from '../../hooks/utils';
 
 type Props = {
     index: number;
+    vaccine?: string;
 };
 
-export const PreAlert: FunctionComponent<Props> = ({ index }) => {
+export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
     const classes: Record<string, string> = usePaperStyles();
     const { formatMessage } = useSafeIntl();
     const { values, setFieldValue, setFieldTouched } =
         useFormikContext<SupplyChainFormData>();
     const { pre_alerts } = values as SupplyChainFormData;
     const markedForDeletion = pre_alerts?.[index].to_delete ?? false;
-
-    const doses_per_vial = pre_alerts?.[index].doses_per_vial ?? 20;
-    const current_vials_shipped = Math.ceil(
-        (pre_alerts?.[index].doses_shipped ?? 0) / doses_per_vial,
-    );
+    const uneditableTextStyling = markedForDeletion ? grayText : undefined;
+    const doses_per_vial_default = vaccine ? dosesPerVial[vaccine] : undefined;
+    const doses_per_vial = pre_alerts?.[index].doses_per_vial ?? doses_per_vial_default;
+    const current_vials_shipped = doses_per_vial ? Math.ceil(
+        ((pre_alerts?.[index].doses_shipped as Optional<number>) ?? 0) /
+        doses_per_vial,
+    ) : 0;
 
     const onDelete = useCallback(() => {
         if (values?.pre_alerts?.[index].id) {
@@ -43,7 +48,6 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
             }
         }
     }, [index, setFieldTouched, setFieldValue, values?.pre_alerts]);
-
     return (
         <div className={classes.container}>
             <Paper
@@ -104,7 +108,10 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                             alignContent="center"
                         >
                             <Box>
-                                <Typography variant="button">
+                                <Typography
+                                    variant="button"
+                                    sx={uneditableTextStyling}
+                                >
                                     {`${formatMessage(
                                         MESSAGES.doses_per_vial,
                                     )}:`}{' '}
@@ -120,7 +127,10 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
                             alignContent="center"
                         >
                             <Box>
-                                <Typography variant="button">
+                                <Typography
+                                    variant="button"
+                                    sx={uneditableTextStyling}
+                                >
                                     {`${formatMessage(
                                         MESSAGES.vials_shipped,
                                     )}:`}{' '}

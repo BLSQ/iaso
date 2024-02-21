@@ -5,10 +5,15 @@ from plugins.polio.api.campaigns.campaigns import CampaignViewSet
 from plugins.polio.api.campaigns.orgunits_per_campaigns import OrgUnitsPerCampaignViewset
 from iaso.api.config import ConfigViewSet
 from plugins.polio.api.country_user_groups import CountryUsersGroupViewSet
-from plugins.polio.api.dashboards.forma import FormAStocksViewSet
-from plugins.polio.api.dashboards.forma import FormAStocksViewSetV2
 from plugins.polio.api.dashboards.launch_powerbi import LaunchPowerBIRefreshViewSet
 from plugins.polio.api.dashboards.preparedness_dashboard import PreparednessDashboardViewSet
+from plugins.polio.api.dashboards.rounds import RoundDashboardViewSet
+from plugins.polio.api.dashboards.spreadsheetimport import SpreadSheetImportViewSet
+from plugins.polio.api.dashboards.supply_chain import (
+    PreAlertDashboardViewSet,
+    VaccineArrivalReportDashboardViewSet,
+    VaccineRequestFormDashboardViewSet,
+)
 from plugins.polio.api.dashboards.vaccine_stocks import VaccineStocksViewSet
 from plugins.polio.api.lqas_im.countries_with_lqas_im import CountriesWithLqasIMConfigViewSet
 from plugins.polio.api.lqas_im.im_stats import IMStatsViewSet
@@ -23,7 +28,9 @@ from plugins.polio.api.rounds.round_date_history import RoundDateHistoryEntryVie
 from plugins.polio.api.vaccines.vaccine_authorization import VaccineAuthorizationViewSet
 from plugins.polio.budget.api import BudgetCampaignViewSet, BudgetStepViewSet, WorkflowViewSet
 from plugins.polio.tasks.api.create_refresh_preparedness_data import RefreshPreparednessLaucherViewSet
-from plugins.polio.api.vaccines.supply_chain import VaccineRequestFormViewSet
+from plugins.polio.api.vaccines.supply_chain import (
+    VaccineRequestFormViewSet,
+)
 from plugins.polio.api.vaccines.stock_management import (
     VaccineStockManagementViewSet,
     OutgoingStockMovementViewSet,
@@ -43,8 +50,6 @@ router.register(r"polio/campaignsgroup", CampaignGroupViewSet, basename="campaig
 router.register(r"polio/preparedness_dashboard", PreparednessDashboardViewSet, basename="preparedness_dashboard")
 router.register(r"polio/imstats", IMStatsViewSet, basename="imstats")
 router.register(r"polio/vaccines", VaccineStocksViewSet, basename="vaccines")
-router.register(r"polio/forma", FormAStocksViewSet, basename="forma")
-router.register(r"polio/v2/forma", FormAStocksViewSetV2, basename="forma")
 router.register(r"polio/countryusersgroup", CountryUsersGroupViewSet, basename="countryusersgroup")
 router.register(r"polio/orgunitspercampaign", OrgUnitsPerCampaignViewset, basename="orgunitspercampaign")
 # duplicate of /api/configs. Can be removed once lqas OpenHexa pipeline switches to the main (iaso) endpoint
@@ -71,3 +76,28 @@ router.register(r"polio/vaccine/stock/incident_report", IncidentReportViewSet, b
 router.register(r"polio/notifications", NotificationViewSet, basename="notifications")
 
 router.register(r"tasks/create/refreshpreparedness", RefreshPreparednessLaucherViewSet, basename="refresh_preparedness")
+router.register(
+    r"polio/dashboards/vaccine_request_forms",
+    VaccineRequestFormDashboardViewSet,
+    basename="dashboard_vaccine_request_forms",
+)
+router.register(
+    r"polio/dashboards/pre_alerts",
+    PreAlertDashboardViewSet,
+    basename="dashboard_pre-alerts",
+)
+router.register(
+    r"polio/dashboards/arrival_reports",
+    VaccineArrivalReportDashboardViewSet,
+    basename="dashboard_arrival_reports",
+)
+router.register(
+    r"polio/dashboards/rounds",
+    RoundDashboardViewSet,
+    basename="dashboard_rounds",
+)
+router.register(
+    r"polio/dashboards/preparedness_sheets",
+    SpreadSheetImportViewSet,
+    basename="dashboard_preparedness_sheets",
+)

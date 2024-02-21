@@ -310,6 +310,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.cancelChanges',
         defaultMessage: 'Cancel changes',
     },
+    targetPopulation: {
+        id: 'iaso.polio.label.targetPopulation',
+        defaultMessage: 'Target population',
+    },
 });
 
 export default MESSAGES;

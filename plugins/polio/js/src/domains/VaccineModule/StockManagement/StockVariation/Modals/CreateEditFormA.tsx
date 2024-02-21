@@ -57,7 +57,7 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
         validationSchema,
     });
     const { data: campaignOptions, isFetching: isFetchingCampaigns } =
-        useCampaignOptions(countryName);
+        useCampaignOptions(countryName, formik.values.campaign);
     const titleMessage = formA?.id ? MESSAGES.edit : MESSAGES.create;
     const title = `${countryName} - ${vaccine}: ${formatMessage(
         titleMessage,
@@ -87,17 +87,7 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                         name="campaign"
                         component={SingleSelect}
                         required
-                        options={
-                            // @ts-ignore
-                            (campaignOptions ?? []).length > 0
-                                ? campaignOptions
-                                : [
-                                      {
-                                          label: formik.values.campaign,
-                                          value: formik.values.campaign,
-                                      },
-                                  ]
-                        }
+                        options={campaignOptions}
                         withMarginTop
                         isLoading={isFetchingCampaigns}
                         disabled={!countryName}

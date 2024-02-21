@@ -415,6 +415,15 @@ class SourceVersionAdmin(admin.ModelAdmin):
 @admin.register(Entity)
 @admin_attr_decorator
 class EntityAdmin(admin.ModelAdmin):
+    search_fields = [
+        "uuid",
+        "account__name",
+        "entity_type__name",
+        "attributes__json",
+        "attributes__id",
+        "attributes__uuid",
+    ]
+
     def get_form(self, request, obj=None, **kwargs):
         # In the <select> for the entity type, we also want to indicate the account name
         form = super().get_form(request, obj, **kwargs)
@@ -430,8 +439,11 @@ class EntityAdmin(admin.ModelAdmin):
         "account",
         "entity_type",
     )
-    list_filter = ("entity_type",)
+    list_filter = ("entity_type", "deleted_at")
     raw_id_fields = ("attributes",)
+
+    def get_queryset(self, request):
+        return Entity.objects_include_deleted.all()
 
 
 @admin.register(JsonDataStore)

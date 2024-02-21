@@ -153,6 +153,26 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.close',
         defaultMessage: 'Close',
     },
+    forms: {
+        defaultMessage: 'Forms',
+        id: 'iaso.forms.title',
+    },
+    user: {
+        id: 'iaso.label.user',
+        defaultMessage: 'User',
+    },
+    userRoles: {
+        defaultMessage: 'User roles',
+        id: 'iaso.label.userRoles',
+    },
+    with: {
+        id: 'iaso.label.with',
+        defaultMessage: 'With',
+    },
+    without: {
+        id: 'iaso.label.without',
+        defaultMessage: 'Without',
+    },
 });
 
 export default MESSAGES;

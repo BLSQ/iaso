@@ -85,13 +85,21 @@ The Django model that stores "Change Requests" is `OrgUnitChangeRequest`.
 - `page`: Int (optional) - Current page (default: 1)
 - `limit`: Int (optional) - Number of entities returned by page (default: 20)
 - `org_unit_id`: Int (optional) - Id of the OrgUnit to which the changes apply (default: null)
-- `org_unit_type_id`: Int (optional) - Id of the OrgUnitType to filter on, either the current OrgUnitType or in the change (default: null)
+- `org_unit_type_id`: Int (optional) - Id of the OrgUnitType to filter on, either the old OrgUnitType before the change or the new one after the change (default: null)
 - `status`: Array<Enum<Status>> (optional) - One of `new`, `validated`, `rejected` to filter the requests (default: null)
     - can be combined, e.g. `&status=rejected&status=new`
-- `parent_id`: Int (optional) - Id of the parent OrgUnit to filter on, either the current parent or in the change (default: null)
+- `parent_id`: Int (optional) - Id of the old parent OrgUnit to filter on, before the change (default: null)
 - `project`: Int (optional) - Id of the project to filter on.
-- `groups`: List of int, comma separated (optional) - Ids of the group to filter on, either the currents groups or in the change (default: null)
+- `groups`: List of int, comma separated (optional) - Ids of the old groups to filter on, before the change (default: null)
     - e.g. `&groups=1847,1846`
+- `forms`: List of int, comma separated (optional) - Ids of the old forms to filter on, before the change (default: null)
+    - e.g. `&forms=12,34`
+- `users`: List of int, comma separated (optional) - Ids of the users who either created or last updated the change request (default: null)
+    - e.g. `&users=56,78`
+- `user_roles`: List of int, comma separated (optional) - Ids of the old user roles to filter on, specifically the roles associated with the user who created the change request (default: null)
+    - e.g. `&user_roles=90,123`
+- `with_location`: String (optional) - Filters the change requests based on the presence (`"true"`) or absence (`"false"`) of an old location, before the change (default: null)
+    - e.g. `&with_location=true`
 
 ## Possible responses
 

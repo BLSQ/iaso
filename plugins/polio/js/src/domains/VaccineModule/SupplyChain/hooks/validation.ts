@@ -108,6 +108,12 @@ const useVrfShape = () => {
             .required(formatMessage(MESSAGES.requiredField))
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
+        target_population: yup
+            .number()
+            .nullable()
+            .min(0, formatMessage(MESSAGES.positiveInteger))
+            .integer()
+            .typeError(formatMessage(MESSAGES.positiveInteger)),
         comments: yup.string().nullable(),
     });
 };

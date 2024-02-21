@@ -275,14 +275,17 @@ class ETL:
             given_medication = self.split_given_medication(step.get("medication_2"), quantity)
             given_assistance = given_assistance + given_medication
 
-        if step.get("ration_to_distribute") is not None:
+        if step.get("ration_to_distribute") is not None or step.get("ration") is not None:
             quantity = 0
             if step.get("_total_number_of_sachets") is not None:
                 quantity = step.get("_total_number_of_sachets", 0)
             elif step.get("_csb_packets") is not None:
                 quantity = step.get("_csb_packets", 0)
 
-            assistance = {"type": step.get("ration_to_distribute"), "quantity": quantity}
+            if step.get("ration_to_distribute") is not None:
+                assistance = {"type": step.get("ration_to_distribute"), "quantity": quantity}
+            elif step.get("ration") is not None:
+                assistance = {"type": step.get("ration"), "quantity": quantity}
             given_assistance.append(assistance)
 
         if step.get("ration_type_tsfp") is not None:

@@ -545,7 +545,7 @@ const MESSAGES = defineMessages({
     },
     searchParams: {
         id: 'iaso.orgUnits.searchParams',
-        defaultMessage: 'To search by external reference ID, please insert “refs:” before your search. You can then paste one or several reference ID(s). Example: “refs: XYZ, ABC.”',
+        defaultMessage: 'Use prefix “refs:” for external org unit ID search. Use prefix “ids:” for internal org unit ID search. Separate with a comma for multiple IDs. E.g. “refs: 123456, 654321”',
     }
 });
 

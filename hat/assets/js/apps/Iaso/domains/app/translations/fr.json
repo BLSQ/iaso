@@ -1242,6 +1242,7 @@
     "iaso.workflows.targetVersion": "Version cible",
     "iaso.workflows.unpublish": "Annuler la publication",
     "iaso.zone": "Zone de santé",
+    "iaso.orgUnits.searchParams": "Pour effectuer une recherche par ID de référence externe, veuillez insérer « refs : » avant votre recherche. Vous pouvez ensuite coller un ou plusieurs ID de référence. Exemple : “refs: XYZ, ABC”'",
     "map.draw.label.cancel": "Annuler",
     "map.draw.label.circle": "Dessiner un cercle",
     "map.draw.label.circleTooltip": "Cliquez et bougez pour dessiner un cercle",

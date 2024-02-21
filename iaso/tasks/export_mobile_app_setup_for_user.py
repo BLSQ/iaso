@@ -63,7 +63,7 @@ def export_mobile_app_setup_for_user(
     the_task.report_progress_and_stop_if_killed(progress_value=1)
 
     if app_info["needs_authentication"]:
-        logger.info("-- Authentication required, authenticating iaso_client")
+        logger.info("Authentication required, authenticating iaso_client")
         refresh = RefreshToken.for_user(user)
         iaso_client.authenticate_with_token(str(refresh.access_token))
 
@@ -83,11 +83,11 @@ def export_mobile_app_setup_for_user(
 
 
 def _get_project_app_details(iaso_client, tmp_dir, app_id):
-    logger.info("-- Getting app info (feature flags etc)")
+    logger.info("Getting app info (feature flags etc)")
     # Public endpoint, no auth needed
     app_info = iaso_client.get(f"/api/apps/current/?app_id={app_id}")
 
-    logger.info("-- App summary:")
+    logger.info("App summary:")
     logger.info(f"\tName: {app_info['name']}")
     logger.info(f"\tApp id: {app_info['app_id']}")
     logger.info(f"\tNeeds authentication: {app_info['needs_authentication']}")
@@ -97,7 +97,7 @@ def _get_project_app_details(iaso_client, tmp_dir, app_id):
         logger.info(f"\t\t{flag['code']}: {flag['name']}")
     logger.info("")
 
-    logger.info(f"-- Writing results to {tmp_dir}")
+    logger.info(f"Writing results to {tmp_dir}")
     if not os.path.exists(tmp_dir):
         os.makedirs(tmp_dir)
 
@@ -109,7 +109,7 @@ def _get_project_app_details(iaso_client, tmp_dir, app_id):
 
 def _get_resource(iaso_client, call, tmp_dir, app_id, feature_flags):
     if ("required_feature_flag" in call) and call["required_feature_flag"] not in feature_flags:
-        logger.info(f"-- {call['filename']}: not writing, feature flag missing.")
+        logger.info(f"{call['filename']}: not writing, feature flag missing.")
         return
 
     page = 1
@@ -120,11 +120,15 @@ def _get_resource(iaso_client, call, tmp_dir, app_id, feature_flags):
             query_params["limit"] = call["page_size"]
         resource_url = urlunparse(("", "", call["path"], "", urlencode(query_params), ""))
 
-        logger.info(f"-- {call['filename']}: GET {resource_url}")
+        logger.info(f"{call['filename']}: GET {resource_url}")
         result = iaso_client.get(resource_url)
 
+        if call["filename"] == "formversions":
+            _download_form_versions(iaso_client, tmp_dir, result["form_versions"])
         if call["filename"] == "reports":
             _download_reports(iaso_client, tmp_dir, result)
+        if call["filename"] == "formattachments":
+            _download_form_attachments(iaso_client, tmp_dir, call, result["results"])
 
         if isinstance(result, dict) and "count" in result:
             logger.info(f"\tTotal count: {result['count']}")
@@ -137,29 +141,78 @@ def _get_resource(iaso_client, call, tmp_dir, app_id, feature_flags):
         page += 1
 
 
+def _download_form_attachments(iaso_client, tmp_dir, call, resources):
+    if len(resources) == 0:
+        return
+
+    # create subfolder for downloaded files
+    os.makedirs(os.path.join(tmp_dir, "formattachments"))
+    for resource in resources:
+        form_id = resource["form_id"]
+        os.makedirs(os.path.join(tmp_dir, "formattachments", str(form_id)))
+        path = resource["file"]
+        filename = path.split("/")[-1]
+
+        logger.info(f"\tDOWNLOAD {path}")
+        attachment_file = requests.get(path, headers=iaso_client.headers)
+        logger.info(f"\tDOWNLOAD manifest")
+        manifest_file = requests.get(
+            SERVER + f"/api/forms/{form_id}/manifest/",
+            headers=iaso_client.headers,
+        )
+
+        with open(os.path.join(tmp_dir, "formattachments", str(form_id), filename), mode="wb") as f:
+            f.write(attachment_file.content)
+        with open(os.path.join(tmp_dir, "formattachments", str(form_id), "manifest.xml"), mode="wb") as f:
+            f.write(manifest_file.content)
+
+
+def _download_form_versions(iaso_client, tmp_dir, form_versions):
+    if len(form_versions) == 0:
+        return
+
+    os.makedirs(os.path.join(tmp_dir, "forms"))
+    for form_version in form_versions:
+        path = form_version["file"]
+        filename = path.split("/")[-1]
+
+        logger.info(f"\tDOWNLOAD {path}")
+        response = requests.get(path, headers=iaso_client.headers)
+
+        with open(os.path.join(tmp_dir, "forms", filename), mode="wb") as f:
+            f.write(response.content)
+
+
 def _download_reports(iaso_client, tmp_dir, reports):
+    if len(reports) == 0:
+        return
+
+    os.makedirs(os.path.join(tmp_dir, "reports"))
     for report in reports:
         path = report["url"]
         filename = path.split("/")[-1]
 
-        logger.info(f"\tGET {path}")
+        logger.info(f"\tDOWNLOAD {path}")
         response = requests.get(SERVER + path, headers=iaso_client.headers)
 
-        with open(os.path.join(tmp_dir, filename), mode="wb") as f:
+        with open(os.path.join(tmp_dir, "reports", filename), mode="wb") as f:
             f.write(response.content)
 
 
 def _compress_and_upload_to_s3(tmp_dir, export_name):
     zipfile_name = f"{export_name}.zip"
-    logger.info(f"-- Creating zipfile {zipfile_name}")
+    logger.info(f"Creating zipfile {zipfile_name}")
+
     with zipfile.ZipFile(os.path.join(tmp_dir, zipfile_name), "w") as zipf:
         # add all files in /tmp directory to the .zip file
-        # the arcname param makes sure we add all files in the root of the .zip
-        for file in os.listdir(tmp_dir):
-            if file != zipfile_name:
-                zipf.write(os.path.join(tmp_dir, file), arcname=file)
+        for root, _dirs, files in os.walk(tmp_dir):
+            for file in files:
+                if file != zipfile_name:
+                    file_path = os.path.join(root, file)
+                    archive_name = os.path.relpath(file_path, tmp_dir)
+                    zipf.write(file_path, archive_name)
 
-    logger.info("-- Uploading zipfile to S3")
+    logger.info("Uploading zipfile to S3")
     upload_file_to_s3(
         os.path.join(tmp_dir, zipfile_name),
         object_name=f"export-files/{zipfile_name}",

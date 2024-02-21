@@ -22,6 +22,10 @@ API_CALLS = [
         },
     },
     {
+        "path": "/api/formattachments/",
+        "filename": "formattachments",
+    },
+    {
         "path": "/api/mobile/orgunits/",
         "filename": "orgunits",
         "page_size": 25000,

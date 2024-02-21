@@ -277,15 +277,17 @@ class ETL:
 
         if step.get("ration_to_distribute") is not None or step.get("ration") is not None:
             quantity = 0
+            ration_type = ""
             if step.get("_total_number_of_sachets") is not None:
                 quantity = step.get("_total_number_of_sachets", 0)
             elif step.get("_csb_packets") is not None:
                 quantity = step.get("_csb_packets", 0)
 
             if step.get("ration_to_distribute") is not None:
-                assistance = {"type": step.get("ration_to_distribute"), "quantity": quantity}
+                ration_type = step.get("ration_to_distribute")
             elif step.get("ration") is not None:
-                assistance = {"type": step.get("ration"), "quantity": quantity}
+                ration_type = step.get("ration")
+            assistance = {"type": ration_type, "quantity": quantity}
             given_assistance.append(assistance)
 
         if step.get("ration_type_tsfp") is not None:

@@ -63,7 +63,9 @@ def export_mobile_app_setup_for_user(
     the_task.report_progress_and_stop_if_killed(progress_value=1)
 
     if app_info["needs_authentication"]:
-        _get_access_token_and_user_profile(iaso_client, tmp_dir, user)
+        logger.info("-- Authentication required, authenticating iaso_client")
+        refresh = RefreshToken.for_user(user)
+        iaso_client.authenticate_with_token(str(refresh.access_token))
 
     the_task.report_progress_and_stop_if_killed(progress_value=2)
 
@@ -103,19 +105,6 @@ def _get_project_app_details(iaso_client, tmp_dir, app_id):
         json.dump(app_info, json_file)
 
     return app_info
-
-
-def _get_access_token_and_user_profile(iaso_client, tmp_dir, user):
-    logger.info("-- Authentication required, getting token and profile settings")
-    refresh = RefreshToken.for_user(user)
-    access_token = str(refresh.access_token)
-    iaso_client.authenticate_with_token(access_token)
-    with open(os.path.join(tmp_dir, "access-token.txt"), "w") as f:
-        f.write(access_token)
-
-    profile = iaso_client.get("/api/profiles/me/")
-    with open(os.path.join(tmp_dir, "profile.json"), "w") as json_file:
-        json.dump(profile, json_file)
 
 
 def _get_resource(iaso_client, call, tmp_dir, app_id, feature_flags):

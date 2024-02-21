@@ -543,6 +543,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.closingDate',
         defaultMessage: 'Closing date',
     },
+    searchParams: {
+        id: 'iaso.orgUnits.searchParams',
+        defaultMessage: 'To search by external reference ID, please insert “refs:” before your search. You can then paste one or several reference ID(s). Example: “refs: XYZ, ABC.”',
+    }
 });
 
 export default MESSAGES;

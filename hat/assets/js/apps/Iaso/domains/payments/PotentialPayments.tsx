@@ -1,47 +1,48 @@
 import React, { FunctionComponent } from 'react';
-import { useSafeIntl } from 'bluesquare-components';
-import { Box } from '@mui/material';
-// import { makeStyles } from '@mui/styles';
-// import { useDispatch } from 'react-redux';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import { Box, useTheme } from '@mui/material';
+import { useDispatch } from 'react-redux';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
-// import { UserRolesFilters } from './components/UserRolesFilters';
-// import { baseUrls } from '../../constants/urls';
 import { PotentialPaymentParams } from './types';
+import { useGetPotentialPayments } from './hooks/requests/useGetPotentialPayments';
+import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
+import { baseUrls } from '../../constants/urls';
 // import { useGetUserRolesColumns } from './config';
-// import { redirectTo } from '../../routing/actions';
+import { redirectTo } from '../../routing/actions';
+import { usePotentialPaymentColumns } from './config/usePotentialPaymentColumns';
 
 type Props = {
     params: PotentialPaymentParams;
 };
-// const baseUrl = baseUrls.userRoles;
+const baseUrl = baseUrls.potentialPayments;
 export const PotentialPayments: FunctionComponent<Props> = ({ params }) => {
-    // const dispatch = useDispatch();
+    const dispatch = useDispatch();
 
-    // const { data, isFetching } = useGetUserRoles(params);
+    const { data, isFetching } = useGetPotentialPayments(params);
     const { formatMessage } = useSafeIntl();
-    // const columns = useGetUserRolesColumns(deleteUserRole);
+    const theme = useTheme();
+    const columns = usePotentialPaymentColumns();
     return (
         <>
             <TopBar
                 title={formatMessage(MESSAGES.title)}
                 displayBackButton={false}
             />
-            <Box>
-                POTENTIAL
-                {/* <UserRolesFilters params={params} />
+            <Box sx={commonStyles(theme).containerFullHeightNoTabPadded}>
+                {/* <UserRolesFilters params={params} /> */}
                 <TableWithDeepLink
                     marginTop={false}
                     data={data?.results ?? []}
                     pages={data?.pages ?? 1}
-                    defaultSorted={[{ id: 'group__name', desc: false }]}
+                    defaultSorted={[{ id: 'user__last_name', desc: false }]}
                     columns={columns}
                     count={data?.count ?? 0}
                     baseUrl={baseUrl}
                     params={params}
                     extraProps={{ loading: isFetching }}
                     onTableParamsChange={p => dispatch(redirectTo(baseUrl, p))}
-                /> */}
+                />
             </Box>
         </>
     );

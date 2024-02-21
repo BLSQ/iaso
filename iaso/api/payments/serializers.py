@@ -35,19 +35,17 @@ class PaymentSerializer(serializers.ModelSerializer):
     created_by = UserNestedSerializer()
     updated_by = UserNestedSerializer()
     user = UserNestedSerializer()
-    change_requests = OrgChangeRequestrNestedSerializer()
-    change_requests = OrgChangeRequestrNestedSerializer()
+    change_requests = OrgChangeRequestrNestedSerializer(many=True)
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
 
 
-class PotentialPaymentSerializer(serializers.Serializer):
+class PotentialPaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = PotentialPayment
-        fields = ["id", "status", "user", "change_requests"]
+        fields = ["id", "user", "change_requests"]
         read_only_fields = ["id", "created_at", "updated_at"]
 
     pagination_class = PaymentPagination
     user = UserNestedSerializer()
-    status = serializers.CharField()
-    change_requests = OrgChangeRequestrNestedSerializer()
+    change_requests = OrgChangeRequestrNestedSerializer(many=True)

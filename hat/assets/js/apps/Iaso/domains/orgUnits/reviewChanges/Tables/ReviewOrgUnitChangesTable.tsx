@@ -27,8 +27,7 @@ import {
 } from '../Dialogs/ReviewOrgUnitChangesDialog';
 import { UserCell } from '../../../../components/Cells/UserCell';
 import { colorCodes } from '../Dialogs/ReviewOrgUnitChangesInfos';
-
-type ColumnCell<T> = { row: { original: T; index: number } };
+import { ColumnCell } from '../../../../types/general';
 
 const useColumns = (
     setSelectedChangeRequest: Dispatch<SetStateAction<SelectedChangeRequest>>,

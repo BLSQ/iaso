@@ -19,17 +19,29 @@ class PaymentsViewSet(ModelViewSet):
 
     GET /api/payments/
     GET /api/payments/<id>
+    GET /api/payments/get_potential_payments
+
+    This endpoint first deletes all existing potential payments.
+
+    It then retrieves all users who have approved change requests.
+
+    For each user with approved change requests, it creates a new potential payment.
+
+    The endpoint returns the newly created potential payments.
     """
 
     permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
     filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     ordering_fields = [
         "user__username",
+        "user__last_name",
+        "user__first_name",
         "created_at",
         "updated_at",
         "status",
         "created_by__username",
         "updated_by__username",
+        "change_requests",
     ]
     serializer_class = PaymentSerializer
 
@@ -38,41 +50,20 @@ class PaymentsViewSet(ModelViewSet):
             return PotentialPaymentSerializer
         return super().get_serializer_class()
 
-    def get_ordering_fields(self):
-        if self.action == "get_potential_payments":
-            return ["user__username", "status", "change_requests", "payment"]
-        return super().get_ordering_fields()
-
     results_key = "results"
-    http_method_names = ["get", "post" "head", "options", "trace"]
+    http_method_names = ["get", "head", "options", "trace"]
 
     def get_queryset(self):
-        # """Always filter the base queryset by account"""
-
+        if self.action == "get_potential_payments":
+            return PotentialPayment.objects.all()
         return Payment.objects.all()
         # TODO: check if we have to limit payment per Account
         # return Payment.objects.filter(account=self.request.user.iaso_profile.account)
 
-    """
-    This endpoint retrieves all users who have approved change requests and processes payments for them.
-
-    For each user with approved change requests, it checks if a pending payment already exists. 
-
-    If it does, it updates the existing payment.
-
-    If it doesn't, it creates a new payment.
-
-    It then goes through each of the user's approved change requests. 
-    
-    If a change request is not already associated with the payment, it adds the change request to the payment.
-
-    The endpoint returns a count of new payments created and existing payments modified.
-
-    """
-
     @swagger_auto_schema(request_body=no_body)
     @action(detail=False, methods=["get"], url_path="get_potential_payments")
     def get_potential_payments(self, request):
+        orders = request.GET.get("order", "user__last_name").split(",")
         # Clear out old potential payments
         PotentialPayment.objects.all().delete()
 
@@ -99,6 +90,7 @@ class PaymentsViewSet(ModelViewSet):
                 if not Payment.objects.filter(change_requests__id=change_request.id).exists():
                     # If no Payment exists for the change request, add it to the PotentialPayment instance
                     potential_payment.change_requests.add(change_request)
+            potential_payment.save()
 
         # Use the built-in list method of ModelViewSet which handles ordering and pagination
-        return self.list(request, queryset=PotentialPayment.objects.all())
+        return self.list(request, queryset=PotentialPayment.objects.all().order_by(*orders))

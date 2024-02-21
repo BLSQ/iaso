@@ -24,6 +24,9 @@ import StorageIcon from '@mui/icons-material/Storage';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
+import PaymentsIcon from '@mui/icons-material/Payments';
+import PriceCheckIcon from '@mui/icons-material/PriceCheck';
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 
 import { IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
@@ -236,6 +239,25 @@ const menuItems = (
             key: 'storages',
             permissions: paths.storagesPath.permissions,
             icon: props => <StorageIcon {...props} />,
+        },
+        {
+            label: formatMessage(MESSAGES.payments),
+            key: 'payments',
+            icon: props => <PaymentsIcon {...props} />,
+            subMenu: [
+                {
+                    label: formatMessage(MESSAGES.toPay),
+                    permissions: paths.potentialPaymentsPath.permissions,
+                    key: 'potential',
+                    icon: props => <PriceCheckIcon {...props} />,
+                },
+                {
+                    label: formatMessage(MESSAGES.lots),
+                    permissions: paths.potentialPaymentsPath.permissions,
+                    key: 'lots',
+                    icon: props => <AccountBalanceIcon {...props} />,
+                },
+            ],
         },
         {
             label: formatMessage(MESSAGES.planning),

@@ -127,19 +127,32 @@ def _get_resource(iaso_client, call, tmp_dir, app_id, feature_flags):
             filename = call["filename"] + ".json"
 
         url = urlunparse(("", "", call["path"], "", urlencode(query_params), ""))
-        result = _call_endpoint_and_save_response(iaso_client, tmp_dir, url, filename)
+        result = _call_endpoint(iaso_client, tmp_dir, url, filename)
 
+        # Before saving, for certain resources we need to:
+        # 1. Download the attached files
+        # 2. Rewrite the file URLs to make them appear on a local disk, to facilitate
+        #    fetching them in the mobile app.
         if call["filename"] == "formversions":
             _download_form_versions(iaso_client, tmp_dir, result["form_versions"])
+            for record in result["form_versions"]:
+                record["file"] = "forms/" + record["file"].split("/forms/")[-1]
         if call["filename"] == "reports":
             _download_reports(iaso_client, tmp_dir, result)
+            for record in result:
+                record["url"] = "reports/" + record["url"].split("/reports/")[-1]
         if call["filename"] == "formattachments":
-            _download_form_attachments(iaso_client, tmp_dir, result["results"])
+            _download_form_attachments(iaso_client, tmp_dir, result["results"], app_id)
+            for record in result["results"]:
+                record["file"] = "formattachments/" + record["file"].split("/form_attachments/")[-1]
+
+        with open(os.path.join(tmp_dir, filename), "w") as json_file:
+            json.dump(result, json_file)
 
         page += 1
 
 
-def _call_endpoint_and_save_response(iaso_client, tmp_dir, url, filename):
+def _call_endpoint(iaso_client, tmp_dir, url, filename):
     logger.info(f"{filename}: GET {url}")
     result = iaso_client.get(url)
 
@@ -148,13 +161,10 @@ def _call_endpoint_and_save_response(iaso_client, tmp_dir, url, filename):
     if isinstance(result, dict) and "pages" in result:
         logger.info(f"\tTotal pages: {result['pages']}")
 
-    with open(os.path.join(tmp_dir, filename), "w") as json_file:
-        json.dump(result, json_file)
-
     return result
 
 
-def _download_form_attachments(iaso_client, tmp_dir, resources):
+def _download_form_attachments(iaso_client, tmp_dir, resources, app_id):
     if len(resources) == 0:
         return
 
@@ -170,14 +180,19 @@ def _download_form_attachments(iaso_client, tmp_dir, resources):
         attachment_file = requests.get(path, headers=iaso_client.headers)
         logger.info(f"\tDOWNLOAD manifest")
         manifest_file = requests.get(
-            SERVER + f"/api/forms/{form_id}/manifest/",
+            SERVER + f"/api/forms/{form_id}/manifest/?app_id={app_id}",
             headers=iaso_client.headers,
         )
 
         with open(os.path.join(tmp_dir, "formattachments", str(form_id), filename), mode="wb") as f:
             f.write(attachment_file.content)
-        with open(os.path.join(tmp_dir, "formattachments", str(form_id), "manifest.xml"), mode="wb") as f:
-            f.write(manifest_file.content)
+        # For the manifest.xml, rewrite the `downloadUrl` to the local file path
+        with open(os.path.join(tmp_dir, "formattachments", str(form_id), "manifest.xml"), mode="w") as f:
+            content = manifest_file.content.decode("utf-8")
+            url_regex = r"(?<=<downloadUrl>)(.*?)(?=</downloadUrl>)"
+            download_url = re.search(url_regex, content).group()
+            new_download_url = "formattachments/" + download_url.split("/form_attachments/")[-1]
+            f.write(re.sub(url_regex, new_download_url, content))
 
 
 def _download_form_versions(iaso_client, tmp_dir, form_versions):

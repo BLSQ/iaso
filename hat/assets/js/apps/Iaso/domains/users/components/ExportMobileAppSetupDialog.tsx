@@ -27,6 +27,17 @@ import { TaskApiResponse } from 'Iaso/domains/tasks/types';
 import { Project, User } from 'Iaso/utils/usersUtils';
 
 const styles: SxStyles = {
+    progressWrapper: {
+        display: 'flex',
+        alignItems: 'center',
+    },
+    linearProgress: {
+        width: '100%',
+        mr: 1,
+    },
+    progressLabel: {
+        minWidth: 35,
+    },
     alert: {
         marginBottom: '1rem',
         marginTop: '1rem',
@@ -41,7 +52,7 @@ const styles: SxStyles = {
     },
 };
 
-type Props = {
+type DialogProps = {
     titleMessage: IntlMessage;
     selectedUser: User;
     onCreateExport: MutateFunction<any>;
@@ -53,11 +64,11 @@ function LinearProgressWithLabel(
     props: LinearProgressProps & { value: number },
 ) {
     return (
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Box sx={{ width: '100%', mr: 1 }}>
+        <Box sx={styles.progressWrapper}>
+            <Box sx={styles.linearProgress}>
                 <LinearProgress variant="determinate" {...props} />
             </Box>
-            <Box sx={{ minWidth: 35 }}>
+            <Box sx={styles.progressLabel}>
                 <Typography variant="body2" color="text.secondary">
                     {`${Math.round(props.value)}%`}
                 </Typography>
@@ -66,7 +77,7 @@ function LinearProgressWithLabel(
     );
 }
 
-const ExportMobileAppSetupDialogComponent: FunctionComponent<Props> = ({
+const ExportMobileAppSetupDialogComponent: FunctionComponent<DialogProps> = ({
     titleMessage,
     isOpen,
     selectedUser,
@@ -92,6 +103,16 @@ const ExportMobileAppSetupDialogComponent: FunctionComponent<Props> = ({
                 .join(' - '),
         [selectedUser],
     );
+    const projectOptions = useMemo(
+        () =>
+            selectedUser.projects.map(project => {
+                return {
+                    value: project.id,
+                    label: project.name,
+                };
+            }),
+        [selectedUser],
+    );
 
     const onConfirm = useCallback(() => {
         onCreateExport({
@@ -108,15 +129,13 @@ const ExportMobileAppSetupDialogComponent: FunctionComponent<Props> = ({
         enabled: isExporting,
     });
 
-    let taskProgressValue;
-    if (isExporting && taskData) {
+    let taskProgressValue = 0;
+    if (isExporting && taskData && taskData.end_value != 0) {
         if (['RUNNING', 'QUEUED'].includes(taskData.status)) {
             taskProgressValue =
                 (taskData.progress_value / taskData.end_value) * 100;
         } else if (taskData.status === 'SUCCESS') {
             taskProgressValue = 100;
-        } else {
-            taskProgressValue = 0;
         }
     }
 
@@ -171,12 +190,7 @@ const ExportMobileAppSetupDialogComponent: FunctionComponent<Props> = ({
                             type="select"
                             multi={false}
                             label={MESSAGES.project}
-                            options={selectedUser.projects.map(project => {
-                                return {
-                                    value: project.id,
-                                    label: project.name,
-                                };
-                            })}
+                            options={projectOptions}
                         />
                     )}
                     {isExporting && taskData && taskProgressValue !== null ? (

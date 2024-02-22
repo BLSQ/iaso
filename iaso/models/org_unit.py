@@ -436,15 +436,19 @@ class OrgUnit(TreeModel):
             "sub_source": self.sub_source,
             "sub_source_id": self.sub_source,
             "source_ref": self.source_ref,
-            "source_url": self.version.data_source.credentials.url
-            if self.version and self.version.data_source and self.version.data_source.credentials
-            else None,
+            "source_url": (
+                self.version.data_source.credentials.url
+                if self.version and self.version.data_source and self.version.data_source.credentials
+                else None
+            ),
             "parent_id": self.parent_id,
             "validation_status": self.validation_status,
             "parent_name": self.parent.name if self.parent else None,
-            "parent": self.parent.as_dict_with_parents(light=light_parents, light_parents=light_parents)
-            if self.parent
-            else None,
+            "parent": (
+                self.parent.as_dict_with_parents(light=light_parents, light_parents=light_parents)
+                if self.parent
+                else None
+            ),
             "org_unit_type_id": self.org_unit_type_id,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,

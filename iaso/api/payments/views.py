@@ -1,15 +1,16 @@
+from django.db.models import Count
+import django_filters
 from drf_yasg.utils import swagger_auto_schema, no_body
 from hat.menupermissions import models as permission
 from iaso.api.common import (
     HasPermission,
     ModelViewSet,
 )
+from iaso.api.payments.filters import PaymentsListFilter
 from iaso.models import Payment, OrgUnitChangeRequest, PotentialPayment
 from rest_framework import filters, permissions
 from rest_framework.decorators import action
 from .serializers import PaymentSerializer, PotentialPaymentSerializer
-import django_filters
-from django.db.models import Count
 
 
 class PaymentsViewSet(ModelViewSet):
@@ -44,6 +45,7 @@ class PaymentsViewSet(ModelViewSet):
         "change_requests",
     ]
     serializer_class = PaymentSerializer
+    filterset_class = PaymentsListFilter
 
     def get_serializer_class(self):
         if self.action == "get_potential_payments":
@@ -55,10 +57,17 @@ class PaymentsViewSet(ModelViewSet):
 
     def get_queryset(self):
         if self.action == "get_potential_payments":
-            return PotentialPayment.objects.all()
-        return Payment.objects.all()
-        # TODO: check if we have to limit payment per Account
-        # return Payment.objects.filter(account=self.request.user.iaso_profile.account)
+            queryset = PotentialPayment.objects.all()
+        else:
+            queryset = Payment.objects.all()
+        queryset = queryset.prefetch_related(
+            "change_requests",
+        )
+        queryset = queryset.filter(
+            change_requests__created_by__iaso_profile__account=self.request.user.iaso_profile.account
+        ).distinct()
+
+        return queryset
 
     @swagger_auto_schema(request_body=no_body)
     @action(detail=False, methods=["get"], url_path="get_potential_payments")

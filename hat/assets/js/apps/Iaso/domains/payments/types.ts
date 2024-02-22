@@ -2,7 +2,12 @@
 import { Pagination, UrlParams } from 'bluesquare-components';
 
 export type PotentialPaymentParams = UrlParams & {
-    param?: string;
+    change_requests__created_at_after?: string;
+    change_requests__created_at_before?: string;
+    parent_id?: string;
+    forms?: string;
+    users?: string;
+    user_roles?: string;
 };
 
 type PaymenStatus = 'pending' | 'sent' | 'rejected';

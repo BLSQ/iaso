@@ -32,7 +32,7 @@ const campaignTypeOptions = (formatMessage, showTest = false) => {
     if (showTest) {
         return [
             ...options,
-            { label: formatMessage(MESSAGES.testCampaigns), value: 'test' },
+            { label: formatMessage(MESSAGES.testCampaign), value: 'test' },
         ];
     }
     return options;
@@ -48,6 +48,7 @@ const Filters = ({
     const { formatMessage } = useSafeIntl();
     const { params } = router;
     const [filtersUpdated, setFiltersUpdated] = useState(false);
+    const [filterLaunched, setFilterLaunched] = useState(false);
     const [countries, setCountries] = useState(params.countries);
     const [orgUnitGroups, setOrgUnitGroups] = useState(params.orgUnitGroups);
     const [campaignType, setCampaignType] = useState(params.campaignType);
@@ -77,6 +78,7 @@ const Filters = ({
                 showOnlyDeleted: showOnlyDeleted || undefined,
                 campaignGroups,
                 orgUnitGroups,
+                filterLaunched,
             };
             const url = genUrl(router, urlParams);
             dispatch(replace(url));
@@ -91,6 +93,7 @@ const Filters = ({
         showOnlyDeleted,
         campaignGroups,
         orgUnitGroups,
+        filterLaunched,
         router,
         dispatch,
     ]);
@@ -113,9 +116,34 @@ const Filters = ({
     const theme = useTheme();
     const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
     const [textSearchError, setTextSearchError] = useState(false);
-
+    const filtersFilled = useCallback(() => {
+        return (
+            countries ||
+            search ||
+            roundStartFrom ||
+            roundStartTo ||
+            showOnlyDeleted ||
+            campaignType ||
+            campaignGroups ||
+            orgUnitGroups
+        );
+    }, [
+        campaignGroups,
+        campaignType,
+        countries,
+        orgUnitGroups,
+        roundStartFrom,
+        roundStartTo,
+        search,
+        showOnlyDeleted,
+    ]);
     useEffect(() => {
         setFiltersUpdated(true);
+        if (filtersFilled()) {
+            setFilterLaunched(true);
+        } else {
+            setFilterLaunched(false);
+        }
     }, [
         countries,
         search,
@@ -125,6 +153,7 @@ const Filters = ({
         campaignType,
         campaignGroups,
         orgUnitGroups,
+        filtersFilled,
     ]);
 
     useEffect(() => {

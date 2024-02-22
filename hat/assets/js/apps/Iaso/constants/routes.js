@@ -1367,6 +1367,30 @@ export const potentialPaymentsPath = {
             key: 'accountId',
         },
         ...paginationPathParams,
+        {
+            isRequired: false,
+            key: 'change_requests__created_at_after',
+        },
+        {
+            isRequired: false,
+            key: 'change_requests__created_at_before',
+        },
+        {
+            isRequired: false,
+            key: 'parent_id',
+        },
+        {
+            isRequired: false,
+            key: 'forms',
+        },
+        {
+            isRequired: false,
+            key: 'users',
+        },
+        {
+            isRequired: false,
+            key: 'user_roles',
+        },
     ],
 };
 export const lotsPaymentsPath = {

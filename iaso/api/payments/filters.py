@@ -57,12 +57,3 @@ class PaymentsListFilter(django_filters.rest_framework.FilterSet):
     def filter_user_roles(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
         users_roles_ids = self.parse_comma_separated_numeric_values(value, name)
         return queryset.filter(Q(change_requests__created_by__iaso_profile__user_roles__id__in=users_roles_ids))
-
-    # def filter_change_requests_created_at(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
-    #     if value:
-    #         start_date, end_date = value
-    #         if start_date:
-    #             queryset = queryset.filter(change_requests__created_at__gte=start_date)
-    #         if end_date:
-    #             queryset = queryset.filter(change_requests__created_at__lte=end_date)
-    #     return queryset

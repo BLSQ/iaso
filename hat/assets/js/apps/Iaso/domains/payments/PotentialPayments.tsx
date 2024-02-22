@@ -8,7 +8,7 @@ import { PotentialPaymentParams } from './types';
 import { useGetPotentialPayments } from './hooks/requests/useGetPotentialPayments';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
-// import { useGetUserRolesColumns } from './config';
+import { PotentialPaymentsFilter } from './components/PotentialPaymentsFilter';
 import { redirectTo } from '../../routing/actions';
 import { usePotentialPaymentColumns } from './config/usePotentialPaymentColumns';
 
@@ -30,7 +30,8 @@ export const PotentialPayments: FunctionComponent<Props> = ({ params }) => {
                 displayBackButton={false}
             />
             <Box sx={commonStyles(theme).containerFullHeightNoTabPadded}>
-                {/* <UserRolesFilters params={params} /> */}
+                <PotentialPaymentsFilter params={params} />
+                {/* @ts-ignore */}
                 <TableWithDeepLink
                     marginTop={false}
                     data={data?.results ?? []}

@@ -74,18 +74,29 @@ type Field = {
     name: string;
 };
 type Locales = {
-    fr: string;
-    en: string;
+    fr: string[];
+    en: string[];
 };
-const labelLocales: Locales = { fr: 'French', en: 'English' };
+
+/*
+The array of strings 'labelLocales' is used to handle different formats for multilingual labels.
+Some forms use the format 'label::French' or 'label::English', while others use lowercase locales like 'label::french' or 'label::english'.
+Additionally, to align with ODK standards (https://docs.getodk.org/guide-form-language/#guide-form-language-building),
+the format 'label::French (fr)' and 'label::English (en)' is also supported.
+We also include the locale codes 'fr' and 'en' to cover cases where labels might be defined using just the locale code.
+This array-based approach ensures compatibility with all these formats without disrupting the display for older multilingual forms.
+*/
+const labelLocales: Locales = {
+    fr: ['French', 'french', 'French (fr)', 'fr'],
+    en: ['English', 'english', 'English (en)', 'en'],
+};
 
 const localizeLabel = (field: Field): string => {
     // Localize a label. Sometimes a label may be a string, that is somewhat json but not totally
     // sometime it's already a Mapping.
     const locale: string = getCookie('django_language') ?? 'en';
-    const localeKey = labelLocales[locale] ?? labelLocales.en;
+    let localeOptions: Record<string, string> = { [field.name]: field.name };
 
-    let localeOptions: Record<string, string> = { [localeKey]: field.name };
     if (typeof field === 'object') {
         if (typeof field.label === 'string') {
             // Replacing all single quotes used as apostrophe into html entities, and put it back after replacing other single quotes into double quotes
@@ -110,15 +121,15 @@ const localizeLabel = (field: Field): string => {
             typeof field.label === 'object' &&
             !Array.isArray(field.label)
         ) {
-            // console.log('JSON', field.label);
             localeOptions = field.label;
         }
     } else {
         localeOptions = field;
     }
-    return localeOptions[localeKey];
-};
 
+    const localeKey = labelLocales[locale].find(key => localeOptions[key]);
+    return localeKey ? localeOptions[localeKey] : field.name;
+};
 /**
  * Pretty Format value for display
  * Try to guess if it is a date or datetime to display in appropriate locale

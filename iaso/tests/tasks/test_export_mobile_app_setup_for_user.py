@@ -19,9 +19,14 @@ def mocked_iaso_client_get(*args, **kwargs):
             "feature_flags": [{"name": "Mobile: Show entities screen)", "code": "ENTITY"}],
             "needs_authentication": True,
         }
+    elif url.startswith("/api/formversions/"):
+        return {"form_versions": []}
+    elif url.startswith("/api/formattachments/"):
+        return {"results": []}
     else:
-        # for all other calls, return some random data
-        return {"foo": "bar", "has_next": False}
+        print(args)
+        # for all other calls, return an empty array
+        return []
 
 
 def _get_files_in_zipfile(zip_path):
@@ -71,14 +76,14 @@ class ExportMobileAppSetupForUserTest(TestCase):
         zip_path = os.path.join("/tmp", zip_name, f"{zip_name}.zip")
         # breakpoint()
         created_files = _get_files_in_zipfile(zip_path)
-        self.assertIn("access-token.txt", created_files)
         self.assertIn("app.json", created_files)
-        self.assertIn("profile.json", created_files)
         self.assertIn("entitytypes-1.json", created_files)
-        self.assertIn("forms-1.json", created_files)
-        self.assertIn("formversions-1.json", created_files)
-        self.assertIn("groups-1.json", created_files)
-        self.assertIn("orgunittypes-1.json", created_files)
-        self.assertIn("storage-blacklisted-1.json", created_files)
-        self.assertIn("storage-passwords-1.json", created_files)
-        self.assertIn("workflows-1.json", created_files)
+        self.assertIn("forms.json", created_files)
+        self.assertIn("formattachments.json", created_files)
+        self.assertIn("formversions.json", created_files)
+        self.assertIn("groups.json", created_files)
+        self.assertIn("orgunits-1.json", created_files)
+        self.assertIn("orgunittypes.json", created_files)
+        self.assertIn("storage-blacklisted.json", created_files)
+        self.assertIn("storage-passwords.json", created_files)
+        self.assertIn("workflows.json", created_files)

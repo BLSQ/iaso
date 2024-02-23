@@ -1210,7 +1210,7 @@
     "iaso.users.exportMobileAppTitle": "Exporter fichier pour setup de l'application mobile",
     "iaso.users.exportMobileAppTooltip": "Exporter un fichier pour faire le setup de l'application mobile sans internet",
     "iaso.users.exportMobileAppUser": "Utilisateur :",
-    "iaso.users.exportMobileAppViewTasks": "La fermeture de cette fenêtre n'interrompt pas l'exportation du document. Vous pouvez trouver toutes les tâches et leur état d'avancement sur la page des tâches.",
+    "iaso.users.exportMobileAppViewTasks": "La fermeture de cette fenêtre n'interrompt pas l'exportation du fichier. Vous pouvez trouver toutes les tâches et leur état d'avancement sur la page des tâches.",
     "iaso.users.filter.searchUser": "Rechercher un utilisateur",
     "iaso.users.homePageInfos": "Copier/coller l'url après \"dashboard/\"",
     "iaso.users.isSuperUser": "L'utilisateur est administrateur et a tous les droits.",

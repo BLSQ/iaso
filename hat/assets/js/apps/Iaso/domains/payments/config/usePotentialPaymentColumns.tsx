@@ -45,6 +45,18 @@ export const usePotentialPaymentColumns = (): Column[] => {
                     return value || textPlaceholder;
                 },
             },
+            {
+                Header: formatMessage(MESSAGES.changes),
+                id: 'change_requests',
+                accessor: 'change_requests',
+                Cell: ({
+                    value,
+                }: {
+                    value: PotentialPayment['change_requests'];
+                }): string => {
+                    return `${value.length}`;
+                },
+            },
             //  TODO: we should add user phone number here
         ];
         return columns;

@@ -1,12 +1,5 @@
 import datetime
-
-import time_machine
-
-from django.utils import timezone
-from django.contrib.auth.models import Group
-
 from iaso.test import APITestCase
-from django.contrib.gis.geos import Point
 from iaso import models as m
 
 

@@ -45,6 +45,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.createdDateTo',
         defaultMessage: 'Creation date to',
     },
+    changes: {
+        id: 'iaso.workflows.changes',
+        defaultMessage: 'Changes',
+    },
 });
 
 export default MESSAGES;

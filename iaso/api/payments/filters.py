@@ -6,10 +6,10 @@ from django.db.models import Q
 from django.db.models.query import QuerySet
 from django.utils.translation import gettext_lazy as _
 
-from iaso.models import OrgUnitChangeRequest, OrgUnit, PotentialPayment
+from iaso.models import OrgUnit, PotentialPayment
 
 
-class PaymentsListFilter(django_filters.rest_framework.FilterSet):
+class PotentialPaymentsListFilter(django_filters.rest_framework.FilterSet):
     change_requests__created_at = django_filters.DateFromToRangeFilter()
     parent_id = django_filters.NumberFilter(method="filter_parent_id", label=_("Parent ID"))
     forms = django_filters.CharFilter(method="filter_forms", label=_("Forms IDs (comma-separated)"))

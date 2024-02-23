@@ -5,7 +5,7 @@ import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import { PotentialPaymentParams, PotentialPaymentPaginated } from '../../types';
 
-const apiUrl = '/api/payments/get_potential_payments/';
+const apiUrl = '/api/potential_payments/';
 
 const getPotentialPayments = (options: PotentialPaymentParams) => {
     const {

@@ -6,12 +6,13 @@ from django.utils import timezone
 from django.contrib.auth.models import Group
 
 from iaso.test import APITestCase
+from django.contrib.gis.geos import Point
 from iaso import models as m
 
 
-class PaymentsAPITestCase(APITestCase):
+class PotentialPaymentsViewSetAPITestCase(APITestCase):
     """
-    Test actions on the Payments ViewSet.
+    Test actions on the ViewSet.
     """
 
     DT = datetime.datetime(2023, 10, 17, 17, 0, 0, 0, tzinfo=datetime.timezone.utc)
@@ -26,10 +27,16 @@ class PaymentsAPITestCase(APITestCase):
         )
 
         account = m.Account.objects.create(name="Account", default_version=version)
+        another_account = m.Account.objects.create(name="another_account", default_version=version)
+        user_from_another_account = cls.create_user_with_profile(
+            username="user_from_another_account", account=another_account
+        )
         project = m.Project.objects.create(name="Project", account=account, app_id="foo.bar.baz")
         user = cls.create_user_with_profile(username="user", account=account)
         user_with_review_perm = cls.create_user_with_profile(
-            username="user_with_review_perm", account=account, permissions=["iaso_payments"]
+            username="user_with_review_perm",
+            account=account,
+            permissions=["iaso_org_unit_change_request_review", "iaso_payments"],
         )
 
         data_source.projects.set([project])
@@ -41,76 +48,88 @@ class PaymentsAPITestCase(APITestCase):
         cls.project = project
         cls.user = user
         cls.user_with_review_perm = user_with_review_perm
+        cls.user_from_another_account = user_from_another_account
+        cls.version = version
 
     def test_list_ok(self):
-        m.Payment.objects.create(user=self.user)
-        m.Payment.objects.create(user=self.user)
+        # Create approved change requests for the users
+        m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit, status=m.OrgUnitChangeRequest.Statuses.APPROVED, created_by=self.user
+        )
+        m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            status=m.OrgUnitChangeRequest.Statuses.APPROVED,
+            created_by=self.user_with_review_perm,
+        )
+        m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            status=m.OrgUnitChangeRequest.Statuses.APPROVED,
+            created_by=self.user_from_another_account,
+        )
 
-        self.client.force_authenticate(self.user)
+        self.client.force_authenticate(self.user_with_review_perm)
 
-        response = self.client.get("/api/payments/")
+        response = self.client.get("/api/potential_payments/")
+        self.assertJSONResponse(response, 200)
+        # Check that the correct number of PotentialPayment objects were created
+        self.assertEqual(2, len(response.data["results"]))
+        # Check that the PotentialPayment objects were created for the correct users
+        user_ids = [result["user"]["id"] for result in response.data["results"]]
+        self.assertIn(self.user.id, user_ids)
+        self.assertIn(self.user_with_review_perm.id, user_ids)
+        self.assertNotIn(self.user_from_another_account.id, user_ids)
+
+    def test_list_without_auth(self):
+        response = self.client.get("/api/potential_payments/")
+        self.assertJSONResponse(response, 403)
+
+    def test_retrieve_not_allowed(self):
+        potential_payment = m.PotentialPayment.objects.create(user=self.user)
+        self.client.force_authenticate(self.user_with_review_perm)
+        response = self.client.get(f"/api/potential_payments/{potential_payment.pk}/")
+        self.assertJSONResponse(response, 404)
+        self.assertEqual(response.data["detail"], "Retrieve operation is not allowed.")
+
+    def test_retrieve_without_auth(self):
+        potential_payment = m.PotentialPayment.objects.create(user=self.user)
+        response = self.client.get(f"/api/potential_payments/{potential_payment.pk}/")
+        self.assertJSONResponse(response, 403)
+
+    def test_list_clears_old_potential_payments(self):
+        m.PotentialPayment.objects.create(user=self.user)
+        m.PotentialPayment.objects.create(user=self.user_with_review_perm)
+
+        self.client.force_authenticate(self.user_with_review_perm)
+
+        response = self.client.get("/api/potential_payments/")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(0, len(response.data["results"]))
+
+    def test_list_creates_new_potential_payments(self):
+        m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit, status=m.OrgUnitChangeRequest.Statuses.APPROVED, created_by=self.user
+        )
+        m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            status=m.OrgUnitChangeRequest.Statuses.APPROVED,
+            created_by=self.user_with_review_perm,
+        )
+
+        self.client.force_authenticate(self.user_with_review_perm)
+
+        response = self.client.get("/api/potential_payments/")
         self.assertJSONResponse(response, 200)
         self.assertEqual(2, len(response.data["results"]))
 
-    def test_list_without_auth(self):
-        response = self.client.get("/api/payments/")
-        self.assertJSONResponse(response, 403)
+    def test_list_does_not_create_potential_payments_for_existing_payments(self):
+        change_request = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit, status=m.OrgUnitChangeRequest.Statuses.APPROVED, created_by=self.user
+        )
+        payment = m.Payment.objects.create(user=self.user)  # specify a user here
+        payment.change_requests.set([change_request])
 
-    def test_retrieve_ok(self):
-        payment = m.Payment.objects.create(user=self.user)
-        self.client.force_authenticate(self.user)
-        response = self.client.get(f"/api/payments/{payment.pk}/")
+        self.client.force_authenticate(self.user_with_review_perm)
+
+        response = self.client.get("/api/potential_payments/")
         self.assertJSONResponse(response, 200)
-        self.assertEqual(response.data["id"], payment.pk)
-
-    def test_retrieve_without_auth(self):
-        payment = m.Payment.objects.create(user=self.user)
-        response = self.client.get(f"/api/payments/{payment.pk}/")
-        self.assertJSONResponse(response, 403)
-
-    def test_get_potential_payments_ok(self):
-        self.client.force_authenticate(self.user)
-        response = self.client.get("/api/payments/get_potential_payments/")
-        self.assertEqual(response.status_code, 200)
-
-    def test_get_potential_payments_without_auth(self):
-        response = self.client.get("/api/payments/get_potential_payments/")
-        self.assertJSONResponse(response, 403)
-
-    def test_create_not_allowed(self):
-        self.client.force_authenticate(self.user)
-        data = {
-            "user": self.user.id,
-            "amount": 100.0,
-            "status": "pending",
-        }
-        response = self.client.post("/api/payments/", data=data, format="json")
-        self.assertEqual(response.status_code, 405)
-
-    def test_create_without_auth(self):
-        data = {
-            "user": self.user.id,
-            "amount": 100.0,
-            "status": "pending",
-        }
-        response = self.client.post("/api/payments/", data=data, format="json")
-        self.assertJSONResponse(response, 403)
-
-    def test_update_not_allowed(self):
-        payment = m.Payment.objects.create(user=self.user, amount=100.0, status="pending")
-        self.client.force_authenticate(self.user)
-        data = {
-            "amount": 200.0,
-            "status": "completed",
-        }
-        response = self.client.patch(f"/api/payments/{payment.pk}/", data=data, format="json")
-        self.assertEqual(response.status_code, 405)
-
-    def test_update_without_auth(self):
-        payment = m.Payment.objects.create(user=self.user, amount=100.0, status="pending")
-        data = {
-            "amount": 200.0,
-            "status": "completed",
-        }
-        response = self.client.patch(f"/api/payments/{payment.pk}/", data=data, format="json")
-        self.assertJSONResponse(response, 403)
+        self.assertEqual(0, len(response.data["results"]))

@@ -1,34 +1,23 @@
 from django.db.models import Count
 import django_filters
-from drf_yasg.utils import swagger_auto_schema, no_body
+from rest_framework.exceptions import NotFound
 from hat.menupermissions import models as permission
 from iaso.api.common import (
     HasPermission,
     ModelViewSet,
 )
-from iaso.api.payments.filters import PaymentsListFilter
+from iaso.api.payments.filters import PotentialPaymentsListFilter
 from iaso.models import Payment, OrgUnitChangeRequest, PotentialPayment
 from rest_framework import filters, permissions
-from rest_framework.decorators import action
-from .serializers import PaymentSerializer, PotentialPaymentSerializer
+from .serializers import PotentialPaymentSerializer
 
 
-class PaymentsViewSet(ModelViewSet):
-    """Payments API
+class PotentialPaymentsViewSet(ModelViewSet):
+    """Potential Payments API
 
     This API is restricted to authenticated users.
 
-    GET /api/payments/
-    GET /api/payments/<id>
-    GET /api/payments/get_potential_payments
-
-    This endpoint first deletes all existing potential payments.
-
-    It then retrieves all users who have approved change requests.
-
-    For each user with approved change requests, it creates a new potential payment.
-
-    The endpoint returns the newly created potential payments.
+    GET /api/potential_payments/
     """
 
     permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
@@ -44,22 +33,14 @@ class PaymentsViewSet(ModelViewSet):
         "updated_by__username",
         "change_requests",
     ]
-    serializer_class = PaymentSerializer
-    filterset_class = PaymentsListFilter
-
-    def get_serializer_class(self):
-        if self.action == "get_potential_payments":
-            return PotentialPaymentSerializer
-        return super().get_serializer_class()
+    serializer_class = PotentialPaymentSerializer
+    filterset_class = PotentialPaymentsListFilter
 
     results_key = "results"
     http_method_names = ["get", "head", "options", "trace"]
 
     def get_queryset(self):
-        if self.action == "get_potential_payments":
-            queryset = PotentialPayment.objects.all()
-        else:
-            queryset = Payment.objects.all()
+        queryset = PotentialPayment.objects.all()
         queryset = queryset.prefetch_related(
             "change_requests",
         )
@@ -69,9 +50,10 @@ class PaymentsViewSet(ModelViewSet):
 
         return queryset
 
-    @swagger_auto_schema(request_body=no_body)
-    @action(detail=False, methods=["get"], url_path="get_potential_payments")
-    def get_potential_payments(self, request):
+    def retrieve(self, request, *args, **kwargs):
+        raise NotFound("Retrieve operation is not allowed.")
+
+    def list(self, request):
         orders = request.GET.get("order", "user__last_name").split(",")
         # Clear out old potential payments
         PotentialPayment.objects.all().delete()
@@ -102,4 +84,4 @@ class PaymentsViewSet(ModelViewSet):
             potential_payment.save()
 
         # Use the built-in list method of ModelViewSet which handles ordering and pagination
-        return self.list(request, queryset=PotentialPayment.objects.all().order_by(*orders))
+        return super().list(request, queryset=PotentialPayment.objects.all().order_by(*orders))

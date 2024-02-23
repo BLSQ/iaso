@@ -434,18 +434,39 @@ class VaccineStockManagementViewSet(ModelViewSet):
             )
 
         for report in incident_reports:
-            results.append(
-                {
-                    "date": report.date_of_incident_report,
-                    "action": report.stock_correction,
-                    "vials_in": None,
-                    "doses_in": None,
-                    "vials_out": (report.unusable_vials or 0) + (report.usable_vials or 0),
-                    "doses_out": ((report.unusable_vials or 0) + (report.usable_vials or 0))
-                    * calc.get_doses_per_vial(),
-                    "type": MovementTypeEnum.INCIDENT_REPORT.value,
-                }
-            )
+            if report.usable_vials > 0:
+                if report.stock_correction == IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY:
+                    results.append(
+                        {
+                            "date": report.date_of_incident_report,
+                            "action": report.stock_correction,
+                            "vials_in": report.usable_vials or 0,
+                            "doses_in": (report.usable_vials or 0) * calc.get_doses_per_vial(),
+                            "vials_out": None,
+                            "doses_out": None,
+                            "type": MovementTypeEnum.INCIDENT_REPORT.value,
+                        }
+                    )
+            if report.unusable_vials > 0:
+                if (
+                    report.stock_correction == IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY
+                    or report.stock_correction == IncidentReport.StockCorrectionChoices.VACCINE_EXPIRED
+                    or report.stock_correction == IncidentReport.StockCorrectionChoices.LOSSES
+                    or report.stock_correction == IncidentReport.StockCorrectionChoices.RETURN
+                    or report.stock_correction == IncidentReport.StockCorrectionChoices.STEALING
+                    or report.stock_correction == IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT
+                ):
+                    results.append(
+                        {
+                            "date": report.date_of_incident_report,
+                            "action": report.stock_correction,
+                            "vials_in": None,
+                            "doses_in": None,
+                            "vials_out": report.unusable_vials or 0,
+                            "doses_out": (report.unusable_vials or 0) * calc.get_doses_per_vial(),
+                            "type": MovementTypeEnum.INCIDENT_REPORT.value,
+                        }
+                    )
 
         for movement in stock_movements:
             if movement.usable_vials_used > 0:
@@ -460,18 +481,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
                         "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
                     }
                 )
-            if movement.unusable_vials > 0:
-                results.append(
-                    {
-                        "date": movement.report_date,
-                        "action": "Form A - Unusable Vials",
-                        "vials_in": None,
-                        "doses_in": None,
-                        "vials_out": movement.unusable_vials or 0,
-                        "doses_out": (movement.unusable_vials or 0) * calc.get_doses_per_vial(),
-                        "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
-                    }
-                )
+
             if movement.missing_vials > 0:
                 results.append(
                     {

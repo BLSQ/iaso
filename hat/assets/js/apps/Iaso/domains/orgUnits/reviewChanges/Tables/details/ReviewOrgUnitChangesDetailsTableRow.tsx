@@ -6,6 +6,7 @@ import classNames from 'classnames';
 import InputComponent from '../../../../../components/forms/InputComponent';
 import { NewOrgUnitField } from '../../hooks/useNewFields';
 import { OrgUnitChangeRequestDetails } from '../../types';
+import { HighlightFields } from '../../Dialogs/HighlightFieldsChanges';
 
 type Props = {
     field: NewOrgUnitField;
@@ -90,26 +91,39 @@ export const ReviewOrgUnitChangesDetailsTableRow: FunctionComponent<Props> = ({
         (!isNew &&
             changeRequest?.status === 'approved' &&
             changeRequest.approved_fields.includes(`new_${field.key}`));
+    const changedFieldWithNewValues = changeRequest && changeRequest[`new_${field.key}`];
+    const changedFieldWithOldValues = changeRequest && changeRequest[`old_${field.key}`];
+
+
     return (
         <TableRow key={field.key}>
             <TableCell className={classes.labelCell}>{field.label}</TableCell>
             <TableCell className={classes.verticalTop}>
                 {field.oldValue}
             </TableCell>
-            <TableCell
-                className={classNames(
-                    !isFetchingChangeRequest &&
-                        isCellRejected &&
-                        classes.cellRejected,
-                    !isFetchingChangeRequest &&
-                        isCellApproved &&
-                        classes.cellApproved,
-                    !isCellApproved && !isCellRejected && classes.cell,
-                    classes.verticalTop,
+            {field.key === 'groups' && (
+                <HighlightFields
+                    groups={changedFieldWithNewValues}
+                    isCellApproved={isCellApproved}
+                    oldValues={changedFieldWithOldValues}
+                />
+            ) || (
+                    <TableCell
+                        className={classNames(
+                            !isFetchingChangeRequest &&
+                            isCellRejected &&
+                            classes.cellRejected,
+                            !isFetchingChangeRequest &&
+                            isCellApproved &&
+                            classes.cellApproved,
+                            !isCellApproved && !isCellRejected && classes.cell,
+                            classes.verticalTop,
+                        )}
+                    >
+                        {field.newValue}
+                    </TableCell>
+
                 )}
-            >
-                {field.newValue}
-            </TableCell>
             {isNew && (
                 <TableCell className={classes.checkBoxCell}>
                     {field.isChanged && (

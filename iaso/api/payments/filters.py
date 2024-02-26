@@ -1,11 +1,4 @@
-from datetime import datetime
-
-from django.db.models import Q
 from rest_framework import filters
-from django.db.models.query import QuerySet
-from django.utils.translation import gettext_lazy as _
-
-from iaso.models import OrgUnit, PotentialPayment, OrgUnitChangeRequest
 
 
 class UsersFilterBackend(filters.BaseFilterBackend):

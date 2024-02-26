@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from iaso.models import Payment, PotentialPayment, OrgUnitChangeRequest
+from iaso.models import OrgUnit, Payment, PotentialPayment, OrgUnitChangeRequest, Instance
 from django.contrib.auth.models import User
 from iaso.api.payments.pagination import PaymentPagination
 
@@ -14,13 +14,42 @@ class UserNestedSerializer(serializers.ModelSerializer):
         ref_name = "UserNestedSerializerForPayment"
 
 
-class OrgChangeRequestrNestedSerializer(serializers.ModelSerializer):
+class InstanceForChangeRequestSerializer(serializers.ModelSerializer):
+    """
+    Used for nesting `Instance` instances.
+    """
+
+    form_name = serializers.CharField(source="form.name")
+    values = serializers.JSONField(source="json")
+
+    class Meta:
+        model = Instance
+        fields = [
+            "id",
+            "form_id",
+            "form_name",
+            "values",
+        ]
+
+
+class OrgUnitNestedSerializer(serializers.ModelSerializer):
+    reference_instances = InstanceForChangeRequestSerializer(many=True)
+
+    class Meta:
+        model = OrgUnit
+        fields = ["id", "name", "reference_instances"]
+        ref_name = "OrgUnitNestedSerializerForChangeRequest"
+
+
+class OrgChangeRequestNestedSerializer(serializers.ModelSerializer):
+    org_unit = OrgUnitNestedSerializer()
 
     class Meta:
         model = OrgUnitChangeRequest
         fields = [
             "id",
             "uuid",
+            "org_unit",
             "org_unit_id",
         ]
 
@@ -35,7 +64,7 @@ class PaymentSerializer(serializers.ModelSerializer):
     created_by = UserNestedSerializer()
     updated_by = UserNestedSerializer()
     user = UserNestedSerializer()
-    change_requests = OrgChangeRequestrNestedSerializer(many=True)
+    change_requests = OrgChangeRequestNestedSerializer(many=True)
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
 
@@ -48,4 +77,4 @@ class PotentialPaymentSerializer(serializers.ModelSerializer):
 
     pagination_class = PaymentPagination
     user = UserNestedSerializer()
-    change_requests = OrgChangeRequestrNestedSerializer(many=True)
+    change_requests = OrgChangeRequestNestedSerializer(many=True)

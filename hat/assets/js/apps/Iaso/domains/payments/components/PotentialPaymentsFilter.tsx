@@ -105,8 +105,8 @@ export const PotentialPaymentsFilter: FunctionComponent<Props> = ({
                         keyDateFrom="change_requests__created_at_after"
                         keyDateTo="change_requests__created_at_before"
                         onChangeDate={handleChange}
-                        dateFrom={filters.created_at_after}
-                        dateTo={filters.created_at_before}
+                        dateFrom={filters.change_requests__created_at_after}
+                        dateTo={filters.change_requests__created_at_before}
                         labelFrom={MESSAGES.createdDateFrom}
                         labelTo={MESSAGES.createdDateTo}
                     />

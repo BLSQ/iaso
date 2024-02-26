@@ -31,16 +31,28 @@ class FilterPotentialPaymentsAPITestCase(APITestCase):
             permissions=["iaso_org_unit_change_request_review", "iaso_payments"],
         )
 
+        form = m.Form.objects.create(name="Form")
+        instance = m.Instance.objects.create(
+            org_unit=org_unit,
+            form=form,
+            project=project,
+        )
+
+        m.OrgUnitReferenceInstance.objects.create(org_unit=org_unit, instance=instance, form=form)
+        org_unit.reference_instances.add(instance)
+
         data_source.projects.set([project])
         org_unit_type.projects.set([project])
         user.iaso_profile.org_units.set([org_unit])
 
+        cls.form = form
         cls.account = account
         cls.org_unit = org_unit
         cls.org_unit_type = org_unit_type
         cls.project = project
         cls.user = user
         cls.user_with_review_perm = user_with_review_perm
+        cls.version = version
 
     def test_filter_potential_payments_on_change_request_date_created_from_and_date_created_to(self):
         self.client.force_authenticate(self.user_with_review_perm)
@@ -68,7 +80,7 @@ class FilterPotentialPaymentsAPITestCase(APITestCase):
             "/api/potential_payments/?change_requests__created_at_after=17-10-2023&change_requests__created_at_before=17-10-2023"
         )
         self.assertJSONResponse(response, 200)
-        self.assertEqual(2, len(response.data["results"][0]["change_requests"]))
+        self.assertEqual(1, len(response.data["results"][0]["change_requests"]))
 
         response = self.client.get("/api/potential_payments/?change_requests__created_at_after=17-10-2022")
         self.assertJSONResponse(response, 200)
@@ -78,7 +90,7 @@ class FilterPotentialPaymentsAPITestCase(APITestCase):
         response = self.client.get("/api/potential_payments/?change_requests__created_at_before=17-10-2022")
         self.assertJSONResponse(response, 200)
         self.assertEqual(1, len(response.data["results"]))
-        self.assertEqual(2, len(response.data["results"][0]["change_requests"]))
+        self.assertEqual(1, len(response.data["results"][0]["change_requests"]))
 
     # def test_filter_on_parent_id(self):
     #     parent_org_unit = m.OrgUnit.objects.create(name="Parent Org Unit")
@@ -112,21 +124,37 @@ class FilterPotentialPaymentsAPITestCase(APITestCase):
     #     self.assertNotIn(change_request1.id, [change["id"] for change in response.data["results"]])
     #     self.assertIn(change_request2.id, [change["id"] for change in response.data["results"]])
 
-    # def test_filter_on_forms(self):
-    #     form = m.Form.objects.create(name="Test Form")
-    #     instance = m.Instance.objects.create(
-    #         org_unit=self.org_unit,
-    #         form=form,
-    #         period="202001",
-    #         project=self.project,
-    #     )
+    def test_filter_on_forms(self):
+        another_form = m.Form.objects.create(name="Another form")
+        another_instance = m.Instance.objects.create(
+            org_unit=self.org_unit,
+            form=another_form,
+            project=self.project,
+        )
+        another_org_unit = m.OrgUnit.objects.create(
+            org_unit_type=self.org_unit_type, version=self.version, uuid="12345678"
+        )
+        m.OrgUnitReferenceInstance.objects.create(
+            org_unit=another_org_unit, instance=another_instance, form=another_form
+        )
 
-    #     change_request1 = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
-    #     change_request1.new_reference_instances.add(instance)
-    #     change_request2 = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Bar")
-    #     change_request2.old_reference_instances.add(instance)
+        change_request1 = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            new_name="Foo",
+            created_by=self.user,
+            status=m.OrgUnitChangeRequest.Statuses.APPROVED,
+        )
+        change_request2 = m.OrgUnitChangeRequest.objects.create(
+            org_unit=another_org_unit,
+            new_name="Bar",
+            created_by=self.user,
+            status=m.OrgUnitChangeRequest.Statuses.APPROVED,
+        )
 
-    #     self.client.force_authenticate(self.user)
-    #     response = self.client.get(f"/api/potential_payments/?forms={form.id}")
-    #     self.assertJSONResponse(response, 200)
-    #     self.assertEqual(len(response.data["results"]), 2)
+        self.client.force_authenticate(self.user_with_review_perm)
+        response = self.client.get(f"/api/potential_payments/?forms={self.form.id}")
+        self.assertJSONResponse(response, 200)
+        print(json.dumps(response.data["results"], indent=4))
+        self.assertEqual(len(response.data["results"]["change_requests"]), 1)
+        self.assertEqual(response.data["results"][0]["id"], change_request1.id)
+        self.assertNotIn(change_request2.id, [change["id"] for change in response.data["results"]])

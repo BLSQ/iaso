@@ -1,4 +1,5 @@
 import datetime
+import json
 
 from django.contrib.auth.models import Group
 
@@ -206,6 +207,9 @@ class FilterPotentialPaymentsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user_with_review_perm)
         response = self.client.get(f"/api/potential_payments/?forms={self.form.id}")
         self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response.data["results"]), 1)
         self.assertEqual(len(response.data["results"][0]["change_requests"]), 1)
-        self.assertEqual(response.data["results"][0]["id"], change_request1.id)
-        self.assertNotIn(change_request2.id, [change["id"] for change in response.data["results"]])
+        self.assertIn(change_request1.id, [change["id"] for change in response.data["results"][0]["change_requests"]])
+        self.assertNotIn(
+            change_request2.id, [change["id"] for change in response.data["results"][0]["change_requests"]]
+        )

@@ -21,7 +21,6 @@ class UserNestedSerializer(serializers.ModelSerializer):
 
 
 class OrgChangeRequestNestedSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = OrgUnitChangeRequest
         fields = [

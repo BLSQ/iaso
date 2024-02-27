@@ -1,5 +1,6 @@
 from django.db.models import Count
 import django_filters
+from drf_yasg import openapi
 from rest_framework import filters, permissions
 from rest_framework.exceptions import NotFound
 from hat.menupermissions import models as permission
@@ -10,14 +11,45 @@ from iaso.api.common import (
 from iaso.models import Payment, OrgUnitChangeRequest, PotentialPayment, OrgUnit
 import iaso.api.payments.filters as potential_payment_filters
 from .serializers import PotentialPaymentSerializer
+from drf_yasg.utils import swagger_auto_schema
 
 
 class PotentialPaymentsViewSet(ModelViewSet):
-    """Potential Payments API
+    """
+    # `Potential payment` API
 
-    This API is restricted to authenticated users.
+    This API allows to list potential payments linked to multiple `OrgUnitChangeRequest` by the same user to be updated and queried.
 
-    GET /api/potential_payments/
+    The Django model that stores "Potential payment" is `PotentialPayment`.
+
+    Whenever the list endpoint is invoked, it evaluates whether a new change request can be incorporated into the potential payment, or if there's a need to generate a new potential payment.
+
+    ## Permissions
+
+    - User must be authenticated
+    - User needs `iaso_payments` permission
+
+    ## Possible responses
+
+    ### 200 - OK
+
+    ### 400 - Bad request
+
+    - `page` or `limit` cannot be parsed to a correct integer value
+
+    ### 401 - Unauthorized
+
+    - No authentication token or an invalid one was provided
+
+    ### 403 - Forbidden
+
+    - User doesn't have the proper permission to access this resource.
+
+
+    ### 404 - Not found
+
+    - `users`, `user_roles`, `parent_id` not found
+
     """
 
     permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
@@ -57,9 +89,46 @@ class PotentialPaymentsViewSet(ModelViewSet):
 
         return queryset
 
+    @swagger_auto_schema(auto_schema=None)
     def retrieve(self, request, *args, **kwargs):
         raise NotFound("Retrieve operation is not allowed.")
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                name="users",
+                in_=openapi.IN_QUERY,
+                description="A comma-separated list of User IDs associated with the payments",
+                type=openapi.TYPE_STRING,
+            ),
+            openapi.Parameter(
+                name="user_roles",
+                in_=openapi.IN_QUERY,
+                description="A comma-separated list of User Role IDs associated with the payments",
+                type=openapi.TYPE_STRING,
+            ),
+            openapi.Parameter(
+                name="parent_id",
+                in_=openapi.IN_QUERY,
+                description="The ID of the parent organization unit linked to the change requests. This should also include child units.",
+                type=openapi.TYPE_INTEGER,
+            ),
+            openapi.Parameter(
+                name="change_requests__created_at_after",
+                in_=openapi.IN_QUERY,
+                description="The start date for when the change request has been validated. Format: YYYY-MM-DD",
+                type=openapi.TYPE_STRING,
+                format=openapi.FORMAT_DATE,
+            ),
+            openapi.Parameter(
+                name="change_requests__created_at_before",
+                in_=openapi.IN_QUERY,
+                description="The end date for when the change request has been validated. Format: YYYY-MM-DD",
+                type=openapi.TYPE_STRING,
+                format=openapi.FORMAT_DATE,
+            ),
+        ]
+    )
     def list(self, request):
         orders = request.GET.get("order", "user__last_name").split(",")
 

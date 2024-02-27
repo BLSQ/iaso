@@ -25,7 +25,6 @@ class IasoJSONEditorWidget(JSONEditorWidget):
             "mode": mode,
             "search": True,
         }
-
         if options:
             default_options.update(options)
 

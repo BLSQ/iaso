@@ -1264,11 +1264,7 @@ const MESSAGES = defineMessages({
     },
     testCampaign: {
         id: 'iaso.polio.label.testCampaign',
-        defaultMessage: 'Test campaign',
-    },
-    is_test: {
-        id: 'iaso.polio.label.is_test',
-        defaultMessage: 'Test campaigns/On hold status',
+        defaultMessage: 'Test campaign/On hold',
     },
     testCampaigns: {
         id: 'iaso.polio.label.testCampaigns',

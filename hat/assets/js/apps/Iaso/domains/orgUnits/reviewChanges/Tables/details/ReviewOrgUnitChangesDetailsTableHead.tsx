@@ -7,6 +7,7 @@ import MESSAGES from '../../messages';
 
 type Props = {
     isNew: boolean;
+    isNewOrgUnit: boolean;
 };
 
 const useStyles = makeStyles(() => ({
@@ -17,6 +18,7 @@ const useStyles = makeStyles(() => ({
 
 export const ReviewOrgUnitChangesDetailsTableHead: FunctionComponent<Props> = ({
     isNew,
+    isNewOrgUnit,
 }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
@@ -28,17 +30,21 @@ export const ReviewOrgUnitChangesDetailsTableHead: FunctionComponent<Props> = ({
                         {formatMessage(MESSAGES.label)}
                     </Box>
                 </TableCell>
+                {!isNewOrgUnit && (
+                    <TableCell width={350}>
+                        <Box className={classes.head}>
+                            {formatMessage(MESSAGES.oldValue)}
+                        </Box>
+                    </TableCell>
+                )}
                 <TableCell width={350}>
                     <Box className={classes.head}>
-                        {formatMessage(MESSAGES.oldValue)}
+                        {isNewOrgUnit
+                            ? formatMessage(MESSAGES.value)
+                            : formatMessage(MESSAGES.newValue)}
                     </Box>
                 </TableCell>
-                <TableCell width={350}>
-                    <Box className={classes.head}>
-                        {formatMessage(MESSAGES.newValue)}
-                    </Box>
-                </TableCell>
-                {isNew && (
+                {isNew && !isNewOrgUnit && (
                     <TableCell width={30}>
                         <Box
                             className={classes.head}

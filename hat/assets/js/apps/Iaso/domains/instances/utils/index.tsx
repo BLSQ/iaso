@@ -76,19 +76,68 @@ type Field = {
 type Locales = {
     fr: string[];
     en: string[];
+    es: string[];
+    pt: string[];
 };
 
 /*
 The array of strings 'labelLocales' is used to handle different formats for multilingual labels.
 Some forms use the format 'label::French' or 'label::English', while others use lowercase locales like 'label::french' or 'label::english'.
 Additionally, to align with ODK standards (https://docs.getodk.org/guide-form-language/#guide-form-language-building),
-the format 'label::French (fr)' and 'label::English (en)' is also supported.
-We also include the locale codes 'fr' and 'en' to cover cases where labels might be defined using just the locale code.
+the format 'label::French (fr)', 'label::English (en)', 'label::Español (es)', and 'label::Português (pt)' is also supported.
+We also include the locale codes 'fr', 'en', 'es', and 'pt' to cover cases where labels might be defined using just the locale code.
 This array-based approach ensures compatibility with all these formats without disrupting the display for older multilingual forms.
 */
 const labelLocales: Locales = {
-    fr: ['French', 'french', 'French (fr)', 'fr'],
-    en: ['English', 'english', 'English (en)', 'en'],
+    fr: [
+        'French',
+        'french',
+        'Français (fr)',
+        'fr',
+        'français (fr)',
+        'fre',
+        'fra',
+        'français',
+        'francés',
+        'francês',
+        'frances',
+    ],
+    en: [
+        'English',
+        'english',
+        'English (en)',
+        'en',
+        'english (en)',
+        'eng',
+        'anglais',
+        'inglés',
+        'inglês',
+        'ingles',
+    ],
+    es: [
+        'Spanish',
+        'spanish',
+        'Español (es)',
+        'es',
+        'español (es)',
+        'spa',
+        'español',
+        'espagnol',
+        'espanhol',
+        'espanol',
+    ],
+    pt: [
+        'Portuguese',
+        'portuguese',
+        'Português (pt)',
+        'pt',
+        'português (pt)',
+        'por',
+        'português',
+        'portugais',
+        'portugués',
+        'portugues',
+    ],
 };
 
 const localizeLabel = (field: Field): string => {

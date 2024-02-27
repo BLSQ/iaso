@@ -21,6 +21,9 @@ from ..utils.models.soft_deletable import (
     OnlyDeletedSoftDeletableManager,
 )
 
+CR_MODE_NONE = "CR_MODE_NONE"
+CR_MODE_IF_REFERENCE_FORM = "CR_MODE_IF_REFERENCE_FORM"
+
 
 class FormQuerySet(models.QuerySet):
     def exists_with_same_version_id_within_projects(self, form: "Form", form_id: str):
@@ -71,6 +74,11 @@ class Form(SoftDeletableModel):
         (periods.PERIOD_TYPE_YEAR, _("Year")),
     )
 
+    CHANGE_REQUEST_MODE = (
+        (CR_MODE_NONE, _("No change request")),
+        (CR_MODE_IF_REFERENCE_FORM, _("Create change request if form is reference form")),
+    )
+
     org_unit_types = models.ManyToManyField("OrgUnitType", blank=True)
     form_id = models.TextField(null=True, blank=True)  # extracted from version xls file
     created_at = models.DateTimeField(auto_now_add=True)
@@ -107,6 +115,8 @@ class Form(SoftDeletableModel):
     objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(FormQuerySet)()
 
     legend_threshold = models.JSONField(blank=True, null=True)
+
+    change_request_mode = models.TextField(choices=CHANGE_REQUEST_MODE, default=CR_MODE_NONE)
 
     @property
     def latest_version(self):

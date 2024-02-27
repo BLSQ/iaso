@@ -860,6 +860,7 @@
     "iaso.pages.errors.url": "L'url est un champ requis",
     "iaso.pages.errors.urlNotValid": "L'url n'est pas valide",
     "iaso.pages.title": "Liens intégrés",
+    "iaso.payments.createLot": "Créer un lot de paiements",
     "iaso.payments.lots": "Lots de paiements",
     "iaso.payments.title": "Paiements",
     "iaso.payments.toPay": "A payer",

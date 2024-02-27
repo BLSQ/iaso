@@ -47,12 +47,12 @@ export const PotentialPayments: FunctionComponent<Props> = ({ params }) => {
         () => [
             {
                 icon: <PaymentsIcon />,
-                label: 'LABEL',
+                label: formatMessage(MESSAGES.createLot),
                 onClick: () => setMultiActionPopupOpen(true),
                 disabled: multiEditDisabled,
             },
         ],
-        [multiEditDisabled, setMultiActionPopupOpen],
+        [multiEditDisabled, setMultiActionPopupOpen, formatMessage],
     );
     const handleTableSelection = useCallback(
         (selectionType, items = [], totalCount = 0) => {
@@ -85,7 +85,7 @@ export const PotentialPayments: FunctionComponent<Props> = ({ params }) => {
                     baseUrl={baseUrl}
                     params={params}
                     extraProps={{ loading: isFetching }}
-                    // multiSelect
+                    multiSelect
                     selection={selection}
                     selectionActions={selectionActions}
                     //  @ts-ignore

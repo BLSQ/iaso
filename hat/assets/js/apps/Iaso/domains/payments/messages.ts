@@ -49,6 +49,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.workflows.changes',
         defaultMessage: 'Changes',
     },
+    createLot: {
+        id: 'iaso.payments.createLot',
+        defaultMessage: 'Create a lot of payments',
+    },
 });
 
 export default MESSAGES;

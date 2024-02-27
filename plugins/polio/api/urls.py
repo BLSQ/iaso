@@ -5,6 +5,8 @@ from plugins.polio.api.campaigns.campaigns import CampaignViewSet
 from plugins.polio.api.campaigns.orgunits_per_campaigns import OrgUnitsPerCampaignViewset
 from iaso.api.config import ConfigViewSet
 from plugins.polio.api.country_user_groups import CountryUsersGroupViewSet
+from plugins.polio.api.dashboards.forma import FormAStocksViewSet
+from plugins.polio.api.dashboards.forma import FormAStocksViewSetV2
 from plugins.polio.api.dashboards.launch_powerbi import LaunchPowerBIRefreshViewSet
 from plugins.polio.api.dashboards.preparedness_dashboard import PreparednessDashboardViewSet
 from plugins.polio.api.dashboards.rounds import RoundDashboardViewSet
@@ -50,6 +52,8 @@ router.register(r"polio/campaignsgroup", CampaignGroupViewSet, basename="campaig
 router.register(r"polio/preparedness_dashboard", PreparednessDashboardViewSet, basename="preparedness_dashboard")
 router.register(r"polio/imstats", IMStatsViewSet, basename="imstats")
 router.register(r"polio/vaccines", VaccineStocksViewSet, basename="vaccines")
+router.register(r"polio/forma", FormAStocksViewSet, basename="forma")
+router.register(r"polio/v2/forma", FormAStocksViewSetV2, basename="forma")
 router.register(r"polio/countryusersgroup", CountryUsersGroupViewSet, basename="countryusersgroup")
 router.register(r"polio/orgunitspercampaign", OrgUnitsPerCampaignViewset, basename="orgunitspercampaign")
 # duplicate of /api/configs. Can be removed once lqas OpenHexa pipeline switches to the main (iaso) endpoint

@@ -4,8 +4,8 @@ import React, {
     useState,
     Dispatch,
     SetStateAction,
-    useCallback,
 } from 'react';
+import Color from 'color';
 import { useDispatch } from 'react-redux';
 import { Column, useSafeIntl } from 'bluesquare-components';
 import { Box } from '@mui/material';
@@ -47,14 +47,17 @@ const useColumns = (
             Cell: ({
                 row: { original },
             }: ColumnCell<OrgUnitChangeRequest>): ReactElement => {
-                return (
-                    <LinkToOrgUnit
-                        orgUnit={{
-                            id: original.org_unit_id,
-                            name: original.org_unit_name,
-                        }}
-                    />
-                );
+                if (original.org_unit_name) {
+                    return (
+                        <LinkToOrgUnit
+                            orgUnit={{
+                                id: original.org_unit_id,
+                                name: original.org_unit_name,
+                            }}
+                        />
+                    );
+                }
+                return <>{formatMessage(MESSAGES.newOrgUnit)}</>;
             },
         },
         {
@@ -147,6 +150,24 @@ const useColumns = (
     ];
 };
 
+const getRowProps = (row: { original: OrgUnitChangeRequest }) => {
+    if (
+        row.original.org_unit_validation_status === 'NEW' &&
+        row.original.status === 'new'
+    ) {
+        return {
+            'data-test': 'new-org-unit-row',
+            sx: {
+                backgroundColor: theme =>
+                    `${Color(theme.palette.yellow.main).fade(0.5)} !important`,
+            },
+        };
+    }
+    return {
+        'data-test': 'change-request-row',
+    };
+};
+
 export type SelectedChangeRequest = {
     id: number;
     index: number;
@@ -168,9 +189,10 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
         SelectedChangeRequest | undefined
     >();
     const columns = useColumns(setSelectedChangeRequest);
-    const handleCloseDialog = useCallback(() => {
+    const handleCloseDialog = () => {
         setSelectedChangeRequest(undefined);
-    }, []);
+    };
+
     return (
         <>
             {/* This dialog is at this level to keep selected request in state and allow further multiaction/pagination feature */}
@@ -192,6 +214,9 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
                 baseUrl={baseUrl}
                 countOnTop
                 params={params}
+                // The typing problem is in the table
+                // @ts-ignore
+                rowProps={getRowProps}
                 extraProps={{ loading: isFetching, selectedChangeRequest }}
                 onTableParamsChange={p => {
                     dispatch(redirectTo(baseUrl, p));

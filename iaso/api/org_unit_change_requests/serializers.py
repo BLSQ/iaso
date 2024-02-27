@@ -81,6 +81,7 @@ class OrgUnitForChangeRequestSerializer(serializers.ModelSerializer):
             "opening_date",
             "closed_date",
             "reference_instances",
+            "validation_status",
         ]
 
     def get_groups(self, obj: OrgUnitChangeRequest):
@@ -131,8 +132,9 @@ class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
     org_unit_id = serializers.IntegerField(source="org_unit.id")
     org_unit_uuid = serializers.UUIDField(source="org_unit.uuid")
     org_unit_name = serializers.CharField(source="org_unit.name")
-    org_unit_type_id = serializers.IntegerField(source="org_unit.org_unit_type.id")
-    org_unit_type_name = serializers.CharField(source="org_unit.org_unit_type.name")
+    org_unit_validation_status = serializers.CharField(source="org_unit.validation_status")
+    org_unit_type_id = serializers.IntegerField(source="org_unit.org_unit_type.id", allow_null=True)
+    org_unit_type_name = serializers.CharField(source="org_unit.org_unit_type.name", allow_null=True)
     groups = serializers.SerializerMethodField(method_name="get_current_org_unit_groups")
     created_by = UserNestedSerializer()
     updated_by = UserNestedSerializer()
@@ -147,6 +149,7 @@ class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
             "org_unit_id",
             "org_unit_uuid",
             "org_unit_name",
+            "org_unit_validation_status",
             "org_unit_type_id",
             "org_unit_type_name",
             "status",

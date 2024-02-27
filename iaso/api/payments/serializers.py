@@ -59,8 +59,8 @@ class PotentialPaymentSerializer(serializers.ModelSerializer):
 
     def get_change_requests(self, obj):
         change_requests = obj.change_requests.all()
-        change_requests = filter_by_forms(self.context['request'], change_requests)
-        change_requests = filter_by_dates(self.context['request'], change_requests)
-        change_requests = filter_by_parent(self.context['request'], change_requests)
+        change_requests = filter_by_forms(self.context["request"], change_requests)
+        change_requests = filter_by_dates(self.context["request"], change_requests)
+        change_requests = filter_by_parent(self.context["request"], change_requests)
 
         return OrgChangeRequestNestedSerializer(change_requests, many=True).data

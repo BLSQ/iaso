@@ -427,9 +427,9 @@ class EntityAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         # In the <select> for the entity type, we also want to indicate the account name
         form = super().get_form(request, obj, **kwargs)
-        form.base_fields[
-            "entity_type"
-        ].label_from_instance = lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        form.base_fields["entity_type"].label_from_instance = (
+            lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        )
         return form
 
     readonly_fields = ("created_at",)
@@ -597,9 +597,9 @@ class WorkflowAdmin(admin.ModelAdmin):
     def get_form(self, request, obj=None, **kwargs):
         # In the <select> for the entity type, we also want to indicate the account name
         form = super().get_form(request, obj, **kwargs)
-        form.base_fields[
-            "entity_type"
-        ].label_from_instance = lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        form.base_fields["entity_type"].label_from_instance = (
+            lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        )
         return form
 
     def get_queryset(self, request):
@@ -760,10 +760,12 @@ class ConfigAdmin(admin.ModelAdmin):
     raw_id_fields = ["users"]
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
+
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
     raw_id_fields = ["change_requests"]
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+
 
 admin.site.register(Account)
 admin.site.register(AccountFeatureFlag)

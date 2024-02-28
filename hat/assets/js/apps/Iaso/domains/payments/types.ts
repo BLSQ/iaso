@@ -45,3 +45,7 @@ export type PotentialPayment = {
 export interface PotentialPaymentPaginated extends Pagination {
     results: PotentialPayment[];
 }
+
+export type PotentialPayments = {
+    results: PotentialPayment[];
+};

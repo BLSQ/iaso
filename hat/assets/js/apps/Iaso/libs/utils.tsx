@@ -7,7 +7,7 @@
 // url should include closing slash
 export const makeUrlWithParams = (
     url: string,
-    urlParams: Record<string, string | number | undefined>,
+    urlParams: Record<string, string | number | undefined | boolean>,
 ): string => {
     // @ts-ignore
     const urlSearchParams = new URLSearchParams();

@@ -61,6 +61,7 @@ class PotentialPaymentsViewSet(ModelViewSet):
         potential_payment_filters.FormsFilterBackend,
         potential_payment_filters.ParentFilterBackend,
         potential_payment_filters.StartEndDateFilterBackend,
+        potential_payment_filters.SelectionFilterBackend,
     ]
     ordering_fields = [
         "user__username",
@@ -127,11 +128,28 @@ class PotentialPaymentsViewSet(ModelViewSet):
                 type=openapi.TYPE_STRING,
                 format=openapi.FORMAT_DATE,
             ),
+            openapi.Parameter(
+                name="select_all",
+                in_=openapi.IN_QUERY,
+                description="Select all potential payments from the query",
+                type=openapi.TYPE_BOOLEAN,
+            ),
+            openapi.Parameter(
+                name="selected_ids",
+                in_=openapi.IN_QUERY,
+                description="A comma-separated list of Potential Payments IDs selected to return from the query",
+                type=openapi.TYPE_STRING,
+            ),
+            openapi.Parameter(
+                name="unselected_ids",
+                in_=openapi.TYPE_STRING,
+                description="A comma-separated list of Potential Payments IDs to exlude from the query",
+                type=openapi.TYPE_STRING,
+            ),
         ]
     )
     def list(self, request):
         orders = request.GET.get("order", "user__last_name").split(",")
-
         users_with_change_requests = (
             OrgUnitChangeRequest.objects.filter(status=OrgUnitChangeRequest.Statuses.APPROVED)
             .values("created_by")

@@ -66,6 +66,22 @@ def filter_by_parent(request, queryset, key=None):
     return queryset
 
 
+class SelectionFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        select_all = request.GET.get("select_all", "false").lower() == "true"
+        selected_ids = request.GET.get("selected_ids", "")
+        unselected_ids = request.GET.get("unselected_ids", "")
+        selected_ids_list = [int(id) for id in selected_ids.split(",") if id]
+        unselected_ids_list = [int(id) for id in unselected_ids.split(",") if id]
+        if not select_all:
+            if selected_ids_list:
+                queryset = queryset.filter(pk__in=selected_ids_list)
+        if select_all:
+            if unselected_ids_list:
+                queryset = queryset.exclude(pk__in=unselected_ids_list)
+        return queryset
+
+
 class UsersFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         users = request.GET.get("users", None)

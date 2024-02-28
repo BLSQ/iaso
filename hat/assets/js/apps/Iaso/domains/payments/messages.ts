@@ -51,7 +51,7 @@ const MESSAGES = defineMessages({
     },
     createLot: {
         id: 'iaso.payments.createLot',
-        defaultMessage: 'Create a lot of payments',
+        defaultMessage: 'Create a new lot of payments',
     },
     save: {
         id: 'iaso.label.save',
@@ -64,6 +64,14 @@ const MESSAGES = defineMessages({
     edit: {
         defaultMessage: 'Edit',
         id: 'iaso.label.edit',
+    },
+    name: {
+        defaultMessage: 'Name',
+        id: 'iaso.label.name',
+    },
+    comment: {
+        id: 'iaso.label.comment',
+        defaultMessage: 'Comment',
     },
 });
 

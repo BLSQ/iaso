@@ -25,6 +25,9 @@ class Payment(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    payment_lot = models.ForeignKey(
+        "PaymentLot", on_delete=models.SET_NULL, null=True, blank=True, related_name="payments"
+    )
 
     def __str__(self):
         return "%s - %s - %s - %s" % (
@@ -38,3 +41,21 @@ class Payment(models.Model):
 class PotentialPayment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="potential_payment")
     change_requests = models.ManyToManyField("OrgUnitChangeRequest", related_name="potential_payment")
+
+
+class PaymentLot(models.Model):
+    """
+    Model to store lots of payments. Each payment can belong to only one lot.
+    """
+
+    name = models.CharField(max_length=255)
+    comment = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="payment_lot_created_set")
+    updated_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="payment_lot_updated_set"
+    )
+
+    def __str__(self):
+        return "%s - %s" % (self.name, self.created_at.strftime("%Y-%m-%d %H:%M:%S"))

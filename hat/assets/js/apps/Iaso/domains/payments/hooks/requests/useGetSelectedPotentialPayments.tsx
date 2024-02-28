@@ -34,8 +34,8 @@ const getSelectedPotentialPayments = (
         users,
         user_roles,
         select_all: selectAll,
-        selected_ids: selectedItems.map(item => item.id),
-        unselected_ids: unSelectedItems.map(item => item.id),
+        selected_ids: selectedItems.map(item => item.id).join(','),
+        unselected_ids: unSelectedItems.map(item => item.id).join(','),
     };
 
     const url = makeUrlWithParams(apiUrl, apiParams as Record<string, any>);

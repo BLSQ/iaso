@@ -25,7 +25,6 @@ class Payment(models.Model):
     """
 
     status = models.CharField(choices=Statuses.choices, default=Statuses.PENDING, max_length=40)
-    change_requests = models.ManyToManyField("OrgUnitChangeRequest", related_name="payment")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="payment")
     created_by = models.ForeignKey(
         User, null=True, blank=True, on_delete=models.SET_NULL, related_name="payment_created_set"
@@ -50,7 +49,6 @@ class Payment(models.Model):
 
 class PotentialPayment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="potential_payment")
-    change_requests = models.ManyToManyField("OrgUnitChangeRequest", related_name="potential_payment")
 
 
 class PaymentLot(models.Model):

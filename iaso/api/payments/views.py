@@ -3,6 +3,10 @@ import django_filters
 from drf_yasg import openapi
 from rest_framework import filters, permissions
 from rest_framework.exceptions import NotFound
+from rest_framework import status
+from rest_framework.response import Response
+from django.db import transaction
+
 from hat.menupermissions import models as permission
 from iaso.api.common import (
     HasPermission,
@@ -43,6 +47,40 @@ class PaymentLotsViewSet(ModelViewSet):
         orders = request.GET.get("order", "updated_at").split(",")
         queryset = self.filter_queryset(self.get_queryset()).order_by(*orders)
         return super().list(request, queryset)
+
+    def create(self, request):
+        with transaction.atomic():
+            # Extract name, comment, and potential_payments IDs from request data
+            name = request.data.get("name")
+            comment = request.data.get("comment")
+            potential_payment_ids = request.data.get("potential_payments", [])  # Expecting a list of IDs
+
+            # Create the PaymentLot instance
+            payment_lot = PaymentLot.objects.create(
+                name=name, comment=comment, created_by=request.user, updated_by=request.user
+            )
+
+            # Retrieve PotentialPayment instances by IDs
+            potential_payments = PotentialPayment.objects.filter(id__in=potential_payment_ids)
+
+            # For each potential payment, create a Payment instance in pending status
+            for potential_payment in potential_payments:
+                payment = Payment.objects.create(
+                    status=Payment.Statuses.PENDING,
+                    user=potential_payment.user,
+                    created_by=request.user,
+                    updated_by=request.user,
+                    payment_lot=payment_lot,
+                )
+                # Add change requests from potential payment to the newly created payment
+                for change_request in potential_payment.change_requests.all():
+                    change_request.payment = payment
+                    change_request.save()
+
+            # Return the created PaymentLot instance
+            serializer = self.get_serializer(payment_lot)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
 class PotentialPaymentsViewSet(ModelViewSet):
     """
@@ -109,7 +147,6 @@ class PotentialPaymentsViewSet(ModelViewSet):
     results_key = "results"
     http_method_names = ["get", "head", "options", "trace"]
 
-
     def get_queryset(self):
         queryset = PotentialPayment.objects.all()
         queryset = queryset.prefetch_related(
@@ -131,16 +168,15 @@ class PotentialPaymentsViewSet(ModelViewSet):
 
         for user in users_with_change_requests:
             change_requests = OrgUnitChangeRequest.objects.filter(
-                created_by_id=user["created_by"],
-                status=OrgUnitChangeRequest.Statuses.APPROVED,
+                created_by_id=user["created_by"], status=OrgUnitChangeRequest.Statuses.APPROVED, payment__isnull=True
             )
             if change_requests.exists():
                 potential_payment, created = PotentialPayment.objects.get_or_create(
                     user_id=user["created_by"],
                 )
                 for change_request in change_requests:
-                    if not Payment.objects.filter(change_requests__id=change_request.id).exists():
-                        potential_payment.change_requests.add(change_request)
+                    change_request.potential_payment = potential_payment
+                    change_request.save()
                 potential_payment.save()
 
     @swagger_auto_schema(auto_schema=None)

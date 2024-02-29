@@ -27,6 +27,8 @@ class OrgChangeRequestNestedSerializer(serializers.ModelSerializer):
 
 
 class PaymentSerializer(serializers.ModelSerializer):
+    change_requests = serializers.SerializerMethodField()
+
     class Meta:
         model = Payment
         fields = ["id", "status", "created_at", "updated_at", "created_by", "updated_by", "user", "change_requests"]
@@ -36,9 +38,14 @@ class PaymentSerializer(serializers.ModelSerializer):
     created_by = UserNestedSerializer()
     updated_by = UserNestedSerializer()
     user = UserNestedSerializer()
-    change_requests = OrgChangeRequestNestedSerializer(many=True)
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
+
+    def get_change_requests(self, obj):
+        # Assuming OrgUnitChangeRequest has a reverse relation to Payment named 'change_requests'
+        change_requests = OrgUnitChangeRequest.objects.filter(payment=obj)
+        # Utilize the OrgChangeRequestNestedSerializer to serialize the queryset
+        return OrgChangeRequestNestedSerializer(change_requests, many=True, context=self.context).data
 
 
 class PaymentLotSerializer(serializers.ModelSerializer):
@@ -72,7 +79,7 @@ class PotentialPaymentSerializer(serializers.ModelSerializer):
     user = UserNestedSerializer()
 
     def get_change_requests(self, obj):
-        change_requests = obj.change_requests.all()
+        change_requests = OrgUnitChangeRequest.objects.filter(potential_payment=obj)
         change_requests = filter_by_forms(self.context["request"], change_requests)
         change_requests = filter_by_dates(self.context["request"], change_requests)
         change_requests = filter_by_parent(self.context["request"], change_requests)

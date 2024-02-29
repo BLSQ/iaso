@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useCallback } from 'react';
+import React, { FunctionComponent, useCallback, useEffect } from 'react';
 import {
     IntlMessage,
     makeFullModal,
@@ -20,6 +20,10 @@ import { usePotentialPaymentColumns } from '../config/usePotentialPaymentColumns
 import { SxStyles } from '../../../types/general';
 import InputComponent from '../../../components/forms/InputComponent';
 import { useTranslatedErrors } from '../../../libs/validation';
+import {
+    SavePaymentLotQuery,
+    useSavePaymentLot,
+} from '../hooks/requests/useSavePaymentLot';
 
 const styles: SxStyles = {
     table: {
@@ -62,8 +66,10 @@ const PaymentLotDialog: FunctionComponent<Props> = ({
     selection,
     params,
 }) => {
-    const { data: potentialPaymets, isFetching } =
+    const { data: potentialPayments, isFetching } =
         useGetSelectedPotentialPayments(params, selection);
+
+    const { mutateAsync: savePaymentLot } = useSavePaymentLot('create');
     const {
         values,
         setFieldValue,
@@ -82,9 +88,11 @@ const PaymentLotDialog: FunctionComponent<Props> = ({
         validationSchema,
         validateOnMount: true,
         onSubmit: () => {
-            console.log('save', values);
-            console.log('selection', selection);
-            // onConfirm(values);
+            const body: SavePaymentLotQuery = {
+                ...values,
+                potential_payments: values.potentialPayments.map(pp => pp.id),
+            };
+            savePaymentLot(body);
         },
     });
     const { formatMessage } = useSafeIntl();
@@ -102,19 +110,9 @@ const PaymentLotDialog: FunctionComponent<Props> = ({
         touched,
         messages: MESSAGES,
     });
-    // const handleSetError = useCallback(
-    //     (keyValue, message) => {
-    //         const parts = keyValue.split('-');
-    //         const rangeIndex = parseInt(parts[2], 10) - 1;
-    //         setFieldError(`rangeValues[${rangeIndex}].percent`, message);
-    //     },
-    //     [setFieldError],
-    // );
-    // const mappedErrors = useMemo(() => {
-    //     return Array.isArray(errors.rangeValues)
-    //         ? errors.rangeValues.map(error => error?.percent || undefined)
-    //         : [];
-    // }, [errors]);
+    useEffect(() => {
+        setFieldValue('potentialPayments', potentialPayments);
+    }, [potentialPayments, setFieldValue]);
     return (
         <ConfirmCancelModal
             titleMessage={titleMessage}
@@ -165,11 +163,11 @@ const PaymentLotDialog: FunctionComponent<Props> = ({
                     countOnTop={false}
                     elevation={0}
                     marginTop={false}
-                    data={potentialPaymets || []}
+                    data={potentialPayments || []}
                     pages={1}
                     defaultSorted={[{ id: 'user__last_name', desc: false }]}
                     columns={columns}
-                    count={potentialPaymets?.length ?? 0}
+                    count={potentialPayments?.length ?? 0}
                     extraProps={{ loading: isFetching }}
                     showPagination={false}
                 />

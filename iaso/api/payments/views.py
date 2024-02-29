@@ -18,6 +18,12 @@ from .serializers import PotentialPaymentSerializer, PaymentLotSerializer
 from drf_yasg.utils import swagger_auto_schema
 
 
+# TO-DO:
+# - add filter tests on potential payment selection
+# - write doc on payment lot creation
+# - write swagger doc on api params
+
+
 class PaymentLotsViewSet(ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
     filter_backends = [
@@ -55,10 +61,11 @@ class PaymentLotsViewSet(ModelViewSet):
             comment = request.data.get("comment")
             potential_payment_ids = request.data.get("potential_payments", [])  # Expecting a list of IDs
 
-            # Create the PaymentLot instance
-            payment_lot = PaymentLot.objects.create(
-                name=name, comment=comment, created_by=request.user, updated_by=request.user
-            )
+            # Create the PaymentLot instance but don't save it yet
+            payment_lot = PaymentLot(name=name, comment=comment, created_by=request.user, updated_by=request.user)
+
+            # Save the PaymentLot instance to ensure it has a primary key
+            payment_lot.save()
 
             # Retrieve PotentialPayment instances by IDs
             potential_payments = PotentialPayment.objects.filter(id__in=potential_payment_ids)
@@ -70,12 +77,13 @@ class PaymentLotsViewSet(ModelViewSet):
                     user=potential_payment.user,
                     created_by=request.user,
                     updated_by=request.user,
-                    payment_lot=payment_lot,
+                    payment_lot=payment_lot,  # Now payment_lot has a primary key
                 )
                 # Add change requests from potential payment to the newly created payment
                 for change_request in potential_payment.change_requests.all():
                     change_request.payment = payment
                     change_request.save()
+                potential_payment.delete()
 
             # Return the created PaymentLot instance
             serializer = self.get_serializer(payment_lot)

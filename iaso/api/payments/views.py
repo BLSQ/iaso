@@ -8,11 +8,41 @@ from iaso.api.common import (
     HasPermission,
     ModelViewSet,
 )
-from iaso.models import Payment, OrgUnitChangeRequest, PotentialPayment, OrgUnit
+from iaso.models import Payment, OrgUnitChangeRequest, PotentialPayment, PaymentLot
 import iaso.api.payments.filters as potential_payment_filters
-from .serializers import PotentialPaymentSerializer
+from .serializers import PotentialPaymentSerializer, PaymentLotSerializer
 from drf_yasg.utils import swagger_auto_schema
 
+
+class PaymentLotsViewSet(ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
+    filter_backends = [
+        filters.OrderingFilter,
+        django_filters.rest_framework.DjangoFilterBackend,
+    ]
+    ordering_fields = [
+        "name",
+        "created_at",
+        "updated_at",
+        "created_by__username",
+        "updated_by__username",
+    ]
+    serializer_class = PaymentLotSerializer
+    http_method_names = ["get", "post", "patch", "head", "options", "trace"]
+
+    def get_queryset(self):
+        queryset = PaymentLot.objects.all()
+        queryset = queryset.prefetch_related(
+            "payments",
+        )
+        queryset = queryset.filter(created_by__iaso_profile__account=self.request.user.iaso_profile.account).distinct()
+
+        return queryset
+
+    def list(self, request):
+        orders = request.GET.get("order", "updated_at").split(",")
+        queryset = self.filter_queryset(self.get_queryset()).order_by(*orders)
+        return super().list(request, queryset)
 
 class PotentialPaymentsViewSet(ModelViewSet):
     """
@@ -79,6 +109,7 @@ class PotentialPaymentsViewSet(ModelViewSet):
     results_key = "results"
     http_method_names = ["get", "head", "options", "trace"]
 
+
     def get_queryset(self):
         queryset = PotentialPayment.objects.all()
         queryset = queryset.prefetch_related(
@@ -89,6 +120,28 @@ class PotentialPaymentsViewSet(ModelViewSet):
         ).distinct()
 
         return queryset
+
+    def calculate_new_potential_payments(self):
+        users_with_change_requests = (
+            OrgUnitChangeRequest.objects.filter(status=OrgUnitChangeRequest.Statuses.APPROVED)
+            .values("created_by")
+            .annotate(num_requests=Count("created_by"))
+            .filter(num_requests__gt=0)
+        )
+
+        for user in users_with_change_requests:
+            change_requests = OrgUnitChangeRequest.objects.filter(
+                created_by_id=user["created_by"],
+                status=OrgUnitChangeRequest.Statuses.APPROVED,
+            )
+            if change_requests.exists():
+                potential_payment, created = PotentialPayment.objects.get_or_create(
+                    user_id=user["created_by"],
+                )
+                for change_request in change_requests:
+                    if not Payment.objects.filter(change_requests__id=change_request.id).exists():
+                        potential_payment.change_requests.add(change_request)
+                potential_payment.save()
 
     @swagger_auto_schema(auto_schema=None)
     def retrieve(self, request, *args, **kwargs):
@@ -149,26 +202,7 @@ class PotentialPaymentsViewSet(ModelViewSet):
         ]
     )
     def list(self, request):
+        self.calculate_new_potential_payments()
         orders = request.GET.get("order", "user__last_name").split(",")
-        users_with_change_requests = (
-            OrgUnitChangeRequest.objects.filter(status=OrgUnitChangeRequest.Statuses.APPROVED)
-            .values("created_by")
-            .annotate(num_requests=Count("created_by"))
-            .filter(num_requests__gt=0)
-        )
-
-        for user in users_with_change_requests:
-            change_requests = OrgUnitChangeRequest.objects.filter(
-                created_by_id=user["created_by"],
-                status=OrgUnitChangeRequest.Statuses.APPROVED,
-            )
-            if change_requests.exists():
-                potential_payment, created = PotentialPayment.objects.get_or_create(
-                    user_id=user["created_by"],
-                )
-                for change_request in change_requests:
-                    if not Payment.objects.filter(change_requests__id=change_request.id).exists():
-                        potential_payment.change_requests.add(change_request)
-                potential_payment.save()
         queryset = self.filter_queryset(self.get_queryset()).order_by(*orders)
         return super().list(request, queryset)

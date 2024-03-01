@@ -6,6 +6,7 @@ import MESSAGES from '../messages';
 import { NewOrgUnitField } from '../hooks/useNewFields';
 import { UseSaveChangeRequestQueryData } from '../hooks/api/useSaveChangeRequest';
 import { ReviewOrgUnitChangesDeleteDialog } from './ReviewOrgUnitChangesDeleteDialog';
+import { OrgUnitChangeRequestDetails } from '../types';
 
 type SubmitChangeRequest = (
     // eslint-disable-next-line no-unused-vars
@@ -16,14 +17,18 @@ type Props = {
     closeDialog: () => void;
     newFields: NewOrgUnitField[];
     isNew: boolean;
+    isNewOrgUnit: boolean;
     submitChangeRequest: SubmitChangeRequest;
+    changeRequest?: OrgUnitChangeRequestDetails;
 };
 
 export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
     closeDialog,
     newFields,
     isNew,
+    isNewOrgUnit,
     submitChangeRequest,
+    changeRequest,
 }) => {
     const { formatMessage } = useSafeIntl();
     const selectedFields = newFields.filter(field => field.isSelected);
@@ -33,9 +38,13 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
     const handleConfirm = useCallback(() => {
         submitChangeRequest({
             status: 'approved',
-            approved_fields: selectedFields.map(field => `new_${field.key}`),
+            approved_fields:
+                isNewOrgUnit && changeRequest
+                    ? [...changeRequest.requested_fields]
+                    : selectedFields.map(field => `new_${field.key}`),
         });
-    }, [selectedFields, submitChangeRequest]);
+    }, [changeRequest, isNewOrgUnit, selectedFields, submitChangeRequest]);
+    const allowConfirm = isNewOrgUnit || selectedFields.length > 0;
     return (
         <>
             <ReviewOrgUnitChangesDeleteDialog
@@ -75,9 +84,11 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
                                 variant="contained"
                                 color="primary"
                                 autoFocus
-                                disabled={selectedFields.length === 0}
+                                disabled={!allowConfirm}
                             >
-                                {formatMessage(MESSAGES.validateSelected)}
+                                {isNewOrgUnit
+                                    ? formatMessage(MESSAGES.createOrgUnit)
+                                    : formatMessage(MESSAGES.validateSelected)}
                             </Button>
                         </Box>
                     </>

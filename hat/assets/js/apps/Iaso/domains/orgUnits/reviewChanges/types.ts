@@ -2,7 +2,7 @@
 import { Pagination, UrlParams } from 'bluesquare-components';
 import { User } from '../../../utils/usersUtils';
 import { OrgunitType } from '../types/orgunitTypes';
-import { ShortOrgUnit } from '../types/orgUnit';
+import { OrgUnitStatus, ShortOrgUnit } from '../types/orgUnit';
 
 export type ChangeRequestValidationStatus = 'new' | 'rejected' | 'approved';
 export type ApproveOrgUnitParams = UrlParams & {
@@ -43,6 +43,7 @@ export type OrgUnitChangeRequest = {
     org_unit_name: string;
     org_unit_type_id: number;
     org_unit_type_name: string;
+    org_unit_validation_status: OrgUnitStatus;
     status: ChangeRequestValidationStatus;
     groups: Group[];
     requested_fields: string;
@@ -67,7 +68,7 @@ export type OrgUnitChangeRequestDetails = {
     created_at: number;
     updated_by: NestedUser;
     updated_at: number;
-    requested_fields: string;
+    requested_fields: string[];
     approved_fields: string[];
     rejection_comment?: string;
     org_unit: OrgUnitForChangeRequest;
@@ -101,6 +102,7 @@ type OrgUnitForChangeRequest = {
     opening_date?: string;
     closed_date?: string;
     reference_instances: InstanceForChangeRequest[];
+    validation_status: OrgUnitStatus;
 };
 
 export type InstanceForChangeRequest = {

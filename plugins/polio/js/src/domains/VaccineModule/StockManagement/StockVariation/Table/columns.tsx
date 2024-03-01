@@ -42,28 +42,28 @@ export const useFormATableColumns = (
                 sortable: true,
                 Cell: DateCell,
             },
-            {
-                // Not formatting lot numbers as it's not clear how they will be formatted
-                Header: formatMessage(MESSAGES.lot_numbers_for_usable_vials),
-                accessor: 'lot_numbers',
-                id: 'lot_numbers',
-                sortable: true,
-                Cell: settings => {
-                    const { lot_numbers } = settings.row.original;
-                    if ((lot_numbers ?? []).length === 0) {
-                        return <span>{textPlaceholder}</span>;
-                    }
-                    return (
-                        <>
-                            {lot_numbers.map((lotNumber, index) => (
-                                <div key={`${lotNumber}-${index}`}>
-                                    {lotNumber ?? textPlaceholder}
-                                </div>
-                            ))}
-                        </>
-                    );
-                },
-            },
+            // {
+            //     // Not formatting lot numbers as it's not clear how they will be formatted
+            //     Header: formatMessage(MESSAGES.lot_numbers_for_usable_vials),
+            //     accessor: 'lot_numbers',
+            //     id: 'lot_numbers',
+            //     sortable: true,
+            //     Cell: settings => {
+            //         const { lot_numbers } = settings.row.original;
+            //         if ((lot_numbers ?? []).length === 0) {
+            //             return <span>{textPlaceholder}</span>;
+            //         }
+            //         return (
+            //             <>
+            //                 {lot_numbers.map((lotNumber, index) => (
+            //                     <div key={`${lotNumber}-${index}`}>
+            //                         {lotNumber ?? textPlaceholder}
+            //                     </div>
+            //                 ))}
+            //             </>
+            //         );
+            //     },
+            // },
             {
                 Header: formatMessage(MESSAGES.forma_unusable_vials),
                 accessor: 'unusable_vials',
@@ -233,8 +233,8 @@ export const useIncidentTableColumns = (
                 Cell: settings =>
                     settings.row.original.stock_correction
                         ? formatMessage(
-                              MESSAGES[settings.row.original.stock_correction],
-                          )
+                            MESSAGES[settings.row.original.stock_correction],
+                        )
                         : textPlaceholder,
             },
             {

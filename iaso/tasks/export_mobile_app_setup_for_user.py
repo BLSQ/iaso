@@ -16,6 +16,7 @@ first login on the mobile app.
 import json
 import logging
 import os
+import re
 import requests
 from urllib.parse import urlencode, urlunparse
 import uuid
@@ -29,6 +30,7 @@ from rest_framework_simplejwt.tokens import RefreshToken  # type: ignore
 
 from iaso.models import Project
 from iaso.tasks.utils.mobile_app_setup_api_calls import API_CALLS
+from iaso.utils.encryption import encrypt_file
 from iaso.utils.iaso_api_client import IasoClient
 from iaso.utils.s3_client import upload_file_to_s3
 
@@ -73,11 +75,13 @@ def export_mobile_app_setup_for_user(
         _get_resource(iaso_client, call, tmp_dir, project.app_id, feature_flags)
         the_task.report_progress_and_stop_if_killed(progress_value=the_task.progress_value + 1)
 
-    _compress_and_upload_to_s3(tmp_dir, export_name)
+    s3_object_name = _compress_and_upload_to_s3(tmp_dir, export_name)
+    print("s3_object_name ")
+    print(s3_object_name)
 
     the_task.report_success_with_result(
         message=f"Mobile app setup zipfile was created for user {user.username} and project {project.name}.",
-        result_data=f"file:export-files/{export_name}.zip",
+        result_data="file:" + s3_object_name,
     )
     return the_task
 
@@ -127,7 +131,7 @@ def _get_resource(iaso_client, call, tmp_dir, app_id, feature_flags):
             filename = call["filename"] + ".json"
 
         url = urlunparse(("", "", call["path"], "", urlencode(query_params), ""))
-        result = _call_endpoint(iaso_client, tmp_dir, url, filename)
+        result = _call_endpoint(iaso_client, url, filename)
 
         # Before saving, for certain resources we need to:
         # 1. Download the attached files
@@ -152,7 +156,7 @@ def _get_resource(iaso_client, call, tmp_dir, app_id, feature_flags):
         page += 1
 
 
-def _call_endpoint(iaso_client, tmp_dir, url, filename):
+def _call_endpoint(iaso_client, url, filename):
     logger.info(f"{filename}: GET {url}")
     result = iaso_client.get(url)
 
@@ -240,8 +244,14 @@ def _compress_and_upload_to_s3(tmp_dir, export_name):
                     archive_name = os.path.relpath(file_path, tmp_dir)
                     zipf.write(file_path, archive_name)
 
-    logger.info("Uploading zipfile to S3")
-    upload_file_to_s3(
-        os.path.join(tmp_dir, zipfile_name),
-        object_name=f"export-files/{zipfile_name}",
+    logger.info("Encrypting zipfile")
+    encrypted_file_path = encrypt_file(
+        file_path=tmp_dir,
+        file_name_in=zipfile_name,
+        file_name_out=zipfile_name,
     )
+
+    logger.info("Uploading zipfile to S3")
+    s3_object_name = "export-files/" + zipfile_name
+    upload_file_to_s3(encrypted_file_path, object_name=s3_object_name)
+    return s3_object_name

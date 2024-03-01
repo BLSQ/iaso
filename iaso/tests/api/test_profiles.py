@@ -37,8 +37,11 @@ class ProfileAPITestCase(APITestCase):
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
         cls.jedi_council.sub_unit_types.add(cls.jedi_squad)
 
-        cls.mock_multipolygon = MultiPolygon(Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]))
-        cls.mock_point = Point(x=4, y=50, z=100)
+        # cls.mock_multipolygon = MultiPolygon(Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]))
+        # cls.mock_point = Point(x=4, y=50, z=100)
+
+        cls.mock_multipolygon = None
+        cls.mock_point = None
 
         cls.elite_group = m.Group.objects.create(name="Elite councils")
         cls.sw_source = sw_source
@@ -851,20 +854,20 @@ class ProfileAPITestCase(APITestCase):
 
     def test_update_user_add_phone_number(self):
         self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])
-        self.client.force_authenticate(self.jam)
+        self.client.force_authenticate(self.john)
         jum = Profile.objects.get(user=self.jum)
         data = {
             "user_name": "unittest_user_name",
             "password": "unittest_password",
             "first_name": "unittest_first_name",
             "last_name": "unittest_last_name",
-            "phone_number": "123456789",
-            "country_code": "US",
+            "phone_number": "32477123456",
+            "country_code": "be",
         }
         response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
         updated_jum = Profile.objects.get(user=self.jum)
-        self.assertEqual(updated_jum.phone_number.as_e164, "+1123456789")
+        self.assertEqual(updated_jum.phone_number.as_e164, "+32477123456")
 
         def test_update_user_with_malformed_phone_number(self):
             self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])

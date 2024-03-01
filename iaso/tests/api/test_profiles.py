@@ -2,19 +2,19 @@ import typing
 
 import numpy as np
 import pandas as pd
-
 from django.conf import settings
-from django.contrib.gis.geos import Polygon, Point, MultiPolygon
+from django.contrib.auth.models import Group, Permission
+from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.contrib.sites.models import Site
 from django.core import mail
-from django.contrib.auth.models import Group, Permission
-from hat.menupermissions.constants import MODULES
+from django.utils.translation import gettext as _
 
+from hat.menupermissions import models as permission
+from hat.menupermissions.constants import MODULES
 from iaso import models as m
 from iaso.models import Profile
 from iaso.models.microplanning import Team
 from iaso.test import APITestCase
-from hat.menupermissions import models as permission
 
 
 class ProfileAPITestCase(APITestCase):
@@ -848,3 +848,37 @@ class ProfileAPITestCase(APITestCase):
         jum = Profile.objects.get(user=self.jum)
         response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 403)
+
+    def test_update_user_add_phone_number(self):
+        self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])
+        self.client.force_authenticate(self.jam)
+        jum = Profile.objects.get(user=self.jum)
+        data = {
+            "user_name": "unittest_user_name",
+            "password": "unittest_password",
+            "first_name": "unittest_first_name",
+            "last_name": "unittest_last_name",
+            "phone_number": "123456789",
+            "country_code": "US",
+        }
+        response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+        updated_jum = Profile.objects.get(user=self.jum)
+        self.assertEqual(updated_jum.phone_number.as_e164, "+1123456789")
+
+        def test_update_user_with_malformed_phone_number(self):
+            self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])
+            self.client.force_authenticate(self.jam)
+            jum = Profile.objects.get(user=self.jum)
+            data = {
+                "user_name": "unittest_user_name",
+                "password": "unittest_password",
+                "first_name": "unittest_first_name",
+                "last_name": "unittest_last_name",
+                "phone_number": "not_a_phone_number",
+                "country_code": "US",
+            }
+            response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
+            self.assertNotEqual(response.status_code, 200)
+            self.assertEqual(response.data["errorKey"], "phone_number")
+            self.assertEqual(response.data["errorMessage"], _("Invalid phone number"))

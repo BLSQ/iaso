@@ -60,9 +60,15 @@ class IasoClient:
 
     def get(self, url, params=None):
         r = requests.get(self.server_url + url, params=params, headers=self.headers)
-        payload = r.json()
-        self.log(url, payload)
-        return payload
+        resp = None
+        try:
+            resp = r.json()
+            r.raise_for_status()
+        except Exception as e:
+            print(resp, r)
+            raise e
+        self.log(url, resp)
+        return resp
 
     def wait_task_completion(self, task_to_wait):
         print(f"\tWaiting for async task '{task_to_wait['task']['name']}'")

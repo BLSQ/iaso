@@ -8,6 +8,16 @@ from Crypto.Util.Padding import pad, unpad
 
 
 def encrypt_file(file_path, file_name_in, file_name_out, password):
+    """
+    Encrypt a file using AES with following settings:
+    - 256 bits (32 bytes) key from PBKDF2 key derivation function (with salt of
+      32 bytes, 1234 iteration and HMAC SHA-1)
+    - Mode: Cipher-Block Chaining (CBC)
+
+    See:
+    - https://pycryptodome.readthedocs.io/en/latest/src/cipher/aes.html
+    - https://pycryptodome.readthedocs.io/en/latest/src/protocol/kdf.html
+    """
     salt = get_random_bytes(32)
     key = PBKDF2(
         password,
@@ -34,6 +44,10 @@ def encrypt_file(file_path, file_name_in, file_name_out, password):
 
 
 def decrypt_file(file_path, file_name_in, file_name_out, password):
+    """
+    Decrypt a AES-256 encrypted file with the same settings as described in
+    the `encrypt_file` function.
+    """
     with open(os.path.join(file_path, file_name_in), "rb") as file_enc:
         salt = file_enc.read(32)
         iv = file_enc.read(16)

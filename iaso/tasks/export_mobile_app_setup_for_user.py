@@ -18,7 +18,7 @@ import logging
 import os
 import re
 import requests
-from urllib.parse import urlencode, urlunparse
+from urllib.parse import urlencode, urlparse, urlunparse
 import uuid
 import zipfile
 
@@ -141,20 +141,28 @@ def _get_resource(iaso_client, call, tmp_dir, app_id, feature_flags):
         if call["filename"] == "formversions":
             _download_form_versions(iaso_client, tmp_dir, result["form_versions"])
             for record in result["form_versions"]:
-                record["file"] = "forms/" + record["file"].split("/forms/")[-1]
+                record["file"] = "forms/" + _extract_filename_from_url(record["file"])
         if call["filename"] == "reports":
             _download_reports(iaso_client, tmp_dir, result)
             for record in result:
-                record["url"] = "reports/" + record["url"].split("/reports/")[-1]
+                record["url"] = "reports/" + _extract_filename_from_url(record["url"])
         if call["filename"] == "formattachments":
             _download_form_attachments(iaso_client, tmp_dir, result["results"], app_id)
             for record in result["results"]:
-                record["file"] = "formattachments/" + record["file"].split("/form_attachments/")[-1]
+                # don't use _extract_filename_from_url to preserve subpath
+                record["file"] = "formattachments/" + urlparse(record["file"]).path.split("/form_attachments/")[-1]
 
         with open(os.path.join(tmp_dir, filename), "w") as json_file:
             json.dump(result, json_file)
 
         page += 1
+
+
+# The URL is potentially an S3 signed URL, thus containing query params with
+# an AWS key, signature etc.
+# For this reason, we use `urlparse` to easily get a clean path without query params.
+def _extract_filename_from_url(url):
+    return urlparse(url).path.split("/")[-1]
 
 
 def _call_endpoint(iaso_client, url, filename):
@@ -178,11 +186,11 @@ def _download_form_attachments(iaso_client, tmp_dir, resources, app_id):
     for resource in resources:
         form_id = resource["form_id"]
         os.makedirs(os.path.join(tmp_dir, "formattachments", str(form_id)))
-        path = resource["file"]
-        filename = path.split("/")[-1]
+        url = resource["file"]
+        filename = _extract_filename_from_url(url)
 
-        logger.info(f"\tDOWNLOAD {path}")
-        attachment_file = requests.get(path, headers=iaso_client.headers)
+        logger.info(f"\tDOWNLOAD {url}")
+        attachment_file = requests.get(url, headers=iaso_client.headers)
         logger.info(f"\tDOWNLOAD manifest")
         manifest_file = requests.get(
             SERVER + f"/api/forms/{form_id}/manifest/?app_id={app_id}",
@@ -196,7 +204,7 @@ def _download_form_attachments(iaso_client, tmp_dir, resources, app_id):
             content = manifest_file.content.decode("utf-8")
             url_regex = r"(?<=<downloadUrl>)(.*?)(?=</downloadUrl>)"
             download_url = re.search(url_regex, content).group()
-            new_download_url = "formattachments/" + download_url.split("/form_attachments/")[-1]
+            new_download_url = "formattachments/" + _extract_filename_from_url(download_url)
             f.write(re.sub(url_regex, new_download_url, content))
 
 
@@ -206,11 +214,11 @@ def _download_form_versions(iaso_client, tmp_dir, form_versions):
 
     os.makedirs(os.path.join(tmp_dir, "forms"))
     for form_version in form_versions:
-        path = form_version["file"]
-        filename = path.split("/")[-1]
+        url = form_version["file"]
+        filename = _extract_filename_from_url(url)
 
-        logger.info(f"\tDOWNLOAD {path}")
-        response = requests.get(path, headers=iaso_client.headers)
+        logger.info(f"\tDOWNLOAD {url}")
+        response = requests.get(url, headers=iaso_client.headers)
 
         with open(os.path.join(tmp_dir, "forms", filename), mode="wb") as f:
             f.write(response.content)
@@ -223,7 +231,7 @@ def _download_reports(iaso_client, tmp_dir, reports):
     os.makedirs(os.path.join(tmp_dir, "reports"))
     for report in reports:
         path = report["url"]
-        filename = path.split("/")[-1]
+        filename = _extract_filename_from_url(path)
 
         logger.info(f"\tDOWNLOAD {path}")
         response = requests.get(SERVER + path, headers=iaso_client.headers)

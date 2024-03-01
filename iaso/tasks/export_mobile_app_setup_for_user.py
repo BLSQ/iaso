@@ -230,12 +230,14 @@ def _download_reports(iaso_client, tmp_dir, reports):
 
     os.makedirs(os.path.join(tmp_dir, "reports"))
     for report in reports:
-        path = report["url"]
-        filename = _extract_filename_from_url(path)
+        # path in dev, url in prod
+        url_or_path = report["url"]
+        url = url_or_path if url_or_path.startswith("https") else SERVER + url_or_path
 
-        logger.info(f"\tDOWNLOAD {path}")
-        response = requests.get(SERVER + path, headers=iaso_client.headers)
+        logger.info(f"\tDOWNLOAD {url}")
+        response = requests.get(url, headers=iaso_client.headers)
 
+        filename = _extract_filename_from_url(url)
         with open(os.path.join(tmp_dir, "reports", filename), mode="wb") as f:
             f.write(response.content)
 

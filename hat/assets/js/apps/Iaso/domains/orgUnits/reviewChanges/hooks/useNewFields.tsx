@@ -22,13 +22,14 @@ import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
 import MESSAGES from '../messages';
 import InstanceDetail from '../../../instances/compare/components/InstanceDetail';
 import { ShortOrgUnit } from '../../types/orgUnit';
+import { Nullable, Optional } from '../../../../types/utils';
 
 export type NewOrgUnitField = {
     key: string;
     isChanged: boolean;
     isSelected: boolean;
-    newValue: ReactElement;
-    oldValue: ReactElement;
+    newValue: ReactElement | Optional<Nullable<string>>;
+    oldValue: ReactElement | Optional<Nullable<string>>;
     label: string;
     order: number;
 };
@@ -40,7 +41,7 @@ type FieldDefinition = {
         val: any,
         // eslint-disable-next-line no-unused-vars
         isOld: boolean,
-    ) => ReactElement;
+    ) => ReactElement | Optional<Nullable<string>>;
 };
 
 type FieldDefinitions = Record<string, FieldDefinition>;
@@ -112,20 +113,22 @@ export const useNewFields = (
             new_name: {
                 label: formatMessage(MESSAGES.name),
                 order: 1,
-                formatValue: val => <span>{val.toString()}</span>,
+                formatValue: val => val,
+                // formatValue: val => <span>{val.toString()}</span>,
+            },
+            new_org_unit_type: {
+                label: formatMessage(MESSAGES.orgUnitsType),
+                order: 2,
+                formatValue: val => (val as NestedOrgUnitType)?.short_name,
+                // formatValue: val => (
+                //     <span>{(val as NestedOrgUnitType).short_name}</span>
+                // ),
             },
             new_parent: {
                 label: formatMessage(MESSAGES.parent),
                 order: 3,
                 formatValue: val => (
                     <LinkToOrgUnit orgUnit={val as ShortOrgUnit} />
-                ),
-            },
-            new_org_unit_type: {
-                label: formatMessage(MESSAGES.orgUnitsType),
-                order: 2,
-                formatValue: val => (
-                    <span>{(val as NestedOrgUnitType).short_name}</span>
                 ),
             },
             new_groups: {
@@ -176,13 +179,17 @@ export const useNewFields = (
             key: string,
             value: any,
         ): {
-            oldValue: ReactElement;
-            newValue: ReactElement;
+            oldValue: ReactElement | Optional<Nullable<string>>;
+            newValue: ReactElement | Optional<Nullable<string>>;
             isChanged: boolean;
         } => {
             const fieldDef = fieldDefinitions[`new_${key}`];
-            let oldValue: ReactElement = <>{textPlaceholder}</>;
-            let newValue: ReactElement = <>{textPlaceholder}</>;
+            let oldValue: ReactElement | Optional<Nullable<string>> = (
+                <>{textPlaceholder}</>
+            );
+            let newValue: ReactElement | Optional<Nullable<string>> = (
+                <>{textPlaceholder}</>
+            );
             const isChanged = Array.isArray(value)
                 ? value.length > 0
                 : Boolean(value);

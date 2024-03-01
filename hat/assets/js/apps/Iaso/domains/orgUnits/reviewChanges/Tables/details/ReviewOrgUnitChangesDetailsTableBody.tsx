@@ -4,6 +4,8 @@ import { TableBody } from '@mui/material';
 import { NewOrgUnitField } from '../../hooks/useNewFields';
 import { ReviewOrgUnitChangesDetailsTableRow } from './ReviewOrgUnitChangesDetailsTableRow';
 import { OrgUnitChangeRequestDetails } from '../../types';
+import { HighlightFields } from '../../Dialogs/HighlightFieldsChanges';
+import { sortBy } from 'lodash';
 
 type Props = {
     newFields: NewOrgUnitField[];
@@ -23,16 +25,37 @@ export const ReviewOrgUnitChangesDetailsTableBody: FunctionComponent<Props> = ({
 }) => {
     return (
         <TableBody>
-            {newFields.map(field => (
-                <ReviewOrgUnitChangesDetailsTableRow
-                    key={field.key}
-                    field={field}
-                    setSelected={setSelected}
-                    isNew={isNew}
-                    changeRequest={changeRequest}
-                    isFetchingChangeRequest={isFetchingChangeRequest}
-                />
-            ))}
+            {newFields.map(field => {
+                if (field.key === 'groups') {
+                    const changedFieldWithNewValues =
+                        changeRequest && changeRequest[`new_${field.key}`];
+                    const changedFieldWithOldValues =
+                        changeRequest && changeRequest[`old_${field.key}`];
+
+                    return (
+                        <HighlightFields
+                            label={field.label}
+                            field={field}
+                            newGroups={sortBy(changedFieldWithNewValues, 'id')}
+                            oldGroups={sortBy(changedFieldWithOldValues, 'id')}
+                            status={changeRequest?.status || ""}
+                            isNew={isNew}
+                            setSelected={setSelected}
+                        />
+                    );
+                } else {
+                    return (
+                        <ReviewOrgUnitChangesDetailsTableRow
+                            key={field.key}
+                            field={field}
+                            setSelected={setSelected}
+                            isNew={isNew}
+                            changeRequest={changeRequest}
+                            isFetchingChangeRequest={isFetchingChangeRequest}
+                        />
+                    );
+                }
+            })}
         </TableBody>
     );
 };

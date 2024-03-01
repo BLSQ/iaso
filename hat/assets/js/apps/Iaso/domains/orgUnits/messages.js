@@ -543,6 +543,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.closingDate',
         defaultMessage: 'Closing date',
     },
+    searchParams: {
+        id: 'iaso.orgUnits.searchParams',
+        defaultMessage: 'Use prefix “refs:” for external org unit ID search. Use prefix “ids:” for internal org unit ID search. Separate with a comma for multiple IDs. E.g. “refs: 123456, 654321”',
+    }
 });
 
 export default MESSAGES;

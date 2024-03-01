@@ -16,8 +16,8 @@ yup.addMethod(
                 const valuesArray = Array.isArray(value)
                     ? value
                     : value
-                          .split(',')
-                          .map((v: string | number) => `${v}`.trim());
+                        .split(',')
+                        .map((v: string | number) => `${v}`.trim());
                 const hasOtherChar = valuesArray.some(v => !regexp.test(v));
                 if (hasOtherChar) {
                     errorMessage = formatMessage(MESSAGES.lotNumberError);
@@ -60,7 +60,6 @@ const useVrfShape = () => {
             .required(formatMessage(MESSAGES.requiredField)),
         date_vrf_signature: yup
             .date()
-            .required(formatMessage(MESSAGES.requiredField))
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
         quantities_ordered_in_doses: yup
@@ -76,7 +75,6 @@ const useVrfShape = () => {
             .min(0, formatMessage(MESSAGES.positiveNumber)),
         date_vrf_reception: yup
             .date()
-            .required(formatMessage(MESSAGES.requiredField))
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
         date_vrf_submission_to_orpg: yup
@@ -105,7 +103,6 @@ const useVrfShape = () => {
             .typeError(formatMessage(MESSAGES.positiveInteger)),
         date_dg_approval: yup
             .date()
-            .required(formatMessage(MESSAGES.requiredField))
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable(),
         target_population: yup

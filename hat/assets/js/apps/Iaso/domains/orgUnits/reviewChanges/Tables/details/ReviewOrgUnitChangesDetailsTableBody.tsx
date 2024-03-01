@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import React, { FunctionComponent } from 'react';
 import { TableBody } from '@mui/material';
 import { NewOrgUnitField } from '../../hooks/useNewFields';
@@ -12,6 +11,7 @@ type Props = {
     isFetchingChangeRequest: boolean;
     changeRequest?: OrgUnitChangeRequestDetails;
     isNew: boolean;
+    isNewOrgUnit: boolean;
 };
 
 export const ReviewOrgUnitChangesDetailsTableBody: FunctionComponent<Props> = ({
@@ -20,6 +20,7 @@ export const ReviewOrgUnitChangesDetailsTableBody: FunctionComponent<Props> = ({
     isFetchingChangeRequest,
     changeRequest,
     isNew,
+    isNewOrgUnit,
 }) => {
     return (
         <TableBody>
@@ -29,6 +30,7 @@ export const ReviewOrgUnitChangesDetailsTableBody: FunctionComponent<Props> = ({
                     field={field}
                     setSelected={setSelected}
                     isNew={isNew}
+                    isNewOrgUnit={isNewOrgUnit}
                     changeRequest={changeRequest}
                     isFetchingChangeRequest={isFetchingChangeRequest}
                 />

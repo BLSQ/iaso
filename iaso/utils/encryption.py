@@ -7,8 +7,7 @@ from Crypto.Random import get_random_bytes
 from Crypto.Util.Padding import pad, unpad
 
 
-def encrypt_file(file_path, file_name_in, file_name_out):
-    password = b"secret"
+def encrypt_file(file_path, file_name_in, file_name_out, password):
     salt = get_random_bytes(32)
     key = PBKDF2(
         password,
@@ -34,7 +33,7 @@ def encrypt_file(file_path, file_name_in, file_name_out):
     return file_path_out
 
 
-def decrypt_file(file_path, file_name_in, file_name_out, password=b"secret"):
+def decrypt_file(file_path, file_name_in, file_name_out, password):
     with open(os.path.join(file_path, file_name_in), "rb") as file_enc:
         salt = file_enc.read(32)
         iv = file_enc.read(16)

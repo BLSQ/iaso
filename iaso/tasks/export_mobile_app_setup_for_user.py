@@ -43,6 +43,7 @@ SERVER = f"https://{settings.DNS_DOMAIN}"
 def export_mobile_app_setup_for_user(
     user_id,
     project_id,
+    password,
     task=None,
 ):
     the_task = task
@@ -75,7 +76,7 @@ def export_mobile_app_setup_for_user(
         _get_resource(iaso_client, call, tmp_dir, project.app_id, feature_flags)
         the_task.report_progress_and_stop_if_killed(progress_value=the_task.progress_value + 1)
 
-    s3_object_name = _compress_and_upload_to_s3(tmp_dir, export_name)
+    s3_object_name = _compress_and_upload_to_s3(tmp_dir, export_name, password)
     print("s3_object_name ")
     print(s3_object_name)
 
@@ -231,7 +232,7 @@ def _download_reports(iaso_client, tmp_dir, reports):
             f.write(response.content)
 
 
-def _compress_and_upload_to_s3(tmp_dir, export_name):
+def _compress_and_upload_to_s3(tmp_dir, export_name, password):
     zipfile_name = f"{export_name}.zip"
     logger.info(f"Creating zipfile {zipfile_name}")
 
@@ -249,6 +250,7 @@ def _compress_and_upload_to_s3(tmp_dir, export_name):
         file_path=tmp_dir,
         file_name_in=zipfile_name,
         file_name_out=zipfile_name,
+        password=password,
     )
 
     logger.info("Uploading zipfile to S3")

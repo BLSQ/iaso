@@ -1201,7 +1201,7 @@
     "iaso.users.exportMobileAppBody": "This will create a zip file containing all the data necessary for the initial setup of the mobile application for:",
     "iaso.users.exportMobileAppBodyNoProjects": "This user has no assigned project. The configuration of the mobile application must be done for a specific project. Please assign at least one project to this user in order to continue.",
     "iaso.users.exportMobileAppBodySure": "Are you sure you want to create the export file?",
-    "iaso.users.exportMobileAppBodyWarning": "Warning: This file will contain sensitive information such as an API access token and details about the user's profile.",
+    "iaso.users.exportMobileAppBodyWarning": "Caution: This file will contain sensitive information, for this reason the exported file will be encrypted. Please choose a password of at least 8 characters to encrypt the file. You will need to provide this password when setting up the mobile application.",
     "iaso.users.exportMobileAppBtn": "Generate file",
     "iaso.users.exportMobileAppDownloadBtn": "Download file",
     "iaso.users.exportMobileAppError": "An error has occurred, please refer to the tasks page for more details.",

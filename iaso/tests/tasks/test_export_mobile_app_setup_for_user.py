@@ -7,6 +7,7 @@ from unittest import mock
 from django.contrib.auth.models import User
 from iaso.models import Account, Project, Task, ERRORED, SUCCESS
 from iaso.tasks.export_mobile_app_setup_for_user import export_mobile_app_setup_for_user
+from iaso.utils.encryption import decrypt_file
 
 
 def mocked_iaso_client_get(*args, **kwargs):
@@ -29,8 +30,14 @@ def mocked_iaso_client_get(*args, **kwargs):
         return []
 
 
-def _get_files_in_zipfile(zip_path):
-    with zipfile.ZipFile(zip_path, "r") as zip_ref:
+def _get_files_in_zipfile(zip_path, zip_name):
+    decrypted_file_path = decrypt_file(
+        file_path=zip_path,
+        file_name_in=zip_name,
+        file_name_out="decrypted.zip",
+        password="supersecret",
+    )
+    with zipfile.ZipFile(decrypted_file_path, "r") as zip_ref:
         return zip_ref.namelist()
 
 
@@ -60,6 +67,7 @@ class ExportMobileAppSetupForUserTest(TestCase):
         export_mobile_app_setup_for_user(
             user_id=self.user.id,
             project_id=self.project.id,
+            password="supersecret",
             task=self.task,
             _immediate=True,
         )
@@ -72,14 +80,16 @@ class ExportMobileAppSetupForUserTest(TestCase):
         self.assertIn("file:export-files/mobile-app-export-", self.task.result["data"])
 
         # check zip file contents
-        zip_name = self.task.result["data"].replace("file:export-files/", "").replace(".zip", "")
-        zip_path = os.path.join("/tmp", zip_name, f"{zip_name}.zip")
+        zip_name = self.task.result["data"].replace("file:export-files/", "")
+        folder_name = zip_name.replace(".zip", "")
+        zip_path = os.path.join("/tmp", folder_name)
         # breakpoint()
-        created_files = _get_files_in_zipfile(zip_path)
+        created_files = _get_files_in_zipfile(zip_path, zip_name)
         self.assertIn("app.json", created_files)
+        self.assertIn("entities-1.json", created_files)
         self.assertIn("entitytypes-1.json", created_files)
-        self.assertIn("forms.json", created_files)
         self.assertIn("formattachments.json", created_files)
+        self.assertIn("forms.json", created_files)
         self.assertIn("formversions.json", created_files)
         self.assertIn("groups.json", created_files)
         self.assertIn("orgunits-1.json", created_files)

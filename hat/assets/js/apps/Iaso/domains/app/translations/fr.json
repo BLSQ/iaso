@@ -1201,7 +1201,7 @@
     "iaso.users.exportMobileAppBody": "Cela créera un fichier zip contenant toutes les données nécessaires à la configuration initiale de l'application mobile pour :",
     "iaso.users.exportMobileAppBodyNoProjects": "Cet utilisateur n'a pas de projet attribué. La configuration de l'application mobile doit être effectuée pour un projet spécifique. Veuillez assigner au moins un projet à cet utilisateur afin de pouvoir continuer.",
     "iaso.users.exportMobileAppBodySure": "Êtes-vous sûr de vouloir créer le fichier d'exportation ?",
-    "iaso.users.exportMobileAppBodyWarning": "Attention : Ce fichier contiendra des informations sensibles telles qu'un jeton d'accès à l'API ainsi que des détails sur le profil de l'utilisateur.",
+    "iaso.users.exportMobileAppBodyWarning": "Attention : Ce fichier contiendra des informations sensibles, c'est pourquoi le fichier exporté sera crypté. Veuillez choisir un mot de passe d'au moins 8 caractères pour crypter le fichier. Vous devrez fournir ce mot de passe lors de la configuration de l'application mobile.",
     "iaso.users.exportMobileAppBtn": "Générer fichier",
     "iaso.users.exportMobileAppDownloadBtn": "Télécharger fichier",
     "iaso.users.exportMobileAppError": "Une erreur s'est produite, veuillez vous référer à la page des tâches pour plus de détails.",

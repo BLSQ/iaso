@@ -89,6 +89,8 @@ const ExportMobileAppSetupDialogComponent: FunctionComponent<DialogProps> = ({
     const [selectedProject, setSelectedProject] = useState<Project>(
         selectedUser.projects.length === 1 ? selectedUser.projects[0] : null,
     );
+    const [password, setPassword] = useState<string>();
+    const [passwordErrors, setPasswordErrors] = useState<string>();
     const [isExporting, setIsExporting] = useState<boolean>(false);
     const [taskId, setTaskId] = useState<number>();
     const [presignedUrl, setPresignedUrl] = useState<string>();
@@ -118,11 +120,22 @@ const ExportMobileAppSetupDialogComponent: FunctionComponent<DialogProps> = ({
         onCreateExport({
             userId: selectedUser.user_id,
             projectId: selectedProject.id,
-        }).then((task: TaskApiResponse<any>) => {
-            setIsExporting(true);
-            setTaskId(task.task.id);
-        });
-    }, [selectedUser, selectedProject, onCreateExport]);
+            password: password,
+        })
+            .then((task: TaskApiResponse<any>) => {
+                setIsExporting(true);
+                setTaskId(task.task.id);
+            })
+            .catch(error => {
+                if (error.status === 400) {
+                    Object.keys(error.details).forEach(errorKey => {
+                        if (errorKey === 'password') {
+                            setPasswordErrors(error.details[errorKey]);
+                        }
+                    });
+                }
+            });
+    }, [selectedUser, selectedProject, password, onCreateExport]);
 
     const { data: taskData } = useTaskMonitor({
         taskId,
@@ -156,7 +169,9 @@ const ExportMobileAppSetupDialogComponent: FunctionComponent<DialogProps> = ({
             maxWidth="md"
             open={isOpen}
             closeDialog={() => null}
-            allowConfirm={selectedUser && selectedProject && !isExporting}
+            allowConfirm={
+                selectedUser && selectedProject && password && !isExporting
+            }
             onClose={() => null}
             onCancel={() => {
                 closeDialog();
@@ -238,7 +253,18 @@ const ExportMobileAppSetupDialogComponent: FunctionComponent<DialogProps> = ({
                                     MESSAGES.exportMobileAppBodyWarning,
                                 )}
                             </Alert>
-                            <Typography mb={2}>
+                            <InputComponent
+                                type="password"
+                                keyValue="password"
+                                required
+                                onChange={(_key, value) =>
+                                    setPassword(value.trim())
+                                }
+                                label={MESSAGES.password}
+                                value={password}
+                                errors={passwordErrors}
+                            />
+                            <Typography my={2}>
                                 {formatMessage(
                                     MESSAGES.exportMobileAppBodySure,
                                 )}

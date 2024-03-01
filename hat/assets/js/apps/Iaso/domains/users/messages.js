@@ -316,7 +316,7 @@ const MESSAGES = defineMessages({
     },
     exportMobileAppBodyWarning: {
         defaultMessage:
-            'Caution: This file will contain sensitive information such as an API access token as well as user profile details.',
+            'Caution: This file will contain sensitive information, for this reason the exported file will be encrypted. Please choose a password of at least 8 characters to encrypt the file. You will need to provide this password when setting up the mobile application.',
         id: 'iaso.users.exportMobileAppBodyWarning',
     },
     exportMobileAppBodySure: {
@@ -357,6 +357,10 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Closing this modal will not stop the document export. You can find all tasks and their progress on the tasks overview page.',
         id: 'iaso.users.exportMobileAppViewTasks',
+    },
+    password: {
+        defaultMessage: 'password',
+        id: 'iaso.users.password',
     },
 });
 

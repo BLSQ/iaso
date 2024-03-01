@@ -1,48 +1,38 @@
-# Web interface
+# IASO Web
 
 ### Overview
 
-Iaso is a platform (a georegistry) developed mainly
-at Bluesquare which has 3 main functionalities:
+IASO is an innovative, open-source, bilingual (EN/FR) data collection platform with advanced geospatial features to plan, monitor and evaluate health, environmental or social programmes in low- and middle-income settings (LMICs). IASO is recognized as a Digital Public Good by the Digital Public Good Alliance and listed as a Digital Square Software Global Good, a testament to its proven impact.
 
--   Data collection (trough forms)
-    -   Create forms
-    -   Validation of data collection
-    -   View forms sent from the mobile app
-    -   Export results ( CSV/Geopackage) into a data warehouse, such as
+IASO comprises:
+- a **web
+dashboard** - intended to supervisors for them to organize data collection and geographical data management
+- a **mobile application** that also works **offline** - intended to field users for them to fill out forms and send data when network is available
+- a **matching and scripting interface** to analyze, compare and merge several geographic data sources
+- a bi-directional **integration with DHIS2**, the widely used HMIS in LMICs
+
+In terms of features, IASO can be summarized around **three main components** which are interconnected and expand the powers of one another:
+
+-  Geospatial data management (Georegistry)
+    -  Manage multiple master lists of organizational units (e.g. health areas, districts, facilities, or schools) including their GPS coordinates and boundaries
+    -  Keep track of changes made to the organization units
+    -   Map multiple geographic data sources
+    -   Propose changes to org units from IASO mobile application and validate them on the web
+    
+- Structured data collection
+    -   Create data collection forms using the widely known XLS form format and upload them to IASO
+    -   Link your form to one or several organization unit type (e.g. National/Regional/District/Health facility) to geo-structure your data collection
+    -   Keep track of changes with versioning of your data collection forms
     -   Export collected data to DHIS2
--   Data management (trough territorial hierarchies)
-    -   Location of structures using GPS
-    -   Mapping of multiple data sources
-    -   Distribution of validation work by geographic sub-area
-    -   Traceability of changes
+    -   Validate from the web all data collection form submissions sent from IASO mobile application
+    -   Monitor data collection completeness per organization unit level and drill-down to identify where issues happen
 
--   Micro planning
-    - Manage teams of users
-    - Create plannings with deadlines
-    - In the context of a planning, assign org units to visit to teams and individual users
-    - Monitor the good execution of your planning
-
-Iaso supports the continuous management of geographical
-information based on master lists of generic
-geographical objects called organizational units (“org. units”),
-which are for example health areas, schools, provinces, health
-districts, or wells).
-
-Iaso prevents data fragmentation and lack of standardisation that can
-lead to duplicative efforts, imprecise metrics, time consuming data
-integration efforts and errors.
-
-Iaso as georegistry is used in several countries in support of a process
-where updated data improves the health information system based on
-DHIS2.
-
-Iaso provides a number of core features in support of continuous
-geospatial data management: a **mobile application**, a **web
-dashboard**, a **matching featur**e to merge various data sources, a
-**data scienc**e and **scripting** interface and a seamless
-bi-directional **integration** with DHIS2.
-
+-   Geo-enabled Microplanning
+    - Manage teams of users and teams of teams
+    - Assign data collection duties to teams and users using a map interface
+    - Create plannings with a scope, a time span, and one or several data collection form(s)
+    
+The platform has been implemented in Benin, Burkina Faso, Burundi, Cameroon, Central African Republic, the Democratic Republic of Congo, Haiti, Ivory Coast, Mali, Niger, Nigeria and Uganda. It is the official georegistry in Burkina Faso since 2023. IASO has also been implemented at regional level (AFRO region) in support to the Global Polio Eradication Initiative for its geospatial and health facility registries capabilities.
 
 
 ### Login

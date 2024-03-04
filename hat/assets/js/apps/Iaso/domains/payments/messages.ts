@@ -89,6 +89,26 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.created_at',
         defaultMessage: 'Created',
     },
+    new: {
+        defaultMessage: 'New',
+        id: 'iaso.forms.newCap',
+    },
+    all: {
+        id: 'iaso.forms.all',
+        defaultMessage: 'All',
+    },
+    sent: {
+        id: 'iaso.payments.sent',
+        defaultMessage: 'Sent',
+    },
+    paid: {
+        id: 'iaso.payments.paid',
+        defaultMessage: 'Paid',
+    },
+    partially_paid: {
+        id: 'iaso.payments.partially_paid',
+        defaultMessage: 'Partially paid',
+    },
 });
 
 export default MESSAGES;

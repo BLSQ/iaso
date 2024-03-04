@@ -10,6 +10,7 @@ import { useGetPaymentLots } from './hooks/requests/useGetPaymentLots';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { redirectTo } from '../../routing/actions';
 import { usePaymentLotsColumns } from './config/usePaymentLotsColumns';
+import { PaymentLotsFilters } from './components/PaymentLotsFilters';
 
 type Props = {
     params: PotentialPaymentParams;
@@ -29,6 +30,7 @@ export const LotsPayments: FunctionComponent<Props> = ({ params }) => {
                 displayBackButton={false}
             />
             <Box sx={commonStyles(theme).containerFullHeightNoTabPadded}>
+                <PaymentLotsFilters params={params} />
                 {/* @ts-ignore */}
                 <TableWithDeepLink
                     marginTop={false}

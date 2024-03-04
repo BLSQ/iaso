@@ -22,3 +22,12 @@ class StartEndDateFilterBackend(filters.BaseFilterBackend):
         start_date = request.GET.get("created_at_after", None)
         end_date = request.GET.get("created_at_before", None)
         return filter_by_dates(request, queryset, start_date, end_date)
+
+
+class StatusFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        status = request.GET.get("status", None)
+        if status:
+            status_list = status.split(",")
+            return queryset.filter(status__in=status_list)
+        return queryset

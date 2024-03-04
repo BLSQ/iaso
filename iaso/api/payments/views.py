@@ -14,6 +14,7 @@ from iaso.api.common import (
 )
 from iaso.models import Payment, OrgUnitChangeRequest, PotentialPayment, PaymentLot
 import iaso.api.payments.filters.potential_payments as potential_payments_filters
+import iaso.api.payments.filters.payments_lots as payments_lots_filters
 from .serializers import PotentialPaymentSerializer, PaymentLotSerializer
 from drf_yasg.utils import swagger_auto_schema
 
@@ -37,10 +38,10 @@ class PaymentLotsViewSet(ModelViewSet):
 
     The status of a payment lot is dynamically computed based on the statuses of the payments it contains. The possible statuses are:
 
-    - `NEW`: Default status, indicating a newly created lot or a lot with no payments sent.
-    - `SENT`: Indicates that all payments in the lot have been sent.
-    - `PAID`: Indicates that all payments in the lot have been paid.
-    - `PARTIALLY_PAID`: Indicates that some, but not all, payments in the lot have been paid.
+    - `new`: Default status, indicating a newly created lot or a lot with no payments sent.
+    - `sent`: Indicates that all payments in the lot have been sent.
+    - `paid`: Indicates that all payments in the lot have been paid.
+    - `partially_paid`: Indicates that some, but not all, payments in the lot have been paid.
 
     The status is computed every time a payment lot is saved, ensuring that the payment lot status accurately reflects the current state of its associated payments.
     """
@@ -49,6 +50,10 @@ class PaymentLotsViewSet(ModelViewSet):
     filter_backends = [
         filters.OrderingFilter,
         django_filters.rest_framework.DjangoFilterBackend,
+        payments_lots_filters.UsersFilterBackend,
+        payments_lots_filters.ParentFilterBackend,
+        payments_lots_filters.StartEndDateFilterBackend,
+        payments_lots_filters.StatusFilterBackend,
     ]
     ordering_fields = [
         "name",
@@ -80,7 +85,7 @@ class PaymentLotsViewSet(ModelViewSet):
             openapi.Parameter(
                 name="status",
                 in_=openapi.IN_QUERY,
-                description="One of the possible payment lot status",
+                description="A comma-separated list of the possible payment lot status",
                 type=openapi.TYPE_STRING,
             ),
             openapi.Parameter(

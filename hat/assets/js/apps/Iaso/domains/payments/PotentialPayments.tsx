@@ -13,7 +13,7 @@ import { PotentialPaymentParams, PotentialPayment } from './types';
 import { useGetPotentialPayments } from './hooks/requests/useGetPotentialPayments';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
-import { PotentialPaymentsFilter } from './components/PotentialPaymentsFilter';
+import { PotentialPaymentsFilters } from './components/PotentialPaymentsFilters';
 import { redirectTo } from '../../routing/actions';
 import { usePotentialPaymentColumns } from './config/usePotentialPaymentColumns';
 import { Selection } from '../orgUnits/types/selection';
@@ -54,7 +54,7 @@ export const PotentialPayments: FunctionComponent<Props> = ({ params }) => {
                 displayBackButton={false}
             />
             <Box sx={commonStyles(theme).containerFullHeightNoTabPadded}>
-                <PotentialPaymentsFilter params={params} />
+                <PotentialPaymentsFilters params={params} />
                 <Box display="flex" justifyContent="flex-end">
                     <AddPaymentLotDialog
                         iconProps={{ disabled: multiEditDisabled }}

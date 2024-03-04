@@ -190,7 +190,13 @@ def _download_form_attachments(iaso_client, tmp_dir, resources, app_id):
         filename = _extract_filename_from_url(url)
 
         logger.info(f"\tDOWNLOAD {url}")
-        attachment_file = requests.get(url, headers=iaso_client.headers)
+        attachment_file = None
+        # S3 urls contain a signature and don't work with additional auth headers
+        if "s3.amazonaws" in url:
+            attachment_file = requests.get(url)
+        else:
+            attachment_file = requests.get(url, headers=iaso_client.headers)
+
         logger.info(f"\tDOWNLOAD manifest")
         manifest_file = requests.get(
             SERVER + f"/api/forms/{form_id}/manifest/?app_id={app_id}",
@@ -219,7 +225,12 @@ def _download_form_versions(iaso_client, tmp_dir, form_versions):
         filename = _extract_filename_from_url(url)
 
         logger.info(f"\tDOWNLOAD {url}")
-        response = requests.get(url, headers=iaso_client.headers)
+        response = None
+        # S3 urls contain a signature and don't work with additional auth headers
+        if "s3.amazonaws" in url:
+            response = requests.get(url)
+        else:
+            response = requests.get(url, headers=iaso_client.headers)
 
         with open(os.path.join(tmp_dir, "forms", filename), mode="wb") as f:
             f.write(response.content)
@@ -231,12 +242,13 @@ def _download_reports(iaso_client, tmp_dir, reports):
 
     os.makedirs(os.path.join(tmp_dir, "reports"))
     for report in reports:
-        # path in dev, url in prod
-        url_or_path = report["url"]
-        url = url_or_path if url_or_path.startswith("https") else SERVER + url_or_path
-
+        url = report["url"]
         logger.info(f"\tDOWNLOAD {url}")
-        response = requests.get(url, headers=iaso_client.headers)
+        # S3 urls contain a signature and don't work with additional auth headers
+        if "s3.amazonaws" in url:
+            response = requests.get(url)
+        else:
+            response = requests.get(SERVER + url, headers=iaso_client.headers)
 
         filename = _extract_filename_from_url(url)
         with open(os.path.join(tmp_dir, "reports", filename), mode="wb") as f:

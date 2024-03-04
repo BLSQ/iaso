@@ -12,7 +12,7 @@ import {
 import { Budget, Workflow } from '../../types';
 
 type Option = {
-    budget_current_state_key__in: [number | string];
+    current_state_key__in: [number | string];
     country__id__in: [number | string];
     order?: string;
     orgUnitGroups: [number | string];
@@ -25,7 +25,7 @@ type Option = {
 
 type Param = {
     accountId: string;
-    budget_current_state_key__in: [number | string];
+    current_state_key__in: [number | string];
     country__id__in: [number | string];
     order: string;
     orgUnitGroups: [number | string];
@@ -35,13 +35,14 @@ type Param = {
     roundStartTo: string;
     search: string;
 };
+
 const getBudgets = (params: any) => {
     const filteredParams = Object.entries(params).filter(
         // eslint-disable-next-line no-unused-vars
         ([, value]) => value !== undefined,
     );
     if (!params.order) {
-        filteredParams.push(['order', '-cvdpv2_notified_at']);
+        filteredParams.push(['order', '-updated_at']);
     }
 
     const queryString = new URLSearchParams(
@@ -56,10 +57,10 @@ export const useGetBudgets = (options: Option): any => {
         page: options.page,
         order: options.order,
         search: options.search,
-        budget_current_state_key__in: options.budget_current_state_key__in,
+        current_state_key__in: options.current_state_key__in,
         country__id__in: options.country__id__in,
         orgUnitGroups: options.orgUnitGroups,
-        fields: 'id,obr_name,country_name,current_state,cvdpv2_notified_at,possible_states,budget_last_updated_at',
+        fields: 'id,obr_name,country_name,current_state,round_numbers,possible_states,updated_at',
     };
 
     return useSnackQuery({
@@ -71,13 +72,13 @@ export const useGetBudgets = (options: Option): any => {
 export const useBudgetParams = (params: Param): any => {
     return useMemo(() => {
         return {
-            order: params?.order ?? '-cvdpv2_notified_at',
+            order: params?.order ?? '-updated_at',
             pageSize: params?.pageSize ?? 20,
             page: params?.page ?? 1,
             search: params.search,
             roundStartFrom: getApiParamDateString(params.roundStartFrom),
             roundStartTo: getApiParamDateString(params.roundStartTo),
-            budget_current_state_key__in: params.budget_current_state_key__in,
+            current_state_key__in: params.current_state_key__in,
             country__id__in: params?.country__id__in,
             orgUnitGroups: params?.orgUnitGroups,
         };
@@ -88,7 +89,7 @@ export const useBudgetParams = (params: Param): any => {
         params.search,
         params.roundStartFrom,
         params.roundStartTo,
-        params.budget_current_state_key__in,
+        params.current_state_key__in,
         params?.country__id__in,
         params?.orgUnitGroups,
     ]);

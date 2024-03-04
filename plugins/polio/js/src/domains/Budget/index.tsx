@@ -58,7 +58,7 @@ const usePaginationStyles = makeStyles({
     alignRight: { textAlign: 'right' },
 });
 
-export const BudgetList: FunctionComponent<Props> = ({ router }) => {
+export const BudgetProcessList: FunctionComponent<Props> = ({ router }) => {
     const { params } = router;
     const { formatMessage } = useSafeIntl();
     const paginationStyle = usePaginationStyles();

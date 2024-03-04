@@ -204,7 +204,8 @@ def _download_form_attachments(iaso_client, tmp_dir, resources, app_id):
             content = manifest_file.content.decode("utf-8")
             url_regex = r"(?<=<downloadUrl>)(.*?)(?=</downloadUrl>)"
             download_url = re.search(url_regex, content).group()
-            new_download_url = "formattachments/" + _extract_filename_from_url(download_url)
+            # don't use _extract_filename_from_url to preserve subpath
+            new_download_url = "formattachments/" + urlparse(download_url).path.split("/form_attachments/")[-1]
             f.write(re.sub(url_regex, new_download_url, content))
 
 

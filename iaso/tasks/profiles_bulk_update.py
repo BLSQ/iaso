@@ -5,6 +5,7 @@ from typing import Optional, List
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.models import QuerySet
+from iaso.models.microplanning import Team, TeamType
 from rest_framework.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from beanstalk_worker import task_decorator
@@ -24,6 +25,8 @@ def update_single_profile_from_bulk(
     projects_ids_removed: Optional[List[int]],
     roles_id_added: Optional[List[int]],
     roles_id_removed: Optional[List[int]],
+    teams_id_added: Optional[List[int]],
+    teams_id_removed: Optional[List[int]],
     location_ids_added: Optional[List[int]],
     location_ids_removed: Optional[List[int]],
     language: Optional[str],
@@ -64,6 +67,25 @@ def update_single_profile_from_bulk(
             if project.account and project.account.id == account_id:
                 project.iaso_profile.remove(profile)
 
+    if teams_id_added is not None:
+        for team_id in teams_id_added:
+            team = Team.objects.get(pk=team_id)
+            if (
+                team.manager.iaso_profile.account
+                and team.manager.iaso_profile.account.id == account_id
+                and team.type == TeamType.TEAM_OF_USERS
+            ):
+                team.users.add(profile.user)
+    if teams_id_removed is not None:
+        for team_id in teams_id_removed:
+            team = Team.objects.get(pk=team_id)
+            if (
+                team.manager.iaso_profile.account
+                and team.manager.iaso_profile.account.id == account_id
+                and team.type == TeamType.TEAM_OF_USERS
+            ):
+                team.users.remove(profile.user)
+
     if language is not None:
         profile.language = language
 
@@ -100,6 +122,8 @@ def profiles_bulk_update(
     projects_ids_removed: Optional[List[int]],
     roles_id_added: Optional[List[int]],
     roles_id_removed: Optional[List[int]],
+    teams_id_added: Optional[List[int]],
+    teams_id_removed: Optional[List[int]],
     location_ids_added: Optional[List[int]],
     location_ids_removed: Optional[List[int]],
     language: Optional[str],
@@ -168,6 +192,8 @@ def profiles_bulk_update(
                 projects_ids_removed=projects_ids_removed,
                 roles_id_added=roles_id_added,
                 roles_id_removed=roles_id_removed,
+                teams_id_added=teams_id_added,
+                teams_id_removed=teams_id_removed,
                 location_ids_added=location_ids_added,
                 location_ids_removed=location_ids_removed,
                 language=language,

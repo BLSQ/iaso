@@ -53,26 +53,29 @@ export const useBudgetColumns = (): Column[] => {
             {
                 Header: formatMessage(MESSAGES.country),
                 id: 'country__name',
-                accessor: 'country_name',
                 sortable: true,
+                accessor: 'country_name',
             },
             {
                 Header: formatMessage(MESSAGES.status),
                 sortable: true,
-                accessor: 'budget_current_state_key',
+                accessor: 'current_state_key',
                 Cell: settings =>
                     settings.row.original.current_state?.label ?? '--',
             },
             {
-                Header: formatMessage(MESSAGES.virusNotificationDate),
-                sortable: true,
-                accessor: 'cvdpv2_notified_at',
-                Cell: DateCell,
+                Header: formatMessage(MESSAGES.rounds),
+                sortable: false,
+                accessor: 'round_numbers',
+                Cell: settings =>
+                    settings.row.original.round_numbers
+                        .map(i => `Round ${i}`)
+                        .join(', ') || '--',
             },
             {
                 Header: formatMessage(MESSAGES.lastStep),
                 sortable: true,
-                accessor: 'budget_last_updated_at',
+                accessor: 'updated_at',
                 Cell: DateCell,
             },
             {

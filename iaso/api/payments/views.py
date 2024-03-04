@@ -13,18 +13,38 @@ from iaso.api.common import (
     ModelViewSet,
 )
 from iaso.models import Payment, OrgUnitChangeRequest, PotentialPayment, PaymentLot
-import iaso.api.payments.filters as potential_payment_filters
+import iaso.api.payments.potential_payments_filters as potential_payments_filters
 from .serializers import PotentialPaymentSerializer, PaymentLotSerializer
 from drf_yasg.utils import swagger_auto_schema
 
 
-# TO-DO:
-# - add filter tests on potential payment selection
-# - write doc on payment lot creation
-# - write swagger doc on api params
-
-
 class PaymentLotsViewSet(ModelViewSet):
+    """
+    # `Payment Lots` API
+
+    This API allows for the management and querying of payment lots. Payment lots are collections of payments that can be processed together.
+
+    The Django model that stores "Payment Lot" is `PaymentLot`.
+
+    This API supports creating new payment lots, updating existing ones, and querying for payment lots based on various criteria such as creation date, status, and associated user.
+
+    ## Permissions
+
+    - User must be authenticated
+    - User needs `iaso_payments` permission
+
+    ## Status Computing
+
+    The status of a payment lot is dynamically computed based on the statuses of the payments it contains. The possible statuses are:
+
+    - `NEW`: Default status, indicating a newly created lot or a lot with no payments sent.
+    - `SENT`: Indicates that all payments in the lot have been sent.
+    - `PAID`: Indicates that all payments in the lot have been paid.
+    - `PARTIALLY_PAID`: Indicates that some, but not all, payments in the lot have been paid.
+
+    The status is computed every time a payment lot is saved, ensuring that the payment lot status accurately reflects the current state of its associated payments.
+    """
+
     permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
     filter_backends = [
         filters.OrderingFilter,
@@ -49,6 +69,42 @@ class PaymentLotsViewSet(ModelViewSet):
 
         return queryset
 
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                name="user",
+                in_=openapi.IN_QUERY,
+                description="A comma-separated list of User IDs associated with the payment lots creation",
+                type=openapi.TYPE_STRING,
+            ),
+            openapi.Parameter(
+                name="status",
+                in_=openapi.IN_QUERY,
+                description="One of the possible payment lot status",
+                type=openapi.TYPE_STRING,
+            ),
+            openapi.Parameter(
+                name="parent_id",
+                in_=openapi.IN_QUERY,
+                description="The ID of the parent organization unit linked to the change requests. This should also include child units.",
+                type=openapi.TYPE_INTEGER,
+            ),
+            openapi.Parameter(
+                name="created_at_after",
+                in_=openapi.IN_QUERY,
+                description="The start date for when the lots has been created. Format: YYYY-MM-DD",
+                type=openapi.TYPE_STRING,
+                format=openapi.FORMAT_DATE,
+            ),
+            openapi.Parameter(
+                name="created_at_before",
+                in_=openapi.IN_QUERY,
+                description="The end date for when the lots has been created. Format: YYYY-MM-DD",
+                type=openapi.TYPE_STRING,
+                format=openapi.FORMAT_DATE,
+            ),
+        ]
+    )
     def list(self, request):
         orders = request.GET.get("order", "updated_at").split(",")
         queryset = self.filter_queryset(self.get_queryset()).order_by(*orders)
@@ -105,39 +161,18 @@ class PotentialPaymentsViewSet(ModelViewSet):
     - User must be authenticated
     - User needs `iaso_payments` permission
 
-    ## Possible responses
-
-    ### 200 - OK
-
-    ### 400 - Bad request
-
-    - `page` or `limit` cannot be parsed to a correct integer value
-
-    ### 401 - Unauthorized
-
-    - No authentication token or an invalid one was provided
-
-    ### 403 - Forbidden
-
-    - User doesn't have the proper permission to access this resource.
-
-
-    ### 404 - Not found
-
-    - `users`, `user_roles`, `parent_id` not found
-
     """
 
     permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
     filter_backends = [
         filters.OrderingFilter,
         django_filters.rest_framework.DjangoFilterBackend,
-        potential_payment_filters.UsersFilterBackend,
-        potential_payment_filters.UserRolesFilterBackend,
-        potential_payment_filters.FormsFilterBackend,
-        potential_payment_filters.ParentFilterBackend,
-        potential_payment_filters.StartEndDateFilterBackend,
-        potential_payment_filters.SelectionFilterBackend,
+        potential_payments_filters.UsersFilterBackend,
+        potential_payments_filters.UserRolesFilterBackend,
+        potential_payments_filters.FormsFilterBackend,
+        potential_payments_filters.ParentFilterBackend,
+        potential_payments_filters.StartEndDateFilterBackend,
+        potential_payments_filters.SelectionFilterBackend,
     ]
     ordering_fields = [
         "user__username",

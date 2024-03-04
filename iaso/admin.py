@@ -83,6 +83,7 @@ from .models import (
     WorkflowFollowup,
     WorkflowVersion,
     OrgUnitReferenceInstance,
+    PotentialPayment,
     Payment,
     PaymentLot,
 )
@@ -762,6 +763,11 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
 @admin.register(Config)
 class ConfigAdmin(admin.ModelAdmin):
     raw_id_fields = ["users"]
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+
+
+@admin.register(PotentialPayment)
+class PotentialPaymentAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from iaso.models import Payment, PotentialPayment, OrgUnitChangeRequest, PaymentLot
-from iaso.api.payments.filters import filter_by_forms, filter_by_dates, filter_by_parent
+from iaso.api.payments.potential_payments_filters import filter_by_forms, filter_by_dates, filter_by_parent
 
 from django.contrib.auth.models import User
 from iaso.api.payments.pagination import PaymentPagination

@@ -12,6 +12,7 @@ import { IconButton, Button, Box, Divider, Grid } from '@mui/material';
 import Add from '@mui/icons-material/Add';
 
 import { useFormik } from 'formik';
+import moment from 'moment';
 import MESSAGES from '../messages';
 import { PotentialPayment, PotentialPaymentParams } from '../types';
 import { Selection } from '../../orgUnits/types/selection';
@@ -24,6 +25,7 @@ import {
     SavePaymentLotQuery,
     useSavePaymentLot,
 } from '../hooks/requests/useSavePaymentLot';
+import getDisplayName, { useCurrentUser } from '../../../utils/usersUtils';
 
 const styles: SxStyles = {
     table: {
@@ -31,6 +33,14 @@ const styles: SxStyles = {
         mt: 2,
         '& .MuiSpeedDial-root': {
             display: 'none',
+        },
+    },
+    infos: {
+        p: theme => `28px ${theme.spacing()}`,
+        '& span': {
+            fontWeight: 'bold',
+            display: 'inline-block',
+            mr: 1,
         },
     },
 };
@@ -70,6 +80,7 @@ const PaymentLotDialog: FunctionComponent<Props> = ({
         useGetSelectedPotentialPayments(params, selection);
 
     const { mutateAsync: savePaymentLot } = useSavePaymentLot('create');
+    const currentUser = useCurrentUser();
     const {
         values,
         setFieldValue,
@@ -152,8 +163,14 @@ const PaymentLotDialog: FunctionComponent<Props> = ({
                     />
                 </Grid>
                 <Grid item xs={4}>
-                    <Box>Date: Date d'ajd</Box>
-                    <Box>Creator: Moi</Box>
+                    <Box sx={styles.infos}>
+                        <span>{formatMessage(MESSAGES.date)}:</span>
+                        {moment().format('L')}
+                    </Box>
+                    <Box sx={styles.infos}>
+                        <span>{formatMessage(MESSAGES.created_by)}:</span>
+                        {getDisplayName(currentUser)}
+                    </Box>
                 </Grid>
             </Grid>
             <Box sx={styles.table}>

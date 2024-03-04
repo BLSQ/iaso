@@ -73,6 +73,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.comment',
         defaultMessage: 'Comment',
     },
+    created_by: {
+        id: 'iaso.label.created_by',
+        defaultMessage: 'Created by',
+    },
+    date: {
+        defaultMessage: 'Date',
+        id: 'iaso.label.date',
+    },
+    status: {
+        id: 'iaso.forms.status',
+        defaultMessage: 'Status',
+    },
+    created_at: {
+        id: 'iaso.forms.created_at',
+        defaultMessage: 'Created',
+    },
 });
 
 export default MESSAGES;

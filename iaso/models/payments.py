@@ -45,14 +45,17 @@ class PotentialPayment(models.Model):
 
 class PaymentLot(models.Model):
     """
-    Model to store lots / batch of payments. Each payment can belong to only one lot.
+    Model to store lots / batches of payments. Each payment can belong to only one lot.
+    This model includes a mechanism to dynamically compute the status of a payment lot based on the statuses of the payments it contains.
     """
 
-    class PaymentLotStatuses(models.TextChoices):
-        NEW = "new", _("New")
-        SENT = "sent", _("Sent")
-        PAID = "paid", _("Paid")
-        PARTIALLY_PAID = "partially_paid", _("Partially Paid")
+    class Statuses(models.TextChoices):
+        NEW = "new", _("New")  # Default status, indicating a newly created lot or a lot with no payments sent.
+        SENT = "sent", _("Sent")  # Indicates that all payments in the lot have been sent.
+        PAID = "paid", _("Paid")  # Indicates that all payments in the lot have been paid.
+        PARTIALLY_PAID = "partially_paid", _(
+            "Partially Paid"
+        )  # Indicates that some, but not all, payments in the lot have been paid.
 
     name = models.CharField(max_length=255)
     comment = models.TextField(blank=True, null=True)
@@ -62,28 +65,28 @@ class PaymentLot(models.Model):
     updated_by = models.ForeignKey(
         User, null=True, blank=True, on_delete=models.SET_NULL, related_name="payment_lot_updated_set"
     )
-    status = models.CharField(choices=PaymentLotStatuses.choices, default=PaymentLotStatuses.NEW, max_length=40)
+    status = models.CharField(choices=Statuses.choices, default=Statuses.NEW, max_length=40)
 
     def compute_status(self):
         payments = self.payments.all()
         if not payments.exists():
-            return self.PaymentLotStatuses.NEW
+            return self.Statuses.NEW
         total_payments = payments.count()
         paid_payments = payments.filter(status=Payment.Statuses.PAID).count()
         sent_payments = payments.filter(status=Payment.Statuses.SENT).count()
 
         if paid_payments == total_payments:
-            return self.PaymentLotStatuses.PAID
+            return self.Statuses.PAID
         elif paid_payments > 0:
-            return self.PaymentLotStatuses.PARTIALLY_PAID
+            return self.Statuses.PARTIALLY_PAID
         elif sent_payments == total_payments:
-            return self.PaymentLotStatuses.SENT
+            return self.Statuses.SENT
         else:
-            return self.PaymentLotStatuses.NEW
+            return self.Statuses.NEW
 
     def save(self, *args, **kwargs):
         if not self.pk:
-            self.status = self.PaymentLotStatuses.NEW
+            self.status = self.Statuses.NEW
         else:
             self.status = self.compute_status()
         super().save(*args, **kwargs)

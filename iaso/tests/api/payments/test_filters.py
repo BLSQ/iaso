@@ -1,5 +1,4 @@
 import datetime
-import json
 
 from django.contrib.auth.models import Group
 
@@ -212,4 +211,153 @@ class FilterPotentialPaymentsAPITestCase(APITestCase):
         self.assertIn(change_request1.id, [change["id"] for change in response.data["results"][0]["change_requests"]])
         self.assertNotIn(
             change_request2.id, [change["id"] for change in response.data["results"][0]["change_requests"]]
+        )
+
+    def test_select_all_filter(self):
+        m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            new_name="Foo",
+            created_by=self.user,
+            status=m.OrgUnitChangeRequest.Statuses.APPROVED,
+        )
+        m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            new_name="Bar",
+            created_by=self.user,
+            status=m.OrgUnitChangeRequest.Statuses.APPROVED,
+        )
+        self.client.force_authenticate(self.user_with_review_perm)
+        response = self.client.get("/api/potential_payments/?select_all=true")
+        self.assertJSONResponse(response, 200)
+        self.assertTrue(
+            len(response.data["results"][0]["change_requests"]) == 2, "select_all filter did not return all results"
+        )
+
+    def test_selected_ids_filter(self):
+        another_user = self.create_user_with_profile(
+            username="another_user",
+            account=self.account,
+            permissions=["iaso_org_unit_change_request_review"],
+        )
+        potential_payment1 = m.PotentialPayment.objects.create(
+            user=self.user,
+        )
+        potential_payment2 = m.PotentialPayment.objects.create(
+            user=another_user,
+        )
+        potential_payment3 = m.PotentialPayment.objects.create(
+            user=self.user_with_review_perm,
+        )
+
+        m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            new_name="Foo",
+            created_by=self.user,
+            status=m.OrgUnitChangeRequest.Statuses.APPROVED,
+            potential_payment=potential_payment1,
+        )
+        m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            new_name="Bar",
+            created_by=another_user,
+            status=m.OrgUnitChangeRequest.Statuses.APPROVED,
+            potential_payment=potential_payment2,
+        )
+        m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            new_name="new_name",
+            created_by=self.user_with_review_perm,
+            status=m.OrgUnitChangeRequest.Statuses.APPROVED,
+            potential_payment=potential_payment3,
+        )
+
+        selected_ids = f"{potential_payment1.id},{potential_payment2.id}"
+        self.client.force_authenticate(self.user_with_review_perm)
+        response = self.client.get(f"/api/potential_payments/?selected_ids={selected_ids}")
+        self.assertJSONResponse(response, 200)
+
+        self.assertEqual(
+            len(response.data["results"]),
+            2,
+            "selected_ids filter did not return the correct number of results",
+        )
+        potential_payments_in_results = [result["id"] for result in response.data["results"]]
+        self.assertIn(
+            potential_payment1.id,
+            potential_payments_in_results,
+            "potential_payment1 not found in selected_ids results",
+        )
+        self.assertIn(
+            potential_payment2.id,
+            potential_payments_in_results,
+            "potential_payment2 not found in selected_ids results",
+        )
+        self.assertNotIn(
+            potential_payment3.id,
+            potential_payments_in_results,
+            "potential_payment3 found in selected_ids results",
+        )
+
+    def test_unselected_ids_filter(self):
+        another_user = self.create_user_with_profile(
+            username="another_user",
+            account=self.account,
+            permissions=["iaso_org_unit_change_request_review"],
+        )
+        potential_payment1 = m.PotentialPayment.objects.create(
+            user=self.user,
+        )
+        potential_payment2 = m.PotentialPayment.objects.create(
+            user=another_user,
+        )
+        potential_payment3 = m.PotentialPayment.objects.create(
+            user=self.user_with_review_perm,
+        )
+
+        m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            new_name="Foo",
+            created_by=self.user,
+            status=m.OrgUnitChangeRequest.Statuses.APPROVED,
+            potential_payment=potential_payment1,
+        )
+        m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            new_name="Bar",
+            created_by=another_user,
+            status=m.OrgUnitChangeRequest.Statuses.APPROVED,
+            potential_payment=potential_payment2,
+        )
+        m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            new_name="new_name",
+            created_by=self.user_with_review_perm,
+            status=m.OrgUnitChangeRequest.Statuses.APPROVED,
+            potential_payment=potential_payment3,
+        )
+
+        unselected_ids = f"{potential_payment1.id}"
+        self.client.force_authenticate(self.user_with_review_perm)
+        response = self.client.get(f"/api/potential_payments/?unselected_ids={unselected_ids}&select_all=true")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(
+            len(response.data["results"]),
+            2,
+            "unselected_ids filter did not return the correct number of results",
+        )
+        potential_payments_in_results = [result["id"] for result in response.data["results"]]
+        self.assertIn(
+            potential_payment3.id,
+            potential_payments_in_results,
+            "potential_payment3 not found in selected_ids results",
+        )
+        self.assertIn(
+            potential_payment2.id,
+            potential_payments_in_results,
+            "potential_payment2 not found in selected_ids results",
+        )
+        self.assertNotIn(
+            potential_payment1.id,
+            potential_payments_in_results,
+            "potential_payment1 found in selected_ids results",
         )

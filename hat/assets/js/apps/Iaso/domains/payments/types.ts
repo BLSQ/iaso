@@ -10,6 +10,14 @@ export type PotentialPaymentParams = UrlParams & {
     user_roles?: string;
 };
 
+export type PaymentLotsParams = UrlParams & {
+    created_at_after?: string;
+    created_at_before?: string;
+    parent_id?: string;
+    status?: PaymentLotStatus;
+    users?: string;
+};
+
 type PaymenStatus = 'pending' | 'sent' | 'rejected';
 
 type User = {
@@ -49,3 +57,20 @@ export interface PotentialPaymentPaginated extends Pagination {
 export type PotentialPayments = {
     results: PotentialPayment[];
 };
+
+type PaymentLotStatus = 'new' | 'sent' | 'paid' | 'partially_paid';
+
+export type PaymentLot = {
+    id: number;
+    name: string;
+    comment?: string;
+    created_at: string;
+    updated_at: string;
+    created_by: User;
+    updated_by: User;
+    status: PaymentLotStatus;
+    payments: Payment[];
+};
+export interface PaymentLotPaginated extends Pagination {
+    results: PaymentLot[];
+}

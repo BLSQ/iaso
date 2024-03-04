@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from iaso.models import Payment, PotentialPayment, OrgUnitChangeRequest, PaymentLot
-from iaso.api.payments.potential_payments_filters import filter_by_forms, filter_by_dates, filter_by_parent
+from iaso.api.payments.filters.potential_payments import filter_by_forms, filter_by_dates, filter_by_parent
 
 from django.contrib.auth.models import User
 from iaso.api.payments.pagination import PaymentPagination
@@ -19,11 +19,10 @@ class UserNestedSerializer(serializers.ModelSerializer):
 class OrgChangeRequestNestedSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrgUnitChangeRequest
-        fields = [
-            "id",
-            "uuid",
-            "org_unit_id",
-        ]
+        fields = ["id", "uuid", "org_unit_id", "created_at"]
+        read_only_fields = ["id", "created_at", "updated_at"]
+
+    # created_at = TimestampField(read_only=True)
 
 
 class PaymentSerializer(serializers.ModelSerializer):
@@ -80,7 +79,11 @@ class PotentialPaymentSerializer(serializers.ModelSerializer):
 
     def get_change_requests(self, obj):
         change_requests = OrgUnitChangeRequest.objects.filter(potential_payment=obj)
-        change_requests = filter_by_forms(self.context["request"], change_requests)
-        change_requests = filter_by_dates(self.context["request"], change_requests)
-        change_requests = filter_by_parent(self.context["request"], change_requests)
+        request = self.context.get("request", None)
+        change_requests = filter_by_forms(request, change_requests)
+        change_requests = filter_by_parent(request, change_requests)
+        if request:
+            start_date = request.GET.get("change_requests__created_at_after", None)
+            end_date = request.GET.get("change_requests__created_at_before", None)
+            change_requests = filter_by_dates(request, change_requests, start_date, end_date)
         return OrgChangeRequestNestedSerializer(change_requests, many=True).data

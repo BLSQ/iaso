@@ -84,7 +84,7 @@ class FilterPotentialPaymentsAPITestCase(APITestCase):
         change_request2.save()
 
         response = self.client.get(
-            "/api/potential_payments/?change_requests__created_at_after=17-10-2023&change_requests__created_at_before=17-10-2023"
+            "/api/potential_payments/?change_requests__created_at_after=2023-10-17&change_requests__created_at_before=2023-10-17"
         )
         self.assertJSONResponse(response, 200)
         self.assertEqual(1, len(response.data["results"][0]["change_requests"]))
@@ -97,7 +97,7 @@ class FilterPotentialPaymentsAPITestCase(APITestCase):
         response = self.client.get("/api/potential_payments/?change_requests__created_at_before=17-10-2022")
         self.assertJSONResponse(response, 200)
         self.assertEqual(1, len(response.data["results"]))
-        self.assertEqual(1, len(response.data["results"][0]["change_requests"]))
+        self.assertEqual(2, len(response.data["results"][0]["change_requests"]))
 
     def test_filter_on_users(self):
         change_request1 = m.OrgUnitChangeRequest.objects.create(

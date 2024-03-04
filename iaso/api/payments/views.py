@@ -13,7 +13,7 @@ from iaso.api.common import (
     ModelViewSet,
 )
 from iaso.models import Payment, OrgUnitChangeRequest, PotentialPayment, PaymentLot
-import iaso.api.payments.potential_payments_filters as potential_payments_filters
+import iaso.api.payments.filters.potential_payments as potential_payments_filters
 from .serializers import PotentialPaymentSerializer, PaymentLotSerializer
 from drf_yasg.utils import swagger_auto_schema
 

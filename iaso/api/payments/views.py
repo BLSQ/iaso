@@ -2,10 +2,13 @@ from django.db.models import Count
 import django_filters
 from drf_yasg import openapi
 from rest_framework import filters, permissions
+from django.db.models.functions import Coalesce
 from rest_framework.exceptions import NotFound
 from rest_framework import status
 from rest_framework.response import Response
 from django.db import transaction
+from django.db.models import Count, Subquery, OuterRef
+from django.db import models
 
 from hat.menupermissions import models as permission
 from iaso.api.common import (
@@ -55,22 +58,30 @@ class PaymentLotsViewSet(ModelViewSet):
         payments_lots_filters.StartEndDateFilterBackend,
         payments_lots_filters.StatusFilterBackend,
     ]
-    ordering_fields = [
-        "name",
-        "created_at",
-        "updated_at",
-        "created_by__username",
-        "updated_by__username",
-    ]
+    ordering_fields = ["name", "created_at", "created_by__username", "status", "change_requests_count"]
     serializer_class = PaymentLotSerializer
     http_method_names = ["get", "post", "patch", "head", "options", "trace"]
 
     def get_queryset(self):
         queryset = PaymentLot.objects.all()
-        queryset = queryset.prefetch_related(
-            "payments",
+        queryset = queryset.prefetch_related("payments")
+
+        # Adjusted subquery to directly link and count OrgUnitChangeRequests through Payments
+        change_requests_count = (
+            OrgUnitChangeRequest.objects.filter(payment__payment_lot=OuterRef("pk"))
+            .order_by()
+            .values("payment__payment_lot")
+            .annotate(total=Count("id"))
+            .values("total")
         )
+
+        queryset = queryset.annotate(
+            change_requests_count=Coalesce(Subquery(change_requests_count, output_field=models.IntegerField()), 0)
+        )
+
         queryset = queryset.filter(created_by__iaso_profile__account=self.request.user.iaso_profile.account).distinct()
+        for payment_lot in queryset:
+            print(f"PaymentLot ID: {payment_lot.id}, Change Requests Count: {payment_lot.change_requests_count}")
 
         return queryset
 

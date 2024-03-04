@@ -19,10 +19,8 @@ class UserNestedSerializer(serializers.ModelSerializer):
 class OrgChangeRequestNestedSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrgUnitChangeRequest
-        fields = ["id", "uuid", "org_unit_id", "created_at"]
-        read_only_fields = ["id", "created_at", "updated_at"]
-
-    # created_at = TimestampField(read_only=True)
+        fields = ["id", "uuid", "org_unit_id"]
+        read_only_fields = ["id", "updated_at"]
 
 
 class PaymentSerializer(serializers.ModelSerializer):
@@ -41,9 +39,22 @@ class PaymentSerializer(serializers.ModelSerializer):
     updated_at = TimestampField(read_only=True)
 
     def get_change_requests(self, obj):
-        # Assuming OrgUnitChangeRequest has a reverse relation to Payment named 'change_requests'
         change_requests = OrgUnitChangeRequest.objects.filter(payment=obj)
-        # Utilize the OrgChangeRequestNestedSerializer to serialize the queryset
+        return OrgChangeRequestNestedSerializer(change_requests, many=True, context=self.context).data
+
+
+class NestedPaymentSerializer(serializers.ModelSerializer):
+    change_requests = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Payment
+        fields = ["id", "change_requests", "user"]
+        read_only_fields = ["id"]
+
+    user = UserNestedSerializer()
+
+    def get_change_requests(self, obj):
+        change_requests = OrgUnitChangeRequest.objects.filter(payment=obj)
         return OrgChangeRequestNestedSerializer(change_requests, many=True, context=self.context).data
 
 
@@ -52,18 +63,16 @@ class PaymentLotSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PaymentLot
-        fields = ["id", "name", "status", "created_at", "updated_at", "created_by", "updated_by", "payments"]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        fields = ["id", "name", "status", "created_at", "created_by", "payments"]
+        read_only_fields = ["id", "created_at"]
 
     pagination_class = PaymentPagination
     created_by = UserNestedSerializer()
-    updated_by = UserNestedSerializer()
     created_at = TimestampField(read_only=True)
-    updated_at = TimestampField(read_only=True)
 
     def get_payments(self, obj):
         payments = obj.payments.all()
-        return PaymentSerializer(payments, many=True, context=self.context).data
+        return NestedPaymentSerializer(payments, many=True, context=self.context).data
 
 
 class PotentialPaymentSerializer(serializers.ModelSerializer):

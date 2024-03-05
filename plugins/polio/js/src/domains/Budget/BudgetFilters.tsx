@@ -17,7 +17,7 @@ type Props = {
         showOnlyDeleted: boolean;
         roundStartTo: string;
         roundStartFrom: string;
-        country__id__in: any;
+        countries: any;
         orgUnitGroups: any;
         campaign: string;
         // eslint-disable-next-line camelcase
@@ -59,9 +59,9 @@ export const BudgetFilters: FunctionComponent<Props> = ({
                     <InputComponent
                         type="select"
                         multi={false}
-                        keyValue="current_state_key__in"
+                        keyValue="current_state_key"
                         onChange={handleChange}
-                        value={filters.current_state_key__in}
+                        value={filters.current_state_key}
                         options={statesList}
                         label={MESSAGES.status}
                     />
@@ -82,11 +82,11 @@ export const BudgetFilters: FunctionComponent<Props> = ({
                 <Grid item xs={12} sm={6} md={3}>
                     <InputComponent
                         loading={isFetchingCountries}
-                        keyValue="country__id__in"
+                        keyValue="countries"
                         multi
                         clearable
                         onChange={handleChange}
-                        value={filters.country__id__in}
+                        value={filters.countries}
                         type="select"
                         options={countriesList.map(c => ({
                             label: c.name,

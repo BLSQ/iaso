@@ -15,6 +15,7 @@ from rest_framework.viewsets import ViewSet
 from hat.menupermissions import models as permission
 from iaso.api.common import CSVExportMixin, ModelViewSet, DeletionFilterBackend, HasPermission
 from iaso.api.common import CustomFilterBackend
+from plugins.polio.budget.filters import BudgetCampaignFilter
 from plugins.polio.budget.models import BudgetStep, MailTemplate, get_workflow, BudgetStepFile, BudgetProcess
 from plugins.polio.budget.serializers import (
     BudgetProcessSerializer,
@@ -41,7 +42,6 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
     export_filename = "campaigns_budget_list_{date}.csv"
     permission_classes = [HasPermission(permission.POLIO_BUDGET)]  # type: ignore
     use_field_order = True
-
     http_method_names = ["get", "head", "post"]
     filter_backends = [
         filters.OrderingFilter,
@@ -49,9 +49,7 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
         DeletionFilterBackend,
         CustomFilterBackend,
     ]
-    filterset_fields = {
-        "current_state_key": ["exact", "in"],
-    }
+    filterset_class = BudgetCampaignFilter
 
     def get_serializer_class(self):
         if self.action == "create":

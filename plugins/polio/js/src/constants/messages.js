@@ -824,7 +824,7 @@ const MESSAGES = defineMessages({
     },
     '1lqasOK': {
         id: 'iaso.polio.label.passed',
-        defaultMessage: 'Passed',
+        defaultMessage: 'High SIA performance',
     },
     disqualified: {
         id: 'iaso.polio.label.disqualified',
@@ -840,7 +840,15 @@ const MESSAGES = defineMessages({
     },
     '3lqasFail': {
         id: 'iaso.polio.label.failed',
-        defaultMessage: 'Failed',
+        defaultMessage: 'Very poor SIA performance',
+    },
+    '3lqaspoor': {
+        id: 'iaso.polio.label.failed',
+        defaultMessage: 'Poor SIA performance',
+    },
+    '3lqasmoderate': {
+        id: 'iaso.polio.label.failed',
+        defaultMessage: 'Moderate SIA performance',
     },
     inScope: {
         id: 'iaso.polio.label.inScope',

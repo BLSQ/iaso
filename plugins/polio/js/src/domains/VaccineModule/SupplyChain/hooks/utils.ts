@@ -22,27 +22,42 @@ import {
 import { makeHandleSubmit } from '../Details/utils';
 import { Optional } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
-export const emptyArrivalReport = {
-    report_date: undefined,
-    po_number: undefined,
-    lot_numbers: undefined,
-    expiration_date: undefined,
-    doses_shipped: undefined,
-    doses_received: undefined,
-    to_delete: false,
-    doses_per_vial: 20, // this is hardcoded in backend too, we need to think about it.
-};
+export const dosesPerVial = {
+    "nOPV2": 50,
+    "bOPV": 20,
+    "mOPV2": 20,
+}
 
-export const emptyPreAlert = {
-    date_pre_alert_reception: undefined,
-    po_number: undefined,
-    estimated_arrival_time: undefined,
-    expiration_date: undefined,
-    doses_shipped: undefined,
-    doses_per_vial: 20,
-    lot_numbers: undefined,
-    to_delete: false,
-    id: undefined,
+export const createEmptyArrivalReport = (vaccineType?: string) => {
+    const doses_per_vial = vaccineType ? dosesPerVial[vaccineType] : undefined;
+
+    return {
+        report_date: undefined,
+        po_number: undefined,
+        lot_numbers: undefined,
+        expiration_date: undefined,
+        doses_shipped: undefined,
+        doses_received: undefined,
+        to_delete: false,
+        doses_per_vial,
+    };
+}
+
+export const createEmptyPreAlert = (vaccineType?: string) => {
+
+    const doses_per_vial = vaccineType ? dosesPerVial[vaccineType] : undefined;
+
+    return {
+        date_pre_alert_reception: undefined,
+        po_number: undefined,
+        estimated_arrival_time: undefined,
+        expiration_date: undefined,
+        doses_shipped: undefined,
+        doses_per_vial,
+        lot_numbers: undefined,
+        to_delete: false,
+        id: undefined,
+    }
 };
 
 const areArrayElementsChanged = (
@@ -79,7 +94,7 @@ const canSaveArrayTab = (
     }
     const newElements = values[tab]
         ? // @ts-ignore we check that values[tab] is not undefined, so the ts error is wrong
-          values[tab].slice(initialValues[tab].length - 1)
+        values[tab].slice(initialValues[tab].length - 1)
         : [];
     // If an element has been added, we check that it's not empty
     return areArrayElementsChanged(newElements);
@@ -130,15 +145,15 @@ export const useEnableSaveButtons = ({
 
         setAllowSaveAll(
             isValid &&
-                !isSaving &&
-                !isSubmitting &&
-                (isVRFChanged || isPreAlertChanged || isVARChanged),
+            !isSaving &&
+            !isSubmitting &&
+            (isVRFChanged || isPreAlertChanged || isVARChanged),
         );
         setAllowSaveTab(
             isTabValid &&
-                !isSaving &&
-                !isSubmitting &&
-                canSaveTab(tab, initialValues, values),
+            !isSaving &&
+            !isSubmitting &&
+            canSaveTab(tab, initialValues, values),
         );
     }, [
         initialValues,
@@ -180,7 +195,7 @@ export const useHandleSubmit = ({
     saveForm,
     redirect,
 }: // eslint-disable-next-line no-unused-vars
-UseHandleSubmitArgs): ((saveAll?: boolean | undefined) => void) => {
+    UseHandleSubmitArgs): ((saveAll?: boolean | undefined) => void) => {
     return useMemo(() => {
         return makeHandleSubmit({
             formik,
@@ -245,7 +260,7 @@ export const useInitializeVRFOnFetch = ({
         if (vrf) {
             const wastageRate =
                 vrf.wastage_rate_used_on_vrf === null ||
-                vrf.wastage_rate_used_on_vrf === undefined
+                    vrf.wastage_rate_used_on_vrf === undefined
                     ? vrf.wastage_rate_used_on_vrf
                     : parseFloat(vrf.wastage_rate_used_on_vrf as string);
             const formattedValue = {
@@ -278,7 +293,7 @@ export const useInitializePreAlertsOnFetch = ({
                 // parsing the value, as NumberInput will automatically do it in the form, which will make theinterface believe the value has been changed
                 const dosesShipped =
                     preAlert.doses_shipped === null ||
-                    preAlert.doses_shipped === undefined
+                        preAlert.doses_shipped === undefined
                         ? preAlert.doses_shipped
                         : parseFloat(preAlert.doses_shipped as string);
                 return {
@@ -311,13 +326,13 @@ export const useInitializeArrivalReportsOnFetch = ({
                 // parsing the value, as NumberInput will automatically do it in the form, which will make theinterface believe the value has been changed
                 const dosesShipped =
                     arrivalReport.doses_shipped === null ||
-                    arrivalReport.doses_shipped === undefined
+                        arrivalReport.doses_shipped === undefined
                         ? arrivalReport.doses_shipped
                         : parseFloat(arrivalReport.doses_shipped as string);
                 // parsing the value, as NumberInput will automatically do it in the form, which will make theinterface believe the value has been changed
                 const dosesReceived =
                     arrivalReport.doses_received === null ||
-                    arrivalReport.doses_received === undefined
+                        arrivalReport.doses_received === undefined
                         ? arrivalReport.doses_received
                         : parseFloat(arrivalReport.doses_received as string);
 

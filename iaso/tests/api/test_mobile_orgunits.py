@@ -3,7 +3,7 @@ import time_machine
 from django.contrib.gis.geos import Polygon, MultiPolygon, Point
 from django.core.cache import cache
 
-from iaso.api.query_params import APP_ID, LIMIT, PAGE
+from iaso.api.query_params import APP_ID, LIMIT, PAGE, IDS
 from iaso.models import (
     Account,
     DataSource,
@@ -301,3 +301,22 @@ class MobileOrgUnitAPITestCase(APITestCase):
                 "limit": 10,
             },
         )
+
+    def test_post_to_retrieve_list(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get(
+            BASE_URL, data={APP_ID: BASE_APP_ID, IDS: f"{self.goku.id},{self.gohan.id},{self.goten.id}"}
+        )
+        org_units = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(org_units["orgUnits"]), 3)
+        self.assertEqual(org_units["orgUnits"][0]["id"], self.goku.id)
+        self.assertEqual(org_units["orgUnits"][0]["validation_status"], OrgUnit.VALIDATION_REJECTED)
+        self.assertEqual(org_units["orgUnits"][1]["id"], self.gohan.id)
+        self.assertEqual(org_units["orgUnits"][1]["validation_status"], OrgUnit.VALIDATION_VALID)
+        self.assertEqual(org_units["orgUnits"][2]["id"], self.goten.id)
+        self.assertEqual(org_units["orgUnits"][2]["validation_status"], OrgUnit.VALIDATION_VALID)
+
+    def test_post_to_retrieve_list_with_wrong_id(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID, IDS: f"{self.goku.id},-1,{self.goten.id}"})
+        self.assertEqual(response.status_code, 404)

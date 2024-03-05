@@ -49,7 +49,7 @@ VACCINES = [
 
 DOSES_PER_VIAL = {
     "mOPV2": 20,
-    "nOPV2": 20,
+    "nOPV2": 50,
     "bOPV": 20,
 }
 
@@ -962,9 +962,9 @@ class VaccineRequestForm(SoftDeletableModel):
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
     vaccine_type = models.CharField(max_length=5, choices=VACCINES)
     rounds = models.ManyToManyField(Round)
-    date_vrf_signature = models.DateField()
-    date_vrf_reception = models.DateField()
-    date_dg_approval = models.DateField()
+    date_vrf_signature = models.DateField(null=True, blank=True)
+    date_vrf_reception = models.DateField(null=True, blank=True)
+    date_dg_approval = models.DateField(null=True, blank=True)
     quantities_ordered_in_doses = models.PositiveIntegerField()
 
     created_at = models.DateTimeField(auto_now_add=True)

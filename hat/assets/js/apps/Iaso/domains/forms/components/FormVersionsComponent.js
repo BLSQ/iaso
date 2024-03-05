@@ -16,10 +16,6 @@ import { formVersionsTableColumns } from '../config';
 import MESSAGES from '../messages';
 import { PERIOD_TYPE_DAY } from '../../periods/constants';
 
-const TEMPLATE_URL = `${
-    window.STATIC_URL ?? '/static/'
-}templates/XLSForm_Template.xlsx`;
-
 const baseUrl = baseUrls.formDetail;
 const defaultOrder = 'version_id';
 const FormVersionsComponent = ({
@@ -30,7 +26,9 @@ const FormVersionsComponent = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     if (!formId) return null;
-
+    const templateUrl = `${
+        window.STATIC_URL ?? '/static/'
+    }templates/XLSForm_Template.xlsx`;
     return (
         <Box>
             <Box
@@ -42,7 +40,7 @@ const FormVersionsComponent = ({
                 <Button
                     sx={{ mr: 2 }}
                     variant="outlined"
-                    href={TEMPLATE_URL}
+                    href={templateUrl}
                     target="_blank"
                     download
                 >

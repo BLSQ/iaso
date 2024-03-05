@@ -3,6 +3,7 @@ from django.db import models, transaction
 from django.db.models import Count, Prefetch, Subquery, OuterRef
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse, StreamingHttpResponse
+from django.utils.translation import gettext_lazy as _
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, permissions, status
@@ -221,29 +222,46 @@ class PaymentLotsViewSet(ModelViewSet):
 
         return super().retrieve(request, *args, **kwargs)
 
-    def _get_table_row(self, payment, row_num=None):
-        """
-        Transforms a Payment instance into a row for CSV/XLSX export.
+    def _get_table_row(self, payment, row_num=None, export_type="csv"):
+        change_requests = payment.change_requests.all()
+        change_requests_str = "\n".join(
+            [f"ID: {cr.id}, Org Unit: {cr.org_unit.name} (ID: {cr.org_unit.id})" for cr in change_requests]
+        )
+        change_requests_count = len(change_requests)
 
-        Args:
-            payment (Payment): An instance of Payment.
-
-        Returns:
-            list: A list of values representing a row in the export file.
-        """
         return [
             str(payment.id),
             payment.status,
+            str(payment.user.id),  # Added User ID
             payment.user.username,
+            payment.user.last_name,
+            payment.user.first_name,
+            change_requests_str,
+            str(change_requests_count),  # Added count of change requests
         ]
 
     def retrieve_to_csv(self, request, *args, **kwargs):
         payment_lot = self.get_object()
         payments = payment_lot.payments.all()
-        columns = ["ID", "Status", "User Username"]
-        # Use iter_items utility to stream the CSV content
+        columns = [
+            str(_("ID")),
+            str(_("Status")),
+            str(_("User ID")),  # Added User ID column
+            str(_("User Username")),
+            str(_("User Last Name")),
+            str(_("User First Name")),
+            str(_("Change Requests")),
+            str(_("Change Requests Count")),  # Added column for count of change requests
+        ]
         response = StreamingHttpResponse(
-            streaming_content=(iter_items(payments, Echo(), columns, self._get_table_row)),
+            streaming_content=(
+                iter_items(
+                    payments,
+                    Echo(),
+                    columns,
+                    lambda payment: self._get_table_row(payment, export_type="csv"),
+                )
+            ),
             content_type="text/csv",
         )
         response["Content-Disposition"] = f'attachment; filename="{payment_lot.name}_payments.csv"'
@@ -253,13 +271,22 @@ class PaymentLotsViewSet(ModelViewSet):
         payment_lot = self.get_object()
         payments = payment_lot.payments.all()
         columns = [
-            {"title": "ID", "width": 10},
-            {"title": "Status", "width": 20},
-            {"title": "User Username", "width": 30},
+            {"title": str(_("ID")), "width": 10},
+            {"title": str(_("Status")), "width": 20},
+            {"title": str(_("User ID")), "width": 20},  # Added User ID column
+            {"title": str(_("User Username")), "width": 30},
+            {"title": str(_("User Last Name")), "width": 30},
+            {"title": str(_("User First Name")), "width": 30},
+            {"title": str(_("Change Requests")), "width": 50},
+            {"title": str(_("Change Requests Count")), "width": 15},  # Added column for count of change requests
         ]
-        # Use generate_xlsx utility to create the XLSX content
         response = HttpResponse(
-            generate_xlsx(f"{payment_lot.name}_Payments", columns, payments, self._get_table_row),
+            generate_xlsx(
+                f"{payment_lot.name}_Payments",
+                columns,
+                payments,
+                lambda payment, row_num: self._get_table_row(payment, row_num, export_type="xlsx"),
+            ),
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
         response["Content-Disposition"] = f'attachment; filename="{payment_lot.name}_payments.xlsx"'

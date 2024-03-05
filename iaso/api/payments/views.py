@@ -58,7 +58,7 @@ class PaymentLotsViewSet(ModelViewSet):
         payments_lots_filters.StartEndDateFilterBackend,
         payments_lots_filters.StatusFilterBackend,
     ]
-    ordering_fields = ["name", "created_at", "created_by__username", "status", "change_requests_count"]
+    ordering_fields = ["name", "created_at", "created_by__username", "status", "change_requests_count", "payments_count"]
     serializer_class = PaymentLotSerializer
     http_method_names = ["get", "post", "patch", "head", "options", "trace"]
 
@@ -75,10 +75,19 @@ class PaymentLotsViewSet(ModelViewSet):
             .values("total")
         )
 
-        queryset = queryset.annotate(
-            change_requests_count=Coalesce(Subquery(change_requests_count, output_field=models.IntegerField()), 0)
+        # Subquery to count the number of payments associated with each PaymentLot
+        payments_count = (
+            Payment.objects.filter(payment_lot=OuterRef("pk"))
+            .order_by()
+            .values("payment_lot")
+            .annotate(total=Count("id"))
+            .values("total")
         )
 
+        queryset = queryset.annotate(
+            change_requests_count=Coalesce(Subquery(change_requests_count, output_field=models.IntegerField()), 0),
+            payments_count=Coalesce(Subquery(payments_count, output_field=models.IntegerField()), 0)
+        )
         queryset = queryset.filter(created_by__iaso_profile__account=self.request.user.iaso_profile.account).distinct()
         for payment_lot in queryset:
             print(f"PaymentLot ID: {payment_lot.id}, Change Requests Count: {payment_lot.change_requests_count}")

@@ -109,6 +109,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.payments.partially_paid',
         defaultMessage: 'Partially paid',
     },
+    payments: {
+        id: 'iaso.label.payments',
+        defaultMessage: 'Payments',
+    },
 });
 
 export default MESSAGES;

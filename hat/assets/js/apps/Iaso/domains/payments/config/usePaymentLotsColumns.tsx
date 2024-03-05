@@ -35,13 +35,18 @@ export const usePaymentLotsColumns = (): Column[] => {
                 Header: formatMessage(MESSAGES.changes),
                 id: 'change_requests_count',
                 accessor: 'payments',
-                Cell: ({ value }: { value: Payment[] }): string => {
-                    let count = 0;
-                    value.forEach((payment: Payment) => {
-                        count += payment.change_requests.length;
-                    });
-                    return `${count}`;
-                },
+                Cell: ({ value }: { value: Payment[] }): string =>
+                    `${value.reduce(
+                        (acc, payment) => acc + payment.change_requests.length,
+                        0,
+                    )}`,
+            },
+            {
+                Header: formatMessage(MESSAGES.payments),
+                id: 'payments_count',
+                accessor: 'payments',
+                Cell: ({ value }: { value: Payment[] }): string =>
+                    `${value.length}`,
             },
         ];
         return columns;

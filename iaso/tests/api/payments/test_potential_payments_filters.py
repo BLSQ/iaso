@@ -7,9 +7,6 @@ from iaso import models as m
 
 
 class FilterPotentialPaymentsAPITestCase(APITestCase):
-    """
-    Test filtering on the ViewSet.
-    """
 
     @classmethod
     def setUpTestData(cls):

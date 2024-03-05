@@ -396,11 +396,20 @@ class CustomFilterBackend(filters.BaseFilterBackend):
                 name__icontains=search, org_unit_type__in=country_types, path__isnull=False
             ).only("id")
 
-            query = Q(obr_name__icontains=search) | Q(epid__icontains=search)
+            lookups = [
+                ["obr_name__icontains", search],
+                ["epid__icontains", search],
+                ["initial_org_unit__path__descendants", OrgUnit.objects.query_for_related_org_units(org_units)],
+            ]
+
+            # Use `__name__` to avoid a direct import from Polio.
+            # TODO: we should probably do this filtering in some other way inside the Polio plugin.
+            if queryset.model.__name__ == "BudgetProcess":
+                lookups = [["rounds__campaign__" + lookup[0], lookup[1]] for lookup in lookups]
+
+            query = Q(lookups[0]) | Q(lookups[1])
             if len(org_units) > 0:
-                query.add(
-                    Q(initial_org_unit__path__descendants=OrgUnit.objects.query_for_related_org_units(org_units)), Q.OR
-                )
+                query.add(Q(lookups[2]), Q.OR)
 
             return queryset.filter(query)
 

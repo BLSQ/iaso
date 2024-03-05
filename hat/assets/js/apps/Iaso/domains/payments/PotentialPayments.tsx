@@ -61,6 +61,7 @@ export const PotentialPayments: FunctionComponent<Props> = ({ params }) => {
                         selection={selection}
                         titleMessage={formatMessage(MESSAGES.createLot)}
                         params={params}
+                        setSelection={setSelection}
                     />
                 </Box>
                 {/* @ts-ignore */}

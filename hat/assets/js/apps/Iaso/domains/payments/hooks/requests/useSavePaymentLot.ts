@@ -27,17 +27,20 @@ const postPaymentLot = async (body: SavePaymentLotQuery) => {
 
 export const useSavePaymentLot = (
     type: 'create' | 'edit',
+    onSuccess?: () => void,
 ): UseMutationResult => {
     const ignoreErrorCodes = [400];
     const editPaymentLot = useSnackMutation({
         mutationFn: (data: Partial<SavePaymentLotQuery>) => putPaymentLot(data),
         invalidateQueryKey: ['paymentLots', 'potentialPayments'],
         ignoreErrorCodes,
+        options: { onSuccess },
     });
     const createPaymentLot = useSnackMutation({
         mutationFn: (data: SavePaymentLotQuery) => postPaymentLot(data),
         invalidateQueryKey: ['paymentLots', 'potentialPayments'],
         ignoreErrorCodes,
+        options: { onSuccess },
     });
 
     switch (type) {

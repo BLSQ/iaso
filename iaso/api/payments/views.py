@@ -82,16 +82,18 @@ class PaymentLotsViewSet(ModelViewSet):
         change_requests_count = (
             OrgUnitChangeRequest.objects.filter(payment__payment_lot=OuterRef("pk"))
             .order_by()
+            .distinct()
             .values("payment__payment_lot")
-            .annotate(total=Count("id"))
+            .annotate(total=Count("id", distinct=True))
             .values("total")
         )
 
         payments_count = (
             Payment.objects.filter(payment_lot=OuterRef("pk"))
             .order_by()
+            .distinct()
             .values("payment_lot")
-            .annotate(total=Count("id"))
+            .annotate(total=Count("id", distinct=True))
             .values("total")
         )
 
@@ -272,13 +274,13 @@ class PaymentLotsViewSet(ModelViewSet):
         payments = payment_lot.payments.all()
         columns = [
             {"title": str(_("ID")), "width": 10},
-            {"title": str(_("Status")), "width": 20},
-            {"title": str(_("User ID")), "width": 20},  # Added User ID column
-            {"title": str(_("User Username")), "width": 30},
-            {"title": str(_("User Last Name")), "width": 30},
-            {"title": str(_("User First Name")), "width": 30},
-            {"title": str(_("Change Requests")), "width": 50},
-            {"title": str(_("Change Requests Count")), "width": 15},  # Added column for count of change requests
+            {"title": str(_("Status")), "width": 10},
+            {"title": str(_("User ID")), "width": 10},
+            {"title": str(_("User Username")), "width": 20},
+            {"title": str(_("User Last Name")), "width": 20},
+            {"title": str(_("User First Name")), "width": 20},
+            {"title": str(_("Change Requests")), "width": 40},
+            {"title": str(_("Change Requests Count")), "width": 20},
         ]
         response = HttpResponse(
             generate_xlsx(
@@ -330,7 +332,7 @@ class PotentialPaymentsViewSet(ModelViewSet):
         "status",
         "created_by__username",
         "updated_by__username",
-        "change_requests",
+        "change_requests_count",
     ]
     serializer_class = PotentialPaymentSerializer
 
@@ -342,6 +344,20 @@ class PotentialPaymentsViewSet(ModelViewSet):
         queryset = queryset.prefetch_related(
             "change_requests",
         )
+
+        change_requests_count = (
+            OrgUnitChangeRequest.objects.filter(potential_payment=OuterRef("pk"))
+            .order_by()
+            .distinct()
+            .values("potential_payment")
+            .annotate(total=Count("id", distinct=True))
+            .values("total")
+        )
+
+        queryset = queryset.annotate(
+            change_requests_count=Coalesce(Subquery(change_requests_count, output_field=models.IntegerField()), 0),
+        )
+
         queryset = queryset.filter(
             change_requests__created_by__iaso_profile__account=self.request.user.iaso_profile.account
         ).distinct()

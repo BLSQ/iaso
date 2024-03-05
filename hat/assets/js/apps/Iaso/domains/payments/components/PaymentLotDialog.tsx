@@ -5,6 +5,7 @@ import {
     ConfirmCancelModal,
     useSafeIntl,
     Table,
+    selectionInitialState,
 } from 'bluesquare-components';
 import * as Yup from 'yup';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -44,15 +45,16 @@ const styles: SxStyles = {
         },
     },
 };
-
 type Props = {
     titleMessage: IntlMessage;
     isOpen: boolean;
     closeDialog: () => void;
     selection: Selection<PotentialPayment>;
     params: PotentialPaymentParams;
+    setSelection: React.Dispatch<
+        React.SetStateAction<Selection<PotentialPayment>>
+    >;
 };
-
 type FormikValues = {
     name: string;
     potentialPayments: PotentialPayment[];
@@ -75,11 +77,14 @@ const PaymentLotDialog: FunctionComponent<Props> = ({
     closeDialog,
     selection,
     params,
+    setSelection,
 }) => {
     const { data: potentialPayments, isFetching } =
         useGetSelectedPotentialPayments(params, selection);
 
-    const { mutateAsync: savePaymentLot } = useSavePaymentLot('create');
+    const { mutateAsync: savePaymentLot } = useSavePaymentLot('create', () =>
+        setSelection(selectionInitialState),
+    );
     const currentUser = useCurrentUser();
     const {
         values,

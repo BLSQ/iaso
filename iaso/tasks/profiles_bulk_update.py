@@ -68,6 +68,8 @@ def update_single_profile_from_bulk(
                 project.iaso_profile.remove(profile)
 
     if teams_id_added is not None:
+        if not user.has_perm(permission.TEAMS):
+            raise PermissionDenied(f"User without the permission {permission.TEAMS} cannot add users to team")
         for team_id in teams_id_added:
             team = Team.objects.get(pk=team_id)
             if (
@@ -77,6 +79,8 @@ def update_single_profile_from_bulk(
             ):
                 team.users.add(profile.user)
     if teams_id_removed is not None:
+        if not user.has_perm(permission.TEAMS):
+            raise PermissionDenied(f"User without the permission {permission.TEAMS} cannot remove users to team")
         for team_id in teams_id_removed:
             team = Team.objects.get(pk=team_id)
             if (

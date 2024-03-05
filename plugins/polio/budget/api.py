@@ -49,6 +49,9 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
         DeletionFilterBackend,
         CustomFilterBackend,
     ]
+    filterset_fields = {
+        "current_state_key": ["exact", "in"],
+    }
 
     def get_serializer_class(self):
         if self.action == "create":

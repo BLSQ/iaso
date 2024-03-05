@@ -21,7 +21,7 @@ type Props = {
         orgUnitGroups: any;
         campaign: string;
         // eslint-disable-next-line camelcase
-        budget_current_state_key__in: string;
+        current_state_key: string;
     };
     statesList?: DropdownOptions<string>[];
     buttonSize?: 'medium' | 'small' | 'large' | undefined;
@@ -59,9 +59,9 @@ export const BudgetFilters: FunctionComponent<Props> = ({
                     <InputComponent
                         type="select"
                         multi={false}
-                        keyValue="budget_current_state_key__in"
+                        keyValue="current_state_key__in"
                         onChange={handleChange}
-                        value={filters.budget_current_state_key__in}
+                        value={filters.current_state_key__in}
                         options={statesList}
                         label={MESSAGES.status}
                     />

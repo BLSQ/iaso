@@ -113,6 +113,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.payments',
         defaultMessage: 'Payments',
     },
+    actions: {
+        defaultMessage: 'Action(s)',
+        id: 'iaso.label.actions',
+    },
+    mark_as_sent: {
+        defaultMessage: 'Mark as sent',
+        id: 'iaso.payments.mark_as_sent',
+    },
+    download_payments: {
+        defaultMessage: 'Download payments',
+        id: 'iaso.payments.download_payments',
+    },
 });
 
 export default MESSAGES;

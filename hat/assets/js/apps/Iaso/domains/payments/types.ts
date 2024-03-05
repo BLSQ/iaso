@@ -44,6 +44,13 @@ export type Payment = {
     change_requests: OrgUnitChangeRequest[];
 };
 
+type NestedPayment = {
+    id: number;
+    status: PaymenStatus;
+    user: User;
+    change_requests: OrgUnitChangeRequest[];
+};
+
 export type PotentialPayment = {
     id: number;
     status: string;
@@ -65,11 +72,9 @@ export type PaymentLot = {
     name: string;
     comment?: string;
     created_at: string;
-    updated_at: string;
     created_by: User;
-    updated_by: User;
     status: PaymentLotStatus;
-    payments: Payment[];
+    payments: NestedPayment[];
 };
 export interface PaymentLotPaginated extends Pagination {
     results: PaymentLot[];

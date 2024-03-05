@@ -1,25 +1,24 @@
-from django.db.models import Count
 import django_filters
-from drf_yasg import openapi
-from rest_framework import filters, permissions
+from django.db import models, transaction
+from django.db.models import Count, Prefetch, Subquery, OuterRef
 from django.db.models.functions import Coalesce
+from django.http import HttpResponse, StreamingHttpResponse
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import filters, permissions, status
 from rest_framework.exceptions import NotFound
-from rest_framework import status
 from rest_framework.response import Response
-from django.db import transaction
-from django.db.models import Count, Subquery, OuterRef
-from django.db import models
 
+
+from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.menupermissions import models as permission
-from iaso.api.common import (
-    HasPermission,
-    ModelViewSet,
+from iaso.api.common import HasPermission, ModelViewSet
+from iaso.api.payments.filters import (
+    potential_payments as potential_payments_filters,
+    payments_lots as payments_lots_filters,
 )
 from iaso.models import Payment, OrgUnitChangeRequest, PotentialPayment, PaymentLot
-import iaso.api.payments.filters.potential_payments as potential_payments_filters
-import iaso.api.payments.filters.payments_lots as payments_lots_filters
-from .serializers import PotentialPaymentSerializer, PaymentLotSerializer
-from drf_yasg.utils import swagger_auto_schema
+from .serializers import PotentialPaymentSerializer, PaymentLotSerializer, PaymentLotCreateSerializer
 
 
 class PaymentLotsViewSet(ModelViewSet):
@@ -58,15 +57,27 @@ class PaymentLotsViewSet(ModelViewSet):
         payments_lots_filters.StartEndDateFilterBackend,
         payments_lots_filters.StatusFilterBackend,
     ]
-    ordering_fields = ["name", "created_at", "created_by__username", "status", "change_requests_count", "payments_count"]
+    ordering_fields = [
+        "name",
+        "created_at",
+        "created_by__username",
+        "status",
+        "change_requests_count",
+        "payments_count",
+    ]
     serializer_class = PaymentLotSerializer
     http_method_names = ["get", "post", "patch", "head", "options", "trace"]
 
     def get_queryset(self):
         queryset = PaymentLot.objects.all()
-        queryset = queryset.prefetch_related("payments")
 
-        # Adjusted subquery to directly link and count OrgUnitChangeRequests through Payments
+        change_requests_prefetch = Prefetch(
+            "payments__change_requests",
+            queryset=OrgUnitChangeRequest.objects.all(),
+            to_attr="prefetched_change_requests",
+        )
+        queryset = queryset.prefetch_related("payments", change_requests_prefetch)
+
         change_requests_count = (
             OrgUnitChangeRequest.objects.filter(payment__payment_lot=OuterRef("pk"))
             .order_by()
@@ -75,7 +86,6 @@ class PaymentLotsViewSet(ModelViewSet):
             .values("total")
         )
 
-        # Subquery to count the number of payments associated with each PaymentLot
         payments_count = (
             Payment.objects.filter(payment_lot=OuterRef("pk"))
             .order_by()
@@ -86,11 +96,9 @@ class PaymentLotsViewSet(ModelViewSet):
 
         queryset = queryset.annotate(
             change_requests_count=Coalesce(Subquery(change_requests_count, output_field=models.IntegerField()), 0),
-            payments_count=Coalesce(Subquery(payments_count, output_field=models.IntegerField()), 0)
+            payments_count=Coalesce(Subquery(payments_count, output_field=models.IntegerField()), 0),
         )
         queryset = queryset.filter(created_by__iaso_profile__account=self.request.user.iaso_profile.account).distinct()
-        for payment_lot in queryset:
-            print(f"PaymentLot ID: {payment_lot.id}, Change Requests Count: {payment_lot.change_requests_count}")
 
         return queryset
 
@@ -135,6 +143,38 @@ class PaymentLotsViewSet(ModelViewSet):
         queryset = self.filter_queryset(self.get_queryset()).order_by(*orders)
         return super().list(request, queryset)
 
+    @swagger_auto_schema(
+        responses={status.HTTP_200_OK: PaymentLotSerializer()},
+        manual_parameters=[
+            openapi.Parameter(
+                name="mark_payments_as_sent",
+                in_=openapi.IN_QUERY,
+                description="If set to true, all related payments will be marked as sent",
+                type=openapi.TYPE_BOOLEAN,
+            ),
+        ],
+    )
+    def update(self, request, *args, **kwargs):
+        with transaction.atomic():
+            partial = kwargs.pop("partial", False)
+            instance = self.get_object()
+            serializer = self.get_serializer(instance, data=request.data, partial=partial)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+
+            mark_as_sent = request.query_params.get("mark_payments_as_sent", "false").lower() == "true"
+            if mark_as_sent:
+                related_payments = Payment.objects.filter(payment_lot=instance)
+                for payment in related_payments:
+                    payment.status = Payment.Statuses.SENT
+                    payment.save()
+
+        return Response(serializer.data)
+
+    @swagger_auto_schema(
+        request_body=PaymentLotCreateSerializer,
+        responses={status.HTTP_201_CREATED: PaymentLotSerializer()},
+    )
     def create(self, request):
         with transaction.atomic():
             # Extract name, comment, and potential_payments IDs from request data
@@ -169,6 +209,61 @@ class PaymentLotsViewSet(ModelViewSet):
             # Return the created PaymentLot instance
             serializer = self.get_serializer(payment_lot)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def retrieve(self, request, *args, **kwargs):
+        csv_format = bool(request.query_params.get("csv"))
+        xlsx_format = bool(request.query_params.get("xlsx"))
+
+        if csv_format:
+            return self.retrieve_to_csv(request, *args, **kwargs)
+        elif xlsx_format:
+            return self.retrieve_to_xlsx(request, *args, **kwargs)
+
+        return super().retrieve(request, *args, **kwargs)
+
+    def _get_table_row(self, payment, row_num=None):
+        """
+        Transforms a Payment instance into a row for CSV/XLSX export.
+
+        Args:
+            payment (Payment): An instance of Payment.
+
+        Returns:
+            list: A list of values representing a row in the export file.
+        """
+        return [
+            str(payment.id),
+            payment.status,
+            payment.user.username,
+        ]
+
+    def retrieve_to_csv(self, request, *args, **kwargs):
+        payment_lot = self.get_object()
+        payments = payment_lot.payments.all()
+        columns = ["ID", "Status", "User Username"]
+        # Use iter_items utility to stream the CSV content
+        response = StreamingHttpResponse(
+            streaming_content=(iter_items(payments, Echo(), columns, self._get_table_row)),
+            content_type="text/csv",
+        )
+        response["Content-Disposition"] = f'attachment; filename="{payment_lot.name}_payments.csv"'
+        return response
+
+    def retrieve_to_xlsx(self, request, *args, **kwargs):
+        payment_lot = self.get_object()
+        payments = payment_lot.payments.all()
+        columns = [
+            {"title": "ID", "width": 10},
+            {"title": "Status", "width": 20},
+            {"title": "User Username", "width": 30},
+        ]
+        # Use generate_xlsx utility to create the XLSX content
+        response = HttpResponse(
+            generate_xlsx(f"{payment_lot.name}_Payments", columns, payments, self._get_table_row),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = f'attachment; filename="{payment_lot.name}_payments.xlsx"'
+        return response
 
 
 class PotentialPaymentsViewSet(ModelViewSet):

@@ -48,7 +48,7 @@ class NestedPaymentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Payment
-        fields = ["id", "change_requests", "user"]
+        fields = ["id", "change_requests", "user", "status"]
         read_only_fields = ["id"]
 
     user = UserNestedSerializer()
@@ -96,3 +96,12 @@ class PotentialPaymentSerializer(serializers.ModelSerializer):
             end_date = request.GET.get("change_requests__created_at_before", None)
             change_requests = filter_by_dates(request, change_requests, start_date, end_date)
         return OrgChangeRequestNestedSerializer(change_requests, many=True).data
+
+
+class PaymentLotCreateSerializer(serializers.Serializer):
+    name = serializers.CharField(help_text="Name of the payment lot")
+    comment = serializers.CharField(help_text="Comment or description of the payment lot")
+    potential_payments = serializers.ListField(
+        child=serializers.IntegerField(),
+        help_text="List of IDs for potential payments to be included in the payment lot",
+    )

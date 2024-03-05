@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import { UseMutationResult } from 'react-query';
-import { putRequest, postRequest } from '../../../../libs/Api';
+import { patchRequest, postRequest } from '../../../../libs/Api';
 import { useSnackMutation } from '../../../../libs/apiHooks';
 
 export type SavePaymentLotQuery = {
@@ -8,13 +8,17 @@ export type SavePaymentLotQuery = {
     name: string;
     comment?: string;
     potential_payments?: number[];
+    mark_payments_as_sent?: boolean;
 };
 
 const endpoint = '/api/payments/lots/';
 
 const putPaymentLot = async (body: Partial<SavePaymentLotQuery>) => {
     const url = `${endpoint}${body.id}/`;
-    return putRequest(url, body);
+    const queryParams = body.mark_payments_as_sent
+        ? `?mark_payments_as_sent=${body.mark_payments_as_sent}`
+        : '';
+    return patchRequest(`${url}${queryParams}`, body);
 };
 
 const postPaymentLot = async (body: SavePaymentLotQuery) => {
@@ -27,12 +31,12 @@ export const useSavePaymentLot = (
     const ignoreErrorCodes = [400];
     const editPaymentLot = useSnackMutation({
         mutationFn: (data: Partial<SavePaymentLotQuery>) => putPaymentLot(data),
-        invalidateQueryKey: ['paymentLotsList', 'potentialPayments'],
+        invalidateQueryKey: ['paymentLots', 'potentialPayments'],
         ignoreErrorCodes,
     });
     const createPaymentLot = useSnackMutation({
         mutationFn: (data: SavePaymentLotQuery) => postPaymentLot(data),
-        invalidateQueryKey: ['paymentLotsList', 'potentialPayments'],
+        invalidateQueryKey: ['paymentLots', 'potentialPayments'],
         ignoreErrorCodes,
     });
 

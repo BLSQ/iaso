@@ -4,6 +4,7 @@ import MESSAGES from '../messages';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 import { UserCell } from '../../../components/Cells/UserCell';
 import { Payment } from '../types';
+import { PaymentLotActionCell } from '../components/PaymentLotActionCell';
 
 export const usePaymentLotsColumns = (): Column[] => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
@@ -47,6 +48,12 @@ export const usePaymentLotsColumns = (): Column[] => {
                 accessor: 'payments',
                 Cell: ({ value }: { value: Payment[] }): string =>
                     `${value.length}`,
+            },
+            {
+                Header: formatMessage(MESSAGES.actions),
+                id: 'actions',
+                sortable: false,
+                Cell: PaymentLotActionCell,
             },
         ];
         return columns;

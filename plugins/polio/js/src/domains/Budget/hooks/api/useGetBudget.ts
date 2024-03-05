@@ -12,8 +12,8 @@ import {
 import { Budget, Workflow } from '../../types';
 
 type Option = {
-    current_state_key__in: [number | string];
-    country__id__in: [number | string];
+    current_state_key: [number | string];
+    countries: [number | string];
     order?: string;
     orgUnitGroups: [number | string];
     page?: number;
@@ -25,8 +25,8 @@ type Option = {
 
 type Param = {
     accountId: string;
-    current_state_key__in: [number | string];
-    country__id__in: [number | string];
+    current_state_key: [number | string];
+    countries: [number | string];
     order: string;
     orgUnitGroups: [number | string];
     page: number | string;
@@ -57,8 +57,8 @@ export const useGetBudgets = (options: Option): any => {
         page: options.page,
         order: options.order,
         search: options.search,
-        current_state_key__in: options.current_state_key__in,
-        country__id__in: options.country__id__in,
+        current_state_key: options.current_state_key,
+        countries: options.countries,
         orgUnitGroups: options.orgUnitGroups,
         fields: 'id,obr_name,country_name,current_state,round_numbers,possible_states,updated_at',
     };
@@ -78,8 +78,8 @@ export const useBudgetParams = (params: Param): any => {
             search: params.search,
             roundStartFrom: getApiParamDateString(params.roundStartFrom),
             roundStartTo: getApiParamDateString(params.roundStartTo),
-            current_state_key__in: params.current_state_key__in,
-            country__id__in: params?.country__id__in,
+            current_state_key: params.current_state_key,
+            countries: params?.countries,
             orgUnitGroups: params?.orgUnitGroups,
         };
     }, [
@@ -89,8 +89,8 @@ export const useBudgetParams = (params: Param): any => {
         params.search,
         params.roundStartFrom,
         params.roundStartTo,
-        params.current_state_key__in,
-        params?.country__id__in,
+        params.current_state_key,
+        params?.countries,
         params?.orgUnitGroups,
     ]);
 };

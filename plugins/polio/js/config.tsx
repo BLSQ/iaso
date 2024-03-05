@@ -344,7 +344,7 @@ const routes = [
             },
             {
                 isRequired: false,
-                key: 'current_state_key__in',
+                key: 'current_state_key',
             },
             {
                 isRequired: false,
@@ -356,7 +356,7 @@ const routes = [
             },
             {
                 isRequired: false,
-                key: 'country__id__in',
+                key: 'countries',
             },
             {
                 isRequired: false,

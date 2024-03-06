@@ -182,13 +182,14 @@ class BudgetProcessSerializer(DynamicFieldsModelSerializer, serializers.ModelSer
     def get_next_transitions(self, budget_process: BudgetProcess):
         # // get transition from workflow engine.
         workflow = get_workflow()
+        campaign = budget_process.rounds.first().campaign
         transitions = next_transitions(workflow.transitions, budget_process.current_state_key)
         user = self.context["request"].user
         for transition in transitions:
-            allowed = can_user_transition(transition, user, budget_process)
+            allowed = can_user_transition(transition, user, campaign)
             transition.allowed = allowed
             if not allowed:
-                if not effective_teams(budget_process, transition.teams_ids_can_transition):
+                if not effective_teams(campaign, transition.teams_ids_can_transition):
                     reason = "No team configured for this country and transition"
                 else:
                     reason = "User doesn't have permission"
@@ -197,7 +198,7 @@ class BudgetProcessSerializer(DynamicFieldsModelSerializer, serializers.ModelSer
             # FIXME: filter on effective teams, need campaign
             teams = []
             for _, teams_ids in transition.emails_to_send:
-                teams += effective_teams(budget_process, teams_ids).values_list("id", flat=True)
+                teams += effective_teams(campaign, teams_ids).values_list("id", flat=True)
             transition.emails_destination_team_ids = set(teams)
 
         return TransitionSerializer(transitions, many=True).data

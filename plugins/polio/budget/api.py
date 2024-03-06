@@ -101,7 +101,7 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
 @swagger_auto_schema(tags=["budget"])
 class BudgetStepViewSet(ModelViewSet):
     """
-    Step on a campaign, to progress the budget workflow
+    Steps on a budget process, to progress the budget workflow.
     """
 
     # FIXME : add DELETE
@@ -125,17 +125,13 @@ class BudgetStepViewSet(ModelViewSet):
     def get_queryset(self) -> QuerySet:
         return BudgetStep.objects.filter_for_user(self.request.user)
 
-    def filter_queryset(self, queryset):
-        queryset = super().filter_queryset(queryset)
-        return queryset
-
     ordering_fields = [
-        "campaign_id",
+        "budget_process_id",
         "created_at",
         "created_by",
     ]
     filterset_fields = {
-        "campaign_id": ["exact"],
+        "budget_process_id": ["exact"],
         "transition_key": ["exact", "in"],
     }
 

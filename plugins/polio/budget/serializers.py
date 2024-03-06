@@ -618,6 +618,7 @@ class BudgetStepSerializer(serializers.ModelSerializer):
             "created_by",
             "deleted_at",
             "campaign_id",
+            "budget_process_id",
             "comment",
             "links",
             "files",

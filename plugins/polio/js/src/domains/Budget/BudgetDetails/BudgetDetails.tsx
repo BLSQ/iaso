@@ -121,7 +121,7 @@ export const BudgetProcessDetails: FunctionComponent<Props> = ({ router }) => {
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Box mb={2}>
                     <BudgetDetailsInfos
-                        status={budgetInfos?.current_state?.label ?? '--'}
+                        status={budgetInfos?.current_state?.label}
                         roundNumbers={budgetInfos?.round_numbers}
                         nextSteps={nextSteps}
                         categories={budgetInfos?.timeline?.categories}

@@ -79,15 +79,11 @@ class PotentialPaymentsViewSet(ModelViewSet):
     http_method_names = ["get", "head", "options", "trace"]
 
     def get_queryset(self):
-        queryset = PotentialPayment.objects.all()
-        queryset = queryset.prefetch_related(
-            "change_requests",
+        return (
+            PotentialPayment.objects.prefetch_related("change_requests")
+            .filter(change_requests__created_by__iaso_profile__account=self.request.user.iaso_profile.account)
+            .distinct()
         )
-        queryset = queryset.filter(
-            change_requests__created_by__iaso_profile__account=self.request.user.iaso_profile.account
-        ).distinct()
-
-        return queryset
 
     @swagger_auto_schema(auto_schema=None)
     def retrieve(self, request, *args, **kwargs):
@@ -152,5 +148,5 @@ class PotentialPaymentsViewSet(ModelViewSet):
                     if not Payment.objects.filter(change_requests__id=change_request.id).exists():
                         potential_payment.change_requests.add(change_request)
                 potential_payment.save()
-        queryset = self.filter_queryset(self.get_queryset()).order_by(*orders)
+        queryset = self.filter_queryset(self.get_queryset())
         return super().list(request, queryset)

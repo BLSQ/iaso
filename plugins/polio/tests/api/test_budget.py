@@ -284,7 +284,7 @@ class BudgetCampaignViewSetTestCase(APITestCase):
 
     def test_list_filter(self):
         """
-        GET /api/polio/budget/?orgUnitGroups=x
+        GET /api/polio/budget/?org_unit_groups=x
         """
         group_1 = Group.objects.create(name="Group 1")
         group_2 = Group.objects.create(name="Group 2")

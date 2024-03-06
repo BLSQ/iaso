@@ -21,6 +21,7 @@ import { CreateOverrideStep } from '../CreateBudgetStep/CreateOverrideStep';
 import { BudgetTimeline } from './BudgetTimeline';
 import { userHasPermission } from '../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { formatRoundNumbers } from '../utils';
 
 type NextSteps = {
     regular?: Transition[];
@@ -35,6 +36,7 @@ type Params = {
 
 type Props = {
     status: string;
+    roundNumbers: number[];
     nextSteps?: NextSteps;
     categories?: Categories;
     budgetDetails?: Paginated<BudgetStep>;
@@ -69,6 +71,7 @@ const useStyles = makeStyles(theme => ({
 
 export const BudgetDetailsInfos: FunctionComponent<Props> = ({
     status = '--',
+    roundNumbers = [],
     nextSteps,
     categories = [],
     budgetDetails,
@@ -96,7 +99,9 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
 
     return (
         <WidgetPaperComponent
-            title={formatMessage(MESSAGES.budgetStatus)}
+            title={`${formatRoundNumbers(roundNumbers)} - ${formatMessage(
+                MESSAGES.budgetStatus,
+            )}`}
             className={classes.paper}
         >
             <Grid container spacing={0}>

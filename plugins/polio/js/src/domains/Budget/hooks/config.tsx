@@ -15,7 +15,7 @@ import {
     DateCell,
     DateTimeCellRfc,
 } from '../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
-import { makeFileLinks, makeLinks } from '../utils';
+import { formatRoundNumbers, makeFileLinks, makeLinks } from '../utils';
 import { Optional } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { convertObjectToString } from '../../../utils';
 import { formatThousand } from '../../../../../../../hat/assets/js/apps/Iaso/utils';
@@ -68,9 +68,7 @@ export const useBudgetColumns = (): Column[] => {
                 sortable: false,
                 accessor: 'round_numbers',
                 Cell: settings =>
-                    settings.row.original.round_numbers
-                        .map(i => `Round ${i}`)
-                        .join(', ') || '--',
+                    formatRoundNumbers(settings.row.original.round_numbers),
             },
             {
                 Header: formatMessage(MESSAGES.lastStep),
@@ -87,7 +85,7 @@ export const useBudgetColumns = (): Column[] => {
                         <IconButtonComponent
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.details}
-                            url={`${baseUrl}/budgetProcessId/${settings.row.original.id}`}
+                            url={`${baseUrl}/campaignName/${settings.row.original.obr_name}/budgetProcessId/${settings.row.original.id}`}
                         />
                     );
                 },

@@ -14,7 +14,7 @@ import { FileWithName, LinkWithAlias } from './types';
 export const formatUserName = (profile: Profile): string => {
     return profile?.first_name && profile?.last_name
         ? `${profile.first_name} ${profile.last_name}`
-        : profile?.user_name ?? profile?.user_id;
+        : profile?.user_name ?? `${profile?.user_id}`;
 };
 
 export const formatRoundNumbers = (roundNumbers: number[]): string => {

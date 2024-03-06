@@ -71,6 +71,7 @@ export type Budget = {
         key: string;
         label: string;
     }[];
+    round_numbers?: number[];
     timeline?: Timeline;
 };
 

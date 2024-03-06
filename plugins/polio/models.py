@@ -293,14 +293,18 @@ CampaignManager = models.Manager.from_queryset(CampaignQuerySet)
 
 
 class CampaignType(models.Model):
+    POLIO = "Polio"
+    MEASLES = "Measles"
+    PIRI = "PIRI"
+    YELLOW_FEVER = "Yellow fever"
+    VITAMIN_A = "Vitamin A"
+    RUBELLA = "Rubella"
+    DEWORMING = "Deworming"
+
     name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
         return self.name
-
-
-def get_default_campaign_type():
-    return CampaignType.objects.get_or_create(name="Polio")[0].pk
 
 
 class Campaign(SoftDeletableModel):
@@ -320,9 +324,7 @@ class Campaign(SoftDeletableModel):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    campaign_type = models.ForeignKey(
-        CampaignType, on_delete=models.SET_NULL, null=True, blank=True, default=get_default_campaign_type
-    )
+    campaign_types = models.ManyToManyField(CampaignType, blank=True, related_name="campaigns")
 
     gpei_coordinator = models.CharField(max_length=255, null=True, blank=True)
     gpei_email = models.EmailField(max_length=254, null=True, blank=True)
@@ -686,6 +688,11 @@ class Campaign(SoftDeletableModel):
                 pass
 
         super().save(*args, **kwargs)
+
+        # Check if the Campaign has no types associated and give it the Polio Type By default
+        if not self.campaign_types.exists():
+            default_type, created = CampaignType.objects.get_or_create(name=CampaignType.POLIO)
+            self.campaign_types.add(default_type)
 
     @property
     def vaccines(self):

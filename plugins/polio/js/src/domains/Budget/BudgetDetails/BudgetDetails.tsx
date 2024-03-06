@@ -45,7 +45,7 @@ export const BudgetProcessDetails: FunctionComponent<Props> = ({ router }) => {
         return {
             ...rest,
             deletion_status: showHidden ? 'all' : undefined,
-            campaign_id: budgetProcessId,
+            budget_process_id: budgetProcessId,
             transition_key__in: transition_key,
         };
     }, [budgetProcessId, rest, showHidden, transition_key]);

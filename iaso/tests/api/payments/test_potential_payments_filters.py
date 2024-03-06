@@ -7,7 +7,6 @@ from iaso import models as m
 
 
 class FilterPotentialPaymentsAPITestCase(APITestCase):
-
     @classmethod
     def setUpTestData(cls):
         data_source = m.DataSource.objects.create(name="Data source")

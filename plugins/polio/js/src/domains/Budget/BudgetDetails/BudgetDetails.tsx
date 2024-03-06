@@ -34,9 +34,8 @@ type Props = {
 
 export const BudgetProcessDetails: FunctionComponent<Props> = ({ router }) => {
     const { params } = router;
+    const { campaignName, budgetProcessId, transition_key, ...rest } = params;
     const classes = useStyles();
-    const { campaignName, budgetProcessId, transition_key, ...rest } =
-        router.params;
     const [showHidden, setShowHidden] = useState<boolean>(
         rest.show_hidden ?? false,
     );
@@ -123,9 +122,10 @@ export const BudgetProcessDetails: FunctionComponent<Props> = ({ router }) => {
                 <Box mb={2}>
                     <BudgetDetailsInfos
                         status={budgetInfos?.current_state?.label ?? '--'}
+                        roundNumbers={budgetInfos?.round_numbers}
                         nextSteps={nextSteps}
                         categories={budgetInfos?.timeline?.categories}
-                        params={router.params}
+                        params={params}
                         budgetDetails={budgetDetails}
                     />
                 </Box>

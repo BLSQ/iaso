@@ -376,12 +376,12 @@ const routes = [
             ...paginationPathParams,
 
             {
-                isRequired: true,
-                key: 'budgetProcessId',
+                isRequired: false,
+                key: 'campaignName',
             },
             {
                 isRequired: false,
-                key: 'campaignName',
+                key: 'budgetProcessId',
             },
             {
                 isRequired: false,

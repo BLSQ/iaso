@@ -18,7 +18,7 @@ type Props = {
         roundStartTo: string;
         roundStartFrom: string;
         countries: any;
-        orgUnitGroups: any;
+        org_unit_groups: any;
         campaign: string;
         // eslint-disable-next-line camelcase
         current_state_key: string;
@@ -69,11 +69,11 @@ export const BudgetFilters: FunctionComponent<Props> = ({
                 <Grid item xs={12} sm={6} md={3}>
                     <InputComponent
                         loading={isFetchingGroupedOrgUnits}
-                        keyValue="orgUnitGroups"
+                        keyValue="org_unit_groups"
                         multi
                         clearable
                         onChange={handleChange}
-                        value={filters.orgUnitGroups}
+                        value={filters.org_unit_groups}
                         type="select"
                         options={groupedOrgUnits}
                         label={MESSAGES.countryBlock}

@@ -46,7 +46,6 @@ import {
 } from './src/constants/routes';
 import en from './src/constants/translations/en.json';
 import fr from './src/constants/translations/fr.json';
-import { BudgetDetails } from './src/domains/Budget/BudgetDetails/BudgetDetails';
 import { Calendar } from './src/domains/Calendar/Calendar';
 import { Dashboard } from './src/domains/Campaigns/CampaignsList/Dashboard';
 import { CampaignHistory } from './src/domains/Campaigns/campaignHistory/CampaignHistory';
@@ -55,6 +54,7 @@ import { ReasonsForDelay } from './src/domains/Config/ReasonsForDelay/ReasonsFor
 import { GroupedCampaigns } from './src/domains/GroupedCampaigns/GroupedCampaigns';
 import { ImStats } from './src/domains/LQAS-IM/IM';
 import { Lqas } from './src/domains/LQAS-IM/LQAS';
+import { BudgetProcessDetails } from './src/domains/Budget/BudgetDetails/BudgetDetails';
 import { BudgetProcessList } from './src/domains/Budget';
 import { LqasAfroOverview } from './src/domains/LQAS-IM/LQAS/LqasAfroOverview/LqasAfroOverview';
 import { Notifications } from './src/domains/Notifications/index';
@@ -370,18 +370,18 @@ const routes = [
     },
     {
         baseUrl: BUDGET_DETAILS,
-        component: props => <BudgetDetails {...props} />,
+        component: props => <BudgetProcessDetails {...props} />,
         permissions: ['iaso_polio_budget'],
         params: [
             ...paginationPathParams,
 
             {
-                isRequired: false,
-                key: 'campaignName',
+                isRequired: true,
+                key: 'budgetProcessId',
             },
             {
                 isRequired: false,
-                key: 'campaignId',
+                key: 'campaignName',
             },
             {
                 isRequired: false,

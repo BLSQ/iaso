@@ -32,10 +32,11 @@ type Props = {
     router: any;
 };
 
-export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
+export const BudgetProcessDetails: FunctionComponent<Props> = ({ router }) => {
     const { params } = router;
     const classes = useStyles();
-    const { campaignName, campaignId, transition_key, ...rest } = router.params;
+    const { campaignName, budgetProcessId, transition_key, ...rest } =
+        router.params;
     const [showHidden, setShowHidden] = useState<boolean>(
         rest.show_hidden ?? false,
     );
@@ -44,10 +45,10 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
         return {
             ...rest,
             deletion_status: showHidden ? 'all' : undefined,
-            campaign_id: campaignId,
+            campaign_id: budgetProcessId,
             transition_key__in: transition_key,
         };
-    }, [campaignId, rest, showHidden, transition_key]);
+    }, [budgetProcessId, rest, showHidden, transition_key]);
 
     // @ts-ignore
     const prevPathname = useSelector(state => state.routerCustom.prevPathname);
@@ -61,7 +62,9 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     }: { data: Paginated<BudgetStep> | undefined; isFetching: boolean } =
         useGetBudgetDetails(apiParams);
 
-    const { data: budgetInfos } = useGetBudgetForCampaign(params?.campaignId);
+    const { data: budgetInfos } = useGetBudgetForCampaign(
+        params?.budgetProcessId,
+    );
 
     const nextSteps = useMemo(() => {
         const regular = budgetInfos?.next_transitions?.filter(

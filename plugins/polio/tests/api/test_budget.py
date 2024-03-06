@@ -291,11 +291,11 @@ class BudgetCampaignViewSetTestCase(APITestCase):
         self.campaign.country.groups.set([group_1])
         self.client.force_login(self.user)
 
-        response = self.client.get(f"/api/polio/budget/?orgUnitGroups={group_1.id}")
+        response = self.client.get(f"/api/polio/budget/?org_unit_groups={group_1.id}")
         response_data = self.assertJSONResponse(response, 200)
         self.assertEqual(len(response_data["results"]), 2)
 
-        response = self.client.get(f"/api/polio/budget/?orgUnitGroups={group_2.id}")
+        response = self.client.get(f"/api/polio/budget/?org_unit_groups={group_2.id}")
         response_data = self.assertJSONResponse(response, 200)
         self.assertEqual(len(response_data["results"]), 0)
 

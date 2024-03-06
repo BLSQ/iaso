@@ -14,7 +14,6 @@ from rest_framework.viewsets import ViewSet
 
 from hat.menupermissions import models as permission
 from iaso.api.common import CSVExportMixin, ModelViewSet, DeletionFilterBackend, HasPermission
-from iaso.api.common import CustomFilterBackend
 from plugins.polio.budget.filters import BudgetCampaignFilter
 from plugins.polio.budget.models import BudgetStep, MailTemplate, get_workflow, BudgetStepFile, BudgetProcess
 from plugins.polio.budget.serializers import (
@@ -47,7 +46,6 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
         filters.OrderingFilter,
         DjangoFilterBackend,
         DeletionFilterBackend,
-        CustomFilterBackend,
     ]
     filterset_class = BudgetCampaignFilter
 

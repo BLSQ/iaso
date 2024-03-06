@@ -15,7 +15,7 @@ type Option = {
     current_state_key: [number | string];
     countries: [number | string];
     order?: string;
-    orgUnitGroups: [number | string];
+    org_unit_groups: [number | string];
     page?: number;
     pageSize?: number;
     roundStartFrom?: string;
@@ -28,7 +28,7 @@ type Param = {
     current_state_key: [number | string];
     countries: [number | string];
     order: string;
-    orgUnitGroups: [number | string];
+    org_unit_groups: [number | string];
     page: number | string;
     pageSize: number | string;
     roundStartFrom: string;
@@ -59,7 +59,7 @@ export const useGetBudgets = (options: Option): any => {
         search: options.search,
         current_state_key: options.current_state_key,
         countries: options.countries,
-        orgUnitGroups: options.orgUnitGroups,
+        org_unit_groups: options.org_unit_groups,
         fields: 'id,obr_name,country_name,current_state,round_numbers,possible_states,updated_at',
     };
 
@@ -80,7 +80,7 @@ export const useBudgetParams = (params: Param): any => {
             roundStartTo: getApiParamDateString(params.roundStartTo),
             current_state_key: params.current_state_key,
             countries: params?.countries,
-            orgUnitGroups: params?.orgUnitGroups,
+            org_unit_groups: params?.org_unit_groups,
         };
     }, [
         params?.order,
@@ -91,7 +91,7 @@ export const useBudgetParams = (params: Param): any => {
         params.roundStartTo,
         params.current_state_key,
         params?.countries,
-        params?.orgUnitGroups,
+        params?.org_unit_groups,
     ]);
 };
 

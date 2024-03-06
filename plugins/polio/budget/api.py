@@ -68,15 +68,6 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
         )
         return budget_processes
 
-    def filter_queryset(self, queryset):
-        queryset = super().filter_queryset(queryset)
-
-        org_unit_groups = self.request.query_params.get("orgUnitGroups")
-        if org_unit_groups:
-            queryset = queryset.filter(rounds__campaign__country__groups__in=org_unit_groups.split(","))
-
-        return queryset
-
     @action(detail=False, methods=["POST"], serializer_class=TransitionToSerializer)
     def transition_to(self, request):
         """

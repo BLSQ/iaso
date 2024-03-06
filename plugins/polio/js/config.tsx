@@ -360,7 +360,7 @@ const routes = [
             },
             {
                 isRequired: false,
-                key: 'orgUnitGroups',
+                key: 'org_unit_groups',
             },
         ],
     },

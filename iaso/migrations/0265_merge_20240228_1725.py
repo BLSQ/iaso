@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
     dependencies = [
         ("iaso", "0263_form_change_request_mode"),
-        ("iaso", "0264_alter_payment_change_requests_alter_payment_user_and_more"),
+        ("iaso", "0264_payment_potentialpayment"),
     ]
 
     operations = []

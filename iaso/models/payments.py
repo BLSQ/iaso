@@ -8,6 +8,7 @@ from django.dispatch import receiver
 class Payment(models.Model):
     """
     Model to store the status of payments linked to multiple OrgUnitChangeRequest by the same user.
+    User is the user that will receive the payment for the change request he did
     """
 
     class Statuses(models.TextChoices):

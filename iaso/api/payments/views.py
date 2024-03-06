@@ -340,9 +340,10 @@ class PotentialPaymentsViewSet(ModelViewSet):
     http_method_names = ["get", "head", "options", "trace"]
 
     def get_queryset(self):
-        queryset = PotentialPayment.objects.all()
-        queryset = queryset.prefetch_related(
-            "change_requests",
+        return (
+            PotentialPayment.objects.prefetch_related("change_requests")
+            .filter(change_requests__created_by__iaso_profile__account=self.request.user.iaso_profile.account)
+            .distinct()
         )
 
         change_requests_count = (

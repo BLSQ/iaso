@@ -87,7 +87,7 @@ export const useBudgetColumns = (): Column[] => {
                         <IconButtonComponent
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.details}
-                            url={`${baseUrl}/campaignName/${settings.row.original.obr_name}/campaignId/${settings.row.original.id}`}
+                            url={`${baseUrl}/budgetProcessId/${settings.row.original.id}`}
                         />
                     );
                 },

@@ -124,3 +124,20 @@ export type Workflow = {
         label: string;
     }[];
 };
+
+export type SelectCountries = {
+    id: number;
+    name: string;
+};
+
+export type SelectCampaigns = {
+    id: number;
+    name: string;
+    country_id: number;
+};
+
+export type SelectRounds = {
+    id: number;
+    name: string;
+    campaign_id: number;
+};

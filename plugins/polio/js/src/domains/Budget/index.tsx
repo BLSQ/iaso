@@ -27,6 +27,7 @@ import { handleTableDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/u
 import { useStyles } from '../../styles/theme';
 import { BUDGET } from '../../constants/routes';
 import MESSAGES from '../../constants/messages';
+import { BudgetButtons } from './BudgetButtons';
 
 type Props = {
     router: any;
@@ -118,13 +119,9 @@ export const BudgetProcessList: FunctionComponent<Props> = ({ router }) => {
                             buttonSize="small"
                             statesList={possibleStates}
                         />
-                        <Grid container justifyContent="flex-end">
-                            <Box mb={4}>
-                                <CsvButton
-                                    csvUrl={`/api/polio/budget/export_csv/?${csvParams}`}
-                                />
-                            </Box>
-                        </Grid>
+                        <BudgetButtons
+                            csvUrl={`/api/polio/budget/export_csv/?${csvParams}`}
+                        />
                     </Collapse>
                 )}
 
@@ -134,12 +131,9 @@ export const BudgetProcessList: FunctionComponent<Props> = ({ router }) => {
                             params={params}
                             statesList={possibleStates}
                         />
-                        <Box mb={2} className={paginationStyle.alignRight}>
-                            <CsvButton
-                                csvUrl={`/api/polio/budget/export_csv/?${csvParams}`}
-                            />
-                        </Box>
-
+                        <BudgetButtons
+                            csvUrl={`/api/polio/budget/export_csv/?${csvParams}`}
+                        />
                         <TableWithDeepLink
                             data={budgets?.results ?? []}
                             count={budgets?.count}

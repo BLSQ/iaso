@@ -9,7 +9,7 @@ from hat.audit.models import Modification
 from iaso import models as m
 from iaso.models import Account
 from iaso.test import APITestCase
-from plugins.polio.models import Round
+from plugins.polio.models import Round, CampaignType
 from plugins.polio.preparedness.spreadsheet_manager import *
 
 
@@ -642,6 +642,45 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(round.vaccines.count(), 1)
         self.assertEqual(round.destructions.count(), 0)
         self.assertEqual(round.shipments.count(), 1)
+
+    def test_campaign_creation_without_explicit_campaign_type(self):
+        self.client.force_authenticate(self.yoda)
+        payload = {
+            "obr_name": "Test Campaign",
+            "group": {"name": "Test Group", "org_units": []},
+            "is_preventive": True,
+            "is_test": False,
+            "enable_send_weekly_email": False,
+        }
+        response = self.client.post("/api/polio/campaigns/", payload, format="json")
+        self.assertEqual(response.status_code, 201, response.content)
+        campaign_id = response.data["id"]
+        campaign = Campaign.objects.get(id=campaign_id)
+        self.assertEqual(campaign.campaign_types.first().name, "Polio", "Campaign type should default to 'Polio'")
+
+    def test_create_campaign_with_explicit_campaign_types(self):
+        self.client.force_authenticate(self.yoda)
+        self.assertEqual(Campaign.objects.count(), 0)
+
+        campaign_type1 = CampaignType.objects.create(name="Type1")
+        campaign_type2 = CampaignType.objects.create(name="Type2")
+        payload = {
+            "obr_name": "Campaign with Types",
+            "group": {"name": "Test Group", "org_units": []},
+            "is_preventive": True,
+            "is_test": False,
+            "enable_send_weekly_email": False,
+            "campaign_types": [campaign_type1.id, campaign_type2.id],
+        }
+
+        response = self.client.post("/api/polio/campaigns/", payload, format="json")
+        self.assertEqual(response.status_code, 201, response.content)
+        campaign_id = response.data["id"]
+        campaign = Campaign.objects.get(id=campaign_id)
+
+        self.assertEqual(campaign.campaign_types.count(), 2)
+        self.assertTrue(campaign.campaign_types.filter(id=campaign_type1.id).exists())
+        self.assertTrue(campaign.campaign_types.filter(id=campaign_type2.id).exists())
 
 
 class PreparednessAPITestCase(APITestCase):

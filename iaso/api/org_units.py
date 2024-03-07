@@ -228,6 +228,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 {"title": "Ref Ext parent 2", "width": 20},
                 {"title": "Ref Ext parent 3", "width": 20},
                 {"title": "Ref Ext parent 4", "width": 20},
+                {"title": "Creator", "width": 20},
+                {"title": "Creator first name", "width": 20},
+                {"title": "Creator last name", "width": 20},
             ]
             counts_by_forms = []
             for frm in forms:
@@ -257,6 +260,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 "instances_count",
                 "opening_date",
                 "closed_date",
+                "creator__username",
+                "creator__first_name",
+                "creator__last_name",
             )
 
             user_account_name = profile.account.name if profile else ""
@@ -287,6 +293,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     *[org_unit.get(count_field_name) for count_field_name in counts_by_forms],
                     org_unit.get("instances_count"),
                     *[int(org_unit.get("id") in group.org_units__ids) for group in groups],
+                    org_unit.get("creator__username"),
+                    org_unit.get("creator__first_name"),
+                    org_unit.get("creator__last_name"),
                 ]
                 return org_unit_values
 

@@ -519,6 +519,25 @@ class OrgUnitAPITestCase(APITestCase):
         )
         self.assertFileResponse(response, 200, "text/csv; charset=utf-8")
 
+    def test_can_retrieve_org_units_list_in_csv_format(self):
+        # TODO: handle this properly in `setUpTestData()`.
+        self.yoda.first_name = "Yo"
+        self.yoda.last_name = "Da"
+        self.yoda.save()
+        self.jedi_council_brussels.creator = self.yoda
+        self.jedi_council_brussels.save()
+
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(f"/api/orgunits/?csv=true")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/csv")
+
+        response_csv = response.getvalue().decode("utf-8")
+        # TODO: test this properly, see `ProfileAPITestCase.test_profile_list_export_as_csv`.
+        print("-" * 80)
+        print(response_csv)
+
     def assertValidOrgUnitListData(self, *, list_data: typing.Mapping, expected_length: int):
         self.assertValidListData(list_data=list_data, results_key="orgUnits", expected_length=expected_length)
         for org_unit_data in list_data["orgUnits"]:

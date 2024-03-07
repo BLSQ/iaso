@@ -1,12 +1,13 @@
 import React, { FunctionComponent } from 'react';
 import { differenceBy } from 'lodash';
-import { NestedGroup } from '../types';
 import { Box, TableCell, TableRow } from '@mui/material';
+import { NestedGroup } from '../types';
 import { ReviewOrgUnitGroupChanges } from './ReviewOrgUnitGroupChanges';
 import { NewOrgUnitField } from '../hooks/useNewFields';
 import InputComponent from '../../../../components/forms/InputComponent';
 
 type Props = {
+    // eslint-disable-next-line no-unused-vars
     setSelected: (key: string) => void;
     field: NewOrgUnitField;
     label: string;
@@ -25,7 +26,7 @@ export const HighlightFields: FunctionComponent<Props> = ({
     setSelected,
     status,
 }) => {
-    let newAddedGroups = differenceBy(newGroups, oldGroups, 'id');
+    const newAddedGroups = differenceBy(newGroups, oldGroups, 'id');
     return (
         <TableRow>
             <TableCell>{label}</TableCell>

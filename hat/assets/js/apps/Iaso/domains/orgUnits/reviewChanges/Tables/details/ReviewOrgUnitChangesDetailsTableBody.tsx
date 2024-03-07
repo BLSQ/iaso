@@ -1,10 +1,10 @@
 import React, { FunctionComponent } from 'react';
 import { TableBody } from '@mui/material';
+import { sortBy } from 'lodash';
 import { NewOrgUnitField } from '../../hooks/useNewFields';
 import { ReviewOrgUnitChangesDetailsTableRow } from './ReviewOrgUnitChangesDetailsTableRow';
 import { OrgUnitChangeRequestDetails } from '../../types';
 import { HighlightFields } from '../../Dialogs/HighlightFieldsChanges';
-import { sortBy } from 'lodash';
 
 type Props = {
     newFields: NewOrgUnitField[];
@@ -39,24 +39,23 @@ export const ReviewOrgUnitChangesDetailsTableBody: FunctionComponent<Props> = ({
                             field={field}
                             newGroups={sortBy(changedFieldWithNewValues, 'id')}
                             oldGroups={sortBy(changedFieldWithOldValues, 'id')}
-                            status={changeRequest?.status || ""}
+                            status={changeRequest?.status || ''}
                             isNew={isNew}
                             setSelected={setSelected}
-                        />
-                    );
-                } else {
-                    return (
-                        <ReviewOrgUnitChangesDetailsTableRow
-                            key={field.key}
-                            field={field}
-                            setSelected={setSelected}
-                            isNew={isNew}
-                            isNewOrgUnit={isNewOrgUnit}
-                            changeRequest={changeRequest}
-                            isFetchingChangeRequest={isFetchingChangeRequest}
                         />
                     );
                 }
+                return (
+                    <ReviewOrgUnitChangesDetailsTableRow
+                        key={field.key}
+                        field={field}
+                        setSelected={setSelected}
+                        isNew={isNew}
+                        isNewOrgUnit={isNewOrgUnit}
+                        changeRequest={changeRequest}
+                        isFetchingChangeRequest={isFetchingChangeRequest}
+                    />
+                );
             })}
         </TableBody>
     );

@@ -1,13 +1,15 @@
 // A bit higher limit than for table since we display a grid
 import { LoadingSpinner } from 'bluesquare-components';
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useState } from 'react';
 import { TablePagination } from '@mui/material';
 import InstancesFilesList from './InstancesFilesListComponent.tsx';
 import { useGetInstancesFiles } from '../requests';
+import { useGetInstance } from '../compare/hooks/useGetInstance.ts';
 
 const DEFAULT_FILES_PER_PAGES = 100;
 export const PaginatedInstanceFiles = ({ params, updateParams }) => {
+    const [currentImageIndex, setCurrentImageIndex] = useState(-1);
     const page = params?.filePage ? parseInt(params.filePage, 10) : 0;
     const rowsPerPage = params?.fileRowsPerPage
         ? parseInt(params.fileRowsPerPage, 10)
@@ -26,12 +28,22 @@ export const PaginatedInstanceFiles = ({ params, updateParams }) => {
             fileRowsPerPage: newRowsPerPage,
         });
     };
+
+    const getCurrentIndexImage = index => {
+        setCurrentImageIndex(index);
+    };
+
+    const { data: currentInstance, isLoading: fetching } = useGetInstance(
+        instancesFiles?.results[currentImageIndex]?.itemId,
+    );
     return (
         <>
             {loadingFiles && <LoadingSpinner />}
             <InstancesFilesList
+                instanceDetail={currentInstance}
                 files={instancesFiles?.results}
-                fetching={loadingFiles}
+                fetching={loadingFiles || fetching}
+                getCurrentIndexImage={getCurrentIndexImage}
             />
             {instancesFiles?.count > 0 && (
                 <TablePagination

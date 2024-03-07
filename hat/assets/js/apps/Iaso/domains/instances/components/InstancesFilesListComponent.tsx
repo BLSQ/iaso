@@ -1,10 +1,11 @@
-import React, { useState, FunctionComponent, useMemo } from 'react';
+import React, { useState, FunctionComponent, useMemo, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { Tabs, Tab, Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import { useSafeIntl } from 'bluesquare-components';
+import { Link } from 'react-router';
 import ImageGallery from '../../../components/dialogs/ImageGalleryComponent';
 import LazyImagesList from '../../../components/files/LazyImagesListComponent';
 import DocumentsList from '../../../components/files/DocumentsListComponent';
@@ -39,12 +40,20 @@ const useStyles = makeStyles(theme => ({
         minHeight: minTabHeight,
         backgroundColor: 'white',
     },
+    link: {
+        color: 'inherit',
+        position: 'absolute',
+        bottom: theme.spacing(2),
+        right: theme.spacing(3),
+    },
 }));
 type Props = {
     instanceDetail?: Instance;
     files: ShortFile[];
     // eslint-disable-next-line no-unused-vars
     onLightBoxToggled?: (value: boolean) => void;
+    // eslint-disable-next-line no-unused-vars
+    getCurrentIndexImage?: (currentImageIndex: number) => void;
     fetchDetails?: boolean;
     fetching?: boolean;
 };
@@ -53,6 +62,7 @@ const InstancesFilesList: FunctionComponent<Props> = ({
     files = [],
     fetchDetails = false,
     onLightBoxToggled = () => null,
+    getCurrentIndexImage = () => null,
     fetching = false,
 }) => {
     const classes = useStyles();
@@ -101,10 +111,26 @@ const InstancesFilesList: FunctionComponent<Props> = ({
         onLightBoxToggled(false);
     };
 
+    useEffect(() => {
+        getCurrentIndexImage(currentImageIndex);
+    }, [currentImageIndex, getCurrentIndexImage]);
+
     if (fetching || !files) return null;
     if (files.length === 0) {
         return <Box p={2}>{formatMessage(MESSAGES.missingFile)}</Box>;
     }
+
+    const formSubmissionLink = (images, index) => {
+        const currentFormSubmissionUrl = `/forms/submission/instanceId/${images[index].itemId}`;
+        return (
+            <Box className={classes.link}>
+                <Link to={currentFormSubmissionUrl}>
+                    {formatMessage(MESSAGES.formSubmissionLinkLabel)}
+                </Link>
+            </Box>
+        );
+    };
+
     return (
         <section className={classes.root}>
             <Tabs
@@ -171,6 +197,14 @@ const InstancesFilesList: FunctionComponent<Props> = ({
                     currentIndex={currentImageIndex}
                     setCurrentIndex={newIndex =>
                         handleSetCurrentIndex(newIndex, 'images')
+                    }
+                    link={
+                        currentInstance
+                            ? null
+                            : formSubmissionLink(
+                                  sortedFiles.images,
+                                  currentImageIndex,
+                              )
                     }
                     getExtraInfos={() => (
                         <InstancePopover instanceDetail={currentInstance} />

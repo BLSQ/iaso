@@ -11,7 +11,10 @@ import {
     IconButton,
     Typography,
 } from '@mui/material';
+import { useSafeIntl } from 'bluesquare-components';
+import { Link } from 'react-router';
 import { ShortFile } from '../../domains/instances/types/instance';
+import MESSAGES from './messages';
 
 const styles = {
     paper: {
@@ -21,10 +24,13 @@ const styles = {
         width: '80%',
     },
     content: {
-        padding: '0 !important',
+        padding: '2vh !important',
         borderRadius: 0,
         height: '90vh',
         overflow: 'hidden',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     image: {
         width: '110%',
@@ -68,9 +74,9 @@ const styles = {
     },
     infos: {
         color: 'white',
-        position: 'fixed',
-        bottom: theme => theme.spacing(2),
-        left: theme => theme.spacing(2),
+        position: 'absolute',
+        top: theme => theme.spacing(1),
+        right: theme => theme.spacing(1),
     },
 };
 
@@ -80,6 +86,7 @@ type Props = {
     currentIndex: number;
     // eslint-disable-next-line no-unused-vars
     setCurrentIndex: (index: number) => void;
+    link: any;
     // eslint-disable-next-line no-unused-vars
     getExtraInfos?: (image: ShortFile) => React.ReactNode;
 };
@@ -89,11 +96,13 @@ const ImageGallery: FunctionComponent<Props> = ({
     imageList,
     currentIndex,
     setCurrentIndex,
+    link,
     getExtraInfos = () => null,
 }) => {
     const currentImg = imageList[currentIndex];
     if (!currentImg) return null;
     const currentImgSrc = currentImg.path;
+
     return (
         <>
             <Dialog
@@ -134,6 +143,7 @@ const ImageGallery: FunctionComponent<Props> = ({
                     >
                         <Close sx={styles.closeIcon} />
                     </IconButton>
+                    {link}
                     <Box sx={styles.infos}>{getExtraInfos(currentImg)}</Box>
                     <Typography color="primary" variant="h6" sx={styles.count}>
                         {`${currentIndex + 1} / ${imageList.length}`}

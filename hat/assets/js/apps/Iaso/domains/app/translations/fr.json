@@ -497,6 +497,7 @@
     "iaso.label.formList": "Liste de formulaires",
     "iaso.label.forms": "Formulaires",
     "iaso.label.formSelectHelperText": "Veuillez sélectioner un projet avent de sélectioner des formulaires",
+    "iaso.label.formSubmissionLinkLabel": "Lien vers la soumission du formulaire",
     "iaso.label.from": "De",
     "iaso.label.fromOrgunit": "(de l'unité d'organisation)",
     "iaso.label.geo_json": "Forme geo json",

@@ -63,27 +63,15 @@ const Filters = ({
         dateApiToDateRangePicker(params.roundStartTo),
     );
 
-    const filtersFilled = useCallback(() => {
-        return (
-            countries ||
-            search ||
-            roundStartFrom ||
-            roundStartTo ||
-            showOnlyDeleted ||
-            campaignType ||
-            campaignGroups ||
-            orgUnitGroups
-        );
-    }, [
-        campaignGroups,
-        campaignType,
-        countries,
-        orgUnitGroups,
-        roundStartFrom,
-        roundStartTo,
-        search,
-        showOnlyDeleted,
-    ]);
+    const filtersFilled =
+        countries ||
+        search ||
+        roundStartFrom ||
+        roundStartTo ||
+        showOnlyDeleted ||
+        campaignType ||
+        campaignGroups ||
+        orgUnitGroups;
 
     const dispatch = useDispatch();
     const handleSearch = useCallback(() => {
@@ -99,7 +87,7 @@ const Filters = ({
                 showOnlyDeleted: showOnlyDeleted || undefined,
                 campaignGroups,
                 orgUnitGroups,
-                filterLaunched: !!filtersFilled(),
+                filterLaunched: !!filtersFilled,
             };
             const url = genUrl(router, urlParams);
             dispatch(replace(url));

@@ -938,7 +938,12 @@ class CampaignViewSet(ModelViewSet):
                 it generates a csv file export
         """
         columns = self.campaign_csv_columns()
-        campaigns = self.filter_queryset(self.get_queryset())
+        queryset = self.get_queryset()
+
+        if not request.query_params.get("deletion_status"):
+            queryset = queryset.filter(deleted_at__isnull=True)
+
+        campaigns = self.filter_queryset(queryset)
         rounds = Round.objects.order_by("campaign__created_at").filter(campaign_id__in=campaigns)
         data = []
 

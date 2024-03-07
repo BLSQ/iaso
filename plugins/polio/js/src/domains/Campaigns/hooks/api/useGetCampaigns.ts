@@ -27,6 +27,7 @@ export type Options = {
     enabled?: boolean;
     last_budget_event__status?: string;
     fieldset?: string;
+    filterLaunched?: boolean;
 };
 
 export type GetCampaignsParams = {
@@ -148,10 +149,10 @@ export const useGetCampaignsAsCsv = (
 // Need a better way to handle default in the routing
 export const useCampaignParams = (params: Options): Options => {
     return useMemo(() => {
-        const showTest = !!(
+        const showTest =
             params.campaignType !== 'regular' &&
-            params.campaignType !== 'preventive'
-        );
+            params.campaignType !== 'preventive' &&
+            params.filterLaunched;
         return {
             order: params?.order ?? DEFAULT_ORDER,
             pageSize: params?.pageSize ?? DEFAULT_PAGE_SIZE,

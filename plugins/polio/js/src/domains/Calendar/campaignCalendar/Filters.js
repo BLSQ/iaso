@@ -32,7 +32,7 @@ const campaignTypeOptions = (formatMessage, showTest = false) => {
     if (showTest) {
         return [
             ...options,
-            { label: formatMessage(MESSAGES.testCampaigns), value: 'test' },
+            { label: formatMessage(MESSAGES.testCampaign), value: 'test' },
         ];
     }
     return options;
@@ -63,6 +63,16 @@ const Filters = ({
         dateApiToDateRangePicker(params.roundStartTo),
     );
 
+    const filtersFilled =
+        countries ||
+        search ||
+        roundStartFrom ||
+        roundStartTo ||
+        showOnlyDeleted ||
+        campaignType ||
+        campaignGroups ||
+        orgUnitGroups;
+
     const dispatch = useDispatch();
     const handleSearch = useCallback(() => {
         if (filtersUpdated) {
@@ -77,6 +87,7 @@ const Filters = ({
                 showOnlyDeleted: showOnlyDeleted || undefined,
                 campaignGroups,
                 orgUnitGroups,
+                filterLaunched: !!filtersFilled,
             };
             const url = genUrl(router, urlParams);
             dispatch(replace(url));
@@ -91,6 +102,7 @@ const Filters = ({
         showOnlyDeleted,
         campaignGroups,
         orgUnitGroups,
+        filtersFilled,
         router,
         dispatch,
     ]);

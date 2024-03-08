@@ -49,6 +49,7 @@ from plugins.polio.api.shared_serializers import (
 from plugins.polio.export_utils import generate_xlsx_campaigns_calendar, xlsx_file_name
 from plugins.polio.models import (
     Campaign,
+    CampaignType,
     CampaignGroup,
     CampaignScope,
     CountryUsersGroup,
@@ -125,6 +126,12 @@ def check_total_doses_requested(vaccine_authorization, nOPV2_rounds, current_cam
             raise Custom403Exception(message)
 
 
+class CampaignTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampaignType
+        fields = ["id", "name"]
+
+
 class CampaignSerializer(serializers.ModelSerializer):
     round_one = serializers.SerializerMethodField(read_only=True)
     round_two = serializers.SerializerMethodField(read_only=True)
@@ -152,6 +159,7 @@ class CampaignSerializer(serializers.ModelSerializer):
     # Account is filed per default the one of the connected user that update it
     account: Field = serializers.PrimaryKeyRelatedField(default=CurrentAccountDefault(), read_only=True)
     has_data_in_budget_tool = serializers.SerializerMethodField(read_only=True)
+    campaign_types = serializers.PrimaryKeyRelatedField(many=True, queryset=CampaignType.objects.all(), required=False)
 
     def get_top_level_org_unit_name(self, campaign):
         if campaign.country:
@@ -185,6 +193,7 @@ class CampaignSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         grouped_campaigns = validated_data.pop("grouped_campaigns", [])
         rounds = validated_data.pop("rounds", [])
+        campaign_types = validated_data.pop("campaign_types", [])
         initial_org_unit = validated_data.get("initial_org_unit")
         obr_name = validated_data["obr_name"]
         account = self.context["request"].user.iaso_profile.account
@@ -218,6 +227,12 @@ class CampaignSerializer(serializers.ModelSerializer):
                 scope.group.save()
 
             scope.group.org_units.set(org_units)
+
+        if campaign_types:
+            campaign.campaign_types.set(campaign_types)
+        else:  # if no campaign_types are given, we assume it's a polio campaign
+            polio_type = CampaignType.objects.get(name=CampaignType.POLIO)
+            campaign.campaign_types.set([polio_type])
 
         for round_data in rounds:
             scopes = round_data.pop("scopes", [])
@@ -799,6 +814,12 @@ class CampaignViewSet(ModelViewSet):
                 campaigns = campaigns.filter(account_id=account_id)
 
         return campaigns
+
+    @action(detail=False, methods=["GET"], serializer_class=CampaignTypeSerializer)
+    def available_campaign_types(self, request):
+        campaign_types = CampaignType.objects.all()
+        serializer = CampaignTypeSerializer(campaign_types, many=True)
+        return Response(serializer.data)
 
     @action(methods=["POST"], detail=False, serializer_class=PreparednessPreviewSerializer)
     def preview_preparedness(self, request, **kwargs):

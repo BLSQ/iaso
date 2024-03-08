@@ -300,6 +300,8 @@ class CampaignType(models.Model):
     VITAMIN_A = "Vitamin A"
     RUBELLA = "Rubella"
     DEWORMING = "Deworming"
+    # This is the types that we know at the moment.
+    # Clients will have the possibility to add new types
 
     name = models.CharField(max_length=100, unique=True)
 
@@ -688,11 +690,6 @@ class Campaign(SoftDeletableModel):
                 pass
 
         super().save(*args, **kwargs)
-
-        # Check if the Campaign has no types associated and give it the Polio Type By default
-        if not self.campaign_types.exists():
-            default_type, created = CampaignType.objects.get_or_create(name=CampaignType.POLIO)
-            self.campaign_types.add(default_type)
 
     @property
     def vaccines(self):

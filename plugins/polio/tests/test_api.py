@@ -320,7 +320,7 @@ class PolioAPITestCase(APITestCase):
                 {
                     "number": 1,
                     "started_at": "2021-02-01",
-                    "lqas_district_failing": 100
+                    "lqas_district_failing": 100,
                     # Removed that line to test that empty field in payload
                     # will not overwrite existing field in DB
                     # "ended_at": "2021-02-20",
@@ -681,6 +681,37 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(campaign.campaign_types.count(), 2)
         self.assertTrue(campaign.campaign_types.filter(id=campaign_type1.id).exists())
         self.assertTrue(campaign.campaign_types.filter(id=campaign_type2.id).exists())
+
+    def test_campaign_api_returns_campaign_types(self):
+        self.client.force_authenticate(self.yoda)
+        campaign_type1 = CampaignType.objects.create(name="Type1")
+        campaign_type2 = CampaignType.objects.create(name="Type2")
+        campaign_type_ids = [campaign_type1.id, campaign_type2.id]
+
+        campaign = Campaign.objects.create(obr_name="Campaign with Types", account=self.account)
+        campaign.campaign_types.set([campaign_type1, campaign_type2])
+
+        response = self.client.get(f"/api/polio/campaigns/{campaign.id}/", format="json")
+        self.assertEqual(response.status_code, 200, response.content)
+        response_data = response.json()
+
+        self.assertIn("campaign_types", response_data)
+        campaign_types = response_data["campaign_types"]
+        self.assertEqual(len(campaign_types), 2)
+
+        self.assertIn(campaign_type1.id, campaign_type_ids)
+        self.assertIn(campaign_type2.id, campaign_type_ids)
+
+    def test_available_campaign_types(self):
+        self.client.force_authenticate(self.yoda)
+        campaign_types_count = CampaignType.objects.count()
+
+        response = self.client.get("/api/polio/campaigns/available_campaign_types/", format="json")
+        self.assertEqual(response.status_code, 200, response.content)
+        response_data = response.json()
+
+        self.assertEqual(len(response_data), campaign_types_count)
+        self.assertIn(CampaignType.POLIO, [ct["name"] for ct in response_data])
 
 
 class PreparednessAPITestCase(APITestCase):

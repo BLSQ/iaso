@@ -19,10 +19,18 @@ def migrate_data_forward(apps, schema_editor):
     )
 
     for uuid in duplicated_uuids:
-        # Retrieve change requests sharing the same UUID except for the oldest one.
-        change_requests_to_delete = OrgUnitChangeRequest.objects.filter(uuid=uuid).order_by("created_at")[1:]
-        for change_request in change_requests_to_delete:
-            change_request.delete()
+        change_requests_with_same_uuid = list(OrgUnitChangeRequest.objects.filter(uuid=uuid).order_by("-created_at"))
+        change_request_to_keep = None
+        for change_request in change_requests_with_same_uuid:
+            if change_request.status == "approved":
+                # Keep the most recent "approved" change request.
+                change_request_to_keep = change_request
+                break
+        if not change_request_to_keep:
+            # Keep the most recent change request.
+            change_request_to_keep = change_requests_with_same_uuid[0]
+        # Delete duplicates.
+        OrgUnitChangeRequest.objects.filter(uuid=uuid).exclude(pk=change_request_to_keep.pk).delete()
 
 
 class Migration(migrations.Migration):

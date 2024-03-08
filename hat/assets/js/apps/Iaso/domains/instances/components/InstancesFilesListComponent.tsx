@@ -118,8 +118,8 @@ const InstancesFilesList: FunctionComponent<Props> = ({
         return <Box p={2}>{formatMessage(MESSAGES.missingFile)}</Box>;
     }
 
-    const formSubmissionLink = (images, index) => {
-        const currentFormSubmissionUrl = `/forms/submission/instanceId/${images[index].itemId}`;
+    const FormSubmissionLink = ({ images, imageIndex }) => {
+        const currentFormSubmissionUrl = `/forms/submission/instanceId/${images[imageIndex].itemId}`;
         return (
             <Box className={classes.link}>
                 <Link to={currentFormSubmissionUrl}>
@@ -197,12 +197,12 @@ const InstancesFilesList: FunctionComponent<Props> = ({
                         handleSetCurrentIndex(newIndex, 'images')
                     }
                     link={
-                        showLink
-                            ? formSubmissionLink(
-                                  sortedFiles.images,
-                                  currentImageIndex,
-                              )
-                            : null
+                        showLink ? (
+                            <FormSubmissionLink
+                                images={sortedFiles.images}
+                                imageIndex={currentImageIndex}
+                            />
+                        ) : null
                     }
                     getExtraInfos={() => (
                         <InstancePopover instanceDetail={currentInstance} />

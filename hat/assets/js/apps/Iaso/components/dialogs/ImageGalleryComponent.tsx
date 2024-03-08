@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, ReactElement } from 'react';
 
 import ArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
 import ArrowRight from '@mui/icons-material/KeyboardArrowRight';
@@ -83,7 +83,7 @@ type Props = {
     currentIndex: number;
     // eslint-disable-next-line no-unused-vars
     setCurrentIndex: (index: number) => void;
-    link?: any;
+    link: ReactElement | null;
     // eslint-disable-next-line no-unused-vars
     getExtraInfos?: (image: ShortFile) => React.ReactNode;
 };

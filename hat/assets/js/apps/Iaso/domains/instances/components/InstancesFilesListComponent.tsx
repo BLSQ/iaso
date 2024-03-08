@@ -53,17 +53,19 @@ type Props = {
     // eslint-disable-next-line no-unused-vars
     onLightBoxToggled?: (value: boolean) => void;
     // eslint-disable-next-line no-unused-vars
-    getCurrentIndexImage?: (currentImageIndex: number) => void;
     fetchDetails?: boolean;
+    fetchingFile?: boolean;
     fetching?: boolean;
+    showLink?: boolean;
 };
 const InstancesFilesList: FunctionComponent<Props> = ({
     instanceDetail,
     files = [],
     fetchDetails = false,
+    fetchingFile = false,
     onLightBoxToggled = () => null,
-    getCurrentIndexImage = () => null,
     fetching = false,
+    showLink = false,
 }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
@@ -84,7 +86,7 @@ const InstancesFilesList: FunctionComponent<Props> = ({
     const handleSetCurrentIndex = (fileIndex, fileTypeKey) => {
         if (fileIndex >= 0) {
             const file = sortedFiles[fileTypeKey][fileIndex];
-            if (fetchDetails) {
+            if (fetchDetails || fetchingFile) {
                 setCurrentInstance(undefined);
                 if (file) {
                     fetchInstanceDetail(dispatch, file.itemId).then(
@@ -110,10 +112,6 @@ const InstancesFilesList: FunctionComponent<Props> = ({
         setCurrentInstance(fetchDetails ? undefined : currentInstance);
         onLightBoxToggled(false);
     };
-
-    useEffect(() => {
-        getCurrentIndexImage(currentImageIndex);
-    }, [currentImageIndex, getCurrentIndexImage]);
 
     if (fetching || !files) return null;
     if (files.length === 0) {
@@ -199,12 +197,12 @@ const InstancesFilesList: FunctionComponent<Props> = ({
                         handleSetCurrentIndex(newIndex, 'images')
                     }
                     link={
-                        currentInstance
-                            ? null
-                            : formSubmissionLink(
+                        showLink
+                            ? formSubmissionLink(
                                   sortedFiles.images,
                                   currentImageIndex,
                               )
+                            : null
                     }
                     getExtraInfos={() => (
                         <InstancePopover instanceDetail={currentInstance} />

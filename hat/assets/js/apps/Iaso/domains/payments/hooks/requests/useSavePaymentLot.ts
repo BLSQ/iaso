@@ -3,7 +3,13 @@ import { UseMutationResult } from 'react-query';
 import { patchRequest, postRequest } from '../../../../libs/Api';
 import { useSnackMutation } from '../../../../libs/apiHooks';
 
-export type SavePaymentLotQuery = {
+export type CreatePaymentLotQuery = {
+    id?: number;
+    name: string;
+    comment?: string;
+    potential_payments?: number[];
+};
+export type UpdatePaymentLotQuery = {
     id?: number;
     name: string;
     comment?: string;
@@ -11,18 +17,20 @@ export type SavePaymentLotQuery = {
     mark_payments_as_sent?: boolean;
 };
 
-const endpoint = '/api/payments/lots/';
+export type SavePaymentLotQuery = CreatePaymentLotQuery | UpdatePaymentLotQuery;
 
-const putPaymentLot = async (body: Partial<SavePaymentLotQuery>) => {
-    const url = `${endpoint}${body.id}/`;
+const paymentLotEndpoint = '/api/payments/lots/';
+
+const putPaymentLot = async (body: Partial<UpdatePaymentLotQuery>) => {
+    const url = `${paymentLotEndpoint}${body.id}/`;
     const queryParams = body.mark_payments_as_sent
         ? `?mark_payments_as_sent=${body.mark_payments_as_sent}`
         : '';
     return patchRequest(`${url}${queryParams}`, body);
 };
 
-const postPaymentLot = async (body: SavePaymentLotQuery) => {
-    return postRequest(endpoint, body);
+const postPaymentLot = async (body: CreatePaymentLotQuery) => {
+    return postRequest(paymentLotEndpoint, body);
 };
 
 export const useSavePaymentLot = (
@@ -31,13 +39,14 @@ export const useSavePaymentLot = (
 ): UseMutationResult => {
     const ignoreErrorCodes = [400];
     const editPaymentLot = useSnackMutation({
-        mutationFn: (data: Partial<SavePaymentLotQuery>) => putPaymentLot(data),
+        mutationFn: (data: Partial<UpdatePaymentLotQuery>) =>
+            putPaymentLot(data),
         invalidateQueryKey: ['paymentLots', 'potentialPayments'],
         ignoreErrorCodes,
         options: { onSuccess },
     });
     const createPaymentLot = useSnackMutation({
-        mutationFn: (data: SavePaymentLotQuery) => postPaymentLot(data),
+        mutationFn: (data: CreatePaymentLotQuery) => postPaymentLot(data),
         invalidateQueryKey: ['paymentLots', 'potentialPayments'],
         ignoreErrorCodes,
         options: { onSuccess },
@@ -53,4 +62,23 @@ export const useSavePaymentLot = (
                 `wrong type expected: create or edit, got: ${type}`,
             );
     }
+};
+
+const markPaymentsAsSent = async (body: Partial<UpdatePaymentLotQuery>) => {
+    const url = `${paymentLotEndpoint}${body.id}/`;
+    const queryParams = body.mark_payments_as_sent
+        ? `?mark_payments_as_sent=${body.mark_payments_as_sent}`
+        : '';
+    return patchRequest(`${url}${queryParams}`, body);
+};
+
+export const useMarkPaymentsAsSent = (
+    onSuccess?: () => void,
+): UseMutationResult => {
+    return useSnackMutation({
+        mutationFn: (data: Partial<UpdatePaymentLotQuery>) =>
+            markPaymentsAsSent(data),
+        invalidateQueryKey: ['paymentLots', 'potentialPayments'],
+        options: { onSuccess },
+    });
 };

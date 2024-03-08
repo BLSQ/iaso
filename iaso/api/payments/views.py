@@ -73,6 +73,9 @@ class PotentialPaymentsViewSet(ModelViewSet):
         "updated_by__username",
         "change_requests",
     ]
+
+    ordering = ["user__last_name"]
+
     serializer_class = PotentialPaymentSerializer
 
     results_key = "results"
@@ -126,8 +129,6 @@ class PotentialPaymentsViewSet(ModelViewSet):
         ]
     )
     def list(self, request):
-        orders = request.GET.get("order", "user__last_name").split(",")
-
         users_with_change_requests = (
             OrgUnitChangeRequest.objects.filter(status=OrgUnitChangeRequest.Statuses.APPROVED)
             .values("created_by")

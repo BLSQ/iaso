@@ -4,7 +4,7 @@ IASO is an innovative, open-source, bilingual (EN/FR) data collection platform w
 
 IASO comprises:
 - a **web
-dashboard** - intended to supervisors for them to organize data collection and geographical data management
+dashboard** - intended for supervisors to organize data collection and geographical data management
 - a **mobile application** that also works **offline** - intended to field users to fill out forms and send data when network is available
 - a **matching and scripting interface** to analyze, compare and merge several geographic data sources
 - a bi-directional **integration with DHIS2**, the widely used HMIS in LMICs

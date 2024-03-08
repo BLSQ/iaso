@@ -11,10 +11,7 @@ import {
     IconButton,
     Typography,
 } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
-import { Link } from 'react-router';
 import { ShortFile } from '../../domains/instances/types/instance';
-import MESSAGES from './messages';
 
 const styles = {
     paper: {
@@ -86,7 +83,7 @@ type Props = {
     currentIndex: number;
     // eslint-disable-next-line no-unused-vars
     setCurrentIndex: (index: number) => void;
-    link: any;
+    link?: any;
     // eslint-disable-next-line no-unused-vars
     getExtraInfos?: (image: ShortFile) => React.ReactNode;
 };

@@ -1,4 +1,4 @@
-import React, { useState, FunctionComponent, useMemo, useEffect } from 'react';
+import React, { useState, FunctionComponent, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { Tabs, Tab, Box } from '@mui/material';

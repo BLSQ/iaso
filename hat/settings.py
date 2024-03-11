@@ -177,6 +177,7 @@ INSTALLED_APPS = [
     "django_filters",
     "drf_yasg",
     "django_json_widget",
+    "phonenumber_field",
 ]
 
 if USE_CELERY:

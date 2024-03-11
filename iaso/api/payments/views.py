@@ -334,6 +334,9 @@ class PotentialPaymentsViewSet(ModelViewSet):
         "updated_by__username",
         "change_requests_count",
     ]
+
+    ordering = ["user__last_name"]
+
     serializer_class = PotentialPaymentSerializer
 
     results_key = "results"
@@ -345,25 +348,6 @@ class PotentialPaymentsViewSet(ModelViewSet):
             .filter(change_requests__created_by__iaso_profile__account=self.request.user.iaso_profile.account)
             .distinct()
         )
-
-        change_requests_count = (
-            OrgUnitChangeRequest.objects.filter(potential_payment=OuterRef("pk"))
-            .order_by()
-            .distinct()
-            .values("potential_payment")
-            .annotate(total=Count("id", distinct=True))
-            .values("total")
-        )
-
-        queryset = queryset.annotate(
-            change_requests_count=Coalesce(Subquery(change_requests_count, output_field=models.IntegerField()), 0),
-        )
-
-        queryset = queryset.filter(
-            change_requests__created_by__iaso_profile__account=self.request.user.iaso_profile.account
-        ).distinct()
-
-        return queryset
 
     def calculate_new_potential_payments(self):
         users_with_change_requests = (

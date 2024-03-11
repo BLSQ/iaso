@@ -246,7 +246,7 @@ const menuItems = (
             icon: props => <PaymentsIcon {...props} />,
             subMenu: [
                 {
-                    label: formatMessage(MESSAGES.toPay),
+                    label: formatMessage(MESSAGES.potentialPayments),
                     permissions: paths.potentialPaymentsPath.permissions,
                     key: 'potential',
                     icon: props => <PriceCheckIcon {...props} />,

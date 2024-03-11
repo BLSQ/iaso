@@ -862,7 +862,7 @@
     "iaso.pages.title": "Liens intégrés",
     "iaso.payments.lots": "Lots de paiements",
     "iaso.payments.title": "Paiements",
-    "iaso.payments.toPay": "A payer",
+    "iaso.payments.potentialPayments": "Paiements potentiels",
     "iaso.periods.end": "Période de fin",
     "iaso.periods.start": "Période de début",
     "iaso.permission.reports": "Appareils",

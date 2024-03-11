@@ -862,7 +862,7 @@
     "iaso.pages.title": "Embedded links",
     "iaso.payments.lots": "Payments lots",
     "iaso.payments.title": "Payments",
-    "iaso.payments.toPay": "To pay",
+    "iaso.payments.potentialPayments": "Potential payments",
     "iaso.periods.end": "End period",
     "iaso.periods.start": "Start period",
     "iaso.permission.reports": "Devices",

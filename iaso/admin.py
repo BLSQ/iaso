@@ -25,7 +25,6 @@ class IasoJSONEditorWidget(JSONEditorWidget):
             "mode": mode,
             "search": True,
         }
-
         if options:
             default_options.update(options)
 
@@ -84,6 +83,7 @@ from .models import (
     WorkflowFollowup,
     WorkflowVersion,
     OrgUnitReferenceInstance,
+    Payment,
 )
 from .models.microplanning import Team, Planning, Assignment
 from .models.data_store import JsonDataStore
@@ -757,6 +757,12 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
 @admin.register(Config)
 class ConfigAdmin(admin.ModelAdmin):
     raw_id_fields = ["users"]
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+
+
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    raw_id_fields = ["change_requests"]
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 

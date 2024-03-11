@@ -125,6 +125,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Download payments',
         id: 'iaso.payments.download_payments',
     },
+    close: {
+        id: 'iaso.label.close',
+        defaultMessage: 'Close',
+    },
 });
 
 export default MESSAGES;

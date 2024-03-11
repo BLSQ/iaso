@@ -8,8 +8,7 @@ import {
     selectionInitialState,
 } from 'bluesquare-components';
 import * as Yup from 'yup';
-import SettingsIcon from '@mui/icons-material/Settings';
-import { IconButton, Button, Box, Divider, Grid } from '@mui/material';
+import { Button, Box, Divider, Grid } from '@mui/material';
 import Add from '@mui/icons-material/Add';
 
 import { useFormik } from 'formik';
@@ -19,7 +18,6 @@ import { PotentialPayment, PotentialPaymentParams } from '../types';
 import { Selection } from '../../orgUnits/types/selection';
 import { useGetSelectedPotentialPayments } from '../hooks/requests/useGetSelectedPotentialPayments';
 import { usePotentialPaymentColumns } from '../config/usePotentialPaymentColumns';
-import { SxStyles } from '../../../types/general';
 import InputComponent from '../../../components/forms/InputComponent';
 import { useTranslatedErrors } from '../../../libs/validation';
 import {
@@ -27,24 +25,8 @@ import {
     useSavePaymentLot,
 } from '../hooks/requests/useSavePaymentLot';
 import getDisplayName, { useCurrentUser } from '../../../utils/usersUtils';
+import { styles } from './shared';
 
-const styles: SxStyles = {
-    table: {
-        mx: -3,
-        mt: 2,
-        '& .MuiSpeedDial-root': {
-            display: 'none',
-        },
-    },
-    infos: {
-        p: theme => `28px ${theme.spacing()}`,
-        '& span': {
-            fontWeight: 'bold',
-            display: 'inline-block',
-            mr: 1,
-        },
-    },
-};
 type Props = {
     titleMessage: IntlMessage;
     isOpen: boolean;
@@ -143,8 +125,8 @@ const PaymentLotDialog: FunctionComponent<Props> = ({
             onCancel={() => {
                 closeDialog();
             }}
-            id="paylment-lot-dialog"
-            dataTestId="paylment-lot-dialog"
+            id="payment-lot-dialog"
+            dataTestId="payment-lot-dialog"
         >
             <Grid container spacing={2}>
                 <Grid item xs={4}>
@@ -198,23 +180,6 @@ const PaymentLotDialog: FunctionComponent<Props> = ({
     );
 };
 
-type PropsIcon = {
-    onClick: () => void;
-};
-
-export const EditIconButton: FunctionComponent<PropsIcon> = ({ onClick }) => {
-    const { formatMessage } = useSafeIntl();
-    return (
-        <IconButton
-            onClick={onClick}
-            aria-label={formatMessage(MESSAGES.edit)}
-            size="small"
-        >
-            <SettingsIcon />
-        </IconButton>
-    );
-};
-
 type AddButtonProps = {
     onClick: () => void;
     disabled: boolean;
@@ -242,9 +207,5 @@ const AddButton: FunctionComponent<AddButtonProps> = ({
 };
 
 const modalWithButton = makeFullModal(PaymentLotDialog, AddButton);
-const modalWithIcon = makeFullModal(PaymentLotDialog, EditIconButton);
 
-export {
-    modalWithButton as AddPaymentLotDialog,
-    modalWithIcon as EditPaymentLotDialog,
-};
+export { modalWithButton as AddPaymentLotDialog };

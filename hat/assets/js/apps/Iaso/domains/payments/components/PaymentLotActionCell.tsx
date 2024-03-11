@@ -6,7 +6,8 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { PaymentLot } from '../types';
 
 import MESSAGES from '../messages';
-import { useSavePaymentLot } from '../hooks/requests/useSavePaymentLot';
+import { useMarkPaymentsAsSent } from '../hooks/requests/useSavePaymentLot';
+import { EditPaymentLotDialog } from './PaymentLotEditionDialog';
 
 interface ActionCellProps<T> {
     row: {
@@ -16,7 +17,7 @@ interface ActionCellProps<T> {
 export const PaymentLotActionCell = ({
     row: { original: paymentLot },
 }: ActionCellProps<PaymentLot>): ReactElement => {
-    const { mutateAsync: savePaymentLot } = useSavePaymentLot('edit');
+    const { mutateAsync: savePaymentLot } = useMarkPaymentsAsSent();
     const handleSend = useCallback(() => {
         savePaymentLot({
             id: paymentLot.id,
@@ -36,6 +37,7 @@ export const PaymentLotActionCell = ({
                     iconSize="small"
                 />
             )}
+            <EditPaymentLotDialog iconProps={{}} paymentLot={paymentLot} />
             <IconButton
                 tooltipMessage={MESSAGES.download_payments}
                 overrideIcon={FileDownloadIcon}

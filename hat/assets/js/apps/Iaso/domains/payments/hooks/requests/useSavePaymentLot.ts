@@ -30,6 +30,7 @@ type CreateEditPaymentLotFunction<T extends 'create' | 'edit'> = (
 
 const paymentLotEndpoint = '/api/payments/lots/';
 
+// TODO replace with classic PATCH
 const patchPaymentLot = async (body: Partial<UpdatePaymentLotQuery>) => {
     const url = `${paymentLotEndpoint}${body.id}/`;
     const queryParams = body.mark_payments_as_sent

@@ -334,6 +334,9 @@ class PotentialPaymentsViewSet(ModelViewSet):
         "updated_by__username",
         "change_requests_count",
     ]
+
+    ordering = ["user__last_name"]
+
     serializer_class = PotentialPaymentSerializer
 
     results_key = "results"

@@ -189,9 +189,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Payments',
         id: 'iaso.payments.title',
     },
-    toPay: {
-        defaultMessage: 'To pay',
-        id: 'iaso.payments.toPay',
+    potentialPayments: {
+        defaultMessage: 'Potential payments',
+        id: 'iaso.payments.potentialPayments',
     },
     lots: {
         defaultMessage: 'Payments lots',

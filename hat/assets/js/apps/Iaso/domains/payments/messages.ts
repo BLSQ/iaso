@@ -2,8 +2,8 @@ import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
     title: {
-        defaultMessage: 'To pay',
-        id: 'iaso.payments.toPay',
+        defaultMessage: 'Potential payments',
+        id: 'iaso.payments.potentialPayments',
     },
     lots: {
         defaultMessage: 'Payments lots',

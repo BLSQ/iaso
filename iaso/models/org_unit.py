@@ -629,7 +629,7 @@ class OrgUnitChangeRequest(models.Model):
         REJECTED = "rejected", _("Rejected")
         APPROVED = "approved", _("Approved")
 
-    uuid = models.UUIDField(default=uuid.uuid4, editable=False)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     org_unit = models.ForeignKey("OrgUnit", on_delete=models.CASCADE)
     status = models.CharField(choices=Statuses.choices, default=Statuses.NEW, max_length=40)
 

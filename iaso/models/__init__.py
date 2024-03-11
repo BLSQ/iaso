@@ -13,3 +13,4 @@ from .workflow import Workflow, WorkflowVersion, WorkflowFollowup, WorkflowChang
 from .reports import Report, ReportVersion
 from .deduplication import EntityDuplicateAnalyzis, EntityDuplicate
 from .microplanning import Planning, Team
+from .payments import Payment, PotentialPayment

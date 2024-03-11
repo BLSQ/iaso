@@ -1,11 +1,10 @@
 /* eslint-disable camelcase */
 import { UseQueryResult } from 'react-query';
-import moment from 'moment';
 import { makeUrlWithParams } from '../../../../libs/utils';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import { PaymentLotsParams, PaymentLotPaginated } from '../../types';
-import { apiDateFormat } from '../../../../utils/dates';
+import { apiDateFormat, formatDateString } from '../../../../utils/dates';
 
 const apiUrl = '/api/payments/lots/';
 
@@ -22,12 +21,16 @@ const getPaymentLots = (options: PaymentLotsParams) => {
         order: options.order || '-created_at',
         limit: options.pageSize || 20,
         page,
-        created_at_after: created_at_after
-            ? moment(created_at_after, 'L').format(apiDateFormat)
-            : undefined,
-        created_at_before: created_at_before
-            ? moment(created_at_before, 'L').format(apiDateFormat)
-            : undefined,
+        created_at_after: formatDateString(
+            created_at_after,
+            'L',
+            apiDateFormat,
+        ),
+        created_at_before: formatDateString(
+            created_at_before,
+            'L',
+            apiDateFormat,
+        ),
         parent_id,
         status,
         users,

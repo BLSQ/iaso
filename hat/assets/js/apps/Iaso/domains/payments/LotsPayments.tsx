@@ -7,17 +7,18 @@ import MESSAGES from './messages';
 import { baseUrls } from '../../constants/urls';
 import { PotentialPaymentParams } from './types';
 import { useGetPaymentLots } from './hooks/requests/useGetPaymentLots';
-import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
-import { redirectTo } from '../../routing/actions';
+// import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
+// import { redirectTo } from '../../routing/actions';
 import { usePaymentLotsColumns } from './config/usePaymentLotsColumns';
 import { PaymentLotsFilters } from './components/PaymentLotsFilters';
+import { SimpleTableWithDeepLink } from '../../components/tables/SimpleTableWithDeepLink';
 
 type Props = {
     params: PotentialPaymentParams;
 };
 const baseUrl = baseUrls.lotsPayments;
 export const LotsPayments: FunctionComponent<Props> = ({ params }) => {
-    const dispatch = useDispatch();
+    // const dispatch = useDispatch();
 
     const theme = useTheme();
     const { data, isFetching } = useGetPaymentLots(params);
@@ -32,17 +33,14 @@ export const LotsPayments: FunctionComponent<Props> = ({ params }) => {
             <Box sx={commonStyles(theme).containerFullHeightNoTabPadded}>
                 <PaymentLotsFilters params={params} />
                 {/* @ts-ignore */}
-                <TableWithDeepLink
+                <SimpleTableWithDeepLink
                     marginTop={false}
-                    data={data?.results ?? []}
-                    pages={data?.pages ?? 1}
+                    data={data}
                     defaultSorted={[{ id: 'created_at', desc: true }]}
                     columns={columns}
-                    count={data?.count ?? 0}
                     baseUrl={baseUrl}
                     params={params}
                     extraProps={{ loading: isFetching }}
-                    onTableParamsChange={p => dispatch(redirectTo(baseUrl, p))}
                 />
             </Box>
         </>

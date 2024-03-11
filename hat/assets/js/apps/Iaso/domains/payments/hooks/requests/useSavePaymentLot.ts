@@ -13,7 +13,16 @@ export type SavePaymentLotQuery = {
 
 const endpoint = '/api/payments/lots/';
 
-const putPaymentLot = async (body: Partial<SavePaymentLotQuery>) => {
+type CreateEditPaymentLotFunction<T extends 'create' | 'edit'> = (
+    // eslint-disable-next-line no-unused-vars
+    body: T extends 'create'
+        ? SavePaymentLotQuery
+        : Partial<SavePaymentLotQuery>,
+    // eslint-disable-next-line no-unused-vars
+    type: T,
+) => Promise<any>;
+
+const patchPaymentLot = async (body: Partial<SavePaymentLotQuery>) => {
     const url = `${endpoint}${body.id}/`;
     const queryParams = body.mark_payments_as_sent
         ? `?mark_payments_as_sent=${body.mark_payments_as_sent}`
@@ -21,36 +30,31 @@ const putPaymentLot = async (body: Partial<SavePaymentLotQuery>) => {
     return patchRequest(`${url}${queryParams}`, body);
 };
 
-const postPaymentLot = async (body: SavePaymentLotQuery) => {
+const postPaymentLot = async (body: Partial<SavePaymentLotQuery>) => {
     return postRequest(endpoint, body);
+};
+
+const createEditPaymentLot: CreateEditPaymentLotFunction<'create' | 'edit'> = (
+    body,
+    type,
+) => {
+    if (type === 'edit') {
+        return patchPaymentLot(body as Partial<SavePaymentLotQuery>);
+    }
+    if (type === 'create') {
+        return postPaymentLot(body as SavePaymentLotQuery);
+    }
+    throw new Error(`wrong type expected: create or edit, got: ${type}`);
 };
 
 export const useSavePaymentLot = (
     type: 'create' | 'edit',
     onSuccess?: () => void,
 ): UseMutationResult => {
-    const ignoreErrorCodes = [400];
-    const editPaymentLot = useSnackMutation({
-        mutationFn: (data: Partial<SavePaymentLotQuery>) => putPaymentLot(data),
+    return useSnackMutation({
+        mutationFn: (data: Partial<SavePaymentLotQuery>) =>
+            createEditPaymentLot(data, type),
         invalidateQueryKey: ['paymentLots', 'potentialPayments'],
-        ignoreErrorCodes,
         options: { onSuccess },
     });
-    const createPaymentLot = useSnackMutation({
-        mutationFn: (data: SavePaymentLotQuery) => postPaymentLot(data),
-        invalidateQueryKey: ['paymentLots', 'potentialPayments'],
-        ignoreErrorCodes,
-        options: { onSuccess },
-    });
-
-    switch (type) {
-        case 'create':
-            return createPaymentLot;
-        case 'edit':
-            return editPaymentLot;
-        default:
-            throw new Error(
-                `wrong type expected: create or edit, got: ${type}`,
-            );
-    }
 };

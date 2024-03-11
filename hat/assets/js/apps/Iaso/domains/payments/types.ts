@@ -44,12 +44,10 @@ export type Payment = {
     change_requests: OrgUnitChangeRequest[];
 };
 
-type NestedPayment = {
-    id: number;
-    status: PaymenStatus;
-    user: User;
-    change_requests: OrgUnitChangeRequest[];
-};
+type NestedPayment = Omit<
+    Payment,
+    'created_at' | 'updated_at' | 'created_by' | 'updated_by'
+>;
 
 export type PotentialPayment = {
     id: number;

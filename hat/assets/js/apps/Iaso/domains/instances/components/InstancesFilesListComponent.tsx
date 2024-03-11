@@ -5,7 +5,6 @@ import { Tabs, Tab, Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import { useSafeIntl } from 'bluesquare-components';
-import { Link } from 'react-router';
 import ImageGallery from '../../../components/dialogs/ImageGalleryComponent';
 import LazyImagesList from '../../../components/files/LazyImagesListComponent';
 import DocumentsList from '../../../components/files/DocumentsListComponent';
@@ -40,12 +39,6 @@ const useStyles = makeStyles(theme => ({
         minHeight: minTabHeight,
         backgroundColor: 'white',
     },
-    link: {
-        color: 'inherit',
-        position: 'absolute',
-        bottom: theme.spacing(2),
-        right: theme.spacing(3),
-    },
 }));
 type Props = {
     instanceDetail?: Instance;
@@ -57,6 +50,7 @@ type Props = {
     fetchingFile?: boolean;
     fetching?: boolean;
     showLink?: boolean;
+    urlLabel?: { id: string; defaultMessage: string } | undefined;
 };
 const InstancesFilesList: FunctionComponent<Props> = ({
     instanceDetail,
@@ -66,6 +60,7 @@ const InstancesFilesList: FunctionComponent<Props> = ({
     onLightBoxToggled = () => null,
     fetching = false,
     showLink = false,
+    urlLabel = undefined,
 }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
@@ -117,17 +112,6 @@ const InstancesFilesList: FunctionComponent<Props> = ({
     if (files.length === 0) {
         return <Box p={2}>{formatMessage(MESSAGES.missingFile)}</Box>;
     }
-
-    const FormSubmissionLink = ({ images, imageIndex }) => {
-        const currentFormSubmissionUrl = `/forms/submission/instanceId/${images[imageIndex].itemId}`;
-        return (
-            <Box className={classes.link}>
-                <Link to={currentFormSubmissionUrl}>
-                    {formatMessage(MESSAGES.formSubmissionLinkLabel)}
-                </Link>
-            </Box>
-        );
-    };
 
     return (
         <section className={classes.root}>
@@ -196,14 +180,12 @@ const InstancesFilesList: FunctionComponent<Props> = ({
                     setCurrentIndex={newIndex =>
                         handleSetCurrentIndex(newIndex, 'images')
                     }
-                    link={
-                        showLink ? (
-                            <FormSubmissionLink
-                                images={sortedFiles.images}
-                                imageIndex={currentImageIndex}
-                            />
-                        ) : null
+                    url={
+                        showLink
+                            ? `/forms/submission/instanceId/${sortedFiles.images[currentImageIndex].itemId}`
+                            : null
                     }
+                    urlLabel={urlLabel}
                     getExtraInfos={() => (
                         <InstancePopover instanceDetail={currentInstance} />
                     )}

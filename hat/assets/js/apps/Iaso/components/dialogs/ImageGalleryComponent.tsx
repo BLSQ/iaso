@@ -1,4 +1,4 @@
-import React, { FunctionComponent, ReactElement } from 'react';
+import React, { FunctionComponent } from 'react';
 
 import ArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
 import ArrowRight from '@mui/icons-material/KeyboardArrowRight';
@@ -12,6 +12,7 @@ import {
     Typography,
 } from '@mui/material';
 import { ShortFile } from '../../domains/instances/types/instance';
+import { ImageGalleryLink } from './ImageGalleryLink';
 
 const styles = {
     paper: {
@@ -83,7 +84,8 @@ type Props = {
     currentIndex: number;
     // eslint-disable-next-line no-unused-vars
     setCurrentIndex: (index: number) => void;
-    link: ReactElement | null;
+    url: string | null;
+    urlLabel: { id: string; defaultMessage: string } | undefined;
     // eslint-disable-next-line no-unused-vars
     getExtraInfos?: (image: ShortFile) => React.ReactNode;
 };
@@ -93,7 +95,8 @@ const ImageGallery: FunctionComponent<Props> = ({
     imageList,
     currentIndex,
     setCurrentIndex,
-    link,
+    url,
+    urlLabel,
     getExtraInfos = () => null,
 }) => {
     const currentImg = imageList[currentIndex];
@@ -140,7 +143,7 @@ const ImageGallery: FunctionComponent<Props> = ({
                     >
                         <Close sx={styles.closeIcon} />
                     </IconButton>
-                    {link}
+                    <ImageGalleryLink url={url} urlLabel={urlLabel} />
                     <Box sx={styles.infos}>{getExtraInfos(currentImg)}</Box>
                     <Typography color="primary" variant="h6" sx={styles.count}>
                         {`${currentIndex + 1} / ${imageList.length}`}

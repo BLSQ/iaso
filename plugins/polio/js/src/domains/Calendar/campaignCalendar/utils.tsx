@@ -6,15 +6,28 @@ import { colsCount, dateFormat } from './constants';
 import { RoundCell } from './cells/RoundCell';
 import { CampaignDurationCell } from './cells/CampaignDuration';
 import { EmptyCell } from './cells/Empty';
+import { Campaign } from '../../../constants/types';
+import { CalendarData, WeekHeader, YearHeader } from './types';
 
-const getEmptyCellsData = (endRoundDate, lastSunday) => {
-    let sunday;
+type Round = {
+    end: moment.Moment;
+    number: number;
+    start: moment.Moment;
+    id?: string;
+    started_at?: string;
+    ended_at?: string;
+    daysCount?: number;
+    weeksCount?: number;
+};
+
+const getEmptyCellsData = (endRoundDate: moment.Moment, lastSunday: moment.Moment) => {
+    let sunday: moment.Moment;
     if (endRoundDate.weekday() !== 7) {
-        sunday = endRoundDate?.clone().endOf('isoWeek');
+        sunday = endRoundDate.clone().endOf('isoWeek');
     } else {
-        sunday = endRoundDate?.clone();
+        sunday = endRoundDate.clone();
     }
-    const extraDays = sunday?.clone().diff(endRoundDate, 'days');
+    const extraDays = sunday.clone().diff(endRoundDate, 'days');
     const fullWeeks = lastSunday.diff(sunday, 'weeks');
     return {
         extraDays,
@@ -29,12 +42,19 @@ const getEmptyCells = ({
     round,
     currentWeekIndex,
     id,
+}: {
+    cells: JSX.Element[];
+    extraDays: number;
+    fullWeeks: number;
+    round: Round;
+    currentWeekIndex: number;
+    id: string;
 }) => {
     let spans = 0;
     cells.forEach(c => {
         spans += c.props.colSpan;
     });
-    spans = parseInt(spans / 7, 10);
+    spans = parseInt(`${spans / 7}`, 10);
     if (extraDays) {
         spans += 1;
         cells.push(
@@ -47,7 +67,7 @@ const getEmptyCells = ({
     }
     const weeks = fullWeeks >= 0 ? fullWeeks : 0;
     Array(weeks)
-        .fill()
+        .fill(null)
         .forEach((_, i) => {
             spans += 1;
             cells.push(
@@ -61,36 +81,41 @@ const getEmptyCells = ({
     return cells;
 };
 
-const getCalendarData = currentMonday => {
+
+
+const getCalendarData = (currentMonday: moment.Moment): CalendarData => {
     const todayMonday = moment().startOf('isoWeek');
     const currentWeek = {
         year: todayMonday.format('YYYY'),
         month: todayMonday.format('MMM'),
         value: todayMonday.format('DD'),
     };
-    const firstMonday = currentMonday?.clone().subtract(3, 'week');
+    const firstMonday = currentMonday.clone().subtract(3, 'week');
     const lastSunday = currentMonday
-        ?.clone()
+        .clone()
         .add(colsCount - 4, 'week')
         .endOf('isoWeek');
-    const headers = {
-        years: [],
-        months: [],
-        weeks: [],
-    };
+    const headers: {
+            years: YearHeader[];
+            months: any[]; // Replace 'any' with the correct type for months
+            weeks: WeekHeader[];
+        } = {
+            years: [],
+            months: [],
+            weeks: [],
+        };
     let currentWeekIndex = -1;
     Array(colsCount)
-        .fill()
+        .fill(null)
         .forEach((_, i) => {
-            const newMonday = firstMonday?.clone().add(i, 'week');
+            const newMonday = firstMonday.clone().add(i, 'week');
             const year = newMonday.format('YYYY');
-            if (!headers.years.find(y => year === y.value))
-                if (!headers.years.includes(year)) {
-                    headers.years.push({
-                        value: year,
-                        daysCount: 0,
-                    });
-                }
+            if (!headers.years.find(y => y.value === year)) {
+                headers.years.push({
+                    value: year,
+                    daysCount: 0,
+                });
+            }
             const month = newMonday.format('MMM');
             if (
                 !headers.months.find(m => month === m.value && year === m.year)
@@ -119,7 +144,7 @@ const getCalendarData = currentMonday => {
                 year,
                 month,
                 value: week,
-                monday: newMonday?.clone(),
+                monday: newMonday.clone(),
             });
         });
     return {
@@ -130,12 +155,12 @@ const getCalendarData = currentMonday => {
     };
 };
 
-const isDateInRange = (date, firstMonday, lastSunday) =>
+const isDateInRange = (date: moment.Moment, firstMonday: moment.Moment, lastSunday: moment.Moment) =>
     Boolean(date) &&
     date.isSameOrBefore(lastSunday, 'day') &&
     date.isSameOrAfter(firstMonday, 'day');
 
-const getLastRound = rounds => {
+const getLastRound = (rounds: Round[]) => {
     const lastRound = rounds[rounds.length - 1];
     if (lastRound?.started_at && lastRound?.ended_at) {
         return lastRound;
@@ -149,7 +174,7 @@ const getLastRound = rounds => {
     return lastRound;
 };
 
-const filterCampaigns = (allCampaigns, firstMonday, lastSunday) => {
+const filterCampaigns = (allCampaigns: Campaign[], firstMonday: moment.Moment, lastSunday: moment.Moment) => {
     return allCampaigns.filter(campaign => {
         const { rounds } = campaign;
         const lastRound = getLastRound(rounds);
@@ -176,7 +201,7 @@ const filterCampaigns = (allCampaigns, firstMonday, lastSunday) => {
     });
 };
 
-const mapCampaigns = allCampaigns => {
+const mapCampaigns = (allCampaigns: Campaign[]) => {
     return allCampaigns.map(c => {
         const rounds = c.rounds.map((round, index) => {
             const nextRound = c.rounds[index + 1];
@@ -228,17 +253,27 @@ const addCellsBeforeRound = ({
     index,
     previousRound,
     startInRange,
+}: {
+    id: string;
+    cells: JSX.Element[];
+    currentWeekIndex: number;
+    firstMonday: moment.Moment;
+    lastSunday: moment.Moment;
+    round: Round;
+    index: number;
+    previousRound?: Round;
+    startInRange: boolean;
 }) => {
     const result = [...cells];
     if (index === 0) {
         // if first round is not starting on the first cell, populate with empty cell
         if (startInRange) {
             if (!round.start.isSame(firstMonday, 'day')) {
-                const monday = round.start?.clone().startOf('isoWeek');
-                const extraDays = round.start?.clone().diff(monday, 'days');
+                const monday = round.start.clone().startOf('isoWeek');
+                const extraDays = round.start.clone().diff(monday, 'days');
                 const fullWeeks = monday.diff(firstMonday, 'weeks');
                 Array(fullWeeks)
-                    .fill()
+                    .fill(null)
                     .forEach((_, i) => {
                         result.push(
                             <EmptyCell
@@ -289,8 +324,16 @@ const addRoundCell = ({
     lastSunday,
     startInRange,
     endInRange,
+}: {
+    campaign: Campaign;
+    cells: JSX.Element[];
+    round: Round;
+    firstMonday: moment.Moment;
+    lastSunday: moment.Moment;
+    startInRange: boolean;
+    endInRange: boolean;
 }) => {
-    let colSpan;
+    let colSpan: number;
     const { id } = campaign;
     const result = [...cells];
 
@@ -302,13 +345,13 @@ const addRoundCell = ({
 
     if (startAndEndInRange) {
         // if both start and end date are in range use diff between dates for length of cells
-        colSpan = round.end?.clone().add(1, 'day').diff(round.start, 'days');
+        colSpan = round.end.clone().add(1, 'day').diff(round.start, 'days');
         // else if start is not in range calculate diff with firstmonday
     } else if (onlyEndInRange) {
-        colSpan = round.end?.clone().add(1, 'day').diff(firstMonday, 'days');
+        colSpan = round.end.clone().add(1, 'day').diff(firstMonday, 'days');
         // else if end is not in range calculate diff with lastSunday
     } else if (onlyStartInRange) {
-        colSpan = round.end?.clone().add(2, 'day').diff(lastSunday, 'days');
+        colSpan = round.end.clone().add(2, 'day').diff(lastSunday, 'days');
     }
     result.push(
         <RoundCell
@@ -332,18 +375,29 @@ const addBufferCell = ({
     firstMonday,
     rounds,
     index,
+}: {
+    id: string;
+    round: Round;
+    cells: JSX.Element[];
+    dateUntilNextRoundInRange: boolean;
+    lastSunday: moment.Moment;
+    endInRange: boolean;
+    dateUntilNextRound: moment.Moment;
+    firstMonday: moment.Moment;
+    rounds: Round[];
+    index: number;
 }) => {
     // draw campaign duration cells
     const result = [...cells];
     let roundInterval = round.daysCount > 0 ? round.daysCount - 1 : 0;
     // if campaign days count is not in range calculate diff with last sunday campaign
     if (!dateUntilNextRoundInRange) {
-        roundInterval = lastSunday?.clone().diff(round.end, 'days');
+        roundInterval = lastSunday.clone().diff(round.end, 'days');
     }
     // if last round end date is not in range calculate diff with first monday and campaign days
     if (!endInRange && dateUntilNextRoundInRange) {
         roundInterval = dateUntilNextRound
-            ?.clone()
+            .clone()
             .add(1, 'day')
             .diff(firstMonday, 'days');
     }
@@ -370,11 +424,17 @@ const addRemainingEmptyCells = ({
     round,
     campaign,
     currentWeekIndex,
+}: {
+    cells: JSX.Element[];
+    dateUntilNextRound: moment.Moment;
+    lastSunday: moment.Moment;
+    round: Round;
+    campaign: Campaign;
+    currentWeekIndex: number;
 }) => {
     const { id } = campaign;
     const cellsData = getEmptyCellsData(dateUntilNextRound, lastSunday);
-    const { extraDays } = cellsData;
-    const { fullWeeks } = cellsData;
+    const { extraDays, fullWeeks } = cellsData;
 
     return getEmptyCells({
         cells,
@@ -386,8 +446,8 @@ const addRemainingEmptyCells = ({
     });
 };
 
-const getCells = (campaign, currentWeekIndex, firstMonday, lastSunday) => {
-    let cells = [];
+const getCells = (campaign: Campaign, currentWeekIndex: number, firstMonday: moment.Moment, lastSunday: moment.Moment) => {
+    let cells: JSX.Element[] = [];
     const { id, rounds } = campaign;
     rounds.forEach((round, index) => {
         // for one round

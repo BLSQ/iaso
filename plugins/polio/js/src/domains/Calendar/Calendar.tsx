@@ -1,6 +1,5 @@
 /* eslint-disable camelcase */
-import React, { useMemo, useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
+import React, { useMemo, useEffect, useState, FunctionComponent } from 'react';
 import moment from 'moment';
 import classnames from 'classnames';
 import { Box, Grid, Button, Typography } from '@mui/material';
@@ -14,11 +13,11 @@ import {
     getTableUrl,
 } from 'bluesquare-components';
 import { useSelector } from 'react-redux';
-import TopBar from 'Iaso/components/nav/TopBarComponent';
 import domToPdf from 'dom-to-pdf';
+import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { CampaignsCalendar } from './campaignCalendar';
 import { getCampaignColor } from '../../constants/campaignsColors';
-import { CalendarMap } from './campaignCalendar/map/CalendarMap.tsx';
+import { CalendarMap } from './campaignCalendar/map/CalendarMap';
 import {
     mapCampaigns,
     filterCampaigns,
@@ -26,17 +25,35 @@ import {
 } from './campaignCalendar/utils';
 
 import { dateFormat, defaultOrder } from './campaignCalendar/constants';
-import { useGetCampaigns } from '../Campaigns/hooks/api/useGetCampaigns.ts';
+import {
+    CampaignType,
+    useGetCampaigns,
+} from '../Campaigns/hooks/api/useGetCampaigns';
 import MESSAGES from '../../constants/messages';
 import { Filters } from './campaignCalendar/Filters';
-import { ExportCsvModal } from './ExportCsvModal.tsx';
+import { ExportCsvModal } from './ExportCsvModal';
 import { userHasPermission } from '../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
-import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils.ts';
+import {
+    User,
+    useCurrentUser,
+} from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { CalendarParams } from './campaignCalendar/types';
 
+type Props = {
+    params: CalendarParams;
+};
+type Users = {
+    current: User;
+};
+type State = {
+    users: Users;
+};
 const pageWidth = 1980;
 
 const useStyles = makeStyles(theme => ({
-    ...commonStyles(theme),
+    containerFullHeightNoTabPadded: {
+        ...commonStyles(theme).containerFullHeightNoTabPadded,
+    },
     loadingSpinnerPdf: {
         backgroundColor: 'rgba(255,255,255,1)',
         zIndex: 2000,
@@ -50,30 +67,32 @@ const useStyles = makeStyles(theme => ({
     exportIcon: { marginRight: '8px' },
 }));
 
-const Calendar = props => {
-    const { params } = props;
+export const Calendar: FunctionComponent<Props> = ({ params }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const isLogged = useSelector(state => Boolean(state.users.current));
+    const isLogged = useSelector((state: State) =>
+        Boolean(state.users.current),
+    );
     const orders = params.order || defaultOrder;
-    const queryOptions = useMemo(() => {
-        return {
+    const queryOptions = useMemo(
+        () => ({
             order: orders,
             countries: params.countries,
             search: params.search,
             campaignType: params.campaignType,
-            campaignGroups: params.campaignGroups,
-            orgUnitGroups: params.orgUnitGroups,
+            campaignGroups: params.campaignGroups ? params.campaignGroups.split(',').map(Number) : undefined,
+            orgUnitGroups: params.orgUnitGroups ? params.orgUnitGroups.split(',').map(Number) : undefined,
             fieldset: 'calendar',
-        };
-    }, [
-        orders,
-        params.campaignGroups,
-        params.campaignType,
-        params.countries,
-        params.orgUnitGroups,
-        params.search,
-    ]);
+        }),
+        [
+            orders,
+            params.campaignGroups,
+            params.campaignType,
+            params.countries,
+            params.orgUnitGroups,
+            params.search,
+        ],
+    );
 
     const {
         data: campaigns = [],
@@ -231,6 +250,7 @@ const Calendar = props => {
                         ) && (
                             <Grid item>
                                 <Box mb={2} mt={2}>
+                                    {/* @ts-ignore */}
                                     <ExportCsvModal params={params} />
                                 </Box>
                             </Grid>
@@ -269,9 +289,3 @@ const Calendar = props => {
         </div>
     );
 };
-
-Calendar.propTypes = {
-    params: PropTypes.object.isRequired,
-};
-
-export { Calendar };

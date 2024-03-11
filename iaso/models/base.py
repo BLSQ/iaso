@@ -1112,6 +1112,13 @@ class Instance(models.Model):
         dict["form_descriptor"] = form_version.get_or_save_form_descriptor() if form_version is not None else None
         return dict
 
+    def get_creator_name(self, creator):
+        if creator is None:
+            return None
+        if creator.first_name is not None or creator.last_name is not None:
+            return f"{creator.username} ({creator.first_name} {creator.last_name})"
+        return creator.username
+
     def as_dict_with_parents(self):
         file_content = self.get_and_save_json_of_xml()
         return {
@@ -1124,7 +1131,7 @@ class Instance(models.Model):
             "form_id": self.form_id,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
-            "created_by": self.created_by.username if self.created_by else None,
+            "created_by": self.get_creator_name(self.created_by) if self.created_by else None,
             "org_unit": self.org_unit.as_dict_with_parents() if self.org_unit else None,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,

@@ -18,6 +18,8 @@ from iaso.api import query_params as query
 from iaso.models.microplanning import Planning, Team
 from iaso.models import Instance, InstanceLock, FormVersion
 from iaso.test import APITestCase
+import csv
+import io
 
 MOCK_DATE = datetime.datetime(2020, 2, 2, 2, 2, 2, tzinfo=pytz.utc)
 
@@ -920,6 +922,29 @@ class InstancesAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f"/api/instances/?format=csv", headers={"Content-Type": "text/csv"})
         self.assertFileResponse(response, 200, "text/csv; charset=utf-8")
+
+    def test_can_retrieve_submissions_list_in_csv_format(self):
+        """It tests the csv submissions export data"""
+
+        self.yoda.username = "yoda"
+        self.yoda.last_name = "Da"
+        self.yoda.first_name = "Yo"
+        self.yoda.save()
+
+        self.created_by = self.yoda
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(f"/api/instances/?form_ids=1&csv=true", headers={"Content-Type": "text/csv"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/csv")
+
+        response_csv = response.getvalue().decode("utf-8")
+
+        response_string = "".join(s for s in response_csv)
+        reader = csv.reader(io.StringIO(response_string), delimiter=",")
+        data = list(reader)
+        row_to_test = data[len(data) - 1]
+        created_by = row_to_test[10]
+        self.assertEqual(created_by, "yoda (Yo Da)")
 
     def test_user_restriction(self):
         full = self.create_user_with_profile(username="full", account=self.star_wars, permissions=["iaso_submissions"])

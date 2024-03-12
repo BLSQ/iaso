@@ -1,9 +1,10 @@
+/* eslint-disable camelcase */
 import { Moment } from 'moment';
 import { Campaign, MergedShape, Scope, Shape } from '../../../constants/types';
 import { CampaignType } from '../../Campaigns/hooks/api/useGetCampaigns';
 
 export type Query = {
-    queryKey: any[];
+    queryKey: (string | Record<string, string>)[];
     queryFn: CallableFunction;
     select: CallableFunction;
     enabled: boolean;
@@ -23,6 +24,7 @@ export type CalendarRound = {
     daysCount?: number;
     weeksCount?: number;
     vaccine_names: string;
+    scopes: Scope[];
 };
 
 export type MappedCampaign = {
@@ -42,7 +44,7 @@ export type MappedCampaign = {
 export type ShapeForCalendarMap = {
     color: string;
     campaign: MappedCampaign;
-    round?: any;
+    round?: CalendarRound;
     vaccine: string;
     shapes: Shape[];
 };
@@ -86,6 +88,11 @@ export type WeekHeader = {
     monday: Moment;
 };
 export type YearHeader = {
+    value: string;
+    daysCount: number;
+};
+export type MonthHeader = {
+    year: string;
     value: string;
     daysCount: number;
 };

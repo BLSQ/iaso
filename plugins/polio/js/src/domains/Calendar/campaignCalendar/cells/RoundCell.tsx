@@ -17,6 +17,7 @@ import { useStyles } from '../Styles';
 import { RoundPopperContext } from '../contexts/RoundPopperContext';
 import { polioVaccines } from '../../../../constants/virus';
 import { CalendarRound, MappedCampaign } from '../types';
+import { User } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 
 type Props = {
     colSpan: number;
@@ -46,7 +47,7 @@ export const RoundCell: FunctionComponent<Props> = ({
             }
             setAnchorEl(
                 isEqual(event.currentTarget, anchorEl)
-                    ? null
+                    ? undefined
                     : event.currentTarget,
             );
         },
@@ -54,12 +55,14 @@ export const RoundCell: FunctionComponent<Props> = ({
     );
 
     const handleClose = () => {
-        setAnchorEl(null);
+        setAnchorEl(undefined);
     };
 
     const defaultCellStyles = [classes.tableCell, classes.tableCellBordered];
     const open = self && isEqual(self, anchorEl);
-    const isLogged = useSelector((state: any) => Boolean(state.users.current)); // Consider defining a more specific type for state
+    const isLogged = useSelector((state: { users: { current: User } }) =>
+        Boolean(state.users.current),
+    );
     const vaccinesList = useMemo(() => {
         const list = campaign.separateScopesPerRound
             ? round.vaccine_names?.split(',') ?? []

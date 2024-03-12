@@ -11,6 +11,7 @@ import {
     CalendarData,
     CalendarRound,
     MappedCampaign,
+    MonthHeader,
     WeekHeader,
     YearHeader,
 } from './types';
@@ -93,7 +94,7 @@ const getCalendarData = (currentMonday: Moment): CalendarData => {
         .endOf('isoWeek');
     const headers: {
         years: YearHeader[];
-        months: any[]; // Replace 'any' with the correct type for months
+        months: MonthHeader[];
         weeks: WeekHeader[];
     } = {
         years: [],

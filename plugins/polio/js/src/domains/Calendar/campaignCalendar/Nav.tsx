@@ -26,12 +26,13 @@ import { dateFormat } from './constants';
 
 import { genUrl } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import MESSAGES from '../../../constants/messages';
-import moment from 'moment';
+import moment, { Moment} from 'moment';
+import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
 
 type Props =  {
-    currentMonday: moment.Moment;
-    router: any;
-    currentDate: moment.Moment;
+    currentMonday: Moment;
+    router: Router;
+    currentDate: Moment;
 }
 
 const Nav: FunctionComponent<Props> = ({ currentMonday, router, currentDate }) => {
@@ -39,7 +40,7 @@ const Nav: FunctionComponent<Props> = ({ currentMonday, router, currentDate }) =
     const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-    const urlForDate = (date: any) =>
+    const urlForDate = (date: Moment) =>
         genUrl(router, {
             currentDate: date.format(dateFormat),
         });
@@ -51,8 +52,9 @@ const Nav: FunctionComponent<Props> = ({ currentMonday, router, currentDate }) =
             setAnchorEl(null);
         }
     };
-    const handleDateChange = (newDate: any) => {
+    const handleDateChange = (newDate: string) => {
         handleClickDate();
+        console.log('newDate', newDate)
         const url = genUrl(router, {
             currentDate: newDate,
         });

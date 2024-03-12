@@ -13,7 +13,7 @@ import { replace } from 'react-router-redux';
 import { Grid, Button, Box, useMediaQuery, useTheme } from '@mui/material';
 import FiltersIcon from '@mui/icons-material/FilterList';
 import { withRouter } from 'react-router';
-import { useSafeIntl } from 'bluesquare-components';
+import { IntlMessage, useSafeIntl } from 'bluesquare-components';
 import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import DatesRange from '../../../../../../../hat/assets/js/apps/Iaso/components/filters/DatesRange';
@@ -38,7 +38,7 @@ type Props = {
     showTest: boolean;
 };
 
-const campaignTypeOptions = (formatMessage: any, showTest = false) => {
+const campaignTypeOptions = (formatMessage: IntlMessage, showTest = false) => {
     const options = [
         { label: formatMessage(MESSAGES.all), value: 'all' },
         { label: formatMessage(MESSAGES.preventiveShort), value: 'preventive' },

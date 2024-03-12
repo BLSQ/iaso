@@ -1,18 +1,12 @@
 import React, { FunctionComponent } from 'react';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    Accordion,
-    AccordionSummary,
-    AccordionDetails,
-    TableRow,
-} from '@mui/material';
+import { Table, TableBody, TableCell, TableRow } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { NestedGroup } from '../types';
 import { NewOrgUnitField } from '../hooks/useNewFields';
 import MESSAGES from '../messages';
+import { Accordion } from '../../../../components/Accordion/Accordion';
+import { AccordionSummary } from '../../../../components/Accordion/AccordionSummary';
+import { AccordionDetails } from '../../../../components/Accordion/AccordionDetails';
 
 type Props = {
     groups: NestedGroup[];
@@ -36,9 +30,8 @@ export const ReviewOrgUnitGroupChanges: FunctionComponent<Props> = ({
     return (
         <Accordion>
             <AccordionSummary
-                expandIcon={<ExpandMoreIcon />}
-                aria-controls="panel1-content"
-                id="panel1-header"
+                aria-controls="change-request"
+                id="change-request"
             >
                 {formatMessage(MESSAGES.viewDetails)}
             </AccordionSummary>

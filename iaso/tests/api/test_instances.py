@@ -930,15 +930,18 @@ class InstancesAPITestCase(APITestCase):
         self.yoda.last_name = "Da"
         self.yoda.first_name = "Yo"
         self.yoda.save()
+        self.form_id = self.form_1.id
 
         self.created_by = self.yoda
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(f"/api/instances/?form_ids=1&csv=true", headers={"Content-Type": "text/csv"})
+
+        response = self.client.get(
+            f"/api/instances/?form_ids={self.form_1.id}&csv=true", headers={"Content-Type": "text/csv"}
+        )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "text/csv")
 
         response_csv = response.getvalue().decode("utf-8")
-
         response_string = "".join(s for s in response_csv)
         reader = csv.reader(io.StringIO(response_string), delimiter=",")
         data = list(reader)

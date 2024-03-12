@@ -77,8 +77,6 @@ def export_mobile_app_setup_for_user(
         the_task.report_progress_and_stop_if_killed(progress_value=the_task.progress_value + 1)
 
     s3_object_name = _compress_and_upload_to_s3(tmp_dir, export_name, password)
-    print("s3_object_name ")
-    print(s3_object_name)
 
     the_task.report_success_with_result(
         message=f"Mobile app setup zipfile was created for user {user.username} and project {project.name}.",
@@ -221,19 +219,13 @@ def _download_form_versions(iaso_client, tmp_dir, form_versions):
 
     os.makedirs(os.path.join(tmp_dir, "forms"))
     for form_version in form_versions:
-        url = form_version["file"]
-        filename = _extract_filename_from_url(url)
-
-        logger.info(f"\tDOWNLOAD {url}")
-        response = None
-        # S3 urls contain a signature and don't work with additional auth headers
-        if "s3.amazonaws" in url:
-            response = requests.get(url)
-        else:
-            response = requests.get(url, headers=iaso_client.headers)
-
-        with open(os.path.join(tmp_dir, "forms", filename), mode="wb") as f:
-            f.write(response.content)
+        _download_and_save_file(
+            iaso_client,
+            tmp_dir,
+            url=form_version["file"],
+            non_s3_url=form_version["file"],
+            folder_name="forms",
+        )
 
 
 def _download_reports(iaso_client, tmp_dir, reports):
@@ -242,17 +234,28 @@ def _download_reports(iaso_client, tmp_dir, reports):
 
     os.makedirs(os.path.join(tmp_dir, "reports"))
     for report in reports:
-        url = report["url"]
-        logger.info(f"\tDOWNLOAD {url}")
-        # S3 urls contain a signature and don't work with additional auth headers
-        if "s3.amazonaws" in url:
-            response = requests.get(url)
-        else:
-            response = requests.get(SERVER + url, headers=iaso_client.headers)
+        _download_and_save_file(
+            iaso_client,
+            tmp_dir,
+            url=report["url"],
+            non_s3_url=SERVER + report["url"],
+            folder_name="reports",
+        )
 
-        filename = _extract_filename_from_url(url)
-        with open(os.path.join(tmp_dir, "reports", filename), mode="wb") as f:
-            f.write(response.content)
+
+def _download_and_save_file(iaso_client, tmp_dir, folder_name, url, non_s3_url):
+    filename = _extract_filename_from_url(url)
+    response = None
+    # S3 urls contain a signature and don't work with additional auth headers
+    if "s3.amazonaws" in url:
+        logger.info(f"\tDOWNLOAD {url}")
+        response = requests.get(url)
+    else:
+        logger.info(f"\tDOWNLOAD {non_s3_url}")
+        response = requests.get(non_s3_url, headers=iaso_client.headers)
+
+    with open(os.path.join(tmp_dir, folder_name, filename), mode="wb") as f:
+        f.write(response.content)
 
 
 def _compress_and_upload_to_s3(tmp_dir, export_name, password):

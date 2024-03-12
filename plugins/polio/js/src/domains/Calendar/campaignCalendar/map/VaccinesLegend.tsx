@@ -8,7 +8,7 @@ import { polioVaccines } from '../../../../constants/virus';
 
 type Vaccine = typeof polioVaccines[number];
 
-const VaccinesLegend: FunctionComponent = () => {
+export const VaccinesLegend: FunctionComponent = () => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     return (
@@ -50,5 +50,3 @@ const VaccinesLegend: FunctionComponent = () => {
         </Paper>
     );
 };
-
-export { VaccinesLegend };

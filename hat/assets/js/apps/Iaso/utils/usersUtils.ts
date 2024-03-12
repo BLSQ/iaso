@@ -12,6 +12,8 @@ export type Profile = {
     language?: null | undefined | string;
     user_id: number;
     color?: string;
+    phone_number?: string | null;
+    country_code?: string | null;
 };
 
 export type DataSource = {

@@ -6,14 +6,16 @@ import {
     Table,
 } from 'bluesquare-components';
 import SettingsIcon from '@mui/icons-material/Settings';
-import { Box, Button, Divider, Grid, IconButton } from '@mui/material';
+import { Box, Button, Paper, Grid, IconButton, Divider } from '@mui/material';
 import moment from 'moment';
 import MESSAGES from '../messages';
 import InputComponent from '../../../components/forms/InputComponent';
 import { styles } from './shared';
-import { usePotentialPaymentColumns } from '../config/usePotentialPaymentColumns';
+import { usePaymentColumns } from '../config/usePotentialPaymentColumns';
 import getDisplayName from '../../../utils/usersUtils';
 import { useSavePaymentLot } from '../hooks/requests/useSavePaymentLot';
+import { Payment } from '../types';
+import { useTableSelection } from '../../../utils/table';
 
 type CancelButtonProps = {
     closeDialog: () => void;
@@ -45,7 +47,13 @@ export const PaymentLotEditionDialog: FunctionComponent<Props> = ({
     const [comment, setComment] = useState<string | null>(
         paymentLot?.comment ?? null,
     );
-    const columns = usePotentialPaymentColumns();
+    const {
+        selection,
+        handleTableSelection,
+        handleSelectAll,
+        handleUnselectAll,
+    } = useTableSelection<Payment>();
+    const columns = usePaymentColumns({ potential: false });
     const { mutateAsync: savePaymentLot } = useSavePaymentLot('edit');
     const handleSaveName = useCallback(
         () => savePaymentLot({ id: paymentLot.id, name }),
@@ -108,7 +116,6 @@ export const PaymentLotEditionDialog: FunctionComponent<Props> = ({
                     <Grid item xs={3}>
                         <Box my={2} ml={2} mt={3}>
                             <Button
-                                // className={buttonStyles.button}
                                 color="primary"
                                 variant="contained"
                                 size="medium"
@@ -130,20 +137,67 @@ export const PaymentLotEditionDialog: FunctionComponent<Props> = ({
                     </Box>
                 </Grid>
             </Grid>
-            <Box sx={styles.table}>
+            <Box sx={styles.table} mt={2}>
                 <Divider />
                 {/* @ts-ignore */}
-                <Table
-                    countOnTop={false}
-                    elevation={0}
-                    marginTop={false}
-                    data={paymentLot?.payments || []}
-                    pages={1}
-                    defaultSorted={[{ id: 'user__last_name', desc: false }]}
-                    columns={columns}
-                    count={paymentLot?.payments?.length ?? 0}
-                    showPagination={false}
-                />
+                <Paper elevation={0}>
+                    <Box my={2} mr={2}>
+                        <Grid container spacing={2} justifyContent="flex-end">
+                            <Grid item>
+                                <Box>
+                                    <Button
+                                        variant="outlined"
+                                        color="primary"
+                                        onClick={() => {
+                                            handleSelectAll();
+                                        }}
+                                    >
+                                        Select All
+                                    </Button>
+                                </Box>
+                            </Grid>
+                            <Grid item>
+                                {/* <Box> */}
+                                <Button
+                                    variant="outlined"
+                                    color="primary"
+                                    onClick={() => {
+                                        handleUnselectAll();
+                                    }}
+                                >
+                                    Unselect All
+                                </Button>
+                                {/* </Box> */}
+                            </Grid>
+                            <Grid item>
+                                {/* <Box mr={2}> */}
+                                <Button variant="contained" color="primary">
+                                    Edit selected
+                                </Button>
+                                {/* </Box> */}
+                            </Grid>
+                        </Grid>
+                    </Box>
+                    <Divider />
+                    <Table
+                        countOnTop={false}
+                        elevation={0}
+                        marginTop={false}
+                        data={paymentLot?.payments || []}
+                        pages={1}
+                        defaultSorted={[{ id: 'user__last_name', desc: false }]}
+                        columns={columns}
+                        count={paymentLot?.payments?.length ?? 0}
+                        multiSelect
+                        showPagination={false}
+                        selection={selection}
+                        extraProps={{
+                            columns,
+                        }}
+                        // @ts-ignore
+                        setTableSelection={handleTableSelection}
+                    />
+                </Paper>
             </Box>
         </SimpleModal>
     );

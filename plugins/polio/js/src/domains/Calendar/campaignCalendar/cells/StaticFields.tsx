@@ -13,7 +13,7 @@ type Props = {
     isPdf: boolean;
 };
 
-const StaticFieldsCells: FunctionComponent<Props> = ({ campaign, isPdf }) => {
+export const StaticFieldsCells: FunctionComponent<Props> = ({ campaign, isPdf }) => {
     const classes = useStyles();
     const defaultCellStyles = [classes.tableCell, classes.tableCellBordered];
     const fields = useStaticFields(isPdf);
@@ -39,5 +39,3 @@ const StaticFieldsCells: FunctionComponent<Props> = ({ campaign, isPdf }) => {
         </>
     );
 };
-
-export { StaticFieldsCells };

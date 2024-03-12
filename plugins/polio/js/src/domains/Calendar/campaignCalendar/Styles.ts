@@ -23,6 +23,7 @@ export const useStyles = makeStyles(theme => {
         tableRow: {
             height: cellHeight,
             '& th:last-child, & td:last-child': {
+                // @ts-ignore
                 borderRight: `1px solid ${theme.palette.ligthGray.border}`,
             },
         },
@@ -34,6 +35,7 @@ export const useStyles = makeStyles(theme => {
             padding: '0 !important',
             margin: '0 !important',
             position: 'relative',
+            // @ts-ignore
             borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
         },
         tableCellHead: {
@@ -41,6 +43,7 @@ export const useStyles = makeStyles(theme => {
             padding: '0 !important',
             margin: '0 !important',
             position: 'sticky',
+            // @ts-ignore
             borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
         },
         tableCellTopBordered: {
@@ -48,6 +51,7 @@ export const useStyles = makeStyles(theme => {
             padding: '0 !important',
             margin: '0 !important',
             position: 'sticky',
+            // @ts-ignore
             borderTop: `1px solid ${theme.palette.ligthGray.border}`,
         },
         tableCellTitle: {
@@ -55,7 +59,9 @@ export const useStyles = makeStyles(theme => {
             margin: '0 !important',
             position: 'sticky',
             height: cellHeight,
+            // @ts-ignore
             borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
+            // @ts-ignore
             borderTop: `1px solid ${theme.palette.ligthGray.border}`,
         },
         tableCellTitleSmall: {
@@ -66,6 +72,7 @@ export const useStyles = makeStyles(theme => {
             backgroundColor: theme.palette.common.white,
         },
         tableCellBordered: {
+            // @ts-ignore
             borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
         },
         tableCellDashed: {
@@ -81,6 +88,7 @@ export const useStyles = makeStyles(theme => {
         tableCellHidden: {
             height: 0,
             border: `1px solid #fafafa`,
+            // @ts-ignore
             borderBottom: `1px solid ${theme.palette.ligthGray.border}`,
         },
         round: {
@@ -185,6 +193,7 @@ export const useStyles = makeStyles(theme => {
             height: theme.spacing(3),
             width: theme.spacing(3),
             opacity: vaccineOpacity,
+            // @ts-ignore
             border: `2px solid ${theme.palette.ligthGray.border}`,
         },
         mapLegendLabel: {

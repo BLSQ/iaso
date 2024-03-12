@@ -2,15 +2,15 @@ import React, { ReactElement } from 'react';
 import moment from 'moment';
 
 import { EditCampaignCell } from './cells/EditCampaignCell';
-import { Campaign } from '../../../constants/types';
 import { Field } from '../types';
+import { MappedCampaign } from './types';
 
 export const staticFields: Field[] = [
     {
         width: 16,
         key: 'edit',
         hideHeadTitle: true,
-        render: (campaign: Campaign): ReactElement => (
+        render: (campaign: MappedCampaign): ReactElement => (
             <EditCampaignCell campaign={campaign} />
         ),
         exportHide: true,
@@ -26,7 +26,7 @@ export const staticFields: Field[] = [
     {
         key: 'r1StartDate',
         sortKey: 'first_round_started_at',
-        render: (campaign: Campaign): string => {
+        render: (campaign: MappedCampaign): string => {
             const roundOne = campaign.rounds?.find(round => round.number === 1);
             if (roundOne?.started_at) {
                 return moment(roundOne.started_at).format('L');

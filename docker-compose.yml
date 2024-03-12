@@ -75,6 +75,7 @@ services:
       WFP_AUTH_CLIENT_ID:
       WFP_AUTH_ACCOUNT:
       WFP_EMAIL_RECIPIENTS_NEW_ACCOUNT:
+      DISABLE_PASSWORD_LOGINS:
       SERVER_URL:
     # Limit logging in dev to not overflow terminal
     logging: &iaso_logging

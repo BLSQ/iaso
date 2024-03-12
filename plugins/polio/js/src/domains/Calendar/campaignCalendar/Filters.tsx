@@ -1,29 +1,44 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, {
+    useState,
+    useEffect,
+    useCallback,
+    useMemo,
+    FunctionComponent,
+} from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useDispatch } from 'react-redux';
-import PropTypes from 'prop-types';
 import { replace } from 'react-router-redux';
 
 import { Grid, Button, Box, useMediaQuery, useTheme } from '@mui/material';
 import FiltersIcon from '@mui/icons-material/FilterList';
 import { withRouter } from 'react-router';
 import { useSafeIntl } from 'bluesquare-components';
-import InputComponent from 'Iaso/components/forms/InputComponent.tsx';
-import DatesRange from 'Iaso/components/filters/DatesRange';
-import { useGetGroupDropdown } from 'Iaso/domains/orgUnits/hooks/requests/useGetGroups.ts';
+import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
+import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
+import DatesRange from '../../../../../../../hat/assets/js/apps/Iaso/components/filters/DatesRange';
+import { useGetGroupDropdown } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
 import MESSAGES from '../../../constants/messages';
 import { useGetCountries } from '../../../hooks/useGetCountries';
-import { useGetGroupedCampaigns } from '../../GroupedCampaigns/hooks/useGetGroupedCampaigns.ts';
+import { useGetGroupedCampaigns } from '../../GroupedCampaigns/hooks/useGetGroupedCampaigns';
 
-import { genUrl } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing.ts';
+import { genUrl } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import {
     dateApiToDateRangePicker,
     dateRangePickerToDateApi,
-} from '../../../../../../../hat/assets/js/apps/Iaso/utils/dates.ts';
-import { appId } from '../../../constants/app.ts';
+} from '../../../../../../../hat/assets/js/apps/Iaso/utils/dates';
+import { appId } from '../../../constants/app';
+import { CalendarParams } from './types';
 
-const campaignTypeOptions = (formatMessage, showTest = false) => {
+type Props = {
+    router: Router & { params: CalendarParams };
+    disableDates: boolean;
+    disableOnlyDeleted: boolean;
+    isCalendar: boolean;
+    showTest: boolean;
+};
+
+const campaignTypeOptions = (formatMessage: any, showTest = false) => {
     const options = [
         { label: formatMessage(MESSAGES.all), value: 'all' },
         { label: formatMessage(MESSAGES.preventiveShort), value: 'preventive' },
@@ -38,12 +53,12 @@ const campaignTypeOptions = (formatMessage, showTest = false) => {
     return options;
 };
 
-const Filters = ({
+const Filters: FunctionComponent<Props> = ({
     router,
-    disableDates,
-    disableOnlyDeleted,
-    isCalendar,
-    showTest,
+    disableDates = false,
+    disableOnlyDeleted = false,
+    isCalendar = false,
+    showTest = false,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { params } = router;
@@ -59,7 +74,7 @@ const Filters = ({
     const [roundStartFrom, setRoundStartFrom] = useState(
         dateApiToDateRangePicker(params.roundStartFrom),
     );
-    const [roundStartTo, set1StartTo] = useState(
+    const [roundStartTo, setRoundStartTo] = useState(
         dateApiToDateRangePicker(params.roundStartTo),
     );
 
@@ -78,16 +93,20 @@ const Filters = ({
         if (filtersUpdated) {
             setFiltersUpdated(false);
             const urlParams = {
-                countries,
+                countries: countries?.join(','),
                 search: search && search !== '' ? search : undefined,
-                roundStartFrom: dateRangePickerToDateApi(roundStartFrom),
-                roundStartTo: dateRangePickerToDateApi(roundStartTo),
+                roundStartFrom: dateRangePickerToDateApi(
+                    roundStartFrom ?? undefined,
+                ),
+                roundStartTo: dateRangePickerToDateApi(
+                    roundStartTo ?? undefined,
+                ),
                 page: null,
                 campaignType,
-                showOnlyDeleted: showOnlyDeleted || undefined,
+                showOnlyDeleted: showOnlyDeleted ? 'true' : undefined,
                 campaignGroups,
                 orgUnitGroups,
-                filterLaunched: !!filtersFilled,
+                filterLaunched: filtersFilled ? 'true' : 'false',
             };
             const url = genUrl(router, urlParams);
             dispatch(replace(url));
@@ -108,7 +127,7 @@ const Filters = ({
     ]);
     const { data, isFetching: isFetchingCountries } = useGetCountries();
     const { data: groupedCampaigns, isFetching: isFetchingGroupedGroups } =
-        useGetGroupedCampaigns();
+        useGetGroupedCampaigns(params);
     // Pass the appId to have it works in the embedded calendar where the user is not connected
     const { data: groupedOrgUnits, isFetching: isFetchingGroupedOrgUnits } =
         useGetGroupDropdown({ blockOfCountries: 'True', appId });
@@ -248,13 +267,13 @@ const Filters = ({
                                     setRoundStartFrom(value);
                                 }
                                 if (key === 'dateTo') {
-                                    set1StartTo(value);
+                                    setRoundStartTo(value);
                                 }
                             }}
                             labelFrom={MESSAGES.RoundStartFrom}
                             labelTo={MESSAGES.RoundStartTo}
-                            dateFrom={roundStartFrom}
-                            dateTo={roundStartTo}
+                            dateFrom={roundStartFrom || undefined}
+                            dateTo={roundStartTo || undefined}
                         />
                     </Grid>
                 )}
@@ -282,23 +301,6 @@ const Filters = ({
             </Grid>
         </>
     );
-};
-
-Filters.defaultProps = {
-    baseUrl: '',
-    disableDates: false,
-    disableOnlyDeleted: false,
-    isCalendar: false,
-    showTest: false,
-};
-
-Filters.propTypes = {
-    baseUrl: PropTypes.string,
-    router: PropTypes.object.isRequired,
-    disableDates: PropTypes.bool,
-    disableOnlyDeleted: PropTypes.bool,
-    isCalendar: PropTypes.bool,
-    showTest: PropTypes.bool,
 };
 
 const wrappedFilters = withRouter(Filters);

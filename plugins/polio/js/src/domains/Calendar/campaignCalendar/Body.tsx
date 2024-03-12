@@ -7,10 +7,10 @@ import { getCells } from './utils';
 import { StaticFieldsCells } from './cells/StaticFields';
 import { PlaceholderRow } from './PlaceholderRow';
 import { RoundPopperContextProvider } from './contexts/RoundPopperContext';
-import { Campaign, CalendarData } from './types';
+import { CalendarData, MappedCampaign } from './types';
 
 type BodyProps = {
-    campaigns: Campaign[];
+    campaigns: MappedCampaign[];
     currentWeekIndex: number;
     firstMonday: CalendarData['firstMonday'];
     lastSunday: CalendarData['lastSunday'];
@@ -38,10 +38,7 @@ export const Body: FunctionComponent<BodyProps> = ({
                         className={classes.tableRow}
                         key={`row-${campaign.id}`}
                     >
-                        <StaticFieldsCells
-                            campaign={campaign}
-                            isPdf={isPdf}
-                        />
+                        <StaticFieldsCells campaign={campaign} isPdf={isPdf} />
                         {getCells(
                             campaign,
                             currentWeekIndex,

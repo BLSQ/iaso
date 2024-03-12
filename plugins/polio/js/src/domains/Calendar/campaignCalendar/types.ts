@@ -1,11 +1,5 @@
 import { Moment } from 'moment';
-import {
-    Campaign,
-    MergedShape,
-    Round,
-    Scope,
-    Shape,
-} from '../../../constants/types';
+import { Campaign, MergedShape, Scope, Shape } from '../../../constants/types';
 import { CampaignType } from '../../Campaigns/hooks/api/useGetCampaigns';
 
 export type Query = {
@@ -19,10 +13,16 @@ export type MergedShapeWithCacheDate = MergedShape & { cache: number };
 
 export type MergedShapeWithColor = MergedShapeWithCacheDate & { color: string };
 
-export type CalendarRound = Round & {
-    weeksCount: number;
-    start: Moment;
-    end: Moment;
+export type CalendarRound = {
+    end?: Moment;
+    number: number;
+    start?: Moment;
+    id?: number;
+    started_at?: string;
+    ended_at?: string;
+    daysCount?: number;
+    weeksCount?: number;
+    vaccine_names: string;
 };
 
 export type MappedCampaign = {
@@ -31,7 +31,7 @@ export type MappedCampaign = {
     rounds: CalendarRound[];
     scopes: Scope[];
     separateScopesPerRound: boolean;
-    color: string;
+    color?: string;
     country: string;
     // eslint-disable-next-line camelcase
     country_id: number;

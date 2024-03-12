@@ -1,4 +1,5 @@
-import React, {FunctionComponent} from 'react';
+import React, { FunctionComponent } from 'react';
+import { Moment } from 'moment';
 import { LoadingSpinner } from 'bluesquare-components';
 
 import { Table, TableContainer, Box } from '@mui/material';
@@ -8,19 +9,18 @@ import { useStyles } from './Styles';
 import { Head } from './Head';
 import { Body } from './Body';
 import { Nav } from './Nav';
-import { Campaign } from '../../../constants/types';
-import { CalendarData, CalendarParams } from './types';
+import { CalendarData, CalendarParams, MappedCampaign } from './types';
 
 type Props = {
-    campaigns: Campaign[];
+    campaigns: MappedCampaign[];
     calendarData: CalendarData;
-    currentMonday: moment.Moment;
+    currentMonday: Moment;
     loadingCampaigns: boolean;
     params: CalendarParams;
     orders: string;
-    currentDate: moment.Moment;
+    currentDate: Moment;
     isPdf?: boolean;
-}
+};
 
 const CampaignsCalendar: FunctionComponent<Props> = ({
     campaigns,

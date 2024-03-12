@@ -1,27 +1,25 @@
 /* eslint-disable react/no-array-index-key */
-import moment from 'moment';
-import React from 'react';
+import moment, { Moment } from 'moment';
+import React, { ReactElement } from 'react';
 import { colsCount, dateFormat } from './constants';
 
 import { RoundCell } from './cells/RoundCell';
 import { CampaignDurationCell } from './cells/CampaignDuration';
 import { EmptyCell } from './cells/Empty';
 import { Campaign } from '../../../constants/types';
-import { CalendarData, WeekHeader, YearHeader } from './types';
+import {
+    CalendarData,
+    CalendarRound,
+    MappedCampaign,
+    WeekHeader,
+    YearHeader,
+} from './types';
 
-type Round = {
-    end: moment.Moment;
-    number: number;
-    start: moment.Moment;
-    id?: string;
-    started_at?: string;
-    ended_at?: string;
-    daysCount?: number;
-    weeksCount?: number;
-};
-
-const getEmptyCellsData = (endRoundDate: moment.Moment, lastSunday: moment.Moment) => {
-    let sunday: moment.Moment;
+const getEmptyCellsData = (
+    endRoundDate: Moment,
+    lastSunday: Moment,
+): { extraDays: number; fullWeeks: number } => {
+    let sunday: Moment;
     if (endRoundDate.weekday() !== 7) {
         sunday = endRoundDate.clone().endOf('isoWeek');
     } else {
@@ -43,10 +41,10 @@ const getEmptyCells = ({
     currentWeekIndex,
     id,
 }: {
-    cells: JSX.Element[];
+    cells: ReactElement[];
     extraDays: number;
     fullWeeks: number;
-    round: Round;
+    round: CalendarRound;
     currentWeekIndex: number;
     id: string;
 }) => {
@@ -81,9 +79,7 @@ const getEmptyCells = ({
     return cells;
 };
 
-
-
-const getCalendarData = (currentMonday: moment.Moment): CalendarData => {
+const getCalendarData = (currentMonday: Moment): CalendarData => {
     const todayMonday = moment().startOf('isoWeek');
     const currentWeek = {
         year: todayMonday.format('YYYY'),
@@ -96,14 +92,14 @@ const getCalendarData = (currentMonday: moment.Moment): CalendarData => {
         .add(colsCount - 4, 'week')
         .endOf('isoWeek');
     const headers: {
-            years: YearHeader[];
-            months: any[]; // Replace 'any' with the correct type for months
-            weeks: WeekHeader[];
-        } = {
-            years: [],
-            months: [],
-            weeks: [],
-        };
+        years: YearHeader[];
+        months: any[]; // Replace 'any' with the correct type for months
+        weeks: WeekHeader[];
+    } = {
+        years: [],
+        months: [],
+        weeks: [],
+    };
     let currentWeekIndex = -1;
     Array(colsCount)
         .fill(null)
@@ -155,12 +151,12 @@ const getCalendarData = (currentMonday: moment.Moment): CalendarData => {
     };
 };
 
-const isDateInRange = (date: moment.Moment, firstMonday: moment.Moment, lastSunday: moment.Moment) =>
+const isDateInRange = (date: Moment, firstMonday: Moment, lastSunday: Moment) =>
     Boolean(date) &&
     date.isSameOrBefore(lastSunday, 'day') &&
     date.isSameOrAfter(firstMonday, 'day');
 
-const getLastRound = (rounds: Round[]) => {
+const getLastRound = (rounds: CalendarRound[]): CalendarRound => {
     const lastRound = rounds[rounds.length - 1];
     if (lastRound?.started_at && lastRound?.ended_at) {
         return lastRound;
@@ -174,7 +170,11 @@ const getLastRound = (rounds: Round[]) => {
     return lastRound;
 };
 
-const filterCampaigns = (allCampaigns: Campaign[], firstMonday: moment.Moment, lastSunday: moment.Moment) => {
+const filterCampaigns = (
+    allCampaigns: MappedCampaign[],
+    firstMonday: Moment,
+    lastSunday: Moment,
+): MappedCampaign[] => {
     return allCampaigns.filter(campaign => {
         const { rounds } = campaign;
         const lastRound = getLastRound(rounds);
@@ -187,27 +187,30 @@ const filterCampaigns = (allCampaigns: Campaign[], firstMonday: moment.Moment, l
                 round =>
                     round.started_at &&
                     round.ended_at &&
+                    round.start &&
+                    round.end &&
                     (isDateInRange(round.start, firstMonday, lastSunday) ||
                         isDateInRange(round.end, firstMonday, lastSunday)),
             ).length > 0;
 
-        const isLastRoundVisible = isDateInRange(
-            endCampaignDate,
-            firstMonday,
-            lastSunday,
-        );
+        const isLastRoundVisible = endCampaignDate
+            ? isDateInRange(endCampaignDate, firstMonday, lastSunday)
+            : false;
 
         return isRoundVisible || isLastRoundVisible;
     });
 };
 
-const mapCampaigns = (allCampaigns: Campaign[]) => {
+const mapCampaigns = (allCampaigns: Campaign[]): MappedCampaign[] => {
     return allCampaigns.map(c => {
         const rounds = c.rounds.map((round, index) => {
             const nextRound = c.rounds[index + 1];
-            const start =
-                round.started_at && moment(round.started_at, dateFormat);
-            const end = round.ended_at && moment(round.ended_at, dateFormat);
+            const start = round.started_at
+                ? moment(round.started_at, dateFormat)
+                : undefined;
+            const end = round.ended_at
+                ? moment(round.ended_at, dateFormat)
+                : undefined;
             const hasNextRound = nextRound && end && nextRound.started_at;
             const weeksCount = hasNextRound
                 ? moment(nextRound.started_at, dateFormat).diff(end, 'weeks')
@@ -255,19 +258,19 @@ const addCellsBeforeRound = ({
     startInRange,
 }: {
     id: string;
-    cells: JSX.Element[];
+    cells: ReactElement[];
     currentWeekIndex: number;
-    firstMonday: moment.Moment;
-    lastSunday: moment.Moment;
-    round: Round;
+    firstMonday: Moment;
+    lastSunday: Moment;
+    round: CalendarRound;
     index: number;
-    previousRound?: Round;
+    previousRound?: CalendarRound;
     startInRange: boolean;
 }) => {
     const result = [...cells];
     if (index === 0) {
         // if first round is not starting on the first cell, populate with empty cell
-        if (startInRange) {
+        if (startInRange && round.start) {
             if (!round.start.isSame(firstMonday, 'day')) {
                 const monday = round.start.clone().startOf('isoWeek');
                 const extraDays = round.start.clone().diff(monday, 'days');
@@ -302,14 +305,15 @@ const addCellsBeforeRound = ({
         // if previous round end date is not in range, calculate number of cells to firstMonday and draw campaign duration cells
         previousRound?.end &&
         !isDateInRange(previousRound.end, firstMonday, lastSunday) &&
-        startInRange
+        startInRange &&
+        round.start
     ) {
         const campaignDays = round.start.diff(firstMonday, 'days');
         result.push(
             <CampaignDurationCell
                 key={`campaign-duration-${id}-round-${round.id}`}
                 colSpan={campaignDays}
-                weeksCount={previousRound.weeksCount}
+                weeksCount={previousRound.weeksCount || 0}
             />,
         );
     }
@@ -325,15 +329,15 @@ const addRoundCell = ({
     startInRange,
     endInRange,
 }: {
-    campaign: Campaign;
-    cells: JSX.Element[];
-    round: Round;
-    firstMonday: moment.Moment;
-    lastSunday: moment.Moment;
+    campaign: MappedCampaign;
+    cells: ReactElement[];
+    round: CalendarRound;
+    firstMonday: Moment;
+    lastSunday: Moment;
     startInRange: boolean;
     endInRange: boolean;
 }) => {
-    let colSpan: number;
+    let colSpan = 1;
     const { id } = campaign;
     const result = [...cells];
 
@@ -343,15 +347,17 @@ const addRoundCell = ({
 
     const onlyEndInRange = !startInRange && endInRange;
 
-    if (startAndEndInRange) {
-        // if both start and end date are in range use diff between dates for length of cells
-        colSpan = round.end.clone().add(1, 'day').diff(round.start, 'days');
-        // else if start is not in range calculate diff with firstmonday
-    } else if (onlyEndInRange) {
-        colSpan = round.end.clone().add(1, 'day').diff(firstMonday, 'days');
-        // else if end is not in range calculate diff with lastSunday
-    } else if (onlyStartInRange) {
-        colSpan = round.end.clone().add(2, 'day').diff(lastSunday, 'days');
+    if (round.end) {
+        if (startAndEndInRange) {
+            // if both start and end date are in range use diff between dates for length of cells
+            colSpan = round.end.clone().add(1, 'day').diff(round.start, 'days');
+            // else if start is not in range calculate diff with firstmonday
+        } else if (onlyEndInRange) {
+            colSpan = round.end.clone().add(1, 'day').diff(firstMonday, 'days');
+            // else if end is not in range calculate diff with lastSunday
+        } else if (onlyStartInRange) {
+            colSpan = round.end.clone().add(2, 'day').diff(lastSunday, 'days');
+        }
     }
     result.push(
         <RoundCell
@@ -377,25 +383,26 @@ const addBufferCell = ({
     index,
 }: {
     id: string;
-    round: Round;
-    cells: JSX.Element[];
+    round: CalendarRound;
+    cells: ReactElement[];
     dateUntilNextRoundInRange: boolean;
-    lastSunday: moment.Moment;
+    lastSunday: Moment;
     endInRange: boolean;
-    dateUntilNextRound: moment.Moment;
-    firstMonday: moment.Moment;
-    rounds: Round[];
+    dateUntilNextRound?: Moment;
+    firstMonday: Moment;
+    rounds: CalendarRound[];
     index: number;
 }) => {
     // draw campaign duration cells
     const result = [...cells];
-    let roundInterval = round.daysCount > 0 ? round.daysCount - 1 : 0;
+    let roundInterval =
+        round.daysCount && round.daysCount > 0 ? round.daysCount - 1 : 0;
     // if campaign days count is not in range calculate diff with last sunday campaign
     if (!dateUntilNextRoundInRange) {
         roundInterval = lastSunday.clone().diff(round.end, 'days');
     }
     // if last round end date is not in range calculate diff with first monday and campaign days
-    if (!endInRange && dateUntilNextRoundInRange) {
+    if (!endInRange && dateUntilNextRoundInRange && dateUntilNextRound) {
         roundInterval = dateUntilNextRound
             .clone()
             .add(1, 'day')
@@ -410,7 +417,7 @@ const addBufferCell = ({
             <CampaignDurationCell
                 key={`campaign-duration-${id}-round-${round.number}`}
                 colSpan={roundInterval}
-                weeksCount={round.weeksCount}
+                weeksCount={round.weeksCount || 0}
             />,
         );
     }
@@ -425,11 +432,11 @@ const addRemainingEmptyCells = ({
     campaign,
     currentWeekIndex,
 }: {
-    cells: JSX.Element[];
-    dateUntilNextRound: moment.Moment;
-    lastSunday: moment.Moment;
-    round: Round;
-    campaign: Campaign;
+    cells: ReactElement[];
+    dateUntilNextRound: Moment;
+    lastSunday: Moment;
+    round: CalendarRound;
+    campaign: MappedCampaign;
     currentWeekIndex: number;
 }) => {
     const { id } = campaign;
@@ -446,28 +453,31 @@ const addRemainingEmptyCells = ({
     });
 };
 
-const getCells = (campaign: Campaign, currentWeekIndex: number, firstMonday: moment.Moment, lastSunday: moment.Moment) => {
-    let cells: JSX.Element[] = [];
+const getCells = (
+    campaign: MappedCampaign,
+    currentWeekIndex: number,
+    firstMonday: Moment,
+    lastSunday: Moment,
+): ReactElement[] => {
+    let cells: ReactElement[] = [];
     const { id, rounds } = campaign;
     rounds.forEach((round, index) => {
         // for one round
         const previousRound = rounds[index - 1];
-        const startInRange = isDateInRange(
-            round.start,
-            firstMonday,
-            lastSunday,
-        );
-        const endInRange = isDateInRange(round.end, firstMonday, lastSunday);
+        const startInRange = round.start
+            ? isDateInRange(round.start, firstMonday, lastSunday)
+            : false;
+        const endInRange = round.end
+            ? isDateInRange(round.end, firstMonday, lastSunday)
+            : false;
 
         let dateUntilNextRound = round.end
             ?.clone()
             .add(round.daysCount, 'days');
 
-        let dateUntilNextRoundInRange = isDateInRange(
-            dateUntilNextRound,
-            firstMonday,
-            lastSunday,
-        );
+        let dateUntilNextRoundInRange =
+            !!dateUntilNextRound &&
+            isDateInRange(dateUntilNextRound, firstMonday, lastSunday);
 
         const startAndEndInRange = startInRange && endInRange;
 
@@ -487,7 +497,6 @@ const getCells = (campaign: Campaign, currentWeekIndex: number, firstMonday: mom
         cells = addCellsBeforeRound({
             id,
             cells,
-            rounds,
             round,
             index,
             startInRange,
@@ -515,8 +524,6 @@ const getCells = (campaign: Campaign, currentWeekIndex: number, firstMonday: mom
                     id,
                     cells,
                     round,
-                    isRoundIntervalVisible,
-                    isRoundVisible,
                     dateUntilNextRoundInRange,
                     lastSunday,
                     endInRange,
@@ -528,7 +535,11 @@ const getCells = (campaign: Campaign, currentWeekIndex: number, firstMonday: mom
             }
 
             // if it's last round draw empty cells
-            if (index === rounds.length - 1 && dateUntilNextRoundInRange) {
+            if (
+                index === rounds.length - 1 &&
+                dateUntilNextRoundInRange &&
+                dateUntilNextRound
+            ) {
                 cells = addRemainingEmptyCells({
                     cells,
                     dateUntilNextRound,
@@ -540,7 +551,7 @@ const getCells = (campaign: Campaign, currentWeekIndex: number, firstMonday: mom
             }
         } else if (previousRound.end) {
             // add an additional day for positioning if the next round has a start date
-            if (round.started_at) {
+            if (round.started_at && previousRound.daysCount) {
                 dateUntilNextRound = previousRound.end
                     ?.clone()
                     .add(previousRound.daysCount - 1, 'days');
@@ -565,8 +576,6 @@ const getCells = (campaign: Campaign, currentWeekIndex: number, firstMonday: mom
                     id,
                     cells,
                     round: { ...round, end: dateUntilNextRound },
-                    isRoundIntervalVisible: true,
-                    isRoundVisible,
                     dateUntilNextRoundInRange,
                     lastSunday,
                     endInRange: false,

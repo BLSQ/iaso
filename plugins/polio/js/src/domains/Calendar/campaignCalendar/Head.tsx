@@ -1,13 +1,7 @@
 import React, { FunctionComponent } from 'react';
 
 import classnames from 'classnames';
-import {
-    TableHead,
-    TableRow,
-    TableCell,
-    Typography,
-    Box,
-} from '@mui/material';
+import { TableHead, TableRow, TableCell, Typography, Box } from '@mui/material';
 
 import { useStyles } from './Styles';
 
@@ -23,7 +17,12 @@ type Props = {
     isPdf: boolean;
 };
 
-export const Head: FunctionComponent<Props> = ({ headers, orders, currentWeekIndex, isPdf }) => {
+export const Head: FunctionComponent<Props> = ({
+    headers,
+    orders,
+    currentWeekIndex,
+    isPdf,
+}) => {
     const classes = useStyles();
     const fields = useStaticFields(isPdf);
     return (
@@ -100,10 +99,7 @@ export const Head: FunctionComponent<Props> = ({ headers, orders, currentWeekInd
                 {headers.weeks.map((week, weekIndex) => (
                     <TableCell
                         className={classnames(
-                            [
-                                classes.tableCellHead,
-                                classes.tableCellSmall,
-                            ],
+                            [classes.tableCellHead, classes.tableCellSmall],
                             {
                                 [classes.currentWeek]:
                                     weekIndex + 1 === currentWeekIndex,
@@ -144,6 +140,7 @@ export const Head: FunctionComponent<Props> = ({ headers, orders, currentWeekInd
                                     classes.tableCellHead,
                                     classes.tableCellHidden,
                                 ])}
+                                // eslint-disable-next-line react/no-array-index-key
                                 key={`day-${week.year}-${week.month}-${week.value}-${i}`}
                                 align="center"
                                 colSpan={1}

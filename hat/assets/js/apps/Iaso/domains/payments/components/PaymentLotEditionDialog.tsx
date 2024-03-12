@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useCallback, useState } from 'react';
 import {
     SimpleModal,
     makeFullModal,
@@ -13,6 +13,7 @@ import InputComponent from '../../../components/forms/InputComponent';
 import { styles } from './shared';
 import { usePotentialPaymentColumns } from '../config/usePotentialPaymentColumns';
 import getDisplayName from '../../../utils/usersUtils';
+import { useSavePaymentLot } from '../hooks/requests/useSavePaymentLot';
 
 type CancelButtonProps = {
     closeDialog: () => void;
@@ -45,6 +46,15 @@ export const PaymentLotEditionDialog: FunctionComponent<Props> = ({
         paymentLot?.comment ?? null,
     );
     const columns = usePotentialPaymentColumns();
+    const { mutateAsync: savePaymentLot } = useSavePaymentLot('edit');
+    const handleSaveName = useCallback(
+        () => savePaymentLot({ id: paymentLot.id, name }),
+        [savePaymentLot, paymentLot.id, name],
+    );
+    const handleSaveComment = useCallback(
+        () => savePaymentLot({ id: paymentLot.id, comment }),
+        [savePaymentLot, paymentLot.id, comment],
+    );
     return (
         <SimpleModal
             buttons={CloseButton}
@@ -77,9 +87,7 @@ export const PaymentLotEditionDialog: FunctionComponent<Props> = ({
                                     color="primary"
                                     variant="contained"
                                     size="medium"
-                                    onClick={() => {
-                                        console.log('patch', 'name: ', name);
-                                    }}
+                                    onClick={handleSaveName}
                                 >
                                     {formatMessage(MESSAGES.save)}
                                 </Button>
@@ -104,9 +112,7 @@ export const PaymentLotEditionDialog: FunctionComponent<Props> = ({
                                 color="primary"
                                 variant="contained"
                                 size="medium"
-                                onClick={() => {
-                                    console.log('patch', 'comment: ', comment);
-                                }}
+                                onClick={handleSaveComment}
                             >
                                 {formatMessage(MESSAGES.save)}
                             </Button>

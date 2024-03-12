@@ -51,7 +51,7 @@ import { VisitDetails } from '../domains/entities/components/VisitDetails.tsx';
 import * as Permission from '../utils/permissions.ts';
 import { SetupAccount } from '../domains/setup/index.tsx';
 import { PotentialPayments } from '../domains/payments/PotentialPayments.tsx';
-import { LotsPayments } from '../domains/payments/LotsPayments';
+import { LotsPayments } from '../domains/payments/LotsPayments.tsx';
 
 const paginationPathParamsWithPrefix = prefix =>
     paginationPathParams.map(p => ({
@@ -757,6 +757,10 @@ export const completenessStatsPath = {
         {
             isRequired: false,
             key: 'showDirectCompleteness',
+        },
+        {
+            isRequired: false,
+            key: 'teamsIds',
         },
     ],
 };

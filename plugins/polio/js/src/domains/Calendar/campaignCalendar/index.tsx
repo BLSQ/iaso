@@ -50,7 +50,6 @@ const CampaignsCalendar: FunctionComponent<Props> = ({
                 <Table stickyHeader>
                     <Head
                         headers={headers}
-                        params={params}
                         orders={orders}
                         currentWeekIndex={currentWeekIndex}
                         isPdf={isPdf}

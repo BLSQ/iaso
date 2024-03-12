@@ -1,7 +1,6 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 
 import classnames from 'classnames';
-import PropTypes from 'prop-types';
 import {
     TableHead,
     TableRow,
@@ -15,8 +14,16 @@ import { useStyles } from './Styles';
 import { colSpanTitle } from './constants';
 import { HeadStaticFieldsCells } from './cells/HeadStaticFields';
 import { useStaticFields } from '../hooks/useStaticFields';
+import { CalendarData } from './types';
 
-const Head = ({ headers, orders, currentWeekIndex, isPdf }) => {
+type Props = {
+    headers: CalendarData['headers'];
+    orders: string;
+    currentWeekIndex: number;
+    isPdf: boolean;
+};
+
+export const Head: FunctionComponent<Props> = ({ headers, orders, currentWeekIndex, isPdf }) => {
     const classes = useStyles();
     const fields = useStaticFields(isPdf);
     return (
@@ -96,7 +103,6 @@ const Head = ({ headers, orders, currentWeekIndex, isPdf }) => {
                             [
                                 classes.tableCellHead,
                                 classes.tableCellSmall,
-                                classes.tableCellNoBorderBottom,
                             ],
                             {
                                 [classes.currentWeek]:
@@ -131,8 +137,8 @@ const Head = ({ headers, orders, currentWeekIndex, isPdf }) => {
                 ))}
                 {headers.weeks.map(week => {
                     return Array(7)
-                        .fill()
-                        .map((x, i) => (
+                        .fill(null)
+                        .map((_, i) => (
                             <TableCell
                                 className={classnames([
                                     classes.tableCellHead,
@@ -148,11 +154,3 @@ const Head = ({ headers, orders, currentWeekIndex, isPdf }) => {
         </TableHead>
     );
 };
-Head.propTypes = {
-    headers: PropTypes.object.isRequired,
-    orders: PropTypes.string.isRequired,
-    currentWeekIndex: PropTypes.number.isRequired,
-    isPdf: PropTypes.bool.isRequired,
-};
-
-export { Head };

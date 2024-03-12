@@ -129,6 +129,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.close',
         defaultMessage: 'Close',
     },
+    pending: {
+        id: 'iaso.label.pending',
+        defaultMessage: 'Pending',
+    },
 });
 
 export default MESSAGES;

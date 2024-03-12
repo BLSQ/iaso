@@ -25,10 +25,7 @@ import {
 } from './campaignCalendar/utils';
 
 import { dateFormat, defaultOrder } from './campaignCalendar/constants';
-import {
-    CampaignType,
-    useGetCampaigns,
-} from '../Campaigns/hooks/api/useGetCampaigns';
+import { useGetCampaigns } from '../Campaigns/hooks/api/useGetCampaigns';
 import MESSAGES from '../../constants/messages';
 import { Filters } from './campaignCalendar/Filters';
 import { ExportCsvModal } from './ExportCsvModal';
@@ -37,7 +34,7 @@ import {
     User,
     useCurrentUser,
 } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-import { CalendarParams } from './campaignCalendar/types';
+import { CalendarParams, MappedCampaign } from './campaignCalendar/types';
 
 type Props = {
     params: CalendarParams;
@@ -80,8 +77,12 @@ export const Calendar: FunctionComponent<Props> = ({ params }) => {
             countries: params.countries,
             search: params.search,
             campaignType: params.campaignType,
-            campaignGroups: params.campaignGroups ? params.campaignGroups.split(',').map(Number) : undefined,
-            orgUnitGroups: params.orgUnitGroups ? params.orgUnitGroups.split(',').map(Number) : undefined,
+            campaignGroups: params.campaignGroups
+                ? params.campaignGroups.split(',').map(Number)
+                : undefined,
+            orgUnitGroups: params.orgUnitGroups
+                ? params.orgUnitGroups.split(',').map(Number)
+                : undefined,
             fieldset: 'calendar',
         }),
         [
@@ -113,7 +114,10 @@ export const Calendar: FunctionComponent<Props> = ({ params }) => {
         [currentMonday],
     );
 
-    const mappedCampaigns = useMemo(() => mapCampaigns(campaigns), [campaigns]);
+    const mappedCampaigns: MappedCampaign[] = useMemo(
+        () => mapCampaigns(campaigns),
+        [campaigns],
+    );
     const filteredCampaigns = useMemo(
         () =>
             filterCampaigns(

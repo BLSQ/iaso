@@ -17,7 +17,7 @@ import MESSAGES from '../messages';
 import { PotentialPayment, PotentialPaymentParams } from '../types';
 import { Selection } from '../../orgUnits/types/selection';
 import { useGetSelectedPotentialPayments } from '../hooks/requests/useGetSelectedPotentialPayments';
-import { usePotentialPaymentColumns } from '../config/usePotentialPaymentColumns';
+import { usePaymentColumns } from '../config/usePotentialPaymentColumns';
 import InputComponent from '../../../components/forms/InputComponent';
 import { useTranslatedErrors } from '../../../libs/validation';
 import {
@@ -94,7 +94,7 @@ const PaymentLotDialog: FunctionComponent<Props> = ({
         },
     });
     const { formatMessage } = useSafeIntl();
-    const columns = usePotentialPaymentColumns();
+    const columns = usePaymentColumns({ potential: true });
     const handleChange = useCallback(
         (keyValue, value) => {
             setFieldTouched(keyValue, true);

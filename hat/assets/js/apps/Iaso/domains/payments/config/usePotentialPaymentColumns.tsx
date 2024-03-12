@@ -1,10 +1,14 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useSafeIntl, Column, IntlFormatMessage } from 'bluesquare-components';
 import MESSAGES from '../messages';
 import { PotentialPayment } from '../types';
 import { textPlaceholder } from '../../../constants/uiConstants';
 
-export const usePotentialPaymentColumns = (): Column[] => {
+export const usePaymentColumns = ({
+    potential = true,
+}: {
+    potential?: boolean;
+}): Column[] => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     return useMemo(() => {
@@ -59,6 +63,24 @@ export const usePotentialPaymentColumns = (): Column[] => {
             },
             //  TODO: we should add user phone number here
         ];
+        if (!potential) {
+            return columns.concat([
+                {
+                    Header: formatMessage(MESSAGES.status),
+                    id: 'status',
+                    accessor: 'status',
+                    Cell: settings => {
+                        return (
+                            <span>
+                                {formatMessage(
+                                    MESSAGES[settings.row.original.status],
+                                )}
+                            </span>
+                        );
+                    },
+                },
+            ]);
+        }
         return columns;
-    }, [formatMessage]);
+    }, [formatMessage, potential]);
 };

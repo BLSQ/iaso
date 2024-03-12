@@ -31,22 +31,28 @@ export const HighlightFields: FunctionComponent<Props> = ({
         <TableRow>
             <TableCell>{label}</TableCell>
             <TableCell>
-                <ReviewOrgUnitGroupChanges
-                    groups={oldGroups}
-                    newAddedGroups={[]}
-                    status={undefined}
-                    field={field}
-                />
+                {(oldGroups.length > 0 && (
+                    <ReviewOrgUnitGroupChanges
+                        groups={oldGroups}
+                        newAddedGroups={[]}
+                        status={undefined}
+                        field={field}
+                    />
+                )) ||
+                    '--'}
             </TableCell>
             <TableCell>
-                <ReviewOrgUnitGroupChanges
-                    groups={newGroups}
-                    newAddedGroups={newAddedGroups}
-                    status={status}
-                    field={field}
-                />
+                {(newGroups.length > 0 && (
+                    <ReviewOrgUnitGroupChanges
+                        groups={newGroups}
+                        newAddedGroups={newAddedGroups}
+                        status={status}
+                        field={field}
+                    />
+                )) ||
+                    '--'}
             </TableCell>
-            {isNew && (
+            {isNew && newGroups.length > 0 && (
                 <TableCell>
                     <Box
                         sx={{

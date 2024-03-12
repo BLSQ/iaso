@@ -66,6 +66,8 @@ class PaymentLotsViewSet(ModelViewSet):
         "change_requests_count",
         "payments_count",
     ]
+
+    ordering = ["updated_at"]
     serializer_class = PaymentLotSerializer
     http_method_names = ["get", "post", "patch", "head", "options", "trace"]
 
@@ -142,8 +144,7 @@ class PaymentLotsViewSet(ModelViewSet):
         ]
     )
     def list(self, request):
-        orders = request.GET.get("order", "updated_at").split(",")
-        queryset = self.filter_queryset(self.get_queryset()).order_by(*orders)
+        queryset = self.filter_queryset(self.get_queryset())
         return super().list(request, queryset)
 
     @swagger_auto_schema(

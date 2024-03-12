@@ -46,6 +46,7 @@ psycopg2-binary==2.9.9  # https://github.com/psycopg/psycopg2/tags
 # ------------------------------------------------------------------------------
 Pillow==10.1.0  # https://github.com/python-pillow/Pillow/tags
 boto3==1.34.7  # https://github.com/boto/boto3/tags
+pycryptodome==3.20.0  # https://github.com/Legrandin/pycryptodome/
 dateparser==1.2.0  # https://github.com/scrapinghub/dateparser/tags
 requests==2.31.0  # https://github.com/psf/requests/tags
 gql[requests]==3.4.1  # https://github.com/graphql-python/gql/tags

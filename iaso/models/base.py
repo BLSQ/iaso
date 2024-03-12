@@ -27,6 +27,8 @@ from django.db.models import Count, FilteredRelation, Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from phonenumber_field.modelfields import PhoneNumberField
+from phonenumbers.phonenumberutil import region_code_for_number
 
 from hat.audit.models import INSTANCE_API, log_modification
 from hat.menupermissions.constants import MODULES
@@ -1295,6 +1297,7 @@ class Profile(models.Model):
     home_page = models.CharField(max_length=512, null=True, blank=True)
     user_roles = models.ManyToManyField("UserRole", related_name="iaso_profile", blank=True)
     projects = models.ManyToManyField("Project", related_name="iaso_profile", blank=True)
+    phone_number = PhoneNumberField(blank=True)
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["dhis2_id", "account"], name="dhis2_id_constraint")]
@@ -1329,6 +1332,8 @@ class Profile(models.Model):
             "user_id": self.user.id,
             "dhis2_id": self.dhis2_id,
             "home_page": self.home_page,
+            "phone_number": self.phone_number.as_e164 if self.phone_number else None,
+            "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
             "projects": [p.as_dict() for p in self.projects.all().order_by("name")],
         }
 
@@ -1341,6 +1346,8 @@ class Profile(models.Model):
             "email": self.user.email,
             "language": self.language,
             "user_id": self.user.id,
+            "phone_number": self.phone_number if len(self.phone_number) > 0 else None,
+            "country_code": self.phone_number.country_code if self.phone_number else None,
             "projects": [p.as_dict() for p in self.projects.all().order_by("name")],
         }
 

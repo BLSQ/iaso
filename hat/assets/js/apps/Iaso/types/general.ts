@@ -65,3 +65,5 @@ declare global {
         STATIC_URL?: string;
     }
 }
+
+export type ColumnCell<T> = { row: { original: T; index: number } };

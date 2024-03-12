@@ -4,6 +4,7 @@ import { makeUrlWithParams } from '../../../../libs/utils';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import { PotentialPaymentParams, PotentialPaymentPaginated } from '../../types';
+import { apiDateFormat, formatDateString } from '../../../../utils/dates';
 
 const apiUrl = '/api/potential_payments/';
 
@@ -21,8 +22,16 @@ const getPotentialPayments = (options: PotentialPaymentParams) => {
         order: options.order || 'user__last_name',
         limit: options.pageSize || 20,
         page,
-        change_requests__created_at_after,
-        change_requests__created_at_before,
+        change_requests__created_at_after: formatDateString(
+            change_requests__created_at_after,
+            'L',
+            apiDateFormat,
+        ),
+        change_requests__created_at_before: formatDateString(
+            change_requests__created_at_before,
+            'L',
+            apiDateFormat,
+        ),
         parent_id,
         forms,
         users,

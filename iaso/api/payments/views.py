@@ -1,17 +1,299 @@
-from django.db.models import Count
 import django_filters
+from django.db import models, transaction
+from django.db.models import Count, Prefetch, Subquery, OuterRef
+from django.db.models.functions import Coalesce
+from django.http import HttpResponse, StreamingHttpResponse
+from django.utils.translation import gettext_lazy as _
 from drf_yasg import openapi
-from rest_framework import filters, permissions
-from rest_framework.exceptions import NotFound
-from hat.menupermissions import models as permission
-from iaso.api.common import (
-    HasPermission,
-    ModelViewSet,
-)
-from iaso.models import Payment, OrgUnitChangeRequest, PotentialPayment, OrgUnit
-import iaso.api.payments.filters as potential_payment_filters
-from .serializers import PotentialPaymentSerializer
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework import filters, permissions, status
+from rest_framework.exceptions import NotFound
+from rest_framework.response import Response
+
+
+from hat.api.export_utils import Echo, generate_xlsx, iter_items
+from hat.menupermissions import models as permission
+from iaso.api.common import HasPermission, ModelViewSet
+from iaso.api.payments.filters import (
+    potential_payments as potential_payments_filters,
+    payments_lots as payments_lots_filters,
+)
+from iaso.models import Payment, OrgUnitChangeRequest, PotentialPayment, PaymentLot
+from .serializers import PotentialPaymentSerializer, PaymentLotSerializer, PaymentLotCreateSerializer
+
+
+class PaymentLotsViewSet(ModelViewSet):
+    """
+    # `Payment Lots` API
+
+    This API allows for the management and querying of payment lots. Payment lots are collections of payments that can be processed together.
+
+    The Django model that stores "Payment Lot" is `PaymentLot`.
+
+    This API supports creating new payment lots, updating existing ones, and querying for payment lots based on various criteria such as creation date, status, and associated user.
+
+    ## Permissions
+
+    - User must be authenticated
+    - User needs `iaso_payments` permission
+
+    ## Status Computing
+
+    The status of a payment lot is dynamically computed based on the statuses of the payments it contains. The possible statuses are:
+
+    - `new`: Default status, indicating a newly created lot or a lot with no payments sent.
+    - `sent`: Indicates that all payments in the lot have been sent.
+    - `paid`: Indicates that all payments in the lot have been paid.
+    - `partially_paid`: Indicates that some, but not all, payments in the lot have been paid.
+
+    The status is computed every time a payment lot is saved, ensuring that the payment lot status accurately reflects the current state of its associated payments.
+    """
+
+    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
+    filter_backends = [
+        filters.OrderingFilter,
+        django_filters.rest_framework.DjangoFilterBackend,
+        payments_lots_filters.UsersFilterBackend,
+        payments_lots_filters.ParentFilterBackend,
+        payments_lots_filters.StartEndDateFilterBackend,
+        payments_lots_filters.StatusFilterBackend,
+    ]
+    ordering_fields = [
+        "name",
+        "created_at",
+        "created_by__username",
+        "status",
+        "change_requests_count",
+        "payments_count",
+    ]
+
+    ordering = ["updated_at"]
+    serializer_class = PaymentLotSerializer
+    http_method_names = ["get", "post", "patch", "head", "options", "trace"]
+
+    def get_queryset(self):
+        queryset = PaymentLot.objects.all()
+
+        change_requests_prefetch = Prefetch(
+            "payments__change_requests",
+            queryset=OrgUnitChangeRequest.objects.all(),
+            to_attr="prefetched_change_requests",
+        )
+        queryset = queryset.prefetch_related("payments", change_requests_prefetch)
+
+        change_requests_count = (
+            OrgUnitChangeRequest.objects.filter(payment__payment_lot=OuterRef("pk"))
+            .order_by()
+            .distinct()
+            .values("payment__payment_lot")
+            .annotate(total=Count("id", distinct=True))
+            .values("total")
+        )
+
+        payments_count = (
+            Payment.objects.filter(payment_lot=OuterRef("pk"))
+            .order_by()
+            .distinct()
+            .values("payment_lot")
+            .annotate(total=Count("id", distinct=True))
+            .values("total")
+        )
+
+        queryset = queryset.annotate(
+            change_requests_count=Coalesce(Subquery(change_requests_count, output_field=models.IntegerField()), 0),
+            payments_count=Coalesce(Subquery(payments_count, output_field=models.IntegerField()), 0),
+        )
+        queryset = queryset.filter(created_by__iaso_profile__account=self.request.user.iaso_profile.account).distinct()
+
+        return queryset
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter(
+                name="user",
+                in_=openapi.IN_QUERY,
+                description="A comma-separated list of User IDs associated with the payment lots creation",
+                type=openapi.TYPE_STRING,
+            ),
+            openapi.Parameter(
+                name="status",
+                in_=openapi.IN_QUERY,
+                description="A comma-separated list of the possible payment lot status",
+                type=openapi.TYPE_STRING,
+            ),
+            openapi.Parameter(
+                name="parent_id",
+                in_=openapi.IN_QUERY,
+                description="The ID of the parent organization unit linked to the change requests. This should also include child units.",
+                type=openapi.TYPE_INTEGER,
+            ),
+            openapi.Parameter(
+                name="created_at_after",
+                in_=openapi.IN_QUERY,
+                description="The start date for when the lots has been created. Format: YYYY-MM-DD",
+                type=openapi.TYPE_STRING,
+                format=openapi.FORMAT_DATE,
+            ),
+            openapi.Parameter(
+                name="created_at_before",
+                in_=openapi.IN_QUERY,
+                description="The end date for when the lots has been created. Format: YYYY-MM-DD",
+                type=openapi.TYPE_STRING,
+                format=openapi.FORMAT_DATE,
+            ),
+        ]
+    )
+    def list(self, request):
+        queryset = self.filter_queryset(self.get_queryset())
+        return super().list(request, queryset)
+
+    @swagger_auto_schema(
+        responses={status.HTTP_200_OK: PaymentLotSerializer()},
+        manual_parameters=[
+            openapi.Parameter(
+                name="mark_payments_as_sent",
+                in_=openapi.IN_QUERY,
+                description="If set to true, all related payments will be marked as sent",
+                type=openapi.TYPE_BOOLEAN,
+            ),
+        ],
+    )
+    def update(self, request, *args, **kwargs):
+        with transaction.atomic():
+            partial = kwargs.pop("partial", False)
+            instance = self.get_object()
+            serializer = self.get_serializer(instance, data=request.data, partial=partial)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+
+            mark_as_sent = request.query_params.get("mark_payments_as_sent", "false").lower() == "true"
+            if mark_as_sent:
+                related_payments = Payment.objects.filter(payment_lot=instance)
+                for payment in related_payments:
+                    payment.status = Payment.Statuses.SENT
+                    payment.save()
+
+        return Response(serializer.data)
+
+    @swagger_auto_schema(
+        request_body=PaymentLotCreateSerializer,
+        responses={status.HTTP_201_CREATED: PaymentLotSerializer()},
+    )
+    def create(self, request):
+        with transaction.atomic():
+            # Extract name, comment, and potential_payments IDs from request data
+            name = request.data.get("name")
+            comment = request.data.get("comment")
+            potential_payment_ids = request.data.get("potential_payments", [])  # Expecting a list of IDs
+
+            # Create the PaymentLot instance but don't save it yet
+            payment_lot = PaymentLot(name=name, comment=comment, created_by=request.user, updated_by=request.user)
+
+            # Save the PaymentLot instance to ensure it has a primary key
+            payment_lot.save()
+
+            # Retrieve PotentialPayment instances by IDs
+            potential_payments = PotentialPayment.objects.filter(id__in=potential_payment_ids)
+
+            # For each potential payment, create a Payment instance in pending status
+            for potential_payment in potential_payments:
+                payment = Payment.objects.create(
+                    status=Payment.Statuses.PENDING,
+                    user=potential_payment.user,
+                    created_by=request.user,
+                    updated_by=request.user,
+                    payment_lot=payment_lot,  # Now payment_lot has a primary key
+                )
+                # Add change requests from potential payment to the newly created payment
+                for change_request in potential_payment.change_requests.all():
+                    change_request.payment = payment
+                    change_request.save()
+                potential_payment.delete()
+
+            # Return the created PaymentLot instance
+            serializer = self.get_serializer(payment_lot)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def retrieve(self, request, *args, **kwargs):
+        csv_format = bool(request.query_params.get("csv"))
+        xlsx_format = bool(request.query_params.get("xlsx"))
+
+        if csv_format:
+            return self.retrieve_to_csv(request, *args, **kwargs)
+        elif xlsx_format:
+            return self.retrieve_to_xlsx(request, *args, **kwargs)
+
+        return super().retrieve(request, *args, **kwargs)
+
+    def _get_table_row(self, payment, row_num=None, export_type="csv"):
+        change_requests = payment.change_requests.all()
+        change_requests_str = "\n".join(
+            [f"ID: {cr.id}, Org Unit: {cr.org_unit.name} (ID: {cr.org_unit.id})" for cr in change_requests]
+        )
+        change_requests_count = len(change_requests)
+
+        return [
+            str(payment.id),
+            payment.status,
+            str(payment.user.id),  # Added User ID
+            payment.user.username,
+            payment.user.last_name,
+            payment.user.first_name,
+            change_requests_str,
+            str(change_requests_count),  # Added count of change requests
+        ]
+
+    def retrieve_to_csv(self, request, *args, **kwargs):
+        payment_lot = self.get_object()
+        payments = payment_lot.payments.all()
+        columns = [
+            str(_("ID")),
+            str(_("Status")),
+            str(_("User ID")),  # Added User ID column
+            str(_("User Username")),
+            str(_("User Last Name")),
+            str(_("User First Name")),
+            str(_("Change Requests")),
+            str(_("Change Requests Count")),  # Added column for count of change requests
+        ]
+        response = StreamingHttpResponse(
+            streaming_content=(
+                iter_items(
+                    payments,
+                    Echo(),
+                    columns,
+                    lambda payment: self._get_table_row(payment, export_type="csv"),
+                )
+            ),
+            content_type="text/csv",
+        )
+        response["Content-Disposition"] = f'attachment; filename="{payment_lot.name}_payments.csv"'
+        return response
+
+    def retrieve_to_xlsx(self, request, *args, **kwargs):
+        payment_lot = self.get_object()
+        payments = payment_lot.payments.all()
+        columns = [
+            {"title": str(_("ID")), "width": 10},
+            {"title": str(_("Status")), "width": 10},
+            {"title": str(_("User ID")), "width": 10},
+            {"title": str(_("User Username")), "width": 20},
+            {"title": str(_("User Last Name")), "width": 20},
+            {"title": str(_("User First Name")), "width": 20},
+            {"title": str(_("Change Requests")), "width": 40},
+            {"title": str(_("Change Requests Count")), "width": 20},
+        ]
+        response = HttpResponse(
+            generate_xlsx(
+                f"{payment_lot.name}_Payments",
+                columns,
+                payments,
+                lambda payment, row_num: self._get_table_row(payment, row_num, export_type="xlsx"),
+            ),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = f'attachment; filename="{payment_lot.name}_payments.xlsx"'
+        return response
 
 
 class PotentialPaymentsViewSet(ModelViewSet):
@@ -29,38 +311,18 @@ class PotentialPaymentsViewSet(ModelViewSet):
     - User must be authenticated
     - User needs `iaso_payments` permission
 
-    ## Possible responses
-
-    ### 200 - OK
-
-    ### 400 - Bad request
-
-    - `page` or `limit` cannot be parsed to a correct integer value
-
-    ### 401 - Unauthorized
-
-    - No authentication token or an invalid one was provided
-
-    ### 403 - Forbidden
-
-    - User doesn't have the proper permission to access this resource.
-
-
-    ### 404 - Not found
-
-    - `users`, `user_roles`, `parent_id` not found
-
     """
 
     permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
     filter_backends = [
         filters.OrderingFilter,
         django_filters.rest_framework.DjangoFilterBackend,
-        potential_payment_filters.UsersFilterBackend,
-        potential_payment_filters.UserRolesFilterBackend,
-        potential_payment_filters.FormsFilterBackend,
-        potential_payment_filters.ParentFilterBackend,
-        potential_payment_filters.StartEndDateFilterBackend,
+        potential_payments_filters.UsersFilterBackend,
+        potential_payments_filters.UserRolesFilterBackend,
+        potential_payments_filters.FormsFilterBackend,
+        potential_payments_filters.ParentFilterBackend,
+        potential_payments_filters.StartEndDateFilterBackend,
+        potential_payments_filters.SelectionFilterBackend,
     ]
     ordering_fields = [
         "user__username",
@@ -71,7 +333,7 @@ class PotentialPaymentsViewSet(ModelViewSet):
         "status",
         "created_by__username",
         "updated_by__username",
-        "change_requests",
+        "change_requests_count",
     ]
 
     ordering = ["user__last_name"]
@@ -87,6 +349,27 @@ class PotentialPaymentsViewSet(ModelViewSet):
             .filter(change_requests__created_by__iaso_profile__account=self.request.user.iaso_profile.account)
             .distinct()
         )
+
+    def calculate_new_potential_payments(self):
+        users_with_change_requests = (
+            OrgUnitChangeRequest.objects.filter(status=OrgUnitChangeRequest.Statuses.APPROVED)
+            .values("created_by")
+            .annotate(num_requests=Count("created_by"))
+            .filter(num_requests__gt=0)
+        )
+
+        for user in users_with_change_requests:
+            change_requests = OrgUnitChangeRequest.objects.filter(
+                created_by_id=user["created_by"], status=OrgUnitChangeRequest.Statuses.APPROVED, payment__isnull=True
+            )
+            if change_requests.exists():
+                potential_payment, created = PotentialPayment.objects.get_or_create(
+                    user_id=user["created_by"],
+                )
+                for change_request in change_requests:
+                    change_request.potential_payment = potential_payment
+                    change_request.save()
+                potential_payment.save()
 
     @swagger_auto_schema(auto_schema=None)
     def retrieve(self, request, *args, **kwargs):
@@ -126,28 +409,28 @@ class PotentialPaymentsViewSet(ModelViewSet):
                 type=openapi.TYPE_STRING,
                 format=openapi.FORMAT_DATE,
             ),
+            openapi.Parameter(
+                name="select_all",
+                in_=openapi.IN_QUERY,
+                description="Select all potential payments from the query",
+                type=openapi.TYPE_BOOLEAN,
+            ),
+            openapi.Parameter(
+                name="selected_ids",
+                in_=openapi.IN_QUERY,
+                description="A comma-separated list of Potential Payments IDs selected to return from the query",
+                type=openapi.TYPE_STRING,
+            ),
+            openapi.Parameter(
+                name="unselected_ids",
+                in_=openapi.TYPE_STRING,
+                description="A comma-separated list of Potential Payments IDs to exlude from the query",
+                type=openapi.TYPE_STRING,
+            ),
         ]
     )
     def list(self, request):
-        users_with_change_requests = (
-            OrgUnitChangeRequest.objects.filter(status=OrgUnitChangeRequest.Statuses.APPROVED)
-            .values("created_by")
-            .annotate(num_requests=Count("created_by"))
-            .filter(num_requests__gt=0)
-        )
-
-        for user in users_with_change_requests:
-            change_requests = OrgUnitChangeRequest.objects.filter(
-                created_by_id=user["created_by"],
-                status=OrgUnitChangeRequest.Statuses.APPROVED,
-            )
-            if change_requests.exists():
-                potential_payment, created = PotentialPayment.objects.get_or_create(
-                    user_id=user["created_by"],
-                )
-                for change_request in change_requests:
-                    if not Payment.objects.filter(change_requests__id=change_request.id).exists():
-                        potential_payment.change_requests.add(change_request)
-                potential_payment.save()
-        queryset = self.filter_queryset(self.get_queryset())
+        self.calculate_new_potential_payments()
+        orders = request.GET.get("order", "user__last_name").split(",")
+        queryset = self.filter_queryset(self.get_queryset()).order_by(*orders)
         return super().list(request, queryset)

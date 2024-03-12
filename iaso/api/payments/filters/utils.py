@@ -1,4 +1,3 @@
-from rest_framework import filters
 from datetime import datetime
 
 from django.utils import timezone
@@ -20,11 +19,8 @@ def filter_by_forms(request, queryset, key=None):
     return queryset
 
 
-def filter_by_dates(request, queryset, key=None):
-    start_date = request.GET.get("change_requests__created_at_after", None)
-    end_date = request.GET.get("change_requests__created_at_before", None)
-    date_format = "%d-%m-%Y"
-
+def filter_by_dates(request, queryset, start_date=None, end_date=None, key=None):
+    date_format = "%Y-%m-%d"
     if start_date:
         try:
             start_date_dt = datetime.strptime(start_date, date_format)
@@ -64,45 +60,3 @@ def filter_by_parent(request, queryset, key=None):
             raise ValidationError({"parent_id": [f"OrgUnit with id {parent_id} does not exist."]})
 
     return queryset
-
-
-class UsersFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        users = request.GET.get("users", None)
-        if users:
-            users_ids = [int(val) for val in users.split(",") if val.isnumeric()]
-            return queryset.filter(user_id__in=users_ids)
-        return queryset
-
-
-class UserRolesFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        user_roles = request.GET.get("user_roles", None)
-        if user_roles:
-            user_roles_ids = [int(val) for val in user_roles.split(",") if val.isnumeric()]
-            return queryset.filter(user__iaso_profile__user_roles__id__in=user_roles_ids)
-        return queryset
-
-
-class FormsFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        return filter_by_forms(request, queryset, "change_requests")
-
-
-class ParentFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        return filter_by_parent(request, queryset, "change_requests")
-
-
-class StartEndDateFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        return filter_by_dates(request, queryset, "change_requests")
-
-
-class ChangeRequestsFilterBackend(filters.BaseFilterBackend):
-    def filter_queryset(self, request, queryset, view):
-        change_requests = request.GET.get("change_requests__", None)
-        if change_requests:
-            change_requests_ids = [int(val) for val in change_requests.split(",") if val.isnumeric()]
-            return queryset.filter(change_requests__id__in=change_requests_ids)
-        return queryset

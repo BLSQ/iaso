@@ -243,18 +243,21 @@ const menuItems = (
         {
             label: formatMessage(MESSAGES.payments),
             key: 'payments',
+            dev: true,
             icon: props => <PaymentsIcon {...props} />,
             subMenu: [
                 {
                     label: formatMessage(MESSAGES.potentialPayments),
                     permissions: paths.potentialPaymentsPath.permissions,
                     key: 'potential',
+                    dev: true,
                     icon: props => <PriceCheckIcon {...props} />,
                 },
                 {
                     label: formatMessage(MESSAGES.lots),
                     permissions: paths.potentialPaymentsPath.permissions,
                     key: 'lots',
+                    dev: true,
                     icon: props => <AccountBalanceIcon {...props} />,
                 },
             ],

@@ -133,6 +133,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.pending',
         defaultMessage: 'Pending',
     },
+    changeStatus: {
+        id: 'iaso.label.changeStatus',
+        defaultMessage: 'Change status',
+    },
+    rejected: {
+        id: 'iaso.label.rejected',
+        defaultMessage: 'Rejected',
+    },
 });
 
 export default MESSAGES;

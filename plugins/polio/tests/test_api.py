@@ -9,7 +9,7 @@ from hat.audit.models import Modification
 from iaso import models as m
 from iaso.models import Account
 from iaso.test import APITestCase
-from plugins.polio.models import Round
+from plugins.polio.models import Round, CampaignType
 from plugins.polio.preparedness.spreadsheet_manager import *
 
 
@@ -320,7 +320,7 @@ class PolioAPITestCase(APITestCase):
                 {
                     "number": 1,
                     "started_at": "2021-02-01",
-                    "lqas_district_failing": 100
+                    "lqas_district_failing": 100,
                     # Removed that line to test that empty field in payload
                     # will not overwrite existing field in DB
                     # "ended_at": "2021-02-20",
@@ -642,6 +642,120 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(round.vaccines.count(), 1)
         self.assertEqual(round.destructions.count(), 0)
         self.assertEqual(round.shipments.count(), 1)
+
+    def test_campaign_creation_without_explicit_campaign_type(self):
+        self.client.force_authenticate(self.yoda)
+        payload = {
+            "obr_name": "Test Campaign",
+            "group": {"name": "Test Group", "org_units": []},
+            "is_preventive": True,
+            "is_test": False,
+            "enable_send_weekly_email": False,
+        }
+        response = self.client.post("/api/polio/campaigns/", payload, format="json")
+        self.assertEqual(response.status_code, 201, response.content)
+        campaign_id = response.data["id"]
+        campaign = Campaign.objects.get(id=campaign_id)
+        self.assertEqual(campaign.campaign_types.first().name, "Polio", "Campaign type should default to 'Polio'")
+
+        response = self.client.get(f"/api/polio/campaigns/{campaign.id}/", format="json")
+        self.assertEqual(response.status_code, 200, response.content)
+        response_data = response.json()
+
+        self.assertIn("campaign_types", response_data)
+        campaign_types = response_data["campaign_types"]
+        self.assertEqual(len(campaign_types), 1)
+
+    def test_create_campaign_with_explicit_campaign_types(self):
+        self.client.force_authenticate(self.yoda)
+        self.assertEqual(Campaign.objects.count(), 0)
+
+        campaign_type1 = CampaignType.objects.create(name="Type1")
+        campaign_type2 = CampaignType.objects.create(name="Type2")
+        payload = {
+            "obr_name": "Campaign with Types",
+            "group": {"name": "Test Group", "org_units": []},
+            "is_preventive": True,
+            "is_test": False,
+            "enable_send_weekly_email": False,
+            "campaign_types": [campaign_type1.id, campaign_type2.id],
+        }
+
+        response = self.client.post("/api/polio/campaigns/", payload, format="json")
+        self.assertEqual(response.status_code, 201, response.content)
+        campaign_id = response.data["id"]
+        campaign = Campaign.objects.get(id=campaign_id)
+
+        self.assertEqual(campaign.campaign_types.count(), 2)
+        self.assertTrue(campaign.campaign_types.filter(id=campaign_type1.id).exists())
+        self.assertTrue(campaign.campaign_types.filter(id=campaign_type2.id).exists())
+
+    def test_campaign_api_returns_campaign_types(self):
+        self.client.force_authenticate(self.yoda)
+        campaign_type1 = CampaignType.objects.create(name="Type1")
+        campaign_type2 = CampaignType.objects.create(name="Type2")
+        campaign_type_ids = [campaign_type1.id, campaign_type2.id]
+
+        campaign = Campaign.objects.create(obr_name="Campaign with Types", account=self.account)
+        campaign.campaign_types.set([campaign_type1, campaign_type2])
+
+        response = self.client.get(f"/api/polio/campaigns/{campaign.id}/", format="json")
+        self.assertEqual(response.status_code, 200, response.content)
+        response_data = response.json()
+
+        self.assertIn("campaign_types", response_data)
+        campaign_types = response_data["campaign_types"]
+        self.assertEqual(len(campaign_types), 2)
+
+        self.assertIn(campaign_type1.id, campaign_type_ids)
+        self.assertIn(campaign_type2.id, campaign_type_ids)
+
+    def test_available_campaign_types(self):
+        self.client.force_authenticate(self.yoda)
+        campaign_types_count = CampaignType.objects.count()
+
+        response = self.client.get("/api/polio/campaigns/available_campaign_types/", format="json")
+        self.assertEqual(response.status_code, 200, response.content)
+        response_data = response.json()
+
+        self.assertEqual(len(response_data), campaign_types_count)
+        self.assertIn(CampaignType.POLIO, [ct["name"] for ct in response_data])
+
+    def test_filter_by_campaign_types(self):
+        self.client.force_authenticate(self.yoda)
+        campaign_type1 = CampaignType.objects.create(name="Type1")
+        campaign_type2 = CampaignType.objects.create(name="Type2")
+        campaign_type3 = CampaignType.objects.create(name="Type3")
+        campaign1 = Campaign.objects.create(obr_name="Campaign1", account=self.account)
+        campaign2 = Campaign.objects.create(obr_name="Campaign2", account=self.account)
+        campaign3 = Campaign.objects.create(obr_name="Campaign3", account=self.account)
+        campaign1.campaign_types.add(campaign_type1)
+        campaign2.campaign_types.add(campaign_type2)
+        campaign3.campaign_types.add(campaign_type3)
+
+        # Filter by single campaign type
+        response = self.client.get(f"/api/polio/campaigns/?campaign_types={campaign_type1.id}", format="json")
+        self.assertEqual(response.status_code, 200, response.content)
+        response_data = response.json()
+        self.assertEqual(len(response_data), 1)
+        self.assertEqual(response_data[0]["id"], str(campaign1.id))
+
+        # Filter by multiple campaign types
+        response = self.client.get(
+            f"/api/polio/campaigns/?campaign_types={campaign_type1.id},{campaign_type2.id}", format="json"
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        response_data = response.json()
+        self.assertEqual(len(response_data), 2)
+        campaign_ids = [campaign["id"] for campaign in response_data]
+        self.assertIn(str(campaign1.id), campaign_ids)
+        self.assertIn(str(campaign2.id), campaign_ids)
+
+        # Filter by non-existing campaign type
+        response = self.client.get("/api/polio/campaigns/?campaign_types=9999", format="json")
+        self.assertEqual(response.status_code, 200, response.content)
+        response_data = response.json()
+        self.assertEqual(len(response_data), 0)
 
 
 class PreparednessAPITestCase(APITestCase):

@@ -1,0 +1,127 @@
+import React, {
+    useState,
+    useContext,
+    useCallback,
+    useMemo,
+    FunctionComponent,
+} from 'react';
+import classnames from 'classnames';
+
+import { TableCell, Box } from '@mui/material';
+
+import { isEqual } from 'lodash';
+import { useSelector } from 'react-redux';
+import { PolioCreateEditDialog as CreateEditDialog } from '../../../Campaigns/MainDialog/CreateEditDialog';
+import { RoundPopper } from '../popper/RoundPopper';
+import { useStyles } from '../Styles';
+import { RoundPopperContext } from '../contexts/RoundPopperContext';
+import { polioVaccines } from '../../../../constants/virus';
+import { CalendarRound, MappedCampaign } from '../types';
+import { User } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+
+type Props = {
+    colSpan: number;
+    campaign: MappedCampaign;
+    round: CalendarRound;
+};
+
+const getVaccineColor = (vaccine: string) =>
+    polioVaccines.find(polioVaccine => polioVaccine.value === vaccine)?.color ||
+    '#bcbcbc';
+
+export const RoundCell: FunctionComponent<Props> = ({
+    colSpan,
+    campaign,
+    round,
+}) => {
+    const classes = useStyles();
+    const [dialogOpen, setDialogOpen] = useState(false);
+
+    const { anchorEl, setAnchorEl } = useContext(RoundPopperContext);
+    const [self, setSelf] = useState<HTMLElement | null>(null);
+
+    const handleClick = useCallback(
+        (event: React.MouseEvent<HTMLElement>) => {
+            if (!self) {
+                setSelf(event.currentTarget);
+            }
+            setAnchorEl(
+                isEqual(event.currentTarget, anchorEl)
+                    ? undefined
+                    : event.currentTarget,
+            );
+        },
+        [anchorEl, self, setAnchorEl],
+    );
+
+    const handleClose = () => {
+        setAnchorEl(undefined);
+    };
+
+    const defaultCellStyles = [classes.tableCell, classes.tableCellBordered];
+    const open = self && isEqual(self, anchorEl);
+    const isLogged = useSelector((state: { users: { current: User } }) =>
+        Boolean(state.users.current),
+    );
+    const vaccinesList = useMemo(() => {
+        const list = campaign.separateScopesPerRound
+            ? round.vaccine_names?.split(',') ?? []
+            : campaign.original.vaccines?.split(',') ?? [];
+        return list.map((vaccineName: string) => vaccineName.trim());
+    }, [
+        campaign.original.vaccines,
+        campaign.separateScopesPerRound,
+        round.vaccine_names,
+    ]);
+
+    return (
+        <TableCell
+            className={classnames(defaultCellStyles, classes.round)}
+            colSpan={colSpan}
+        >
+            <Box
+                className={classes.coloredBox}
+                style={{ backgroundColor: campaign.color }}
+            >
+                {vaccinesList.map((vaccine: string) => (
+                    <span
+                        key={`${campaign.id}-${round.number}-${vaccine}`}
+                        style={{
+                            backgroundColor: getVaccineColor(vaccine),
+                            display: 'block',
+                            height: `${100 / vaccinesList.length}%`,
+                        }}
+                    />
+                ))}
+            </Box>
+            <span
+                onClick={handleClick}
+                role="button"
+                tabIndex={0}
+                className={classnames(
+                    classes.tableCellSpan,
+                    classes.tableCellSpanWithPopOver,
+                )}
+            >
+                {colSpan > 1 && `R${round.number}`}
+            </span>
+            {open && (
+                <RoundPopper
+                    open={open}
+                    round={round}
+                    anchorEl={anchorEl}
+                    campaign={campaign}
+                    handleClose={handleClose}
+                    setDialogOpen={setDialogOpen}
+                />
+            )}
+            {isLogged && (
+                <CreateEditDialog
+                    campaignId={campaign.original.id}
+                    isOpen={dialogOpen}
+                    onClose={() => setDialogOpen(false)}
+                />
+            )}
+        </TableCell>
+    );
+};

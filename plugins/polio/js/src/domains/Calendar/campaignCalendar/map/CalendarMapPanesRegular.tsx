@@ -2,9 +2,10 @@ import React, { FunctionComponent } from 'react';
 import { GeoJSON, Pane } from 'react-leaflet';
 import { getGeoJsonStyle } from './utils';
 import { CalendarMapTooltip } from './CalendarMapTooltip';
+import { ShapeForCalendarMap } from '../types';
 
 type Props = {
-    campaignsShapes: any[];
+    campaignsShapes: ShapeForCalendarMap[];
     zoom: number;
 };
 
@@ -29,8 +30,8 @@ export const CalendarMapPanesRegular: FunctionComponent<Props> = ({
                                 data={shape.geo_json}
                                 style={() =>
                                     getGeoJsonStyle(
-                                        campaignShape.color || color,
-                                        color,
+                                        campaignShape.color,
+                                        color || campaignShape.color,
                                         zoom,
                                     )
                                 }
@@ -39,7 +40,7 @@ export const CalendarMapPanesRegular: FunctionComponent<Props> = ({
                                     type="regular"
                                     campaign={name}
                                     country={country}
-                                    region={shape.parent_name}
+                                    region={shape.parent_name ?? undefined}
                                     district={shape.name}
                                     vaccine={campaignShape.vaccine}
                                 />

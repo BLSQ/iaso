@@ -42,6 +42,8 @@ import { useGetUserRolesOptions } from '../../userRoles/hooks/requests/useGetUse
 import { userHasPermission } from '../utils';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import * as Permission from '../../../utils/permissions';
+import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
+import { TeamType } from '../../teams/constants';
 
 type Props = {
     open: boolean;
@@ -90,6 +92,8 @@ type BulkState = {
     language?: 'en' | 'fr';
     addLocations: OrgUnit[];
     removeLocations: OrgUnit[];
+    addTeams: string[];
+    removeTeams: string[];
 };
 
 const initialState: BulkState = {
@@ -100,6 +104,8 @@ const initialState: BulkState = {
     language: undefined,
     addLocations: [],
     removeLocations: [],
+    addTeams: [],
+    removeTeams: [],
 };
 
 export const UsersMultiActionsDialog: FunctionComponent<Props> = ({
@@ -118,6 +124,10 @@ export const UsersMultiActionsDialog: FunctionComponent<Props> = ({
 
     const { data: userRoles, isFetching: isFetchingUserRoles } =
         useGetUserRolesOptions();
+
+    const { data: teams, isFetching: isFetchingTeams } = useGetTeamsDropdown({
+        type: TeamType.TEAM_OF_USERS,
+    });
     const handleChange = useCallback(
         (key, value) => {
             setBulkState({
@@ -214,6 +224,30 @@ export const UsersMultiActionsDialog: FunctionComponent<Props> = ({
                         />
                     </>
                 )}
+                <InputComponent
+                    keyValue="addTeams"
+                    onChange={(key, value) =>
+                        handleChange(key, value ? value.split(',') : value)
+                    }
+                    value={bulkState.addTeams}
+                    type="select"
+                    options={teams}
+                    label={MESSAGES.addTeams}
+                    loading={isFetchingTeams}
+                    multi
+                />
+                <InputComponent
+                    keyValue="removeTeams"
+                    onChange={(key, value) =>
+                        handleChange(key, value ? value.split(',') : value)
+                    }
+                    value={bulkState.removeTeams}
+                    type="select"
+                    options={teams}
+                    label={MESSAGES.removeTeams}
+                    loading={isFetchingTeams}
+                    multi
+                />
                 <InputComponent
                     keyValue="language"
                     onChange={handleChange}

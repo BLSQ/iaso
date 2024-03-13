@@ -65,7 +65,6 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
         () => savePaymentLot({ id: paymentLot.id, comment }),
         [savePaymentLot, paymentLot.id, comment],
     );
-    console.log('selection', selection);
     return (
         <SimpleModal
             buttons={CloseButton}
@@ -88,13 +87,11 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
                                 labelString={formatMessage(MESSAGES.name)}
                                 value={name}
                                 onChange={(_, value) => setName(value)}
-                                // errors={getErrors('name')}
                             />
                         </Grid>
                         <Grid item xs={3}>
                             <Box ml={2} my={2} mt={3}>
                                 <Button
-                                    // className={buttonStyles.button}
                                     color="primary"
                                     variant="contained"
                                     size="medium"
@@ -113,7 +110,6 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
                             labelString={formatMessage(MESSAGES.comment)}
                             value={comment}
                             onChange={(_, value) => setComment(value)}
-                            // errors={getErrors('comment')}
                         />
                     </Grid>
                     <Grid item xs={3}>

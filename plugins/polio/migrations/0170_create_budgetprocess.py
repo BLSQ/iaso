@@ -8,7 +8,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("polio", "0167_auto_20240226_1352"),
+        ("polio", "0169_auto_20240306_1327"),
     ]
 
     operations = [

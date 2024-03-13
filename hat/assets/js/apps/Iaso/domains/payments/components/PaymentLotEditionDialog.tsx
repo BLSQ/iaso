@@ -5,8 +5,7 @@ import {
     useSafeIntl,
     Table,
 } from 'bluesquare-components';
-import SettingsIcon from '@mui/icons-material/Settings';
-import { Box, Button, Paper, Grid, IconButton, Divider } from '@mui/material';
+import { Box, Button, Paper, Grid, Divider } from '@mui/material';
 import moment from 'moment';
 import MESSAGES from '../messages';
 import InputComponent from '../../../components/forms/InputComponent';
@@ -16,6 +15,7 @@ import getDisplayName from '../../../utils/usersUtils';
 import { useSavePaymentLot } from '../hooks/requests/useSavePaymentLot';
 import { Payment } from '../types';
 import { useTableSelection } from '../../../utils/table';
+import { EditIconButton } from '../../../components/Buttons/EditIconButton';
 
 type CancelButtonProps = {
     closeDialog: () => void;
@@ -200,23 +200,6 @@ export const PaymentLotEditionDialog: FunctionComponent<Props> = ({
                 </Paper>
             </Box>
         </SimpleModal>
-    );
-};
-
-type PropsIcon = {
-    onClick: () => void;
-};
-
-export const EditIconButton: FunctionComponent<PropsIcon> = ({ onClick }) => {
-    const { formatMessage } = useSafeIntl();
-    return (
-        <IconButton
-            onClick={onClick}
-            aria-label={formatMessage(MESSAGES.edit)}
-            size="small"
-        >
-            <SettingsIcon />
-        </IconButton>
     );
 };
 

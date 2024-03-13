@@ -721,6 +721,42 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(len(response_data), campaign_types_count)
         self.assertIn(CampaignType.POLIO, [ct["name"] for ct in response_data])
 
+    def test_filter_by_campaign_types(self):
+        self.client.force_authenticate(self.yoda)
+        campaign_type1 = CampaignType.objects.create(name="Type1")
+        campaign_type2 = CampaignType.objects.create(name="Type2")
+        campaign_type3 = CampaignType.objects.create(name="Type3")
+        campaign1 = Campaign.objects.create(obr_name="Campaign1", account=self.account)
+        campaign2 = Campaign.objects.create(obr_name="Campaign2", account=self.account)
+        campaign3 = Campaign.objects.create(obr_name="Campaign3", account=self.account)
+        campaign1.campaign_types.add(campaign_type1)
+        campaign2.campaign_types.add(campaign_type2)
+        campaign3.campaign_types.add(campaign_type3)
+
+        # Filter by single campaign type
+        response = self.client.get(f"/api/polio/campaigns/?campaign_types={campaign_type1.id}", format="json")
+        self.assertEqual(response.status_code, 200, response.content)
+        response_data = response.json()
+        self.assertEqual(len(response_data), 1)
+        self.assertEqual(response_data[0]["id"], str(campaign1.id))
+
+        # Filter by multiple campaign types
+        response = self.client.get(
+            f"/api/polio/campaigns/?campaign_types={campaign_type1.id},{campaign_type2.id}", format="json"
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        response_data = response.json()
+        self.assertEqual(len(response_data), 2)
+        campaign_ids = [campaign["id"] for campaign in response_data]
+        self.assertIn(str(campaign1.id), campaign_ids)
+        self.assertIn(str(campaign2.id), campaign_ids)
+
+        # Filter by non-existing campaign type
+        response = self.client.get("/api/polio/campaigns/?campaign_types=9999", format="json")
+        self.assertEqual(response.status_code, 200, response.content)
+        response_data = response.json()
+        self.assertEqual(len(response_data), 0)
+
 
 class PreparednessAPITestCase(APITestCase):
     data_source: m.DataSource

@@ -761,24 +761,28 @@ class CampaignViewSet(ModelViewSet):
         queryset = super().filter_queryset(queryset)
         if self.action in ("update", "partial_update", "retrieve", "destroy"):
             return queryset
-        campaign_type = self.request.query_params.get("campaign_type")
+        campaign_category = self.request.query_params.get("campaign_category")
         campaign_groups = self.request.query_params.get("campaign_groups")
         show_test = self.request.query_params.get("show_test", "false")
         org_unit_groups = self.request.query_params.get("org_unit_groups")
+        campaign_types = self.request.query_params.get("campaign_types")
         campaigns = queryset
         if show_test == "false":
             campaigns = campaigns.filter(is_test=False)
         campaigns.prefetch_related("rounds", "group", "grouped_campaigns")
-        if campaign_type == "preventive":
+        if campaign_category == "preventive":
             campaigns = campaigns.filter(is_preventive=True)
-        if campaign_type == "test":
+        if campaign_category == "test":
             campaigns = campaigns.filter(is_test=True)
-        if campaign_type == "regular":
+        if campaign_category == "regular":
             campaigns = campaigns.filter(is_preventive=False).filter(is_test=False)
         if campaign_groups:
             campaigns = campaigns.filter(grouped_campaigns__in=campaign_groups.split(","))
         if org_unit_groups:
             campaigns = campaigns.filter(country__groups__in=org_unit_groups.split(","))
+        if campaign_types:
+            campaign_types_ids = campaign_types.split(",")
+            campaigns = campaigns.filter(campaign_types__id__in=campaign_types_ids)
         org_units_id_only_qs = OrgUnit.objects.only("id", "name")
         country_prefetch = Prefetch("country", queryset=org_units_id_only_qs)
         scopes_group_org_units_prefetch = Prefetch("scopes__group__org_units", queryset=org_units_id_only_qs)
@@ -1131,7 +1135,7 @@ class CampaignViewSet(ModelViewSet):
         """
         countries = params.get("countries") if params.get("countries") is not None else None
         campaign_groups = params.get("campaignGroups") if params.get("campaignGroups") is not None else None
-        campaign_type = params.get("campaignType") if params.get("campaignType") is not None else None
+        campaign_category = params.get("campaignCategory") if params.get("campaignCategory") is not None else None
         search = params.get("search")
         org_unit_groups = params.get("orgUnitGroups") if params.get("orgUnitGroups") is not None else None
         # Test campaigns should not appear in the xlsx calendar
@@ -1140,9 +1144,9 @@ class CampaignViewSet(ModelViewSet):
             rounds = rounds.filter(campaign__country_id__in=countries.split(","))
         if campaign_groups:
             rounds = rounds.filter(campaign__group_id__in=campaign_groups.split(","))
-        if campaign_type == "preventive":
+        if campaign_category == "preventive":
             rounds = rounds.filter(campaign__is_preventive=True)
-        if campaign_type == "regular":
+        if campaign_category == "regular":
             rounds = rounds.filter(campaign__is_preventive=False).filter(campaign__is_test=False)
         if search:
             rounds = rounds.filter(Q(campaign__obr_name__icontains=search) | Q(campaign__epid__icontains=search))

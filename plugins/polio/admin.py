@@ -41,7 +41,7 @@ class CampaignAdmin(admin.ModelAdmin):
     formfield_overrides = {
         models.ForeignKey: {"widget": widgets.AdminTextInputWidget},
     }
-    list_filter = ["virus", "detection_status", "risk_assessment_status", "budget_status"]
+    list_filter = ["virus", "detection_status", "risk_assessment_status", "budget_status", "campaign_types"]
 
     def save_model(self, request, obj: Campaign, form, change):
         obj.update_geojson_field()

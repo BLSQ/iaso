@@ -435,6 +435,7 @@ class ListCampaignSerializer(CampaignSerializer):
             "rounds",
             "general_status",
             "grouped_campaigns",
+            "campaign_types",
         ]
         read_only_fields = fields
 
@@ -509,6 +510,7 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "is_preventive",
             "account",
             "outbreak_declaration_date",
+            "campaign_types",
         ]
         read_only_fields = fields
 
@@ -564,6 +566,7 @@ class SmallCampaignSerializer(CampaignSerializer):
             "is_preventive",
             "account",
             "outbreak_declaration_date",
+            "campaign_types",
         ]
         read_only_fields = fields
 
@@ -624,6 +627,7 @@ class CalendarCampaignSerializer(CampaignSerializer):
             "risk_assessment_status",
             "budget_status",
             "vaccines",
+            "campaign_types",
         ]
         read_only_fields = fields
 

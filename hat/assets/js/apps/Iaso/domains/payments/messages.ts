@@ -145,6 +145,26 @@ const MESSAGES = defineMessages({
         id: 'iaso.payments.label.editPaymentFor',
         defaultMessage: 'Edit payment for {user}',
     },
+    editSelected: {
+        id: 'iaso.payments.label.editSelected',
+        defaultMessage: 'Edit selected',
+    },
+    editSelectedPayments: {
+        id: 'iaso.payments.label.editSelectedPayments',
+        defaultMessage: 'Edit {count} selected payments',
+    },
+    confirm: {
+        id: 'iaso.label.confirm',
+        defaultMessage: 'Confirm',
+    },
+    confirmBulkChange: {
+        id: 'iaso.payments.label.confirmBulkChange',
+        defaultMessage: 'Confirm multiple changes',
+    },
+    bulkChangeCount: {
+        id: 'iaso.payments.label.bulkChangeCount',
+        defaultMessage: "You're about to update {count} payments",
+    },
 });
 
 export default MESSAGES;

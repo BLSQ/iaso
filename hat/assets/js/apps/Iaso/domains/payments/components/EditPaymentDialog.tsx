@@ -5,13 +5,12 @@ import {
     makeFullModal,
 } from 'bluesquare-components';
 import MESSAGES from '../messages';
-import InputComponent from '../../../components/forms/InputComponent';
 import { PaymentStatus } from '../types';
 import { useSavePaymentStatus } from '../hooks/requests/useSavePaymentStatus';
-import { usePaymentStatusOptions } from '../hooks/utils';
 import { EditIconButton } from '../../../components/Buttons/EditIconButton';
 import { UserDisplayData } from '../../users/types';
 import getDisplayName from '../../../utils/usersUtils';
+import { StatusSelect } from './StatusSelect';
 
 type Props = {
     isOpen: boolean;
@@ -34,7 +33,6 @@ const EditPaymentDialog: FunctionComponent<Props> = ({
     const handleConfirm = useCallback(() => {
         return saveStatus({ id, status });
     }, [id, saveStatus, status]);
-    const paymentStatusOptions = usePaymentStatusOptions();
     const userDisplayName = getDisplayName(user);
     const titleMessage = formatMessage(MESSAGES.editPaymentFor, {
         user: userDisplayName,
@@ -52,16 +50,7 @@ const EditPaymentDialog: FunctionComponent<Props> = ({
             confirmMessage={MESSAGES.save}
             cancelMessage={MESSAGES.cancel}
         >
-            <InputComponent
-                type="select"
-                keyValue="status"
-                value={status}
-                clearable={false}
-                required
-                onChange={(_, value) => setStatus(value)}
-                labelString={formatMessage(MESSAGES.changeStatus)}
-                options={paymentStatusOptions}
-            />
+            <StatusSelect value={status} onChange={value => setStatus(value)} />
         </ConfirmCancelModal>
     );
 };

@@ -16,6 +16,7 @@ import { useSavePaymentLot } from '../hooks/requests/useSavePaymentLot';
 import { Payment } from '../types';
 import { useTableSelection } from '../../../utils/table';
 import { EditIconButton } from '../../../components/Buttons/EditIconButton';
+import { BulkEditPaymentDialog } from './BulkEditPaymentsDialog';
 
 type CancelButtonProps = {
     closeDialog: () => void;
@@ -47,12 +48,13 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
     const [comment, setComment] = useState<string | null>(
         paymentLot?.comment ?? null,
     );
+    const count = paymentLot?.payments?.length ?? 0;
     const {
         selection,
         handleTableSelection,
         handleSelectAll,
         handleUnselectAll,
-    } = useTableSelection<Payment>();
+    } = useTableSelection<Payment>(count);
     const columns = usePaymentColumns({ potential: false });
     const { mutateAsync: savePaymentLot } = useSavePaymentLot('edit');
     const handleSaveName = useCallback(
@@ -63,6 +65,7 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
         () => savePaymentLot({ id: paymentLot.id, comment }),
         [savePaymentLot, paymentLot.id, comment],
     );
+    console.log('selection', selection);
     return (
         <SimpleModal
             buttons={CloseButton}
@@ -170,11 +173,13 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
                                 {/* </Box> */}
                             </Grid>
                             <Grid item>
-                                {/* <Box mr={2}> */}
-                                <Button variant="contained" color="primary">
-                                    Edit selected
-                                </Button>
-                                {/* </Box> */}
+                                <BulkEditPaymentDialog
+                                    selection={selection}
+                                    resetSelection={handleUnselectAll}
+                                    iconProps={{
+                                        disabled: selection.selectCount === 0,
+                                    }}
+                                />
                             </Grid>
                         </Grid>
                     </Box>
@@ -187,7 +192,7 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
                         pages={1}
                         defaultSorted={[{ id: 'user__last_name', desc: false }]}
                         columns={columns}
-                        count={paymentLot?.payments?.length ?? 0}
+                        count={count}
                         multiSelect
                         showPagination={false}
                         selection={selection}

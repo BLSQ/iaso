@@ -32,12 +32,17 @@ type UseTableSelection<T> = {
     ) => void;
     handleUnselectAll: () => void;
 };
-export const useTableSelection = <T>(): UseTableSelection<T> => {
+
+/** Convenience hook when using the built-in select boxes of a Table
+ * @prop count: number (optional) - Should be passed when using a custom "edit selected" button (i.o. the tables speed dial) so the hook is made aware of the total number of selectable elements
+ */
+export const useTableSelection = <T>(count?: number): UseTableSelection<T> => {
     const [selection, setSelection] = useState<Selection<T>>(
         selectionInitialState,
     );
+    const defaultCount = count ?? 0;
     const handleTableSelection = useCallback(
-        (selectionType, items = [], totalCount = 0) => {
+        (selectionType, items = [], totalCount = defaultCount) => {
             const newSelection: Selection<T> = setTableSelection(
                 selection,
                 selectionType,
@@ -46,11 +51,11 @@ export const useTableSelection = <T>(): UseTableSelection<T> => {
             );
             setSelection(newSelection);
         },
-        [selection],
+        [defaultCount, selection],
     );
 
     const handleSelectAll = useCallback(
-        (data: Array<T>, items = [], totalCount = 0) => {
+        (data: Array<T>, items = [], totalCount = defaultCount) => {
             const newSelection: Selection<T> = setTableSelection(
                 data,
                 'selectAll',
@@ -59,7 +64,7 @@ export const useTableSelection = <T>(): UseTableSelection<T> => {
             );
             setSelection(newSelection);
         },
-        [setSelection],
+        [defaultCount],
     );
 
     const handleUnselectAll = useCallback(() => {

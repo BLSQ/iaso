@@ -40,7 +40,7 @@ export type GetCampaignsParams = {
     rounds__started_at__gte?: string;
     rounds__started_at__lte?: string;
     deletion_status?: string;
-    campaign_type?: string;
+    campaign_types?: string;
     campaign_category?: CampaignCategory;
     campaign_groups?: number[];
     org_unit_groups?: number[];
@@ -67,7 +67,6 @@ export const useGetCampaignsOptions = (
     options: Options,
     asCsv = false,
 ): GetCampaignsParams => {
-    console.log('options', options);
     return useMemo(
         () => ({
             limit: asCsv ? undefined : options.pageSize,
@@ -78,7 +77,7 @@ export const useGetCampaignsOptions = (
             rounds__started_at__gte: options.roundStartFrom,
             rounds__started_at__lte: options.roundStartTo,
             deletion_status: options.showOnlyDeleted ? 'deleted' : undefined,
-            campaign_type: options.campaignType,
+            campaign_types: options.campaignType,
             campaign_category: options.campaignCategory ?? 'all',
             campaign_groups: options.campaignGroups,
             org_unit_groups: options.orgUnitGroups,

@@ -17,7 +17,7 @@ import MESSAGES from '../messages';
 import { PotentialPayment, PotentialPaymentParams } from '../types';
 import { Selection } from '../../orgUnits/types/selection';
 import { useGetSelectedPotentialPayments } from '../hooks/requests/useGetSelectedPotentialPayments';
-import { usePaymentColumns } from '../config/usePotentialPaymentColumns';
+import { usePaymentColumns } from '../hooks/config/usePaymentColumns';
 import InputComponent from '../../../components/forms/InputComponent';
 import { useTranslatedErrors } from '../../../libs/validation';
 import {

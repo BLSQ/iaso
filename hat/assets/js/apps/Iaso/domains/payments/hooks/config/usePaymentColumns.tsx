@@ -1,8 +1,9 @@
 import React, { useMemo } from 'react';
 import { useSafeIntl, Column, IntlFormatMessage } from 'bluesquare-components';
-import MESSAGES from '../messages';
-import { PotentialPayment } from '../types';
-import { textPlaceholder } from '../../../constants/uiConstants';
+import MESSAGES from '../../messages';
+import { PotentialPayment } from '../../types';
+import { textPlaceholder } from '../../../../constants/uiConstants';
+import { EditPaymentDialog } from '../../components/EditPaymentDialog';
 
 export const usePaymentColumns = ({
     potential = true,

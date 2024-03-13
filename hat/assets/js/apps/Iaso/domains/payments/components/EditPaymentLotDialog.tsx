@@ -10,7 +10,7 @@ import moment from 'moment';
 import MESSAGES from '../messages';
 import InputComponent from '../../../components/forms/InputComponent';
 import { styles } from './shared';
-import { usePaymentColumns } from '../config/usePotentialPaymentColumns';
+import { usePaymentColumns } from '../hooks/config/usePaymentColumns';
 import getDisplayName from '../../../utils/usersUtils';
 import { useSavePaymentLot } from '../hooks/requests/useSavePaymentLot';
 import { Payment } from '../types';
@@ -37,7 +37,7 @@ const CloseButton: FunctionComponent<CancelButtonProps> = ({ closeDialog }) => {
 
 type Props = { isOpen: boolean; closeDialog: () => void; paymentLot: any };
 
-export const PaymentLotEditionDialog: FunctionComponent<Props> = ({
+const EditPaymentLotDialog: FunctionComponent<Props> = ({
     isOpen,
     closeDialog,
     paymentLot,
@@ -203,6 +203,6 @@ export const PaymentLotEditionDialog: FunctionComponent<Props> = ({
     );
 };
 
-const modalWithButton = makeFullModal(PaymentLotEditionDialog, EditIconButton);
+const modalWithButton = makeFullModal(EditPaymentLotDialog, EditIconButton);
 
 export { modalWithButton as EditPaymentLotDialog };

@@ -15,7 +15,7 @@ import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
 import { PotentialPaymentsFilters } from './components/PotentialPaymentsFilters';
 import { redirectTo } from '../../routing/actions';
-import { usePaymentColumns } from './config/usePotentialPaymentColumns';
+import { usePaymentColumns } from './hooks/config/usePaymentColumns';
 import { Selection } from '../orgUnits/types/selection';
 import { AddPaymentLotDialog } from './components/PaymentLotDialog';
 

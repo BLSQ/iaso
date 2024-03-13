@@ -7,7 +7,7 @@ import { PaymentLot } from '../types';
 
 import MESSAGES from '../messages';
 import { useMarkPaymentsAsSent } from '../hooks/requests/useSavePaymentLot';
-import { EditPaymentLotDialog } from './EditPaymentLotDialog';
+import { EditPaymentLotDialog } from './EditPaymentLot/EditPaymentLotDialog';
 
 interface ActionCellProps<T> {
     row: {

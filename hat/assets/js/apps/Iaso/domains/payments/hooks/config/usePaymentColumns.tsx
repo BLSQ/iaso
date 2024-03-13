@@ -3,7 +3,7 @@ import { useSafeIntl, Column, IntlFormatMessage } from 'bluesquare-components';
 import MESSAGES from '../../messages';
 import { PotentialPayment } from '../../types';
 import { textPlaceholder } from '../../../../constants/uiConstants';
-import { EditPaymentDialog } from '../../components/EditPaymentDialog';
+import { EditPaymentDialog } from '../../components/EditPaymentLot/EditPaymentDialog';
 
 export const usePaymentColumns = ({
     potential = true,

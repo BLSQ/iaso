@@ -4,13 +4,13 @@ import {
     ConfirmCancelModal,
     makeFullModal,
 } from 'bluesquare-components';
-import MESSAGES from '../messages';
-import { PaymentStatus } from '../types';
-import { useSavePaymentStatus } from '../hooks/requests/useSavePaymentStatus';
-import { EditIconButton } from '../../../components/Buttons/EditIconButton';
-import { UserDisplayData } from '../../users/types';
-import getDisplayName from '../../../utils/usersUtils';
-import { StatusSelect } from './StatusSelect';
+import MESSAGES from '../../messages';
+import { PaymentStatus } from '../../types';
+import { useSavePaymentStatus } from '../../hooks/requests/useSavePaymentStatus';
+import { EditIconButton } from '../../../../components/Buttons/EditIconButton';
+import { UserDisplayData } from '../../../users/types';
+import getDisplayName from '../../../../utils/usersUtils';
+import { StatusSelect } from '../StatusSelect';
 
 type Props = {
     isOpen: boolean;

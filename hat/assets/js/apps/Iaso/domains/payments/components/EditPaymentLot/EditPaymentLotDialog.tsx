@@ -7,16 +7,16 @@ import {
 } from 'bluesquare-components';
 import { Box, Button, Paper, Grid, Divider } from '@mui/material';
 import moment from 'moment';
-import MESSAGES from '../messages';
-import InputComponent from '../../../components/forms/InputComponent';
-import { styles } from './shared';
-import { usePaymentColumns } from '../hooks/config/usePaymentColumns';
-import getDisplayName from '../../../utils/usersUtils';
-import { useSavePaymentLot } from '../hooks/requests/useSavePaymentLot';
-import { Payment } from '../types';
-import { useTableSelection } from '../../../utils/table';
-import { EditIconButton } from '../../../components/Buttons/EditIconButton';
-import { BulkEditPaymentDialog } from './BulkEditPaymentsDialog';
+import MESSAGES from '../../messages';
+import InputComponent from '../../../../components/forms/InputComponent';
+import { styles } from '../shared';
+import { usePaymentColumns } from '../../hooks/config/usePaymentColumns';
+import getDisplayName from '../../../../utils/usersUtils';
+import { useSavePaymentLot } from '../../hooks/requests/useSavePaymentLot';
+import { Payment } from '../../types';
+import { useTableSelection } from '../../../../utils/table';
+import { EditIconButton } from '../../../../components/Buttons/EditIconButton';
+import { BulkEditPaymentDialog } from '../BulkEditPayment/BulkEditPaymentsDialog';
 
 type CancelButtonProps = {
     closeDialog: () => void;

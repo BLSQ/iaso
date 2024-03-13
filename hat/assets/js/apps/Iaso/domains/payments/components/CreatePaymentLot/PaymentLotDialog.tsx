@@ -13,19 +13,19 @@ import Add from '@mui/icons-material/Add';
 
 import { useFormik } from 'formik';
 import moment from 'moment';
-import MESSAGES from '../messages';
-import { PotentialPayment, PotentialPaymentParams } from '../types';
-import { Selection } from '../../orgUnits/types/selection';
-import { useGetSelectedPotentialPayments } from '../hooks/requests/useGetSelectedPotentialPayments';
-import { usePaymentColumns } from '../hooks/config/usePaymentColumns';
-import InputComponent from '../../../components/forms/InputComponent';
-import { useTranslatedErrors } from '../../../libs/validation';
+import MESSAGES from '../../messages';
+import { PotentialPayment, PotentialPaymentParams } from '../../types';
+import { Selection } from '../../../orgUnits/types/selection';
+import { useGetSelectedPotentialPayments } from '../../hooks/requests/useGetSelectedPotentialPayments';
+import { usePaymentColumns } from '../../hooks/config/usePaymentColumns';
+import InputComponent from '../../../../components/forms/InputComponent';
+import { useTranslatedErrors } from '../../../../libs/validation';
 import {
     SavePaymentLotQuery,
     useSavePaymentLot,
-} from '../hooks/requests/useSavePaymentLot';
-import getDisplayName, { useCurrentUser } from '../../../utils/usersUtils';
-import { styles } from './shared';
+} from '../../hooks/requests/useSavePaymentLot';
+import getDisplayName, { useCurrentUser } from '../../../../utils/usersUtils';
+import { styles } from '../shared';
 
 type Props = {
     titleMessage: IntlMessage;

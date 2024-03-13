@@ -4,12 +4,12 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import React, { FunctionComponent, useCallback, useState } from 'react';
-import { Payment, PaymentStatus } from '../types';
-import MESSAGES from '../messages';
-import { StatusSelect } from './StatusSelect';
-import { Selection } from '../../orgUnits/types/selection';
-import { EditSelectedButton } from './EditSelectedButton';
-import { useBulkSavePaymentStatus } from '../hooks/requests/useSavePaymentStatus';
+import { Payment, PaymentStatus } from '../../types';
+import MESSAGES from '../../messages';
+import { StatusSelect } from '../StatusSelect';
+import { Selection } from '../../../orgUnits/types/selection';
+import { EditSelectedButton } from '../EditPaymentLot/EditSelectedButton';
+import { useBulkSavePaymentStatus } from '../../hooks/requests/useSavePaymentStatus';
 import { BulkEditWarning } from './BulkEditWarning';
 
 type Props = {

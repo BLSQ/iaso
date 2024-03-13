@@ -2,9 +2,9 @@ import React, { FunctionComponent } from 'react';
 import ReportIcon from '@mui/icons-material/Report';
 import { ConfirmCancelModal, useSafeIntl } from 'bluesquare-components';
 import { Box, Typography } from '@mui/material';
-import MESSAGES from '../messages';
-import { SxStyles } from '../../../types/general';
-import { NumberCell } from '../../../components/Cells/NumberCell';
+import MESSAGES from '../../messages';
+import { SxStyles } from '../../../../types/general';
+import { NumberCell } from '../../../../components/Cells/NumberCell';
 
 type Props = {
     onConfirm: () => void;

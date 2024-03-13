@@ -658,6 +658,14 @@ class PolioAPITestCase(APITestCase):
         campaign = Campaign.objects.get(id=campaign_id)
         self.assertEqual(campaign.campaign_types.first().name, "Polio", "Campaign type should default to 'Polio'")
 
+        response = self.client.get(f"/api/polio/campaigns/{campaign.id}/", format="json")
+        self.assertEqual(response.status_code, 200, response.content)
+        response_data = response.json()
+
+        self.assertIn("campaign_types", response_data)
+        campaign_types = response_data["campaign_types"]
+        self.assertEqual(len(campaign_types), 1)
+
     def test_create_campaign_with_explicit_campaign_types(self):
         self.client.force_authenticate(self.yoda)
         self.assertEqual(Campaign.objects.count(), 0)

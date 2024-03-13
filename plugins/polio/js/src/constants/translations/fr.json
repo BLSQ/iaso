@@ -230,6 +230,7 @@
     "iaso.polio.label.CAMPAIGN_MOVED_FORWARD_BY_MOH": "Campagne avancée par le Ministère de la Santé",
     "iaso.polio.label.CAMPAIGN_SYNCHRONIZATION": "Synchonisation des campagnes",
     "iaso.polio.label.campaign.id": "Id",
+    "iaso.polio.label.campaignCategory": "Catégorie de campagne",
     "iaso.polio.label.campaignDropdownLabel": "Date de modification",
     "iaso.polio.label.campaigns": "Campagnes",
     "iaso.polio.label.campaignsToLink": "Campagnes à lier",

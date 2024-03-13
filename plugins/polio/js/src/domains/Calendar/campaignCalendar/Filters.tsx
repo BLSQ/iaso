@@ -38,7 +38,11 @@ type Props = {
     showTest: boolean;
 };
 
-const campaignTypeOptions = (formatMessage: IntlMessage, showTest = false) => {
+const campaignCategoryOptions = (
+    // eslint-disable-next-line no-unused-vars
+    formatMessage: (message: IntlMessage) => string,
+    showTest = false,
+) => {
     const options = [
         { label: formatMessage(MESSAGES.all), value: 'all' },
         { label: formatMessage(MESSAGES.preventiveShort), value: 'preventive' },
@@ -66,6 +70,9 @@ const Filters: FunctionComponent<Props> = ({
     const [countries, setCountries] = useState(params.countries);
     const [orgUnitGroups, setOrgUnitGroups] = useState(params.orgUnitGroups);
     const [campaignType, setCampaignType] = useState(params.campaignType);
+    const [campaignCategory, setCampaignCategory] = useState(
+        params.campaignCategory,
+    );
     const [campaignGroups, setCampaignGroups] = useState(params.campaignGroups);
     const [search, setSearch] = useState(params.search);
     const [showOnlyDeleted, setShowOnlyDeleted] = useState(
@@ -85,6 +92,7 @@ const Filters: FunctionComponent<Props> = ({
         roundStartTo ||
         showOnlyDeleted ||
         campaignType ||
+        campaignCategory ||
         campaignGroups ||
         orgUnitGroups;
 
@@ -103,6 +111,7 @@ const Filters: FunctionComponent<Props> = ({
                 ),
                 page: null,
                 campaignType,
+                campaignCategory,
                 showOnlyDeleted: showOnlyDeleted ? 'true' : undefined,
                 campaignGroups,
                 orgUnitGroups,
@@ -118,6 +127,7 @@ const Filters: FunctionComponent<Props> = ({
         roundStartFrom,
         roundStartTo,
         campaignType,
+        campaignCategory,
         showOnlyDeleted,
         campaignGroups,
         orgUnitGroups,
@@ -154,6 +164,7 @@ const Filters: FunctionComponent<Props> = ({
         roundStartTo,
         showOnlyDeleted,
         campaignType,
+        campaignCategory,
         campaignGroups,
         orgUnitGroups,
     ]);
@@ -212,6 +223,21 @@ const Filters: FunctionComponent<Props> = ({
                 <Grid item xs={12} md={3}>
                     <InputComponent
                         loading={isFetchingCountries}
+                        keyValue="campaignCategory"
+                        clearable
+                        onChange={(_key, value) => {
+                            setCampaignCategory(value);
+                        }}
+                        value={campaignCategory}
+                        type="select"
+                        options={campaignCategoryOptions(
+                            formatMessage,
+                            showTest,
+                        )}
+                        label={MESSAGES.campaignCategory}
+                    />
+                    {/* <InputComponent
+                        loading={isFetchingCountries}
                         keyValue="campaignType"
                         clearable
                         onChange={(_key, value) => {
@@ -221,7 +247,7 @@ const Filters: FunctionComponent<Props> = ({
                         type="select"
                         options={campaignTypeOptions(formatMessage, showTest)}
                         label={MESSAGES.campaignType}
-                    />
+                    /> */}
                     <InputComponent
                         loading={isFetchingCountries}
                         keyValue="countries"

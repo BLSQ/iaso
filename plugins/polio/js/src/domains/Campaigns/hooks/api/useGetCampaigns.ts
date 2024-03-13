@@ -9,7 +9,7 @@ const DEFAULT_PAGE = 1;
 const DEFAULT_ORDER = '-cvdpv2_notified_at';
 export const CAMPAIGNS_ENDPOINT = '/api/polio/campaigns/';
 
-export type CampaignType = 'all' | 'preventive' | 'test' | 'regular';
+export type CampaignCategory = 'all' | 'preventive' | 'test' | 'regular';
 
 export type Options = {
     pageSize?: number;
@@ -20,7 +20,8 @@ export type Options = {
     roundStartFrom?: string; // Date
     roundStartTo?: string; // Date
     showOnlyDeleted?: boolean;
-    campaignType?: CampaignType;
+    campaignType?: string;
+    campaignCategory?: CampaignCategory;
     campaignGroups?: number[];
     orgUnitGroups?: number[];
     show_test?: boolean;
@@ -39,7 +40,8 @@ export type GetCampaignsParams = {
     rounds__started_at__gte?: string;
     rounds__started_at__lte?: string;
     deletion_status?: string;
-    campaign_type?: CampaignType;
+    campaign_type?: string;
+    campaign_category?: CampaignCategory;
     campaign_groups?: number[];
     org_unit_groups?: number[];
     show_test?: boolean;
@@ -65,6 +67,7 @@ export const useGetCampaignsOptions = (
     options: Options,
     asCsv = false,
 ): GetCampaignsParams => {
+    console.log('options', options);
     return useMemo(
         () => ({
             limit: asCsv ? undefined : options.pageSize,
@@ -75,7 +78,8 @@ export const useGetCampaignsOptions = (
             rounds__started_at__gte: options.roundStartFrom,
             rounds__started_at__lte: options.roundStartTo,
             deletion_status: options.showOnlyDeleted ? 'deleted' : undefined,
-            campaign_type: options.campaignType ?? 'all',
+            campaign_type: options.campaignType,
+            campaign_category: options.campaignCategory ?? 'all',
             campaign_groups: options.campaignGroups,
             org_unit_groups: options.orgUnitGroups,
             show_test: options.show_test ?? false,
@@ -88,6 +92,7 @@ export const useGetCampaignsOptions = (
             asCsv,
             options.campaignGroups,
             options.campaignType,
+            options.campaignCategory,
             options.countries,
             options.enabled,
             options.fieldset,
@@ -150,8 +155,8 @@ export const useGetCampaignsAsCsv = (
 export const useCampaignParams = (params: Options): Options => {
     return useMemo(() => {
         const showTest =
-            params.campaignType !== 'regular' &&
-            params.campaignType !== 'preventive' &&
+            params.campaignCategory !== 'regular' &&
+            params.campaignCategory !== 'preventive' &&
             params.filterLaunched;
         return {
             order: params?.order ?? DEFAULT_ORDER,
@@ -163,6 +168,7 @@ export const useCampaignParams = (params: Options): Options => {
             roundStartTo: params.roundStartTo,
             showOnlyDeleted: params.showOnlyDeleted,
             campaignType: params.campaignType,
+            campaignCategory: params.campaignCategory,
             campaignGroups: params.campaignGroups,
             show_test: showTest,
             last_budget_event__status: params.last_budget_event__status,

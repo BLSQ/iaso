@@ -141,6 +141,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.rejected',
         defaultMessage: 'Rejected',
     },
+    editPaymentFor: {
+        id: 'iaso.payments.label.editPaymentFor',
+        defaultMessage: 'Edit payment for {user}',
+    },
 });
 
 export default MESSAGES;

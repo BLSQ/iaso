@@ -10,18 +10,22 @@ import { PaymentStatus } from '../types';
 import { useSavePaymentStatus } from '../hooks/requests/useSavePaymentStatus';
 import { usePaymentStatusOptions } from '../hooks/utils';
 import { EditIconButton } from '../../../components/Buttons/EditIconButton';
+import { UserDisplayData } from '../../users/types';
+import getDisplayName from '../../../utils/usersUtils';
 
 type Props = {
     isOpen: boolean;
     closeDialog: () => void;
     id: number;
     status: PaymentStatus;
+    user: UserDisplayData;
 };
 
 const EditPaymentDialog: FunctionComponent<Props> = ({
     isOpen,
     closeDialog,
     id,
+    user,
     status: initialStatus,
 }) => {
     const { formatMessage } = useSafeIntl();
@@ -31,14 +35,17 @@ const EditPaymentDialog: FunctionComponent<Props> = ({
         return saveStatus({ id, status });
     }, [id, saveStatus, status]);
     const paymentStatusOptions = usePaymentStatusOptions();
-    console.log('status', status);
+    const userDisplayName = getDisplayName(user);
+    const titleMessage = formatMessage(MESSAGES.editPaymentFor, {
+        user: userDisplayName,
+    });
     return (
         <ConfirmCancelModal
             open={isOpen}
             onClose={() => null}
             id="EditPaymentDialog"
             dataTestId="EditPaymentDialog"
-            titleMessage={undefined}
+            titleMessage={titleMessage}
             closeDialog={closeDialog}
             onConfirm={handleConfirm}
             onCancel={() => setStatus(initialStatus)}
@@ -52,7 +59,7 @@ const EditPaymentDialog: FunctionComponent<Props> = ({
                 clearable={false}
                 required
                 onChange={(_, value) => setStatus(value)}
-                label={formatMessage(MESSAGES.changeStatus)}
+                labelString={formatMessage(MESSAGES.changeStatus)}
                 options={paymentStatusOptions}
             />
         </ConfirmCancelModal>

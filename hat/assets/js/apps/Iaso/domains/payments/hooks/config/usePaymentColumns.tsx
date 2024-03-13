@@ -80,6 +80,22 @@ export const usePaymentColumns = ({
                         );
                     },
                 },
+                {
+                    Header: formatMessage(MESSAGES.actions),
+                    id: 'action',
+                    accessor: 'action',
+                    Cell: settings => {
+                        const payment = settings.row.original;
+                        return (
+                            <EditPaymentDialog
+                                status={payment.status}
+                                id={payment.id}
+                                iconProps={{}}
+                                user={payment.user}
+                            />
+                        );
+                    },
+                },
             ]);
         }
         return columns;

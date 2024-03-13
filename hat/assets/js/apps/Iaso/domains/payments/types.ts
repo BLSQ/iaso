@@ -18,7 +18,7 @@ export type PaymentLotsParams = UrlParams & {
     users?: string;
 };
 
-type PaymenStatus = 'pending' | 'sent' | 'rejected';
+export type PaymentStatus = 'pending' | 'sent' | 'rejected';
 
 type User = {
     id: number;
@@ -35,7 +35,7 @@ type OrgUnitChangeRequest = {
 
 export type Payment = {
     id: number;
-    status: PaymenStatus;
+    status: PaymentStatus;
     created_at: string;
     updated_at: string;
     created_by: User;

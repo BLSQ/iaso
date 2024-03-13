@@ -867,6 +867,7 @@
     "iaso.pages.title": "Embedded links",
     "iaso.payments.createLot": "Create a new lot of payments",
     "iaso.payments.download_payments": "Download payments",
+    "iaso.payments.label.editPaymentFor": "Edit payment for {user}",
     "iaso.payments.lots": "Payments lots",
     "iaso.payments.mark_as_sent": "Mark as sent",
     "iaso.payments.paid": "Paid",

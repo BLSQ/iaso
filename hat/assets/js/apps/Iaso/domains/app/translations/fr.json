@@ -867,6 +867,7 @@
     "iaso.pages.title": "Liens intégrés",
     "iaso.payments.createLot": "Créer un nouveau lot de paiements",
     "iaso.payments.download_payments": "Télécharger les paiements",
+    "iaso.payments.label.editPaymentFor": "Editer paiement pour {user}",
     "iaso.payments.lots": "Lots de paiements",
     "iaso.payments.mark_as_sent": "Marquer comme envoyé",
     "iaso.payments.paid": "Payé",

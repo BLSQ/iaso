@@ -243,11 +243,11 @@ const MESSAGES = defineMessages({
     },
     obrName: {
         id: 'iaso.polio.form.label.obrName',
-        defaultMessage: 'OBR Name',
+        defaultMessage: 'Campaign identifier',
     },
     obr_name: {
         id: 'iaso.polio.form.label.obrName',
-        defaultMessage: 'OBR Name',
+        defaultMessage: 'Campaign identifier',
     },
     virus: {
         id: 'iaso.polio.form.label.virus',
@@ -259,11 +259,11 @@ const MESSAGES = defineMessages({
     },
     gpeiCoordinator: {
         id: 'iaso.polio.form.label.gpeiCoordinator',
-        defaultMessage: 'GPEI Coordinator',
+        defaultMessage: 'Responsible officer',
     },
     gpei_coordinator: {
         id: 'iaso.polio.form.label.gpeiCoordinator',
-        defaultMessage: 'GPEI Coordinator',
+        defaultMessage: 'Responsible officer',
     },
     preventive: {
         id: 'iaso.polio.form.label.preventive',

@@ -31,12 +31,12 @@ const BulkEditPaymentDialog: FunctionComponent<Props> = ({
     const { mutateAsync: saveStatus } = useBulkSavePaymentStatus();
 
     const handleConfirm = useCallback(() => {
-        saveStatus({ selection }).then(() => {
+        saveStatus({ ...selection, status }).then(() => {
             setIsWarningOpen(false);
             resetSelection();
             closeDialog();
         });
-    }, [closeDialog, resetSelection, saveStatus, selection]);
+    }, [closeDialog, resetSelection, saveStatus, selection, status]);
     const count = selection.selectCount;
     const titleMessage = formatMessage(MESSAGES.editSelectedPayments, {
         count,

@@ -26,6 +26,7 @@ from iaso.gpkg import org_units_to_gpkg_bytes
 from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form, Instance, DataSource
 from iaso.utils import geojson_queryset
 from hat.menupermissions import models as permission
+from ..utils.models.common import get_creator_name
 
 
 # noinspection PyMethodMayBeStatic
@@ -73,13 +74,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
     def get_queryset(self):
         return OrgUnit.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
-
-    def get_creator_name(self, creator):
-        if creator is None:
-            return None
-        if creator["first_name"] is not None or creator["last_name"] is not None:
-            return f"{creator['username']} ({creator['first_name']} {creator['last_name']})"
-        return creator["username"]
 
     def list(self, request):
         """Power the almighty Search function, and export
@@ -259,7 +253,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 "source_ref",
                 "created_at",
                 "updated_at",
-                "creator",
                 "creator__username",
                 "creator__first_name",
                 "creator__last_name",
@@ -278,12 +271,12 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
             def get_row(org_unit, **kwargs):
                 location = org_unit.get("location", None)
-                creator = {
-                    "username": org_unit.get("creator__username", ""),
-                    "first_name": org_unit.get("creator__first_name", ""),
-                    "last_name": org_unit.get("creator__last_name", ""),
-                }
-                creator_name = self.get_creator_name(creator)
+                creator = get_creator_name(
+                    None,
+                    org_unit.get("creator__username", None),
+                    org_unit.get("creator__first_name", None),
+                    org_unit.get("creator__last_name", None),
+                )
 
                 org_unit_values = [
                     org_unit.get("id"),
@@ -299,7 +292,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     org_unit.get("closed_date").strftime("%Y-%m-%d") if org_unit.get("closed_date") else None,
                     org_unit.get("created_at").strftime("%Y-%m-%d %H:%M"),
                     org_unit.get("updated_at").strftime("%Y-%m-%d %H:%M"),
-                    creator_name if creator_name else None,
+                    creator,
                     org_unit.get("version__data_source__name"),
                     org_unit.get("validation_status"),
                     org_unit.get("source_ref"),

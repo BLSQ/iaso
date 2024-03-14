@@ -1,11 +1,13 @@
 import React from 'react';
+import { Chip } from '@mui/material';
 import {
     IconButton as IconButtonComponent,
     displayDateFromTimestamp,
+    Expander,
 } from 'bluesquare-components';
 import MESSAGES from './messages';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell';
-import { NotificationImportDetailModal } from './components/NotificationImportDetailModal.tsx';
+import { NotificationImportDetailModal } from './components/NotificationImportDetailModal';
 
 const getTranslatedStatusMessage = (formatMessage, status) => {
     // Return untranslated status if not translation available
@@ -14,12 +16,30 @@ const getTranslatedStatusMessage = (formatMessage, status) => {
         : status;
 };
 
+const getStatusColor = status => {
+    if (['QUEUED', 'RUNNING'].includes(status)) {
+        return 'info';
+    } else if (['EXPORTED', 'SUCCESS'].includes(status)) {
+        return 'success';
+    } else if (status === 'ERRORED') {
+        return 'error';
+    } else {
+        return 'warning';
+    }
+};
+
 const safePercent = (a, b) => {
     if (b === 0) {
         return '';
     }
     const percent = 100 * (a / b);
     return `${percent.toFixed(2)}%`;
+};
+
+const styles: SxStyles = {
+    chip: {
+        color: 'white',
+    },
 };
 
 const tasksTableColumns = (
@@ -40,17 +60,24 @@ const tasksTableColumns = (
             return (
                 <span>
                     {settings.value === 'RUNNING' &&
-                    settings.row.original.end_value > 0
-                        ? `${settings.row.original.progress_value}/${
-                              settings.row.original.end_value
-                          } (${safePercent(
-                              settings.row.original.progress_value,
-                              settings.row.original.end_value,
-                          )})`
-                        : getTranslatedStatusMessage(
-                              formatMessage,
-                              settings.value,
-                          )}
+                    settings.row.original.end_value > 0 ? (
+                        `${settings.row.original.progress_value}/${
+                            settings.row.original.end_value
+                        } (${safePercent(
+                            settings.row.original.progress_value,
+                            settings.row.original.end_value,
+                        )})`
+                    ) : (
+                        <Chip
+                            label={getTranslatedStatusMessage(
+                                formatMessage,
+                                settings.value,
+                            )}
+                            color={getStatusColor(settings.value)}
+                            size="small"
+                            sx={styles.chip}
+                        />
+                    )}
                 </span>
             );
         },
@@ -63,17 +90,9 @@ const tasksTableColumns = (
         accessor: 'progress_message',
         Cell: settings => {
             if (!settings.value) return null;
-            return settings.value?.length < 40 ? (
-                settings.value
-            ) : (
-                <details>
-                    <summary>{settings.value.slice(0, 99)}...</summary>
-                    <i>Open for more details</i>
-                    <pre style={{ maxWidth: '550px', textWrap: 'wrap' }}>
-                        {settings.value}
-                    </pre>
-                </details>
-            );
+            return settings.value?.length < 40
+                ? settings.value
+                : `${settings.value.slice(0, 40)}...`;
         },
     },
     {
@@ -155,6 +174,12 @@ const tasksTableColumns = (
                     )}
             </section>
         ),
+    },
+    {
+        expander: true,
+        accessor: 'expander',
+        width: 65,
+        Expander,
     },
 ];
 export default tasksTableColumns;

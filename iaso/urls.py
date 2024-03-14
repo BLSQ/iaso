@@ -80,6 +80,7 @@ from .api.source_versions import SourceVersionViewSet
 from .api.storage import StorageLogViewSet, StorageViewSet, logs_per_device, StorageBlacklistedViewSet
 from .api.tasks import TaskSourceViewSet
 from .api.tasks.create.import_gpkg import ImportGPKGViewSet
+from .api.tasks.create.export_mobile_setup import ExportMobileSetupViewSet
 from .api.tasks.create.org_unit_bulk_location_set import OrgUnitsBulkLocationSet
 from .api.workflows.changes import WorkflowChangeViewSet
 from .api.workflows.followups import WorkflowFollowupViewSet
@@ -141,6 +142,7 @@ router.register(r"tasks/create/orgunitsbulkupdate", OrgUnitsBulkUpdate, basename
 router.register(r"tasks/create/profilesbulkupdate", ProfilesBulkUpdate, basename="profilesbulkupdate")
 router.register(r"tasks/create/orgunitsbulklocationset", OrgUnitsBulkLocationSet, basename="orgunitsbulklocationset")
 router.register(r"tasks/create/importgpkg", ImportGPKGViewSet, basename="importgpkg")
+router.register(r"tasks/create/exportmobilesetup", ExportMobileSetupViewSet, basename="exportmobilesetup")
 router.register(r"tasks", TaskSourceViewSet, basename="tasks")
 router.register(r"comments", CommentViewSet, basename="comments")
 router.register(r"entities", EntityViewSet, basename="entity")

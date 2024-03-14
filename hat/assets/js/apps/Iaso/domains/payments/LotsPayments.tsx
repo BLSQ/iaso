@@ -18,7 +18,8 @@ export const LotsPayments: FunctionComponent<Props> = ({ params }) => {
     // const dispatch = useDispatch();
 
     const theme = useTheme();
-    const { data, isFetching } = useGetPaymentLots(params);
+    // Replaced isFetching with isLoading to avoid flicker effect when refreshing data, eg when PATCHing a payment
+    const { data, isLoading } = useGetPaymentLots(params);
     const { formatMessage } = useSafeIntl();
     const columns = usePaymentLotsColumns();
     return (
@@ -37,7 +38,7 @@ export const LotsPayments: FunctionComponent<Props> = ({ params }) => {
                     columns={columns}
                     baseUrl={baseUrl}
                     params={params}
-                    extraProps={{ loading: isFetching }}
+                    extraProps={{ loading: isLoading }}
                 />
             </Box>
         </>

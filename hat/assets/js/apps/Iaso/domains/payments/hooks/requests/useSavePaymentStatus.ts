@@ -12,10 +12,7 @@ const savePaymentStatus = (body: {
     id: number;
 }): Promise<any> => {
     const { id, status } = body;
-    // return patchRequest(`${apiUrl}/${id}`, { status });
-    waitFor(500);
-    console.log('PATCH', body);
-    return body;
+    return patchRequest(`${apiUrl}${id}/`, { status });
 };
 
 export const useSavePaymentStatus = (): UseMutationResult => {

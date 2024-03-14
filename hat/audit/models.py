@@ -18,6 +18,7 @@ FORM_API = "form_api"
 GPKG_IMPORT = "gpkg_import"
 CAMPAIGN_API = "campaign_api"
 PROFILE_API_BULK = "profile_api_bulk"
+PAYMENT_API_BULK = "payment_api_bulk"
 
 
 def dict_compare(d1, d2):

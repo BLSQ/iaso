@@ -73,12 +73,14 @@ from .api.periods import PeriodsViewSet
 from .api.permissions import PermissionsViewSet
 from .api.profiles import ProfilesViewSet
 from .api.projects import ProjectsViewSet
+from .api.payments.views import PotentialPaymentsViewSet, PaymentLotsViewSet
 from .api.reports import ReportsViewSet
 from .api.setup_account import SetupAccountViewSet
 from .api.source_versions import SourceVersionViewSet
 from .api.storage import StorageLogViewSet, StorageViewSet, logs_per_device, StorageBlacklistedViewSet
 from .api.tasks import TaskSourceViewSet
 from .api.tasks.create.import_gpkg import ImportGPKGViewSet
+from .api.tasks.create.export_mobile_setup import ExportMobileSetupViewSet
 from .api.tasks.create.org_unit_bulk_location_set import OrgUnitsBulkLocationSet
 from .api.workflows.changes import WorkflowChangeViewSet
 from .api.workflows.followups import WorkflowFollowupViewSet
@@ -101,6 +103,8 @@ router.register(r"orgunittypes", OrgUnitTypeViewSet, basename="orgunittypes")
 router.register(r"v2/orgunittypes", OrgUnitTypeViewSetV2, basename="orgunittypes")
 router.register(r"apps", AppsViewSet, basename="apps")
 router.register(r"projects", ProjectsViewSet, basename="projects")
+router.register(r"potential_payments", PotentialPaymentsViewSet, basename="potential_payments")
+router.register(r"payments/lots", PaymentLotsViewSet, basename="paymentslots")
 router.register(r"instances", InstancesViewSet, basename="instances")
 router.register(r"forms", FormsViewSet, basename="forms")
 router.register(r"mobile/forms", MobileFormViewSet, basename="formsmobile")
@@ -138,6 +142,7 @@ router.register(r"tasks/create/orgunitsbulkupdate", OrgUnitsBulkUpdate, basename
 router.register(r"tasks/create/profilesbulkupdate", ProfilesBulkUpdate, basename="profilesbulkupdate")
 router.register(r"tasks/create/orgunitsbulklocationset", OrgUnitsBulkLocationSet, basename="orgunitsbulklocationset")
 router.register(r"tasks/create/importgpkg", ImportGPKGViewSet, basename="importgpkg")
+router.register(r"tasks/create/exportmobilesetup", ExportMobileSetupViewSet, basename="exportmobilesetup")
 router.register(r"tasks", TaskSourceViewSet, basename="tasks")
 router.register(r"comments", CommentViewSet, basename="comments")
 router.register(r"entities", EntityViewSet, basename="entity")

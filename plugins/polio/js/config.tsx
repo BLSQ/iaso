@@ -106,6 +106,10 @@ const campaignsFilters = [
         isRequired: false,
         key: 'show_test',
     },
+    {
+        isRequired: false,
+        key: 'filterLaunched',
+    },
 ];
 
 const routes = [

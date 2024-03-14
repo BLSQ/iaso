@@ -594,6 +594,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.user',
         defaultMessage: 'User',
     },
+    formSubmissionLinkLabel: {
+        id: 'iaso.label.formSubmissionLinkLabel',
+        defaultMessage: 'Link to form submission',
+    },
 });
 
 export default MESSAGES;

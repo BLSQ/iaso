@@ -3,24 +3,19 @@ import time
 
 
 class IasoClient:
-    def __init__(self, server_url, user_name, password):
+    def __init__(self, server_url):
         self.debug = False
-        self.user_name = user_name
-        self.password = password
         self.server_url = server_url
-        self.headers = self.init_auth_headers()
+        self.headers = {}
 
-    def get_api_url(self):
-        return self.server_url + "/api/"
-
-    def init_auth_headers(self):
-        creds = {"username": self.user_name, "password": self.password}
-
-        r = requests.post(self.get_api_url() + "token/", json=creds)
-
+    def authenticate_with_username_and_password(self, username, password):
+        credentials = {"username": username, "password": password}
+        r = requests.post(self.server_url + "/api/token/", json=credentials)
         token = r.json().get("access")
-        headers = {"Authorization": "Bearer %s" % token}
-        return headers
+        self.authenticate_with_token(token)
+
+    def authenticate_with_token(self, token):
+        self.headers["Authorization"] = "Bearer %s" % token
 
     def post(self, url, json=None, data=None, files=None):
         self.log(url, json)
@@ -65,9 +60,15 @@ class IasoClient:
 
     def get(self, url, params=None):
         r = requests.get(self.server_url + url, params=params, headers=self.headers)
-        payload = r.json()
-        self.log(url, payload)
-        return payload
+        resp = None
+        try:
+            resp = r.json()
+            r.raise_for_status()
+        except Exception as e:
+            print(resp, r)
+            raise e
+        self.log(url, resp)
+        return resp
 
     def wait_task_completion(self, task_to_wait):
         print(f"\tWaiting for async task '{task_to_wait['task']['name']}'")

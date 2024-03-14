@@ -23,4 +23,6 @@ class Migration(migrations.Migration):
         ("iaso", "0268_remove_payment_change_requests_and_more"),
     ]
 
-    operations = []
+    operations = [
+        migrations.RunPython(create_feature_flags, destroy_feature_flags),
+    ]

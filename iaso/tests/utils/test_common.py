@@ -3,7 +3,6 @@ from iaso.utils.models.common import get_creator_name
 
 
 class CommonTestCase(TestCase):
-
     def test_get_creator_name(self):
         user = {"username": "yoda", "first_name": "Yo", "last_name": "Da"}
         creator = get_creator_name(

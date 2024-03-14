@@ -12,6 +12,7 @@ from rest_framework.response import Response
 
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
+from hat.audit.audit_mixin import AuditMixin
 from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission, ModelViewSet
 from iaso.api.payments.filters import (
@@ -19,10 +20,10 @@ from iaso.api.payments.filters import (
     payments_lots as payments_lots_filters,
 )
 from iaso.models import Payment, OrgUnitChangeRequest, PotentialPayment, PaymentLot
-from .serializers import PotentialPaymentSerializer, PaymentLotSerializer, PaymentLotCreateSerializer
+from .serializers import PaymentSerializer, PotentialPaymentSerializer, PaymentLotSerializer, PaymentLotCreateSerializer
 
 
-class PaymentLotsViewSet(ModelViewSet):
+class PaymentLotsViewSet(ModelViewSet, AuditMixin):
     """
     # `Payment Lots` API
 
@@ -296,7 +297,7 @@ class PaymentLotsViewSet(ModelViewSet):
         return response
 
 
-class PotentialPaymentsViewSet(ModelViewSet):
+class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
     """
     # `Potential payment` API
 
@@ -434,3 +435,13 @@ class PotentialPaymentsViewSet(ModelViewSet):
         orders = request.GET.get("order", "user__last_name").split(",")
         queryset = self.filter_queryset(self.get_queryset()).order_by(*orders)
         return super().list(request, queryset)
+
+
+class PaymentsViewSet(ModelViewSet, AuditMixin):
+    http_method_names = ["patch", "get"]
+    results_key = "results"
+    serializer_class = PaymentSerializer
+    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
+
+    def get_queryset(self) -> models.QuerySet:
+        return Payment.objects.filter(created_by__iaso_profile__account=self.request.user.iaso_profile.account)

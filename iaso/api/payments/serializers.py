@@ -105,3 +105,41 @@ class PaymentLotCreateSerializer(serializers.Serializer):
         child=serializers.IntegerField(),
         help_text="List of IDs for potential payments to be included in the payment lot",
     )
+
+
+class PaymentSerializer(serializers.ModelSerializer):
+    change_requests = serializers.SerializerMethodField(read_only=True)
+    user = UserNestedSerializer(read_only=True)
+
+    class Meta:
+        model = Payment
+        fields = "__all__"
+        read_only_fields = [
+            "id",
+            "created_at",
+            "updated_at",
+            "change_requests",
+            "user",
+            "created_by",
+            "payment_lot",
+            "updated_by",
+        ]
+
+    pagination_class = PaymentPagination
+
+    def validate_status(self, status):
+        if status not in Payment.Statuses:
+            raise serializers.ValidationError("Invalid status")
+        return status
+
+    def get_change_requests(self, obj):
+        change_requests = OrgUnitChangeRequest.objects.filter(payment=obj)
+        return OrgChangeRequestNestedSerializer(change_requests, many=True).data
+
+    def update(self, obj, validated_data):
+        payment = super().update(obj, validated_data)
+        request = self.context["request"]
+        user = request.user
+        payment.updated_by = user
+        payment.save()
+        return payment

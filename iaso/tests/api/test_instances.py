@@ -10,7 +10,6 @@ from django.contrib.gis.geos import Point
 from django.core.files import File
 from django.utils import timezone
 from django.utils.timezone import now
-
 from hat.api.export_utils import timestamp_to_utc_datetime
 from hat.audit.models import Modification
 from iaso import models as m
@@ -37,7 +36,9 @@ class InstancesAPITestCase(APITestCase):
         star_wars.save()
         cls.sw_version = sw_version
 
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_submissions"])
+        cls.yoda = cls.create_user_with_profile(
+            username="yoda", last_name="Da", first_name="Yo", account=star_wars, permissions=["iaso_submissions"]
+        )
         cls.guest = cls.create_user_with_profile(username="guest", account=star_wars, permissions=["iaso_submissions"])
         cls.supervisor = cls.create_user_with_profile(
             username="supervisor", account=star_wars, permissions=["iaso_submissions", "iaso_forms"]
@@ -90,6 +91,7 @@ class InstancesAPITestCase(APITestCase):
                 org_unit=cls.jedi_council_corruscant,
                 project=cls.project,
                 created_by=cls.yoda,
+                export_id="Vzhn0nceudr",
             )
         with patch("django.utils.timezone.now", lambda: datetime.datetime(2020, 2, 1, 0, 0, 5, tzinfo=pytz.UTC)):
             cls.instance_2 = cls.create_form_instance(
@@ -924,19 +926,9 @@ class InstancesAPITestCase(APITestCase):
         self.assertFileResponse(response, 200, "text/csv; charset=utf-8")
 
     def test_can_retrieve_submissions_list_in_csv_format(self):
-        """It tests the csv submissions export data"""
-
-        self.yoda.username = "yoda"
-        self.yoda.last_name = "Da"
-        self.yoda.first_name = "Yo"
-        self.yoda.save()
-        self.form_id = self.form_1.id
-
-        self.created_by = self.yoda
         self.client.force_authenticate(self.yoda)
-
         response = self.client.get(
-            f"/api/instances/?form_ids={self.form_1.id}&csv=true", headers={"Content-Type": "text/csv"}
+            f"/api/instances/?form_ids={self.instance_1.form.id}&csv=true", headers={"Content-Type": "text/csv"}
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "text/csv")
@@ -946,8 +938,28 @@ class InstancesAPITestCase(APITestCase):
         reader = csv.reader(io.StringIO(response_string), delimiter=",")
         data = list(reader)
         row_to_test = data[len(data) - 1]
-        created_by = row_to_test[10]
-        self.assertEqual(created_by, "yoda (Yo Da)")
+        expected_row = [
+            f"{self.instance_1.id}",
+            "",
+            "Vzhn0nceudr",
+            "",
+            "",
+            "",
+            "",
+            "202001",
+            self.instance_1.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+            now().strftime("%Y-%m-%d %H:%M:%S"),
+            "yoda (Yo Da)",
+            "READY",
+            "Coruscant Jedi Council",
+            f"{self.jedi_council_corruscant.id}",
+            "jedi_council_corruscant_ref",
+            "",
+            "",
+            "",
+            "",
+        ]
+        self.assertEqual(row_to_test, expected_row)
 
     def test_user_restriction(self):
         full = self.create_user_with_profile(username="full", account=self.star_wars, permissions=["iaso_submissions"])

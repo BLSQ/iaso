@@ -1200,6 +1200,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.campaignType',
         defaultMessage: 'Campaign type',
     },
+    campaign_types: {
+        id: 'iaso.polio.label.campaignTypes',
+        defaultMessage: 'Campaign types',
+    },
     campaignCategory: {
         id: 'iaso.polio.label.campaignCategory',
         defaultMessage: 'Campaign category',

@@ -681,6 +681,13 @@ class OrgUnitChangeRequest(models.Model):
     old_closed_date = models.DateField(blank=True, null=True)
     old_reference_instances = models.ManyToManyField("Instance", blank=True, related_name="+")
 
+    payment = models.ForeignKey(
+        "Payment", on_delete=models.SET_NULL, null=True, blank=True, related_name="change_requests"
+    )
+    potential_payment = models.ForeignKey(
+        "PotentialPayment", on_delete=models.SET_NULL, null=True, blank=True, related_name="change_requests"
+    )
+
     class Meta:
         verbose_name = _("Org unit change request")
         indexes = [

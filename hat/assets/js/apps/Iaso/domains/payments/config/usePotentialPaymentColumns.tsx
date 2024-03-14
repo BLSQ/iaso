@@ -47,7 +47,7 @@ export const usePotentialPaymentColumns = (): Column[] => {
             },
             {
                 Header: formatMessage(MESSAGES.changes),
-                id: 'change_requests',
+                id: 'change_requests_count',
                 accessor: 'change_requests',
                 Cell: ({
                     value,

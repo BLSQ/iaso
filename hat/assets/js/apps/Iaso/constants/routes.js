@@ -1407,6 +1407,26 @@ export const lotsPaymentsPath = {
             key: 'accountId',
         },
         ...paginationPathParams,
+        {
+            isRequired: false,
+            key: 'created_at_after',
+        },
+        {
+            isRequired: false,
+            key: 'created_at_before',
+        },
+        {
+            isRequired: false,
+            key: 'status',
+        },
+        {
+            isRequired: false,
+            key: 'users',
+        },
+        {
+            isRequired: false,
+            key: 'parent_id',
+        },
     ],
 };
 

@@ -1,9 +1,4 @@
-import React, {
-    FunctionComponent,
-    useState,
-    useMemo,
-    useCallback,
-} from 'react';
+import React, { FunctionComponent, useState, useCallback } from 'react';
 import {
     commonStyles,
     selectionInitialState,
@@ -12,18 +7,17 @@ import {
 } from 'bluesquare-components';
 import { Box, useTheme } from '@mui/material';
 import { useDispatch } from 'react-redux';
-import PaymentsIcon from '@mui/icons-material/Payments';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
-import { PotentialPaymentParams } from './types';
+import { PotentialPaymentParams, PotentialPayment } from './types';
 import { useGetPotentialPayments } from './hooks/requests/useGetPotentialPayments';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
-import { PotentialPaymentsFilter } from './components/PotentialPaymentsFilter';
+import { PotentialPaymentsFilters } from './components/PotentialPaymentsFilters';
 import { redirectTo } from '../../routing/actions';
 import { usePotentialPaymentColumns } from './config/usePotentialPaymentColumns';
 import { Selection } from '../orgUnits/types/selection';
-import { Profile } from '../../utils/usersUtils';
+import { AddPaymentLotDialog } from './components/PaymentLotDialog';
 
 type Props = {
     params: PotentialPaymentParams;
@@ -36,27 +30,14 @@ export const PotentialPayments: FunctionComponent<Props> = ({ params }) => {
     const { formatMessage } = useSafeIntl();
     const theme = useTheme();
     const columns = usePotentialPaymentColumns();
-    const [multiActionPopupOpen, setMultiActionPopupOpen] =
-        useState<boolean>(false);
-    const [selection, setSelection] = useState<Selection<Profile>>(
+    const [selection, setSelection] = useState<Selection<PotentialPayment>>(
         selectionInitialState,
     );
     const multiEditDisabled =
         !selection.selectAll && selection.selectedItems.length === 0;
-    const selectionActions = useMemo(
-        () => [
-            {
-                icon: <PaymentsIcon />,
-                label: 'LABEL',
-                onClick: () => setMultiActionPopupOpen(true),
-                disabled: multiEditDisabled,
-            },
-        ],
-        [multiEditDisabled, setMultiActionPopupOpen],
-    );
     const handleTableSelection = useCallback(
         (selectionType, items = [], totalCount = 0) => {
-            const newSelection: Selection<Profile> = setTableSelection(
+            const newSelection: Selection<PotentialPayment> = setTableSelection(
                 selection,
                 selectionType,
                 items,
@@ -73,7 +54,16 @@ export const PotentialPayments: FunctionComponent<Props> = ({ params }) => {
                 displayBackButton={false}
             />
             <Box sx={commonStyles(theme).containerFullHeightNoTabPadded}>
-                <PotentialPaymentsFilter params={params} />
+                <PotentialPaymentsFilters params={params} />
+                <Box display="flex" justifyContent="flex-end">
+                    <AddPaymentLotDialog
+                        iconProps={{ disabled: multiEditDisabled }}
+                        selection={selection}
+                        titleMessage={formatMessage(MESSAGES.createLot)}
+                        params={params}
+                        setSelection={setSelection}
+                    />
+                </Box>
                 {/* @ts-ignore */}
                 <TableWithDeepLink
                     marginTop={false}
@@ -85,9 +75,9 @@ export const PotentialPayments: FunctionComponent<Props> = ({ params }) => {
                     baseUrl={baseUrl}
                     params={params}
                     extraProps={{ loading: isFetching }}
-                    // multiSelect
+                    multiSelect
                     selection={selection}
-                    selectionActions={selectionActions}
+                    selectionActions={[]}
                     //  @ts-ignore
                     setTableSelection={(selectionType, items, totalCount) =>
                         handleTableSelection(selectionType, items, totalCount)

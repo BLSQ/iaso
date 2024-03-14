@@ -243,18 +243,21 @@ const menuItems = (
         {
             label: formatMessage(MESSAGES.payments),
             key: 'payments',
+            dev: true,
             icon: props => <PaymentsIcon {...props} />,
             subMenu: [
                 {
                     label: formatMessage(MESSAGES.potentialPayments),
                     permissions: paths.potentialPaymentsPath.permissions,
                     key: 'potential',
+                    dev: true,
                     icon: props => <PriceCheckIcon {...props} />,
                 },
                 {
                     label: formatMessage(MESSAGES.lots),
                     permissions: paths.potentialPaymentsPath.permissions,
                     key: 'lots',
+                    dev: true,
                     icon: props => <AccountBalanceIcon {...props} />,
                 },
             ],
@@ -329,7 +332,7 @@ const filterDevFeatures = (items: MenuItems): MenuItems => {
     items.forEach(item => {
         if (!item.subMenu && !item.dev) {
             result.push(item);
-        } else if (item.subMenu) {
+        } else if (item.subMenu && !item.dev) {
             const subMenu = filterDevFeatures(item.subMenu);
             const filtered = { ...item, subMenu };
             result.push(filtered);

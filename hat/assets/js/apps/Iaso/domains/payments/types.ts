@@ -10,6 +10,14 @@ export type PotentialPaymentParams = UrlParams & {
     user_roles?: string;
 };
 
+export type PaymentLotsParams = UrlParams & {
+    created_at_after?: string;
+    created_at_before?: string;
+    parent_id?: string;
+    status?: PaymentLotStatus;
+    users?: string;
+};
+
 type PaymenStatus = 'pending' | 'sent' | 'rejected';
 
 type User = {
@@ -36,6 +44,11 @@ export type Payment = {
     change_requests: OrgUnitChangeRequest[];
 };
 
+type NestedPayment = Omit<
+    Payment,
+    'created_at' | 'updated_at' | 'created_by' | 'updated_by'
+>;
+
 export type PotentialPayment = {
     id: number;
     status: string;
@@ -44,4 +57,23 @@ export type PotentialPayment = {
 };
 export interface PotentialPaymentPaginated extends Pagination {
     results: PotentialPayment[];
+}
+
+export type PotentialPayments = {
+    results: PotentialPayment[];
+};
+
+type PaymentLotStatus = 'new' | 'sent' | 'paid' | 'partially_paid';
+
+export type PaymentLot = {
+    id: number;
+    name: string;
+    comment?: string;
+    created_at: string;
+    created_by: User;
+    status: PaymentLotStatus;
+    payments: NestedPayment[];
+};
+export interface PaymentLotPaginated extends Pagination {
+    results: PaymentLot[];
 }

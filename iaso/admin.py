@@ -83,7 +83,9 @@ from .models import (
     WorkflowFollowup,
     WorkflowVersion,
     OrgUnitReferenceInstance,
+    PotentialPayment,
     Payment,
+    PaymentLot,
 )
 from .models.microplanning import Team, Planning, Assignment
 from .models.data_store import JsonDataStore
@@ -689,6 +691,8 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
         "new_org_unit_type",
         "new_groups",
         "new_reference_instances",
+        "payment",
+        "potential_payment",
     )
     fieldsets = (
         (
@@ -698,6 +702,8 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
                     "uuid",
                     "org_unit",
                     "status",
+                    "payment",
+                    "potential_payment",
                 )
             },
         ),
@@ -760,9 +766,18 @@ class ConfigAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
+@admin.register(PotentialPayment)
+class PotentialPaymentAdmin(admin.ModelAdmin):
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+
+
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
-    raw_id_fields = ["change_requests"]
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+
+
+@admin.register(PaymentLot)
+class PaymentLotAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 

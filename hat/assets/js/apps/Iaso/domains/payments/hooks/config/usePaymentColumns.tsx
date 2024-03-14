@@ -1,14 +1,18 @@
 import React, { useMemo } from 'react';
 import { useSafeIntl, Column, IntlFormatMessage } from 'bluesquare-components';
+import { UseMutateAsyncFunction } from 'react-query';
 import MESSAGES from '../../messages';
 import { PotentialPayment } from '../../types';
 import { textPlaceholder } from '../../../../constants/uiConstants';
 import { EditPaymentDialog } from '../../components/EditPaymentLot/EditPaymentDialog';
+import { SavePaymentStatusArgs } from '../requests/useSavePaymentStatus';
 
 export const usePaymentColumns = ({
     potential = true,
+    saveStatus,
 }: {
     potential?: boolean;
+    saveStatus?: UseMutateAsyncFunction<any, any, SavePaymentStatusArgs, any>;
 }): Column[] => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
@@ -92,6 +96,15 @@ export const usePaymentColumns = ({
                                 id={payment.id}
                                 iconProps={{}}
                                 user={payment.user}
+                                // if potential is false, then we know we're passing saveStatus
+                                saveStatus={
+                                    saveStatus as UseMutateAsyncFunction<
+                                        any,
+                                        any,
+                                        SavePaymentStatusArgs,
+                                        any
+                                    >
+                                }
                             />
                         );
                     },
@@ -99,5 +112,5 @@ export const usePaymentColumns = ({
             ]);
         }
         return columns;
-    }, [formatMessage, potential]);
+    }, [formatMessage, potential, saveStatus]);
 };

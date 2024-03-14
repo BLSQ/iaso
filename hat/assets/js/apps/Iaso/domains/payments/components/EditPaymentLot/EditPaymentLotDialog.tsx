@@ -17,6 +17,10 @@ import { Payment } from '../../types';
 import { useTableSelection } from '../../../../utils/table';
 import { EditIconButton } from '../../../../components/Buttons/EditIconButton';
 import { BulkEditPaymentDialog } from '../BulkEditPayment/BulkEditPaymentsDialog';
+import {
+    useBulkSavePaymentStatus,
+    useSavePaymentStatus,
+} from '../../hooks/requests/useSavePaymentStatus';
 
 type CancelButtonProps = {
     closeDialog: () => void;
@@ -55,8 +59,15 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
         handleSelectAll,
         handleUnselectAll,
     } = useTableSelection<Payment>(count);
-    const columns = usePaymentColumns({ potential: false });
-    const { mutateAsync: savePaymentLot } = useSavePaymentLot('edit');
+
+    const { mutateAsync: savePaymentLot, isLoading: isSavingPaymentLot } =
+        useSavePaymentLot('edit');
+    const { mutateAsync: saveStatus, isLoading: isSavingPayment } =
+        useSavePaymentStatus();
+    const { mutateAsync: bulkSaveStatus, isLoading: isBulkSaving } =
+        useBulkSavePaymentStatus();
+
+    const columns = usePaymentColumns({ potential: false, saveStatus });
     const handleSaveName = useCallback(
         () => savePaymentLot({ id: paymentLot.id, name }),
         [savePaymentLot, paymentLot.id, name],
@@ -96,6 +107,7 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
                                     variant="contained"
                                     size="medium"
                                     onClick={handleSaveName}
+                                    disabled={isSavingPaymentLot}
                                 >
                                     {formatMessage(MESSAGES.save)}
                                 </Button>
@@ -119,6 +131,7 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
                                 variant="contained"
                                 size="medium"
                                 onClick={handleSaveComment}
+                                disabled={isSavingPaymentLot}
                             >
                                 {formatMessage(MESSAGES.save)}
                             </Button>
@@ -150,6 +163,7 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
                                         onClick={() => {
                                             handleSelectAll();
                                         }}
+                                        disabled={isBulkSaving}
                                     >
                                         Select All
                                     </Button>
@@ -163,6 +177,7 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
                                     onClick={() => {
                                         handleUnselectAll();
                                     }}
+                                    disabled={isBulkSaving}
                                 >
                                     Unselect All
                                 </Button>
@@ -172,8 +187,11 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
                                 <BulkEditPaymentDialog
                                     selection={selection}
                                     resetSelection={handleUnselectAll}
+                                    saveStatus={bulkSaveStatus}
                                     iconProps={{
-                                        disabled: selection.selectCount === 0,
+                                        disabled:
+                                            selection.selectCount === 0 ||
+                                            isBulkSaving,
                                     }}
                                 />
                             </Grid>
@@ -194,6 +212,7 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
                         selection={selection}
                         extraProps={{
                             columns,
+                            loading: isSavingPayment || isBulkSaving,
                         }}
                         // @ts-ignore
                         setTableSelection={handleTableSelection}

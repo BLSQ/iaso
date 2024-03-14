@@ -17,13 +17,14 @@ interface ActionCellProps<T> {
 export const PaymentLotActionCell = ({
     row: { original: paymentLot },
 }: ActionCellProps<PaymentLot>): ReactElement => {
-    const { mutateAsync: savePaymentLot } = useMarkPaymentsAsSent();
+    const { mutateAsync: markAsSent } = useMarkPaymentsAsSent();
+
     const handleSend = useCallback(() => {
-        savePaymentLot({
+        markAsSent({
             id: paymentLot.id,
             mark_payments_as_sent: true,
         });
-    }, [paymentLot.id, savePaymentLot]);
+    }, [paymentLot.id, markAsSent]);
     const handleExport = useCallback(() => {
         window.open(`/api/payments/lots/${paymentLot.id}/?xlsx=true`, '_blank');
     }, [paymentLot.id]);

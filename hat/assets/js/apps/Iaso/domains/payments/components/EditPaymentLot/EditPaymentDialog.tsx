@@ -4,9 +4,10 @@ import {
     ConfirmCancelModal,
     makeFullModal,
 } from 'bluesquare-components';
+import { UseMutateAsyncFunction } from 'react-query';
 import MESSAGES from '../../messages';
 import { PaymentStatus } from '../../types';
-import { useSavePaymentStatus } from '../../hooks/requests/useSavePaymentStatus';
+import { SavePaymentStatusArgs } from '../../hooks/requests/useSavePaymentStatus';
 import { EditIconButton } from '../../../../components/Buttons/EditIconButton';
 import { UserDisplayData } from '../../../users/types';
 import getDisplayName from '../../../../utils/usersUtils';
@@ -18,6 +19,7 @@ type Props = {
     id: number;
     status: PaymentStatus;
     user: UserDisplayData;
+    saveStatus: UseMutateAsyncFunction<any, any, SavePaymentStatusArgs, any>;
 };
 
 const EditPaymentDialog: FunctionComponent<Props> = ({
@@ -26,10 +28,10 @@ const EditPaymentDialog: FunctionComponent<Props> = ({
     id,
     user,
     status: initialStatus,
+    saveStatus,
 }) => {
     const { formatMessage } = useSafeIntl();
     const [status, setStatus] = useState<PaymentStatus>(initialStatus);
-    const { mutateAsync: saveStatus } = useSavePaymentStatus();
     const handleConfirm = useCallback(() => {
         return saveStatus({ id, status });
     }, [id, saveStatus, status]);

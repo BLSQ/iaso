@@ -2,37 +2,58 @@ import { UseMutationResult } from 'react-query';
 import { patchRequest, postRequest } from '../../../../libs/Api';
 import { useSnackMutation } from '../../../../libs/apiHooks';
 import { Payment, PaymentStatus } from '../../types';
-import { waitFor } from '../../../../utils';
 import { Selection } from '../../../orgUnits/types/selection';
+import { waitFor } from '../../../../utils';
+import MESSAGES from '../../messages';
 
 const apiUrl = `/api/payments/`;
+const taskApi = `/api/tasks/create/paymentsbulkupdate/`;
 
-const savePaymentStatus = (body: {
+const savePaymentStatus = async (body: {
     status: PaymentStatus;
     id: number;
 }): Promise<any> => {
     const { id, status } = body;
+    await waitFor(500);
     return patchRequest(`${apiUrl}${id}/`, { status });
 };
 
-export const useSavePaymentStatus = (): UseMutationResult => {
-    // TODO: maybe use mutation result to set cache value?
+export type SavePaymentStatusArgs = { status: PaymentStatus; id: number };
+
+export const useSavePaymentStatus = (): UseMutationResult<
+    any,
+    any,
+    SavePaymentStatusArgs,
+    any
+> => {
     return useSnackMutation({
         mutationFn: body => savePaymentStatus(body),
         invalidateQueryKey: ['paymentLots', 'payments'],
     });
 };
-
-const saveBulkPayments = (body: Selection<Payment>): Promise<any> => {
-    // return postRequest(apiUrl, body);
-    waitFor(500);
-    console.log('POST', body);
-    return body;
+export type BulkPaymentSaveBody = Selection<Payment> & {
+    status: PaymentStatus;
+};
+const saveBulkPayments = async (body: BulkPaymentSaveBody): Promise<any> => {
+    const formattedBody = {
+        selected_ids: body.selectedItems?.map(item => item.id),
+        unselected_ids: body.unSelectedItems?.map(item => item.id),
+        select_all: body.selectAll,
+        status: body.status,
+    };
+    await waitFor(500);
+    return postRequest(taskApi, formattedBody);
 };
 
-export const useBulkSavePaymentStatus = (): UseMutationResult => {
+export const useBulkSavePaymentStatus = (): UseMutationResult<
+    any,
+    any,
+    BulkPaymentSaveBody,
+    any
+> => {
     return useSnackMutation({
         mutationFn: body => saveBulkPayments(body),
         invalidateQueryKey: ['paymentLots', 'payments'],
+        snackSuccessMessage: MESSAGES.edit,
     });
 };

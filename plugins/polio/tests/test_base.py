@@ -901,7 +901,7 @@ class PolioAPICampaignCsvTestCase(APITestCase):
         )
         self.c2.rounds.create(number=2, started_at=datetime.date(2022, 1, 4), ended_at=datetime.date(2022, 1, 7))
         response = self.client.get(
-            "/api/polio/campaigns/csv_campaigns_export/?campaign_type=test&show_test=true&enabled=true"
+            "/api/polio/campaigns/csv_campaigns_export/?campaign_category=test&show_test=true&enabled=true"
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(

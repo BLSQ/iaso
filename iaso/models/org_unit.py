@@ -23,6 +23,7 @@ from hat.audit.models import log_modification, ORG_UNIT_CHANGE_REQUEST
 from iaso.models.data_source import SourceVersion
 from .project import Project
 from ..utils.expressions import ArraySubquery
+from ..utils.models.common import get_creator_name
 
 try:  # for typing
     from .base import Account, Instance
@@ -242,14 +243,6 @@ class OrgUnitManager(models.Manager):
         queries = [Q(path__ancestors=org_unit.path) for org_unit in org_units]
         q = reduce(operator.or_, queries)
         return q
-
-
-def get_creator_name(creator):
-    if creator is None:
-        return None
-    if creator.first_name or creator.last_name:
-        return f"{creator.username} ({creator.get_full_name()})"
-    return f"{creator.username}"
 
 
 class OrgUnit(TreeModel):

@@ -74,15 +74,8 @@ export const usePaymentColumns = ({
                     Header: formatMessage(MESSAGES.status),
                     id: 'status',
                     accessor: 'status',
-                    Cell: settings => {
-                        return (
-                            <span>
-                                {formatMessage(
-                                    MESSAGES[settings.row.original.status],
-                                )}
-                            </span>
-                        );
-                    },
+                    Cell: settings =>
+                        formatMessage(MESSAGES[settings.row.original.status]),
                 },
                 {
                     Header: formatMessage(MESSAGES.actions),

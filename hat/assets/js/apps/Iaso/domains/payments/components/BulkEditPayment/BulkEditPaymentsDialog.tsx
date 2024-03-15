@@ -11,7 +11,6 @@ import { StatusSelect } from '../StatusSelect';
 import { Selection } from '../../../orgUnits/types/selection';
 import { EditSelectedButton } from '../EditPaymentLot/EditSelectedButton';
 import { BulkPaymentSaveBody } from '../../hooks/requests/useSavePaymentStatus';
-// import { BulkEditWarning } from './BulkEditWarning';
 
 type Props = {
     isOpen: boolean;
@@ -30,11 +29,9 @@ const BulkEditPaymentDialog: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const [status, setStatus] = useState<PaymentStatus>('pending');
-    // const [isWarningOpen, setIsWarningOpen] = useState<boolean>(false);
 
     const handleConfirm = useCallback(() => {
         saveStatus({ ...selection, status }).then(() => {
-            // setIsWarningOpen(false);
             resetSelection();
             closeDialog();
         });
@@ -45,24 +42,16 @@ const BulkEditPaymentDialog: FunctionComponent<Props> = ({
     });
     return (
         <>
-            {/* <BulkEditWarning
-                open={isWarningOpen}
-                closeDialog={() => setIsWarningOpen(false)}
-                selectCount={selection.selectCount}
-                onConfirm={handleConfirm}
-            /> */}
             <ConfirmCancelModal
                 open={isOpen}
                 onClose={() => {
                     setStatus('pending');
-                    // setIsWarningOpen(false);
                 }}
                 id="EditPaymentDialog"
                 dataTestId="EditPaymentDialog"
                 titleMessage={titleMessage}
                 closeDialog={closeDialog}
                 onConfirm={handleConfirm}
-                // onConfirm={() => setIsWarningOpen(true)}
                 onCancel={() => null}
                 confirmMessage={MESSAGES.save}
                 cancelMessage={MESSAGES.cancel}

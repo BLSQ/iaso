@@ -35,6 +35,8 @@ class DisableLoginTokenAPITestCase(APITestCase):
             )
             self.assertEqual(response.status_code, 404)
 
+        reload_urlconf()
+
 
 class TokenAPITestCase(APITestCase):
     @classmethod

@@ -169,6 +169,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.payments.label.paymentLotInfos',
         defaultMessage: 'Payment lot informations',
     },
+    paymentsBulkUpdateLaunched: {
+        id: 'iaso.snackBar.paymentsBulkUpdateLaunched',
+        defaultMessage:
+            'The modifications to the payments will take a few moments to take effect',
+    },
 });
 
 export default MESSAGES;

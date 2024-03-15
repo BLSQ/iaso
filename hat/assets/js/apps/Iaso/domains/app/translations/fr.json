@@ -1086,6 +1086,7 @@
     "iaso.snackBar.newEmptyVersionSavedSuccess": "Nouvelle version vide sauvegardée avec succès",
     "iaso.snackBar.patchTaskError": "Une erreur est survenue lors de la mise à jour de la tâche.",
     "iaso.snackBar.patchTaskSuccess": "La tâche a été mise à jour.",
+    "iaso.snackBar.paymentsBulkUpdateLaunched": "Les modifications peuvent prendre un moment avant d'être visibles",
     "iaso.snackBar.permissionError": "Vous n'avez pas la permission d'effectuer cette action",
     "iaso.snackBar.reload": "Recharger",
     "iaso.snackBar.reloadPage": "Une nouvelle version est disponible! Rafraichissez la page.",

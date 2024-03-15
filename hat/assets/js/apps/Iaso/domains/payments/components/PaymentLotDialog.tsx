@@ -8,8 +8,7 @@ import {
     selectionInitialState,
 } from 'bluesquare-components';
 import * as Yup from 'yup';
-import SettingsIcon from '@mui/icons-material/Settings';
-import { IconButton, Button, Box, Divider, Grid } from '@mui/material';
+import { Button, Box, Divider, Grid } from '@mui/material';
 import Add from '@mui/icons-material/Add';
 
 import { useFormik } from 'formik';
@@ -27,6 +26,7 @@ import {
     useSavePaymentLot,
 } from '../hooks/requests/useSavePaymentLot';
 import getDisplayName, { useCurrentUser } from '../../../utils/usersUtils';
+import { EditIconButton } from '../../../components/Buttons/EditIconButton';
 
 const styles: SxStyles = {
     table: {
@@ -195,23 +195,6 @@ const PaymentLotDialog: FunctionComponent<Props> = ({
                 />
             </Box>
         </ConfirmCancelModal>
-    );
-};
-
-type PropsIcon = {
-    onClick: () => void;
-};
-
-export const EditIconButton: FunctionComponent<PropsIcon> = ({ onClick }) => {
-    const { formatMessage } = useSafeIntl();
-    return (
-        <IconButton
-            onClick={onClick}
-            aria-label={formatMessage(MESSAGES.edit)}
-            size="small"
-        >
-            <SettingsIcon />
-        </IconButton>
     );
 };
 

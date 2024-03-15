@@ -155,7 +155,7 @@ class CampaignSerializer(serializers.ModelSerializer):
     # Account is filed per default the one of the connected user that update it
     account: Field = serializers.PrimaryKeyRelatedField(default=CurrentAccountDefault(), read_only=True)
     has_data_in_budget_tool = serializers.SerializerMethodField(read_only=True)
-    campaign_types = CampaignTypeSerializer(many=True, read_only=True)
+    campaign_types = serializers.PrimaryKeyRelatedField(many=True, queryset=CampaignType.objects.all(), required=False)
 
     def get_top_level_org_unit_name(self, campaign):
         if campaign.country:

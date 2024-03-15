@@ -18,8 +18,8 @@ import MESSAGES from '../../../constants/messages';
 import { polioViruses } from '../../../constants/virus.ts';
 import FormAdditionalPropsContext from '../../../contexts/FormAdditionalPropsContext.ts';
 import { useStyles } from '../../../styles/theme';
-import { isPolioCampaign } from '../../../utils/index.tsx';
 import { useGetGroupedCampaigns } from '../../GroupedCampaigns/hooks/useGetGroupedCampaigns.ts';
+import { useGetCampaignTypes } from '../hooks/api/useGetCampaignTypes.ts';
 import { EmailListForCountry } from './EmailListForCountry/EmailListForCountry';
 
 export const baseInfoFormFields = [
@@ -48,6 +48,7 @@ export const BaseInfoForm = () => {
     const currentUser = useCurrentUser();
     const isUserAdmin = userHasPermission('iaso_polio_config', currentUser);
     const { data: groupedCampaigns } = useGetGroupedCampaigns();
+    const { data: campaignTypes } = useGetCampaignTypes();
     const groupedCampaignsOptions = useMemo(
         () =>
             groupedCampaigns?.results.map(result => ({
@@ -60,7 +61,15 @@ export const BaseInfoForm = () => {
 
     const { values } = useFormikContext();
     const { top_level_org_unit_id } = values;
-    const isPolio = isPolioCampaign(values);
+    const isPolio = useMemo(() => {
+        return (
+            campaignTypes?.some(
+                type =>
+                    type.original.name.toLowerCase() === 'polio' &&
+                    values.campaign_types.includes(type.value),
+            ) ?? false
+        );
+    }, [campaignTypes, values.campaign_types]);
     return (
         <>
             <Grid container spacing={2}>

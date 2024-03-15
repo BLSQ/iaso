@@ -1,6 +1,5 @@
 from iaso.test import APITestCase
 from iaso import models as m
-from rest_framework.test import APIClient
 
 
 class PaymentViewSetAPITestCase(APITestCase):

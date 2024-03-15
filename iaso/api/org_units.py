@@ -26,6 +26,7 @@ from iaso.gpkg import org_units_to_gpkg_bytes
 from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form, Instance, DataSource
 from iaso.utils import geojson_queryset
 from hat.menupermissions import models as permission
+from ..utils.models.common import get_creator_name
 
 
 # noinspection PyMethodMayBeStatic
@@ -217,6 +218,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 {"title": "Date de fermeture", "width": 20},
                 {"title": "Date de création", "width": 20},
                 {"title": "Date de modification", "width": 20},
+                {"title": "Créé par", "width": 20},
                 {"title": "Source", "width": 20},
                 {"title": "Validé", "width": 15},
                 {"title": "Référence externe", "width": 17},
@@ -251,6 +253,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 "source_ref",
                 "created_at",
                 "updated_at",
+                "creator__username",
+                "creator__first_name",
+                "creator__last_name",
                 "location",
                 *parent_field_names,
                 *counts_by_forms,
@@ -266,6 +271,13 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
             def get_row(org_unit, **kwargs):
                 location = org_unit.get("location", None)
+                creator = get_creator_name(
+                    None,
+                    org_unit.get("creator__username", None),
+                    org_unit.get("creator__first_name", None),
+                    org_unit.get("creator__last_name", None),
+                )
+
                 org_unit_values = [
                     org_unit.get("id"),
                     org_unit.get("name"),
@@ -280,6 +292,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     org_unit.get("closed_date").strftime("%Y-%m-%d") if org_unit.get("closed_date") else None,
                     org_unit.get("created_at").strftime("%Y-%m-%d %H:%M"),
                     org_unit.get("updated_at").strftime("%Y-%m-%d %H:%M"),
+                    creator,
                     org_unit.get("version__data_source__name"),
                     org_unit.get("validation_status"),
                     org_unit.get("source_ref"),

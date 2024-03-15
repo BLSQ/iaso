@@ -734,7 +734,6 @@ class CampaignViewSet(ModelViewSet):
         "first_round_started_at",
         "last_round_started_at",
         "country__name",
-        "campaign_types__name",
     ]
     filterset_fields = {
         "country__name": ["exact"],

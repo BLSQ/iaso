@@ -13,6 +13,7 @@ const savePaymentStatus = (body: {
 }): Promise<any> => {
     const { id, status } = body;
     // return patchRequest(`${apiUrl}/${id}`, { status });
+    // Uncomment above line when backend is ready. Below code is to enable front-end user testing
     waitFor(500);
     console.log('PATCH', body);
     return body;
@@ -28,6 +29,7 @@ export const useSavePaymentStatus = (): UseMutationResult => {
 
 const saveBulkPayments = (body: Selection<Payment>): Promise<any> => {
     // return postRequest(apiUrl, body);
+    // Uncomment above line when backend is ready. Below code is to enable front-end user testing
     waitFor(500);
     console.log('POST', body);
     return body;

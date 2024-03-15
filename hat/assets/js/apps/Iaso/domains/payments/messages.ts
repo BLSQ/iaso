@@ -165,6 +165,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.payments.label.bulkChangeCount',
         defaultMessage: "You're about to update {count} payments",
     },
+    paymentLotInfos: {
+        id: 'iaso.payments.label.paymentLotInfos',
+        defaultMessage: 'Payment lot informations',
+    },
 });
 
 export default MESSAGES;

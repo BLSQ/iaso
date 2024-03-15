@@ -874,6 +874,7 @@
     "iaso.payments.label.editPaymentFor": "Editer paiement pour {user}",
     "iaso.payments.label.editSelected": "Editer sélection",
     "iaso.payments.label.editSelectedPayments": "Editer les paiements sélectionnés ({count})",
+    "iaso.payments.label.paymentLotInfos": "Informations du lot de paiements",
     "iaso.payments.lots": "Lots de paiements",
     "iaso.payments.mark_as_sent": "Marquer comme envoyé",
     "iaso.payments.paid": "Payé",

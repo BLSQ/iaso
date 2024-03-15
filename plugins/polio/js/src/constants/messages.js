@@ -241,13 +241,17 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.epid',
         defaultMessage: 'EPID',
     },
+    campaignIdentifier: {
+        id: 'iaso.polio.form.label.campaignIdentifier',
+        defaultMessage: 'Campaign identifier',
+    },
     obrName: {
         id: 'iaso.polio.form.label.obrName',
-        defaultMessage: 'Campaign identifier',
+        defaultMessage: 'OBR Name',
     },
     obr_name: {
         id: 'iaso.polio.form.label.obrName',
-        defaultMessage: 'Campaign identifier',
+        defaultMessage: 'OBR Name',
     },
     virus: {
         id: 'iaso.polio.form.label.virus',
@@ -257,13 +261,17 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.description',
         defaultMessage: 'Description',
     },
+    responsibleOfficer: {
+        id: 'iaso.polio.form.label.responsibleOfficer',
+        defaultMessage: 'Responsible officer',
+    },
     gpeiCoordinator: {
         id: 'iaso.polio.form.label.gpeiCoordinator',
-        defaultMessage: 'Responsible officer',
+        defaultMessage: 'GPEI Coordinator',
     },
     gpei_coordinator: {
         id: 'iaso.polio.form.label.gpeiCoordinator',
-        defaultMessage: 'Responsible officer',
+        defaultMessage: 'GPEI Coordinator',
     },
     preventive: {
         id: 'iaso.polio.form.label.preventive',

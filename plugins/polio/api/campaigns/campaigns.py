@@ -784,7 +784,6 @@ class CampaignViewSet(ModelViewSet):
         campaigns = queryset
         if show_test == "false":
             campaigns = campaigns.filter(is_test=False)
-        campaigns.prefetch_related("rounds", "group", "grouped_campaigns")
         if campaign_category == "preventive":
             campaigns = campaigns.filter(is_preventive=True)
         if campaign_category == "test":

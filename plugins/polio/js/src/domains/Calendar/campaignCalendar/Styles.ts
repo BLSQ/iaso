@@ -1,5 +1,5 @@
-import { makeStyles } from '@mui/styles';
 import { red } from '@mui/material/colors';
+import { makeStyles } from '@mui/styles';
 
 const cellHeight = 50;
 const smallCellHeight = 20;
@@ -200,7 +200,9 @@ export const useStyles = makeStyles(theme => {
             textAlign: 'right',
         },
         noCampaign: {
-            textAlign: 'center',
+            textAlign: 'center !important',
+            // @ts-ignore
+            borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
         },
         mapLegendText: {
             fontWeight: 'bold',

@@ -6,6 +6,36 @@ from iaso import models as m
 from iaso.test import APITestCase
 
 
+class DisableLoginTokenAPITestCase(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        data_source = m.DataSource.objects.create(name="counsil")
+        version = m.SourceVersion.objects.create(data_source=data_source, number=1)
+        star_wars = m.Account.objects.create(name="Star Wars", default_version=version)
+        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars)
+
+        cls.yoda.set_password("IMomLove")
+        cls.yoda.save()
+
+    def test_acquire_token_and_authenticate_when_passwords_disabled(self):
+        """Test that token authentication is not possible when passwords are disabled"""
+
+        def reload_urlconf():
+            import importlib
+            from django.urls import clear_url_caches
+
+            clear_url_caches()
+            importlib.reload(importlib.import_module("hat.urls"))
+            importlib.reload(importlib.import_module("iaso.urls"))
+
+        with self.settings(DISABLE_PASSWORD_LOGINS=True):
+            reload_urlconf()
+            response = self.client.post(
+                f"/api/token/", data={"username": "yoda", "password": "IMomLove"}, format="json"
+            )
+            self.assertEqual(response.status_code, 404)
+
+
 class TokenAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):

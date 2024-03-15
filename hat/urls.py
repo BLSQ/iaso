@@ -35,8 +35,6 @@ urlpatterns = urlpatterns + [
     path("health/", health),  # alias since current apache config hide _health/
     path("accounts/", include("django.contrib.auth.urls")),
     path("accounts/", include("allauth.urls")),
-    path("login/", auth.views.LoginView.as_view(template_name="iaso/login.html"), name="login"),
-    path("admin/login/", auth.views.LoginView.as_view(template_name="iaso/login.html"), name="login"),
     path("admin/", admin.site.urls),
     path("api/", include("iaso.urls")),
     path("pages/<page_slug>/", page, name="pages"),

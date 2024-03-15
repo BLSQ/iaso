@@ -13,7 +13,11 @@ import 'leaflet/dist/leaflet.css';
 import { CalendarMapPanesRegular } from './CalendarMapPanesRegular';
 import { CalendarMapPanesMerged } from './CalendarMapPanesMerged';
 import { CampaignsLegend } from './CampaignsLegend';
-import { MappedCampaign, MergedShapeWithColor } from '../types';
+import {
+    MappedCampaign,
+    MergedShapeWithColor,
+    ShapeForCalendarMap,
+} from '../types';
 import { boundariesZoomLimit } from './constants';
 import { VaccinesLegend } from './VaccinesLegend';
 
@@ -21,7 +25,7 @@ import { MapRoundSelector } from './MapRoundSelector';
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 type Props = {
-    campaignsShapes: any[];
+    campaignsShapes: ShapeForCalendarMap[];
     mergedShapes: MergedShapeWithColor[];
     loadingCampaigns: boolean;
     isLoadingMergedShapes: boolean;
@@ -44,7 +48,6 @@ export const CalendarMapContainer: FunctionComponent<Props> = ({
     campaigns,
 }) => {
     const classes = useStyles();
-
     const map = useMapEvent('zoomend', () => {
         setZoom(map.getZoom());
     });

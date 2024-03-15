@@ -1,5 +1,10 @@
-import React, { useState, useContext, useCallback, useMemo } from 'react';
-import PropTypes from 'prop-types';
+import React, {
+    useState,
+    useContext,
+    useCallback,
+    useMemo,
+    FunctionComponent,
+} from 'react';
 import classnames from 'classnames';
 
 import { TableCell, Box } from '@mui/material';
@@ -9,28 +14,40 @@ import { useSelector } from 'react-redux';
 import { PolioCreateEditDialog as CreateEditDialog } from '../../../Campaigns/MainDialog/CreateEditDialog';
 import { RoundPopper } from '../popper/RoundPopper';
 import { useStyles } from '../Styles';
-import { RoundPopperContext } from '../contexts/RoundPopperContext.tsx';
-import { polioVaccines } from '../../../../constants/virus.ts';
+import { RoundPopperContext } from '../contexts/RoundPopperContext';
+import { polioVaccines } from '../../../../constants/virus';
+import { CalendarRound, MappedCampaign } from '../types';
+import { User } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 
-const getVaccineColor = vaccine =>
+type Props = {
+    colSpan: number;
+    campaign: MappedCampaign;
+    round: CalendarRound;
+};
+
+const getVaccineColor = (vaccine: string) =>
     polioVaccines.find(polioVaccine => polioVaccine.value === vaccine)?.color ||
     '#bcbcbc';
 
-const RoundCell = ({ colSpan, campaign, round }) => {
+export const RoundCell: FunctionComponent<Props> = ({
+    colSpan,
+    campaign,
+    round,
+}) => {
     const classes = useStyles();
     const [dialogOpen, setDialogOpen] = useState(false);
 
     const { anchorEl, setAnchorEl } = useContext(RoundPopperContext);
-    const [self, setSelf] = useState(null);
+    const [self, setSelf] = useState<HTMLElement | null>(null);
 
     const handleClick = useCallback(
-        event => {
+        (event: React.MouseEvent<HTMLElement>) => {
             if (!self) {
                 setSelf(event.currentTarget);
             }
             setAnchorEl(
                 isEqual(event.currentTarget, anchorEl)
-                    ? null
+                    ? undefined
                     : event.currentTarget,
             );
         },
@@ -38,17 +55,19 @@ const RoundCell = ({ colSpan, campaign, round }) => {
     );
 
     const handleClose = () => {
-        setAnchorEl(null);
+        setAnchorEl(undefined);
     };
 
     const defaultCellStyles = [classes.tableCell, classes.tableCellBordered];
     const open = self && isEqual(self, anchorEl);
-    const isLogged = useSelector(state => Boolean(state.users.current));
+    const isLogged = useSelector((state: { users: { current: User } }) =>
+        Boolean(state.users.current),
+    );
     const vaccinesList = useMemo(() => {
         const list = campaign.separateScopesPerRound
             ? round.vaccine_names?.split(',') ?? []
             : campaign.original.vaccines?.split(',') ?? [];
-        return list.map(vaccineName => vaccineName.trim());
+        return list.map((vaccineName: string) => vaccineName.trim());
     }, [
         campaign.original.vaccines,
         campaign.separateScopesPerRound,
@@ -64,9 +83,9 @@ const RoundCell = ({ colSpan, campaign, round }) => {
                 className={classes.coloredBox}
                 style={{ backgroundColor: campaign.color }}
             >
-                {vaccinesList.map(vaccine => (
+                {vaccinesList.map((vaccine: string) => (
                     <span
-                        key={`${campaign.uuid}-${round.number}-${vaccine}`}
+                        key={`${campaign.id}-${round.number}-${vaccine}`}
                         style={{
                             backgroundColor: getVaccineColor(vaccine),
                             display: 'block',
@@ -78,7 +97,7 @@ const RoundCell = ({ colSpan, campaign, round }) => {
             <span
                 onClick={handleClick}
                 role="button"
-                tabIndex="0"
+                tabIndex={0}
                 className={classnames(
                     classes.tableCellSpan,
                     classes.tableCellSpanWithPopOver,
@@ -106,11 +125,3 @@ const RoundCell = ({ colSpan, campaign, round }) => {
         </TableCell>
     );
 };
-
-RoundCell.propTypes = {
-    colSpan: PropTypes.number.isRequired,
-    campaign: PropTypes.object.isRequired,
-    round: PropTypes.object.isRequired,
-};
-
-export { RoundCell };

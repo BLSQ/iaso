@@ -1,23 +1,15 @@
-/* eslint-disable react/jsx-props-no-spreading */
-import React, { useCallback } from 'react';
-import PropTypes from 'prop-types';
-import { FormattedMessage } from 'react-intl';
+import React, { useCallback, FunctionComponent } from 'react';
 
-import {
-    IconButton,
-    Grid,
-    Button,
-    Popper,
-    Paper,
-    Box,
-} from '@mui/material';
+import { IconButton, Grid, Button, Popper, Paper, Box } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useSafeIntl, getTableUrl } from 'bluesquare-components';
 
 import { useSelector } from 'react-redux';
+import { User } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import MESSAGES from '../../../../constants/messages';
 import { useStyles } from '../Styles';
-import { CsvButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/CsvButton.tsx';
+import { CsvButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/CsvButton';
+import { CalendarRound, MappedCampaign } from '../types';
 
 const groupsForCampaignRound = (campaign, round) => {
     if (!campaign.separate_scopes_per_round) {
@@ -35,7 +27,17 @@ const groupsForCampaignRound = (campaign, round) => {
     return [];
 };
 
-const RoundPopper = ({
+type Props = {
+    campaign: MappedCampaign;
+    handleClose: () => void;
+    open: boolean;
+    anchorEl: HTMLElement | undefined;
+    // eslint-disable-next-line no-unused-vars
+    setDialogOpen: (open: boolean) => void;
+    round: CalendarRound;
+};
+
+export const RoundPopper: FunctionComponent<Props> = ({
     campaign,
     handleClose,
     open,
@@ -46,7 +48,9 @@ const RoundPopper = ({
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     // We don't want to show the edit button if there is no connected user
-    const isLogged = useSelector(state => Boolean(state.users.current));
+    const isLogged = useSelector((state: { users: { current: User } }) =>
+        Boolean(state.users.current),
+    );
     const id = open ? `campaign-popover-${campaign.id}-${round.id}` : undefined;
     const groupIds = groupsForCampaignRound(campaign, round).join(',');
     const urlParams = {
@@ -80,19 +84,19 @@ const RoundPopper = ({
                     </IconButton>
                     <Grid container spacing={1}>
                         <Grid item sm={6} container justifyContent="flex-end">
-                            <FormattedMessage {...MESSAGES.startDate} />:
+                            {formatMessage(MESSAGES.startDate)}:
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-start">
-                            {round.start.format('L')}
+                            {round.start && round.start.format('L')}
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-end">
-                            <FormattedMessage {...MESSAGES.endDate} />:
+                            {formatMessage(MESSAGES.endDate)}:
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-start">
-                            {round.end.format('L')}
+                            {round.end && round.end.format('L')}
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-end">
-                            <FormattedMessage {...MESSAGES.raStatus} />:
+                            {formatMessage(MESSAGES.raStatus)}:
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-start">
                             {getMessage(
@@ -100,26 +104,24 @@ const RoundPopper = ({
                             )}
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-end">
-                            <FormattedMessage {...MESSAGES.budgetStatus} />:
+                            {formatMessage(MESSAGES.budgetStatus)}:
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-start">
                             {getMessage(campaign.original.budget_status)}
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-end">
-                            <FormattedMessage {...MESSAGES.vaccine} />:
+                            {formatMessage(MESSAGES.vaccine)}:
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-start">
                             {campaign.original.vaccines}
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-end">
-                            <FormattedMessage {...MESSAGES.preventiveShort} />:
+                            {formatMessage(MESSAGES.preventiveShort)}:
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-start">
-                            {campaign.isPreventive ? (
-                                <FormattedMessage {...MESSAGES.yes} />
-                            ) : (
-                                <FormattedMessage {...MESSAGES.no} />
-                            )}
+                            {campaign.isPreventive
+                                ? formatMessage(MESSAGES.yes)
+                                : formatMessage(MESSAGES.no)}
                         </Grid>
                         <Grid
                             item
@@ -138,7 +140,7 @@ const RoundPopper = ({
                                     size="small"
                                     color="primary"
                                 >
-                                    <FormattedMessage {...MESSAGES.edit} />
+                                    {formatMessage(MESSAGES.edit)}
                                 </Button>
                             )}
                         </Grid>
@@ -148,14 +150,3 @@ const RoundPopper = ({
         </Popper>
     );
 };
-
-RoundPopper.propTypes = {
-    campaign: PropTypes.object.isRequired,
-    handleClose: PropTypes.func.isRequired,
-    setDialogOpen: PropTypes.func.isRequired,
-    open: PropTypes.bool.isRequired,
-    anchorEl: PropTypes.object.isRequired,
-    round: PropTypes.object.isRequired,
-};
-
-export { RoundPopper };

@@ -1,12 +1,13 @@
-import React, { useMemo } from 'react';
-import { useSafeIntl, Column } from 'bluesquare-components';
-import moment from 'moment';
 import { Tooltip } from '@mui/material';
-import { RestoreModal } from '../../../../../../../hat/assets/js/apps/Iaso/components/DeleteRestoreModals/RestoreModal';
-import MESSAGES from '../../../constants/messages';
+import { Column, useSafeIntl } from 'bluesquare-components';
+import moment from 'moment';
+import React, { useMemo } from 'react';
 import { DeleteModal } from '../../../../../../../hat/assets/js/apps/Iaso/components/DeleteRestoreModals/DeleteModal';
-import { EditCampaignModal } from '../MainDialog/EditCampaignModal';
+import { RestoreModal } from '../../../../../../../hat/assets/js/apps/Iaso/components/DeleteRestoreModals/RestoreModal';
 import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
+import MESSAGES from '../../../constants/messages';
+import { CampaignListItem } from '../../../constants/types';
+import { EditCampaignModal } from '../MainDialog/EditCampaignModal';
 
 type Args = {
     showOnlyDeleted: boolean;
@@ -69,8 +70,19 @@ export const useCampaignsTableColumns = ({
                 },
             },
             {
-                Header: formatMessage(MESSAGES.status),
+                Header: formatMessage(MESSAGES.campaign_types),
+                id: 'campaign_types__name',
+                accessor: 'campaign_types',
                 sortable: false,
+                Cell: ({
+                    value,
+                }: {
+                    value: CampaignListItem['campaign_types'];
+                }): string =>
+                    value.map(campaignType => campaignType.name).join(', '),
+            },
+            {
+                Header: formatMessage(MESSAGES.status),
                 accessor: 'general_status',
             },
             {

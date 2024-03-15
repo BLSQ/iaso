@@ -1,33 +1,30 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { FormattedMessage } from 'react-intl';
-
 import { TableCell, TableRow } from '@mui/material';
+import React, { FunctionComponent } from 'react';
 
-import { useStyles } from './Styles';
+import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../../constants/messages';
-import { colsCount, colSpanTitle } from './constants';
 import { useStaticFields } from '../hooks/useStaticFields';
+import { colsCount, colSpanTitle } from './constants';
+import { useStyles } from './Styles';
 
-const PlaceholderRow = ({ loadingCampaigns }) => {
+interface PlaceholderRowProps {
+    loadingCampaigns: boolean;
+}
+
+export const PlaceholderRow: FunctionComponent<PlaceholderRowProps> = ({
+    loadingCampaigns,
+}) => {
     const classes = useStyles();
     const fields = useStaticFields();
+    const { formatMessage } = useSafeIntl();
     return (
         <TableRow className={classes.tableRow}>
             <TableCell
                 className={classes.noCampaign}
                 colSpan={colsCount * 7 + fields.length * colSpanTitle}
             >
-                {!loadingCampaigns && (
-                    <FormattedMessage {...MESSAGES.noCampaign} />
-                )}
+                {!loadingCampaigns && formatMessage(MESSAGES.noCampaign)}
             </TableCell>
         </TableRow>
     );
 };
-
-PlaceholderRow.propTypes = {
-    loadingCampaigns: PropTypes.bool.isRequired,
-};
-
-export { PlaceholderRow };

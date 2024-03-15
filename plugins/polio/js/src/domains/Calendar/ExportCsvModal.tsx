@@ -7,9 +7,10 @@ import React, { FunctionComponent, useState } from 'react';
 import DatesRange from '../../../../../../hat/assets/js/apps/Iaso/components/filters/DatesRange';
 import MESSAGES from '../../constants/messages.js';
 import { ExportCsvModalButton } from './ExportCsvModalButton';
+import { CalendarParams } from './campaignCalendar/types';
 
 type Props = {
-    params: any;
+    params: CalendarParams;
     isOpen: boolean;
     closeDialog: () => void;
 };
@@ -34,6 +35,7 @@ const ExportCsvModal: FunctionComponent<Props> = ({
         currentDate: params.currentDate,
         countries: params.countries,
         campaignType: params.campaignType,
+        campaignCategory: params.campaignCategory,
         campaignGroups: params.campaignGroups,
         orgUnitGroups: params.orgUnitGroups,
         search: params.search,
@@ -70,8 +72,8 @@ const ExportCsvModal: FunctionComponent<Props> = ({
                 keyDateTo="roundStartTo"
                 labelFrom={MESSAGES.RoundStartFrom}
                 labelTo={MESSAGES.RoundStartTo}
-                dateFrom={roundStartFrom}
-                dateTo={roundStartTo}
+                dateFrom={roundStartFrom || undefined}
+                dateTo={roundStartTo || undefined}
                 onChangeDate={onChangeDate}
             />
         </ConfirmCancelModal>

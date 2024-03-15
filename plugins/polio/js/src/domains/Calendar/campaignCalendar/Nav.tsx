@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
+import React, { useState, FunctionComponent } from 'react';
 import { replace } from 'react-router-redux';
 import { useDispatch } from 'react-redux';
 
@@ -25,31 +24,44 @@ import { Link, withRouter } from 'react-router';
 import { useStyles } from './Styles';
 import { dateFormat } from './constants';
 
-import { genUrl } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing.ts';
+import { genUrl } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import MESSAGES from '../../../constants/messages';
+import moment, { Moment} from 'moment';
+import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
 
-const Nav = ({ currentMonday, router, currentDate }) => {
+type Props =  {
+    currentMonday: Moment;
+    router: Router;
+    currentDate: Moment;
+}
+
+const Nav: FunctionComponent<Props> = ({ currentMonday, router, currentDate }) => {
     const classes = useStyles();
     const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
-    const [anchorEl, setAnchorEl] = useState(null);
-    const urlForDate = date =>
+    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+    const urlForDate = (date: Moment) =>
         genUrl(router, {
             currentDate: date.format(dateFormat),
         });
 
-    const handleClickDate = event => {
-        setAnchorEl(anchorEl ? null : event.currentTarget);
+    const handleClickDate = (event?: React.MouseEvent<HTMLElement> | MouseEvent | TouchEvent) => {
+        if (event && 'currentTarget' in event) {
+            setAnchorEl(anchorEl ? null : event.currentTarget as HTMLElement);
+        } else {
+            setAnchorEl(null);
+        }
     };
-    const handleDateChange = newDate => {
+    const handleDateChange = (newDate: string) => {
         handleClickDate();
+        console.log('newDate', newDate)
         const url = genUrl(router, {
             currentDate: newDate,
         });
         dispatch(replace(url));
     };
-    const prev = range => currentMonday.clone().subtract(range, 'week');
-    const next = range => currentMonday.clone().add(range, 'week');
+    const prev = (range: number) => currentMonday.clone().subtract(range, 'week');
+    const next = (range: number) => currentMonday.clone().add(range, 'week');
     const open = Boolean(anchorEl);
     return (
         <Box className={classes.nav}>
@@ -93,23 +105,18 @@ const Nav = ({ currentMonday, router, currentDate }) => {
             {open && (
                 <ClickAwayListener onClickAway={handleClickDate}>
                     <Popper
-                        id="color-picker"
+                        id="date-picker"
                         open={open}
                         anchorEl={anchorEl}
                         placement="bottom"
                         className={classes.popper}
                     >
                         <DatePicker
-                            autoOk
-                            disableToolbar
-                            variant="static"
-                            format={dateFormat}
                             label=""
-                            helperText=""
-                            renderInput={props => <TextField {...props} />}
+                            renderInput={(props) => <TextField {...props} />}
                             value={currentDate.format(dateFormat)}
-                            onChange={date =>
-                                handleDateChange(date.format(dateFormat))
+                            onChange={(date) =>
+                                date ? handleDateChange(moment(date).format(dateFormat)) : null
                             }
                         />
                     </Popper>
@@ -144,10 +151,5 @@ const Nav = ({ currentMonday, router, currentDate }) => {
     );
 };
 
-Nav.propTypes = {
-    currentMonday: PropTypes.object.isRequired,
-    router: PropTypes.object.isRequired,
-    currentDate: PropTypes.object.isRequired,
-};
 const wrappedNav = withRouter(Nav);
 export { wrappedNav as Nav };

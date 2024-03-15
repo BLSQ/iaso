@@ -1,12 +1,11 @@
 /* eslint-disable camelcase */
-import React, { useMemo } from 'react';
-import { Grid, Typography, Box } from '@mui/material';
-import { Field, useFormikContext } from 'formik';
+import { Box, Grid, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import { useStyles } from '../../../styles/theme';
+import { Field, useFormikContext } from 'formik';
+import React, { useContext, useMemo } from 'react';
+import { userHasPermission } from '../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils.ts';
 import { SendEmailButton } from '../../../components/Buttons/SendEmailButton';
-import { polioViruses } from '../../../constants/virus.ts';
-import { OrgUnitsLevels } from '../../../components/Inputs/OrgUnitsSelect.tsx';
 import {
     BooleanInput,
     DateInput,
@@ -14,11 +13,14 @@ import {
     TextInput,
 } from '../../../components/Inputs';
 import { MultiSelect } from '../../../components/Inputs/MultiSelect.tsx';
+import { OrgUnitsLevels } from '../../../components/Inputs/OrgUnitsSelect.tsx';
 import MESSAGES from '../../../constants/messages';
-import { EmailListForCountry } from './EmailListForCountry/EmailListForCountry';
+import { polioViruses } from '../../../constants/virus.ts';
+import FormAdditionalPropsContext from '../../../contexts/FormAdditionalPropsContext.ts';
+import { useStyles } from '../../../styles/theme';
+import { isPolioCampaign } from '../../../utils/index.tsx';
 import { useGetGroupedCampaigns } from '../../GroupedCampaigns/hooks/useGetGroupedCampaigns.ts';
-import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils.ts';
-import { userHasPermission } from '../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import { EmailListForCountry } from './EmailListForCountry/EmailListForCountry';
 
 export const baseInfoFormFields = [
     'epid',
@@ -39,6 +41,8 @@ export const baseInfoFormFields = [
 
 export const BaseInfoForm = () => {
     const classes = useStyles();
+    const context = useContext(FormAdditionalPropsContext);
+    const { isFetchingSelectedCampaign } = context || { isFetching: false };
 
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
@@ -56,7 +60,7 @@ export const BaseInfoForm = () => {
 
     const { values } = useFormikContext();
     const { top_level_org_unit_id } = values;
-
+    const isPolio = isPolioCampaign(values);
     return (
         <>
             <Grid container spacing={2}>
@@ -76,7 +80,15 @@ export const BaseInfoForm = () => {
                         />
 
                         <Field
-                            label={formatMessage(MESSAGES.obrName)}
+                            label={
+                                isFetchingSelectedCampaign
+                                    ? ''
+                                    : formatMessage(
+                                          isPolio
+                                              ? MESSAGES.obrName
+                                              : MESSAGES.campaignIdentifier,
+                                      )
+                            }
                             name="obr_name"
                             component={TextInput}
                             shrinkLabel={false}
@@ -122,7 +134,15 @@ export const BaseInfoForm = () => {
                         shrinkLabel={false}
                     />
                     <Field
-                        label={formatMessage(MESSAGES.gpeiCoordinator)}
+                        label={
+                            isFetchingSelectedCampaign
+                                ? ''
+                                : formatMessage(
+                                      isPolio
+                                          ? MESSAGES.gpeiCoordinator
+                                          : MESSAGES.responsibleOfficer,
+                                  )
+                        }
                         name="gpei_coordinator"
                         component={TextInput}
                         shrinkLabel={false}

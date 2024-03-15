@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { Campaign, Round } from '../constants/types';
+import { Campaign, CampaignListItem, Round } from '../constants/types';
 import { accessArrayRound } from '../domains/LQAS-IM/shared/LqasIm';
 
 type Shape = {
@@ -173,4 +173,10 @@ export const findCampaignRound = (
     return campaign.rounds.find(rnd => rnd.number === round);
 };
 
-export const isPolioCampaign = (campaign: Campaign): boolean => campaign;
+export const isPolioCampaign = (
+    campaign: Campaign | CampaignListItem,
+): boolean => {
+    return campaign.campaign_types.some(
+        type => type.name.toLowerCase() === 'polio',
+    );
+};

@@ -1,13 +1,13 @@
-from datetime import datetime
 import json
+from datetime import datetime
+from tempfile import NamedTemporaryFile
 from time import gmtime, strftime
 from typing import Any, List, Union
-from tempfile import NamedTemporaryFile
 
 from django.conf import settings
 from django.core.cache import cache
 from django.core.mail import send_mail
-from django.db.models import Max, Min, Q, Prefetch
+from django.db.models import Max, Min, Prefetch, Q
 from django.db.models.expressions import RawSQL
 from django.db.models.query import QuerySet
 from django.db.transaction import atomic
@@ -25,15 +25,14 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.validators import UniqueValidator
 
-
 from hat.api.export_utils import Echo, iter_items
 from iaso.api.common import (
     CONTENT_TYPE_CSV,
     CONTENT_TYPE_XLSX,
+    Custom403Exception,
     CustomFilterBackend,
     DeletionFilterBackend,
     ModelViewSet,
-    Custom403Exception,
 )
 from iaso.models import Group, OrgUnit
 from plugins.polio.api.campaigns.campaigns_log import log_campaign_modification, serialize_campaign
@@ -42,16 +41,13 @@ from plugins.polio.api.campaigns.vaccine_authorization_missing_email import (
 )
 from plugins.polio.api.common import CACHE_VERSION
 from plugins.polio.api.rounds.round import RoundScopeSerializer, RoundSerializer
-from plugins.polio.api.shared_serializers import (
-    GroupSerializer,
-    OrgUnitSerializer,
-)
+from plugins.polio.api.shared_serializers import GroupSerializer, OrgUnitSerializer
 from plugins.polio.export_utils import generate_xlsx_campaigns_calendar, xlsx_file_name
 from plugins.polio.models import (
     Campaign,
-    CampaignType,
     CampaignGroup,
     CampaignScope,
+    CampaignType,
     CountryUsersGroup,
     Round,
     RoundScope,
@@ -159,7 +155,7 @@ class CampaignSerializer(serializers.ModelSerializer):
     # Account is filed per default the one of the connected user that update it
     account: Field = serializers.PrimaryKeyRelatedField(default=CurrentAccountDefault(), read_only=True)
     has_data_in_budget_tool = serializers.SerializerMethodField(read_only=True)
-    campaign_types = serializers.PrimaryKeyRelatedField(many=True, queryset=CampaignType.objects.all(), required=False)
+    campaign_types = CampaignTypeSerializer(many=True, read_only=True)
 
     def get_top_level_org_unit_name(self, campaign):
         if campaign.country:
@@ -407,13 +403,6 @@ class CampaignSerializer(serializers.ModelSerializer):
         read_only_fields = ["preperadness_sync_status", "creation_email_send_at", "group"]
 
 
-class NestedCampaignTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CampaignType
-        fields = ["id", "name"]
-        ref_name = "CampaignTypeNestedSerializerForCampaign"
-
-
 class ListCampaignSerializer(CampaignSerializer):
     """This serializer contains juste enough data for the List view in the web ui"""
 
@@ -429,7 +418,7 @@ class ListCampaignSerializer(CampaignSerializer):
 
     rounds = NestedListRoundSerializer(many=True, required=False)
 
-    campaign_types = NestedCampaignTypeSerializer(many=True, required=False)
+    campaign_types = CampaignTypeSerializer(many=True, required=False)
 
     class Meta:
         model = Campaign
@@ -466,7 +455,7 @@ class AnonymousCampaignSerializer(CampaignSerializer):
                 return RoundAnonymousSerializer(round).data
         return None
 
-    campaign_types = NestedCampaignTypeSerializer(many=True, required=False)
+    campaign_types = CampaignTypeSerializer(many=True, required=False)
 
     class Meta:
         model = Campaign
@@ -527,7 +516,7 @@ class AnonymousCampaignSerializer(CampaignSerializer):
 
 
 class SmallCampaignSerializer(CampaignSerializer):
-    campaign_types = NestedCampaignTypeSerializer(many=True, required=False)
+    campaign_types = CampaignTypeSerializer(many=True, required=False)
 
     class Meta:
         model = Campaign
@@ -619,7 +608,7 @@ class CalendarCampaignSerializer(CampaignSerializer):
 
     rounds = NestedListRoundSerializer(many=True, required=False)
     scopes = NestedScopeSerializer(many=True, required=False)
-    campaign_types = NestedCampaignTypeSerializer(many=True, required=False)
+    campaign_types = CampaignTypeSerializer(many=True, required=False)
 
     class Meta:
         model = Campaign

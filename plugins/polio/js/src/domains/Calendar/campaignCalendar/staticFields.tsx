@@ -25,7 +25,6 @@ export const staticFields: Field[] = [
     },
     {
         key: 'campaign_types',
-        sortKey: 'campaign_types__name',
         render: (campaign: MappedCampaign): ReactElement => (
             <>
                 {campaign.original.campaign_types

@@ -73,6 +73,7 @@ export const useCampaignsTableColumns = ({
                 Header: formatMessage(MESSAGES.campaign_types),
                 id: 'campaign_types__name',
                 accessor: 'campaign_types',
+                sortable: false,
                 Cell: ({
                     value,
                 }: {

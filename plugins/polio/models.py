@@ -292,6 +292,23 @@ class CampaignQuerySet(models.QuerySet):
 CampaignManager = models.Manager.from_queryset(CampaignQuerySet)
 
 
+class CampaignType(models.Model):
+    POLIO = "Polio"
+    MEASLES = "Measles"
+    PIRI = "PIRI"
+    YELLOW_FEVER = "Yellow fever"
+    VITAMIN_A = "Vitamin A"
+    RUBELLA = "Rubella"
+    DEWORMING = "Deworming"
+    # This is the types that we know at the moment.
+    # Clients will have the possibility to add new types
+
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
+
 class Campaign(SoftDeletableModel):
     class Meta:
         ordering = ["obr_name"]
@@ -308,6 +325,8 @@ class Campaign(SoftDeletableModel):
     is_test = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    campaign_types = models.ManyToManyField(CampaignType, blank=True, related_name="campaigns")
 
     gpei_coordinator = models.CharField(max_length=255, null=True, blank=True)
     gpei_email = models.EmailField(max_length=254, null=True, blank=True)

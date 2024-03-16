@@ -169,8 +169,6 @@ def merge_attributes(e1: Entity, e2: Entity, new_entity_uuid: UUID, merge_def: D
 
     root = tree.getroot()
 
-    ET.dump(root)
-
     for field_name, e_id in merge_def.items():
         the_val = lookup[e_id].json[field_name]
         try:
@@ -188,8 +186,6 @@ def merge_attributes(e1: Entity, e2: Entity, new_entity_uuid: UUID, merge_def: D
     meta_instance_id = root.find("meta/instanceID")
     if meta_instance_id is not None:
         meta_instance_id.text = "uuid:" + str(new_uuid)
-
-    # ET.dump(root)
 
     new_xml_string = ET.tostring(root, encoding="utf-8", xml_declaration=False)
     new_xml_content = ContentFile(new_xml_string)  # .decode("utf-8")
@@ -221,8 +217,6 @@ def copy_instance(inst: Instance, new_entity: Entity):
         return None
 
     root = tree.getroot()
-
-    # ET.dump(root)
 
     entity_uuid = root.find("entityUuid")
     if entity_uuid is not None:

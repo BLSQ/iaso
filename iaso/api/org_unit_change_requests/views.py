@@ -99,9 +99,8 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
         PATCH to approve or reject an `OrgUnitChangeRequest`.
         """
         change_request = self.get_object()
-        print("1. change_request", change_request)
+
         self.has_org_unit_permission(change_request.org_unit)
-        print("2. has_org_unit_permission")
         if change_request.status != change_request.Statuses.NEW:
             raise ValidationError(
                 f"Status must be `{change_request.Statuses.NEW}` but current status is `{change_request.status}`."
@@ -123,6 +122,6 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
                 user=self.request.user,
                 rejection_comment=serializer.validated_data["rejection_comment"],
             )
-        print("saved the patch!, serializing now")
+
         response_serializer = OrgUnitChangeRequestRetrieveSerializer(change_request)
         return Response(response_serializer.data)

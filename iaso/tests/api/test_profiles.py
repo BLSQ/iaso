@@ -601,7 +601,6 @@ class ProfileAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         response_data = response.json()
         self.assertIn("account", response_data)
-        print(response_data["account"])
         self.assertEqual(response_data["account"]["feature_flags"], [])
 
         # add a feature flags
@@ -611,7 +610,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         response_data = response.json()
         self.assertIn("account", response_data)
-        print(response_data["account"])
+
         self.assertEqual(response_data["account"]["feature_flags"], ["shape"])
 
         # remove feature flags
@@ -620,7 +619,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         response_data = response.json()
         self.assertIn("account", response_data)
-        print(response_data["account"])
+
         self.assertEqual(response_data["account"]["feature_flags"], [])
 
     def test_search_user_by_permissions(self):

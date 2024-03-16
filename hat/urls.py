@@ -74,7 +74,6 @@ for plugin_name in settings.PLUGINS:
     urls_module_name = "plugins." + plugin_name + ".urls"
     urls_module = importlib.util.find_spec(urls_module_name)  # checking if the urls module exists for this plugin
     if urls_module:
-        print("importing urls for plugin", plugin_name)
         urlpatterns = urlpatterns + [
             path(plugin_name + "/", include(urls_module_name)),
         ]

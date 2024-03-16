@@ -324,11 +324,6 @@ class CompletenessStatsAPITestCase(APITestCase):
             ],
         }
 
-        pp = pprint.PrettyPrinter(indent=4)
-        print("expected_result:")
-        pp.pprint(expected_result)
-        print("\nj:")
-        pp.pprint(j)
         self.assertAlmostEqualRecursive(
             expected_result,
             j,

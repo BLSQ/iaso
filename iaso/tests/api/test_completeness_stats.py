@@ -3,7 +3,6 @@
 
 # Please refer to the diagram in ../docs/test_completeness_stats.png to understand the expected results
 
-import pprint
 from typing import Any
 
 from django.contrib.auth.models import User, Permission

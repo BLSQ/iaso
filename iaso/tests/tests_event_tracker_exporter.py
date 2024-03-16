@@ -777,7 +777,6 @@ class DataValueExporterTests(TestCase):
 
         self.assertEqual(len(sent_create), 3)
 
-
         self.assertEqual(
             {
                 "orgUnit": "OU_DHIS2_ID",

@@ -53,14 +53,14 @@ def payments_bulk_update(
 
     # FIXME Task don't handle rollback properly if task is killed by user or other error
     with transaction.atomic():
-        for index, org_unit in enumerate(queryset.iterator()):
+        for index, payment in enumerate(queryset.iterator()):
             res_string = "%.2f sec, processed %i payments" % (time() - start, index)
             the_task.report_progress_and_stop_if_killed(
                 progress_message=res_string, end_value=total, progress_value=index
             )
             update_payment_from_bulk(
                 user,
-                org_unit,
+                payment,
                 status=status,
             )
 

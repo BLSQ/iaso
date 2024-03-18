@@ -71,13 +71,20 @@ class IasoTestCaseMixin:
         return file_mock
 
     @staticmethod
-    def reload_urlconf(urlconfs: list) -> None:
+    def reload_urls(urlconfs: list) -> None:
         """
-        Clear the URL cache because Django caches URLs as soon as they are first loaded.
-        This is useful whe testing dynamic URLs, e.g. depending on a setting flag.
+        Clear the URL cache, because Django caches URLs as soon as they are first loaded.
+        This is useful when testing dynamic URLs (e.g. URLs depending on a setting flag).
 
         Usage:
-            self.reload_urlconf(["hat.urls", "iaso.urls"])
+
+            with self.settings(settings.FOO=True):
+                self.reload_urls(urlconfs)
+                // tests
+
+            // Reload URLs without `settings.FOO=True`.
+            self.reload_urls(urlconfs)
+
         """
         for urlconf in urlconfs:
             importlib.reload(importlib.import_module(urlconf))

@@ -1,9 +1,6 @@
-import importlib
 from unittest import mock
 
 from django.core.files import File
-from django.test import override_settings
-from django.urls import clear_url_caches
 
 from iaso import models as m
 from iaso.test import APITestCase
@@ -25,12 +22,16 @@ class DisableLoginTokenAPITestCase(APITestCase):
         response = self.client.post(f"/api/token/", data={"username": "yoda", "password": "IMomLove"}, format="json")
         self.assertEqual(response.status_code, 200)
 
-    @override_settings(DISABLE_PASSWORD_LOGINS=True)
     def test_acquire_token_and_authenticate_when_passwords_disabled(self):
         """Test that token authentication is not possible when passwords are disabled"""
-        self.reload_urlconf(["hat.urls", "iaso.urls"])
-        response = self.client.post(f"/api/token/", data={"username": "yoda", "password": "IMomLove"}, format="json")
-        self.assertEqual(response.status_code, 404)
+        urlconfs = ["hat.urls", "iaso.urls"]
+        with self.settings(DISABLE_PASSWORD_LOGINS=True):
+            self.reload_urls(urlconfs)
+            response = self.client.post(
+                f"/api/token/", data={"username": "yoda", "password": "IMomLove"}, format="json"
+            )
+            self.assertEqual(response.status_code, 404)
+        self.reload_urls(urlconfs)
 
 
 class TokenAPITestCase(APITestCase):

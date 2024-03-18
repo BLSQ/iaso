@@ -1,18 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import isEqual from 'lodash/isEqual';
-import { useSafeIntl } from 'bluesquare-components';
-import { Tabs, Tab, Box, Button, Tooltip, IconButton } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Clear';
+import { Box, Button, IconButton, Tab, Tabs, Tooltip } from '@mui/material';
+import { useSafeIntl } from 'bluesquare-components';
 import { useFormikContext } from 'formik';
+import isEqual from 'lodash/isEqual';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 
 import MESSAGES from '../../../constants/messages';
-import { RoundForm } from './RoundForm.tsx';
+import { Campaign, Round } from '../../../constants/types';
 import { useStyles } from '../../../styles/theme';
+import { ScopeForm } from '../Scope/ScopeForm';
+import { RoundForm } from './RoundForm';
 
 const maxRoundsCount = 6;
 
-export const roundFormFields = rounds => {
+export const roundFormFields = (rounds: Round[]): string[] => {
     const roundKeys = [
         ...rounds
             .map((_round, i) => {
@@ -40,12 +42,12 @@ export const roundFormFields = rounds => {
     return roundKeys;
 };
 
-export const RoundsForm = () => {
+export const RoundsForm: FunctionComponent = () => {
     const classes = useStyles();
     const {
         values: { rounds = [] },
         setFieldValue,
-    } = useFormikContext();
+    } = useFormikContext<Campaign>();
     const { formatMessage } = useSafeIntl();
     const [lastRound, setLastRound] = useState(rounds[rounds.length - 1]);
 
@@ -133,7 +135,6 @@ export const RoundsForm = () => {
                                     {(round.number === 0 ||
                                         round.number === lastRound?.number) && (
                                         <Tooltip
-                                            size="small"
                                             title={
                                                 <>
                                                     {formatMessage(
@@ -203,9 +204,12 @@ export const RoundsForm = () => {
                 )}
             </Box>
             {currentRoundNumber !== undefined && (
-                <Box mt={2} width="100%">
-                    <RoundForm roundNumber={currentRoundNumber} />
-                </Box>
+                <>
+                    <Box mt={2} width="100%">
+                        <RoundForm roundNumber={currentRoundNumber} />
+                    </Box>
+                    <ScopeForm currentTab={`${currentRoundNumber}`} />
+                </>
             )}
         </>
     );

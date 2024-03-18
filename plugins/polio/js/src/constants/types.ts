@@ -1,4 +1,4 @@
-import { Pagination, IntlFormatMessage } from 'bluesquare-components';
+import { IntlFormatMessage, Pagination } from 'bluesquare-components';
 import { Nullable } from '../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { Profile } from '../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { ReasonForDelay } from '../domains/Campaigns/Rounds/ReasonForDelayModal/hooks/reasons';
@@ -246,8 +246,8 @@ export type RoundDateHistoryEntry = {
 
 export type Round = {
     id: number;
-    started_at: string;
-    ended_at: string;
+    started_at: Nullable<string>;
+    ended_at: Nullable<string>;
     mop_up_started_at: Nullable<string>; // date
     mop_up_ended_at: Nullable<string>; // date
     im_started_at: Nullable<string>; // date
@@ -289,6 +289,12 @@ export type Round = {
     datelogs: RoundDateHistoryEntry[];
 };
 
+type NewRound = {
+    started_at: Nullable<string>;
+    ended_at: Nullable<string>;
+    number: number;
+};
+
 export type Campaign = {
     id: string;
     created_at: string;
@@ -296,7 +302,7 @@ export type Campaign = {
     deleted_at: Nullable<string>;
     round_one?: any[];
     round_two?: any[];
-    rounds: Round[];
+    rounds: (Round | NewRound)[];
     org_unit: {
         id: number;
         name: string;

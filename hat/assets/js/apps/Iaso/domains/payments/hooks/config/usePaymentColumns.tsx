@@ -1,10 +1,15 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { useSafeIntl, Column, IntlFormatMessage } from 'bluesquare-components';
-import MESSAGES from '../messages';
-import { PotentialPayment } from '../types';
-import { textPlaceholder } from '../../../constants/uiConstants';
+import MESSAGES from '../../messages';
+import { PotentialPayment } from '../../types';
+import { textPlaceholder } from '../../../../constants/uiConstants';
+import { EditPaymentDialog } from '../../components/EditPaymentLot/EditPaymentDialog';
 
-export const usePotentialPaymentColumns = (): Column[] => {
+export const usePaymentColumns = ({
+    potential = true,
+}: {
+    potential?: boolean;
+}): Column[] => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     return useMemo(() => {
@@ -59,6 +64,33 @@ export const usePotentialPaymentColumns = (): Column[] => {
             },
             //  TODO: we should add user phone number here
         ];
+        if (!potential) {
+            return columns.concat([
+                {
+                    Header: formatMessage(MESSAGES.status),
+                    id: 'status',
+                    accessor: 'status',
+                    Cell: settings =>
+                        formatMessage(MESSAGES[settings.row.original.status]),
+                },
+                {
+                    Header: formatMessage(MESSAGES.actions),
+                    id: 'action',
+                    accessor: 'action',
+                    Cell: settings => {
+                        const payment = settings.row.original;
+                        return (
+                            <EditPaymentDialog
+                                status={payment.status}
+                                id={payment.id}
+                                iconProps={{}}
+                                user={payment.user}
+                            />
+                        );
+                    },
+                },
+            ]);
+        }
         return columns;
-    }, [formatMessage]);
+    }, [formatMessage, potential]);
 };

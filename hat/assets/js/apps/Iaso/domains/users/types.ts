@@ -1,4 +1,4 @@
-import { Profile } from '../../utils/usersUtils';
+import { Profile, User } from '../../utils/usersUtils';
 import { UserRole } from '../userRoles/types/userRoles';
 
 /* eslint-disable camelcase */
@@ -27,3 +27,8 @@ export type UserDialogData = {
 };
 
 export type InitialUserData = Partial<Profile> & { is_superuser?: boolean };
+
+export type UserDisplayData = Pick<
+    User,
+    'id' | 'username' | 'user_name' | 'first_name' | 'last_name'
+>;

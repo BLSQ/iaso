@@ -13,38 +13,20 @@ import Add from '@mui/icons-material/Add';
 
 import { useFormik } from 'formik';
 import moment from 'moment';
-import MESSAGES from '../messages';
-import { PotentialPayment, PotentialPaymentParams } from '../types';
-import { Selection } from '../../orgUnits/types/selection';
-import { useGetSelectedPotentialPayments } from '../hooks/requests/useGetSelectedPotentialPayments';
-import { usePotentialPaymentColumns } from '../config/usePotentialPaymentColumns';
-import { SxStyles } from '../../../types/general';
-import InputComponent from '../../../components/forms/InputComponent';
-import { useTranslatedErrors } from '../../../libs/validation';
+import MESSAGES from '../../messages';
+import { PotentialPayment, PotentialPaymentParams } from '../../types';
+import { Selection } from '../../../orgUnits/types/selection';
+import { useGetSelectedPotentialPayments } from '../../hooks/requests/useGetSelectedPotentialPayments';
+import { usePaymentColumns } from '../../hooks/config/usePaymentColumns';
+import InputComponent from '../../../../components/forms/InputComponent';
+import { useTranslatedErrors } from '../../../../libs/validation';
 import {
     SavePaymentLotQuery,
     useSavePaymentLot,
-} from '../hooks/requests/useSavePaymentLot';
-import getDisplayName, { useCurrentUser } from '../../../utils/usersUtils';
-import { EditIconButton } from '../../../components/Buttons/EditIconButton';
+} from '../../hooks/requests/useSavePaymentLot';
+import getDisplayName, { useCurrentUser } from '../../../../utils/usersUtils';
+import { styles } from '../shared';
 
-const styles: SxStyles = {
-    table: {
-        mx: -3,
-        mt: 2,
-        '& .MuiSpeedDial-root': {
-            display: 'none',
-        },
-    },
-    infos: {
-        p: theme => `28px ${theme.spacing()}`,
-        '& span': {
-            fontWeight: 'bold',
-            display: 'inline-block',
-            mr: 1,
-        },
-    },
-};
 type Props = {
     titleMessage: IntlMessage;
     isOpen: boolean;
@@ -112,7 +94,7 @@ const PaymentLotDialog: FunctionComponent<Props> = ({
         },
     });
     const { formatMessage } = useSafeIntl();
-    const columns = usePotentialPaymentColumns();
+    const columns = usePaymentColumns({ potential: true });
     const handleChange = useCallback(
         (keyValue, value) => {
             setFieldTouched(keyValue, true);
@@ -143,8 +125,8 @@ const PaymentLotDialog: FunctionComponent<Props> = ({
             onCancel={() => {
                 closeDialog();
             }}
-            id="paylment-lot-dialog"
-            dataTestId="paylment-lot-dialog"
+            id="payment-lot-dialog"
+            dataTestId="payment-lot-dialog"
         >
             <Grid container spacing={2}>
                 <Grid item xs={4}>
@@ -225,9 +207,5 @@ const AddButton: FunctionComponent<AddButtonProps> = ({
 };
 
 const modalWithButton = makeFullModal(PaymentLotDialog, AddButton);
-const modalWithIcon = makeFullModal(PaymentLotDialog, EditIconButton);
 
-export {
-    modalWithButton as AddPaymentLotDialog,
-    modalWithIcon as EditPaymentLotDialog,
-};
+export { modalWithButton as AddPaymentLotDialog };

@@ -63,7 +63,7 @@ class PaymentLotSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PaymentLot
-        fields = ["id", "name", "status", "created_at", "created_by", "payments"]
+        fields = ["id", "name", "status", "created_at", "created_by", "payments", "comment"]
         read_only_fields = ["id", "created_at"]
 
     pagination_class = PaymentPagination

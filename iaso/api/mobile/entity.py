@@ -184,17 +184,18 @@ class MobileEntityViewSet(ModelViewSet):
         user = self.request.user
         app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)
 
-        queryset = filter_on_user_and_app_id(Entity.objects, user, app_id)
+        # queryset = filter_on_user_and_app_id(Entity.objects, user, app_id)
 
-        queryset = filter_for_mobile_entity(queryset, self.request)
+        # queryset = filter_for_mobile_entity(queryset, self.request)
 
-        queryset = queryset.select_related("entity_type").prefetch_related(
-            "instances__org_unit",
-            "attributes__org_unit",
-            "instances__form__form_versions",
-            "attributes__form__form_versions",
-        )
-        return queryset.order_by("id")
+        # queryset = queryset.select_related("entity_type").prefetch_related(
+        #     "instances__org_unit",
+        #     "attributes__org_unit",
+        #     "instances__form__form_versions",
+        #     "attributes__form__form_versions",
+        # )
+        # return queryset.order_by("id")
+        return Entity.objects.none()
 
 
 class DeletedMobileEntitySerializer(serializers.ModelSerializer):

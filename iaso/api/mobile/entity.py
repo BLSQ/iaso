@@ -180,14 +180,18 @@ class MobileEntityViewSet(ModelViewSet):
         if not app_id:
             raise ParseError("app_id is required")
 
-        queryset = get_queryset_for_user_and_app_id(user, app_id).filter(deleted_at__isnull=True)
+        # queryset = get_queryset_for_user_and_app_id(user, app_id).filter(deleted_at__isnull=True)
 
-        queryset = filter_for_mobile_entity(queryset, self.request)
+        # queryset = filter_for_mobile_entity(queryset, self.request)
 
-        queryset = queryset.select_related("entity_type").prefetch_related(
-            "instances__org_unit",
-            "attributes__org_unit",
-            "instances__form__form_versions",
-            "attributes__form__form_versions",
-        )
-        return queryset.order_by("id")
+        # queryset = queryset.select_related("entity_type").prefetch_related(
+        #     "instances__org_unit",
+        #     "attributes__org_unit",
+        #     "instances__form__form_versions",
+        #     "attributes__form__form_versions",
+        # )
+        # return queryset.order_by("id")
+
+        # SLEEP-1310 Temporarily disable the entities import
+        # TODO: do this properly with a feature flag
+        return Entity.objects.none()

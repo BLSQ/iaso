@@ -3,7 +3,7 @@ import json
 import pytz
 import time
 import uuid
-from unittest import mock
+from unittest import mock, skip
 
 from django.contrib.auth.models import AnonymousUser
 from django.core.files import File
@@ -663,6 +663,7 @@ class EntityAPITestCase(APITestCase):
         response = self.client.get("/api/entities/?xlsx=true/")
         self.assertEqual(response.status_code, 200)
 
+    @skip("Mobile entities temporarily disabled for Trypelim")
     def test_entity_mobile(self):
         self.client.force_authenticate(self.yoda)
 
@@ -710,6 +711,7 @@ class EntityAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data.get("id"), str(entity.uuid))
 
+    @skip("Mobile entities temporarily disabled for Trypelim")
     def test_entity_mobile_user(self):
         self.client.force_authenticate(self.yoda)
 
@@ -847,6 +849,7 @@ class EntityAPITestCase(APITestCase):
         self.assertEqual(response_json.get("results")[1].get("entity_type_id"), str(self.entity_type.id))
         self.assertEqual(len(response_json.get("results")[1].get("instances")), 0)
 
+    @skip("Mobile entities temporarily disabled for Trypelim")
     def test_access_respect_appid_mobile(self):
         self.client.force_authenticate(self.yoda)
 

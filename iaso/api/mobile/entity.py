@@ -172,20 +172,24 @@ class MobileEntityViewSet(ModelViewSet):
         if not app_id:
             raise ParseError("app_id is required")
 
-        queryset = get_queryset_for_user_and_app_id(user, app_id).filter(deleted_at__isnull=True)
+        # SLEEP-1310 Temporarily disable the entities import
+        # TODO: do this properly with a feature flag
+        return Entity.objects.none()
 
-        queryset = filter_for_mobile_entity(queryset, self.request)
+        # queryset = get_queryset_for_user_and_app_id(user, app_id).filter(deleted_at__isnull=True)
 
-        # we give all entities having an instance linked to the one of the org units allowed for the current user
-        if queryset and user and user.is_authenticated:
-            orgunits = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
-            if orgunits and len(orgunits) > 0:
-                queryset = queryset.filter(instances__org_unit__in=orgunits)
+        # queryset = filter_for_mobile_entity(queryset, self.request)
 
-        queryset = queryset.select_related("entity_type").prefetch_related(
-            "instances__org_unit",
-            "attributes__org_unit",
-            "instances__form__form_versions",
-            "attributes__form__form_versions",
-        )
-        return queryset.order_by("id")
+        # # we give all entities having an instance linked to the one of the org units allowed for the current user
+        # if queryset and user and user.is_authenticated:
+        #     orgunits = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
+        #     if orgunits and len(orgunits) > 0:
+        #         queryset = queryset.filter(instances__org_unit__in=orgunits)
+
+        # queryset = queryset.select_related("entity_type").prefetch_related(
+        #     "instances__org_unit",
+        #     "attributes__org_unit",
+        #     "instances__form__form_versions",
+        #     "attributes__form__form_versions",
+        # )
+        # return queryset.order_by("id")

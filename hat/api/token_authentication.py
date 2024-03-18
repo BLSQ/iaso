@@ -33,6 +33,5 @@ def generate_auto_authentication_link(link, user):
     protocol = "https" if settings.SSL_ON else "http"
 
     final_link = "%s://%s/api/token_auth/?token=%s&next=%s" % (protocol, domain, access_token, encoded_link)
-    print(final_link)
 
     return final_link

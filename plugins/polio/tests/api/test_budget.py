@@ -717,6 +717,29 @@ class BudgetCampaignViewSetTestCase(APITestCase):
         d = budget_step.created_at.strftime("%Y-%m-%d")
         self.assertEqual(response.content.decode(), f"Last update\r\n{d}\r\n{d}\r\n")
 
+    def test_new_budget_process_dropdowns(self):
+        """
+        GET /api/polio/budget/new_budget_process_dropdowns/
+        """
+        self.client.force_login(self.user)
+
+        response = self.client.get("/api/polio/budget/new_budget_process_dropdowns/")
+        response_data = self.assertJSONResponse(response, 200)
+
+        expected_data = {
+            "countries": [{"id": self.campaign.country.id, "name": "ANGOLA"}],
+            "campaigns": [
+                {"id": str(self.campaign.id), "name": "test campaign", "country_id": self.campaign.country.id}
+            ],
+            "rounds": [
+                {"id": self.round_1.id, "name": 1, "campaign_id": str(self.campaign.id)},
+                {"id": self.round_2.id, "name": 2, "campaign_id": str(self.campaign.id)},
+                {"id": self.round_3.id, "name": 3, "campaign_id": str(self.campaign.id)},
+                {"id": self.round_4.id, "name": 4, "campaign_id": str(self.campaign.id)},
+            ],
+        }
+        self.assertEqual(response_data, expected_data)
+
 
 class FilterBudgetCampaignViewSetTestCase(APITestCase):
     """

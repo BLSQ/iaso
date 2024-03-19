@@ -26,7 +26,7 @@ from plugins.polio.budget.serializers import (
     UpdateBudgetStepSerializer,
     WorkflowSerializer,
 )
-from plugins.polio.models import Campaign
+from plugins.polio.models import Campaign, Round
 
 
 @swagger_auto_schema(tags=["budget"])
@@ -96,6 +96,48 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
         budget_step = serializer.save()
 
         return Response({"result": "success", "id": budget_step.id}, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=["GET"])
+    def new_budget_process_dropdowns(self, request):
+        """
+        Returns a dict containing info about rounds for which a budget process can be created.
+
+        This is useful to build select dropdowns that depend on each other in the UI, e.g.:
+
+            {
+                "countries": [
+                    {"id": 1, "name": "Niger"}
+                ],
+                "campaigns": [
+                    {"id": "uuid-488f", "name": "nopv2", "country_id": 1}
+                ],
+                "rounds": [
+                    {"id": 1, "name": 1, "campaign_id": "uuid-488f"}
+                ]
+            }
+
+        """
+        qs = (
+            Campaign.objects.filter_for_user(self.request.user)
+            .filter(rounds__budget_process__isnull=True)
+            .select_related("country")
+            .prefetch_related("rounds")
+        )
+
+        countries = []
+        campaigns = []
+        rounds = []
+
+        for campaign in qs:
+            countries.append({"id": campaign.country_id, "name": campaign.country.name})
+            campaigns.append({"id": str(campaign.id), "name": campaign.obr_name, "country_id": campaign.country_id})
+            for round in campaign.rounds.all():
+                rounds.append({"id": round.id, "name": round.number, "campaign_id": str(campaign.id)})
+
+        # Dedup countries.
+        countries = list({c["id"]: c for c in countries}.values())
+
+        return Response({"countries": countries, "campaigns": campaigns, "rounds": rounds}, status=status.HTTP_200_OK)
 
 
 @swagger_auto_schema(tags=["budget"])

@@ -33,7 +33,10 @@ def create_payment_from_payment_lot(user, payment_lot, *, potential_payment):
         change_request.save()
         # Save change request modification
         change_request_audit_logger.log_modification(
-            instance=change_request, old_data_dump=old_change_request_dump,request_user=user, source=audit_models.PAYMENT_LOT_API
+            instance=change_request,
+            old_data_dump=old_change_request_dump,
+            request_user=user,
+            source=audit_models.PAYMENT_LOT_API,
         )
     # Log the payment change after the fk to chnage reauest has been set
     audit_logger.log_modification(

@@ -161,7 +161,7 @@ class AuditPaymentLotSerializer(serializers.ModelSerializer):
         model = PaymentLot
         fields = "__all__"
 
-    payments = AuditPaymentSerializer(required=False,many=True)
+    payments = AuditPaymentSerializer(required=False, many=True)
 
 
 class PaymentLotAuditLogger(AuditLogger):

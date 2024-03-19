@@ -190,9 +190,7 @@ class PaymentLotsViewSet(ModelViewSet):
                 serializer = self.get_serializer(instance, data=request.data, partial=partial)
                 serializer.is_valid(raise_exception=True)
                 self.perform_update(serializer)
-                audit_logger.log_modification(
-                    instance=instance, old_data_dump=old_data, request_user=request.user
-                )
+                audit_logger.log_modification(instance=instance, old_data_dump=old_data, request_user=request.user)
 
         return Response(serializer.data)
 

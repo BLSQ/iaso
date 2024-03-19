@@ -180,8 +180,6 @@ class WorkflowsImportExportAPITestCase(BaseWorkflowsAPITestCase):
         orig_wf = self.workflow_et_adults_blue_with_followups_and_changes
         orig_versions_count = orig_wf.workflow_versions.count()
         orig_version = orig_wf.workflow_versions.filter(status="DRAFT").first()
-        orig_version_change = orig_version.changes.first()
-        orig_version_first_followup = orig_version.follow_ups.order_by("created_at").first()
 
         self.assertJSONResponse(r, 200)
         self.assertEqual(len(r.data["versions"]), orig_versions_count)
@@ -223,8 +221,6 @@ class WorkflowsImportExportAPITestCase(BaseWorkflowsAPITestCase):
 
         orig_wf = self.workflow_et_adults_blue_with_followups_and_changes
         orig_versions_count = orig_wf.workflow_versions.count()
-
-        print("orig_versions_count", orig_versions_count)
 
         self.assertJSONResponse(r, 200)
 
@@ -293,5 +289,5 @@ class WorkflowsImportExportAPITestCase(BaseWorkflowsAPITestCase):
 
         # Step 4: Verify if the previously soft deleted workflow version is was undeleted
         last_version_from_db = WorkflowVersion.objects.get(pk=version_to_delete.pk)
-        print("last_version_from_db", last_version_from_db)
+
         self.assertEqual(last_version_from_db.deleted_at, None)

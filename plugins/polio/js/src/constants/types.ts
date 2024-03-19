@@ -421,7 +421,7 @@ export type Shape = {
     org_unit_type_depth: number;
     org_unit_type_id: number;
     parent_id: number;
-    parent_name: Nullable<string>;
+    parent_name?: string;
     short_name: string;
     source_id: number;
     source_name: string;

@@ -1,41 +1,45 @@
-import React, { useState, FunctionComponent } from 'react';
-import { replace } from 'react-router-redux';
+import React, { FunctionComponent, useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { replace } from 'react-router-redux';
 
 import {
     Box,
     Button,
-    Popper,
     ClickAwayListener,
-    Tooltip,
+    Popper,
     TextField,
+    Tooltip,
 } from '@mui/material';
 
-import ChevronLeft from '@mui/icons-material/ChevronLeft';
-import ArrowForward from '@mui/icons-material/ArrowForward';
-import { DesktopDatePicker as DatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
-import ChevronRight from '@mui/icons-material/ChevronRight';
 import ArrowBack from '@mui/icons-material/ArrowBack';
+import ArrowForward from '@mui/icons-material/ArrowForward';
+import ChevronLeft from '@mui/icons-material/ChevronLeft';
+import ChevronRight from '@mui/icons-material/ChevronRight';
 import Today from '@mui/icons-material/Today';
+import { DesktopDatePicker as DatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 import { useSafeIntl } from 'bluesquare-components';
 
 import { Link, withRouter } from 'react-router';
 
+import moment, { Moment } from 'moment';
 import { useStyles } from './Styles';
 import { dateFormat } from './constants';
 
 import { genUrl } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
-import MESSAGES from '../../../constants/messages';
-import moment, { Moment} from 'moment';
 import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
+import MESSAGES from '../../../constants/messages';
 
-type Props =  {
+type Props = {
     currentMonday: Moment;
     router: Router;
     currentDate: Moment;
-}
+};
 
-const Nav: FunctionComponent<Props> = ({ currentMonday, router, currentDate }) => {
+const Nav: FunctionComponent<Props> = ({
+    currentMonday,
+    router,
+    currentDate,
+}) => {
     const classes = useStyles();
     const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
@@ -45,22 +49,24 @@ const Nav: FunctionComponent<Props> = ({ currentMonday, router, currentDate }) =
             currentDate: date.format(dateFormat),
         });
 
-    const handleClickDate = (event?: React.MouseEvent<HTMLElement> | MouseEvent | TouchEvent) => {
+    const handleClickDate = (
+        event?: React.MouseEvent<HTMLElement> | MouseEvent | TouchEvent,
+    ) => {
         if (event && 'currentTarget' in event) {
-            setAnchorEl(anchorEl ? null : event.currentTarget as HTMLElement);
+            setAnchorEl(anchorEl ? null : (event.currentTarget as HTMLElement));
         } else {
             setAnchorEl(null);
         }
     };
     const handleDateChange = (newDate: string) => {
         handleClickDate();
-        console.log('newDate', newDate)
         const url = genUrl(router, {
             currentDate: newDate,
         });
         dispatch(replace(url));
     };
-    const prev = (range: number) => currentMonday.clone().subtract(range, 'week');
+    const prev = (range: number) =>
+        currentMonday.clone().subtract(range, 'week');
     const next = (range: number) => currentMonday.clone().add(range, 'week');
     const open = Boolean(anchorEl);
     return (
@@ -113,10 +119,14 @@ const Nav: FunctionComponent<Props> = ({ currentMonday, router, currentDate }) =
                     >
                         <DatePicker
                             label=""
-                            renderInput={(props) => <TextField {...props} />}
+                            renderInput={props => <TextField {...props} />}
                             value={currentDate.format(dateFormat)}
-                            onChange={(date) =>
-                                date ? handleDateChange(moment(date).format(dateFormat)) : null
+                            onChange={date =>
+                                date
+                                    ? handleDateChange(
+                                          moment(date).format(dateFormat),
+                                      )
+                                    : undefined
                             }
                         />
                     </Popper>

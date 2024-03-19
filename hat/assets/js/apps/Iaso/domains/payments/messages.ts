@@ -125,6 +125,50 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Download payments',
         id: 'iaso.payments.download_payments',
     },
+    close: {
+        id: 'iaso.label.close',
+        defaultMessage: 'Close',
+    },
+    pending: {
+        id: 'iaso.label.pending',
+        defaultMessage: 'Pending',
+    },
+    changeStatus: {
+        id: 'iaso.label.changeStatus',
+        defaultMessage: 'Change status',
+    },
+    rejected: {
+        id: 'iaso.label.rejected',
+        defaultMessage: 'Rejected',
+    },
+    editPaymentFor: {
+        id: 'iaso.payments.label.editPaymentFor',
+        defaultMessage: 'Edit payment for {user}',
+    },
+    editSelected: {
+        id: 'iaso.payments.label.editSelected',
+        defaultMessage: 'Edit selected',
+    },
+    editSelectedPayments: {
+        id: 'iaso.payments.label.editSelectedPayments',
+        defaultMessage: 'Edit {count} selected payments',
+    },
+    confirm: {
+        id: 'iaso.label.confirm',
+        defaultMessage: 'Confirm',
+    },
+    confirmBulkChange: {
+        id: 'iaso.payments.label.confirmBulkChange',
+        defaultMessage: 'Confirm multiple changes',
+    },
+    bulkChangeCount: {
+        id: 'iaso.payments.label.bulkChangeCount',
+        defaultMessage: "You're about to update {count} payments",
+    },
+    paymentLotInfos: {
+        id: 'iaso.payments.label.paymentLotInfos',
+        defaultMessage: 'Payment lot informations',
+    },
 });
 
 export default MESSAGES;

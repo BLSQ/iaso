@@ -15,7 +15,7 @@ export type Options = {
     pageSize?: number;
     page?: number;
     order?: string;
-    countries?: (number | string)[];
+    countries?: string;
     search?: string;
     roundStartFrom?: string; // Date
     roundStartTo?: string; // Date
@@ -35,7 +35,7 @@ export type GetCampaignsParams = {
     limit?: number;
     page?: number;
     order?: string;
-    country__id__in?: (number | string)[];
+    country__id__in?: string;
     search?: string;
     rounds__started_at__gte?: string;
     rounds__started_at__lte?: string;

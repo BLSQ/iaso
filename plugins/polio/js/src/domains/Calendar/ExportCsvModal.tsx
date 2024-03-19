@@ -20,8 +20,8 @@ const ExportCsvModal: FunctionComponent<Props> = ({
     isOpen,
     params,
 }) => {
-    const [roundStartFrom, setRoundStartFrom] = useState(null);
-    const [roundStartTo, setRoundStartTo] = useState(null);
+    const [roundStartFrom, setRoundStartFrom] = useState(undefined);
+    const [roundStartTo, setRoundStartTo] = useState(undefined);
     const onChangeDate = (keyValue, value) => {
         if (keyValue === 'roundStartFrom') {
             setRoundStartFrom(value);
@@ -72,8 +72,8 @@ const ExportCsvModal: FunctionComponent<Props> = ({
                 keyDateTo="roundStartTo"
                 labelFrom={MESSAGES.RoundStartFrom}
                 labelTo={MESSAGES.RoundStartTo}
-                dateFrom={roundStartFrom || undefined}
-                dateTo={roundStartTo || undefined}
+                dateFrom={roundStartFrom}
+                dateTo={roundStartTo}
                 onChangeDate={onChangeDate}
             />
         </ConfirmCancelModal>

@@ -3,10 +3,10 @@ import moment, { Moment } from 'moment';
 import React, { ReactElement } from 'react';
 import { colsCount, dateFormat } from './constants';
 
-import { RoundCell } from './cells/RoundCell';
+import { Campaign } from '../../../constants/types';
 import { CampaignDurationCell } from './cells/CampaignDuration';
 import { EmptyCell } from './cells/Empty';
-import { Campaign } from '../../../constants/types';
+import { RoundCell } from './cells/RoundCell';
 import {
     CalendarData,
     CalendarRound,
@@ -21,6 +21,9 @@ const getEmptyCellsData = (
     lastSunday: Moment,
 ): { extraDays: number; fullWeeks: number } => {
     let sunday: Moment;
+    if (endRoundDate.isAfter(lastSunday)) {
+        return { extraDays: 0, fullWeeks: 0 };
+    }
     if (endRoundDate.weekday() !== 7) {
         sunday = endRoundDate.clone().endOf('isoWeek');
     } else {
@@ -33,7 +36,6 @@ const getEmptyCellsData = (
         fullWeeks,
     };
 };
-
 const getEmptyCells = ({
     cells,
     extraDays,
@@ -53,7 +55,7 @@ const getEmptyCells = ({
     cells.forEach(c => {
         spans += c.props.colSpan;
     });
-    spans = parseInt(`${spans / 7}`, 10);
+    spans = Math.floor(spans / 7);
     if (extraDays) {
         spans += 1;
         cells.push(
@@ -357,7 +359,7 @@ const addRoundCell = ({
             colSpan = round.end.clone().add(1, 'day').diff(firstMonday, 'days');
             // else if end is not in range calculate diff with lastSunday
         } else if (onlyStartInRange) {
-            colSpan = round.end.clone().add(2, 'day').diff(lastSunday, 'days');
+            colSpan = round.end.clone().add(3, 'day').diff(lastSunday, 'days');
         }
     }
     result.push(
@@ -599,4 +601,4 @@ const getCells = (
     return cells;
 };
 
-export { getCalendarData, filterCampaigns, mapCampaigns, getCells };
+export { filterCampaigns, getCalendarData, getCells, mapCampaigns };

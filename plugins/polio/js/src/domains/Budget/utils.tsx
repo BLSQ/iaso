@@ -17,8 +17,12 @@ export const formatUserName = (profile: Profile): string => {
         : profile?.user_name ?? `${profile?.user_id}`;
 };
 
+export const formatRoundNumber = (roundNumber: number): string => {
+    return `Round ${roundNumber}`;
+};
+
 export const formatRoundNumbers = (roundNumbers: number[]): string => {
-    return roundNumbers.map(i => `Round ${i}`).join(', ');
+    return roundNumbers.map(i => formatRoundNumber(i)).join(', ');
 };
 
 export const formatTargetTeams = (

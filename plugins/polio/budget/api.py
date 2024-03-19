@@ -1,6 +1,7 @@
 from typing import Type
 
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.db.models import Prefetch
 from django.db.models import QuerySet, F
 from django.http import HttpResponse
 from django.shortcuts import redirect
@@ -119,9 +120,8 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
         """
         qs = (
             Campaign.objects.filter_for_user(self.request.user)
-            .filter(rounds__budget_process__isnull=True)
             .select_related("country")
-            .prefetch_related("rounds")
+            .prefetch_related(Prefetch("rounds", queryset=Round.objects.filter(budget_process__isnull=True)))
         )
 
         countries = []

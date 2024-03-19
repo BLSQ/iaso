@@ -732,9 +732,7 @@ class BudgetCampaignViewSetTestCase(APITestCase):
                 {"id": str(self.campaign.id), "name": "test campaign", "country_id": self.campaign.country.id}
             ],
             "rounds": [
-                {"id": self.round_1.id, "name": 1, "campaign_id": str(self.campaign.id)},
-                {"id": self.round_2.id, "name": 2, "campaign_id": str(self.campaign.id)},
-                {"id": self.round_3.id, "name": 3, "campaign_id": str(self.campaign.id)},
+                # Only round 4 should be available.
                 {"id": self.round_4.id, "name": 4, "campaign_id": str(self.campaign.id)},
             ],
         }

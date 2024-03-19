@@ -3,6 +3,7 @@ import {
     Nullable,
     Optional,
 } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { NotificationsApiData } from '../Notifications/types';
 
 export type Timeline = {
     categories: Categories;
@@ -125,19 +126,30 @@ export type Workflow = {
     }[];
 };
 
-export type SelectCountries = {
+export type Options = {
+    value: number;
+    label: string;
+};
+
+export type OptionsCountry = {
     id: number;
     name: string;
 };
 
-export type SelectCampaigns = {
+export type OptionsCampaigns = {
     id: number;
     name: string;
     country_id: number;
 };
 
-export type SelectRounds = {
+export type OptionsRounds = {
     id: number;
     name: string;
     campaign_id: number;
+};
+
+export type DropdownOptions = {
+    countries: OptionsCountry[];
+    campaigns: OptionsCampaigns[];
+    rounds: OptionsRounds[];
 };

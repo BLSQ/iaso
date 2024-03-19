@@ -7,9 +7,8 @@ CODE = "MOBILE_ENTITY_WARN_WHEN_FOUND"
 
 def create_feature_flags(apps, schema_editor):
     FeatureFlag = apps.get_model("iaso", "FeatureFlag")
-    FeatureFlag.objects.create(
-        code=CODE,
-        name="Mobile: Display a message when an entity is found in the duplicate search",
+    FeatureFlag.objects.get_or_create(
+        code=CODE, defaults={"name": "Mobile: Display a message when an entity is found in the duplicate search"}
     )
 
 

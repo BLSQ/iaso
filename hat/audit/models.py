@@ -19,6 +19,9 @@ GPKG_IMPORT = "gpkg_import"
 CAMPAIGN_API = "campaign_api"
 PROFILE_API_BULK = "profile_api_bulk"
 PAYMENT_API_BULK = "payment_api_bulk"
+PAYMENT_API = "payment_api"
+PAYMENT_LOT_API = "payment_lot_api"
+ORG_UNIT_CHANGE_REQUEST_API = "org_unit_change_request_api"
 
 
 def dict_compare(d1, d2):

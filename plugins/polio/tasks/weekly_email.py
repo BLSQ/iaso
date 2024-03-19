@@ -22,7 +22,7 @@ def send_notification_email(campaign):
     from_email = settings.DEFAULT_FROM_EMAIL
 
     if not (campaign.obr_name and country and campaign.deleted_at is None):
-        print(f"Campaign {campaign} skipped because of missing fields")
+        logger.warning(f"Campaign {campaign} skipped because of missing fields")
         return False
     try:
         cug = CountryUsersGroup.objects.get(country=country)

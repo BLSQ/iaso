@@ -2,6 +2,7 @@ import pkgutil
 from typing import Union, List
 
 from django.contrib import auth
+from django.conf import settings
 from django.urls import path, include, URLPattern, URLResolver
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView  # type: ignore
@@ -211,9 +212,13 @@ def append_datasources_subresource(viewset, resource_name, urlpatterns):
     )
 
 
+if not settings.DISABLE_PASSWORD_LOGINS:
+    urlpatterns = urlpatterns + [
+        path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+        path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    ]
+
 urlpatterns = urlpatterns + [
-    path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
-    path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("storages/<str:storage_type>/<str:storage_customer_chosen_id>/logs", logs_per_device),
     path("workflows/export/<workflow_id>/", export_workflow, name="export_workflow"),
     path("workflows/import/", import_workflow, name="import_workflow"),

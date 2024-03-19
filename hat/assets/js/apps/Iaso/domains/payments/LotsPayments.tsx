@@ -6,8 +6,8 @@ import MESSAGES from './messages';
 import { baseUrls } from '../../constants/urls';
 import { PotentialPaymentParams } from './types';
 import { useGetPaymentLots } from './hooks/requests/useGetPaymentLots';
-import { usePaymentLotsColumns } from './config/usePaymentLotsColumns';
-import { PaymentLotsFilters } from './components/PaymentLotsFilters';
+import { usePaymentLotsColumns } from './hooks/config/usePaymentLotsColumns';
+import { PaymentLotsFilters } from './components/CreatePaymentLot/PaymentLotsFilters';
 import { SimpleTableWithDeepLink } from '../../components/tables/SimpleTableWithDeepLink';
 
 type Props = {

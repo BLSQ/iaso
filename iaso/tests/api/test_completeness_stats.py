@@ -3,7 +3,6 @@
 
 # Please refer to the diagram in ../docs/test_completeness_stats.png to understand the expected results
 
-import pprint
 from typing import Any
 
 from django.contrib.auth.models import User, Permission
@@ -324,11 +323,6 @@ class CompletenessStatsAPITestCase(APITestCase):
             ],
         }
 
-        pp = pprint.PrettyPrinter(indent=4)
-        print("expected_result:")
-        pp.pprint(expected_result)
-        print("\nj:")
-        pp.pprint(j)
         self.assertAlmostEqualRecursive(
             expected_result,
             j,

@@ -1,6 +1,5 @@
 import mock
 from django.contrib.auth.models import User
-from django.test import TransactionTestCase
 from django.utils.timezone import now
 from django_ltree.fields import PathValue  # type: ignore
 
@@ -11,7 +10,7 @@ from iaso.models.microplanning import TeamType, Team, Planning, Assignment
 from iaso.test import IasoTestCaseMixin, APITestCase
 
 
-class TeamTestCase(TransactionTestCase, IasoTestCaseMixin):
+class TeamTestCase(APITestCase, IasoTestCaseMixin):
     fixtures = ["user.yaml"]
 
     def test_simple_team_model(self):

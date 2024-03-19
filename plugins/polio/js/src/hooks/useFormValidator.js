@@ -218,13 +218,13 @@ const useRoundShape = () => {
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable()
-            // .required(formatMessage(MESSAGES.fieldRequired))
+            .required(formatMessage(MESSAGES.fieldRequired))
             .isValidRoundStartDate(formatMessage),
         ended_at: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable()
-            // .required(formatMessage(MESSAGES.fieldRequired))
+            .required(formatMessage(MESSAGES.fieldRequired))
             .isValidRoundEndDate(formatMessage),
         mop_up_started_at: yup
             .date()

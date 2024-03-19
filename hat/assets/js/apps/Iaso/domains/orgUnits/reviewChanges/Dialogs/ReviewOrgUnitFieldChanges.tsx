@@ -9,15 +9,15 @@ import { AccordionSummary } from '../../../../components/Accordion/AccordionSumm
 import { AccordionDetails } from '../../../../components/Accordion/AccordionDetails';
 
 type Props = {
-    groups: NestedGroup[];
-    newAddedGroups: NestedGroup[];
+    fieldValues: NestedGroup[];
+    newAddedFieldValues: NestedGroup[];
     status: string | undefined;
     field: NewOrgUnitField;
 };
 
-export const ReviewOrgUnitGroupChanges: FunctionComponent<Props> = ({
-    groups,
-    newAddedGroups,
+export const ReviewOrgUnitFieldChanges: FunctionComponent<Props> = ({
+    fieldValues,
+    newAddedFieldValues,
     status,
     field,
 }) => {
@@ -38,10 +38,10 @@ export const ReviewOrgUnitGroupChanges: FunctionComponent<Props> = ({
             <AccordionDetails>
                 <Table>
                     <TableBody>
-                        {groups.map(group => {
+                        {fieldValues?.map(group => {
                             const { name } = group;
                             const isNewElement =
-                                newAddedGroups?.includes(group);
+                                newAddedFieldValues?.includes(group);
                             const selected = isSelected;
                             return (
                                 <TableRow>

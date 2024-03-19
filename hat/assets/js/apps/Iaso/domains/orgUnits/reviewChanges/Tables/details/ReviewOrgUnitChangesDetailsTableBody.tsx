@@ -1,8 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { TableBody } from '@mui/material';
-import { sortBy } from 'lodash';
 import { NewOrgUnitField } from '../../hooks/useNewFields';
-import { ReviewOrgUnitChangesDetailsTableRow } from './ReviewOrgUnitChangesDetailsTableRow';
 import { OrgUnitChangeRequestDetails } from '../../types';
 import { HighlightFields } from '../../Dialogs/HighlightFieldsChanges';
 
@@ -27,31 +25,22 @@ export const ReviewOrgUnitChangesDetailsTableBody: FunctionComponent<Props> = ({
     return (
         <TableBody>
             {newFields.map(field => {
-                if (field.key === 'groups') {
-                    const changedFieldWithNewValues =
-                        changeRequest && changeRequest[`new_${field.key}`];
-                    const changedFieldWithOldValues =
-                        changeRequest && changeRequest[`old_${field.key}`];
+                const { fieldType } = field;
+                const changedFieldWithNewValues =
+                    changeRequest && changeRequest[`new_${field.key}`];
+                const changedFieldWithOldValues =
+                    changeRequest && changeRequest[`old_${field.key}`];
 
-                    return (
-                        <HighlightFields
-                            label={field.label}
-                            field={field}
-                            newGroups={sortBy(changedFieldWithNewValues, 'id')}
-                            oldGroups={sortBy(changedFieldWithOldValues, 'id')}
-                            status={changeRequest?.status || ''}
-                            isNew={isNew}
-                            setSelected={setSelected}
-                        />
-                    );
-                }
                 return (
-                    <ReviewOrgUnitChangesDetailsTableRow
-                        key={field.key}
+                    <HighlightFields
                         field={field}
-                        setSelected={setSelected}
+                        newFieldValues={changedFieldWithNewValues}
+                        oldFieldValues={changedFieldWithOldValues}
+                        status={changeRequest?.status || ''}
                         isNew={isNew}
                         isNewOrgUnit={isNewOrgUnit}
+                        setSelected={setSelected}
+                        fieldType={fieldType}
                         changeRequest={changeRequest}
                         isFetchingChangeRequest={isFetchingChangeRequest}
                     />

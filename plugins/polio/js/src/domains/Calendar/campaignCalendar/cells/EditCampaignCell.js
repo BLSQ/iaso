@@ -1,13 +1,11 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
-import { useSelector } from 'react-redux';
-import { PolioCreateEditDialog as CreateEditDialog } from '../../../Campaigns/MainDialog/CreateEditDialog'
+import PropTypes from 'prop-types';
+import React, { useState } from 'react';
 import MESSAGES from '../../../../constants/messages';
+import { PolioCreateEditDialog as CreateEditDialog } from '../../../Campaigns/MainDialog/CreateEditDialog.tsx';
 
 const EditCampaignCell = ({ campaign }) => {
     const [dialogOpen, setDialogOpen] = useState(false);
-    const isLogged = useSelector(state => Boolean(state.users.current));
 
     return (
         <>

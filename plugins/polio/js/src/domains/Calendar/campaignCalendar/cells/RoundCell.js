@@ -1,16 +1,16 @@
-import React, { useState, useContext, useCallback, useMemo } from 'react';
-import PropTypes from 'prop-types';
 import classnames from 'classnames';
+import PropTypes from 'prop-types';
+import React, { useCallback, useContext, useMemo, useState } from 'react';
 
-import { TableCell, Box } from '@mui/material';
+import { Box, TableCell } from '@mui/material';
 
 import { isEqual } from 'lodash';
 import { useSelector } from 'react-redux';
-import { PolioCreateEditDialog as CreateEditDialog } from '../../../Campaigns/MainDialog/CreateEditDialog';
-import { RoundPopper } from '../popper/RoundPopper';
+import { polioVaccines } from '../../../../constants/virus.ts';
+import { PolioCreateEditDialog as CreateEditDialog } from '../../../Campaigns/MainDialog/CreateEditDialog.tsx';
 import { useStyles } from '../Styles';
 import { RoundPopperContext } from '../contexts/RoundPopperContext.tsx';
-import { polioVaccines } from '../../../../constants/virus.ts';
+import { RoundPopper } from '../popper/RoundPopper';
 
 const getVaccineColor = vaccine =>
     polioVaccines.find(polioVaccine => polioVaccine.value === vaccine)?.color ||

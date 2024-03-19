@@ -4,23 +4,23 @@ import classnames from 'classnames';
 import { useDispatch } from 'react-redux';
 
 import {
-    useKeyPressListener,
-    useSafeIntl,
     getOrderArray,
     getSort,
+    useKeyPressListener,
+    useSafeIntl,
 } from 'bluesquare-components';
 
-import { TableCell, TableSortLabel, Box } from '@mui/material';
+import { Box, TableCell, TableSortLabel } from '@mui/material';
 
-import { replace } from 'react-router-redux';
 import { withRouter } from 'react-router';
-import { colSpanTitle, defaultStaticColWidth } from '../constants';
-import { useStyles } from '../Styles';
-import MESSAGES from '../../../../constants/messages';
+import { replace } from 'react-router-redux';
 import { genUrl } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
-import { useStaticFields } from '../../hooks/useStaticFields';
 import { Router } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
+import MESSAGES from '../../../../constants/messages';
+import { useStaticFields } from '../../hooks/useStaticFields';
 import { Field } from '../../types';
+import { useStyles } from '../Styles';
+import { colSpanTitle, defaultStaticColWidth } from '../constants';
 
 type Props = {
     orders: string;
@@ -48,7 +48,7 @@ const HeadStaticFieldsCells: FunctionComponent<Props> = ({ orders, router, isPdf
             desc,
             id: field.sortKey,
         };
-        let newSort: Order[] = []; 
+        let newSort: Order[] = [];
         if (shiftKeyIsDown) {
             newSort = [
                 ...ordersArray.filter(

@@ -1,23 +1,22 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, {
-    useState,
-    useEffect,
-    useCallback,
-    useMemo,
     FunctionComponent,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
 } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { useDispatch } from 'react-redux';
 import { replace } from 'react-router-redux';
 
-import { Grid, Button, Box, useMediaQuery, useTheme } from '@mui/material';
 import FiltersIcon from '@mui/icons-material/FilterList';
-import { withRouter } from 'react-router';
-import { IntlMessage, useSafeIntl } from 'bluesquare-components';
-import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
-import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
+import { Box, Button, Grid, useMediaQuery, useTheme } from '@mui/material';
+import { IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
 import DatesRange from '../../../../../../../hat/assets/js/apps/Iaso/components/filters/DatesRange';
+import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useGetGroupDropdown } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
+import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import MESSAGES from '../../../constants/messages';
 import { useGetCountries } from '../../../hooks/useGetCountries';
 import { useGetGroupedCampaigns } from '../../GroupedCampaigns/hooks/useGetGroupedCampaigns';
@@ -32,13 +31,16 @@ import { CalendarParams } from './types';
 
 type Props = {
     router: Router & { params: CalendarParams };
-    disableDates: boolean;
-    disableOnlyDeleted: boolean;
-    isCalendar: boolean;
-    showTest: boolean;
+    disableDates?: boolean;
+    disableOnlyDeleted?: boolean;
+    isCalendar?: boolean;
+    showTest?: boolean;
 };
 
-const campaignTypeOptions = (formatMessage: IntlMessage, showTest = false) => {
+const campaignTypeOptions = (
+    formatMessage: IntlFormatMessage,
+    showTest = false,
+) => {
     const options = [
         { label: formatMessage(MESSAGES.all), value: 'all' },
         { label: formatMessage(MESSAGES.preventiveShort), value: 'preventive' },
@@ -53,7 +55,7 @@ const campaignTypeOptions = (formatMessage: IntlMessage, showTest = false) => {
     return options;
 };
 
-const Filters: FunctionComponent<Props> = ({
+export const CampaignsFilters: FunctionComponent<Props> = ({
     router,
     disableDates = false,
     disableOnlyDeleted = false,
@@ -93,7 +95,7 @@ const Filters: FunctionComponent<Props> = ({
         if (filtersUpdated) {
             setFiltersUpdated(false);
             const urlParams = {
-                countries: countries?.join(','),
+                countries,
                 search: search && search !== '' ? search : undefined,
                 roundStartFrom: dateRangePickerToDateApi(
                     roundStartFrom ?? undefined,
@@ -127,7 +129,7 @@ const Filters: FunctionComponent<Props> = ({
     ]);
     const { data, isFetching: isFetchingCountries } = useGetCountries();
     const { data: groupedCampaigns, isFetching: isFetchingGroupedGroups } =
-        useGetGroupedCampaigns(params);
+        useGetGroupedCampaigns();
     // Pass the appId to have it works in the embedded calendar where the user is not connected
     const { data: groupedOrgUnits, isFetching: isFetchingGroupedOrgUnits } =
         useGetGroupDropdown({ blockOfCountries: 'True', appId });
@@ -302,6 +304,3 @@ const Filters: FunctionComponent<Props> = ({
         </>
     );
 };
-
-const wrappedFilters = withRouter(Filters);
-export { wrappedFilters as Filters };

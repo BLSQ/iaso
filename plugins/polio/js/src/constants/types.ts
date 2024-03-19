@@ -1,4 +1,4 @@
-import { Pagination, IntlFormatMessage } from 'bluesquare-components';
+import { IntlFormatMessage, Pagination } from 'bluesquare-components';
 import { Nullable } from '../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { Profile } from '../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { ReasonForDelay } from '../domains/Campaigns/Rounds/ReasonForDelayModal/hooks/reasons';
@@ -420,7 +420,7 @@ export type Shape = {
     org_unit_type_depth: number;
     org_unit_type_id: number;
     parent_id: number;
-    parent_name: Nullable<string>;
+    parent_name?: string;
     short_name: string;
     source_id: number;
     source_name: string;

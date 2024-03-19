@@ -1,8 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import { GeoJSON, Pane } from 'react-leaflet';
-import { getGeoJsonStyle } from './utils';
-import { CalendarMapTooltip } from './CalendarMapTooltip';
 import { ShapeForCalendarMap } from '../types';
+import { CalendarMapTooltip } from './CalendarMapTooltip';
+import { getGeoJsonStyle } from './utils';
 
 type Props = {
     campaignsShapes: ShapeForCalendarMap[];
@@ -40,7 +40,7 @@ export const CalendarMapPanesRegular: FunctionComponent<Props> = ({
                                     type="regular"
                                     campaign={name}
                                     country={country}
-                                    region={shape.parent_name ?? undefined}
+                                    region={shape.parent_name}
                                     district={shape.name}
                                     vaccine={campaignShape.vaccine}
                                 />

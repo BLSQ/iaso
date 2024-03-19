@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from hat.audit.audit_logger import AuditLogger
+from hat.audit.models import PAYMENT_API, PAYMENT_LOT_API, Modification
 from iaso.models import Payment, PotentialPayment, OrgUnitChangeRequest, PaymentLot
 from iaso.api.payments.filters.potential_payments import filter_by_forms, filter_by_dates, filter_by_parent
 
@@ -143,3 +145,30 @@ class PaymentSerializer(serializers.ModelSerializer):
         payment.updated_by = user
         payment.save()
         return payment
+
+
+class AuditPaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = "__all__"
+
+    change_requests = OrgChangeRequestNestedSerializer(many=True)
+    user = UserNestedSerializer()
+
+
+class AuditPaymentLotSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PaymentLot
+        fields = "__all__"
+
+    payments = AuditPaymentSerializer(many=True)
+
+
+class PaymentLotAuditLogger(AuditLogger):
+    serializer = AuditPaymentLotSerializer
+    default_source = PAYMENT_LOT_API
+
+
+class PaymentAuditLogger(AuditLogger):
+    serializer = AuditPaymentLotSerializer
+    default_source = PAYMENT_API

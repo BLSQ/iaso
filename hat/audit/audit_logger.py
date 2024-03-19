@@ -12,13 +12,13 @@ class AuditLogger:
         "Serialize instance for audit"
         return [self.serializer(instance).data]
 
-    def log_modification(self, instance, old_data_dump, request_user, source):
+    def log_modification(self, instance, old_data_dump, request_user, source=None):
         source = source if source else self.default_source
         if not old_data_dump:
-            old_payment_dump = []
+            old_data_dump = []
         Modification.objects.create(
             user=request_user,
-            past_value=old_payment_dump,
+            past_value=old_data_dump,
             new_value=self.serialize_instance(instance),
             content_object=instance,
             source=source,

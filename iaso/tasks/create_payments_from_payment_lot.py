@@ -5,6 +5,7 @@ from hat.audit import models as audit_models
 from iaso.api.org_unit_change_requests.serializers import (
     OrgUnitChangeRequestAuditLogger,
 )
+from typing import List
 from iaso.api.payments.serializers import PaymentAuditLogger, PaymentLotAuditLogger
 from iaso.models import Task
 from iaso.models.payments import Payment, PaymentLot, PotentialPayment
@@ -32,11 +33,11 @@ def create_payment_from_payment_lot(user, payment_lot, *, potential_payment):
         change_request.save()
         # Save change request modification
         change_request_audit_logger.log_modification(
-            change_request=change_request, old_payment_dump=old_change_request_dump, api=audit_models.PAYMENT_LOT_API
+            instance=change_request, old_data_dump=old_change_request_dump,request_user=user, source=audit_models.PAYMENT_LOT_API
         )
     # Log the payment change after the fk to chnage reauest has been set
     audit_logger.log_modification(
-        payment=payment, old_payment_dump=None, request_user=user, api=audit_models.PAYMENT_LOT_API
+        instance=payment, old_data_dump=None, request_user=user, source=audit_models.PAYMENT_LOT_API
     )
     potential_payment.delete()
 
@@ -44,8 +45,7 @@ def create_payment_from_payment_lot(user, payment_lot, *, potential_payment):
 @task_decorator(task_name="create_payments_from_payment_lot")
 def create_payments_from_payment_lot(
     payment_lot_id: int,
-    user,
-    potential_payment_ids,
+    potential_payment_ids: List[int],
     task: Task,
 ):
     """Background Task to bulk update payments related to specific PaymentLot
@@ -70,7 +70,6 @@ def create_payments_from_payment_lot(
         the_task.result = {"result": ERRORED, "message": "One or several Potential payments not found"}
         the_task.save()
         raise ObjectDoesNotExist
-
     user = the_task.launcher
     audit_logger = PaymentLotAuditLogger()
     old_payment_lot_dump = audit_logger.serialize_instance(payment_lot)
@@ -83,5 +82,5 @@ def create_payments_from_payment_lot(
             create_payment_from_payment_lot(user=user, payment_lot=payment_lot, potential_payment=potential_payment)
     payment_lot.compute_status()
     payment_lot.save()
-    audit_logger.log_modification(payment_lot=payment_lot, old_payment_lot_dump=old_payment_lot_dump, request_user=user)
+    audit_logger.log_modification(instance=payment_lot, old_data_dump=old_payment_lot_dump, request_user=user)
     the_task.report_success(message="%d modified" % total)

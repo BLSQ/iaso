@@ -9,6 +9,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, permissions, status
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
+from django.contrib.auth.models import User
 
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
@@ -190,7 +191,7 @@ class PaymentLotsViewSet(ModelViewSet):
                 serializer.is_valid(raise_exception=True)
                 self.perform_update(serializer)
                 audit_logger.log_modification(
-                    payment_lot=instance, old_payment_lot_dump=old_data, request_user=request.user
+                    instance=instance, old_data_dump=old_data, request_user=request.user
                 )
 
         return Response(serializer.data)
@@ -202,8 +203,8 @@ class PaymentLotsViewSet(ModelViewSet):
     def create(self, request):
         with transaction.atomic():
             # Extract user, name, comment, and potential_payments IDs from request data
-            user = request.user
-            print("USER", user)
+            user = self.request.user
+            print("USER", user, isinstance(user, User))
             name = request.data.get("name")
             comment = request.data.get("comment")
             potential_payment_ids = request.data.get("potential_payments", [])  # Expecting a list of IDs
@@ -216,8 +217,10 @@ class PaymentLotsViewSet(ModelViewSet):
 
             # Launch a atask in the worker to update payments, delete potehtial payments, update change requests, update payment_lot status
             # and log everything
-            create_payments_from_payment_lot(
-                payment_lot_id=payment_lot.pk, user=user, potential_payment_ids=potential_payment_ids
+            task = create_payments_from_payment_lot(
+                payment_lot_id=payment_lot.pk,
+                potential_payment_ids=potential_payment_ids,
+                user=user,
             )
 
             # Return the created PaymentLot instance
@@ -468,15 +471,15 @@ class PaymentsViewSet(ModelViewSet):
             serializer = self.get_serializer(instance, data=request.data, partial=partial)
             serializer.is_valid(raise_exception=True)
             self.perform_update(serializer)
-            audit_payment.log_modification(old_payment_dump=old_payment, payment=instance, request_user=request.user)
+            audit_payment.log_modification(old_data_dump=old_payment, instance=instance, request_user=request.user)
             old_payment_lot_status = payment_lot.status
             new_payment_lot_status = payment_lot.compute_status()
             if old_payment_lot_status != new_payment_lot_status:
                 payment_lot.status = new_payment_lot_status
                 payment_lot.save()
                 audit_payment_lot.log_modification(
-                    payment_lot=payment_lot,
-                    old_payment_lot_dump=old_payment_lot,
+                    instance=payment_lot,
+                    old_data_dump=old_payment_lot,
                     request_user=request.user,
-                    api=PAYMENT_API,
+                    source=PAYMENT_API,
                 )

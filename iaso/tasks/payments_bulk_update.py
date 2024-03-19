@@ -85,7 +85,7 @@ def payments_bulk_update(
                 payment_lot.status = new_payment_lot_status
                 payment_lot.save()
                 payment_log_audit.log_modification(
-                    old_payment_lot_dump=old_payment_lot, payment_lot=payment_lot, api=audit_models.PAYMENT_API_BULK
+                    old_data_dump=old_payment_lot, instance=payment_lot, source=audit_models.PAYMENT_API_BULK
                 )
             the_task.report_success(message="%d modified" % total)
 
@@ -118,5 +118,5 @@ def mark_payments_as_read(
             update_payment_from_bulk(user, payment, status=Payment.Statuses.SENT, api=api)
         payment_lot.compute_status()
         payment_lot.save()
-        audit_logger.log_modification(old_payment_lot_dump=old_payment_lot, payment_lot=payment_lot, request_user=user)
+        audit_logger.log_modification(old_data_dump=old_payment_lot, instance=payment_lot, request_user=user)
         the_task.report_success(message="%d modified" % total)

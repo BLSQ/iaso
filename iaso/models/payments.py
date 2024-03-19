@@ -85,18 +85,18 @@ class PaymentLot(models.Model):
         else:
             return self.Statuses.NEW
 
-    def save(self, *args, **kwargs):
-        if not self.pk:
-            self.status = self.Statuses.NEW
-        else:
-            self.status = self.compute_status()
-        super().save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     if not self.pk:
+    #         self.status = self.Statuses.NEW
+    #     else:
+    #         self.status = self.compute_status()
+    #     super().save(*args, **kwargs)
 
     def __str__(self):
         return "%s - %s" % (self.name, self.created_at.strftime("%Y-%m-%d %H:%M:%S"))
 
 
-@receiver(post_save, sender=Payment)
-def update_payment_lot_status(sender, instance, **kwargs):
-    if instance.payment_lot:
-        instance.payment_lot.save()
+# @receiver(post_save, sender=Payment)
+# def update_payment_lot_status(sender, instance, **kwargs):
+#     if instance.payment_lot:
+#         instance.payment_lot.save()

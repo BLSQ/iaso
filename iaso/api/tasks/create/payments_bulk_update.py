@@ -22,6 +22,7 @@ class PaymentsBulkUpdate(viewsets.ViewSet):
         status = request.data.get("status", None)
         selected_ids = request.data.get("selected_ids", [])
         unselected_ids = request.data.get("unselected_ids", [])
+        payment_lot_id = request.data.get("payment_lot_id", None)
 
         user = self.request.user
 
@@ -30,6 +31,7 @@ class PaymentsBulkUpdate(viewsets.ViewSet):
             selected_ids=selected_ids,
             unselected_ids=unselected_ids,
             status=status,
+            payment_lot_id=payment_lot_id,
             user=user,
         )
         return Response(

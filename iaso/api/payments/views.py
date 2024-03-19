@@ -13,6 +13,7 @@ from rest_framework.response import Response
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.audit_mixin import AuditMixin
+from hat.audit.models import PAYMENT_API, PAYMENT_LOT_API
 from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission, ModelViewSet
 from iaso.api.payments.filters import (
@@ -20,10 +21,19 @@ from iaso.api.payments.filters import (
     payments_lots as payments_lots_filters,
 )
 from iaso.models import Payment, OrgUnitChangeRequest, PotentialPayment, PaymentLot
-from .serializers import PaymentSerializer, PotentialPaymentSerializer, PaymentLotSerializer, PaymentLotCreateSerializer
+from iaso.tasks.create_payments_from_payment_lot import create_payments_from_payment_lot
+from iaso.tasks.payments_bulk_update import mark_payments_as_read
+from .serializers import (
+    PaymentAuditLogger,
+    PaymentLotAuditLogger,
+    PaymentSerializer,
+    PotentialPaymentSerializer,
+    PaymentLotSerializer,
+    PaymentLotCreateSerializer,
+)
 
 
-class PaymentLotsViewSet(ModelViewSet, AuditMixin):
+class PaymentLotsViewSet(ModelViewSet):
     """
     # `Payment Lots` API
 
@@ -48,6 +58,9 @@ class PaymentLotsViewSet(ModelViewSet, AuditMixin):
     - `partially_paid`: Indicates that some, but not all, payments in the lot have been paid.
 
     The status is computed every time a payment lot is saved, ensuring that the payment lot status accurately reflects the current state of its associated payments.
+
+    Audit (logs) is handled with a custom serializer instead of the `AuditMixin` because we have nested payments, the saving flow is not straightforward because of the link between the `PaymentLot`'s  status
+    and the statuses its `payments`
     """
 
     permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
@@ -163,16 +176,22 @@ class PaymentLotsViewSet(ModelViewSet, AuditMixin):
         with transaction.atomic():
             partial = kwargs.pop("partial", False)
             instance = self.get_object()
-            serializer = self.get_serializer(instance, data=request.data, partial=partial)
-            serializer.is_valid(raise_exception=True)
-            self.perform_update(serializer)
+            audit_logger = PaymentLotAuditLogger()
 
             mark_as_sent = request.query_params.get("mark_payments_as_sent", "false").lower() == "true"
+            # the mark_as_sent query_param is used to only update related_payments' statuses, so we don't perform any other update when it's true
             if mark_as_sent:
-                related_payments = Payment.objects.filter(payment_lot=instance)
-                for payment in related_payments:
-                    payment.status = Payment.Statuses.SENT
-                    payment.save()
+                related_payments = Payment.objects.filter(payment_lot=instance, payments=related_payments)
+                mark_payments_as_read(payment_lot=instance, api=PAYMENT_LOT_API)
+            # Only name or comment are updated via this PATCH endpoint so no need to re compute the payment lot's status
+            else:
+                old_data = audit_logger.serialize_instance(instance)
+                serializer = self.get_serializer(instance, data=request.data, partial=partial)
+                serializer.is_valid(raise_exception=True)
+                self.perform_update(serializer)
+                audit_logger.log_modification(
+                    payment_lot=instance, old_payment_lot_dump=old_data, request_user=request.user
+                )
 
         return Response(serializer.data)
 
@@ -182,7 +201,9 @@ class PaymentLotsViewSet(ModelViewSet, AuditMixin):
     )
     def create(self, request):
         with transaction.atomic():
-            # Extract name, comment, and potential_payments IDs from request data
+            # Extract user, name, comment, and potential_payments IDs from request data
+            user = request.user
+            print("USER", user)
             name = request.data.get("name")
             comment = request.data.get("comment")
             potential_payment_ids = request.data.get("potential_payments", [])  # Expecting a list of IDs
@@ -193,25 +214,14 @@ class PaymentLotsViewSet(ModelViewSet, AuditMixin):
             # Save the PaymentLot instance to ensure it has a primary key
             payment_lot.save()
 
-            # Retrieve PotentialPayment instances by IDs
-            potential_payments = PotentialPayment.objects.filter(id__in=potential_payment_ids)
-
-            # For each potential payment, create a Payment instance in pending status
-            for potential_payment in potential_payments:
-                payment = Payment.objects.create(
-                    status=Payment.Statuses.PENDING,
-                    user=potential_payment.user,
-                    created_by=request.user,
-                    updated_by=request.user,
-                    payment_lot=payment_lot,  # Now payment_lot has a primary key
-                )
-                # Add change requests from potential payment to the newly created payment
-                for change_request in potential_payment.change_requests.all():
-                    change_request.payment = payment
-                    change_request.save()
-                potential_payment.delete()
+            # Launch a atask in the worker to update payments, delete potehtial payments, update change requests, update payment_lot status
+            # and log everything
+            create_payments_from_payment_lot(
+                payment_lot_id=payment_lot.pk, user=user, potential_payment_ids=potential_payment_ids
+            )
 
             # Return the created PaymentLot instance
+            # It will be incomplete as the task has to run for all the data to be correct
             serializer = self.get_serializer(payment_lot)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -437,7 +447,7 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
         return super().list(request, queryset)
 
 
-class PaymentsViewSet(ModelViewSet, AuditMixin):
+class PaymentsViewSet(ModelViewSet):
     http_method_names = ["patch", "get"]
     results_key = "results"
     serializer_class = PaymentSerializer
@@ -445,3 +455,28 @@ class PaymentsViewSet(ModelViewSet, AuditMixin):
 
     def get_queryset(self) -> models.QuerySet:
         return Payment.objects.filter(created_by__iaso_profile__account=self.request.user.iaso_profile.account)
+
+    def update(self, request, *args, **kwargs):
+        with transaction.atomic():
+            partial = kwargs.pop("partial", False)
+            audit_payment = PaymentAuditLogger()
+            audit_payment_lot = PaymentLotAuditLogger()
+            instance = self.get_object()
+            payment_lot = instance.payment_lot
+            old_payment = audit_payment.serialize_instance(instance)
+            old_payment_lot = audit_payment_lot.serialize_instance(payment_lot)
+            serializer = self.get_serializer(instance, data=request.data, partial=partial)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+            audit_payment.log_modification(old_payment_dump=old_payment, payment=instance, request_user=request.user)
+            old_payment_lot_status = payment_lot.status
+            new_payment_lot_status = payment_lot.compute_status()
+            if old_payment_lot_status != new_payment_lot_status:
+                payment_lot.status = new_payment_lot_status
+                payment_lot.save()
+                audit_payment_lot.log_modification(
+                    payment_lot=payment_lot,
+                    old_payment_lot_dump=old_payment_lot,
+                    request_user=request.user,
+                    api=PAYMENT_API,
+                )

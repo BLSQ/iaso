@@ -1,15 +1,14 @@
-import React, { useCallback, FunctionComponent } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 
-import { IconButton, Grid, Button, Popper, Paper, Box } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { useSafeIntl, getTableUrl } from 'bluesquare-components';
+import { Box, Button, Grid, IconButton, Paper, Popper } from '@mui/material';
+import { getTableUrl, useSafeIntl } from 'bluesquare-components';
 
 import { useSelector } from 'react-redux';
-import { User } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { CsvButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/CsvButton';
 import MESSAGES from '../../../../constants/messages';
 import { useStyles } from '../Styles';
-import { CsvButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/CsvButton';
-import { CalendarRound, MappedCampaign } from '../types';
+import { CalendarRound, MappedCampaign, ReduxState } from '../types';
 
 const groupsForCampaignRound = (campaign, round) => {
     if (!campaign.separate_scopes_per_round) {
@@ -48,7 +47,7 @@ export const RoundPopper: FunctionComponent<Props> = ({
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     // We don't want to show the edit button if there is no connected user
-    const isLogged = useSelector((state: { users: { current: User } }) =>
+    const isLogged = useSelector((state: ReduxState) =>
         Boolean(state.users.current),
     );
     const id = open ? `campaign-popover-${campaign.id}-${round.id}` : undefined;

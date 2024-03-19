@@ -1,23 +1,22 @@
-import React, {
-    useState,
-    useContext,
-    useCallback,
-    useMemo,
-    FunctionComponent,
-} from 'react';
 import classnames from 'classnames';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useContext,
+    useMemo,
+    useState,
+} from 'react';
 
-import { TableCell, Box } from '@mui/material';
+import { Box, TableCell } from '@mui/material';
 
 import { isEqual } from 'lodash';
 import { useSelector } from 'react-redux';
+import { polioVaccines } from '../../../../constants/virus';
 import { PolioCreateEditDialog as CreateEditDialog } from '../../../Campaigns/MainDialog/CreateEditDialog';
-import { RoundPopper } from '../popper/RoundPopper';
 import { useStyles } from '../Styles';
 import { RoundPopperContext } from '../contexts/RoundPopperContext';
-import { polioVaccines } from '../../../../constants/virus';
-import { CalendarRound, MappedCampaign } from '../types';
-import { User } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { RoundPopper } from '../popper/RoundPopper';
+import { CalendarRound, MappedCampaign, ReduxState } from '../types';
 
 type Props = {
     colSpan: number;
@@ -60,7 +59,7 @@ export const RoundCell: FunctionComponent<Props> = ({
 
     const defaultCellStyles = [classes.tableCell, classes.tableCellBordered];
     const open = self && isEqual(self, anchorEl);
-    const isLogged = useSelector((state: { users: { current: User } }) =>
+    const isLogged = useSelector((state: ReduxState) =>
         Boolean(state.users.current),
     );
     const vaccinesList = useMemo(() => {

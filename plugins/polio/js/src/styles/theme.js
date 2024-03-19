@@ -104,10 +104,6 @@ export const useStyles = makeStyles(() => ({
     subTabs: {
         padding: theme.spacing(0, 2),
     },
-    subTab: {
-        fontSize: 12,
-        minWidth: 100,
-    },
     addRoundButton: {
         fontSize: 10,
         height: 20,
@@ -137,10 +133,10 @@ export const useStyles = makeStyles(() => ({
         margin: 0,
         position: 'absolute',
         left: theme.spacing(4),
-        top: -5,
+        top: -6,
         minHeight: 0,
         height: 1,
-        width: `calc(100% - ${theme.spacing(4)}px)`,
+        width: `calc(100% - ${theme.spacing(2)})`,
         display: 'flex',
         listStyleType: 'none',
         zIndex: 100000,

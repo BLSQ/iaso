@@ -19,17 +19,6 @@ export const roundFormFields = (rounds: Round[]): string[] => {
         ...rounds
             .map((_round, i) => {
                 return [
-                    `rounds[${i}].awareness_of_campaign_planning`,
-                    `rounds[${i}].im_percentage_children_missed_in_plus_out_household`,
-                    `rounds[${i}].im_percentage_children_missed_out_household`,
-                    `rounds[${i}].im_percentage_children_missed_in_household`,
-                    `rounds[${i}].main_awareness_problem`,
-                    `rounds[${i}].lqas_district_failing`,
-                    `rounds[${i}].lqas_district_passing`,
-                    `rounds[${i}].lqas_ended_at`,
-                    `rounds[${i}].lqas_started_at`,
-                    `rounds[${i}].im_ended_at`,
-                    `rounds[${i}].im_started_at`,
                     `rounds[${i}].mop_up_ended_at`,
                     `rounds[${i}].mop_up_started_at`,
                     `rounds[${i}].ended_at`,
@@ -69,7 +58,7 @@ export const RoundsForm: FunctionComponent = () => {
             number: roundIndex,
             started_at: null,
             ended_at: null,
-        });
+        } as Round);
         const sortedRounds = newRounds.sort((a, b) => a.number - b.number);
         setFieldValue('rounds', sortedRounds);
         setLastRound(newRounds[sortedRounds.length - 1]);
@@ -108,7 +97,7 @@ export const RoundsForm: FunctionComponent = () => {
         <>
             <Box mt={rounds.length > 0 ? -4 : 0} display="flex">
                 {displayAddZeroRound && (
-                    <Box mr={rounds.length === 0 ? 2 : 0} mt={2}>
+                    <Box mr={rounds.length === 0 ? 2 : 0} mt="14px">
                         <Button
                             className={
                                 rounds.length > 0 ? classes.addRoundButton : ''
@@ -172,8 +161,15 @@ export const RoundsForm: FunctionComponent = () => {
                         >
                             {rounds.map(round => (
                                 <Tab
+                                    sx={theme => ({
+                                        fontSize: 12,
+                                        minWidth: 0,
+                                        padding: '10px 12px',
+                                        [theme.breakpoints.up('sm')]: {
+                                            minWidth: 0,
+                                        },
+                                    })}
                                     key={round.number}
-                                    className={classes.subTab}
                                     label={
                                         <span>
                                             {formatMessage(MESSAGES.round)}{' '}
@@ -187,7 +183,7 @@ export const RoundsForm: FunctionComponent = () => {
                     )}
                 </Box>
                 {(!lastRound || lastRound?.number < maxRoundsCount) && (
-                    <Box mt={2}>
+                    <Box mt="14px" ml={2}>
                         <Button
                             className={
                                 rounds.length > 0 ? classes.addRoundButton : ''
@@ -205,9 +201,7 @@ export const RoundsForm: FunctionComponent = () => {
             </Box>
             {currentRoundNumber !== undefined && (
                 <>
-                    <Box mt={2} width="100%">
-                        <RoundForm roundNumber={currentRoundNumber} />
-                    </Box>
+                    <RoundForm roundNumber={currentRoundNumber} />
                     <ScopeForm currentTab={`${currentRoundNumber}`} />
                 </>
             )}

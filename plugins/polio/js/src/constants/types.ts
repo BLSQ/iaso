@@ -289,12 +289,6 @@ export type Round = {
     datelogs: RoundDateHistoryEntry[];
 };
 
-type NewRound = {
-    started_at: Nullable<string>;
-    ended_at: Nullable<string>;
-    number: number;
-};
-
 export type Campaign = {
     id: string;
     created_at: string;
@@ -302,7 +296,7 @@ export type Campaign = {
     deleted_at: Nullable<string>;
     round_one?: any[];
     round_two?: any[];
-    rounds: (Round | NewRound)[];
+    rounds: Round[];
     org_unit: {
         id: number;
         name: string;

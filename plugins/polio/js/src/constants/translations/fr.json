@@ -327,6 +327,7 @@
     "iaso.polio.label.enterOrCreateGoogleSheet": "Entrer un url de Google Sheet ou utiliser le bouton pour générer une nouvelle Google sheet",
     "iaso.polio.label.estimated_arrival_time": "Date d'arrivée estimée",
     "iaso.polio.label.estimatedDateOfArrival": "Date d'arrivée estimée",
+    "iaso.polio.label.evaluation": "Evaluation",
     "iaso.polio.label.expirationDate": "Date d'expiration",
     "iaso.polio.label.expired": "Expiré",
     "iaso.polio.label.exportToExcel": "Exporter en XLSX",

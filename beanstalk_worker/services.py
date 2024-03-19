@@ -92,7 +92,7 @@ class PostgresTaskService(_TaskServiceBase):
 
     def run_task(self, task):
         params = task.params
-        print(params)
+
         if not (params and "module" in params and "method" in params):
             # This is for old task that may be in the DB but are not in the new system
             logger.warning(f"Skipping {task} missing method in params: {params}")

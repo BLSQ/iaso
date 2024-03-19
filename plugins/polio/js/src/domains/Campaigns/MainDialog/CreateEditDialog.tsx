@@ -179,7 +179,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                         </Box>
                     </Grid>
 
-                    {selectedCampaign && campaignLogs?.length && (
+                    {selectedCampaign && Boolean(campaignLogs?.length) && (
                         <Grid
                             item
                             xs={12}

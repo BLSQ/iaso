@@ -1,10 +1,11 @@
 /* eslint-disable camelcase */
 import { Moment } from 'moment';
+import { User } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { Campaign, MergedShape, Scope, Shape } from '../../../constants/types';
 import { CampaignCategory } from '../../Campaigns/hooks/api/useGetCampaigns';
 
 export type Query = {
-    queryKey: (string | Record<string, string>)[];
+    queryKey: (string | Record<string, unknown>)[];
     queryFn: CallableFunction;
     select: CallableFunction;
     enabled: boolean;
@@ -57,7 +58,7 @@ export type CalendarParams = {
     show_test?: string;
     filterLaunched?: string;
     order?: string;
-    countries?: string[];
+    countries?: string;
     search?: string;
     campaignType?: string;
     campaignCategory?: CampaignCategory;
@@ -96,4 +97,12 @@ export type MonthHeader = {
     year: string;
     value: string;
     daysCount: number;
+};
+
+export type Users = {
+    current: User;
+};
+
+export type ReduxState = {
+    users: Users;
 };

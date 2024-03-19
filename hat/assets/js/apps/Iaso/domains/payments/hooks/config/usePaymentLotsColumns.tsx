@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
 import { useSafeIntl, Column, IntlFormatMessage } from 'bluesquare-components';
-import MESSAGES from '../messages';
-import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
-import { UserCell } from '../../../components/Cells/UserCell';
-import { Payment } from '../types';
-import { PaymentLotActionCell } from '../components/PaymentLotActionCell';
+import MESSAGES from '../../messages';
+import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
+import { UserCell } from '../../../../components/Cells/UserCell';
+import { Payment } from '../../types';
+import { PaymentLotActionCell } from '../../components/PaymentLotActionCell';
 
 export const usePaymentLotsColumns = (): Column[] => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =

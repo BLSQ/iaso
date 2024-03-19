@@ -40,7 +40,15 @@ BEANSTALK_SQS_REGION
 BEANSTALK_SQS_URL
 
 ```
+## Disabling login through passwords
 
+In case you wish to deactivate passwords using login:
+
+- in the basic login page
+- to connect to the admin
+- through /api/token , which is used by default by the mobile application 
+
+you can set the environment variable `DISABLE_PASSWORD_LOGINS`to the value`"true"`
 
 ## Sentry related
 

@@ -171,6 +171,7 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
                                     selection={selection}
                                     resetSelection={handleUnselectAll}
                                     saveStatus={bulkSaveStatus}
+                                    paymentLotId={paymentLot.id}
                                     iconProps={{
                                         disabled:
                                             selection.selectCount === 0 ||

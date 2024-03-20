@@ -18,6 +18,7 @@ type Props = {
     selection: Selection<Payment>;
     resetSelection: () => void;
     saveStatus: UseMutateAsyncFunction<any, any, BulkPaymentSaveBody, any>;
+    paymentLotId: number;
 };
 
 const BulkEditPaymentDialog: FunctionComponent<Props> = ({
@@ -26,16 +27,26 @@ const BulkEditPaymentDialog: FunctionComponent<Props> = ({
     selection,
     resetSelection,
     saveStatus,
+    paymentLotId,
 }) => {
     const { formatMessage } = useSafeIntl();
     const [status, setStatus] = useState<PaymentStatus>('pending');
 
     const handleConfirm = useCallback(() => {
-        saveStatus({ ...selection, status }).then(() => {
-            resetSelection();
-            closeDialog();
-        });
-    }, [closeDialog, resetSelection, saveStatus, selection, status]);
+        saveStatus({ ...selection, status, payment_lot_id: paymentLotId }).then(
+            () => {
+                resetSelection();
+                closeDialog();
+            },
+        );
+    }, [
+        closeDialog,
+        paymentLotId,
+        resetSelection,
+        saveStatus,
+        selection,
+        status,
+    ]);
     const count = selection.selectCount;
     const titleMessage = formatMessage(MESSAGES.editSelectedPayments, {
         count,

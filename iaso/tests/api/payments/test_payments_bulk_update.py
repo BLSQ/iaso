@@ -85,6 +85,7 @@ class TestPaymentsBulkUpdate(TaskAPITestCase):
                 "select_all": False,
                 "selected_ids": [self.payment.pk],
                 "status": m.Payment.Statuses.REJECTED,
+                "payment_lot_id": self.payment_lot.pk,
             },
             format="json",
         )
@@ -114,13 +115,14 @@ class TestPaymentsBulkUpdate(TaskAPITestCase):
         self.assertJSONResponse(response, 403)
 
     def test_payment_bulkupdate_select_some(self):
-        """POST /orgunits/bulkupdate happy path"""
+        """POST /orgunits/bulkupdate happy path. Select some"""
 
         self.client.force_authenticate(self.user)
         operation_payload = {
             "select_all": False,
             "selected_ids": [self.payment.pk],
             "status": m.Payment.Statuses.PAID,
+            "payment_lot_id": self.payment_lot.pk,
         }
         response = self.client.post(self.url, data=operation_payload, format="json")
 
@@ -135,7 +137,8 @@ class TestPaymentsBulkUpdate(TaskAPITestCase):
         self.payment.refresh_from_db()
         self.assertEqual(self.payment.status, m.Payment.Statuses.PAID)
 
-        self.assertEqual(1, am.Modification.objects.count())
+        # We expect 1 log for the PaymentLot and 1 for the payment updated
+        self.assertEqual(2, am.Modification.objects.count())
 
         modification_payment = am.Modification.objects.get(object_id=self.payment.pk)
         self.assertEqual(ContentType.objects.get_for_model(m.Payment), modification_payment.content_type)
@@ -144,16 +147,15 @@ class TestPaymentsBulkUpdate(TaskAPITestCase):
         self.assertEqual(m.Payment.Statuses.PENDING, modification_payment.past_value[0]["fields"]["status"])
         self.assertEqual(m.Payment.Statuses.PAID, modification_payment.new_value[0]["fields"]["status"])
 
+        # TODO assert PaymentLot Status
+
     def test_payment_bulkupdate_select_all(self):
         """POST /api/tasks/create/paymentsbulkupdate/ happy path (select all)"""
 
         self.client.force_authenticate(self.user)
         response = self.client.post(
             self.url,
-            data={
-                "select_all": True,
-                "status": m.Payment.Statuses.PAID,
-            },
+            data={"select_all": True, "status": m.Payment.Statuses.PAID, "payment_lot_id": self.payment_lot.pk},
             format="json",
         )
 
@@ -170,7 +172,7 @@ class TestPaymentsBulkUpdate(TaskAPITestCase):
         self.second_payment.refresh_from_db()
         self.assertEqual(self.second_payment.status, m.Payment.Statuses.PAID)
 
-        self.assertEqual(2, am.Modification.objects.count())
+        self.assertEqual(3, am.Modification.objects.count())
 
     def test_payment_bulkupdate_task_select_all_but_some(self):
         """POST /orgunits/bulkupdate/ happy path (select all except some)"""
@@ -182,6 +184,7 @@ class TestPaymentsBulkUpdate(TaskAPITestCase):
                 "select_all": True,
                 "status": m.Payment.Statuses.PAID,
                 "unselected_ids": [self.second_payment.pk],
+                "payment_lot_id": self.payment_lot.pk,
             },
             format="json",
         )
@@ -198,7 +201,7 @@ class TestPaymentsBulkUpdate(TaskAPITestCase):
         self.second_payment.refresh_from_db()
         self.assertEqual(self.second_payment.status, m.Payment.Statuses.PENDING)
 
-        self.assertEqual(1, am.Modification.objects.count())
+        self.assertEqual(2, am.Modification.objects.count())
 
     def test_payment_update_task_kill(self):
         """Launch the task and then kill it
@@ -211,6 +214,7 @@ class TestPaymentsBulkUpdate(TaskAPITestCase):
                 "select_all": True,
                 "status": m.Payment.Statuses.PAID,
                 "unselected_ids": [self.second_payment.pk],
+                "payment_lot_id": self.payment_lot.pk,
             },
             format="json",
         )

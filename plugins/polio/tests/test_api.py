@@ -9,7 +9,7 @@ from hat.audit.models import Modification
 from iaso import models as m
 from iaso.models import Account
 from iaso.test import APITestCase
-from plugins.polio.models import Round, CampaignType
+from plugins.polio.models import CampaignType, Round
 from plugins.polio.preparedness.spreadsheet_manager import *
 
 
@@ -196,7 +196,7 @@ class PolioAPITestCase(APITestCase):
             ],
         }
         response = self.client.post("/api/polio/campaigns/", payload, format="json")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
         self.assertEqual(Campaign.objects.count(), 0)
 
     def test_create_campaign(self):

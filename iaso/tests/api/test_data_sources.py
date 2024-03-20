@@ -23,7 +23,7 @@ class DataSourcesAPITestCase(APITestCase):
         """GET /datasources/ without auth should result in a 401"""
 
         response = self.client.get("/api/datasources/")
-        self.assertJSONResponse(response, 413)
+        self.assertJSONResponse(response, 401)
 
     def test_datasource_list_with_auth_no_permissions(self):
         """GET /projects/ with auth should result in a 403 as no permission"""

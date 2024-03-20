@@ -355,8 +355,8 @@ LOGIN_URL = "/login"
 LOGIN_REDIRECT_URL = "/"
 
 AUTH_CLASSES = [
-    "iaso.api.auth.authentication.CsrfExemptSessionAuthentication",
     "rest_framework_simplejwt.authentication.JWTAuthentication",
+    "iaso.api.auth.authentication.CsrfExemptSessionAuthentication",
 ]
 
 # Needed for PowerBI, used for the Polio project, which only supports BasicAuth.
@@ -369,7 +369,6 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": AUTH_CLASSES,
     "DEFAULT_PERMISSION_CLASSES": ("hat.api.authentication.UserAccessPermission",),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
-    'EXCEPTION_HANDLER': 'iaso.api.auth.exception_handler.custom_exception_handler',
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     "PAGE_SIZE": None,
     "ORDERING_PARAM": "order",
@@ -440,9 +439,11 @@ WEBPACK_LOADER = {
         "STATS_FILE": os.path.join(
             PROJECT_ROOT,
             "assets/webpack",
-            "webpack-stats.json"
-            if (DEBUG and not os.environ.get("TEST_PROD", None) and not USE_S3)
-            else "webpack-stats-prod.json",
+            (
+                "webpack-stats.json"
+                if (DEBUG and not os.environ.get("TEST_PROD", None) and not USE_S3)
+                else "webpack-stats-prod.json"
+            ),
         ),
     }
 }

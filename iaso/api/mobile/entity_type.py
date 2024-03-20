@@ -92,7 +92,6 @@ class MobileEntityTypesViewSet(ModelViewSet):
         app_id = self.request.query_params.get("app_id")
         user = self.request.user
 
-        print("ici")
         if not user or not user.is_authenticated:
             raise AuthenticationFailed(f"User not authenticated")
 

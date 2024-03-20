@@ -30,11 +30,11 @@ class CommentApiTestCase(APITestCase):
 
     def test_setupaccount_unauth_post(self):
         response = self.client.post("/api/comments/", data={}, format="json")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
     def test_setupaccount_unauth_list(self):
         response = self.client.get("/api/comments/", format="json")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
     def test_setupaccount_post_no_perm(self):
         account = m.Account.objects.create(name="test account #2")

@@ -74,7 +74,7 @@ class PotentialPaymentsViewSetAPITestCase(APITestCase):
 
     def test_list_without_auth(self):
         response = self.client.get("/api/potential_payments/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     def test_retrieve_not_allowed(self):
         potential_payment = m.PotentialPayment.objects.create(user=self.user)
@@ -86,7 +86,7 @@ class PotentialPaymentsViewSetAPITestCase(APITestCase):
     def test_retrieve_without_auth(self):
         potential_payment = m.PotentialPayment.objects.create(user=self.user)
         response = self.client.get(f"/api/potential_payments/{potential_payment.pk}/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     def test_list_clears_old_potential_payments(self):
         m.PotentialPayment.objects.create(user=self.user)

@@ -83,7 +83,7 @@ class StorageAPITestCase(APITestCase):
     def test_post_log_needs_authentication(self):
         """POST /api/mobile/storages/log/ is rejected if user is not authenticated."""
         response = self.client.post("/api/mobile/storages/logs/")
-        self.assertEqual(response.status_code, 403)  # TODO: Would be better to return 401?
+        self.assertEqual(response.status_code, 401)
 
     def test_post_log_multiple_logs(self):
         """
@@ -458,7 +458,7 @@ class StorageAPITestCase(APITestCase):
     def test_list_only_authenticated(self):
         """GET /api/storages/ is rejected if user is not authenticated."""
         response = self.client.get("/api/storages/")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
         # TODO: according to the specs, it should be 401.
         #  Is that consistent with the rest of the API? (fix/or update specs)
 
@@ -705,7 +705,7 @@ class StorageAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
         # Case 2: user without iaso_storage permissions
         self.client.force_authenticate(self.another_user)
@@ -807,9 +807,9 @@ class StorageAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_get_logs_for_device_unauthenticated(self):
-        """A non authenticated user should receive a 403"""
+        """A non authenticated user should receive a 401"""
         response = self.client.get("/api/storages/NFC/EXISTING_STORAGE/logs")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
     def test_get_logs_for_device_insufficient_permissions(self):
         """A user without the "iaso_storages" permission should receive a 403"""

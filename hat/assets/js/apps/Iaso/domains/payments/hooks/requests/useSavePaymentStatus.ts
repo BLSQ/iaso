@@ -54,6 +54,6 @@ export const useBulkSavePaymentStatus = (): UseMutationResult<
     return useSnackMutation({
         mutationFn: body => saveBulkPayments(body),
         invalidateQueryKey: ['paymentLots', 'payments'],
-        snackSuccessMessage: MESSAGES.edit,
+        snackSuccessMessage: MESSAGES.paymentsBulkUpdateLaunched,
     });
 };

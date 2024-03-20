@@ -7,9 +7,10 @@ import React, { FunctionComponent, useState } from 'react';
 import DatesRange from '../../../../../../hat/assets/js/apps/Iaso/components/filters/DatesRange';
 import MESSAGES from '../../constants/messages.js';
 import { ExportCsvModalButton } from './ExportCsvModalButton';
+import { CalendarParams } from './campaignCalendar/types';
 
 type Props = {
-    params: any;
+    params: CalendarParams;
     isOpen: boolean;
     closeDialog: () => void;
 };
@@ -19,8 +20,8 @@ const ExportCsvModal: FunctionComponent<Props> = ({
     isOpen,
     params,
 }) => {
-    const [roundStartFrom, setRoundStartFrom] = useState(null);
-    const [roundStartTo, setRoundStartTo] = useState(null);
+    const [roundStartFrom, setRoundStartFrom] = useState(undefined);
+    const [roundStartTo, setRoundStartTo] = useState(undefined);
     const onChangeDate = (keyValue, value) => {
         if (keyValue === 'roundStartFrom') {
             setRoundStartFrom(value);

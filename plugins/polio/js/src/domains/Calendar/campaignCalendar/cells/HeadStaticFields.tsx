@@ -1,41 +1,54 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
+
 import classnames from 'classnames';
-import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 
 import {
-    useKeyPressListener,
-    useSafeIntl,
     getOrderArray,
     getSort,
+    useKeyPressListener,
+    useSafeIntl,
 } from 'bluesquare-components';
 
-import { TableCell, TableSortLabel, Box } from '@mui/material';
+import { Box, TableCell, TableSortLabel } from '@mui/material';
 
-import { replace } from 'react-router-redux';
 import { withRouter } from 'react-router';
-import { colSpanTitle, defaultStaticColWidth } from '../constants';
-import { useStyles } from '../Styles';
-import MESSAGES from '../../../../constants/messages';
+import { replace } from 'react-router-redux';
 import { genUrl } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
+import { Router } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
+import MESSAGES from '../../../../constants/messages';
 import { useStaticFields } from '../../hooks/useStaticFields';
+import { Field } from '../../types';
+import { useStyles } from '../Styles';
+import { colSpanTitle, defaultStaticColWidth } from '../constants';
 
-const HeadStaticFieldsCells = ({ orders, router, isPdf }) => {
+type Props = {
+    orders: string;
+    router: Router; 
+    isPdf: boolean;
+};
+
+type Order = {
+    id: string;
+    desc: boolean;
+};
+
+const HeadStaticFieldsCells: FunctionComponent<Props> = ({ orders, router, isPdf }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     const shiftKeyIsDown = useKeyPressListener('Shift');
     const ordersArray = getOrderArray(orders);
-    const handleSort = (field, existingSort) => {
+    const handleSort = (field: Field, existingSort: Order) => {
         let desc = true;
         if (existingSort && existingSort.desc) {
             desc = false;
         }
-        const currentSort = {
+        const currentSort = field.sortKey && {
             desc,
             id: field.sortKey,
         };
-        let newSort = [];
+        let newSort: Order[] = [];
         if (shiftKeyIsDown) {
             newSort = [
                 ...ordersArray.filter(
@@ -43,7 +56,9 @@ const HeadStaticFieldsCells = ({ orders, router, isPdf }) => {
                 ),
             ];
         }
-        newSort.push(currentSort);
+        if (currentSort) {
+            newSort.push(currentSort);
+        }
 
         const url = genUrl(router, {
             order: getSort(newSort),
@@ -52,7 +67,7 @@ const HeadStaticFieldsCells = ({ orders, router, isPdf }) => {
         dispatch(replace(url));
     };
     const fields = useStaticFields(isPdf);
-    return fields.map(f => {
+    return (<>{fields.map(f => {
         const sort = ordersArray.find(o => o.id === f.sortKey);
         const sortActive = Boolean(sort);
         const direction = sortActive && !sort.desc ? 'asc' : 'desc';
@@ -67,7 +82,6 @@ const HeadStaticFieldsCells = ({ orders, router, isPdf }) => {
                 key={f.key}
                 className={classnames(
                     classes.tableCellTitle,
-                    classes.tableCellTitleLarge,
                 )}
                 colSpan={colSpanTitle}
                 style={{
@@ -91,10 +105,6 @@ const HeadStaticFieldsCells = ({ orders, router, isPdf }) => {
                                 active={sortActive}
                                 direction={direction}
                                 title={formatMessage(title)}
-                                classes={{
-                                    root: classes.sortLabel,
-                                    icon: classes.icon,
-                                }}
                             >
                                 {formatMessage(MESSAGES[f.key])}
                             </TableSortLabel>
@@ -106,12 +116,8 @@ const HeadStaticFieldsCells = ({ orders, router, isPdf }) => {
                 </Box>
             </TableCell>
         );
-    });
-};
-
-HeadStaticFieldsCells.propTypes = {
-    orders: PropTypes.string.isRequired,
-    isPdf: PropTypes.bool.isRequired,
+    })
+    }</>);
 };
 
 const wrappedHeadStaticFieldsCells = withRouter(HeadStaticFieldsCells);

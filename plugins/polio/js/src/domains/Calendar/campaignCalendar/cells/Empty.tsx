@@ -1,11 +1,18 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { FunctionComponent } from 'react';
 import classnames from 'classnames';
 
 import { TableCell } from '@mui/material';
 import { useStyles } from '../Styles';
 
-const EmptyCell = ({ colSpan, isCurrentWeek }) => {
+type Props = {
+    colSpan: number;
+    isCurrentWeek?: boolean;
+};
+
+const EmptyCell: FunctionComponent<Props> = ({
+    colSpan,
+    isCurrentWeek = false,
+}) => {
     const classes = useStyles();
     const defaultCellStyles = [classes.tableCell, classes.tableCellBordered];
     return (
@@ -16,14 +23,6 @@ const EmptyCell = ({ colSpan, isCurrentWeek }) => {
             })}
         />
     );
-};
-EmptyCell.defaultProps = {
-    isCurrentWeek: false,
-};
-
-EmptyCell.propTypes = {
-    colSpan: PropTypes.number.isRequired,
-    isCurrentWeek: PropTypes.bool,
 };
 
 export { EmptyCell };

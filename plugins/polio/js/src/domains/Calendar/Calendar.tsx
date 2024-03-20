@@ -1,42 +1,54 @@
 /* eslint-disable camelcase */
-import React, { useMemo, useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
-import moment from 'moment';
-import classnames from 'classnames';
-import { Box, Grid, Button, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
+import { Box, Button, Grid, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
-    commonStyles,
-    useSafeIntl,
-    LoadingSpinner,
     ExcellSvg,
+    LoadingSpinner,
+    commonStyles,
     getTableUrl,
+    useSafeIntl,
 } from 'bluesquare-components';
-import { useSelector } from 'react-redux';
-import TopBar from 'Iaso/components/nav/TopBarComponent';
+import classnames from 'classnames';
 import domToPdf from 'dom-to-pdf';
-import { CampaignsCalendar } from './campaignCalendar';
+import moment from 'moment';
+import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
+import { useSelector } from 'react-redux';
+import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { getCampaignColor } from '../../constants/campaignsColors';
-import { CalendarMap } from './campaignCalendar/map/CalendarMap.tsx';
+import { CampaignsCalendar } from './campaignCalendar';
+import { CalendarMap } from './campaignCalendar/map/CalendarMap';
 import {
-    mapCampaigns,
     filterCampaigns,
     getCalendarData,
+    mapCampaigns,
 } from './campaignCalendar/utils';
 
-import { dateFormat, defaultOrder } from './campaignCalendar/constants';
-import { useGetCampaigns } from '../Campaigns/hooks/api/useGetCampaigns.ts';
-import MESSAGES from '../../constants/messages';
-import { Filters } from './campaignCalendar/Filters';
-import { ExportCsvModal } from './ExportCsvModal.tsx';
 import { userHasPermission } from '../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
-import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils.ts';
+import { Router } from '../../../../../../hat/assets/js/apps/Iaso/types/general';
+import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import MESSAGES from '../../constants/messages';
+import { useGetCampaigns } from '../Campaigns/hooks/api/useGetCampaigns';
+import { ExportCsvModal } from './ExportCsvModal';
+import { CampaignsFilters } from './campaignCalendar/CampaignsFilters';
+import { dateFormat, defaultOrder } from './campaignCalendar/constants';
+import {
+    CalendarParams,
+    MappedCampaign,
+    ReduxState,
+} from './campaignCalendar/types';
+
+type Props = {
+    params: CalendarParams;
+    router: Router;
+};
 
 const pageWidth = 1980;
 
 const useStyles = makeStyles(theme => ({
-    ...commonStyles(theme),
+    containerFullHeightNoTabPadded: {
+        ...commonStyles(theme).containerFullHeightNoTabPadded,
+    },
     loadingSpinnerPdf: {
         backgroundColor: 'rgba(255,255,255,1)',
         zIndex: 2000,
@@ -50,30 +62,36 @@ const useStyles = makeStyles(theme => ({
     exportIcon: { marginRight: '8px' },
 }));
 
-const Calendar = props => {
-    const { params } = props;
+export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const isLogged = useSelector(state => Boolean(state.users.current));
+    const isLogged = useSelector((state: ReduxState) =>
+        Boolean(state.users.current),
+    );
     const orders = params.order || defaultOrder;
-    const queryOptions = useMemo(() => {
-        return {
+    const queryOptions = useMemo(
+        () => ({
             order: orders,
             countries: params.countries,
             search: params.search,
             campaignType: params.campaignType,
-            campaignGroups: params.campaignGroups,
-            orgUnitGroups: params.orgUnitGroups,
+            campaignGroups: params.campaignGroups
+                ? params.campaignGroups.split(',').map(Number)
+                : undefined,
+            orgUnitGroups: params.orgUnitGroups
+                ? params.orgUnitGroups.split(',').map(Number)
+                : undefined,
             fieldset: 'calendar',
-        };
-    }, [
-        orders,
-        params.campaignGroups,
-        params.campaignType,
-        params.countries,
-        params.orgUnitGroups,
-        params.search,
-    ]);
+        }),
+        [
+            orders,
+            params.campaignGroups,
+            params.campaignType,
+            params.countries,
+            params.orgUnitGroups,
+            params.search,
+        ],
+    );
 
     const {
         data: campaigns = [],
@@ -94,7 +112,10 @@ const Calendar = props => {
         [currentMonday],
     );
 
-    const mappedCampaigns = useMemo(() => mapCampaigns(campaigns), [campaigns]);
+    const mappedCampaigns: MappedCampaign[] = useMemo(
+        () => mapCampaigns(campaigns),
+        [campaigns],
+    );
     const filteredCampaigns = useMemo(
         () =>
             filterCampaigns(
@@ -181,10 +202,11 @@ const Calendar = props => {
                 >
                     {!isPdf && (
                         <Box mb={4}>
-                            <Filters
+                            <CampaignsFilters
                                 disableDates
                                 disableOnlyDeleted
                                 isCalendar
+                                router={router}
                             />
                         </Box>
                     )}
@@ -231,6 +253,7 @@ const Calendar = props => {
                         ) && (
                             <Grid item>
                                 <Box mb={2} mt={2}>
+                                    {/* @ts-ignore */}
                                     <ExportCsvModal params={params} />
                                 </Box>
                             </Grid>
@@ -269,9 +292,3 @@ const Calendar = props => {
         </div>
     );
 };
-
-Calendar.propTypes = {
-    params: PropTypes.object.isRequired,
-};
-
-export { Calendar };

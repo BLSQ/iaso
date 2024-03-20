@@ -1,55 +1,73 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import { replace } from 'react-router-redux';
+import React, { FunctionComponent, useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { replace } from 'react-router-redux';
 
 import {
     Box,
     Button,
-    Popper,
     ClickAwayListener,
-    Tooltip,
+    Popper,
     TextField,
+    Tooltip,
 } from '@mui/material';
 
-import ChevronLeft from '@mui/icons-material/ChevronLeft';
-import ArrowForward from '@mui/icons-material/ArrowForward';
-import { DesktopDatePicker as DatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
-import ChevronRight from '@mui/icons-material/ChevronRight';
 import ArrowBack from '@mui/icons-material/ArrowBack';
+import ArrowForward from '@mui/icons-material/ArrowForward';
+import ChevronLeft from '@mui/icons-material/ChevronLeft';
+import ChevronRight from '@mui/icons-material/ChevronRight';
 import Today from '@mui/icons-material/Today';
+import { DesktopDatePicker as DatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 import { useSafeIntl } from 'bluesquare-components';
 
 import { Link, withRouter } from 'react-router';
 
+import moment, { Moment } from 'moment';
 import { useStyles } from './Styles';
 import { dateFormat } from './constants';
 
-import { genUrl } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing.ts';
+import { genUrl } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
+import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import MESSAGES from '../../../constants/messages';
 
-const Nav = ({ currentMonday, router, currentDate }) => {
+type Props = {
+    currentMonday: Moment;
+    router: Router;
+    currentDate: Moment;
+};
+
+const Nav: FunctionComponent<Props> = ({
+    currentMonday,
+    router,
+    currentDate,
+}) => {
     const classes = useStyles();
     const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
-    const [anchorEl, setAnchorEl] = useState(null);
-    const urlForDate = date =>
+    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+    const urlForDate = (date: Moment) =>
         genUrl(router, {
             currentDate: date.format(dateFormat),
         });
 
-    const handleClickDate = event => {
-        setAnchorEl(anchorEl ? null : event.currentTarget);
+    const handleClickDate = (
+        event?: React.MouseEvent<HTMLElement> | MouseEvent | TouchEvent,
+    ) => {
+        if (event && 'currentTarget' in event) {
+            setAnchorEl(anchorEl ? null : (event.currentTarget as HTMLElement));
+        } else {
+            setAnchorEl(null);
+        }
     };
-    const handleDateChange = newDate => {
+    const handleDateChange = (newDate: string) => {
         handleClickDate();
         const url = genUrl(router, {
             currentDate: newDate,
         });
         dispatch(replace(url));
     };
-    const prev = range => currentMonday.clone().subtract(range, 'week');
-    const next = range => currentMonday.clone().add(range, 'week');
+    const prev = (range: number) =>
+        currentMonday.clone().subtract(range, 'week');
+    const next = (range: number) => currentMonday.clone().add(range, 'week');
     const open = Boolean(anchorEl);
     return (
         <Box className={classes.nav}>
@@ -93,23 +111,22 @@ const Nav = ({ currentMonday, router, currentDate }) => {
             {open && (
                 <ClickAwayListener onClickAway={handleClickDate}>
                     <Popper
-                        id="color-picker"
+                        id="date-picker"
                         open={open}
                         anchorEl={anchorEl}
                         placement="bottom"
                         className={classes.popper}
                     >
                         <DatePicker
-                            autoOk
-                            disableToolbar
-                            variant="static"
-                            format={dateFormat}
                             label=""
-                            helperText=""
                             renderInput={props => <TextField {...props} />}
                             value={currentDate.format(dateFormat)}
                             onChange={date =>
-                                handleDateChange(date.format(dateFormat))
+                                date
+                                    ? handleDateChange(
+                                          moment(date).format(dateFormat),
+                                      )
+                                    : undefined
                             }
                         />
                     </Popper>
@@ -144,10 +161,5 @@ const Nav = ({ currentMonday, router, currentDate }) => {
     );
 };
 
-Nav.propTypes = {
-    currentMonday: PropTypes.object.isRequired,
-    router: PropTypes.object.isRequired,
-    currentDate: PropTypes.object.isRequired,
-};
 const wrappedNav = withRouter(Nav);
 export { wrappedNav as Nav };

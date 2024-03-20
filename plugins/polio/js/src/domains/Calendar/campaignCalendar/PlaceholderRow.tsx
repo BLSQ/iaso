@@ -1,7 +1,5 @@
-import React from 'react';
-import PropTypes from 'prop-types';
+import React, { FunctionComponent } from 'react';
 import { FormattedMessage } from 'react-intl';
-
 import { TableCell, TableRow } from '@mui/material';
 
 import { useStyles } from './Styles';
@@ -9,7 +7,11 @@ import MESSAGES from '../../../constants/messages';
 import { colsCount, colSpanTitle } from './constants';
 import { useStaticFields } from '../hooks/useStaticFields';
 
-const PlaceholderRow = ({ loadingCampaigns }) => {
+interface PlaceholderRowProps {
+    loadingCampaigns: boolean;
+}
+
+export const PlaceholderRow: FunctionComponent<PlaceholderRowProps> = ({ loadingCampaigns }) => {
     const classes = useStyles();
     const fields = useStaticFields();
     return (
@@ -26,8 +28,3 @@ const PlaceholderRow = ({ loadingCampaigns }) => {
     );
 };
 
-PlaceholderRow.propTypes = {
-    loadingCampaigns: PropTypes.bool.isRequired,
-};
-
-export { PlaceholderRow };

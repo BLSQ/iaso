@@ -1,14 +1,18 @@
-import React from 'react';
+import React, { ReactElement } from 'react';
 import moment from 'moment';
 
 import { EditCampaignCell } from './cells/EditCampaignCell';
+import { Field } from '../types';
+import { MappedCampaign } from './types';
 
-const staticFields = [
+export const staticFields: Field[] = [
     {
         width: 16,
         key: 'edit',
         hideHeadTitle: true,
-        render: campaign => <EditCampaignCell campaign={campaign} />,
+        render: (campaign: MappedCampaign): ReactElement => (
+            <EditCampaignCell campaign={campaign} />
+        ),
         exportHide: true,
     },
     {
@@ -22,16 +26,12 @@ const staticFields = [
     {
         key: 'r1StartDate',
         sortKey: 'first_round_started_at',
-        render: campaign => {
-            const roundOne =
-                campaign.rounds &&
-                campaign.rounds.find(round => round.number === 1);
-            if (roundOne && roundOne.started_at) {
+        render: (campaign: MappedCampaign): string => {
+            const roundOne = campaign.rounds?.find(round => round.number === 1);
+            if (roundOne?.started_at) {
                 return moment(roundOne.started_at).format('L');
             }
             return '-';
         },
     },
 ];
-
-export { staticFields };

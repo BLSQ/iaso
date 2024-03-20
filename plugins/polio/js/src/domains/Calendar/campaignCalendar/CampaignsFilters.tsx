@@ -28,6 +28,7 @@ import {
 } from '../../../../../../../hat/assets/js/apps/Iaso/utils/dates';
 import { appId } from '../../../constants/app';
 import { CalendarParams } from './types';
+import { useGetCampaignTypes } from '../../Campaigns/hooks/api/useGetCampaignTypes';
 
 type Props = {
     router: Router & { params: CalendarParams };
@@ -37,7 +38,8 @@ type Props = {
     showTest?: boolean;
 };
 
-const campaignTypeOptions = (
+const campaignCategoryOptions = (
+    // eslint-disable-next-line no-unused-vars
     formatMessage: IntlFormatMessage,
     showTest = false,
 ) => {
@@ -68,6 +70,9 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
     const [countries, setCountries] = useState(params.countries);
     const [orgUnitGroups, setOrgUnitGroups] = useState(params.orgUnitGroups);
     const [campaignType, setCampaignType] = useState(params.campaignType);
+    const [campaignCategory, setCampaignCategory] = useState(
+        params.campaignCategory,
+    );
     const [campaignGroups, setCampaignGroups] = useState(params.campaignGroups);
     const [search, setSearch] = useState(params.search);
     const [showOnlyDeleted, setShowOnlyDeleted] = useState(
@@ -87,6 +92,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
         roundStartTo ||
         showOnlyDeleted ||
         campaignType ||
+        campaignCategory ||
         campaignGroups ||
         orgUnitGroups;
 
@@ -105,6 +111,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                 ),
                 page: null,
                 campaignType,
+                campaignCategory,
                 showOnlyDeleted: showOnlyDeleted ? 'true' : undefined,
                 campaignGroups,
                 orgUnitGroups,
@@ -120,6 +127,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
         roundStartFrom,
         roundStartTo,
         campaignType,
+        campaignCategory,
         showOnlyDeleted,
         campaignGroups,
         orgUnitGroups,
@@ -128,6 +136,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
         dispatch,
     ]);
     const { data, isFetching: isFetchingCountries } = useGetCountries();
+    const { data: types, isFetching: isFetchingTypes } = useGetCampaignTypes();
     const { data: groupedCampaigns, isFetching: isFetchingGroupedGroups } =
         useGetGroupedCampaigns();
     // Pass the appId to have it works in the embedded calendar where the user is not connected
@@ -156,6 +165,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
         roundStartTo,
         showOnlyDeleted,
         campaignType,
+        campaignCategory,
         campaignGroups,
         orgUnitGroups,
     ]);
@@ -163,23 +173,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
     useEffect(() => {
         setFiltersUpdated(false);
     }, []);
-    const GroupedCampaignsInput = () => {
-        return (
-            <InputComponent
-                loading={isFetchingGroupedGroups}
-                keyValue="campaignGroups"
-                clearable
-                multi
-                onChange={(_key, value) => {
-                    setCampaignGroups(value);
-                }}
-                value={campaignGroups}
-                type="select"
-                options={groupedCampaignsOptions}
-                label={MESSAGES.groupedCampaigns}
-            />
-        );
-    };
+
     return (
         <>
             <Grid container spacing={2}>
@@ -209,56 +203,72 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                         options={groupedOrgUnits}
                         label={MESSAGES.countryBlock}
                     />
-                    {!isCalendar && <GroupedCampaignsInput />}
+                    {!isCalendar && (
+                        <InputComponent
+                            loading={isFetchingGroupedGroups}
+                            keyValue="campaignGroups"
+                            clearable
+                            multi
+                            onChange={(_key, value) => {
+                                setCampaignGroups(value);
+                            }}
+                            value={campaignGroups}
+                            type="select"
+                            options={groupedCampaignsOptions}
+                            label={MESSAGES.groupedCampaigns}
+                        />
+                    )}
                 </Grid>
                 <Grid item xs={12} md={3}>
                     <InputComponent
                         loading={isFetchingCountries}
+                        keyValue="campaignCategory"
+                        clearable
+                        onChange={(_key, value) => {
+                            setCampaignCategory(value);
+                        }}
+                        value={campaignCategory}
+                        type="select"
+                        options={campaignCategoryOptions(
+                            formatMessage,
+                            showTest,
+                        )}
+                        label={MESSAGES.campaignCategory}
+                    />
+                    <InputComponent
+                        loading={isFetchingTypes}
                         keyValue="campaignType"
                         clearable
                         onChange={(_key, value) => {
                             setCampaignType(value);
                         }}
+                        multi
                         value={campaignType}
                         type="select"
-                        options={campaignTypeOptions(formatMessage, showTest)}
+                        options={types}
                         label={MESSAGES.campaignType}
                     />
-                    <InputComponent
-                        loading={isFetchingCountries}
-                        keyValue="countries"
-                        multi
-                        clearable
-                        onChange={(key, value) => {
-                            setCountries(value);
-                        }}
-                        value={countries}
-                        type="select"
-                        options={countriesList.map(c => ({
-                            label: c.name,
-                            value: c.id,
-                        }))}
-                        label={MESSAGES.country}
-                    />
-                    {!disableOnlyDeleted && (
+                    {!isCalendar && (
                         <InputComponent
-                            keyValue="showOnlyDeleted"
+                            loading={isFetchingCountries}
+                            keyValue="countries"
+                            multi
+                            clearable
                             onChange={(key, value) => {
-                                setShowOnlyDeleted(value);
+                                setCountries(value);
                             }}
-                            value={showOnlyDeleted}
-                            type="checkbox"
-                            label={MESSAGES.showOnlyDeleted}
+                            value={countries}
+                            type="select"
+                            options={countriesList.map(c => ({
+                                label: c.name,
+                                value: c.id,
+                            }))}
+                            label={MESSAGES.country}
                         />
                     )}
                 </Grid>
-                {isCalendar && (
-                    <Grid item xs={12} md={3}>
-                        <GroupedCampaignsInput />
-                    </Grid>
-                )}
-                {!disableDates && (
-                    <Grid item xs={12} md={3}>
+                <Grid item xs={12} md={3}>
+                    {!disableDates && (
                         <DatesRange
                             xs={12}
                             sm={12}
@@ -277,8 +287,52 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                             dateFrom={roundStartFrom || undefined}
                             dateTo={roundStartTo || undefined}
                         />
-                    </Grid>
-                )}
+                    )}
+                    {isCalendar && (
+                        <>
+                            <InputComponent
+                                loading={isFetchingGroupedGroups}
+                                keyValue="campaignGroups"
+                                clearable
+                                multi
+                                onChange={(_key, value) => {
+                                    setCampaignGroups(value);
+                                }}
+                                value={campaignGroups}
+                                type="select"
+                                options={groupedCampaignsOptions}
+                                label={MESSAGES.groupedCampaigns}
+                            />
+                            <InputComponent
+                                loading={isFetchingCountries}
+                                keyValue="countries"
+                                multi
+                                clearable
+                                onChange={(key, value) => {
+                                    setCountries(value);
+                                }}
+                                value={countries}
+                                type="select"
+                                options={countriesList.map(c => ({
+                                    label: c.name,
+                                    value: c.id,
+                                }))}
+                                label={MESSAGES.country}
+                            />
+                        </>
+                    )}
+                    {!disableOnlyDeleted && (
+                        <InputComponent
+                            keyValue="showOnlyDeleted"
+                            onChange={(key, value) => {
+                                setShowOnlyDeleted(value);
+                            }}
+                            value={showOnlyDeleted}
+                            type="checkbox"
+                            label={MESSAGES.showOnlyDeleted}
+                        />
+                    )}
+                </Grid>
                 <Grid
                     container
                     item

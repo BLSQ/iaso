@@ -437,3 +437,8 @@ export type MapColor = {
 export type Side = 'left' | 'right';
 
 export const Sides = { left: 'left', right: 'right' };
+
+export type CampaignType = {
+    id: number;
+    name: string;
+};

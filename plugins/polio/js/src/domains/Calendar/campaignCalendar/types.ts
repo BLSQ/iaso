@@ -2,7 +2,7 @@
 import { Moment } from 'moment';
 import { User } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { Campaign, MergedShape, Scope, Shape } from '../../../constants/types';
-import { CampaignType } from '../../Campaigns/hooks/api/useGetCampaigns';
+import { CampaignCategory } from '../../Campaigns/hooks/api/useGetCampaigns';
 
 export type Query = {
     queryKey: (string | Record<string, unknown>)[];
@@ -60,7 +60,8 @@ export type CalendarParams = {
     order?: string;
     countries?: string;
     search?: string;
-    campaignType?: CampaignType;
+    campaignType?: string;
+    campaignCategory?: CampaignCategory;
     campaignGroups?: string;
     orgUnitGroups?: string;
     currentDate?: string;

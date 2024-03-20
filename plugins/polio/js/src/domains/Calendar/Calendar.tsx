@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import { Box, Button, Grid, Typography } from '@mui/material';
+import { Box, Button, Grid, Theme, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     ExcellSvg,
@@ -47,7 +47,7 @@ const pageWidth = 1980;
 
 const useStyles = makeStyles(theme => ({
     containerFullHeightNoTabPadded: {
-        ...commonStyles(theme).containerFullHeightNoTabPadded,
+        ...commonStyles(theme as Theme).containerFullHeightNoTabPadded,
     },
     loadingSpinnerPdf: {
         backgroundColor: 'rgba(255,255,255,1)',
@@ -75,6 +75,7 @@ export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
             countries: params.countries,
             search: params.search,
             campaignType: params.campaignType,
+            campaignCategory: params.campaignCategory,
             campaignGroups: params.campaignGroups
                 ? params.campaignGroups.split(',').map(Number)
                 : undefined,
@@ -87,6 +88,7 @@ export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
             orders,
             params.campaignGroups,
             params.campaignType,
+            params.campaignCategory,
             params.countries,
             params.orgUnitGroups,
             params.search,
@@ -151,6 +153,7 @@ export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
         currentDate: params.currentDate,
         countries: params.countries,
         campaignType: params.campaignType,
+        campaignCategory: params.campaignCategory,
         campaignGroups: params.campaignGroups,
         orgUnitGroups: params.orgUnitGroups,
         search: params.search,

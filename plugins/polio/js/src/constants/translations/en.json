@@ -231,6 +231,7 @@
     "iaso.polio.label.CAMPAIGN_MOVED_FORWARD_BY_MOH": "Campaign moved forward by MOH",
     "iaso.polio.label.CAMPAIGN_SYNCHRONIZATION": "Campaigns synchronization",
     "iaso.polio.label.campaign.id": "Id",
+    "iaso.polio.label.campaignCategory": "Campaign category",
     "iaso.polio.label.campaignDropdownLabel": "Modification date",
     "iaso.polio.label.campaigns": "Campaigns",
     "iaso.polio.label.campaignsToLink": "Campaigns to link",

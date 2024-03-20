@@ -35,6 +35,7 @@ const ExportCsvModal: FunctionComponent<Props> = ({
         currentDate: params.currentDate,
         countries: params.countries,
         campaignType: params.campaignType,
+        campaignCategory: params.campaignCategory,
         campaignGroups: params.campaignGroups,
         orgUnitGroups: params.orgUnitGroups,
         search: params.search,

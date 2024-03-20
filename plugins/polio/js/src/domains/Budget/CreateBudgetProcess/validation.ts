@@ -18,10 +18,6 @@ export const useNotificationSchema = () => {
             .required(formatMessage(MESSAGES.requiredField))
             .uuid()
             .typeError(formatMessage(MESSAGES.requiredUuid)),
-        round: yup
-            .number()
-            .required(formatMessage(MESSAGES.requiredField))
-            .integer()
-            .typeError(formatMessage(MESSAGES.requiredPositiveInteger)),
+        rounds: yup.string().required(formatMessage(MESSAGES.requiredField)),
     });
 };

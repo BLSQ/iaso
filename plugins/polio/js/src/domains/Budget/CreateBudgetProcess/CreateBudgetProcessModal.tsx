@@ -18,7 +18,9 @@ import {
 } from '../types';
 import { SingleSelect } from '../../../components/Inputs/SingleSelect';
 import { useGetNewBudgetProcessDropdowns } from '../hooks/api/useGetNewBudgetProcessDropdowns';
+import { useCreateBudgetProcess } from '../hooks/api/useCreateBudgetProcess';
 import { useNotificationSchema } from './validation';
+import { MultiSelect } from '../../../components/Inputs/MultiSelect';
 
 const mapOptions = (
     item: OptionsCountry | OptionsCampaigns | OptionsRounds,
@@ -43,17 +45,17 @@ const CreateBudgetProcessModal: FunctionComponent<Props> = ({
     const { data: dropdownsData, isFetching: isFetchingDropdownData } =
         useGetNewBudgetProcessDropdowns();
 
+    const { mutate: confirm } = useCreateBudgetProcess();
     const schema = useNotificationSchema();
     const formik = useFormik({
         initialValues: {
             country: '',
             campaign: '',
-            round: '',
+            rounds: '',
         },
         validationSchema: schema,
         onSubmit: async values => {
-            // confirm(values);
-            console.log(JSON.stringify(values, null, 2));
+            confirm(values);
         },
     });
 
@@ -71,14 +73,14 @@ const CreateBudgetProcessModal: FunctionComponent<Props> = ({
     }, [formik.values.country]);
 
     // Filter "Rounds" values on "Campaign" change.
-    const [currentRoundOptions, setRoundOptions] = useState<Options[]>([]);
+    const [currentRoundsOptions, setRoundsOptions] = useState<Options[]>([]);
     useEffect(() => {
         const rounds = dropdownsData?.rounds || [];
         const filtered = rounds.filter(
             i => String(i.campaign_id) === String(formik.values.campaign),
         );
         formik.setFieldValue('round', '');
-        setRoundOptions(filtered.map(mapOptions));
+        setRoundsOptions(filtered.map(mapOptions));
     }, [formik.values.campaign]);
 
     const titleMessage = formatMessage(MESSAGES.createBudgetProcessTitle);
@@ -122,9 +124,9 @@ const CreateBudgetProcessModal: FunctionComponent<Props> = ({
                         <Box mb={2}>
                             <Field
                                 label={formatMessage(MESSAGES.labelRound)}
-                                name="round"
-                                component={SingleSelect}
-                                options={currentRoundOptions}
+                                name="rounds"
+                                component={MultiSelect}
+                                options={currentRoundsOptions}
                             />
                         </Box>
                     </ConfirmCancelModal>

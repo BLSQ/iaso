@@ -64,7 +64,7 @@ class NestedPaymentSerializer(serializers.ModelSerializer):
 class NestedTaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
-        fields = "__all__"
+        fields = ["id", "status", "ended_at"]
 
 
 class PaymentLotSerializer(serializers.ModelSerializer):

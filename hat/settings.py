@@ -35,6 +35,10 @@ from plugins.wfp.wfp_pkce_generator import generate_pkce
 # back to the Iaso application.
 #
 # This should be the same as the one set on: `/admin/sites/site/1/change/`
+CSRF_COOKIE_HTTPONLY = os.environ.get("CSRF_COOKIE_HTTPONLY", "false").lower() == "true"
+CSRF_COOKIE_SECURE = os.environ.get("CSRF_COOKIE_SECURE", "false").lower() == "true"
+SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "false").lower() == "true"
+
 DNS_DOMAIN = os.environ.get("DNS_DOMAIN", "localhost:8081")
 TESTING = os.environ.get("TESTING", "").lower() == "true"
 IN_TESTS = len(sys.argv) > 1 and sys.argv[1] == "test"

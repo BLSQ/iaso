@@ -1,5 +1,7 @@
 {
     "aso.polio.label.stockCorrection": "Stock correction",
+    "iaso.forms.error.positiveInteger": "Please use a positive integer",
+    "iaso.forms.error.requiredUuid": "Please use an UUID",
     "iaso.forms.options.budgetTypeError": "Value should be one of \"submission\", \"comments\" or \"validation\"",
     "iaso.forms.options.emailFormat": "Please use correctly formatted email addresses",
     "iaso.forms.options.urlFormat": "Please use correctly formatted URL",

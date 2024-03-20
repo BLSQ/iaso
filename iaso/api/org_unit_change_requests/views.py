@@ -99,6 +99,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
         PATCH to approve or reject an `OrgUnitChangeRequest`.
         """
         change_request = self.get_object()
+
         self.has_org_unit_permission(change_request.org_unit)
         if change_request.status != change_request.Statuses.NEW:
             raise ValidationError(

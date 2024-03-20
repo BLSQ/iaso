@@ -214,8 +214,6 @@ class EntityTypeAPITestCase(APITestCase):
 
         response = self.client.post("/api/entitytypes/", data=payload, format="json")
 
-        print(response.json())
-
         self.assertEqual(response.status_code, 400)
 
     def test_entity_types_are_multitenancy(self):

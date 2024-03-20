@@ -100,6 +100,10 @@ const campaignsFilters = [
     },
     {
         isRequired: false,
+        key: 'campaignCategory',
+    },
+    {
+        isRequired: false,
         key: 'campaignGroups',
     },
     {

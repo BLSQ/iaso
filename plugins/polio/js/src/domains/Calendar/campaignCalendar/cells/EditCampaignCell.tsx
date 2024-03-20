@@ -1,10 +1,17 @@
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
-import PropTypes from 'prop-types';
-import React, { useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import MESSAGES from '../../../../constants/messages';
-import { PolioCreateEditDialog as CreateEditDialog } from '../../../Campaigns/MainDialog/CreateEditDialog.tsx';
+import { PolioCreateEditDialog as CreateEditDialog } from '../../../Campaigns/MainDialog/CreateEditDialog';
 
-const EditCampaignCell = ({ campaign }) => {
+type Props = {
+    campaign: {
+        original: {
+            id: string;
+        };
+    };
+};
+
+const EditCampaignCell: FunctionComponent<Props> = ({ campaign }) => {
     const [dialogOpen, setDialogOpen] = useState(false);
 
     return (
@@ -22,10 +29,6 @@ const EditCampaignCell = ({ campaign }) => {
             />
         </>
     );
-};
-
-EditCampaignCell.propTypes = {
-    campaign: PropTypes.object.isRequired,
 };
 
 export { EditCampaignCell };

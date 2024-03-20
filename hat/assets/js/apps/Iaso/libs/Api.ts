@@ -69,7 +69,14 @@ export const iasoFetch = async (
     }
     if (!response.ok) {
         if (response.status === 401) {
-            window.location.href = '/login';
+            const currentPath = encodeURIComponent(
+                window.location.pathname + window.location.search,
+            );
+            const loginUrl = `/login/?next=${currentPath}`;
+            window.location.href = loginUrl;
+            return Promise.reject(
+                new ApiError('Redirecting to login', response),
+            );
         }
         const json = await tryJson(response);
         throw new ApiError(`Error on ${method} ${url} `, response, json);

@@ -28,6 +28,10 @@ export const PaymentLotActionCell = ({
     const handleExport = useCallback(() => {
         window.open(`/api/payments/lots/${paymentLot.id}/?xlsx=true`, '_blank');
     }, [paymentLot.id]);
+    const disableButtons =
+        paymentLot.task?.status === 'QUEUED' ||
+        paymentLot.task?.status === 'RUNNING';
+
     return (
         <>
             {paymentLot.status === 'new' && (
@@ -36,14 +40,19 @@ export const PaymentLotActionCell = ({
                     overrideIcon={SendIcon}
                     onClick={handleSend}
                     iconSize="small"
+                    disabled={disableButtons}
                 />
             )}
-            <EditPaymentLotDialog iconProps={{}} paymentLot={paymentLot} />
+            <EditPaymentLotDialog
+                iconProps={{ disabled: disableButtons }}
+                paymentLot={paymentLot}
+            />
             <IconButton
                 tooltipMessage={MESSAGES.download_payments}
                 overrideIcon={FileDownloadIcon}
                 onClick={handleExport}
                 iconSize="small"
+                disabled={disableButtons}
             />
         </>
     );

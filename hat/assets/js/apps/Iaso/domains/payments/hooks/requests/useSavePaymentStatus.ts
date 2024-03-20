@@ -3,7 +3,6 @@ import { patchRequest, postRequest } from '../../../../libs/Api';
 import { useSnackMutation } from '../../../../libs/apiHooks';
 import { Payment, PaymentStatus } from '../../types';
 import { Selection } from '../../../orgUnits/types/selection';
-import { waitFor } from '../../../../utils';
 import MESSAGES from '../../messages';
 
 const apiUrl = `/api/payments/`;
@@ -14,7 +13,6 @@ const savePaymentStatus = async (body: {
     id: number;
 }): Promise<any> => {
     const { id, status } = body;
-    await waitFor(500);
     return patchRequest(`${apiUrl}${id}/`, { status });
 };
 
@@ -43,7 +41,6 @@ const saveBulkPayments = async (body: BulkPaymentSaveBody): Promise<any> => {
         status: body.status,
         payment_lot_id: body.payment_lot_id,
     };
-    await waitFor(500);
     return postRequest(taskApi, formattedBody);
 };
 

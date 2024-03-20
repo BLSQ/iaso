@@ -13,6 +13,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.save',
         defaultMessage: 'Save',
     },
+    labelCountry: {
+        id: 'iaso.polio.budget.label.country',
+        defaultMessage: 'Country',
+    },
+    labelCampaign: {
+        id: 'iaso.polio.budget.label.campaign',
+        defaultMessage: 'Campaign',
+    },
+    labelRound: {
+        id: 'iaso.polio.budget.label.round',
+        defaultMessage: 'Round',
+    },
 });
 
 export default MESSAGES;

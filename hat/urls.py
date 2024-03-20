@@ -1,17 +1,17 @@
+import importlib
+
 import django_sql_dashboard  # type: ignore
 from django.apps import apps
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin, auth
 from django.urls import include, path, re_path
-from django.views.generic import RedirectView
+from django.views.generic import RedirectView, TemplateView
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
-import importlib
-from iaso.views import health, page
-from django.views.generic import TemplateView
 
+from iaso.views import health, page
 
 admin.site.site_header = "Administration de Iaso"
 admin.site.site_title = "Iaso"
@@ -39,7 +39,7 @@ urlpatterns = urlpatterns + [
     path("api/", include("iaso.urls")),
     path("pages/<page_slug>/", page, name="pages"),
     path("i18n/", include("django.conf.urls.i18n")),
-    path("logout-iaso", auth.views.LogoutView.as_view(next_page="login"), name="logout-iaso"),
+    path("logout-iaso", auth.views.LogoutView.as_view(next_page="/login/"), name="logout-iaso"),
     path(
         "forgot-password/",
         auth.views.PasswordResetView.as_view(

@@ -1,7 +1,7 @@
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import filters, serializers
 from rest_framework.decorators import action
-from rest_framework.exceptions import ParseError, AuthenticationFailed, NotFound
+from rest_framework.exceptions import AuthenticationFailed, NotFound, ParseError
 
 from iaso.api.common import ModelViewSet, TimestampField
 from iaso.api.mobile.entity import (
@@ -10,7 +10,7 @@ from iaso.api.mobile.entity import (
     filter_for_mobile_entity,
     get_queryset_for_user_and_app_id,
 )
-from iaso.models import Entity, EntityType, Project, FormVersion
+from iaso.models import Entity, EntityType, FormVersion, Project
 
 
 class MobileEntityTypeSerializer(serializers.ModelSerializer):
@@ -92,6 +92,7 @@ class MobileEntityTypesViewSet(ModelViewSet):
         app_id = self.request.query_params.get("app_id")
         user = self.request.user
 
+        print("ici")
         if not user or not user.is_authenticated:
             raise AuthenticationFailed(f"User not authenticated")
 

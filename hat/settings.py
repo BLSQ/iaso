@@ -20,11 +20,11 @@ import urllib.parse
 from datetime import timedelta
 from typing import Any, Dict
 from urllib.parse import urlparse
-from requests.exceptions import HTTPError
 
 import sentry_sdk
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import gettext_lazy as _
+from requests.exceptions import HTTPError
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import ignore_logger
 
@@ -369,6 +369,7 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": AUTH_CLASSES,
     "DEFAULT_PERMISSION_CLASSES": ("hat.api.authentication.UserAccessPermission",),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
+    'EXCEPTION_HANDLER': 'iaso.api.auth.exception_handler.custom_exception_handler',
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
     "PAGE_SIZE": None,
     "ORDERING_PARAM": "order",

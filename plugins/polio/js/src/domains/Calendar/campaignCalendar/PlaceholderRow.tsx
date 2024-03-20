@@ -1,30 +1,30 @@
-import React, { FunctionComponent } from 'react';
-import { FormattedMessage } from 'react-intl';
 import { TableCell, TableRow } from '@mui/material';
+import React, { FunctionComponent } from 'react';
 
-import { useStyles } from './Styles';
+import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../../constants/messages';
-import { colsCount, colSpanTitle } from './constants';
 import { useStaticFields } from '../hooks/useStaticFields';
+import { colsCount, colSpanTitle } from './constants';
+import { useStyles } from './Styles';
 
 interface PlaceholderRowProps {
     loadingCampaigns: boolean;
 }
 
-export const PlaceholderRow: FunctionComponent<PlaceholderRowProps> = ({ loadingCampaigns }) => {
+export const PlaceholderRow: FunctionComponent<PlaceholderRowProps> = ({
+    loadingCampaigns,
+}) => {
     const classes = useStyles();
     const fields = useStaticFields();
+    const { formatMessage } = useSafeIntl();
     return (
         <TableRow className={classes.tableRow}>
             <TableCell
                 className={classes.noCampaign}
                 colSpan={colsCount * 7 + fields.length * colSpanTitle}
             >
-                {!loadingCampaigns && (
-                    <FormattedMessage {...MESSAGES.noCampaign} />
-                )}
+                {!loadingCampaigns && formatMessage(MESSAGES.noCampaign)}
             </TableCell>
         </TableRow>
     );
 };
-

@@ -368,6 +368,7 @@ export type Campaign = {
     country: Nullable<number>;
     group: Nullable<number>; // Doesn't appear nullbale in swagger but had anull value in payload
     last_budget_event: Nullable<number>;
+    campaign_types: CampaignType[];
 };
 
 export type MergedShapeProperties = {
@@ -441,4 +442,25 @@ export const Sides = { left: 'left', right: 'right' };
 export type CampaignType = {
     id: number;
     name: string;
+};
+
+type NestedRound = {
+    id: number;
+    number: number;
+    started_at: Nullable<string>;
+    ended_at: Nullable<string>;
+};
+
+export type CampaignListItem = {
+    id: string;
+    epid: Nullable<string>;
+    obr_name: string;
+    account: number;
+    cvdpv2_notified_at: Nullable<string>;
+    top_level_org_unit_name: Nullable<string>;
+    top_level_org_unit_id: number;
+    rounds: NestedRound[];
+    general_status: string;
+    grouped_campaigns: number[];
+    campaign_types: CampaignType[];
 };

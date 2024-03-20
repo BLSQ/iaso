@@ -407,6 +407,13 @@ class CampaignSerializer(serializers.ModelSerializer):
         read_only_fields = ["preperadness_sync_status", "creation_email_send_at", "group"]
 
 
+class NestedCampaignTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampaignType
+        fields = ["id", "name"]
+        ref_name = "CampaignTypeNestedSerializerForCampaign"
+
+
 class ListCampaignSerializer(CampaignSerializer):
     """This serializer contains juste enough data for the List view in the web ui"""
 
@@ -421,6 +428,8 @@ class ListCampaignSerializer(CampaignSerializer):
             ]
 
     rounds = NestedListRoundSerializer(many=True, required=False)
+
+    campaign_types = NestedCampaignTypeSerializer(many=True, required=False)
 
     class Meta:
         model = Campaign
@@ -456,6 +465,8 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             if round.number == 2:
                 return RoundAnonymousSerializer(round).data
         return None
+
+    campaign_types = NestedCampaignTypeSerializer(many=True, required=False)
 
     class Meta:
         model = Campaign
@@ -516,6 +527,8 @@ class AnonymousCampaignSerializer(CampaignSerializer):
 
 
 class SmallCampaignSerializer(CampaignSerializer):
+    campaign_types = NestedCampaignTypeSerializer(many=True, required=False)
+
     class Meta:
         model = Campaign
         # TODO: refactor to avoid duplication with AnonymousCampaignSerializer?
@@ -606,6 +619,7 @@ class CalendarCampaignSerializer(CampaignSerializer):
 
     rounds = NestedListRoundSerializer(many=True, required=False)
     scopes = NestedScopeSerializer(many=True, required=False)
+    campaign_types = NestedCampaignTypeSerializer(many=True, required=False)
 
     class Meta:
         model = Campaign
@@ -769,7 +783,6 @@ class CampaignViewSet(ModelViewSet):
         campaigns = queryset
         if show_test == "false":
             campaigns = campaigns.filter(is_test=False)
-        campaigns.prefetch_related("rounds", "group", "grouped_campaigns")
         if campaign_category == "preventive":
             campaigns = campaigns.filter(is_preventive=True)
         if campaign_category == "test":

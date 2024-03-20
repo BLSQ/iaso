@@ -24,7 +24,7 @@ import { colSpanTitle, defaultStaticColWidth } from '../constants';
 
 type Props = {
     orders: string;
-    router: Router; 
+    router: Router;
     isPdf: boolean;
 };
 
@@ -33,7 +33,11 @@ type Order = {
     desc: boolean;
 };
 
-const HeadStaticFieldsCells: FunctionComponent<Props> = ({ orders, router, isPdf }) => {
+const HeadStaticFieldsCells: FunctionComponent<Props> = ({
+    orders,
+    router,
+    isPdf,
+}) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
@@ -67,58 +71,67 @@ const HeadStaticFieldsCells: FunctionComponent<Props> = ({ orders, router, isPdf
         dispatch(replace(url));
     };
     const fields = useStaticFields(isPdf);
-    return (<>{fields.map(f => {
-        const sort = ordersArray.find(o => o.id === f.sortKey);
-        const sortActive = Boolean(sort);
-        const direction = sortActive && !sort.desc ? 'asc' : 'desc';
-        let title = MESSAGES.sortDesc;
-        if (sortActive) {
-            if (sort?.desc) {
-                title = MESSAGES.sortAsc;
-            }
-        }
-        return (
-            <TableCell
-                key={f.key}
-                className={classnames(
-                    classes.tableCellTitle,
-                )}
-                colSpan={colSpanTitle}
-                style={{
-                    top: 100,
-                    width: f.width || defaultStaticColWidth,
-                    minWidth: f.width || defaultStaticColWidth,
-                }}
-            >
-                <Box position="relative" width="100%" height="100%">
-                    {f.sortKey && (
-                        <span
-                            onClick={() => handleSort(f, sort)}
-                            role="button"
-                            tabIndex={0}
-                            className={classnames(
-                                classes.tableCellSpan,
-                                classes.tableCellSpanTitle,
+    return (
+        <>
+            {fields.map(f => {
+                const sort = ordersArray.find(o => o.id === f.sortKey);
+                const sortActive = Boolean(sort);
+                const direction = sortActive && !sort.desc ? 'asc' : 'desc';
+                let title = MESSAGES.sortDesc;
+                if (sortActive) {
+                    if (sort?.desc) {
+                        title = MESSAGES.sortAsc;
+                    }
+                }
+                return (
+                    <TableCell
+                        key={f.key}
+                        className={classnames(classes.tableCellTitle)}
+                        colSpan={colSpanTitle}
+                        style={{
+                            top: 100,
+                            width: f.width || defaultStaticColWidth,
+                            minWidth: f.width || defaultStaticColWidth,
+                        }}
+                    >
+                        <Box position="relative" width="100%" height="100%">
+                            {f.sortKey && (
+                                <span
+                                    onClick={() => handleSort(f, sort)}
+                                    role="button"
+                                    tabIndex={0}
+                                    className={classnames(
+                                        classes.tableCellSpan,
+                                        classes.tableCellSpanTitle,
+                                    )}
+                                >
+                                    <TableSortLabel
+                                        active={sortActive}
+                                        direction={direction}
+                                        title={formatMessage(title)}
+                                    >
+                                        {formatMessage(MESSAGES[f.key])}
+                                    </TableSortLabel>
+                                </span>
                             )}
-                        >
-                            <TableSortLabel
-                                active={sortActive}
-                                direction={direction}
-                                title={formatMessage(title)}
-                            >
-                                {formatMessage(MESSAGES[f.key])}
-                            </TableSortLabel>
-                        </span>
-                    )}
-                    {!f.sortKey &&
-                        !f.hideHeadTitle &&
-                        formatMessage(MESSAGES[f.key])}
-                </Box>
-            </TableCell>
-        );
-    })
-    }</>);
+                            {!f.sortKey && !f.hideHeadTitle && (
+                                <span
+                                    className={classnames(
+                                        classes.tableCellSpan,
+                                        classes.tableCellSpanTitle,
+                                    )}
+                                >
+                                    {formatMessage(MESSAGES[f.key])}
+                                </span>
+                            )}
+                        </Box>
+                    </TableCell>
+                );
+            })}
+        </>
+    );
 };
 
 const wrappedHeadStaticFieldsCells = withRouter(HeadStaticFieldsCells);
 export { wrappedHeadStaticFieldsCells as HeadStaticFieldsCells };
+

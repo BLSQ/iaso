@@ -1,8 +1,8 @@
-import React, { ReactElement } from 'react';
 import moment from 'moment';
+import React, { ReactElement } from 'react';
 
-import { EditCampaignCell } from './cells/EditCampaignCell';
 import { Field } from '../types';
+import { EditCampaignCell } from './cells/EditCampaignCell';
 import { MappedCampaign } from './types';
 
 export const staticFields: Field[] = [
@@ -22,6 +22,16 @@ export const staticFields: Field[] = [
     {
         key: 'name',
         sortKey: 'obr_name',
+    },
+    {
+        key: 'campaign_types',
+        render: (campaign: MappedCampaign): ReactElement => (
+            <>
+                {campaign.original.campaign_types
+                    .map(campaignType => campaignType.name)
+                    .join(', ')}
+            </>
+        ),
     },
     {
         key: 'r1StartDate',

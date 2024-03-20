@@ -42,6 +42,9 @@ class Payment(models.Model):
 
 class PotentialPayment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="potential_payment")
+    payment_lot = models.ForeignKey(
+        "PaymentLot", on_delete=models.SET_NULL, null=True, blank=True, related_name="potential_payments"
+    )
 
 
 class PaymentLot(models.Model):

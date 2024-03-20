@@ -82,8 +82,8 @@ class PotentialPaymentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PotentialPayment
-        fields = ["id", "user", "change_requests"]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        fields = ["id", "user", "change_requests", "payment_lot"]
+        read_only_fields = ["id", "created_at", "updated_at", "payment_lot"]
 
     pagination_class = PaymentPagination
     user = UserNestedSerializer()

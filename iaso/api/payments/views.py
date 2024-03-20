@@ -200,11 +200,19 @@ class PaymentLotsViewSet(ModelViewSet):
             comment = request.data.get("comment")
             potential_payment_ids = request.data.get("potential_payments", [])  # Expecting a list of IDs
 
+            audit_logger = PaymentLotAuditLogger()
+
+            # Link the potential Payments to the payment lot to enable front-end to filter them out while the task is creating the Payments
+
             # Create the PaymentLot instance but don't save it yet
             payment_lot = PaymentLot(name=name, comment=comment, created_by=request.user, updated_by=request.user)
 
             # Save the PaymentLot instance to ensure it has a primary key
             payment_lot.save()
+            potential_payments = PotentialPayment.objects.filter(id__in=potential_payment_ids)
+            payment_lot.potential_payments.add(*potential_payments)
+            payment_lot.save()
+            audit_logger.log_modification(old_data_dump=None, instance=payment_lot, request_user=user)
 
             # Launch a atask in the worker to update payments, delete potehtial payments, update change requests, update payment_lot status
             # and log everything
@@ -352,6 +360,8 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
         return (
             PotentialPayment.objects.prefetch_related("change_requests")
             .filter(change_requests__created_by__iaso_profile__account=self.request.user.iaso_profile.account)
+            # Filter out potential payments already linked to a payment lot as this means there's already a task running converting them into Payment
+            .filter(payment_lot__isnull=True)
             .distinct()
         )
 

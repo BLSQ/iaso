@@ -58,6 +58,7 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
     closeDialog,
     paymentLot,
 }) => {
+    const { formatMessage } = useSafeIntl();
     const [name, setName] = useState<string>(paymentLot.name);
     const [comment, setComment] = useState<string | null>(
         paymentLot?.comment ?? null,
@@ -178,7 +179,7 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
                                         }}
                                         disabled={isBulkSaving || isTaskRunning}
                                     >
-                                        Select All
+                                        {formatMessage(MESSAGES.selectAll)}
                                     </Button>
                                 </Box>
                             </Grid>
@@ -191,7 +192,7 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
                                     }}
                                     disabled={isBulkSaving || isTaskRunning}
                                 >
-                                    Unselect All
+                                    {formatMessage(MESSAGES.unSelectAll)}
                                 </Button>
                             </Grid>
                             <Grid item>

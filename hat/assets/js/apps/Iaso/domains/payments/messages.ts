@@ -174,6 +174,14 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'The modifications to the payments will take a few moments to take effect',
     },
+    unSelectAll: {
+        id: 'iaso.payments.label.unSelectAll',
+        defaultMessage: 'Unselect all',
+    },
+    selectAll: {
+        id: 'iaso.payments.label.selectAll',
+        defaultMessage: 'Select all',
+    },
 });
 
 export default MESSAGES;

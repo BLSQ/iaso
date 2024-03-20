@@ -241,6 +241,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.epid',
         defaultMessage: 'EPID',
     },
+    campaignIdentifier: {
+        id: 'iaso.polio.form.label.campaignIdentifier',
+        defaultMessage: 'Campaign identifier',
+    },
     obrName: {
         id: 'iaso.polio.form.label.obrName',
         defaultMessage: 'OBR Name',
@@ -256,6 +260,10 @@ const MESSAGES = defineMessages({
     description: {
         id: 'iaso.polio.form.label.description',
         defaultMessage: 'Description',
+    },
+    responsibleOfficer: {
+        id: 'iaso.polio.form.label.responsibleOfficer',
+        defaultMessage: 'Responsible officer',
     },
     gpeiCoordinator: {
         id: 'iaso.polio.form.label.gpeiCoordinator',

@@ -27,6 +27,7 @@ import { enqueueSnackbar } from '../../../../../../../hat/assets/js/apps/Iaso/re
 import { Form } from '../../../components/Form';
 import MESSAGES from '../../../constants/messages';
 import { CAMPAIGN_HISTORY_URL } from '../../../constants/routes';
+import { FormAdditionalPropsProvider } from '../../../contexts/FormAdditionalPropsContext';
 import { useFormValidator } from '../../../hooks/useFormValidator';
 import { useStyles } from '../../../styles/theme';
 import { convertEmptyStringToNull } from '../../../utils/convertEmptyStringToNull';
@@ -92,6 +93,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
             name: 'hidden group',
             org_units: [],
         },
+        campaign_types: [],
         is_preventive: false,
         is_test: false,
         enable_send_weekly_email: true,
@@ -101,7 +103,6 @@ const CreateEditDialog: FunctionComponent<Props> = ({
         risk_assessment_status: 'TO_SUBMIT',
         non_field_errors: undefined,
     };
-
     // Merge inplace default values with the one we get from the campaign.
     merge(initialValues, {
         ...selectedCampaign,
@@ -208,11 +209,15 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                         setSelectedTab(newValue);
                     }}
                 />
-                <FormikProvider value={formik}>
-                    <Form>
-                        <CurrentForm />
-                    </Form>
-                </FormikProvider>
+                <FormAdditionalPropsProvider
+                    value={{ isFetchingSelectedCampaign: isFetching }}
+                >
+                    <FormikProvider value={formik}>
+                        <Form>
+                            <CurrentForm />
+                        </Form>
+                    </FormikProvider>
+                </FormAdditionalPropsProvider>
             </DialogContent>
             <DialogActions className={classes.action}>
                 <Button
@@ -238,3 +243,4 @@ const CreateEditDialog: FunctionComponent<Props> = ({
 
 // There's naming conflict with component in Iaso
 export { CreateEditDialog as PolioCreateEditDialog };
+

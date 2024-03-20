@@ -17,7 +17,7 @@ export const formatUserName = (profile: Profile): string => {
         : profile?.user_name ?? `${profile?.user_id}`;
 };
 
-export const formatRoundNumber = (roundNumber: number): string => {
+export const formatRoundNumber = (roundNumber: number | string): string => {
     return `Round ${roundNumber}`;
 };
 

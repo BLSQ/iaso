@@ -350,7 +350,7 @@ const addRoundCell = ({
 
     const onlyEndInRange = !startInRange && endInRange;
 
-    if (round.end) {
+    if (round.end && round.start) {
         if (startAndEndInRange) {
             // if both start and end date are in range use diff between dates for length of cells
             colSpan = round.end.clone().add(1, 'day').diff(round.start, 'days');
@@ -359,7 +359,9 @@ const addRoundCell = ({
             colSpan = round.end.clone().add(1, 'day').diff(firstMonday, 'days');
             // else if end is not in range calculate diff with lastSunday
         } else if (onlyStartInRange) {
-            colSpan = round.end.clone().add(3, 'day').diff(lastSunday, 'days');
+            colSpan = Math.abs(
+                round.start.clone().subtract(1, 'day').diff(lastSunday, 'days'),
+            );
         }
     }
     result.push(
@@ -508,7 +510,6 @@ const getCells = (
             lastSunday,
             currentWeekIndex,
         });
-
         if (round.start && round.end) {
             if (isRoundVisible) {
                 cells = addRoundCell({

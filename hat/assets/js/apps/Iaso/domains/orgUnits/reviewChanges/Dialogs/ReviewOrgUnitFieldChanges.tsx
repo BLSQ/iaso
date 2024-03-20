@@ -36,7 +36,7 @@ export const ReviewOrgUnitFieldChanges: FunctionComponent<Props> = ({
                 {formatMessage(MESSAGES.viewDetails)}
             </AccordionSummary>
             <AccordionDetails>
-                <Table>
+                <Table size="small">
                     <TableBody>
                         {fieldValues?.map(group => {
                             const { name } = group;

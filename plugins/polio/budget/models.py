@@ -127,7 +127,7 @@ class BudgetStep(SoftDeletableModel):
     # TODO: remove the `campaign` field after deployment of the "multi round budget".
     campaign = models.ForeignKey("Campaign", on_delete=models.PROTECT, related_name="budget_steps", null=True)
     budget_process = models.ForeignKey(
-        "BudgetProcess", on_delete=models.PROTECT, related_name="budget_steps", null=True
+        "BudgetProcess", on_delete=models.CASCADE, related_name="budget_steps", null=True
     )
     transition_key = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)

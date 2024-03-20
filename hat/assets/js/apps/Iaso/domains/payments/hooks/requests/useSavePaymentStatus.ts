@@ -33,6 +33,7 @@ export const useSavePaymentStatus = (): UseMutationResult<
 };
 export type BulkPaymentSaveBody = Selection<Payment> & {
     status: PaymentStatus;
+    payment_lot_id: number;
 };
 const saveBulkPayments = async (body: BulkPaymentSaveBody): Promise<any> => {
     const formattedBody = {
@@ -40,6 +41,7 @@ const saveBulkPayments = async (body: BulkPaymentSaveBody): Promise<any> => {
         unselected_ids: body.unSelectedItems?.map(item => item.id),
         select_all: body.selectAll,
         status: body.status,
+        payment_lot_id: body.payment_lot_id,
     };
     await waitFor(500);
     return postRequest(taskApi, formattedBody);

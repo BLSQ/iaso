@@ -35,7 +35,9 @@ def has_access_to(user: User, obj: Union[OrgUnit, Instance, models.Model]):
         payments = Payment.objects.filter(created_by__iaso_profile__account=user.iaso_profile.account)
         return payments.filter(id=obj.id).exists() and user.has_perm(permission.PAYMENTS)
     if isinstance(obj, OrgUnitChangeRequest):
-        change_requests = OrgUnitChangeRequest.objects.filter(created_by__iaso_profile__account=user.iaso_profile.account)
+        change_requests = OrgUnitChangeRequest.objects.filter(
+            created_by__iaso_profile__account=user.iaso_profile.account
+        )
         return change_requests.filter(id=obj.id).exists()
     # FIXME Hotfix to prevent an error when loading the app without the polio plugins
     from plugins.polio.models import Campaign

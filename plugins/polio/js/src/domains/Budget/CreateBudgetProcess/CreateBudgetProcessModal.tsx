@@ -28,39 +28,6 @@ const mapOptions = (
     };
 };
 
-const useDependentCampaignOptionsState = (
-    campaigns: OptionsCampaigns[],
-    formik,
-) => {
-    const [value, setValue] = useState<Options[]>([]);
-
-    // When "Country" value changes, filter and update "Campaign" values.
-    useEffect(() => {
-        const filtered = campaigns.filter(
-            i => String(i.country_id) === String(formik.values.country),
-        );
-        formik.setFieldValue('campaign', '');
-        setValue(filtered.map(mapOptions));
-    }, [formik.values.country]);
-
-    return [value, setValue];
-};
-
-const useDependentRoundOptionsState = (rounds: OptionsRounds[], formik) => {
-    const [value, setValue] = useState<Options[]>([]);
-
-    // When "Campaign" value changes, filter and update "Rounds" values.
-    useEffect(() => {
-        const filtered = rounds.filter(
-            i => String(i.campaign_id) === String(formik.values.campaign),
-        );
-        formik.setFieldValue('round', '');
-        setValue(filtered.map(mapOptions));
-    }, [formik.values.campaign]);
-
-    return [value, setValue];
-};
-
 type Props = {
     isOpen: boolean;
     closeDialog: () => void;
@@ -87,15 +54,29 @@ const CreateBudgetProcessModal: FunctionComponent<Props> = ({
         },
     });
 
-    const [currentCampaignOptions] = useDependentCampaignOptionsState(
-        dropdownsData?.campaigns || [],
-        formik,
+    // Filter "Campaign" values on "Country" change.
+    const [currentCampaignOptions, setCampaignOptions] = useState<Options[]>(
+        [],
     );
+    useEffect(() => {
+        const campaigns = dropdownsData?.campaigns || [];
+        const filtered = campaigns.filter(
+            i => String(i.country_id) === String(formik.values.country),
+        );
+        formik.setFieldValue('campaign', '');
+        setCampaignOptions(filtered.map(mapOptions));
+    }, [formik.values.country]);
 
-    const [currentRoundOptions] = useDependentRoundOptionsState(
-        dropdownsData?.rounds || [],
-        formik,
-    );
+    // Filter "Rounds" values on "Campaign" change.
+    const [currentRoundOptions, setRoundOptions] = useState<Options[]>([]);
+    useEffect(() => {
+        const rounds = dropdownsData?.rounds || [];
+        const filtered = rounds.filter(
+            i => String(i.campaign_id) === String(formik.values.campaign),
+        );
+        formik.setFieldValue('round', '');
+        setRoundOptions(filtered.map(mapOptions));
+    }, [formik.values.campaign]);
 
     const titleMessage = formatMessage(MESSAGES.createBudgetProcessTitle);
 

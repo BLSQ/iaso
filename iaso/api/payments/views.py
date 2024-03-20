@@ -9,9 +9,6 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, permissions, status
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
-from django.contrib.auth.models import User
-
-
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.audit_mixin import AuditMixin
 from hat.audit.models import PAYMENT_API, PAYMENT_LOT_API
@@ -178,21 +175,18 @@ class PaymentLotsViewSet(ModelViewSet):
             partial = kwargs.pop("partial", False)
             instance = self.get_object()
             audit_logger = PaymentLotAuditLogger()
+            old_data = audit_logger.serialize_instance(instance)
+            serializer = self.get_serializer(instance, data=request.data, partial=partial)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
 
             mark_as_sent = request.query_params.get("mark_payments_as_sent", "false").lower() == "true"
+            if not mark_as_sent:
+                audit_logger.log_modification(instance=instance, old_data_dump=old_data, request_user=request.user)
             # the mark_as_sent query_param is used to only update related_payments' statuses, so we don't perform any other update when it's true
             if mark_as_sent:
-                related_payments = Payment.objects.filter(payment_lot=instance, payments=related_payments)
-                mark_payments_as_read(payment_lot=instance, api=PAYMENT_LOT_API)
-            # Only name or comment are updated via this PATCH endpoint so no need to re compute the payment lot's status
-            else:
-                old_data = audit_logger.serialize_instance(instance)
-                serializer = self.get_serializer(instance, data=request.data, partial=partial)
-                serializer.is_valid(raise_exception=True)
-                self.perform_update(serializer)
-                audit_logger.log_modification(instance=instance, old_data_dump=old_data, request_user=request.user)
-
-        return Response(serializer.data)
+                mark_payments_as_read(payment_lot_id=instance.pk, api=PAYMENT_LOT_API, user=request.user)
+            return Response(serializer.data)
 
     @swagger_auto_schema(
         request_body=PaymentLotCreateSerializer,
@@ -202,7 +196,6 @@ class PaymentLotsViewSet(ModelViewSet):
         with transaction.atomic():
             # Extract user, name, comment, and potential_payments IDs from request data
             user = self.request.user
-            print("USER", user, isinstance(user, User))
             name = request.data.get("name")
             comment = request.data.get("comment")
             potential_payment_ids = request.data.get("potential_payments", [])  # Expecting a list of IDs
@@ -215,7 +208,7 @@ class PaymentLotsViewSet(ModelViewSet):
 
             # Launch a atask in the worker to update payments, delete potehtial payments, update change requests, update payment_lot status
             # and log everything
-            task = create_payments_from_payment_lot(
+            create_payments_from_payment_lot(
                 payment_lot_id=payment_lot.pk,
                 potential_payment_ids=potential_payment_ids,
                 user=user,
@@ -481,3 +474,4 @@ class PaymentsViewSet(ModelViewSet):
                     request_user=request.user,
                     source=PAYMENT_API,
                 )
+            return Response(serializer.data)

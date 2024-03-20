@@ -32,6 +32,7 @@ class PaymentsBulkUpdate(viewsets.ViewSet):
             unselected_ids=unselected_ids,
             status=status,
             payment_lot_id=payment_lot_id,
+            api=None,
             user=user,
         )
         return Response(

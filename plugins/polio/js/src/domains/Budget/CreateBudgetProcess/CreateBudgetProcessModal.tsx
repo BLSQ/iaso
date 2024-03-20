@@ -99,9 +99,7 @@ const CreateBudgetProcessModal: FunctionComponent<Props> = ({
                     >
                         <Box mb={2} mt={2}>
                             <Field
-                                label={formatMessage(
-                                    MESSAGES.createBudgetProcessTitle,
-                                )}
+                                label={formatMessage(MESSAGES.labelCountry)}
                                 name="country"
                                 component={SingleSelect}
                                 options={
@@ -112,9 +110,7 @@ const CreateBudgetProcessModal: FunctionComponent<Props> = ({
                         </Box>
                         <Box mb={2}>
                             <Field
-                                label={formatMessage(
-                                    MESSAGES.createBudgetProcessTitle,
-                                )}
+                                label={formatMessage(MESSAGES.labelCampaign)}
                                 name="campaign"
                                 component={SingleSelect}
                                 options={currentCampaignOptions}
@@ -122,9 +118,7 @@ const CreateBudgetProcessModal: FunctionComponent<Props> = ({
                         </Box>
                         <Box mb={2}>
                             <Field
-                                label={formatMessage(
-                                    MESSAGES.createBudgetProcessTitle,
-                                )}
+                                label={formatMessage(MESSAGES.labelRound)}
                                 name="round"
                                 component={SingleSelect}
                                 options={currentRoundOptions}

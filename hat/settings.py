@@ -214,8 +214,16 @@ ROOT_URLCONF = "hat.urls"
 
 # Allow CORS for all origins but don't transmit the session cookies or other credentials (which is the default)
 # see https://github.com/adamchainz/django-cors-headers#cors_allow_credentials-bool
-CORS_ORIGIN_ALLOW_ALL = True
-CORS_ALLOW_ALL_ORIGINS = True  # name used in the new version of django-cors-header, for forward compat
+
+ENABLE_CORS = os.environ.get("ENABLE_CORS", "true").lower() == "true"
+
+if ENABLE_CORS:
+    CORS_ORIGIN_ALLOW_ALL = True
+    CORS_ALLOW_ALL_ORIGINS = True  # name used in the new version of django-cors-header, for forward compat
+else:
+    CORS_ORIGIN_ALLOW_ALL = False
+    CORS_ALLOW_ALL_ORIGINS = False  # name used in the new version of django-cors-header, for forward compat
+
 CORS_ALLOW_CREDENTIALS = False
 
 TEMPLATES = [

@@ -133,7 +133,9 @@ class ParamSerializer(serializers.Serializer):
             self.fields["form_id"].child_relation.queryset = Form.objects.filter_for_user_and_app_id(user).distinct()
             self.fields["planning_id"].queryset = Planning.objects.filter_for_user(user)
             self.fields["team_ids"].child_relation.queryset = Team.objects.filter_for_user(user).distinct()
-            self.fields["user_ids"].child_relation.queryset = User.objects.all().distinct()
+            self.fields["user_ids"].child_relation.queryset = User.objects.filter(
+                iaso_profile__account=user.iaso_profile.account
+            ).distinct()
 
     org_unit_type_ids = PrimaryKeysRelatedField(
         child_relation=serializers.PrimaryKeyRelatedField(queryset=OrgUnitType.objects.none()),

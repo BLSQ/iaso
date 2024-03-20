@@ -10,14 +10,15 @@ import {
 } from 'bluesquare-components';
 
 import MESSAGES from '../messages';
-import { SingleSelect } from '../../../components/Inputs/SingleSelect';
-import { useGetNewBudgetProcessDropdowns } from '../hooks/api/useGetNewBudgetProcessDropdowns';
 import {
     Options,
     OptionsCountry,
     OptionsCampaigns,
     OptionsRounds,
 } from '../types';
+import { SingleSelect } from '../../../components/Inputs/SingleSelect';
+import { useGetNewBudgetProcessDropdowns } from '../hooks/api/useGetNewBudgetProcessDropdowns';
+import { useNotificationSchema } from './validation';
 
 const mapOptions = (
     item: OptionsCountry | OptionsCampaigns | OptionsRounds,
@@ -42,12 +43,14 @@ const CreateBudgetProcessModal: FunctionComponent<Props> = ({
     const { data: dropdownsData, isFetching: isFetchingDropdownData } =
         useGetNewBudgetProcessDropdowns();
 
+    const schema = useNotificationSchema();
     const formik = useFormik({
         initialValues: {
             country: '',
             campaign: '',
             round: '',
         },
+        validationSchema: schema,
         onSubmit: async values => {
             // confirm(values);
             console.log(JSON.stringify(values, null, 2));

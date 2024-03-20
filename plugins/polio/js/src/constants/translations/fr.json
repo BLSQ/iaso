@@ -1,4 +1,6 @@
 {
+    "iaso.forms.error.positiveInteger": "Veuillez utiliser un nombre entier positif",
+    "iaso.forms.error.requiredUuid": "Veuillez utiliser un UUID",
     "iaso.forms.options.budgetTypeError": "Choisir une valeur parmis \"soumission\", \"commentaires\" ou \"validation\"",
     "iaso.forms.options.emailFormat": "Veuillez encoder des adresses email valides",
     "iaso.forms.options.urlFormat": "Veuillez utiliser une URL valide ",

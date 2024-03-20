@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from iaso.api.common import HasPermission
 from hat.menupermissions import models as permission
 from iaso.api.tasks import TaskSerializer
+from iaso.models.payments import PaymentLot
 from iaso.tasks.payments_bulk_update import payments_bulk_update
 
 
@@ -35,6 +36,11 @@ class PaymentsBulkUpdate(viewsets.ViewSet):
             api=None,
             user=user,
         )
+        payment_lot = PaymentLot.objects.filter(id=payment_lot_id)
+        if payment_lot.exists():
+            payment_lot = payment_lot.get()
+            payment_lot.task = task
+            payment_lot.save()
         return Response(
             {"task": TaskSerializer(instance=task).data},
             status=http_status.HTTP_201_CREATED,

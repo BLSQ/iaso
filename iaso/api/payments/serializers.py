@@ -7,6 +7,7 @@ from iaso.api.payments.filters.potential_payments import filter_by_forms, filter
 
 from django.contrib.auth.models import User
 from iaso.api.payments.pagination import PaymentPagination
+from iaso.models.base import Task
 
 from ..common import TimestampField
 
@@ -60,12 +61,19 @@ class NestedPaymentSerializer(serializers.ModelSerializer):
         return OrgChangeRequestNestedSerializer(change_requests, many=True, context=self.context).data
 
 
+class NestedTaskSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Task
+        fields = "__all__"
+
+
 class PaymentLotSerializer(serializers.ModelSerializer):
     payments = serializers.SerializerMethodField()
+    task = NestedTaskSerializer(read_only=True)
 
     class Meta:
         model = PaymentLot
-        fields = ["id", "name", "status", "created_at", "created_by", "payments", "comment"]
+        fields = ["id", "name", "status", "created_at", "created_by", "payments", "comment", "task"]
         read_only_fields = ["id", "created_at"]
 
     pagination_class = PaymentPagination

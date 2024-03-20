@@ -216,11 +216,14 @@ class PaymentLotsViewSet(ModelViewSet):
 
             # Launch a atask in the worker to update payments, delete potehtial payments, update change requests, update payment_lot status
             # and log everything
-            create_payments_from_payment_lot(
+            task = create_payments_from_payment_lot(
                 payment_lot_id=payment_lot.pk,
                 potential_payment_ids=potential_payment_ids,
                 user=user,
             )
+            payment_lot.task = task
+            # not logging the task assignment to avoid cluttering the audit logs
+            payment_lot.save()
 
             # Return the created PaymentLot instance
             # It will be incomplete as the task has to run for all the data to be correct

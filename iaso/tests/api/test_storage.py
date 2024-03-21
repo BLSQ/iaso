@@ -459,8 +459,6 @@ class StorageAPITestCase(APITestCase):
         """GET /api/storages/ is rejected if user is not authenticated."""
         response = self.client.get("/api/storages/")
         self.assertEqual(response.status_code, 401)
-        # TODO: according to the specs, it should be 401.
-        #  Is that consistent with the rest of the API? (fix/or update specs)
 
     def test_list_only_storages_permission(self):
         """GET /api/storages/ is rejected if user does not have the 'storages' permission."""

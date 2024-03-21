@@ -39,7 +39,7 @@ urlpatterns = urlpatterns + [
     path("api/", include("iaso.urls")),
     path("pages/<page_slug>/", page, name="pages"),
     path("i18n/", include("django.conf.urls.i18n")),
-    path("logout-iaso", auth.views.LogoutView.as_view(next_page="login"), name="logout-iaso"),
+    path("logout-iaso", auth.views.LogoutView.as_view(next_page="/login/"), name="logout-iaso"),
     path(
         "forgot-password/",
         auth.views.PasswordResetView.as_view(

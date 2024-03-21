@@ -34,7 +34,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'No',
     },
     modalConfirmDeleteBudgetProcess: {
-        id: 'iaso.polio.modal.confirm.deleteBudgetProcess',
+        id: 'iaso.polio.budget_process.modal.confirmDelete',
         defaultMessage: 'Are you sure you want to delete this budget process?',
     },
     requiredField: {

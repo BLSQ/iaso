@@ -386,7 +386,7 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
                 created_by_id=user["created_by"],
                 status=OrgUnitChangeRequest.Statuses.APPROVED,
                 payment__isnull=True,
-                potential_payment__isnull=True,
+                potential_payment__payment_lot__isnull=True,
             )
             if change_requests.exists():
                 potential_payment, created = PotentialPayment.objects.get_or_create(

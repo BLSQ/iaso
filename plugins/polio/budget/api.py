@@ -129,6 +129,8 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
         rounds = []
 
         for campaign in qs:
+            if not campaign.country:  # This shouldn't happen but it does.
+                continue
             countries.append({"id": campaign.country_id, "name": campaign.country.name})
             campaigns.append({"id": str(campaign.id), "name": campaign.obr_name, "country_id": campaign.country_id})
             for round in campaign.rounds.all():

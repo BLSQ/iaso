@@ -30,11 +30,19 @@ from sentry_sdk.integrations.logging import ignore_logger
 
 from plugins.wfp.wfp_pkce_generator import generate_pkce
 
+# security settings
+CSRF_COOKIE_HTTPONLY = os.environ.get("CSRF_COOKIE_HTTPONLY", "false").lower() == "true"
+CSRF_COOKIE_SECURE = os.environ.get("CSRF_COOKIE_SECURE", "false").lower() == "true"
+SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "false").lower() == "true"
+ENABLE_CORS = os.environ.get("ENABLE_CORS", "true").lower() == "true"
+
 # This should be the naked domain (no http or https prefix) that is
 # hosting Iaso, this is used when sending out emails that need a link
 # back to the Iaso application.
 #
 # This should be the same as the one set on: `/admin/sites/site/1/change/`
+
+
 DNS_DOMAIN = os.environ.get("DNS_DOMAIN", "localhost:8081")
 TESTING = os.environ.get("TESTING", "").lower() == "true"
 IN_TESTS = len(sys.argv) > 1 and sys.argv[1] == "test"
@@ -165,7 +173,13 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "storages",
-    "corsheaders",
+]
+if ENABLE_CORS:
+    INSTALLED_APPS += [
+        "corsheaders",
+    ]
+
+INSTALLED_APPS += [
     "rest_framework",
     "webpack_loader",
     "django_ltree",
@@ -198,7 +212,12 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
+]
+if ENABLE_CORS:
+    MIDDLEWARE += [
+        "corsheaders.middleware.CorsMiddleware",
+    ]
+MIDDLEWARE += [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -210,9 +229,11 @@ ROOT_URLCONF = "hat.urls"
 
 # Allow CORS for all origins but don't transmit the session cookies or other credentials (which is the default)
 # see https://github.com/adamchainz/django-cors-headers#cors_allow_credentials-bool
-CORS_ORIGIN_ALLOW_ALL = True
-CORS_ALLOW_ALL_ORIGINS = True  # name used in the new version of django-cors-header, for forward compat
-CORS_ALLOW_CREDENTIALS = False
+
+if ENABLE_CORS:
+    CORS_ORIGIN_ALLOW_ALL = True
+    CORS_ALLOW_ALL_ORIGINS = True  # name used in the new version of django-cors-header, for forward compat
+    CORS_ALLOW_CREDENTIALS = False
 
 TEMPLATES = [
     {

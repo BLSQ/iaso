@@ -64,7 +64,7 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
             .annotate(
                 obr_name=F("rounds__campaign__obr_name"),
                 country_name=F("rounds__campaign__country__name"),
-                round_numbers=ArrayAgg("rounds__number"),
+                round_numbers=ArrayAgg("rounds__number", ordering="rounds__number"),
             )
         )
         return budget_processes

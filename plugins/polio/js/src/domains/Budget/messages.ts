@@ -25,6 +25,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.budget.label.round',
         defaultMessage: 'Round',
     },
+    modalDeleteYes: {
+        id: 'iaso.polio.modal.yes',
+        defaultMessage: 'Yes',
+    },
+    modalDeleteNo: {
+        id: 'iaso.polio.modal.no',
+        defaultMessage: 'No',
+    },
+    modalConfirmDeleteBudgetProcess: {
+        id: 'iaso.polio.modal.confirm.deleteBudgetProcess',
+        defaultMessage: 'Are you sure you want to delete this budget process?',
+    },
     requiredField: {
         id: 'iaso.forms.error.fieldRequired',
         defaultMessage: 'This field is required',

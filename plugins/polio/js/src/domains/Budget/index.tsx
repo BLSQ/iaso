@@ -12,11 +12,11 @@ import { Pagination } from '@mui/lab';
 // @ts-ignore
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
+import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 
 import { BudgetFilters } from './BudgetFilters';
 import { BudgetCard } from './cards/BudgetCard';
 import { useBudgetColumns } from './hooks/config';
-import { CsvButton } from '../../../../../../hat/assets/js/apps/Iaso/components/Buttons/CsvButton';
 import {
     useBudgetParams,
     useGetBudgets,
@@ -28,6 +28,7 @@ import { useStyles } from '../../styles/theme';
 import { BUDGET } from '../../constants/routes';
 import MESSAGES from '../../constants/messages';
 import { BudgetButtons } from './BudgetButtons';
+import { userHasPermission } from '../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 
 type Props = {
     router: any;
@@ -69,8 +70,14 @@ export const BudgetProcessList: FunctionComponent<Props> = ({ router }) => {
     const apiParams = useBudgetParams(params);
     const csvParams = getCsvParams(apiParams);
 
+    const currentUser = useCurrentUser();
+    const isUserPolioBudgetAdmin = userHasPermission(
+        'iaso_polio_budget_admin',
+        currentUser,
+    );
+
     const { data: budgets, isFetching } = useGetBudgets(apiParams);
-    const columns = useBudgetColumns();
+    const columns = useBudgetColumns(isUserPolioBudgetAdmin);
     const theme = useTheme();
     const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -121,6 +128,7 @@ export const BudgetProcessList: FunctionComponent<Props> = ({ router }) => {
                         />
                         <BudgetButtons
                             csvUrl={`/api/polio/budget/export_csv/?${csvParams}`}
+                            isUserPolioBudgetAdmin={isUserPolioBudgetAdmin}
                         />
                     </Collapse>
                 )}
@@ -133,6 +141,7 @@ export const BudgetProcessList: FunctionComponent<Props> = ({ router }) => {
                         />
                         <BudgetButtons
                             csvUrl={`/api/polio/budget/export_csv/?${csvParams}`}
+                            isUserPolioBudgetAdmin={isUserPolioBudgetAdmin}
                         />
                         <TableWithDeepLink
                             data={budgets?.results ?? []}

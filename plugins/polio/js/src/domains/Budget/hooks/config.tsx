@@ -1,5 +1,7 @@
 /* eslint-disable camelcase */
 import React, { useMemo, useState } from 'react';
+import { Box, Tooltip, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     useSafeIntl,
     IconButton as IconButtonComponent,
@@ -7,23 +9,22 @@ import {
     Column,
     Paginated,
 } from 'bluesquare-components';
-import { Box, Tooltip, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+
 import MESSAGES from '../../../constants/messages';
+import getDisplayName from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { BUDGET_DETAILS } from '../../../constants/routes';
+import { BudgetStep, Transition, Params } from '../types';
 import {
     DateCell,
     DateTimeCellRfc,
 } from '../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
-import { formatRoundNumbers, makeFileLinks, makeLinks } from '../utils';
 import { Optional } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { convertObjectToString } from '../../../utils';
-import { formatThousand } from '../../../../../../../hat/assets/js/apps/Iaso/utils';
-import { formatComment } from '../cards/utils';
-import { BudgetStep, Transition, Params } from '../types';
-import getDisplayName from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-
 import { StepActionCell } from '../BudgetDetails/StepActionCell';
+import { convertObjectToString } from '../../../utils';
+import { formatComment } from '../cards/utils';
+import { formatRoundNumbers, makeFileLinks, makeLinks } from '../utils';
+import { formatThousand } from '../../../../../../../hat/assets/js/apps/Iaso/utils';
+import { DeleteBudgetProcessModal } from '../BudgetProcess/DeleteBudgetProcessModal';
 
 const baseUrl = BUDGET_DETAILS;
 
@@ -42,7 +43,7 @@ export const getStyle = classes => isHidden => {
     return isHidden ? classes.hiddenRow : '';
 };
 
-export const useBudgetColumns = (): Column[] => {
+export const useBudgetColumns = (isUserPolioBudgetAdmin: boolean): Column[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
         const cols = [
@@ -82,11 +83,19 @@ export const useBudgetColumns = (): Column[] => {
                 sortable: false,
                 Cell: settings => {
                     return (
-                        <IconButtonComponent
-                            icon="remove-red-eye"
-                            tooltipMessage={MESSAGES.details}
-                            url={`${baseUrl}/campaignName/${settings.row.original.obr_name}/budgetProcessId/${settings.row.original.id}`}
-                        />
+                        <>
+                            <IconButtonComponent
+                                icon="remove-red-eye"
+                                tooltipMessage={MESSAGES.details}
+                                url={`${baseUrl}/campaignName/${settings.row.original.obr_name}/budgetProcessId/${settings.row.original.id}`}
+                            />
+                            {isUserPolioBudgetAdmin && (
+                                <DeleteBudgetProcessModal
+                                    iconProps={{}}
+                                    budgetProcess={settings.row.original}
+                                />
+                            )}
+                        </>
                     );
                 },
             },

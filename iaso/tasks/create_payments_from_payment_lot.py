@@ -75,9 +75,12 @@ def create_payments_from_payment_lot(
         the_task.result = {"result": ERRORED, "message": "One or several Potential payments not found"}
         the_task.save()
         raise ObjectDoesNotExist
+
+    # audit stuff
     user = the_task.launcher
     audit_logger = PaymentLotAuditLogger()
     old_payment_lot_dump = audit_logger.serialize_instance(payment_lot)
+
     with transaction.atomic():
         for index, potential_payment in enumerate(potential_payments.iterator()):
             res_string = "%.2f sec, processed %i payments" % (time() - start, index)
@@ -85,6 +88,7 @@ def create_payments_from_payment_lot(
                 progress_message=res_string, end_value=total, progress_value=index
             )
             create_payment_from_payment_lot(user=user, payment_lot=payment_lot, potential_payment=potential_payment)
+    # Compute status, although it should be NEW since we just created all the Payments
     payment_lot.compute_status()
     payment_lot.save()
     audit_logger.log_modification(instance=payment_lot, old_data_dump=old_payment_lot_dump, request_user=user)

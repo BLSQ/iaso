@@ -56,10 +56,18 @@ class PaymentLotsViewSet(ModelViewSet):
     - `paid`: Indicates that all payments in the lot have been paid.
     - `partially_paid`: Indicates that some, but not all, payments in the lot have been paid.
 
-    The status is computed every time a payment lot is saved, ensuring that the payment lot status accurately reflects the current state of its associated payments.
+    The status is computed every time a payment is updated, ensuring that the payment lot status accurately reflects the current state of its associated payments.
 
     Audit (logs) is handled with a custom serializer instead of the `AuditMixin` because we have nested payments, the saving flow is not straightforward because of the link between the `PaymentLot`'s  status
-    and the statuses its `payments`
+    and the statuses its `payments`. Because of the many DB writes that audit logging introduces, all computations that imply a bulk update have been moved to a `Task` so they can be handled by the worker and avoid slowing the server down too much:
+    - create:
+        - creates several `Payment` from `PotentialPayment` and updates all `OrgUnitChangeRequest` linked to each `Payment`
+        - `PaymentLog` is logged once on creation, before the task is launched, and a second time once the task has run and all data is up to date
+        - Each `Payment` is logged when created
+        - For each `Payment`, all its associated `OrgUnitChangeRequest` are logged once the foreign key has been set
+    - update:
+       - if `mark_payments_as_sent` True, all `Payment` are updated through a task, as well as the `PaymentLot` itself. All logging is done within the `Task`
+       - else, only the `PaymentLot` is logged, in the `update` method
     """
 
     permission_classes = [permissions.IsAuthenticated, HasPermission(permission.PAYMENTS)]
@@ -386,6 +394,7 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
                 created_by_id=user["created_by"],
                 status=OrgUnitChangeRequest.Statuses.APPROVED,
                 payment__isnull=True,
+                # Filter out potential payments already linked to a payment lot as this means there's already a task running converting them into Payment
                 potential_payment__payment_lot__isnull=True,
             )
             if change_requests.exists():
@@ -463,6 +472,23 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
 
 
 class PaymentsViewSet(ModelViewSet):
+    """
+    # `Payment` API
+
+    This API allows to list and update Payments.
+
+    When updating, the status of the linked `PaymentLot` is recalculated and updated if necessary.
+
+    Changes are logged in a `Modification`. If the `PaymentLot` status changed as well, it is logged ina separate `Modification`
+
+
+    ## Permissions
+
+    - User must be authenticated
+    - User needs `iaso_payments` permission
+
+    """
+
     http_method_names = ["patch", "get"]
     results_key = "results"
     serializer_class = PaymentSerializer
@@ -477,13 +503,16 @@ class PaymentsViewSet(ModelViewSet):
             audit_payment = PaymentAuditLogger()
             audit_payment_lot = PaymentLotAuditLogger()
             instance = self.get_object()
+            # save old data for audit
             payment_lot = instance.payment_lot
             old_payment = audit_payment.serialize_instance(instance)
             old_payment_lot = audit_payment_lot.serialize_instance(payment_lot)
+            # update and log Payment
             serializer = self.get_serializer(instance, data=request.data, partial=partial)
             serializer.is_valid(raise_exception=True)
             self.perform_update(serializer)
             audit_payment.log_modification(old_data_dump=old_payment, instance=instance, request_user=request.user)
+            # Check if Payment Lot needs to be updated and log change if necessary
             old_payment_lot_status = payment_lot.status
             new_payment_lot_status = payment_lot.compute_status()
             if old_payment_lot_status != new_payment_lot_status:

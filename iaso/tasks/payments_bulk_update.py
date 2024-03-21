@@ -53,10 +53,13 @@ def payments_bulk_update(
             the_task.ended_at = timezone.now()
             the_task.result = {"result": ERRORED, "message": "Payment Lot not found"}
             the_task.save()
+
+        # audit stuff
         payment_log_audit = PaymentLotAuditLogger()
         old_payment_lot = payment_log_audit.serialize_instance(payment_lot)
-        # Restrict qs to payments accessible to the user
         user = the_task.launcher
+
+        # Restrict qs to payments accessible to the user
         queryset = Payment.objects.filter(created_by__iaso_profile__account=user.iaso_profile.account).filter(
             payment_lot_id=payment_lot_id
         )
@@ -79,6 +82,8 @@ def payments_bulk_update(
                     progress_message=res_string, end_value=total, progress_value=index
                 )
                 update_payment_from_bulk(user, payment, status=status, api=api)
+            # Update PaymentLot status if needed. Since the bulk update doesn't necessarily include
+            # all Payments, we need to check if the status changed
             old_payment_lot_status = payment_lot.status
             new_payment_lot_status = payment_lot.compute_status()
             if old_payment_lot_status != new_payment_lot_status:
@@ -105,7 +110,6 @@ def mark_payments_as_read(
     """
     start = time()
     the_task = task
-    user = the_task.launcher
     the_task.report_progress_and_stop_if_killed(progress_message="Searching for Payments to modify")
     payment_lot = PaymentLot.objects.get(id=payment_lot_id)
     try:
@@ -116,8 +120,12 @@ def mark_payments_as_read(
         the_task.result = {"result": ERRORED, "message": "Payment Lot not found"}
         the_task.save()
     total = payments.count()
+
+    # audit stuff
+    user = the_task.launcher
     audit_logger = PaymentLotAuditLogger()
     old_payment_lot = audit_logger.serialize_instance(payment_lot)
+
     # FIXME Task don't handle rollback properly if task is killed by user or other error
     with transaction.atomic():
         for index, payment in enumerate(payments.iterator()):
@@ -126,7 +134,10 @@ def mark_payments_as_read(
                 progress_message=res_string, end_value=total, progress_value=index
             )
             update_payment_from_bulk(user, payment, status=Payment.Statuses.SENT, api=api)
+
+        # All Payments have been updated so we always need to update the PaymentLot status
         payment_lot.status = payment_lot.compute_status()
         payment_lot.save()
         audit_logger.log_modification(old_data_dump=old_payment_lot, instance=payment_lot, request_user=user)
+
         the_task.report_success(message="%d modified" % total)

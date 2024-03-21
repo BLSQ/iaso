@@ -56,6 +56,12 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
         return BudgetProcessSerializer
 
     def destroy(self, request, *args, **kwargs):
+        """
+        Soft deletion will break integrity, making it hard to find the previous
+        `Rounds` linked to a `BudgetProcess`.
+        If a user wants to restore a soft deleted `BudgetProcess`, the burden
+        of finding the previous linked `Rounds` will be left on his own.
+        """
         # Soft delete `BudgetProcess`.
         budget_process = self.get_object()
         self.perform_destroy(budget_process)

@@ -154,6 +154,30 @@ class BudgetCampaignViewSetTestCase(APITestCase):
             },
         )
 
+    def test_soft_delete(self):
+        """
+        DELETE /api/polio/budget/pk/
+        """
+        # Before soft delete.
+        self.assertIsNone(self.budget_process_1.deleted_at)
+        for step in self.budget_process_1.budget_steps.all():
+            self.assertIsNone(step.deleted_at)
+        for round in self.budget_process_1.rounds.all():
+            self.assertIsNotNone(round.budget_process)
+
+        # Delete.
+        self.client.force_login(self.user)
+        response = self.client.delete(f"/api/polio/budget/{self.budget_process_1.id}/", format="json")
+        self.assertEqual(response.status_code, 204)
+
+        # After soft delete.
+        self.budget_process_1.refresh_from_db()
+        self.assertIsNotNone(self.budget_process_1.deleted_at)
+        for step in self.budget_process_1.budget_steps.all():
+            self.assertIsNotNone(step.deleted_at)
+        for round in self.budget_process_1.rounds.all():
+            self.assertIsNone(round.budget_process)
+
     def test_simple_get_list(self):
         """
         GET /api/polio/budget/

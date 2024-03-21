@@ -1,26 +1,26 @@
 /* eslint-disable camelcase */
-import React, { FunctionComponent, useMemo } from 'react';
-import { useSafeIntl } from 'bluesquare-components';
-import { withRouter } from 'react-router';
 import { Box } from '@mui/material';
+import { useSafeIntl } from 'bluesquare-components';
+import React, { FunctionComponent, useMemo } from 'react';
+import { withRouter } from 'react-router';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
+import { useSingleTableParams } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/SingleTable';
 import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
+import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
+import MESSAGES from '../../../constants/messages';
+import { DASHBOARD_BASE_URL } from '../../../constants/routes';
+import { useStyles } from '../../../styles/theme';
+import { CampaignsFilters } from '../../Calendar/campaignCalendar/CampaignsFilters';
 import {
-    useGetCampaigns,
-    useCampaignParams,
-    useGetCampaignsAsCsv,
     Options as GetCampaignOptions,
+    useCampaignParams,
+    useGetCampaigns,
+    useGetCampaignsAsCsv,
 } from '../hooks/api/useGetCampaigns';
 import { useRemoveCampaign } from '../hooks/api/useRemoveCampaign';
 import { useRestoreCampaign } from '../hooks/api/useRestoreCampaign';
-import { useStyles } from '../../../styles/theme';
-import MESSAGES from '../../../constants/messages';
-import { DASHBOARD_BASE_URL } from '../../../constants/routes';
-import { useSingleTableParams } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/SingleTable';
-import { useCampaignsTableColumns } from './useCampaignsTableColumns';
-import { Filters } from '../../Calendar/campaignCalendar/Filters';
 import { DashboardButtons } from './DashboardButtons';
-import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
+import { useCampaignsTableColumns } from './useCampaignsTableColumns';
 
 type Props = { router: Router };
 
@@ -80,11 +80,7 @@ const Dashboard: FunctionComponent<Props> = ({ router }) => {
                 displayBackButton={false}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <Filters
-                    params={params}
-                    baseUrl={DASHBOARD_BASE_URL}
-                    showTest
-                />
+                <CampaignsFilters showTest router={router} />
                 <Box mb={2}>
                     <DashboardButtons
                         router={router}

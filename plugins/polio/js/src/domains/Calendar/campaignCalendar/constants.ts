@@ -1,4 +1,4 @@
-import { apiDateFormat } from 'Iaso/utils/dates.ts';
+import { apiDateFormat } from '../../../../../../../hat/assets/js/apps/Iaso/utils/dates';
 
 const defaultStaticColWidth = 45;
 const colsCount = 16;

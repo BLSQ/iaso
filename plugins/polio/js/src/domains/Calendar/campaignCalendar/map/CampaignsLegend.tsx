@@ -1,6 +1,4 @@
-import React from 'react';
-import PropTypes from 'prop-types';
-import { FormattedMessage } from 'react-intl';
+import React, { FunctionComponent } from 'react';
 import {
     Grid,
     Typography,
@@ -9,13 +7,20 @@ import {
     AccordionDetails,
     Box,
 } from '@mui/material';
+import { useSafeIntl } from 'bluesquare-components';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useStyles } from '../Styles';
 
 import MESSAGES from '../../../../constants/messages';
+import { MappedCampaign } from '../types';
 
-const CampaignsLegend = ({ campaigns }) => {
+type Props = {
+    campaigns: MappedCampaign[];
+};
+
+export const CampaignsLegend: FunctionComponent<Props> = ({ campaigns }) => {
     const classes = useStyles();
+    const { formatMessage } = useSafeIntl();
     return (
         <Accordion elevation={1} className={classes.mapLegendCampaigns}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -23,14 +28,13 @@ const CampaignsLegend = ({ campaigns }) => {
                     variant="subtitle1"
                     className={classes.mapLegendCampaignTitle}
                 >
-                    <FormattedMessage {...MESSAGES.campaigns} />
+                    {formatMessage(MESSAGES.campaigns)}
                 </Typography>
             </AccordionSummary>
             <AccordionDetails>
                 <Box display="block">
-                    {campaigns.length === 0 && (
-                        <FormattedMessage {...MESSAGES.noCampaign} />
-                    )}
+                    {campaigns.length === 0 &&
+                        formatMessage(MESSAGES.noCampaign)}
                     {campaigns.map(c => (
                         <Grid container spacing={1} key={c.id}>
                             <Grid
@@ -63,9 +67,3 @@ const CampaignsLegend = ({ campaigns }) => {
         </Accordion>
     );
 };
-
-CampaignsLegend.propTypes = {
-    campaigns: PropTypes.array.isRequired,
-};
-
-export { CampaignsLegend };

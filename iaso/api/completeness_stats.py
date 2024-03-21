@@ -29,6 +29,7 @@ This endpoint is used to display the completeness stats in the dashboard. Comple
     }
 ```
 """
+
 from typing import Optional, Any
 from typing import TypedDict, Mapping, List, Union
 
@@ -52,7 +53,7 @@ from typing_extensions import Annotated
 
 from iaso.models import OrgUnit, Form, OrgUnitType, Instance, Group
 from .common import HasPermission
-from ..models.microplanning import Planning
+from ..models.microplanning import Planning, Team
 from ..models.org_unit import OrgUnitQuerySet
 from ..periods import Period
 from iaso.utils import geojson_queryset
@@ -94,6 +95,7 @@ class Params(TypedDict):
     org_unit_group: Optional[Group]
     without_submissions: bool
     org_unit_validation_status: List[str]
+    teams: Optional[List[Team]]
 
 
 class PrimaryKeysRelatedField(serializers.ManyRelatedField):
@@ -129,6 +131,7 @@ class ParamSerializer(serializers.Serializer):
             self.fields["form_id"].default = Form.objects.filter_for_user_and_app_id(user).distinct()[:5]
             self.fields["form_id"].child_relation.queryset = Form.objects.filter_for_user_and_app_id(user).distinct()
             self.fields["planning_id"].queryset = Planning.objects.filter_for_user(user)
+            self.fields["team_ids"].child_relation.queryset = Team.objects.filter_for_user(user).distinct()
 
     org_unit_type_ids = PrimaryKeysRelatedField(
         child_relation=serializers.PrimaryKeyRelatedField(queryset=OrgUnitType.objects.none()),
@@ -171,6 +174,13 @@ class ParamSerializer(serializers.Serializer):
         " (both for returned orgunit and count), can specify multiple status, separated by a ','",
     )
     as_location = serializers.CharField(required=False, help_text="Filter only org units with geo locations")
+
+    team_ids = PrimaryKeysRelatedField(
+        child_relation=serializers.PrimaryKeyRelatedField(queryset=Team.objects.none()),
+        source="teams",
+        required=False,
+        help_text="filter on teams",
+    )
 
     def validate_org_unit_validation_status(self, statuses):
         statuses = statuses.split(",")
@@ -230,6 +240,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         planning_id = params.get("planning_id", None)
         org_unit_validation_status = params["org_unit_validation_status"]
         as_location = params.get("as_location", None)
+        teams = params.get("teams")
 
         instance_qs = Instance.objects.all()
 
@@ -243,6 +254,10 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         if planning:
             instance_qs = instance_qs.filter(planning_id=planning)
             form_qs = form_qs.filter(plannings=planning)
+
+        # filter instance_qs on users related to selected teams
+        if teams:
+            instance_qs = instance_qs.filter(created_by__teams__in=teams)
 
         profile = request.user.iaso_profile  # type: ignore
 
@@ -278,6 +293,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
 
         # How we group them. If none we take the direct descendants or the roots
         group_per_types = params.get("org_unit_types")
+
         if not group_per_types:
             if parent_ou:
                 top_ous = org_units.filter(parent=parent_ou)
@@ -361,9 +377,9 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
                 "org_unit": row_ou.as_dict_for_completeness_stats(),
                 "form_stats": row_ou.form_stats,
                 "org_unit_type": row_ou.org_unit_type.as_dict_for_completeness_stats() if row_ou.org_unit_type else {},
-                "parent_org_unit": row_ou.parent.as_dict_for_completeness_stats_with_parent()
-                if row_ou.parent
-                else None,
+                "parent_org_unit": (
+                    row_ou.parent.as_dict_for_completeness_stats_with_parent() if row_ou.parent else None
+                ),
                 "has_children": has_children(row_ou),
             }
 
@@ -378,9 +394,9 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
                 "longitude": row_ou.location.x if row_ou.location else None,
                 "altitude": row_ou.location.z if row_ou.location else None,
                 "org_unit_type": row_ou.org_unit_type.as_dict_for_completeness_stats() if row_ou.org_unit_type else {},
-                "parent_org_unit": row_ou.parent.as_dict_for_completeness_stats_with_parent()
-                if row_ou.parent
-                else None,
+                "parent_org_unit": (
+                    row_ou.parent.as_dict_for_completeness_stats_with_parent() if row_ou.parent else None
+                ),
                 "has_children": has_children(row_ou),
             }
             if temp_org_unit["has_geo_json"] == True:

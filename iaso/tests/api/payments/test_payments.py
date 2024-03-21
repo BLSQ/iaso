@@ -1,5 +1,6 @@
 from iaso.test import APITestCase
 from iaso import models as m
+from hat.audit import models as am
 
 
 class PaymentViewSetAPITestCase(APITestCase):
@@ -75,3 +76,6 @@ class PaymentViewSetAPITestCase(APITestCase):
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(r["status"], m.Payment.Statuses.SENT)
         self.assertEqual(r["updated_by"], self.user.id)
+        self.payment_lot.refresh_from_db()
+        self.assertEqual(self.payment_lot.status, m.PaymentLot.Statuses.SENT)
+        self.assertEqual(am.Modification.objects.count(), 2)

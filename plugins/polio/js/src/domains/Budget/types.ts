@@ -3,7 +3,6 @@ import {
     Nullable,
     Optional,
 } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { NotificationsApiData } from '../Notifications/types';
 
 export type Timeline = {
     categories: Categories;
@@ -17,6 +16,7 @@ export type Params = {
     order?: string;
     pageSize?: string;
 };
+
 export type Item = {
     label: string;
     step_id?: number;
@@ -77,6 +77,7 @@ export type Budget = {
 };
 
 export type LinkWithAlias = { alias: string; url: string };
+
 export type FileWithName = {
     file: string;
     filename: string;
@@ -108,6 +109,7 @@ export type StepForm = {
     general: Nullable<string[]>;
     attachments: Nullable<string[]>;
 };
+
 export type OverrideStepForm = {
     new_state_key: Optional<string>;
     campaign: string;

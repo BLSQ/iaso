@@ -25,9 +25,11 @@ class TestPaymentsBulkUpdate(TaskAPITestCase):
             version=version,
             validation_status=m.OrgUnit.VALIDATION_VALID,
         )
+        # The data souces and data tasks permissions are needed because we use the task API for task related assertions
         cls.user = cls.create_user_with_profile(
             username="user", permissions=["iaso_payments", "iaso_sources", "iaso_data_tasks"], account=account
         )
+        # The data souces and data tasks permissions are needed because we use the task API for task related assertions
         cls.user_no_perm = cls.create_user_with_profile(
             username="user no perm", permissions=["iaso_forms", "iaso_sources", "iaso_data_tasks"], account=account
         )

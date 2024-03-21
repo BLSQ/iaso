@@ -18,6 +18,7 @@ from iaso.api.payments.filters import (
     potential_payments as potential_payments_filters,
     payments_lots as payments_lots_filters,
 )
+from iaso.api.tasks import TaskSerializer
 from iaso.models import Payment, OrgUnitChangeRequest, PotentialPayment, PaymentLot
 from iaso.tasks.create_payments_from_payment_lot import create_payments_from_payment_lot
 from iaso.tasks.payments_bulk_update import mark_payments_as_read
@@ -183,10 +184,14 @@ class PaymentLotsViewSet(ModelViewSet):
             mark_as_sent = request.query_params.get("mark_payments_as_sent", "false").lower() == "true"
             if not mark_as_sent:
                 audit_logger.log_modification(instance=instance, old_data_dump=old_data, request_user=request.user)
+                return Response(serializer.data)
             # the mark_as_sent query_param is used to only update related_payments' statuses, so we don't perform any other update when it's true
             if mark_as_sent:
-                mark_payments_as_read(payment_lot_id=instance.pk, api=PAYMENT_LOT_API, user=request.user)
-            return Response(serializer.data)
+                task = mark_payments_as_read(payment_lot_id=instance.pk, api=PAYMENT_LOT_API, user=request.user)
+                return Response(
+                    {"task": TaskSerializer(instance=task).data},
+                    status=status.HTTP_201_CREATED,
+                )
 
     @swagger_auto_schema(
         request_body=PaymentLotCreateSerializer,
@@ -378,7 +383,10 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
 
         for user in users_with_change_requests:
             change_requests = OrgUnitChangeRequest.objects.filter(
-                created_by_id=user["created_by"], status=OrgUnitChangeRequest.Statuses.APPROVED, payment__isnull=True
+                created_by_id=user["created_by"],
+                status=OrgUnitChangeRequest.Statuses.APPROVED,
+                payment__isnull=True,
+                potential_payment__isnull=True,
             )
             if change_requests.exists():
                 potential_payment, created = PotentialPayment.objects.get_or_create(

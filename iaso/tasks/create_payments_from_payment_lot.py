@@ -26,10 +26,12 @@ def create_payment_from_payment_lot(user, payment_lot, *, potential_payment):
     # Save payment modification
     audit_logger = PaymentAuditLogger()
     change_request_audit_logger = OrgUnitChangeRequestAuditLogger()
+    change_requests = potential_payment.change_requests.all()
     # Add change requests from potential payment to the newly created payment
-    for change_request in potential_payment.change_requests.all():
+    for change_request in change_requests:
         old_change_request_dump = change_request_audit_logger.serialize_instance(change_request)
         change_request.payment = payment
+        change_request.potential_payment = None
         change_request.save()
         # Save change request modification
         change_request_audit_logger.log_modification(
@@ -38,11 +40,11 @@ def create_payment_from_payment_lot(user, payment_lot, *, potential_payment):
             request_user=user,
             source=audit_models.PAYMENT_LOT_API,
         )
-    # Log the payment change after the fk to chnage reauest has been set
+    potential_payment.delete()
+    # Log the payment change after the fk to change request has been set
     audit_logger.log_modification(
         instance=payment, old_data_dump=None, request_user=user, source=audit_models.PAYMENT_LOT_API
     )
-    potential_payment.delete()
 
 
 @task_decorator(task_name="create_payments_from_payment_lot")

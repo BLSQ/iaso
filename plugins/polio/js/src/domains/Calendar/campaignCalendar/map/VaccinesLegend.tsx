@@ -1,13 +1,16 @@
-import React from 'react';
-import { FormattedMessage } from 'react-intl';
+import React, { FunctionComponent } from 'react';
 import { Grid, Paper, Box, Typography } from '@mui/material';
+import { useSafeIntl } from 'bluesquare-components';
 import { useStyles } from '../Styles';
 
-import MESSAGES from '../../../../constants/messages';
-import { polioVaccines } from '../../../../constants/virus.ts';
+import MESSAGES from '../../../../constants/messages.js';
+import { polioVaccines } from '../../../../constants/virus';
 
-const VaccinesLegend = () => {
+type Vaccine = typeof polioVaccines[number];
+
+export const VaccinesLegend: FunctionComponent = () => {
     const classes = useStyles();
+    const { formatMessage } = useSafeIntl();
     return (
         <Paper elevation={1} className={classes.mapLegendVaccine}>
             <Box p={2}>
@@ -15,9 +18,9 @@ const VaccinesLegend = () => {
                     variant="subtitle1"
                     className={classes.mapLegendTitle}
                 >
-                    <FormattedMessage {...MESSAGES.vaccines} />
+                    {formatMessage(MESSAGES.vaccines)}
                 </Typography>
-                {polioVaccines.map(vaccine => (
+                {polioVaccines.map((vaccine: Vaccine) => (
                     <Box mt={1} key={vaccine.value}>
                         <Grid container spacing={1}>
                             <Grid
@@ -47,5 +50,3 @@ const VaccinesLegend = () => {
         </Paper>
     );
 };
-
-export { VaccinesLegend };

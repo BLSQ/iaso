@@ -9,7 +9,7 @@ from hat.audit.models import Modification
 from iaso import models as m
 from iaso.models import Account
 from iaso.test import APITestCase
-from plugins.polio.models import Round, CampaignType
+from plugins.polio.models import CampaignType, Round
 from plugins.polio.preparedness.spreadsheet_manager import *
 
 

@@ -1,13 +1,18 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
+import React, { useState, FunctionComponent } from 'react';
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
-import { useSelector } from 'react-redux';
-import { PolioCreateEditDialog as CreateEditDialog } from '../../../Campaigns/MainDialog/CreateEditDialog'
+import { PolioCreateEditDialog as CreateEditDialog } from '../../../Campaigns/MainDialog/CreateEditDialog';
 import MESSAGES from '../../../../constants/messages';
 
-const EditCampaignCell = ({ campaign }) => {
+type Props = {
+    campaign: {
+        original: {
+            id: string;
+        };
+    };
+};
+
+const EditCampaignCell: FunctionComponent<Props> = ({ campaign }) => {
     const [dialogOpen, setDialogOpen] = useState(false);
-    const isLogged = useSelector(state => Boolean(state.users.current));
 
     return (
         <>
@@ -24,10 +29,6 @@ const EditCampaignCell = ({ campaign }) => {
             />
         </>
     );
-};
-
-EditCampaignCell.propTypes = {
-    campaign: PropTypes.object.isRequired,
 };
 
 export { EditCampaignCell };

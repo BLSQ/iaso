@@ -42,7 +42,7 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
     export_filename = "campaigns_budget_list_{date}.csv"
     permission_classes = [HasPermission(permission.POLIO_BUDGET)]  # type: ignore
     use_field_order = True
-    http_method_names = ["get", "head", "post"]
+    http_method_names = ["delete", "get", "head", "post"]
     filter_backends = [
         filters.OrderingFilter,
         DjangoFilterBackend,
@@ -54,6 +54,16 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
         if self.action == "create":
             return BudgetProcessWriteSerializer
         return BudgetProcessSerializer
+
+    def destroy(self, request, *args, **kwargs):
+        # Soft delete `BudgetProcess`.
+        budget_process = self.get_object()
+        self.perform_destroy(budget_process)
+        # Soft delete `BudgetStep`s.
+        budget_process.budget_steps.all().delete()
+        # Reset `Rounds`s FKs so that they can be linked to a new `BudgetProcess`.
+        budget_process.rounds.update(budget_process=None)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def get_queryset(self) -> QuerySet:
         user = self.request.user

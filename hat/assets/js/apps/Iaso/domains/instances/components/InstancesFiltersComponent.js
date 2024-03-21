@@ -13,7 +13,7 @@ import {
     useSkipEffectOnMount,
     useHumanReadableJsonLogic,
 } from 'bluesquare-components';
-import InputComponent from '../../../components/forms/InputComponent';
+import InputComponent from '../../../components/forms/InputComponent.tsx';
 
 import { periodTypeOptions } from '../../periods/constants';
 import { isValidPeriod } from '../../periods/utils';

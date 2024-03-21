@@ -100,11 +100,19 @@ const campaignsFilters = [
     },
     {
         isRequired: false,
+        key: 'campaignCategory',
+    },
+    {
+        isRequired: false,
         key: 'campaignGroups',
     },
     {
         isRequired: false,
         key: 'show_test',
+    },
+    {
+        isRequired: false,
+        key: 'filterLaunched',
     },
 ];
 

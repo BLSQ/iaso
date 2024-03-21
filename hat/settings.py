@@ -30,11 +30,19 @@ from sentry_sdk.integrations.logging import ignore_logger
 
 from plugins.wfp.wfp_pkce_generator import generate_pkce
 
+# security settings
+CSRF_COOKIE_HTTPONLY = os.environ.get("CSRF_COOKIE_HTTPONLY", "false").lower() == "true"
+CSRF_COOKIE_SECURE = os.environ.get("CSRF_COOKIE_SECURE", "false").lower() == "true"
+SESSION_COOKIE_SECURE = os.environ.get("SESSION_COOKIE_SECURE", "false").lower() == "true"
+ENABLE_CORS = os.environ.get("ENABLE_CORS", "true").lower() == "true"
+
 # This should be the naked domain (no http or https prefix) that is
 # hosting Iaso, this is used when sending out emails that need a link
 # back to the Iaso application.
 #
 # This should be the same as the one set on: `/admin/sites/site/1/change/`
+
+
 DNS_DOMAIN = os.environ.get("DNS_DOMAIN", "localhost:8081")
 TESTING = os.environ.get("TESTING", "").lower() == "true"
 IN_TESTS = len(sys.argv) > 1 and sys.argv[1] == "test"
@@ -68,6 +76,9 @@ SENTRY_URL = os.environ.get("SENTRY_URL", "")
 # There exists plugins using celery for the backend task (but it's not the default task mechanism of Iaso)
 # If you have such plugin, you can activate the use of celery by setting this env variable to "true"
 USE_CELERY = os.environ.get("USE_CELERY", "")
+
+# It is possible to deactivate password login for the API, the website and the admin using this environment variable
+DISABLE_PASSWORD_LOGINS = os.environ.get("DISABLE_PASSWORD_LOGINS", "").lower() == "true"
 
 # env variables allowing to configure the cache used by Iaso. By default, it's using a table in Postgres
 # to setup Redis, use django_redis.cache.RedisCache as CACHE_BACKEND and something like "redis://127.0.0.1:6379" as CACHE_LOCATION
@@ -162,7 +173,13 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "storages",
-    "corsheaders",
+]
+if ENABLE_CORS:
+    INSTALLED_APPS += [
+        "corsheaders",
+    ]
+
+INSTALLED_APPS += [
     "rest_framework",
     "webpack_loader",
     "django_ltree",
@@ -177,6 +194,7 @@ INSTALLED_APPS = [
     "django_filters",
     "drf_yasg",
     "django_json_widget",
+    "phonenumber_field",
 ]
 
 if USE_CELERY:
@@ -194,7 +212,12 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.locale.LocaleMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
+]
+if ENABLE_CORS:
+    MIDDLEWARE += [
+        "corsheaders.middleware.CorsMiddleware",
+    ]
+MIDDLEWARE += [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -206,9 +229,11 @@ ROOT_URLCONF = "hat.urls"
 
 # Allow CORS for all origins but don't transmit the session cookies or other credentials (which is the default)
 # see https://github.com/adamchainz/django-cors-headers#cors_allow_credentials-bool
-CORS_ORIGIN_ALLOW_ALL = True
-CORS_ALLOW_ALL_ORIGINS = True  # name used in the new version of django-cors-header, for forward compat
-CORS_ALLOW_CREDENTIALS = False
+
+if ENABLE_CORS:
+    CORS_ORIGIN_ALLOW_ALL = True
+    CORS_ALLOW_ALL_ORIGINS = True  # name used in the new version of django-cors-header, for forward compat
+    CORS_ALLOW_CREDENTIALS = False
 
 TEMPLATES = [
     {

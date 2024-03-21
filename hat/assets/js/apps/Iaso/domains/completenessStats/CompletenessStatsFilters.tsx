@@ -32,6 +32,7 @@ import { useGetValidationStatus } from '../forms/hooks/useGetValidationStatus';
 import { redirectToReplace } from '../../routing/actions';
 import { InputWithInfos } from '../../components/InputWithInfos';
 import { DropdownOptionsWithOriginal } from '../../types/utils';
+import { useGetTeamsDropdown } from '../teams/hooks/requests/useGetTeams';
 
 type Props = {
     params: UrlParams & any;
@@ -72,6 +73,8 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
         useGetOrgUnitTypesOptions(filters.parentId);
     const { data: availablePlannings, isFetching: fetchingPlannings } =
         useGetPlanningsOptions(filters.formId);
+    const { data: teamsDropdown, isFetching: isFetchingTeams } =
+        useGetTeamsDropdown({});
     useSkipEffectOnMount(() => {
         setInitialParentId(params?.parentId);
     }, [params]);
@@ -229,6 +232,16 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         value={filters.orgUnitTypeIds}
                         loading={fetchingTypes}
                         options={orgUnitTypes ?? []}
+                    />
+                    <InputComponent
+                        keyValue="teamsIds"
+                        onChange={handleChange}
+                        value={filters.teamsIds}
+                        type="select"
+                        options={teamsDropdown}
+                        label={MESSAGES.teams}
+                        loading={isFetchingTeams}
+                        multi
                     />
                 </Grid>
             </Grid>

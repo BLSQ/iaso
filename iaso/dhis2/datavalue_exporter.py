@@ -793,7 +793,6 @@ class DataValueExporter:
         stats = {"exported_count": 0, "errored_count": 0}
         export_statuses = []
         for page in range(1, paginator.num_pages + 1):
-            print(page)
             page_start = timer()
             prefix = "page %d/%d" % (page, paginator.num_pages)
 

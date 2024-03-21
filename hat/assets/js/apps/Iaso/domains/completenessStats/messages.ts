@@ -148,6 +148,10 @@ const MESSAGES = defineMessages({
             'Please select a Form to watch completeness with the map view',
         id: 'iaso.completenessStats.selectAForm',
     },
+    teams: {
+        defaultMessage: 'Teams',
+        id: 'iaso.label.teams',
+    },
 });
 
 export default MESSAGES;

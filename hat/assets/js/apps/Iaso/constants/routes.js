@@ -50,6 +50,8 @@ import { ReviewOrgUnitChanges } from '../domains/orgUnits/reviewChanges/ReviewOr
 import { VisitDetails } from '../domains/entities/components/VisitDetails.tsx';
 import * as Permission from '../utils/permissions.ts';
 import { SetupAccount } from '../domains/setup/index.tsx';
+import { PotentialPayments } from '../domains/payments/PotentialPayments.tsx';
+import { LotsPayments } from '../domains/payments/LotsPayments.tsx';
 
 const paginationPathParamsWithPrefix = prefix =>
     paginationPathParams.map(p => ({
@@ -756,6 +758,10 @@ export const completenessStatsPath = {
             isRequired: false,
             key: 'showDirectCompleteness',
         },
+        {
+            isRequired: false,
+            key: 'teamsIds',
+        },
     ],
 };
 
@@ -1355,6 +1361,74 @@ export const workflowsDetailPath = {
         ...paginationPathParams,
     ],
 };
+export const potentialPaymentsPath = {
+    baseUrl: baseUrls.potentialPayments,
+    permissions: [Permission.PAYMENTS],
+    component: props => <PotentialPayments {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        ...paginationPathParams,
+        {
+            isRequired: false,
+            key: 'change_requests__created_at_after',
+        },
+        {
+            isRequired: false,
+            key: 'change_requests__created_at_before',
+        },
+        {
+            isRequired: false,
+            key: 'parent_id',
+        },
+        {
+            isRequired: false,
+            key: 'forms',
+        },
+        {
+            isRequired: false,
+            key: 'users',
+        },
+        {
+            isRequired: false,
+            key: 'user_roles',
+        },
+    ],
+};
+export const lotsPaymentsPath = {
+    baseUrl: baseUrls.lotsPayments,
+    permissions: [Permission.PAYMENTS],
+    component: props => <LotsPayments {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        ...paginationPathParams,
+        {
+            isRequired: false,
+            key: 'created_at_after',
+        },
+        {
+            isRequired: false,
+            key: 'created_at_before',
+        },
+        {
+            isRequired: false,
+            key: 'status',
+        },
+        {
+            isRequired: false,
+            key: 'users',
+        },
+        {
+            isRequired: false,
+            key: 'parent_id',
+        },
+    ],
+};
 
 export const page401 = {
     baseUrl: baseUrls.error401,
@@ -1427,4 +1501,6 @@ export const routeConfigs = [
     registryPath,
     registryDetailPath,
     modulesPath,
+    potentialPaymentsPath,
+    lotsPaymentsPath,
 ];

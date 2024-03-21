@@ -132,21 +132,13 @@ class ETL:
 
     def exit_type(self, visit):
         exit_type = None
-        if (
-            (visit.get("_Xfinal_color_result") is not None and visit.get("_Xfinal_color_result") == "Y")
-            and (visit.get("previous_child_color") is not None and visit.get("previous_child_color") == "Y")
-            and (visit.get("_transfer_to_tsfp") is not None and visit.get("_transfer_to_tsfp") == "1")
-        ):
-            exit_type = "cured"
-        elif (
-            (visit.get("previous_whz_color") is not None and visit.get("previous_whz_color") == "R")
-            and (visit.get("_Xwhz_color") is not None and visit.get("_Xwhz_color") == "R")
-            and (visit.get("previous_muac_color") is not None and visit.get("previous_muac_color") == "R")
-            and (visit.get("_Xmuac_color") is not None and visit.get("_Xmuac_color") == "R")
-            and (visit.get("_transfer_to_tsfp") is not None and visit.get("_transfer_to_tsfp") == "1")
+        if (visit.get("_transfer") is not None and visit.get("_transfer") == "1") and (
+            visit.get("_transfer_to_tsfp") is not None and visit.get("_transfer_to_tsfp") == "1"
         ):
             exit_type = "transfer_to_tsfp"
-        elif visit.get("_transfer_to_otp") is not None and visit.get("_transfer_to_otp") == "1":
+        elif (visit.get("_transfer_to_otp") is not None and visit.get("_transfer_to_otp") == "1") or (
+            visit.get("transfer_from_tsfp__bool__") is not None and visit.get("transfer_from_tsfp__bool__") == "1"
+        ):
             exit_type = "transfer_to_otp"
 
         elif visit.get("reason_for_not_continuing") is not None and visit.get("reason_for_not_continuing") != "":
@@ -283,14 +275,19 @@ class ETL:
             given_medication = self.split_given_medication(step.get("medication_2"), quantity)
             given_assistance = given_assistance + given_medication
 
-        if step.get("ration_to_distribute") is not None:
+        if step.get("ration_to_distribute") is not None or step.get("ration") is not None:
             quantity = 0
+            ration_type = ""
             if step.get("_total_number_of_sachets") is not None:
                 quantity = step.get("_total_number_of_sachets", 0)
             elif step.get("_csb_packets") is not None:
                 quantity = step.get("_csb_packets", 0)
 
-            assistance = {"type": step.get("ration_to_distribute"), "quantity": quantity}
+            if step.get("ration_to_distribute") is not None:
+                ration_type = step.get("ration_to_distribute")
+            elif step.get("ration") is not None:
+                ration_type = step.get("ration")
+            assistance = {"type": ration_type, "quantity": quantity}
             given_assistance.append(assistance)
 
         if step.get("ration_type_tsfp") is not None:

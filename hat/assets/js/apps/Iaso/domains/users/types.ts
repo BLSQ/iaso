@@ -1,4 +1,4 @@
-import { Profile } from '../../utils/usersUtils';
+import { Profile, User } from '../../utils/usersUtils';
 import { UserRole } from '../userRoles/types/userRoles';
 
 /* eslint-disable camelcase */
@@ -22,6 +22,13 @@ export type UserDialogData = {
     user_roles_permissions: ValueAndErrors<UserRole[]>;
     language: ValueAndErrors<string | null>;
     password: ValueAndErrors<string | null>;
+    phone_number: ValueAndErrors<string | null>;
+    country_code: ValueAndErrors<string | null>;
 };
 
 export type InitialUserData = Partial<Profile> & { is_superuser?: boolean };
+
+export type UserDisplayData = Pick<
+    User,
+    'id' | 'username' | 'user_name' | 'first_name' | 'last_name'
+>;

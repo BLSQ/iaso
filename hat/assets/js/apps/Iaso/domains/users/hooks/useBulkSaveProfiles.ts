@@ -15,6 +15,8 @@ export type BulkSaveQuery = {
     removeRoles: string[];
     addProjects: string[];
     removeProjects: string[];
+    addTeams: string[];
+    removeTeams: string[];
     language?: 'en' | 'fr';
     addLocations: OrgUnit[];
     removeLocations: OrgUnit[];
@@ -35,6 +37,8 @@ const bulkSaveProfiles = (data: BulkSaveQuery) => {
         removeRoles,
         addProjects,
         removeProjects,
+        addTeams,
+        removeTeams,
         language,
         addLocations,
         removeLocations,
@@ -56,6 +60,8 @@ const bulkSaveProfiles = (data: BulkSaveQuery) => {
         projects_ids_removed: removeProjects.map(projectId =>
             parseInt(projectId, 10),
         ),
+        teams_id_added: addTeams.map(teamId => parseInt(teamId, 10)),
+        teams_id_removed: removeTeams.map(teamId => parseInt(teamId, 10)),
         location_ids_added: addLocations.map(loc => parseInt(loc.id, 10)),
         location_ids_removed: removeLocations.map(loc => parseInt(loc.id, 10)),
         language,

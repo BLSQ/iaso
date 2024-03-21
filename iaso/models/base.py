@@ -27,6 +27,8 @@ from django.db.models import Count, FilteredRelation, Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from phonenumber_field.modelfields import PhoneNumberField
+from phonenumbers.phonenumberutil import region_code_for_number
 
 from hat.audit.models import INSTANCE_API, log_modification
 from hat.menupermissions.constants import MODULES
@@ -38,6 +40,7 @@ from .. import periods
 from ..utils.jsonlogic import jsonlogic_to_q
 from .device import Device, DeviceOwnership
 from .forms import Form, FormVersion
+from ..utils.models.common import get_creator_name
 
 logger = getLogger(__name__)
 
@@ -276,9 +279,9 @@ class Task(models.Model):
             "params": self.params,
             "result": self.result,
             "status": self.status,
-            "launcher": self.launcher.iaso_profile.as_short_dict()
-            if self.launcher and self.launcher.iaso_profile
-            else None,
+            "launcher": (
+                self.launcher.iaso_profile.as_short_dict() if self.launcher and self.launcher.iaso_profile else None
+            ),
             "progress_value": self.progress_value,
             "end_value": self.end_value,
             "name": self.name,
@@ -372,9 +375,9 @@ class Link(models.Model):
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "validated": self.validated,
-            "validator": self.validator.iaso_profile.as_dict()
-            if self.validator and self.validator.iaso_profile
-            else None,
+            "validator": (
+                self.validator.iaso_profile.as_dict() if self.validator and self.validator.iaso_profile else None
+            ),
             "validation_date": self.validation_date,
             "similarity_score": self.similarity_score,
             "algorithm_run": self.algorithm_run.as_dict() if self.algorithm_run else None,
@@ -388,9 +391,9 @@ class Link(models.Model):
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "validated": self.validated,
-            "validator": self.validator.iaso_profile.as_dict()
-            if self.validator and self.validator.iaso_profile
-            else None,
+            "validator": (
+                self.validator.iaso_profile.as_dict() if self.validator and self.validator.iaso_profile else None
+            ),
             "validation_date": self.validation_date,
             "similarity_score": self.similarity_score,
             "algorithm_run": self.algorithm_run.as_dict() if self.algorithm_run else None,
@@ -1094,13 +1097,15 @@ class Instance(models.Model):
             "period": self.period,
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,
-            "created_by": {
-                "first_name": self.created_by.first_name,
-                "user_name": self.created_by.username,
-                "last_name": self.created_by.last_name,
-            }
-            if self.created_by
-            else None,
+            "created_by": (
+                {
+                    "username": self.created_by.username,
+                    "first_name": self.created_by.first_name,
+                    "last_name": self.created_by.last_name,
+                }
+                if self.created_by
+                else None
+            ),
             "last_modified_by": last_modified_by,
         }
 
@@ -1122,6 +1127,7 @@ class Instance(models.Model):
             "form_id": self.form_id,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+            "created_by": get_creator_name(self.created_by) if self.created_by else None,
             "org_unit": self.org_unit.as_dict_with_parents() if self.org_unit else None,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
@@ -1174,12 +1180,16 @@ class Instance(models.Model):
                     "created_at": export_status.created_at.timestamp() if export_status.created_at else None,
                     "export_request": {
                         "launcher": {
-                            "full_name": export_status.export_request.launcher.get_full_name()
-                            if export_status.export_request.launcher
-                            else "AUTO UPLOAD",
-                            "email": export_status.export_request.launcher.email
-                            if export_status.export_request.launcher
-                            else "AUTO UPLOAD",
+                            "full_name": (
+                                export_status.export_request.launcher.get_full_name()
+                                if export_status.export_request.launcher
+                                else "AUTO UPLOAD"
+                            ),
+                            "email": (
+                                export_status.export_request.launcher.email
+                                if export_status.export_request.launcher
+                                else "AUTO UPLOAD"
+                            ),
                         },
                         "last_error_message": f"{export_status.last_error_message}, {export_status.export_request.last_error_message}",
                     },
@@ -1187,13 +1197,15 @@ class Instance(models.Model):
                 for export_status in Paginator(self.exportstatus_set.order_by("-id"), 3).object_list
             ],
             "deleted": self.deleted,
-            "created_by": {
-                "first_name": self.created_by.first_name,
-                "user_name": self.created_by.username,
-                "last_name": self.created_by.last_name,
-            }
-            if self.created_by
-            else None,
+            "created_by": (
+                {
+                    "username": self.created_by.username,
+                    "first_name": self.created_by.first_name,
+                    "last_name": self.created_by.last_name,
+                }
+                if self.created_by
+                else None
+            ),
         }
 
     def as_small_dict(self):
@@ -1279,6 +1291,7 @@ class Profile(models.Model):
     home_page = models.CharField(max_length=512, null=True, blank=True)
     user_roles = models.ManyToManyField("UserRole", related_name="iaso_profile", blank=True)
     projects = models.ManyToManyField("Project", related_name="iaso_profile", blank=True)
+    phone_number = PhoneNumberField(blank=True)
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["dhis2_id", "account"], name="dhis2_id_constraint")]
@@ -1313,6 +1326,8 @@ class Profile(models.Model):
             "user_id": self.user.id,
             "dhis2_id": self.dhis2_id,
             "home_page": self.home_page,
+            "phone_number": self.phone_number.as_e164 if self.phone_number else None,
+            "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
             "projects": [p.as_dict() for p in self.projects.all().order_by("name")],
         }
 
@@ -1325,6 +1340,8 @@ class Profile(models.Model):
             "email": self.user.email,
             "language": self.language,
             "user_id": self.user.id,
+            "phone_number": self.phone_number if len(self.phone_number) > 0 else None,
+            "country_code": self.phone_number.country_code if self.phone_number else None,
             "projects": [p.as_dict() for p in self.projects.all().order_by("name")],
         }
 

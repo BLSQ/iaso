@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { differenceBy, sortBy } from 'lodash';
+import { some, uniqBy, sortBy } from 'lodash';
 import { Box, TableCell, TableRow } from '@mui/material';
 import { NestedGroup, OrgUnitChangeRequestDetails } from '../types';
 import { ReviewOrgUnitFieldChanges } from './ReviewOrgUnitFieldChanges';
@@ -28,53 +28,56 @@ export const HighlightFields: FunctionComponent<Props> = ({
     isNew,
     isNewOrgUnit,
     setSelected,
-    status,
     fieldType,
     isFetchingChangeRequest,
     changeRequest,
 }) => {
-    let newAddedFieldValues: NestedGroup[] = [];
     let changedFieldWithNewValues: NestedGroup[] = [];
     let changedFieldWithOldValues: NestedGroup[] = [];
 
+    let allLeftAndRightFields: NestedGroup[] = [];
+    let changedFieldValues: NestedGroup[] = [];
+
     if (fieldType && fieldType === 'array') {
-        changedFieldWithNewValues = sortBy(newFieldValues, 'id');
-        changedFieldWithOldValues = sortBy(oldFieldValues, 'id');
-        newAddedFieldValues = differenceBy(
-            changedFieldWithNewValues,
-            changedFieldWithOldValues,
-            'id',
-        );
+        allLeftAndRightFields = [];
+        changedFieldWithOldValues = sortBy(oldFieldValues, 'name');
+        changedFieldWithNewValues = sortBy(newFieldValues, 'name');
     }
+    changedFieldValues = uniqBy(
+        changedFieldWithOldValues.concat(changedFieldWithNewValues),
+        'id',
+    );
+
+    allLeftAndRightFields = changedFieldValues.map(row => {
+        let left = false;
+        let right = false;
+        if (some(changedFieldWithNewValues, item => item.id === row.id)) {
+            right = true;
+        }
+        if (some(changedFieldWithOldValues, item => item.id === row.id)) {
+            left = true;
+        }
+        return {
+            ...row,
+            left,
+            right,
+        };
+    });
 
     return (
         <TableRow>
             <TableCell>{field.label}</TableCell>
             {(fieldType && fieldType === 'array' && (
-                <>
-                    <TableCell>
-                        {(changedFieldWithOldValues?.length > 0 && (
-                            <ReviewOrgUnitFieldChanges
-                                fieldValues={changedFieldWithOldValues}
-                                newAddedFieldValues={[]}
-                                status={undefined}
-                                field={field}
-                            />
-                        )) ||
-                            '--'}
-                    </TableCell>
-                    <TableCell>
-                        {(changedFieldWithNewValues?.length > 0 && (
-                            <ReviewOrgUnitFieldChanges
-                                fieldValues={changedFieldWithNewValues}
-                                newAddedFieldValues={newAddedFieldValues}
-                                status={status}
-                                field={field}
-                            />
-                        )) ||
-                            '--'}
-                    </TableCell>
-                </>
+                <TableCell colSpan={2}>
+                    {(allLeftAndRightFields?.length > 0 && (
+                        <ReviewOrgUnitFieldChanges
+                            fieldValues={allLeftAndRightFields}
+                            field={field}
+                            status={changeRequest?.status || ''}
+                        />
+                    )) ||
+                        '--'}
+                </TableCell>
             )) || (
                 <ReviewOrgUnitChangesDetailsTableRow
                     key={field.key}

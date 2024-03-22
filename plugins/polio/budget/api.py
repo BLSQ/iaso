@@ -1,7 +1,6 @@
 from typing import Type
 
 from django.contrib.postgres.aggregates import ArrayAgg
-from django.db.models import Prefetch
 from django.db.models import QuerySet, F
 from django.http import HttpResponse
 from django.shortcuts import redirect
@@ -115,47 +114,54 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
         return Response({"result": "success", "id": budget_step.id}, status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=["GET"])
-    def new_budget_process_dropdowns(self, request):
+    def available_rounds_dropdowns(self, request):
         """
-        Returns a dict containing info about rounds for which a budget process can be created.
-
-        This is useful to build select dropdowns that depend on each other in the UI, e.g.:
+        Returns a data structure suitable to build dependent select dropdowns in the UI.
 
             {
                 "countries": [
                     {"id": 1, "name": "Niger"}
                 ],
                 "campaigns": [
-                    {"id": "uuid-488f", "name": "nopv2", "country_id": 1}
+                    {"id": "e5a1209b-8881-4b66-82a0-429a53dbc94b", "name": "nopv2", "country_id": 1}
                 ],
                 "rounds": [
-                    {"id": 1, "name": 1, "campaign_id": "uuid-488f"}
+                    {"id": 1, "name": 1, "campaign_id": "e5a1209b-8881-4b66-82a0-429a53dbc94b"}
                 ]
             }
 
         """
-        qs = (
-            Campaign.objects.filter_for_user(self.request.user)
-            .select_related("country")
-            .prefetch_related(Prefetch("rounds", queryset=Round.objects.filter(budget_process__isnull=True)))
+        user_campaigns = Campaign.objects.filter_for_user(self.request.user).filter(country__isnull=False)
+        available_rounds = (
+            Round.objects.filter(budget_process__isnull=True, campaign__in=user_campaigns)
+            .select_related("campaign__country")
+            .order_by("campaign__country__name", "campaign__obr_name", "number")
+            .only(
+                "id", "number", "campaign_id", "campaign__obr_name", "campaign__country_id", "campaign__country__name"
+            )
         )
 
-        countries = []
-        campaigns = []
-        rounds = []
+        data = {"unique_countries": {}, "unique_campaigns": {}, "rounds": []}
+        for rnd in available_rounds:
+            campaign_uuid = str(rnd.campaign_id)
+            data["unique_countries"].setdefault(
+                rnd.campaign.country_id,
+                {"id": rnd.campaign.country_id, "name": rnd.campaign.country.name},
+            )
+            data["unique_campaigns"].setdefault(
+                campaign_uuid,
+                {"id": campaign_uuid, "name": rnd.campaign.obr_name, "country_id": rnd.campaign.country_id},
+            )
+            data["rounds"].append({"id": rnd.id, "name": rnd.number, "campaign_id": campaign_uuid})
 
-        for campaign in qs:
-            if not campaign.country:  # This shouldn't happen but it does.
-                continue
-            countries.append({"id": campaign.country_id, "name": campaign.country.name})
-            campaigns.append({"id": str(campaign.id), "name": campaign.obr_name, "country_id": campaign.country_id})
-            for round in campaign.rounds.all():
-                rounds.append({"id": round.id, "name": round.number, "campaign_id": str(campaign.id)})
-
-        # Dedup countries.
-        countries = list({c["id"]: c for c in countries}.values())
-
-        return Response({"countries": countries, "campaigns": campaigns, "rounds": rounds}, status=status.HTTP_200_OK)
+        return Response(
+            {
+                "countries": data["unique_countries"].values(),
+                "campaigns": data["unique_campaigns"].values(),
+                "rounds": data["rounds"],
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 @swagger_auto_schema(tags=["budget"])
@@ -197,7 +203,9 @@ class BudgetStepViewSet(ModelViewSet):
 
     @action(detail=True, methods=["GET"], url_path="files/(?P<file_pk>[0-9]+)")
     def files(self, request, pk, file_pk):
-        "Redirect to the static file"
+        """
+        Redirect to the static file.
+        """
         # Since on AWS S3 the signed url created (for the media upload files) are only valid a certain amount of time
         # This is endpoint is used to give a permanent url to the users.
 

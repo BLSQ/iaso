@@ -382,11 +382,14 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
         )
 
     def calculate_new_potential_payments(self):
+        request_user = self.request.user
         users_with_change_requests = (
             OrgUnitChangeRequest.objects.filter(status=OrgUnitChangeRequest.Statuses.APPROVED)
             .values("created_by")
             .annotate(num_requests=Count("created_by"))
             .filter(num_requests__gt=0)
+            # don't allow users to create payment for themselves
+            .exclude(created_by=request_user)
         )
 
         for user in users_with_change_requests:
@@ -499,6 +502,7 @@ class PaymentsViewSet(ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         with transaction.atomic():
+            request_user = request.user
             partial = kwargs.pop("partial", False)
             audit_payment = PaymentAuditLogger()
             audit_payment_lot = PaymentLotAuditLogger()

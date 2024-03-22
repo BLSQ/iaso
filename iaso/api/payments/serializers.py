@@ -142,6 +142,12 @@ class PaymentSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Invalid status")
         return status
 
+    def validate_user(self, user):
+        request = self.context["request"]
+        request_user = request.user
+        if user == request_user:
+            raise serializers.ValidationError("Users cannot modify their own payments")
+
     def get_change_requests(self, obj):
         change_requests = OrgUnitChangeRequest.objects.filter(payment=obj)
         return OrgChangeRequestNestedSerializer(change_requests, many=True).data

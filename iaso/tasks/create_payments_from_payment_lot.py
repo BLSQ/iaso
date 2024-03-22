@@ -67,7 +67,9 @@ def create_payments_from_payment_lot(
         the_task.result = {"result": ERRORED, "message": "Payment Lot not found"}
         the_task.save()
 
-    potential_payments = PotentialPayment.objects.filter(id__in=potential_payment_ids)
+    user = the_task.launcher
+    # users shouldn't be able to generate payments for themselves
+    potential_payments = PotentialPayment.objects.filter(id__in=potential_payment_ids).exclude(user=user)
     total = len(potential_payment_ids)
     if potential_payments.count() != total:
         the_task.status = ERRORED
@@ -77,7 +79,6 @@ def create_payments_from_payment_lot(
         raise ObjectDoesNotExist
 
     # audit stuff
-    user = the_task.launcher
     audit_logger = PaymentLotAuditLogger()
     old_payment_lot_dump = audit_logger.serialize_instance(payment_lot)
 

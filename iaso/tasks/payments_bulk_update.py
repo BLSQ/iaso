@@ -59,9 +59,11 @@ def payments_bulk_update(
         old_payment_lot = payment_log_audit.serialize_instance(payment_lot)
         user = the_task.launcher
 
-        # Restrict qs to payments accessible to the user
-        queryset = Payment.objects.filter(created_by__iaso_profile__account=user.iaso_profile.account).filter(
-            payment_lot_id=payment_lot_id
+        # Restrict qs to payments accessible to the user, exclude payments to the user
+        queryset = (
+            Payment.objects.filter(created_by__iaso_profile__account=user.iaso_profile.account)
+            .filter(payment_lot_id=payment_lot_id)
+            .exclude(user=user)
         )
 
         if not select_all:
@@ -112,8 +114,10 @@ def mark_payments_as_read(
     the_task = task
     the_task.report_progress_and_stop_if_killed(progress_message="Searching for Payments to modify")
     payment_lot = PaymentLot.objects.get(id=payment_lot_id)
+    user = the_task.launcher
     try:
-        payments = Payment.objects.filter(payment_lot=payment_lot)
+        # Exclude payments from task launcher to prevent users from handling their own payments
+        payments = Payment.objects.filter(payment_lot=payment_lot).exclude(user=user)
     except ObjectDoesNotExist:
         the_task.status = ERRORED
         the_task.ended_at = timezone.now()
@@ -122,7 +126,6 @@ def mark_payments_as_read(
     total = payments.count()
 
     # audit stuff
-    user = the_task.launcher
     audit_logger = PaymentLotAuditLogger()
     old_payment_lot = audit_logger.serialize_instance(payment_lot)
 

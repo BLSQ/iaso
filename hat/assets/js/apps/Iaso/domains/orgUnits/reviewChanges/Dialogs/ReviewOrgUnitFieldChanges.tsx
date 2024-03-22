@@ -1,7 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { Table, TableBody, TableCell, TableRow } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import { NestedGroup } from '../types';
 import { NewOrgUnitField } from '../hooks/useNewFields';
 import MESSAGES from '../messages';
 import { Accordion } from '../../../../components/Accordion/Accordion';
@@ -9,23 +8,21 @@ import { AccordionSummary } from '../../../../components/Accordion/AccordionSumm
 import { AccordionDetails } from '../../../../components/Accordion/AccordionDetails';
 
 type Props = {
-    fieldValues: NestedGroup[];
-    newAddedFieldValues: NestedGroup[];
-    status: string | undefined;
+    fieldValues: any[];
+    status: string;
     field: NewOrgUnitField;
 };
 
 export const ReviewOrgUnitFieldChanges: FunctionComponent<Props> = ({
     fieldValues,
-    newAddedFieldValues,
     status,
     field,
 }) => {
+    const { formatMessage } = useSafeIntl();
     const isCellApproved =
         (status && status === 'approved' && 'success.light') || '';
     const isSelected =
         (status && field?.isSelected === true && 'success.light') || '';
-    const { formatMessage } = useSafeIntl();
 
     return (
         <Accordion>
@@ -38,24 +35,35 @@ export const ReviewOrgUnitFieldChanges: FunctionComponent<Props> = ({
             <AccordionDetails>
                 <Table size="small">
                     <TableBody>
-                        {fieldValues?.map(group => {
-                            const { name } = group;
-                            const isNewElement =
-                                newAddedFieldValues?.includes(group);
-                            const selected = isSelected;
+                        {fieldValues.map(value => {
+                            const { name } = value;
+                            const isHighlighted =
+                                (((value.left === false &&
+                                    value.right === true) ||
+                                    (value.left === true &&
+                                        value.right === false)) &&
+                                    'error.light') ||
+                                '';
                             return (
                                 <TableRow>
                                     <TableCell
                                         sx={{
-                                            color:
-                                                (selected !== '' && selected) ||
-                                                (isNewElement &&
-                                                    'error.light') ||
-                                                isCellApproved,
                                             borderBottom: 'none',
+                                            color: isHighlighted,
                                         }}
                                     >
-                                        {name}
+                                        {(value.left === true && name) || ''}
+                                    </TableCell>
+                                    <TableCell
+                                        sx={{
+                                            borderBottom: 'none',
+                                            color:
+                                                isCellApproved ||
+                                                isSelected ||
+                                                isHighlighted,
+                                        }}
+                                    >
+                                        {(value.right === true && name) || ''}
                                     </TableCell>
                                 </TableRow>
                             );

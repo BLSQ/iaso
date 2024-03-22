@@ -215,19 +215,17 @@ class PaymentLotsViewSet(ModelViewSet):
 
             audit_logger = PaymentLotAuditLogger()
 
-            # Link the potential Payments to the payment lot to enable front-end to filter them out while the task is creating the Payments
-
             # Create the PaymentLot instance but don't save it yet
             payment_lot = PaymentLot(name=name, comment=comment, created_by=request.user, updated_by=request.user)
 
             # Save the PaymentLot instance to ensure it has a primary key
             payment_lot.save()
             potential_payments = PotentialPayment.objects.filter(id__in=potential_payment_ids)
+            # Link the potential Payments to the payment lot to enable front-end to filter them out while the task is creating the Payments
             payment_lot.potential_payments.add(*potential_payments)
             payment_lot.save()
             audit_logger.log_modification(old_data_dump=None, instance=payment_lot, request_user=user)
-
-            # Launch a atask in the worker to update payments, delete potehtial payments, update change requests, update payment_lot status
+            # Launch a a task in the worker to update payments, delete potehtial payments, update change requests, update payment_lot status
             # and log everything
             task = create_payments_from_payment_lot(
                 payment_lot_id=payment_lot.pk,

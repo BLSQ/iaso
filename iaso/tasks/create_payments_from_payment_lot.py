@@ -68,22 +68,24 @@ def create_payments_from_payment_lot(
         the_task.save()
 
     user = the_task.launcher
-    # users shouldn't be able to generate payments for themselves
-    potential_payments = PotentialPayment.objects.filter(id__in=potential_payment_ids).exclude(user=user)
+    potential_payments = PotentialPayment.objects.filter(id__in=potential_payment_ids)
     total = len(potential_payment_ids)
+
     if potential_payments.count() != total:
         the_task.status = ERRORED
         the_task.ended_at = timezone.now()
         the_task.result = {"result": ERRORED, "message": "One or several Potential payments not found"}
         the_task.save()
         raise ObjectDoesNotExist
+    # users shouldn't be able to generate payments for themselves
+    eligible_potential_payments = potential_payments.exclude(user=user)
 
     # audit stuff
     audit_logger = PaymentLotAuditLogger()
     old_payment_lot_dump = audit_logger.serialize_instance(payment_lot)
 
     with transaction.atomic():
-        for index, potential_payment in enumerate(potential_payments.iterator()):
+        for index, potential_payment in enumerate(eligible_potential_payments.iterator()):
             res_string = "%.2f sec, processed %i payments" % (time() - start, index)
             the_task.report_progress_and_stop_if_killed(
                 progress_message=res_string, end_value=total, progress_value=index

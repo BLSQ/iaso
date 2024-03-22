@@ -65,11 +65,14 @@ class PotentialPaymentsViewSetAPITestCase(APITestCase):
         response = self.client.get("/api/potential_payments/")
         self.assertJSONResponse(response, 200)
         # Check that the correct number of PotentialPayment objects were created
-        self.assertEqual(2, len(response.data["results"]))
-        # Check that the PotentialPayment objects were created for the correct users
+        potential_payments_count = m.PotentialPayment.objects.count()
+        self.assertEqual(2, potential_payments_count)
+        # Check that results don't show payments that wil benefit requets user
+        self.assertEqual(1, len(response.data["results"]))
+        # Check that the PotentialPayment returned is for the correct user
         user_ids = [result["user"]["id"] for result in response.data["results"]]
         self.assertIn(self.user.id, user_ids)
-        self.assertIn(self.user_with_perm.id, user_ids)
+        self.assertNotIn(self.user_with_perm.id, user_ids)
         self.assertNotIn(self.user_from_another_account.id, user_ids)
 
     def test_list_without_auth(self):
@@ -112,7 +115,11 @@ class PotentialPaymentsViewSetAPITestCase(APITestCase):
 
         response = self.client.get("/api/potential_payments/")
         self.assertJSONResponse(response, 200)
-        self.assertEqual(2, len(response.data["results"]))
+        # Check that the correct number of PotentialPayment objects were created
+        potential_payments_count = m.PotentialPayment.objects.count()
+        self.assertEqual(
+            1, potential_payments_count
+        )  # Only 1 potential payment is created since the API won't create potential payments for change requestst created by the API user
 
     def test_list_does_not_create_potential_payments_for_existing_payments(self):
         change_request = m.OrgUnitChangeRequest.objects.create(

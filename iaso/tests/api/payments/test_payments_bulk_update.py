@@ -64,6 +64,19 @@ class TestPaymentsBulkUpdate(TaskAPITestCase):
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,
             payment=cls.second_payment,
         )
+        # User handling their own payments. This payment should not appear in any test result
+        cls.payment_to_self = m.Payment.objects.create(
+            created_by=cls.user,
+            payment_lot=cls.payment_lot,
+            status=m.Payment.Statuses.PENDING,
+            user=cls.user,
+        )
+        cls.third_change_request = m.OrgUnitChangeRequest.objects.create(
+            org_unit=org_unit,
+            new_name="Wetlands",
+            status=m.OrgUnitChangeRequest.Statuses.APPROVED,
+            payment=cls.payment_to_self,
+        )
 
     def test_user_not_authenticated(self):
         """POST /api/tasks/create/paymentsbulkupdate/, no auth -> 403"""

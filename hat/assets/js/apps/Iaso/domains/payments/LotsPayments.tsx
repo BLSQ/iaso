@@ -10,6 +10,7 @@ import { useGetPaymentLots } from './hooks/requests/useGetPaymentLots';
 import { usePaymentLotsColumns } from './hooks/config/usePaymentLotsColumns';
 import { PaymentLotsFilters } from './components/CreatePaymentLot/PaymentLotsFilters';
 import { SimpleTableWithDeepLink } from '../../components/tables/SimpleTableWithDeepLink';
+import { RefreshButton } from '../../components/Buttons/RefreshButton';
 
 type Props = {
     params: PotentialPaymentParams;
@@ -38,7 +39,12 @@ const baseUrl = baseUrls.lotsPayments;
 export const LotsPayments: FunctionComponent<Props> = ({ params }) => {
     const theme = useTheme();
     // Replaced isFetching with isLoading to avoid flicker effect when refreshing data, eg when PATCHing a payment
-    const { data, isLoading } = useGetPaymentLots(params);
+    const {
+        data,
+        isLoading,
+        isFetching,
+        refetch: forceRefresh,
+    } = useGetPaymentLots(params);
     const { formatMessage } = useSafeIntl();
     const columns = usePaymentLotsColumns();
     return (
@@ -49,6 +55,12 @@ export const LotsPayments: FunctionComponent<Props> = ({ params }) => {
             />
             <Box sx={commonStyles(theme).containerFullHeightNoTabPadded}>
                 <PaymentLotsFilters params={params} />
+                <RefreshButton
+                    forceRefresh={forceRefresh}
+                    withLoadingSpinner
+                    disabled={isFetching}
+                    isLoading={isFetching}
+                />
                 {/* @ts-ignore */}
                 <SimpleTableWithDeepLink
                     marginTop={false}

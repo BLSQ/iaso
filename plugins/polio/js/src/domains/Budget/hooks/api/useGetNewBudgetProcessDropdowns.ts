@@ -29,7 +29,7 @@ export const useGetNewBudgetProcessDropdowns = (): UseQueryResult<
     return useSnackQuery({
         queryKey: ['new_budget_process_dropdowns'],
         queryFn: () =>
-            getRequest('/api/polio/budget/new_budget_process_dropdowns/'),
+            getRequest('/api/polio/budget/available_rounds_dropdowns/'),
         options: {
             keepPreviousData: true,
             select,

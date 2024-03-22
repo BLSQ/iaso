@@ -3,8 +3,7 @@
 IASO is an innovative, open-source, bilingual (EN/FR) data collection platform with advanced geospatial features to plan, monitor and evaluate health, environmental or social programmes in low- and middle-income settings (LMICs). IASO is recognized as a Digital Public Good by the Digital Public Good Alliance and listed as a Digital Square Software Global Good, a testament to its proven impact.
 
 IASO comprises:
-- a **web
-dashboard** - intended for supervisors to organize data collection and geographical data management
+- a **web dashboard** - intended for supervisors to organize data collection and geographical data management
 - a **mobile application** that also works **offline** - intended to field users to fill out forms and send data when network is available
 - a **matching and scripting interface** to analyze, compare and merge several geographic data sources
 - a bi-directional **integration with DHIS2**, the widely used HMIS in LMICs

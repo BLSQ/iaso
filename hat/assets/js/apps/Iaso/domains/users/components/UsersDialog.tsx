@@ -3,6 +3,7 @@ import React, { useState, FunctionComponent, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { Tabs, Tab } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import { FormikProvider, useFormik } from 'formik';
 import {
     IntlMessage,
     useSafeIntl,
@@ -120,8 +121,20 @@ const UserDialogComponent: FunctionComponent<Props> = ({
         user?.user_permissions.value,
         user?.user_roles_permissions.value,
     ]);
+
+    const formik = useFormik({
+        initialValues: initialData,
+        enableReinitialize: true,
+        validateOnBlur: true,
+        onSubmit: () => {
+            onConfirm();
+        },
+    });
+
+    const { handleSubmit } = formik;
+
     return (
-        <>
+        <FormikProvider value={formik}>
             <WarningModal
                 open={openWarning}
                 closeDialog={() => setOpenWarning(false)}
@@ -130,7 +143,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
 
             <ConfirmCancelModal
                 titleMessage={titleMessage}
-                onConfirm={onConfirm}
+                onConfirm={handleSubmit}
                 cancelMessage={MESSAGES.cancel}
                 confirmMessage={MESSAGES.save}
                 maxWidth="md"
@@ -218,7 +231,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                     )}
                 </div>
             </ConfirmCancelModal>
-        </>
+        </FormikProvider>
     );
 };
 

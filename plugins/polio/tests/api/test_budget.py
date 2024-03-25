@@ -190,10 +190,11 @@ class BudgetCampaignViewSetTestCase(APITestCase):
 
         budget_processes = response_data["results"]
         for budget_process in budget_processes:
-            self.assertEqual(len(budget_process.keys()), 7)
+            self.assertEqual(len(budget_process.keys()), 8)
             self.assertIn("created_at", budget_process)
             self.assertIn("updated_at", budget_process)
             self.assertIn("id", budget_process)
+            self.assertEqual(budget_process["campaign_id"], str(self.campaign.id))
             self.assertEqual(budget_process["obr_name"], "test campaign")
             self.assertEqual(budget_process["country_name"], "ANGOLA")
             self.assertEqual(budget_process["current_state"], {"key": "-", "label": "-"})
@@ -292,10 +293,11 @@ class BudgetCampaignViewSetTestCase(APITestCase):
             ]
         }
         for budget_process in response_data["results"]:
-            self.assertEqual(len(budget_process.keys()), 11)
+            self.assertEqual(len(budget_process.keys()), 12)
             self.assertIn("created_at", budget_process)
             self.assertIn("updated_at", budget_process)
             self.assertIn("id", budget_process)
+            self.assertEqual(budget_process["campaign_id"], str(self.campaign.id))
             self.assertEqual(budget_process["obr_name"], "test campaign")
             self.assertEqual(budget_process["country_name"], "ANGOLA")
             self.assertEqual(budget_process["current_state"], {"key": "-", "label": "-"})

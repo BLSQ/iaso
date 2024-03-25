@@ -77,6 +77,7 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
             BudgetProcess.objects.filter(rounds__campaign__in=campaigns)
             .distinct()
             .annotate(
+                campaign_id=F("rounds__campaign_id"),
                 obr_name=F("rounds__campaign__obr_name"),
                 country_name=F("rounds__campaign__country__name"),
                 round_numbers=ArrayAgg("rounds__number", ordering="rounds__number"),

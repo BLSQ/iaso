@@ -134,6 +134,7 @@ class BudgetProcessSerializer(DynamicFieldsModelSerializer, serializers.ModelSer
         fields = [
             "created_at",
             "id",
+            "campaign_id",  # Added via `annotate`.
             "obr_name",  # Added via `annotate`.
             "country_name",  # Added via `annotate`.
             "round_numbers",  # Added via `annotate`.
@@ -147,6 +148,7 @@ class BudgetProcessSerializer(DynamicFieldsModelSerializer, serializers.ModelSer
         default_fields = [
             "created_at",
             "id",
+            "campaign_id",
             "obr_name",
             "country_name",
             "round_numbers",
@@ -154,6 +156,7 @@ class BudgetProcessSerializer(DynamicFieldsModelSerializer, serializers.ModelSer
             "updated_at",
         ]
 
+    campaign_id = serializers.UUIDField()
     obr_name = serializers.CharField()
     country_name = serializers.CharField()
     round_numbers = serializers.ListField()

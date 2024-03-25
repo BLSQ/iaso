@@ -6,7 +6,10 @@ import { Campaign } from '../../../constants/types';
 import { compareArraysValues } from '../../../utils/compareArraysValues';
 import { BaseInfoForm, baseInfoFormFields } from '../BaseInfo/BaseInfoForm';
 import { BudgetForm, budgetFormFields } from '../Budget/BudgetForm';
-import { EvaluationsForms } from '../Evaluations/EvaluationsForms';
+import {
+    EvaluationsForms,
+    evaluationFormFields,
+} from '../Evaluations/EvaluationsForms';
 import { PreparednessForm } from '../Preparedness/PreparednessForm';
 import {
     RiskAssessmentForm,
@@ -59,7 +62,7 @@ export const usePolioDialogTabs = (
                     !formik.values.initial_org_unit ||
                     formik.values.rounds.length === 0,
                 hasTabError: compareArraysValues(
-                    scopeFormFields,
+                    evaluationFormFields(selectedCampaign?.rounds ?? []),
                     formik.errors,
                 ),
                 key: 'evaluation',

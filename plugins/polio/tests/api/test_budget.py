@@ -743,6 +743,25 @@ class BudgetCampaignViewSetTestCase(APITestCase):
         d = budget_step.created_at.strftime("%Y-%m-%d")
         self.assertEqual(response.content.decode(), f"Last update\r\n{d}\r\n{d}\r\n")
 
+    def test_available_rounds(self):
+        """
+        GET /api/polio/budget/available_rounds/?campaign_id=uuid&budget_process_id=pk
+        """
+        self.client.force_login(self.user)
+
+        response = self.client.get(
+            "/api/polio/budget/available_rounds/"
+            f"?campaign_id={self.campaign.id}&budget_process_id={self.budget_process_1.pk}"
+        )
+        response_data = self.assertJSONResponse(response, 200)
+
+        expected_data = [
+            {"id": self.round_1.pk, "name": 1},
+            {"id": self.round_2.pk, "name": 2},
+            {"id": self.round_4.pk, "name": 4},
+        ]
+        self.assertEqual(response_data, expected_data)
+
     def test_available_rounds_dropdowns(self):
         """
         GET /api/polio/budget/available_rounds_dropdowns/

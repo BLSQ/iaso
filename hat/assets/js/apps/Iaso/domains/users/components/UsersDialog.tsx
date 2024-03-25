@@ -103,25 +103,6 @@ const UserDialogComponent: FunctionComponent<Props> = ({
         user,
     ]);
 
-    const onConfirm = useCallback(() => {
-        const userPermissions = user?.user_permissions.value ?? [];
-        const userRolesPermissions = user?.user_roles_permissions.value ?? [];
-        if (
-            userPermissions.length > 0 ||
-            userRolesPermissions.length > 0 ||
-            initialData?.is_superuser
-        ) {
-            saveUser();
-        } else {
-            setOpenWarning(true);
-        }
-    }, [
-        initialData?.is_superuser,
-        saveUser,
-        user?.user_permissions.value,
-        user?.user_roles_permissions.value,
-    ]);
-
     const formik = useFormik({
         initialValues: initialData,
         enableReinitialize: true,
@@ -131,23 +112,49 @@ const UserDialogComponent: FunctionComponent<Props> = ({
         },
     });
 
-    const { handleSubmit, isValid } = formik;
+    const { handleSubmit, isValid, resetForm, isSubmitting, setSubmitting } =
+        formik;
 
-    const allowConfirm =
-        isValid &&
-        !(
-            user.user_name.value === '' ||
-            (!user.id?.value &&
-                (user.password.value === '' || user.password.value === null) &&
-                user.send_email_invitation.value === false)
-        );
+    const onConfirm = useCallback(() => {
+        const userPermissions = user?.user_permissions.value ?? [];
+        const userRolesPermissions = user?.user_roles_permissions.value ?? [];
+        if (
+            userPermissions.length > 0 ||
+            userRolesPermissions.length > 0 ||
+            initialData?.is_superuser
+        ) {
+            saveUser();
+            setSubmitting(false);
+        } else {
+            setOpenWarning(true);
+        }
+    }, [
+        initialData?.is_superuser,
+        saveUser,
+        setSubmitting,
+        user?.user_permissions.value,
+        user?.user_roles_permissions.value,
+    ]);
+
+    const fieldsConfirm =
+        user.user_name.value === '' ||
+        (!user.id?.value &&
+            (user.password.value === '' || user.password.value === null) &&
+            user.send_email_invitation.value === false);
+
+    const allowConfirm = isValid && !fieldsConfirm && isSubmitting === false;
+
+    const warningConfirm = () => {
+        saveUser();
+        setSubmitting(false);
+    };
 
     return (
         <FormikProvider value={formik}>
             <WarningModal
                 open={openWarning}
                 closeDialog={() => setOpenWarning(false)}
-                onConfirm={saveUser}
+                onConfirm={warningConfirm}
             />
 
             <ConfirmCancelModal
@@ -162,6 +169,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                 onClose={() => null}
                 onCancel={() => {
                     closeDialog();
+                    resetForm();
                 }}
                 id="user-dialog"
                 dataTestId="user-dialog"

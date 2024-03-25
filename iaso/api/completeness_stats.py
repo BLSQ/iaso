@@ -40,6 +40,7 @@ from django.core.paginator import Paginator
 from django.db import models
 from django.db.models import QuerySet, OrderBy, Q
 from django.db.models.expressions import RawSQL
+from django.contrib.auth.models import User
 from django_cte import With
 from django_cte.raw import raw_cte_sql
 from rest_framework import serializers
@@ -132,6 +133,9 @@ class ParamSerializer(serializers.Serializer):
             self.fields["form_id"].child_relation.queryset = Form.objects.filter_for_user_and_app_id(user).distinct()
             self.fields["planning_id"].queryset = Planning.objects.filter_for_user(user)
             self.fields["team_ids"].child_relation.queryset = Team.objects.filter_for_user(user).distinct()
+            self.fields["user_ids"].child_relation.queryset = User.objects.filter(
+                iaso_profile__account=user.iaso_profile.account
+            ).distinct()
 
     org_unit_type_ids = PrimaryKeysRelatedField(
         child_relation=serializers.PrimaryKeyRelatedField(queryset=OrgUnitType.objects.none()),
@@ -180,6 +184,13 @@ class ParamSerializer(serializers.Serializer):
         source="teams",
         required=False,
         help_text="filter on teams",
+    )
+
+    user_ids = PrimaryKeysRelatedField(
+        child_relation=serializers.PrimaryKeyRelatedField(queryset=User.objects.none()),
+        source="users",
+        required=False,
+        help_text="filter on users",
     )
 
     def validate_org_unit_validation_status(self, statuses):
@@ -241,6 +252,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         org_unit_validation_status = params["org_unit_validation_status"]
         as_location = params.get("as_location", None)
         teams = params.get("teams")
+        users = params.get("users")
 
         instance_qs = Instance.objects.all()
 
@@ -258,6 +270,10 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         # filter instance_qs on users related to selected teams
         if teams:
             instance_qs = instance_qs.filter(created_by__teams__in=teams)
+
+        # filter instance_qs on users
+        if users:
+            instance_qs = instance_qs.filter(created_by__in=users)
 
         profile = request.user.iaso_profile  # type: ignore
 

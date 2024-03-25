@@ -762,6 +762,10 @@ export const completenessStatsPath = {
             isRequired: false,
             key: 'teamsIds',
         },
+        {
+            isRequired: false,
+            key: 'userIds',
+        },
     ],
 };
 

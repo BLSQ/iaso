@@ -33,6 +33,9 @@ import { redirectToReplace } from '../../routing/actions';
 import { InputWithInfos } from '../../components/InputWithInfos';
 import { DropdownOptionsWithOriginal } from '../../types/utils';
 import { useGetTeamsDropdown } from '../teams/hooks/requests/useGetTeams';
+import { AsyncSelect } from '../../components/forms/AsyncSelect';
+import { getUsersDropDown } from '../instances/hooks/requests/getUsersDropDown';
+import { useGetProfilesDropdown } from '../instances/hooks/useGetProfilesDropdown';
 
 type Props = {
     params: UrlParams & any;
@@ -79,6 +82,8 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
         setInitialParentId(params?.parentId);
     }, [params]);
     const { data: groups, isFetching: isFetchingGroups } = useGetGroups({});
+
+    const { data: selectedUsers } = useGetProfilesDropdown(filters.userIds);
 
     // React to org unit type filtering, if the type is not available anymore
     // we remove it
@@ -139,6 +144,14 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
         (keyValue, value) => {
             handleChange('planningId', undefined);
             handleChange(keyValue, value);
+        },
+        [handleChange],
+    );
+
+    const handleChangeUsers = useCallback(
+        (keyValue, newValue) => {
+            const joined = newValue?.map(r => r.value)?.join(',');
+            handleChange(keyValue, joined);
         },
         [handleChange],
     );
@@ -233,6 +246,17 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         loading={fetchingTypes}
                         options={orgUnitTypes ?? []}
                     />
+                    <Box mt={2}>
+                        <AsyncSelect
+                            keyValue="userIds"
+                            label={MESSAGES.user}
+                            value={selectedUsers ?? ''}
+                            onChange={handleChangeUsers}
+                            debounceTime={500}
+                            multi
+                            fetchOptions={input => getUsersDropDown(input)}
+                        />
+                    </Box>
                     <InputComponent
                         keyValue="teamsIds"
                         onChange={handleChange}

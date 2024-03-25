@@ -24,6 +24,7 @@ import { convertObjectToString } from '../../../utils';
 import { formatComment } from '../cards/utils';
 import { formatRoundNumbers, makeFileLinks, makeLinks } from '../utils';
 import { formatThousand } from '../../../../../../../hat/assets/js/apps/Iaso/utils';
+import { EditBudgetProcessModal } from '../BudgetProcess/EditBudgetProcessModal';
 import { DeleteBudgetProcessModal } from '../BudgetProcess/DeleteBudgetProcessModal';
 
 const baseUrl = BUDGET_DETAILS;
@@ -89,6 +90,12 @@ export const useBudgetColumns = (isUserPolioBudgetAdmin: boolean): Column[] => {
                                 tooltipMessage={MESSAGES.details}
                                 url={`${baseUrl}/campaignName/${settings.row.original.obr_name}/budgetProcessId/${settings.row.original.id}`}
                             />
+                            {isUserPolioBudgetAdmin && (
+                                <EditBudgetProcessModal
+                                    iconProps={{}}
+                                    budgetProcess={settings.row.original}
+                                />
+                            )}
                             {isUserPolioBudgetAdmin && (
                                 <DeleteBudgetProcessModal
                                     iconProps={{}}

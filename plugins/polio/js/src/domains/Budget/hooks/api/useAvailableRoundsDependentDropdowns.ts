@@ -7,15 +7,15 @@ import { useSnackQuery } from '../../../../../../../../hat/assets/js/apps/Iaso/l
 import { DropdownOptions, OptionsRounds } from '../../types';
 import { formatRoundNumber } from '../../utils';
 
-export const useGetNewBudgetProcessDropdowns = (): UseQueryResult<
+export const useAvailableRoundsDependentDropdowns = (): UseQueryResult<
     DropdownOptions,
     Error
 > => {
     const select = useCallback((data: DropdownOptions) => {
         const formattedRounds = data.rounds.map((round: OptionsRounds) => {
             return {
-                id: round.id,
-                name: formatRoundNumber(round.name),
+                value: round.value,
+                label: formatRoundNumber(round.label),
                 campaign_id: round.campaign_id,
             };
         });

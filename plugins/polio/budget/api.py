@@ -119,16 +119,16 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
     def available_rounds(self, request):
         """
         Returns available rounds that can be associated with a given `budget_process_id`.
-        To make queries and validation easier, `campaign_id` is required too.
+        `campaign_id` is required too to make queries and validation easier.
 
         Used in the UI to build a select dropdown when editing a budget process.
         """
         input = AvailableRoundsSerializer(data=request.query_params)
         input.is_valid(raise_exception=True)
-        campaign_id = input.validated_data["campaign_id"]
+        campaign_uuid = input.validated_data["campaign_id"]
         budget_process_id = input.validated_data["budget_process_id"]
 
-        campaign = Campaign.objects.filter(id=campaign_id).filter_for_user(self.request.user).first()
+        campaign = Campaign.objects.filter(id=campaign_uuid).filter_for_user(self.request.user).first()
 
         available_rounds = (
             Round.objects.filter(campaign=campaign)
@@ -137,7 +137,7 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
             .only("id", "number")
         )
 
-        result = [{"id": rnd.id, "name": rnd.number} for rnd in available_rounds]
+        result = [{"value": rnd.id, "label": rnd.number, "campaign_id": campaign_uuid} for rnd in available_rounds]
         return Response(result, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=["GET"])
@@ -150,13 +150,13 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
 
             {
                 "countries": [
-                    {"id": 1, "name": "Niger"}
+                    {"value": 1, "label": "Niger"}
                 ],
                 "campaigns": [
-                    {"id": "e5a1209b-8881-4b66-82a0-429a53dbc94b", "name": "nopv2", "country_id": 1}
+                    {"value": "e5a1209b-8881-4b66-82a0-429a53dbc94b", "label": "nopv2", "country_id": 1}
                 ],
                 "rounds": [
-                    {"id": 1, "name": 1, "campaign_id": "e5a1209b-8881-4b66-82a0-429a53dbc94b"}
+                    {"value": 1, "label": 1, "campaign_id": "e5a1209b-8881-4b66-82a0-429a53dbc94b"}
                 ]
             }
 
@@ -176,13 +176,13 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
             campaign_uuid = str(rnd.campaign_id)
             data["unique_countries"].setdefault(
                 rnd.campaign.country_id,
-                {"id": rnd.campaign.country_id, "name": rnd.campaign.country.name},
+                {"value": rnd.campaign.country_id, "label": rnd.campaign.country.name},
             )
             data["unique_campaigns"].setdefault(
                 campaign_uuid,
-                {"id": campaign_uuid, "name": rnd.campaign.obr_name, "country_id": rnd.campaign.country_id},
+                {"value": campaign_uuid, "label": rnd.campaign.obr_name, "country_id": rnd.campaign.country_id},
             )
-            data["rounds"].append({"id": rnd.id, "name": rnd.number, "campaign_id": campaign_uuid})
+            data["rounds"].append({"value": rnd.id, "label": rnd.number, "campaign_id": campaign_uuid})
 
         return Response(
             {

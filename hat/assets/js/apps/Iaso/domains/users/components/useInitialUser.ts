@@ -10,6 +10,8 @@ export type InitialUserUtils = {
     setFieldErrors: (fieldName, fieldError) => void;
     // eslint-disable-next-line no-unused-vars
     setFieldValue: (fieldName, fieldError) => void;
+    // eslint-disable-next-line no-unused-vars
+    setFormFieldsValue: (fieldName, fieldError, setFieldsValue) => void;
 };
 
 export const useInitialUser = (
@@ -99,6 +101,45 @@ export const useInitialUser = (
         },
         [user],
     );
+    const setFormFieldsValue = useCallback(
+        (fieldName, fieldValue, setFieldsValue) => {
+            if (fieldName === 'phone_number_obj') {
+                setFieldsValue(user.phone_number, {
+                    value: fieldValue.phone_number,
+                    errors: [],
+                });
+
+                setFieldsValue(user.country_code, {
+                    value: fieldValue.country_code?.countryCode,
+                    errors: [],
+                });
+            } else {
+                setFieldsValue(fieldName, {
+                    value: fieldValue,
+                    errors: [],
+                });
+            }
+
+            if (fieldName === 'user_roles') {
+                const userRolesPermissions: UserRole[] = (userRoles || [])
+                    .filter(userRole => fieldValue.includes(userRole.value))
+                    .map(userRole => {
+                        const role = {
+                            ...(userRole.original as UserRole),
+                            permissions: userRole.original?.permissions.map(
+                                perm => perm.codename,
+                            ),
+                        };
+                        return role;
+                    });
+                setFieldsValue(user.user_roles_permissions, {
+                    value: userRolesPermissions,
+                    errors: [],
+                });
+            }
+        },
+        [user, userRoles],
+    );
     const setFieldValue = useCallback(
         (fieldName, fieldValue) => {
             const newUser = {
@@ -149,6 +190,6 @@ export const useInitialUser = (
     }, [initialUser]);
 
     return useMemo(() => {
-        return { user, setFieldValue, setFieldErrors };
-    }, [setFieldErrors, setFieldValue, user]);
+        return { user, setFormFieldsValue, setFieldValue, setFieldErrors };
+    }, [setFieldErrors, setFieldValue, setFormFieldsValue, user]);
 };

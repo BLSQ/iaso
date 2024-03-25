@@ -14,6 +14,7 @@ import {
 
 import { MutateFunction } from 'react-query';
 
+import { isEqual } from 'lodash';
 import UsersInfos from './UsersInfos';
 import { fetchCurrentUser } from '../actions';
 import MESSAGES from '../messages';
@@ -70,13 +71,34 @@ const UserDialogComponent: FunctionComponent<Props> = ({
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
 
-    const { user, setFieldValue, setFieldErrors } = useInitialUser(initialData);
+    const { user, setFormFieldsValue, setFieldErrors } =
+        useInitialUser(initialData);
     const [tab, setTab] = useState('infos');
     const [openWarning, setOpenWarning] = useState<boolean>(false);
+
+    const formik = useFormik({
+        initialValues: user,
+        enableReinitialize: true,
+        validateOnBlur: true,
+        onSubmit: () => {
+            onConfirm();
+        },
+    });
+
+    const {
+        values,
+        setFieldValue,
+        initialValues,
+        handleSubmit,
+        isValid,
+        resetForm,
+        isSubmitting,
+        setSubmitting,
+    } = formik;
     const saveUser = useCallback(() => {
         const currentUser: any = {};
-        Object.keys(user).forEach(key => {
-            currentUser[key] = user[key].value;
+        Object.keys(values).forEach(key => {
+            currentUser[key] = values[key].value;
         });
         saveProfile(currentUser, {
             onSuccess: () => {
@@ -100,24 +122,12 @@ const UserDialogComponent: FunctionComponent<Props> = ({
         dispatch,
         saveProfile,
         setFieldErrors,
-        user,
+        values,
     ]);
 
-    const formik = useFormik({
-        initialValues: initialData,
-        enableReinitialize: true,
-        validateOnBlur: true,
-        onSubmit: () => {
-            onConfirm();
-        },
-    });
-
-    const { handleSubmit, isValid, resetForm, isSubmitting, setSubmitting } =
-        formik;
-
     const onConfirm = useCallback(() => {
-        const userPermissions = user?.user_permissions.value ?? [];
-        const userRolesPermissions = user?.user_roles_permissions.value ?? [];
+        const userPermissions = values?.user_permissions.value ?? [];
+        const userRolesPermissions = values?.user_roles_permissions.value ?? [];
         if (
             userPermissions.length > 0 ||
             userRolesPermissions.length > 0 ||
@@ -132,17 +142,21 @@ const UserDialogComponent: FunctionComponent<Props> = ({
         initialData?.is_superuser,
         saveUser,
         setSubmitting,
-        user?.user_permissions.value,
-        user?.user_roles_permissions.value,
+        values?.user_permissions.value,
+        values?.user_roles_permissions.value,
     ]);
 
     const fieldsConfirm =
-        user.user_name.value === '' ||
-        (!user.id?.value &&
-            (user.password.value === '' || user.password.value === null) &&
-            user.send_email_invitation.value === false);
+        values.user_name.value === '' ||
+        (!values.id?.value &&
+            (values.password.value === '' || values.password.value === null) &&
+            values.send_email_invitation.value === false);
 
-    const allowConfirm = isValid && !fieldsConfirm && isSubmitting === false;
+    const allowConfirm =
+        isValid &&
+        !fieldsConfirm &&
+        isSubmitting === false &&
+        !isEqual(values, initialValues);
 
     const warningConfirm = () => {
         saveUser();
@@ -210,10 +224,10 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                     >
                         <UsersInfos
                             setFieldValue={(key, value) =>
-                                setFieldValue(key, value)
+                                setFormFieldsValue(key, value, setFieldValue)
                             }
                             initialData={initialData}
-                            currentUser={user}
+                            currentUser={values}
                             allowSendEmailInvitation={allowSendEmailInvitation}
                         />
                     </div>
@@ -224,19 +238,27 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                     >
                         <PermissionsSwitches
                             isSuperUser={initialData?.is_superuser}
-                            currentUser={user}
+                            currentUser={values}
                             handleChange={permissions =>
-                                setFieldValue('user_permissions', permissions)
+                                setFormFieldsValue(
+                                    'user_permissions',
+                                    permissions,
+                                    setFieldValue,
+                                )
                             }
                             setFieldValue={(key, value) =>
-                                setFieldValue(key, value)
+                                setFormFieldsValue(key, value, setFieldValue)
                             }
                         />
                     </div>
                     {tab === 'locations' && (
                         <UsersLocations
                             handleChange={ouList =>
-                                setFieldValue('org_units', ouList)
+                                setFormFieldsValue(
+                                    'org_units',
+                                    ouList,
+                                    setFieldValue,
+                                )
                             }
                             currentUser={user}
                         />

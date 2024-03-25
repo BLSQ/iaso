@@ -131,7 +131,16 @@ const UserDialogComponent: FunctionComponent<Props> = ({
         },
     });
 
-    const { handleSubmit } = formik;
+    const { handleSubmit, isValid } = formik;
+
+    const allowConfirm =
+        isValid &&
+        !(
+            user.user_name.value === '' ||
+            (!user.id?.value &&
+                (user.password.value === '' || user.password.value === null) &&
+                user.send_email_invitation.value === false)
+        );
 
     return (
         <FormikProvider value={formik}>
@@ -149,12 +158,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                 maxWidth="md"
                 open={isOpen}
                 closeDialog={() => null}
-                allowConfirm={
-                    !(
-                        user.user_name.value === '' ||
-                        (!user.id?.value && user.password.value === '')
-                    )
-                }
+                allowConfirm={allowConfirm}
                 onClose={() => null}
                 onCancel={() => {
                     closeDialog();

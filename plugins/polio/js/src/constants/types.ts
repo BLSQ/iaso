@@ -442,6 +442,7 @@ export const Sides = { left: 'left', right: 'right' };
 export type CampaignType = {
     id: number;
     name: string;
+    slug: string;
 };
 
 type NestedRound = {

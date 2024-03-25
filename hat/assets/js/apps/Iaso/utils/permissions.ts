@@ -36,6 +36,7 @@ const USERS_MANAGEMENT = 'iaso_users_managed';
 const WORKFLOWS = 'iaso_workflows';
 const MODULES = 'iaso_modules';
 const POLIO_NOTIFICATIONS = 'iaso_polio_notifications';
+const PAYMENTS = 'iaso_payments';
 
 export {
     COMPLETENESS,
@@ -76,4 +77,5 @@ export {
     USERS_MANAGEMENT,
     WORKFLOWS,
     MODULES,
+    PAYMENTS,
 };

@@ -13,6 +13,7 @@ from plugins.polio.api.vaccines.supply_chain import validate_rounds_and_campaign
 from .budget.models import BudgetStep, BudgetStepFile, BudgetStepLink, MailTemplate, WorkflowModel
 from .models import (
     Campaign,
+    CampaignType,
     CampaignGroup,
     CountryUsersGroup,
     DestructionReport,
@@ -40,7 +41,7 @@ class CampaignAdmin(admin.ModelAdmin):
     formfield_overrides = {
         models.ForeignKey: {"widget": widgets.AdminTextInputWidget},
     }
-    list_filter = ["virus", "detection_status", "risk_assessment_status", "budget_status"]
+    list_filter = ["virus", "detection_status", "risk_assessment_status", "budget_status", "campaign_types"]
 
     def save_model(self, request, obj: Campaign, form, change):
         obj.update_geojson_field()
@@ -267,3 +268,4 @@ class NotificationAdmin(admin.ModelAdmin):
 admin.site.register(RoundDateHistoryEntry)
 admin.site.register(CountryUsersGroup)
 admin.site.register(URLCache)
+admin.site.register(CampaignType)

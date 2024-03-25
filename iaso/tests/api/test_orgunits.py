@@ -7,6 +7,8 @@ from hat.audit.models import Modification
 from iaso import models as m
 from iaso.models import OrgUnitType, OrgUnit
 from iaso.test import APITestCase
+import csv
+import io
 
 
 class OrgUnitAPITestCase(APITestCase):
@@ -518,6 +520,32 @@ class OrgUnitAPITestCase(APITestCase):
             f"/api/orgunits/{self.jedi_squad_endor.id}/?format=csv", headers={"Content-Type": "text/csv"}
         )
         self.assertFileResponse(response, 200, "text/csv; charset=utf-8")
+
+    def test_can_retrieve_org_units_list_in_csv_format(self):
+        """It tests the csv org unit export data"""
+
+        self.yoda.username = "yoda"
+        self.yoda.last_name = "Da"
+        self.yoda.first_name = "Yo"
+        self.yoda.save()
+
+        self.jedi_council_brussels.creator = self.yoda
+        self.jedi_council_brussels.save()
+
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(f"/api/orgunits/?csv=true")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/csv")
+
+        response_csv = response.getvalue().decode("utf-8")
+
+        response_string = "".join(s for s in response_csv)
+        reader = csv.reader(io.StringIO(response_string), delimiter=",")
+        data = list(reader)
+        first_row = data[1]
+        first_row_name = first_row[1]
+        self.assertEqual(first_row_name, self.jedi_council_brussels.name)
 
     def assertValidOrgUnitListData(self, *, list_data: typing.Mapping, expected_length: int):
         self.assertValidListData(list_data=list_data, results_key="orgUnits", expected_length=expected_length)

@@ -5,7 +5,7 @@ import { TableWithDeepLink } from './TableWithDeepLink';
 type Props = {
     params: Partial<UrlParams>;
     paramsPrefix?: string;
-    data: { results?: any[]; count?: number; pages?: number };
+    data?: { results?: any[]; count?: number; pages?: number };
     isFetching: boolean;
     columns?: Column[];
     baseUrl: string;
@@ -29,7 +29,7 @@ type Props = {
 export const SimpleTableWithDeepLink: FunctionComponent<Props> = ({
     params,
     paramsPrefix,
-    data,
+    data = { results: [], count: 0, pages: 0 },
     isFetching,
     baseUrl,
     extraProps = {},

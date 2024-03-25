@@ -1,68 +1,68 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React from 'react';
-import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
-import FormatListBulleted from '@mui/icons-material/FormatListBulleted';
-import SettingsIcon from '@mui/icons-material/Settings';
-import CalendarToday from '@mui/icons-material/CalendarToday';
-import AssessmentIcon from '@mui/icons-material/Assessment';
-import MenuBookIcon from '@mui/icons-material/MenuBook';
-import PublicIcon from '@mui/icons-material/Public';
-import DonutSmallIcon from '@mui/icons-material/DonutSmall';
-import GroupWork from '@mui/icons-material/GroupWork';
-import HomeWorkIcon from '@mui/icons-material/HomeWork';
-import PhotoSizeSelectActualIcon from '@mui/icons-material/PhotoSizeSelectActual';
-import HomeIcon from '@mui/icons-material/Home';
-import StorefrontIcon from '@mui/icons-material/Storefront';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import AssessmentIcon from '@mui/icons-material/Assessment';
+import CalendarToday from '@mui/icons-material/CalendarToday';
+import DonutSmallIcon from '@mui/icons-material/DonutSmall';
 import ExtensionIcon from '@mui/icons-material/Extension';
-import WatchLaterIcon from '@mui/icons-material/WatchLater';
+import FormatListBulleted from '@mui/icons-material/FormatListBulleted';
+import GroupWork from '@mui/icons-material/GroupWork';
+import HomeIcon from '@mui/icons-material/Home';
+import HomeWorkIcon from '@mui/icons-material/HomeWork';
+import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import StorageIcon from '@mui/icons-material/Storage';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
-import { Dashboard } from './src/domains/Campaigns/CampaignsList/Dashboard';
-import { Calendar } from './src/domains/Calendar/Calendar';
-import { CampaignHistory } from './src/domains/Campaigns/campaignHistory/CampaignHistory';
-import { CountryNotificationsConfig } from './src/domains/Config/CountryNotification/CountryNotificationsConfig';
-import { ReasonsForDelay } from './src/domains/Config/ReasonsForDelay/ReasonsForDelay';
+import PhotoSizeSelectActualIcon from '@mui/icons-material/PhotoSizeSelectActual';
+import PublicIcon from '@mui/icons-material/Public';
+import SettingsIcon from '@mui/icons-material/Settings';
+import StorageIcon from '@mui/icons-material/Storage';
+import StorefrontIcon from '@mui/icons-material/Storefront';
+import WatchLaterIcon from '@mui/icons-material/WatchLater';
+import React from 'react';
+import { paginationPathParams } from '../../../hat/assets/js/apps/Iaso/routing/common';
 import MESSAGES from './src/constants/messages';
 import {
-    DASHBOARD_BASE_URL,
-    CAMPAIGN_HISTORY_URL,
-    GROUPED_CAMPAIGNS,
+    BUDGET,
+    BUDGET_DETAILS,
     CALENDAR_BASE_URL,
+    CAMPAIGN_HISTORY_URL,
     CONFIG_COUNTRY_URL,
     CONFIG_REASONS_FOR_DELAY_URL,
-    LQAS_BASE_URL,
+    DASHBOARD_BASE_URL,
+    GROUPED_CAMPAIGNS,
     IM_GLOBAL,
     IM_IHH,
     IM_OHH,
-    BUDGET,
-    BUDGET_DETAILS,
     LQAS_AFRO_MAP_URL,
+    LQAS_BASE_URL,
     NOPV2_AUTH,
     NOPV2_AUTH_DETAILS,
-    VACCINE_SUPPLY_CHAIN,
-    VACCINE_SUPPLY_CHAIN_DETAILS,
+    NOTIFICATIONS_BASE_URL,
     STOCK_MANAGEMENT,
     STOCK_MANAGEMENT_DETAILS,
     STOCK_VARIATION,
-    NOTIFICATIONS_BASE_URL,
+    VACCINE_SUPPLY_CHAIN,
+    VACCINE_SUPPLY_CHAIN_DETAILS,
 } from './src/constants/routes';
-import fr from './src/constants/translations/fr.json';
 import en from './src/constants/translations/en.json';
-import { Lqas } from './src/domains/LQAS-IM/LQAS';
-import { ImStats } from './src/domains/LQAS-IM/IM';
-import { paginationPathParams } from '../../../hat/assets/js/apps/Iaso/routing/common';
-import { GroupedCampaigns } from './src/domains/GroupedCampaigns/GroupedCampaigns';
-import { BudgetDetails } from './src/domains/Budget/BudgetDetails/BudgetDetails';
+import fr from './src/constants/translations/fr.json';
 import { BudgetList } from './src/domains/Budget';
+import { BudgetDetails } from './src/domains/Budget/BudgetDetails/BudgetDetails';
+import { Calendar } from './src/domains/Calendar/Calendar';
+import { Dashboard } from './src/domains/Campaigns/CampaignsList/Dashboard';
+import { CampaignHistory } from './src/domains/Campaigns/campaignHistory/CampaignHistory';
+import { CountryNotificationsConfig } from './src/domains/Config/CountryNotification/CountryNotificationsConfig';
+import { ReasonsForDelay } from './src/domains/Config/ReasonsForDelay/ReasonsForDelay';
+import { GroupedCampaigns } from './src/domains/GroupedCampaigns/GroupedCampaigns';
+import { ImStats } from './src/domains/LQAS-IM/IM';
+import { Lqas } from './src/domains/LQAS-IM/LQAS';
 import { LqasAfroOverview } from './src/domains/LQAS-IM/LQAS/LqasAfroOverview/LqasAfroOverview';
-import { Nopv2Authorisations } from './src/domains/VaccineModule/Nopv2Authorisations/Nopv2Authorisations';
+import { Notifications } from './src/domains/Notifications/index';
 import { Nopv2AuthorisationsDetails } from './src/domains/VaccineModule/Nopv2Authorisations/Details/Nopv2AuthorisationsDetails';
-import { VaccineSupplyChain } from './src/domains/VaccineModule/SupplyChain/VaccineSupplyChain';
-import { VaccineStockManagement } from './src/domains/VaccineModule/StockManagement/VaccineStockManagement';
+import { Nopv2Authorisations } from './src/domains/VaccineModule/Nopv2Authorisations/Nopv2Authorisations';
 import { VaccineStockManagementDetails } from './src/domains/VaccineModule/StockManagement/Details/VaccineStockManagementDetails';
 import { VaccineStockVariation } from './src/domains/VaccineModule/StockManagement/StockVariation/VaccineStockVariation';
+import { VaccineStockManagement } from './src/domains/VaccineModule/StockManagement/VaccineStockManagement';
 import {
     DESTRUCTION,
     FORM_A,
@@ -71,7 +71,7 @@ import {
     USABLE_VIALS,
 } from './src/domains/VaccineModule/StockManagement/constants';
 import { VaccineSupplyChainDetails } from './src/domains/VaccineModule/SupplyChain/Details/VaccineSupplyChainDetails';
-import { Notifications } from './src/domains/Notifications/index';
+import { VaccineSupplyChain } from './src/domains/VaccineModule/SupplyChain/VaccineSupplyChain';
 
 const campaignsFilters = [
     {
@@ -100,11 +100,19 @@ const campaignsFilters = [
     },
     {
         isRequired: false,
+        key: 'campaignCategory',
+    },
+    {
+        isRequired: false,
         key: 'campaignGroups',
     },
     {
         isRequired: false,
         key: 'show_test',
+    },
+    {
+        isRequired: false,
+        key: 'filterLaunched',
     },
 ];
 

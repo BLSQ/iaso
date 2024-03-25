@@ -14,7 +14,6 @@ import { useGetGroupDropdown } from '../../../../../../hat/assets/js/apps/Iaso/d
 
 type Props = {
     params: UrlParams & {
-        campaignType: string;
         showOnlyDeleted: boolean;
         roundStartTo: string;
         roundStartFrom: string;

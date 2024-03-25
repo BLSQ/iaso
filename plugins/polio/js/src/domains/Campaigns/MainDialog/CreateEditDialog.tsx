@@ -1,40 +1,41 @@
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable camelcase */
-import React, { FunctionComponent, useEffect, useState } from 'react';
 import isEqual from 'lodash/isEqual';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 
-import { FormikProvider, useFormik } from 'formik';
-import { merge } from 'lodash';
 import {
+    Box,
     Button,
     Dialog,
     DialogActions,
     DialogContent,
     DialogTitle,
     Grid,
-    Box,
 } from '@mui/material';
+import { FormikProvider, useFormik } from 'formik';
+import { merge } from 'lodash';
 
 import {
-    useSafeIntl,
-    LoadingSpinner,
-    IconButton as IconButtonComponent,
     BackdropClickModal,
+    IconButton as IconButtonComponent,
+    LoadingSpinner,
+    useSafeIntl,
 } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
-import { convertEmptyStringToNull } from '../../../utils/convertEmptyStringToNull';
-import { useFormValidator } from '../../../hooks/useFormValidator';
+import { succesfullSnackBar } from '../../../../../../../hat/assets/js/apps/Iaso/constants/snackBars';
+import { enqueueSnackbar } from '../../../../../../../hat/assets/js/apps/Iaso/redux/snackBarsReducer';
 import { Form } from '../../../components/Form';
-import { useSaveCampaign } from '../hooks/api/useSaveCampaign';
-import { useGetCampaignLogs } from '../campaignHistory/hooks/useGetCampaignHistory';
-import { CAMPAIGN_HISTORY_URL } from '../../../constants/routes';
-import { useStyles } from '../../../styles/theme';
 import MESSAGES from '../../../constants/messages';
+import { CAMPAIGN_HISTORY_URL } from '../../../constants/routes';
+import { FormAdditionalPropsProvider } from '../../../contexts/FormAdditionalPropsContext';
+import { useFormValidator } from '../../../hooks/useFormValidator';
+import { useStyles } from '../../../styles/theme';
+import { convertEmptyStringToNull } from '../../../utils/convertEmptyStringToNull';
+import { useGetCampaignLogs } from '../campaignHistory/hooks/useGetCampaignHistory';
 import { useGetCampaign } from '../hooks/api/useGetCampaign';
+import { useSaveCampaign } from '../hooks/api/useSaveCampaign';
 import { PolioDialogTabs } from './PolioDialogTabs';
 import { usePolioDialogTabs } from './usePolioDialogTabs';
-import { enqueueSnackbar } from '../../../../../../../hat/assets/js/apps/Iaso/redux/snackBarsReducer';
-import { succesfullSnackBar } from '../../../../../../../hat/assets/js/apps/Iaso/constants/snackBars';
 
 type Props = {
     isOpen: boolean;
@@ -92,6 +93,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
             name: 'hidden group',
             org_units: [],
         },
+        campaign_types: [],
         is_preventive: false,
         is_test: false,
         enable_send_weekly_email: true,
@@ -101,7 +103,6 @@ const CreateEditDialog: FunctionComponent<Props> = ({
         risk_assessment_status: 'TO_SUBMIT',
         non_field_errors: undefined,
     };
-
     // Merge inplace default values with the one we get from the campaign.
     merge(initialValues, {
         ...selectedCampaign,
@@ -178,7 +179,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                         </Box>
                     </Grid>
 
-                    {selectedCampaign && campaignLogs?.length && (
+                    {selectedCampaign && Boolean(campaignLogs?.length) && (
                         <Grid
                             item
                             xs={12}
@@ -208,11 +209,15 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                         setSelectedTab(newValue);
                     }}
                 />
-                <FormikProvider value={formik}>
-                    <Form>
-                        <CurrentForm />
-                    </Form>
-                </FormikProvider>
+                <FormAdditionalPropsProvider
+                    value={{ isFetchingSelectedCampaign: isFetching }}
+                >
+                    <FormikProvider value={formik}>
+                        <Form>
+                            <CurrentForm />
+                        </Form>
+                    </FormikProvider>
+                </FormAdditionalPropsProvider>
             </DialogContent>
             <DialogActions className={classes.action}>
                 <Button
@@ -238,3 +243,4 @@ const CreateEditDialog: FunctionComponent<Props> = ({
 
 // There's naming conflict with component in Iaso
 export { CreateEditDialog as PolioCreateEditDialog };
+

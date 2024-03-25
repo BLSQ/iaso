@@ -5,6 +5,7 @@ from beanstalk_worker.services import TestTaskService
 from hat.audit import models as am
 from iaso import models as m
 from iaso.models import Task, QUEUED
+from iaso.models.microplanning import TeamType
 from iaso.test import APITestCase
 from hat.menupermissions import models as permission
 
@@ -122,8 +123,20 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             permissions=["iaso_data_tasks"],
             language="en",
         )
-
         saveUserProfile(cls.user_with_no_users_permission)
+
+        cls.add_users_team_launcher_1 = cls.create_user_with_profile(
+            username="add_users_team_launcher_1",
+            account=star_wars,
+            permissions=[permission._USERS_ADMIN, permission._DATA_TASKS, permission._TEAMS],
+            language="en",
+        )
+        saveUserProfile(cls.add_users_team_launcher_1)
+
+        cls.team_1 = m.Team.objects.create(
+            name="Team 1", manager=cls.yoda, project=cls.project, type=TeamType.TEAM_OF_USERS
+        )
+        cls.team_2 = m.Team.objects.create(name="Team 2", manager=cls.yoda, project=cls.project)
 
     @tag("iaso_only")
     def test_profile_bulkupdate_not_authenticated(self):
@@ -511,10 +524,10 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.assertEqual(self.luke.iaso_profile.language, "fr")
         self.yoda.refresh_from_db()
         self.assertEqual(self.yoda.iaso_profile.language, "fr")
-        self.assertEqual(5, am.Modification.objects.count())
+        self.assertEqual(6, am.Modification.objects.count())
         self.obi_wan.refresh_from_db()
         self.assertEqual(self.obi_wan.iaso_profile.language, "fr")
-        self.assertEqual(5, am.Modification.objects.count())
+        self.assertEqual(6, am.Modification.objects.count())
 
     @tag("iaso_only")
     def test_org_unit_bulkupdate_select_all_with_search(self):
@@ -593,7 +606,105 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.yoda.refresh_from_db()
         self.assertEqual(self.yoda.iaso_profile.language, "fr")
 
-        self.assertEqual(2, am.Modification.objects.count())
+        self.assertEqual(3, am.Modification.objects.count())
+
+    @tag("iaso_only")
+    def test_profile_bulkupdate_user_without_iaso_team_permission(self):
+        """POST /api/tasks/create/profilesbulkupdate/ a user without permission menupermissions.iaso_teams cannot add users to team"""
+        self.client.force_authenticate(self.obi_wan)
+        operation_payload = {
+            "select_all": True,
+            "teams_id_added": [
+                self.team_1.pk,
+            ],
+        }
+        response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
+
+        self.assertJSONResponse(response, 201)
+        data = response.json()
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
+        self.assertEqual(task.launcher, self.obi_wan)
+
+        # Run the task
+        self.runAndValidateTask(task, "ERRORED")
+        self.team_1.refresh_from_db()
+
+        self.assertNotIn(
+            self.luke,
+            self.team_1.users.all(),
+        )
+        self.assertNotIn(
+            self.chewy,
+            self.team_1.users.all(),
+        )
+
+    @tag("iaso_only")
+    def test_profile_bulkupdate_add_users_to_team(self):
+        """POST /api/tasks/create/profilesbulkupdate/ can add users to a team and the users must have same account as the launcher"""
+        self.client.force_authenticate(self.add_users_team_launcher_1)
+        operation_payload = {
+            "select_all": True,
+            "teams_id_added": [
+                self.team_1.pk,
+            ],
+        }
+        response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
+
+        self.assertJSONResponse(response, 201)
+        data = response.json()
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
+        self.assertEqual(task.launcher, self.add_users_team_launcher_1)
+
+        # Run the task
+        self.runAndValidateTask(task, "SUCCESS")
+        self.team_1.refresh_from_db()
+        # check if users with same account as the launcher has been added
+        self.assertIn(
+            self.luke,
+            self.team_1.users.all(),
+        )
+        self.assertIn(
+            self.chewy,
+            self.team_1.users.all(),
+        )
+        # check if users with different account as the launcher has been added
+        self.assertNotIn(
+            self.raccoon,
+            self.team_1.users.all(),
+        )
+        self.assertNotIn(
+            self.wolverine,
+            self.team_1.users.all(),
+        )
+
+    @tag("iaso_only")
+    def test_profile_bulkupdate_add_users_to_no_team_of_users(self):
+        """POST /api/tasks/create/profilesbulkupdate/ can not add users to a team with no team_of_users type"""
+        self.client.force_authenticate(self.add_users_team_launcher_1)
+        operation_payload = {
+            "select_all": True,
+            "teams_id_added": [
+                self.team_2.pk,
+            ],
+        }
+        response = self.client.post(f"/api/tasks/create/profilesbulkupdate/", data=operation_payload, format="json")
+
+        self.assertJSONResponse(response, 201)
+        data = response.json()
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="profiles_bulk_update")
+        self.assertEqual(task.launcher, self.add_users_team_launcher_1)
+
+        # Run the task
+        self.runAndValidateTask(task, "SUCCESS")
+        self.team_2.refresh_from_db()
+        self.assertNotIn(
+            self.luke,
+            self.team_2.users.all(),
+        )
+        self.assertNotIn(
+            self.chewy,
+            self.team_2.users.all(),
+        )
 
     def test_task_kill(self):
         """Launch the task and then kill it
@@ -628,7 +739,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.assertEqual(Task.objects.filter(status=QUEUED).count(), 0)
 
         response = self.client.get("/api/tasks/%d/" % task.id)
-        print(response.json())
+
         self.assertEqual(response.status_code, 200)
         # Task completion status
         return self.assertValidTaskAndInDB(response.json(), new_status)

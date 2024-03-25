@@ -241,6 +241,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.epid',
         defaultMessage: 'EPID',
     },
+    campaignIdentifier: {
+        id: 'iaso.polio.form.label.campaignIdentifier',
+        defaultMessage: 'Campaign identifier',
+    },
     obrName: {
         id: 'iaso.polio.form.label.obrName',
         defaultMessage: 'OBR Name',
@@ -256,6 +260,10 @@ const MESSAGES = defineMessages({
     description: {
         id: 'iaso.polio.form.label.description',
         defaultMessage: 'Description',
+    },
+    responsibleOfficer: {
+        id: 'iaso.polio.form.label.responsibleOfficer',
+        defaultMessage: 'Responsible officer',
     },
     gpeiCoordinator: {
         id: 'iaso.polio.form.label.gpeiCoordinator',
@@ -1200,6 +1208,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.campaignType',
         defaultMessage: 'Campaign type',
     },
+    campaign_types: {
+        id: 'iaso.polio.label.campaignTypes',
+        defaultMessage: 'Campaign types',
+    },
+    campaignCategory: {
+        id: 'iaso.polio.label.campaignCategory',
+        defaultMessage: 'Campaign category',
+    },
     lqasImDateTooltip: {
         id: 'iaso.polio.tooltip.label.lqasImDate',
         defaultMessage:
@@ -1265,10 +1281,6 @@ const MESSAGES = defineMessages({
     testCampaign: {
         id: 'iaso.polio.label.testCampaign',
         defaultMessage: 'Test campaign/On hold',
-    },
-    testCampaigns: {
-        id: 'iaso.polio.label.testCampaigns',
-        defaultMessage: 'Test campaigns',
     },
     round: {
         id: 'iaso.polio.label.round',
@@ -2483,6 +2495,10 @@ const MESSAGES = defineMessages({
     defaultMutationApiSuccess: {
         id: 'iaso.snackBar.successful',
         defaultMessage: 'Saved successfully',
+    },
+    evaluation: {
+        id: 'iaso.polio.label.evaluation',
+        defaultMessage: 'Evaluation',
     },
 });
 

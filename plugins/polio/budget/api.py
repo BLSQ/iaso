@@ -1,7 +1,7 @@
 from typing import Type
 
 from django.contrib.postgres.aggregates import ArrayAgg
-from django.db.models import QuerySet, F
+from django.db.models import QuerySet, F, Q
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
@@ -25,6 +25,7 @@ from plugins.polio.budget.serializers import (
     TransitionToSerializer,
     UpdateBudgetStepSerializer,
     WorkflowSerializer,
+    AvailableRoundsSerializer,
 )
 from plugins.polio.models import Campaign, Round
 
@@ -115,9 +116,37 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
         return Response({"result": "success", "id": budget_step.id}, status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=["GET"])
+    def available_rounds(self, request):
+        """
+        Returns available rounds that can be associated with a given `budget_process_id`.
+        To make queries and validation easier, `campaign_id` is required too.
+
+        Used in the UI to build a select dropdown when editing a budget process.
+        """
+        input = AvailableRoundsSerializer(data=request.query_params)
+        input.is_valid(raise_exception=True)
+        campaign_id = input.validated_data["campaign_id"]
+        budget_process_id = input.validated_data["budget_process_id"]
+
+        campaign = Campaign.objects.filter(id=campaign_id).filter_for_user(self.request.user).first()
+
+        available_rounds = (
+            Round.objects.filter(campaign=campaign)
+            .filter(Q(budget_process_id=budget_process_id) | Q(budget_process__isnull=True))
+            .order_by("number")
+            .only("id", "number")
+        )
+
+        result = [{"id": rnd.id, "name": rnd.number} for rnd in available_rounds]
+        return Response(result, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=["GET"])
     def available_rounds_dropdowns(self, request):
         """
-        Returns a data structure suitable to build dependent select dropdowns in the UI.
+        Returns all available rounds.
+        Used in the UI to build dependent select dropdowns when creating a new budget process.
+
+        Returns this data structure.
 
             {
                 "countries": [

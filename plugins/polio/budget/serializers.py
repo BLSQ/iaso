@@ -74,6 +74,11 @@ class TimelineSerializer(serializers.Serializer):
     categories = CategorySerializer(many=True)
 
 
+class AvailableRoundsSerializer(serializers.Serializer):
+    campaign_id = serializers.UUIDField()
+    budget_process_id = serializers.IntegerField()
+
+
 class BudgetProcessWriteSerializer(serializers.ModelSerializer):
     """
     Create a `BudgetProcess` that is linked to one (or more) `Round`(s).

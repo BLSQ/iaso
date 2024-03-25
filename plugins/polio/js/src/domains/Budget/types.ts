@@ -133,25 +133,20 @@ export type Options = {
     label: string;
 };
 
-export type OptionsCountry = {
-    id: number;
-    name: string;
-};
-
 export type OptionsCampaigns = {
-    id: number;
-    name: string;
+    value: number;
+    label: string;
     country_id: number;
 };
 
 export type OptionsRounds = {
-    id: number;
-    name: string;
+    value: number;
+    label: string;
     campaign_id: number;
 };
 
 export type DropdownOptions = {
-    countries: OptionsCountry[];
+    countries: Options[];
     campaigns: OptionsCampaigns[];
     rounds: OptionsRounds[];
 };

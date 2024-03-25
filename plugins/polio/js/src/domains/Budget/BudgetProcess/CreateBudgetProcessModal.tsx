@@ -10,26 +10,12 @@ import {
 } from 'bluesquare-components';
 
 import MESSAGES from '../messages';
-import {
-    Options,
-    OptionsCountry,
-    OptionsCampaigns,
-    OptionsRounds,
-} from '../types';
+import { MultiSelect } from '../../../components/Inputs/MultiSelect';
+import { Options } from '../types';
 import { SingleSelect } from '../../../components/Inputs/SingleSelect';
-import { useGetNewBudgetProcessDropdowns } from '../hooks/api/useGetNewBudgetProcessDropdowns';
+import { useAvailableRoundsDependentDropdowns } from '../hooks/api/useAvailableRoundsDependentDropdowns';
 import { useCreateBudgetProcess } from '../hooks/api/useCreateBudgetProcess';
 import { useNotificationSchema } from './validation';
-import { MultiSelect } from '../../../components/Inputs/MultiSelect';
-
-const mapOptions = (
-    item: OptionsCountry | OptionsCampaigns | OptionsRounds,
-): Options => {
-    return {
-        label: `${item.name}`,
-        value: item.id,
-    };
-};
 
 type Props = {
     isOpen: boolean;
@@ -43,7 +29,7 @@ const CreateBudgetProcessModal: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
 
     const { data: dropdownsData, isFetching: isFetchingDropdownData } =
-        useGetNewBudgetProcessDropdowns();
+        useAvailableRoundsDependentDropdowns();
 
     const { mutate: confirm } = useCreateBudgetProcess();
     const schema = useNotificationSchema();
@@ -69,7 +55,7 @@ const CreateBudgetProcessModal: FunctionComponent<Props> = ({
             i => String(i.country_id) === String(formik.values.country),
         );
         formik.setFieldValue('campaign', '');
-        setCampaignOptions(filtered.map(mapOptions));
+        setCampaignOptions(filtered);
     }, [formik.values.country]);
 
     // Filter "Rounds" values on "Campaign" change.
@@ -80,7 +66,7 @@ const CreateBudgetProcessModal: FunctionComponent<Props> = ({
             i => String(i.campaign_id) === String(formik.values.campaign),
         );
         formik.setFieldValue('round', '');
-        setRoundsOptions(filtered.map(mapOptions));
+        setRoundsOptions(filtered);
     }, [formik.values.campaign]);
 
     const titleMessage = formatMessage(MESSAGES.createBudgetProcessTitle);
@@ -107,10 +93,7 @@ const CreateBudgetProcessModal: FunctionComponent<Props> = ({
                                 label={formatMessage(MESSAGES.labelCountry)}
                                 name="country"
                                 component={SingleSelect}
-                                options={
-                                    dropdownsData?.countries.map(mapOptions) ||
-                                    []
-                                }
+                                options={dropdownsData?.countries || []}
                             />
                         </Box>
                         <Box mb={2}>

@@ -756,9 +756,9 @@ class BudgetCampaignViewSetTestCase(APITestCase):
         response_data = self.assertJSONResponse(response, 200)
 
         expected_data = [
-            {"id": self.round_1.pk, "name": 1},
-            {"id": self.round_2.pk, "name": 2},
-            {"id": self.round_4.pk, "name": 4},
+            {"value": self.round_1.pk, "label": 1, "campaign_id": str(self.campaign.id)},
+            {"value": self.round_2.pk, "label": 2, "campaign_id": str(self.campaign.id)},
+            {"value": self.round_4.pk, "label": 4, "campaign_id": str(self.campaign.id)},
         ]
         self.assertEqual(response_data, expected_data)
 
@@ -772,13 +772,13 @@ class BudgetCampaignViewSetTestCase(APITestCase):
         response_data = self.assertJSONResponse(response, 200)
 
         expected_data = {
-            "countries": [{"id": self.campaign.country.id, "name": "ANGOLA"}],
+            "countries": [{"value": self.campaign.country.id, "label": "ANGOLA"}],
             "campaigns": [
-                {"id": str(self.campaign.id), "name": "test campaign", "country_id": self.campaign.country.id}
+                {"value": str(self.campaign.id), "label": "test campaign", "country_id": self.campaign.country.id}
             ],
             "rounds": [
                 # Only round 4 should be available.
-                {"id": self.round_4.id, "name": 4, "campaign_id": str(self.campaign.id)},
+                {"value": self.round_4.id, "label": 4, "campaign_id": str(self.campaign.id)},
             ],
         }
         self.assertEqual(response_data, expected_data)

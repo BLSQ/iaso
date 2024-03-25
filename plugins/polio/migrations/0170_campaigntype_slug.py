@@ -11,6 +11,13 @@ def set_slugs(apps, schema_editor):
         ct.save()
 
 
+def unset_slugs(apps, schema_editor):
+    campaigntypes = apps.get_model("polio", "CampaignType").objects.all()
+    for ct in campaigntypes:
+        ct.slug = ""
+        ct.save()
+
+
 class Migration(migrations.Migration):
     dependencies = [
         ("polio", "0169_auto_20240306_1327"),
@@ -22,5 +29,5 @@ class Migration(migrations.Migration):
             name="slug",
             field=models.SlugField(blank=True, max_length=100, unique=False),
         ),
-        migrations.RunPython(set_slugs),
+        migrations.RunPython(set_slugs, unset_slugs),
     ]

@@ -505,6 +505,16 @@ class InstancesAPITestCase(APITestCase):
 
         self.assertValidInstanceListData(response.json(), 0)
 
+    def test_instance_unknown_form_id(self):
+        """GET /instances/?form_id=form_id"""
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/instances/?csv=true&form_ids=99999")
+
+        self.assertJSONResponse(response, 404)
+        response = self.client.get("/api/instances/?csv=true&form_id=99999")
+
+        self.assertJSONResponse(response, 404)
+
     def test_instance_list_by_form_id_ok_soft_deleted(self):
         """GET /instances/?form_id=form_id"""
 

@@ -14,10 +14,8 @@ import { EditIconButton } from '../../../../../../../hat/assets/js/apps/Iaso/com
 import MESSAGES from '../messages';
 import { Budget } from '../types';
 import { MultiSelect } from '../../../components/Inputs/MultiSelect';
-import {
-    useGetAvailableRounds,
-    useEditBudgetProcess,
-} from '../hooks/api/useEditBudgetProcess';
+import { useEditBudgetProcess } from '../hooks/api/useEditBudgetProcess';
+import { useGetAvailableRoundsForBudgetProcess } from '../hooks/api/useGetBudgetProcessAvailableRounds';
 
 type Props = {
     isOpen: boolean;
@@ -33,7 +31,10 @@ const EditBudgetProcessModal: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
 
     const { data: availableRounds, isFetching: isFetchingAvailableRounds } =
-        useGetAvailableRounds(budgetProcess.campaign_id, budgetProcess.id);
+        useGetAvailableRoundsForBudgetProcess(
+            budgetProcess.campaign_id,
+            budgetProcess.id,
+        );
 
     const { mutate: confirm } = useEditBudgetProcess();
     // const schema = useNotificationSchema();

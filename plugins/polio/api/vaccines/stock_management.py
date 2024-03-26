@@ -550,9 +550,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
             results.append(
                 {
                     "date": report.destruction_report_date,
-                    "action": f"{report.action} ({report.lot_numbers})"
-                    if len(report.action) > 0
-                    else f"Stock Destruction ({report.lot_numbers})",
+                    "action": f"Destruction report {report.action}",
                     "vials_in": None,
                     "doses_in": None,
                     "vials_out": report.unusable_vials_destroyed or 0,

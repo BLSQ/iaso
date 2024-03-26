@@ -1,6 +1,7 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Box } from '@mui/material';
 import { Field, FormikProvider, useFormik } from 'formik';
+
 import {
     AddButton,
     ConfirmCancelModal,
@@ -15,7 +16,7 @@ import { Options } from '../types';
 import { SingleSelect } from '../../../components/Inputs/SingleSelect';
 import { useAvailableRoundsDependentDropdowns } from '../hooks/api/useGetBudgetProcessAvailableRounds';
 import { useCreateBudgetProcess } from '../hooks/api/useCreateBudgetProcess';
-import { useNotificationSchema } from './validation';
+import { useCreateBudgetProcessSchema } from './validation';
 
 type Props = {
     isOpen: boolean;
@@ -32,18 +33,16 @@ const CreateBudgetProcessModal: FunctionComponent<Props> = ({
         useAvailableRoundsDependentDropdowns();
 
     const { mutate: confirm } = useCreateBudgetProcess();
-    const schema = useNotificationSchema();
+    const schema = useCreateBudgetProcessSchema();
     const formik = useFormik({
-        initialValues: {
-            country: '',
-            campaign: '',
-            rounds: '',
-        },
+        initialValues: { country: '', campaign: '', rounds: '' },
         validationSchema: schema,
         onSubmit: async values => {
             confirm(values);
         },
     });
+    const allowConfirm =
+        !formik.isSubmitting && formik.isValid && Boolean(formik.values.rounds);
 
     // Filter "Campaign" values on "Country" change.
     const [currentCampaignOptions, setCampaignOptions] = useState<Options[]>(
@@ -86,6 +85,7 @@ const CreateBudgetProcessModal: FunctionComponent<Props> = ({
                         onConfirm={() => formik.handleSubmit()}
                         onCancel={() => null}
                         confirmMessage={MESSAGES.save}
+                        allowConfirm={allowConfirm}
                         cancelMessage={MESSAGES.cancel}
                     >
                         <Box mb={2} mt={2}>

@@ -126,3 +126,16 @@ requests-toolbelt==0.9.1
 # ------------------------------------------------------------------------------
 ipython==8.18.1  # https://github.com/ipython/ipython/tags
 django-extensions==3.2.3  # https://github.com/django-extensions/django-extensions/tags
+
+# Trypelim plugin.
+# ------------------------------------------------------------------------------
+django-pg-utils==0.1.5
+django-rq==2.8.1
+django-ses==2.6.1
+gpxpy==1.4.0
+rq==1.15.1
+rq-scheduler==0.13
+snaql==0.4.2
+tsp-solver2==0.4.1
+django-querycount==0.8.3 # check workzones, many calls!
+# https://github.com/bradmontgomery/django-querycount

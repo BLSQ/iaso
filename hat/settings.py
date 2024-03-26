@@ -17,6 +17,7 @@ import os
 import re
 import sys
 import urllib.parse
+import importlib
 from datetime import timedelta
 from typing import Any, Dict
 from urllib.parse import urlparse
@@ -206,7 +207,22 @@ COMMENTS_APP = "iaso"
 
 print("Enabled plugins:", PLUGINS, end=" ")
 for plugin_name in PLUGINS:
-    INSTALLED_APPS.append(f"plugins.{plugin_name}")
+    try:
+        plugin_settings = importlib.import_module(f"plugins.{plugin_name}.plugin_settings")
+
+        if hasattr(plugin_settings, "INSTALLED_APPS"):
+            INSTALLED_APPS.extend(plugin_settings.INSTALLED_APPS)
+        else:
+            print(f"WARNING: found plugin_settings.py for plugin {plugin_name}, but it doesn't contain INSTALLED_APPS")
+
+        if hasattr(plugin_settings, "CONSTANTS"):
+            # Inject CONSTANTS dictionary into the Django settings
+            for constant, value in plugin_settings.CONSTANTS.items():
+                globals()[constant] = value
+        else:
+            print(f"WARNING: found plugin_settings.py for plugin {plugin_name}, but it doesn't contain CONSTANTS")
+    except ModuleNotFoundError:  # Use "simple" plugin system if no settings file found
+        INSTALLED_APPS.append(f"plugins.{plugin_name}")
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -223,6 +239,7 @@ MIDDLEWARE += [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "hat.middleware.ThreadLocalMiddleware",
 ]
 
 ROOT_URLCONF = "hat.urls"
@@ -238,7 +255,11 @@ if ENABLE_CORS:
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": ["./hat/templates", "./django_sql_dashboard_export/templates"],
+        "DIRS": [
+            "./hat/templates",
+            "./django_sql_dashboard_export/templates",
+            os.path.join(BASE_DIR, "plugins/trypelim/templates"),
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -451,6 +472,8 @@ else:
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "iaso/static"),
     os.path.join(BASE_DIR, "hat/assets/webpack"),
+    os.path.join(BASE_DIR, "plugins/trypelim/assets/webpack"),
+    os.path.join(BASE_DIR, "plugins/trypelim/dashboard/static"),
 )
 
 # Javascript/CSS Files:
@@ -464,7 +487,17 @@ WEBPACK_LOADER = {
             if (DEBUG and not os.environ.get("TEST_PROD", None) and not USE_S3)
             else "webpack-stats-prod.json",
         ),
-    }
+    },
+    "TRYPELIM_OLD": {
+        "BUNDLE_DIR_NAME": "",  # used in prod, same as default, set to root
+        "STATS_FILE": os.path.join(
+            BASE_DIR,
+            "plugins/trypelim/assets/webpack",
+            "webpack-stats.json"
+            if (DEBUG and not os.environ.get("TEST_PROD", None) and not USE_S3)
+            else "webpack-stats-prod.json",
+        ),
+    },
 }
 
 AUTH_PROFILE_MODULE = "hat.users.Profile"
@@ -527,6 +560,7 @@ if SENTRY_URL:
         integrations=[DjangoIntegration()],
         send_default_pii=True,
         release=VERSION,
+        ignore_errors=["django.security.DisallowedHost"],
     )
 
 # Workers configuration

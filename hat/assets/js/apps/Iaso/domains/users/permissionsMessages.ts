@@ -395,9 +395,17 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'trypelim.permissions.stats_graphs',
         defaultMessage: 'Graphs',
     },
+    iaso_trypelim_stats_reports: {
+        id: 'trypelim.permissions.stats_reports',
+        defaultMessage: 'Reporst (Trypelim)',
+    },
     iaso_trypelim_management_health_structures: {
         id: 'trypelim.permissions.management_health_structures',
         defaultMessage: 'Health structures',
+    },
+    iaso_trypelim_management_teams: {
+        id: 'trypelim.permissions.management_teams',
+        defaultMessage: 'Teams (Trypelim)',
     },
     iaso_trypelim_lab: {
         id: 'trypelim.permissions.lab',

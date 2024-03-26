@@ -234,47 +234,47 @@ const menuItems = (
                 },
             ],
         },
-        {
-            label: formatMessage(MESSAGES.storages),
-            key: 'storages',
-            permissions: paths.storagesPath.permissions,
-            icon: props => <StorageIcon {...props} />,
-        },
-        {
-            label: formatMessage(MESSAGES.payments),
-            key: 'payments',
-            dev: true,
-            icon: props => <PaymentsIcon {...props} />,
-            subMenu: [
-                {
-                    label: formatMessage(MESSAGES.potentialPayments),
-                    permissions: paths.potentialPaymentsPath.permissions,
-                    key: 'potential',
-                    dev: true,
-                    icon: props => <PriceCheckIcon {...props} />,
-                },
-                {
-                    label: formatMessage(MESSAGES.lots),
-                    permissions: paths.potentialPaymentsPath.permissions,
-                    key: 'lots',
-                    dev: true,
-                    icon: props => <AccountBalanceIcon {...props} />,
-                },
-            ],
-        },
-        {
-            label: formatMessage(MESSAGES.planning),
-            key: 'planning',
-            icon: props => <AssignmentIcon {...props} />,
-            subMenu: [
-                {
-                    label: formatMessage(MESSAGES.planningList),
-                    permissions: paths.planningPath.permissions,
-                    key: 'list',
-                    icon: props => <FormatListBulleted {...props} />,
-                },
-            ],
-        },
+        // {
+        //     label: formatMessage(MESSAGES.storages),
+        //     key: 'storages',
+        //     permissions: paths.storagesPath.permissions,
+        //     icon: props => <StorageIcon {...props} />,
+        // },
+        // {
+        //     label: formatMessage(MESSAGES.payments),
+        //     key: 'payments',
+        //     dev: true,
+        //     icon: props => <PaymentsIcon {...props} />,
+        //     subMenu: [
+        //         {
+        //             label: formatMessage(MESSAGES.potentialPayments),
+        //             permissions: paths.potentialPaymentsPath.permissions,
+        //             key: 'potential',
+        //             dev: true,
+        //             icon: props => <PriceCheckIcon {...props} />,
+        //         },
+        //         {
+        //             label: formatMessage(MESSAGES.lots),
+        //             permissions: paths.potentialPaymentsPath.permissions,
+        //             key: 'lots',
+        //             dev: true,
+        //             icon: props => <AccountBalanceIcon {...props} />,
+        //         },
+        //     ],
+        // },
+        // {
+        //     label: formatMessage(MESSAGES.planning),
+        //     key: 'planning',
+        //     icon: props => <AssignmentIcon {...props} />,
+        //     subMenu: [
+        //         {
+        //             label: formatMessage(MESSAGES.planningList),
+        //             permissions: paths.planningPath.permissions,
+        //             key: 'list',
+        //             icon: props => <FormatListBulleted {...props} />,
+        //         },
+        //     ],
+        // },
         {
             label: formatMessage(MESSAGES.config),
             key: 'settings',
@@ -286,24 +286,24 @@ const menuItems = (
                     permissions: paths.tasksPath.permissions,
                     icon: props => <AssignmentRoundedIcon {...props} />,
                 },
-                {
-                    label: formatMessage(MESSAGES.monitoring),
-                    key: 'devices',
-                    permissions: paths.devicesPath.permissions,
-                    icon: props => <ImportantDevicesRoundedIcon {...props} />,
-                },
+                // {
+                //     label: formatMessage(MESSAGES.monitoring),
+                //     key: 'devices',
+                //     permissions: paths.devicesPath.permissions,
+                //     icon: props => <ImportantDevicesRoundedIcon {...props} />,
+                // },
                 {
                     label: formatMessage(MESSAGES.projects),
                     key: 'projects',
                     permissions: paths.projectsPath.permissions,
                     icon: props => <PhonelinkSetupIcon {...props} />,
                 },
-                {
-                    label: formatMessage(MESSAGES.modules),
-                    key: 'modules',
-                    permissions: paths.modulesPath.permissions,
-                    icon: props => <ViewModuleIcon {...props} />,
-                },
+                // {
+                //     label: formatMessage(MESSAGES.modules),
+                //     key: 'modules',
+                //     permissions: paths.modulesPath.permissions,
+                //     icon: props => <ViewModuleIcon {...props} />,
+                // },
                 {
                     label: formatMessage(MESSAGES.users),
                     key: 'users',
@@ -316,12 +316,12 @@ const menuItems = (
                     permissions: paths.userRolesPath.permissions,
                     icon: props => <GroupsIcon {...props} />,
                 },
-                {
-                    label: formatMessage(MESSAGES.teams),
-                    permissions: paths.teamsPath.permissions,
-                    key: 'teams',
-                    icon: props => <GroupIcon {...props} />,
-                },
+                // {
+                //     label: formatMessage(MESSAGES.teams),
+                //     permissions: paths.teamsPath.permissions,
+                //     key: 'teams',
+                //     icon: props => <GroupIcon {...props} />,
+                // },
             ],
         },
     ];

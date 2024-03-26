@@ -12,6 +12,7 @@ const queryParamsMap = new Map([
     ['groupId', 'org_unit_group_id'],
     ['orgunitValidationStatus', 'org_unit_validation_status'],
     ['teamsIds', 'team_ids'],
+    ['userIds', 'user_ids'],
 ]);
 
 const apiParamsKeys = ['order', 'page', 'limit', 'search', 'period'];

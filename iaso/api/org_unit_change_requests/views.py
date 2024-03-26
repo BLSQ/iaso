@@ -27,6 +27,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     filterset_class = OrgUnitChangeRequestListFilter
     ordering_fields = [
+        "id",
         "org_unit__name",
         "org_unit__org_unit_type__name",
         "groups",

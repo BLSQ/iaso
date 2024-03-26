@@ -1,7 +1,7 @@
-import React, { useState, FunctionComponent } from 'react';
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
-import { PolioCreateEditDialog as CreateEditDialog } from '../../../Campaigns/MainDialog/CreateEditDialog';
+import React, { FunctionComponent, useState } from 'react';
 import MESSAGES from '../../../../constants/messages';
+import { PolioCreateEditDialog as CreateEditDialog } from '../../../Campaigns/MainDialog/CreateEditDialog';
 
 type Props = {
     campaign: {

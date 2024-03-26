@@ -246,8 +246,8 @@ export type RoundDateHistoryEntry = {
 
 export type Round = {
     id: number;
-    started_at: string;
-    ended_at: string;
+    started_at: Nullable<string>;
+    ended_at: Nullable<string>;
     mop_up_started_at: Nullable<string>; // date
     mop_up_ended_at: Nullable<string>; // date
     im_started_at: Nullable<string>; // date
@@ -442,6 +442,7 @@ export const Sides = { left: 'left', right: 'right' };
 export type CampaignType = {
     id: number;
     name: string;
+    slug: string;
 };
 
 type NestedRound = {

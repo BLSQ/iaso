@@ -26,7 +26,7 @@ from iaso.gpkg import org_units_to_gpkg_bytes
 from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form, Instance, DataSource
 from iaso.utils import geojson_queryset
 from hat.menupermissions import models as permission
-from ..utils.models.common import get_creator_name
+from ..utils.models.common import get_creator_name, get_org_unit_parents_ref
 
 
 # noinspection PyMethodMayBeStatic
@@ -242,7 +242,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 columns.append({"title": group.name, "width": 20})
 
             parent_field_names = ["parent__" * i + "name" for i in range(1, 5)]
-            parent_field_names.extend(["parent__" * i + "source_ref" for i in range(1, 5)])
+            parent_source_ref_name = ["parent__" * i + "source_ref" for i in range(1, 5)]
+            parent_field_ids = ["parent__" * i + "id" for i in range(1, 5)]
 
             queryset = queryset.values(
                 "id",
@@ -258,6 +259,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 "creator__last_name",
                 "location",
                 *parent_field_names,
+                *parent_source_ref_name,
+                *parent_field_ids,
                 *counts_by_forms,
                 "instances_count",
                 "opening_date",
@@ -277,6 +280,12 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     org_unit.get("creator__first_name", None),
                     org_unit.get("creator__last_name", None),
                 )
+                source_ref = org_unit.get("source_ref") if org_unit.get("source_ref") else f"iaso#{org_unit.get('id')}"
+
+                parents_source_ref = [
+                    get_org_unit_parents_ref(field_name, org_unit, parent_source_ref_name, parent_field_ids)
+                    for field_name in parent_source_ref_name
+                ]
 
                 org_unit_values = [
                     org_unit.get("id"),
@@ -295,8 +304,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     creator,
                     org_unit.get("version__data_source__name"),
                     org_unit.get("validation_status"),
-                    org_unit.get("source_ref"),
+                    source_ref,
                     *[org_unit.get(field_name) for field_name in parent_field_names],
+                    *parents_source_ref,
                     *[org_unit.get(count_field_name) for count_field_name in counts_by_forms],
                     org_unit.get("instances_count"),
                     *[int(org_unit.get("id") in group.org_units__ids) for group in groups],

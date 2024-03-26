@@ -12,7 +12,6 @@ import {
 
 import { Box, TableCell, TableSortLabel } from '@mui/material';
 
-import { withRouter } from 'react-router';
 import { replace } from 'react-router-redux';
 import { genUrl } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import { Router } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
@@ -33,12 +32,12 @@ type Order = {
     desc: boolean;
 };
 
-const HeadStaticFieldsCells: FunctionComponent<Props> = ({
+export const HeadStaticFieldsCells: FunctionComponent<Props> = ({
     orders,
     router,
     isPdf,
 }) => {
-    const classes = useStyles();
+    const classes: Record<string, any> = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     const shiftKeyIsDown = useKeyPressListener('Shift');
@@ -131,7 +130,3 @@ const HeadStaticFieldsCells: FunctionComponent<Props> = ({
         </>
     );
 };
-
-const wrappedHeadStaticFieldsCells = withRouter(HeadStaticFieldsCells);
-export { wrappedHeadStaticFieldsCells as HeadStaticFieldsCells };
-

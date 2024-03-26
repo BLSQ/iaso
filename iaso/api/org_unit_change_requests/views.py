@@ -29,6 +29,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
     ordering_fields = [
         "id",
         "org_unit__name",
+        "org_unit__parent__name",
         "org_unit__org_unit_type__name",
         "groups",
         "created_at",

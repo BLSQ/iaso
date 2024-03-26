@@ -146,7 +146,6 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
         },
         [dispatch, params],
     );
-    console.log('showTooltip', showTooltip);
     if (isFetchingChildren)
         return (
             <Box position="relative" height={500}>

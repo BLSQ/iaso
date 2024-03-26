@@ -15,7 +15,7 @@ import { useSafeIntl, Paginated } from 'bluesquare-components';
 import classnames from 'classnames';
 import WidgetPaperComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/papers/WidgetPaperComponent';
 import MESSAGES from '../../../constants/messages';
-import { BudgetStep, Categories, Transition } from '../types';
+import { BudgetStep, Categories, Round, Transition } from '../types';
 import { CreateBudgetStep } from '../CreateBudgetStep/CreateBudgetStep';
 import { CreateOverrideStep } from '../CreateBudgetStep/CreateOverrideStep';
 import { BudgetTimeline } from './BudgetTimeline';
@@ -36,7 +36,7 @@ type Params = {
 
 type Props = {
     status: string;
-    roundNumbers: number[];
+    rounds: Round[];
     nextSteps?: NextSteps;
     categories?: Categories;
     budgetDetails?: Paginated<BudgetStep>;
@@ -71,7 +71,7 @@ const useStyles = makeStyles(theme => ({
 
 export const BudgetDetailsInfos: FunctionComponent<Props> = ({
     status = '--',
-    roundNumbers = [],
+    rounds = [],
     nextSteps,
     categories = [],
     budgetDetails,
@@ -99,7 +99,7 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
 
     return (
         <WidgetPaperComponent
-            title={`${formatRoundNumbers(roundNumbers)} - ${formatMessage(
+            title={`${formatRoundNumbers(rounds)} - ${formatMessage(
                 MESSAGES.budgetStatus,
             )}`}
             className={classes.paper}

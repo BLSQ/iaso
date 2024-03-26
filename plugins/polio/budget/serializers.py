@@ -133,6 +133,15 @@ class BudgetProcessWriteSerializer(serializers.ModelSerializer):
         return budget_process
 
 
+class BudgetProcessNestedRoundSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Round
+        fields = [
+            "id",
+            "number",
+        ]
+
+
 class BudgetProcessSerializer(DynamicFieldsModelSerializer, serializers.ModelSerializer):
     class Meta:
         model = BudgetProcess
@@ -142,7 +151,7 @@ class BudgetProcessSerializer(DynamicFieldsModelSerializer, serializers.ModelSer
             "campaign_id",  # Added via `annotate`.
             "obr_name",  # Added via `annotate`.
             "country_name",  # Added via `annotate`.
-            "round_numbers",  # Added via `annotate`.
+            "rounds",
             "current_state",
             "updated_at",
             "possible_states",
@@ -156,7 +165,7 @@ class BudgetProcessSerializer(DynamicFieldsModelSerializer, serializers.ModelSer
             "campaign_id",
             "obr_name",
             "country_name",
-            "round_numbers",
+            "rounds",
             "current_state",
             "updated_at",
         ]
@@ -164,7 +173,7 @@ class BudgetProcessSerializer(DynamicFieldsModelSerializer, serializers.ModelSer
     campaign_id = serializers.UUIDField()
     obr_name = serializers.CharField()
     country_name = serializers.CharField()
-    round_numbers = serializers.ListField()
+    rounds = BudgetProcessNestedRoundSerializer(many=True)
     current_state = serializers.SerializerMethodField()
     possible_states = serializers.SerializerMethodField()
     possible_transitions = serializers.SerializerMethodField()

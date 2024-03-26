@@ -39,7 +39,7 @@ const DeleteBudgetProcessModal: FunctionComponent<Props> = ({
         >
             <ul>
                 <li>{budgetProcess.obr_name}</li>
-                <li>{formatRoundNumbers(budgetProcess.round_numbers!)}</li>
+                <li>{formatRoundNumbers(budgetProcess.rounds!)}</li>
             </ul>
         </ConfirmCancelModal>
     );

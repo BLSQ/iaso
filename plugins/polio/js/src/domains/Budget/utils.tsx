@@ -9,7 +9,7 @@ import {
     Optional,
 } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { Team } from '../../../../../../hat/assets/js/apps/Iaso/domains/teams/types/team';
-import { FileWithName, LinkWithAlias } from './types';
+import { FileWithName, LinkWithAlias, Round } from './types';
 
 export const formatUserName = (profile: Profile): string => {
     return profile?.first_name && profile?.last_name
@@ -21,8 +21,8 @@ export const formatRoundNumber = (roundNumber: number | string): string => {
     return `Round ${roundNumber}`;
 };
 
-export const formatRoundNumbers = (roundNumbers: number[]): string => {
-    return roundNumbers.map(i => formatRoundNumber(i)).join(', ');
+export const formatRoundNumbers = (roundNumbers: Round[]): string => {
+    return roundNumbers.map(i => formatRoundNumber(i.number)).join(', ');
 };
 
 export const formatTargetTeams = (

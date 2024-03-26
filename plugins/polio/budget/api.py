@@ -81,8 +81,8 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
                 campaign_id=F("rounds__campaign_id"),
                 obr_name=F("rounds__campaign__obr_name"),
                 country_name=F("rounds__campaign__country__name"),
-                round_numbers=ArrayAgg("rounds__number", ordering="rounds__number"),
             )
+            .prefetch_related("rounds")
         )
         return budget_processes
 

@@ -184,7 +184,7 @@ class BudgetCampaignViewSetTestCase(APITestCase):
         """
         self.client.force_login(self.user)
 
-        with self.assertNumQueries(8):
+        with self.assertNumQueries(9):
             response = self.client.get("/api/polio/budget/")
             response_data = self.assertJSONResponse(response, 200)
 
@@ -198,10 +198,12 @@ class BudgetCampaignViewSetTestCase(APITestCase):
             self.assertEqual(budget_process["obr_name"], "test campaign")
             self.assertEqual(budget_process["country_name"], "ANGOLA")
             self.assertEqual(budget_process["current_state"], {"key": "-", "label": "-"})
-            self.assertIn("round_numbers", budget_process)
+            self.assertIn("rounds", budget_process)
 
-        self.assertEqual(budget_processes[0]["round_numbers"], [1, 2])
-        self.assertEqual(budget_processes[1]["round_numbers"], [3])
+        self.assertEqual(
+            budget_processes[0]["rounds"], [{"id": self.round_1.pk, "number": 1}, {"id": self.round_2.pk, "number": 2}]
+        )
+        self.assertEqual(budget_processes[1]["rounds"], [{"id": self.round_3.pk, "number": 3}])
 
     def test_simple_get_list_with_all_fields(self):
         """
@@ -305,7 +307,7 @@ class BudgetCampaignViewSetTestCase(APITestCase):
             self.assertEqual(budget_process["next_transitions"], expected_next_transitions)
             self.assertEqual(budget_process["possible_transitions"], expected_possible_transitions)
             self.assertEqual(budget_process["timeline"], expected_timeline)
-            self.assertIn("round_numbers", budget_process)
+            self.assertIn("rounds", budget_process)
 
     def test_list_select_fields(self):
         """

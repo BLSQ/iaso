@@ -15,6 +15,7 @@ import MESSAGES from '../messages';
 import { Budget } from '../types';
 import { MultiSelect } from '../../../components/Inputs/MultiSelect';
 import { useEditBudgetProcess } from '../hooks/api/useEditBudgetProcess';
+import { useEditBudgetProcessSchema } from './validation';
 import { useGetAvailableRoundsForBudgetProcess } from '../hooks/api/useGetBudgetProcessAvailableRounds';
 
 type Props = {
@@ -37,21 +38,24 @@ const EditBudgetProcessModal: FunctionComponent<Props> = ({
         );
 
     const { mutate: confirm } = useEditBudgetProcess();
-    // const schema = useNotificationSchema();
+    const schema = useEditBudgetProcessSchema();
     const formik = useFormik({
         initialValues: {
             rounds: budgetProcess?.rounds?.map(round => round.id),
         },
         enableReinitialize: true,
         validateOnBlur: true,
-        // validationSchema: schema,
+        validationSchema: schema,
         onSubmit: async values => {
             confirm({ id: budgetProcess.id, rounds: values.rounds });
         },
     });
     const isFormChanged = !isEqual(formik.values, formik.initialValues);
     const allowConfirm =
-        !formik.isSubmitting && formik.isValid && isFormChanged;
+        !formik.isSubmitting &&
+        formik.isValid &&
+        isFormChanged &&
+        Boolean(formik.values.rounds);
 
     return (
         <>

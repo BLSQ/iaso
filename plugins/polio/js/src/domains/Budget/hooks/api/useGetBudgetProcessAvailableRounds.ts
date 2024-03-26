@@ -12,24 +12,24 @@ export const useAvailableRoundsDependentDropdowns = (): UseQueryResult<
     Error
 > => {
     const select = useCallback((data: DropdownOptions) => {
-        if (!data)
-            return {
-                countries: [],
-                campaigns: [],
-                rounds: [],
-            };
-        const formattedRounds = data.rounds.map((round: OptionsRounds) => {
-            return {
-                value: round.value,
-                label: formatRoundNumber(round.label),
-                campaign_id: round.campaign_id,
-            };
-        });
-        return {
-            countries: data.countries,
-            campaigns: data.campaigns,
-            rounds: formattedRounds,
+        const result: DropdownOptions = {
+            countries: [],
+            campaigns: [],
+            rounds: [],
         };
+        if (data.rounds !== undefined) {
+            const formattedRounds = data.rounds.map((round: OptionsRounds) => {
+                return {
+                    value: round.value,
+                    label: formatRoundNumber(round.label),
+                    campaign_id: round.campaign_id,
+                };
+            });
+            result.countries = data.countries;
+            result.campaigns = data.campaigns;
+            result.rounds = formattedRounds;
+        }
+        return result;
     }, []);
 
     return useSnackQuery({
@@ -48,14 +48,17 @@ export const useGetAvailableRoundsForBudgetProcess = (
     budgetProcessId: number,
 ): UseQueryResult<OptionsRounds[], Error> => {
     const select = useCallback((data: OptionsRounds[]) => {
-        if (!data) return [];
-        return data.map((round: OptionsRounds) => {
-            return {
-                value: round.value,
-                label: formatRoundNumber(round.label),
-                campaign_id: round.campaign_id,
-            };
-        });
+        let result: OptionsRounds[] = [];
+        if (Array.isArray(data)) {
+            result = data.map((round: OptionsRounds) => {
+                return {
+                    value: round.value,
+                    label: formatRoundNumber(round.label),
+                    campaign_id: round.campaign_id,
+                };
+            });
+        }
+        return result;
     }, []);
 
     return useSnackQuery({

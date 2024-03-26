@@ -9,8 +9,6 @@ export type InitialUserUtils = {
     // eslint-disable-next-line no-unused-vars
     setFieldErrors: (fieldName, fieldError) => void;
     // eslint-disable-next-line no-unused-vars
-    setFieldValue: (fieldName, fieldError) => void;
-    // eslint-disable-next-line no-unused-vars
     setFormFieldsValue: (fieldName, fieldError, setFieldsValue) => void;
 };
 
@@ -140,56 +138,12 @@ export const useInitialUser = (
         },
         [user, userRoles],
     );
-    const setFieldValue = useCallback(
-        (fieldName, fieldValue) => {
-            const newUser = {
-                ...user,
-            };
-
-            if (fieldName === 'phone_number_obj') {
-                newUser.phone_number = {
-                    value: fieldValue.phone_number,
-                    errors: [],
-                };
-                newUser.country_code = {
-                    value: fieldValue.country_code?.countryCode,
-                    errors: [],
-                };
-            } else {
-                newUser[fieldName] = {
-                    value: fieldValue,
-                    errors: [],
-                };
-            }
-
-            if (fieldName === 'user_roles') {
-                const userRolesPermissions: UserRole[] = (userRoles || [])
-                    .filter(userRole => fieldValue.includes(userRole.value))
-                    .map(userRole => {
-                        const role = {
-                            ...(userRole.original as UserRole),
-                            permissions: userRole.original?.permissions.map(
-                                perm => perm.codename,
-                            ),
-                        };
-                        return role;
-                    });
-                newUser.user_roles_permissions = {
-                    value: userRolesPermissions,
-                    errors: [],
-                };
-            }
-
-            setUser(newUser);
-        },
-        [user, userRoles],
-    );
 
     useEffect(() => {
         setUser(initialUser);
     }, [initialUser]);
 
     return useMemo(() => {
-        return { user, setFormFieldsValue, setFieldValue, setFieldErrors };
-    }, [setFieldErrors, setFieldValue, setFormFieldsValue, user]);
+        return { user, setFormFieldsValue, setFieldErrors };
+    }, [setFieldErrors, setFormFieldsValue, user]);
 };

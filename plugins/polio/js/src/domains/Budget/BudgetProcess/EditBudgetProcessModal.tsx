@@ -14,7 +14,10 @@ import { EditIconButton } from '../../../../../../../hat/assets/js/apps/Iaso/com
 import MESSAGES from '../messages';
 import { Budget } from '../types';
 import { MultiSelect } from '../../../components/Inputs/MultiSelect';
-import { useGetAvailableRounds } from '../hooks/api/useEditBudgetProcess';
+import {
+    useGetAvailableRounds,
+    useEditBudgetProcess,
+} from '../hooks/api/useEditBudgetProcess';
 
 type Props = {
     isOpen: boolean;
@@ -32,7 +35,7 @@ const EditBudgetProcessModal: FunctionComponent<Props> = ({
     const { data: availableRounds, isFetching: isFetchingAvailableRounds } =
         useGetAvailableRounds(budgetProcess.campaign_id, budgetProcess.id);
 
-    // const { mutate: confirm } = useEditBudgetProcess();
+    const { mutate: confirm } = useEditBudgetProcess();
     // const schema = useNotificationSchema();
     const formik = useFormik({
         initialValues: {
@@ -42,8 +45,7 @@ const EditBudgetProcessModal: FunctionComponent<Props> = ({
         validateOnBlur: true,
         // validationSchema: schema,
         onSubmit: async values => {
-            console.log('validate', values);
-            // confirm(values);
+            confirm({ id: budgetProcess.id, rounds: values.rounds });
         },
     });
     const isFormChanged = !isEqual(formik.values, formik.initialValues);

@@ -101,7 +101,7 @@ export const RoundPopper: FunctionComponent<Props> = ({
                         </Grid>
 
                         <Grid item sm={6} container justifyContent="flex-end">
-                            {formatMessage(MESSAGES.target_population)}:
+                            {formatMessage(MESSAGES.targetPopulation)}:
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-start">
                             {formatNumber(round.target_population)}

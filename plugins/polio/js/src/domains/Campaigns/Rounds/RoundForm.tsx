@@ -36,7 +36,7 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
                     />
                     <Box mt={2}>
                         <Field
-                            label={formatMessage(MESSAGES.target_population)}
+                            label={formatMessage(MESSAGES.targetPopulation)}
                             name={`rounds[${roundIndex}].target_population`}
                             component={NumberInput}
                         />

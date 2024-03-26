@@ -13,7 +13,7 @@ import MESSAGES from '../messages';
 import { MultiSelect } from '../../../components/Inputs/MultiSelect';
 import { Options } from '../types';
 import { SingleSelect } from '../../../components/Inputs/SingleSelect';
-import { useAvailableRoundsDependentDropdowns } from '../hooks/api/useAvailableRoundsDependentDropdowns';
+import { useAvailableRoundsDependentDropdowns } from '../hooks/api/useGetBudgetProcessAvailableRounds';
 import { useCreateBudgetProcess } from '../hooks/api/useCreateBudgetProcess';
 import { useNotificationSchema } from './validation';
 

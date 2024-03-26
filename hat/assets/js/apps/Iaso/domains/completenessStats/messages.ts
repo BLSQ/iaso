@@ -152,6 +152,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Teams',
         id: 'iaso.label.teams',
     },
+    user: {
+        id: 'iaso.label.user',
+        defaultMessage: 'User',
+    },
 });
 
 export default MESSAGES;

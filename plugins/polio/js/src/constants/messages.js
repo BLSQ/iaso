@@ -2496,6 +2496,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.successful',
         defaultMessage: 'Saved successfully',
     },
+    evaluation: {
+        id: 'iaso.polio.label.evaluation',
+        defaultMessage: 'Evaluation',
+    },
 });
 
 export default MESSAGES;

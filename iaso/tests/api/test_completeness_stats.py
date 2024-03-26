@@ -8,6 +8,7 @@ from typing import Any
 from django.contrib.auth.models import User, Permission
 
 from iaso.models import Account, Form, OrgUnitType, OrgUnit, Instance
+from iaso.models.base import Profile
 from iaso.models.microplanning import Team
 from iaso.test import APITestCase
 
@@ -143,9 +144,13 @@ class CompletenessStatsAPITestCase(APITestCase):
         cls.instance_3 = cls.create_form_instance(form=cls.form_hs_4, org_unit=cls.as_abb_ou)
 
         cls.user_1 = User.objects.create(username="test 1")
+        Profile.objects.create(user=cls.user_1, account=cls.account)
         cls.user_2 = User.objects.create(username="test 2")
+        Profile.objects.create(user=cls.user_2, account=cls.account)
         cls.user_3 = User.objects.create(username="test 3")
+        Profile.objects.create(user=cls.user_3, account=cls.account)
         cls.user_4 = User.objects.create(username="test 4")
+        Profile.objects.create(user=cls.user_4, account=cls.account)
 
         cls.team_1 = Team.objects.create(
             name="team 1", description="first team", manager=cls.user_1, project=cls.project_1, path=1
@@ -557,6 +562,46 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.instance_3.refresh_from_db()
 
         response = self.client.get(f"/api/v2/completeness_stats/?team_ids={self.team_1.id},{self.team_2.id}")
+        json = response.json()
+        for result in json["results"]:
+            forms_stats = result["form_stats"]
+            self.assertEqual(forms_stats[f"form_{self.form_hs_1.id}"]["total_instances"], 1)
+            self.assertEqual(forms_stats[f"form_{self.form_hs_4.id}"]["total_instances"], 2)
+
+    def test_filter_by_user(self):
+        """Filtering by user"""
+        self.client.force_authenticate(self.user)
+
+        self.instance_1.created_by = self.user_1
+        self.instance_1.save()
+        self.instance_1.refresh_from_db()
+
+        response = self.client.get(f"/api/v2/completeness_stats/?user_ids={self.user_1.id}")
+        json = response.json()
+        for result in json["results"]:
+            forms_stats = result["form_stats"]
+            self.assertEqual(forms_stats[f"form_{self.form_hs_1.id}"]["total_instances"], 1)
+            self.assertEqual(forms_stats[f"form_{self.form_hs_2.id}"]["total_instances"], 0)
+
+    def test_filter_by_multiple_users(self):
+        """Filtering by multiple users"""
+        self.client.force_authenticate(self.user)
+
+        self.instance_1.created_by = self.user_1
+        self.instance_1.save()
+        self.instance_1.refresh_from_db()
+
+        self.instance_2.created_by = self.user_2
+        self.instance_2.save()
+        self.instance_2.refresh_from_db()
+
+        self.instance_3.created_by = self.user_4
+        self.instance_3.save()
+        self.instance_3.refresh_from_db()
+
+        response = self.client.get(
+            f"/api/v2/completeness_stats/?user_ids={self.user_1.id},{self.user_2.id}, {self.user_4.id}"
+        )
         json = response.json()
         for result in json["results"]:
             forms_stats = result["form_stats"]

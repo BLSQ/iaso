@@ -35,6 +35,7 @@
     "iaso.polio.api.vrfApiSuccess": "VRF sucessfully updated",
     "iaso.polio.badRoundNumbers": "Forms with the wrong round number",
     "iaso.polio.budget_process.modal.confirmDelete": "Do you really want to delete this budget process?",
+    "iaso.polio.budget_process.modal.edit": "Edit budget process",
     "iaso.polio.budget.label.addCampaign": "Add campaign",
     "iaso.polio.budget.label.campaign": "Campaign",
     "iaso.polio.budget.label.country": "Country",

@@ -39,7 +39,7 @@ const MESSAGES = defineMessages({
     },
     modalEditBudgetProcess: {
         id: 'iaso.polio.budget_process.modal.edit',
-        defaultMessage: 'Edit budget process?',
+        defaultMessage: 'Edit budget process',
     },
     modalWriteCancel: {
         id: 'iaso.label.cancel',

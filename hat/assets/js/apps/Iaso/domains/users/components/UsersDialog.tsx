@@ -93,7 +93,6 @@ const UserDialogComponent: FunctionComponent<Props> = ({
         isValid,
         resetForm,
         isSubmitting,
-        setSubmitting,
     } = formik;
     const saveUser = useCallback(() => {
         const currentUser: any = {};
@@ -134,14 +133,12 @@ const UserDialogComponent: FunctionComponent<Props> = ({
             initialData?.is_superuser
         ) {
             saveUser();
-            setSubmitting(false);
         } else {
             setOpenWarning(true);
         }
     }, [
         initialData?.is_superuser,
         saveUser,
-        setSubmitting,
         values?.user_permissions.value,
         values?.user_roles_permissions.value,
     ]);
@@ -155,12 +152,11 @@ const UserDialogComponent: FunctionComponent<Props> = ({
     const allowConfirm =
         isValid &&
         !fieldsConfirm &&
-        isSubmitting === false &&
+        !isSubmitting &&
         !isEqual(values, initialValues);
 
     const warningConfirm = () => {
         saveUser();
-        setSubmitting(false);
     };
 
     return (

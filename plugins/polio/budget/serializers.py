@@ -81,7 +81,7 @@ class AvailableRoundsSerializer(serializers.Serializer):
 
 class BudgetProcessWriteSerializer(serializers.ModelSerializer):
     """
-    Create a `BudgetProcess` that is linked to one (or more) `Round`(s).
+    Create or update a `BudgetProcess` that is linked to one (or more) `Round`(s).
     """
 
     created_by = UserSerializer(read_only=True)
@@ -103,15 +103,19 @@ class BudgetProcessWriteSerializer(serializers.ModelSerializer):
 
     def validate_rounds(self, submitted_rounds: list[Round]) -> list[Round]:
         request = self.context["request"]
+        is_new = self.instance is None
 
         valid_rounds_ids = Campaign.objects.filter_for_user(request.user).values_list("rounds", flat=True)
         invalid_rounds = [round for round in submitted_rounds if round.id not in valid_rounds_ids]
         if invalid_rounds:
             raise serializers.ValidationError(f"The user does not have the permissions for rounds: {invalid_rounds}.")
 
-        already_linked_rounds = [round for round in submitted_rounds if round.budget_process]
-        if already_linked_rounds:
-            raise serializers.ValidationError(f"A BudgetProcess already exists for rounds: {already_linked_rounds}.")
+        if is_new:
+            already_linked_rounds = [round for round in submitted_rounds if round.budget_process]
+            if already_linked_rounds:
+                raise serializers.ValidationError(
+                    f"A BudgetProcess already exists for rounds: {already_linked_rounds}."
+                )
 
         rounds_campaigns = {round.campaign_id for round in submitted_rounds}
         if len(rounds_campaigns) > 1:
@@ -126,10 +130,18 @@ class BudgetProcessWriteSerializer(serializers.ModelSerializer):
         validated_data["created_by"] = request.user
         budget_process = super().create(validated_data)
 
-        # Link `Round`(s) to `BudgetProcess`.
+        # Link rounds.
         rounds_ids = [round.id for round in self.validated_data["rounds"]]
         Round.objects.filter(id__in=rounds_ids).update(budget_process=budget_process)
 
+        return budget_process
+
+    def update(self, budget_process: BudgetProcess, validated_data: dict) -> BudgetProcess:
+        # Unlink old rounds.
+        budget_process.rounds.update(budget_process=None)
+        # Link new rounds.
+        rounds_ids = [round.id for round in self.validated_data["rounds"]]
+        Round.objects.filter(id__in=rounds_ids).update(budget_process=budget_process)
         return budget_process
 
 

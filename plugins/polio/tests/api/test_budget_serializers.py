@@ -33,18 +33,18 @@ class BudgetProcessWriteSerializerTestCase(TestCase):
             account=cls.user.iaso_profile.account,
             country=m.OrgUnit.objects.create(name="ANGOLA"),
         )
+        # Budget process.
+        cls.budget_process = BudgetProcess.objects.create(created_by=cls.user)
         # Rounds.
         cls.round_1 = Round.objects.create(number=1, campaign=cls.campaign, budget_process=None)
         cls.round_2 = Round.objects.create(number=2, campaign=cls.campaign, budget_process=None)
         cls.round_3 = Round.objects.create(number=3, campaign=cls.campaign, budget_process=None)
 
-    def test_deserialize_ok(self):
+    def test_deserialize_and_create(self):
         """
-        Test the validation of the incoming data and the creation of a BudgetProcess instance.
+        Test BudgetProcess instance create.
         """
-        data = {
-            "rounds": [self.round_1.pk, self.round_2.pk],
-        }
+        data = {"rounds": [self.round_1.pk, self.round_2.pk]}
         serializer = BudgetProcessWriteSerializer(data=data, context={"request": self.request})
         self.assertTrue(serializer.is_valid())
 
@@ -52,8 +52,28 @@ class BudgetProcessWriteSerializerTestCase(TestCase):
         self.assertEqual(budget_process.created_by, self.user)
         self.assertEqual(budget_process.created_at, DT)
         rounds = budget_process.rounds.all()
+        self.assertEqual(2, len(rounds))
         self.assertIn(self.round_1, rounds)
         self.assertIn(self.round_2, rounds)
+
+    def test_deserialize_and_update(self):
+        """
+        Test BudgetProcess instance update.
+        """
+        self.round_1.budget_process = self.budget_process
+        self.round_1.save()
+        self.round_2.budget_process = self.budget_process
+        self.round_2.save()
+
+        data = {"rounds": [self.round_3.pk]}
+        context = {"request": self.request}
+        serializer = BudgetProcessWriteSerializer(self.budget_process, data=data, partial=True, context=context)
+        self.assertTrue(serializer.is_valid())
+
+        budget_process = serializer.save()
+        rounds = budget_process.rounds.all()
+        self.assertEqual(1, len(rounds))
+        self.assertIn(self.round_3, rounds)
 
     def test_validate_raises_for_invalid_rounds(self):
         invalid_round = Round.objects.create(number=1)

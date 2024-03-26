@@ -61,6 +61,11 @@ const useColumns = (
             },
         },
         {
+            Header: formatMessage(MESSAGES.parent),
+            id: 'org_unit__org_unit_parent_name',
+            accessor: 'org_unit_parent_name',
+        },
+        {
             Header: formatMessage(MESSAGES.orgUnitsType),
             id: 'org_unit__org_unit_type__name',
             accessor: 'org_unit_type_name',

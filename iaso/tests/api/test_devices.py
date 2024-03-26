@@ -16,10 +16,10 @@ class DevicesAPITestCase(APITestCase):
         cls.device_1.projects.add(project)
 
     def test_devices_list_without_auth(self):
-        """GET /devices/ without auth should result in a 403"""
+        """GET /devices/ without auth should result in a 401"""
 
         response = self.client.get("/api/devices/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     def test_devices_list_no_permission(self):
         """GET /devices/ with auth but without the proper permission"""

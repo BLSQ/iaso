@@ -196,12 +196,12 @@ class InstancesAPITestCase(APITestCase):
         """GET /instances/?form_id=form_id"""
         instance = self.form_1.instances.first()
         response = self.client.get(f"/api/instances/{instance.pk}/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     def test_instance_details_permission_denied_when_anonymous(self):
         """GET /instances/?form_id=form_id"""
         response = self.client.get(f"/api/instances/?form_id={self.form_1.pk}")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     def test_instance_create_planning(self):
         """POST /api/instances/ happy path (anonymous)"""

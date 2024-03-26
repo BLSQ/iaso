@@ -196,7 +196,7 @@ class PolioAPITestCase(APITestCase):
             ],
         }
         response = self.client.post("/api/polio/campaigns/", payload, format="json")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
         self.assertEqual(Campaign.objects.count(), 0)
 
     def test_create_campaign(self):

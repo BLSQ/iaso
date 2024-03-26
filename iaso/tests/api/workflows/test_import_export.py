@@ -12,7 +12,7 @@ class WorkflowsImportExportAPITestCase(BaseWorkflowsAPITestCase):
     def test_workflow_export_without_auth(self):
         response = self.client.get(f"{BASE_API}export/{self.workflow_et_adults_blue.pk}/", format="json")
 
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
         self.assertEqual(response.data["detail"].code, "not_authenticated")
         self.assertEqual(response.data["detail"], "Authentication credentials were not provided.")
 
@@ -35,7 +35,7 @@ class WorkflowsImportExportAPITestCase(BaseWorkflowsAPITestCase):
     def test_workflow_import_without_auth(self):
         response = self.client.post(f"{BASE_API}import/", format="json", data={})
 
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
         self.assertEqual(response.data["detail"].code, "not_authenticated")
         self.assertEqual(response.data["detail"], "Authentication credentials were not provided.")
 

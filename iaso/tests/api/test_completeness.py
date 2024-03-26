@@ -55,10 +55,10 @@ class CompletenessAPITestCase(APITestCase):
         return str(number) + "b7c3954-f69a-4b99-83b1-db73957b32b" + str(number)
 
     def test_completeness_list_without_auth(self):
-        """GET /completeness/ without auth should result in a 403"""
+        """GET /completeness/ without auth should result in a 401"""
 
         response = self.client.get("/api/completeness/")
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(401, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
 
     def test_completeness_list(self):

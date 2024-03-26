@@ -178,7 +178,7 @@ class CompletenessStatsAPITestCase(APITestCase):
     def test_row_listing_anonymous(self):
         """An anonymous user should not be able to access the API"""
         response = self.client.get("/api/v2/completeness_stats/")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
     def test_row_listing_insufficient_permissions(self):
         """A user without the permission should not be able to access the API"""

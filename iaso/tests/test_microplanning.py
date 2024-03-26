@@ -694,7 +694,7 @@ class AssignmentAPITestCase(APITestCase):
 
     def test_query_fail_no_auth(self):
         response = self.client.get(f"/api/microplanning/assignments/?planning={self.planning.id}", format="json")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     def test_query_filtering(self):
         p = Planning.objects.create(

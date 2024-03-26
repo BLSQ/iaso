@@ -27,8 +27,6 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
                         setParentFieldValue={setFieldValue}
                         parentFieldValue={rounds[roundIndex]}
                     />
-                </Grid>
-                <Grid xs={12} md={6} item>
                     <Field
                         label={formatMessage(
                             MESSAGES.percentage_covered_target_population,
@@ -38,18 +36,25 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
                     />
                     <Box mt={2}>
                         <Field
-                            label={formatMessage(MESSAGES.mop_up_started_at)}
-                            name={`rounds[${roundIndex}].mop_up_started_at`}
-                            component={DateInput}
-                            fullWidth
-                        />
-                        <Field
-                            label={formatMessage(MESSAGES.mop_up_ended_at)}
-                            name={`rounds[${roundIndex}].mop_up_ended_at`}
-                            component={DateInput}
-                            fullWidth
+                            label={formatMessage(MESSAGES.target_population)}
+                            name={`rounds[${roundIndex}].target_population`}
+                            component={NumberInput}
                         />
                     </Box>
+                </Grid>
+                <Grid xs={12} md={6} item>
+                    <Field
+                        label={formatMessage(MESSAGES.mop_up_started_at)}
+                        name={`rounds[${roundIndex}].mop_up_started_at`}
+                        component={DateInput}
+                        fullWidth
+                    />
+                    <Field
+                        label={formatMessage(MESSAGES.mop_up_ended_at)}
+                        name={`rounds[${roundIndex}].mop_up_ended_at`}
+                        component={DateInput}
+                        fullWidth
+                    />
                 </Grid>
             </Grid>
         </>

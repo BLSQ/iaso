@@ -349,9 +349,13 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.dgAuthorization',
         defaultMessage: 'DG Authorization',
     },
-    target_population: {
+    target_population_round: {
         id: 'iaso.polio.form.label.targetpopulationRound',
         defaultMessage: 'Target population Round',
+    },
+    target_population: {
+        id: 'iaso.polio.form.label.targetpopulation',
+        defaultMessage: 'Target population',
     },
     percentage_covered_target_population: {
         id: 'iaso.polio.form.label.percentageCoveredTargetPopulation',

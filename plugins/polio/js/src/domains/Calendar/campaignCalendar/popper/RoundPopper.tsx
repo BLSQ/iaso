@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useCallback } from 'react';
+import React, { FunctionComponent } from 'react';
 
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, Button, Grid, IconButton, Paper, Popper } from '@mui/material';
@@ -6,8 +6,8 @@ import { getTableUrl, useSafeIntl } from 'bluesquare-components';
 
 import { useSelector } from 'react-redux';
 import { CsvButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/CsvButton';
+import { SxStyles } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import MESSAGES from '../../../../constants/messages';
-import { useStyles } from '../Styles';
 import { CalendarRound, MappedCampaign, ReduxState } from '../types';
 
 const groupsForCampaignRound = (campaign, round) => {
@@ -24,6 +24,21 @@ const groupsForCampaignRound = (campaign, round) => {
             .flat();
     }
     return [];
+};
+const styles: SxStyles = {
+    popper: {
+        zIndex: 500,
+        width: 400,
+        backgroundColor: 'white',
+    },
+    popperClose: {
+        position: 'absolute',
+        top: theme => theme.spacing(1),
+        right: theme => theme.spacing(1),
+    },
+    editButton: {
+        marginLeft: 'auto',
+    },
 };
 
 type Props = {
@@ -44,8 +59,7 @@ export const RoundPopper: FunctionComponent<Props> = ({
     setDialogOpen,
     round,
 }) => {
-    const classes = useStyles();
-    const { formatMessage } = useSafeIntl();
+    const { formatMessage, formatNumber } = useSafeIntl();
     // We don't want to show the edit button if there is no connected user
     const isLogged = useSelector((state: ReduxState) =>
         Boolean(state.users.current),
@@ -60,23 +74,13 @@ export const RoundPopper: FunctionComponent<Props> = ({
         'polio/campaigns/csv_campaign_scopes_export',
         urlParams,
     );
-
-    const getMessage = useCallback(
-        key => (MESSAGES[key] ? formatMessage(MESSAGES[key]) : key),
-        [formatMessage],
-    );
     return (
-        <Popper
-            id={id}
-            open={open}
-            anchorEl={anchorEl}
-            className={classes.popper}
-        >
+        <Popper id={id} open={open} anchorEl={anchorEl} sx={styles.popper}>
             <Paper elevation={1}>
-                <Box p={2}>
+                <Box pt={6} pb={2} pr={2} pl={2}>
                     <IconButton
                         onClick={() => handleClose()}
-                        className={classes.popperClose}
+                        sx={styles.popperClose}
                         size="small"
                     >
                         <CloseIcon color="primary" />
@@ -88,32 +92,21 @@ export const RoundPopper: FunctionComponent<Props> = ({
                         <Grid item sm={6} container justifyContent="flex-start">
                             {round.start && round.start.format('L')}
                         </Grid>
+
                         <Grid item sm={6} container justifyContent="flex-end">
                             {formatMessage(MESSAGES.endDate)}:
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-start">
                             {round.end && round.end.format('L')}
                         </Grid>
+
                         <Grid item sm={6} container justifyContent="flex-end">
-                            {formatMessage(MESSAGES.raStatus)}:
+                            {formatMessage(MESSAGES.target_population)}:
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-start">
-                            {getMessage(
-                                campaign.original.risk_assessment_status,
-                            )}
+                            {formatNumber(round.target_population)}
                         </Grid>
-                        <Grid item sm={6} container justifyContent="flex-end">
-                            {formatMessage(MESSAGES.budgetStatus)}:
-                        </Grid>
-                        <Grid item sm={6} container justifyContent="flex-start">
-                            {getMessage(campaign.original.budget_status)}
-                        </Grid>
-                        <Grid item sm={6} container justifyContent="flex-end">
-                            {formatMessage(MESSAGES.vaccine)}:
-                        </Grid>
-                        <Grid item sm={6} container justifyContent="flex-start">
-                            {campaign.original.vaccines}
-                        </Grid>
+
                         <Grid item sm={6} container justifyContent="flex-end">
                             {formatMessage(MESSAGES.preventiveShort)}:
                         </Grid>
@@ -122,14 +115,13 @@ export const RoundPopper: FunctionComponent<Props> = ({
                                 ? formatMessage(MESSAGES.yes)
                                 : formatMessage(MESSAGES.no)}
                         </Grid>
-                        <Grid
-                            item
-                            sm={12}
-                            container
-                            justifyContent={
-                                isLogged ? 'space-between' : 'flex-end'
-                            }
-                        >
+                        <Grid item sm={6} container justifyContent="flex-end">
+                            {formatMessage(MESSAGES.description)}:
+                        </Grid>
+                        <Grid item sm={6} container justifyContent="flex-start">
+                            {campaign.original.description || '--'}
+                        </Grid>
+                        <Grid item sm={12} container>
                             {groupIds && (
                                 <CsvButton csvUrl={url} variant="text" />
                             )}
@@ -138,6 +130,7 @@ export const RoundPopper: FunctionComponent<Props> = ({
                                     onClick={() => setDialogOpen(true)}
                                     size="small"
                                     color="primary"
+                                    sx={styles.editButton}
                                 >
                                     {formatMessage(MESSAGES.edit)}
                                 </Button>

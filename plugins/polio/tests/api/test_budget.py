@@ -154,6 +154,22 @@ class BudgetCampaignViewSetTestCase(APITestCase):
             },
         )
 
+    def test_update(self):
+        """
+        PATCH /api/polio/budget/pk/
+        """
+        self.client.force_login(self.user)
+        self.assertEqual(self.budget_process_1.rounds.count(), 2)
+        response = self.client.patch(
+            f"/api/polio/budget/{self.budget_process_1.pk}/",
+            data={"rounds": [self.round_1.pk]},
+            format="json",
+        )
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertEqual(response_data["id"], self.budget_process_1.pk)
+        self.assertEqual(response_data["rounds"], [self.round_1.pk])
+        self.assertEqual(self.budget_process_1.rounds.count(), 1)
+
     def test_soft_delete(self):
         """
         DELETE /api/polio/budget/pk/

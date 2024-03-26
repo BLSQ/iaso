@@ -42,7 +42,7 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
     export_filename = "campaigns_budget_list_{date}.csv"
     permission_classes = [HasPermission(permission.POLIO_BUDGET)]  # type: ignore
     use_field_order = True
-    http_method_names = ["delete", "get", "head", "post"]
+    http_method_names = ["delete", "get", "head", "patch", "post"]
     filter_backends = [
         filters.OrderingFilter,
         DjangoFilterBackend,
@@ -51,13 +51,13 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
     filterset_class = BudgetCampaignFilter
 
     def get_serializer_class(self):
-        if self.action == "create":
+        if self.action in ["partial_update", "create"]:
             return BudgetProcessWriteSerializer
         return BudgetProcessSerializer
 
     def destroy(self, request, *args, **kwargs):
         """
-        Soft deletion will break integrity, making it hard to find the previous
+        Soft deletion will break integrity: it will be hard to find the previous
         `Rounds` linked to a `BudgetProcess`.
         If a user wants to restore a soft deleted `BudgetProcess`, the burden
         of finding the previous linked `Rounds` will be left on his own.

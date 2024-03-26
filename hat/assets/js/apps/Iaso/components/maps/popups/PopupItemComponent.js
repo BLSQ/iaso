@@ -1,11 +1,11 @@
 import React from 'react';
 
-import { Grid } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import { withStyles } from '@mui/styles';
 
 import PropTypes, { number } from 'prop-types';
 
-import { textPlaceholder, mapPopupStyles } from 'bluesquare-components';
+import { mapPopupStyles, textPlaceholder } from 'bluesquare-components';
 
 const styles = theme => ({
     ...mapPopupStyles(theme),
@@ -16,7 +16,7 @@ const PopupItemComponent = props => {
     return (
         <Grid container spacing={0}>
             <Grid item xs={labelSize} className={classes.popupListItemLabel}>
-                {label}:
+                <Box mr={1}>{label}:</Box>
             </Grid>
             <Grid item xs={valueSize} className={classes.popuplistItem}>
                 {value || textPlaceholder}

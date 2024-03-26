@@ -20,10 +20,10 @@ class DataSourcesAPITestCase(APITestCase):
         cls.ghi_project = m.Project.objects.create(name="ghi_project", account=ghi)
 
     def test_datasource_list_without_auth(self):
-        """GET /datasources/ without auth should result in a 403"""
+        """GET /datasources/ without auth should result in a 401"""
 
         response = self.client.get("/api/datasources/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     def test_datasource_list_with_auth_no_permissions(self):
         """GET /projects/ with auth should result in a 403 as no permission"""

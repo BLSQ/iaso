@@ -121,14 +121,14 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
 
     @tag("iaso_only")
     def test_org_unit_bulkupdate_not_authenticated(self):
-        """POST /orgunits/bulkupdate, no auth -> 403"""
+        """POST /orgunits/bulkupdate, no auth -> 401"""
 
         response = self.client.post(
             f"/api/tasks/create/orgunitsbulkupdate/",
             data={"select_all": True, "validation_status": m.OrgUnit.VALIDATION_REJECTED},
             format="json",
         )
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
         self.assertEqual(Task.objects.filter(status=QUEUED).count(), 0)
 

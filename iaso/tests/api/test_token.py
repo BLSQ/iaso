@@ -195,14 +195,14 @@ class TokenAPITestCase(APITestCase):
         # test an endpoint that requires authentication
         response = self.client.get("/api/groups/?app_id=stars.empire.agriculture.hydroponics")
 
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer  WRONG")
 
         # test an endpoint that requires authentication
         response = self.client.get("/api/groups/?app_id=stars.empire.agriculture.hydroponics")
 
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     def test_acquire_token_and_post_org_unit(self):
         """Test upload to a project that requires authentication"""

@@ -153,10 +153,10 @@ class DerivedInstancesTests(APITestCase):
         self.survey_form.projects.add(self.project)
 
     def test_post_derived_instances_without_auth(self):
-        """POST /derivedinstances/ without auth should result in a 403"""
+        """POST /derivedinstances/ without auth should result in a 401"""
 
         response = self.client.post("/api/derivedinstances/")
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(401, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
 
     def test_post_derived_instances_with_updated(self):

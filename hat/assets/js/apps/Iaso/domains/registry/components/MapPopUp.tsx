@@ -2,20 +2,20 @@ import React, { FunctionComponent, useRef } from 'react';
 import { Popup, useMap } from 'react-leaflet';
 
 import ClearIcon from '@mui/icons-material/Clear';
-import { Card, CardContent, Box, Divider, IconButton } from '@mui/material';
+import { Box, Card, CardContent, Divider, IconButton } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import {
-    useSafeIntl,
     commonStyles,
     mapPopupStyles,
+    useSafeIntl,
 } from 'bluesquare-components';
 
-import MESSAGES from '../messages';
-import { OrgUnit } from '../../orgUnits/types/orgUnit';
-import { LinkToRegistry } from './LinkToRegistry';
 import PopupItemComponent from '../../../components/maps/popups/PopupItemComponent';
 import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
+import { OrgUnit } from '../../orgUnits/types/orgUnit';
+import MESSAGES from '../messages';
+import { LinkToRegistry } from './LinkToRegistry';
 
 type Props = {
     orgUnit: OrgUnit;

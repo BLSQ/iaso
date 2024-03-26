@@ -36,7 +36,7 @@ const EditBudgetProcessModal: FunctionComponent<Props> = ({
     // const schema = useNotificationSchema();
     const formik = useFormik({
         initialValues: {
-            id: budgetProcess?.id,
+            rounds: budgetProcess?.rounds?.map(round => round.id),
         },
         enableReinitialize: true,
         validateOnBlur: true,

@@ -122,7 +122,7 @@ export const BudgetProcessDetails: FunctionComponent<Props> = ({ router }) => {
                 <Box mb={2}>
                     <BudgetDetailsInfos
                         status={budgetInfos?.current_state?.label ?? '--'}
-                        roundNumbers={budgetInfos?.round_numbers ?? []}
+                        rounds={budgetInfos?.rounds ?? []}
                         nextSteps={nextSteps}
                         categories={budgetInfos?.timeline?.categories}
                         params={params}

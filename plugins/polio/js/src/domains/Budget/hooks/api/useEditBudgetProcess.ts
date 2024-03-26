@@ -9,7 +9,7 @@ import { formatRoundNumber } from '../../utils';
 
 export const useGetAvailableRounds = (
     campaignID: string,
-    budgetProcessId: string,
+    budgetProcessId: number,
 ): UseQueryResult<OptionsRounds[], Error> => {
     const select = useCallback((data: OptionsRounds[]) => {
         return data.map((round: OptionsRounds) => {

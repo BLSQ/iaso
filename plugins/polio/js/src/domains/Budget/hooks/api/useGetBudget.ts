@@ -60,7 +60,7 @@ export const useGetBudgets = (options: Option): any => {
         current_state_key: options.current_state_key,
         countries: options.countries,
         org_unit_groups: options.org_unit_groups,
-        fields: 'id,campaign_id,obr_name,country_name,current_state,round_numbers,possible_states,updated_at',
+        fields: 'id,campaign_id,obr_name,country_name,current_state,rounds,possible_states,updated_at',
     };
 
     return useSnackQuery({
@@ -104,7 +104,7 @@ export const useGetBudgetForCampaign = (
     id: Optional<string>,
 ): UseQueryResult<Partial<Budget>> => {
     const params = {
-        fields: 'id,obr_name,current_state,next_transitions,possible_transitions,round_numbers,timeline',
+        fields: 'id,obr_name,current_state,next_transitions,possible_transitions,rounds,timeline',
     };
 
     return useSnackQuery({

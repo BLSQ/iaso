@@ -68,9 +68,9 @@ export const useBudgetColumns = (isUserPolioBudgetAdmin: boolean): Column[] => {
             {
                 Header: formatMessage(MESSAGES.rounds),
                 sortable: false,
-                accessor: 'round_numbers',
+                accessor: 'rounds',
                 Cell: settings =>
-                    formatRoundNumbers(settings.row.original.round_numbers),
+                    formatRoundNumbers(settings.row.original.rounds),
             },
             {
                 Header: formatMessage(MESSAGES.lastStep),

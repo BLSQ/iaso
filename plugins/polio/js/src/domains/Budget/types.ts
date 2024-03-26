@@ -51,6 +51,11 @@ export type Transition = {
     displayed_fields: string[]; // This field determines the columns shown in the "create" modal
 };
 
+export type Round = {
+    id: number;
+    number: string;
+};
+
 export type Budget = {
     id: number;
     obr_name: string;
@@ -72,7 +77,7 @@ export type Budget = {
         key: string;
         label: string;
     }[];
-    round_numbers?: number[];
+    rounds?: Round[];
     timeline?: Timeline;
 };
 

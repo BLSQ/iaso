@@ -553,7 +553,7 @@ class OrgUnit(TreeModel):
         return [instance.as_full_model() for instance in self.reference_instances.all()]
 
     def set_extra_fields(self, fields):
-        self.extra_fields = {**self.extra_fields, **fields}
+        self.extra_fields = self.extra_fields | fields
         self.save()
 
 

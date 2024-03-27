@@ -777,7 +777,9 @@ class PreparednessAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
 
     def test_two_campaign_round_empty(self):
+        type = CampaignType.objects.get_or_create(name=CampaignType.POLIO)
         campaign_a = Campaign.objects.create(obr_name="campaign A", account=self.account)
+        campaign_a.campaign_types.add(type)
         campaign_a.rounds.create(number=1)
         campaign_a.rounds.create(number=3)
         Campaign.objects.create(obr_name="campaign B", account=self.account)
@@ -793,12 +795,15 @@ class PreparednessAPITestCase(APITestCase):
         self.assertEqual(len(r), 0)
 
     def test_two_campaign_round_error(self):
+        type = CampaignType.objects.get_or_create(name=CampaignType.POLIO)
         campaign_a = Campaign.objects.create(obr_name="campaign A", account=self.account)
+        campaign_a.campaign_types.add(type)
         round_one = campaign_a.rounds.create(number=1)
         round_three = campaign_a.rounds.create(number=3)
-        Campaign.objects.create(obr_name="campaign B", account=self.account)
-        Campaign.objects.create(obr_name="campaign c", account=self.account)
-
+        campaign_b = Campaign.objects.create(obr_name="campaign B", account=self.account)
+        campaign_c = Campaign.objects.create(obr_name="campaign c", account=self.account)
+        campaign_b.campaign_types.add(type)
+        campaign_c.campaign_types.add(type)
         response = self.client.get(f"/api/polio/campaigns/{campaign_a.id}/", format="json")
 
         r = self.assertJSONResponse(response, 200)

@@ -147,10 +147,13 @@ class PaymentSerializer(serializers.ModelSerializer):
         return OrgChangeRequestNestedSerializer(change_requests, many=True).data
 
     def update(self, obj, validated_data):
-        payment = super().update(obj, validated_data)
         request = self.context["request"]
-        user = request.user
-        payment.updated_by = user
+        user = obj.user
+        request_user = request.user
+        if user == request_user:
+            raise serializers.ValidationError("Users cannot modify their own payments")
+        payment = super().update(obj, validated_data)
+        payment.updated_by = request_user
         payment.save()
         return payment
 

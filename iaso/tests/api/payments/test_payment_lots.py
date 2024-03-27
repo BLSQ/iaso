@@ -1,4 +1,5 @@
 import datetime
+import json
 from iaso import models as m
 from hat.audit import models as am
 from iaso.tests.tasks.task_api_test_case import TaskAPITestCase
@@ -61,11 +62,37 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
             status=m.OrgUnitChangeRequest.Statuses.APPROVED,
             potential_payment=cls.potential_payment,
         )
+        # Payment from user to themselves, should not be updated when marking all payments as read
+        cls.payment_to_self = m.Payment.objects.create(
+            created_by=cls.user,
+            payment_lot=cls.payment_lot,
+            status=m.Payment.Statuses.PENDING,
+            user=cls.user,
+        )
+        cls.fourth_change_request = m.OrgUnitChangeRequest.objects.create(
+            org_unit=org_unit,
+            new_name="Highland",
+            status=m.OrgUnitChangeRequest.Statuses.APPROVED,
+            payment=cls.payment_to_self,
+        )
+        # Same as with payemnt_to_self, it should be filtered out when creating payments
+        cls.potential_payment_to_self = m.PotentialPayment.objects.create(user=cls.user)
+        cls.fifth_change_request = m.OrgUnitChangeRequest.objects.create(
+            org_unit=org_unit,
+            new_name="Woodland",
+            status=m.OrgUnitChangeRequest.Statuses.APPROVED,
+            potential_payment=cls.potential_payment_to_self,
+        )
 
     def test_create_payment_lot(self):
         self.client.force_authenticate(self.user)
         response = self.client.post(
-            "/api/payments/lots/", {"name": "New Payment Lot", "potential_payments": [self.potential_payment.pk]}
+            "/api/payments/lots/",
+            {
+                "name": "New Payment Lot",
+                "potential_payments": [self.potential_payment.pk, self.potential_payment_to_self.pk],
+            },
+            format="json",
         )
 
         self.assertJSONResponse(response, 201)
@@ -78,13 +105,17 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         self.third_change_request.refresh_from_db()
 
         # New PaymentLot has been created with status NEW
-        self.assertEqual(m.PaymentLot.objects.count(), 2)  # Including the one created in setUpTestData
+        self.assertEqual(m.PaymentLot.objects.count(), 2)  # Including the ones created in setUpTestData
         new_lot = m.PaymentLot.objects.exclude(id=self.payment_lot.pk).get()
         self.assertEqual(new_lot.status, m.PaymentLot.Statuses.NEW)
 
         # new payment has been added
-        self.assertEqual(m.Payment.objects.count(), 3)  # 2 payments from test setup + 1 created from potential payment
-        new_payment = m.Payment.objects.exclude(id__in=[self.payment.pk, self.second_payment.pk])
+        self.assertEqual(
+            m.Payment.objects.count(), 4
+        )  # 2 payments from test setup + 1 existing payment to self + 1 created from potential payment. potential_payment_to_self has been skipped by the task
+        new_payment = m.Payment.objects.exclude(
+            id__in=[self.payment.pk, self.second_payment.pk, self.payment_to_self.pk]
+        )
         self.assertTrue(new_payment.exists())
         new_payment = new_payment.get()
 
@@ -101,6 +132,11 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         self.assertEqual(4, am.Modification.objects.count())
 
     def test_update_payment_lot_mark_payments_as_sent(self):
+        # remove payment_to_self from payment_lot so we can test that payment_lot status
+        # is updated when all payment statuses have been updated
+        self.payment_to_self.payment_lot = None
+        self.payment_to_self.save()
+        self.payment_lot.refresh_from_db()
         self.client.force_authenticate(self.user)
         response = self.client.patch(f"/api/payments/lots/{self.payment_lot.id}/?mark_payments_as_sent=true")
         self.assertJSONResponse(response, 201)
@@ -115,7 +151,28 @@ class PaymentLotsViewSetAPITestCase(TaskAPITestCase):
         self.second_payment.refresh_from_db()
         self.assertEqual(self.payment.status, m.Payment.Statuses.SENT)
         self.assertEqual(self.second_payment.status, m.Payment.Statuses.SENT)
+        self.assertEqual(self.payment_to_self.status, m.Payment.Statuses.PENDING)
         self.assertEqual(self.payment_lot.status, m.PaymentLot.Statuses.SENT)
+
+        self.assertEqual(3, am.Modification.objects.count())
+
+    def test_update_payment_lot_mark_payments_as_sent_dont_update_user_own_payments(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.patch(f"/api/payments/lots/{self.payment_lot.id}/?mark_payments_as_sent=true")
+        self.assertJSONResponse(response, 201)
+        data = response.json()
+        task = self.assertValidTaskAndInDB(data["task"], status="QUEUED", name="mark_payments_as_read")
+        self.assertEqual(task.launcher, self.user)
+
+        # Run the task
+        self.runAndValidateTask(task, "SUCCESS")
+        self.payment_lot.refresh_from_db()
+        self.payment.refresh_from_db()
+        self.second_payment.refresh_from_db()
+        self.assertEqual(self.payment.status, m.Payment.Statuses.SENT)
+        self.assertEqual(self.second_payment.status, m.Payment.Statuses.SENT)
+        self.assertEqual(self.payment_to_self.status, m.Payment.Statuses.PENDING)
+        self.assertEqual(self.payment_lot.status, m.PaymentLot.Statuses.NEW)
 
         self.assertEqual(3, am.Modification.objects.count())
 

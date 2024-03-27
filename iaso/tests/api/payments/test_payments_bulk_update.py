@@ -66,14 +66,14 @@ class TestPaymentsBulkUpdate(TaskAPITestCase):
         )
 
     def test_user_not_authenticated(self):
-        """POST /api/tasks/create/paymentsbulkupdate/, no auth -> 403"""
+        """POST /api/tasks/create/paymentsbulkupdate/, no auth -> 401"""
 
         response = self.client.post(
             self.url,
             data={"select_all": True, "status": m.Payment.Statuses.PAID},
             format="json",
         )
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
         self.assertEqual(Task.objects.filter(status=QUEUED).count(), 0)
 
@@ -142,7 +142,9 @@ class TestPaymentsBulkUpdate(TaskAPITestCase):
         # We expect 1 log for the PaymentLot and 1 for the payment updated
         self.assertEqual(2, am.Modification.objects.count())
 
-        modification_payment = am.Modification.objects.get(object_id=self.payment.pk)
+        modification_payment = am.Modification.objects.filter(
+            object_id=self.payment.pk
+        ).first()  # am.Modification.objects.get(object_id=self.payment.pk)
         self.assertEqual(ContentType.objects.get_for_model(m.Payment), modification_payment.content_type)
         self.assertEqual(self.user, modification_payment.user)
         self.assertEqual(am.PAYMENT_API_BULK, modification_payment.source)

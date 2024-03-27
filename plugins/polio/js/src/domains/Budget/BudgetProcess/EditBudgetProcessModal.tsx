@@ -16,7 +16,7 @@ import { Budget } from '../types';
 import { MultiSelect } from '../../../components/Inputs/MultiSelect';
 import { useEditBudgetProcess } from '../hooks/api/useEditBudgetProcess';
 import { useEditBudgetProcessSchema } from './validation';
-import { useGetAvailableRoundsForBudgetProcess } from '../hooks/api/useGetBudgetProcessAvailableRounds';
+import { useAvailableRoundsForUpdate } from '../hooks/api/useGetBudgetProcessAvailableRounds';
 
 type Props = {
     isOpen: boolean;
@@ -32,7 +32,7 @@ const EditBudgetProcessModal: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
 
     const { data: availableRounds, isFetching: isFetchingAvailableRounds } =
-        useGetAvailableRoundsForBudgetProcess(
+        useAvailableRoundsForUpdate(
             budgetProcess.campaign_id,
             budgetProcess.id,
         );

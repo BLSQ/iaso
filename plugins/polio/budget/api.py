@@ -1,6 +1,5 @@
 from typing import Type
 
-from django.contrib.postgres.aggregates import ArrayAgg
 from django.db.models import QuerySet, F, Q
 from django.http import HttpResponse
 from django.shortcuts import redirect
@@ -116,50 +115,9 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
         return Response({"result": "success", "id": budget_step.id}, status=status.HTTP_201_CREATED)
 
     @action(detail=False, methods=["GET"])
-    def available_rounds(self, request):
+    def available_rounds_for_create(self, request):
         """
-        Returns available rounds that can be associated with a given `budget_process_id`.
-        `campaign_id` is required too to make queries and validation easier.
-
-        Used in the UI to build a select dropdown when editing a budget process.
-        """
-        input = AvailableRoundsSerializer(data=request.query_params)
-        input.is_valid(raise_exception=True)
-        campaign_uuid = input.validated_data["campaign_id"]
-        budget_process_id = input.validated_data["budget_process_id"]
-
-        campaign = Campaign.objects.filter(id=campaign_uuid).filter_for_user(self.request.user).first()
-
-        available_rounds = (
-            Round.objects.filter(campaign=campaign)
-            .filter(Q(budget_process_id=budget_process_id) | Q(budget_process__isnull=True))
-            .order_by("number")
-            .only("id", "number")
-        )
-
-        result = [{"value": rnd.id, "label": rnd.number, "campaign_id": campaign_uuid} for rnd in available_rounds]
-        return Response(result, status=status.HTTP_200_OK)
-
-    @action(detail=False, methods=["GET"])
-    def available_rounds_dropdowns(self, request):
-        """
-        Returns all available rounds.
-        Used in the UI to build dependent select dropdowns when creating a new budget process.
-
-        Returns this data structure.
-
-            {
-                "countries": [
-                    {"value": 1, "label": "Niger"}
-                ],
-                "campaigns": [
-                    {"value": "e5a1209b-8881-4b66-82a0-429a53dbc94b", "label": "nopv2", "country_id": 1}
-                ],
-                "rounds": [
-                    {"value": 1, "label": 1, "campaign_id": "e5a1209b-8881-4b66-82a0-429a53dbc94b"}
-                ]
-            }
-
+        Returns all available rounds that can be used to create a new `BudgetProcess`.
         """
         user_campaigns = Campaign.objects.filter_for_user(self.request.user).filter(country__isnull=False)
         available_rounds = (
@@ -170,28 +128,29 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
                 "id", "number", "campaign_id", "campaign__obr_name", "campaign__country_id", "campaign__country__name"
             )
         )
+        return Response(available_rounds.as_ui_dropdown_data(), status=status.HTTP_200_OK)
 
-        data = {"unique_countries": {}, "unique_campaigns": {}, "rounds": []}
-        for rnd in available_rounds:
-            campaign_uuid = str(rnd.campaign_id)
-            data["unique_countries"].setdefault(
-                rnd.campaign.country_id,
-                {"value": rnd.campaign.country_id, "label": rnd.campaign.country.name},
-            )
-            data["unique_campaigns"].setdefault(
-                campaign_uuid,
-                {"value": campaign_uuid, "label": rnd.campaign.obr_name, "country_id": rnd.campaign.country_id},
-            )
-            data["rounds"].append({"value": rnd.id, "label": rnd.number, "campaign_id": campaign_uuid})
+    @action(detail=False, methods=["GET"])
+    def available_rounds_for_update(self, request):
+        """
+        Returns rounds that can be associated to a given `BudgetProcess`.
+        """
+        query_params = AvailableRoundsSerializer(data=request.query_params)
+        query_params.is_valid(raise_exception=True)
+        campaign_uuid = query_params.validated_data["campaign_id"]
+        budget_process_id = query_params.validated_data["budget_process_id"]
 
-        return Response(
-            {
-                "countries": data["unique_countries"].values(),
-                "campaigns": data["unique_campaigns"].values(),
-                "rounds": data["rounds"],
-            },
-            status=status.HTTP_200_OK,
+        campaign = Campaign.objects.filter(id=campaign_uuid).filter_for_user(self.request.user).first()
+        available_rounds = (
+            Round.objects.filter(campaign=campaign)
+            .select_related("campaign__country")
+            .filter(Q(budget_process_id=budget_process_id) | Q(budget_process__isnull=True))
+            .order_by("number")
+            .only(
+                "id", "number", "campaign_id", "campaign__obr_name", "campaign__country_id", "campaign__country__name"
+            )
         )
+        return Response(available_rounds.as_ui_dropdown_data()["rounds"], status=status.HTTP_200_OK)
 
 
 @swagger_auto_schema(tags=["budget"])

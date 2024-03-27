@@ -201,7 +201,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                 </Grid>
             </Box>
 
-            <DialogContent className={classes.content}>
+            <DialogContent className={classes.content} sx={{ pt: 0 }}>
                 <PolioDialogTabs
                     tabs={tabs}
                     selectedTab={selectedTab}
@@ -243,4 +243,3 @@ const CreateEditDialog: FunctionComponent<Props> = ({
 
 // There's naming conflict with component in Iaso
 export { CreateEditDialog as PolioCreateEditDialog };
-

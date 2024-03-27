@@ -1,7 +1,7 @@
 import { red } from '@mui/material/colors';
 import { makeStyles } from '@mui/styles';
 
-const cellHeight = 50;
+export const cellHeight = 50;
 const smallCellHeight = 20;
 export const vaccineOpacity = 0.6;
 export const useStyles = makeStyles(theme => {
@@ -156,14 +156,13 @@ export const useStyles = makeStyles(theme => {
         },
         popper: {
             zIndex: 500,
-            width: 250,
+            width: 400,
             backgroundColor: 'white',
         },
         popperClose: {
-            position: 'relative',
-            marginLeft: '85%',
-            marginTop: theme.spacing(-1),
-            marginBottom: theme.spacing(1),
+            position: 'absolute',
+            top: theme.spacing(1),
+            right: theme.spacing(1),
         },
         mapLegend: {
             position: 'absolute',
@@ -198,11 +197,6 @@ export const useStyles = makeStyles(theme => {
         },
         mapLegendLabel: {
             textAlign: 'right',
-        },
-        noCampaign: {
-            textAlign: 'center !important',
-            // @ts-ignore
-            borderLeft: `1px solid ${theme.palette.ligthGray.border}`,
         },
         mapLegendText: {
             fontWeight: 'bold',

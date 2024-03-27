@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 /* eslint-disable react/no-array-index-key */
 import moment, { Moment } from 'moment';
 import React, { ReactElement } from 'react';
@@ -208,6 +209,10 @@ const mapCampaigns = (allCampaigns: Campaign[]): MappedCampaign[] => {
     return allCampaigns.map(c => {
         const rounds = c.rounds.map((round, index) => {
             const nextRound = c.rounds[index + 1];
+            const started_at =
+                round.started_at === null ? undefined : round.started_at;
+            const ended_at =
+                round.ended_at === null ? undefined : round.ended_at;
             const start = round.started_at
                 ? moment(round.started_at, dateFormat)
                 : undefined;
@@ -215,6 +220,8 @@ const mapCampaigns = (allCampaigns: Campaign[]): MappedCampaign[] => {
                 ? moment(round.ended_at, dateFormat)
                 : undefined;
             const hasNextRound = nextRound && end && nextRound.started_at;
+            const target_population =
+                round.target_population != null ? round.target_population : 0;
             const weeksCount = hasNextRound
                 ? moment(nextRound.started_at, dateFormat).diff(end, 'weeks')
                 : 0;
@@ -224,6 +231,9 @@ const mapCampaigns = (allCampaigns: Campaign[]): MappedCampaign[] => {
                 : 0;
             const mappedRound = {
                 ...round,
+                target_population,
+                started_at,
+                ended_at,
                 start,
                 end,
                 weeksCount,

@@ -26,6 +26,7 @@ export type CalendarRound = {
     weeksCount?: number;
     vaccine_names: string;
     scopes: Scope[];
+    target_population: number;
 };
 
 export type MappedCampaign = {

@@ -6,9 +6,10 @@ import MESSAGES from '../messages';
 import { Accordion } from '../../../../components/Accordion/Accordion';
 import { AccordionSummary } from '../../../../components/Accordion/AccordionSummary';
 import { AccordionDetails } from '../../../../components/Accordion/AccordionDetails';
+import { ExtendedNestedGroup } from '../types';
 
 type Props = {
-    fieldValues: any[];
+    fieldValues: ExtendedNestedGroup[];
     status: string;
     field: NewOrgUnitField;
 };
@@ -25,7 +26,7 @@ export const ReviewOrgUnitFieldChanges: FunctionComponent<Props> = ({
         (status && field?.isSelected === true && 'success.light') || '';
 
     return (
-        <Accordion>
+        <Accordion defaultExpanded>
             <AccordionSummary
                 aria-controls="change-request"
                 id="change-request"
@@ -44,10 +45,12 @@ export const ReviewOrgUnitFieldChanges: FunctionComponent<Props> = ({
                                         value.right === false)) &&
                                     'error.light') ||
                                 '';
+
                             return (
-                                <TableRow>
+                                <TableRow key={value.id}>
                                     <TableCell
                                         sx={{
+                                            width: '50%',
                                             borderBottom: 'none',
                                             color: isHighlighted,
                                         }}
@@ -56,6 +59,7 @@ export const ReviewOrgUnitFieldChanges: FunctionComponent<Props> = ({
                                     </TableCell>
                                     <TableCell
                                         sx={{
+                                            width: '50%',
                                             borderBottom: 'none',
                                             color:
                                                 isCellApproved ||

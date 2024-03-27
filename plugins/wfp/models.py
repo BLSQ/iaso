@@ -63,6 +63,8 @@ class Journey(models.Model):
     nutrition_programme = models.CharField(max_length=255, choices=NUTRITION_PROGRAMMES, null=True, blank=True)
     programme_type = models.CharField(max_length=255, choices=PROGRAMME_TYPE, null=True, blank=True)
     weight_gain = models.FloatField(default=0)
+    weight_loss = models.FloatField(default=0)
+    weight_difference = models.FloatField(default=0)
     exit_type = models.CharField(max_length=50, choices=EXIT_TYPES, null=True, blank=True)
     instance_id = models.IntegerField(null=True, blank=True)
 

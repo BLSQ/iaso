@@ -1,6 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { Box, useTheme } from '@mui/material';
+import Color from 'color';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { baseUrls } from '../../constants/urls';
@@ -9,17 +10,41 @@ import { useGetPaymentLots } from './hooks/requests/useGetPaymentLots';
 import { usePaymentLotsColumns } from './hooks/config/usePaymentLotsColumns';
 import { PaymentLotsFilters } from './components/CreatePaymentLot/PaymentLotsFilters';
 import { SimpleTableWithDeepLink } from '../../components/tables/SimpleTableWithDeepLink';
+import { RefreshButton } from '../../components/Buttons/RefreshButton';
 
 type Props = {
     params: PotentialPaymentParams;
 };
+
+const getRowProps = row => {
+    if (
+        row.original.task?.status === 'QUEUED' ||
+        row.original.task?.status === 'RUNNING'
+    ) {
+        return {
+            'data-test': 'paymentLotRow',
+            sx: {
+                backgroundColor: t =>
+                    `${Color(t.palette.yellow.main).fade(0.7)} !important`,
+                opacity: 0.5,
+            },
+        };
+    }
+    return {
+        'data-test': 'paymentLotRow',
+    };
+};
+
 const baseUrl = baseUrls.lotsPayments;
 export const LotsPayments: FunctionComponent<Props> = ({ params }) => {
-    // const dispatch = useDispatch();
-
     const theme = useTheme();
     // Replaced isFetching with isLoading to avoid flicker effect when refreshing data, eg when PATCHing a payment
-    const { data, isLoading } = useGetPaymentLots(params);
+    const {
+        data,
+        isLoading,
+        isFetching,
+        refetch: forceRefresh,
+    } = useGetPaymentLots(params);
     const { formatMessage } = useSafeIntl();
     const columns = usePaymentLotsColumns();
     return (
@@ -30,11 +55,19 @@ export const LotsPayments: FunctionComponent<Props> = ({ params }) => {
             />
             <Box sx={commonStyles(theme).containerFullHeightNoTabPadded}>
                 <PaymentLotsFilters params={params} />
+                <RefreshButton
+                    forceRefresh={forceRefresh}
+                    withLoadingSpinner
+                    disabled={isFetching}
+                    isLoading={isFetching}
+                />
                 {/* @ts-ignore */}
                 <SimpleTableWithDeepLink
                     marginTop={false}
                     data={data}
                     defaultSorted={[{ id: 'created_at', desc: true }]}
+                    // @ts-ignore
+                    rowProps={getRowProps}
                     columns={columns}
                     baseUrl={baseUrl}
                     params={params}

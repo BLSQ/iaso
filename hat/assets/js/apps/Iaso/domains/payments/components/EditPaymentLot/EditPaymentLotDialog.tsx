@@ -6,6 +6,7 @@ import {
     Table,
 } from 'bluesquare-components';
 import { Box, Button, Paper, Grid, Divider } from '@mui/material';
+import Color from 'color';
 import MESSAGES from '../../messages';
 import { usePaymentColumns } from '../../hooks/config/usePaymentColumns';
 import { useSavePaymentLot } from '../../hooks/requests/useSavePaymentLot';
@@ -57,6 +58,7 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
     closeDialog,
     paymentLot,
 }) => {
+    const { formatMessage } = useSafeIntl();
     const [name, setName] = useState<string>(paymentLot.name);
     const [comment, setComment] = useState<string | null>(
         paymentLot?.comment ?? null,
@@ -75,11 +77,19 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
     const { mutateAsync: bulkSaveStatus, isLoading: isBulkSaving } =
         useBulkSavePaymentStatus();
 
-    const columns = usePaymentColumns({ potential: false, saveStatus });
+    const columns = usePaymentColumns({
+        potential: false,
+        saveStatus,
+        paymentLot,
+    });
 
     const allowSaveInfos =
         comment !== paymentLot.comment ||
         (name !== undefined && name !== null && name !== paymentLot.name); // can't use name && name!==paymentLot.name as thsi would result in a string
+
+    const isTaskRunning =
+        paymentLot.task?.status === 'QUEUED' ||
+        paymentLot.task?.status === 'RUNNING';
     const handleLotInfoChange = (
         keyValue: 'name' | 'comment',
         newValue: string,
@@ -112,6 +122,25 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
         paymentLot.name,
         savePaymentLot,
     ]);
+
+    const getRowProps = useCallback(() => {
+        if (
+            paymentLot.task?.status === 'QUEUED' ||
+            paymentLot.task?.status === 'RUNNING'
+        ) {
+            return {
+                'data-test': 'paymentRow',
+                sx: {
+                    backgroundColor: t =>
+                        `${Color(t.palette.yellow.main).fade(0.7)} !important`,
+                    opacity: 0.5,
+                },
+            };
+        }
+        return {
+            'data-test': 'paymentRow',
+        };
+    }, [paymentLot?.task?.status]);
 
     return (
         <SimpleModal
@@ -148,9 +177,9 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
                                         onClick={() => {
                                             handleSelectAll();
                                         }}
-                                        disabled={isBulkSaving}
+                                        disabled={isBulkSaving || isTaskRunning}
                                     >
-                                        Select All
+                                        {formatMessage(MESSAGES.selectAll)}
                                     </Button>
                                 </Box>
                             </Grid>
@@ -161,9 +190,9 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
                                     onClick={() => {
                                         handleUnselectAll();
                                     }}
-                                    disabled={isBulkSaving}
+                                    disabled={isBulkSaving || isTaskRunning}
                                 >
-                                    Unselect All
+                                    {formatMessage(MESSAGES.unSelectAll)}
                                 </Button>
                             </Grid>
                             <Grid item>
@@ -171,10 +200,12 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
                                     selection={selection}
                                     resetSelection={handleUnselectAll}
                                     saveStatus={bulkSaveStatus}
+                                    paymentLotId={paymentLot.id}
                                     iconProps={{
                                         disabled:
                                             selection.selectCount === 0 ||
-                                            isBulkSaving,
+                                            isBulkSaving ||
+                                            isTaskRunning,
                                     }}
                                 />
                             </Grid>
@@ -189,13 +220,18 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
                         pages={1}
                         defaultSorted={[{ id: 'user__last_name', desc: false }]}
                         columns={columns}
+                        rowProps={getRowProps}
                         count={count}
                         multiSelect
                         showPagination={false}
                         selection={selection}
                         extraProps={{
                             columns,
-                            loading: isSavingPayment || isBulkSaving,
+                            loading:
+                                isSavingPayment ||
+                                isBulkSaving ||
+                                isTaskRunning,
+                            getRowProps,
                         }}
                         // @ts-ignore
                         setTableSelection={handleTableSelection}

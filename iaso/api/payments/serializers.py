@@ -1,10 +1,13 @@
 from rest_framework import serializers
 
+from hat.audit.audit_logger import AuditLogger
+from hat.audit.models import PAYMENT_API, PAYMENT_LOT_API, Modification
 from iaso.models import Payment, PotentialPayment, OrgUnitChangeRequest, PaymentLot
 from iaso.api.payments.filters.potential_payments import filter_by_forms, filter_by_dates, filter_by_parent
 
 from django.contrib.auth.models import User
 from iaso.api.payments.pagination import PaymentPagination
+from iaso.models.base import Task
 
 from ..common import TimestampField
 
@@ -58,12 +61,19 @@ class NestedPaymentSerializer(serializers.ModelSerializer):
         return OrgChangeRequestNestedSerializer(change_requests, many=True, context=self.context).data
 
 
+class NestedTaskSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Task
+        fields = ["id", "status", "ended_at"]
+
+
 class PaymentLotSerializer(serializers.ModelSerializer):
     payments = serializers.SerializerMethodField()
+    task = NestedTaskSerializer(read_only=True)
 
     class Meta:
         model = PaymentLot
-        fields = ["id", "name", "status", "created_at", "created_by", "payments", "comment"]
+        fields = ["id", "name", "status", "created_at", "created_by", "payments", "comment", "task"]
         read_only_fields = ["id", "created_at"]
 
     pagination_class = PaymentPagination
@@ -80,8 +90,8 @@ class PotentialPaymentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PotentialPayment
-        fields = ["id", "user", "change_requests"]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        fields = ["id", "user", "change_requests", "payment_lot"]
+        read_only_fields = ["id", "created_at", "updated_at", "payment_lot"]
 
     pagination_class = PaymentPagination
     user = UserNestedSerializer()
@@ -143,3 +153,30 @@ class PaymentSerializer(serializers.ModelSerializer):
         payment.updated_by = user
         payment.save()
         return payment
+
+
+class AuditPaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = "__all__"
+
+    change_requests = OrgChangeRequestNestedSerializer(many=True)
+    user = UserNestedSerializer()
+
+
+class AuditPaymentLotSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PaymentLot
+        fields = "__all__"
+
+    payments = AuditPaymentSerializer(required=False, many=True)
+
+
+class PaymentLotAuditLogger(AuditLogger):
+    serializer = AuditPaymentLotSerializer
+    default_source = PAYMENT_LOT_API
+
+
+class PaymentAuditLogger(AuditLogger):
+    serializer = AuditPaymentSerializer
+    default_source = PAYMENT_API

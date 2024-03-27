@@ -43,19 +43,22 @@ class PaymentLotModelTestCase(TestCase):
         self.assertEqual(self.payment_lot.status, m.PaymentLot.Statuses.NEW)
 
     def test_compute_status_paid(self):
-        payment = m.Payment.objects.create(user=self.user, status=m.Payment.Statuses.PAID, payment_lot=self.payment_lot)
+        m.Payment.objects.create(user=self.user, status=m.Payment.Statuses.PAID, payment_lot=self.payment_lot)
+        self.payment_lot.status = self.payment_lot.compute_status()
         self.payment_lot.save()
         self.assertEqual(self.payment_lot.status, m.PaymentLot.Statuses.PAID)
 
     def test_compute_status_partially_paid(self):
         m.Payment.objects.create(user=self.user, status=m.Payment.Statuses.PAID, payment_lot=self.payment_lot)
         m.Payment.objects.create(user=self.user, status=m.Payment.Statuses.PENDING, payment_lot=self.payment_lot)
+        self.payment_lot.status = self.payment_lot.compute_status()
         self.payment_lot.save()
         self.assertEqual(self.payment_lot.status, m.PaymentLot.Statuses.PARTIALLY_PAID)
 
     def test_compute_status_sent(self):
         m.Payment.objects.create(user=self.user, status=m.Payment.Statuses.SENT, payment_lot=self.payment_lot)
         m.Payment.objects.create(user=self.user, status=m.Payment.Statuses.SENT, payment_lot=self.payment_lot)
+        self.payment_lot.status = self.payment_lot.compute_status()
         self.payment_lot.save()
         self.assertEqual(self.payment_lot.status, m.PaymentLot.Statuses.SENT)
 

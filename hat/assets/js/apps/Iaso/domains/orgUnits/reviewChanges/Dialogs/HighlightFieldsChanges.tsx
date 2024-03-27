@@ -1,7 +1,11 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import { some, uniqBy, sortBy } from 'lodash';
 import { Box, TableCell, TableRow } from '@mui/material';
-import { NestedGroup, OrgUnitChangeRequestDetails } from '../types';
+import {
+    ExtendedNestedGroup,
+    NestedGroup,
+    OrgUnitChangeRequestDetails,
+} from '../types';
 import { ReviewOrgUnitFieldChanges } from './ReviewOrgUnitFieldChanges';
 import { NewOrgUnitField } from '../hooks/useNewFields';
 import InputComponent from '../../../../components/forms/InputComponent';
@@ -32,37 +36,34 @@ export const HighlightFields: FunctionComponent<Props> = ({
     isFetchingChangeRequest,
     changeRequest,
 }) => {
-    let changedFieldWithNewValues: NestedGroup[] = [];
-    let changedFieldWithOldValues: NestedGroup[] = [];
-
-    let allLeftAndRightFields: NestedGroup[] = [];
-    let changedFieldValues: NestedGroup[] = [];
-
-    if (fieldType && fieldType === 'array') {
-        allLeftAndRightFields = [];
-        changedFieldWithOldValues = sortBy(oldFieldValues, 'name');
-        changedFieldWithNewValues = sortBy(newFieldValues, 'name');
-    }
-    changedFieldValues = uniqBy(
-        changedFieldWithOldValues.concat(changedFieldWithNewValues),
-        'id',
-    );
-
-    allLeftAndRightFields = changedFieldValues.map(row => {
-        let left = false;
-        let right = false;
-        if (some(changedFieldWithNewValues, item => item.id === row.id)) {
-            right = true;
+    const allLeftAndRightFields: ExtendedNestedGroup[] = useMemo(() => {
+        let changedFieldWithNewValues: NestedGroup[] = [];
+        let changedFieldWithOldValues: NestedGroup[] = [];
+        if (fieldType && fieldType === 'array') {
+            changedFieldWithOldValues = sortBy(oldFieldValues, 'name');
+            changedFieldWithNewValues = sortBy(newFieldValues, 'name');
         }
-        if (some(changedFieldWithOldValues, item => item.id === row.id)) {
-            left = true;
-        }
-        return {
-            ...row,
-            left,
-            right,
-        };
-    });
+        const changedFieldValues = uniqBy(
+            changedFieldWithOldValues.concat(changedFieldWithNewValues),
+            'id',
+        );
+
+        return changedFieldValues.map(row => {
+            let left = false;
+            let right = false;
+            if (some(changedFieldWithNewValues, item => item.id === row.id)) {
+                right = true;
+            }
+            if (some(changedFieldWithOldValues, item => item.id === row.id)) {
+                left = true;
+            }
+            return {
+                ...row,
+                left,
+                right,
+            };
+        });
+    }, [fieldType, oldFieldValues, newFieldValues]);
 
     return (
         <TableRow>

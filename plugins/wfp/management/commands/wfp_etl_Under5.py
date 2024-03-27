@@ -12,9 +12,15 @@ logger = logging.getLogger(__name__)
 class Under5:
     def compute_gained_weight(self, initial_weight, current_weight):
         weight_gain = 0
+        weight_loss = 0
         if initial_weight is not None and current_weight is not None:
-            weight_gain = float(current_weight) - float(initial_weight)
-        return weight_gain
+            weight_difference = float(current_weight) - float(initial_weight)
+            if weight_difference > 0:
+                weight_gain = weight_difference
+            elif weight_difference < 0:
+                weight_loss = abs(weight_difference)
+
+        return {"weight_gain": weight_gain, "weight_loss": weight_loss}
 
     def group_visit_by_entity(self, entities):
         instances = []
@@ -52,8 +58,22 @@ class Under5:
                     if form_id == "Anthropometric visit child":
                         initial_weight = current_weight
                         instances[i]["initial_weight"] = initial_weight
+                    print("INITIAL WEIGHT ...:", initial_weight, "CURRENT WEIGHT ...:", current_weight)
+                    weight = self.compute_gained_weight(initial_weight, current_weight)
+                    print("WEIGHT ....:", weight, entity_id)
+                    print(
+                        "WEIGHT GAINED ....:",
+                        weight["weight_gain"],
+                        "WEIGHT LOSS ....:",
+                        weight["weight_loss"],
+                        entity_id,
+                        visit.get("id"),
+                    )
+                    # print("INSATNCE ...:", instances[i])
+                    # current_record["weight_gain"] = weight
+                    current_record["weight_gain"] = weight["weight_gain"]
+                    current_record["weight_loss"] = weight["weight_loss"]
 
-                    current_record["weight_gain"] = self.compute_gained_weight(initial_weight, current_weight)
                     if visit.get("created_at"):
                         current_record["date"] = visit.get("created_at").strftime("%Y-%m-%d")
 
@@ -81,6 +101,8 @@ class Under5:
             if visit:
                 if visit.get("weight_gain", None) is not None and visit.get("weight_gain", None) > 0:
                     current_journey["weight_gain"] = visit.get("weight_gain")
+                if visit.get("weight_loss", None) is not None and visit.get("weight_loss", None) > 0:
+                    current_journey["weight_loss"] = visit.get("weight_loss")
 
                 if visit["form_id"] == "Anthropometric visit child":
                     current_journey["nutrition_programme"] = ETL().program_mapper(visit)

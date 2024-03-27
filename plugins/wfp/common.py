@@ -21,6 +21,8 @@ class ETL:
         updated_at = datetime.date(2023, 7, 10)
         beneficiaries = (
             Instance.objects.filter(entity__entity_type__name=self.type)
+            # .filter(entity__id__in=[42, 46, 58, 77, 90, 111])
+            # .filter(entity__id__in=[49, 42])
             .filter(json__isnull=False)
             .filter(form__isnull=False)
             .filter(updated_at__gte=updated_at)
@@ -132,15 +134,24 @@ class ETL:
 
     def exit_type(self, visit):
         exit_type = None
-        if (visit.get("_transfer") is not None and visit.get("_transfer") == "1") and (
+        if (visit.get("new_programme") is not None and visit.get("new_programme") == "TSFP") and (
+            visit.get("transfer__int__") is not None and visit.get("transfer__int__") == "1"
+        ):
+            exit_type = "transfer_to_tsfp"
+        elif (visit.get("new_programme") is not None and visit.get("new_programme") == "OTP") and (
+            visit.get("transfer__int__") is not None and visit.get("transfer__int__") == "1"
+        ):
+            exit_type = "transfer_to_otp"
+
+        elif (visit.get("_transfer") is not None and visit.get("_transfer") == "1") and (
             visit.get("_transfer_to_tsfp") is not None and visit.get("_transfer_to_tsfp") == "1"
         ):
             exit_type = "transfer_to_tsfp"
+
         elif (visit.get("_transfer_to_otp") is not None and visit.get("_transfer_to_otp") == "1") or (
             visit.get("transfer_from_tsfp__bool__") is not None and visit.get("transfer_from_tsfp__bool__") == "1"
         ):
             exit_type = "transfer_to_otp"
-
         elif visit.get("reason_for_not_continuing") is not None and visit.get("reason_for_not_continuing") != "":
             exit_type = visit.get("reason_for_not_continuing")
 

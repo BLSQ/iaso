@@ -64,6 +64,20 @@ const useColumns = (
             Header: formatMessage(MESSAGES.parent),
             id: 'org_unit__parent__name',
             accessor: 'org_unit_parent_name',
+            Cell: settings => {
+                const parentId = settings.row.original?.org_unit_parent_id;
+                const parentName = settings.row.original?.org_unit_parent_name;
+                return parentId && parentName ? (
+                    <LinkToOrgUnit
+                        orgUnit={{
+                            id: parentId,
+                            name: parentName,
+                        }}
+                    />
+                ) : (
+                    <>--</>
+                );
+            },
         },
         {
             Header: formatMessage(MESSAGES.orgUnitsType),

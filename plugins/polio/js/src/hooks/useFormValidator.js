@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
-import * as yup from 'yup';
-import moment from 'moment';
 import { useSafeIntl } from 'bluesquare-components';
+import moment from 'moment';
+import * as yup from 'yup';
 import MESSAGES from '../constants/messages';
 import { dateFormat } from '../domains/Calendar/campaignCalendar/constants';
 

@@ -6,7 +6,7 @@ import { useSnackQuery } from '../../../../../../../../hat/assets/js/apps/Iaso/l
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 export const useGetCampaignTypes = (): UseQueryResult<
-    DropdownOptions<number>[],
+    DropdownOptions<string>[],
     Error
 > => {
     return useSnackQuery({
@@ -16,6 +16,7 @@ export const useGetCampaignTypes = (): UseQueryResult<
         options: {
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
+            keepPreviousData: true,
             select: data => {
                 return (
                     data?.map((campaignType: CampaignType) => {

@@ -2,7 +2,7 @@
 import { Box, Grid, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { Field, useFormikContext } from 'formik';
-import React, { useContext, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { userHasPermission } from '../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils.ts';
 import { SendEmailButton } from '../../../components/Buttons/SendEmailButton';
@@ -16,10 +16,9 @@ import { MultiSelect } from '../../../components/Inputs/MultiSelect.tsx';
 import { OrgUnitsLevels } from '../../../components/Inputs/OrgUnitsSelect.tsx';
 import MESSAGES from '../../../constants/messages';
 import { polioViruses } from '../../../constants/virus.ts';
-import FormAdditionalPropsContext from '../../../contexts/FormAdditionalPropsContext.ts';
 import { useStyles } from '../../../styles/theme';
 import { useGetGroupedCampaigns } from '../../GroupedCampaigns/hooks/useGetGroupedCampaigns.ts';
-import { useGetCampaignTypes } from '../hooks/api/useGetCampaignTypes.ts';
+import { useIsPolioCampaignCheck } from '../hooks/useIsPolioCampaignCheck.ts';
 import { EmailListForCountry } from './EmailListForCountry/EmailListForCountry';
 
 export const baseInfoFormFields = [
@@ -41,14 +40,12 @@ export const baseInfoFormFields = [
 
 export const BaseInfoForm = () => {
     const classes = useStyles();
-    const context = useContext(FormAdditionalPropsContext);
-    const { isFetchingSelectedCampaign } = context || { isFetching: false };
+    const isPolio = useIsPolioCampaignCheck();
 
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
     const isUserAdmin = userHasPermission('iaso_polio_config', currentUser);
     const { data: groupedCampaigns } = useGetGroupedCampaigns();
-    const { data: campaignTypes } = useGetCampaignTypes();
     const groupedCampaignsOptions = useMemo(
         () =>
             groupedCampaigns?.results.map(result => ({
@@ -61,15 +58,21 @@ export const BaseInfoForm = () => {
 
     const { values } = useFormikContext();
     const { top_level_org_unit_id } = values;
-    const isPolio = useMemo(() => {
-        return (
-            campaignTypes?.some(
-                type =>
-                    type.value === 'polio' &&
-                    values.campaign_types.includes(type.original.id),
-            ) ?? false
-        );
-    }, [campaignTypes, values.campaign_types]);
+    const getLabelByKey = useCallback(
+        key => {
+            if (isPolio === undefined) return '';
+            const labels = {
+                obr_name: isPolio
+                    ? MESSAGES.obrName
+                    : MESSAGES.campaignIdentifier,
+                gpei_coordinator: isPolio
+                    ? MESSAGES.gpeiCoordinator
+                    : MESSAGES.responsibleOfficer,
+            };
+            return formatMessage(labels[key]);
+        },
+        [formatMessage, isPolio],
+    );
     return (
         <>
             <Grid container spacing={2}>
@@ -89,15 +92,7 @@ export const BaseInfoForm = () => {
                         />
 
                         <Field
-                            label={
-                                isFetchingSelectedCampaign
-                                    ? ''
-                                    : formatMessage(
-                                          isPolio
-                                              ? MESSAGES.obrName
-                                              : MESSAGES.campaignIdentifier,
-                                      )
-                            }
+                            label={getLabelByKey('obr_name')}
                             name="obr_name"
                             component={TextInput}
                             shrinkLabel={false}
@@ -143,15 +138,7 @@ export const BaseInfoForm = () => {
                         shrinkLabel={false}
                     />
                     <Field
-                        label={
-                            isFetchingSelectedCampaign
-                                ? ''
-                                : formatMessage(
-                                      isPolio
-                                          ? MESSAGES.gpeiCoordinator
-                                          : MESSAGES.responsibleOfficer,
-                                  )
-                        }
+                        label={getLabelByKey('gpei_coordinator')}
                         name="gpei_coordinator"
                         component={TextInput}
                         shrinkLabel={false}

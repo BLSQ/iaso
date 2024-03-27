@@ -191,6 +191,41 @@ class ReasonForDelay(SoftDeletableModel):
         return self.name
 
 
+class RoundQuerySet(models.QuerySet):
+    def as_ui_dropdown_data(self):
+        """
+        Returns a data structure suitable to build dependent select dropdowns in the UI:
+        {
+            "countries": [
+                {"value": 1, "label": "Niger"}
+            ],
+            "campaigns": [
+                {"value": "e5a1209b-8881-4b66-82a0-429a53dbc94b", "label": "nopv2", "country_id": 1}
+            ],
+            "rounds": [
+                {"value": 1, "label": 1, "campaign_id": "e5a1209b-8881-4b66-82a0-429a53dbc94b"}
+            ]
+        }
+        """
+        data = {"countries": {}, "campaigns": {}, "rounds": []}
+
+        for rnd in self:
+            campaign_uuid = str(rnd.campaign_id)
+            data["countries"].setdefault(
+                rnd.campaign.country_id,
+                {"value": rnd.campaign.country_id, "label": rnd.campaign.country.name},
+            )
+            data["campaigns"].setdefault(
+                campaign_uuid,
+                {"value": campaign_uuid, "label": rnd.campaign.obr_name, "country_id": rnd.campaign.country_id},
+            )
+            data["rounds"].append({"value": rnd.id, "label": rnd.number, "campaign_id": campaign_uuid})
+
+        data["countries"] = data["countries"].values()
+        data["campaigns"] = data["campaigns"].values()
+        return data
+
+
 class Round(models.Model):
     class Meta:
         ordering = ["number", "started_at"]
@@ -248,6 +283,8 @@ class Round(models.Model):
     forma_comment = models.TextField(blank=True, null=True)
     percentage_covered_target_population = models.IntegerField(null=True, blank=True)
     # End of vaccine management
+
+    objects = models.Manager.from_queryset(RoundQuerySet)()
 
     def get_item_by_key(self, key):
         return getattr(self, key)

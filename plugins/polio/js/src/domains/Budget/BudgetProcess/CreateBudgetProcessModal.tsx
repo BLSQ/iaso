@@ -14,7 +14,7 @@ import MESSAGES from '../messages';
 import { MultiSelect } from '../../../components/Inputs/MultiSelect';
 import { Options } from '../types';
 import { SingleSelect } from '../../../components/Inputs/SingleSelect';
-import { useAvailableRoundsDependentDropdowns } from '../hooks/api/useGetBudgetProcessAvailableRounds';
+import { useAvailableRoundsForCreate } from '../hooks/api/useGetBudgetProcessAvailableRounds';
 import { useCreateBudgetProcess } from '../hooks/api/useCreateBudgetProcess';
 import { useCreateBudgetProcessSchema } from './validation';
 
@@ -30,7 +30,7 @@ const CreateBudgetProcessModal: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
 
     const { data: dropdownsData, isFetching: isFetchingDropdownData } =
-        useAvailableRoundsDependentDropdowns();
+        useAvailableRoundsForCreate();
 
     const { mutate: confirm } = useCreateBudgetProcess();
     const schema = useCreateBudgetProcessSchema();

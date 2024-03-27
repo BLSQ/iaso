@@ -7,7 +7,7 @@ import { useSnackQuery } from '../../../../../../../../hat/assets/js/apps/Iaso/l
 import { DropdownOptions, OptionsRounds } from '../../types';
 import { formatRoundNumber } from '../../utils';
 
-export const useAvailableRoundsDependentDropdowns = (): UseQueryResult<
+export const useAvailableRoundsForCreate = (): UseQueryResult<
     DropdownOptions,
     Error
 > => {
@@ -35,7 +35,7 @@ export const useAvailableRoundsDependentDropdowns = (): UseQueryResult<
     return useSnackQuery({
         queryKey: ['new_budget_process_dropdowns'],
         queryFn: () =>
-            getRequest('/api/polio/budget/available_rounds_dropdowns/'),
+            getRequest('/api/polio/budget/available_rounds_for_create/'),
         options: {
             keepPreviousData: true,
             select,
@@ -43,7 +43,7 @@ export const useAvailableRoundsDependentDropdowns = (): UseQueryResult<
     });
 };
 
-export const useGetAvailableRoundsForBudgetProcess = (
+export const useAvailableRoundsForUpdate = (
     campaignID: string,
     budgetProcessId: number,
 ): UseQueryResult<OptionsRounds[], Error> => {
@@ -65,7 +65,7 @@ export const useGetAvailableRoundsForBudgetProcess = (
         queryKey: ['new_budget_process_dropdowns'],
         queryFn: () =>
             getRequest(
-                `/api/polio/budget/available_rounds/?campaign_id=${campaignID}&budget_process_id=${budgetProcessId}`,
+                `/api/polio/budget/available_rounds_for_update/?campaign_id=${campaignID}&budget_process_id=${budgetProcessId}`,
             ),
         options: {
             keepPreviousData: true,

@@ -10,7 +10,7 @@ from django.utils.safestring import mark_safe
 from iaso.admin import IasoJSONEditorWidget
 from plugins.polio.api.vaccines.supply_chain import validate_rounds_and_campaign
 
-from .budget.models import BudgetStep, BudgetStepFile, BudgetStepLink, MailTemplate, WorkflowModel
+from .budget.models import BudgetProcess, BudgetStep, BudgetStepFile, BudgetStepLink, MailTemplate, WorkflowModel
 from .models import (
     Campaign,
     CampaignType,
@@ -263,6 +263,30 @@ class NotificationAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return super().get_queryset(request).select_related("org_unit")
+
+
+class RoundAdminInline(admin.TabularInline):
+    model = Round
+    extra = 0
+    show_change_link = True
+    can_delete = False
+    fields = ("id", "started_at", "number", "campaign")
+    readonly_fields = ("id", "started_at", "number", "campaign")
+
+
+class BudgetStepAdminInline(admin.TabularInline):
+    model = BudgetStep
+    extra = 0
+    show_change_link = True
+    can_delete = False
+    fields = ("id", "created_at", "transition_key", "created_by")
+    readonly_fields = ("id", "created_at", "transition_key", "created_by")
+
+
+@admin.register(BudgetProcess)
+class BudgetProcessAdmin(admin.ModelAdmin):
+    raw_id_fields = ("created_by",)
+    inlines = [RoundAdminInline, BudgetStepAdminInline]
 
 
 admin.site.register(RoundDateHistoryEntry)

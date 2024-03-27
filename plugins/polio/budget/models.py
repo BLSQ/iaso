@@ -17,14 +17,13 @@ from iaso.utils.models.soft_deletable import SoftDeletableModel
 from plugins.polio.budget import workflow
 from plugins.polio.budget.workflow import next_transitions, can_user_transition, Transition, Node, Workflow, Category
 from plugins.polio.time_cache import time_cache
+from plugins.polio.models import Campaign, PAYMENT, Round
 
 
 class BudgetStepQuerySet(models.QuerySet):
     def filter_for_user(self, user: Union[User, AnonymousUser]):
-        from plugins.polio.models import Campaign
-
         campaigns = Campaign.objects.filter_for_user(user)  # type: ignore
-        return self.filter(campaign__in=campaigns)
+        return self.filter(budget_process__rounds__campaign__in=campaigns).distinct()
 
 
 # workaround for MyPy
@@ -38,12 +37,98 @@ def model_field_exists(campaign, field):
     return True if field in campaign_fields else False
 
 
+class BudgetProcess(SoftDeletableModel):
+    """
+    A `Budget Process` for a `Round` of a `Campaign`.
+
+    DB relationships:
+
+    +---------------+      +---------------+      +----------+
+    | BudgetStep(s) |  ->  | BudgetProcess |  <-  | Round(s) |
+    +---------------+      +---------------+      +----------+
+    """
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey("auth.User", on_delete=models.PROTECT)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    status = models.CharField(max_length=100, null=True, blank=True)
+    current_state_key = models.CharField(max_length=100, default="-")
+    current_state_label = models.CharField(max_length=100, blank=True)
+
+    # Budget tab.
+    # These fields can be either filled manually or via the budget workflow when a step is done.
+    ra_completed_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    who_sent_budget_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    unicef_sent_budget_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    gpei_consolidated_budgets_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    submitted_to_rrt_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    feedback_sent_to_gpei_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    re_submitted_to_rrt_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    submitted_to_orpg_operations1_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    feedback_sent_to_rrt1_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    re_submitted_to_orpg_operations1_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    submitted_to_orpg_wider_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    submitted_to_orpg_operations2_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    feedback_sent_to_rrt2_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    re_submitted_to_orpg_operations2_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    submitted_for_approval_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    feedback_sent_to_orpg_operations_who_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    approved_by_who_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    approved_by_unicef_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    approved_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    approval_confirmed_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    payment_mode = models.CharField(max_length=30, choices=PAYMENT, blank=True)
+    district_count = models.IntegerField(null=True, blank=True)
+
+    # Fund release part of the budget form. Will be migrated to workflow fields later.
+    who_disbursed_to_co_at = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_("Disbursed to CO (WHO)"),
+    )
+    who_disbursed_to_moh_at = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_("Disbursed to MOH (WHO)"),
+    )
+    unicef_disbursed_to_co_at = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_("Disbursed to CO (UNICEF)"),
+    )
+    unicef_disbursed_to_moh_at = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_("Disbursed to MOH (UNICEF)"),
+    )
+
+    no_regret_fund_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+
+    class Meta:
+        verbose_name = "Budget Process"
+        verbose_name_plural = "Budget Processes"
+
+    def __str__(self):
+        return f"{self.pk} - {self.status}"
+
+
 class BudgetStep(SoftDeletableModel):
     class Meta:
         ordering = ["-updated_at"]
 
     objects = BudgetManager()
-    campaign = models.ForeignKey("Campaign", on_delete=models.PROTECT, related_name="budget_steps")
+    # TODO: remove the `campaign` field after deployment of the "multi round budget".
+    campaign = models.ForeignKey("Campaign", on_delete=models.PROTECT, related_name="budget_steps", null=True)
+    budget_process = models.ForeignKey(
+        "BudgetProcess", on_delete=models.PROTECT, related_name="budget_steps", null=True
+    )
     transition_key = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey("auth.User", on_delete=models.PROTECT)

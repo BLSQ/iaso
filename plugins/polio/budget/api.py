@@ -1,5 +1,7 @@
 from typing import Type
-from django.db.models import QuerySet, Max
+
+from django.contrib.postgres.aggregates import ArrayAgg
+from django.db.models import QuerySet, F
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
@@ -10,40 +12,36 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
+from hat.menupermissions import models as permission
 from iaso.api.common import CSVExportMixin, ModelViewSet, DeletionFilterBackend, HasPermission
-from plugins.polio.budget.models import BudgetStep, MailTemplate, get_workflow, BudgetStepFile
+from iaso.api.common import CustomFilterBackend
+from plugins.polio.budget.models import BudgetStep, MailTemplate, get_workflow, BudgetStepFile, BudgetProcess
 from plugins.polio.budget.serializers import (
-    CampaignBudgetSerializer,
-    ExportCampaignBudgetSerializer,
-    TransitionToSerializer,
+    BudgetProcessSerializer,
+    BudgetProcessWriteSerializer,
     BudgetStepSerializer,
+    ExportBudgetProcessSerializer,
+    TransitionOverrideSerializer,
+    TransitionToSerializer,
     UpdateBudgetStepSerializer,
     WorkflowSerializer,
-    TransitionOverrideSerializer,
 )
-from iaso.api.common import CustomFilterBackend
 from plugins.polio.models import Campaign
-from hat.menupermissions import models as permission
 
 
-# FIXME maybe: Maybe we should inherit from CampaignViewSet directly to not duplicate all the order and filter logic
-# But then we would inherit all the other actions too
 @swagger_auto_schema(tags=["budget"])
 class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
     """
-    Campaign endpoint with budget information.
+    Budget information endpoint.
 
-    You can request specific field by using the ?fields parameter
+    You can request specific field by using the `?fields` parameter.
     """
 
-    serializer_class = CampaignBudgetSerializer
-    exporter_serializer_class = ExportCampaignBudgetSerializer
+    exporter_serializer_class = ExportBudgetProcessSerializer
     export_filename = "campaigns_budget_list_{date}.csv"
     permission_classes = [HasPermission(permission.POLIO_BUDGET)]  # type: ignore
     use_field_order = True
 
-    # Make this read only
-    # FIXME : remove POST
     http_method_names = ["get", "head", "post"]
     filter_backends = [
         filters.OrderingFilter,
@@ -52,50 +50,39 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
         CustomFilterBackend,
     ]
 
+    def get_serializer_class(self):
+        if self.action == "create":
+            return BudgetProcessWriteSerializer
+        return BudgetProcessSerializer
+
     def get_queryset(self) -> QuerySet:
         user = self.request.user
         campaigns = Campaign.objects.filter_for_user(user)
-        campaigns = campaigns.annotate(budget_last_updated_at=Max("budget_steps__created_at"))
-        return campaigns
+        budget_processes = (
+            BudgetProcess.objects.filter(rounds__campaign__in=campaigns)
+            .distinct()
+            .annotate(
+                obr_name=F("rounds__campaign__obr_name"),
+                country_name=F("rounds__campaign__country__name"),
+                round_numbers=ArrayAgg("rounds__number"),
+            )
+        )
+        return budget_processes
 
     def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)
 
         org_unit_groups = self.request.query_params.get("orgUnitGroups")
         if org_unit_groups:
-            queryset = queryset.filter(country__groups__in=org_unit_groups.split(","))
+            queryset = queryset.filter(rounds__campaign__country__groups__in=org_unit_groups.split(","))
 
         return queryset
 
-    ordering_fields = [
-        "obr_name",
-        "cvdpv2_notified_at",
-        "detection_status",
-        "first_round_started_at",
-        "last_round_started_at",
-        "country__name",
-        "last_budget_event__created_at",
-        "last_budget_event__type",
-        "last_budget_event__status",
-        "budget_current_state_key",
-    ]
-    filterset_fields = {
-        "last_budget_event__status": ["exact"],
-        "country__name": ["exact"],
-        "country__id": ["in"],
-        "grouped_campaigns__id": ["in", "exact"],
-        "obr_name": ["exact", "contains"],
-        "cvdpv2_notified_at": ["gte", "lte", "range"],
-        "created_at": ["gte", "lte", "range"],
-        "rounds__started_at": ["gte", "lte", "range"],
-        "budget_current_state_key": ["exact", "in"],
-    }
-
     @action(detail=False, methods=["POST"], serializer_class=TransitionToSerializer)
     def transition_to(self, request):
-        "Transition campaign to next state. Use multipart/form-data to send files"
-        # data = request.data.dict()
-        # data['links'] = request.data.getlist('links')
+        """
+        Transition `BudgetProcess` to next state. Use multipart/form-data to send files.
+        """
         data = request.data
         serializer = TransitionToSerializer(data=data, context={"request": request})
         serializer.is_valid(raise_exception=True)
@@ -107,10 +94,12 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
         detail=False,
         methods=["POST"],
         serializer_class=TransitionOverrideSerializer,
-        permission_classes=[HasPermission("iaso_polio_budget_admin")],
+        permission_classes=[HasPermission(permission.POLIO_BUDGET_ADMIN)],
     )
     def override(self, request):
-        "Transition campaign to next state. Use multipart/form-data to send files"
+        """
+        Override `BudgetProcess` state.
+        """
         data = request.data
         serializer = TransitionOverrideSerializer(data=data, context={"request": request})
         serializer.is_valid(raise_exception=True)

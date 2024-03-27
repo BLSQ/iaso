@@ -742,10 +742,10 @@ class BudgetCampaignViewSetTestCase(APITestCase):
 
     def test_csv_export(self):
         self.client.force_login(self.user)
-        r = self.client.get("/api/polio/budget/export_csv/?fields=obr_name")
+        r = self.client.get("/api/polio/budget/export_csv/?fields=obr_name,rounds")
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r["Content-Type"], "text/csv")
-        self.assertEqual(r.content, b"OBR name\r\ntest campaign\r\ntest campaign\r\n")
+        self.assertEqual(r.content, b'OBR name,Rounds\r\ntest campaign,"1,2"\r\ntest campaign,3\r\n')
 
     def test_csv_export_date(self):
         self.client.force_login(self.user)

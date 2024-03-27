@@ -681,16 +681,21 @@ class UpdateBudgetStepSerializer(serializers.ModelSerializer):
 class ExportBudgetProcessSerializer(BudgetProcessSerializer):
     class Meta:
         model = BudgetProcess
-        fields = ["obr_name", "current_state_label", "country", "updated_at"]
+        fields = ["obr_name", "current_state_label", "country", "rounds", "updated_at"]
         labels = {
             "obr_name": "OBR name",
             "updated_at": "Last update",
             "country": "Country",
+            "rounds": "Rounds",
             "current_state_label": "Budget state",
         }
 
     country = serializers.SerializerMethodField()
     updated_at = serializers.SerializerMethodField()
+    rounds = serializers.SerializerMethodField()
+
+    def get_rounds(self, budget_process: BudgetProcess):
+        return ",".join([str(num) for num in budget_process.rounds.values_list("number", flat=True)])
 
     def get_country(self, budget_process: BudgetProcess):
         return budget_process.country_name

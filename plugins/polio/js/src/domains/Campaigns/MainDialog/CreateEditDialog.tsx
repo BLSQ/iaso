@@ -27,6 +27,7 @@ import { enqueueSnackbar } from '../../../../../../../hat/assets/js/apps/Iaso/re
 import { Form } from '../../../components/Form';
 import MESSAGES from '../../../constants/messages';
 import { CAMPAIGN_HISTORY_URL } from '../../../constants/routes';
+import { CampaignFormValues } from '../../../constants/types';
 import { FormAdditionalPropsProvider } from '../../../contexts/FormAdditionalPropsContext';
 import { useFormValidator } from '../../../hooks/useFormValidator';
 import { useStyles } from '../../../styles/theme';
@@ -34,6 +35,7 @@ import { convertEmptyStringToNull } from '../../../utils/convertEmptyStringToNul
 import { useGetCampaignLogs } from '../campaignHistory/hooks/useGetCampaignHistory';
 import { useGetCampaign } from '../hooks/api/useGetCampaign';
 import { useSaveCampaign } from '../hooks/api/useSaveCampaign';
+import { useIsPolioCampaignCheck } from '../hooks/useIsPolioCampaignCheck';
 import { PolioDialogTabs } from './PolioDialogTabs';
 import { usePolioDialogTabs } from './usePolioDialogTabs';
 
@@ -51,6 +53,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
     campaignId,
 }) => {
     const { mutate: saveCampaign, isLoading: isSaving } = useSaveCampaign();
+
     const { data: selectedCampaign, isFetching } = useGetCampaign(
         isOpen && campaignId,
     );
@@ -61,9 +64,10 @@ const CreateEditDialog: FunctionComponent<Props> = ({
         isOpen,
     );
     const [isBackdropOpen, setIsBackdropOpen] = useState(false);
-    const schema = useFormValidator();
+    const { plainSchema, polioSchema } = useFormValidator();
+    // const [schema, updateSchema] = useState(plainSchema);
     const { formatMessage } = useSafeIntl();
-
+    const isPolio = useIsPolioCampaignCheck();
     const classes: Record<string, string> = useStyles();
 
     const handleSubmit = async (values, helpers) => {
@@ -114,14 +118,26 @@ const CreateEditDialog: FunctionComponent<Props> = ({
         initialValues,
         enableReinitialize: true,
         validateOnBlur: true,
-        validationSchema: schema,
+        validate: async (values: CampaignFormValues) => {
+            const schema = isPolio(values) ? polioSchema : plainSchema;
+            try {
+                await schema.validate(values, { abortEarly: false });
+                return {};
+            } catch (error) {
+                return error.inner.reduce((acc, err) => {
+                    if (!acc[err.path]) {
+                        acc[err.path] = err.message;
+                    }
+                    return acc;
+                }, {});
+            }
+        },
         onSubmit: (values, helpers) => {
             helpers.setSubmitting(true);
             handleSubmit(values, helpers);
         },
     });
     const { touched } = formik;
-
     const handleClose = () => {
         formik.resetForm();
         onClose();

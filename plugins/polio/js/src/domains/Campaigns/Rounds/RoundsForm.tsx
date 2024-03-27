@@ -7,7 +7,7 @@ import isEqual from 'lodash/isEqual';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 
 import MESSAGES from '../../../constants/messages';
-import { Campaign, Round } from '../../../constants/types';
+import { CampaignFormValues, Round } from '../../../constants/types';
 import { useStyles } from '../../../styles/theme';
 import { ScopeForm } from '../Scope/ScopeForm';
 import { RoundForm } from './RoundForm';
@@ -37,7 +37,7 @@ export const RoundsForm: FunctionComponent = () => {
     const {
         values: { rounds = [] },
         setFieldValue,
-    } = useFormikContext<Campaign>();
+    } = useFormikContext<CampaignFormValues>();
     const { formatMessage } = useSafeIntl();
     const [lastRound, setLastRound] = useState(rounds[rounds.length - 1]);
 

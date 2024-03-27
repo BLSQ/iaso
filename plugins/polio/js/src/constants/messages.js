@@ -309,10 +309,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.outbreakdeclarationdate',
         defaultMessage: 'Outbreak declaration date',
     },
-    baseInfoFormTitle: {
-        id: 'iaso.polio.form.title.baseInfoFormTitle',
-        defaultMessage: 'Enter information about the new outbreak response',
-    },
     verificationScore: {
         id: 'iaso.polio.form.label.verificationScore',
         defaultMessage: 'Verification Score (/20)',

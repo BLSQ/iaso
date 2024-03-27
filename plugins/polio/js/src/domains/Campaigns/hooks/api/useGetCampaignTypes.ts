@@ -5,10 +5,9 @@ import { CampaignType } from '../../../../constants/types';
 import { useSnackQuery } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
-export const useGetCampaignTypes = (): UseQueryResult<
-    DropdownOptions<string>[],
-    Error
-> => {
+export const useGetCampaignTypes = (
+    useIds = false,
+): UseQueryResult<DropdownOptions<string>[], Error> => {
     return useSnackQuery({
         queryKey: ['campaign_types_dropdown'],
         queryFn: () =>
@@ -21,7 +20,7 @@ export const useGetCampaignTypes = (): UseQueryResult<
                 return (
                     data?.map((campaignType: CampaignType) => {
                         return {
-                            value: campaignType.slug,
+                            value: useIds ? campaignType.id : campaignType.slug,
                             label: campaignType.name,
                             original: campaignType,
                         };

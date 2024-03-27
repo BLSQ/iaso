@@ -28,11 +28,15 @@ export const EditCampaignModal: FunctionComponent<Props> = ({
     }, [campaignId, dispatch, params]);
 
     const closeDialog = useCallback(() => {
+        const newParams = {
+            ...params,
+        };
+        delete newParams.campaignId;
         dispatch(
             // Passing the account id to avoid a redirection which would slow down the closing of the modal
-            redirectTo(DASHBOARD_BASE_URL, { accountId: params.accountId }),
+            redirectTo(DASHBOARD_BASE_URL, newParams),
         );
-    }, [dispatch, params.accountId]);
+    }, [dispatch, params]);
 
     // Effect required when using deep linking
     useEffect(() => {

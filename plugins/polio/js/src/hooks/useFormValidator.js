@@ -3,7 +3,7 @@ import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import * as yup from 'yup';
 import MESSAGES from '../constants/messages';
-import { dateFormat } from '../domains/Calendar/campaignCalendar/constants';
+import { dateFormat } from '../domains/Calendar/campaignCalendar/constants.ts';
 
 const getRounds = context => {
     return context?.from[context.from.length - 1]?.value?.rounds || [];
@@ -316,23 +316,14 @@ export const useFormValidator = () => {
     // eslint-disable-next-line camelcase
     const round_shape = useRoundShape();
 
-    return yup.object().shape({
-        epid: yup.string().nullable(),
-        obr_name: yup
-            .string()
-            .trim()
-            .required(formatMessage(MESSAGES.requiredField)),
-        initial_org_unit: yup
-            .number()
-            .positive()
-            .integer()
-            .required(formatMessage(MESSAGES.requiredField)),
-        grouped_campaigns: yup.array(yup.number()).nullable(),
+    const polioSchema = {
         virus: yup
             .string()
             .nullable()
             .required(formatMessage(MESSAGES.requiredField)),
-        description: yup.string().nullable(),
+        vaccines: yup.string().nullable(),
+        epid: yup.string().nullable(),
+        grouped_campaigns: yup.array(yup.number()).nullable(),
         onset_at: yup
             .date()
             .nullable()
@@ -347,9 +338,6 @@ export const useFormValidator = () => {
             .nullable()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .isValidOutbreakDeclaration(formatMessage),
-
-        cvdpv_notified_at: yup.date().nullable(),
-        verification_score: yup.number().nullable().positive().integer(),
 
         detection_first_draft_submitted_at: yup.date().nullable(),
         detection_rrt_oprtt_approval_at: yup.date().nullable(),
@@ -419,6 +407,36 @@ export const useFormValidator = () => {
             .positive()
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
+    };
+
+    const plainSchema = {
+        campaign_types: yup
+            .array(yup.number())
+            .nullable()
+            .required(formatMessage(MESSAGES.requiredField))
+            .min(1, formatMessage(MESSAGES.requiredField)),
+        initial_org_unit: yup
+            .number()
+            .positive()
+            .integer()
+            .required(formatMessage(MESSAGES.requiredField)),
+        obr_name: yup
+            .string()
+            .trim()
+            .required(formatMessage(MESSAGES.requiredField)),
+        description: yup.string().nullable(),
+        gpei_coordinator: yup.string().nullable(),
+
+        verification_score: yup.number().nullable().positive().integer(),
+        is_preventive: yup.bool(),
+        is_test: yup.bool(),
         rounds: yup.array(round_shape).nullable(),
-    });
+    };
+    return {
+        polioSchema: yup.object().shape({
+            ...plainSchema,
+            ...polioSchema,
+        }),
+        plainSchema: yup.object().shape(plainSchema),
+    };
 };

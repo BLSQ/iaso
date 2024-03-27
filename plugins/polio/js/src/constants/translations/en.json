@@ -178,7 +178,6 @@
     "iaso.polio.form.label.virusNotificationDate": "Virus notification date",
     "iaso.polio.form.label.who_sent_budget": "WHO CO sent budget",
     "iaso.polio.form.pleaseCreateVrf": "Create VRF to unlock this tab",
-    "iaso.polio.form.title.baseInfoFormTitle": "Enter information about the new outbreak response",
     "iaso.polio.form.validator.error.endDateAfterNextStartDate": "End date can't be after or equal next round start date",
     "iaso.polio.form.validator.error.endDateBeforeStartDate": "End date can't be before start date",
     "iaso.polio.form.validator.error.positiveInteger": "Please use a positive integer",

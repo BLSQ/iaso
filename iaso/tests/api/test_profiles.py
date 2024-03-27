@@ -137,10 +137,10 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200, response)
 
     def test_profile_me_without_auth(self):
-        """GET /profiles/me/ without auth should result in a 403"""
+        """GET /profiles/me/ without auth should result in a 401"""
 
         response = self.client.get("/api/profiles/me/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     def test_profile_me_ok(self):
         """GET /profiles/me/ with auth"""
@@ -168,10 +168,10 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(response_data["user_name"], "johndoe")
 
     def test_profile_list_no_auth(self):
-        """GET /profiles/ without auth -> 403"""
+        """GET /profiles/ without auth -> 401"""
 
         response = self.client.get("/api/profiles/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     def test_profile_list_read_only_permissions(self):
         """GET /profiles/ with auth (user has read only permissions)"""
@@ -604,7 +604,6 @@ class ProfileAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         response_data = response.json()
         self.assertIn("account", response_data)
-        print(response_data["account"])
         self.assertEqual(response_data["account"]["feature_flags"], [])
 
         # add a feature flags
@@ -614,7 +613,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         response_data = response.json()
         self.assertIn("account", response_data)
-        print(response_data["account"])
+
         self.assertEqual(response_data["account"]["feature_flags"], ["shape"])
 
         # remove feature flags
@@ -623,7 +622,7 @@ class ProfileAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         response_data = response.json()
         self.assertIn("account", response_data)
-        print(response_data["account"])
+
         self.assertEqual(response_data["account"]["feature_flags"], [])
 
     def test_search_user_by_permissions(self):

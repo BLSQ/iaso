@@ -1089,7 +1089,6 @@ class VaccineAuthorizationAPITestCase(APITestCase):
 
         response = self.client.post("/api/polio/vaccineauthorizations/", data=data)
 
-        print("RESPONSE: ", response.data)
         self.assertEqual(response.status_code, 403)
         self.assertEqual(response.data["error"], "A vaccine authorization is already validated for this country")
 

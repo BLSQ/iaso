@@ -1,4 +1,4 @@
-import { Pagination, IntlFormatMessage } from 'bluesquare-components';
+import { IntlFormatMessage, Pagination } from 'bluesquare-components';
 import { Nullable } from '../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { Profile } from '../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { ReasonForDelay } from '../domains/Campaigns/Rounds/ReasonForDelayModal/hooks/reasons';
@@ -246,8 +246,8 @@ export type RoundDateHistoryEntry = {
 
 export type Round = {
     id: number;
-    started_at: string;
-    ended_at: string;
+    started_at: Nullable<string>;
+    ended_at: Nullable<string>;
     mop_up_started_at: Nullable<string>; // date
     mop_up_ended_at: Nullable<string>; // date
     im_started_at: Nullable<string>; // date
@@ -368,6 +368,7 @@ export type Campaign = {
     country: Nullable<number>;
     group: Nullable<number>; // Doesn't appear nullbale in swagger but had anull value in payload
     last_budget_event: Nullable<number>;
+    campaign_types: CampaignType[];
 };
 
 export type MergedShapeProperties = {
@@ -420,7 +421,7 @@ export type Shape = {
     org_unit_type_depth: number;
     org_unit_type_id: number;
     parent_id: number;
-    parent_name: Nullable<string>;
+    parent_name?: string;
     short_name: string;
     source_id: number;
     source_name: string;
@@ -437,3 +438,30 @@ export type MapColor = {
 export type Side = 'left' | 'right';
 
 export const Sides = { left: 'left', right: 'right' };
+
+export type CampaignType = {
+    id: number;
+    name: string;
+    slug: string;
+};
+
+type NestedRound = {
+    id: number;
+    number: number;
+    started_at: Nullable<string>;
+    ended_at: Nullable<string>;
+};
+
+export type CampaignListItem = {
+    id: string;
+    epid: Nullable<string>;
+    obr_name: string;
+    account: number;
+    cvdpv2_notified_at: Nullable<string>;
+    top_level_org_unit_name: Nullable<string>;
+    top_level_org_unit_id: number;
+    rounds: NestedRound[];
+    general_status: string;
+    grouped_campaigns: number[];
+    campaign_types: CampaignType[];
+};

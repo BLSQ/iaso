@@ -9,7 +9,7 @@ from hat.audit.models import Modification
 from iaso import models as m
 from iaso.models import Account
 from iaso.test import APITestCase
-from plugins.polio.models import Round, CampaignType
+from plugins.polio.models import CampaignType, Round
 from plugins.polio.preparedness.spreadsheet_manager import *
 
 
@@ -196,7 +196,7 @@ class PolioAPITestCase(APITestCase):
             ],
         }
         response = self.client.post("/api/polio/campaigns/", payload, format="json")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
         self.assertEqual(Campaign.objects.count(), 0)
 
     def test_create_campaign(self):
@@ -740,6 +740,13 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(len(response_data), 1)
         self.assertEqual(response_data[0]["id"], str(campaign1.id))
 
+        # Filter by single campaign type using slug
+        response = self.client.get(f"/api/polio/campaigns/?campaign_types={campaign_type1.slug}", format="json")
+        self.assertEqual(response.status_code, 200, response.content)
+        response_data = response.json()
+        self.assertEqual(len(response_data), 1)
+        self.assertEqual(response_data[0]["id"], str(campaign1.id))
+
         # Filter by multiple campaign types
         response = self.client.get(
             f"/api/polio/campaigns/?campaign_types={campaign_type1.id},{campaign_type2.id}", format="json"
@@ -751,8 +758,25 @@ class PolioAPITestCase(APITestCase):
         self.assertIn(str(campaign1.id), campaign_ids)
         self.assertIn(str(campaign2.id), campaign_ids)
 
+        # Filter by multiple campaign types
+        response = self.client.get(
+            f"/api/polio/campaigns/?campaign_types={campaign_type1.slug},{campaign_type2.slug}", format="json"
+        )
+        self.assertEqual(response.status_code, 200, response.content)
+        response_data = response.json()
+        self.assertEqual(len(response_data), 2)
+        campaign_ids = [campaign["id"] for campaign in response_data]
+        self.assertIn(str(campaign1.id), campaign_ids)
+        self.assertIn(str(campaign2.id), campaign_ids)
+
         # Filter by non-existing campaign type
         response = self.client.get("/api/polio/campaigns/?campaign_types=9999", format="json")
+        self.assertEqual(response.status_code, 200, response.content)
+        response_data = response.json()
+        self.assertEqual(len(response_data), 0)
+
+        # Filter by non-existing campaign type
+        response = self.client.get("/api/polio/campaigns/?campaign_types=UNKNOWN_CAMPAIGN_TYPE", format="json")
         self.assertEqual(response.status_code, 200, response.content)
         response_data = response.json()
         self.assertEqual(len(response_data), 0)

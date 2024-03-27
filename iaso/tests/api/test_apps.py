@@ -37,10 +37,10 @@ class AppsAPITestCase(APITestCase):
         cls.project_2.feature_flags.set([cls.flag_1, cls.flag_2])
 
     def test_apps_delete(self):
-        """DELETE /apps/<app_id>/ without auth should result in a 405 response"""
+        """DELETE /apps/<app_id>/ without auth should result in a 401 response"""
 
         response = self.client.delete("/api/apps/org.ghi.p1/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     def test_apps_list(self):
         """GET /apps/ is not implemented, should result in a 404 response"""
@@ -187,7 +187,7 @@ class AppsAPITestCase(APITestCase):
         }
 
         response = self.client.post(f"/api/apps/", candidated_app, format="json")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     def test_app_update_and_commit_require_auth_ok_with_auth(self):
         candidated_app = {

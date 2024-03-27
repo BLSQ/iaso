@@ -36,10 +36,10 @@ class Dhis2APITestCase(APITestCase):
         self.source.save()
 
     def test_data_element_list_without_auth(self):
-        """GET /dataElements/ without auth should result in a 403"""
+        """GET /dataElements/ without auth should result in a 401"""
 
         response = self.client.get("/api/datasources/" + str(self.source.id) + "/dataElements/")
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(401, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
 
     def test_data_element_list_with_auth_but_non_configured_credentials(self):

@@ -7,10 +7,7 @@ CODE = "MOBILE_ORG_UNIT_DEEP_SEARCH"
 
 def create_feature_flags(apps, schema_editor):
     FeatureFlag = apps.get_model("iaso", "FeatureFlag")
-    FeatureFlag.objects.create(
-        code=CODE,
-        name="Mobile: Search through children in OrgUnit tree.",
-    )
+    FeatureFlag.objects.get_or_create(code=CODE, defaults={"name": "Mobile: Search through children in OrgUnit tree."})
 
 
 def destroy_feature_flags(apps, schema_editor):

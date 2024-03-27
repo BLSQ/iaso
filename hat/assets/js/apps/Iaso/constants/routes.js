@@ -758,6 +758,14 @@ export const completenessStatsPath = {
             isRequired: false,
             key: 'showDirectCompleteness',
         },
+        {
+            isRequired: false,
+            key: 'teamsIds',
+        },
+        {
+            isRequired: false,
+            key: 'userIds',
+        },
     ],
 };
 

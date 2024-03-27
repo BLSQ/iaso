@@ -140,14 +140,14 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
 
     @tag("iaso_only")
     def test_profile_bulkupdate_not_authenticated(self):
-        """POST /api/tasks/create/profilesbulkupdate/, no auth -> 403"""
+        """POST /api/tasks/create/profilesbulkupdate/, no auth -> 401"""
 
         response = self.client.post(
             f"/api/tasks/create/profilesbulkupdate/",
             data={"select_all": True, "language": "fr"},
             format="json",
         )
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
         self.assertEqual(Task.objects.filter(status=QUEUED).count(), 0)
 
@@ -739,7 +739,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.assertEqual(Task.objects.filter(status=QUEUED).count(), 0)
 
         response = self.client.get("/api/tasks/%d/" % task.id)
-        print(response.json())
+
         self.assertEqual(response.status_code, 200)
         # Task completion status
         return self.assertValidTaskAndInDB(response.json(), new_status)

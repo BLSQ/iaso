@@ -1,13 +1,13 @@
-from datetime import datetime
 import json
+from datetime import datetime
+from tempfile import NamedTemporaryFile
 from time import gmtime, strftime
 from typing import Any, List, Union
-from tempfile import NamedTemporaryFile
 
 from django.conf import settings
 from django.core.cache import cache
 from django.core.mail import send_mail
-from django.db.models import Max, Min, Q, Prefetch
+from django.db.models import Max, Min, Prefetch, Q
 from django.db.models.expressions import RawSQL
 from django.db.models.query import QuerySet
 from django.db.transaction import atomic
@@ -25,15 +25,14 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.validators import UniqueValidator
 
-
 from hat.api.export_utils import Echo, iter_items
 from iaso.api.common import (
     CONTENT_TYPE_CSV,
     CONTENT_TYPE_XLSX,
+    Custom403Exception,
     CustomFilterBackend,
     DeletionFilterBackend,
     ModelViewSet,
-    Custom403Exception,
 )
 from iaso.models import Group, OrgUnit
 from plugins.polio.api.campaigns.campaigns_log import log_campaign_modification, serialize_campaign
@@ -42,16 +41,13 @@ from plugins.polio.api.campaigns.vaccine_authorization_missing_email import (
 )
 from plugins.polio.api.common import CACHE_VERSION
 from plugins.polio.api.rounds.round import RoundScopeSerializer, RoundSerializer
-from plugins.polio.api.shared_serializers import (
-    GroupSerializer,
-    OrgUnitSerializer,
-)
+from plugins.polio.api.shared_serializers import GroupSerializer, OrgUnitSerializer
 from plugins.polio.export_utils import generate_xlsx_campaigns_calendar, xlsx_file_name
 from plugins.polio.models import (
     Campaign,
-    CampaignType,
     CampaignGroup,
     CampaignScope,
+    CampaignType,
     CountryUsersGroup,
     Round,
     RoundScope,
@@ -129,7 +125,7 @@ def check_total_doses_requested(vaccine_authorization, nOPV2_rounds, current_cam
 class CampaignTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = CampaignType
-        fields = ["id", "name"]
+        fields = ["id", "name", "slug"]
 
 
 class CampaignSerializer(serializers.ModelSerializer):
@@ -422,6 +418,8 @@ class ListCampaignSerializer(CampaignSerializer):
 
     rounds = NestedListRoundSerializer(many=True, required=False)
 
+    campaign_types = CampaignTypeSerializer(many=True, required=False)
+
     class Meta:
         model = Campaign
         fields = [
@@ -456,6 +454,8 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             if round.number == 2:
                 return RoundAnonymousSerializer(round).data
         return None
+
+    campaign_types = CampaignTypeSerializer(many=True, required=False)
 
     class Meta:
         model = Campaign
@@ -516,6 +516,8 @@ class AnonymousCampaignSerializer(CampaignSerializer):
 
 
 class SmallCampaignSerializer(CampaignSerializer):
+    campaign_types = CampaignTypeSerializer(many=True, required=False)
+
     class Meta:
         model = Campaign
         # TODO: refactor to avoid duplication with AnonymousCampaignSerializer?
@@ -606,6 +608,7 @@ class CalendarCampaignSerializer(CampaignSerializer):
 
     rounds = NestedListRoundSerializer(many=True, required=False)
     scopes = NestedScopeSerializer(many=True, required=False)
+    campaign_types = CampaignTypeSerializer(many=True, required=False)
 
     class Meta:
         model = Campaign
@@ -769,7 +772,6 @@ class CampaignViewSet(ModelViewSet):
         campaigns = queryset
         if show_test == "false":
             campaigns = campaigns.filter(is_test=False)
-        campaigns.prefetch_related("rounds", "group", "grouped_campaigns")
         if campaign_category == "preventive":
             campaigns = campaigns.filter(is_preventive=True)
         if campaign_category == "test":
@@ -781,8 +783,11 @@ class CampaignViewSet(ModelViewSet):
         if org_unit_groups:
             campaigns = campaigns.filter(country__groups__in=org_unit_groups.split(","))
         if campaign_types:
-            campaign_types_ids = campaign_types.split(",")
-            campaigns = campaigns.filter(campaign_types__id__in=campaign_types_ids)
+            campaign_types_list = campaign_types.split(",")
+            if all(item.isdigit() for item in campaign_types_list):
+                campaigns = campaigns.filter(campaign_types__id__in=campaign_types_list)
+            else:
+                campaigns = campaigns.filter(campaign_types__slug__in=campaign_types_list)
         org_units_id_only_qs = OrgUnit.objects.only("id", "name")
         country_prefetch = Prefetch("country", queryset=org_units_id_only_qs)
         scopes_group_org_units_prefetch = Prefetch("scopes__group__org_units", queryset=org_units_id_only_qs)

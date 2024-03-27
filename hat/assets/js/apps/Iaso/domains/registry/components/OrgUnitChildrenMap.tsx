@@ -1,45 +1,45 @@
-import React, {
-    FunctionComponent,
-    useState,
-    useMemo,
-    useCallback,
-} from 'react';
-import { useDispatch } from 'react-redux';
-import { MapContainer, GeoJSON, Pane, ScaleControl } from 'react-leaflet';
-import { LoadingSpinner, commonStyles } from 'bluesquare-components';
 import { Box, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import { LoadingSpinner, commonStyles } from 'bluesquare-components';
 import classNames from 'classnames';
 import { keyBy } from 'lodash';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
+import { GeoJSON, MapContainer, Pane, ScaleControl } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
+import { useDispatch } from 'react-redux';
 import {
     circleColorMarkerOptions,
+    colorClusterCustomMarker,
     getOrgUnitBounds,
     getOrgUnitsBounds,
     mergeBounds,
-    colorClusterCustomMarker,
 } from '../../../utils/map/mapUtils';
 
+import CircleMarkerComponent from '../../../components/maps/markers/CircleMarkerComponent';
 import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
 import { MapLegend } from './MapLegend';
-import CircleMarkerComponent from '../../../components/maps/markers/CircleMarkerComponent';
 
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { OrgunitTypes } from '../../orgUnits/types/orgunitTypes';
 
 import { Legend, useGetlegendOptions } from '../hooks/useGetLegendOptions';
 
-import { MapToggleTooltips } from './MapToggleTooltips';
 import { MapToggleFullscreen } from './MapToggleFullscreen';
+import { MapToggleTooltips } from './MapToggleTooltips';
 
-import TILES from '../../../constants/mapTiles';
-import { MapPopUp } from './MapPopUp';
-import { RegistryDetailParams } from '../types';
-import { redirectToReplace } from '../../../routing/actions';
-import { baseUrls } from '../../../constants/urls';
+import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
 import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
 import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
-import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
+import TILES from '../../../constants/mapTiles';
+import { baseUrls } from '../../../constants/urls';
+import { redirectToReplace } from '../../../routing/actions';
+import { RegistryDetailParams } from '../types';
+import { MapPopUp } from './MapPopUp';
 import { MapToolTip } from './MapTooltip';
 
 type Props = {
@@ -146,7 +146,6 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
         },
         [dispatch, params],
     );
-
     if (isFetchingChildren)
         return (
             <Box position="relative" height={500}>
@@ -206,7 +205,22 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                                     style={() => ({
                                         color: theme.palette.secondary.main,
                                     })}
-                                />
+                                >
+                                    <MapPopUp orgUnit={orgUnit} />
+                                    {showTooltip && (
+                                        <MapToolTip
+                                            permanent
+                                            pane="popupPane"
+                                            label={orgUnit.name}
+                                        />
+                                    )}
+                                    {!showTooltip && (
+                                        <MapToolTip
+                                            pane="popupPane"
+                                            label={orgUnit.name}
+                                        />
+                                    )}
+                                </GeoJSON>
                             </Pane>
                         )}
                         {orgUnit.latitude && orgUnit.longitude && (
@@ -219,7 +233,18 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                                     ...circleColorMarkerOptions(
                                         theme.palette.secondary.main,
                                     ),
+                                    key: `markers-${orgUnit.id}-${showTooltip}`,
                                 })}
+                                popupProps={() => ({
+                                    orgUnit,
+                                })}
+                                tooltipProps={() => ({
+                                    permanent: showTooltip,
+                                    pane: 'popupPane',
+                                    label: orgUnit.name,
+                                })}
+                                PopupComponent={MapPopUp}
+                                TooltipComponent={MapToolTip}
                             />
                         )}
                     </>

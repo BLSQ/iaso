@@ -226,7 +226,7 @@ class MultiTenantTestCase(APITestCase):
 
     def test_version_access(self):
         response = APIClient().get("/api/sourceversions/", accept="application/json")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
         response = self.raccoon_client.get("/api/sourceversions/", accept="application/json")
 

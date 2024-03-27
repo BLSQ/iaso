@@ -825,7 +825,7 @@
     "iaso.orgUnits.referenceForms": "Reference forms",
     "iaso.orgUnits.removeFromGroups": "Remove from group(s)",
     "iaso.orgUnits.search": "Search org unit",
-    "iaso.orgUnits.searchParams": "Use prefix “refs:” for external org unit ID search. Use prefix “ids:” for internal org unit ID search. Separate with a comma for multiple IDs. E.g: “refs: 123456, 654321”",
+    "iaso.orgUnits.searchParams": "Use prefix “refs:” for external org unit ID search. Use prefix “ids:” for internal org unit ID search. You can also search multiple IDs at once, separated by a comma or a space. E.g. “ids: 123456, 654321” or “refs: O6uvpzGd5pu, ImspTQPwCqd”",
     "iaso.orgUnits.selectionAction": "With selected org unit",
     "iaso.orgUnits.selectOrgUnit": "Please select an org Unit",
     "iaso.orgUnits.selectProjects": "Select a project",

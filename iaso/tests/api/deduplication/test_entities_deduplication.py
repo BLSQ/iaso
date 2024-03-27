@@ -235,7 +235,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             format="json",
         )
 
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
     def test_analyzes_user_with_readonly_permissions(self):
         self.client.force_authenticate(self.user_with_default_ou_ro)
@@ -513,11 +513,13 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         self.assertEqual(duplicate.validation_status, ValidationStatus.PENDING)
 
         merged_data = {i: duplicate.entity1.id for i in duplicate.analyze.metadata["fields"]}
+
         response = self.client.post(
             f"/api/entityduplicates/",
             data={"merge": merged_data, "entity1_id": duplicate.entity1.id, "entity2_id": duplicate.entity2.id},
             format="json",
         )
+
         self.assertEqual(response.status_code, 200)
         response_data = response.json()
 

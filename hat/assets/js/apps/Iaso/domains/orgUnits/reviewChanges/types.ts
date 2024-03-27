@@ -28,6 +28,10 @@ export type NestedGroup = {
     id: number;
     name: string;
 };
+export type ExtendedNestedGroup = NestedGroup & {
+    left: boolean;
+    right: boolean;
+};
 
 export type NestedLocation = {
     latitude: number;

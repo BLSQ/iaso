@@ -669,7 +669,7 @@ class EntityDuplicateAnalyzisAdmin(admin.ModelAdmin):
 class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
     list_display = ("pk", "org_unit", "created_at", "status")
     list_display_links = ("pk", "org_unit")
-    list_filter = ("status",)
+    list_filter = ("status", "created_by")
     readonly_fields = (
         "uuid",
         "created_at",

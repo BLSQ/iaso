@@ -25,6 +25,10 @@ export const usePaymentLotsColumns = (): Column[] => {
                 Header: formatMessage(MESSAGES.status),
                 id: 'status',
                 accessor: 'status',
+                Cell: settings => {
+                    const { status } = settings.row.original;
+                    return formatMessage(MESSAGES[status]);
+                },
             },
             {
                 Header: formatMessage(MESSAGES.created_by),

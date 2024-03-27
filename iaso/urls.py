@@ -14,6 +14,7 @@ from iaso.api.data_store import DataStoreViewSet
 from iaso.api.tasks.create.copy_version import CopyVersionViewSet
 from iaso.api.tasks.create.dhis2_ou_importer import Dhis2OuImporterViewSet
 from iaso.api.tasks.create.org_units_bulk_update import OrgUnitsBulkUpdate
+from iaso.api.tasks.create.payments_bulk_update import PaymentsBulkUpdate
 from iaso.api.tasks.create.profiles_bulk_update import ProfilesBulkUpdate
 from iaso.models import MatchingAlgorithm
 from plugins.router import router as plugins_router
@@ -74,7 +75,7 @@ from .api.periods import PeriodsViewSet
 from .api.permissions import PermissionsViewSet
 from .api.profiles import ProfilesViewSet
 from .api.projects import ProjectsViewSet
-from .api.payments.views import PotentialPaymentsViewSet, PaymentLotsViewSet
+from .api.payments.views import PaymentsViewSet, PotentialPaymentsViewSet, PaymentLotsViewSet
 from .api.reports import ReportsViewSet
 from .api.setup_account import SetupAccountViewSet
 from .api.source_versions import SourceVersionViewSet
@@ -106,6 +107,7 @@ router.register(r"apps", AppsViewSet, basename="apps")
 router.register(r"projects", ProjectsViewSet, basename="projects")
 router.register(r"potential_payments", PotentialPaymentsViewSet, basename="potential_payments")
 router.register(r"payments/lots", PaymentLotsViewSet, basename="paymentslots")
+router.register(r"payments", PaymentsViewSet, basename="payments")
 router.register(r"instances", InstancesViewSet, basename="instances")
 router.register(r"forms", FormsViewSet, basename="forms")
 router.register(r"mobile/forms", MobileFormViewSet, basename="formsmobile")
@@ -140,6 +142,7 @@ router.register(r"copyversion", CopyVersionViewSet, basename="copyversion")
 router.register(r"dhis2ouimporter", Dhis2OuImporterViewSet, basename="dhis2ouimporter")
 router.register(r"setupaccount", SetupAccountViewSet, basename="setupaccount")
 router.register(r"tasks/create/orgunitsbulkupdate", OrgUnitsBulkUpdate, basename="orgunitsbulkupdate")
+router.register(r"tasks/create/paymentsbulkupdate", PaymentsBulkUpdate, basename="paymentsbulkupdate")
 router.register(r"tasks/create/profilesbulkupdate", ProfilesBulkUpdate, basename="profilesbulkupdate")
 router.register(r"tasks/create/orgunitsbulklocationset", OrgUnitsBulkLocationSet, basename="orgunitsbulklocationset")
 router.register(r"tasks/create/importgpkg", ImportGPKGViewSet, basename="importgpkg")

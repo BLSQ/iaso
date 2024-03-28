@@ -595,3 +595,50 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         orig_json["_version"] = orig_version_id
         duplicate.entity1.attributes.json = orig_json
         duplicate.entity1.attributes.save()
+
+    def test_duplicate_visibility_across_accounts(self):
+        # You shouldn't see duplicates from another account
+
+        self.client.force_authenticate(self.user_with_default_ou_rw)
+
+        response = self.client.post(
+            "/api/entityduplicates_analyzes/",
+            {
+                "entity_type_id": self.default_entity_type.id,
+                "fields": ["Prenom", "Nom", "Age"],
+                "algorithm": "levenshtein",
+                "parameters": {},
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 201)
+        assert "analyze_id" in response.data
+
+        analyze_id = response.data["analyze_id"]
+
+        task_service = TestTaskService()
+        task_service.run_all()
+
+        response_analyze = self.client.get(f"/api/entityduplicates_analyzes/{analyze_id}/")
+
+        self.assertEqual(response_analyze.status_code, 200)
+
+        response = self.client.get(f"/api/entityduplicates/")
+
+        self.assertNotEqual(response.data["results"], [])
+
+        account_2 = m.Account.objects.create(name="Account 2")
+
+        user2 = self.create_user_with_profile(
+            username="user__2",
+            account=account_2,
+            permissions=["iaso_entity_duplicates_read", "iaso_entity_duplicates_write"],
+        )
+
+        # Authenticate as user2 and check if we see the duplicate
+        self.client.force_authenticate(user2)
+
+        response = self.client.get(f"/api/entityduplicates/")
+
+        self.assertEqual(response.data["results"], [])

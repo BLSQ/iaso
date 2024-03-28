@@ -568,7 +568,19 @@ class BudgetCampaignViewSetTestCase(APITestCase):
         )
         response_data = self.assertJSONResponse(response, 201)
         self.assertEqual(response_data["result"], "success")
+
         budget_step_1 = BudgetStep.objects.get(id=response_data["id"])
+
+        # Check created `BudgetStep`.
+        self.assertEqual(budget_step_1.campaign, self.campaign)
+        self.assertEqual(budget_step_1.budget_process, budget_process)
+        self.assertEqual(budget_step_1.transition_key, "submit_budget")
+        self.assertEqual(budget_step_1.node_key_from, "-")
+        self.assertEqual(budget_step_1.node_key_to, "budget_submitted")
+        self.assertEqual(budget_step_1.created_by, self.user)
+        self.assertEqual(budget_step_1.comment, "hello world2")
+        self.assertIsNone(budget_step_1.amount)
+
         # Check steps number.
         new_budget_step_count = BudgetStep.objects.count()
         self.assertEqual(prev_budget_step_count + 1, new_budget_step_count)
@@ -666,9 +678,16 @@ class BudgetCampaignViewSetTestCase(APITestCase):
 
         step_id = response_data["id"]
         budget_step = BudgetStep.objects.get(id=step_id)
+
+        # Check created `BudgetStep`.
+        self.assertEqual(budget_step.campaign, self.campaign)
+        self.assertEqual(budget_step.budget_process, self.budget_process_1)
         self.assertEqual(budget_step.transition_key, "override")
         self.assertEqual(budget_step.node_key_from, "-")
         self.assertEqual(budget_step.node_key_to, "rejected")
+        self.assertEqual(budget_step.created_by, self.user)
+        self.assertEqual(budget_step.comment, "override me")
+        self.assertIsNone(budget_step.amount)
 
         # Check DB relations: BudgetStep -> BudgetProcess <- Round
         self.round_1.refresh_from_db()

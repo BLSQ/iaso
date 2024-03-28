@@ -117,7 +117,7 @@ export type StepForm = {
 
 export type OverrideStepForm = {
     new_state_key: Optional<string>;
-    campaign: string;
+    budget_process: string;
     comment: Optional<string>;
     files: Optional<File[]>;
     links: Optional<LinkWithAlias[]>;

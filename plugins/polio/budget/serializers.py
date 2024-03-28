@@ -459,6 +459,7 @@ class TransitionToSerializer(serializers.Serializer):
     def save(self, **kwargs):
         data = self.validated_data
         budget_process: BudgetProcess = data["budget_process"]
+        campaign: Campaign = budget_process.rounds.first().campaign
         user = self.context["request"].user
         transition_key = data["transition_key"]
 
@@ -477,7 +478,7 @@ class TransitionToSerializer(serializers.Serializer):
             )
         transition = transitions[0]
 
-        if not can_user_transition(transition, user, budget_process.rounds.first().campaign):
+        if not can_user_transition(transition, user, campaign):
             raise serializers.ValidationError({"transition_key": [TransitionError.NOT_ALLOWED]})
 
         for field in transition.required_fields:
@@ -502,6 +503,7 @@ class TransitionToSerializer(serializers.Serializer):
                 amount=data.get("amount"),
                 created_by=user,
                 created_by_team=created_by_team,
+                campaign=campaign,
                 budget_process=budget_process,
                 comment=data.get("comment"),
                 transition_key=transition.key,
@@ -560,6 +562,7 @@ class TransitionOverrideSerializer(serializers.Serializer):
     def save(self, **kwargs):
         data = self.validated_data
         budget_process: BudgetProcess = data["budget_process"]
+        campaign: Campaign = budget_process.rounds.first().campaign
         user = self.context["request"].user
         node_keys = data["new_state_key"]
         workflow = get_workflow()
@@ -583,6 +586,7 @@ class TransitionOverrideSerializer(serializers.Serializer):
                 amount=data.get("amount"),
                 created_by=user,
                 created_by_team=created_by_team,
+                campaign=campaign,
                 budget_process=budget_process,
                 comment=data.get("comment"),
                 transition_key="override",

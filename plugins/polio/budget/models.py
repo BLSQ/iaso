@@ -124,7 +124,8 @@ class BudgetStep(SoftDeletableModel):
         ordering = ["-updated_at"]
 
     objects = BudgetManager()
-    # TODO: remove the `campaign` field after deployment of the "multi round budget".
+    # `campaign` could have been removed while implementing "Multi Rounds Budget"
+    # because of the new models relationships, but it's heavily used and saves a lot of queries.
     campaign = models.ForeignKey("Campaign", on_delete=models.PROTECT, related_name="budget_steps", null=True)
     budget_process = models.ForeignKey(
         "BudgetProcess", on_delete=models.PROTECT, related_name="budget_steps", null=True
@@ -331,8 +332,8 @@ def send_budget_mails(step: BudgetStep, transition, request) -> None:
         except MailTemplate.DoesNotExist as e:
             logger.exception(e)
             continue
-
-        teams = workflow.effective_teams(step.campaign, team_ids)
+        campaign = step.campaign
+        teams = workflow.effective_teams(campaign, team_ids)
         # Ensure we don't send an email twice to the same user
         users = User.objects.filter(teams__in=teams).distinct()
         for user in users:

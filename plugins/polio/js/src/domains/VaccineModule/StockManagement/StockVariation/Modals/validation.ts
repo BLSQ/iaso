@@ -61,7 +61,7 @@ export const useFormAValidation = () => {
         usable_vials_used: yup
             .number()
             .nullable()
-            .required(formatMessage(MESSAGES.requiredField))
+            // .required(formatMessage(MESSAGES.requiredField))
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),

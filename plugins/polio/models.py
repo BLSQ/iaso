@@ -1119,7 +1119,7 @@ class OutgoingStockMovement(models.Model):
     )  # Country can be deduced from the campaign
     report_date = models.DateField()
     form_a_reception_date = models.DateField()
-    usable_vials_used = models.PositiveIntegerField()
+    usable_vials_used = models.PositiveIntegerField(default=0)
     unusable_vials = models.PositiveIntegerField()
     lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
     missing_vials = models.PositiveIntegerField()

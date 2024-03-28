@@ -31,7 +31,7 @@ const getBudgetDetails = (params: any) => {
 
 export type DetailsParams = {
     action?: any;
-    campaign_id: string;
+    budget_process_id: string;
     country?: string;
     deletion_status?: any;
     order?: string;

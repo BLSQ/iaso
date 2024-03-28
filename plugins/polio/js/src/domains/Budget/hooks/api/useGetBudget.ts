@@ -12,10 +12,10 @@ import {
 import { Budget, Workflow } from '../../types';
 
 type Option = {
-    budget_current_state_key__in: [number | string];
-    country__id__in: [number | string];
+    current_state_key: [number | string];
+    countries: [number | string];
     order?: string;
-    orgUnitGroups: [number | string];
+    org_unit_groups: [number | string];
     page?: number;
     pageSize?: number;
     roundStartFrom?: string;
@@ -25,23 +25,24 @@ type Option = {
 
 type Param = {
     accountId: string;
-    budget_current_state_key__in: [number | string];
-    country__id__in: [number | string];
+    current_state_key: [number | string];
+    countries: [number | string];
     order: string;
-    orgUnitGroups: [number | string];
+    org_unit_groups: [number | string];
     page: number | string;
     pageSize: number | string;
     roundStartFrom: string;
     roundStartTo: string;
     search: string;
 };
+
 const getBudgets = (params: any) => {
     const filteredParams = Object.entries(params).filter(
         // eslint-disable-next-line no-unused-vars
         ([, value]) => value !== undefined,
     );
     if (!params.order) {
-        filteredParams.push(['order', '-cvdpv2_notified_at']);
+        filteredParams.push(['order', '-updated_at']);
     }
 
     const queryString = new URLSearchParams(
@@ -56,10 +57,10 @@ export const useGetBudgets = (options: Option): any => {
         page: options.page,
         order: options.order,
         search: options.search,
-        budget_current_state_key__in: options.budget_current_state_key__in,
-        country__id__in: options.country__id__in,
-        orgUnitGroups: options.orgUnitGroups,
-        fields: 'id,obr_name,country_name,current_state,cvdpv2_notified_at,possible_states,budget_last_updated_at',
+        current_state_key: options.current_state_key,
+        countries: options.countries,
+        org_unit_groups: options.org_unit_groups,
+        fields: 'id,campaign_id,obr_name,country_name,current_state,rounds,possible_states,updated_at',
     };
 
     return useSnackQuery({
@@ -71,15 +72,15 @@ export const useGetBudgets = (options: Option): any => {
 export const useBudgetParams = (params: Param): any => {
     return useMemo(() => {
         return {
-            order: params?.order ?? '-cvdpv2_notified_at',
+            order: params?.order ?? '-updated_at',
             pageSize: params?.pageSize ?? 20,
             page: params?.page ?? 1,
             search: params.search,
             roundStartFrom: getApiParamDateString(params.roundStartFrom),
             roundStartTo: getApiParamDateString(params.roundStartTo),
-            budget_current_state_key__in: params.budget_current_state_key__in,
-            country__id__in: params?.country__id__in,
-            orgUnitGroups: params?.orgUnitGroups,
+            current_state_key: params.current_state_key,
+            countries: params?.countries,
+            org_unit_groups: params?.org_unit_groups,
         };
     }, [
         params?.order,
@@ -88,9 +89,9 @@ export const useBudgetParams = (params: Param): any => {
         params.search,
         params.roundStartFrom,
         params.roundStartTo,
-        params.budget_current_state_key__in,
-        params?.country__id__in,
-        params?.orgUnitGroups,
+        params.current_state_key,
+        params?.countries,
+        params?.org_unit_groups,
     ]);
 };
 
@@ -103,7 +104,7 @@ export const useGetBudgetForCampaign = (
     id: Optional<string>,
 ): UseQueryResult<Partial<Budget>> => {
     const params = {
-        fields: 'id,obr_name,current_state,next_transitions,possible_transitions,timeline',
+        fields: 'id,obr_name,current_state,next_transitions,possible_transitions,rounds,timeline',
     };
 
     return useSnackQuery({

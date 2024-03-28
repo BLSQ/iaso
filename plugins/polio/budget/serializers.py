@@ -74,9 +74,14 @@ class TimelineSerializer(serializers.Serializer):
     categories = CategorySerializer(many=True)
 
 
+class AvailableRoundsSerializer(serializers.Serializer):
+    campaign_id = serializers.UUIDField()
+    budget_process_id = serializers.IntegerField()
+
+
 class BudgetProcessWriteSerializer(serializers.ModelSerializer):
     """
-    Create a `BudgetProcess` that is linked to one (or more) `Round`(s).
+    Create or update a `BudgetProcess` that is linked to one (or more) `Round`(s).
     """
 
     created_by = UserSerializer(read_only=True)
@@ -98,15 +103,19 @@ class BudgetProcessWriteSerializer(serializers.ModelSerializer):
 
     def validate_rounds(self, submitted_rounds: list[Round]) -> list[Round]:
         request = self.context["request"]
+        is_new = self.instance is None
 
         valid_rounds_ids = Campaign.objects.filter_for_user(request.user).values_list("rounds", flat=True)
         invalid_rounds = [round for round in submitted_rounds if round.id not in valid_rounds_ids]
         if invalid_rounds:
             raise serializers.ValidationError(f"The user does not have the permissions for rounds: {invalid_rounds}.")
 
-        already_linked_rounds = [round for round in submitted_rounds if round.budget_process]
-        if already_linked_rounds:
-            raise serializers.ValidationError(f"A BudgetProcess already exists for rounds: {already_linked_rounds}.")
+        if is_new:
+            already_linked_rounds = [round for round in submitted_rounds if round.budget_process]
+            if already_linked_rounds:
+                raise serializers.ValidationError(
+                    f"A BudgetProcess already exists for rounds: {already_linked_rounds}."
+                )
 
         rounds_campaigns = {round.campaign_id for round in submitted_rounds}
         if len(rounds_campaigns) > 1:
@@ -121,11 +130,28 @@ class BudgetProcessWriteSerializer(serializers.ModelSerializer):
         validated_data["created_by"] = request.user
         budget_process = super().create(validated_data)
 
-        # Link `Round`(s) to `BudgetProcess`.
+        # Link rounds.
         rounds_ids = [round.id for round in self.validated_data["rounds"]]
         Round.objects.filter(id__in=rounds_ids).update(budget_process=budget_process)
 
         return budget_process
+
+    def update(self, budget_process: BudgetProcess, validated_data: dict) -> BudgetProcess:
+        # Unlink old rounds.
+        budget_process.rounds.update(budget_process=None)
+        # Link new rounds.
+        rounds_ids = [round.id for round in self.validated_data["rounds"]]
+        Round.objects.filter(id__in=rounds_ids).update(budget_process=budget_process)
+        return budget_process
+
+
+class BudgetProcessNestedRoundSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Round
+        fields = [
+            "id",
+            "number",
+        ]
 
 
 class BudgetProcessSerializer(DynamicFieldsModelSerializer, serializers.ModelSerializer):
@@ -134,9 +160,10 @@ class BudgetProcessSerializer(DynamicFieldsModelSerializer, serializers.ModelSer
         fields = [
             "created_at",
             "id",
+            "campaign_id",  # Added via `annotate`.
             "obr_name",  # Added via `annotate`.
             "country_name",  # Added via `annotate`.
-            "round_numbers",  # Added via `annotate`.
+            "rounds",
             "current_state",
             "updated_at",
             "possible_states",
@@ -147,16 +174,18 @@ class BudgetProcessSerializer(DynamicFieldsModelSerializer, serializers.ModelSer
         default_fields = [
             "created_at",
             "id",
+            "campaign_id",
             "obr_name",
             "country_name",
-            "round_numbers",
+            "rounds",
             "current_state",
             "updated_at",
         ]
 
+    campaign_id = serializers.UUIDField()
     obr_name = serializers.CharField()
     country_name = serializers.CharField()
-    round_numbers = serializers.ListField()
+    rounds = BudgetProcessNestedRoundSerializer(many=True)
     current_state = serializers.SerializerMethodField()
     possible_states = serializers.SerializerMethodField()
     possible_transitions = serializers.SerializerMethodField()
@@ -182,13 +211,14 @@ class BudgetProcessSerializer(DynamicFieldsModelSerializer, serializers.ModelSer
     def get_next_transitions(self, budget_process: BudgetProcess):
         # // get transition from workflow engine.
         workflow = get_workflow()
+        campaign = budget_process.rounds.first().campaign
         transitions = next_transitions(workflow.transitions, budget_process.current_state_key)
         user = self.context["request"].user
         for transition in transitions:
-            allowed = can_user_transition(transition, user, budget_process)
+            allowed = can_user_transition(transition, user, campaign)
             transition.allowed = allowed
             if not allowed:
-                if not effective_teams(budget_process, transition.teams_ids_can_transition):
+                if not effective_teams(campaign, transition.teams_ids_can_transition):
                     reason = "No team configured for this country and transition"
                 else:
                     reason = "User doesn't have permission"
@@ -197,7 +227,7 @@ class BudgetProcessSerializer(DynamicFieldsModelSerializer, serializers.ModelSer
             # FIXME: filter on effective teams, need campaign
             teams = []
             for _, teams_ids in transition.emails_to_send:
-                teams += effective_teams(budget_process, teams_ids).values_list("id", flat=True)
+                teams += effective_teams(campaign, teams_ids).values_list("id", flat=True)
             transition.emails_destination_team_ids = set(teams)
 
         return TransitionSerializer(transitions, many=True).data
@@ -617,6 +647,7 @@ class BudgetStepSerializer(serializers.ModelSerializer):
             "created_by",
             "deleted_at",
             "campaign_id",
+            "budget_process_id",
             "comment",
             "links",
             "files",
@@ -650,16 +681,21 @@ class UpdateBudgetStepSerializer(serializers.ModelSerializer):
 class ExportBudgetProcessSerializer(BudgetProcessSerializer):
     class Meta:
         model = BudgetProcess
-        fields = ["obr_name", "current_state_label", "country", "updated_at"]
+        fields = ["obr_name", "current_state_label", "country", "rounds", "updated_at"]
         labels = {
             "obr_name": "OBR name",
             "updated_at": "Last update",
             "country": "Country",
+            "rounds": "Rounds",
             "current_state_label": "Budget state",
         }
 
     country = serializers.SerializerMethodField()
     updated_at = serializers.SerializerMethodField()
+    rounds = serializers.SerializerMethodField()
+
+    def get_rounds(self, budget_process: BudgetProcess):
+        return ",".join([str(num) for num in budget_process.rounds.values_list("number", flat=True)])
 
     def get_country(self, budget_process: BudgetProcess):
         return budget_process.country_name

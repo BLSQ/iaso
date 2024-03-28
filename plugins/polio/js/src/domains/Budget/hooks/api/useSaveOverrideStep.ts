@@ -11,7 +11,7 @@ type Payload = {
     files?: File[]; // for some transitions, one of files or links will have to have a value
     links?: LinkWithAlias[];
     amount?: number;
-    campaign_id: string; // uuid
+    budget_process_id: string; // uuid
 };
 
 type PostRequestBody = PostArg;
@@ -27,6 +27,7 @@ const postOverrideStep = (body: Payload): Promise<BudgetStep> => {
         const filteredLinks = links.filter(link => link.alias && link.url);
         filteredParams.links = filteredLinks;
     }
+
     const requestBody: PostRequestBody = {
         url: '/api/polio/budget/override/',
         data: filteredParams,

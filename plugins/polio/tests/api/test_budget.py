@@ -9,7 +9,7 @@ from django.http import HttpResponse
 from django.template import Engine, Context
 from rest_framework import status
 
-from iaso.models import Group, OrgUnit
+from iaso import models as m
 from iaso.test import APITestCase
 from plugins.polio.budget.models import BudgetProcess, BudgetStep, MailTemplate
 from plugins.polio.budget.workflow import Category, Transition, Node, Workflow
@@ -81,12 +81,14 @@ def get_workflow():
 @mock.patch("plugins.polio.budget.models.get_workflow", get_workflow)
 @mock.patch("plugins.polio.budget.serializers.get_workflow", get_workflow)
 class BudgetCampaignViewSetTestCase(APITestCase):
-    fixtures = ["user.yaml"]
-    c: Campaign
-    user: User
+    """
+    Test actions on `BudgetCampaignViewSet`.
+    """
 
     def jsonListContains(self, actual: List[Dict], expected: List[Dict]):
-        "Check that each dict in the expect list is contained as a subset of a dict in actual"
+        """
+        Check that each dict in the expect list is contained as a subset of a dict in actual.
+        """
 
         def dictContains(actual_d, expected_d):
             for k, v in expected_d.items():
@@ -99,22 +101,31 @@ class BudgetCampaignViewSetTestCase(APITestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
-        cls.user = User.objects.get(username="test")
-        cls.user.user_permissions.add(Permission.objects.get(codename="iaso_polio_budget"))
+        # User.
+        cls.data_source = m.DataSource.objects.create(name="Data Source")
+        cls.source_version = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
+        cls.account = m.Account.objects.create(name="Account", default_version=cls.source_version)
+        cls.user = cls.create_user_with_profile(
+            username="test", first_name="test", last_name="test", account=cls.account, permissions=["iaso_polio_budget"]
+        )
+
         # Campaign.
         cls.campaign = Campaign.objects.create(
             obr_name="test campaign",
             account=cls.user.iaso_profile.account,
-            country=OrgUnit.objects.create(name="ANGOLA"),
+            country=m.OrgUnit.objects.create(name="ANGOLA"),
         )
+
         # Budget Processes.
         cls.budget_process_1 = BudgetProcess.objects.create(created_by=cls.user)
         cls.budget_process_2 = BudgetProcess.objects.create(created_by=cls.user)
+
         # Rounds.
         cls.round_1 = Round.objects.create(number=1, campaign=cls.campaign, budget_process=cls.budget_process_1)
         cls.round_2 = Round.objects.create(number=2, campaign=cls.campaign, budget_process=cls.budget_process_1)
         cls.round_3 = Round.objects.create(number=3, campaign=cls.campaign, budget_process=cls.budget_process_2)
         cls.round_4 = Round.objects.create(number=4, campaign=cls.campaign, budget_process=None)
+
         # Budget Steps.
         cls.budget_step_1 = BudgetStep.objects.create(budget_process=cls.budget_process_1, created_by=cls.user)
         cls.budget_step_2 = BudgetStep.objects.create(budget_process=cls.budget_process_1, created_by=cls.user)
@@ -143,29 +154,72 @@ class BudgetCampaignViewSetTestCase(APITestCase):
             },
         )
 
+    def test_update(self):
+        """
+        PATCH /api/polio/budget/pk/
+        """
+        self.client.force_login(self.user)
+        self.assertEqual(self.budget_process_1.rounds.count(), 2)
+        response = self.client.patch(
+            f"/api/polio/budget/{self.budget_process_1.pk}/",
+            data={"rounds": [self.round_1.pk]},
+            format="json",
+        )
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertEqual(response_data["id"], self.budget_process_1.pk)
+        self.assertEqual(response_data["rounds"], [self.round_1.pk])
+        self.assertEqual(self.budget_process_1.rounds.count(), 1)
+
+    def test_soft_delete(self):
+        """
+        DELETE /api/polio/budget/pk/
+        """
+        # Before soft delete.
+        self.assertIsNone(self.budget_process_1.deleted_at)
+        for step in self.budget_process_1.budget_steps.all():
+            self.assertIsNone(step.deleted_at)
+        for round in self.budget_process_1.rounds.all():
+            self.assertIsNotNone(round.budget_process)
+
+        # Delete.
+        self.client.force_login(self.user)
+        response = self.client.delete(f"/api/polio/budget/{self.budget_process_1.id}/", format="json")
+        self.assertEqual(response.status_code, 204)
+
+        # After soft delete.
+        self.budget_process_1.refresh_from_db()
+        self.assertIsNotNone(self.budget_process_1.deleted_at)
+        for step in self.budget_process_1.budget_steps.all():
+            self.assertIsNotNone(step.deleted_at)
+        for round in self.budget_process_1.rounds.all():
+            self.assertIsNone(round.budget_process)
+
     def test_simple_get_list(self):
         """
         GET /api/polio/budget/
         """
         self.client.force_login(self.user)
 
-        with self.assertNumQueries(8):
+        with self.assertNumQueries(9):
             response = self.client.get("/api/polio/budget/")
             response_data = self.assertJSONResponse(response, 200)
 
         budget_processes = response_data["results"]
         for budget_process in budget_processes:
-            self.assertEqual(len(budget_process.keys()), 7)
+            self.assertEqual(len(budget_process.keys()), 8)
             self.assertIn("created_at", budget_process)
             self.assertIn("updated_at", budget_process)
             self.assertIn("id", budget_process)
+            self.assertEqual(budget_process["campaign_id"], str(self.campaign.id))
             self.assertEqual(budget_process["obr_name"], "test campaign")
             self.assertEqual(budget_process["country_name"], "ANGOLA")
             self.assertEqual(budget_process["current_state"], {"key": "-", "label": "-"})
-            self.assertIn("round_numbers", budget_process)
+            self.assertIn("rounds", budget_process)
 
-        self.assertEqual(budget_processes[0]["round_numbers"], [1, 2])
-        self.assertEqual(budget_processes[1]["round_numbers"], [3])
+        self.assertEqual(
+            budget_processes[0]["rounds"], [{"id": self.round_1.pk, "number": 1}, {"id": self.round_2.pk, "number": 2}]
+        )
+        self.assertEqual(budget_processes[1]["rounds"], [{"id": self.round_3.pk, "number": 3}])
 
     def test_simple_get_list_with_all_fields(self):
         """
@@ -257,10 +311,11 @@ class BudgetCampaignViewSetTestCase(APITestCase):
             ]
         }
         for budget_process in response_data["results"]:
-            self.assertEqual(len(budget_process.keys()), 11)
+            self.assertEqual(len(budget_process.keys()), 12)
             self.assertIn("created_at", budget_process)
             self.assertIn("updated_at", budget_process)
             self.assertIn("id", budget_process)
+            self.assertEqual(budget_process["campaign_id"], str(self.campaign.id))
             self.assertEqual(budget_process["obr_name"], "test campaign")
             self.assertEqual(budget_process["country_name"], "ANGOLA")
             self.assertEqual(budget_process["current_state"], {"key": "-", "label": "-"})
@@ -268,7 +323,7 @@ class BudgetCampaignViewSetTestCase(APITestCase):
             self.assertEqual(budget_process["next_transitions"], expected_next_transitions)
             self.assertEqual(budget_process["possible_transitions"], expected_possible_transitions)
             self.assertEqual(budget_process["timeline"], expected_timeline)
-            self.assertIn("round_numbers", budget_process)
+            self.assertIn("rounds", budget_process)
 
     def test_list_select_fields(self):
         """
@@ -281,23 +336,6 @@ class BudgetCampaignViewSetTestCase(APITestCase):
             self.assertEqual(budget_process["obr_name"], "test campaign")
             self.assertEqual(budget_process["country_name"], "ANGOLA")
             self.assertEqual(list(budget_process.keys()), ["obr_name", "country_name"])
-
-    def test_list_filter(self):
-        """
-        GET /api/polio/budget/?orgUnitGroups=x
-        """
-        group_1 = Group.objects.create(name="Group 1")
-        group_2 = Group.objects.create(name="Group 2")
-        self.campaign.country.groups.set([group_1])
-        self.client.force_login(self.user)
-
-        response = self.client.get(f"/api/polio/budget/?orgUnitGroups={group_1.id}")
-        response_data = self.assertJSONResponse(response, 200)
-        self.assertEqual(len(response_data["results"]), 2)
-
-        response = self.client.get(f"/api/polio/budget/?orgUnitGroups={group_2.id}")
-        response_data = self.assertJSONResponse(response, 200)
-        self.assertEqual(len(response_data["results"]), 0)
 
     def test_transition_to(self):
         """
@@ -704,10 +742,10 @@ class BudgetCampaignViewSetTestCase(APITestCase):
 
     def test_csv_export(self):
         self.client.force_login(self.user)
-        r = self.client.get("/api/polio/budget/export_csv/?fields=obr_name")
+        r = self.client.get("/api/polio/budget/export_csv/?fields=obr_name,rounds")
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r["Content-Type"], "text/csv")
-        self.assertEqual(r.content, b"OBR name\r\ntest campaign\r\ntest campaign\r\n")
+        self.assertEqual(r.content, b'OBR name,Rounds\r\ntest campaign,"1,2"\r\ntest campaign,3\r\n')
 
     def test_csv_export_date(self):
         self.client.force_login(self.user)
@@ -722,3 +760,215 @@ class BudgetCampaignViewSetTestCase(APITestCase):
         self.assertEqual(response["Content-Type"], "text/csv")
         d = budget_step.created_at.strftime("%Y-%m-%d")
         self.assertEqual(response.content.decode(), f"Last update\r\n{d}\r\n{d}\r\n")
+
+    def test_available_rounds_for_update(self):
+        """
+        GET /api/polio/budget/available_rounds_for_update/?campaign_id=uuid&budget_process_id=pk
+        """
+        self.client.force_login(self.user)
+
+        response = self.client.get(
+            "/api/polio/budget/available_rounds_for_update/"
+            f"?campaign_id={self.campaign.id}&budget_process_id={self.budget_process_1.pk}"
+        )
+        response_data = self.assertJSONResponse(response, 200)
+
+        expected_data = [
+            {"value": self.round_1.pk, "label": 1, "campaign_id": str(self.campaign.id)},
+            {"value": self.round_2.pk, "label": 2, "campaign_id": str(self.campaign.id)},
+            {"value": self.round_4.pk, "label": 4, "campaign_id": str(self.campaign.id)},
+        ]
+        self.assertEqual(response_data, expected_data)
+
+    def test_available_rounds_for_create(self):
+        """
+        GET /api/polio/budget/available_rounds_for_create/
+        """
+        self.client.force_login(self.user)
+
+        response = self.client.get("/api/polio/budget/available_rounds_for_create/")
+        response_data = self.assertJSONResponse(response, 200)
+
+        expected_data = {
+            "countries": [{"value": self.campaign.country.id, "label": "ANGOLA"}],
+            "campaigns": [
+                {"value": str(self.campaign.id), "label": "test campaign", "country_id": self.campaign.country.id}
+            ],
+            "rounds": [
+                # Only round 4 should be available.
+                {"value": self.round_4.id, "label": 4, "campaign_id": str(self.campaign.id)},
+            ],
+        }
+        self.assertEqual(response_data, expected_data)
+
+
+class FilterBudgetCampaignViewSetTestCase(APITestCase):
+    """
+    Test filtering on `BudgetCampaignViewSet`.
+    """
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        # User.
+        cls.data_source = m.DataSource.objects.create(name="Data Source")
+        cls.source_version = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
+        cls.account = m.Account.objects.create(name="Account", default_version=cls.source_version)
+        cls.user = cls.create_user_with_profile(username="user", account=cls.account, permissions=["iaso_polio_budget"])
+
+        # Campaign.
+        cls.country = m.OrgUnit.objects.create(name="ANGOLA")
+        cls.campaign = Campaign.objects.create(
+            obr_name="test campaign",
+            account=cls.user.iaso_profile.account,
+            country=cls.country,
+        )
+
+        # Budget Processes.
+        cls.budget_process_1 = BudgetProcess.objects.create(created_by=cls.user)
+        cls.budget_process_2 = BudgetProcess.objects.create(created_by=cls.user)
+
+        # Rounds.
+        cls.round_1 = Round.objects.create(number=1, campaign=cls.campaign, budget_process=cls.budget_process_1)
+        cls.round_2 = Round.objects.create(number=2, campaign=cls.campaign, budget_process=cls.budget_process_1)
+        cls.round_3 = Round.objects.create(number=3, campaign=cls.campaign, budget_process=cls.budget_process_2)
+        cls.round_4 = Round.objects.create(number=4, campaign=cls.campaign, budget_process=None)
+
+        # Budget Steps.
+        cls.budget_step_1 = BudgetStep.objects.create(budget_process=cls.budget_process_1, created_by=cls.user)
+        cls.budget_step_2 = BudgetStep.objects.create(budget_process=cls.budget_process_1, created_by=cls.user)
+
+    def test_list_filter_by_org_unit_groups(self):
+        """
+        GET /api/polio/budget/?org_unit_groups=x,y
+        """
+        group_1 = m.Group.objects.create(name="Group 1")
+        group_2 = m.Group.objects.create(name="Group 2")
+        self.campaign.country.groups.set([group_1])
+        self.client.force_login(self.user)
+
+        response = self.client.get(f"/api/polio/budget/?org_unit_groups={group_1.id},{group_2.id}")
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response_data["results"]), 2)
+
+        response = self.client.get(f"/api/polio/budget/?org_unit_groups={group_2.id}")
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response_data["results"]), 0)
+
+    def test_list_filter_by_countries(self):
+        """
+        GET /api/polio/budget/?countries=x,y
+        """
+        self.client.force_login(self.user)
+        response = self.client.get(f"/api/polio/budget/?countries={self.country.pk}")
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response_data["results"]), 2)
+
+        not_existing_country_id = self.country.pk + 1
+        response = self.client.get(f"/api/polio/budget/?countries={not_existing_country_id}")
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response_data["results"]), 0)
+
+    def test_list_filter_by_search(self):
+        """
+        GET /api/polio/budget/?search=foo
+        """
+        self.client.force_login(self.user)
+
+        search = self.campaign.obr_name
+        response = self.client.get(f"/api/polio/budget/?search={search}")
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response_data["results"]), 2)
+
+        search = self.country.name
+        response = self.client.get(f"/api/polio/budget/?search={search}")
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response_data["results"]), 2)
+
+        search = "foo"
+        response = self.client.get(f"/api/polio/budget/?search={search}")
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response_data["results"]), 0)
+
+    def test_list_filter_by_current_state_key(self):
+        """
+        GET /api/polio/budget/?current_state_key=key
+        """
+        self.client.force_login(self.user)
+
+        current_state_key = "foo"
+        response = self.client.get(f"/api/polio/budget/?current_state_key={current_state_key}")
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response_data["results"]), 0)
+
+        current_state_key = self.budget_process_1.current_state_key
+        response = self.client.get(f"/api/polio/budget/?current_state_key={current_state_key}")
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response_data["results"]), 2)
+
+
+@mock.patch("plugins.polio.budget.models.get_workflow", get_workflow)
+@mock.patch("plugins.polio.budget.serializers.get_workflow", get_workflow)
+class FilterBudgetStepViewSetTestCase(APITestCase):
+    """
+    Test filtering on `BudgetStepViewSet`.
+    """
+
+    @classmethod
+    def setUpTestData(cls) -> None:
+        # User.
+        cls.data_source = m.DataSource.objects.create(name="Data Source")
+        cls.source_version = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
+        cls.account = m.Account.objects.create(name="Account", default_version=cls.source_version)
+        cls.user = cls.create_user_with_profile(username="user", account=cls.account, permissions=["iaso_polio_budget"])
+
+        # Campaign.
+        cls.country = m.OrgUnit.objects.create(name="ANGOLA")
+        cls.campaign = Campaign.objects.create(
+            obr_name="test campaign",
+            account=cls.user.iaso_profile.account,
+            country=cls.country,
+        )
+
+        # Budget Processes.
+        cls.budget_process_1 = BudgetProcess.objects.create(created_by=cls.user)
+        cls.budget_process_2 = BudgetProcess.objects.create(created_by=cls.user)
+
+        # # Rounds.
+        cls.round_a = Round.objects.create(number=1, campaign=cls.campaign, budget_process=cls.budget_process_1)
+        cls.round_b = Round.objects.create(number=2, campaign=cls.campaign, budget_process=cls.budget_process_1)
+        cls.round_c = Round.objects.create(number=1, campaign=cls.campaign, budget_process=cls.budget_process_2)
+
+        # Budget Steps.
+        cls.budget_step_1 = BudgetStep.objects.create(
+            budget_process=cls.budget_process_1, created_by=cls.user, transition_key="submit_budget"
+        )
+        cls.budget_step_2 = BudgetStep.objects.create(budget_process=cls.budget_process_1, created_by=cls.user)
+
+    def test_list_filter_by_budget_process_id(self):
+        """
+        GET /api/polio/budgetsteps/?budget_process_id=x
+        """
+        self.client.force_login(self.user)
+
+        self.assertEqual(self.budget_process_1.budget_steps.count(), 2)
+        self.assertEqual(self.budget_process_2.budget_steps.count(), 0)
+
+        response = self.client.get(f"/api/polio/budgetsteps/?budget_process_id={self.budget_process_1.id}")
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response_data["results"]), 2)
+
+        response = self.client.get(f"/api/polio/budgetsteps/?budget_process_id={self.budget_process_2.id}")
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response_data["results"]), 0)
+
+    def test_list_filter_by_transition_key(self):
+        """
+        GET /api/polio/budgetsteps/?transition_key=x
+        """
+        self.client.force_login(self.user)
+
+        id_ = self.budget_process_1.id
+        key = "submit_budget"
+        response = self.client.get(f"/api/polio/budgetsteps/?budget_process_id={id_}&transition_key={key}")
+        response_data = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response_data["results"]), 1)

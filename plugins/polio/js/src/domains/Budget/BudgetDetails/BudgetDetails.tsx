@@ -32,10 +32,10 @@ type Props = {
     router: any;
 };
 
-export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
+export const BudgetProcessDetails: FunctionComponent<Props> = ({ router }) => {
     const { params } = router;
+    const { campaignName, budgetProcessId, transition_key, ...rest } = params;
     const classes = useStyles();
-    const { campaignName, campaignId, transition_key, ...rest } = router.params;
     const [showHidden, setShowHidden] = useState<boolean>(
         rest.show_hidden ?? false,
     );
@@ -44,10 +44,10 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
         return {
             ...rest,
             deletion_status: showHidden ? 'all' : undefined,
-            campaign_id: campaignId,
+            budget_process_id: budgetProcessId,
             transition_key__in: transition_key,
         };
-    }, [campaignId, rest, showHidden, transition_key]);
+    }, [budgetProcessId, rest, showHidden, transition_key]);
 
     // @ts-ignore
     const prevPathname = useSelector(state => state.routerCustom.prevPathname);
@@ -61,15 +61,17 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     }: { data: Paginated<BudgetStep> | undefined; isFetching: boolean } =
         useGetBudgetDetails(apiParams);
 
-    const { data: budgetInfos } = useGetBudgetForCampaign(params?.campaignId);
+    const { data: budgetProcess } = useGetBudgetForCampaign(
+        params?.budgetProcessId,
+    );
 
     const nextSteps = useMemo(() => {
-        const regular = budgetInfos?.next_transitions?.filter(
+        const regular = budgetProcess?.next_transitions?.filter(
             transition =>
                 transition.key !== 'override' &&
                 !transition.key.includes('repeat'),
         );
-        const repeat = budgetInfos?.next_transitions?.filter(
+        const repeat = budgetProcess?.next_transitions?.filter(
             step => step.key.includes('repeat') && step.allowed,
         );
         const toDisplay = new Set(
@@ -78,7 +80,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
                 .map(transition => transition.label),
         );
         return { regular, toDisplay, repeat };
-    }, [budgetInfos?.next_transitions]);
+    }, [budgetProcess?.next_transitions]);
 
     const { resetPageToOne, columns } = useTableState({
         events: budgetDetails?.results,
@@ -98,7 +100,7 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
         [params, setPage],
     );
     const stepsList = Object.entries(
-        groupBy(budgetInfos?.possible_transitions, 'label'),
+        groupBy(budgetProcess?.possible_transitions, 'label'),
     ).map(([label, items]) => {
         return { label, value: items.map(i => i.key).join(',') };
     });
@@ -119,10 +121,9 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Box mb={2}>
                     <BudgetDetailsInfos
-                        status={budgetInfos?.current_state?.label ?? '--'}
+                        budgetProcess={budgetProcess ?? {}}
                         nextSteps={nextSteps}
-                        categories={budgetInfos?.timeline?.categories}
-                        params={router.params}
+                        params={params}
                         budgetDetails={budgetDetails}
                     />
                 </Box>

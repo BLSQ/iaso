@@ -16,6 +16,7 @@ export type Params = {
     order?: string;
     pageSize?: string;
 };
+
 export type Item = {
     label: string;
     step_id?: number;
@@ -50,6 +51,11 @@ export type Transition = {
     displayed_fields: string[]; // This field determines the columns shown in the "create" modal
 };
 
+export type Round = {
+    id: number;
+    number: string;
+};
+
 export type Budget = {
     id: number;
     obr_name: string;
@@ -71,10 +77,12 @@ export type Budget = {
         key: string;
         label: string;
     }[];
+    rounds?: Round[];
     timeline?: Timeline;
 };
 
 export type LinkWithAlias = { alias: string; url: string };
+
 export type FileWithName = {
     file: string;
     filename: string;
@@ -106,9 +114,10 @@ export type StepForm = {
     general: Nullable<string[]>;
     attachments: Nullable<string[]>;
 };
+
 export type OverrideStepForm = {
     new_state_key: Optional<string>;
-    campaign: string;
+    budget_process: string;
     comment: Optional<string>;
     files: Optional<File[]>;
     links: Optional<LinkWithAlias[]>;
@@ -122,4 +131,27 @@ export type Workflow = {
         key: string;
         label: string;
     }[];
+};
+
+export type Options = {
+    value: number;
+    label: string;
+};
+
+export type OptionsCampaigns = {
+    value: number;
+    label: string;
+    country_id: number;
+};
+
+export type OptionsRounds = {
+    value: number;
+    label: string;
+    campaign_id: number;
+};
+
+export type DropdownOptions = {
+    countries: Options[];
+    campaigns: OptionsCampaigns[];
+    rounds: OptionsRounds[];
 };

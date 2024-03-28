@@ -331,8 +331,8 @@ def send_budget_mails(step: BudgetStep, transition, request) -> None:
         except MailTemplate.DoesNotExist as e:
             logger.exception(e)
             continue
-
-        teams = workflow.effective_teams(step.campaign, team_ids)
+        campaign = step.budget_process.rounds.first().campaign
+        teams = workflow.effective_teams(campaign, team_ids)
         # Ensure we don't send an email twice to the same user
         users = User.objects.filter(teams__in=teams).distinct()
         for user in users:

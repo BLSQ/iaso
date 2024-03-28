@@ -269,6 +269,32 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.deleteText',
         defaultMessage: 'This operation cannot be undone.',
     },
+    deleteFormA: {
+        id: 'iaso.polio.label.deleteFormA',
+        defaultMessage: 'Delete Form A',
+    },
+    deleteFormAWarning: {
+        id: 'iaso.polio.label.deleteFormAWarning',
+        defaultMessage: 'Are you sure you want to delete this Form A ?',
+    },
+    deleteDestruction: {
+        id: 'iaso.polio.label.deleteDestruction',
+        defaultMessage: 'Delete Destruction Report',
+    },
+    deleteDestructionWarning: {
+        id: 'iaso.polio.label.deleteDestructionWarning',
+        defaultMessage:
+            'Are you sure you want to delete this destruction report ?',
+    },
+    deleteIncident: {
+        id: 'iaso.polio.label.deleteIncident',
+        defaultMessage: 'Delete Incident Report',
+    },
+    deleteIncidentWarning: {
+        id: 'iaso.polio.label.deleteIncidentWarning',
+        defaultMessage:
+            'Are you sure you want to delete this incident report ?',
+    },
 });
 
 export default MESSAGES;

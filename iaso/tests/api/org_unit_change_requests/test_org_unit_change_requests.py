@@ -22,7 +22,10 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         version = m.SourceVersion.objects.create(number=1, data_source=data_source)
         org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
         org_unit = m.OrgUnit.objects.create(
-            org_unit_type=org_unit_type, version=version, uuid="1539f174-4c53-499c-85de-7a58458c49ef"
+            org_unit_type=org_unit_type,
+            version=version,
+            uuid="1539f174-4c53-499c-85de-7a58458c49ef",
+            closed_date=cls.DT.date(),
         )
 
         account = m.Account.objects.create(name="Account", default_version=version)
@@ -96,6 +99,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertEqual(change_request.created_at, self.DT)
         self.assertEqual(change_request.created_by, self.user)
         self.assertEqual(change_request.updated_at, self.DT)
+        self.assertEqual(change_request.requested_fields, ["new_name", "new_org_unit_type"])
 
     @time_machine.travel(DT, tick=False)
     def test_create_ok_using_uuid_as_for_org_unit_id(self):
@@ -113,6 +117,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertEqual(change_request.created_at, self.DT)
         self.assertEqual(change_request.created_by, self.user)
         self.assertEqual(change_request.updated_at, self.DT)
+        self.assertEqual(change_request.requested_fields, ["new_name", "new_org_unit_type"])
 
     @time_machine.travel(DT, tick=False)
     def test_create_ok_from_mobile(self):
@@ -132,6 +137,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertEqual(change_request.created_at, self.DT)
         self.assertEqual(change_request.created_by, self.user)
         self.assertEqual(change_request.updated_at, self.DT)
+        self.assertEqual(change_request.requested_fields, ["new_name"])
 
     def test_create_without_auth(self):
         data = {
@@ -200,18 +206,22 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
             "org_unit": self.org_unit,
             "created_by": self.user,
             "new_name": "Foo",
+            "new_closed_date": None,
         }
         change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
 
         data = {
             "status": change_request.Statuses.APPROVED,
-            "approved_fields": ["new_name"],
+            "approved_fields": ["new_name", "new_closed_date"],
         }
         response = self.client.patch(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
 
         change_request.refresh_from_db()
         self.assertEqual(change_request.status, change_request.Statuses.APPROVED)
+        self.org_unit.refresh_from_db()
+        self.assertEqual(self.org_unit.name, "Foo")
+        self.assertIsNone(self.org_unit.closed_date)
 
     def test_partial_update_approve_fail_wrong_status(self):
         self.client.force_authenticate(self.user_with_review_perm)

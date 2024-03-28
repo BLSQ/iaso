@@ -75,6 +75,17 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
             "new_location_accuracy": "0.11",
             "new_opening_date": datetime.date(2022, 10, 27),
             "new_closed_date": datetime.date(2024, 10, 27),
+            "requested_fields": [
+                "new_parent",
+                "new_name",
+                "new_org_unit_type",
+                "new_groups",
+                "new_location",
+                "new_location_accuracy",
+                "new_opening_date",
+                "new_closed_date",
+                "new_reference_instances",
+            ],
             "approved_fields": [
                 "new_parent",
                 "new_name",
@@ -109,6 +120,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         self.assertEqual(change_request.new_groups.first(), self.new_group1)
         self.assertEqual(change_request.new_reference_instances.count(), 1)
         self.assertEqual(change_request.new_reference_instances.first(), self.new_instance1)
+        self.assertCountEqual(change_request.requested_fields, kwargs["requested_fields"])
         self.assertCountEqual(change_request.approved_fields, kwargs["approved_fields"])
         # Change request old values.
         self.assertEqual(change_request.old_parent, self.org_unit.parent)
@@ -157,15 +169,6 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
             "new_reference_instances",
         ]
         self.assertCountEqual(change_request.get_new_fields(), expected_fields)
-
-    def test_requested_fields(self):
-        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="New name")
-        self.assertCountEqual(change_request.requested_fields, ["new_name"])
-
-        change_request.new_org_unit_type = m.OrgUnitType.objects.create(name="New org unit type")
-        change_request.new_groups.add(m.Group.objects.create(name="new group"))
-        change_request.save()
-        self.assertCountEqual(change_request.requested_fields, ["new_name", "new_org_unit_type", "new_groups"])
 
     @time_machine.travel(DT, tick=False)
     def test_reject(self):
@@ -235,3 +238,52 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
 
         self.assertEqual(diff["modified"]["name"]["before"], "Hôpital Général")
         self.assertEqual(diff["modified"]["name"]["after"], "New name given in a change request")
+
+    @time_machine.travel(DT, tick=False)
+    def test_approve_with_erasing(self):
+        self.assertEqual(self.org_unit.location, "SRID=4326;POINT Z (-1.1111111 1.1111111 1.1111111)")
+        self.assertEqual(self.org_unit.opening_date, datetime.date(2020, 1, 1))
+        self.assertEqual(self.org_unit.closed_date, datetime.date(2055, 1, 1))
+
+        change_request = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            # Explicitly ask for `new_location`, `new_opening_date` and `new_closed_date` to be erased.
+            new_location=None,
+            new_opening_date=None,
+            new_closed_date=None,
+            requested_fields=["new_location", "new_opening_date", "new_closed_date"],
+        )
+
+        approved_fields = ["new_location", "new_opening_date", "new_closed_date"]
+        change_request.approve(user=self.user, approved_fields=approved_fields)
+        change_request.refresh_from_db()
+
+        # Change request.
+        self.assertEqual(change_request.status, change_request.Statuses.APPROVED)
+        self.assertEqual(change_request.created_at, self.DT)
+        self.assertEqual(change_request.updated_at, self.DT)
+        self.assertEqual(change_request.updated_by, self.user)
+        self.assertCountEqual(change_request.approved_fields, approved_fields)
+
+        # Org Unit.
+        self.assertEqual(self.org_unit.validation_status, self.org_unit.VALIDATION_VALID)
+        # Those fields should've been erased.
+        self.assertIsNone(self.org_unit.location)
+        self.assertIsNone(self.org_unit.opening_date)
+        self.assertIsNone(self.org_unit.closed_date)
+
+        # Logs.
+        modification = Modification.objects.get(object_id=self.org_unit.pk)
+        diff = modification.field_diffs()
+        self.assertIn("location", diff["modified"])
+        self.assertIn("opening_date", diff["modified"])
+        self.assertIn("closed_date", diff["modified"])
+
+        self.assertEqual(diff["modified"]["location"]["before"], "SRID=4326;POINT Z (-1.1111111 1.1111111 1.1111111)")
+        self.assertIsNone(diff["modified"]["location"]["after"])
+
+        self.assertEqual(diff["modified"]["opening_date"]["before"], "2020-01-01")
+        self.assertIsNone(diff["modified"]["opening_date"]["after"])
+
+        self.assertEqual(diff["modified"]["closed_date"]["before"], "2055-01-01")
+        self.assertIsNone(diff["modified"]["closed_date"]["after"])

@@ -1,22 +1,18 @@
-import { useContext, useMemo } from 'react';
+import { useMemo } from 'react';
 import { CampaignFormValues } from '../../../constants/types';
-import FormAdditionalPropsContext from '../../../contexts/FormAdditionalPropsContext';
 import { useGetCampaignTypes } from './api/useGetCampaignTypes';
 
 export const useIsPolioCampaignCheck = (): ((
     // eslint-disable-next-line no-unused-vars
     campaign?: CampaignFormValues,
 ) => boolean | undefined) => {
-    const { isFetchingSelectedCampaign } = useContext(
-        FormAdditionalPropsContext,
-    ) || { isFetching: false };
     const { data: campaignTypes } = useGetCampaignTypes();
 
     return useMemo(() => {
-        if (isFetchingSelectedCampaign) {
-            return () => undefined;
-        }
-        return (campaign: CampaignFormValues): boolean | undefined => {
+        return (campaign?: CampaignFormValues): boolean | undefined => {
+            if (!campaign) {
+                return undefined;
+            }
             return (
                 campaignTypes?.some(
                     type =>
@@ -25,5 +21,5 @@ export const useIsPolioCampaignCheck = (): ((
                 ) ?? false
             );
         };
-    }, [campaignTypes, isFetchingSelectedCampaign]);
+    }, [campaignTypes]);
 };

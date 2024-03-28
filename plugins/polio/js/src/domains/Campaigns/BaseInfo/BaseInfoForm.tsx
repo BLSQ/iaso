@@ -88,7 +88,7 @@ export const BaseInfoForm: FunctionComponent = () => {
     );
 
     return (
-        <Box maxWidth={isPolio(values) ? '80%' : '400px'}>
+        <Box maxWidth={isPolio(values) ? '100%' : '400px'}>
             <Grid container spacing={2}>
                 <Grid container item spacing={2}>
                     <Grid xs={12} md={isPolio(values) ? 6 : 12} item>

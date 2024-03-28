@@ -27,7 +27,6 @@ import { Form } from '../../../components/Form';
 import MESSAGES from '../../../constants/messages';
 import { CAMPAIGN_HISTORY_URL } from '../../../constants/routes';
 import { CampaignFormValues } from '../../../constants/types';
-import { FormAdditionalPropsProvider } from '../../../contexts/FormAdditionalPropsContext';
 import { useFormValidator } from '../../../hooks/useFormValidator';
 import { useStyles } from '../../../styles/theme';
 import { convertEmptyStringToNull } from '../../../utils/convertEmptyStringToNull';
@@ -71,12 +70,12 @@ const CreateEditDialog: FunctionComponent<Props> = ({
         try {
             await saveCampaign(convertEmptyStringToNull(values));
             setIsUpdated(true);
-            helpers.setSubmitting(false);
+            // helpers.setSubmitting(false);
         } catch (error) {
             if (error.data && error.data.details) {
                 helpers.setErrors(error.data.details);
             }
-            helpers.setSubmitting(false);
+            // helpers.setSubmitting(false);
         }
     };
 
@@ -132,7 +131,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
             }
         },
         onSubmit: (values, helpers) => {
-            helpers.setSubmitting(true);
+            // helpers.setSubmitting(true);
             handleSubmit(values, helpers);
         },
     });
@@ -162,7 +161,6 @@ const CreateEditDialog: FunctionComponent<Props> = ({
 
     return (
         <Dialog
-            // fullWidth
             maxWidth="xl"
             open={isOpen}
             onClose={(_event, reason) => {
@@ -182,14 +180,14 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                 onConfirm={() => handleClose()}
             />
             <Box pt={1}>
-                <Grid container>
-                    <Grid item xs={12} md={6}>
+                <Grid container spacing={0}>
+                    <Grid item xs={12} md={8}>
                         <Box
                             pr={4}
                             justifyContent="center"
                             alignContent="center"
                         >
-                            <DialogTitle className={classes.title}>
+                            <DialogTitle sx={{ pb: 0 }}>
                                 {selectedCampaign?.id
                                     ? formatMessage(MESSAGES.editCampaign)
                                     : formatMessage(MESSAGES.createCampaign)}
@@ -201,7 +199,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                         <Grid
                             item
                             xs={12}
-                            md={6}
+                            md={4}
                             className={classes.historyLink}
                         >
                             <Box pr={4} alignItems="center">
@@ -219,7 +217,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                 </Grid>
             </Box>
 
-            <DialogContent className={classes.content} sx={{ pt: 0 }}>
+            <DialogContent className={classes.content} sx={{ pt: 0, mt: -2 }}>
                 <PolioDialogTabs
                     tabs={tabs}
                     selectedTab={selectedTab}
@@ -227,15 +225,11 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                         setSelectedTab(newValue);
                     }}
                 />
-                <FormAdditionalPropsProvider
-                    value={{ isFetchingSelectedCampaign: isFetching }}
-                >
-                    <FormikProvider value={formik}>
-                        <Form>
-                            <CurrentForm />
-                        </Form>
-                    </FormikProvider>
-                </FormAdditionalPropsProvider>
+                <FormikProvider value={formik}>
+                    <Form>
+                        <CurrentForm />
+                    </Form>
+                </FormikProvider>
             </DialogContent>
             <DialogActions className={classes.action}>
                 <Button

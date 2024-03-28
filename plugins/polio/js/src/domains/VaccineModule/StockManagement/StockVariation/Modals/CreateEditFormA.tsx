@@ -11,11 +11,7 @@ import { Box } from '@mui/material';
 import { Vaccine } from '../../../../../constants/types';
 import MESSAGES from '../../messages';
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
-import {
-    TextInput,
-    DateInput,
-    NumberInput,
-} from '../../../../../components/Inputs';
+import { DateInput, NumberInput } from '../../../../../components/Inputs';
 import { useCampaignOptions, useSaveFormA } from '../../hooks/api';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import { useFormAValidation } from './validation';
@@ -115,14 +111,14 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                     component={DateInput}
                     required
                 />
-                <Box mb={2}>
+                {/* <Box mb={2}>
                     <Field
                         label={formatMessage(MESSAGES.forma_vials_used)}
                         name="usable_vials_used"
                         component={NumberInput}
                         required
                     />
-                </Box>
+                </Box> */}
                 <Box mb={2}>
                     <Field
                         label={formatMessage(MESSAGES.forma_vials_missing)}

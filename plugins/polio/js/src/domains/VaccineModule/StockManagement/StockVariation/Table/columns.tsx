@@ -89,22 +89,22 @@ export const useFormATableColumns = (
                     return textPlaceholder;
                 },
             },
-            {
-                Header: formatMessage(MESSAGES.forma_vials_used),
-                accessor: 'usable_vials_used',
-                id: 'usable_vials_used',
-                sortable: true,
-                Cell: settings => {
-                    if (settings.row.original.usable_vials_used) {
-                        return (
-                            <NumberCell
-                                value={settings.row.original.usable_vials_used}
-                            />
-                        );
-                    }
-                    return textPlaceholder;
-                },
-            },
+            // {
+            //     Header: formatMessage(MESSAGES.forma_vials_used),
+            //     accessor: 'usable_vials_used',
+            //     id: 'usable_vials_used',
+            //     sortable: true,
+            //     Cell: settings => {
+            //         if (settings.row.original.usable_vials_used) {
+            //             return (
+            //                 <NumberCell
+            //                     value={settings.row.original.usable_vials_used}
+            //                 />
+            //             );
+            //         }
+            //         return textPlaceholder;
+            //     },
+            // },
         ];
         if (userHasPermission(POLIO_VACCINE_STOCK_WRITE, currentUser)) {
             columns.push({

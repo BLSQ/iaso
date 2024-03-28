@@ -15,7 +15,7 @@ import { useSafeIntl, Paginated } from 'bluesquare-components';
 import classnames from 'classnames';
 import WidgetPaperComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/papers/WidgetPaperComponent';
 import MESSAGES from '../../../constants/messages';
-import { BudgetStep, Categories, Round, Transition } from '../types';
+import { Budget, BudgetStep, Transition } from '../types';
 import { CreateBudgetStep } from '../CreateBudgetStep/CreateBudgetStep';
 import { CreateOverrideStep } from '../CreateBudgetStep/CreateOverrideStep';
 import { BudgetTimeline } from './BudgetTimeline';
@@ -35,10 +35,8 @@ type Params = {
 };
 
 type Props = {
-    status: string;
-    rounds: Round[];
+    budgetProcess: Partial<Budget>;
     nextSteps?: NextSteps;
-    categories?: Categories;
     budgetDetails?: Paginated<BudgetStep>;
     params: Params;
 };
@@ -70,13 +68,15 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export const BudgetDetailsInfos: FunctionComponent<Props> = ({
-    status = '--',
-    rounds = [],
+    budgetProcess = {},
     nextSteps,
-    categories = [],
     budgetDetails,
     params,
 }) => {
+    const status = budgetProcess?.current_state?.label;
+    const rounds = budgetProcess?.rounds ?? [];
+    const categories = budgetProcess?.timeline?.categories;
+
     const { previousStep, quickTransition, campaignId } = params;
     const { formatMessage } = useSafeIntl();
     const theme = useTheme();
@@ -213,7 +213,7 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
                                         {/* @ts-ignore */}
                                         <CreateOverrideStep
                                             isMobileLayout={isMobileLayout}
-                                            campaignId={campaignId}
+                                            budgetProcessId={budgetProcess?.id}
                                             params={params}
                                         />
                                     </Grid>

@@ -61,17 +61,17 @@ export const BudgetProcessDetails: FunctionComponent<Props> = ({ router }) => {
     }: { data: Paginated<BudgetStep> | undefined; isFetching: boolean } =
         useGetBudgetDetails(apiParams);
 
-    const { data: budgetInfos } = useGetBudgetForCampaign(
+    const { data: budgetProcess } = useGetBudgetForCampaign(
         params?.budgetProcessId,
     );
 
     const nextSteps = useMemo(() => {
-        const regular = budgetInfos?.next_transitions?.filter(
+        const regular = budgetProcess?.next_transitions?.filter(
             transition =>
                 transition.key !== 'override' &&
                 !transition.key.includes('repeat'),
         );
-        const repeat = budgetInfos?.next_transitions?.filter(
+        const repeat = budgetProcess?.next_transitions?.filter(
             step => step.key.includes('repeat') && step.allowed,
         );
         const toDisplay = new Set(
@@ -80,7 +80,7 @@ export const BudgetProcessDetails: FunctionComponent<Props> = ({ router }) => {
                 .map(transition => transition.label),
         );
         return { regular, toDisplay, repeat };
-    }, [budgetInfos?.next_transitions]);
+    }, [budgetProcess?.next_transitions]);
 
     const { resetPageToOne, columns } = useTableState({
         events: budgetDetails?.results,
@@ -100,7 +100,7 @@ export const BudgetProcessDetails: FunctionComponent<Props> = ({ router }) => {
         [params, setPage],
     );
     const stepsList = Object.entries(
-        groupBy(budgetInfos?.possible_transitions, 'label'),
+        groupBy(budgetProcess?.possible_transitions, 'label'),
     ).map(([label, items]) => {
         return { label, value: items.map(i => i.key).join(',') };
     });
@@ -121,10 +121,8 @@ export const BudgetProcessDetails: FunctionComponent<Props> = ({ router }) => {
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Box mb={2}>
                     <BudgetDetailsInfos
-                        status={budgetInfos?.current_state?.label ?? '--'}
-                        rounds={budgetInfos?.rounds ?? []}
+                        budgetProcess={budgetProcess ?? {}}
                         nextSteps={nextSteps}
-                        categories={budgetInfos?.timeline?.categories}
                         params={params}
                         budgetDetails={budgetDetails}
                     />

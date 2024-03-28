@@ -128,6 +128,7 @@ def effective_teams(c: "plugins.polio.models.Campaign", team_ids: List[int]) -> 
     q = direct_teams
     # For teams that are teams of teams, we keep the team on the country campaign
 
+    # TOFIX: this fails when overriding a step.
     if c.country:
         teams_on_country = (
             Team.objects

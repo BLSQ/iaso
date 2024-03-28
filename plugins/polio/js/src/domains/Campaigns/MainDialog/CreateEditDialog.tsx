@@ -21,9 +21,8 @@ import {
     LoadingSpinner,
     useSafeIntl,
 } from 'bluesquare-components';
-import { useDispatch } from 'react-redux';
-import { succesfullSnackBar } from '../../../../../../../hat/assets/js/apps/Iaso/constants/snackBars';
-import { enqueueSnackbar } from '../../../../../../../hat/assets/js/apps/Iaso/redux/snackBarsReducer';
+import { useQueryClient } from 'react-query';
+import { ValidationError } from 'yup';
 import { Form } from '../../../components/Form';
 import MESSAGES from '../../../constants/messages';
 import { CAMPAIGN_HISTORY_URL } from '../../../constants/routes';
@@ -45,49 +44,40 @@ type Props = {
     campaignId?: string;
 };
 
-const successSnackBar = msg => succesfullSnackBar(undefined, msg);
-
 const CreateEditDialog: FunctionComponent<Props> = ({
     isOpen,
     onClose,
     campaignId,
 }) => {
-    const { mutate: saveCampaign, isLoading: isSaving } = useSaveCampaign();
-
+    const { mutateAsync: saveCampaign, isLoading: isSaving } =
+        useSaveCampaign();
+    const queryClient = useQueryClient();
     const { data: selectedCampaign, isFetching } = useGetCampaign(
         isOpen && campaignId,
     );
-    const dispatch = useDispatch();
 
     const { data: campaignLogs } = useGetCampaignLogs(
         selectedCampaign?.id,
         isOpen,
     );
     const [isBackdropOpen, setIsBackdropOpen] = useState(false);
+    const [isUpdated, setIsUpdated] = useState(false);
     const { plainSchema, polioSchema } = useFormValidator();
-    // const [schema, updateSchema] = useState(plainSchema);
     const { formatMessage } = useSafeIntl();
     const isPolio = useIsPolioCampaignCheck();
     const classes: Record<string, string> = useStyles();
 
     const handleSubmit = async (values, helpers) => {
-        saveCampaign(convertEmptyStringToNull(values), {
-            onSuccess: () => {
-                helpers.resetForm();
-                onClose();
-                // dispatching the snackbar here so the form can be reset and `onClose` called
-                // before the snackbar triggers a re-render of the whole table
-                dispatch(
-                    enqueueSnackbar(
-                        successSnackBar(MESSAGES.defaultMutationApiSuccess),
-                    ),
-                );
-            },
-            onError: error => {
-                helpers.setErrors(error.details);
-                helpers.setSubmitting(false);
-            },
-        });
+        try {
+            await saveCampaign(convertEmptyStringToNull(values));
+            setIsUpdated(true);
+            helpers.setSubmitting(false);
+        } catch (error) {
+            if (error.data && error.data.details) {
+                helpers.setErrors(error.data.details);
+            }
+            helpers.setSubmitting(false);
+        }
     };
 
     const initialValues = {
@@ -124,12 +114,21 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                 await schema.validate(values, { abortEarly: false });
                 return {};
             } catch (error) {
-                return error.inner.reduce((acc, err) => {
-                    if (!acc[err.path]) {
-                        acc[err.path] = err.message;
-                    }
-                    return acc;
-                }, {});
+                // Check if the error is a Yup ValidationError and has an inner array
+                if (error instanceof ValidationError && error.inner) {
+                    return error.inner.reduce((acc, err) => {
+                        const path = err.path || 'unknownPath';
+                        if (!acc[path]) {
+                            acc[path] = err.message;
+                        }
+                        return acc;
+                    }, {});
+                }
+                console.error(
+                    "Validation failed, but it wasn't a Yup ValidationError:",
+                    error,
+                );
+                return { _error: 'An unexpected validation error occurred.' };
             }
         },
         onSubmit: (values, helpers) => {
@@ -140,6 +139,9 @@ const CreateEditDialog: FunctionComponent<Props> = ({
     const { touched } = formik;
     const handleClose = () => {
         formik.resetForm();
+        if (isUpdated) {
+            queryClient.invalidateQueries('campaigns');
+        }
         onClose();
     };
     const tabs = usePolioDialogTabs(formik, selectedCampaign);
@@ -160,7 +162,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
 
     return (
         <Dialog
-            fullWidth
+            // fullWidth
             maxWidth="xl"
             open={isOpen}
             onClose={(_event, reason) => {
@@ -241,7 +243,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                     color="primary"
                     disabled={formik.isSubmitting}
                 >
-                    {formatMessage(MESSAGES.cancel)}
+                    {formatMessage(MESSAGES.close)}
                 </Button>
                 <Button
                     onClick={() => formik.handleSubmit()}

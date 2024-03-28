@@ -56,7 +56,7 @@ export const BaseInfoForm: FunctionComponent = () => {
         [groupedCampaigns],
     );
 
-    const { values } = useFormikContext<CampaignFormValues>();
+    const { values, setFieldValue } = useFormikContext<CampaignFormValues>();
     const { data: types, isFetching: isFetchingTypes } =
         useGetCampaignTypes(true);
     const isPolio = useIsPolioCampaignCheck();
@@ -76,11 +76,22 @@ export const BaseInfoForm: FunctionComponent = () => {
         },
         [formatMessage, isPolio, values],
     );
+
+    const handleChangeCampaignTypes = useCallback(
+        (key, newTypes?: string): void => {
+            setFieldValue(
+                key,
+                newTypes ? newTypes.split(',').map(id => parseInt(id, 10)) : [],
+            );
+        },
+        [setFieldValue],
+    );
+
     return (
-        <>
+        <Box maxWidth={isPolio(values) ? '80%' : '400px'}>
             <Grid container spacing={2}>
                 <Grid container item spacing={2}>
-                    <Grid xs={12} md={6} item>
+                    <Grid xs={12} md={isPolio(values) ? 6 : 12} item>
                         <Field
                             label={formatMessage(MESSAGES.campaignType)}
                             name="campaign_types"
@@ -89,6 +100,7 @@ export const BaseInfoForm: FunctionComponent = () => {
                             required
                             component={MultiSelect}
                             isDisabled={isFetchingTypes}
+                            onChange={handleChangeCampaignTypes}
                         />
                         <Field
                             name="initial_org_unit"
@@ -220,6 +232,6 @@ export const BaseInfoForm: FunctionComponent = () => {
                     )}
                 </Grid>
             </Grid>
-        </>
+        </Box>
     );
 };

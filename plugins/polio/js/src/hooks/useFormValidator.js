@@ -407,14 +407,13 @@ export const useFormValidator = () => {
             .positive()
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
+        verification_score: yup.number().nullable().positive().integer(),
     };
 
     const plainSchema = {
         campaign_types: yup
             .array(yup.number())
-            .nullable()
-            .required(formatMessage(MESSAGES.requiredField))
-            .min(1, formatMessage(MESSAGES.requiredField)),
+            .min(1, formatMessage(MESSAGES.fieldRequired)),
         initial_org_unit: yup
             .number()
             .positive()
@@ -426,8 +425,6 @@ export const useFormValidator = () => {
             .required(formatMessage(MESSAGES.requiredField)),
         description: yup.string().nullable(),
         gpei_coordinator: yup.string().nullable(),
-
-        verification_score: yup.number().nullable().positive().integer(),
         is_preventive: yup.bool(),
         is_test: yup.bool(),
         rounds: yup.array(round_shape).nullable(),

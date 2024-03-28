@@ -473,7 +473,6 @@ export type DefaultCampaignValues = {
     obr_name?: string;
     description?: string;
     gpei_coordinator?: string;
-    verification_score?: number;
     is_preventive: boolean;
     is_test: boolean;
     rounds?: Round[];
@@ -523,6 +522,7 @@ export type PolioCampaignValues = DefaultCampaignValues & {
     budget_submitted_at?: string | null;
     district_count?: number;
     no_regret_fund_amount?: number;
+    verification_score?: number;
 };
 
 export type CampaignFormValues = DefaultCampaignValues | PolioCampaignValues;

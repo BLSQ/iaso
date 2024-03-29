@@ -130,19 +130,22 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
         response_serializer = OrgUnitChangeRequestRetrieveSerializer(change_request)
         return Response(response_serializer.data)
 
+    @staticmethod
+    def org_unit_change_request_csv_columns():
+        return ["Id", "Name", "Org unit type", "Groups", "Status", "Created", "Created by", "Updated", "Updated by"]
+
     @action(detail=False, methods=["get"])
     def export_to_csv(self, request):
-        filename = "%s--%s" % ("review-change-proposals", datetime.now().strftime("%Y-%m-%d")) + ".csv"
+        filename = "%s--%s" % ("review-change-proposals", datetime.now().strftime("%Y-%m-%d"))
         org_unit_changes_requests = self.get_queryset()
         filtered_org_unit_changes_requests = OrgUnitChangeRequestListFilter(
             request.GET, queryset=org_unit_changes_requests
         ).qs
 
         response = HttpResponse(content_type=CONTENT_TYPE_CSV)
-        filename = filename + ".csv"
-        response["Content-Disposition"] = "attachment; filename=" + filename
+
         writer = csv.writer(response)
-        headers = ["Id", "Name", "Org unit type", "Groups", "Status", "Created", "Created by", "Updated", "Updated by"]
+        headers = self.org_unit_change_request_csv_columns()
         writer.writerow(headers)
         for change_request in filtered_org_unit_changes_requests:
             row = [
@@ -152,9 +155,11 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
                 ",".join(group.name for group in change_request.org_unit.groups.all()),
                 change_request.status,
                 datetime.strftime(change_request.created_at, "%Y-%m-%d"),
-                change_request.created_by.username,
+                change_request.created_by.username if change_request.created_by else None,
                 datetime.strftime(change_request.updated_at, "%Y-%m-%d"),
                 change_request.updated_by.username if change_request.updated_by else None,
             ]
             writer.writerow(row)
+        filename = filename + ".csv"
+        response["Content-Disposition"] = "attachment; filename=" + filename
         return response

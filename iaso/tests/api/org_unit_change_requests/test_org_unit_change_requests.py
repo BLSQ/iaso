@@ -1,5 +1,8 @@
+import csv
 import datetime
+import io
 
+from iaso.api.org_unit_change_requests.views import OrgUnitChangeRequestViewSet
 import time_machine
 
 from django.contrib.auth.models import Group
@@ -41,6 +44,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         cls.project = project
         cls.user = user
         cls.user_with_review_perm = user_with_review_perm
+        cls.org_unit_change_request_csv_columns = OrgUnitChangeRequestViewSet.org_unit_change_request_csv_columns()
 
     def test_list_ok(self):
         m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
@@ -243,3 +247,49 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
         response = self.client.delete(f"/api/orgunits/changes/{change_request.pk}/", format="json")
         self.assertEqual(response.status_code, 405)
+
+    def test_export_to_csv(self):
+        """
+        It tests the csv export for the org change requests list
+        """
+        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
+        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Bar")
+
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get("/api/orgunits/changes/export_to_csv/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.get("Content-Disposition"),
+            "attachment; filename=review-change-proposals--" + datetime.datetime.now().strftime("%Y-%m-%d") + ".csv",
+        )
+
+        response_string = "\n".join(s.decode("U8") for s in response).replace("\r\n\n", "\r\n")
+        reader = csv.reader(io.StringIO(response_string), delimiter=",")
+        data = list(reader)
+        self.assertEqual(len(data), 4)
+
+        data_headers = data[1]
+        self.assertEqual(
+            data_headers,
+            self.org_unit_change_request_csv_columns,
+        )
+        first_data_row = data[2]
+        row_data = self.csv_row_data(change_request)
+        self.assertEqual(
+            first_data_row,
+            row_data,
+        )
+
+    def csv_row_data(self, change_request):
+        return [
+            str(change_request.id),
+            change_request.org_unit.name,
+            change_request.org_unit.org_unit_type.name,
+            ",".join(group.name for group in change_request.org_unit.groups.all()),
+            str(change_request.status),
+            datetime.datetime.strftime(change_request.created_at, "%Y-%m-%d"),
+            change_request.created_by.username if change_request.created_by else "",
+            datetime.datetime.strftime(change_request.updated_at, "%Y-%m-%d"),
+            change_request.updated_by.username if change_request.updated_by else "",
+        ]

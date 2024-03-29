@@ -482,16 +482,16 @@ export type PolioCampaignValues = DefaultCampaignValues & {
     vaccines?: string;
     epid?: string;
     grouped_campaigns?: number[];
-    onset_at?: string | null; // Date in string format or null
-    cvdpv2_notified_at?: string | null; // Date in string format or null
-    outbreak_declaration_date?: string | null; // Date in string format or null
-    detection_first_draft_submitted_at?: string | null; // Date in string format or null
-    detection_rrt_oprtt_approval_at?: string | null; // Date in string format or null
-    investigation_at?: string | null; // Date in string format or null
-    risk_assessment_first_draft_submitted_at?: string | null; // Date in string format or null
-    risk_assessment_rrt_oprtt_approval_at?: string | null; // Date in string format or null
-    ag_nopv_group_met_at?: string | null; // Date in string format or null
-    dg_authorized_at?: string | null; // Date in string format or null
+    onset_at?: string | null;
+    cvdpv2_notified_at?: string | null;
+    outbreak_declaration_date?: string | null;
+    detection_first_draft_submitted_at?: string | null;
+    detection_rrt_oprtt_approval_at?: string | null;
+    investigation_at?: string | null;
+    risk_assessment_first_draft_submitted_at?: string | null;
+    risk_assessment_rrt_oprtt_approval_at?: string | null;
+    ag_nopv_group_met_at?: string | null;
+    dg_authorized_at?: string | null;
     // Budget-related dates
     who_sent_budget_at_WFEDITABLE?: string | null;
     unicef_sent_budget_at_WFEDITABLE?: string | null;

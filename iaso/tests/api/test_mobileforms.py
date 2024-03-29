@@ -244,10 +244,10 @@ class MobileFormsAPITestCase(APITestCase):
         self.assertEqual(response_data["periods_after_allowed"], 10)
 
     def test_forms_create_without_auth(self):
-        """POST /mobile/forms/ without auth: 403"""
+        """POST /mobile/forms/ without auth: 401"""
 
         response = self.client.post(f"/api/mobile/forms/", data={"name": "test form"}, format="json")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     def test_forms_create_wrong_permission(self):
         """POST /mobile/forms/ with auth but not the proper permission: 403"""
@@ -424,10 +424,10 @@ class MobileFormsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 404)
 
     def test_forms_destroy_no_auth(self):
-        """DELETE /mobile/forms/<form_id> without auth -> 403"""
+        """DELETE /mobile/forms/<form_id> without auth -> 401"""
 
         response = self.client.delete(f"/api/mobile/forms/{self.form_1.id}/", format="json")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     # noinspection DuplicatedCode
     def assertValidFormListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):

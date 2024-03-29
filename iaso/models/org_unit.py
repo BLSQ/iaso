@@ -10,7 +10,7 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
 from django.contrib.postgres.fields import ArrayField
-from django.contrib.postgres.indexes import GistIndex
+from django.contrib.postgres.indexes import GinIndex, GistIndex
 from django.db import models, transaction
 from django.db.models import QuerySet, Q
 from django.db.models.expressions import RawSQL
@@ -285,13 +285,17 @@ class OrgUnit(TreeModel):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+    extra_fields = models.JSONField(default=dict)
 
     opening_date = models.DateField(blank=True, null=True)  # Start date of activities of the organisation unit
     closed_date = models.DateField(blank=True, null=True)  # End date of activities of the organisation unit
     objects = OrgUnitManager.from_queryset(OrgUnitQuerySet)()  # type: ignore
 
     class Meta:
-        indexes = [GistIndex(fields=["path"], buffering=True)]
+        indexes = [
+            GistIndex(fields=["path"], buffering=True),
+            GinIndex(fields=["extra_fields"]),
+        ]
 
     def root(self):
         if self.path is not None and len(self.path) > 1:
@@ -548,36 +552,9 @@ class OrgUnit(TreeModel):
     def get_reference_instances_details_for_api(self) -> list:
         return [instance.as_full_model() for instance in self.reference_instances.all()]
 
-    def get_extra_fields(self):
-        from iaso.models import Account
-        from iaso.models.data_store import JsonDataStore
-
-        try:
-            datastore = self.jsondatastore_set.get(
-                account=Account.objects.filter(default_version=self.version).first(),
-                slug="extra_fields",
-            )
-            return datastore.content
-        except JsonDataStore.DoesNotExist:
-            return {}
-
-    def set_extra_fields(self, content):
-        from iaso.models import Account
-        from iaso.models.data_store import JsonDataStore
-
-        try:
-            datastore = self.jsondatastore_set.get(
-                account=Account.objects.filter(default_version=self.version).first(),
-                slug="extra_fields",
-            )
-            datastore.content = {**datastore.content, **content}
-            datastore.save()
-        except JsonDataStore.DoesNotExist:
-            self.jsondatastore_set.create(
-                account=Account.objects.filter(default_version=self.version).first(),
-                slug="extra_fields",
-                content=content,
-            )
+    def set_extra_fields(self, fields):
+        self.extra_fields = self.extra_fields | fields
+        self.save()
 
 
 class OrgUnitReferenceInstance(models.Model):

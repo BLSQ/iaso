@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
 import { Pagination, UrlParams } from 'bluesquare-components';
+import { TaskStatus } from '../tasks/types';
 
 export type PotentialPaymentParams = UrlParams & {
     change_requests__created_at_after?: string;
@@ -73,6 +74,7 @@ export type PaymentLot = {
     created_by: User;
     status: PaymentLotStatus;
     payments: NestedPayment[];
+    task?: { id: number; status: TaskStatus; ended_at: string };
 };
 export interface PaymentLotPaginated extends Pagination {
     results: PaymentLot[];

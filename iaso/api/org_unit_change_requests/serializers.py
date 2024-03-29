@@ -3,6 +3,8 @@ import uuid
 from rest_framework import serializers
 from django.contrib.auth.models import User
 
+from hat.audit.audit_logger import AuditLogger
+from hat.audit.models import ORG_UNIT_CHANGE_REQUEST_API, Modification
 from iaso.api.mobile.org_units import ReferenceInstancesSerializer
 from iaso.models import Instance, OrgUnit, OrgUnitChangeRequest, OrgUnitType
 from iaso.utils.serializer.id_or_uuid_field import IdOrUuidRelatedField
@@ -352,3 +354,14 @@ class OrgUnitChangeRequestReviewSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("At least one `approved_fields` must be provided.")
 
         return validated_data
+
+
+class AuditOrgUnitChangeRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrgUnitChangeRequest
+        fields = "__all__"
+
+
+class OrgUnitChangeRequestAuditLogger(AuditLogger):
+    serializer = AuditOrgUnitChangeRequestSerializer
+    default_source = ORG_UNIT_CHANGE_REQUEST_API

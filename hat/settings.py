@@ -20,11 +20,11 @@ import urllib.parse
 from datetime import timedelta
 from typing import Any, Dict
 from urllib.parse import urlparse
-from requests.exceptions import HTTPError
 
 import sentry_sdk
 from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import gettext_lazy as _
+from requests.exceptions import HTTPError
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import ignore_logger
 
@@ -376,8 +376,8 @@ LOGIN_URL = "/login"
 LOGIN_REDIRECT_URL = "/"
 
 AUTH_CLASSES = [
-    "iaso.api.auth.authentication.CsrfExemptSessionAuthentication",
     "rest_framework_simplejwt.authentication.JWTAuthentication",
+    "iaso.api.auth.authentication.CsrfExemptSessionAuthentication",
 ]
 
 # Needed for PowerBI, used for the Polio project, which only supports BasicAuth.
@@ -460,9 +460,11 @@ WEBPACK_LOADER = {
         "STATS_FILE": os.path.join(
             PROJECT_ROOT,
             "assets/webpack",
-            "webpack-stats.json"
-            if (DEBUG and not os.environ.get("TEST_PROD", None) and not USE_S3)
-            else "webpack-stats-prod.json",
+            (
+                "webpack-stats.json"
+                if (DEBUG and not os.environ.get("TEST_PROD", None) and not USE_S3)
+                else "webpack-stats-prod.json"
+            ),
         ),
     }
 }

@@ -1,8 +1,9 @@
 import json
+
+from hat.menupermissions import models as permission
 from iaso.models.base import Account
 from iaso.models.data_store import JsonDataStore
 from iaso.test import APITestCase
-from hat.menupermissions import models as permission
 
 data_store_content1 = json.dumps({"hello": "world"})
 data_store_content2 = json.dumps({"wait": "what"})
@@ -36,10 +37,10 @@ class LQASCountryAPITestCase(APITestCase):
         )
 
     def test_datastore_list_without_auth(self):
-        """GET /polio/lqasmap/country/ without auth should result in a 403"""
+        """GET /polio/lqasmap/country/ without auth should result in a 401"""
 
         response = self.client.get(api_url)
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     def test_datastore_list_permissions(self):
         """GET /polio/lqasmap/country/ with auth but without the proper permission should return a 403"""
@@ -55,10 +56,10 @@ class LQASCountryAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
 
     def test_datastore_detail_without_auth(self):
-        """GET /polio/lqasmap/country/{slug} without auth should result in a 403"""
+        """GET /polio/lqasmap/country/{slug} without auth should result in a 401"""
 
         response = self.client.get(f"{api_url}{self.data_store1.slug}/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     def test_datastore_detail_permissions(self):
         """GET /polio/lqasmap/country/{slug} with auth but without the proper permission should return a 403. Wrong account should return a 404"""

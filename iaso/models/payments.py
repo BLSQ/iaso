@@ -42,6 +42,9 @@ class Payment(models.Model):
 
 class PotentialPayment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="potential_payment")
+    payment_lot = models.ForeignKey(
+        "PaymentLot", on_delete=models.SET_NULL, null=True, blank=True, related_name="potential_payments"
+    )
 
 
 class PaymentLot(models.Model):
@@ -67,6 +70,7 @@ class PaymentLot(models.Model):
         User, null=True, blank=True, on_delete=models.SET_NULL, related_name="payment_lot_updated_set"
     )
     status = models.CharField(choices=Statuses.choices, default=Statuses.NEW, max_length=40)
+    task = models.ForeignKey("Task", on_delete=models.SET_NULL, null=True, blank=True, related_name="payment_lots")
 
     def compute_status(self):
         payments = self.payments.all()
@@ -85,18 +89,5 @@ class PaymentLot(models.Model):
         else:
             return self.Statuses.NEW
 
-    def save(self, *args, **kwargs):
-        if not self.pk:
-            self.status = self.Statuses.NEW
-        else:
-            self.status = self.compute_status()
-        super().save(*args, **kwargs)
-
     def __str__(self):
         return "%s - %s" % (self.name, self.created_at.strftime("%Y-%m-%d %H:%M:%S"))
-
-
-@receiver(post_save, sender=Payment)
-def update_payment_lot_status(sender, instance, **kwargs):
-    if instance.payment_lot:
-        instance.payment_lot.save()

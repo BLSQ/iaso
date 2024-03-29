@@ -1,7 +1,11 @@
 /* eslint-disable react/jsx-props-no-spreading */
-/* eslint-disable camelcase */
 import isEqual from 'lodash/isEqual';
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useState,
+} from 'react';
 
 import {
     Box,
@@ -22,18 +26,15 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { useQueryClient } from 'react-query';
-import { ValidationError } from 'yup';
 import { Form } from '../../../components/Form';
 import MESSAGES from '../../../constants/messages';
 import { CAMPAIGN_HISTORY_URL } from '../../../constants/routes';
-import { CampaignFormValues } from '../../../constants/types';
-import { useFormValidator } from '../../../hooks/useFormValidator';
 import { useStyles } from '../../../styles/theme';
 import { convertEmptyStringToNull } from '../../../utils/convertEmptyStringToNull';
 import { useGetCampaignLogs } from '../campaignHistory/hooks/useGetCampaignHistory';
 import { useGetCampaign } from '../hooks/api/useGetCampaign';
 import { useSaveCampaign } from '../hooks/api/useSaveCampaign';
-import { useIsPolioCampaignCheck } from '../hooks/useIsPolioCampaignCheck';
+import { useValidateCampaign } from '../hooks/useValidateCampaign';
 import { PolioDialogTabs } from './PolioDialogTabs';
 import { usePolioDialogTabs } from './usePolioDialogTabs';
 
@@ -48,8 +49,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
     onClose,
     campaignId,
 }) => {
-    const { mutateAsync: saveCampaign, isLoading: isSaving } =
-        useSaveCampaign();
+    const { mutate: saveCampaign, isLoading: isSaving } = useSaveCampaign();
     const queryClient = useQueryClient();
     const { data: selectedCampaign, isFetching } = useGetCampaign(
         isOpen && campaignId,
@@ -61,23 +61,25 @@ const CreateEditDialog: FunctionComponent<Props> = ({
     );
     const [isBackdropOpen, setIsBackdropOpen] = useState(false);
     const [isUpdated, setIsUpdated] = useState(false);
-    const { plainSchema, polioSchema } = useFormValidator();
     const { formatMessage } = useSafeIntl();
-    const isPolio = useIsPolioCampaignCheck();
     const classes: Record<string, string> = useStyles();
+    const validate = useValidateCampaign();
 
-    const handleSubmit = async (values, helpers) => {
-        try {
-            await saveCampaign(convertEmptyStringToNull(values));
-            setIsUpdated(true);
-            // helpers.setSubmitting(false);
-        } catch (error) {
-            if (error.data && error.data.details) {
-                helpers.setErrors(error.data.details);
-            }
-            // helpers.setSubmitting(false);
-        }
-    };
+    const handleSubmit = useCallback(
+        (values, helpers) => {
+            saveCampaign(convertEmptyStringToNull(values), {
+                onSuccess: () => {
+                    setIsUpdated(true);
+                },
+                onError: error => {
+                    if (error.details) {
+                        helpers.setErrors(error.details);
+                    }
+                },
+            });
+        },
+        [saveCampaign],
+    );
 
     const initialValues = {
         rounds: [],
@@ -90,6 +92,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
         is_preventive: false,
         is_test: false,
         enable_send_weekly_email: true,
+        // Those are Polio default values to be set if the types changes to Polio
         has_data_in_budget_tool: false,
         budget_current_state_key: '-',
         detection_status: 'PENDING',
@@ -107,31 +110,8 @@ const CreateEditDialog: FunctionComponent<Props> = ({
         initialValues,
         enableReinitialize: true,
         validateOnBlur: true,
-        validate: async (values: CampaignFormValues) => {
-            const schema = isPolio(values) ? polioSchema : plainSchema;
-            try {
-                await schema.validate(values, { abortEarly: false });
-                return {};
-            } catch (error) {
-                // Check if the error is a Yup ValidationError and has an inner array
-                if (error instanceof ValidationError && error.inner) {
-                    return error.inner.reduce((acc, err) => {
-                        const path = err.path || 'unknownPath';
-                        if (!acc[path]) {
-                            acc[path] = err.message;
-                        }
-                        return acc;
-                    }, {});
-                }
-                console.error(
-                    "Validation failed, but it wasn't a Yup ValidationError:",
-                    error,
-                );
-                return { _error: 'An unexpected validation error occurred.' };
-            }
-        },
+        validate,
         onSubmit: (values, helpers) => {
-            // helpers.setSubmitting(true);
             handleSubmit(values, helpers);
         },
     });
@@ -153,12 +133,8 @@ const CreateEditDialog: FunctionComponent<Props> = ({
         setSelectedTab(0);
     }, [isOpen]);
 
-    const isFormChanged = !isEqual(formik.values, formik.initialValues);
     const saveDisabled =
-        !isFormChanged ||
-        (isFormChanged && !formik.isValid) ||
-        formik.isSubmitting;
-
+        !formik.dirty || !formik.isValid || formik.isSubmitting;
     return (
         <Dialog
             maxWidth="xl"

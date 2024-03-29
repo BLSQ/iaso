@@ -174,18 +174,21 @@ export const BaseInfoForm: FunctionComponent = () => {
                                 className={classes.input}
                                 options={polioViruses}
                                 required
+                                clearable={false}
                                 component={Select}
                             />
-                            <Field
-                                label={formatMessage(MESSAGES.vaccines)}
-                                name="vaccines"
-                                disabled
-                                component={TextInput}
-                                shrinkLabel={false}
-                                title={formatMessage(
-                                    MESSAGES.helpTextEditVaccineViaScope,
-                                )}
-                            />
+                            <Box mt={2}>
+                                <Field
+                                    label={formatMessage(MESSAGES.vaccines)}
+                                    name="vaccines"
+                                    disabled
+                                    component={TextInput}
+                                    shrinkLabel={false}
+                                    title={formatMessage(
+                                        MESSAGES.helpTextEditVaccineViaScope,
+                                    )}
+                                />
+                            </Box>
                             <Box mt={2}>
                                 <Field
                                     label={formatMessage(MESSAGES.epid)}

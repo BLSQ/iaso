@@ -1,12 +1,15 @@
+import csv
+from datetime import datetime
 import django_filters
 
+from iaso.api.common import CONTENT_TYPE_CSV
 from rest_framework import filters
 from rest_framework import viewsets
 from rest_framework.exceptions import PermissionDenied, ValidationError
-
+from rest_framework.decorators import action
 from django.utils import timezone
 from rest_framework.response import Response
-
+from django.http import HttpResponse
 from iaso.api.org_unit_change_requests.filters import OrgUnitChangeRequestListFilter
 from iaso.api.org_unit_change_requests.pagination import OrgUnitChangeRequestPagination
 from iaso.api.org_unit_change_requests.permissions import (
@@ -126,3 +129,32 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
 
         response_serializer = OrgUnitChangeRequestRetrieveSerializer(change_request)
         return Response(response_serializer.data)
+
+    @action(detail=False, methods=["get"])
+    def export_to_csv(self, request):
+        filename = "%s--%s" % ("review-change-proposals", datetime.now().strftime("%Y-%m-%d")) + ".csv"
+        org_unit_changes_requests = self.get_queryset()
+        filtered_org_unit_changes_requests = OrgUnitChangeRequestListFilter(
+            request.GET, queryset=org_unit_changes_requests
+        ).qs
+
+        response = HttpResponse(content_type=CONTENT_TYPE_CSV)
+        filename = filename + ".csv"
+        response["Content-Disposition"] = "attachment; filename=" + filename
+        writer = csv.writer(response)
+        headers = ["Id", "Name", "Org unit type", "Groups", "Status", "Created", "Created by", "Updated", "Updated by"]
+        writer.writerow(headers)
+        for change_request in filtered_org_unit_changes_requests:
+            row = [
+                change_request.id,
+                change_request.org_unit.name,
+                change_request.org_unit.org_unit_type.name,
+                ",".join(group.name for group in change_request.org_unit.groups.all()),
+                change_request.status,
+                datetime.strftime(change_request.created_at, "%Y-%m-%d"),
+                change_request.created_by.username,
+                datetime.strftime(change_request.updated_at, "%Y-%m-%d"),
+                change_request.updated_by.username if change_request.updated_by else None,
+            ]
+            writer.writerow(row)
+        return response

@@ -43,9 +43,9 @@ import { baseUrls } from '../../../constants/urls';
 
 import { Selection } from '../../orgUnits/types/selection';
 
-import { userHasOneOfPermissions } from '../../users/utils';
+import { userHasOneOfPermissions, userHasPermission } from '../../users/utils';
 
-import { useCurrentUser } from '../../../utils/usersUtils';
+import { User, useCurrentUser } from '../../../utils/usersUtils';
 import * as Permission from '../../../utils/permissions';
 
 const NO_VALUE = '/';
@@ -410,11 +410,49 @@ export const getSelectionActions = (
     setForceRefresh: () => void,
     isUnDeleteAction = false,
     classes: Record<string, string>,
+    currentUser: User,
 ): SelectionAction[] => {
     const label = formatMessage(
         isUnDeleteAction ? MESSAGES.unDeleteInstance : MESSAGES.deleteInstance,
     );
-    return [
+
+    const exportAction = {
+        icon: newSelection => (
+            <ExportInstancesDialogComponent
+                // @ts-ignore need to refactor this component to TS
+                selection={newSelection}
+                getFilters={() => filters}
+                renderTrigger={openDialog => {
+                    const iconDisabled = newSelection.selectCount === 0;
+                    const iconProps = {
+                        className: iconDisabled ? classes.iconDisabled : null,
+                        onClick: !iconDisabled ? openDialog : () => null,
+                        disabled: iconDisabled,
+                    };
+                    // @ts-ignore
+                    return <CallMade {...iconProps} />;
+                }}
+            />
+        ),
+        label: formatMessage(MESSAGES.exportRequest),
+        disabled: false,
+    };
+
+    const deleteAction = {
+        icon: (newSelection, resetSelection) => (
+            <DeleteDialog
+                selection={newSelection}
+                filters={filters}
+                setForceRefresh={setForceRefresh}
+                resetSelection={resetSelection}
+                isUnDeleteAction={isUnDeleteAction}
+            />
+        ),
+        label,
+        disabled: false,
+    };
+
+    const actions: any = [
         {
             icon: newSelection => {
                 const isDisabled =
@@ -437,43 +475,11 @@ export const getSelectionActions = (
             label: formatMessage(MESSAGES.compare),
             disabled: false,
         },
-        {
-            icon: newSelection => (
-                <ExportInstancesDialogComponent
-                    // @ts-ignore need to refactor this component to TS
-                    selection={newSelection}
-                    getFilters={() => filters}
-                    renderTrigger={openDialog => {
-                        const iconDisabled = newSelection.selectCount === 0;
-                        const iconProps = {
-                            className: iconDisabled
-                                ? classes.iconDisabled
-                                : null,
-                            onClick: !iconDisabled ? openDialog : () => null,
-                            disabled: iconDisabled,
-                        };
-                        // @ts-ignore
-                        return <CallMade {...iconProps} />;
-                    }}
-                />
-            ),
-            label: formatMessage(MESSAGES.exportRequest),
-            disabled: false,
-        },
-        {
-            icon: (newSelection, resetSelection) => (
-                <DeleteDialog
-                    selection={newSelection}
-                    filters={filters}
-                    setForceRefresh={setForceRefresh}
-                    resetSelection={resetSelection}
-                    isUnDeleteAction={isUnDeleteAction}
-                />
-            ),
-            label,
-            disabled: false,
-        },
     ];
+    if (userHasPermission(Permission.SUBMISSIONS_UPDATE, currentUser)) {
+        actions.push(exportAction, deleteAction);
+    }
+    return actions;
 };
 
 const asBackendStatus = status => {

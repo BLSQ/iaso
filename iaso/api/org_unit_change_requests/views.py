@@ -132,12 +132,23 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
 
     @staticmethod
     def org_unit_change_request_csv_columns():
-        return ["Id", "Name", "Org unit type", "Groups", "Status", "Created", "Created by", "Updated", "Updated by"]
+        return [
+            "Id",
+            "Name",
+            "Parent",
+            "Org unit type",
+            "Groups",
+            "Status",
+            "Created",
+            "Created by",
+            "Updated",
+            "Updated by",
+        ]
 
     @action(detail=False, methods=["get"])
     def export_to_csv(self, request):
         filename = "%s--%s" % ("review-change-proposals", datetime.now().strftime("%Y-%m-%d"))
-        org_unit_changes_requests = self.get_queryset()
+        org_unit_changes_requests = self.get_queryset().order_by("org_unit__name")
         filtered_org_unit_changes_requests = OrgUnitChangeRequestListFilter(
             request.GET, queryset=org_unit_changes_requests
         ).qs
@@ -151,6 +162,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
             row = [
                 change_request.id,
                 change_request.org_unit.name,
+                change_request.org_unit.parent.name if change_request.org_unit.parent else None,
                 change_request.org_unit.org_unit_type.name,
                 ",".join(group.name for group in change_request.org_unit.groups.all()),
                 change_request.status,

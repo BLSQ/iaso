@@ -45,6 +45,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         cls.user = user
         cls.user_with_review_perm = user_with_review_perm
         cls.org_unit_change_request_csv_columns = OrgUnitChangeRequestViewSet.org_unit_change_request_csv_columns()
+        cls.version = version
 
     def test_list_ok(self):
         m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
@@ -252,8 +253,25 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         """
         It tests the csv export for the org change requests list
         """
+        group_1 = m.Group.objects.create(
+            name="Group 1", source_ref="qRsdUL2Oa4d", source_version=self.version, block_of_countries=False
+        )
+        group_2 = m.Group.objects.create(
+            name="Group 2", source_ref="KOSuvYwass8", source_version=self.version, block_of_countries=False
+        )
+        self.org_unit.groups.set([group_1, group_2])
+        org_unit_parent = m.OrgUnit.objects.create(name="parent")
+        self.org_unit.parent = org_unit_parent
+        self.org_unit.save()
+        self.org_unit.refresh_from_db()
+
         m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
         change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Bar")
+
+        change_request.created_by = self.user
+        change_request.updated_by = self.user
+        change_request.save()
+        change_request.refresh_from_db()
 
         self.client.force_authenticate(self.user)
 
@@ -276,6 +294,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         )
         first_data_row = data[2]
         row_data = self.csv_row_data(change_request)
+
         self.assertEqual(
             first_data_row,
             row_data,
@@ -285,6 +304,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         return [
             str(change_request.id),
             change_request.org_unit.name,
+            change_request.org_unit.parent.name if change_request.org_unit.parent else "",
             change_request.org_unit.org_unit_type.name,
             ",".join(group.name for group in change_request.org_unit.groups.all()),
             str(change_request.status),

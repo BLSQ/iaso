@@ -133,7 +133,8 @@ class ETL:
     def exit_type(self, visit):
         exit_type = None
         if (visit.get("_transfer") is not None and visit.get("_transfer") == "1") and (
-            visit.get("_transfer_to_tsfp") is not None and visit.get("_transfer_to_tsfp") == "1"
+            (visit.get("_transfer_to_tsfp") is not None and visit.get("_transfer_to_tsfp") == "1")
+            or (visit.get("transfer_from_otp__bool__") is not None and visit.get("transfer_from_otp__bool__") == "1")
         ):
             exit_type = "transfer_to_tsfp"
         elif (visit.get("_transfer_to_otp") is not None and visit.get("_transfer_to_otp") == "1") or (
@@ -280,6 +281,8 @@ class ETL:
             ration_type = ""
             if step.get("_total_number_of_sachets") is not None:
                 quantity = step.get("_total_number_of_sachets", 0)
+            elif step.get("_number_of_sutchets") is not None:
+                quantity = step.get("_number_of_sutchets", 0)
             elif step.get("_csb_packets") is not None:
                 quantity = step.get("_csb_packets", 0)
 
@@ -294,6 +297,8 @@ class ETL:
             quantity = 0
             if step.get("_total_number_of_sachets") is not None and step.get("_total_number_of_sachets") != "":
                 quantity = step.get("_total_number_of_sachets")
+            elif step.get("_number_of_sutchets") is not None and step.get("_number_of_sutchets") != "":
+                quantity = step.get("_number_of_sutchets", 0)
             assistance = {
                 "type": step.get("ration_type_tsfp"),
                 "quantity": quantity,
@@ -303,6 +308,8 @@ class ETL:
             quantity = 0
             if step.get("_total_number_of_sachets") is not None and step.get("_total_number_of_sachets") != "":
                 quantity = step.get("_total_number_of_sachets")
+            elif step.get("_number_of_sutchets") is not None and step.get("_number_of_sutchets") != "":
+                quantity = step.get("_number_of_sutchets", 0)
             assistance = {
                 "type": step.get("ration_type_otp"),
                 "quantity": quantity,

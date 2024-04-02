@@ -1,19 +1,19 @@
+import PropTypes from 'prop-types';
 import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import PropTypes from 'prop-types';
 
 import SidebarMenu from '../../app/components/SidebarMenuComponent';
 
 import { redirectToReplace } from '../../../routing/actions.ts';
 
-import { userHasOneOfPermissions, getFirstAllowedUrl } from '../utils';
+import { getFirstAllowedUrl, userHasOneOfPermissions } from '../utils';
 
 import PageError from '../../../components/errors/PageError';
-import { switchLocale } from '../../app/actions';
+import PageNoPerms from '../../../components/errors/PageNoPerms.tsx';
 import { hasFeatureFlag } from '../../../utils/featureFlags';
 import { useCurrentUser } from '../../../utils/usersUtils.ts';
+import { switchLocale } from '../../app/actions';
 import { WrongAccountModal } from './WrongAccountModal.tsx';
-import PageNoPerms from '../../../components/errors/PageNoPerms.tsx';
 
 const ProtectedRoute = ({
     routeConfig,

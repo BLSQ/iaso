@@ -7,7 +7,7 @@ import isEqual from 'lodash/isEqual';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 
 import MESSAGES from '../../../constants/messages';
-import { Campaign, Round } from '../../../constants/types';
+import { CampaignFormValues, Round } from '../../../constants/types';
 import { useStyles } from '../../../styles/theme';
 import { ScopeForm } from '../Scope/ScopeForm';
 import { RoundForm } from './RoundForm';
@@ -24,6 +24,7 @@ export const roundFormFields = (rounds: Round[]): string[] => {
                     `rounds[${i}].ended_at`,
                     `rounds[${i}].started_at`,
                     `rounds[${i}].percentage_covered_target_population`,
+                    `rounds[${i}].target_population`,
                 ];
             })
             .flat(),
@@ -36,7 +37,7 @@ export const RoundsForm: FunctionComponent = () => {
     const {
         values: { rounds = [] },
         setFieldValue,
-    } = useFormikContext<Campaign>();
+    } = useFormikContext<CampaignFormValues>();
     const { formatMessage } = useSafeIntl();
     const [lastRound, setLastRound] = useState(rounds[rounds.length - 1]);
 
@@ -94,7 +95,7 @@ export const RoundsForm: FunctionComponent = () => {
     }, [rounds]);
 
     return (
-        <>
+        <Box minWidth="70vw">
             <Box mt={rounds.length > 0 ? -4 : 0} display="flex">
                 {displayAddZeroRound && (
                     <Box mr={rounds.length === 0 ? 2 : 0} mt="14px">
@@ -205,6 +206,6 @@ export const RoundsForm: FunctionComponent = () => {
                     <ScopeForm currentTab={`${currentRoundNumber}`} />
                 </>
             )}
-        </>
+        </Box>
     );
 };

@@ -1,15 +1,15 @@
-import React, { FunctionComponent, useMemo } from 'react';
-import { some, uniqBy, sortBy } from 'lodash';
 import { Box, TableCell, TableRow } from '@mui/material';
+import { some, sortBy, uniqBy } from 'lodash';
+import React, { FunctionComponent, useMemo } from 'react';
+import InputComponent from '../../../../components/forms/InputComponent';
+import { ReviewOrgUnitChangesDetailsTableRow } from '../Tables/details/ReviewOrgUnitChangesDetailsTableRow';
+import { NewOrgUnitField } from '../hooks/useNewFields';
 import {
     ExtendedNestedGroup,
     NestedGroup,
     OrgUnitChangeRequestDetails,
 } from '../types';
 import { ReviewOrgUnitFieldChanges } from './ReviewOrgUnitFieldChanges';
-import { NewOrgUnitField } from '../hooks/useNewFields';
-import InputComponent from '../../../../components/forms/InputComponent';
-import { ReviewOrgUnitChangesDetailsTableRow } from '../Tables/details/ReviewOrgUnitChangesDetailsTableRow';
 
 type Props = {
     // eslint-disable-next-line no-unused-vars

@@ -1,8 +1,8 @@
 /* eslint-disable camelcase */
-import React, { FunctionComponent } from 'react';
 import { TableCell } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import classNames from 'classnames';
+import React, { FunctionComponent } from 'react';
 import { NewOrgUnitField } from '../../hooks/useNewFields';
 import { OrgUnitChangeRequestDetails } from '../../types';
 

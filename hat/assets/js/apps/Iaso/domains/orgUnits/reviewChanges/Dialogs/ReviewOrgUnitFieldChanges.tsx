@@ -1,11 +1,11 @@
-import React, { FunctionComponent } from 'react';
 import { Table, TableBody, TableCell, TableRow } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
+import React, { FunctionComponent } from 'react';
+import { Accordion } from '../../../../components/Accordion/Accordion';
+import { AccordionDetails } from '../../../../components/Accordion/AccordionDetails';
+import { AccordionSummary } from '../../../../components/Accordion/AccordionSummary';
 import { NewOrgUnitField } from '../hooks/useNewFields';
 import MESSAGES from '../messages';
-import { Accordion } from '../../../../components/Accordion/Accordion';
-import { AccordionSummary } from '../../../../components/Accordion/AccordionSummary';
-import { AccordionDetails } from '../../../../components/Accordion/AccordionDetails';
 import { ExtendedNestedGroup } from '../types';
 
 type Props = {
@@ -55,7 +55,7 @@ export const ReviewOrgUnitFieldChanges: FunctionComponent<Props> = ({
                                             color: isHighlighted,
                                         }}
                                     >
-                                        {(value.left === true && name) || ''}
+                                        {(value.left === true && name) || '--'}
                                     </TableCell>
                                     <TableCell
                                         sx={{
@@ -67,7 +67,7 @@ export const ReviewOrgUnitFieldChanges: FunctionComponent<Props> = ({
                                                 isHighlighted,
                                         }}
                                     >
-                                        {(value.right === true && name) || ''}
+                                        {(value.right === true && name) || '--'}
                                     </TableCell>
                                 </TableRow>
                             );

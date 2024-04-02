@@ -465,3 +465,64 @@ export type CampaignListItem = {
     grouped_campaigns: number[];
     campaign_types: CampaignType[];
 };
+
+export type DefaultCampaignValues = {
+    initial_org_unit?: number;
+    top_level_org_unit_id?: number;
+    campaign_types: number[];
+    obr_name?: string;
+    description?: string;
+    gpei_coordinator?: string;
+    is_preventive: boolean;
+    is_test: boolean;
+    rounds?: Round[];
+};
+export type PolioCampaignValues = DefaultCampaignValues & {
+    virus?: string;
+    vaccines?: string;
+    epid?: string;
+    grouped_campaigns?: number[];
+    onset_at?: string | null;
+    cvdpv2_notified_at?: string | null;
+    outbreak_declaration_date?: string | null;
+    detection_first_draft_submitted_at?: string | null;
+    detection_rrt_oprtt_approval_at?: string | null;
+    investigation_at?: string | null;
+    risk_assessment_first_draft_submitted_at?: string | null;
+    risk_assessment_rrt_oprtt_approval_at?: string | null;
+    ag_nopv_group_met_at?: string | null;
+    dg_authorized_at?: string | null;
+    // Budget-related dates
+    who_sent_budget_at_WFEDITABLE?: string | null;
+    unicef_sent_budget_at_WFEDITABLE?: string | null;
+    gpei_consolidated_budgets_at_WFEDITABLE?: string | null;
+    submitted_to_rrt_at_WFEDITABLE?: string | null;
+    feedback_sent_to_gpei_at_WFEDITABLE?: string | null;
+    re_submitted_to_rrt_at_WFEDITABLE?: string | null;
+    submitted_to_orpg_operations1_at_WFEDITABLE?: string | null;
+    feedback_sent_to_rrt1_at_WFEDITABLE?: string | null;
+    submitted_to_orpg_wider_at_WFEDITABLE?: string | null;
+    submission_to_orpg_operations_2_at_WFEDITABLE?: string | null;
+    feedback_sent_to_rrt2_at_WFEDITABLE?: string | null;
+    re_submitted_to_orpg_operations1_at_WFEDITABLE?: string | null;
+    re_submitted_to_orpg_operations2_at_WFEDITABLE?: string | null;
+    submitted_for_approval_at_WFEDITABLE?: string | null;
+    approved_by_who_at_WFEDITABLE?: string | null;
+    feedback_sent_to_orpg_operations_who_at_WFEDITABLE?: string | null;
+    feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE?: string | null;
+    approved_by_unicef_at_WFEDITABLE?: string | null;
+    approved_at_WFEDITABLE?: string | null;
+    approval_confirmed_at_WFEDITABLE?: string | null;
+    unicef_disbursed_to_moh_at?: string | null;
+    unicef_disbursed_to_co_at?: string | null;
+    who_disbursed_to_moh_at?: string | null;
+    who_disbursed_to_co_at?: string | null;
+    spreadsheet_url?: string | null;
+    eomg?: string | null;
+    budget_submitted_at?: string | null;
+    district_count?: number;
+    no_regret_fund_amount?: number;
+    verification_score?: number;
+};
+
+export type CampaignFormValues = DefaultCampaignValues | PolioCampaignValues;

@@ -4,7 +4,7 @@ import { Field, useFormikContext } from 'formik';
 import React, { FunctionComponent } from 'react';
 import { DateInput, NumberInput } from '../../../components/Inputs';
 import MESSAGES from '../../../constants/messages';
-import { Campaign } from '../../../constants/types';
+import { CampaignFormValues } from '../../../constants/types';
 import { RoundDates } from './RoundDates/RoundDates';
 
 type Props = { roundNumber: number };
@@ -14,7 +14,7 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
     const {
         values: { rounds = [] },
         setFieldValue,
-    } = useFormikContext<Campaign>();
+    } = useFormikContext<CampaignFormValues>();
     const roundIndex = rounds.findIndex(r => r.number === roundNumber);
 
     return (

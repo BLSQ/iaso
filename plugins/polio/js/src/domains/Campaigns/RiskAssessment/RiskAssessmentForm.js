@@ -207,7 +207,6 @@ export const RiskAssessmentForm = () => {
                                 name={`rounds[${i}].doses_requested`}
                                 component={NumberInput}
                                 className={classes.input}
-                                withMarginTop
                             />
                         );
                     })}

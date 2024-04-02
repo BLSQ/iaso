@@ -4,7 +4,7 @@ import { Field, useFormikContext } from 'formik';
 import React, { FunctionComponent } from 'react';
 import { DateInput, NumberInput, TextInput } from '../../../components/Inputs';
 import MESSAGES from '../../../constants/messages';
-import { Campaign } from '../../../constants/types';
+import { CampaignFormValues } from '../../../constants/types';
 import { LqasDistrictsPassed } from './LqasDistrictsPassed/LqasDistrictsPassed';
 
 type Props = { roundNumber: number };
@@ -13,7 +13,7 @@ export const EvaluationForm: FunctionComponent<Props> = ({ roundNumber }) => {
     const { formatMessage } = useSafeIntl();
     const {
         values: { rounds = [] },
-    } = useFormikContext<Campaign>();
+    } = useFormikContext<CampaignFormValues>();
     const roundIndex = rounds.findIndex(r => r.number === roundNumber);
 
     return (

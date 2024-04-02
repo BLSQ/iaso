@@ -1,9 +1,9 @@
-import { useSnackQuery } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { getRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
+import { useSnackQuery } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 
 export const useGetCampaignScope = ({ country, campaignId }) => {
     return useSnackQuery(
-        ['polio', 'campaigns', country, campaignId],
+        ['polio', 'campaignsScope', country, campaignId],
         () => getRequest(`/api/polio/campaigns/?country__id__in=${country}`),
         undefined,
         {

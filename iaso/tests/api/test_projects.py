@@ -20,10 +20,10 @@ class ProjectsAPITestCase(APITestCase):
         m.Project.objects.create(name="Project 2", app_id="org.ghi.p2", account=ghi)
 
     def test_projects_list_without_auth(self):
-        """GET /projects/ without auth should result in a 403"""
+        """GET /projects/ without auth should result in a 401"""
 
         response = self.client.get("/api/projects/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     def test_projects_list_no_permission(self):
         """GET /projects/ with auth. User without the iaso_forms permission can list project"""
@@ -86,10 +86,10 @@ class ProjectsAPITestCase(APITestCase):
         self.assertEqual(response_data["count"], m.FeatureFlag.objects.count())
 
     def test_projects_retrieve_without_auth(self):
-        """GET /projects/<project_id> without auth should result in a 403"""
+        """GET /projects/<project_id> without auth should result in a 401"""
 
         response = self.client.get(f"/api/projects/{self.project_1.id}/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     def test_projects_retrieve_wrong_auth(self):
         """GET /projects/<project_id> with auth of unrelated user should result in a 404"""

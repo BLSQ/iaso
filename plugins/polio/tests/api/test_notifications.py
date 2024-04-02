@@ -291,7 +291,7 @@ class NotificationViewSetTestCase(APITestCase):
 
     def test_list_without_auth(self):
         response = self.client.get("/api/polio/notifications/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     def test_list(self):
         self.client.force_authenticate(self.user)

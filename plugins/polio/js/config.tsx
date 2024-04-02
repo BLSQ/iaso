@@ -686,6 +686,7 @@ const menu = [
             {
                 label: MESSAGES.calendar,
                 key: 'calendar',
+                extraPath: '/campaignType/polio',
                 permissions: ['iaso_polio'],
                 icon: props => <CalendarToday {...props} />,
             },

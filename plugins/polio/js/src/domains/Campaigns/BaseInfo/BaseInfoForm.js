@@ -65,8 +65,8 @@ export const BaseInfoForm = () => {
         return (
             campaignTypes?.some(
                 type =>
-                    type.original.name.toLowerCase() === 'polio' &&
-                    values.campaign_types.includes(type.value),
+                    type.value === 'polio' &&
+                    values.campaign_types.includes(type.original.id),
             ) ?? false
         );
     }, [campaignTypes, values.campaign_types]);

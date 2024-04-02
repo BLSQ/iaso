@@ -65,7 +65,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
 
     def test_list_without_auth(self):
         response = self.client.get("/api/orgunits/changes/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     def test_retrieve_ok(self):
         change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
@@ -78,7 +78,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
     def test_retrieve_without_auth(self):
         change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
         response = self.client.get(f"/api/orgunits/changes/{change_request.pk}/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     @time_machine.travel(DT, tick=False)
     def test_create_ok(self):
@@ -140,7 +140,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
             "new_name": "Foo",
         }
         response = self.client.post("/api/orgunits/changes/", data=data, format="json")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     def test_create_without_perm(self):
         self.client.force_authenticate(self.user)

@@ -20,7 +20,7 @@ export const useGetCampaignTypes = (): UseQueryResult<
                 return (
                     data?.map((campaignType: CampaignType) => {
                         return {
-                            value: campaignType.id,
+                            value: campaignType.slug,
                             label: campaignType.name,
                             original: campaignType,
                         };

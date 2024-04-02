@@ -132,10 +132,10 @@ class OrgUnitTypesAPITestCase(APITestCase):
         self.assertValidOrgUnitTypeListData(response.json(), 0)
 
     def test_org_unit_type_create_no_auth(self):
-        """POST /orgunittypes/ without auth: 403"""
+        """POST /orgunittypes/ without auth: 401"""
 
         response = self.client.post("/api/v2/orgunittypes/", data={}, format="json")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     def test_org_unit_type_create_invalid(self):
         """POST /orgunittypes/ without project ids: invalid"""

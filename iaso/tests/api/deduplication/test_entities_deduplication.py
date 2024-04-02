@@ -235,7 +235,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             format="json",
         )
 
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
     def test_analyzes_user_with_readonly_permissions(self):
         self.client.force_authenticate(self.user_with_default_ou_ro)

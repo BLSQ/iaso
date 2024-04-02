@@ -89,16 +89,6 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                         disabled={!countryName}
                     />
                 </Box>
-                {/* <Box mb={2}>
-                    <Field
-                        label={formatMessage(
-                            MESSAGES.lot_numbers_for_usable_vials,
-                        )}
-                        name="lot_numbers"
-                        component={TextInput}
-                        shrinkLabel={false}
-                    />
-                </Box> */}
                 <Field
                     label={formatMessage(MESSAGES.report_date)}
                     name="report_date"
@@ -111,14 +101,6 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                     component={DateInput}
                     required
                 />
-                {/* <Box mb={2}>
-                    <Field
-                        label={formatMessage(MESSAGES.forma_vials_used)}
-                        name="usable_vials_used"
-                        component={NumberInput}
-                        required
-                    />
-                </Box> */}
                 <Box mb={2}>
                     <Field
                         label={formatMessage(MESSAGES.forma_vials_missing)}

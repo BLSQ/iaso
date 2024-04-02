@@ -42,28 +42,6 @@ export const useFormATableColumns = (
                 sortable: true,
                 Cell: DateCell,
             },
-            // {
-            //     // Not formatting lot numbers as it's not clear how they will be formatted
-            //     Header: formatMessage(MESSAGES.lot_numbers_for_usable_vials),
-            //     accessor: 'lot_numbers',
-            //     id: 'lot_numbers',
-            //     sortable: true,
-            //     Cell: settings => {
-            //         const { lot_numbers } = settings.row.original;
-            //         if ((lot_numbers ?? []).length === 0) {
-            //             return <span>{textPlaceholder}</span>;
-            //         }
-            //         return (
-            //             <>
-            //                 {lot_numbers.map((lotNumber, index) => (
-            //                     <div key={`${lotNumber}-${index}`}>
-            //                         {lotNumber ?? textPlaceholder}
-            //                     </div>
-            //                 ))}
-            //             </>
-            //         );
-            //     },
-            // },
             {
                 Header: formatMessage(MESSAGES.forma_unusable_vials),
                 accessor: 'unusable_vials',
@@ -89,22 +67,6 @@ export const useFormATableColumns = (
                     return textPlaceholder;
                 },
             },
-            // {
-            //     Header: formatMessage(MESSAGES.forma_vials_used),
-            //     accessor: 'usable_vials_used',
-            //     id: 'usable_vials_used',
-            //     sortable: true,
-            //     Cell: settings => {
-            //         if (settings.row.original.usable_vials_used) {
-            //             return (
-            //                 <NumberCell
-            //                     value={settings.row.original.usable_vials_used}
-            //                 />
-            //             );
-            //         }
-            //         return textPlaceholder;
-            //     },
-            // },
         ];
         if (userHasPermission(POLIO_VACCINE_STOCK_WRITE, currentUser)) {
             columns.push({

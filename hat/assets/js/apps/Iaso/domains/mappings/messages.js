@@ -188,6 +188,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.mappings.label.programDataElement',
         defaultMessage: 'Program data element',
     },
+    eventDateSource: {
+        id : 'iaso.mappings.label.eventDateSource',
+        defaultMessage: "Event date source"
+    },
+    fromSubmissionCreatedAt: {
+        id : 'iaso.mappings.label.fromSubmissionCreatedAt',
+        defaultMessage: "from submission's created at"
+    },
+    fromSubmissionPeriod: {
+        id : 'iaso.mappings.label.fromSubmissionPeriod',
+        defaultMessage: "from submission's period"
+    }
 });
 
 export default MESSAGES;

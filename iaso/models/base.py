@@ -510,6 +510,9 @@ class MappingVersion(models.Model):
     QUESTION_MAPPING_NEVER_MAPPED = "neverMapped"
     QUESTION_MAPPING_MULTIPLE = "multiple"
 
+    EVENT_DATE_SOURCE_FROM_SUBMISSION_CREATED_AT = "FROM_SUBMISSION_CREATED_AT"
+    EVENT_DATE_SOURCE_FROM_SUBMISSION_PERIOD = "FROM_SUBMISSION_PERIOD"
+
     form_version = models.ForeignKey("FormVersion", on_delete=models.CASCADE, related_name="mapping_versions")
     mapping = models.ForeignKey(
         Mapping,
@@ -536,6 +539,12 @@ class MappingVersion(models.Model):
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
         }
+
+    @staticmethod
+    def get_event_date_source(json):
+        if "event_date_source" in json:
+            return json["event_date_source"]
+        return MappingVersion.EVENT_DATE_SOURCE_FROM_SUBMISSION_CREATED_AT
 
 
 class ExternalCredentials(models.Model):

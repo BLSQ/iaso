@@ -139,27 +139,31 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
 
     def update(self, instance, validated_data):
         # partial update only question mappings
-        for question_name, data_element in validated_data["question_mappings"].items():
-            path = "question_mappings." + question_name
+        if "question_mappings" in validated_data:
+            for question_name, data_element in validated_data["question_mappings"].items():
+                path = "question_mappings." + question_name
 
-            if type(data_element) is list:
+                if type(data_element) is list:
+                    instance.json["question_mappings"][question_name] = data_element
+                else:
+                    if data_element and data_element.get("action") == "unmap":
+                        instance.json["question_mappings"].pop(question_name, None)
+                        continue
+
+                    if data_element and data_element.get("type") not in (
+                        MappingVersion.QUESTION_MAPPING_MULTIPLE,
+                        MappingVersion.QUESTION_MAPPING_NEVER_MAPPED,
+                    ):
+                        if data_element.get("id") is None:
+                            raise serializers.ValidationError({path: "should have a least an data element id"})
+
+                        if data_element.get("valueType") is None:
+                            raise serializers.ValidationError({path: "should have a valueType"})
+
                 instance.json["question_mappings"][question_name] = data_element
-            else:
-                if data_element and data_element.get("action") == "unmap":
-                    instance.json["question_mappings"].pop(question_name, None)
-                    continue
 
-                if data_element and data_element.get("type") not in (
-                    MappingVersion.QUESTION_MAPPING_MULTIPLE,
-                    MappingVersion.QUESTION_MAPPING_NEVER_MAPPED,
-                ):
-                    if data_element.get("id") is None:
-                        raise serializers.ValidationError({path: "should have a least an data element id"})
-
-                    if data_element.get("valueType") is None:
-                        raise serializers.ValidationError({path: "should have a valueType"})
-
-            instance.json["question_mappings"][question_name] = data_element
+        if "event_date_source" in validated_data:
+            instance.json["event_date_source"] = validated_data["event_date_source"]
 
         instance.save()
 

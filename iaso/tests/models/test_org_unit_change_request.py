@@ -251,10 +251,11 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
             new_location=None,
             new_opening_date=None,
             new_closed_date=None,
-            requested_fields=["new_location", "new_opening_date", "new_closed_date"],
+            requested_fields=["new_groups", "new_location", "new_opening_date", "new_closed_date"],
         )
+        change_request.new_groups.set([])
 
-        approved_fields = ["new_location", "new_opening_date", "new_closed_date"]
+        approved_fields = ["new_groups", "new_location", "new_opening_date", "new_closed_date"]
         change_request.approve(user=self.user, approved_fields=approved_fields)
         change_request.refresh_from_db()
 
@@ -271,6 +272,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         self.assertIsNone(self.org_unit.location)
         self.assertIsNone(self.org_unit.opening_date)
         self.assertIsNone(self.org_unit.closed_date)
+        self.assertEqual(self.org_unit.groups.count(), 0)
 
         # Logs.
         modification = Modification.objects.get(object_id=self.org_unit.pk)

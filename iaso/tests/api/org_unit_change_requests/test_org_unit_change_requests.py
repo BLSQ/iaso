@@ -102,6 +102,50 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertEqual(change_request.requested_fields, ["new_name", "new_org_unit_type"])
 
     @time_machine.travel(DT, tick=False)
+    def test_create_ok_erase_fields(self):
+        self.client.force_authenticate(self.user)
+        data = {
+            "org_unit_id": self.org_unit.id,
+            "new_parent_id": None,
+            "new_name": "",
+            "new_groups": [],
+            "new_location": None,
+            "new_location_accuracy": None,
+            "new_org_unit_type_id": self.org_unit_type.pk,  # At least one field is required to create a change request.
+            "new_opening_date": None,
+            "new_closed_date": None,
+            "new_reference_instances": [],
+        }
+        response = self.client.post("/api/orgunits/changes/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+        change_request = m.OrgUnitChangeRequest.objects.get(new_name=data["new_name"])
+        self.assertEqual(change_request.new_name, "")
+        self.assertEqual(change_request.new_groups.count(), 0)
+        self.assertEqual(change_request.new_location, None)
+        self.assertEqual(change_request.new_location_accuracy, None)
+        self.assertEqual(change_request.new_org_unit_type, self.org_unit_type)
+        self.assertEqual(change_request.new_opening_date, None)
+        self.assertEqual(change_request.new_closed_date, None)
+        self.assertEqual(change_request.new_reference_instances.count(), 0)
+        self.assertEqual(change_request.created_at, self.DT)
+        self.assertEqual(change_request.created_by, self.user)
+        self.assertEqual(change_request.updated_at, self.DT)
+        self.assertEqual(
+            change_request.requested_fields,
+            [
+                "new_parent",
+                "new_name",
+                "new_org_unit_type",
+                "new_groups",
+                "new_location",
+                "new_location_accuracy",
+                "new_opening_date",
+                "new_closed_date",
+                "new_reference_instances",
+            ],
+        )
+
+    @time_machine.travel(DT, tick=False)
     def test_create_ok_using_uuid_as_for_org_unit_id(self):
         self.client.force_authenticate(self.user)
         data = {

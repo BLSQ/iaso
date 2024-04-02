@@ -416,7 +416,7 @@ export const getSelectionActions = (
         isUnDeleteAction ? MESSAGES.unDeleteInstance : MESSAGES.deleteInstance,
     );
 
-    const exportAction = {
+    const exportAction: SelectionAction = {
         icon: newSelection => (
             <ExportInstancesDialogComponent
                 // @ts-ignore need to refactor this component to TS
@@ -438,7 +438,7 @@ export const getSelectionActions = (
         disabled: false,
     };
 
-    const deleteAction = {
+    const deleteAction: SelectionAction = {
         icon: (newSelection, resetSelection) => (
             <DeleteDialog
                 selection={newSelection}
@@ -452,30 +452,30 @@ export const getSelectionActions = (
         disabled: false,
     };
 
-    const actions: any = [
-        {
-            icon: newSelection => {
-                const isDisabled =
-                    newSelection.selectCount <= 1 || newSelection.selectAll;
-                if (isDisabled) {
-                    return <CompareArrowsIcon color="disabled" />;
-                }
-                const instancesIds = newSelection.selectedItems
-                    .map(s => s.id)
-                    .join(',');
-                return (
-                    <Link
-                        style={{ color: 'inherit', display: 'flex' }}
-                        to={`${baseUrls.compareInstances}/instanceIds/${instancesIds}`}
-                    >
-                        <CompareArrowsIcon />
-                    </Link>
-                );
-            },
-            label: formatMessage(MESSAGES.compare),
-            disabled: false,
+    const compareAction: SelectionAction = {
+        icon: newSelection => {
+            const isDisabled =
+                newSelection.selectCount <= 1 || newSelection.selectAll;
+            if (isDisabled) {
+                return <CompareArrowsIcon color="disabled" />;
+            }
+            const instancesIds = newSelection.selectedItems
+                .map(s => s.id)
+                .join(',');
+            return (
+                <Link
+                    style={{ color: 'inherit', display: 'flex' }}
+                    to={`${baseUrls.compareInstances}/instanceIds/${instancesIds}`}
+                >
+                    <CompareArrowsIcon />
+                </Link>
+            );
         },
-    ];
+        label: formatMessage(MESSAGES.compare),
+        disabled: false,
+    };
+
+    const actions: SelectionAction[] = [compareAction];
     if (userHasPermission(Permission.SUBMISSIONS_UPDATE, currentUser)) {
         actions.push(exportAction, deleteAction);
     }

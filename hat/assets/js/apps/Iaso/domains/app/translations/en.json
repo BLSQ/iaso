@@ -763,6 +763,7 @@
     "iaso.mappings.label.trackedEntityAttribute": "Tracked Entity Attribute",
     "iaso.mappings.label.useValueFromForm": "Use the value from the form's answer",
     "iaso.mappings.label.generalHint": "Click in the tree on the left to map questions to dhis2 data elements or verify their aggregations.",
+    "iaso.mappings.label.generalTitle": "General Informations",
     "iaso.mappings.label.eventDateSource": "Event date source",
     "iaso.mappings.label.fromSubmissionCreatedAt": "from submission's creation date", 
     "iaso.mappings.label.fromSubmissionPeriod": "from submission's period",    

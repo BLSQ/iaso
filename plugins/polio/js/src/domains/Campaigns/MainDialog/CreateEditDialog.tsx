@@ -133,8 +133,12 @@ const CreateEditDialog: FunctionComponent<Props> = ({
         setSelectedTab(0);
     }, [isOpen]);
 
+    const isFormChanged = !isEqual(formik.values, formik.initialValues);
     const saveDisabled =
-        !formik.dirty || !formik.isValid || formik.isSubmitting;
+        !isFormChanged ||
+        (isFormChanged && !formik.isValid) ||
+        isSaving ||
+        isFetching;
     return (
         <Dialog
             maxWidth="xl"
@@ -211,7 +215,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                 <Button
                     onClick={handleClose}
                     color="primary"
-                    disabled={formik.isSubmitting}
+                    disabled={isSaving}
                 >
                     {formatMessage(MESSAGES.close)}
                 </Button>

@@ -7,7 +7,7 @@ import { useIsPolioCampaignCheck } from './useIsPolioCampaignCheck';
 //  based on the campaign type as the schema is different for polio and non polio
 //  campaigns.
 
-type ValidationResult = Record<string, string> & { _error?: string };
+type ValidationResult = Record<string, string> & { _error?: any };
 
 export const useValidateCampaign = (): ((
     // eslint-disable-next-line no-unused-vars

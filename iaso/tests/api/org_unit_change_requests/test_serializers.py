@@ -131,7 +131,8 @@ class OrgUnitChangeRequestListSerializerTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
         org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
-        org_unit = m.OrgUnit.objects.create(org_unit_type=org_unit_type)
+        org_unit_parent = m.OrgUnit.objects.create(name="Parent")
+        org_unit = m.OrgUnit.objects.create(org_unit_type=org_unit_type, parent=org_unit_parent)
 
         group = m.Group.objects.create(name="Group")
         org_unit.groups.set([group])
@@ -165,6 +166,8 @@ class OrgUnitChangeRequestListSerializerTestCase(TestCase):
                 "org_unit_id": self.org_unit.pk,
                 "org_unit_uuid": self.org_unit.uuid,
                 "org_unit_name": self.org_unit.name,
+                "org_unit_parent_id": self.org_unit.parent.pk,
+                "org_unit_parent_name": self.org_unit.parent.name,
                 "org_unit_type_id": self.org_unit.org_unit_type.pk,
                 "org_unit_type_name": self.org_unit.org_unit_type.name,
                 "org_unit_validation_status": "NEW",

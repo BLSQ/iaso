@@ -165,7 +165,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
                 change_request.org_unit.parent.name if change_request.org_unit.parent else None,
                 change_request.org_unit.org_unit_type.name,
                 ",".join(group.name for group in change_request.org_unit.groups.all()),
-                change_request.status,
+                change_request.get_status_display(),
                 datetime.strftime(change_request.created_at, "%Y-%m-%d"),
                 change_request.created_by.username if change_request.created_by else None,
                 datetime.strftime(change_request.updated_at, "%Y-%m-%d"),

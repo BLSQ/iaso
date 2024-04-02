@@ -1,13 +1,14 @@
 import React, { FunctionComponent } from 'react';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import { commonStyles, getTableUrl, useSafeIntl } from 'bluesquare-components';
 import { ReviewOrgUnitChangesFilter } from './Filter/ReviewOrgUnitChangesFilter';
 import { ReviewOrgUnitChangesTable } from './Tables/ReviewOrgUnitChangesTable';
 import { useGetApprovalProposals } from './hooks/api/useGetApprovalProposals';
 import TopBar from '../../../components/nav/TopBarComponent';
 import { ApproveOrgUnitParams } from './types';
 import MESSAGES from './messages';
+import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 /*
 # Org Unit Change Request
 
@@ -60,11 +61,31 @@ export const ReviewOrgUnitChanges: FunctionComponent<Props> = ({ params }) => {
     const { data, isFetching } = useGetApprovalProposals(params);
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
+    const endPointUrl = 'orgunits/changes/export_to_csv';
+    const csv_params = {
+        parent_id: params.parent_id,
+        groups: params.groups,
+        org_unit_type_id: params.org_unit_type_id,
+        status: params.status,
+        created_at_after: params.created_at_after,
+        created_at_before: params.created_at_before,
+        forms: params.forms,
+        users: params.userIds,
+        user_roles: params.userRoles,
+        with_location: params.withLocation,
+    };
+
+    const csv_url = getTableUrl(endPointUrl, csv_params);
+
     return (
         <div>
             <TopBar title={formatMessage(MESSAGES.reviewChangeProposals)} />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <ReviewOrgUnitChangesFilter params={params} />
+                <Box mb={2} display="flex" justifyContent="flex-end">
+                    <DownloadButtonsComponent csvUrl={csv_url} />
+                </Box>
+
                 <ReviewOrgUnitChangesTable
                     data={data}
                     isFetching={isFetching}

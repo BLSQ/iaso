@@ -1183,6 +1183,7 @@ class Instance(models.Model):
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,
             "last_export_success_at": self.last_export_success_at.timestamp() if self.last_export_success_at else None,
+            "export_id": self.export_id,
             "export_statuses": [
                 {
                     "status": export_status.status,

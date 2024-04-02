@@ -4,6 +4,9 @@ import InputComponent from '../../../components/forms/InputComponent';
 import Alert from '@mui/material/Alert';
 import MESSAGES from '../messages';
 import { Button } from '@mui/material';
+
+import { useSafeIntl } from 'bluesquare-components';
+
 const evenDateOptions = [
     {
         value: 'FROM_SUBMISSION_CREATED_AT',
@@ -22,6 +25,7 @@ function toGeneralFields(currentMappingVersion) {
         fields.push({
             name: 'mappingType',
             value: currentMappingVersion.mapping.mapping_type,
+            message: MESSAGES.mappingType,
         });
     }
 
@@ -29,12 +33,14 @@ function toGeneralFields(currentMappingVersion) {
         fields.push({
             name: 'programName',
             value: currentMappingVersion.derivate_settings.program_name,
+            message: MESSAGES.program,
         });
     }
     if (currentMappingVersion.derivate_settings.program_id) {
         fields.push({
             name: 'programId',
             value: currentMappingVersion.derivate_settings.program_id,
+            message: MESSAGES.program,
         });
     }
 
@@ -42,12 +48,14 @@ function toGeneralFields(currentMappingVersion) {
         fields.push({
             name: 'datasetName',
             value: currentMappingVersion.dataset.name,
+            message: MESSAGES.dataset,
         });
     }
     if (currentMappingVersion.dataset.id) {
         fields.push({
             name: 'datasetId',
             value: currentMappingVersion.dataset.id,
+            message: MESSAGES.dataset,
         });
     }
 
@@ -62,6 +70,7 @@ function toGeneralFields(currentMappingVersion) {
 }
 
 const GeneraMappingInfo = ({ currentMappingVersion, applyUpdate }) => {
+    const { formatMessage } = useSafeIntl();
     const [eventDateSource, setEventDateSource] = React.useState(
         currentMappingVersion.derivate_settings.event_date_source ||
             evenDateOptions[0].value,
@@ -69,16 +78,19 @@ const GeneraMappingInfo = ({ currentMappingVersion, applyUpdate }) => {
     return (
         <div>
             <Alert severity="info">
-                Click in the tree on the left to map questions to dhis2 data
-                elements or verify their aggregations.
+                {formatMessage(MESSAGES.generalHint)}
             </Alert>
-            <h1>General Infos</h1>
+            <h1>{formatMessage(MESSAGES.generalTitle)}</h1>
 
             <table width="600px">
                 <tbody>
                     {toGeneralFields(currentMappingVersion).map(fieldValue => (
                         <tr key={fieldValue.name}>
-                            <td>{fieldValue.name}</td>
+                            <td>
+                                {fieldValue.message
+                                    ? formatMessage(fieldValue.message)
+                                    : fieldValue.name}
+                            </td>
                             <td>{fieldValue.value}</td>
                         </tr>
                     ))}
@@ -88,7 +100,9 @@ const GeneraMappingInfo = ({ currentMappingVersion, applyUpdate }) => {
                             currentMappingVersion.mapping.mapping_type,
                         ) && (
                             <tr>
-                                <td>Event period source</td>
+                                <td>
+                                    {formatMessage(MESSAGES.eventDateSource)}
+                                </td>
                                 <td width="">
                                     <InputComponent
                                         keyValue="event_period_source"
@@ -111,7 +125,9 @@ const GeneraMappingInfo = ({ currentMappingVersion, applyUpdate }) => {
                 variant="contained"
                 color="primary"
                 onClick={() => {
-                    applyUpdate(currentMappingVersion.id, { event_date_source: eventDateSource });               
+                    applyUpdate(currentMappingVersion.id, {
+                        event_date_source: eventDateSource,
+                    });
                 }}
             >
                 Update

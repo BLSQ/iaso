@@ -199,6 +199,14 @@ const MESSAGES = defineMessages({
     fromSubmissionPeriod: {
         id : 'iaso.mappings.label.fromSubmissionPeriod',
         defaultMessage: "from submission's period"
+    },
+    generalHint: {
+        id: "iaso.mappings.label.generalHint",
+        defaultMessage: "Click in the tree on the left to map questions to dhis2 data elements or verify their aggregations."
+    },
+    generalTitle: {
+        id: "iaso.mappings.label.generalTitle",
+        defaultMessage: "General informations"
     }
 });
 

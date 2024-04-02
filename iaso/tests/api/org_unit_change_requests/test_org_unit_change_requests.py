@@ -3,6 +3,7 @@ import datetime
 import io
 
 from iaso.api.org_unit_change_requests.views import OrgUnitChangeRequestViewSet
+from iaso.utils.models.common import get_creator_name
 import time_machine
 
 from django.contrib.auth.models import Group
@@ -292,24 +293,21 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
             data_headers,
             self.org_unit_change_request_csv_columns,
         )
+
         first_data_row = data[2]
-        row_data = self.csv_row_data(change_request)
-
-        self.assertEqual(
-            first_data_row,
-            row_data,
-        )
-
-    def csv_row_data(self, change_request):
-        return [
+        expected_row_data = [
             str(change_request.id),
             change_request.org_unit.name,
             change_request.org_unit.parent.name if change_request.org_unit.parent else "",
             change_request.org_unit.org_unit_type.name,
             ",".join(group.name for group in change_request.org_unit.groups.all()),
-            str(change_request.status),
+            str(change_request.get_status_display()),
             datetime.datetime.strftime(change_request.created_at, "%Y-%m-%d"),
-            change_request.created_by.username if change_request.created_by else "",
+            get_creator_name(change_request.created_by) if change_request.created_by else "",
             datetime.datetime.strftime(change_request.updated_at, "%Y-%m-%d"),
-            change_request.updated_by.username if change_request.updated_by else "",
+            get_creator_name(change_request.updated_by) if change_request.updated_by else "",
         ]
+        self.assertEqual(
+            first_data_row,
+            expected_row_data,
+        )

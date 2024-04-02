@@ -3,6 +3,7 @@ from datetime import datetime
 import django_filters
 
 from iaso.api.common import CONTENT_TYPE_CSV
+from iaso.utils.models.common import get_creator_name
 from rest_framework import filters
 from rest_framework import viewsets
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -158,6 +159,7 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
         writer = csv.writer(response)
         headers = self.org_unit_change_request_csv_columns()
         writer.writerow(headers)
+
         for change_request in filtered_org_unit_changes_requests:
             row = [
                 change_request.id,
@@ -167,9 +169,9 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
                 ",".join(group.name for group in change_request.org_unit.groups.all()),
                 change_request.get_status_display(),
                 datetime.strftime(change_request.created_at, "%Y-%m-%d"),
-                change_request.created_by.username if change_request.created_by else None,
+                get_creator_name(change_request.created_by) if change_request.created_by else None,
                 datetime.strftime(change_request.updated_at, "%Y-%m-%d"),
-                change_request.updated_by.username if change_request.updated_by else None,
+                get_creator_name(change_request.updated_by) if change_request.updated_by else None,
             ]
             writer.writerow(row)
         filename = filename + ".csv"

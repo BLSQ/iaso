@@ -1,34 +1,29 @@
-import { Box, Button, Divider, Grid, Paper } from '@mui/material';
+import React, { FunctionComponent, useCallback, useState } from 'react';
 import {
     SimpleModal,
-    Table,
     makeFullModal,
     useSafeIntl,
+    Table,
 } from 'bluesquare-components';
+import { Box, Button, Paper, Grid, Divider } from '@mui/material';
 import Color from 'color';
-import React, { FunctionComponent, useCallback, useState } from 'react';
-import { EditIconButton } from '../../../../components/Buttons/EditIconButton';
-import { useSortedItems } from '../../../../hooks/useSortedItems';
-import { SxStyles } from '../../../../types/general';
-import { useTableSelection } from '../../../../utils/table';
+import MESSAGES from '../../messages';
 import { usePaymentColumns } from '../../hooks/config/usePaymentColumns';
 import { useSavePaymentLot } from '../../hooks/requests/useSavePaymentLot';
+import { Payment, PaymentLot } from '../../types';
+import { useTableSelection } from '../../../../utils/table';
+import { EditIconButton } from '../../../../components/Buttons/EditIconButton';
+import { BulkEditPaymentDialog } from '../BulkEditPayment/BulkEditPaymentsDialog';
 import {
     useBulkSavePaymentStatus,
     useSavePaymentStatus,
 } from '../../hooks/requests/useSavePaymentStatus';
-import MESSAGES from '../../messages';
-import { NestedPayment, Payment, PaymentLot } from '../../types';
-import { BulkEditPaymentDialog } from '../BulkEditPayment/BulkEditPaymentsDialog';
 import { PaymentLotInfos } from './PaymentLotInfos';
+import { SxStyles } from '../../../../types/general';
 
-type DialogParams = {
-    order: string;
-};
 type CancelButtonProps = {
     closeDialog: () => void;
 };
-
 const CloseButton: FunctionComponent<CancelButtonProps> = ({ closeDialog }) => {
     const { formatMessage } = useSafeIntl();
     return (
@@ -68,10 +63,6 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
     const [comment, setComment] = useState<string | null>(
         paymentLot?.comment ?? null,
     );
-
-    const [dialogParams, setDialogParams] = useState<DialogParams>({
-        order: 'user__last_name',
-    });
     const count = paymentLot?.payments?.length ?? 0;
     const {
         selection,
@@ -91,12 +82,6 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
         saveStatus,
         paymentLot,
     });
-    const sortedPayments: NestedPayment[] | undefined =
-        useSortedItems<NestedPayment>(
-            paymentLot?.payments,
-            columns,
-            dialogParams.order,
-        );
 
     const allowSaveInfos =
         comment !== paymentLot.comment ||
@@ -231,8 +216,7 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
                         countOnTop={false}
                         elevation={0}
                         marginTop={false}
-                        params={dialogParams}
-                        data={sortedPayments || []}
+                        data={paymentLot?.payments || []}
                         pages={1}
                         defaultSorted={[{ id: 'user__last_name', desc: false }]}
                         columns={columns}
@@ -251,9 +235,6 @@ const EditPaymentLotDialog: FunctionComponent<Props> = ({
                         }}
                         // @ts-ignore
                         setTableSelection={handleTableSelection}
-                        onTableParamsChange={p =>
-                            setDialogParams(p as DialogParams)
-                        }
                     />
                 </Paper>
             </Box>

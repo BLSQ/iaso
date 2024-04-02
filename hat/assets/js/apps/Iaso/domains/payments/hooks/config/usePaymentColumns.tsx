@@ -1,10 +1,10 @@
-import { Column, IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
 import React, { useMemo } from 'react';
+import { useSafeIntl, Column, IntlFormatMessage } from 'bluesquare-components';
 import { UseMutateAsyncFunction } from 'react-query';
-import { textPlaceholder } from '../../../../constants/uiConstants';
-import { EditPaymentDialog } from '../../components/EditPaymentLot/EditPaymentDialog';
 import MESSAGES from '../../messages';
 import { PaymentLot, PotentialPayment } from '../../types';
+import { textPlaceholder } from '../../../../constants/uiConstants';
+import { EditPaymentDialog } from '../../components/EditPaymentLot/EditPaymentDialog';
 import { SavePaymentStatusArgs } from '../requests/useSavePaymentStatus';
 
 export const usePaymentColumns = ({
@@ -56,18 +56,6 @@ export const usePaymentColumns = ({
                 },
             },
             {
-                Header: formatMessage(MESSAGES.phoneNumber),
-                id: 'user__iaso_profile__phone_number',
-                accessor: 'user.phone_number',
-                Cell: ({
-                    value,
-                }: {
-                    value: PotentialPayment['user']['phone_number'];
-                }): string => {
-                    return value || textPlaceholder;
-                },
-            },
-            {
                 Header: formatMessage(MESSAGES.changes),
                 id: 'change_requests_count',
                 accessor: 'change_requests',
@@ -94,7 +82,6 @@ export const usePaymentColumns = ({
                     Header: formatMessage(MESSAGES.actions),
                     id: 'action',
                     accessor: 'action',
-                    sortable: false,
                     Cell: settings => {
                         const payment = settings.row.original;
                         return (

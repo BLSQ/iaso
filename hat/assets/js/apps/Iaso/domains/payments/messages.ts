@@ -182,10 +182,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.payments.label.selectAll',
         defaultMessage: 'Select all',
     },
-    phoneNumber: {
-        id: 'iaso.label.phoneNumber',
-        defaultMessage: 'Phone number',
-    },
 });
 
 export default MESSAGES;

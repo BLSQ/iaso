@@ -1,27 +1,22 @@
-from django.contrib.auth.models import User
 from rest_framework import serializers
 
 from hat.audit.audit_logger import AuditLogger
 from hat.audit.models import PAYMENT_API, PAYMENT_LOT_API, Modification
-from iaso.api.payments.filters.potential_payments import filter_by_dates, filter_by_forms, filter_by_parent
+from iaso.models import Payment, PotentialPayment, OrgUnitChangeRequest, PaymentLot
+from iaso.api.payments.filters.potential_payments import filter_by_forms, filter_by_dates, filter_by_parent
+
+from django.contrib.auth.models import User
 from iaso.api.payments.pagination import PaymentPagination
-from iaso.models import OrgUnitChangeRequest, Payment, PaymentLot, PotentialPayment
 from iaso.models.base import Task
 
 from ..common import TimestampField
 
 
 class UserNestedSerializer(serializers.ModelSerializer):
-    phone_number = serializers.SerializerMethodField()
-
     class Meta:
         model = User
-        fields = ["id", "username", "first_name", "last_name", "phone_number"]
+        fields = ["id", "username", "first_name", "last_name"]
         ref_name = "UserNestedSerializerForPayment"
-
-    def get_phone_number(self, obj):
-        profile = getattr(obj, "iaso_profile", None)
-        return profile.phone_number.as_e164 if profile and profile.phone_number else None
 
 
 class OrgChangeRequestNestedSerializer(serializers.ModelSerializer):

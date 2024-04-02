@@ -24,9 +24,8 @@ export type PaymentStatus = 'pending' | 'sent' | 'rejected' | 'paid';
 type User = {
     id: number;
     username: string;
-    first_name?: string;
-    last_name?: string;
-    phone_number?: string;
+    first_name: string;
+    last_name: string;
 };
 
 type OrgUnitChangeRequest = {
@@ -46,7 +45,7 @@ export type Payment = {
     change_requests: OrgUnitChangeRequest[];
 };
 
-export type NestedPayment = Omit<
+type NestedPayment = Omit<
     Payment,
     'created_at' | 'updated_at' | 'created_by' | 'updated_by'
 >;

@@ -29,7 +29,6 @@ type NextSteps = {
 };
 
 type Params = {
-    campaignId: string;
     previousStep: string;
     quickTransition?: string;
 };
@@ -77,7 +76,7 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
     const rounds = budgetProcess?.rounds ?? [];
     const categories = budgetProcess?.timeline?.categories;
 
-    const { previousStep, quickTransition, campaignId } = params;
+    const { previousStep, quickTransition } = params;
     const { formatMessage } = useSafeIntl();
     const theme = useTheme();
     const classes = useStyles();
@@ -173,7 +172,9 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
                                                         isMobileLayout={
                                                             isMobileLayout
                                                         }
-                                                        campaignId={campaignId}
+                                                        budgetProcessId={
+                                                            budgetProcess?.id
+                                                        }
                                                         iconProps={{
                                                             label: step.label,
                                                             // @ts-ignore

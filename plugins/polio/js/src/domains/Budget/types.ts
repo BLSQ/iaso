@@ -106,7 +106,7 @@ export type BudgetStep = {
 
 export type StepForm = {
     transition_key: string;
-    campaign: string;
+    budget_process: string;
     comment: Optional<string>;
     files: Optional<File[]>;
     links: Optional<LinkWithAlias[]>;

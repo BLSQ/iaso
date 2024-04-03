@@ -15,7 +15,7 @@ import {
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { formatLabel } from '../../instances/utils';
-import { periodTypeOptions } from '../../periods/constants';
+import { periodTypeOptionsWithNoPeriod } from '../../periods/constants';
 import MESSAGES from '../messages';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import { FormDataType } from '../types/forms';
@@ -56,6 +56,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
     setFieldValue,
 }) => {
     const classes = useStyles();
+    const [displayPeriods, setDisplayPeriods] = useState<boolean>();
     const { formatMessage } = useSafeIntl();
     const [showAdvancedSettings, setshowAdvancedSettings] = useState(false);
 
@@ -65,11 +66,13 @@ const FormForm: FunctionComponent<FormFormProps> = ({
         useGetOrgUnitTypesDropdownOptions();
     const setPeriodType = value => {
         setFieldValue('period_type', value);
-        if (value === null) {
+        if (value === null || value === 'NO_PERIOD') {
+            setDisplayPeriods(false);
             setFieldValue('single_per_period', null);
             setFieldValue('periods_before_allowed', 0);
             setFieldValue('periods_after_allowed', 0);
         } else {
+            setDisplayPeriods(true);
             setFieldValue('periods_before_allowed', 3);
             setFieldValue('periods_after_allowed', 3);
         }
@@ -83,6 +86,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
     if (currentForm.project_ids.value.length > 0) {
         projects = currentForm.project_ids.value.join(',');
     }
+
     const logsUrl = `/${baseUrls.apiLogs}/?objectId=${currentForm.id.value}&contentType=iaso.form`;
     return (
         <>
@@ -106,86 +110,111 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                         value={currentForm.period_type.value}
                         errors={currentForm.period_type.errors}
                         type="select"
-                        options={periodTypeOptions}
+                        options={periodTypeOptionsWithNoPeriod}
                         label={MESSAGES.periodType}
                     />
+
                     <Grid container spacing={2}>
-                        <Grid item xs={6}>
-                            <InputComponent
-                                keyValue="periods_before_allowed"
-                                disabled={
-                                    currentForm.period_type.value === null
-                                }
-                                onChange={(key, value) =>
-                                    setFieldValue(key, value)
-                                }
-                                value={currentForm.periods_before_allowed.value}
-                                errors={
-                                    currentForm.periods_before_allowed.errors
-                                }
-                                type="number"
-                                label={MESSAGES.periodsBeforeAllowed}
-                                required
-                            />
-                        </Grid>
-                        <Grid item xs={6}>
-                            <InputComponent
-                                keyValue="periods_after_allowed"
-                                disabled={
-                                    currentForm.period_type.value === null
-                                }
-                                onChange={(key, value) =>
-                                    setFieldValue(key, value)
-                                }
-                                value={currentForm.periods_after_allowed.value}
-                                errors={
-                                    currentForm.periods_after_allowed.errors
-                                }
-                                type="number"
-                                label={MESSAGES.periodsAfterAllowed}
-                                required
-                            />
-                        </Grid>
-                        <Grid item xs={6}>
-                            <InputComponent
-                                className={classes.radio}
-                                keyValue="single_per_period"
-                                disabled={
-                                    currentForm.period_type.value === null
-                                }
-                                required
-                                onChange={(key, value) => {
-                                    setFieldValue(key, value === 'true');
-                                }}
-                                value={formatBooleanForRadio(
-                                    currentForm.single_per_period.value,
-                                )}
-                                errors={
-                                    currentForm.single_per_period.value === null
-                                        ? [
-                                              formatMessage(
-                                                  MESSAGES.singlePerPeriodSelect,
-                                              ),
-                                          ]
-                                        : []
-                                }
-                                type="radio"
-                                options={[
-                                    {
-                                        label: formatMessage(MESSAGES.yes),
-                                        value: 'true',
-                                    },
-                                    {
-                                        label: formatMessage(MESSAGES.no),
-                                        value: 'false',
-                                    },
-                                ]}
-                                clearable={false}
-                                label={MESSAGES.singlePerPeriod}
-                                withMarginTop={false}
-                            />
-                        </Grid>
-                        <Grid item xs={2} />
+                        {displayPeriods && (
+                            <>
+                                <Grid item xs={6}>
+                                    <InputComponent
+                                        keyValue="periods_before_allowed"
+                                        disabled={
+                                            currentForm.period_type.value ===
+                                            null
+                                        }
+                                        onChange={(key, value) =>
+                                            setFieldValue(key, value)
+                                        }
+                                        value={
+                                            currentForm.periods_before_allowed
+                                                .value
+                                        }
+                                        errors={
+                                            currentForm.periods_before_allowed
+                                                .errors
+                                        }
+                                        type="number"
+                                        label={MESSAGES.periodsBeforeAllowed}
+                                        required
+                                    />
+                                </Grid>
+                                <Grid item xs={6}>
+                                    <InputComponent
+                                        keyValue="periods_after_allowed"
+                                        disabled={
+                                            currentForm.period_type.value ===
+                                            null
+                                        }
+                                        onChange={(key, value) =>
+                                            setFieldValue(key, value)
+                                        }
+                                        value={
+                                            currentForm.periods_after_allowed
+                                                .value
+                                        }
+                                        errors={
+                                            currentForm.periods_after_allowed
+                                                .errors
+                                        }
+                                        type="number"
+                                        label={MESSAGES.periodsAfterAllowed}
+                                        required
+                                    />
+                                </Grid>
+                                <Grid item xs={6}>
+                                    <InputComponent
+                                        className={classes.radio}
+                                        keyValue="single_per_period"
+                                        disabled={
+                                            currentForm.period_type.value ===
+                                            null
+                                        }
+                                        required
+                                        onChange={(key, value) => {
+                                            setFieldValue(
+                                                key,
+                                                value === 'true',
+                                            );
+                                        }}
+                                        value={formatBooleanForRadio(
+                                            currentForm.single_per_period.value,
+                                        )}
+                                        errors={
+                                            currentForm.single_per_period
+                                                .value === null
+                                                ? [
+                                                      formatMessage(
+                                                          MESSAGES.singlePerPeriodSelect,
+                                                      ),
+                                                  ]
+                                                : []
+                                        }
+                                        type="radio"
+                                        options={[
+                                            {
+                                                label: formatMessage(
+                                                    MESSAGES.yes,
+                                                ),
+                                                value: 'true',
+                                            },
+                                            {
+                                                label: formatMessage(
+                                                    MESSAGES.no,
+                                                ),
+                                                value: 'false',
+                                            },
+                                        ]}
+                                        clearable={false}
+                                        label={MESSAGES.singlePerPeriod}
+                                        withMarginTop={false}
+                                    />
+                                </Grid>
+                                <Grid item xs={2} />
+                            </>
+                        )}
+
                         <Grid item xs={4}>
                             <FormLegendInput
                                 currentForm={currentForm}

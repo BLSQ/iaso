@@ -109,6 +109,8 @@ const FormDetail: FunctionComponent<FormDetailProps> = ({ router, params }) => {
     const { data: form, isLoading: isFormLoading } = useGetForm(params.formId);
     const [isLoading, setIsLoading] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
+    const [detailRequiredFields, setDetailRequiredFields] =
+        useState(requiredFields);
     const [tab, setTab] = useState(params.tab || 'versions');
     const [forceRefreshVersions, setForceRefreshVersions] = useState(false);
     const dispatch = useDispatch();
@@ -184,13 +186,19 @@ const FormDetail: FunctionComponent<FormDetailProps> = ({ router, params }) => {
         (keyValue, value) => {
             if (isSaved) setIsSaved(false);
             setFieldValue(keyValue, value);
-            if (!isFieldValid(keyValue, value, requiredFields)) {
+            if (!isFieldValid(keyValue, value, detailRequiredFields)) {
                 setFieldErrors(keyValue, [
                     formatMessage(MESSAGES.requiredField),
                 ]);
             }
         },
-        [isSaved, setFieldValue, setFieldErrors, formatMessage],
+        [
+            isSaved,
+            setFieldValue,
+            detailRequiredFields,
+            setFieldErrors,
+            formatMessage,
+        ],
     );
     const handleChangeTab = (newTab: string) => {
         setTab(newTab);
@@ -205,6 +213,21 @@ const FormDetail: FunctionComponent<FormDetailProps> = ({ router, params }) => {
             setFormState(formatFormData(form));
         }
     }, [form, setFormState]);
+
+    useEffect(() => {
+        if (
+            currentForm.period_type.value === 'NO_PERIOD' ||
+            currentForm.period_type.value === null
+        ) {
+            setDetailRequiredFields(
+                requiredFields.filter(
+                    field => field.key !== 'single_per_period',
+                ),
+            );
+        } else {
+            setDetailRequiredFields(requiredFields);
+        }
+    }, [currentForm.period_type.value]);
     return (
         <>
             <TopBar
@@ -239,7 +262,7 @@ const FormDetail: FunctionComponent<FormDetailProps> = ({ router, params }) => {
                         data-id="form-detail-confirm"
                         disabled={
                             !isFormModified ||
-                            !isFormValid(requiredFields, currentForm)
+                            !isFormValid(detailRequiredFields, currentForm)
                         }
                         variant="contained"
                         className={classes.marginLeft}

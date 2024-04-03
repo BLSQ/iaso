@@ -23,6 +23,12 @@ export const periodTypeOptions = [
     value: periodType,
     label: MESSAGES[periodType.toLowerCase()],
 }));
+export const periodTypeOptionsWithNoPeriod = [
+    {
+        value: 'NO_PERIOD',
+        label: MESSAGES.noPeriod,
+    },
+].concat(periodTypeOptions);
 
 export const QUARTERS = {
     1: 'Q1',

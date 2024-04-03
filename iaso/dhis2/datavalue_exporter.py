@@ -35,7 +35,6 @@ def get_event_date(instance, form_mapping):
     if event_date_source == MappingVersion.EVENT_DATE_SOURCE_FROM_SUBMISSION_PERIOD:
         dhis2_period = Period.from_string(instance.period)
         start = dhis2_period.start_date().strftime("%Y-%m-%d")
-        print(dhis2_period, instance.period, start)
         return start
     raise ValueError("unsupported event date source type '" + event_date_source + "'")
 

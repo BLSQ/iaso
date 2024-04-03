@@ -77,9 +77,7 @@ const GeneraMappingInfo = ({ currentMappingVersion, applyUpdate }) => {
     );
     return (
         <div>
-            <Alert severity="info">
-                {formatMessage(MESSAGES.generalHint)}
-            </Alert>
+            <Alert severity="info">{formatMessage(MESSAGES.generalHint)}</Alert>
             <h1>{formatMessage(MESSAGES.generalTitle)}</h1>
 
             <table width="600px">
@@ -103,7 +101,7 @@ const GeneraMappingInfo = ({ currentMappingVersion, applyUpdate }) => {
                                 <td>
                                     {formatMessage(MESSAGES.eventDateSource)}
                                 </td>
-                                <td width="">
+                                <td>
                                     <InputComponent
                                         keyValue="event_period_source"
                                         onChange={(key, value) =>
@@ -119,7 +117,7 @@ const GeneraMappingInfo = ({ currentMappingVersion, applyUpdate }) => {
                         )}
                 </tbody>
             </table>
-            <br />
+     
             <Button
                 className="button"
                 variant="contained"

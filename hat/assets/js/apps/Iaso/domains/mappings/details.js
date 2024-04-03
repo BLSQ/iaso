@@ -16,7 +16,7 @@ import {
     fetchMappingVersionDetail as fetchMappingVersionDetailAction,
     setCurrentQuestion as setCurrentQuestionAction,
     applyPartialUpdate as applyPartialUpdateAction,
-    applyUpdate as applyUpdateAction
+    applyUpdate as applyUpdateAction,
 } from './actions';
 
 import { redirectToReplace as redirectToReplaceAction } from '../../routing/actions';
@@ -27,7 +27,7 @@ import QuestionInfos from './components/QuestionInfos';
 import QuestionMappingForm from './components/QuestionMappingForm';
 import DerivedQuestionMappingForm from './components/DerivedQuestionMappingForm';
 import { baseUrls } from '../../constants/urls';
-import GeneraMappingInfo from "./components/GeneraMappingInfo"
+import GeneraMappingInfo from './components/GeneraMappingInfo';
 import Descriptor from './descriptor';
 import MESSAGES from './messages';
 
@@ -170,7 +170,7 @@ class MappingDetails extends Component {
                                             currentMappingVersion={
                                                 currentMappingVersion
                                             }
-                                        ></GeneraMappingInfo>
+                                        />
                                     )}
                                 {currentQuestion && (
                                     <>
@@ -274,7 +274,7 @@ const MapDispatchToProps = dispatch => ({
             setCurrentMappingVersion: setCurrentMappingVersionAction,
             setCurrentQuestion: setCurrentQuestionAction,
             applyPartialUpdate: applyPartialUpdateAction,
-            applyUpdate: applyUpdateAction
+            applyUpdate: applyUpdateAction,
         },
         dispatch,
     ),

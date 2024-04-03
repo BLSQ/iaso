@@ -768,6 +768,7 @@
     "iaso.mappings.label.searchTracker": "Rechecher le tracker data element par nom, code ou id",
     "iaso.mappings.label.source": "Source",
     "iaso.mappings.label.trackedEntityAttribute": "Attribut de l'entit\u00e9 suivie",
+    "iaso.mappings.label.update": "Mettre \u00e0 jour",
     "iaso.mappings.label.useValueFromForm": "Utliser la valeur de la r\u00e9ponse du formulaire",
     "iaso.mappings.mapped_questions": "Nombre de questions avec lien",
     "iaso.mappings.neverMapAlert": "cette question est consid\u00e9r\u00e9 comme n'ayant aucune correspondance{breakLine}mais vous pouvez changer d'avis",

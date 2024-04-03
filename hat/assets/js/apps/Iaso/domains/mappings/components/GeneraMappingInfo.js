@@ -117,7 +117,7 @@ const GeneraMappingInfo = ({ currentMappingVersion, applyUpdate }) => {
                         )}
                 </tbody>
             </table>
-     
+
             <Button
                 className="button"
                 variant="contained"
@@ -128,7 +128,7 @@ const GeneraMappingInfo = ({ currentMappingVersion, applyUpdate }) => {
                     });
                 }}
             >
-                Update
+                {formatMessage(MESSAGES.update)}
             </Button>
         </div>
     );

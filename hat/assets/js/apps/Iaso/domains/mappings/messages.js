@@ -189,25 +189,30 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Program data element',
     },
     eventDateSource: {
-        id : 'iaso.mappings.label.eventDateSource',
-        defaultMessage: "Event date source"
+        id: 'iaso.mappings.label.eventDateSource',
+        defaultMessage: 'Event date source',
     },
     fromSubmissionCreatedAt: {
-        id : 'iaso.mappings.label.fromSubmissionCreatedAt',
-        defaultMessage: "from submission's created at"
+        id: 'iaso.mappings.label.fromSubmissionCreatedAt',
+        defaultMessage: "from submission's created at",
     },
     fromSubmissionPeriod: {
-        id : 'iaso.mappings.label.fromSubmissionPeriod',
-        defaultMessage: "from submission's period"
+        id: 'iaso.mappings.label.fromSubmissionPeriod',
+        defaultMessage: "from submission's period",
     },
     generalHint: {
-        id: "iaso.mappings.label.generalHint",
-        defaultMessage: "Click in the tree on the left to map questions to dhis2 data elements or verify their aggregations."
+        id: 'iaso.mappings.label.generalHint',
+        defaultMessage:
+            'Click in the tree on the left to map questions to dhis2 data elements or verify their aggregations.',
     },
     generalTitle: {
-        id: "iaso.mappings.label.generalTitle",
-        defaultMessage: "General informations"
-    }
+        id: 'iaso.mappings.label.generalTitle',
+        defaultMessage: 'General informations',
+    },
+    update: {
+        id: 'iaso.mappings.label.update',
+        defaultMessage: 'Update',
+    },
 });
 
 export default MESSAGES;

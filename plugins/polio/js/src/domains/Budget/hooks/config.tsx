@@ -302,7 +302,7 @@ export const useTableState = ({
     budgetDetails,
     repeatTransitions,
 }: TablePorps): { resetPageToOne: unknown; columns: Column[] } => {
-    const { campaignName, campaignId } = params;
+    const { campaignName, budgetProcessId } = params;
     const [resetPageToOne, setResetPageToOne] = useState('');
 
     useSkipEffectOnMount(() => {
@@ -312,7 +312,7 @@ export const useTableState = ({
         delete newParams.page;
         delete newParams.order;
         setResetPageToOne(convertObjectToString(newParams));
-    }, [params.pageSize, campaignId, campaignName]);
+    }, [params.pageSize, budgetProcessId, campaignName]);
 
     const columns = useBudgetDetailsColumns(
         params,

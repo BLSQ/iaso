@@ -42,7 +42,7 @@ import { TextArea } from '../../../../../../../hat/assets/js/apps/Iaso/component
 import { useGetRecipientTeams } from '../hooks/api/useGetEmailRecipients';
 
 type Props = {
-    campaignId: string;
+    budgetProcessId: string;
     previousStep?: BudgetStep;
     transitionKey: string;
     transitionLabel: string;

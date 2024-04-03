@@ -8,7 +8,7 @@ export type Timeline = {
     categories: Categories;
 };
 export type Params = {
-    campaignId: string;
+    budgetProcessId: string;
     previousStep: string;
     quickTransition?: string;
     campaignName?: string;

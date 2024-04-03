@@ -1,30 +1,35 @@
-import React, { FunctionComponent, useCallback, useEffect } from 'react';
-import {
-    IntlMessage,
-    makeFullModal,
-    ConfirmCancelModal,
-    useSafeIntl,
-    Table,
-    selectionInitialState,
-} from 'bluesquare-components';
-import * as Yup from 'yup';
-import { Button, Box, Divider, Grid } from '@mui/material';
 import Add from '@mui/icons-material/Add';
+import { Box, Button, Divider, Grid } from '@mui/material';
+import {
+    ConfirmCancelModal,
+    IntlMessage,
+    Table,
+    makeFullModal,
+    selectionInitialState,
+    useSafeIntl,
+} from 'bluesquare-components';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useState,
+} from 'react';
+import * as Yup from 'yup';
 
 import { useFormik } from 'formik';
 import moment from 'moment';
-import MESSAGES from '../../messages';
-import { PotentialPayment, PotentialPaymentParams } from '../../types';
-import { Selection } from '../../../orgUnits/types/selection';
-import { useGetSelectedPotentialPayments } from '../../hooks/requests/useGetSelectedPotentialPayments';
-import { usePaymentColumns } from '../../hooks/config/usePaymentColumns';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { useTranslatedErrors } from '../../../../libs/validation';
+import getDisplayName, { useCurrentUser } from '../../../../utils/usersUtils';
+import { Selection } from '../../../orgUnits/types/selection';
+import { usePaymentColumns } from '../../hooks/config/usePaymentColumns';
+import { useGetSelectedPotentialPayments } from '../../hooks/requests/useGetSelectedPotentialPayments';
 import {
     SavePaymentLotQuery,
     useSavePaymentLot,
 } from '../../hooks/requests/useSavePaymentLot';
-import getDisplayName, { useCurrentUser } from '../../../../utils/usersUtils';
+import MESSAGES from '../../messages';
+import { PotentialPayment, PotentialPaymentParams } from '../../types';
 import { styles } from '../shared';
 
 type Props = {
@@ -61,8 +66,12 @@ const PaymentLotDialog: FunctionComponent<Props> = ({
     params,
     setSelection,
 }) => {
+    const [dialogParams, setDialogParams] = useState<PotentialPaymentParams>({
+        ...params,
+        order: 'user__last_name',
+    });
     const { data: potentialPayments, isFetching } =
-        useGetSelectedPotentialPayments(params, selection);
+        useGetSelectedPotentialPayments(dialogParams, selection);
 
     const { mutateAsync: savePaymentLot } = useSavePaymentLot('create', () =>
         setSelection(selectionInitialState),
@@ -167,6 +176,7 @@ const PaymentLotDialog: FunctionComponent<Props> = ({
                     countOnTop={false}
                     elevation={0}
                     marginTop={false}
+                    params={dialogParams}
                     data={potentialPayments || []}
                     pages={1}
                     defaultSorted={[{ id: 'user__last_name', desc: false }]}
@@ -174,6 +184,9 @@ const PaymentLotDialog: FunctionComponent<Props> = ({
                     count={potentialPayments?.length ?? 0}
                     extraProps={{ loading: isFetching }}
                     showPagination={false}
+                    onTableParamsChange={p =>
+                        setDialogParams(p as PotentialPaymentParams)
+                    }
                 />
             </Box>
         </ConfirmCancelModal>

@@ -768,6 +768,7 @@
     "iaso.mappings.label.searchTracker": "Search for tracker data element (and combo) by name, code or id",
     "iaso.mappings.label.source": "Source",
     "iaso.mappings.label.trackedEntityAttribute": "Tracked Entity Attribute",
+    "iaso.mappings.label.update": "Update",
     "iaso.mappings.label.useValueFromForm": "Use the value from the form's answer",
     "iaso.mappings.mapped_questions": "Mapped questions",
     "iaso.mappings.neverMapAlert": "This question is considered to be never mapped but you can{breakLine}change your mind",

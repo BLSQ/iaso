@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import InputComponent from '../../../components/forms/InputComponent';
 import Alert from '@mui/material/Alert';
@@ -75,6 +75,8 @@ const GeneraMappingInfo = ({ currentMappingVersion, applyUpdate }) => {
         currentMappingVersion.derivate_settings.event_date_source ||
             evenDateOptions[0].value,
     );
+
+    const fieldValues = useMemo(() => toGeneralFields(currentMappingVersion), [currentMappingVersion]);
     return (
         <div>
             <Alert severity="info">{formatMessage(MESSAGES.generalHint)}</Alert>
@@ -82,7 +84,7 @@ const GeneraMappingInfo = ({ currentMappingVersion, applyUpdate }) => {
 
             <table width="600px">
                 <tbody>
-                    {toGeneralFields(currentMappingVersion).map(fieldValue => (
+                    {fieldValues.map(fieldValue => (
                         <tr key={fieldValue.name}>
                             <td>
                                 {fieldValue.message

@@ -40,6 +40,7 @@ import { isFieldValid, isFormValid } from '../../utils/forms';
 import { FormAttachments } from './components/FormAttachments';
 import { FormParams } from './types/forms';
 import { Router } from '../../types/general';
+import { NO_PERIOD } from '../periods/constants';
 
 interface FormDetailProps {
     router: Router;
@@ -131,6 +132,9 @@ const FormDetail: FunctionComponent<FormDetailProps> = ({ router, params }) => {
         let isUpdate;
         let saveForm;
         let formData;
+        if (currentForm.period_type.value === NO_PERIOD) {
+            currentForm.period_type.value = null;
+        }
         if (params.formId === '0') {
             isUpdate = false;
             formData = mapValues(
@@ -216,8 +220,9 @@ const FormDetail: FunctionComponent<FormDetailProps> = ({ router, params }) => {
 
     useEffect(() => {
         if (
-            currentForm.period_type.value === 'NO_PERIOD' ||
-            currentForm.period_type.value === null
+            currentForm.period_type.value === NO_PERIOD ||
+            currentForm.period_type.value === null ||
+            currentForm.period_type.value === undefined
         ) {
             setDetailRequiredFields(
                 requiredFields.filter(

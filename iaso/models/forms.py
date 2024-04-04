@@ -96,7 +96,7 @@ class Form(SoftDeletableModel):
         "Automatically updated on new versions.",
     )
     period_type = models.TextField(null=True, blank=True, choices=PERIOD_TYPE_CHOICES)
-    single_per_period = models.BooleanField(default=False, null=True)
+    single_per_period = models.BooleanField(null=True)
     # The following two fields control the allowed period span (instances can be provided for the period corresponding
     # to [current_period - periods_before_allowed, current_period + periods_after_allowed]
     periods_before_allowed = models.IntegerField(default=0, null=True)

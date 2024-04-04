@@ -6,6 +6,7 @@ export const PERIOD_TYPE_SIX_MONTH = 'SIX_MONTH';
 export const PERIOD_TYPE_QUARTER = 'QUARTER';
 export const PERIOD_TYPE_MONTH = 'MONTH';
 export const PERIOD_TYPE_PLACEHOLDER = 'EMPTY';
+export const NO_PERIOD = 'NO_PERIOD';
 
 export const PERIOD_TYPES = [
     PERIOD_TYPE_MONTH,
@@ -25,7 +26,7 @@ export const periodTypeOptions = [
 }));
 export const periodTypeOptionsWithNoPeriod = [
     {
-        value: 'NO_PERIOD',
+        value: NO_PERIOD,
         label: MESSAGES.noPeriod,
     },
 ].concat(periodTypeOptions);

@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import React, { useState, FunctionComponent } from 'react';
+import React, { useState, FunctionComponent, useEffect } from 'react';
 import { Box, Grid, Typography, Theme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
@@ -15,7 +15,10 @@ import {
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { formatLabel } from '../../instances/utils';
-import { periodTypeOptionsWithNoPeriod } from '../../periods/constants';
+import {
+    NO_PERIOD,
+    periodTypeOptionsWithNoPeriod,
+} from '../../periods/constants';
 import MESSAGES from '../messages';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import { FormDataType } from '../types/forms';
@@ -57,6 +60,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
 }) => {
     const classes = useStyles();
     const [displayPeriods, setDisplayPeriods] = useState<boolean>();
+
     const { formatMessage } = useSafeIntl();
     const [showAdvancedSettings, setshowAdvancedSettings] = useState(false);
 
@@ -66,13 +70,11 @@ const FormForm: FunctionComponent<FormFormProps> = ({
         useGetOrgUnitTypesDropdownOptions();
     const setPeriodType = value => {
         setFieldValue('period_type', value);
-        if (value === null || value === 'NO_PERIOD') {
-            setDisplayPeriods(false);
+        if (value === null || value === NO_PERIOD) {
             setFieldValue('single_per_period', null);
             setFieldValue('periods_before_allowed', 0);
             setFieldValue('periods_after_allowed', 0);
         } else {
-            setDisplayPeriods(true);
             setFieldValue('periods_before_allowed', 3);
             setFieldValue('periods_after_allowed', 3);
         }
@@ -87,6 +89,17 @@ const FormForm: FunctionComponent<FormFormProps> = ({
         projects = currentForm.project_ids.value.join(',');
     }
 
+    useEffect(() => {
+        if (
+            currentForm.period_type.value === NO_PERIOD ||
+            currentForm.period_type.value === undefined ||
+            currentForm.period_type.value === null
+        ) {
+            setDisplayPeriods(false);
+        } else {
+            setDisplayPeriods(true);
+        }
+    }, [currentForm.period_type.value]);
     const logsUrl = `/${baseUrls.apiLogs}/?objectId=${currentForm.id.value}&contentType=iaso.form`;
     return (
         <>
@@ -107,7 +120,11 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                         keyValue="period_type"
                         clearable
                         onChange={(key, value) => setPeriodType(value)}
-                        value={currentForm.period_type.value}
+                        value={
+                            currentForm.period_type.value
+                                ? currentForm.period_type.value
+                                : NO_PERIOD
+                        }
                         errors={currentForm.period_type.errors}
                         type="select"
                         options={periodTypeOptionsWithNoPeriod}
@@ -211,11 +228,10 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                                         withMarginTop={false}
                                     />
                                 </Grid>
-                                <Grid item xs={2} />
                             </>
                         )}
-
-                        <Grid item xs={4}>
+                        <Grid item xs={2} />
+                        <Grid item xs={displayPeriods ? 4 : 18}>
                             <FormLegendInput
                                 currentForm={currentForm}
                                 setFieldValue={setFieldValue}

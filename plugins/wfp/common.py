@@ -21,8 +21,7 @@ class ETL:
         updated_at = datetime.date(2023, 7, 10)
         beneficiaries = (
             Instance.objects.filter(entity__entity_type__name=self.type)
-            # .filter(entity__id__in=[42, 46, 58, 77, 90, 111])
-            # .filter(entity__id__in=[49, 42])
+            # .filter(entity__id__in=[1, 42, 46, 49, 58, 77, 90, 111, 322, 323, 330])
             .filter(json__isnull=False)
             .filter(form__isnull=False)
             .filter(updated_at__gte=updated_at)
@@ -184,6 +183,8 @@ class ETL:
             return "dismissed_due_to_cheating"
         elif exit_type == "transferredout":
             return "transferred_out"
+        elif exit_type == "voluntarywithdrawal":
+            return "voluntary_withdrawal"
         else:
             return exit_type
 
@@ -218,16 +219,25 @@ class ETL:
     def journey_Formatter(self, visit, anthropometric_visit_form, followup_forms, current_journey):
         if visit["form_id"] == anthropometric_visit_form:
             current_journey["instance_id"] = visit.get("instance_id", None)
+            current_journey["start_date"] = visit.get("start_date", None)
+            current_journey["initial_weight"] = visit.get("initial_weight", None)
             if visit.get("registration_date", None) is not None and visit.get("registration_date", None) != "":
                 current_journey["date"] = visit.get("registration_date", None)
             elif visit.get("_visit_date", None) is not None and visit.get("_visit_date", None) != "":
                 current_journey["date"] = visit.get("_visit_date", None)
+
             current_journey["admission_criteria"] = self.admission_criteria(visit)
             current_journey["admission_type"] = self.admission_type(visit)
             current_journey["programme_type"] = self.program_mapper(visit)
             current_journey["org_unit_id"] = visit.get("org_unit_id")
 
         if visit["form_id"] in followup_forms:
+            end_date = visit.get("end_date", visit.get("created_at", ""))
+            current_journey["end_date"] = (
+                end_date if end_date is not None else visit.get("created_at", None).strftime("%Y-%m-%d")
+            )
+            current_journey["discharge_weight"] = visit.get("discharge_weight", None)
+            current_journey["weight_difference"] = visit.get("weight_difference", None)
             current_journey["exit_type"] = self.exit_type(visit)
 
         followup_forms.append(anthropometric_visit_form)

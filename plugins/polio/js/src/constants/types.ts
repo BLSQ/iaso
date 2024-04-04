@@ -1,5 +1,8 @@
 import { IntlFormatMessage, Pagination } from 'bluesquare-components';
-import { Nullable } from '../../../../../hat/assets/js/apps/Iaso/types/utils';
+import {
+    DropdownOptionsWithOriginal,
+    Nullable,
+} from '../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { Profile } from '../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { ReasonForDelay } from '../domains/Campaigns/Rounds/ReasonForDelayModal/hooks/reasons';
 
@@ -203,8 +206,8 @@ export type Translations = {
 };
 
 export type Scope = {
-    vaccine: Vaccine;
-    group: { name: string; id: number; org_units: number[] };
+    vaccine?: Vaccine;
+    group: { name?: string; id?: number; org_units: number[] };
 };
 
 export type RoundVaccine = {
@@ -475,7 +478,10 @@ export type DefaultCampaignValues = {
     gpei_coordinator?: string;
     is_preventive: boolean;
     is_test: boolean;
-    rounds?: Round[];
+    rounds: Round[];
+    scopes: Scope[];
+    org_unit: Shape;
+    separate_scopes_per_round: boolean;
 };
 export type PolioCampaignValues = DefaultCampaignValues & {
     virus?: string;
@@ -526,3 +532,8 @@ export type PolioCampaignValues = DefaultCampaignValues & {
 };
 
 export type CampaignFormValues = DefaultCampaignValues | PolioCampaignValues;
+
+export type CampaignTypesDropdown = DropdownOptionsWithOriginal<
+    string,
+    CampaignType
+>;

@@ -205,11 +205,11 @@ class CampaignSerializer(serializers.ModelSerializer):
 
         # noinspection DuplicatedCode
         for scope in campaign_scopes:
-            vaccine = scope.get("vaccine")
+            vaccine = scope.get("vaccine", None)
             org_units = scope.get("group", {}).get("org_units")
             scope, created = campaign.scopes.get_or_create(vaccine=vaccine)
             source_version_id = None
-            name = f"scope for campaign {campaign.obr_name} - {vaccine}"
+            name = f"scope for campaign {campaign.obr_name}" + (f" - {vaccine}" if vaccine else "")
             if org_units:
                 source_version_ids = set([ou.version_id for ou in org_units])
                 if len(source_version_ids) != 1:
@@ -237,7 +237,7 @@ class CampaignSerializer(serializers.ModelSerializer):
             round = round_serializer.save()
 
             for scope in scopes:
-                vaccine = scope.get("vaccine")
+                vaccine = scope.get("vaccine", None)
                 org_units = scope.get("group", {}).get("org_units")
                 source_version_id = None
                 if org_units:
@@ -245,7 +245,9 @@ class CampaignSerializer(serializers.ModelSerializer):
                     if len(source_version_ids) != 1:
                         raise serializers.ValidationError("All orgunit should be in the same source version")
                     source_version_id = list(source_version_ids)[0]
-                name = f"scope for round {round.number} campaign {campaign.obr_name} - {vaccine}"
+                name = f"scope for round {round.number} campaign {campaign.obr_name}" + (
+                    f" - {vaccine}" if vaccine else ""
+                )
                 scope, created = round.scopes.get_or_create(vaccine=vaccine)
                 if not scope.group:
                     scope.group = Group.objects.create(name=name)
@@ -293,11 +295,11 @@ class CampaignSerializer(serializers.ModelSerializer):
         account = self.context["request"].user.iaso_profile.account
 
         for scope in campaign_scopes:
-            vaccine = scope.get("vaccine")
+            vaccine = scope.get("vaccine", None)
             org_units = scope.get("group", {}).get("org_units")
             scope, created = instance.scopes.get_or_create(vaccine=vaccine)
             source_version_id = None
-            name = f"scope for campaign {instance.obr_name} - {vaccine}"
+            name = f"scope for campaign {instance.obr_name}" + (f" - {vaccine}" if vaccine else "")
             if org_units:
                 source_version_ids = set([ou.version_id for ou in org_units])
                 if len(source_version_ids) != 1:
@@ -347,7 +349,7 @@ class CampaignSerializer(serializers.ModelSerializer):
             round_instances.append(round_instance)
             round_datelogs = []
             for scope in scopes:
-                vaccine = scope.get("vaccine")
+                vaccine = scope.get("vaccine", None)
                 org_units = scope.get("group", {}).get("org_units")
                 source_version_id = None
                 if org_units:
@@ -355,7 +357,9 @@ class CampaignSerializer(serializers.ModelSerializer):
                     if len(source_version_ids) != 1:
                         raise serializers.ValidationError("All orgunit should be in the same source version")
                     source_version_id = list(source_version_ids)[0]
-                name = f"scope for round {round_instance.number} campaign {instance.obr_name} - {vaccine}"
+                name = f"scope for round {round_instance.number} campaign {instance.obr_name}" + (
+                    f" - {vaccine}" if vaccine else ""
+                )
                 scope, created = round_instance.scopes.get_or_create(vaccine=vaccine)
                 if not scope.group:
                     scope.group = Group.objects.create(name=name)

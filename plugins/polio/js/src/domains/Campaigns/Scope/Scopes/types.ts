@@ -1,13 +1,6 @@
 /* eslint-disable camelcase */
 import { OrgUnit } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
-
-export type Scope = {
-    vaccine: string;
-    group: {
-        org_units: number[];
-        id?: number;
-    };
-};
+import { Scope } from '../../../../constants/types';
 
 export type Shape = OrgUnit & {
     name: string;
@@ -15,12 +8,6 @@ export type Shape = OrgUnit & {
     parent_id: number;
     country_parent?: { id: number };
     root?: { id: number };
-};
-
-export type Values = {
-    scopes?: Scope[];
-    org_unit: Shape;
-    initial_org_unit: number;
 };
 
 export type FilteredDistricts = {
@@ -33,6 +20,7 @@ export type FilteredDistricts = {
     longitude?: number;
     geo_json?: Shape | undefined;
     has_geo_json: boolean;
+    scope?: Scope;
 };
 
 export type ShapeRow = Shape & {

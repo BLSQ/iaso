@@ -44,6 +44,21 @@ const baseSettings = [
     },
 ];
 
+const noPeriodSettings = [
+    {
+        keyValue: 'periods_before_allowed',
+        newValue: 0,
+    },
+    {
+        keyValue: 'periods_after_allowed',
+        newValue: 0,
+    },
+    {
+        keyValue: 'single_per_period',
+        newValue: null,
+    },
+];
+
 const advancedSettings = [
     {
         keyValue: 'device_field',
@@ -72,9 +87,32 @@ const currentForm = {
     depth: { value: 0 },
     org_unit_type_ids: { value: [1] },
     project_ids: { value: [1] },
-    period_type: { value: null },
+    period_type: { value: 'MONTH' },
     derived: { value: false },
     single_per_period: { value: false },
+    periods_before_allowed: { value: 0 },
+    periods_after_allowed: { value: 0 },
+    device_field: { value: 'deviceid' },
+    label_keys: { value: 'blue candle' },
+    possible_fields: {
+        value: [
+            { label: 'blue candle', name: 'bc', type: 'string' },
+            { label: 'boomerang', name: 'bg', type: 'string' },
+        ],
+    },
+    location_field: { value: '' },
+};
+
+const currentFormNoPeriod = {
+    id: { value: 69 },
+    name: { value: 'form 1' },
+    short_name: { value: 'form 1' },
+    depth: { value: 0 },
+    org_unit_type_ids: { value: [1] },
+    project_ids: { value: [1] },
+    period_type: { value: 'NO_PERIOD' },
+    derived: { value: false },
+    single_per_period: { value: null },
     periods_before_allowed: { value: 0 },
     periods_after_allowed: { value: 0 },
     device_field: { value: 'deviceid' },
@@ -160,6 +198,27 @@ describe('FormFormComponent connected component', () => {
                 ),
             );
             expect(connectedWrapper.exists()).to.equal(true);
+        });
+
+        it('No display single_per_period,  periods_before_allowed and periods_after_allowed when no_period', () => {
+            connectedWrapper = mount(
+                withQueryClientProvider(
+                    renderWithStore(
+                        <FormFormComponent
+                            currentForm={currentFormNoPeriod}
+                            setFieldValue={() => {
+                                setFieldValueSpy();
+                            }}
+                        />,
+                    ),
+                ),
+            );
+            noPeriodSettings.forEach(setting => {
+                const input = connectedWrapper
+                    .find(`[keyValue="${setting.keyValue}"]`)
+                    .at(0);
+                expect(input.exists()).to.equal(false);
+            });
         });
     });
 });

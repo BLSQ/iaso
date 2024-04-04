@@ -10,7 +10,6 @@ logger = logging.getLogger(__name__)
 
 
 class Under5:
-
     def compute_gained_weight(self, initial_weight, current_weight, duration):
         weight_gain = 0
         weight_loss = 0

@@ -100,6 +100,7 @@ steps:
     RDS_USERNAME: postgres
     CACHE: false
     DEV_SERVER: true
+    VERSION_NAME: test
     PLUGINS: polio,wfp
     DJANGO_SUPERUSER_USERNAME: adm
     DJANGO_SUPERUSER_EMAIL: adm@example.com
@@ -113,6 +114,8 @@ steps:
     testRunTitle: 'Python $(PYTHON_VERSION)'
 
 - script: docker build -t dev-coda2 --target prod -f $(Build.SourcesDirectory)/docker/bundle/Dockerfile .
+  env:
+    VERSION_NAME: test
   displayName: 'Build docker image'
 
 - script: docker save -o $(Build.ArtifactStagingDirectory)/dev-coda2.tar.gz dev-coda2

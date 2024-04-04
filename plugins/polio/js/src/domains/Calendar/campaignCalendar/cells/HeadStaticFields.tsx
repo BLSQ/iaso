@@ -87,10 +87,10 @@ export const HeadStaticFieldsCells: FunctionComponent<Props> = ({
                         key={f.key}
                         className={classnames(classes.tableCellTitle)}
                         colSpan={colSpanTitle}
-                        style={{
+                        sx={{
                             top: 100,
                             width: f.width || defaultStaticColWidth,
-                            minWidth: f.width || defaultStaticColWidth,
+                            minWidth: f.key === 'edit' ? '50px' : '4vw',
                         }}
                     >
                         <Box position="relative" width="100%" height="100%">

@@ -280,6 +280,7 @@ export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
                                 currentMonday={currentMonday}
                                 loadingCampaigns={isLoading}
                                 isPdf={isPdf}
+                                router={router}
                             />
                         </Grid>
                         <Grid item xs={12} lg={!isPdf ? 4 : 12}>

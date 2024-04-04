@@ -2,7 +2,7 @@
 /* eslint-disable react/no-array-index-key */
 import moment, { Moment } from 'moment';
 import React, { ReactElement } from 'react';
-import { colsCount, dateFormat } from './constants';
+import { colsCounts, dateFormat } from './constants';
 
 import { Campaign } from '../../../constants/types';
 import { CampaignDurationCell } from './cells/CampaignDuration';
@@ -83,17 +83,23 @@ const getEmptyCells = ({
     return cells;
 };
 
-const getCalendarData = (currentMonday: Moment): CalendarData => {
+const getCalendarData = (
+    currentMonday: Moment,
+    period: 'quarter' | 'year' | 'semester' = 'semester',
+): CalendarData => {
     const todayMonday = moment().startOf('isoWeek');
     const currentWeek = {
         year: todayMonday.format('YYYY'),
         month: todayMonday.format('MMM'),
         value: todayMonday.format('DD'),
     };
-    const firstMonday = currentMonday.clone().subtract(3, 'week');
+    const columnCount = colsCounts[period];
+    const firstMonday = currentMonday
+        .clone()
+        .subtract(Math.floor(columnCount / 2), 'week');
     const lastSunday = currentMonday
         .clone()
-        .add(colsCount - 4, 'week')
+        .add(columnCount - (Math.floor(columnCount / 2) + 1), 'week')
         .endOf('isoWeek');
     const headers: {
         years: YearHeader[];
@@ -105,7 +111,7 @@ const getCalendarData = (currentMonday: Moment): CalendarData => {
         weeks: [],
     };
     let currentWeekIndex = -1;
-    Array(colsCount)
+    Array(columnCount)
         .fill(null)
         .forEach((_, i) => {
             const newMonday = firstMonday.clone().add(i, 'week');

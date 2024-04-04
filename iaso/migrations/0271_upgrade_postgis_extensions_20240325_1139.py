@@ -6,4 +6,4 @@ class Migration(migrations.Migration):
         ("iaso", "0270_auto_20240314_1515"),
     ]
 
-    operations = [migrations.RunSQL("SELECT postgis_extensions_upgrade();")]
+    operations = [migrations.RunSQL('ALTER EXTENSION postgis update to "3.2.1";')]

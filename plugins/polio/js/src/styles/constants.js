@@ -8,6 +8,7 @@ export const selectedPathOptions = {
     weight: '1',
     opacity: '1',
     zIndex: '1',
+    fillOpacity: '0.5',
 };
 export const unselectedPathOptions = {
     color: 'gray',

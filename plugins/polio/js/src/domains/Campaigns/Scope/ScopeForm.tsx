@@ -4,8 +4,8 @@ import cloneDeep from 'lodash/cloneDeep';
 import React, { FunctionComponent, useMemo, useState } from 'react';
 import { useDebounce } from 'use-debounce';
 // @ts-ignore
-import { TabContext, TabPanel } from '@mui/lab';
-import { Grid } from '@mui/material';
+import { TabContext, TabList, TabPanel } from '@mui/lab';
+import { Box, Grid, Tab } from '@mui/material';
 import { useSafeIntl, useSkipEffectOnMount } from 'bluesquare-components';
 
 import { BooleanInput } from '../../../components/Inputs';
@@ -18,23 +18,15 @@ import { findRegion, findScopeWithOrgUnit } from './Scopes/utils';
 import { useGetGeoJson } from './hooks/useGetGeoJson';
 import { useGetParentOrgUnit } from './hooks/useGetParentOrgUnit';
 
-import { FilteredDistricts, Round, Scope } from './Scopes/types';
-
-type Values = {
-    separate_scopes_per_round?: boolean;
-    rounds: Round[];
-    scopes: Scope[];
-    initial_org_unit: number;
-};
+import { CampaignFormValues } from '../../../constants/types';
+import { useIsPolioCampaign } from '../hooks/useIsPolioCampaignCheck';
+import { FilteredDistricts, Round } from './Scopes/types';
 
 export const scopeFormFields = ['separate_scopes_per_round', 'scopes'];
 
-type Props = {
-    currentTab: string;
-};
-
-export const ScopeForm: FunctionComponent<Props> = ({ currentTab }) => {
-    const { values } = useFormikContext<Values>();
+export const ScopeForm: FunctionComponent = () => {
+    const { values } = useFormikContext<CampaignFormValues>();
+    const isPolio = useIsPolioCampaign(values);
     const { formatMessage } = useSafeIntl();
     const { separate_scopes_per_round: scopePerRound, rounds } = values;
     const classes: Record<string, string> = useStyles();
@@ -43,6 +35,12 @@ export const ScopeForm: FunctionComponent<Props> = ({ currentTab }) => {
     const [search, setSearch] = useState('');
     const [debouncedSearch] = useDebounce(search, 500);
 
+    const [currentTab, setCurrentTab] = useState<string>(
+        rounds?.[0] ? `${rounds[0].number}` : '1',
+    );
+    const handleChangeTab = (event, newValue) => {
+        setCurrentTab(newValue);
+    };
     const sortedRounds: Round[] = useMemo(
         () =>
             rounds
@@ -81,14 +79,15 @@ export const ScopeForm: FunctionComponent<Props> = ({ currentTab }) => {
     const filteredDistricts: FilteredDistricts[] | undefined = useMemo(() => {
         if (districtShapes && regionShapes) {
             let filtered: FilteredDistricts[] = districtShapes.map(district => {
+                const scope = findScopeWithOrgUnit(scopes, district.id);
                 return {
                     ...cloneDeep(district),
                     region: findRegion(district, regionShapes),
-                    vaccineName: findScopeWithOrgUnit(scopes, district.id)
-                        ?.vaccine,
+                    scope,
+                    vaccineName: scope?.vaccine,
                 };
             }) as FilteredDistricts[];
-            if (scopes) {
+            if (scopes && isPolio) {
                 filtered.forEach((d, index) => {
                     scopes.forEach(scope => {
                         scope.group.org_units.forEach(ouId => {
@@ -116,14 +115,21 @@ export const ScopeForm: FunctionComponent<Props> = ({ currentTab }) => {
             return filtered;
         }
         return undefined;
-    }, [districtShapes, regionShapes, scopes, debouncedSearch, searchScope]);
+    }, [
+        districtShapes,
+        regionShapes,
+        scopes,
+        debouncedSearch,
+        searchScope,
+        isPolio,
+    ]);
 
     useSkipEffectOnMount(() => {
         setPage(0);
     }, [filteredDistricts]);
 
     return (
-        <>
+        <Box minWidth="70vw">
             <Grid container spacing={4} justifyContent="space-between">
                 <Grid xs={12} md={6} item>
                     <Field
@@ -134,6 +140,19 @@ export const ScopeForm: FunctionComponent<Props> = ({ currentTab }) => {
                 </Grid>
             </Grid>
             <TabContext value={currentTab}>
+                {scopePerRound && (
+                    <TabList onChange={handleChangeTab}>
+                        {sortedRounds.map(round => (
+                            <Tab
+                                key={round.number}
+                                label={`${formatMessage(MESSAGES.round)} ${
+                                    round.number
+                                }`}
+                                value={`${round.number}`}
+                            />
+                        ))}
+                    </TabList>
+                )}
                 {!scopePerRound && (
                     <ScopeField
                         name="scopes"
@@ -181,6 +200,6 @@ export const ScopeForm: FunctionComponent<Props> = ({ currentTab }) => {
                         </TabPanel>
                     ))}
             </TabContext>
-        </>
+        </Box>
     );
 };

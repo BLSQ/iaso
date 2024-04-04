@@ -343,6 +343,13 @@ class CampaignSerializer(serializers.ModelSerializer):
             ]
             round_data["datelogs"] = datelogs_with_pk
 
+            # At this point `round_data` has already been validated and deserialized to complex Django types.
+            # But it will still be passed to `RoundSerializer.data` as if it were native Python datatypes.
+            # So, we convert it back to a native datatype to prevent `RoundSerializer` to raise an error:
+            # "Incorrect type. Expected pk value, received BudgetProcess."…
+            budget_process = round_data.pop("budget_process", None)
+            round_data["budget_process"] = budget_process.pk if budget_process else None
+
             round_serializer = RoundSerializer(instance=round, data=round_data, context=self.context)
             round_serializer.is_valid(raise_exception=True)
             round_instance = round_serializer.save()

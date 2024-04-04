@@ -221,8 +221,7 @@ const FormDetail: FunctionComponent<FormDetailProps> = ({ router, params }) => {
     useEffect(() => {
         if (
             currentForm.period_type.value === NO_PERIOD ||
-            currentForm.period_type.value === null ||
-            currentForm.period_type.value === undefined
+            !currentForm.period_type.value
         ) {
             setDetailRequiredFields(
                 requiredFields.filter(

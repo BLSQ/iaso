@@ -92,8 +92,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
     useEffect(() => {
         if (
             currentForm.period_type.value === NO_PERIOD ||
-            currentForm.period_type.value === undefined ||
-            currentForm.period_type.value === null
+            !currentForm.period_type.value
         ) {
             setDisplayPeriods(false);
         } else {
@@ -120,11 +119,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                         keyValue="period_type"
                         clearable
                         onChange={(key, value) => setPeriodType(value)}
-                        value={
-                            currentForm.period_type.value
-                                ? currentForm.period_type.value
-                                : NO_PERIOD
-                        }
+                        value={currentForm.period_type.value || NO_PERIOD}
                         errors={currentForm.period_type.errors}
                         type="select"
                         options={periodTypeOptionsWithNoPeriod}

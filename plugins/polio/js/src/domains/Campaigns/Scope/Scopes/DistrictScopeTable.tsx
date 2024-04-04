@@ -143,10 +143,8 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
         selectedVaccine,
         districtShapes,
     ]);
-
     const displayPlaceHolder =
         isFetching || (!isFetching && filteredDistricts?.length === 0);
-    console.log('shapesForTable', shapesForTable);
     return (
         <>
             <TableContainer className={classes.districtList}>
@@ -214,6 +212,9 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                             />
                         )}
                         {shapesForTable?.map((shape, i) => {
+                            const isShapeInScope = scopes.some(s =>
+                                s.group.org_units.includes(shape.id),
+                            );
                             return (
                                 <TableRow
                                     key={shape.id}
@@ -270,7 +271,7 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                                                 }
                                             />
                                         )}
-                                        {shape.vaccineName && (
+                                        {isShapeInScope && (
                                             <>
                                                 <IconButtonComponent
                                                     size="small"
@@ -287,7 +288,7 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                                                 />
                                             </>
                                         )}
-                                        {!shape.vaccineName && (
+                                        {!isShapeInScope && (
                                             <>
                                                 <IconButtonComponent
                                                     size="small"

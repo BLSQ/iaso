@@ -73,10 +73,13 @@ export const ScopeInput: FunctionComponent<Props> = ({
                 .filter(s => s.parent_id === selectOrgUnit.parent_id)
                 .map(s => s.id);
             const newScopes: Scope[] = cloneDeep(scopes);
-            // Find scope for vaccine
-            let scope: Scope | undefined = newScopes.find(
-                s => s.vaccine === selectedVaccine,
-            );
+            let scope: Scope | undefined;
+            if (!isPolio) {
+                [scope] = newScopes;
+            } else {
+                // Find scope for vaccine
+                scope = newScopes.find(s => s.vaccine === selectedVaccine);
+            }
             if (!scope) {
                 scope = {
                     group: {
@@ -128,9 +131,12 @@ export const ScopeInput: FunctionComponent<Props> = ({
         district => {
             const newScopes: Scope[] = cloneDeep(scopes);
             // check if a scope exists for currently selected vaccine
-            let scope: Scope | undefined = newScopes.find(
-                s => s.vaccine === selectedVaccine,
-            );
+            let scope: Scope | undefined;
+            if (!isPolio) {
+                [scope] = newScopes;
+            } else {
+                scope = newScopes.find(s => s.vaccine === selectedVaccine);
+            }
             // if not create one that is initially empty
             if (!scope) {
                 scope = {

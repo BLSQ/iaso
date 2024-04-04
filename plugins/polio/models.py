@@ -126,7 +126,7 @@ class RoundScope(models.Model):
     )
     round = models.ForeignKey("Round", on_delete=models.CASCADE, related_name="scopes")
 
-    vaccine = models.CharField(max_length=5, choices=VACCINES)
+    vaccine = models.CharField(max_length=5, choices=VACCINES, blank=True, null=True)
 
     class Meta:
         unique_together = [("round", "vaccine")]
@@ -144,7 +144,7 @@ class CampaignScope(models.Model):
         Group, on_delete=models.CASCADE, related_name="campaignScope", default=make_group_campaign_scope
     )
     campaign = models.ForeignKey("Campaign", on_delete=models.CASCADE, related_name="scopes")
-    vaccine = models.CharField(max_length=5, choices=VACCINES)
+    vaccine = models.CharField(max_length=5, choices=VACCINES, blank=True, null=True)
 
     class Meta:
         unique_together = [("campaign", "vaccine")]
@@ -262,10 +262,14 @@ class Round(models.Model):
         campaign = self.campaign
 
         if campaign.separate_scopes_per_round:
-            scopes_with_orgunits = filter(lambda s: len(s.group.org_units.all()) > 0, self.scopes.all())
+            scopes_with_orgunits = filter(
+                lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, self.scopes.all()
+            )
             return ", ".join(scope.vaccine for scope in scopes_with_orgunits)
         else:
-            scopes_with_orgunits = filter(lambda s: len(s.group.org_units.all()) > 0, self.campaign.scopes.all())
+            scopes_with_orgunits = filter(
+                lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, self.campaign.scopes.all()
+            )
             return ",".join(scope.vaccine for scope in scopes_with_orgunits)
 
     @property
@@ -706,7 +710,8 @@ class Campaign(SoftDeletableModel):
             for round in self.rounds.all():
                 scopes_with_orgunits = filter(lambda s: len(s.group.org_units.all()) > 0, round.scopes.all())
                 for scope in scopes_with_orgunits:
-                    vaccines.add(scope.vaccine)
+                    if scope.vaccine:
+                        vaccines.add(scope.vaccine)
             return ", ".join(list(vaccines))
         else:
             scopes_with_orgunits = filter(lambda s: len(s.group.org_units.all()) > 0, self.scopes.all())
@@ -741,7 +746,7 @@ class Campaign(SoftDeletableModel):
         campaign = self
         features = []
         if not self.separate_scopes_per_round:
-            campaign_scopes = self.scopes
+            campaign_scopes = self.scopes.all()
 
             # noinspection SqlResolve
             campaign_scopes = campaign_scopes.annotate(
@@ -761,14 +766,14 @@ class Campaign(SoftDeletableModel):
                         "properties": {
                             "obr_name": campaign.obr_name,
                             "id": str(campaign.id),
-                            "vaccine": scope.vaccine,
+                            "vaccine": scope.vaccine if scope.vaccine else None,
                             "scope_key": f"campaignScope-{scope.id}",
                             "top_level_org_unit_name": scope.campaign.country.name,
                         },
                     }
                     features.append(feature)
         else:
-            round_scopes = RoundScope.objects.filter(round__campaign=campaign)
+            round_scopes = RoundScope.objects.filter(round__campaign=campaign).all()
             round_scopes = round_scopes.prefetch_related("round")
             # noinspection SqlResolve
             round_scopes = round_scopes.annotate(
@@ -788,7 +793,7 @@ class Campaign(SoftDeletableModel):
                         "properties": {
                             "obr_name": campaign.obr_name,
                             "id": str(campaign.id),
-                            "vaccine": scope.vaccine,
+                            "vaccine": scope.vaccine if scope.vaccine else None,
                             "scope_key": f"roundScope-{scope.id}",
                             "top_level_org_unit_name": campaign.country.name,
                             "round_number": scope.round.number,

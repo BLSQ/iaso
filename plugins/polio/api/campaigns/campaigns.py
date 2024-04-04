@@ -26,37 +26,30 @@ from rest_framework.response import Response
 from rest_framework.validators import UniqueValidator
 
 from hat.api.export_utils import Echo, iter_items
-from iaso.api.common import (
-    CONTENT_TYPE_CSV,
-    CONTENT_TYPE_XLSX,
-    Custom403Exception,
-    CustomFilterBackend,
-    DeletionFilterBackend,
-    ModelViewSet,
-)
+from iaso.api.common import (CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX,
+                             Custom403Exception, CustomFilterBackend,
+                             DeletionFilterBackend, ModelViewSet)
 from iaso.models import Group, OrgUnit
-from plugins.polio.api.campaigns.campaigns_log import log_campaign_modification, serialize_campaign
-from plugins.polio.api.campaigns.vaccine_authorization_missing_email import (
-    missing_vaccine_authorization_for_campaign_email_alert,
-)
+from plugins.polio.api.campaigns.campaigns_log import (
+    log_campaign_modification, serialize_campaign)
+from plugins.polio.api.campaigns.vaccine_authorization_missing_email import \
+    missing_vaccine_authorization_for_campaign_email_alert
 from plugins.polio.api.common import CACHE_VERSION
-from plugins.polio.api.rounds.round import RoundScopeSerializer, RoundSerializer
-from plugins.polio.api.shared_serializers import GroupSerializer, OrgUnitSerializer
-from plugins.polio.export_utils import generate_xlsx_campaigns_calendar, xlsx_file_name
-from plugins.polio.models import (
-    Campaign,
-    CampaignGroup,
-    CampaignScope,
-    CampaignType,
-    CountryUsersGroup,
-    Round,
-    RoundScope,
-    SpreadSheetImport,
-    VaccineAuthorization,
-)
+from plugins.polio.api.rounds.round import (RoundScopeSerializer,
+                                            RoundSerializer)
+from plugins.polio.api.shared_serializers import (GroupSerializer,
+                                                  OrgUnitSerializer)
+from plugins.polio.export_utils import (generate_xlsx_campaigns_calendar,
+                                        xlsx_file_name)
+from plugins.polio.models import (Campaign, CampaignGroup, CampaignScope,
+                                  CampaignType, CountryUsersGroup, Round,
+                                  RoundScope, SpreadSheetImport,
+                                  VaccineAuthorization)
 from plugins.polio.preparedness.calculator import get_preparedness_score
-from plugins.polio.preparedness.parser import InvalidFormatError, get_preparedness
-from plugins.polio.preparedness.spreadsheet_manager import Campaign, generate_spreadsheet_for_campaign
+from plugins.polio.preparedness.parser import (InvalidFormatError,
+                                               get_preparedness)
+from plugins.polio.preparedness.spreadsheet_manager import (
+    Campaign, generate_spreadsheet_for_campaign)
 from plugins.polio.preparedness.summary import preparedness_summary
 
 
@@ -205,11 +198,11 @@ class CampaignSerializer(serializers.ModelSerializer):
 
         # noinspection DuplicatedCode
         for scope in campaign_scopes:
-            vaccine = scope.get("vaccine")
+            vaccine = scope.get("vaccine", None)
             org_units = scope.get("group", {}).get("org_units")
             scope, created = campaign.scopes.get_or_create(vaccine=vaccine)
             source_version_id = None
-            name = f"scope for campaign {campaign.obr_name} - {vaccine}"
+            name = f"scope for campaign {campaign.obr_name}" + (f" - {vaccine}" if vaccine else "")
             if org_units:
                 source_version_ids = set([ou.version_id for ou in org_units])
                 if len(source_version_ids) != 1:
@@ -237,7 +230,7 @@ class CampaignSerializer(serializers.ModelSerializer):
             round = round_serializer.save()
 
             for scope in scopes:
-                vaccine = scope.get("vaccine")
+                vaccine = scope.get("vaccine", None)
                 org_units = scope.get("group", {}).get("org_units")
                 source_version_id = None
                 if org_units:
@@ -245,7 +238,7 @@ class CampaignSerializer(serializers.ModelSerializer):
                     if len(source_version_ids) != 1:
                         raise serializers.ValidationError("All orgunit should be in the same source version")
                     source_version_id = list(source_version_ids)[0]
-                name = f"scope for round {round.number} campaign {campaign.obr_name} - {vaccine}"
+                name = f"scope for round {round.number} campaign {campaign.obr_name}" + (f" - {vaccine}" if vaccine else "")
                 scope, created = round.scopes.get_or_create(vaccine=vaccine)
                 if not scope.group:
                     scope.group = Group.objects.create(name=name)
@@ -293,11 +286,11 @@ class CampaignSerializer(serializers.ModelSerializer):
         account = self.context["request"].user.iaso_profile.account
 
         for scope in campaign_scopes:
-            vaccine = scope.get("vaccine")
+            vaccine = scope.get("vaccine", None)
             org_units = scope.get("group", {}).get("org_units")
             scope, created = instance.scopes.get_or_create(vaccine=vaccine)
             source_version_id = None
-            name = f"scope for campaign {instance.obr_name} - {vaccine}"
+            name = f"scope for campaign {instance.obr_name}" + (f" - {vaccine}" if vaccine else "")
             if org_units:
                 source_version_ids = set([ou.version_id for ou in org_units])
                 if len(source_version_ids) != 1:
@@ -347,7 +340,7 @@ class CampaignSerializer(serializers.ModelSerializer):
             round_instances.append(round_instance)
             round_datelogs = []
             for scope in scopes:
-                vaccine = scope.get("vaccine")
+                vaccine = scope.get("vaccine", None)
                 org_units = scope.get("group", {}).get("org_units")
                 source_version_id = None
                 if org_units:
@@ -355,7 +348,7 @@ class CampaignSerializer(serializers.ModelSerializer):
                     if len(source_version_ids) != 1:
                         raise serializers.ValidationError("All orgunit should be in the same source version")
                     source_version_id = list(source_version_ids)[0]
-                name = f"scope for round {round_instance.number} campaign {instance.obr_name} - {vaccine}"
+                name = f"scope for round {round_instance.number} campaign {instance.obr_name}" + (f" - {vaccine}" if vaccine else "")
                 scope, created = round_instance.scopes.get_or_create(vaccine=vaccine)
                 if not scope.group:
                     scope.group = Group.objects.create(name=name)

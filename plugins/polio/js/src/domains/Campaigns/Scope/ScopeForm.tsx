@@ -176,6 +176,7 @@ export const ScopeForm: FunctionComponent = () => {
                         <TabPanel
                             value={`${round.number}`}
                             key={round.number}
+                            sx={{ p: 0 }}
                             className={classes.tabPanel}
                         >
                             <ScopeField

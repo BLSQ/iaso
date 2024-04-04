@@ -46,7 +46,7 @@ class FormsSerializerTestCase(TestCase):
             "projects": [],
             "project_ids": [],
             "period_type": None,
-            "single_per_period": False,
+            "single_per_period": None,
             "periods_before_allowed": 0,
             "periods_after_allowed": 0,
             "latest_form_version": None,

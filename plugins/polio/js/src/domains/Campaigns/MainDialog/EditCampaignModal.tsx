@@ -28,19 +28,22 @@ export const EditCampaignModal: FunctionComponent<Props> = ({
     }, [campaignId, dispatch, params]);
 
     const closeDialog = useCallback(() => {
-        dispatch(
-            // Passing the account id to avoid a redirection which would slow down the closing of the modal
-            redirectTo(DASHBOARD_BASE_URL, { accountId: params.accountId }),
-        );
-    }, [dispatch, params.accountId]);
+        const newParams = {
+            ...params,
+        };
+        delete newParams.campaignId;
+        dispatch(redirectTo(DASHBOARD_BASE_URL, newParams));
+        setIsOpen(false);
+    }, [dispatch, params]);
 
     // Effect required when using deep linking
     useEffect(() => {
         if (router?.params.campaignId === campaignId && !isOpen) {
             setIsOpen(true);
         }
-    }, [campaignId, isOpen, router?.params.campaignId]);
-
+        // only need to run once on load
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
     return (
         <>
             <IconButton
@@ -49,16 +52,11 @@ export const EditCampaignModal: FunctionComponent<Props> = ({
                 onClick={openDialog}
             />
 
-            {isOpen && (
-                <PolioCreateEditDialog
-                    isOpen={isOpen}
-                    onClose={() => {
-                        setIsOpen(false);
-                        closeDialog();
-                    }}
-                    campaignId={campaignId}
-                />
-            )}
+            <PolioCreateEditDialog
+                isOpen={isOpen}
+                onClose={closeDialog}
+                campaignId={campaignId}
+            />
         </>
     );
 };

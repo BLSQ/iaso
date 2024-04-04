@@ -199,6 +199,7 @@ export const useStyles = makeStyles(() => ({
     },
     tabError: {
         color: `${theme.palette.error.main} !important`,
+        fontWeight: 'bold !important',
     },
     tabDisabled: {
         color: `${theme.palette.text.disabled} !important`,

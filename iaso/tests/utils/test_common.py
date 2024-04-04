@@ -13,6 +13,16 @@ class CommonTestCase(TestCase):
         )
         self.assertEqual(creator, "yoda (Yo Da)")
 
+    def test_get_creator_name_with_username_only(self):
+        user = {"username": "yoda"}
+        creator = get_creator_name(
+            None,
+            user.get("username", ""),
+            user.get("first_name", ""),
+            user.get("last_name", ""),
+        )
+        self.assertEqual(creator, "yoda")
+
     def test_get_org_unit_parents_ref(self):
         org_unit = {
             "id": 9354,

@@ -1210,7 +1210,7 @@ const MESSAGES = defineMessages({
     },
     campaign_types: {
         id: 'iaso.polio.label.campaignTypes',
-        defaultMessage: 'Campaign types',
+        defaultMessage: 'Types',
     },
     campaignCategory: {
         id: 'iaso.polio.label.campaignCategory',

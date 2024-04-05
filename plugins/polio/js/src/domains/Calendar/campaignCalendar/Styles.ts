@@ -103,15 +103,15 @@ export const useStyles = makeStyles(theme => {
             backgroundColor: red['100'],
         },
         nav: {
+            width: '100%',
             left: theme.spacing(2),
-            top: 0,
+            top: 17,
             zIndex: 3,
             position: 'absolute',
             display: 'flex',
-            width: '31vw',
             justifyContent: 'center',
             [theme.breakpoints.up('lg')]: {
-                width: '21vw',
+                width: '17.3vw',
             },
         },
         navButton: {
@@ -141,7 +141,7 @@ export const useStyles = makeStyles(theme => {
             paddingLeft: theme.spacing(1),
             paddingRight: theme.spacing(1),
             fontWeight: 'bold',
-            fontSize: 2,
+            fontSize: 10,
             lineHeight: '14px',
         },
         tableCellSpanWithPopOver: {
@@ -150,9 +150,7 @@ export const useStyles = makeStyles(theme => {
         tableCellSpanRow: {
             alignItems: 'center',
             justifyContent: 'flex-start',
-            paddingLeft: theme.spacing(1),
-            paddingRight: theme.spacing(1),
-            fontSize: 11,
+            fontSize: 9,
         },
         popper: {
             zIndex: 500,

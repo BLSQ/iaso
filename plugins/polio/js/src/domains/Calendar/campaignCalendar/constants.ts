@@ -3,7 +3,7 @@ import { apiDateFormat } from '../../../../../../../hat/assets/js/apps/Iaso/util
 const defaultStaticColWidth = 45;
 const colsCount = 13;
 const dateFormat = apiDateFormat;
-const colSpanTitle = 21;
+const colSpanTitle = 1;
 const defaultOrder = 'first_round_started_at';
 
 const colsCounts = {

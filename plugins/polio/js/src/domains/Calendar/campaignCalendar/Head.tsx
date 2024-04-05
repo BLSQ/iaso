@@ -82,7 +82,7 @@ export const Head: FunctionComponent<Props> = ({
                             classes.tableCellHead,
                             classes.tableCellSmall,
                         )}
-                        style={{ top: 50, fontSize: 10 }}
+                        style={{ top: 50, fontSize: 11 }}
                         key={`month-${month.year}-${month.value}`}
                         align="center"
                         colSpan={month.daysCount}
@@ -120,7 +120,7 @@ export const Head: FunctionComponent<Props> = ({
                         <Box position="relative" width="100%" height="100%">
                             <Box
                                 className={classes.tableCellSpan}
-                                sx={{ fontSize: 8 }}
+                                sx={{ fontSize: 9 }}
                             >
                                 {week.value}
                             </Box>

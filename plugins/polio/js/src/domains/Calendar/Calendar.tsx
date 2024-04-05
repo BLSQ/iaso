@@ -1,6 +1,14 @@
 /* eslint-disable camelcase */
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import { Box, Button, Grid, Theme, Typography } from '@mui/material';
+import {
+    Box,
+    Button,
+    Grid,
+    Theme,
+    ToggleButton,
+    ToggleButtonGroup,
+    Typography,
+} from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     ExcellSvg,
@@ -25,7 +33,6 @@ import {
     mapCampaigns,
 } from './campaignCalendar/utils';
 
-import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { userHasPermission } from '../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 import { genUrl } from '../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import { Router } from '../../../../../../hat/assets/js/apps/Iaso/types/general';
@@ -171,15 +178,6 @@ export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
         urlParams,
     );
 
-    const handleChangePeriodType = (_, value: PeriodType) => {
-        const newParams = {
-            ...params,
-            periodType: value,
-        };
-        const url = genUrl(router, newParams);
-        dispatch(replace(url));
-    };
-
     useEffect(() => {
         if (
             filteredCampaigns.length > 0 &&
@@ -194,6 +192,15 @@ export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
 
     const currentUser = useCurrentUser();
     const periodTypes = useGetPeriodTypes();
+
+    const handleChangePeriodType = (_, value: PeriodType) => {
+        const newParams = {
+            ...params,
+            periodType: value,
+        };
+        const url = genUrl(router, newParams);
+        dispatch(replace(url));
+    };
     return (
         <div>
             {isLogged && !isPdf && (
@@ -278,6 +285,7 @@ export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
                             </Grid>
                         )}
                     </Grid>
+
                     <Grid container spacing={2}>
                         {isPdf && (
                             <Grid item xs={12}>
@@ -286,32 +294,41 @@ export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
                                 </Typography>
                             </Grid>
                         )}
-                        {!isPdf && (
-                            <Grid container item xs={12}>
-                                <Grid item xs={12} md={3}>
-                                    <InputComponent
-                                        keyValue="period"
-                                        type="select"
-                                        onChange={handleChangePeriodType}
-                                        value={params.periodType || 'quarter'}
-                                        label={MESSAGES.period}
-                                        options={periodTypes}
-                                        clearable={false}
-                                    />
-                                </Grid>
-                            </Grid>
-                        )}
                         <Grid item xs={12} lg={!isPdf ? 8 : 12}>
+                            {!isPdf && (
+                                <Box
+                                    display="flex"
+                                    justifyContent="flex-end"
+                                    mb={1}
+                                >
+                                    <ToggleButtonGroup
+                                        color="primary"
+                                        size="small"
+                                        value={params.periodType || 'quarter'}
+                                        exclusive
+                                        onChange={handleChangePeriodType}
+                                    >
+                                        {periodTypes.map(period => (
+                                            <ToggleButton
+                                                key={period.value}
+                                                value={period.value}
+                                            >
+                                                {period.label}
+                                            </ToggleButton>
+                                        ))}
+                                    </ToggleButtonGroup>
+                                </Box>
+                            )}
                             <CampaignsCalendar
-                                currentDate={currentDate}
                                 params={params}
                                 orders={orders}
                                 campaigns={filteredCampaigns}
                                 calendarData={calendarData}
-                                currentMonday={currentMonday}
                                 loadingCampaigns={isLoading}
                                 isPdf={isPdf}
                                 router={router}
+                                currentMonday={currentMonday}
+                                currentDate={currentDate}
                             />
                         </Grid>
                         <Grid item xs={12} lg={!isPdf ? 4 : 12}>

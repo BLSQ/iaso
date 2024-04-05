@@ -1,7 +1,7 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 
 import classnames from 'classnames';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import {
     getOrderArray,
@@ -11,13 +11,11 @@ import {
 } from 'bluesquare-components';
 
 import { Box, TableCell, TableSortLabel } from '@mui/material';
-
 import { replace } from 'react-router-redux';
 import { genUrl } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
-import {
-    Router,
-    SxStyles,
-} from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
+import { Router } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
+import { User } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+
 import MESSAGES from '../../../../constants/messages';
 import { useStaticFields } from '../../hooks/useStaticFields';
 import { Field } from '../../types';
@@ -35,27 +33,11 @@ type Order = {
     desc: boolean;
 };
 
-const cellStyle = (key: string): SxStyles => ({
-    quarter: {
-        top: 100,
-        minWidth: '25px',
-    },
-    semester: {
-        top: 100,
-        minWidth: '50px',
-    },
-    year: {
-        top: 100,
-        minWidth: key === 'edit' ? '50px' : '90px',
-    },
-});
-
 export const HeadStaticFieldsCells: FunctionComponent<Props> = ({
     orders,
     router,
     isPdf,
 }) => {
-    const periodType = router.params.periodType || 'quarter';
     const classes: Record<string, any> = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
@@ -89,6 +71,18 @@ export const HeadStaticFieldsCells: FunctionComponent<Props> = ({
         dispatch(replace(url));
     };
     const fields = useStaticFields(isPdf);
+    const isLogged = useSelector((state: { users: { current: User } }) =>
+        Boolean(state.users.current),
+    );
+    const getWidth = useCallback(
+        (f: Field) => {
+            if (f.key === 'edit') {
+                return '30px';
+            }
+            return !isLogged || isPdf ? '85px' : '75px';
+        },
+        [isLogged, isPdf],
+    );
     return (
         <>
             {fields.map(f => {
@@ -106,7 +100,11 @@ export const HeadStaticFieldsCells: FunctionComponent<Props> = ({
                         key={f.key}
                         className={classnames(classes.tableCellTitle)}
                         colSpan={colSpanTitle}
-                        sx={cellStyle(f.key)[periodType]}
+                        sx={{
+                            top: 100,
+                            width: getWidth(f),
+                            minWidth: getWidth(f),
+                        }}
                     >
                         <Box position="relative" width="100%" height="100%">
                             {f.sortKey && (

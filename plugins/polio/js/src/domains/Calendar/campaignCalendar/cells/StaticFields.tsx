@@ -1,7 +1,7 @@
 import classnames from 'classnames';
 import React, { FunctionComponent } from 'react';
 
-import { TableCell } from '@mui/material';
+import { Box, TableCell } from '@mui/material';
 
 import { useStaticFields } from '../../hooks/useStaticFields';
 import { useStyles } from '../Styles';
@@ -28,15 +28,16 @@ export const StaticFieldsCells: FunctionComponent<Props> = ({
                     colSpan={colSpanTitle}
                     className={classnames(defaultCellStyles)}
                 >
-                    <span
+                    <Box
                         className={classnames(
                             classes.tableCellSpan,
                             classes.tableCellSpanRow,
                         )}
+                        sx={{ px: field.key === 'edit' ? 0 : 1 }}
                     >
                         {!field.render && campaign[field.key]}
                         {field.render && field.render(campaign)}
-                    </span>
+                    </Box>
                 </TableCell>
             ))}
         </>

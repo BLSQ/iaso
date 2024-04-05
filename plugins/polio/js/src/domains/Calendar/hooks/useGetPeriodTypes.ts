@@ -6,12 +6,12 @@ export const useGetPeriodTypes = (): DropdownOptions<string>[] => {
     const { formatMessage } = useSafeIntl();
     return [
         {
-            label: formatMessage(MESSAGES.semester),
-            value: 'semester',
-        },
-        {
             label: formatMessage(MESSAGES.quarter),
             value: 'quarter',
+        },
+        {
+            label: formatMessage(MESSAGES.semester),
+            value: 'semester',
         },
         {
             label: formatMessage(MESSAGES.year),

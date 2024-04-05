@@ -13,6 +13,7 @@ import {
     CalendarRound,
     MappedCampaign,
     MonthHeader,
+    PeriodType,
     WeekHeader,
     YearHeader,
 } from './types';
@@ -85,7 +86,7 @@ const getEmptyCells = ({
 
 const getCalendarData = (
     currentMonday: Moment,
-    period: 'quarter' | 'year' | 'semester' = 'semester',
+    periodType: PeriodType = 'year',
 ): CalendarData => {
     const todayMonday = moment().startOf('isoWeek');
     const currentWeek = {
@@ -93,7 +94,7 @@ const getCalendarData = (
         month: todayMonday.format('MMM'),
         value: todayMonday.format('DD'),
     };
-    const columnCount = colsCounts[period];
+    const columnCount = colsCounts[periodType];
     const firstMonday = currentMonday
         .clone()
         .subtract(Math.floor(columnCount / 2), 'week');

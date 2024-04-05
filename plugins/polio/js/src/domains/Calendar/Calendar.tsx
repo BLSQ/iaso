@@ -13,7 +13,8 @@ import classnames from 'classnames';
 import domToPdf from 'dom-to-pdf';
 import moment from 'moment';
 import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { replace } from 'react-router-redux';
 import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { getCampaignColor } from '../../constants/campaignsColors';
 import { CampaignsCalendar } from './campaignCalendar';
@@ -24,7 +25,9 @@ import {
     mapCampaigns,
 } from './campaignCalendar/utils';
 
+import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { userHasPermission } from '../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import { genUrl } from '../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import { Router } from '../../../../../../hat/assets/js/apps/Iaso/types/general';
 import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import MESSAGES from '../../constants/messages';
@@ -35,8 +38,10 @@ import { dateFormat, defaultOrder } from './campaignCalendar/constants';
 import {
     CalendarParams,
     MappedCampaign,
+    PeriodType,
     ReduxState,
 } from './campaignCalendar/types';
+import { useGetPeriodTypes } from './hooks/useGetPeriodTypes';
 
 type Props = {
     params: CalendarParams;
@@ -65,6 +70,7 @@ const useStyles = makeStyles(theme => ({
 export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
+    const dispatch = useDispatch();
     const isLogged = useSelector((state: ReduxState) =>
         Boolean(state.users.current),
     );
@@ -110,8 +116,8 @@ export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
 
     const currentMonday = currentDate.clone().startOf('isoWeek');
     const calendarData = useMemo(
-        () => getCalendarData(currentMonday),
-        [currentMonday],
+        () => getCalendarData(currentMonday, params.periodType || 'quarter'),
+        [currentMonday, params.periodType],
     );
 
     const mappedCampaigns: MappedCampaign[] = useMemo(
@@ -165,6 +171,15 @@ export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
         urlParams,
     );
 
+    const handleChangePeriodType = (_, value: PeriodType) => {
+        const newParams = {
+            ...params,
+            periodType: value,
+        };
+        const url = genUrl(router, newParams);
+        dispatch(replace(url));
+    };
+
     useEffect(() => {
         if (
             filteredCampaigns.length > 0 &&
@@ -178,6 +193,7 @@ export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
     }, [filteredCampaigns, mappedCampaigns, isLoading]);
 
     const currentUser = useCurrentUser();
+    const periodTypes = useGetPeriodTypes();
     return (
         <div>
             {isLogged && !isPdf && (
@@ -268,6 +284,21 @@ export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
                                 <Typography variant="h3" color="primary">
                                     {formatMessage(MESSAGES.calendarPdfTitle)}
                                 </Typography>
+                            </Grid>
+                        )}
+                        {!isPdf && (
+                            <Grid container item xs={12}>
+                                <Grid item xs={12} md={3}>
+                                    <InputComponent
+                                        keyValue="period"
+                                        type="select"
+                                        onChange={handleChangePeriodType}
+                                        value={params.periodType || 'quarter'}
+                                        label={MESSAGES.period}
+                                        options={periodTypes}
+                                        clearable={false}
+                                    />
+                                </Grid>
                             </Grid>
                         )}
                         <Grid item xs={12} lg={!isPdf ? 8 : 12}>

@@ -82,7 +82,7 @@ export const Head: FunctionComponent<Props> = ({
                             classes.tableCellHead,
                             classes.tableCellSmall,
                         )}
-                        style={{ top: 50 }}
+                        style={{ top: 50, fontSize: 10 }}
                         key={`month-${month.year}-${month.value}`}
                         align="center"
                         colSpan={month.daysCount}

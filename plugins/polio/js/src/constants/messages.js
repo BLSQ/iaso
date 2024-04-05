@@ -2500,6 +2500,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.evaluation',
         defaultMessage: 'Evaluation',
     },
+    period: {
+        defaultMessage: 'Period',
+        id: 'iaso.instance.period',
+    },
+    semester: {
+        defaultMessage: 'Semester',
+        id: 'iaso.polio.periods.semester',
+    },
+    quarter: {
+        defaultMessage: 'Quarter',
+        id: 'iaso.polio.periods.quarter',
+    },
+    year: {
+        defaultMessage: 'Year',
+        id: 'iaso.polio.periods.year',
+    },
 });
 
 export default MESSAGES;

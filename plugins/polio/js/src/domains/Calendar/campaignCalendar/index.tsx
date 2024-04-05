@@ -50,7 +50,7 @@ const CampaignsCalendar: FunctionComponent<Props> = ({
                 }
             >
                 {loadingCampaigns && <LoadingSpinner absolute />}
-                <Table stickyHeader>
+                <Table stickyHeader size="small">
                     <Head
                         headers={headers}
                         orders={orders}
@@ -65,6 +65,7 @@ const CampaignsCalendar: FunctionComponent<Props> = ({
                         firstMonday={firstMonday}
                         lastSunday={lastSunday}
                         isPdf={isPdf}
+                        params={params}
                     />
                 </Table>
             </TableContainer>

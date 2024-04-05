@@ -26,7 +26,6 @@ export const StaticFieldsCells: FunctionComponent<Props> = ({
                 <TableCell
                     key={field.key}
                     colSpan={colSpanTitle}
-                    sx={{ minWidth: field.key === 'edit' ? '50px' : '4vw' }}
                     className={classnames(defaultCellStyles)}
                 >
                     <span

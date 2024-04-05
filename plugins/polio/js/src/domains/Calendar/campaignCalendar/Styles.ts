@@ -138,10 +138,10 @@ export const useStyles = makeStyles(theme => {
         tableCellSpanTitle: {
             alignItems: 'center',
             justifyContent: 'flex-start',
-            paddingLeft: theme.spacing(2),
-            paddingRight: theme.spacing(2),
+            paddingLeft: theme.spacing(1),
+            paddingRight: theme.spacing(1),
             fontWeight: 'bold',
-            fontSize: 11,
+            fontSize: 2,
             lineHeight: '14px',
         },
         tableCellSpanWithPopOver: {

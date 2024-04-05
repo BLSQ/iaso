@@ -14,12 +14,15 @@ import { Box, TableCell, TableSortLabel } from '@mui/material';
 
 import { replace } from 'react-router-redux';
 import { genUrl } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
-import { Router } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
+import {
+    Router,
+    SxStyles,
+} from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import MESSAGES from '../../../../constants/messages';
 import { useStaticFields } from '../../hooks/useStaticFields';
 import { Field } from '../../types';
 import { useStyles } from '../Styles';
-import { colSpanTitle, defaultStaticColWidth } from '../constants';
+import { colSpanTitle } from '../constants';
 
 type Props = {
     orders: string;
@@ -32,11 +35,27 @@ type Order = {
     desc: boolean;
 };
 
+const cellStyle = (key: string): SxStyles => ({
+    quarter: {
+        top: 100,
+        minWidth: '25px',
+    },
+    semester: {
+        top: 100,
+        minWidth: '50px',
+    },
+    year: {
+        top: 100,
+        minWidth: key === 'edit' ? '50px' : '90px',
+    },
+});
+
 export const HeadStaticFieldsCells: FunctionComponent<Props> = ({
     orders,
     router,
     isPdf,
 }) => {
+    const periodType = router.params.periodType || 'quarter';
     const classes: Record<string, any> = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
@@ -87,11 +106,7 @@ export const HeadStaticFieldsCells: FunctionComponent<Props> = ({
                         key={f.key}
                         className={classnames(classes.tableCellTitle)}
                         colSpan={colSpanTitle}
-                        sx={{
-                            top: 100,
-                            width: f.width || defaultStaticColWidth,
-                            minWidth: f.key === 'edit' ? '50px' : '4vw',
-                        }}
+                        sx={cellStyle(f.key)[periodType]}
                     >
                         <Box position="relative" width="100%" height="100%">
                             {f.sortKey && (

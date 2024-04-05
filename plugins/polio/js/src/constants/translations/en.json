@@ -45,6 +45,7 @@
     "iaso.polio.calendar.pdf.title": "Campaigns calendar",
     "iaso.polio.calendar.r1StartDate": "R1 date",
     "iaso.polio.calendar.weeks": "week(s)",
+    "iaso.polio.calendar.weeksShort": "w.",
     "iaso.polio.campaign.byCountry": "By country",
     "iaso.polio.campaign.campaignHistory": "Campaign History",
     "iaso.polio.campaign.campaignHistory.error": "Can't find an history with this campaign id",

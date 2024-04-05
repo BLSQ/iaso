@@ -13,7 +13,7 @@ from rest_framework.viewsets import ViewSet
 
 from hat.menupermissions import models as permission
 from iaso.api.common import CSVExportMixin, ModelViewSet, DeletionFilterBackend, HasPermission
-from plugins.polio.budget.filters import BudgetCampaignFilter
+from plugins.polio.budget.filters import BudgetProcessFilter
 from plugins.polio.budget.models import BudgetStep, MailTemplate, get_workflow, BudgetStepFile, BudgetProcess
 from plugins.polio.budget.serializers import (
     BudgetProcessSerializer,
@@ -30,7 +30,7 @@ from plugins.polio.models import Campaign, Round
 
 
 @swagger_auto_schema(tags=["budget"])
-class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
+class BudgetProcessViewSet(ModelViewSet, CSVExportMixin):
     """
     Budget information endpoint.
 
@@ -47,7 +47,7 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
         DjangoFilterBackend,
         DeletionFilterBackend,
     ]
-    filterset_class = BudgetCampaignFilter
+    filterset_class = BudgetProcessFilter
 
     def get_serializer_class(self):
         if self.action in ["partial_update", "create"]:

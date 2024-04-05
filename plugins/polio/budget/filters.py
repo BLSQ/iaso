@@ -8,7 +8,7 @@ from rest_framework.exceptions import ValidationError
 from plugins.polio.budget.models import BudgetProcess
 
 
-class BudgetCampaignFilter(django_filters.rest_framework.FilterSet):
+class BudgetProcessFilter(django_filters.rest_framework.FilterSet):
     countries = django_filters.CharFilter(method="filter_countries", label=_("Countries IDs (comma-separated)"))
     org_unit_groups = django_filters.CharFilter(
         method="filter_org_unit_groups", label=_("Org unit group IDs (comma-separated)")

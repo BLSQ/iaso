@@ -80,9 +80,9 @@ def get_workflow():
 
 @mock.patch("plugins.polio.budget.models.get_workflow", get_workflow)
 @mock.patch("plugins.polio.budget.serializers.get_workflow", get_workflow)
-class BudgetCampaignViewSetTestCase(APITestCase):
+class BudgetProcessViewSetTestCase(APITestCase):
     """
-    Test actions on `BudgetCampaignViewSet`.
+    Test actions on `BudgetProcessViewSet`.
     """
 
     def jsonListContains(self, actual: List[Dict], expected: List[Dict]):
@@ -821,9 +821,9 @@ class BudgetCampaignViewSetTestCase(APITestCase):
         self.assertEqual(response_data, expected_data)
 
 
-class FilterBudgetCampaignViewSetTestCase(APITestCase):
+class FilterBudgetProcessViewSetTestCase(APITestCase):
     """
-    Test filtering on `BudgetCampaignViewSet`.
+    Test filtering on `BudgetProcessViewSet`.
     """
 
     @classmethod

@@ -48,6 +48,12 @@ class BudgetProcessViewSet(ModelViewSet, CSVExportMixin):
         DeletionFilterBackend,
     ]
     filterset_class = BudgetProcessFilter
+    ordering_fields = [
+        "current_state_key",
+        "obr_name",
+        "country_name",
+        "updated_at",
+    ]
 
     def get_serializer_class(self):
         if self.action in ["partial_update", "create"]:
@@ -156,7 +162,7 @@ class BudgetProcessViewSet(ModelViewSet, CSVExportMixin):
 @swagger_auto_schema(tags=["budget"])
 class BudgetStepViewSet(ModelViewSet):
     """
-    Steps on a budget process, to progress the budget workflow.
+    Step on a budget process, to progress the budget workflow.
     """
 
     # FIXME : add DELETE

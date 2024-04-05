@@ -54,7 +54,7 @@ export const useBudgetColumns = (isUserPolioBudgetAdmin: boolean): Column[] => {
             },
             {
                 Header: formatMessage(MESSAGES.country),
-                id: 'country__name',
+                id: 'country_name',
                 sortable: true,
                 accessor: 'country_name',
             },

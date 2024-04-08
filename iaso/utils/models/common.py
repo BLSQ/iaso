@@ -6,7 +6,7 @@ def get_creator_name(creator: User = None, username: str = "", first_name: str =
         username = creator.username
         first_name = creator.first_name
         last_name = creator.last_name
-    if username or first_name or last_name:
+    if username and first_name and last_name:
         return f"{username} ({first_name} {last_name})"
     elif username:
         return username

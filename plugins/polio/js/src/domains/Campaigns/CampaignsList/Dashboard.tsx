@@ -72,7 +72,6 @@ const Dashboard: FunctionComponent<Props> = ({ router }) => {
         handleClickRestoreRow: handleRestoreDialogConfirm,
         router,
     });
-
     return (
         <>
             <TopBar

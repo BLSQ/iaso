@@ -379,3 +379,54 @@ export const useDeleteVaccineStock = (): UseMutationResult => {
         invalidateQueryKey: 'vaccine-stock-list',
     });
 };
+
+const deleteIncident = (id: string) => {
+    return deleteRequest(`${modalUrl}incident_report/${id}`);
+};
+
+export const useDeleteIncident = (): UseMutationResult => {
+    return useSnackMutation({
+        mutationFn: deleteIncident,
+        invalidateQueryKey: [
+            'incidents',
+            'vaccine-stock-list',
+            'usable-vials',
+            'stock-management-summary',
+            'unusable-vials',
+        ],
+    });
+};
+
+const deleteDestruction = (id: string) => {
+    return deleteRequest(`${modalUrl}destruction_report/${id}`);
+};
+
+export const useDeleteDestruction = (): UseMutationResult => {
+    return useSnackMutation({
+        mutationFn: deleteDestruction,
+        invalidateQueryKey: [
+            'destruction',
+            'vaccine-stock-list',
+            'usable-vials',
+            'stock-management-summary',
+            'unusable-vials',
+        ],
+    });
+};
+
+const deleteFormA = (id: string) => {
+    return deleteRequest(`${modalUrl}outgoing_stock_movement/${id}`);
+};
+
+export const useDeleteFormA = (): UseMutationResult => {
+    return useSnackMutation({
+        mutationFn: deleteFormA,
+        invalidateQueryKey: [
+            'formA',
+            'vaccine-stock-list',
+            'usable-vials',
+            'stock-management-summary',
+            'unusable-vials',
+        ],
+    });
+};

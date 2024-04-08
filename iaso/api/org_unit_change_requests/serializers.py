@@ -134,6 +134,8 @@ class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
     org_unit_id = serializers.IntegerField(source="org_unit.id")
     org_unit_uuid = serializers.UUIDField(source="org_unit.uuid")
     org_unit_name = serializers.CharField(source="org_unit.name")
+    org_unit_parent_id = serializers.IntegerField(source="org_unit.parent.id", allow_null=True)
+    org_unit_parent_name = serializers.CharField(source="org_unit.parent.name", allow_null=True)
     org_unit_validation_status = serializers.CharField(source="org_unit.validation_status")
     org_unit_type_id = serializers.IntegerField(source="org_unit.org_unit_type.id", allow_null=True)
     org_unit_type_name = serializers.CharField(source="org_unit.org_unit_type.name", allow_null=True)
@@ -151,6 +153,8 @@ class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
             "org_unit_id",
             "org_unit_uuid",
             "org_unit_name",
+            "org_unit_parent_id",
+            "org_unit_parent_name",
             "org_unit_validation_status",
             "org_unit_type_id",
             "org_unit_type_name",

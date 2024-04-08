@@ -1,12 +1,12 @@
 /* eslint-disable camelcase */
-import React, { ReactElement, useCallback } from 'react';
-import { IconButton } from 'bluesquare-components';
-import SendIcon from '@mui/icons-material/Send';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import SendIcon from '@mui/icons-material/Send';
+import { IconButton } from 'bluesquare-components';
+import React, { ReactElement, useCallback } from 'react';
 import { PaymentLot } from '../types';
 
-import MESSAGES from '../messages';
 import { useMarkPaymentsAsSent } from '../hooks/requests/useSavePaymentLot';
+import MESSAGES from '../messages';
 import { EditPaymentLotDialog } from './EditPaymentLot/EditPaymentLotDialog';
 
 interface ActionCellProps<T> {

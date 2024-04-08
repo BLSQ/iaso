@@ -32,10 +32,12 @@ export type NewOrgUnitField = {
     oldValue: ReactElement | Optional<Nullable<string>>;
     label: string;
     order: number;
+    fieldType: string;
 };
 type FieldDefinition = {
     label: string;
     order: number;
+    fieldType: string;
     formatValue: (
         // eslint-disable-next-line no-unused-vars
         val: any,
@@ -113,12 +115,14 @@ export const useNewFields = (
             new_name: {
                 label: formatMessage(MESSAGES.name),
                 order: 1,
+                fieldType: '',
                 formatValue: val => val,
                 // formatValue: val => <span>{val.toString()}</span>,
             },
             new_org_unit_type: {
                 label: formatMessage(MESSAGES.orgUnitsType),
                 order: 2,
+                fieldType: 'string',
                 formatValue: val => (val as NestedOrgUnitType)?.short_name,
                 // formatValue: val => (
                 //     <span>{(val as NestedOrgUnitType).short_name}</span>
@@ -127,6 +131,7 @@ export const useNewFields = (
             new_parent: {
                 label: formatMessage(MESSAGES.parent),
                 order: 3,
+                fieldType: '',
                 formatValue: val => (
                     <LinkToOrgUnit orgUnit={val as ShortOrgUnit} />
                 ),
@@ -134,6 +139,7 @@ export const useNewFields = (
             new_groups: {
                 label: formatMessage(MESSAGES.groups),
                 order: 4,
+                fieldType: 'array',
                 formatValue: val => (
                     <span>{getGroupsValue(val as NestedGroup[])}</span>
                 ),
@@ -141,6 +147,7 @@ export const useNewFields = (
             new_location: {
                 label: formatMessage(MESSAGES.location),
                 order: 5,
+                fieldType: '',
                 formatValue: (val, isOld) =>
                     changeRequest ? (
                         getLocationValue(
@@ -155,16 +162,19 @@ export const useNewFields = (
             new_opening_date: {
                 label: formatMessage(MESSAGES.openingDate),
                 order: 6,
+                fieldType: '',
                 formatValue: val => <span>{moment(val).format('L')}</span>,
             },
             new_closed_date: {
                 label: formatMessage(MESSAGES.closingDate),
                 order: 7,
+                fieldType: '',
                 formatValue: val => <span>{moment(val).format('L')}</span>,
             },
             new_reference_instances: {
                 label: formatMessage(MESSAGES.multiReferenceInstancesLabel),
                 order: 8,
+                fieldType: '',
                 formatValue: val => (
                     <ReferenceInstances
                         instances={val as InstanceForChangeRequest[]}
@@ -237,7 +247,7 @@ export const useNewFields = (
                         fieldKey,
                         value,
                     );
-                    const { label, order } = fieldDef;
+                    const { label, order, fieldType } = fieldDef;
                     return {
                         key: fieldKey,
                         label,
@@ -246,6 +256,7 @@ export const useNewFields = (
                         newValue,
                         oldValue,
                         order,
+                        fieldType,
                     };
                 }),
             ['order'],

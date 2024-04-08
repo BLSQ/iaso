@@ -1,20 +1,14 @@
 /* eslint-disable camelcase */
+import { Box, FormControlLabel, FormGroup, Grid, Switch } from '@mui/material';
+import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
+import { FieldProps, useField } from 'formik';
+import cloneDeep from 'lodash/cloneDeep';
 import React, {
     FunctionComponent,
+    ReactNode,
     useCallback,
     useState,
-    ReactNode,
 } from 'react';
-import { useField, FieldProps } from 'formik';
-import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
-import {
-    FormControlLabel,
-    FormGroup,
-    Grid,
-    Switch,
-    Box,
-} from '@mui/material';
-import cloneDeep from 'lodash/cloneDeep';
 
 // @ts-ignore
 import InputComponent from 'Iaso/components/forms/InputComponent';
@@ -23,8 +17,8 @@ import MESSAGES from '../../../constants/messages';
 import { DistrictScopeTable } from './Scopes/DistrictScopeTable';
 import { MapScope } from './Scopes/MapScope';
 
-import { Scope, Values, FilteredDistricts } from './Scopes/types';
 import { OrgUnit } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
+import { FilteredDistricts, Scope, Values } from './Scopes/types';
 
 type ExtraProps = {
     filteredDistricts: FilteredDistricts[];
@@ -184,58 +178,62 @@ export const ScopeInput: FunctionComponent<Props> = ({
     );
 
     return (
-        <Grid container spacing={2}>
-            <Grid xs={5} item>
-                <Box mb={2} mt={2}>
-                    {searchComponent}
-                    <InputComponent
-                        keyValue="searchScope"
-                        type="checkbox"
-                        withMarginTop={false}
-                        onChange={onChangeSearchScope}
-                        value={searchScope}
-                        label={MESSAGES.searchInScopeOrAllDistricts}
-                    />
-                </Box>
-                <DistrictScopeTable
-                    field={field}
-                    regionShapes={regionShapes || []}
-                    filteredDistricts={filteredDistricts}
-                    toggleDistrictInVaccineScope={toggleDistrictInVaccineScope}
-                    toggleRegion={toggleRegion}
-                    setPage={setPage}
-                    page={page}
-                    isFetching={isFetching}
-                    districtShapes={districtShapes || []}
-                    selectedVaccine={selectedVaccine}
-                />
-            </Grid>
-            <Grid xs={7} item>
-                {isFetching && <LoadingSpinner />}
-                <MapScope
-                    field={field}
-                    values={values}
-                    regionShapes={regionShapes || []}
-                    districtShapes={districtShapes || []}
-                    onSelectOrgUnit={onSelectOrgUnit}
-                    selectedVaccine={selectedVaccine}
-                    setSelectedVaccine={setSelectedVaccine}
-                />
-                <FormGroup>
-                    <FormControlLabel
-                        style={{ width: 'max-content' }}
-                        control={
-                            <Switch
-                                size="medium"
-                                checked={selectRegion}
-                                onChange={toggleRegionSelect}
-                                color="primary"
-                            />
+        <Box width="100%" overflow="hidden">
+            <Grid container spacing={2}>
+                <Grid xs={5} item>
+                    <Box mb={2} mt={2}>
+                        {searchComponent}
+                        <InputComponent
+                            keyValue="searchScope"
+                            type="checkbox"
+                            withMarginTop={false}
+                            onChange={onChangeSearchScope}
+                            value={searchScope}
+                            label={MESSAGES.searchInScopeOrAllDistricts}
+                        />
+                    </Box>
+                    <DistrictScopeTable
+                        field={field}
+                        regionShapes={regionShapes || []}
+                        filteredDistricts={filteredDistricts}
+                        toggleDistrictInVaccineScope={
+                            toggleDistrictInVaccineScope
                         }
-                        label={formatMessage(MESSAGES.selectRegion)}
+                        toggleRegion={toggleRegion}
+                        setPage={setPage}
+                        page={page}
+                        isFetching={isFetching}
+                        districtShapes={districtShapes || []}
+                        selectedVaccine={selectedVaccine}
                     />
-                </FormGroup>
+                </Grid>
+                <Grid xs={7} item>
+                    {isFetching && <LoadingSpinner />}
+                    <MapScope
+                        field={field}
+                        values={values}
+                        regionShapes={regionShapes || []}
+                        districtShapes={districtShapes || []}
+                        onSelectOrgUnit={onSelectOrgUnit}
+                        selectedVaccine={selectedVaccine}
+                        setSelectedVaccine={setSelectedVaccine}
+                    />
+                    <FormGroup>
+                        <FormControlLabel
+                            style={{ width: 'max-content' }}
+                            control={
+                                <Switch
+                                    size="medium"
+                                    checked={selectRegion}
+                                    onChange={toggleRegionSelect}
+                                    color="primary"
+                                />
+                            }
+                            label={formatMessage(MESSAGES.selectRegion)}
+                        />
+                    </FormGroup>
+                </Grid>
             </Grid>
-        </Grid>
+        </Box>
     );
 };

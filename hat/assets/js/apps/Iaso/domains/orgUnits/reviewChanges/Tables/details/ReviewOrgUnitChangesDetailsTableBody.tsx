@@ -1,7 +1,7 @@
-import React, { FunctionComponent } from 'react';
 import { TableBody } from '@mui/material';
+import React, { FunctionComponent } from 'react';
+import { HighlightFields } from '../../Dialogs/HighlightFieldsChanges';
 import { NewOrgUnitField } from '../../hooks/useNewFields';
-import { ReviewOrgUnitChangesDetailsTableRow } from './ReviewOrgUnitChangesDetailsTableRow';
 import { OrgUnitChangeRequestDetails } from '../../types';
 
 type Props = {
@@ -24,17 +24,29 @@ export const ReviewOrgUnitChangesDetailsTableBody: FunctionComponent<Props> = ({
 }) => {
     return (
         <TableBody>
-            {newFields.map(field => (
-                <ReviewOrgUnitChangesDetailsTableRow
-                    key={field.key}
-                    field={field}
-                    setSelected={setSelected}
-                    isNew={isNew}
-                    isNewOrgUnit={isNewOrgUnit}
-                    changeRequest={changeRequest}
-                    isFetchingChangeRequest={isFetchingChangeRequest}
-                />
-            ))}
+            {newFields.map(field => {
+                const { fieldType, key } = field;
+                const changedFieldWithNewValues =
+                    changeRequest && changeRequest[`new_${field.key}`];
+                const changedFieldWithOldValues =
+                    changeRequest && changeRequest[`old_${field.key}`];
+
+                return (
+                    <HighlightFields
+                        key={key}
+                        field={field}
+                        newFieldValues={changedFieldWithNewValues}
+                        oldFieldValues={changedFieldWithOldValues}
+                        status={changeRequest?.status || ''}
+                        isNew={isNew}
+                        isNewOrgUnit={isNewOrgUnit}
+                        setSelected={setSelected}
+                        fieldType={fieldType}
+                        changeRequest={changeRequest}
+                        isFetchingChangeRequest={isFetchingChangeRequest}
+                    />
+                );
+            })}
         </TableBody>
     );
 };

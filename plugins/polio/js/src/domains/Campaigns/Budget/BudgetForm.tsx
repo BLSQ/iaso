@@ -1,25 +1,25 @@
 /* eslint-disable camelcase */
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
-import { Grid, Typography, Box, Divider } from '@mui/material';
+import { Box, Divider, Grid, Typography } from '@mui/material';
+import { ExpandableItem, useSafeIntl } from 'bluesquare-components';
 import { Field, FormikErrors, FormikTouched, useFormikContext } from 'formik';
-import { useSafeIntl, ExpandableItem } from 'bluesquare-components';
-import { useStyles } from '../../../styles/theme';
-import MESSAGES from '../../../constants/messages';
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import { hasFormikFieldError } from '../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
 import {
     DateInput,
-    PaymentField,
     NumberInput,
+    PaymentField,
 } from '../../../components/Inputs';
 import {
-    BUDGET_STATES,
     BUDGET_REQUEST,
-    RRT_REVIEW,
+    BUDGET_STATES,
     ORPG_REVIEW,
     REVIEW_FOR_APPROVAL,
+    RRT_REVIEW,
     WORKFLOW_SUFFIX,
 } from '../../../constants/budget';
-import { hasFormikFieldError } from '../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
+import MESSAGES from '../../../constants/messages';
 import { Round } from '../../../constants/types';
+import { useStyles } from '../../../styles/theme';
 
 const defaultToZero = (value?: string | number | null): number => {
     const toParse = value ? '0' : `${value}`;
@@ -195,239 +195,255 @@ export const BudgetForm: FunctionComponent = () => {
         : values.budget_status ?? values.budget_current_state_key;
 
     return (
-        <Grid container spacing={2} direction="row">
-            <Grid
-                container
-                item
-                xs={12}
-                md={4}
-                lg={6}
-                spacing={2}
-                direction="column"
-            >
-                <Grid item>
-                    <Box mb={2} ml={2} textAlign="center">
-                        <Typography variant="button">{title}</Typography>
-                    </Box>
-                    <Box>
-                        <Divider />
-                    </Box>
-                </Grid>
-                <Grid item>
-                    <Box mb={2} px={2} py={2}>
-                        <Typography variant="button">
-                            {`${formatMessage(
-                                MESSAGES.status,
-                            )}: ${budgetStatusMessage}`}
-                        </Typography>
-                    </Box>
-                    <Box>
-                        <Divider />
-                    </Box>
-                </Grid>
-                <Grid container direction="row" item spacing={2}>
-                    <Grid item xs={12} lg={6}>
-                        <ExpandableItem
-                            label={formatMessage(MESSAGES.budgetRequest)}
-                            preventCollapse={hasRequestFieldsError}
-                        >
-                            {BUDGET_REQUEST.map((node, index) => {
-                                return (
-                                    <Box mt={index === 0 ? 2 : 0} key={node}>
-                                        <Field
-                                            label={formatMessage(
-                                                MESSAGES[node],
-                                            )}
-                                            name={`${node}${WORKFLOW_SUFFIX}`}
-                                            component={DateInput}
-                                            fullWidth
-                                            disabled={disableEdition}
-                                            onChange={updateBudgetStatus}
-                                        />
-                                    </Box>
-                                );
-                            })}
-                        </ExpandableItem>
-                        <Divider style={{ height: '1px', width: '100%' }} />
-                        <ExpandableItem
-                            label={formatMessage(MESSAGES.RRTReview)}
-                            preventCollapse={hasRRTReviewError}
-                        >
-                            {RRT_REVIEW.map((node, index) => {
-                                return (
-                                    <Box mt={index === 0 ? 2 : 0} key={node}>
-                                        <Field
-                                            label={formatMessage(
-                                                MESSAGES[node],
-                                            )}
-                                            name={`${node}${WORKFLOW_SUFFIX}`}
-                                            component={DateInput}
-                                            fullWidth
-                                            disabled={disableEdition}
-                                            onChange={updateBudgetStatus}
-                                        />
-                                    </Box>
-                                );
-                            })}
-                        </ExpandableItem>
-                        <Box mb={2}>
-                            <Divider />
+        <Box minWidth="75vw">
+            <Grid container spacing={2} direction="row">
+                <Grid
+                    container
+                    item
+                    xs={12}
+                    md={4}
+                    lg={6}
+                    spacing={2}
+                    direction="column"
+                >
+                    <Grid item>
+                        <Box mb={2} ml={2} textAlign="center">
+                            <Typography variant="button">{title}</Typography>
                         </Box>
-                    </Grid>
-
-                    <Grid item xs={12} lg={6}>
-                        <ExpandableItem
-                            label={formatMessage(MESSAGES.ORPGReview)}
-                            preventCollapse={hasORPGReviewError}
-                        >
-                            {ORPG_REVIEW.map((node, index) => {
-                                return (
-                                    <Box mt={index === 0 ? 2 : 0} key={node}>
-                                        <Field
-                                            label={formatMessage(
-                                                MESSAGES[node],
-                                            )}
-                                            name={`${node}${WORKFLOW_SUFFIX}`}
-                                            component={DateInput}
-                                            fullWidth
-                                            disabled={disableEdition}
-                                            onChange={updateBudgetStatus}
-                                        />
-                                    </Box>
-                                );
-                            })}
-                        </ExpandableItem>
                         <Box>
                             <Divider />
                         </Box>
-                        <ExpandableItem
-                            label={formatMessage(MESSAGES.approval)}
-                            preventCollapse={hasApprovalFieldsError}
-                        >
-                            {REVIEW_FOR_APPROVAL.map((node, index) => {
-                                return (
-                                    <Box mt={index === 0 ? 2 : 0} key={node}>
-                                        <Field
-                                            label={formatMessage(
-                                                MESSAGES[node],
-                                            )}
-                                            name={`${node}${WORKFLOW_SUFFIX}`}
-                                            component={DateInput}
-                                            fullWidth
-                                            disabled={disableEdition}
-                                            onChange={updateBudgetStatus}
-                                        />
-                                    </Box>
-                                );
-                            })}
-                        </ExpandableItem>
+                    </Grid>
+                    <Grid item>
+                        <Box mb={2} px={2} py={2}>
+                            <Typography variant="button">
+                                {`${formatMessage(
+                                    MESSAGES.status,
+                                )}: ${budgetStatusMessage}`}
+                            </Typography>
+                        </Box>
+                        <Box>
+                            <Divider />
+                        </Box>
+                    </Grid>
+                    <Grid container direction="row" item spacing={2}>
+                        <Grid item xs={12} lg={6}>
+                            <ExpandableItem
+                                label={formatMessage(MESSAGES.budgetRequest)}
+                                preventCollapse={hasRequestFieldsError}
+                            >
+                                {BUDGET_REQUEST.map((node, index) => {
+                                    return (
+                                        <Box
+                                            mt={index === 0 ? 2 : 0}
+                                            key={node}
+                                        >
+                                            <Field
+                                                label={formatMessage(
+                                                    MESSAGES[node],
+                                                )}
+                                                name={`${node}${WORKFLOW_SUFFIX}`}
+                                                component={DateInput}
+                                                fullWidth
+                                                disabled={disableEdition}
+                                                onChange={updateBudgetStatus}
+                                            />
+                                        </Box>
+                                    );
+                                })}
+                            </ExpandableItem>
+                            <Divider style={{ height: '1px', width: '100%' }} />
+                            <ExpandableItem
+                                label={formatMessage(MESSAGES.RRTReview)}
+                                preventCollapse={hasRRTReviewError}
+                            >
+                                {RRT_REVIEW.map((node, index) => {
+                                    return (
+                                        <Box
+                                            mt={index === 0 ? 2 : 0}
+                                            key={node}
+                                        >
+                                            <Field
+                                                label={formatMessage(
+                                                    MESSAGES[node],
+                                                )}
+                                                name={`${node}${WORKFLOW_SUFFIX}`}
+                                                component={DateInput}
+                                                fullWidth
+                                                disabled={disableEdition}
+                                                onChange={updateBudgetStatus}
+                                            />
+                                        </Box>
+                                    );
+                                })}
+                            </ExpandableItem>
+                            <Box mb={2}>
+                                <Divider />
+                            </Box>
+                        </Grid>
+
+                        <Grid item xs={12} lg={6}>
+                            <ExpandableItem
+                                label={formatMessage(MESSAGES.ORPGReview)}
+                                preventCollapse={hasORPGReviewError}
+                            >
+                                {ORPG_REVIEW.map((node, index) => {
+                                    return (
+                                        <Box
+                                            mt={index === 0 ? 2 : 0}
+                                            key={node}
+                                        >
+                                            <Field
+                                                label={formatMessage(
+                                                    MESSAGES[node],
+                                                )}
+                                                name={`${node}${WORKFLOW_SUFFIX}`}
+                                                component={DateInput}
+                                                fullWidth
+                                                disabled={disableEdition}
+                                                onChange={updateBudgetStatus}
+                                            />
+                                        </Box>
+                                    );
+                                })}
+                            </ExpandableItem>
+                            <Box>
+                                <Divider />
+                            </Box>
+                            <ExpandableItem
+                                label={formatMessage(MESSAGES.approval)}
+                                preventCollapse={hasApprovalFieldsError}
+                            >
+                                {REVIEW_FOR_APPROVAL.map((node, index) => {
+                                    return (
+                                        <Box
+                                            mt={index === 0 ? 2 : 0}
+                                            key={node}
+                                        >
+                                            <Field
+                                                label={formatMessage(
+                                                    MESSAGES[node],
+                                                )}
+                                                name={`${node}${WORKFLOW_SUFFIX}`}
+                                                component={DateInput}
+                                                fullWidth
+                                                disabled={disableEdition}
+                                                onChange={updateBudgetStatus}
+                                            />
+                                        </Box>
+                                    );
+                                })}
+                            </ExpandableItem>
+                            <Box mb={2}>
+                                <Divider
+                                    style={{ height: '1px', width: '100%' }}
+                                />
+                            </Box>
+                        </Grid>
+                    </Grid>
+                </Grid>
+                <Grid container item xs={12} md={4} lg={3}>
+                    <Grid item xs={12}>
+                        <Box mb={2} textAlign="center">
+                            <Typography variant="button">
+                                {formatMessage(MESSAGES.fundsRelease)}
+                            </Typography>
+                        </Box>
                         <Box mb={2}>
                             <Divider style={{ height: '1px', width: '100%' }} />
                         </Box>
+                        <Box mb={2}>
+                            <Field
+                                name="payment_mode"
+                                component={PaymentField}
+                                fullWidth
+                                shrinkLabel={false}
+                            />
+                        </Box>
+                        <Field
+                            label={formatMessage(MESSAGES.disbursedToCoWho)}
+                            name="who_disbursed_to_co_at"
+                            component={DateInput}
+                            fullWidth
+                        />
+                        <Field
+                            label={formatMessage(MESSAGES.disbursedToMohWho)}
+                            name="who_disbursed_to_moh_at"
+                            component={DateInput}
+                            fullWidth
+                        />
+                        <Field
+                            label={formatMessage(MESSAGES.disbursedToCoUnicef)}
+                            name="unicef_disbursed_to_co_at"
+                            component={DateInput}
+                            fullWidth
+                        />
+                        <Field
+                            label={formatMessage(MESSAGES.disbursedToMohUnicef)}
+                            name="unicef_disbursed_to_moh_at"
+                            component={DateInput}
+                            fullWidth
+                        />
+                        <Field
+                            label={formatMessage(MESSAGES.district_count)}
+                            name="district_count"
+                            component={NumberInput}
+                            className={classes.input}
+                        />
+
+                        <Field
+                            label={formatMessage(MESSAGES.noRegretFund)}
+                            name="no_regret_fund_amount"
+                            component={NumberInput}
+                            className={classes.input}
+                            withMarginTop
+                        />
+                    </Grid>
+                </Grid>
+                <Grid container item xs={12} md={4} lg={3}>
+                    <Grid item xs={12}>
+                        <Box mb={2} textAlign="center">
+                            <Typography variant="button">
+                                {formatMessage(MESSAGES.costPerChild)}
+                            </Typography>
+                        </Box>
+                        <Box mb={2}>
+                            <Divider style={{ height: '1px', width: '100%' }} />
+                        </Box>
+                        {rounds.map((round, i) => {
+                            const roundData = getRoundData(round);
+                            return (
+                                <Box key={round.number}>
+                                    <Field
+                                        label={`${formatMessage(
+                                            MESSAGES.cost,
+                                        )} ${round.number}`}
+                                        name={`rounds[${i}].cost`}
+                                        component={NumberInput}
+                                        className={classes.input}
+                                    />
+                                    <Box mb={2}>
+                                        <Typography>
+                                            {formatMessage(
+                                                MESSAGES.costPerChildRound,
+                                            )}
+                                            {` ${round.number}: $`}
+                                            {roundData.calculateRound
+                                                ? roundData.costRoundPerChild
+                                                : ' -'}
+                                        </Typography>
+                                    </Box>
+                                </Box>
+                            );
+                        })}
+
+                        <Typography>
+                            {formatMessage(MESSAGES.costPerChildTotal)}: $
+                            {totalCostPerChild}
+                        </Typography>
                     </Grid>
                 </Grid>
             </Grid>
-            <Grid container item xs={12} md={4} lg={3}>
-                <Grid item xs={12}>
-                    <Box mb={2} textAlign="center">
-                        <Typography variant="button">
-                            {formatMessage(MESSAGES.fundsRelease)}
-                        </Typography>
-                    </Box>
-                    <Box mb={2}>
-                        <Divider style={{ height: '1px', width: '100%' }} />
-                    </Box>
-                    <Box mb={2}>
-                        <Field
-                            name="payment_mode"
-                            component={PaymentField}
-                            fullWidth
-                            shrinkLabel={false}
-                        />
-                    </Box>
-                    <Field
-                        label={formatMessage(MESSAGES.disbursedToCoWho)}
-                        name="who_disbursed_to_co_at"
-                        component={DateInput}
-                        fullWidth
-                    />
-                    <Field
-                        label={formatMessage(MESSAGES.disbursedToMohWho)}
-                        name="who_disbursed_to_moh_at"
-                        component={DateInput}
-                        fullWidth
-                    />
-                    <Field
-                        label={formatMessage(MESSAGES.disbursedToCoUnicef)}
-                        name="unicef_disbursed_to_co_at"
-                        component={DateInput}
-                        fullWidth
-                    />
-                    <Field
-                        label={formatMessage(MESSAGES.disbursedToMohUnicef)}
-                        name="unicef_disbursed_to_moh_at"
-                        component={DateInput}
-                        fullWidth
-                    />
-                    <Field
-                        label={formatMessage(MESSAGES.district_count)}
-                        name="district_count"
-                        component={NumberInput}
-                        className={classes.input}
-                    />
-
-                    <Field
-                        label={formatMessage(MESSAGES.noRegretFund)}
-                        name="no_regret_fund_amount"
-                        component={NumberInput}
-                        className={classes.input}
-                        withMarginTop
-                    />
-                </Grid>
-            </Grid>
-            <Grid container item xs={12} md={4} lg={3}>
-                <Grid item xs={12}>
-                    <Box mb={2} textAlign="center">
-                        <Typography variant="button">
-                            {formatMessage(MESSAGES.costPerChild)}
-                        </Typography>
-                    </Box>
-                    <Box mb={2}>
-                        <Divider style={{ height: '1px', width: '100%' }} />
-                    </Box>
-                    {rounds.map((round, i) => {
-                        const roundData = getRoundData(round);
-                        return (
-                            <Box key={round.number}>
-                                <Field
-                                    label={`${formatMessage(MESSAGES.cost)} ${
-                                        round.number
-                                    }`}
-                                    name={`rounds[${i}].cost`}
-                                    component={NumberInput}
-                                    className={classes.input}
-                                />
-                                <Box mb={2}>
-                                    <Typography>
-                                        {formatMessage(
-                                            MESSAGES.costPerChildRound,
-                                        )}
-                                        {` ${round.number}: $`}
-                                        {roundData.calculateRound
-                                            ? roundData.costRoundPerChild
-                                            : ' -'}
-                                    </Typography>
-                                </Box>
-                            </Box>
-                        );
-                    })}
-
-                    <Typography>
-                        {formatMessage(MESSAGES.costPerChildTotal)}: $
-                        {totalCostPerChild}
-                    </Typography>
-                </Grid>
-            </Grid>
-        </Grid>
+        </Box>
     );
 };

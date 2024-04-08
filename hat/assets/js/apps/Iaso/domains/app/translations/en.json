@@ -983,6 +983,7 @@
     "iaso.projects.needsAuthentication": "Requires authentication",
     "iaso.projects.true": "User needs authentication",
     "iaso.projects.update": "Update project",
+    "iaso.projets.label.appIdError": "\"-\" character is not allowed in app id",
     "iaso.province": "Province",
     "iaso.queryBuilder.supportedTypeFields": "Supported type of fields",
     "iaso.queryBuilder.title": "Query builder",

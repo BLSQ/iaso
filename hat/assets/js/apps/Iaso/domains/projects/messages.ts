@@ -57,6 +57,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.save',
         defaultMessage: 'Save',
     },
+    appIdError: {
+        id: 'iaso.projets.label.appIdError',
+        defaultMessage: '"-" character is not allowed in app id',
+    },
 });
 
 export default MESSAGES;

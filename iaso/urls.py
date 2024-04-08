@@ -92,6 +92,7 @@ from .api.org_unit_validation_status import ValidationStatusViewSet
 from .dhis2.authentication import dhis2_callback  # type: ignore
 from .api.user_roles import UserRolesViewSet
 from .api.modules import ModulesViewSet
+from .api.synchronization.views import SynchronizeZipViewSet
 
 URL = Union[URLPattern, URLResolver]
 URLList = List[URL]
@@ -177,6 +178,7 @@ router.register(r"validationstatus", ValidationStatusViewSet, basename="validati
 router.register(r"mobile/metadata/lastupdates", LastUpdatesViewSet, basename="lastupdates")
 router.register(r"modules", ModulesViewSet, basename="modules")
 router.register(r"configs", ConfigViewSet, basename="jsonconfigs")
+router.register(r"synchronize/zip", SynchronizeZipViewSet, basename="handlezipfile")
 router.registry.extend(plugins_router.registry)
 
 urlpatterns: URLList = [

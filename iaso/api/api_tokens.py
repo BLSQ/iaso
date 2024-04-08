@@ -8,7 +8,7 @@ class APITokenSerializer(serializers.Serializer):
 
 
 class APITokenViewSet(viewsets.ViewSet):
-    f"""
+    """
     Used to obtain a token usable for the API.
     This is only really useful when the login/password authentication is disabled and only SSO is active.
     """

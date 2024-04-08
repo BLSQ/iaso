@@ -193,6 +193,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.error.fieldRequired',
         defaultMessage: 'This field is required',
     },
+    viewDetails: {
+         id: 'iaso.label.viewDetails',
+        defaultMessage: 'View details',
+    }
+
 });
 
 export default MESSAGES;

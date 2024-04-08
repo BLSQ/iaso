@@ -126,6 +126,22 @@ export const applyPartialUpdate =
             });
     };
 
+export const applyUpdate = (mappingVersionId, payload) => dispatch => {
+    dispatch(fetchingMappingVersions(true));
+    return patchRequest(`/api/mappingversions/${mappingVersionId}/`, payload)
+        .then(() =>
+            dispatch(fetchMappingVersionDetail(mappingVersionId)),
+        )
+        .catch(err =>
+            dispatch(
+                enqueueSnackbar(errorSnackBar('fetchMappingsError', null, err)),
+            ),
+        )
+        .then(() => {
+            dispatch(fetchingMappingVersions(false));
+        });
+};
+
 export const fetchMappingVersions = params => dispatch => {
     dispatch(fetchingMappingVersions(true));
 

@@ -12,6 +12,7 @@ import iaso.models as models
 from iaso.models import OrgUnit, MappingVersion, ExportLog, RUNNING, ERRORED, EXPORTED
 from .api_logger import ApiLogger  # type: ignore
 from .value_formatter import format_value
+from ..periods import Period
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +25,18 @@ class InstanceExportError(BaseException):
 
     def __str__(self):
         return "InstanceExportError, {0} ".format(self.message)
+
+
+def get_event_date(instance, form_mapping):
+    event_date_source = MappingVersion.get_event_date_source(form_mapping)
+
+    if event_date_source == MappingVersion.EVENT_DATE_SOURCE_FROM_SUBMISSION_CREATED_AT:
+        return instance.created_at.strftime("%Y-%m-%d")
+    if event_date_source == MappingVersion.EVENT_DATE_SOURCE_FROM_SUBMISSION_PERIOD:
+        dhis2_period = Period.from_string(instance.period)
+        start = dhis2_period.start_date().strftime("%Y-%m-%d")
+        return start
+    raise ValueError("unsupported event date source type '" + event_date_source + "'")
 
 
 def uniquify(seq, idfun=None):
@@ -232,7 +245,7 @@ class EventHandler(BaseHandler):
             "program": form_mapping["program_id"],
             "event": instance.export_id,
             "orgUnit": instance.org_unit.source_ref,
-            "eventDate": instance.created_at.strftime("%Y-%m-%d"),
+            "eventDate": get_event_date(instance, form_mapping),
             "status": "COMPLETED",
             "dataValues": [],
         }
@@ -379,7 +392,7 @@ class EventTrackerHandler(BaseHandler):
                     if program_stage_id not in program_stage_ids:
                         program_stage_ids.append(program_stage_id)
 
-        event_date = instance.created_at.strftime("%Y-%m-%d")
+        event_date = get_event_date(instance, form_mapping)
         events = []
         errored = False
 

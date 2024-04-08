@@ -1,6 +1,6 @@
 import django_filters
 from django.db import models, transaction
-from django.db.models import Count, Prefetch, Subquery, OuterRef
+from django.db.models import Count, OuterRef, Prefetch, Subquery
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse, StreamingHttpResponse
 from django.utils.translation import gettext_lazy as _
@@ -9,26 +9,26 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, permissions, status
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
+
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.audit_mixin import AuditMixin
 from hat.audit.models import PAYMENT_API, PAYMENT_LOT_API
 from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission, ModelViewSet
-from iaso.api.payments.filters import (
-    potential_payments as potential_payments_filters,
-    payments_lots as payments_lots_filters,
-)
+from iaso.api.payments.filters import payments_lots as payments_lots_filters
+from iaso.api.payments.filters import potential_payments as potential_payments_filters
 from iaso.api.tasks import TaskSerializer
-from iaso.models import Payment, OrgUnitChangeRequest, PotentialPayment, PaymentLot
+from iaso.models import OrgUnitChangeRequest, Payment, PaymentLot, PotentialPayment
 from iaso.tasks.create_payments_from_payment_lot import create_payments_from_payment_lot
 from iaso.tasks.payments_bulk_update import mark_payments_as_read
+
 from .serializers import (
     PaymentAuditLogger,
     PaymentLotAuditLogger,
+    PaymentLotCreateSerializer,
+    PaymentLotSerializer,
     PaymentSerializer,
     PotentialPaymentSerializer,
-    PaymentLotSerializer,
-    PaymentLotCreateSerializer,
 )
 
 
@@ -264,12 +264,17 @@ class PaymentLotsViewSet(ModelViewSet):
         return [
             str(payment.id),
             payment.status,
-            str(payment.user.id),  # Added User ID
+            str(payment.user.id),
             payment.user.username,
+            (
+                payment.user.iaso_profile.phone_number.as_e164
+                if payment.user.iaso_profile and payment.user.iaso_profile.phone_number
+                else None
+            ),
             payment.user.last_name,
             payment.user.first_name,
             change_requests_str,
-            str(change_requests_count),  # Added count of change requests
+            str(change_requests_count),
         ]
 
     def retrieve_to_csv(self, request, *args, **kwargs):
@@ -278,12 +283,13 @@ class PaymentLotsViewSet(ModelViewSet):
         columns = [
             str(_("ID")),
             str(_("Status")),
-            str(_("User ID")),  # Added User ID column
+            str(_("User ID")),
             str(_("User Username")),
+            str(_("User Phone")),
             str(_("User Last Name")),
             str(_("User First Name")),
             str(_("Change Requests")),
-            str(_("Change Requests Count")),  # Added column for count of change requests
+            str(_("Change Requests Count")),
         ]
         response = StreamingHttpResponse(
             streaming_content=(
@@ -307,6 +313,7 @@ class PaymentLotsViewSet(ModelViewSet):
             {"title": str(_("Status")), "width": 10},
             {"title": str(_("User ID")), "width": 10},
             {"title": str(_("User Username")), "width": 20},
+            {"title": str(_("User Phone")), "width": 20},
             {"title": str(_("User Last Name")), "width": 20},
             {"title": str(_("User First Name")), "width": 20},
             {"title": str(_("Change Requests")), "width": 40},
@@ -357,6 +364,7 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
         "user__username",
         "user__last_name",
         "user__first_name",
+        "user__iaso_profile__phone_number",
         "created_at",
         "updated_at",
         "status",
@@ -373,13 +381,16 @@ class PotentialPaymentsViewSet(ModelViewSet, AuditMixin):
     http_method_names = ["get", "head", "options", "trace"]
 
     def get_queryset(self):
-        return (
+        queryset = (
             PotentialPayment.objects.prefetch_related("change_requests")
             .filter(change_requests__created_by__iaso_profile__account=self.request.user.iaso_profile.account)
             # Filter out potential payments already linked to a payment lot as this means there's already a task running converting them into Payment
             .filter(payment_lot__isnull=True)
             .distinct()
         )
+        queryset = queryset.annotate(change_requests_count=Count("change_requests"))
+
+        return queryset
 
     def calculate_new_potential_payments(self):
         users_with_change_requests = (

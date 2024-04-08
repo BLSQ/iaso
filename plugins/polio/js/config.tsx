@@ -825,7 +825,7 @@ export default {
     routes,
     menu,
     translations,
-    homeUrl: `${DASHBOARD_BASE_URL}`,
+    homeUrl: `${DASHBOARD_BASE_URL}/campaignCategory/all`,
     // homeOffline: () => <div>OFFLINE</div>,
     // homeOnline: () => <div>CONNECTED HOME POLIO</div>,
 };

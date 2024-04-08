@@ -636,6 +636,7 @@ class CalendarCampaignSerializer(CampaignSerializer):
             "vaccines",
             "campaign_types",
             "description",
+            "is_test",
         ]
         read_only_fields = fields
 

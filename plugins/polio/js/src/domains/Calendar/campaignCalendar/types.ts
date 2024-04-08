@@ -41,6 +41,7 @@ export type MappedCampaign = {
     country_id: number;
     id: string;
     isPreventive: boolean;
+    isTest: boolean;
 };
 
 export type ShapeForCalendarMap = {

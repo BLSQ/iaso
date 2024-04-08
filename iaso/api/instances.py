@@ -605,7 +605,6 @@ class InstancesViewSet(viewsets.ViewSet):
 def import_data(instances, user, app_id):
     project = Project.objects.get_for_user_and_app_id(user, app_id)
 
-    feature_flag = project.feature_flags.filter(name="")
     for instance_data in instances:
         uuid = instance_data.get("id", None)
 

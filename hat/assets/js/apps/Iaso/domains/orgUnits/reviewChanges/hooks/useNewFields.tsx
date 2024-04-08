@@ -23,7 +23,7 @@ import MESSAGES from '../messages';
 import InstanceDetail from '../../../instances/compare/components/InstanceDetail';
 import { ShortOrgUnit } from '../../types/orgUnit';
 import { Nullable, Optional } from '../../../../types/utils';
-import { BooleanValue } from '../../../../libs/utils';
+import { BooleanValue, PlaceholderValue } from '../../../../libs/utils';
 
 export type NewOrgUnitField = {
     key: string;
@@ -105,9 +105,12 @@ const getLocationValue = (
     );
 };
 
-const PlaceholderValue: ReactElement | Optional<Nullable<string>> = (
-    <>{textPlaceholder}</>
-);
+const getPlaceholderValue = (key: string) => {
+    if (key === 'location') {
+        return <></>;
+    }
+    return PlaceholderValue;
+};
 
 export const useNewFields = (
     changeRequest?: OrgUnitChangeRequestDetails,
@@ -206,11 +209,11 @@ export const useNewFields = (
             // This will not work if we have to show fields with boolean values
             const newValue = changeRequest[`new_${key}`]
                 ? fieldDef.formatValue(changeRequest[`new_${key}`], false)
-                : PlaceholderValue;
+                : getPlaceholderValue(key);
 
             const oldValue = changeRequest[`old_${key}`]
                 ? fieldDef.formatValue(changeRequest[`old_${key}`], true)
-                : PlaceholderValue;
+                : getPlaceholderValue(key);
 
             return {
                 oldValue,

@@ -246,6 +246,37 @@ class DataValueExporterTests(TestCase):
         self.assertIsNotNone(instance.last_export_success_at)
 
     @responses.activate
+    def test_event_export_works_for_period_as_event_date_source(self):
+        mapping_json = build_form_mapping()
+        mapping_json["event_date_source"] = MappingVersion.EVENT_DATE_SOURCE_FROM_SUBMISSION_PERIOD
+
+        mapping_version = MappingVersion(
+            name="event", json=mapping_json, form_version=self.form_version, mapping=self.mapping
+        )
+        mapping_version.save()
+        # setup
+        # persist an instance
+        instance = self.build_instance(self.form)
+        # put a created_at different then the period
+        instance.created_at = datetime.strptime("2024-02-16 11:00 AM", "%Y-%m-%d %I:%M %p")
+        instance.save()
+        export_request = ExportRequestBuilder().build_export_request(
+            filters={"period_ids": "201801", "form_id": self.form.id, "org_unit_id": instance.org_unit.id},
+            launcher=self.user,
+        )
+        # mock expected calls
+
+        responses.add(
+            responses.POST, "https://dhis2.com/api/events", json=load_dhis2_fixture("datavalues-ok.json"), status=200
+        )
+
+        DataValueExporter().export_instances(export_request)
+        self.expect_logs(EXPORTED)
+
+        instance.refresh_from_db()
+        self.assertIsNotNone(instance.last_export_success_at)
+
+    @responses.activate
     def test_event_export_handle_errors(self):
         mapping_version = MappingVersion(
             name="event", json=build_form_mapping(), form_version=self.form_version, mapping=self.mapping

@@ -104,7 +104,7 @@ const ProjectsDialog: FunctionComponent<Props> = ({
     const appIdError = formatMessage(MESSAGES.appIdError);
 
     const onClosed = () => {
-        setProject(emptyProject);
+        setProject(initialProject(null));
         setTab('infos');
     };
 
@@ -165,7 +165,7 @@ const ProjectsDialog: FunctionComponent<Props> = ({
             .then(() => {
                 closeDialog();
                 setTab('infos');
-                setProject(emptyProject);
+                setProject(initialProject(initialData));
             })
             .catch(error => {
                 if (error.status === 400) {

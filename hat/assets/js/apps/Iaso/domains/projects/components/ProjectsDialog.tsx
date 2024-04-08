@@ -124,7 +124,9 @@ const ProjectsDialog: FunctionComponent<Props> = ({
     const setInfoFieldValue = useCallback(
         (fieldName, fieldValue) => {
             const errors: unknown[] = [];
-            if (fieldName === 'app_id' && fieldValue.includes('-')) {
+            const hasForbiddenChar =
+                fieldValue.includes('-') || fieldValue.includes(' ');
+            if (fieldName === 'app_id' && hasForbiddenChar) {
                 errors.push(appIdError);
             }
             setProject({
@@ -165,7 +167,7 @@ const ProjectsDialog: FunctionComponent<Props> = ({
             .then(() => {
                 closeDialog();
                 setTab('infos');
-                setProject(initialProject(initialData));
+                setProject(initialProject(null));
             })
             .catch(error => {
                 if (error.status === 400) {

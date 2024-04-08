@@ -59,7 +59,7 @@ const MESSAGES = defineMessages({
     },
     appIdError: {
         id: 'iaso.projets.label.appIdError',
-        defaultMessage: '"-" character is not allowed in app id',
+        defaultMessage: '"-" and whitespace are not allowed in app id',
     },
 });
 

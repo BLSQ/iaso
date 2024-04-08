@@ -1,7 +1,11 @@
 /* eslint-disable react/jsx-props-no-spreading */
-/* eslint-disable camelcase */
 import isEqual from 'lodash/isEqual';
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useState,
+} from 'react';
 
 import {
     Box,
@@ -21,19 +25,16 @@ import {
     LoadingSpinner,
     useSafeIntl,
 } from 'bluesquare-components';
-import { useDispatch } from 'react-redux';
-import { succesfullSnackBar } from '../../../../../../../hat/assets/js/apps/Iaso/constants/snackBars';
-import { enqueueSnackbar } from '../../../../../../../hat/assets/js/apps/Iaso/redux/snackBarsReducer';
+import { useQueryClient } from 'react-query';
 import { Form } from '../../../components/Form';
 import MESSAGES from '../../../constants/messages';
 import { CAMPAIGN_HISTORY_URL } from '../../../constants/routes';
-import { FormAdditionalPropsProvider } from '../../../contexts/FormAdditionalPropsContext';
-import { useFormValidator } from '../../../hooks/useFormValidator';
 import { useStyles } from '../../../styles/theme';
 import { convertEmptyStringToNull } from '../../../utils/convertEmptyStringToNull';
 import { useGetCampaignLogs } from '../campaignHistory/hooks/useGetCampaignHistory';
 import { useGetCampaign } from '../hooks/api/useGetCampaign';
 import { useSaveCampaign } from '../hooks/api/useSaveCampaign';
+import { useValidateCampaign } from '../hooks/useValidateCampaign';
 import { PolioDialogTabs } from './PolioDialogTabs';
 import { usePolioDialogTabs } from './usePolioDialogTabs';
 
@@ -43,48 +44,42 @@ type Props = {
     campaignId?: string;
 };
 
-const successSnackBar = msg => succesfullSnackBar(undefined, msg);
-
 const CreateEditDialog: FunctionComponent<Props> = ({
     isOpen,
     onClose,
     campaignId,
 }) => {
     const { mutate: saveCampaign, isLoading: isSaving } = useSaveCampaign();
+    const queryClient = useQueryClient();
     const { data: selectedCampaign, isFetching } = useGetCampaign(
         isOpen && campaignId,
     );
-    const dispatch = useDispatch();
 
     const { data: campaignLogs } = useGetCampaignLogs(
         selectedCampaign?.id,
         isOpen,
     );
     const [isBackdropOpen, setIsBackdropOpen] = useState(false);
-    const schema = useFormValidator();
+    const [isUpdated, setIsUpdated] = useState(false);
     const { formatMessage } = useSafeIntl();
-
     const classes: Record<string, string> = useStyles();
+    const validate = useValidateCampaign();
 
-    const handleSubmit = async (values, helpers) => {
-        saveCampaign(convertEmptyStringToNull(values), {
-            onSuccess: () => {
-                helpers.resetForm();
-                onClose();
-                // dispatching the snackbar here so the form can be reset and `onClose` called
-                // before the snackbar triggers a re-render of the whole table
-                dispatch(
-                    enqueueSnackbar(
-                        successSnackBar(MESSAGES.defaultMutationApiSuccess),
-                    ),
-                );
-            },
-            onError: error => {
-                helpers.setErrors(error.details);
-                helpers.setSubmitting(false);
-            },
-        });
-    };
+    const handleSubmit = useCallback(
+        (values, helpers) => {
+            saveCampaign(convertEmptyStringToNull(values), {
+                onSuccess: () => {
+                    setIsUpdated(true);
+                },
+                onError: error => {
+                    if (error.details) {
+                        helpers.setErrors(error.details);
+                    }
+                },
+            });
+        },
+        [saveCampaign],
+    );
 
     const initialValues = {
         rounds: [],
@@ -97,6 +92,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
         is_preventive: false,
         is_test: false,
         enable_send_weekly_email: true,
+        // Those are Polio default values to be set if the types changes to Polio
         has_data_in_budget_tool: false,
         budget_current_state_key: '-',
         detection_status: 'PENDING',
@@ -114,16 +110,17 @@ const CreateEditDialog: FunctionComponent<Props> = ({
         initialValues,
         enableReinitialize: true,
         validateOnBlur: true,
-        validationSchema: schema,
+        validate,
         onSubmit: (values, helpers) => {
-            helpers.setSubmitting(true);
             handleSubmit(values, helpers);
         },
     });
     const { touched } = formik;
-
     const handleClose = () => {
         formik.resetForm();
+        if (isUpdated) {
+            queryClient.invalidateQueries('campaigns');
+        }
         onClose();
     };
     const tabs = usePolioDialogTabs(formik, selectedCampaign);
@@ -140,11 +137,10 @@ const CreateEditDialog: FunctionComponent<Props> = ({
     const saveDisabled =
         !isFormChanged ||
         (isFormChanged && !formik.isValid) ||
-        formik.isSubmitting;
-
+        isSaving ||
+        isFetching;
     return (
         <Dialog
-            fullWidth
             maxWidth="xl"
             open={isOpen}
             onClose={(_event, reason) => {
@@ -164,14 +160,14 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                 onConfirm={() => handleClose()}
             />
             <Box pt={1}>
-                <Grid container>
-                    <Grid item xs={12} md={6}>
+                <Grid container spacing={0}>
+                    <Grid item xs={12} md={8}>
                         <Box
                             pr={4}
                             justifyContent="center"
                             alignContent="center"
                         >
-                            <DialogTitle className={classes.title}>
+                            <DialogTitle sx={{ pb: 0 }}>
                                 {selectedCampaign?.id
                                     ? formatMessage(MESSAGES.editCampaign)
                                     : formatMessage(MESSAGES.createCampaign)}
@@ -183,7 +179,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                         <Grid
                             item
                             xs={12}
-                            md={6}
+                            md={4}
                             className={classes.historyLink}
                         >
                             <Box pr={4} alignItems="center">
@@ -201,7 +197,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                 </Grid>
             </Box>
 
-            <DialogContent className={classes.content}>
+            <DialogContent className={classes.content} sx={{ pt: 0, mt: -2 }}>
                 <PolioDialogTabs
                     tabs={tabs}
                     selectedTab={selectedTab}
@@ -209,23 +205,19 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                         setSelectedTab(newValue);
                     }}
                 />
-                <FormAdditionalPropsProvider
-                    value={{ isFetchingSelectedCampaign: isFetching }}
-                >
-                    <FormikProvider value={formik}>
-                        <Form>
-                            <CurrentForm />
-                        </Form>
-                    </FormikProvider>
-                </FormAdditionalPropsProvider>
+                <FormikProvider value={formik}>
+                    <Form>
+                        <CurrentForm />
+                    </Form>
+                </FormikProvider>
             </DialogContent>
             <DialogActions className={classes.action}>
                 <Button
                     onClick={handleClose}
                     color="primary"
-                    disabled={formik.isSubmitting}
+                    disabled={isSaving}
                 >
-                    {formatMessage(MESSAGES.cancel)}
+                    {formatMessage(MESSAGES.close)}
                 </Button>
                 <Button
                     onClick={() => formik.handleSubmit()}
@@ -243,4 +235,3 @@ const CreateEditDialog: FunctionComponent<Props> = ({
 
 // There's naming conflict with component in Iaso
 export { CreateEditDialog as PolioCreateEditDialog };
-

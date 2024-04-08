@@ -1,18 +1,9 @@
 /* eslint-disable camelcase */
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import {
-    Box,
-    Button,
-    Grid,
-    Theme,
-    ToggleButton,
-    ToggleButtonGroup,
-    Typography,
-} from '@mui/material';
+import { Box, Button, Grid, Theme, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     ExcellSvg,
-    LoadingSpinner,
     commonStyles,
     getTableUrl,
     useSafeIntl,
@@ -21,8 +12,7 @@ import classnames from 'classnames';
 import domToPdf from 'dom-to-pdf';
 import moment from 'moment';
 import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { replace } from 'react-router-redux';
+import { useSelector } from 'react-redux';
 import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { getCampaignColor } from '../../constants/campaignsColors';
 import { CampaignsCalendar } from './campaignCalendar';
@@ -34,21 +24,20 @@ import {
 } from './campaignCalendar/utils';
 
 import { userHasPermission } from '../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
-import { genUrl } from '../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import { Router } from '../../../../../../hat/assets/js/apps/Iaso/types/general';
 import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import MESSAGES from '../../constants/messages';
 import { useGetCampaigns } from '../Campaigns/hooks/api/useGetCampaigns';
 import { ExportCsvModal } from './ExportCsvModal';
 import { CampaignsFilters } from './campaignCalendar/CampaignsFilters';
+import { IsTestLegend } from './campaignCalendar/IsTestLegend';
+import { TogglePeriod } from './campaignCalendar/TogglePeriod';
 import { dateFormat, defaultOrder } from './campaignCalendar/constants';
 import {
     CalendarParams,
     MappedCampaign,
-    PeriodType,
     ReduxState,
 } from './campaignCalendar/types';
-import { useGetPeriodTypes } from './hooks/useGetPeriodTypes';
 
 type Props = {
     params: CalendarParams;
@@ -77,7 +66,6 @@ const useStyles = makeStyles(theme => ({
 export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const dispatch = useDispatch();
     const isLogged = useSelector((state: ReduxState) =>
         Boolean(state.users.current),
     );
@@ -194,16 +182,6 @@ export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
     }, [filteredCampaigns, mappedCampaigns, isLoading]);
 
     const currentUser = useCurrentUser();
-    const periodTypes = useGetPeriodTypes();
-
-    const handleChangePeriodType = (_, value: PeriodType) => {
-        const newParams = {
-            ...params,
-            periodType: value,
-        };
-        const url = genUrl(router, newParams);
-        dispatch(replace(url));
-    };
     return (
         <div>
             {isLogged && !isPdf && (
@@ -230,64 +208,72 @@ export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
                     )}
                 >
                     {!isPdf && (
-                        <Box mb={4}>
-                            <CampaignsFilters
-                                disableDates
-                                disableOnlyDeleted
-                                isCalendar
-                                router={router}
-                            />
-                        </Box>
-                    )}
-                    <Grid
-                        container
-                        spacing={1}
-                        display="flex"
-                        justifyContent="flex-end"
-                    >
-                        <Grid item>
-                            <Box mb={2} mt={2}>
-                                <Button
-                                    onClick={createPDF}
-                                    disabled={!isCalendarAndMapLoaded}
-                                    type="button"
-                                    color="primary"
-                                    variant="contained"
-                                    className="createPDF"
-                                >
-                                    <PictureAsPdfIcon
-                                        className={classes.exportIcon}
-                                    />
-                                    {formatMessage(MESSAGES.exportToPdf)}
-                                </Button>
+                        <>
+                            <Box mb={4}>
+                                <CampaignsFilters
+                                    disableDates
+                                    disableOnlyDeleted
+                                    isCalendar
+                                    router={router}
+                                />
                             </Box>
-                        </Grid>
-                        <Grid item>
-                            <Box mb={2} mt={2}>
-                                <Button
-                                    type="button"
-                                    color="primary"
-                                    variant="contained"
-                                    className="createXlsx"
-                                    href={xlsx_url}
-                                >
-                                    <ExcellSvg className={classes.exportIcon} />
-                                    {formatMessage(MESSAGES.exportToExcel)}
-                                </Button>
-                            </Box>
-                        </Grid>
-                        {userHasPermission(
-                            'iaso_polio_config',
-                            currentUser,
-                        ) && (
-                            <Grid item>
-                                <Box mb={2} mt={2}>
-                                    {/* @ts-ignore */}
-                                    <ExportCsvModal params={params} />
-                                </Box>
+                            <Grid
+                                container
+                                spacing={1}
+                                display="flex"
+                                justifyContent="flex-end"
+                            >
+                                <Grid item>
+                                    <Box mb={2} mt={2}>
+                                        <Button
+                                            onClick={createPDF}
+                                            disabled={!isCalendarAndMapLoaded}
+                                            type="button"
+                                            color="primary"
+                                            variant="contained"
+                                            className="createPDF"
+                                        >
+                                            <PictureAsPdfIcon
+                                                className={classes.exportIcon}
+                                            />
+                                            {formatMessage(
+                                                MESSAGES.exportToPdf,
+                                            )}
+                                        </Button>
+                                    </Box>
+                                </Grid>
+                                <Grid item>
+                                    <Box mb={2} mt={2}>
+                                        <Button
+                                            type="button"
+                                            color="primary"
+                                            variant="contained"
+                                            className="createXlsx"
+                                            href={xlsx_url}
+                                        >
+                                            <ExcellSvg
+                                                className={classes.exportIcon}
+                                            />
+                                            {formatMessage(
+                                                MESSAGES.exportToExcel,
+                                            )}
+                                        </Button>
+                                    </Box>
+                                </Grid>
+                                {userHasPermission(
+                                    'iaso_polio_config',
+                                    currentUser,
+                                ) && (
+                                    <Grid item>
+                                        <Box mb={2} mt={2}>
+                                            {/* @ts-ignore */}
+                                            <ExportCsvModal params={params} />
+                                        </Box>
+                                    </Grid>
+                                )}
                             </Grid>
-                        )}
-                    </Grid>
+                        </>
+                    )}
 
                     <Grid container spacing={2}>
                         {isPdf && (
@@ -298,41 +284,33 @@ export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
                             </Grid>
                         )}
                         <Grid item xs={12} lg={!isPdf ? 8 : 12}>
-                            {!isPdf && (
-                                <Box
-                                    display="flex"
-                                    justifyContent="flex-end"
-                                    mb={1}
-                                >
-                                    <ToggleButtonGroup
-                                        color="primary"
-                                        size="small"
-                                        value={params.periodType || 'quarter'}
-                                        exclusive
-                                        onChange={handleChangePeriodType}
-                                    >
-                                        {periodTypes.map(period => (
-                                            <ToggleButton
-                                                key={period.value}
-                                                value={period.value}
-                                            >
-                                                {period.label}
-                                            </ToggleButton>
-                                        ))}
-                                    </ToggleButtonGroup>
-                                </Box>
-                            )}
-                            <CampaignsCalendar
-                                params={params}
-                                orders={orders}
-                                campaigns={filteredCampaigns}
-                                calendarData={calendarData}
-                                loadingCampaigns={isLoading}
-                                isPdf={isPdf}
-                                router={router}
-                                currentMonday={currentMonday}
-                                currentDate={currentDate}
-                            />
+                            <Box display="flex" justifyContent="flex-end">
+                                {(params.campaignCategory === 'test' ||
+                                    params.campaignCategory === 'all') && (
+                                    <Box mr={2}>
+                                        <IsTestLegend />
+                                    </Box>
+                                )}
+                                {!isPdf && (
+                                    <TogglePeriod
+                                        params={params}
+                                        router={router}
+                                    />
+                                )}
+                            </Box>
+                            <Box mt={!isPdf ? 1 : 0}>
+                                <CampaignsCalendar
+                                    params={params}
+                                    orders={orders}
+                                    campaigns={filteredCampaigns}
+                                    calendarData={calendarData}
+                                    loadingCampaigns={isLoading}
+                                    isPdf={isPdf}
+                                    router={router}
+                                    currentMonday={currentMonday}
+                                    currentDate={currentDate}
+                                />
+                            </Box>
                         </Grid>
                         <Grid item xs={12} lg={!isPdf ? 4 : 12}>
                             <CalendarMap

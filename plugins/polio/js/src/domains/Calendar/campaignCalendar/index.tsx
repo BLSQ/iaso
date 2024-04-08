@@ -39,11 +39,13 @@ const CampaignsCalendar: FunctionComponent<Props> = ({
     const { headers, currentWeekIndex, firstMonday, lastSunday } = calendarData;
     return (
         <Box mb={2} display="flex" alignItems="flex-start" position="relative">
-            <Nav
-                currentMonday={currentMonday}
-                params={params}
-                currentDate={currentDate}
-            />
+            {!isPdf && (
+                <Nav
+                    currentMonday={currentMonday}
+                    params={params}
+                    currentDate={currentDate}
+                />
+            )}
             <TableContainer
                 className={
                     !isPdf ? classes.tableContainer : classes.tableContainerPdf

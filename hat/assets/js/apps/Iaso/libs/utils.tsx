@@ -60,3 +60,8 @@ export const makeRegexValidator =
             return true;
         },
     });
+
+// Same as built-in Boolean method, but works with arrays as well
+export const BooleanValue = (value: Array<unknown> | unknown): boolean => {
+    return Array.isArray(value) ? value.length > 0 : Boolean(value);
+};

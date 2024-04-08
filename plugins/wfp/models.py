@@ -13,7 +13,7 @@ EXIT_TYPES = [
     ("transfer_to_otp", _("Transfer To OTP")),
     ("transfer_to_tsfp", _("Transfer To TSFP")),
     ("non_respondent", _("Non respondent")),
-    ("transferredout", _("Transferred out")),
+    ("transferred_out", _("Transferred out")),
     ("defaulter", _("Defaulter")),
     ("other", _("Other")),
 ]
@@ -62,7 +62,13 @@ class Journey(models.Model):
     admission_type = models.CharField(max_length=255, choices=ADMISSION_TYPES, null=True, blank=True)
     nutrition_programme = models.CharField(max_length=255, choices=NUTRITION_PROGRAMMES, null=True, blank=True)
     programme_type = models.CharField(max_length=255, choices=PROGRAMME_TYPE, null=True, blank=True)
+    initial_weight = models.FloatField(default=0)
+    discharge_weight = models.FloatField(null=True, blank=True)
     weight_gain = models.FloatField(default=0)
+    weight_loss = models.FloatField(default=0)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    duration = models.FloatField(null=True, blank=True)
     exit_type = models.CharField(max_length=50, choices=EXIT_TYPES, null=True, blank=True)
     instance_id = models.IntegerField(null=True, blank=True)
 

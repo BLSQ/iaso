@@ -79,7 +79,7 @@ export const HeadStaticFieldsCells: FunctionComponent<Props> = ({
             if (f.key === 'edit') {
                 return '30px';
             }
-            return !isLogged || isPdf ? '85px' : '75px';
+            return !isLogged || isPdf ? '85px' : '70px';
         },
         [isLogged, isPdf],
     );

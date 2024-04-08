@@ -683,6 +683,7 @@ const menu = [
                 label: MESSAGES.campaigns,
                 key: 'list',
                 permissions: ['iaso_polio'],
+                extraPath: '/campaignCategory/all',
                 icon: props => <FormatListBulleted {...props} />,
             },
             {
@@ -694,7 +695,8 @@ const menu = [
             {
                 label: MESSAGES.calendar,
                 key: 'calendar',
-                extraPath: '/campaignType/polio/periodType/quarter',
+                extraPath:
+                    '/campaignType/polio/campaignCategory/all/periodType/quarter',
                 permissions: ['iaso_polio'],
                 icon: props => <CalendarToday {...props} />,
             },

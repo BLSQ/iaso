@@ -153,10 +153,6 @@ export const useGetCampaignsAsCsv = (
 // Need a better way to handle default in the routing
 export const useCampaignParams = (params: Options): Options => {
     return useMemo(() => {
-        const showTest =
-            params.campaignCategory !== 'regular' &&
-            params.campaignCategory !== 'preventive' &&
-            params.filterLaunched;
         return {
             order: params?.order ?? DEFAULT_ORDER,
             pageSize: params?.pageSize ?? DEFAULT_PAGE_SIZE,
@@ -169,7 +165,9 @@ export const useCampaignParams = (params: Options): Options => {
             campaignType: params.campaignType,
             campaignCategory: params.campaignCategory,
             campaignGroups: params.campaignGroups,
-            show_test: showTest,
+            show_test:
+                params.campaignCategory === 'test' ||
+                params.campaignCategory === 'all',
             last_budget_event__status: params.last_budget_event__status,
             fieldset: 'list',
             orgUnitGroups: params.orgUnitGroups,

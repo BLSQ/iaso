@@ -96,6 +96,9 @@ export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
                 ? params.orgUnitGroups.split(',').map(Number)
                 : undefined,
             fieldset: 'calendar',
+            show_test:
+                params.campaignCategory === 'test' ||
+                params.campaignCategory === 'all',
         }),
         [
             orders,

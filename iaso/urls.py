@@ -22,6 +22,7 @@ from .api.accounts import AccountViewSet
 from .api.algorithms import AlgorithmsViewSet
 from .api.algorithms_runs import AlgorithmsRunsViewSet
 from .api.apps import AppsViewSet
+from .api.api_tokens import APITokenViewSet
 from .api.bulk_create_users import BulkCreateUserFromCsvViewSet
 from .api.check_version import CheckVersionViewSet
 from .api.comment import CommentViewSet
@@ -120,6 +121,7 @@ router.register(r"devicesownerships", DevicesOwnershipViewSet, basename="devices
 router.register(r"devicespositions?", DevicesPositionViewSet, basename="devicesposition")
 router.register(r"datasources", DataSourceViewSet, basename="datasources")
 router.register(r"accounts", AccountViewSet, basename="accounts")
+router.register(r"apitoken", APITokenViewSet, basename="apitoken")
 router.register(r"sourceversions", SourceVersionViewSet, basename="sourceversion")
 router.register(r"links", LinkViewSet, basename="links")
 router.register(r"logs", LogsViewSet, basename="logs")

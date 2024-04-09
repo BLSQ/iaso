@@ -142,9 +142,7 @@ const FormDetail: FunctionComponent<FormDetailProps> = ({ router, params }) => {
         let isUpdate;
         let saveForm;
         let formData;
-        if (currentForm.period_type.value === NO_PERIOD) {
-            currentForm.period_type.value = null;
-        }
+
         if (params.formId === '0') {
             isUpdate = false;
             formData = mapValues(

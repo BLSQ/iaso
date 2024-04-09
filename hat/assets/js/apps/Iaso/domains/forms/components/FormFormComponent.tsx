@@ -69,8 +69,9 @@ const FormForm: FunctionComponent<FormFormProps> = ({
     const { data: allOrgUnitTypes, isFetching: isOuTypeLoading } =
         useGetOrgUnitTypesDropdownOptions();
     const setPeriodType = value => {
-        setFieldValue('period_type', value);
+        let periodTypeValue = value;
         if (value === null || value === NO_PERIOD) {
+            periodTypeValue = null;
             setFieldValue('single_per_period', null);
             setFieldValue('periods_before_allowed', 0);
             setFieldValue('periods_after_allowed', 0);
@@ -78,6 +79,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
             setFieldValue('periods_before_allowed', 3);
             setFieldValue('periods_after_allowed', 3);
         }
+        setFieldValue('period_type', periodTypeValue);
     };
 
     let orgUnitTypes;

@@ -6,7 +6,7 @@ import MESSAGES from '../messages';
 
 import { FeatureFlag } from '../types/featureFlag';
 
-type Form = {
+export type Form = {
     value: Array<string>;
     errors: Array<string>;
 };

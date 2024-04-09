@@ -990,6 +990,7 @@
     "iaso.projects.needsAuthentication": "Nécessite une authentification",
     "iaso.projects.true": "L'utilisateur a besoin d'une authentification",
     "iaso.projects.update": "Modifier un projet",
+    "iaso.projets.label.appIdError": "Les symboles \", ?, /, %, &, - et les espaces ne sont pas autorisés dans l'app id",
     "iaso.province": "Province",
     "iaso.queryBuilder.supportedTypeFields": "Type de champ supportés",
     "iaso.queryBuilder.title": "Query builder",

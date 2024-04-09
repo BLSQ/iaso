@@ -50,9 +50,12 @@ const CreateEditDialog: FunctionComponent<Props> = ({
     campaignId,
 }) => {
     const { mutate: saveCampaign, isLoading: isSaving } = useSaveCampaign();
+    const [selectedCampaignId, setSelectedCampaignId] = useState<
+        string | undefined
+    >(campaignId);
     const queryClient = useQueryClient();
     const { data: selectedCampaign, isFetching } = useGetCampaign(
-        isOpen && campaignId,
+        isOpen && selectedCampaignId,
     );
 
     const { data: campaignLogs } = useGetCampaignLogs(
@@ -68,8 +71,11 @@ const CreateEditDialog: FunctionComponent<Props> = ({
     const handleSubmit = useCallback(
         (values, helpers) => {
             saveCampaign(convertEmptyStringToNull(values), {
-                onSuccess: () => {
+                onSuccess: result => {
                     setIsUpdated(true);
+                    if (!selectedCampaignId) {
+                        setSelectedCampaignId(result.id);
+                    }
                 },
                 onError: error => {
                     if (error.details) {
@@ -78,7 +84,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                 },
             });
         },
-        [saveCampaign],
+        [saveCampaign, selectedCampaignId],
     );
 
     const initialValues = {

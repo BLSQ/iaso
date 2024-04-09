@@ -6,4 +6,4 @@ class Migration(migrations.Migration):
         ("iaso", "0270_auto_20240314_1515"),
     ]
 
-    operations = [migrations.RunSQL("SELECT postgis_extensions_upgrade()")]
+    operations = []  # There used to be something here, but it was a bad idea, and we only kept an empty migration

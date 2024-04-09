@@ -480,7 +480,7 @@ export type DefaultCampaignValues = {
     is_test: boolean;
     rounds: Round[];
     scopes: Scope[];
-    org_unit: Shape;
+    org_unit?: Shape;
     separate_scopes_per_round: boolean;
 };
 export type PolioCampaignValues = DefaultCampaignValues & {

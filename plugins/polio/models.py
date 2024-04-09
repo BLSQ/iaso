@@ -27,7 +27,8 @@ from iaso.models import Group, OrgUnit
 from iaso.models.base import Account, Task
 from iaso.models.microplanning import Team
 from iaso.utils import slugify_underscore
-from iaso.utils.models.soft_deletable import DefaultSoftDeletableManager, SoftDeletableModel
+from iaso.utils.models.soft_deletable import (DefaultSoftDeletableManager,
+                                              SoftDeletableModel)
 from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
 
@@ -708,24 +709,27 @@ class Campaign(SoftDeletableModel):
         if self.separate_scopes_per_round:
             vaccines = set()
             for round in self.rounds.all():
-                scopes_with_orgunits = filter(lambda s: len(s.group.org_units.all()) > 0, round.scopes.all())
+                scopes_with_orgunits = filter(
+                    lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, round.scopes.all()
+                )
                 for scope in scopes_with_orgunits:
-                    if scope.vaccine:
-                        vaccines.add(scope.vaccine)
-            return ", ".join(list(vaccines))
+                    vaccines.add(scope.vaccine)
+            return ", ".join(sorted(vaccines))
         else:
-            scopes_with_orgunits = filter(lambda s: len(s.group.org_units.all()) > 0, self.scopes.all())
-            return ",".join(scope.vaccine for scope in scopes_with_orgunits)
+            scopes_with_orgunits = filter(
+                lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, self.scopes.all()
+            )
+            return ",".join(sorted({scope.vaccine for scope in scopes_with_orgunits}))
 
     def vaccine_names(self):
-        # only take into account scope which have orgunit attached
-        campaign = self.campaign
-        scopes_with_orgunits = filter(lambda s: len(s.group.org_units.all()) > 0, self.scopes.all())
+        # only take into account scope which have orgunit attached and vaccine is not None
+        scopes_with_orgunits_and_vaccine = filter(
+            lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, 
+            self.scopes.all()
+        )
 
-        if campaign.separate_scopes_per_round:
-            return ", ".join(scope.vaccine for scope in scopes_with_orgunits)
-        else:
-            return ",".join(scope.vaccine for scope in scopes_with_orgunits)
+        vaccine_names = sorted({scope.vaccine for scope in scopes_with_orgunits_and_vaccine})
+        return ", ".join(vaccine_names)
 
     def get_round_one(self):
         try:

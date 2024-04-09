@@ -64,6 +64,15 @@ const emptyProject = {
     feature_flags: { value: [], errors: [] } as Form,
 };
 
+export const forbiddenCharacters = ['"', '?', '/', '%', '&', ' ', '-'];
+
+export const containsForbiddenCharacter = (value: string): boolean => {
+    for (let i = 0; i < value.length; i += 1) {
+        if (forbiddenCharacters.includes(value[i])) return true;
+    }
+    return false;
+};
+
 const ProjectsDialog: FunctionComponent<Props> = ({
     titleMessage,
     renderTrigger,
@@ -124,8 +133,7 @@ const ProjectsDialog: FunctionComponent<Props> = ({
     const setInfoFieldValue = useCallback(
         (fieldName, fieldValue) => {
             const errors: unknown[] = [];
-            const hasForbiddenChar =
-                fieldValue.includes('-') || fieldValue.includes(' ');
+            const hasForbiddenChar = containsForbiddenCharacter(fieldValue);
             if (fieldName === 'app_id' && hasForbiddenChar) {
                 errors.push(appIdError);
             }

@@ -553,7 +553,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
                     "action": (
                         f"{report.action} ({report.lot_numbers})"
                         if len(report.action) > 0
-                        else f"Stock Destruction ({report.lot_numbers})"
+                        else f"Destruction report {report.action}"
                     ),
                     "vials_in": None,
                     "doses_in": None,

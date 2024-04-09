@@ -27,8 +27,7 @@ from iaso.models import Group, OrgUnit
 from iaso.models.base import Account, Task
 from iaso.models.microplanning import Team
 from iaso.utils import slugify_underscore
-from iaso.utils.models.soft_deletable import (DefaultSoftDeletableManager,
-                                              SoftDeletableModel)
+from iaso.utils.models.soft_deletable import DefaultSoftDeletableManager, SoftDeletableModel
 from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
 
@@ -724,8 +723,7 @@ class Campaign(SoftDeletableModel):
     def vaccine_names(self):
         # only take into account scope which have orgunit attached and vaccine is not None
         scopes_with_orgunits_and_vaccine = filter(
-            lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, 
-            self.scopes.all()
+            lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, self.scopes.all()
         )
 
         vaccine_names = sorted({scope.vaccine for scope in scopes_with_orgunits_and_vaccine})

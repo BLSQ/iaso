@@ -57,6 +57,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.save',
         defaultMessage: 'Save',
     },
+    appIdError: {
+        id: 'iaso.projets.label.appIdError',
+        defaultMessage:
+            '", ?, /, %, &, - and whitespace are not allowed in app id',
+    },
 });
 
 export default MESSAGES;

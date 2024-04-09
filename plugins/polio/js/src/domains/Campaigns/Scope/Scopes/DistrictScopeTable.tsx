@@ -12,9 +12,7 @@ import {
     Typography,
 } from '@mui/material';
 import {
-    // @ts-ignore
     IconButton as IconButtonComponent,
-    // @ts-ignore
     useSafeIntl,
 } from 'bluesquare-components';
 import { FieldInputProps } from 'formik';
@@ -40,7 +38,7 @@ import { TablePlaceHolder } from './TablePlaceHolder';
 import { TableText } from './TableText';
 
 import { OrgUnitLocationIcon } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/components/OrgUnitLocationIcon';
-import { Scope, Vaccine } from '../../../../constants/types';
+import { Scope } from '../../../../constants/types';
 
 type Props = {
     field: FieldInputProps<Scope[]>;
@@ -59,8 +57,8 @@ type Props = {
     setPage: (page: number) => void;
     isFetching: boolean;
     districtShapes: OrgUnit[];
-    selectedVaccine: Vaccine;
-    isPolio?: boolean;
+    selectedVaccine: string;
+    isPolio: boolean;
 };
 
 export const DistrictScopeTable: FunctionComponent<Props> = ({
@@ -212,8 +210,8 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                             />
                         )}
                         {shapesForTable?.map((shape, i) => {
-                            const isShapeInScope = scopes.some(s =>
-                                s.group.org_units.includes(shape.id),
+                            const isShapeInScope = Boolean(
+                                shape.scope?.group.org_units.includes(shape.id),
                             );
                             return (
                                 <TableRow

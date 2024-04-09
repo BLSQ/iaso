@@ -724,8 +724,13 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
             },
         ),
         (
-            "Approved changes",
-            {"fields": ("approved_fields",)},
+            "Changes",
+            {
+                "fields": (
+                    "requested_fields",
+                    "approved_fields",
+                )
+            },
         ),
         (
             "Metadata",

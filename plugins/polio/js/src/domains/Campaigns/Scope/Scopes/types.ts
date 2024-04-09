@@ -32,6 +32,7 @@ export type ShapeRow = Shape & {
     longitude?: number;
     geo_json?: Shape | undefined;
     has_geo_json: boolean;
+    scope?: Scope;
 };
 
 export type Round = {

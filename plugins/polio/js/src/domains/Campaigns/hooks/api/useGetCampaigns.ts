@@ -118,7 +118,7 @@ export const useGetCampaigns = (
     const params: GetCampaignsParams = useGetCampaignsOptions(options);
     // adding the params to the queryKey to make sure it fetches when the query changes
     const effectiveQueryKey: QueryKey = useMemo(() => {
-        const key: any[] = ['polio', 'campaigns', params];
+        const key: any[] = ['campaigns', params];
         if (queryKey) {
             key.push(queryKey);
         }

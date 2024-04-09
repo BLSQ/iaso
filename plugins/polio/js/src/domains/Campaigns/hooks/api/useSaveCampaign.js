@@ -1,12 +1,11 @@
-import { useSnackMutation } from 'Iaso/libs/apiHooks.ts';
 import { postRequest, putRequest } from 'Iaso/libs/Api.ts';
+import { useSnackMutation } from 'Iaso/libs/apiHooks.ts';
 import { commaSeparatedIdsToStringArray } from 'Iaso/utils/forms';
 
 // we need this check because the select box returns the list in string format, but the api retirns an actual array
-const formatGroupedCampaigns = groupedCampaigns => {
-    if (typeof groupedCampaigns === 'string')
-        return commaSeparatedIdsToStringArray(groupedCampaigns);
-    return groupedCampaigns ?? [];
+const formatStringtoArray = value => {
+    if (typeof value === 'string') return commaSeparatedIdsToStringArray(value);
+    return value ?? [];
 };
 export const useSaveCampaign = () => {
     return useSnackMutation({
@@ -14,9 +13,7 @@ export const useSaveCampaign = () => {
             // TODO remove this hack when we get the real multiselect in polio
             const hackedBody = {
                 ...body,
-                grouped_campaigns: formatGroupedCampaigns(
-                    body.grouped_campaigns,
-                ),
+                grouped_campaigns: formatStringtoArray(body.grouped_campaigns),
             };
             return hackedBody.id
                 ? putRequest(
@@ -25,9 +22,6 @@ export const useSaveCampaign = () => {
                   )
                 : postRequest('/api/polio/campaigns/', hackedBody);
         },
-        // disable the snackbar here because it would lead to an early re-render of the table
-        // that would prevent the modal from closing and add a couple of other glitches
-        showSucessSnackBar: false,
-        invalidateQueryKeys: [['polio', 'campaigns']],
+        invalidateQueryKey: ['campaign'],
     });
 };

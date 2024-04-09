@@ -1,5 +1,5 @@
 from credentials import *
-from iaso.utils.iaso_api_client import IasoClient
+from iaso_api_client import IasoClient
 from micro_planning import setup_users_teams_micro_planning
 from data_collection import setup_instances
 from pyramid import setup_orgunits

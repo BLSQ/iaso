@@ -309,10 +309,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.outbreakdeclarationdate',
         defaultMessage: 'Outbreak declaration date',
     },
-    baseInfoFormTitle: {
-        id: 'iaso.polio.form.title.baseInfoFormTitle',
-        defaultMessage: 'Enter information about the new outbreak response',
-    },
     verificationScore: {
         id: 'iaso.polio.form.label.verificationScore',
         defaultMessage: 'Verification Score (/20)',
@@ -350,8 +346,12 @@ const MESSAGES = defineMessages({
         defaultMessage: 'DG Authorization',
     },
     target_population: {
-        id: 'iaso.polio.form.label.targetpopulationRound',
+        id: 'iaso.polio.form.label.targetpopulation',
         defaultMessage: 'Target population Round',
+    },
+    targetPopulation: {
+        id: 'iaso.polio.label.targetPopulation',
+        defaultMessage: 'Target population',
     },
     percentage_covered_target_population: {
         id: 'iaso.polio.form.label.percentageCoveredTargetPopulation',

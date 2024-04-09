@@ -4,7 +4,7 @@ import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 import MESSAGES from '../../messages';
 import { DateCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
-// import DeleteDialog from '../../../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
+import DeleteDialog from '../../../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
 import { EditFormA } from '../Modals/CreateEditFormA';
 import { Vaccine } from '../../../../../constants/types';
 import { EditDestruction } from '../Modals/CreateEditDestruction';
@@ -12,6 +12,11 @@ import { EditIncident } from '../Modals/CreateEditIncident';
 import { useCurrentUser } from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { userHasPermission } from '../../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 import { POLIO_VACCINE_STOCK_WRITE } from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
+import {
+    useDeleteDestruction,
+    useDeleteFormA,
+    useDeleteIncident,
+} from '../../hooks/api';
 
 export const useFormATableColumns = (
     countryName: string,
@@ -19,6 +24,7 @@ export const useFormATableColumns = (
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
+    const { mutateAsync: deleteFormA } = useDeleteFormA();
 
     return useMemo(() => {
         const columns = [
@@ -42,28 +48,6 @@ export const useFormATableColumns = (
                 sortable: true,
                 Cell: DateCell,
             },
-            // {
-            //     // Not formatting lot numbers as it's not clear how they will be formatted
-            //     Header: formatMessage(MESSAGES.lot_numbers_for_usable_vials),
-            //     accessor: 'lot_numbers',
-            //     id: 'lot_numbers',
-            //     sortable: true,
-            //     Cell: settings => {
-            //         const { lot_numbers } = settings.row.original;
-            //         if ((lot_numbers ?? []).length === 0) {
-            //             return <span>{textPlaceholder}</span>;
-            //         }
-            //         return (
-            //             <>
-            //                 {lot_numbers.map((lotNumber, index) => (
-            //                     <div key={`${lotNumber}-${index}`}>
-            //                         {lotNumber ?? textPlaceholder}
-            //                     </div>
-            //                 ))}
-            //             </>
-            //         );
-            //     },
-            // },
             {
                 Header: formatMessage(MESSAGES.forma_unusable_vials),
                 accessor: 'unusable_vials',
@@ -83,22 +67,6 @@ export const useFormATableColumns = (
                         return (
                             <NumberCell
                                 value={settings.row.original.missing_vials}
-                            />
-                        );
-                    }
-                    return textPlaceholder;
-                },
-            },
-            {
-                Header: formatMessage(MESSAGES.forma_vials_used),
-                accessor: 'usable_vials_used',
-                id: 'usable_vials_used',
-                sortable: true,
-                Cell: settings => {
-                    if (settings.row.original.usable_vials_used) {
-                        return (
-                            <NumberCell
-                                value={settings.row.original.usable_vials_used}
                             />
                         );
                     }
@@ -125,20 +93,20 @@ export const useFormATableColumns = (
                                     settings.row.original.vaccine_stock
                                 }
                             />
-                            {/* <DeleteDialog
-                                titleMessage={MESSAGES.deleteVRF}
-                                message={MESSAGES.deleteVRFWarning}
+                            <DeleteDialog
+                                titleMessage={MESSAGES.deleteFormA}
+                                message={MESSAGES.deleteFormAWarning}
                                 onConfirm={() =>
-                                    deleteVrf(settings.row.original.id)
+                                    deleteFormA(settings.row.original.id)
                                 }
-                            /> */}
+                            />
                         </>
                     );
                 },
             });
         }
         return columns;
-    }, [countryName, formatMessage, vaccine, currentUser]);
+    }, [formatMessage, currentUser, countryName, vaccine, deleteFormA]);
 };
 export const useDestructionTableColumns = (
     countryName: string,
@@ -146,6 +114,7 @@ export const useDestructionTableColumns = (
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
+    const { mutateAsync: deleteDestruction } = useDeleteDestruction();
 
     return useMemo(() => {
         const columns = [
@@ -202,20 +171,20 @@ export const useDestructionTableColumns = (
                                     settings.row.original.vaccine_stock
                                 }
                             />
-                            {/* <DeleteDialog
-                                titleMessage={MESSAGES.deleteVRF}
-                                message={MESSAGES.deleteVRFWarning}
+                            <DeleteDialog
+                                titleMessage={MESSAGES.deleteDestruction}
+                                message={MESSAGES.deleteDestructionWarning}
                                 onConfirm={() =>
-                                    deleteVrf(settings.row.original.id)
+                                    deleteDestruction(settings.row.original.id)
                                 }
-                            /> */}
+                            />
                         </>
                     );
                 },
             });
         }
         return columns;
-    }, [countryName, formatMessage, vaccine, currentUser]);
+    }, [countryName, formatMessage, vaccine, currentUser, deleteDestruction]);
 };
 export const useIncidentTableColumns = (
     countryName: string,
@@ -223,6 +192,7 @@ export const useIncidentTableColumns = (
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
+    const { mutateAsync: deleteIncident } = useDeleteIncident();
     return useMemo(() => {
         const columns = [
             {
@@ -289,18 +259,18 @@ export const useIncidentTableColumns = (
                                     settings.row.original.vaccine_stock
                                 }
                             />
-                            {/* <DeleteDialog
-                                titleMessage={MESSAGES.deleteVRF}
-                                message={MESSAGES.deleteVRFWarning}
+                            <DeleteDialog
+                                titleMessage={MESSAGES.deleteIncident}
+                                message={MESSAGES.deleteIncidentWarning}
                                 onConfirm={() =>
-                                    deleteVrf(settings.row.original.id)
+                                    deleteIncident(settings.row.original.id)
                                 }
-                            /> */}
+                            />
                         </>
                     );
                 },
             });
         }
         return columns;
-    }, [countryName, formatMessage, vaccine, currentUser]);
+    }, [countryName, formatMessage, vaccine, currentUser, deleteIncident]);
 };

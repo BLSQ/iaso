@@ -3,6 +3,8 @@ import uuid
 from rest_framework import serializers
 from django.contrib.auth.models import User
 
+from hat.audit.audit_logger import AuditLogger
+from hat.audit.models import ORG_UNIT_CHANGE_REQUEST_API, Modification
 from iaso.api.mobile.org_units import ReferenceInstancesSerializer
 from iaso.models import Instance, OrgUnit, OrgUnitChangeRequest, OrgUnitType
 from iaso.utils.serializer.id_or_uuid_field import IdOrUuidRelatedField
@@ -132,6 +134,8 @@ class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
     org_unit_id = serializers.IntegerField(source="org_unit.id")
     org_unit_uuid = serializers.UUIDField(source="org_unit.uuid")
     org_unit_name = serializers.CharField(source="org_unit.name")
+    org_unit_parent_id = serializers.IntegerField(source="org_unit.parent.id", allow_null=True)
+    org_unit_parent_name = serializers.CharField(source="org_unit.parent.name", allow_null=True)
     org_unit_validation_status = serializers.CharField(source="org_unit.validation_status")
     org_unit_type_id = serializers.IntegerField(source="org_unit.org_unit_type.id", allow_null=True)
     org_unit_type_name = serializers.CharField(source="org_unit.org_unit_type.name", allow_null=True)
@@ -149,6 +153,8 @@ class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
             "org_unit_id",
             "org_unit_uuid",
             "org_unit_name",
+            "org_unit_parent_id",
+            "org_unit_parent_name",
             "org_unit_validation_status",
             "org_unit_type_id",
             "org_unit_type_name",
@@ -352,3 +358,14 @@ class OrgUnitChangeRequestReviewSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("At least one `approved_fields` must be provided.")
 
         return validated_data
+
+
+class AuditOrgUnitChangeRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrgUnitChangeRequest
+        fields = "__all__"
+
+
+class OrgUnitChangeRequestAuditLogger(AuditLogger):
+    serializer = AuditOrgUnitChangeRequestSerializer
+    default_source = ORG_UNIT_CHANGE_REQUEST_API

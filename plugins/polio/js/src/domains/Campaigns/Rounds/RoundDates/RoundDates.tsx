@@ -8,7 +8,7 @@ import React, { FunctionComponent } from 'react';
 import { dateFormat } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/dates';
 import { DateInput } from '../../../../components/Inputs';
 import MESSAGES from '../../../../constants/messages';
-import { Campaign, Round } from '../../../../constants/types';
+import { CampaignFormValues, Round } from '../../../../constants/types';
 import { ReasonForDelayModal } from '../ReasonForDelayModal/ReasonForDelayModal';
 import { useRoundDateHistorySchema } from '../ReasonForDelayModal/validation';
 import { RoundDatesHistoryModal } from '../RoundDatesHistory/RoundDatesHistoryModal/RoundDatesHistoryModal';
@@ -38,15 +38,15 @@ export const RoundDates: FunctionComponent<Props> = ({
     const {
         values: { rounds = [] },
         initialValues,
-    } = useFormikContext<Campaign>();
+    } = useFormikContext<CampaignFormValues>();
     const currentStartDate = rounds?.[roundIndex]?.started_at;
     const currentEndDate = rounds?.[roundIndex]?.ended_at;
     // For initial data, wee need to perform a find, because if we're adding round 0
     // We'll be addinga round at the start of the rounds array which will lead to index related errors
     const hasInitialData = Boolean(
-        initialValues.rounds.find(round => round.number === roundNumber)
+        initialValues?.rounds?.find(round => round.number === roundNumber)
             ?.started_at &&
-            initialValues.rounds.find(round => round.number === roundNumber)
+            initialValues?.rounds?.find(round => round.number === roundNumber)
                 ?.ended_at,
     );
     const save = (

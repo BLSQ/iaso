@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
 import { Pagination, UrlParams } from 'bluesquare-components';
+import { TaskStatus } from '../tasks/types';
 
 export type PotentialPaymentParams = UrlParams & {
     change_requests__created_at_after?: string;
@@ -23,8 +24,9 @@ export type PaymentStatus = 'pending' | 'sent' | 'rejected' | 'paid';
 type User = {
     id: number;
     username: string;
-    first_name: string;
-    last_name: string;
+    first_name?: string;
+    last_name?: string;
+    phone_number?: string;
 };
 
 type OrgUnitChangeRequest = {
@@ -44,7 +46,7 @@ export type Payment = {
     change_requests: OrgUnitChangeRequest[];
 };
 
-type NestedPayment = Omit<
+export type NestedPayment = Omit<
     Payment,
     'created_at' | 'updated_at' | 'created_by' | 'updated_by'
 >;
@@ -73,6 +75,7 @@ export type PaymentLot = {
     created_by: User;
     status: PaymentLotStatus;
     payments: NestedPayment[];
+    task?: { id: number; status: TaskStatus; ended_at: string };
 };
 export interface PaymentLotPaginated extends Pagination {
     results: PaymentLot[];

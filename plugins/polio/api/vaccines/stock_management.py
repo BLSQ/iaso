@@ -537,7 +537,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
                 results.append(
                     {
                         "date": movement.report_date,
-                        "action": "Outgoing Movement",
+                        "action": "Form A - Unusable vials",
                         "vials_in": movement.unusable_vials or 0,
                         "doses_in": (movement.unusable_vials or 0) * calc.get_doses_per_vial(),
                         "vials_out": None,
@@ -550,9 +550,11 @@ class VaccineStockManagementViewSet(ModelViewSet):
             results.append(
                 {
                     "date": report.destruction_report_date,
-                    "action": f"{report.action} ({report.lot_numbers})"
-                    if len(report.action) > 0
-                    else f"Stock Destruction ({report.lot_numbers})",
+                    "action": (
+                        f"{report.action} ({report.lot_numbers})"
+                        if len(report.action) > 0
+                        else f"Stock Destruction ({report.lot_numbers})"
+                    ),
                     "vials_in": None,
                     "doses_in": None,
                     "vials_out": report.unusable_vials_destroyed or 0,

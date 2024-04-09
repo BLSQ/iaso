@@ -183,7 +183,8 @@ router.register(r"validationstatus", ValidationStatusViewSet, basename="validati
 router.register(r"mobile/metadata/lastupdates", LastUpdatesViewSet, basename="lastupdates")
 router.register(r"modules", ModulesViewSet, basename="modules")
 router.register(r"configs", ConfigViewSet, basename="jsonconfigs")
-router.register(r"synchronize/zip", SynchronizeZipViewSet, basename="handlezipfile")
+
+router.register(r"mobile/bulkupload", SynchronizeZipViewSet, basename="mobilebulkupload")
 router.registry.extend(plugins_router.registry)
 
 urlpatterns: URLList = [

@@ -192,22 +192,16 @@ def import_gpkg_file2(
     # Create and update all the groups and put them in a dict indexed by ref
     # Do it in sqlite because Fiona is not great with Attributes table (without geom)
     ref_group: Dict[str, Group] = {get_ref(group): group for group in Group.all_objects.filter(source_version=version)}
-    # with sqlite3.connect(filename) as conn:
-    # cur = conn.cursor()
-    # rows = cur.execute("select ref, name from groups")
-    rows = [
-        ("JM7jsziOLB2", "Medical Centres/Centres Médicaux"),
-        ("bO815RlSIN3", "Private hospitals/Cliniques privées"),
-        ("IzVj0UdnSRF", "Nursing facility/Soins infirmiers"),
-        ("FnGKoaZpj4u", "Public hospitals/Hôpitaux publics"),
-    ]
-    for ref, name in rows:
-        # Log modification done on group
-        old_group = deepcopy(ref_group.get(ref))
-        # TODO: investigate type error on next line?
-        group = create_or_update_group(ref_group.get(ref), ref, name, version)  # type: ignore
-        ref_group[get_ref(group)] = group
-        audit_models.log_modification(old_group, group, source=audit_models.GPKG_IMPORT, user=user)
+    with sqlite3.connect(filename) as conn:
+        cur = conn.cursor()
+        rows = cur.execute("select ref, name from groups")
+        for ref, name in rows:
+            # Log modification done on group
+            old_group = deepcopy(ref_group.get(ref))
+            # TODO: investigate type error on next line?
+            group = create_or_update_group(ref_group.get(ref), ref, name, version)  # type: ignore
+            ref_group[get_ref(group)] = group
+            audit_models.log_modification(old_group, group, source=audit_models.GPKG_IMPORT, user=user)
 
     # index all existing OrgUnit per ref
     existing_orgunits = version.orgunit_set.all()  # Maybe add a only?

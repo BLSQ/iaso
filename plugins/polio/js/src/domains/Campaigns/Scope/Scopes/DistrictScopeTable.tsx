@@ -58,6 +58,7 @@ type Props = {
     isFetching: boolean;
     districtShapes: OrgUnit[];
     selectedVaccine: string;
+    isPolio: boolean;
 };
 
 export const DistrictScopeTable: FunctionComponent<Props> = ({
@@ -71,6 +72,7 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
     isFetching,
     selectedVaccine,
     districtShapes,
+    isPolio,
 }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
@@ -165,15 +167,17 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                                     {formatMessage(MESSAGES.district)}
                                 </Typography>
                             </TableCell>
-                            <TableCell
-                                onClick={() => handleSort('VACCINE')}
-                                variant="head"
-                                style={{ cursor: 'pointer' }}
-                            >
-                                <Typography>
-                                    {formatMessage(MESSAGES.vaccine)}
-                                </Typography>
-                            </TableCell>
+                            {isPolio && (
+                                <TableCell
+                                    onClick={() => handleSort('VACCINE')}
+                                    variant="head"
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    <Typography>
+                                        {formatMessage(MESSAGES.vaccine)}
+                                    </Typography>
+                                </TableCell>
+                            )}
                             <TableCell
                                 onClick={() => handleSort('LOCATION')}
                                 variant="head"
@@ -222,11 +226,13 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                                     <TableCell>
                                         <TableText text={shape.name} />
                                     </TableCell>
-                                    <TableCell>
-                                        <TableText
-                                            text={shape.vaccineName || '-'}
-                                        />
-                                    </TableCell>
+                                    {isPolio && (
+                                        <TableCell>
+                                            <TableText
+                                                text={shape.vaccineName || '-'}
+                                            />
+                                        </TableCell>
+                                    )}
                                     <TableCell>
                                         <OrgUnitLocationIcon orgUnit={shape} />
                                     </TableCell>

@@ -16,7 +16,22 @@ class BeneficiaryAdmin(admin.ModelAdmin):
 
 @admin.register(Journey)
 class JourneyAdmin(admin.ModelAdmin):
-    list_display = ("id", "admission_criteria", "admission_type", "nutrition_programme", "programme_type", "exit_type")
+    list_display = (
+        "id",
+        "admission_criteria",
+        "admission_type",
+        "nutrition_programme",
+        "programme_type",
+        "initial_weight",
+        "discharge_weight",
+        "start_date",
+        "end_date",
+        "duration",
+        "weight_gain",
+        "weight_loss",
+        "exit_type",
+        "instance_id",
+    )
     list_filter = ("admission_criteria", "admission_type", "nutrition_programme", "programme_type", "exit_type")
 
 

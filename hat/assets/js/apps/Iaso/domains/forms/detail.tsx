@@ -110,8 +110,6 @@ const FormDetail: FunctionComponent<FormDetailProps> = ({ router, params }) => {
     const { data: form, isLoading: isFormLoading } = useGetForm(params.formId);
     const [isLoading, setIsLoading] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
-    const [detailRequiredFields, setDetailRequiredFields] =
-        useState(requiredFields);
     const [tab, setTab] = useState(params.tab || 'versions');
     const [forceRefreshVersions, setForceRefreshVersions] = useState(false);
     const dispatch = useDispatch();
@@ -127,6 +125,18 @@ const FormDetail: FunctionComponent<FormDetailProps> = ({ router, params }) => {
             ) && !isSaved
         );
     }, [currentForm, form, isSaved]);
+
+    const detailRequiredFields = useMemo(() => {
+        if (
+            currentForm.period_type.value === NO_PERIOD ||
+            !currentForm.period_type.value
+        ) {
+            return requiredFields.filter(
+                field => field.key !== 'single_per_period',
+            );
+        }
+        return requiredFields;
+    }, [currentForm.period_type.value]);
 
     const onConfirm = async () => {
         let isUpdate;
@@ -218,20 +228,6 @@ const FormDetail: FunctionComponent<FormDetailProps> = ({ router, params }) => {
         }
     }, [form, setFormState]);
 
-    useEffect(() => {
-        if (
-            currentForm.period_type.value === NO_PERIOD ||
-            !currentForm.period_type.value
-        ) {
-            setDetailRequiredFields(
-                requiredFields.filter(
-                    field => field.key !== 'single_per_period',
-                ),
-            );
-        } else {
-            setDetailRequiredFields(requiredFields);
-        }
-    }, [currentForm.period_type.value]);
     return (
         <>
             <TopBar

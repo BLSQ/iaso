@@ -98,6 +98,8 @@ const CreateEditDialog: FunctionComponent<Props> = ({
         detection_status: 'PENDING',
         risk_assessment_status: 'TO_SUBMIT',
         non_field_errors: undefined,
+        separate_scopes_per_round: false,
+        org_unit: undefined,
     };
     // Merge inplace default values with the one we get from the campaign.
     merge(initialValues, {

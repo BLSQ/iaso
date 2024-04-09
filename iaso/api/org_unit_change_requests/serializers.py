@@ -249,13 +249,18 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
         source="new_parent",
         queryset=OrgUnit.objects.all(),
         required=False,
+        allow_null=True,
     )
     new_org_unit_type_id = serializers.PrimaryKeyRelatedField(
         source="new_org_unit_type",
         queryset=OrgUnitType.objects.all(),
         required=False,
+        allow_null=True,
     )
-    new_location = ThreeDimPointField(required=False)
+    new_location = ThreeDimPointField(
+        required=False,
+        allow_null=True,
+    )
     new_reference_instances = IdOrUuidRelatedField(
         many=True,
         queryset=Instance.objects.all(),
@@ -289,7 +294,11 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
 
     def validate_new_org_unit_type_id(self, new_org_unit_type):
         request = self.context.get("request")
-        if request and not new_org_unit_type.projects.filter(account=request.user.iaso_profile.account).exists():
+        if (
+            request
+            and new_org_unit_type
+            and not new_org_unit_type.projects.filter(account=request.user.iaso_profile.account).exists()
+        ):
             raise serializers.ValidationError("`new_org_unit_type_id` is not part of the user account.")
         return new_org_unit_type
 
@@ -319,6 +328,13 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
 
             if OrgUnit.objects.hierarchy(org_unit).filter(pk=new_parent.pk).exists():
                 raise serializers.ValidationError("`new_parent_id` is already a child of `org_unit_id`.")
+
+        # All `new_*` fields passed in the payload are those for which the user requests a change.
+        # If a value is None or "" (depending on what the field refers to in the model), it means
+        # the user is asking to erase the value of this field (e.g. reset a `closed_date`).
+        validated_data["requested_fields"] = [
+            field for field in validated_data if field in OrgUnitChangeRequest.get_new_fields()
+        ]
 
         return validated_data
 

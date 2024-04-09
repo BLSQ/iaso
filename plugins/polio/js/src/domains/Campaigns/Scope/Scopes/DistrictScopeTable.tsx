@@ -139,7 +139,6 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
         selectedVaccine,
         districtShapes,
     ]);
-
     const displayPlaceHolder =
         isFetching || (!isFetching && filteredDistricts?.length === 0);
     return (
@@ -207,6 +206,9 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                             />
                         )}
                         {shapesForTable?.map((shape, i) => {
+                            const isShapeInScope = Boolean(
+                                shape.scope?.group.org_units.includes(shape.id),
+                            );
                             return (
                                 <TableRow
                                     key={shape.id}
@@ -261,7 +263,7 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                                                 }
                                             />
                                         )}
-                                        {shape.vaccineName && (
+                                        {isShapeInScope && (
                                             <>
                                                 <IconButtonComponent
                                                     size="small"
@@ -278,7 +280,7 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                                                 />
                                             </>
                                         )}
-                                        {!shape.vaccineName && (
+                                        {!isShapeInScope && (
                                             <>
                                                 <IconButtonComponent
                                                     size="small"

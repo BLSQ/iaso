@@ -39,7 +39,6 @@ def generate_presigned_url_from_s3(object_name, expires_in=3600):
 
 def download_file(object_name):
     file_name = object_name.split("/")[-1]
-    print("file_name ", file_name)
     destination_file_name = "/tmp/" + file_name
 
     boto3.client("s3", region_name=settings.AWS_S3_REGION_NAME).download_file(

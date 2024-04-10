@@ -142,17 +142,17 @@ export const useNewFields = (
                 label: formatMessage(MESSAGES.name),
                 order: 1,
                 fieldType: '',
-                formatValue: val => val,
-                // formatValue: val => <span>{val.toString()}</span>,
+                // span is necessary to enable text styling
+                formatValue: val => <span>{val.toString()}</span>,
             },
             new_org_unit_type: {
                 label: formatMessage(MESSAGES.orgUnitsType),
                 order: 2,
                 fieldType: 'string',
-                formatValue: val => (val as NestedOrgUnitType)?.short_name,
-                // formatValue: val => (
-                //     <span>{(val as NestedOrgUnitType).short_name}</span>
-                // ),
+                // span is necessary to enable text styling
+                formatValue: val => (
+                    <span>{(val as NestedOrgUnitType)?.short_name}</span>
+                ),
             },
             new_parent: {
                 label: formatMessage(MESSAGES.parent),

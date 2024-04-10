@@ -61,6 +61,7 @@ from .api.mapping_versions import MappingVersionsViewSet
 from .api.mappings import MappingsViewSet
 from iaso.api.mobile.metadata.last_updates import LastUpdatesViewSet
 from .api.microplanning import TeamViewSet, PlanningViewSet, AssignmentViewSet, MobilePlanningViewSet
+from .api.mobile.bulk_uploads import MobileBulkUploadsViewSet
 from .api.mobile.entity import MobileEntityViewSet
 from .api.mobile.entity_type import MobileEntityTypesViewSet
 from .api.mobile.org_units import MobileOrgUnitViewSet
@@ -94,7 +95,6 @@ from .api.org_unit_validation_status import ValidationStatusViewSet
 from .dhis2.authentication import dhis2_callback  # type: ignore
 from .api.user_roles import UserRolesViewSet
 from .api.modules import ModulesViewSet
-from .api.synchronization.views import SynchronizeZipViewSet
 
 URL = Union[URLPattern, URLResolver]
 URLList = List[URL]
@@ -184,7 +184,7 @@ router.register(r"mobile/metadata/lastupdates", LastUpdatesViewSet, basename="la
 router.register(r"modules", ModulesViewSet, basename="modules")
 router.register(r"configs", ConfigViewSet, basename="jsonconfigs")
 
-router.register(r"mobile/bulkupload", SynchronizeZipViewSet, basename="mobilebulkupload")
+router.register(r"mobile/bulkupload", MobileBulkUploadsViewSet, basename="mobilebulkupload")
 router.registry.extend(plugins_router.registry)
 
 urlpatterns: URLList = [

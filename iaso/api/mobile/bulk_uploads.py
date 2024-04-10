@@ -6,12 +6,11 @@ import zipfile
 from botocore.exceptions import ClientError
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import status
+from rest_framework import serializers, status
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
-from .serializers import ZipFileSerializer
 from iaso.api.query_params import APP_ID
 from iaso.api.serializers import AppIdSerializer
 from iaso.models import Project
@@ -21,7 +20,16 @@ from iaso.utils.s3_client import upload_file_to_s3
 logger = logging.getLogger(__name__)
 
 
-class SynchronizeZipViewSet(ViewSet):
+class ZipFileSerializer(serializers.Serializer):
+    zip_file = serializers.FileField()
+
+    def validateZipFile(self):
+        if self.is_valid():
+            return self.validated_data["zip_file"]
+        raise ValueError("Zip file not valid")
+
+
+class MobileBulkUploadsViewSet(ViewSet):
     app_id_param = openapi.Parameter(
         name=APP_ID,
         in_=openapi.IN_QUERY,
@@ -73,6 +81,7 @@ class SynchronizeZipViewSet(ViewSet):
             )
 
             _task = process_mobile_bulk_upload(
+                user_id=user.id,
                 project_id=project.id,
                 zip_file_object_name=object_name,
                 user=current_user,

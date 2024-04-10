@@ -231,7 +231,7 @@ export const useNewFields = (
 
             const requestedFields = changeRequest.requested_fields;
 
-            const isChanged = requestedFields.includes(key);
+            const isChanged = requestedFields.includes(`new_${key}`);
 
             // This will not work if we have to show fields with boolean values
             const newValue = computeNewValue(

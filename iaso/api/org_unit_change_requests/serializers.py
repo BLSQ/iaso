@@ -305,12 +305,6 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
     def validate(self, validated_data):
         # Fields names are different between API and model, e.g. `new_parent_id` VS `new_parent`.
         new_fields_api = [name for name in self.Meta.fields if name.startswith("new_")]
-        new_fields_model = OrgUnitChangeRequest.get_new_fields()
-
-        if not any([validated_data.get(field) for field in new_fields_model]):
-            raise serializers.ValidationError(
-                f"You must provide at least one of the following fields: {', '.join(new_fields_api)}."
-            )
 
         new_closed_date = validated_data.get("new_closed_date")
         new_opening_date = validated_data.get("new_opening_date")
@@ -335,6 +329,11 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
         validated_data["requested_fields"] = [
             field for field in validated_data if field in OrgUnitChangeRequest.get_new_fields()
         ]
+
+        if not validated_data["requested_fields"]:
+            raise serializers.ValidationError(
+                f"You must provide at least one of the following fields: {', '.join(new_fields_api)}."
+            )
 
         return validated_data
 

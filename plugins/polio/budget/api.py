@@ -213,7 +213,7 @@ class BudgetStepViewSet(ModelViewSet):
 
     @action(detail=True, permission_classes=[permissions.IsAdminUser])
     def mail_template(self, request, pk):
-        step = self.get_queryset().get(pk=pk)
+        step: BudgetStep = self.get_queryset().select_related("budget_process", "campaign").get(pk=pk)
         template_id = request.query_params.get("template_id")
         template = MailTemplate.objects.get(id=template_id)
         email_template = template.render_for_step(step, request.user, request)

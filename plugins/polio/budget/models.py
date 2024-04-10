@@ -17,7 +17,7 @@ from iaso.utils.models.soft_deletable import SoftDeletableModel
 from plugins.polio.budget import workflow
 from plugins.polio.budget.workflow import next_transitions, can_user_transition, Transition, Node, Workflow, Category
 from plugins.polio.time_cache import time_cache
-from plugins.polio.models import Campaign, PAYMENT, Round
+from plugins.polio.models import Campaign, PAYMENT
 
 
 class BudgetStepQuerySet(models.QuerySet):
@@ -222,27 +222,29 @@ class MailTemplate(models.Model):
     def __str__(self):
         return str(self.slug)
 
-    def render_for_step(self, step: BudgetStep, receiver: User, request=None) -> EmailMultiAlternatives:
-        msg = EmailMultiAlternatives(from_email=settings.DEFAULT_FROM_EMAIL, to=[receiver.email])
+    def render_for_step(self, budget_step: BudgetStep, receiver: User, request=None) -> EmailMultiAlternatives:
         site = get_current_site(request)
-        base_url = "https://" if settings.SSL_ON else "http://"
-        base_url += site.domain  # type: ignore
+        protocol = "https://" if settings.SSL_ON else "http://"
+        base_url = f"{protocol}{site.domain}"
 
-        campaign = step.campaign
-        campaign_url = (
-            f"{base_url}/dashboard/polio/budget/details/campaignName/{campaign.obr_name}/campaignId/{campaign.id}"
+        budget_process_url = (
+            f"{base_url}/dashboard/polio/budget/details"
+            f"/campaignName/{budget_step.campaign.obr_name}"
+            f"/budgetProcessId/{budget_step.budget_process_id}"
         )
-        self_auth_campaign_url = generate_auto_authentication_link(campaign_url, receiver)
+        self_auth_budget_process_url = generate_auto_authentication_link(budget_process_url, receiver)
 
         workflow = get_workflow()
-        transitions = next_transitions(workflow.transitions, campaign.budget_current_state_key)
+        transitions = next_transitions(workflow.transitions, budget_step.budget_process.current_state_key)
         # filter out repeat steps. I do it here so it's easy to remove
         filtered_transitions = [transition for transition in transitions if "repeat" not in transition.key.split("_")]
 
         buttons = []
         for transition in filtered_transitions:
             transition_url_template = "/quickTransition/{transition_key}/previousStep/{step_id}"
-            button_url = campaign_url + transition_url_template.format(transition_key=transition.key, step_id=step.id)
+            button_url = budget_process_url + transition_url_template.format(
+                transition_key=transition.key, step_id=budget_step.id
+            )
             # link that will auto auth
 
             buttons.append(
@@ -251,13 +253,13 @@ class MailTemplate(models.Model):
                     "url": generate_auto_authentication_link(button_url, receiver),
                     "label": transition.label,
                     "color": transition.color if transition.color != "primary" else "black",
-                    "allowed": can_user_transition(transition, receiver, campaign),
+                    "allowed": can_user_transition(transition, receiver, budget_step.campaign),
                 }
             )
         # buttons is never empty, so the text accompanying the buttons in the email would always show, even when no buttons are displayed
         # So we check if there are allowed buttons
         show_buttons = list(filter(lambda x: x["allowed"], buttons))
-        transition = workflow.get_transition_by_key(step.transition_key)
+        transition = workflow.get_transition_by_key(budget_step.transition_key)
         if transition.key != "override":
             node = workflow.get_node_by_key(transition.to_node)
         else:
@@ -266,42 +268,44 @@ class MailTemplate(models.Model):
 
         attachments = []
         skipped_attachements = 0
-        override = step.transition_key == "override"
+        override = budget_step.transition_key == "override"
         total_file_size = 0
-        if len(list(step.files.all())) > 0:
+        if len(list(budget_step.files.all())) > 0:
             total_file_size = reduce(
-                lambda file1, file2: file1 + file2, list(map(lambda f: f.file.size, list(step.files.all())))
+                lambda file1, file2: file1 + file2, list(map(lambda f: f.file.size, list(budget_step.files.all())))
             )
 
-        for f in step.files.all():
+        msg = EmailMultiAlternatives(from_email=settings.DEFAULT_FROM_EMAIL, to=[receiver.email])
+
+        for f in budget_step.files.all():
             # only attach files if total is less than 5MB
             if total_file_size < 1024 * 5000:
                 msg.attach(f.filename, f.file.read())
             else:
-                skipped_attachements = len(list(step.files.all()))
+                skipped_attachements = len(list(budget_step.files.all()))
                 file_url = base_url + f.get_absolute_url()
                 attachments.append({"url": generate_auto_authentication_link(file_url, receiver), "name": f.filename})
-        for l in step.links.all():
+        for l in budget_step.links.all():
             attachments.append({"url": l.url, "name": l.alias})
 
         context = Context(
             {
-                "author": step.created_by,
-                "author_name": step.created_by.get_full_name() or step.created_by.username,
+                "author": budget_step.created_by,
+                "author_name": budget_step.created_by.get_full_name() or budget_step.created_by.username,
                 "buttons": buttons if show_buttons else None,
                 "node": node,
-                "team": step.created_by_team,
-                "step": step,
-                "campaign": campaign,
-                "budget_url": self_auth_campaign_url,
+                "team": budget_step.created_by_team,
+                "step": budget_step,
+                "campaign": budget_step.campaign,
+                "budget_url": self_auth_budget_process_url,
                 "site_url": base_url,
                 "site_name": site.name,
-                "comment": step.comment,
-                "amount": step.amount,
+                "comment": budget_step.comment,
+                "amount": budget_step.amount,
                 "attachments": attachments,
                 "skipped_attachments": skipped_attachements,
-                "files": step.files.all(),
-                "links": step.links.all(),
+                "files": budget_step.files.all(),
+                "links": budget_step.links.all(),
                 "override": override,
             }
         )
@@ -318,7 +322,9 @@ class MailTemplate(models.Model):
         msg.body = text_content
 
         msg.attach_alternative(html_content, "text/html")
-        return msg
+
+        # Context is returned for usage in tests.
+        return (context, msg)
 
 
 logger = logging.getLogger(__name__)
@@ -341,7 +347,7 @@ def send_budget_mails(step: BudgetStep, transition, request) -> None:
                 logger.info(f"skip sending email for {step}, user {user} doesn't have an email address configured")
                 continue
 
-            msg = mt.render_for_step(step, user, request)
+            _, msg = mt.render_for_step(step, user, request)
             logger.debug("sending", msg)
             msg.send(fail_silently=False)
 

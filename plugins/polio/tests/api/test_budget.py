@@ -3,7 +3,7 @@ from io import StringIO
 from typing import List, Dict
 from unittest import skip, mock
 
-from django.contrib.auth.models import User, Permission
+from django.contrib.auth.models import Permission
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse
 from django.template import Engine, Context
@@ -12,74 +12,12 @@ from rest_framework import status
 from iaso import models as m
 from iaso.test import APITestCase
 from plugins.polio.budget.models import BudgetProcess, BudgetStep, MailTemplate
-from plugins.polio.budget.workflow import Category, Transition, Node, Workflow
 from plugins.polio.models import Campaign, Round
-
-# Hardcoded workflow for testing.
-
-transition_defs = [
-    {
-        "displayed_fields": ["comment"],
-        "from_node": "-",
-        "key": "submit_budget",
-        "label": "Submit budget",
-        "required_fields": [],
-        "teams_ids_can_transition": [],
-        "to_node": "budget_submitted",
-    },
-    {
-        "color": "green",
-        "displayed_fields": ["comment"],
-        "from_node": "budget_submitted",
-        "key": "accept_budget",
-        "label": "Accept budget",
-        "required_fields": [],
-        "to_node": "accepted",
-    },
-    {
-        "color": "primary",
-        "displayed_fields": ["comment"],
-        "from_node": "budget_submitted",
-        "key": "reject_budget",
-        "label": "Provide feedback",
-        "required_fields": [],
-        "to_node": "rejected",
-    },
-    {
-        "color": "red",
-        "displayed_fields": [],
-        "emails_to_send": [],
-        "from_node": "any",
-        "key": "override",
-        "label": "Override",
-        "required_fields": [],
-        "teams_ids_can_transition": [],
-        "to_node": "any",
-    },
-]
-
-node_defs = [
-    {"key": None, "label": "No budget", "category_key": "category_1"},
-    {"key": "budget_submitted", "label": "Budget submitted", "category_key": "category_1"},
-    {"key": "accepted", "label": "Budget accepted", "category_key": "category_2"},
-    {"key": "rejected", "label": "Budget rejected", "category_key": "category_2"},
-]
-
-categories_defs = [
-    {"key": "category_1", "label": "Category 1"},
-    {"key": "category_2", "label": "Category 2"},
-]
+from plugins.polio.tests.utils.budget import get_mocked_workflow
 
 
-def get_workflow():
-    transitions = [Transition(**transition_def) for transition_def in transition_defs]
-    nodes = [Node(**node_def) for node_def in node_defs]
-    categories = [Category(**categories_def) for categories_def in categories_defs]
-    return Workflow(transitions=transitions, nodes=nodes, categories=categories)
-
-
-@mock.patch("plugins.polio.budget.models.get_workflow", get_workflow)
-@mock.patch("plugins.polio.budget.serializers.get_workflow", get_workflow)
+@mock.patch("plugins.polio.budget.models.get_workflow", get_mocked_workflow)
+@mock.patch("plugins.polio.budget.serializers.get_workflow", get_mocked_workflow)
 class BudgetProcessViewSetTestCase(APITestCase):
     """
     Test actions on `BudgetProcessViewSet`.
@@ -925,8 +863,8 @@ class FilterBudgetProcessViewSetTestCase(APITestCase):
         self.assertEqual(len(response_data["results"]), 2)
 
 
-@mock.patch("plugins.polio.budget.models.get_workflow", get_workflow)
-@mock.patch("plugins.polio.budget.serializers.get_workflow", get_workflow)
+@mock.patch("plugins.polio.budget.models.get_workflow", get_mocked_workflow)
+@mock.patch("plugins.polio.budget.serializers.get_workflow", get_mocked_workflow)
 class FilterBudgetStepViewSetTestCase(APITestCase):
     """
     Test filtering on `BudgetStepViewSet`.

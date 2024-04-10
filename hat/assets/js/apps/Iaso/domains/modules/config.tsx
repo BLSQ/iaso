@@ -6,7 +6,7 @@ import {
 } from '@mui/icons-material';
 import MESSAGES from './messages';
 
-export const useGetModulesColumns = (): Column[] => {
+export const useModulesColumns = (): Column[] => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     return useMemo(() => {

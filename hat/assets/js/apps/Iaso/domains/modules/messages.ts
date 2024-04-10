@@ -65,6 +65,10 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Registry',
         id: 'iaso.modules.registry',
     },
+    payments: {
+        defaultMessage: 'Payments',
+        id: 'iaso.modules.payments',
+    },
     modulesInformation: {
         id: 'iaso.modules.modulesInformation',
         defaultMessage:

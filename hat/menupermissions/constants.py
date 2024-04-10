@@ -46,7 +46,7 @@ MODULE_PERMISSIONS = {
         "iaso_polio_vaccine_authorizations_admin",
     ],
     "REGISTRY": ["iaso_registry", "iaso_org_unit_change_request_review"],
-    "PAYMENTS": ["iaso_payments"]
+    "PAYMENTS": ["iaso_payments"],
 }
 
 MODULES = [
@@ -59,5 +59,5 @@ MODULES = [
     {"name": "Planning", "codename": "PLANNING"},
     {"name": "Polio project", "codename": "POLIO_PROJECT"},
     {"name": "Registry", "codename": "REGISTRY"},
-    {"name": "Payments", "codename":"PAYMENTS"}
+    {"name": "Payments", "codename": "PAYMENTS"},
 ]

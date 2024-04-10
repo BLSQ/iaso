@@ -114,6 +114,23 @@ const getPlaceholderValue = (key: string) => {
     return PlaceholderValue;
 };
 
+const computeNewValue = (
+    key: string,
+    changeRequest: OrgUnitChangeRequestDetails,
+    fieldDef: FieldDefinition,
+    isChanged: boolean,
+): Optional<Nullable<string>> | ReactElement => {
+    if (!isChanged) {
+        return changeRequest[`old_${key}`]
+            ? fieldDef.formatValue(changeRequest[`old_${key}`], false)
+            : getPlaceholderValue(key);
+    }
+    // This will not work if we have to show fields with boolean values
+    return changeRequest[`new_${key}`]
+        ? fieldDef.formatValue(changeRequest[`new_${key}`], false)
+        : getPlaceholderValue(key);
+};
+
 export const useNewFields = (
     changeRequest?: OrgUnitChangeRequestDetails,
 ): UseNewFields => {
@@ -217,9 +234,12 @@ export const useNewFields = (
             const isChanged = requestedFields.includes(key);
 
             // This will not work if we have to show fields with boolean values
-            const newValue = changeRequest[`new_${key}`]
-                ? fieldDef.formatValue(changeRequest[`new_${key}`], false)
-                : getPlaceholderValue(key);
+            const newValue = computeNewValue(
+                key,
+                changeRequest,
+                fieldDef,
+                isChanged,
+            );
 
             const oldValue = changeRequest[`old_${key}`]
                 ? fieldDef.formatValue(changeRequest[`old_${key}`], true)

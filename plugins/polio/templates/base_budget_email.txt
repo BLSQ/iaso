@@ -14,7 +14,7 @@ The following comment was left:
 {%endif%}
 {% if skipped_attachments > 0 %}{{ skipped_attachments }} file(s) has(have) not been attached to this message due to their size. Please use the link(s) above to view them.{% endif %}
 
-Consult the campaign page for the complete budget history and more information: {{ budget_url|safe }}
+Consult the budget page for the complete budget history and more information: {{ budget_url|safe }}
 
 {% if buttons %}
 You can do a quick follow up using one of these links:

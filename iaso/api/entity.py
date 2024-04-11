@@ -2,13 +2,13 @@ import csv
 import datetime
 import io
 import math
-from time import strftime, gmtime
-from typing import List, Any, Union
+from time import gmtime, strftime
+from typing import Any, List, Union
 
 import xlsxwriter  # type: ignore
 from django.core.paginator import Paginator
-from django.db.models import Max, Q, Count
-from django.http import JsonResponse, HttpResponse, StreamingHttpResponse
+from django.db.models import Count, Exists, Max, OuterRef, Q
+from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import filters, permissions, serializers, status
@@ -17,18 +17,12 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
-from iaso.api.common import (
-    CONTENT_TYPE_CSV,
-    CONTENT_TYPE_XLSX,
-    EXPORTS_DATETIME_FORMAT,
-    DeletionFilterBackend,
-    HasPermission,
-    ModelViewSet,
-    TimestampField,
-)
+from hat.menupermissions import models as permission
+from iaso.api.common import (CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX,
+                             EXPORTS_DATETIME_FORMAT, DeletionFilterBackend,
+                             HasPermission, ModelViewSet, TimestampField)
 from iaso.models import Entity, EntityType, Instance
 from iaso.models.deduplication import ValidationStatus
-from hat.menupermissions import models as permission
 
 
 class EntityTypeSerializer(serializers.ModelSerializer):
@@ -233,7 +227,6 @@ class EntityViewSet(ModelViewSet):
 
         queryset = Entity.objects.filter(account=self.request.user.iaso_profile.account)
 
-        queryset = queryset.annotate(last_saved_instance=Max("instances__created_at"))
         if form_name:
             queryset = queryset.filter(attributes__form__name__icontains=form_name)
         if search:
@@ -248,10 +241,17 @@ class EntityViewSet(ModelViewSet):
             queryset = queryset.filter(entity_type_id__in=entity_type_ids.split(","))
         if org_unit_id:
             queryset = queryset.filter(attributes__org_unit__id=org_unit_id)
-        if date_from:
-            queryset = queryset.filter(last_saved_instance__gte=date_from)
-        if date_to:
-            queryset = queryset.filter(last_saved_instance__date__lte=date_to)
+
+        if date_from or date_to:
+            date_from_dt = datetime.datetime.strptime(date_from, "%Y-%m-%d") if date_from else datetime.datetime.min
+            date_to_dt = datetime.datetime.strptime(date_to, "%Y-%m-%d") if date_to else datetime.datetime.max
+
+            instances_within_range = Instance.objects.filter(
+                entity=OuterRef("pk"), created_at__gte=date_from_dt, created_at__lte=date_to_dt
+            )
+            queryset = queryset.annotate(has_instance_within_range=Exists(instances_within_range)).filter(
+                has_instance_within_range=True
+            )
         if show_deleted:
             queryset = queryset.filter(deleted_at__isnull=True)
         if created_by_id:

@@ -1,13 +1,13 @@
-import React from 'react';
 import { Button, Tooltip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import React from 'react';
 
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import MESSAGES from './messages';
 import { closeFixedSnackbar } from '../../redux/snackBarsReducer';
+import MESSAGES from './messages';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -21,10 +21,9 @@ const useStyles = makeStyles(theme => ({
         zIndex: -100,
     },
     errorMessage: {
-        display: '-webkit-box',
-        '-webkit-line-clamp': 30,
-        '-webkit-box-orient': 'vertical',
+        display: 'flex',
         overflow: 'hidden',
+        whiteSpace: 'pre-wrap',
     },
 }));
 
@@ -42,7 +41,7 @@ const SnackBarErrorMessage = ({ errorLog, id }) => {
         errorMessage = JSON.stringify(
             { ...errorLog, message: errorLog.message },
             null,
-            1,
+            2,
         );
     } else {
         errorMessage = JSON.stringify(errorLog, null, 1);

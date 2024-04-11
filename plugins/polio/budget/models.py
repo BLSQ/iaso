@@ -191,12 +191,6 @@ def validator_template(value: str):
         raise ValidationError(_("Error in template: %(error)s"), code="invalid_template", params={"error": str(e)})
 
 
-DEFAUL_MAIL_TEMPLATE = """{% extends "base_budget_email.html" %}
-{% block text %}
-{{ block.super }} 
-{% endblock %}"""
-
-
 class MailTemplate(models.Model):
     slug = models.SlugField(unique=True)
     subject_template = models.TextField(
@@ -290,23 +284,25 @@ class MailTemplate(models.Model):
 
         context = Context(
             {
-                "author": budget_step.created_by,
-                "author_name": budget_step.created_by.get_full_name() or budget_step.created_by.username,
-                "buttons": buttons if show_buttons else None,
-                "node": node,
-                "team": budget_step.created_by_team,
-                "step": budget_step,
-                "campaign": budget_step.campaign,
-                "budget_url": self_auth_budget_process_url,
-                "site_url": base_url,
-                "site_name": site.name,
-                "comment": budget_step.comment,
                 "amount": budget_step.amount,
                 "attachments": attachments,
-                "skipped_attachments": skipped_attachements,
+                "author": budget_step.created_by,
+                "author_name": budget_step.created_by.get_full_name() or budget_step.created_by.username,
+                "budget_url": self_auth_budget_process_url,
+                "buttons": buttons if show_buttons else None,
+                "campaign": budget_step.campaign,
+                "comment": budget_step.comment,
                 "files": budget_step.files.all(),
                 "links": budget_step.links.all(),
+                "node": node,
                 "override": override,
+                "rounds": budget_step.budget_process.rounds.all(),
+                "site_name": site.name,
+                "site_url": base_url,
+                "skipped_attachments": skipped_attachements,
+                "step": budget_step,
+                "team": budget_step.created_by_team,
+                "transition": transition,
             }
         )
         DEFAULT_HTML_TEMPLATE = '{% extends "base_budget_email.html" %}'
@@ -330,7 +326,7 @@ class MailTemplate(models.Model):
 logger = logging.getLogger(__name__)
 
 
-def send_budget_mails(step: BudgetStep, transition, request) -> None:
+def send_budget_mails(budget_step: BudgetStep, transition, request) -> None:
     for email_to_send in transition.emails_to_send:
         template_slug, team_ids = email_to_send
         try:
@@ -338,16 +334,17 @@ def send_budget_mails(step: BudgetStep, transition, request) -> None:
         except MailTemplate.DoesNotExist as e:
             logger.exception(e)
             continue
-        campaign = step.campaign
-        teams = workflow.effective_teams(campaign, team_ids)
+        teams = workflow.effective_teams(budget_step.campaign, team_ids)
         # Ensure we don't send an email twice to the same user
         users = User.objects.filter(teams__in=teams).distinct()
         for user in users:
             if not user.email:
-                logger.info(f"skip sending email for {step}, user {user} doesn't have an email address configured")
+                logger.info(
+                    f"skip sending email for {budget_step}, user {user} doesn't have an email address configured"
+                )
                 continue
 
-            _, msg = mt.render_for_step(step, user, request)
+            _, msg = mt.render_for_step(budget_step, user, request)
             logger.debug("sending", msg)
             msg.send(fail_silently=False)
 

@@ -22,8 +22,6 @@ Base file to be reused in the MailTemplate for the budget workflow engine
       table, td, div, h1, p {
           font-family: Arial, sans-serif;
       }
-
-      {% comment %} table, td {border:2px solid #000000 !important;} {% endcomment %}
   </style>
 </head>
 <body style="margin:0;padding:0;width:100%;max-width:800px">
@@ -34,11 +32,7 @@ Base file to be reused in the MailTemplate for the budget workflow engine
   <tr>
     <td align="left" style="padding:5px;">
       {% block campaign %}
-        {% if override %}
-            The status of polio campaign {{ campaign.obr_name }} has been overridden.
-        {% else %}
-            The status of polio campaign {{ campaign.obr_name }} has been updated.
-        {% endif %}
+        The status of polio campaign {{ campaign.obr_name }} for {% for round in rounds%}Round {{ round.number }}{% if not forloop.last %}, {% endif %}{% endfor %} has been {% if override %}overridden{% else %}updated{% endif %}.
       {% endblock %}
     </td>
   </tr>

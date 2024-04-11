@@ -18,9 +18,15 @@ from rest_framework.response import Response
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.menupermissions import models as permission
-from iaso.api.common import (CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX,
-                             EXPORTS_DATETIME_FORMAT, DeletionFilterBackend,
-                             HasPermission, ModelViewSet, TimestampField)
+from iaso.api.common import (
+    CONTENT_TYPE_CSV,
+    CONTENT_TYPE_XLSX,
+    EXPORTS_DATETIME_FORMAT,
+    DeletionFilterBackend,
+    HasPermission,
+    ModelViewSet,
+    TimestampField,
+)
 from iaso.models import Entity, EntityType, Instance
 from iaso.models.deduplication import ValidationStatus
 

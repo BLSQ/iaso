@@ -1,9 +1,8 @@
 import datetime
 import logging
-import os
-import zipfile
 
 from botocore.exceptions import ClientError
+from django.core.files.uploadhandler import TemporaryFileUploadHandler
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, status
@@ -54,6 +53,8 @@ class MobileBulkUploadsViewSet(ViewSet):
         manual_parameters=[app_id_param, zip_file_param],
     )
     def create(self, request):
+        request.upload_handlers = [TemporaryFileUploadHandler(request)]
+
         current_user = self.request.user
         user = self.request.user
         app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=True)

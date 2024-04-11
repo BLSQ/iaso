@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { expect } from 'chai';
-import FormFormComponent from './FormFormComponent';
+import FormFormComponent from './FormFormComponent.tsx';
 import { renderWithStore } from '../../../../../test/utils/redux';
 import { withQueryClientProvider } from '../../../../../test/utils';
 
@@ -78,8 +78,6 @@ const advancedSettings = [
     },
 ];
 
-const inputsList = [...baseSettings, ...advancedSettings];
-
 const currentForm = {
     id: { value: 69 },
     name: { value: 'ZELDA' },
@@ -112,7 +110,7 @@ const currentFormNoPeriod = {
     project_ids: { value: [1] },
     period_type: { value: 'NO_PERIOD' },
     derived: { value: false },
-    single_per_period: { value: null },
+    single_per_period: { value: false },
     periods_before_allowed: { value: 0 },
     periods_after_allowed: { value: 0 },
     device_field: { value: 'deviceid' },

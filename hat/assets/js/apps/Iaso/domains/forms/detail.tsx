@@ -64,7 +64,7 @@ const defaultForm = {
     project_ids: [],
     period_type: null,
     derived: false,
-    single_per_period: null,
+    single_per_period: false,
     periods_before_allowed: 0,
     periods_after_allowed: 0,
     device_field: 'deviceid',
@@ -117,6 +117,7 @@ const FormDetail: FunctionComponent<FormDetailProps> = ({ router, params }) => {
     const classes: Record<string, string> = useStyles();
     const [currentForm, setFieldValue, setFieldErrors, setFormState] =
         useFormState(formatFormData(form));
+
     const isFormModified = useMemo(() => {
         return (
             !isEqual(
@@ -226,6 +227,16 @@ const FormDetail: FunctionComponent<FormDetailProps> = ({ router, params }) => {
         }
     }, [form, setFormState]);
 
+    const originalSinglePerPeriod = useMemo(() => {
+        let singlePerPeriodValue = false;
+        if (form) {
+            singlePerPeriodValue = form.period_type
+                ? form.single_per_period
+                : null;
+        }
+        return singlePerPeriodValue;
+    }, [form]);
+
     return (
         <>
             <TopBar
@@ -243,7 +254,11 @@ const FormDetail: FunctionComponent<FormDetailProps> = ({ router, params }) => {
             />
             {(isLoading || isFormLoading) && <LoadingSpinner />}
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <FormForm currentForm={currentForm} setFieldValue={onChange} />
+                <FormForm
+                    currentForm={currentForm}
+                    setFieldValue={onChange}
+                    originalSinglePerPeriod={originalSinglePerPeriod}
+                />
                 <Box mt={2} justifyContent="flex-end" display="flex">
                     {currentForm.id.value !== '' && (
                         <Button

@@ -52,11 +52,13 @@ type FormFormProps = {
     currentForm: FormDataType;
     // eslint-disable-next-line no-unused-vars
     setFieldValue: (key: string, value: any) => void;
+    originalSinglePerPeriod?: boolean;
 };
 
 const FormForm: FunctionComponent<FormFormProps> = ({
     currentForm,
     setFieldValue,
+    originalSinglePerPeriod,
 }) => {
     const classes = useStyles();
     const [displayPeriods, setDisplayPeriods] = useState<boolean>();
@@ -72,10 +74,11 @@ const FormForm: FunctionComponent<FormFormProps> = ({
         let periodTypeValue = value;
         if (value === null || value === NO_PERIOD) {
             periodTypeValue = null;
-            setFieldValue('single_per_period', null);
+            setFieldValue('single_per_period', false);
             setFieldValue('periods_before_allowed', 0);
             setFieldValue('periods_after_allowed', 0);
         } else {
+            setFieldValue('single_per_period', originalSinglePerPeriod);
             setFieldValue('periods_before_allowed', 3);
             setFieldValue('periods_after_allowed', 3);
         }

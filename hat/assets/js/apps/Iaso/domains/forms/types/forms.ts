@@ -124,7 +124,13 @@ type FieldError<T> = {
     errors: Errors;
 };
 
-type PeriodType = 'MONTH' | 'QUARTER' | 'SIX_MONTH' | 'YEAR' | null;
+type PeriodType =
+    | 'NO_PERIOD'
+    | 'MONTH'
+    | 'QUARTER'
+    | 'SIX_MONTH'
+    | 'YEAR'
+    | null;
 
 export type FormDataType = {
     id: FieldError<number | null>;

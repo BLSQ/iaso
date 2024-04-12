@@ -20,6 +20,18 @@ admin.site.index_title = "Administration de Iaso"
 
 if settings.DISABLE_PASSWORD_LOGINS:
     urlpatterns = [
+        # FIXME workaround to avoid 500 on these routes
+        path(
+            "accounts/admin/login/",
+            auth.views.LoginView.as_view(template_name="iaso/disabled_password_login.html"),
+            name="login-iaso",
+        ),
+        path(
+            "accounts/login/",
+            auth.views.LoginView.as_view(template_name="iaso/disabled_password_login.html"),
+            name="login-iaso",
+        ),
+        # end
         path(
             "admin/login/", TemplateView.as_view(template_name="iaso/disabled_password_login.html"), name="login-iaso"
         ),
@@ -27,8 +39,10 @@ if settings.DISABLE_PASSWORD_LOGINS:
     ]
 else:
     urlpatterns = [
+        # FIXME workaround to avoid 500 on these routes
         path("accounts/admin/login/", auth.views.LoginView.as_view(template_name="iaso/login.html"), name="login-iaso"),
         path("accounts/login/", auth.views.LoginView.as_view(template_name="iaso/login.html"), name="login-iaso"),
+        # end
         path("admin/login/", auth.views.LoginView.as_view(template_name="iaso/login.html"), name="login-iaso"),
         path("login/", auth.views.LoginView.as_view(template_name="iaso/login.html"), name="login-iaso"),
     ]
@@ -38,7 +52,7 @@ urlpatterns = urlpatterns + [
     path("_health/", health),
     path("_health", health),  # same without slash otherwise AWS complain about redirect
     path("health/", health),  # alias since current apache config hide _health/
-    path("accounts/", include("django.contrib.auth.urls")),
+    path("accounts/", include("django.contrib.auth.urls")),  # TODO check if this can be safely deleted
     path("accounts/", include("allauth.urls")),
     path("admin/", admin.site.urls),
     path("api/", include("iaso.urls")),

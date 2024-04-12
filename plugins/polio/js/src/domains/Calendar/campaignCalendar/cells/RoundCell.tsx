@@ -88,7 +88,6 @@ export const RoundCell: FunctionComponent<Props> = ({
             <Box
                 className={classes.coloredBox}
                 sx={{
-                    // backgroundColor: campaign.color,
                     border: campaign.isTest ? '1px dashed red' : undefined,
                 }}
             >

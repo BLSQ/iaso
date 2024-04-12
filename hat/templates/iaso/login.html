@@ -15,7 +15,7 @@
           {% include "wfp_auth/login_subtemplate.html" %}
         {% endif %}
       {% endfor %}
-      <form method="post" data-qa="login-form" class="auth__form" action="{% url 'login' %}">
+      <form method="post" data-qa="login-form" class="auth__form" action="{% url 'login-iaso' %}">
         {% if next %}
         {% if user.is_authenticated %}
         <p class="auth__text--warning">

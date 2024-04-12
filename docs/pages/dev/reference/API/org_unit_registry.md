@@ -24,20 +24,20 @@ The Django model that stores "Change Requests" is `OrgUnitChangeRequest`.
 {
   "uuid": "UUID - Client generated UUID",
   "org_unit_id": "String - id or UUID of the OrgUnit to change",
-  "new_parent_id": "String? - id or UUID of the parent OrgUnit, may be null or omitted.",
-  "new_name": "String? - Name of the OrgUnit, may be null or omitted.",
-  "new_org_unit_type_id": "Int? - id of the OrgUnitType, may be null or omitted",
-  "new_groups": "Array of Group ids? - can be empty, null or omitted. Empty means we want to remove all values",
+  "new_parent_id": "String? - id or UUID of the parent OrgUnit, null to erase, omitted to ignore.",
+  "new_name": "String? - Name of the OrgUnit, \"\" (empty string) to erase, omitted to ignore.",
+  "new_org_unit_type_id": "Int? - id of the OrgUnitType, null to erase, omitted to ignore.",
+  "new_groups": "Array of Group ids? - empty array to erase, omitted to ignore.",
   "new_location": {
-    "": "New geopoint for the OrgUnit, may be null or omitted",
+    "": "New geopoint for the OrgUnit, null to erase, omitted to ignore.",
     "latitude": "Double - New latitude of the OrgUnit",
     "longitude": "Double - New longitude of the OrgUnit",
     "altitude": "Double - New altitude of the OrgUnit"
   },
-  "new_location_accuracy": "Double - New accuracy of the OrgUnit",
-  "new_opening_date": "Timestamp",
-  "new_closed_date": "Timestamp",
-  "new_reference_instances": "Array of instance ids or UUIDs? - may be null or omitted, cannot be empty"
+  "new_location_accuracy": "Double - New accuracy of the OrgUnit, null to erase, omitted to ignore.",
+  "new_opening_date": "Timestamp, null to erase, omitted to ignore.",
+  "new_closed_date": "Timestamp, null to erase, omitted to ignore.",
+  "new_reference_instances": "Array of instance ids or UUIDs? - empty array to erase, omitted to ignore."
 }
 ```
 
@@ -52,7 +52,6 @@ The Django model that stores "Change Requests" is `OrgUnitChangeRequest`.
 - `new_parent_id` is not a valid OrgUnit
 - `new_org_unit_type_id` is not a valid OrgUnitType
 - One of the `new_groups` id is not a valid Group
-- `new_reference_instances` is empty
 - `new_reference_instances` only one reference instance can exist by org_unit/form pair
 - `new_org_unit_type_id` is not part of the user account
 - `new_closed_date` must be later than `new_opening_date`

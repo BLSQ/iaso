@@ -4,6 +4,11 @@
  * @param {string} url
  * @param {{[p: string]: T}} urlParams
  */
+
+import React, { ReactElement } from 'react';
+import { textPlaceholder } from 'bluesquare-components';
+import { Nullable, Optional } from '../types/utils';
+
 // url should include closing slash
 export const makeUrlWithParams = (
     url: string,
@@ -60,3 +65,13 @@ export const makeRegexValidator =
             return true;
         },
     });
+
+// Same as built-in Boolean method, but works with arrays as well
+export const BooleanValue = (value: Array<unknown> | unknown): boolean => {
+    return Array.isArray(value) ? value.length > 0 : Boolean(value);
+};
+
+// using a span is necessary to allow text styling
+export const PlaceholderValue: ReactElement | Optional<Nullable<string>> = (
+    <span>{textPlaceholder}</span>
+);

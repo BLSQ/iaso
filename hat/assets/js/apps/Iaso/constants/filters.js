@@ -5,16 +5,7 @@ import FullStarsSvg from '../components/stars/FullStarsSvgComponent';
 import getDisplayName from '../utils/usersUtils.ts';
 import { usePrettyPeriod } from '../domains/periods/utils';
 import { orgUnitLabelString } from '../domains/orgUnits/utils';
-import { capitalize } from '../utils/index';
-
-export const forbiddenCharacters = ['"', '?', '/', '%', '&'];
-
-export const containsForbiddenCharacter = value => {
-    for (let i = 0; i < value.length; i += 1) {
-        if (forbiddenCharacters.includes(value[i])) return true;
-    }
-    return false;
-};
+import { capitalize } from '../utils/index.ts';
 
 export const search = (urlKey = 'search') => ({
     urlKey,

@@ -596,7 +596,10 @@ ACCOUNT_EMAIL_VERIFICATION = "none"
 CODE_CHALLENGE = generate_pkce()
 
 SOCIALACCOUNT_PROVIDERS = {}
-if os.environ.get("WFP_AUTH_CLIENT_ID"):
+
+WFP_AUTH_CLIENT_ID = os.environ.get("WFP_AUTH_CLIENT_ID", False)
+ACTIVATE_SOCIAL_ACCOUNT = WFP_AUTH_CLIENT_ID is not False  # for now, only WFP uses social_accounts
+if WFP_AUTH_CLIENT_ID:
     # Activate WFP login
     # activate the wfp_auth plugin only if needed
     index = INSTALLED_APPS.index("allauth.socialaccount")

@@ -31,12 +31,16 @@ else:
         path("login/", auth.views.LoginView.as_view(template_name=login_template), name="login"),
     ]
 
+if settings.ACTIVATE_SOCIAL_ACCOUNT:
+    # ------------------ adding urls of allauth for social account ------------------
+    urlpatterns += [
+        # these 3 next lines ensure that no signup or password login is provided by allauth
+        path("accounts/login/", RedirectView.as_view(pattern_name="login", permanent=False)),
+        path("accounts/signup/", RedirectView.as_view(pattern_name="login", permanent=False)),
+        path("accounts/social/signup/", RedirectView.as_view(pattern_name="login", permanent=False)),
+        path("accounts/", include("allauth.urls")),  # allauth is providing the social login flow
+    ]
 urlpatterns += [
-    # these 3 next lines ensure that no signup or password login is provided by allauth
-    path("accounts/login/", RedirectView.as_view(pattern_name="login", permanent=False)),
-    path("accounts/signup/", RedirectView.as_view(pattern_name="login", permanent=False)),
-    path("accounts/social/signup/", RedirectView.as_view(pattern_name="login", permanent=False)),
-    path("accounts/", include("allauth.urls")),  # allauth is providing the social login flow
     path("", RedirectView.as_view(pattern_name="dashboard:home_iaso", permanent=False), name="index"),
     path("_health/", health),
     path("_health", health),  # same without slash otherwise AWS complain about redirect

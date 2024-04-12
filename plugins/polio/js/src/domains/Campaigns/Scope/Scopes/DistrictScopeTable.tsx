@@ -1,18 +1,7 @@
 /* eslint-disable camelcase */
-import React, {
-    FunctionComponent,
-    useCallback,
-    useMemo,
-    useState,
-} from 'react';
-import { FieldInputProps } from 'formik';
+import MapIcon from '@mui/icons-material/Map';
 import {
-    // @ts-ignore
-    IconButton as IconButtonComponent,
-    // @ts-ignore
-    useSafeIntl,
-} from 'bluesquare-components';
-import {
+    Box,
     Table as MuiTable,
     TableBody,
     TableCell,
@@ -21,25 +10,35 @@ import {
     TablePagination,
     TableRow,
     Typography,
-    Box,
 } from '@mui/material';
-import sortBy from 'lodash/sortBy';
+import {
+    IconButton as IconButtonComponent,
+    useSafeIntl,
+} from 'bluesquare-components';
+import { FieldInputProps } from 'formik';
 import { cloneDeep } from 'lodash';
-import MapIcon from '@mui/icons-material/Map';
+import sortBy from 'lodash/sortBy';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 
 import CheckIcon from '@mui/icons-material/Check';
 import SelectAllIcon from '@mui/icons-material/SelectAll';
 import MESSAGES from '../../../../constants/messages';
 import { useStyles } from '../../../../styles/theme';
 
-import { Scope, Shape, FilteredDistricts, ShapeRow } from './types';
+import { FilteredDistricts, Shape, ShapeRow } from './types';
 import { checkFullRegionIsPartOfScope } from './utils';
 
-import { TableText } from './TableText';
-import { TablePlaceHolder } from './TablePlaceHolder';
 import { OrgUnit } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
+import { TablePlaceHolder } from './TablePlaceHolder';
+import { TableText } from './TableText';
 
 import { OrgUnitLocationIcon } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/components/OrgUnitLocationIcon';
+import { Scope } from '../../../../constants/types';
 
 type Props = {
     field: FieldInputProps<Scope[]>;
@@ -59,6 +58,7 @@ type Props = {
     isFetching: boolean;
     districtShapes: OrgUnit[];
     selectedVaccine: string;
+    isPolio: boolean;
 };
 
 export const DistrictScopeTable: FunctionComponent<Props> = ({
@@ -72,6 +72,7 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
     isFetching,
     selectedVaccine,
     districtShapes,
+    isPolio,
 }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
@@ -140,7 +141,6 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
         selectedVaccine,
         districtShapes,
     ]);
-
     const displayPlaceHolder =
         isFetching || (!isFetching && filteredDistricts?.length === 0);
     return (
@@ -167,15 +167,17 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                                     {formatMessage(MESSAGES.district)}
                                 </Typography>
                             </TableCell>
-                            <TableCell
-                                onClick={() => handleSort('VACCINE')}
-                                variant="head"
-                                style={{ cursor: 'pointer' }}
-                            >
-                                <Typography>
-                                    {formatMessage(MESSAGES.vaccine)}
-                                </Typography>
-                            </TableCell>
+                            {isPolio && (
+                                <TableCell
+                                    onClick={() => handleSort('VACCINE')}
+                                    variant="head"
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    <Typography>
+                                        {formatMessage(MESSAGES.vaccine)}
+                                    </Typography>
+                                </TableCell>
+                            )}
                             <TableCell
                                 onClick={() => handleSort('LOCATION')}
                                 variant="head"
@@ -208,6 +210,9 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                             />
                         )}
                         {shapesForTable?.map((shape, i) => {
+                            const isShapeInScope = Boolean(
+                                shape.scope?.group.org_units.includes(shape.id),
+                            );
                             return (
                                 <TableRow
                                     key={shape.id}
@@ -221,11 +226,13 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                                     <TableCell>
                                         <TableText text={shape.name} />
                                     </TableCell>
-                                    <TableCell>
-                                        <TableText
-                                            text={shape.vaccineName || '-'}
-                                        />
-                                    </TableCell>
+                                    {isPolio && (
+                                        <TableCell>
+                                            <TableText
+                                                text={shape.vaccineName || '-'}
+                                            />
+                                        </TableCell>
+                                    )}
                                     <TableCell>
                                         <OrgUnitLocationIcon orgUnit={shape} />
                                     </TableCell>
@@ -262,7 +269,7 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                                                 }
                                             />
                                         )}
-                                        {shape.vaccineName && (
+                                        {isShapeInScope && (
                                             <>
                                                 <IconButtonComponent
                                                     size="small"
@@ -279,7 +286,7 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                                                 />
                                             </>
                                         )}
-                                        {!shape.vaccineName && (
+                                        {!isShapeInScope && (
                                             <>
                                                 <IconButtonComponent
                                                     size="small"

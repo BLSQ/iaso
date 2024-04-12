@@ -1,7 +1,7 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 
 import classnames from 'classnames';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import {
     getOrderArray,
@@ -11,15 +11,16 @@ import {
 } from 'bluesquare-components';
 
 import { Box, TableCell, TableSortLabel } from '@mui/material';
-
 import { replace } from 'react-router-redux';
 import { genUrl } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import { Router } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
+import { User } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+
 import MESSAGES from '../../../../constants/messages';
 import { useStaticFields } from '../../hooks/useStaticFields';
 import { Field } from '../../types';
 import { useStyles } from '../Styles';
-import { colSpanTitle, defaultStaticColWidth } from '../constants';
+import { colSpanTitle } from '../constants';
 
 type Props = {
     orders: string;
@@ -70,6 +71,18 @@ export const HeadStaticFieldsCells: FunctionComponent<Props> = ({
         dispatch(replace(url));
     };
     const fields = useStaticFields(isPdf);
+    const isLogged = useSelector((state: { users: { current: User } }) =>
+        Boolean(state.users.current),
+    );
+    const getWidth = useCallback(
+        (f: Field) => {
+            if (f.key === 'edit') {
+                return '30px';
+            }
+            return !isLogged || isPdf ? '85px' : '70px';
+        },
+        [isLogged, isPdf],
+    );
     return (
         <>
             {fields.map(f => {
@@ -87,10 +100,10 @@ export const HeadStaticFieldsCells: FunctionComponent<Props> = ({
                         key={f.key}
                         className={classnames(classes.tableCellTitle)}
                         colSpan={colSpanTitle}
-                        style={{
+                        sx={{
                             top: 100,
-                            width: f.width || defaultStaticColWidth,
-                            minWidth: f.width || defaultStaticColWidth,
+                            width: getWidth(f),
+                            minWidth: getWidth(f),
                         }}
                     >
                         <Box position="relative" width="100%" height="100%">

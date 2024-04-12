@@ -1,13 +1,14 @@
-import React, { FunctionComponent } from 'react';
-import { Moment } from 'moment';
 import { LoadingSpinner } from 'bluesquare-components';
+import { Moment } from 'moment';
+import React, { FunctionComponent } from 'react';
 
-import { Table, TableContainer, Box } from '@mui/material';
+import { Box, Table, TableContainer } from '@mui/material';
 
 import { useStyles } from './Styles';
 
-import { Head } from './Head';
+import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import { Body } from './Body';
+import { Head } from './Head';
 import { Nav } from './Nav';
 import { CalendarData, CalendarParams, MappedCampaign } from './types';
 
@@ -20,6 +21,7 @@ type Props = {
     orders: string;
     currentDate: Moment;
     isPdf?: boolean;
+    router: Router;
 };
 
 const CampaignsCalendar: FunctionComponent<Props> = ({
@@ -31,6 +33,7 @@ const CampaignsCalendar: FunctionComponent<Props> = ({
     orders,
     currentDate,
     isPdf = false,
+    router,
 }) => {
     const classes = useStyles();
     const { headers, currentWeekIndex, firstMonday, lastSunday } = calendarData;
@@ -47,12 +50,13 @@ const CampaignsCalendar: FunctionComponent<Props> = ({
                 }
             >
                 {loadingCampaigns && <LoadingSpinner absolute />}
-                <Table stickyHeader>
+                <Table stickyHeader size="small">
                     <Head
                         headers={headers}
                         orders={orders}
                         currentWeekIndex={currentWeekIndex}
                         isPdf={isPdf}
+                        router={router}
                     />
                     <Body
                         loadingCampaigns={loadingCampaigns}
@@ -61,6 +65,7 @@ const CampaignsCalendar: FunctionComponent<Props> = ({
                         firstMonday={firstMonday}
                         lastSunday={lastSunday}
                         isPdf={isPdf}
+                        params={params}
                     />
                 </Table>
             </TableContainer>

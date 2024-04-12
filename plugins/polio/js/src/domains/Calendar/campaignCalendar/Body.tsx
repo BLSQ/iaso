@@ -6,7 +6,7 @@ import { useStyles } from './Styles';
 import { PlaceholderRow } from './PlaceholderRow';
 import { StaticFieldsCells } from './cells/StaticFields';
 import { RoundPopperContextProvider } from './contexts/RoundPopperContext';
-import { CalendarData, MappedCampaign } from './types';
+import { CalendarData, CalendarParams, MappedCampaign } from './types';
 import { getCells } from './utils';
 
 type BodyProps = {
@@ -16,6 +16,7 @@ type BodyProps = {
     lastSunday: CalendarData['lastSunday'];
     loadingCampaigns: boolean;
     isPdf: boolean;
+    params: CalendarParams;
 };
 
 export const Body: FunctionComponent<BodyProps> = ({
@@ -25,13 +26,17 @@ export const Body: FunctionComponent<BodyProps> = ({
     lastSunday,
     loadingCampaigns,
     isPdf,
+    params,
 }) => {
     const classes = useStyles();
     return (
         <RoundPopperContextProvider>
             <TableBody>
                 {campaigns.length === 0 && (
-                    <PlaceholderRow loadingCampaigns={loadingCampaigns} />
+                    <PlaceholderRow
+                        loadingCampaigns={loadingCampaigns}
+                        params={params}
+                    />
                 )}
                 {campaigns.map((campaign: MappedCampaign) => (
                     <TableRow
@@ -44,6 +49,7 @@ export const Body: FunctionComponent<BodyProps> = ({
                             currentWeekIndex,
                             firstMonday,
                             lastSunday,
+                            params.periodType || 'quarter',
                         )}
                     </TableRow>
                 ))}

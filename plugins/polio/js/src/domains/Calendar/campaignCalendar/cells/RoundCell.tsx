@@ -16,12 +16,18 @@ import { PolioCreateEditDialog as CreateEditDialog } from '../../../Campaigns/Ma
 import { useStyles } from '../Styles';
 import { RoundPopperContext } from '../contexts/RoundPopperContext';
 import { RoundPopper } from '../popper/RoundPopper';
-import { CalendarRound, MappedCampaign, ReduxState } from '../types';
+import {
+    CalendarRound,
+    MappedCampaign,
+    PeriodType,
+    ReduxState,
+} from '../types';
 
 type Props = {
     colSpan: number;
     campaign: MappedCampaign;
     round: CalendarRound;
+    periodType: PeriodType;
 };
 
 const getVaccineColor = (vaccine: string) =>
@@ -32,6 +38,7 @@ export const RoundCell: FunctionComponent<Props> = ({
     colSpan,
     campaign,
     round,
+    periodType,
 }) => {
     const classes = useStyles();
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -102,7 +109,8 @@ export const RoundCell: FunctionComponent<Props> = ({
                     classes.tableCellSpanWithPopOver,
                 )}
             >
-                {colSpan > 1 && `R${round.number}`}
+                {periodType !== 'year' && colSpan > 1 && `R${round.number}`}
+                {periodType === 'year' && colSpan > 1 && round.number}
             </span>
             {open && (
                 <RoundPopper

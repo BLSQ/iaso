@@ -1,6 +1,14 @@
 /* eslint-disable camelcase */
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import { Box, Button, Grid, Theme, Typography } from '@mui/material';
+import {
+    Box,
+    Button,
+    Grid,
+    Theme,
+    ToggleButton,
+    ToggleButtonGroup,
+    Typography,
+} from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     ExcellSvg,
@@ -13,7 +21,8 @@ import classnames from 'classnames';
 import domToPdf from 'dom-to-pdf';
 import moment from 'moment';
 import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { replace } from 'react-router-redux';
 import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { getCampaignColor } from '../../constants/campaignsColors';
 import { CampaignsCalendar } from './campaignCalendar';
@@ -25,6 +34,7 @@ import {
 } from './campaignCalendar/utils';
 
 import { userHasPermission } from '../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import { genUrl } from '../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import { Router } from '../../../../../../hat/assets/js/apps/Iaso/types/general';
 import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import MESSAGES from '../../constants/messages';
@@ -35,8 +45,10 @@ import { dateFormat, defaultOrder } from './campaignCalendar/constants';
 import {
     CalendarParams,
     MappedCampaign,
+    PeriodType,
     ReduxState,
 } from './campaignCalendar/types';
+import { useGetPeriodTypes } from './hooks/useGetPeriodTypes';
 
 type Props = {
     params: CalendarParams;
@@ -65,6 +77,7 @@ const useStyles = makeStyles(theme => ({
 export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
+    const dispatch = useDispatch();
     const isLogged = useSelector((state: ReduxState) =>
         Boolean(state.users.current),
     );
@@ -110,8 +123,8 @@ export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
 
     const currentMonday = currentDate.clone().startOf('isoWeek');
     const calendarData = useMemo(
-        () => getCalendarData(currentMonday),
-        [currentMonday],
+        () => getCalendarData(currentMonday, params.periodType || 'quarter'),
+        [currentMonday, params.periodType],
     );
 
     const mappedCampaigns: MappedCampaign[] = useMemo(
@@ -178,6 +191,16 @@ export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
     }, [filteredCampaigns, mappedCampaigns, isLoading]);
 
     const currentUser = useCurrentUser();
+    const periodTypes = useGetPeriodTypes();
+
+    const handleChangePeriodType = (_, value: PeriodType) => {
+        const newParams = {
+            ...params,
+            periodType: value,
+        };
+        const url = genUrl(router, newParams);
+        dispatch(replace(url));
+    };
     return (
         <div>
             {isLogged && !isPdf && (
@@ -262,6 +285,7 @@ export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
                             </Grid>
                         )}
                     </Grid>
+
                     <Grid container spacing={2}>
                         {isPdf && (
                             <Grid item xs={12}>
@@ -271,15 +295,40 @@ export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
                             </Grid>
                         )}
                         <Grid item xs={12} lg={!isPdf ? 8 : 12}>
+                            {!isPdf && (
+                                <Box
+                                    display="flex"
+                                    justifyContent="flex-end"
+                                    mb={1}
+                                >
+                                    <ToggleButtonGroup
+                                        color="primary"
+                                        size="small"
+                                        value={params.periodType || 'quarter'}
+                                        exclusive
+                                        onChange={handleChangePeriodType}
+                                    >
+                                        {periodTypes.map(period => (
+                                            <ToggleButton
+                                                key={period.value}
+                                                value={period.value}
+                                            >
+                                                {period.label}
+                                            </ToggleButton>
+                                        ))}
+                                    </ToggleButtonGroup>
+                                </Box>
+                            )}
                             <CampaignsCalendar
-                                currentDate={currentDate}
                                 params={params}
                                 orders={orders}
                                 campaigns={filteredCampaigns}
                                 calendarData={calendarData}
-                                currentMonday={currentMonday}
                                 loadingCampaigns={isLoading}
                                 isPdf={isPdf}
+                                router={router}
+                                currentMonday={currentMonday}
+                                currentDate={currentDate}
                             />
                         </Grid>
                         <Grid item xs={12} lg={!isPdf ? 4 : 12}>

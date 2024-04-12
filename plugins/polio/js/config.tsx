@@ -187,6 +187,10 @@ const routes = [
                 isRequired: false,
                 key: 'orgUnitGroups',
             },
+            {
+                isRequired: false,
+                key: 'periodType',
+            },
         ],
     },
     {
@@ -645,6 +649,10 @@ const routes = [
                 isRequired: false,
                 key: 'orgUnitGroups',
             },
+            {
+                isRequired: false,
+                key: 'periodType',
+            },
         ],
         isRootUrl: false,
     },
@@ -686,7 +694,7 @@ const menu = [
             {
                 label: MESSAGES.calendar,
                 key: 'calendar',
-                extraPath: '/campaignType/polio',
+                extraPath: '/campaignType/polio/periodType/quarter',
                 permissions: ['iaso_polio'],
                 icon: props => <CalendarToday {...props} />,
             },

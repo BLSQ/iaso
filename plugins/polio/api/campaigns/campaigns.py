@@ -205,7 +205,7 @@ class CampaignSerializer(serializers.ModelSerializer):
 
         # noinspection DuplicatedCode
         for scope in campaign_scopes:
-            vaccine = scope.get("vaccine", None)
+            vaccine = scope.get("vaccine", "")
             org_units = scope.get("group", {}).get("org_units")
             scope, created = campaign.scopes.get_or_create(vaccine=vaccine)
             source_version_id = None
@@ -237,7 +237,7 @@ class CampaignSerializer(serializers.ModelSerializer):
             round = round_serializer.save()
 
             for scope in scopes:
-                vaccine = scope.get("vaccine", None)
+                vaccine = scope.get("vaccine", "")
                 org_units = scope.get("group", {}).get("org_units")
                 source_version_id = None
                 if org_units:
@@ -295,7 +295,7 @@ class CampaignSerializer(serializers.ModelSerializer):
         account = self.context["request"].user.iaso_profile.account
 
         for scope in campaign_scopes:
-            vaccine = scope.get("vaccine", None)
+            vaccine = scope.get("vaccine", "")
             org_units = scope.get("group", {}).get("org_units")
             scope, created = instance.scopes.get_or_create(vaccine=vaccine)
             source_version_id = None
@@ -349,7 +349,7 @@ class CampaignSerializer(serializers.ModelSerializer):
             round_instances.append(round_instance)
             round_datelogs = []
             for scope in scopes:
-                vaccine = scope.get("vaccine", None)
+                vaccine = scope.get("vaccine", "")
                 org_units = scope.get("group", {}).get("org_units")
                 source_version_id = None
                 if org_units:

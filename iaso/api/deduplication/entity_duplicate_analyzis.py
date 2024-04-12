@@ -117,8 +117,8 @@ class EntityDuplicateAnalyzisViewSet(viewsets.GenericViewSet):
         return self.results_key
 
     def get_queryset(self):
-        initial_queryset = EntityDuplicateAnalyzis.objects.all()
-        return initial_queryset
+        user_account = self.request.user.iaso_profile.account
+        return EntityDuplicateAnalyzis.objects.filter(task__account=user_account)
 
     def list(self, request, *args, **kwargs):
         """

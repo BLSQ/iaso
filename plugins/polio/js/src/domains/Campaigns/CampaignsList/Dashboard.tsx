@@ -79,7 +79,7 @@ const Dashboard: FunctionComponent<Props> = ({ router }) => {
                 displayBackButton={false}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <CampaignsFilters showTest router={router} />
+                <CampaignsFilters router={router} />
                 <Box mb={2}>
                     <DashboardButtons
                         router={router}

@@ -87,7 +87,9 @@ export const RoundCell: FunctionComponent<Props> = ({
         >
             <Box
                 className={classes.coloredBox}
-                style={{ backgroundColor: campaign.color }}
+                sx={{
+                    border: campaign.isTest ? '1px dashed red' : undefined,
+                }}
             >
                 {vaccinesList.map((vaccine: string) => (
                     <span

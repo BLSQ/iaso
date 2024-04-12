@@ -260,6 +260,7 @@ const mapCampaigns = (allCampaigns: Campaign[]): MappedCampaign[] => {
             rounds,
             original: c,
             isPreventive: c.is_preventive,
+            isTest: c.is_test,
             separateScopesPerRound: c.separate_scopes_per_round,
             scopes: c.scopes,
         };

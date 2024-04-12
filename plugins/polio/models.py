@@ -126,7 +126,7 @@ class RoundScope(models.Model):
     )
     round = models.ForeignKey("Round", on_delete=models.CASCADE, related_name="scopes")
 
-    vaccine = models.CharField(max_length=5, choices=VACCINES, blank=True, null=True)
+    vaccine = models.CharField(max_length=5, choices=VACCINES, blank=True)
 
     class Meta:
         unique_together = [("round", "vaccine")]

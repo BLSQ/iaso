@@ -74,63 +74,72 @@ steps:
     . ./venv/bin/activate && black --check .
   displayName: 'Check formatting with black'
 
-# The secret key is done with an export because Azure pipelines will
-# remove all env variables that start with SECRET_
-- script: |
-    export SECRET_KEY=${SECRETKEY}
-    export DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD}
-    export DJANGO_SUPERUSER_USERNAME=${DJANGO_SUPERUSER_USERNAME}
-    export DJANGO_SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL}
-    . ./venv/bin/activate &&  python manage.py migrate
-    . ./venv/bin/activate &&  python manage.py createcachetable
-    . ./venv/bin/activate &&  python manage.py test --testrunner xmlrunner.extra.djangotestrunner.XMLTestRunner --no-input
-    . ./venv/bin/activate &&  python manage.py makemigrations --check
-    . ./venv/bin/activate &&  python manage.py createsuperuser --noinput
-  displayName: 'Django tests'
-  condition: succeededOrFailed()
-  env:
-    IASO_ENVIRONMENT: development
-    RDS_DB_NAME: does_not_matter
-    SECRETKEY: secret-only-used-in-azure-pipeline
-    DEBUG: true
-    DJANGO_SETTINGS_MODULE: hat.settings
-    RDS_PASSWORD: postgres
-    RDS_HOSTNAME: localhost
-    RDS_PORT: 5432
-    RDS_USERNAME: postgres
-    CACHE: false
-    DEV_SERVER: true
-    VERSION_NAME: test
-    PLUGINS: polio,wfp
-    DJANGO_SUPERUSER_USERNAME: adm
-    DJANGO_SUPERUSER_EMAIL: adm@example.com
-    DJANGO_SUPERUSER_PASSWORD: $(DJANGO_SUPERUSER_PASSWORD)
-    DISABLE_PASSWORD_LOGINS: true
-    USE_CELERY: true
-- task: PublishTestResults@2
-  condition: succeededOrFailed()
+# Setting the details for the health page
+- task: Bash@3
   inputs:
-    testResultsFiles: "**/TEST-*.xml"
-    testRunTitle: 'Python $(PYTHON_VERSION)'
+    targetType: 'inline'
+    script: |
+      ./scripts/set_version.sh
+    displayName: 'Set Version Info for Health'
 
-- script: docker build -t dev-coda2 --target prod -f $(Build.SourcesDirectory)/docker/bundle/Dockerfile .
-  env:
-    VERSION_NAME: test
-  displayName: 'Build docker image'
 
-- script: docker save -o $(Build.ArtifactStagingDirectory)/dev-coda2.tar.gz dev-coda2
-  displayName: 'Save docker image'
+# # The secret key is done with an export because Azure pipelines will
+# # remove all env variables that start with SECRET_
+# - script: |
+#     export SECRET_KEY=${SECRETKEY}
+#     export DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD}
+#     export DJANGO_SUPERUSER_USERNAME=${DJANGO_SUPERUSER_USERNAME}
+#     export DJANGO_SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL}
+#     . ./venv/bin/activate &&  python manage.py migrate
+#     . ./venv/bin/activate &&  python manage.py createcachetable
+#     . ./venv/bin/activate &&  python manage.py test --testrunner xmlrunner.extra.djangotestrunner.XMLTestRunner --no-input
+#     . ./venv/bin/activate &&  python manage.py makemigrations --check
+#     . ./venv/bin/activate &&  python manage.py createsuperuser --noinput
+#   displayName: 'Django tests'
+#   condition: succeededOrFailed()
+#   env:
+#     IASO_ENVIRONMENT: development
+#     RDS_DB_NAME: does_not_matter
+#     SECRETKEY: secret-only-used-in-azure-pipeline
+#     DEBUG: true
+#     DJANGO_SETTINGS_MODULE: hat.settings
+#     RDS_PASSWORD: postgres
+#     RDS_HOSTNAME: localhost
+#     RDS_PORT: 5432
+#     RDS_USERNAME: postgres
+#     CACHE: false
+#     DEV_SERVER: true
+#     VERSION_NAME: test
+#     PLUGINS: polio,wfp
+#     DJANGO_SUPERUSER_USERNAME: adm
+#     DJANGO_SUPERUSER_EMAIL: adm@example.com
+#     DJANGO_SUPERUSER_PASSWORD: $(DJANGO_SUPERUSER_PASSWORD)
+#     DISABLE_PASSWORD_LOGINS: true
+#     USE_CELERY: true
+# - task: PublishTestResults@2
+#   condition: succeededOrFailed()
+#   inputs:
+#     testResultsFiles: "**/TEST-*.xml"
+#     testRunTitle: 'Python $(PYTHON_VERSION)'
 
-- task: PublishBuildArtifacts@1
-  inputs:
-    pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    artifactName: dev-coda2
+# - script: docker build -t dev-coda2 --target prod -f $(Build.SourcesDirectory)/docker/bundle/Dockerfile .
+#   env:
+#     VERSION_NAME: test
+#   displayName: 'Build docker image'
 
-- script: docker run -v $(Build.ArtifactStagingDirectory)/static:/opt/mount --rm --entrypoint bash dev-coda2 -c "cp -R /opt/app/static /opt/mount/"
-  displayName: 'Copy static files from docker'
+# - script: docker save -o $(Build.ArtifactStagingDirectory)/dev-coda2.tar.gz dev-coda2
+#   displayName: 'Save docker image'
 
-- task: PublishBuildArtifacts@1
-  inputs:
-    pathtoPublish: $(Build.ArtifactStagingDirectory)/static
-    artifactName: dev-coda2-static
-  displayName: 'Publish static files'
+# - task: PublishBuildArtifacts@1
+#   inputs:
+#     pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+#     artifactName: dev-coda2
+
+# - script: docker run -v $(Build.ArtifactStagingDirectory)/static:/opt/mount --rm --entrypoint bash dev-coda2 -c "cp -R /opt/app/static /opt/mount/"
+#   displayName: 'Copy static files from docker'
+
+# - task: PublishBuildArtifacts@1
+#   inputs:
+#     pathtoPublish: $(Build.ArtifactStagingDirectory)/static
+#     artifactName: dev-coda2-static
+#   displayName: 'Publish static files'

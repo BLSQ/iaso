@@ -17,24 +17,34 @@ admin.site.site_header = "Administration de Iaso"
 admin.site.site_title = "Iaso"
 admin.site.index_title = "Administration de Iaso"
 
+
 if settings.DISABLE_PASSWORD_LOGINS:
+    login_template = "iaso/disabled_password_login.html"
     urlpatterns = [
-        path("login/", TemplateView.as_view(template_name="iaso/disabled_password_login.html"), name="login"),
-        path("admin/login/", TemplateView.as_view(template_name="iaso/disabled_password_login.html"), name="login"),
+        path("admin/login/", TemplateView.as_view(template_name=login_template), name="admin-login"),
+        path("login/", TemplateView.as_view(template_name=login_template), name="login"),
     ]
 else:
+    login_template = "iaso/login.html"
     urlpatterns = [
-        path("login/", auth.views.LoginView.as_view(template_name="iaso/login.html"), name="login"),
-        path("admin/login/", auth.views.LoginView.as_view(template_name="iaso/login.html"), name="login"),
+        path("admin/login/", auth.views.LoginView.as_view(template_name=login_template), name="admin-login"),
+        path("login/", auth.views.LoginView.as_view(template_name=login_template), name="login"),
     ]
 
-urlpatterns = urlpatterns + [
+if settings.ACTIVATE_SOCIAL_ACCOUNT:
+    # ------------------ adding urls of allauth for social account ------------------
+    urlpatterns += [
+        # these 3 next lines ensure that no signup or password login is provided by allauth
+        path("accounts/login/", RedirectView.as_view(pattern_name="login", permanent=False)),
+        path("accounts/signup/", RedirectView.as_view(pattern_name="login", permanent=False)),
+        path("accounts/social/signup/", RedirectView.as_view(pattern_name="login", permanent=False)),
+        path("accounts/", include("allauth.urls")),  # allauth is providing the social login flow
+    ]
+urlpatterns += [
     path("", RedirectView.as_view(pattern_name="dashboard:home_iaso", permanent=False), name="index"),
     path("_health/", health),
     path("_health", health),  # same without slash otherwise AWS complain about redirect
     path("health/", health),  # alias since current apache config hide _health/
-    path("accounts/", include("django.contrib.auth.urls")),
-    path("accounts/", include("allauth.urls")),
     path("admin/", admin.site.urls),
     path("api/", include("iaso.urls")),
     path("pages/<page_slug>/", page, name="pages"),
@@ -69,6 +79,7 @@ urlpatterns = urlpatterns + [
     ),
     path("sync/", include("hat.sync.urls")),
 ]
+
 
 for plugin_name in settings.PLUGINS:
     urls_module_name = "plugins." + plugin_name + ".urls"

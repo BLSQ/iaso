@@ -631,11 +631,17 @@ class OrgUnitChangeRequest(models.Model):
     new_closed_date = models.DateField(blank=True, null=True)
     new_reference_instances = models.ManyToManyField("Instance", blank=True)
 
-    # Stores approved fields (only a subset can be approved).
+    requested_fields = ArrayField(
+        models.CharField(max_length=30, blank=True),
+        default=list,
+        blank=True,
+        help_text="List of fields names for which a change is requested.",
+    )
     approved_fields = ArrayField(
         models.CharField(max_length=30, blank=True),
         default=list,
         blank=True,
+        help_text="List of approved fields names (only a subset can be approved).",
     )
 
     # Old values are populated after a change has been approved.
@@ -690,21 +696,6 @@ class OrgUnitChangeRequest(models.Model):
         self.approved_fields = list(set(self.approved_fields))
         self.clean_approved_fields()
         self.clean_new_dates()
-
-    @property
-    def requested_fields(self) -> typing.List[str]:
-        """
-        Returns the list of fields names for which a change was requested.
-        `prefetch_related` of m2m are required when used in bulk.
-        """
-        requested = []
-        for name in self.get_new_fields():
-            field = getattr(self, name)
-            is_m2m = field.__class__.__name__ == "ManyRelatedManager"
-            is_requested = field.exists() if is_m2m else field
-            if is_requested:
-                requested.append(name)
-        return requested
 
     def clean_approved_fields(self) -> None:
         for name in self.approved_fields:

@@ -153,6 +153,7 @@ class OrgUnitChangeRequestListSerializerTestCase(TestCase):
             "created_by": self.user,
             "new_org_unit_type": self.org_unit_type,
             "new_location": Point(-2.4747713, 47.3358576, 1.3358576),
+            "requested_fields": ["new_org_unit_type", "new_location"],
             "approved_fields": ["new_org_unit_type"],
         }
         change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
@@ -309,6 +310,7 @@ class OrgUnitChangeRequestRetrieveSerializerTestCase(TestCase):
             "new_org_unit_type": self.org_unit_type,
             "new_opening_date": datetime.date(2022, 10, 27),
             "new_closed_date": datetime.date(2024, 10, 27),
+            "requested_fields": ["new_org_unit_type", "new_opening_date", "new_closed_date", "new_groups"],
         }
         change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
         new_group = m.Group.objects.create(name="new group")
@@ -414,9 +416,11 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
             "uuid": "e05933f4-8370-4329-8cf5-197941785a24",
             "org_unit_id": self.org_unit.id,
             "new_name": "Foo",
+            "new_opening_date": None,
         }
         serializer = OrgUnitChangeRequestWriteSerializer(data=data)
         self.assertTrue(serializer.is_valid())
+        self.assertEqual(serializer.validated_data["requested_fields"], ["new_name", "new_opening_date"])
 
     def test_generate_uuid_if_not_provided(self):
         data = {
@@ -426,6 +430,7 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
         serializer = OrgUnitChangeRequestWriteSerializer(data=data)
         self.assertTrue(serializer.is_valid())
         self.assertTrue(isinstance(serializer.validated_data["uuid"], uuid.UUID))
+        self.assertEqual(serializer.validated_data["requested_fields"], ["new_name"])
 
     def test_validate(self):
         data = {
@@ -563,6 +568,20 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
         serializer = OrgUnitChangeRequestWriteSerializer(data=data)
 
         self.assertTrue(serializer.is_valid())
+
+        expected_requested_fields = [
+            "new_parent",
+            "new_name",
+            "new_org_unit_type",
+            "new_groups",
+            "new_location",
+            "new_location_accuracy",
+            "new_opening_date",
+            "new_closed_date",
+            "new_reference_instances",
+        ]
+        self.assertEqual(serializer.validated_data["requested_fields"], expected_requested_fields)
+
         serializer.save()
 
         change_request = OrgUnitChangeRequest.objects.get(uuid=data["uuid"])
@@ -577,6 +596,7 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
         self.assertIn(group2, new_groups)
         self.assertEqual(change_request.new_location, Point(-2.4747713, 47.3358576, 10.0, srid=4326))
         self.assertEqual(change_request.new_location_accuracy, 4.0)
+        self.assertEqual(change_request.requested_fields, expected_requested_fields)
         new_reference_instances = change_request.new_reference_instances.all()
         self.assertIn(instance1, new_reference_instances)
         self.assertIn(instance2, new_reference_instances)

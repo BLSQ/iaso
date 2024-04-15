@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Router, Link } from 'react-router';
+import { Router } from 'react-router';
+import { Link } from 'react-router-dom';
 import { LinkProvider, LoadingSpinner } from 'bluesquare-components';
 import { useSnackBars } from '../../components/snackBars/useSnackBars';
 import { useRoutes } from './hooks/useRoutes';

@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 import { IconButton, Box, Tooltip } from '@mui/material';
 import MESSAGES from '../../messages';
 import { useCurrentUser } from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';

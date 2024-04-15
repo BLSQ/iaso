@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { withStyles } from '@mui/styles';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 
 import { textPlaceholder } from 'bluesquare-components';
 import { OrgUnitLabel } from '../utils';

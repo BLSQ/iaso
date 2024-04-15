@@ -2,7 +2,7 @@ import React from 'react';
 import thunk from 'redux-thunk';
 import configureStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 import { LinkProvider } from 'bluesquare-components';
 
 import { orgUnitsInitialState } from '../../apps/Iaso/domains/orgUnits/reducer';

@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 import { userHasPermission } from '../../users/utils';
 import { baseUrls } from '../../../constants/urls';
 import { useCurrentUser } from '../../../utils/usersUtils';

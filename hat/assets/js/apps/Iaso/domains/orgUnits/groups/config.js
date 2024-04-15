@@ -4,11 +4,11 @@ import {
     IconButton as IconButtonComponent,
     textPlaceholder,
 } from 'bluesquare-components';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 import GroupsDialog from './components/GroupsDialog';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import MESSAGES from './messages';
-import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
+import { DateTimeCell } from '../../../components/Cells/DateTimeCell.tsx';
 import { baseUrls } from '../../../constants/urls';
 import { getChipColors } from '../../../constants/chipColors';
 

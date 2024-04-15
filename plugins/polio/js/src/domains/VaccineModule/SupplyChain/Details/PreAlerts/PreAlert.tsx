@@ -1,19 +1,19 @@
 /* eslint-disable camelcase */
-import React, { FunctionComponent, useCallback } from 'react';
-import { Box, Grid, Paper, Typography } from '@mui/material';
-import { Field, useFormikContext } from 'formik';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
+import { Box, Grid, Paper, Typography } from '@mui/material';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
 import classNames from 'classnames';
+import { Field, useFormikContext } from 'formik';
+import React, { FunctionComponent, useCallback } from 'react';
 import { DeleteIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/DeleteIconButton';
-import { DateInput } from '../../../../../components/Inputs/DateInput';
+import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
+import { Optional } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { NumberInput, TextInput } from '../../../../../components/Inputs';
+import { DateInput } from '../../../../../components/Inputs/DateInput';
+import { dosesPerVial } from '../../hooks/utils';
 import MESSAGES from '../../messages';
 import { SupplyChainFormData } from '../../types';
 import { grayText, usePaperStyles } from '../shared';
-import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
-import { Optional } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { dosesPerVial } from '../../hooks/utils';
 
 type Props = {
     index: number;
@@ -29,11 +29,14 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
     const markedForDeletion = pre_alerts?.[index].to_delete ?? false;
     const uneditableTextStyling = markedForDeletion ? grayText : undefined;
     const doses_per_vial_default = vaccine ? dosesPerVial[vaccine] : undefined;
-    const doses_per_vial = pre_alerts?.[index].doses_per_vial ?? doses_per_vial_default;
-    const current_vials_shipped = doses_per_vial ? Math.ceil(
-        ((pre_alerts?.[index].doses_shipped as Optional<number>) ?? 0) /
-        doses_per_vial,
-    ) : 0;
+    const doses_per_vial =
+        pre_alerts?.[index].doses_per_vial ?? doses_per_vial_default;
+    const current_vials_shipped = doses_per_vial
+        ? Math.ceil(
+              ((pre_alerts?.[index].doses_shipped as Optional<number>) ?? 0) /
+                  doses_per_vial,
+          )
+        : 0;
 
     const onDelete = useCallback(() => {
         if (values?.pre_alerts?.[index].id) {
@@ -87,6 +90,7 @@ export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
                                 name={`pre_alerts[${index}].estimated_arrival_time`}
                                 component={DateInput}
                                 disabled={markedForDeletion}
+                                required
                             />
                         </Grid>
                     </Grid>

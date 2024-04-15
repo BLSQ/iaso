@@ -1,24 +1,27 @@
 /* eslint-disable camelcase */
-import React, { FunctionComponent } from 'react';
-import { Box, Grid, Paper, Typography } from '@mui/material';
-import { Field, useFormikContext } from 'formik';
-import classNames from 'classnames';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
+import { Box, Grid, Paper, Typography } from '@mui/material';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
+import classNames from 'classnames';
+import { Field, useFormikContext } from 'formik';
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { DeleteIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/DeleteIconButton';
-import { DateInput } from '../../../../../components/Inputs/DateInput';
-import { NumberInput, TextInput } from '../../../../../components/Inputs';
-import MESSAGES from '../../messages';
-import { SupplyChainFormData } from '../../types';
-import { VAR } from '../../constants';
-import { grayText, usePaperStyles } from '../shared';
 import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 import { Optional } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { NumberInput, Select } from '../../../../../components/Inputs';
+import { DateInput } from '../../../../../components/Inputs/DateInput';
+import { VAR } from '../../constants';
 import { dosesPerVial } from '../../hooks/utils';
+import MESSAGES from '../../messages';
+import { SupplyChainFormData } from '../../types';
+import { grayText, usePaperStyles } from '../shared';
 
-type Props = { index: number, vaccine?: string };
+type Props = { index: number; vaccine?: string };
 
-export const VaccineArrivalReport: FunctionComponent<Props> = ({ index, vaccine }) => {
+export const VaccineArrivalReport: FunctionComponent<Props> = ({
+    index,
+    vaccine,
+}) => {
     const classes: Record<string, string> = usePaperStyles();
     const { formatMessage } = useSafeIntl();
     const { values, setFieldValue, setFieldTouched } =
@@ -28,16 +31,45 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index, vaccine 
     const uneditableTextStyling = markedForDeletion ? grayText : undefined;
 
     const doses_per_vial_default = vaccine ? dosesPerVial[vaccine] : undefined;
-    const doses_per_vial = arrival_reports?.[index].doses_per_vial ?? doses_per_vial_default;
-    const current_vials_shipped = doses_per_vial ? Math.ceil(
-        ((arrival_reports?.[index].doses_shipped as Optional<number>) ?? 0) /
-        doses_per_vial,
-    ) : 0;
-    const current_vials_received = doses_per_vial ? Math.ceil(
-        ((arrival_reports?.[index].doses_received as Optional<number>) ?? 0) /
-        doses_per_vial,
-    ) : 0;
+    const doses_per_vial =
+        arrival_reports?.[index].doses_per_vial ?? doses_per_vial_default;
+    const current_vials_shipped = doses_per_vial
+        ? Math.ceil(
+              ((arrival_reports?.[index].doses_shipped as Optional<number>) ??
+                  0) / doses_per_vial,
+          )
+        : 0;
+    const current_vials_received = doses_per_vial
+        ? Math.ceil(
+              ((arrival_reports?.[index].doses_received as Optional<number>) ??
+                  0) / doses_per_vial,
+          )
+        : 0;
 
+    const poNumberOptions = useMemo(() => {
+        return values.pre_alerts?.map(
+            preAlert =>
+                ({
+                    label: preAlert.po_number,
+                    value: preAlert.po_number,
+                } || []),
+        );
+    }, [values.pre_alerts]);
+    const handleChangePoNumber = useCallback(
+        (key, value) => {
+            const preAlert = values.pre_alerts?.find(
+                pre => pre.po_number === value,
+            );
+            if (preAlert) {
+                setFieldValue(
+                    `${VAR}[${index}].doses_shipped`,
+                    preAlert.doses_shipped,
+                );
+            }
+            setFieldValue(key, value);
+        },
+        [index, setFieldValue, values.pre_alerts],
+    );
     return (
         <div className={classes.container}>
             <Paper
@@ -48,6 +80,19 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index, vaccine 
             >
                 <Grid container>
                     <Grid container item xs={12} spacing={2}>
+                        <Grid item xs={6} md={3}>
+                            <Field
+                                label={formatMessage(MESSAGES.po_number)}
+                                name={`${VAR}[${index}].po_number`}
+                                component={Select}
+                                shrinkLabel={false}
+                                freeSolo
+                                options={poNumberOptions}
+                                disabled={markedForDeletion}
+                                required
+                                onChange={handleChangePoNumber}
+                            />
+                        </Grid>
                         <Grid item xs={6} md={3}>
                             <Field
                                 label={formatMessage(
@@ -74,16 +119,6 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({ index, vaccine 
                                 label={formatMessage(MESSAGES.doses_received)}
                                 name={`${VAR}[${index}].doses_received`}
                                 component={NumberInput}
-                                disabled={markedForDeletion}
-                                required
-                            />
-                        </Grid>
-                        <Grid item xs={6} md={3}>
-                            <Field
-                                label={formatMessage(MESSAGES.po_number)}
-                                name={`${VAR}[${index}].po_number`}
-                                component={TextInput}
-                                shrinkLabel={false}
                                 disabled={markedForDeletion}
                                 required
                             />

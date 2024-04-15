@@ -1,29 +1,29 @@
-import React, { ReactNode, useMemo, useState } from 'react';
 import { Box } from '@mui/material';
 import {
-    TextInput,
-    PasswordInput,
-    NumberInput,
-    Radio,
-    Checkbox,
     ArrayFieldInput,
-    SearchInput,
-    // @ts-ignore
-    translateOptions,
-    Select,
-    useSafeIntl,
+    BaseCountryData,
+    Checkbox,
     IntlMessage,
     LangOptions,
+    NumberInput,
+    PasswordInput,
     PhoneInput,
-    BaseCountryData,
+    Radio,
+    SearchInput,
+    Select,
+    TextInput,
+    // @ts-ignore
+    translateOptions,
+    useSafeIntl,
 } from 'bluesquare-components';
+import React, { ReactNode, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import MESSAGES from '../../domains/forms/messages';
-import { DropdownOptions } from '../../types/utils';
 import {
     useNumberSeparatorsFromLocale,
     useThousandGroupStyle,
 } from '../../hooks/useNumberSeparatorsFromLocale';
+import { DropdownOptions } from '../../types/utils';
 
 type Option = DropdownOptions<string | number>;
 
@@ -113,6 +113,7 @@ export type InputComponentProps = {
     autoComplete?: string;
     // eslint-disable-next-line no-unused-vars
     renderTags?: (tagValue: Array<any>, getTagProps: any) => Array<any>;
+    freeSolo?: boolean;
 };
 
 const useLocalizedNumberInputOptions = (
@@ -165,6 +166,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
     setFieldError = () => null,
     autoComplete = 'off',
     phoneInputOptions = {},
+    freeSolo = false,
 }) => {
     const [displayPassword, setDisplayPassword] = useState(false);
     const { formatMessage } = useSafeIntl();
@@ -259,6 +261,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
                         }}
                         renderTags={renderTags}
                         helperText={helperText}
+                        freeSolo={freeSolo}
                     />
                 );
             case 'arrayInput':

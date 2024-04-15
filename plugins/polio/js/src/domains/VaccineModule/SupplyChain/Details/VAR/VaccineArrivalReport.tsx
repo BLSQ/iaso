@@ -47,12 +47,15 @@ export const VaccineArrivalReport: FunctionComponent<Props> = ({
         : 0;
 
     const poNumberOptions = useMemo(() => {
-        return values.pre_alerts?.map(
-            preAlert =>
-                ({
+        return (
+            values.pre_alerts
+                ?.filter(
+                    preAlert => preAlert.po_number && preAlert.doses_shipped,
+                )
+                .map(preAlert => ({
                     label: preAlert.po_number,
                     value: preAlert.po_number,
-                } || []),
+                })) || []
         );
     }, [values.pre_alerts]);
     const handleChangePoNumber = useCallback(

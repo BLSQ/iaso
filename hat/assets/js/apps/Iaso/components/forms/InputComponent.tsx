@@ -113,7 +113,7 @@ export type InputComponentProps = {
     autoComplete?: string;
     // eslint-disable-next-line no-unused-vars
     renderTags?: (tagValue: Array<any>, getTagProps: any) => Array<any>;
-    freeSolo?: boolean;
+    freeSolo?: boolean; // this props i only use on single select and allow user to give an option not present in the list. Errors will be ignored
 };
 
 const useLocalizedNumberInputOptions = (
@@ -256,12 +256,10 @@ const InputComponent: React.FC<InputComponentProps> = ({
                         getOptionLabel={getOptionLabel}
                         getOptionSelected={getOptionSelected}
                         options={translateOptions(options, formatMessage)}
-                        onChange={newValue => {
-                            onChange(keyValue, newValue);
-                        }}
+                        onChange={newValue => onChange(keyValue, newValue)}
                         renderTags={renderTags}
                         helperText={helperText}
-                        freeSolo={freeSolo}
+                        freeSolo={!multi && freeSolo}
                     />
                 );
             case 'arrayInput':

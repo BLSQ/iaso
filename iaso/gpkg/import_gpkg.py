@@ -122,7 +122,8 @@ def create_or_update_orgunit(
                 simplified_geom = MultiPolygon(simplified_geom)
             orgunit.simplified_geom = simplified_geom
 
-    orgunit.save(skip_calculate_path=True)
+    if orgunit.location is not None or orgunit.geom is not None:
+        orgunit.save(skip_calculate_path=True)
 
     if "group_refs" not in props:
         # the column is not here we don't touch the group
@@ -131,7 +132,8 @@ def create_or_update_orgunit(
         # if it's an empty string or null we will remove all groups presumably
         # I previously wanted to differentiate the case of empty str vs null but QGIS don't show the difference
         #  in the ui so it's perilous
-        orgunit.groups.clear()
+        if orgunit is not None and orgunit.id is not None:
+            orgunit.groups.clear()
     elif props["group_refs"]:
         group_refs = props["group_refs"].split(",")
         group_refs = [ref.strip() for ref in group_refs]
@@ -241,7 +243,8 @@ def import_gpkg_file2(
             parent_ref = row["properties"]["parent_ref"]
             to_update_with_parent.append((ref, parent_ref))
             # we will log the modification after we set the parent
-            modifications_to_log.append((existing_ou, orgunit))
+            if orgunit.location is not None or orgunit.geom is not None:
+                modifications_to_log.append((existing_ou, orgunit))
 
             total_org_unit += 1
 
@@ -252,7 +255,8 @@ def import_gpkg_file2(
 
         parent_ou = ref_ou[parent_ref] if parent_ref else None
         ou.parent = parent_ou
-        ou.save()
+        if ou.location is not None or ou.geom is not None:
+            ou.save()
 
     for old_ou, new_ou in modifications_to_log:
         # Possible optimisation, crate a bulk update

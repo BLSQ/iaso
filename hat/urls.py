@@ -10,6 +10,7 @@ from django.views.generic import RedirectView, TemplateView
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
+from importlib import import_module
 
 from iaso.views import health, page
 
@@ -33,13 +34,25 @@ else:
 
 if settings.ACTIVATE_SOCIAL_ACCOUNT:
     # ------------------ adding urls of allauth for social account ------------------
-    urlpatterns += [
-        # these 3 next lines ensure that no signup or password login is provided by allauth
-        path("accounts/login/", RedirectView.as_view(pattern_name="login", permanent=False)),
-        path("accounts/signup/", RedirectView.as_view(pattern_name="login", permanent=False)),
-        path("accounts/social/signup/", RedirectView.as_view(pattern_name="login", permanent=False)),
-        path("accounts/", include("allauth.urls")),  # allauth is providing the social login flow
-    ]
+    # this snippet is lifted from allauth.account.urls.py. It's the only way I found to ONLY load the features we need
+    # It means that with the current allauth version, only the following urls will be added (for a WFP account):
+    # /accounts/wfp/login/	allauth.socialaccount.providers.oauth2.views.view	wfp_login
+    # /accounts/wfp/login/callback/	allauth.socialaccount.providers.oauth2.views.view	wfp_callback
+    # /accounts/wfp/token/	plugins.wfp_auth.views.token_view	wfp_token
+    from allauth.socialaccount import providers
+
+    # Provider urlpatterns, as separate attribute (for reusability).
+    provider_urlpatterns = []
+    for provider in providers.registry.get_list():
+        try:
+            prov_mod = import_module(provider.get_package() + ".urls")
+        except ImportError:
+            continue
+        prov_urlpatterns = getattr(prov_mod, "urlpatterns", None)
+        if prov_urlpatterns:
+            provider_urlpatterns += prov_urlpatterns
+    urlpatterns += [path("accounts/", include(provider_urlpatterns))]
+
 urlpatterns += [
     path("", RedirectView.as_view(pattern_name="dashboard:home_iaso", permanent=False), name="index"),
     path("_health/", health),

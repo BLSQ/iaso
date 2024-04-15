@@ -114,6 +114,23 @@ const getPlaceholderValue = (key: string) => {
     return PlaceholderValue;
 };
 
+const computeNewValue = (
+    key: string,
+    changeRequest: OrgUnitChangeRequestDetails,
+    fieldDef: FieldDefinition,
+    isChanged: boolean,
+): Optional<Nullable<string>> | ReactElement => {
+    if (!isChanged) {
+        return changeRequest[`old_${key}`]
+            ? fieldDef.formatValue(changeRequest[`old_${key}`], false)
+            : getPlaceholderValue(key);
+    }
+    // This will not work if we have to show fields with boolean values
+    return changeRequest[`new_${key}`]
+        ? fieldDef.formatValue(changeRequest[`new_${key}`], false)
+        : getPlaceholderValue(key);
+};
+
 export const useNewFields = (
     changeRequest?: OrgUnitChangeRequestDetails,
 ): UseNewFields => {
@@ -125,17 +142,17 @@ export const useNewFields = (
                 label: formatMessage(MESSAGES.name),
                 order: 1,
                 fieldType: '',
-                formatValue: val => val,
-                // formatValue: val => <span>{val.toString()}</span>,
+                // span is necessary to enable text styling
+                formatValue: val => <span>{val.toString()}</span>,
             },
             new_org_unit_type: {
                 label: formatMessage(MESSAGES.orgUnitsType),
                 order: 2,
                 fieldType: 'string',
-                formatValue: val => (val as NestedOrgUnitType)?.short_name,
-                // formatValue: val => (
-                //     <span>{(val as NestedOrgUnitType).short_name}</span>
-                // ),
+                // span is necessary to enable text styling
+                formatValue: val => (
+                    <span>{(val as NestedOrgUnitType)?.short_name}</span>
+                ),
             },
             new_parent: {
                 label: formatMessage(MESSAGES.parent),
@@ -214,12 +231,15 @@ export const useNewFields = (
 
             const requestedFields = changeRequest.requested_fields;
 
-            const isChanged = requestedFields.includes(key);
+            const isChanged = requestedFields.includes(`new_${key}`);
 
             // This will not work if we have to show fields with boolean values
-            const newValue = changeRequest[`new_${key}`]
-                ? fieldDef.formatValue(changeRequest[`new_${key}`], false)
-                : getPlaceholderValue(key);
+            const newValue = computeNewValue(
+                key,
+                changeRequest,
+                fieldDef,
+                isChanged,
+            );
 
             const oldValue = changeRequest[`old_${key}`]
                 ? fieldDef.formatValue(changeRequest[`old_${key}`], true)

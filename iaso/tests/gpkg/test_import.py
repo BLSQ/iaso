@@ -192,18 +192,16 @@ class GPKGImport(TestCase):
             validation_status="new",
             description="",
         )
-
         self.assertEqual(OrgUnitType.objects.count(), 3)
-        self.assertEqual(OrgUnit.objects.all().count(), 4)
+        self.assertEqual(OrgUnit.objects.all().count(), 3)
         self.assertEqual(Group.objects.all().count(), 2)
 
-        self.assertEqual(4, Modification.objects.filter(content_type__model="orgunit").count())
+        self.assertEqual(3, Modification.objects.filter(content_type__model="orgunit").count())
         self.assertEqual(
             2, Modification.objects.filter(content_type__model="group", content_type__app_label="iaso").count()
         )
-
-        ou = OrgUnit.objects.get(source_ref="empty_geom")
-        self.assertEqual(ou.name, "empty_geom")
+        ou = OrgUnit.objects.filter(source_ref="empty_geom")
+        self.assertEqual(ou.first(), None)
 
     def test_import_orgunit_existing_orgunit_type(self):
         """A similar (same name and depth) OUT already exists for the same account, so we reuse this one"""
@@ -219,10 +217,10 @@ class GPKGImport(TestCase):
             description="",
         )
         self.assertEqual(OrgUnitType.objects.count(), 3)
-        self.assertEqual(OrgUnit.objects.all().count(), 4)
+        self.assertEqual(OrgUnit.objects.all().count(), 3)
         self.assertEqual(Group.objects.all().count(), 2)
 
-        self.assertEqual(4, Modification.objects.filter(content_type__model="orgunit").count())
+        self.assertEqual(3, Modification.objects.filter(content_type__model="orgunit").count())
 
         self.assertEqual(
             2, Modification.objects.filter(content_type__model="group", content_type__app_label="iaso").count()
@@ -278,10 +276,10 @@ class GPKGImport(TestCase):
             description="",
         )
         self.assertEqual(OrgUnitType.objects.count(), 4)
-        self.assertEqual(OrgUnit.objects.all().count(), 4)
+        self.assertEqual(OrgUnit.objects.all().count(), 3)
         self.assertEqual(Group.objects.all().count(), 2)
 
-        self.assertEqual(4, Modification.objects.filter(content_type__model="orgunit").count())
+        self.assertEqual(3, Modification.objects.filter(content_type__model="orgunit").count())
         self.assertEqual(
             2, Modification.objects.filter(content_type__model="group", content_type__app_label="iaso").count()
         )
@@ -315,10 +313,10 @@ class GPKGImport(TestCase):
         self.assertQuerySetEqual(source.versions.all().order_by("number"), [11, 16, 17], lambda x: x.number)
 
         self.assertEqual(OrgUnitType.objects.count(), 3)
-        self.assertEqual(OrgUnit.objects.all().count(), 4)
+        self.assertEqual(OrgUnit.objects.all().count(), 3)
         self.assertEqual(Group.objects.all().count(), 2)
 
-        self.assertEqual(4, Modification.objects.filter(content_type__model="orgunit").count())
+        self.assertEqual(3, Modification.objects.filter(content_type__model="orgunit").count())
         self.assertEqual(
             2, Modification.objects.filter(content_type__model="group", content_type__app_label="iaso").count()
         )
@@ -351,10 +349,10 @@ class GPKGImportSimplifiedGroup(TestCase):
         )
 
         self.assertEqual(OrgUnitType.objects.count(), 3)
-        self.assertEqual(OrgUnit.objects.all().count(), 4)
+        self.assertEqual(OrgUnit.objects.all().count(), 3)
         self.assertEqual(Group.objects.all().count(), 3)
 
-        self.assertEqual(4, Modification.objects.filter(content_type__model="orgunit").count())
+        self.assertEqual(3, Modification.objects.filter(content_type__model="orgunit").count())
         self.assertEqual(
             2, Modification.objects.filter(content_type__model="group", content_type__app_label="iaso").count()
         )

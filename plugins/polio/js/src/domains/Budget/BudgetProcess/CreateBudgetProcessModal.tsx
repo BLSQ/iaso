@@ -71,51 +71,49 @@ const CreateBudgetProcessModal: FunctionComponent<Props> = ({
     const titleMessage = formatMessage(MESSAGES.createBudgetProcessTitle);
 
     return (
-        <>
+        <FormikProvider value={formik}>
             {isFetchingDropdownData && <LoadingSpinner />}
             {!isFetchingDropdownData && (
-                <FormikProvider value={formik}>
-                    <ConfirmCancelModal
-                        open={isOpen}
-                        closeDialog={closeDialog}
-                        onClose={() => null}
-                        id="create-budget-process"
-                        dataTestId="create-budget-process"
-                        titleMessage={titleMessage}
-                        onConfirm={() => formik.handleSubmit()}
-                        onCancel={() => null}
-                        confirmMessage={MESSAGES.save}
-                        allowConfirm={allowConfirm}
-                        cancelMessage={MESSAGES.cancel}
-                    >
-                        <Box mb={2} mt={2}>
-                            <Field
-                                label={formatMessage(MESSAGES.labelCountry)}
-                                name="country"
-                                component={SingleSelect}
-                                options={dropdownsData?.countries || []}
-                            />
-                        </Box>
-                        <Box mb={2}>
-                            <Field
-                                label={formatMessage(MESSAGES.labelCampaign)}
-                                name="campaign"
-                                component={SingleSelect}
-                                options={currentCampaignOptions}
-                            />
-                        </Box>
-                        <Box mb={2}>
-                            <Field
-                                label={formatMessage(MESSAGES.labelRound)}
-                                name="rounds"
-                                component={MultiSelect}
-                                options={currentRoundsOptions}
-                            />
-                        </Box>
-                    </ConfirmCancelModal>
-                </FormikProvider>
+                <ConfirmCancelModal
+                    open={isOpen}
+                    closeDialog={closeDialog}
+                    onClose={() => null}
+                    id="create-budget-process"
+                    dataTestId="create-budget-process"
+                    titleMessage={titleMessage}
+                    onConfirm={() => formik.handleSubmit()}
+                    onCancel={() => null}
+                    confirmMessage={MESSAGES.save}
+                    allowConfirm={allowConfirm}
+                    cancelMessage={MESSAGES.cancel}
+                >
+                    <Box mb={2} mt={2}>
+                        <Field
+                            label={formatMessage(MESSAGES.labelCountry)}
+                            name="country"
+                            component={SingleSelect}
+                            options={dropdownsData?.countries || []}
+                        />
+                    </Box>
+                    <Box mb={2}>
+                        <Field
+                            label={formatMessage(MESSAGES.labelCampaign)}
+                            name="campaign"
+                            component={SingleSelect}
+                            options={currentCampaignOptions}
+                        />
+                    </Box>
+                    <Box mb={2}>
+                        <Field
+                            label={formatMessage(MESSAGES.labelRound)}
+                            name="rounds"
+                            component={MultiSelect}
+                            options={currentRoundsOptions}
+                        />
+                    </Box>
+                </ConfirmCancelModal>
             )}
-        </>
+        </FormikProvider>
     );
 };
 

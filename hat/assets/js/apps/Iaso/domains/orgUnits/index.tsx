@@ -21,6 +21,7 @@ import { useDispatch } from 'react-redux';
 import { useQueryClient } from 'react-query';
 
 // COMPONENTS
+import { useSearchParams } from 'react-router-dom';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import { OrgUnitFiltersContainer } from './components/OrgUnitFiltersContainer';
 import TopBar from '../../components/nav/TopBarComponent';
@@ -84,13 +85,15 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-type Props = {
-    params: OrgUnitParams;
-};
+// type Props = {
+//     params: OrgUnitParams;
+// };
 
 const baseUrl = baseUrls.orgUnits;
-export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
+export const OrgUnits: FunctionComponent = () => {
     // HOOKS
+    const [params, setSearchParams]: [OrgUnitParams, any] = useSearchParams();
+    console.log('PARAMS', params);
     const queryClient = useQueryClient();
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();

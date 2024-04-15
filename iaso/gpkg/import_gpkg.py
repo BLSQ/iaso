@@ -256,6 +256,8 @@ def import_gpkg_file2(
         parent_ou = ref_ou[parent_ref] if parent_ref else None
         ou.parent = parent_ou
         if ou.location is not None or ou.geom is not None:
+            if ou.parent is not None and (ou.parent.location is None or ou.parent.geom is None):
+                ou.parent = None
             ou.save()
 
     for old_ou, new_ou in modifications_to_log:

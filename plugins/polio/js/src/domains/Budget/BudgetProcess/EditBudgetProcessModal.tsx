@@ -58,38 +58,36 @@ const EditBudgetProcessModal: FunctionComponent<Props> = ({
         Boolean(formik.values.rounds);
 
     return (
-        <>
+        <FormikProvider value={formik}>
             {isFetchingAvailableRounds && <LoadingSpinner />}
             {!isFetchingAvailableRounds && (
-                <FormikProvider value={formik}>
-                    <ConfirmCancelModal
-                        open={isOpen}
-                        closeDialog={closeDialog}
-                        onClose={() => null}
-                        id="edit-budget-process"
-                        dataTestId="edit-budget-process"
-                        titleMessage={MESSAGES.modalEditBudgetProcess}
-                        onConfirm={() => formik.handleSubmit()}
-                        onCancel={() => null}
-                        confirmMessage={MESSAGES.modalWriteConfirm}
-                        allowConfirm={allowConfirm}
-                        cancelMessage={MESSAGES.modalWriteCancel}
-                    >
-                        <Box mb={2}>
-                            <Divider />
-                        </Box>
-                        <Box mb={2}>
-                            <Field
-                                label={formatMessage(MESSAGES.labelRound)}
-                                name="rounds"
-                                component={MultiSelect}
-                                options={availableRounds}
-                            />
-                        </Box>
-                    </ConfirmCancelModal>
-                </FormikProvider>
+                <ConfirmCancelModal
+                    open={isOpen}
+                    closeDialog={closeDialog}
+                    onClose={() => null}
+                    id="edit-budget-process"
+                    dataTestId="edit-budget-process"
+                    titleMessage={MESSAGES.modalEditBudgetProcess}
+                    onConfirm={() => formik.handleSubmit()}
+                    onCancel={() => null}
+                    confirmMessage={MESSAGES.modalWriteConfirm}
+                    allowConfirm={allowConfirm}
+                    cancelMessage={MESSAGES.modalWriteCancel}
+                >
+                    <Box mb={2}>
+                        <Divider />
+                    </Box>
+                    <Box mb={2}>
+                        <Field
+                            label={formatMessage(MESSAGES.labelRound)}
+                            name="rounds"
+                            component={MultiSelect}
+                            options={availableRounds}
+                        />
+                    </Box>
+                </ConfirmCancelModal>
             )}
-        </>
+        </FormikProvider>
     );
 };
 const modalWithIcon = makeFullModal(EditBudgetProcessModal, EditIconButton);

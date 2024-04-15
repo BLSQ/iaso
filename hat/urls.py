@@ -10,6 +10,7 @@ from django.views.generic import RedirectView, TemplateView
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
+from importlib import import_module
 
 from iaso.views import health, page
 
@@ -17,24 +18,46 @@ admin.site.site_header = "Administration de Iaso"
 admin.site.site_title = "Iaso"
 admin.site.index_title = "Administration de Iaso"
 
+
 if settings.DISABLE_PASSWORD_LOGINS:
+    login_template = "iaso/disabled_password_login.html"
     urlpatterns = [
-        path("login/", TemplateView.as_view(template_name="iaso/disabled_password_login.html"), name="login"),
-        path("admin/login/", TemplateView.as_view(template_name="iaso/disabled_password_login.html"), name="login"),
+        path("admin/login/", TemplateView.as_view(template_name=login_template), name="admin-login"),
+        path("login/", TemplateView.as_view(template_name=login_template), name="login"),
     ]
 else:
+    login_template = "iaso/login.html"
     urlpatterns = [
-        path("login/", auth.views.LoginView.as_view(template_name="iaso/login.html"), name="login"),
-        path("admin/login/", auth.views.LoginView.as_view(template_name="iaso/login.html"), name="login"),
+        path("admin/login/", auth.views.LoginView.as_view(template_name=login_template), name="admin-login"),
+        path("login/", auth.views.LoginView.as_view(template_name=login_template), name="login"),
     ]
 
-urlpatterns = urlpatterns + [
+if settings.ACTIVATE_SOCIAL_ACCOUNT:
+    # ------------------ adding urls of allauth for social account ------------------
+    # this snippet is lifted from allauth.account.urls.py. It's the only way I found to ONLY load the features we need
+    # It means that with the current allauth version, only the following urls will be added (for a WFP account):
+    # /accounts/wfp/login/	allauth.socialaccount.providers.oauth2.views.view	wfp_login
+    # /accounts/wfp/login/callback/	allauth.socialaccount.providers.oauth2.views.view	wfp_callback
+    # /accounts/wfp/token/	plugins.wfp_auth.views.token_view	wfp_token
+    from allauth.socialaccount import providers
+
+    # Provider urlpatterns, as separate attribute (for reusability).
+    provider_urlpatterns = []
+    for provider in providers.registry.get_list():
+        try:
+            prov_mod = import_module(provider.get_package() + ".urls")
+        except ImportError:
+            continue
+        prov_urlpatterns = getattr(prov_mod, "urlpatterns", None)
+        if prov_urlpatterns:
+            provider_urlpatterns += prov_urlpatterns
+    urlpatterns += [path("accounts/", include(provider_urlpatterns))]
+
+urlpatterns += [
     path("", RedirectView.as_view(pattern_name="dashboard:home_iaso", permanent=False), name="index"),
     path("_health/", health),
     path("_health", health),  # same without slash otherwise AWS complain about redirect
     path("health/", health),  # alias since current apache config hide _health/
-    path("accounts/", include("django.contrib.auth.urls")),
-    path("accounts/", include("allauth.urls")),
     path("admin/", admin.site.urls),
     path("api/", include("iaso.urls")),
     path("pages/<page_slug>/", page, name="pages"),
@@ -69,6 +92,7 @@ urlpatterns = urlpatterns + [
     ),
     path("sync/", include("hat.sync.urls")),
 ]
+
 
 for plugin_name in settings.PLUGINS:
     urls_module_name = "plugins." + plugin_name + ".urls"

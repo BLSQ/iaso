@@ -2,11 +2,9 @@
 import { Box } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent, useMemo } from 'react';
-import { withRouter } from 'react-router';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { useSingleTableParams } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/SingleTable';
 import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
-import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import MESSAGES from '../../../constants/messages';
 import { DASHBOARD_BASE_URL } from '../../../constants/routes';
 import { useStyles } from '../../../styles/theme';
@@ -21,10 +19,10 @@ import { useRemoveCampaign } from '../hooks/api/useRemoveCampaign';
 import { useRestoreCampaign } from '../hooks/api/useRestoreCampaign';
 import { DashboardButtons } from './DashboardButtons';
 import { useCampaignsTableColumns } from './useCampaignsTableColumns';
+import { useRouter } from '../../../../../../../hat/assets/js/apps/Iaso/routing/useRouter';
 
-type Props = { router: Router };
-
-const Dashboard: FunctionComponent<Props> = ({ router }) => {
+export const Dashboard: FunctionComponent = () => {
+    const router = useRouter();
     const { params } = router;
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
@@ -105,6 +103,3 @@ const Dashboard: FunctionComponent<Props> = ({ router }) => {
         </>
     );
 };
-
-const wrappedDashboard = withRouter(Dashboard);
-export { wrappedDashboard as Dashboard };

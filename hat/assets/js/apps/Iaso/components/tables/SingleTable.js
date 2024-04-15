@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { withRouter } from 'react-router';
 import { makeStyles } from '@mui/styles';
 import { Box } from '@mui/material';
 import { useDispatch } from 'react-redux';
@@ -19,8 +18,8 @@ import {
 
 import Filters from './TableFilters';
 
-import DownloadButtonsComponent from '../DownloadButtonsComponent';
-import { redirectToReplace } from '../../routing/actions';
+import DownloadButtonsComponent from '../DownloadButtonsComponent.tsx';
+import { redirectToReplace } from '../../routing/actions.ts';
 import { convertObjectToString } from '../../utils/dataManipulation.ts';
 import { useAbortController } from '../../libs/apiHooks.ts';
 
@@ -370,4 +369,4 @@ SingleTable.propTypes = {
     filtersColumnsCount: PropTypes.number,
 };
 
-export default withRouter(SingleTable);
+export default SingleTable;

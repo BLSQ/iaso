@@ -1,6 +1,4 @@
 import React, { FunctionComponent, useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { replace } from 'react-router-redux';
 
 import {
     Box,
@@ -18,14 +16,10 @@ import ChevronRight from '@mui/icons-material/ChevronRight';
 import Today from '@mui/icons-material/Today';
 import { DesktopDatePicker as DatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
 import { useSafeIntl } from 'bluesquare-components';
-
-import { Link, withRouter } from 'react-router';
-
+import { Link } from 'react-router-dom';
 import moment, { Moment } from 'moment';
 import { useStyles } from './Styles';
 import { dateFormat } from './constants';
-
-import { genUrl } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import MESSAGES from '../../../constants/messages';
 
@@ -35,19 +29,17 @@ type Props = {
     currentDate: Moment;
 };
 
-const Nav: FunctionComponent<Props> = ({
+export const Nav: FunctionComponent<Props> = ({
     currentMonday,
-    router,
     currentDate,
 }) => {
     const classes = useStyles();
-    const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-    const urlForDate = (date: Moment) =>
-        genUrl(router, {
-            currentDate: date.format(dateFormat),
-        });
+    const urlForDate = (date: Moment) => '/home';
+    // genUrl(router, {
+    //     currentDate: date.format(dateFormat),
+    // });
 
     const handleClickDate = (
         event?: React.MouseEvent<HTMLElement> | MouseEvent | TouchEvent,
@@ -60,10 +52,10 @@ const Nav: FunctionComponent<Props> = ({
     };
     const handleDateChange = (newDate: string) => {
         handleClickDate();
-        const url = genUrl(router, {
-            currentDate: newDate,
-        });
-        dispatch(replace(url));
+        // const url = genUrl(router, {
+        //     currentDate: newDate,
+        // });
+        // dispatch(replace(url));
     };
     const prev = (range: number) =>
         currentMonday.clone().subtract(range, 'week');
@@ -160,6 +152,3 @@ const Nav: FunctionComponent<Props> = ({
         </Box>
     );
 };
-
-const wrappedNav = withRouter(Nav);
-export { wrappedNav as Nav };

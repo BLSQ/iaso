@@ -4,8 +4,8 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { object } from 'prop-types';
-import { withRouter } from 'react-router';
 import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink.tsx';
+import { useRouter } from 'Iaso/routing/useRouter.tsx';
 import { useGetCountryUsersGroup, useGetProfiles } from '../requests';
 import MESSAGES from '../../../../constants/messages';
 import { CountryNotificationsConfigModal } from '../CountryNotificationsConfigModal';
@@ -24,8 +24,9 @@ const allLanguages = [
     { value: 'PT', label: 'PT' },
 ];
 
-const CountryNotificationsConfigTable = ({ params }) => {
+export const CountryNotificationsConfigTable = () => {
     const { formatMessage } = useSafeIntl();
+    const { params } = useRouter();
     const tableParams = useMemo(
         () => ({
             order: params.order ?? 'country__name', // Watch out, needs 2 underscores
@@ -109,6 +110,3 @@ const CountryNotificationsConfigTable = ({ params }) => {
 CountryNotificationsConfigTable.propTypes = {
     params: object.isRequired,
 };
-
-const tableWithRouter = withRouter(CountryNotificationsConfigTable);
-export { tableWithRouter as CountryNotificationsConfigTable };

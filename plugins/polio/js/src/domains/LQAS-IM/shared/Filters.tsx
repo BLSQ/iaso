@@ -1,13 +1,13 @@
 import React, { FunctionComponent, useMemo, useState } from 'react';
 // @ts-ignore
 import { Select, useSafeIntl } from 'bluesquare-components';
-import { withRouter } from 'react-router';
 import { useDispatch } from 'react-redux';
 import { replace } from 'react-router-redux';
 
 import { Box, Grid, IconButton } from '@mui/material';
 
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { useRouter } from '../../../../../../../hat/assets/js/apps/Iaso/routing/useRouter';
 import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { userHasPermission } from '../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 import MESSAGES from '../../../constants/messages';
@@ -25,27 +25,23 @@ type FiltersState = {
     campaign: string | undefined;
     country: number | undefined;
 };
-type Router = {
-    params: Params;
-};
+
 type Props = {
     isFetching: boolean;
-    router: Router;
     campaigns: any[];
     campaignsFetching: boolean;
     category: 'lqas' | 'im';
 };
 
-const Filters: FunctionComponent<Props> = ({
+export const Filters: FunctionComponent<Props> = ({
     isFetching,
-    router,
     campaigns,
     campaignsFetching,
     category,
 }) => {
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
-    const { params } = router;
+    const { params } = useRouter();
 
     const [filters, setFilters] = useState<FiltersState>({
         campaign: params.campaign,
@@ -136,6 +132,3 @@ const Filters: FunctionComponent<Props> = ({
         </Box>
     );
 };
-
-const wrappedFilters = withRouter(Filters);
-export { wrappedFilters as Filters };

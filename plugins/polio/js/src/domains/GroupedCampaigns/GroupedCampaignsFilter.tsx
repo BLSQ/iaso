@@ -5,7 +5,6 @@ import React, {
     useCallback,
     useEffect,
 } from 'react';
-import { withRouter } from 'react-router';
 import FiltersIcon from '@mui/icons-material/FilterList';
 import { Box, Button, Grid } from '@mui/material';
 import { FormattedMessage } from 'react-intl';
@@ -14,19 +13,19 @@ import { replace } from 'react-router-redux';
 import { genUrl } from '../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import MESSAGES from '../../constants/messages';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-// import { useGetCountries } from '../../hooks/useGetCountries';
+import { useRouter } from '../../../../../../hat/assets/js/apps/Iaso/routing/useRouter';
 
 type Props = {
     router: any;
     disableOnlyDeleted: boolean;
 };
 
-const GroupedCampaignsFilter: FunctionComponent<Props> = ({
+export const GroupedCampaignsFilter: FunctionComponent<Props> = ({
     router,
     // TODO set to false shwoOnlyDeleted is implemented
     disableOnlyDeleted = true,
 }) => {
-    const { params } = router;
+    const { params } = useRouter();
     const [filtersUpdated, setFiltersUpdated] = useState<boolean>(false);
     // const [countries, setCountries] = useState<string>(params.countries);
     const [search, setSearch] = useState<string>(params.search);
@@ -123,5 +122,3 @@ const GroupedCampaignsFilter: FunctionComponent<Props> = ({
         </>
     );
 };
-const wrappedFilters = withRouter(GroupedCampaignsFilter);
-export { wrappedFilters as GroupedCampaignsFilter };

@@ -25,6 +25,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.budget.label.round',
         defaultMessage: 'Round',
     },
+    messageCreateSuccess: {
+        id: 'iaso.polio.budget.message.CreateSuccess',
+        defaultMessage: 'Budget process successfully created',
+    },
+    messageEditSuccess: {
+        id: 'iaso.polio.budget.message.EditSuccess',
+        defaultMessage: 'Budget process successfully edited',
+    },
+    messageDeleteSuccess: {
+        id: 'iaso.polio.budget.message.DeleteSuccess',
+        defaultMessage: 'Budget process successfully deleted',
+    },
     modalDeleteYes: {
         id: 'iaso.polio.modal.yes',
         defaultMessage: 'Yes',

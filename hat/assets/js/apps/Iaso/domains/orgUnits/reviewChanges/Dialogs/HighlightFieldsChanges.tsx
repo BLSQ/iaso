@@ -74,7 +74,7 @@ export const HighlightFields: FunctionComponent<Props> = ({
                         <ReviewOrgUnitFieldChanges
                             fieldValues={allLeftAndRightFields}
                             field={field}
-                            status={changeRequest?.status || ''}
+                            changeRequest={changeRequest}
                         />
                     )) ||
                         '--'}

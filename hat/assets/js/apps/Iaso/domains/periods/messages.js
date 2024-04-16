@@ -81,6 +81,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.formversions.periodError',
         defaultMessage: 'Period not valid',
     },
+    noPeriod: {
+        id: 'iaso.label.noPeriod',
+        defaultMessage: 'No period',
+    },
 });
 
 export default MESSAGES;

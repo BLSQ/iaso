@@ -22,15 +22,12 @@ export const useValidateCampaign = (): ((
             await schema.validate(values, { abortEarly: false });
             return {};
         } catch (error) {
-            // Check if the error is a Yup ValidationError and has an inner array
             if (error instanceof ValidationError && error.inner) {
                 return error.inner.reduce((acc, err) => {
                     const path = err.path || 'unknownPath';
-                    if (!acc[path]) {
-                        acc[path] = err.message;
-                    }
+                    acc[path] = err.message;
                     return acc;
-                }, {});
+                }, {} as ValidationResult);
             }
             console.error(
                 "Validation failed, but it wasn't a Yup ValidationError:",

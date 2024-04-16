@@ -148,7 +148,11 @@ const MESSAGES = defineMessages({
     },
     weeks: {
         id: 'iaso.polio.calendar.weeks',
-        defaultMessage: 'week(s) were',
+        defaultMessage: 'week(s)',
+    },
+    weeksShort: {
+        id: 'iaso.polio.calendar.weeksShort',
+        defaultMessage: 'w.',
     },
     startDate: {
         id: 'iaso.label.dateFrom',
@@ -1210,7 +1214,7 @@ const MESSAGES = defineMessages({
     },
     campaign_types: {
         id: 'iaso.polio.label.campaignTypes',
-        defaultMessage: 'Campaign types',
+        defaultMessage: 'Types',
     },
     campaignCategory: {
         id: 'iaso.polio.label.campaignCategory',
@@ -2499,6 +2503,22 @@ const MESSAGES = defineMessages({
     evaluation: {
         id: 'iaso.polio.label.evaluation',
         defaultMessage: 'Evaluation',
+    },
+    period: {
+        defaultMessage: 'Period',
+        id: 'iaso.instance.period',
+    },
+    semester: {
+        defaultMessage: 'Semester',
+        id: 'iaso.polio.periods.semester',
+    },
+    quarter: {
+        defaultMessage: 'Quarter',
+        id: 'iaso.polio.periods.quarter',
+    },
+    year: {
+        defaultMessage: 'Year',
+        id: 'iaso.polio.periods.year',
     },
 });
 

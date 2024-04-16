@@ -826,6 +826,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.passed',
         defaultMessage: 'Passed',
     },
+    verypoor: {
+        id: 'iaso.polio.label.verypoor',
+        defaultMessage: 'Very poor',
+    },
     poor: {
         id: 'iaso.polio.label.poor',
         defaultMessage: 'Poor',
@@ -859,7 +863,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Failed',
     },
     '3lqasFail': {
-        id: 'iaso.polio.label.failed',
+        id: 'iaso.polio.label.3lqasFail',
         defaultMessage: 'Very poor',
     },
     '3lqasmoderate': {

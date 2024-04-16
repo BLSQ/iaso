@@ -78,7 +78,7 @@ export const makeLqasMapLegendItems =
             color: OK_COLOR,
         });
         const failedLegendItem = makeLegendItem({
-            label: formatMessage(MESSAGES.failing),
+            label: formatMessage(MESSAGES.verypoor),
             value: failed?.length,
             color: FAIL_COLOR,
         });

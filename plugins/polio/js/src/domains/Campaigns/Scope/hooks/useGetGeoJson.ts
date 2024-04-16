@@ -19,9 +19,10 @@ type Params = {
 export const useGetGeoJson = (
     topParentId: number | undefined,
     orgUnitCategory: string,
+    validationStatus: string | undefined = 'all',
 ): UseQueryResult<any> => {
     const params: Params = {
-        validation_status: 'all',
+        validation_status: validationStatus,
         withShapes: 'true',
         order: 'id',
         orgUnitTypeCategory: orgUnitCategory,

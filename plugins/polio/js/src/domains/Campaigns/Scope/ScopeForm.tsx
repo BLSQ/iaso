@@ -55,10 +55,11 @@ export const ScopeForm: FunctionComponent = () => {
     const parentCountryId =
         country?.country_parent?.id || country?.root?.id || country?.id;
     const { data: districtShapes, isFetching: isFetchingDistrictsShapes } =
-        useGetGeoJson(parentCountryId, 'DISTRICT');
+        useGetGeoJson(parentCountryId, 'DISTRICT', 'VALID');
     const { data: regionShapes, isFetching: isFetchingRegions } = useGetGeoJson(
         parentCountryId,
         'REGION',
+        'VALID',
     );
 
     const scopes = useMemo(() => {

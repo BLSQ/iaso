@@ -826,6 +826,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.passed',
         defaultMessage: 'Passed',
     },
+    poor: {
+        id: 'iaso.polio.label.poor',
+        defaultMessage: 'Poor',
+    },
+    moderate: {
+        id: 'iaso.polio.label.moderate',
+        defaultMessage: 'Moderate',
+    },
     countryPassing: {
         id: 'iaso.polio.label.countryPassing',
         defaultMessage: '80% or more districts passed',
@@ -852,7 +860,15 @@ const MESSAGES = defineMessages({
     },
     '3lqasFail': {
         id: 'iaso.polio.label.failed',
-        defaultMessage: 'Failed',
+        defaultMessage: 'Very poor',
+    },
+    '3lqasmoderate': {
+        id: 'iaso.polio.label.moderate',
+        defaultMessage: 'Moderate',
+    },
+    '3lqaspoor': {
+        id: 'iaso.polio.label.poor',
+        defaultMessage: 'Poor',
     },
     inScope: {
         id: 'iaso.polio.label.inScope',

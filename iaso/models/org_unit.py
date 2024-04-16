@@ -713,7 +713,7 @@ class OrgUnitChangeRequest(models.Model):
         self.rejection_comment = rejection_comment
         self.save()
 
-    def approve(self, user: User, approved_fields: typing.List[str], rejection_comment: str) -> None:
+    def approve(self, user: User, approved_fields: typing.List[str], rejection_comment: str = "") -> None:
         self.__apply_changes(user, approved_fields)
         self.updated_by = user
         self.status = self.Statuses.APPROVED

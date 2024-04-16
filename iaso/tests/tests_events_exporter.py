@@ -314,3 +314,42 @@ class DataValueExporterTests(TestCase):
         )
         instance.refresh_from_db()
         self.assertIsNone(instance.last_export_success_at)
+
+    @responses.activate
+    def test_event_export_handle_errors_new_payload(self):
+        mapping_version = MappingVersion(
+            name="event", json=build_form_mapping(), form_version=self.form_version, mapping=self.mapping
+        )
+        mapping_version.save()
+        # setup
+        # persist an instance
+        instance = self.build_instance(self.form)
+
+        export_request = ExportRequestBuilder().build_export_request(
+            filters={"period_ids": "201801", "form_id": self.form.id, "org_unit_id": instance.org_unit.id},
+            launcher=self.user,
+        )
+        # mock expected calls
+
+        responses.add(
+            responses.POST,
+            "https://dhis2.com/api/events",
+            json=load_dhis2_fixture("event-create-error-235-type.json"),
+            status=200,
+        )
+
+        with self.assertRaises(InstanceExportError) as context:
+            DataValueExporter().export_instances(export_request)
+            self.expect_logs("exported")
+
+            instance.refresh_from_db()
+            self.assertIsNotNone(instance.last_export_success_at)
+
+        self.expect_logs(ERRORED)
+
+        self.assertEqual(
+            'ERROR while processing page 1/1 : [[{"object": "DkhbIf6Xm9X", "value": "value_not_positive_integer"}]]',
+            context.exception.message,
+        )
+        instance.refresh_from_db()
+        self.assertIsNone(instance.last_export_success_at)

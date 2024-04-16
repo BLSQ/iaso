@@ -13,7 +13,7 @@ import { replace } from 'react-router-redux';
 import { genUrl } from '../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import MESSAGES from '../../constants/messages';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-import { useRouter } from '../../../../../../hat/assets/js/apps/Iaso/routing/useRouter';
+import { useRouter } from '../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useRouter';
 
 type Props = {
     router: any;

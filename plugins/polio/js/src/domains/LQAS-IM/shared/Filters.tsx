@@ -7,7 +7,7 @@ import { replace } from 'react-router-redux';
 import { Box, Grid, IconButton } from '@mui/material';
 
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import { useRouter } from '../../../../../../../hat/assets/js/apps/Iaso/routing/useRouter';
+import { useRouter } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useRouter';
 import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { userHasPermission } from '../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 import MESSAGES from '../../../constants/messages';

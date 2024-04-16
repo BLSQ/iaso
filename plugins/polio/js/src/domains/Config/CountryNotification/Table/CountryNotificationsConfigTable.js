@@ -5,7 +5,7 @@ import {
 } from 'bluesquare-components';
 import { object } from 'prop-types';
 import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink.tsx';
-import { useRouter } from 'Iaso/routing/useRouter.tsx';
+import { useRouter } from 'Iaso/routing/hooks/useRouter.tsx';
 import { useGetCountryUsersGroup, useGetProfiles } from '../requests';
 import MESSAGES from '../../../../constants/messages';
 import { CountryNotificationsConfigModal } from '../CountryNotificationsConfigModal';

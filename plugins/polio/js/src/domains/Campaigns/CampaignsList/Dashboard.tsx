@@ -19,7 +19,7 @@ import { useRemoveCampaign } from '../hooks/api/useRemoveCampaign';
 import { useRestoreCampaign } from '../hooks/api/useRestoreCampaign';
 import { DashboardButtons } from './DashboardButtons';
 import { useCampaignsTableColumns } from './useCampaignsTableColumns';
-import { useRouter } from '../../../../../../../hat/assets/js/apps/Iaso/routing/useRouter';
+import { useRouter } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useRouter';
 
 export const Dashboard: FunctionComponent = () => {
     const router = useRouter();

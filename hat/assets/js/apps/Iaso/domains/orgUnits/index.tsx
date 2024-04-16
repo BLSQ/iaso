@@ -8,20 +8,16 @@ import React, {
 import { Box, Tabs, Tab } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
-    // @ts-ignore
     commonStyles,
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     LoadingSpinner,
-    // @ts-ignore
     useSkipEffectOnMount,
 } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 import { useQueryClient } from 'react-query';
 
 // COMPONENTS
-import { useSearchParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import { OrgUnitFiltersContainer } from './components/OrgUnitFiltersContainer';
 import TopBar from '../../components/nav/TopBarComponent';
@@ -92,8 +88,7 @@ const useStyles = makeStyles(theme => ({
 const baseUrl = baseUrls.orgUnits;
 export const OrgUnits: FunctionComponent = () => {
     // HOOKS
-    const [params, setSearchParams]: [OrgUnitParams, any] = useSearchParams();
-    console.log('PARAMS', params);
+    const params: OrgUnitParams = useParams();
     const queryClient = useQueryClient();
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();

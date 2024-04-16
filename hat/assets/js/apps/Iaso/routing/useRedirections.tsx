@@ -1,5 +1,5 @@
 import { getSort } from 'bluesquare-components';
-import { Route } from 'react-router';
+import { Route, Routes } from 'react-router';
 import React, { ReactElement } from 'react';
 import { baseUrls } from '../constants/urls';
 import Page404 from '../components/errors/Page404';
@@ -158,15 +158,18 @@ export const useRedirections: RedirectionsMethod = (
                 <Route
                     path={redirection.path}
                     element={redirection.component}
+                    key={`${redirection.path}${redirection.to}`}
                 />
             );
         }
         return (
             <Route
                 path={redirection.path}
+                key={`${redirection.path}${redirection.to}`}
                 element={<div>REDIRECTION BROKEN, LOL</div>}
             />
         );
+
         // return <Redirect path={redirection.path} to={redirection.to} />;
     });
 };

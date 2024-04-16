@@ -86,7 +86,8 @@ export const getPath = path => {
 export const setupAccountPath = {
     baseUrl: baseUrls.setupAccount,
     permissions: [],
-    component: props => <SetupAccount {...props} />,
+    element: <SetupAccount />,
+    // component: props => <SetupAccount {...props} />,
     params: [],
 };
 
@@ -124,7 +125,8 @@ export const formsPath = {
             key: 'projectsIds',
         },
     ],
-    component: props => <Forms {...props} />,
+    element: <Forms />,
+    // component: props => <Forms {...props} />,
     isRootUrl: true,
 };
 
@@ -139,13 +141,13 @@ export const pagesPath = {
         },
         ...paginationPathParams,
     ],
-    component: props => <Pages {...props} />,
+    element: <Pages />,
 };
 
 export const formDetailPath = {
     baseUrl: baseUrls.formDetail,
     permissions: [Permission.FORMS, Permission.SUBMISSIONS],
-    component: props => <FormDetail {...props} />,
+    component: <FormDetail />,
     params: [
         {
             isRequired: false,
@@ -167,7 +169,7 @@ export const formDetailPath = {
 export const formsStatsPath = {
     baseUrl: baseUrls.formsStats,
     permissions: [Permission.FORMS],
-    component: () => <FormsStats />,
+    element: <FormsStats />,
     params: [
         {
             isRequired: false,
@@ -179,7 +181,7 @@ export const formsStatsPath = {
 export const instancesPath = {
     baseUrl: baseUrls.instances,
     permissions: [Permission.SUBMISSIONS, Permission.SUBMISSIONS_UPDATE],
-    component: props => <Instances {...props} />,
+    element: <Instances />,
     params: [
         {
             isRequired: false,
@@ -296,7 +298,7 @@ export const instancesPath = {
 export const instanceDetailPath = {
     baseUrl: baseUrls.instanceDetail,
     permissions: [Permission.SUBMISSIONS],
-    component: props => <InstanceDetail {...props} />,
+    element: <InstanceDetail />,
     params: [
         {
             isRequired: false,
@@ -316,7 +318,7 @@ export const instanceDetailPath = {
 export const compareInstanceLogsPath = {
     baseUrl: baseUrls.compareInstanceLogs,
     permissions: [Permission.SUBMISSIONS],
-    component: props => <CompareInstanceLogs {...props} />,
+    element: <CompareInstanceLogs />,
     params: [
         {
             isRequired: false,
@@ -340,7 +342,7 @@ export const compareInstanceLogsPath = {
 export const compareInstancesPath = {
     baseUrl: baseUrls.compareInstances,
     permissions: [Permission.SUBMISSIONS],
-    component: props => <CompareSubmissions {...props} />,
+    element: <CompareSubmissions />,
     params: [
         {
             isRequired: false,
@@ -356,7 +358,7 @@ export const compareInstancesPath = {
 export const mappingsPath = {
     baseUrl: baseUrls.mappings,
     permissions: [Permission.MAPPINGS],
-    component: props => <Mappings {...props} />,
+    element: <Mappings />,
     params: [
         {
             isRequired: false,
@@ -376,7 +378,7 @@ export const mappingsPath = {
 export const mappingDetailPath = {
     baseUrl: baseUrls.mappingDetail,
     permissions: [Permission.MAPPINGS],
-    component: props => <MappingDetails {...props} />,
+    element: <MappingDetails />,
     params: [
         {
             isRequired: false,
@@ -396,7 +398,7 @@ export const mappingDetailPath = {
 export const orgUnitsPath = {
     baseUrl: baseUrls.orgUnits,
     permissions: [Permission.ORG_UNITS],
-    component: props => <OrgUnits {...props} />,
+    element: <OrgUnits />,
     params: [
         {
             isRequired: false,
@@ -432,7 +434,7 @@ export const orgUnitsPath = {
 export const orgUnitsDetailsPath = {
     baseUrl: baseUrls.orgUnitDetails,
     permissions: [Permission.ORG_UNITS],
-    component: props => <OrgUnitDetail {...props} />,
+    element: <OrgUnitDetail />,
     params: [
         {
             isRequired: false,
@@ -479,7 +481,7 @@ export const orgUnitsDetailsPath = {
 export const orgUnitChangeRequestPath = {
     baseUrl: baseUrls.orgUnitsChangeRequest,
     permissions: [Permission.ORG_UNITS_CHANGE_REQUEST_REVIEW],
-    component: props => <ReviewOrgUnitChanges {...props} />,
+    element: <ReviewOrgUnitChanges />,
     params: [
         {
             isRequired: false,
@@ -531,7 +533,7 @@ export const orgUnitChangeRequestPath = {
 export const registryPath = {
     baseUrl: baseUrls.registry,
     permissions: [Permission.REGISTRY],
-    component: props => <Registry {...props} />,
+    element: <Registry />,
     params: [
         {
             isRequired: false,
@@ -542,7 +544,7 @@ export const registryPath = {
 export const registryDetailPath = {
     baseUrl: baseUrls.registryDetail,
     permissions: [Permission.REGISTRY],
-    component: props => <RegistryDetail {...props} />,
+    element: <RegistryDetail />,
     params: [
         {
             isRequired: false,
@@ -593,7 +595,7 @@ export const registryDetailPath = {
 export const linksPath = {
     baseUrl: baseUrls.links,
     permissions: [Permission.LINKS],
-    component: props => <Links {...props} />,
+    element: <Links />,
     params: [
         {
             isRequired: false,
@@ -658,7 +660,7 @@ export const linksPath = {
 export const algosPath = {
     baseUrl: baseUrls.algos,
     permissions: [Permission.LINKS],
-    component: props => <Runs {...props} />,
+    element: <Runs />,
     params: [
         {
             isRequired: false,
@@ -699,7 +701,7 @@ export const algosPath = {
 export const completenessPath = {
     baseUrl: baseUrls.completeness,
     permissions: [Permission.COMPLETENESS],
-    component: props => <Completeness {...props} />,
+    element: <Completeness />,
     params: [
         {
             isRequired: false,
@@ -711,7 +713,7 @@ export const completenessPath = {
 export const completenessStatsPath = {
     baseUrl: baseUrls.completenessStats,
     permissions: [Permission.COMPLETENESS_STATS],
-    component: props => <CompletenessStats {...props} />,
+    element: <CompletenessStats />,
     params: [
         {
             isRequired: false,
@@ -772,7 +774,7 @@ export const completenessStatsPath = {
 export const modulesPath = {
     baseUrl: baseUrls.modules,
     permissions: [Permission.MODULES],
-    component: props => <Modules {...props} />,
+    element: <Modules />,
     params: [
         {
             isRequired: false,
@@ -789,7 +791,7 @@ export const modulesPath = {
 export const usersPath = {
     baseUrl: baseUrls.users,
     permissions: [Permission.USERS_ADMIN, Permission.USERS_MANAGEMENT],
-    component: props => <Users {...props} />,
+    element: <Users />,
     params: [
         {
             isRequired: false,
@@ -841,7 +843,7 @@ export const usersPath = {
 export const userRolesPath = {
     baseUrl: baseUrls.userRoles,
     permissions: [Permission.USER_ROLES],
-    component: props => <UserRoles {...props} />,
+    element: <UserRoles />,
     params: [
         {
             isRequired: false,
@@ -861,7 +863,7 @@ export const userRolesPath = {
 export const projectsPath = {
     baseUrl: baseUrls.projects,
     permissions: [Permission.PROJECTS],
-    component: props => <Projects {...props} />,
+    element: <Projects />,
     params: [
         {
             isRequired: false,
@@ -874,7 +876,7 @@ export const projectsPath = {
 export const dataSourcesPath = {
     baseUrl: baseUrls.sources,
     permissions: [Permission.SOURCES, Permission.SOURCE_WRITE],
-    component: props => <DataSources {...props} />,
+    element: <DataSources />,
     params: [
         {
             isRequired: false,
@@ -887,7 +889,7 @@ export const dataSourcesPath = {
 export const dataSourceDetailsPath = {
     baseUrl: baseUrls.sourceDetails,
     permissions: [Permission.SOURCES, Permission.SOURCE_WRITE],
-    component: props => <DataSourceDetail {...props} />,
+    element: <DataSourceDetail />,
     params: [
         {
             isRequired: false,
@@ -904,7 +906,7 @@ export const dataSourceDetailsPath = {
 export const tasksPath = {
     baseUrl: baseUrls.tasks,
     permissions: [Permission.DATA_TASKS],
-    component: props => <Tasks {...props} />,
+    element: <Tasks />,
     params: [
         {
             isRequired: false,
@@ -917,7 +919,7 @@ export const tasksPath = {
 export const devicesPath = {
     baseUrl: baseUrls.devices,
     permissions: [Permission.DATA_DEVICES],
-    component: props => <Devices {...props} />,
+    element: <Devices />,
     params: [
         {
             isRequired: false,
@@ -930,7 +932,7 @@ export const devicesPath = {
 export const groupsPath = {
     baseUrl: baseUrls.groups,
     permissions: [Permission.ORG_UNIT_GROUPS],
-    component: props => <Groups {...props} />,
+    element: <Groups />,
     params: [
         {
             isRequired: false,
@@ -950,7 +952,7 @@ export const groupsPath = {
 export const orgUnitTypesPath = {
     baseUrl: baseUrls.orgUnitTypes,
     permissions: [Permission.ORG_UNIT_TYPES],
-    component: props => <Types {...props} />,
+    element: <Types />,
     params: [
         {
             isRequired: false,
@@ -969,7 +971,7 @@ export const orgUnitTypesPath = {
 export const entitiesPath = {
     baseUrl: baseUrls.entities,
     permissions: [Permission.ENTITIES],
-    component: props => <Beneficiaries {...props} />,
+    element: <Beneficiaries />,
     params: [
         {
             isRequired: false,
@@ -1016,7 +1018,7 @@ export const entitiesPath = {
 export const entityDetailsPath = {
     baseUrl: baseUrls.entityDetails,
     permissions: [Permission.ENTITIES],
-    component: props => <BeneficiaryDetail {...props} />,
+    element: <BeneficiaryDetail />,
     params: [
         {
             isRequired: false,
@@ -1033,7 +1035,7 @@ export const entityDetailsPath = {
 export const entitySubmissionDetailPath = {
     baseUrl: baseUrls.entitySubmissionDetail,
     permissions: [Permission.ENTITIES],
-    component: props => <VisitDetails {...props} />,
+    element: <VisitDetails />,
     params: [
         {
             isRequired: false,
@@ -1053,7 +1055,7 @@ export const entitySubmissionDetailPath = {
 export const entityTypesPath = {
     baseUrl: baseUrls.entityTypes,
     permissions: [Permission.ENTITIES],
-    component: props => <EntityTypes {...props} />,
+    element: <EntityTypes />,
     params: [
         {
             isRequired: false,
@@ -1075,7 +1077,7 @@ export const entityDuplicatesPath = {
         Permission.ENTITIES_DUPLICATE_READ,
         Permission.ENTITIES_DUPLICATE_WRITE,
     ],
-    component: props => <Duplicates {...props} />,
+    element: <Duplicates />,
     params: [
         {
             isRequired: false,
@@ -1151,7 +1153,7 @@ export const entityDuplicatesDetailsPath = {
         Permission.ENTITIES_DUPLICATE_READ,
         Permission.ENTITIES_DUPLICATE_WRITE,
     ],
-    component: props => <DuplicateDetails {...props} />,
+    element: <DuplicateDetails />,
     params: [
         {
             isRequired: false,
@@ -1171,7 +1173,7 @@ export const planningPath = {
     baseUrl: baseUrls.planning,
     // FIXME use planning permissions when they exist
     permissions: [Permission.PLANNINGS],
-    component: props => <Planning {...props} />,
+    element: <Planning />,
     params: [
         {
             isRequired: false,
@@ -1203,7 +1205,7 @@ export const assignmentsPath = {
     baseUrl: baseUrls.assignments,
     // FIXME use planning permissions when they exist
     permissions: [Permission.PLANNINGS],
-    component: props => <Assignments {...props} />,
+    element: <Assignments />,
     params: [
         {
             isRequired: false,
@@ -1242,7 +1244,7 @@ export const assignmentsPath = {
 export const teamsPath = {
     baseUrl: baseUrls.teams,
     permissions: [Permission.TEAMS],
-    component: props => <Teams {...props} />,
+    element: <Teams />,
     params: [
         {
             isRequired: false,
@@ -1261,7 +1263,7 @@ export const teamsPath = {
 export const storagesPath = {
     baseUrl: baseUrls.storages,
     permissions: [Permission.STORAGES],
-    component: props => <Storages {...props} />,
+    element: <Storages />,
     params: [
         {
             isRequired: false,
@@ -1292,7 +1294,7 @@ export const storagesPath = {
 export const storageDetailPath = {
     baseUrl: baseUrls.storageDetail,
     permissions: [Permission.STORAGES],
-    component: props => <StorageDetails {...props} />,
+    element: <StorageDetails />,
     params: [
         {
             isRequired: false,
@@ -1320,7 +1322,7 @@ export const storageDetailPath = {
 export const workflowsPath = {
     baseUrl: baseUrls.workflows,
     permissions: [Permission.WORKFLOWS],
-    component: props => <Workflows {...props} />,
+    element: <Workflows />,
     params: [
         {
             isRequired: false,
@@ -1347,7 +1349,7 @@ export const workflowsPath = {
 export const workflowsDetailPath = {
     baseUrl: baseUrls.workflowDetail,
     permissions: [Permission.WORKFLOWS],
-    component: props => <WorkflowDetails {...props} />,
+    element: <WorkflowDetails />,
     params: [
         {
             isRequired: false,
@@ -1368,7 +1370,7 @@ export const workflowsDetailPath = {
 export const potentialPaymentsPath = {
     baseUrl: baseUrls.potentialPayments,
     permissions: [Permission.PAYMENTS],
-    component: props => <PotentialPayments {...props} />,
+    element: <PotentialPayments />,
     params: [
         {
             isRequired: false,
@@ -1404,7 +1406,7 @@ export const potentialPaymentsPath = {
 export const lotsPaymentsPath = {
     baseUrl: baseUrls.lotsPayments,
     permissions: [Permission.PAYMENTS],
-    component: props => <LotsPayments {...props} />,
+    element: <LotsPayments />,
     params: [
         {
             isRequired: false,
@@ -1436,25 +1438,25 @@ export const lotsPaymentsPath = {
 
 export const page401 = {
     baseUrl: baseUrls.error401,
-    component: () => <PageError errorCode="401" />,
+    element: () => <PageError errorCode="401" />,
     params: [],
 };
 
 export const page403 = {
     baseUrl: baseUrls.error403,
-    component: () => <PageError errorCode="403" />,
+    element: () => <PageError errorCode="403" />,
     params: [],
 };
 
 export const page404 = {
     baseUrl: baseUrls.error404,
-    component: () => <PageError errorCode="404" />,
+    element: () => <PageError errorCode="404" />,
     params: [],
 };
 
 export const page500 = {
     baseUrl: baseUrls.error500,
-    component: () => <PageError errorCode="500" />,
+    element: () => <PageError errorCode="500" />,
     params: [],
 };
 

@@ -1,9 +1,9 @@
 import React, { FunctionComponent } from 'react';
-import { Link, RouterProvider } from 'react-router-dom';
+import { BrowserRouter, Link, RouterProvider } from 'react-router-dom';
 import { LinkProvider, LoadingSpinner } from 'bluesquare-components';
 import { useSnackBars } from '../../components/snackBars/useSnackBars';
 import { useRoutes } from './hooks/useRoutes';
-import { router } from '../../routing/router';
+// import { router } from '../../routing/router';
 
 type Props = {
     userHomePage?: string;
@@ -20,7 +20,8 @@ const App: FunctionComponent<Props> = ({ userHomePage }) => {
             {!isLoadingRoutes && (
                 <LinkProvider linkComponent={Link}>
                     {/* <Router routes={routes} history={history} /> */}
-                    <RouterProvider router={router} />
+                    {/* <RouterProvider router={router} /> */}
+                    <BrowserRouter>{routes}</BrowserRouter>
                 </LinkProvider>
             )}
         </>

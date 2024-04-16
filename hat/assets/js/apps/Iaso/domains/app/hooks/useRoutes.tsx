@@ -1,5 +1,5 @@
 import React, { ElementType, useContext, useMemo, ReactElement } from 'react';
-import { Route } from 'react-router';
+import { Route, Routes } from 'react-router';
 import { last } from 'lodash';
 
 import {
@@ -20,7 +20,7 @@ import { useGetAndStoreCurrentUser } from '../../home/hooks/useGetAndStoreCurren
 import { SHOW_HOME_ONLINE, hasFeatureFlag } from '../../../utils/featureFlags';
 
 type Result = {
-    routes: ReactElement[];
+    routes: ReactElement | null;
     isLoadingRoutes: boolean;
 };
 
@@ -114,29 +114,52 @@ const useGetProtectedRoutes = (
     routes: RouteCustom[],
     hasNoAccount: boolean,
 ): ReactElement[] => {
-    return useMemo(
-        () =>
-            routes.map(routeConfig => {
-                const { allowAnonymous = false, component: Component } =
-                    routeConfig;
-                const ProtectedComponent = props => (
-                    <ProtectedRoute
-                        // eslint-disable-next-line react/jsx-props-no-spreading
-                        {...props}
-                        routeConfig={routeConfig}
-                        component={routeConfig.component(props)}
-                        allRoutes={routes}
-                        hasNoAccount={hasNoAccount}
-                    />
-                );
-                const page =
-                    allowAnonymous || hasNoAccount
-                        ? Component
-                        : ProtectedComponent;
-                return <Route path={getPath(routeConfig)} component={page} />;
-            }),
-        [hasNoAccount, routes],
-    );
+    return useMemo(() => {
+        return routes.map(routeConfig => {
+            const { allowAnonymous = false, component: Component } =
+                routeConfig;
+            const ProtectedComponent = props => (
+                <ProtectedRoute
+                    // eslint-disable-next-line react/jsx-props-no-spreading
+                    {...props}
+                    key={routeConfig.baseUrl}
+                    routeConfig={routeConfig}
+                    component={routeConfig.component(props)}
+                    allRoutes={routes}
+                    hasNoAccount={hasNoAccount}
+                />
+            );
+            const Page =
+                allowAnonymous || hasNoAccount ? Component : ProtectedComponent;
+            return <Route path={getPath(routeConfig)} element={<Page />} />;
+        });
+        // return (
+        //     <Routes>
+        //         {routes.map(routeConfig => {
+        //             const { allowAnonymous = false, component: Component } =
+        //                 routeConfig;
+        //             const ProtectedComponent = props => (
+        //                 <ProtectedRoute
+        //                     // eslint-disable-next-line react/jsx-props-no-spreading
+        //                     {...props}
+        //                     key={routeConfig.baseUrl}
+        //                     routeConfig={routeConfig}
+        //                     component={routeConfig.component(props)}
+        //                     allRoutes={routes}
+        //                     hasNoAccount={hasNoAccount}
+        //                 />
+        //             );
+        //             const Page =
+        //                 allowAnonymous || hasNoAccount
+        //                     ? Component
+        //                     : ProtectedComponent;
+        //             return (
+        //                 <Route path={getPath(routeConfig)} element={<Page />} />
+        //             );
+        //         })}
+        //     </Routes>
+        // );
+    }, [hasNoAccount, routes]);
 };
 
 const useCurrentRoute = (routes: RouteCustom[]): RouteCustom | undefined => {
@@ -187,9 +210,11 @@ export const useRoutes = (userHomePage?: string): Result => {
     );
 
     // routes should only change if currentUser has changed
-    const routes: ReactElement[] = useMemo(
+    const routes: ReactElement | null = useMemo(
         () =>
-            isFetchingCurrentUser ? [] : [...protectedRoutes, ...redirections],
+            isFetchingCurrentUser ? null : (
+                <Routes>{[protectedRoutes, redirections]}</Routes>
+            ),
         // eslint-disable-next-line react-hooks/exhaustive-deps
         [isFetchingCurrentUser],
     );

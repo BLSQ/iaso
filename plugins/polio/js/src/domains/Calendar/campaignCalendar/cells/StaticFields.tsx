@@ -1,11 +1,11 @@
-import React, { FunctionComponent } from 'react';
 import classnames from 'classnames';
+import React, { FunctionComponent } from 'react';
 
-import { TableCell } from '@mui/material';
+import { Box, TableCell } from '@mui/material';
 
-import { colSpanTitle } from '../constants';
-import { useStyles } from '../Styles';
 import { useStaticFields } from '../../hooks/useStaticFields';
+import { useStyles } from '../Styles';
+import { colSpanTitle } from '../constants';
 import { MappedCampaign } from '../types';
 
 type Props = {
@@ -13,7 +13,10 @@ type Props = {
     isPdf: boolean;
 };
 
-export const StaticFieldsCells: FunctionComponent<Props> = ({ campaign, isPdf }) => {
+export const StaticFieldsCells: FunctionComponent<Props> = ({
+    campaign,
+    isPdf,
+}) => {
     const classes = useStyles();
     const defaultCellStyles = [classes.tableCell, classes.tableCellBordered];
     const fields = useStaticFields(isPdf);
@@ -25,15 +28,16 @@ export const StaticFieldsCells: FunctionComponent<Props> = ({ campaign, isPdf })
                     colSpan={colSpanTitle}
                     className={classnames(defaultCellStyles)}
                 >
-                    <span
+                    <Box
                         className={classnames(
                             classes.tableCellSpan,
                             classes.tableCellSpanRow,
                         )}
+                        sx={{ px: field.key === 'edit' ? 0 : 1 }}
                     >
                         {!field.render && campaign[field.key]}
                         {field.render && field.render(campaign)}
-                    </span>
+                    </Box>
                 </TableCell>
             ))}
         </>

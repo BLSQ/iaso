@@ -5,11 +5,13 @@ import { useSafeIntl } from 'bluesquare-components';
 import { SxStyles } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import MESSAGES from '../../../constants/messages';
 import { useStaticFields } from '../hooks/useStaticFields';
-import { colsCount, colSpanTitle } from './constants';
+import { colsCounts, colSpanTitle } from './constants';
 import { cellHeight } from './Styles';
+import { CalendarParams } from './types';
 
 interface PlaceholderRowProps {
     loadingCampaigns: boolean;
+    params: CalendarParams;
 }
 
 const styles: SxStyles = {
@@ -30,6 +32,7 @@ const styles: SxStyles = {
 
 export const PlaceholderRow: FunctionComponent<PlaceholderRowProps> = ({
     loadingCampaigns,
+    params,
 }) => {
     const fields = useStaticFields();
     const { formatMessage } = useSafeIntl();
@@ -37,7 +40,10 @@ export const PlaceholderRow: FunctionComponent<PlaceholderRowProps> = ({
         <TableRow sx={styles.tableRow}>
             <TableCell
                 sx={styles.noCampaign}
-                colSpan={colsCount * 7 + fields.length * colSpanTitle}
+                colSpan={
+                    colsCounts[params.periodType || 'quarter'] * 7 +
+                    fields.length * colSpanTitle
+                }
             >
                 {!loadingCampaigns && formatMessage(MESSAGES.noCampaign)}
             </TableCell>

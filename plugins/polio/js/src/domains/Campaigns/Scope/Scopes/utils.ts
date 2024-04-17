@@ -1,7 +1,8 @@
 import { cloneDeep } from 'lodash';
-import { Optional } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { Scope, Shape } from './types';
 import { OrgUnit } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
+import { Optional } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { Scope, Vaccine } from '../../../../constants/types';
+import { Shape } from './types';
 
 export const findScopeWithOrgUnit = (
     scopes: Scope[],
@@ -33,14 +34,13 @@ export const checkFullRegionIsPartOfScope = (
     const vaccineScope: Scope | undefined = cloneDeep(
         scopes?.find(s => s.vaccine === selectedVaccine),
     ) ?? {
-        vaccine: selectedVaccine,
+        vaccine: selectedVaccine as Vaccine,
         group: {
             org_units: [],
         },
     };
 
     return regionIds.every(OrgUnitId =>
-        // @ts-ignore
-        vaccineScope.group.org_units.includes(OrgUnitId),
+        vaccineScope?.group.org_units.includes(OrgUnitId),
     );
 };

@@ -16,8 +16,8 @@ import {
     riskAssessmentFormFields,
 } from '../RiskAssessment/RiskAssessmentForm';
 import { RoundsForm, roundFormFields } from '../Rounds/RoundsForm';
-import { scopeFormFields } from '../Scope/ScopeForm';
-import { useIsPolioCampaignCheck } from '../hooks/useIsPolioCampaignCheck';
+import { ScopeForm, scopeFormFields } from '../Scope/ScopeForm';
+import { useIsPolioCampaign } from '../hooks/useIsPolioCampaignCheck';
 import { Tab } from './PolioDialogTabs';
 
 export const usePolioDialogTabs = (
@@ -25,7 +25,7 @@ export const usePolioDialogTabs = (
     selectedCampaign: Campaign,
 ): Tab[] => {
     const { formatMessage } = useSafeIntl();
-    const isPolio = useIsPolioCampaignCheck();
+    const isPolio = useIsPolioCampaign(formik.values);
 
     return useMemo(() => {
         const defaultTabs = [
@@ -48,6 +48,18 @@ export const usePolioDialogTabs = (
                         roundFormFields(selectedCampaign?.rounds ?? []),
                         formik.errors,
                     ) || compareArraysValues(scopeFormFields, formik.errors),
+            },
+            {
+                title: formatMessage(MESSAGES.scope),
+                form: ScopeForm,
+                disabled:
+                    !formik.values.initial_org_unit ||
+                    formik.values.rounds?.length === 0,
+                hasTabError: compareArraysValues(
+                    scopeFormFields,
+                    formik.errors,
+                ),
+                key: 'scope',
             },
         ];
         const polioTabs = [
@@ -88,7 +100,7 @@ export const usePolioDialogTabs = (
                 hasTabError: false,
             },
         ];
-        if (isPolio(formik.values)) {
+        if (isPolio) {
             return [...defaultTabs, ...polioTabs];
         }
         return defaultTabs;

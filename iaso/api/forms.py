@@ -168,8 +168,6 @@ class FormSerializer(DynamicFieldsModelSerializer):
         # If the period type is None, some period-specific fields must have specific values
         if "period_type" in data and data["period_type"] is None:
             tracker_errors = {}
-            if data["single_per_period"] is not False:
-                tracker_errors["single_per_period"] = "Should be false"
             if data["periods_before_allowed"] != 0:
                 tracker_errors["periods_before_allowed"] = "Should be 0"
             if data["periods_after_allowed"] != 0:

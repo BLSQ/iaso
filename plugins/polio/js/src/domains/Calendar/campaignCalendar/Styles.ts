@@ -10,7 +10,7 @@ export const useStyles = makeStyles(theme => {
             overflow: 'auto',
             width: '100%',
             [theme.breakpoints.up('lg')]: {
-                height: '71vh',
+                height: '67vh',
             },
         },
         tableContainerPdf: {
@@ -103,19 +103,16 @@ export const useStyles = makeStyles(theme => {
             backgroundColor: red['100'],
         },
         nav: {
-            left: theme.spacing(2),
-            top: 0,
+            width: '300px',
+            left: theme.spacing(1),
+            top: 17,
             zIndex: 3,
             position: 'absolute',
-            display: 'flex',
-            width: '31vw',
+            display: 'block',
             justifyContent: 'center',
-            [theme.breakpoints.up('lg')]: {
-                width: '21vw',
-            },
         },
         navButton: {
-            margin: `${theme.spacing(1.5)} !important`,
+            margin: `${theme.spacing(1)} !important`,
             borderRadius: '100% !important',
             padding: `${theme.spacing(1)} !important`,
             minWidth: '0 !important',
@@ -138,10 +135,10 @@ export const useStyles = makeStyles(theme => {
         tableCellSpanTitle: {
             alignItems: 'center',
             justifyContent: 'flex-start',
-            paddingLeft: theme.spacing(2),
-            paddingRight: theme.spacing(2),
+            paddingLeft: theme.spacing(1),
+            paddingRight: theme.spacing(1),
             fontWeight: 'bold',
-            fontSize: 11,
+            fontSize: 10,
             lineHeight: '14px',
         },
         tableCellSpanWithPopOver: {
@@ -150,9 +147,7 @@ export const useStyles = makeStyles(theme => {
         tableCellSpanRow: {
             alignItems: 'center',
             justifyContent: 'flex-start',
-            paddingLeft: theme.spacing(1),
-            paddingRight: theme.spacing(1),
-            fontSize: 11,
+            fontSize: 9,
         },
         popper: {
             zIndex: 500,

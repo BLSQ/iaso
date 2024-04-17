@@ -1,3 +1,5 @@
+import { Vaccine } from './types';
+
 const polioViruses = [
     // Legacy values
     // {
@@ -30,7 +32,12 @@ const polioViruses = [
     },
 ];
 
-const polioVaccines = [
+type PolioVaccine = {
+    value: Vaccine;
+    label: string;
+    color: string;
+};
+const polioVaccines: PolioVaccine[] = [
     {
         value: 'nOPV2',
         label: 'nOPV2',
@@ -48,4 +55,4 @@ const polioVaccines = [
     },
 ];
 
-export { polioViruses, polioVaccines };
+export { polioVaccines, polioViruses };

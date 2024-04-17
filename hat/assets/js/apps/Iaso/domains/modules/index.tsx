@@ -9,7 +9,7 @@ import MESSAGES from './messages';
 import { baseUrls } from '../../constants/urls';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { ModuleParams } from './types/modules';
-import { useGetModulesColumns } from './config';
+import { useModulesColumns } from './config';
 import { useGetModules } from './hooks/requests/useGetModules';
 import { redirectTo } from '../../routing/actions';
 import { ModulesFilters } from './components/ModulesFilters';
@@ -27,7 +27,7 @@ export const Modules: FunctionComponent<Props> = ({ params }) => {
 
     const { data, isFetching } = useGetModules(params);
     const { formatMessage } = useSafeIntl();
-    const columns = useGetModulesColumns();
+    const columns = useModulesColumns();
     return (
         <>
             <TopBar

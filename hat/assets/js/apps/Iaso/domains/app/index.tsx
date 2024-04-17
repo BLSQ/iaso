@@ -13,7 +13,6 @@ const App: FunctionComponent<Props> = ({ userHomePage }) => {
     const { routes, isLoadingRoutes } = useRoutes(
         userHomePage && userHomePage !== '' ? userHomePage : undefined,
     );
-    console.log('ROUTES', routes);
     useSnackBars();
     return (
         <>

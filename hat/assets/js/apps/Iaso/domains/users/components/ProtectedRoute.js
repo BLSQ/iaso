@@ -2,10 +2,8 @@ import PropTypes from 'prop-types';
 import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { useLocation, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import SidebarMenu from '../../app/components/SidebarMenuComponent';
-
-import { redirectToReplace } from '../../../routing/actions.ts';
 
 import { getFirstAllowedUrl, userHasOneOfPermissions } from '../utils';
 
@@ -18,7 +16,8 @@ import { WrongAccountModal } from './WrongAccountModal.tsx';
 
 const ProtectedRoute = ({ routeConfig, allRoutes, component }) => {
     const { featureFlag, permissions, isRootUrl, baseUrl } = routeConfig;
-    const params = useParams;
+    const params = useParams()['*'];
+    const navigate = useNavigate();
     const location = useLocation();
     const currentUser = useCurrentUser();
     const dispatch = useDispatch();
@@ -27,24 +26,6 @@ const ProtectedRoute = ({ routeConfig, allRoutes, component }) => {
         params.accountId && params.accountId !== `${currentUser.account.id}`,
     );
 
-    useEffect(() => {
-        if (!params.accountId && currentUser.account) {
-            dispatch(
-                redirectToReplace(baseUrl, {
-                    ...params,
-                    accountId: currentUser.account.id,
-                }),
-            );
-        }
-    }, [currentUser.account, baseUrl, params, dispatch]);
-
-    useEffect(() => {
-        // Use defined default language if it exists and if the user didn't set it manually
-        if (currentUser.language) {
-            dispatch(switchLocale(currentUser.language));
-        }
-    }, [currentUser.language, dispatch]);
-
     let isAuthorized =
         permissions.length > 0
             ? userHasOneOfPermissions(permissions, currentUser)
@@ -52,6 +33,7 @@ const ProtectedRoute = ({ routeConfig, allRoutes, component }) => {
     if (featureFlag && !hasFeatureFlag(currentUser, featureFlag)) {
         isAuthorized = false;
     }
+    // TODO merge both effects for simpler redirect
     useEffect(() => {
         if (!isAuthorized && isRootUrl) {
             const newBaseUrl = getFirstAllowedUrl(
@@ -60,7 +42,7 @@ const ProtectedRoute = ({ routeConfig, allRoutes, component }) => {
                 allRoutes,
             );
             if (newBaseUrl) {
-                dispatch(redirectToReplace(newBaseUrl, {}));
+                navigate(`./${newBaseUrl}`);
             }
         }
     }, [
@@ -69,8 +51,24 @@ const ProtectedRoute = ({ routeConfig, allRoutes, component }) => {
         dispatch,
         isAuthorized,
         isRootUrl,
+        navigate,
         permissions,
     ]);
+
+    useEffect(() => {
+        if (!params.includes('accountId') && currentUser.account) {
+            navigate(`./accountId/${currentUser.account.id}/${params}`, {
+                replace: true,
+            });
+        }
+    }, [currentUser.account, baseUrl, navigate, params]);
+
+    useEffect(() => {
+        // Use defined default language if it exists and if the user didn't set it manually
+        if (currentUser.language) {
+            dispatch(switchLocale(currentUser.language));
+        }
+    }, [currentUser.language, dispatch]);
 
     // this should kick in if the above effect didn't redirect the user to a better page
     const hasNoPermWarning =

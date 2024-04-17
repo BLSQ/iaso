@@ -1,5 +1,5 @@
 import { getSort } from 'bluesquare-components';
-import { Route, Routes } from 'react-router';
+import { Navigate, Route } from 'react-router-dom';
 import React, { ReactElement } from 'react';
 import { baseUrls } from '../constants/urls';
 import Page404 from '../components/errors/Page404';
@@ -23,7 +23,7 @@ const setupRedirections = [
     },
     {
         path: '/*',
-        component: ({ location }) => <Page404 location={location} />,
+        element: <Page404 />,
     },
 ];
 
@@ -102,7 +102,7 @@ const baseRedirections = [
     },
     {
         path: '/*',
-        component: ({ location }) => <Page404 location={location} />,
+        element: <Page404 />,
     },
 ];
 
@@ -133,10 +133,7 @@ export const useRedirections: RedirectionsMethod = (
         redirections = [
             {
                 path: '/home',
-                component: () => {
-                    window.location.replace('/login');
-                    return <></>;
-                },
+                to: '/login',
             },
         ];
     } else {
@@ -152,21 +149,30 @@ export const useRedirections: RedirectionsMethod = (
             ...baseRedirections,
         ];
     }
+    console.log('redirections', redirections);
     return redirections.map(redirection => {
-        if (redirection.component) {
+        if (redirection.element) {
             return (
                 <Route
                     path={redirection.path}
-                    element={redirection.component}
+                    element={redirection.element}
                     key={`${redirection.path}${redirection.to}`}
                 />
             );
         }
         return (
             <Route
-                path={redirection.path}
+                path={`${redirection.path}`}
                 key={`${redirection.path}${redirection.to}`}
-                element={<div>REDIRECTION BROKEN, LOL</div>}
+                element={
+                    <Navigate to={`../../${redirection.to}`} relative="path" />
+                }
+                // element={
+                //     <div>
+                //         <span>REDIRECTION BROKEN, LOL</span>
+                //         <p>{redirection.to}</p>
+                //     </div>
+                // }
             />
         );
 

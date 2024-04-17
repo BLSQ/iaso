@@ -72,12 +72,12 @@ const linksFiltersPathParamsWithPrefix = prefix =>
     }));
 
 export const getPath = path => {
-    let url = `/${path.baseUrl}`;
+    let url = `${path.baseUrl}`;
     path.params.forEach(p => {
         if (p.isRequired) {
             url += `/${p.key}/:${p.key}`;
         } else {
-            url += `(/${p.key}/:${p.key})`;
+            url += `/${p.key}?/:${p.key}?`;
         }
     });
     return url;
@@ -85,14 +85,15 @@ export const getPath = path => {
 
 export const setupAccountPath = {
     baseUrl: baseUrls.setupAccount,
+    routerUrl: `${baseUrls.setupAccount}/*`,
     permissions: [],
     element: <SetupAccount />,
-    // component: props => <SetupAccount {...props} />,
     params: [],
 };
 
 export const formsPath = {
     baseUrl: baseUrls.forms,
+    routerUrl: `${baseUrls.forms}/*`,
     permissions: [Permission.FORMS, Permission.SUBMISSIONS],
     params: [
         {
@@ -126,12 +127,12 @@ export const formsPath = {
         },
     ],
     element: <Forms />,
-    // component: props => <Forms {...props} />,
     isRootUrl: true,
 };
 
 export const pagesPath = {
     baseUrl: baseUrls.pages,
+    routerUrl: `${baseUrls.pages}/*`,
     permissions: [Permission.PAGES, Permission.PAGE_WRITE],
     featureFlag: SHOW_PAGES,
     params: [
@@ -146,8 +147,9 @@ export const pagesPath = {
 
 export const formDetailPath = {
     baseUrl: baseUrls.formDetail,
+    routerUrl: `${baseUrls.formDetail}/*`,
     permissions: [Permission.FORMS, Permission.SUBMISSIONS],
-    component: <FormDetail />,
+    element: <FormDetail />,
     params: [
         {
             isRequired: false,
@@ -168,6 +170,7 @@ export const formDetailPath = {
 
 export const formsStatsPath = {
     baseUrl: baseUrls.formsStats,
+    routerUrl: `${baseUrls.formsStats}/*`,
     permissions: [Permission.FORMS],
     element: <FormsStats />,
     params: [
@@ -180,6 +183,7 @@ export const formsStatsPath = {
 
 export const instancesPath = {
     baseUrl: baseUrls.instances,
+    routerUrl: `${baseUrls.instances}/*`,
     permissions: [Permission.SUBMISSIONS, Permission.SUBMISSIONS_UPDATE],
     element: <Instances />,
     params: [
@@ -297,6 +301,7 @@ export const instancesPath = {
 
 export const instanceDetailPath = {
     baseUrl: baseUrls.instanceDetail,
+    routerUrl: `${baseUrls.instanceDetail}/*`,
     permissions: [Permission.SUBMISSIONS],
     element: <InstanceDetail />,
     params: [
@@ -317,6 +322,7 @@ export const instanceDetailPath = {
 
 export const compareInstanceLogsPath = {
     baseUrl: baseUrls.compareInstanceLogs,
+    routerUrl: `${baseUrls.compareInstanceLogs}/*`,
     permissions: [Permission.SUBMISSIONS],
     element: <CompareInstanceLogs />,
     params: [
@@ -341,6 +347,7 @@ export const compareInstanceLogsPath = {
 
 export const compareInstancesPath = {
     baseUrl: baseUrls.compareInstances,
+    routerUrl: `${baseUrls.compareInstances}/*`,
     permissions: [Permission.SUBMISSIONS],
     element: <CompareSubmissions />,
     params: [
@@ -357,6 +364,7 @@ export const compareInstancesPath = {
 
 export const mappingsPath = {
     baseUrl: baseUrls.mappings,
+    routerUrl: `${baseUrls.mappings}/*`,
     permissions: [Permission.MAPPINGS],
     element: <Mappings />,
     params: [
@@ -377,6 +385,7 @@ export const mappingsPath = {
 
 export const mappingDetailPath = {
     baseUrl: baseUrls.mappingDetail,
+    routerUrl: `${baseUrls.mappingDetail}/*`,
     permissions: [Permission.MAPPINGS],
     element: <MappingDetails />,
     params: [
@@ -397,6 +406,7 @@ export const mappingDetailPath = {
 
 export const orgUnitsPath = {
     baseUrl: baseUrls.orgUnits,
+    routerUrl: `${baseUrls.orgUnits}/*`,
     permissions: [Permission.ORG_UNITS],
     element: <OrgUnits />,
     params: [
@@ -433,6 +443,7 @@ export const orgUnitsPath = {
 
 export const orgUnitsDetailsPath = {
     baseUrl: baseUrls.orgUnitDetails,
+    routerUrl: `${baseUrls.orgUnitDetails}/*`,
     permissions: [Permission.ORG_UNITS],
     element: <OrgUnitDetail />,
     params: [
@@ -480,6 +491,7 @@ export const orgUnitsDetailsPath = {
 
 export const orgUnitChangeRequestPath = {
     baseUrl: baseUrls.orgUnitsChangeRequest,
+    routerUrl: `${baseUrls.orgUnitsChangeRequest}/*`,
     permissions: [Permission.ORG_UNITS_CHANGE_REQUEST_REVIEW],
     element: <ReviewOrgUnitChanges />,
     params: [
@@ -532,6 +544,7 @@ export const orgUnitChangeRequestPath = {
 };
 export const registryPath = {
     baseUrl: baseUrls.registry,
+    routerUrl: `${baseUrls.registry}/*`,
     permissions: [Permission.REGISTRY],
     element: <Registry />,
     params: [
@@ -543,6 +556,7 @@ export const registryPath = {
 };
 export const registryDetailPath = {
     baseUrl: baseUrls.registryDetail,
+    routerUrl: `${baseUrls.registryDetail}/*`,
     permissions: [Permission.REGISTRY],
     element: <RegistryDetail />,
     params: [
@@ -594,6 +608,7 @@ export const registryDetailPath = {
 
 export const linksPath = {
     baseUrl: baseUrls.links,
+    routerUrl: `${baseUrls.links}/*`,
     permissions: [Permission.LINKS],
     element: <Links />,
     params: [
@@ -659,6 +674,7 @@ export const linksPath = {
 
 export const algosPath = {
     baseUrl: baseUrls.algos,
+    routerUrl: `${baseUrls.algos}/*`,
     permissions: [Permission.LINKS],
     element: <Runs />,
     params: [
@@ -700,6 +716,7 @@ export const algosPath = {
 
 export const completenessPath = {
     baseUrl: baseUrls.completeness,
+    routerUrl: `${baseUrls.completeness}/*`,
     permissions: [Permission.COMPLETENESS],
     element: <Completeness />,
     params: [
@@ -712,6 +729,7 @@ export const completenessPath = {
 
 export const completenessStatsPath = {
     baseUrl: baseUrls.completenessStats,
+    routerUrl: `${baseUrls.completenessStats}/*`,
     permissions: [Permission.COMPLETENESS_STATS],
     element: <CompletenessStats />,
     params: [
@@ -773,6 +791,7 @@ export const completenessStatsPath = {
 
 export const modulesPath = {
     baseUrl: baseUrls.modules,
+    routerUrl: `${baseUrls.modules}/*`,
     permissions: [Permission.MODULES],
     element: <Modules />,
     params: [
@@ -790,6 +809,7 @@ export const modulesPath = {
 
 export const usersPath = {
     baseUrl: baseUrls.users,
+    routerUrl: `${baseUrls.users}/*`,
     permissions: [Permission.USERS_ADMIN, Permission.USERS_MANAGEMENT],
     element: <Users />,
     params: [
@@ -842,6 +862,7 @@ export const usersPath = {
 
 export const userRolesPath = {
     baseUrl: baseUrls.userRoles,
+    routerUrl: `${baseUrls.userRoles}/*`,
     permissions: [Permission.USER_ROLES],
     element: <UserRoles />,
     params: [
@@ -862,6 +883,7 @@ export const userRolesPath = {
 
 export const projectsPath = {
     baseUrl: baseUrls.projects,
+    routerUrl: `${baseUrls.projects}/*`,
     permissions: [Permission.PROJECTS],
     element: <Projects />,
     params: [
@@ -875,6 +897,7 @@ export const projectsPath = {
 
 export const dataSourcesPath = {
     baseUrl: baseUrls.sources,
+    routerUrl: `${baseUrls.sources}/*`,
     permissions: [Permission.SOURCES, Permission.SOURCE_WRITE],
     element: <DataSources />,
     params: [
@@ -888,6 +911,7 @@ export const dataSourcesPath = {
 
 export const dataSourceDetailsPath = {
     baseUrl: baseUrls.sourceDetails,
+    routerUrl: `${baseUrls.sourceDetails}/*`,
     permissions: [Permission.SOURCES, Permission.SOURCE_WRITE],
     element: <DataSourceDetail />,
     params: [
@@ -905,6 +929,7 @@ export const dataSourceDetailsPath = {
 
 export const tasksPath = {
     baseUrl: baseUrls.tasks,
+    routerUrl: `${baseUrls.tasks}/*`,
     permissions: [Permission.DATA_TASKS],
     element: <Tasks />,
     params: [
@@ -918,6 +943,7 @@ export const tasksPath = {
 
 export const devicesPath = {
     baseUrl: baseUrls.devices,
+    routerUrl: `${baseUrls.devices}/*`,
     permissions: [Permission.DATA_DEVICES],
     element: <Devices />,
     params: [
@@ -931,6 +957,7 @@ export const devicesPath = {
 
 export const groupsPath = {
     baseUrl: baseUrls.groups,
+    routerUrl: `${baseUrls.groups}/*`,
     permissions: [Permission.ORG_UNIT_GROUPS],
     element: <Groups />,
     params: [
@@ -951,6 +978,7 @@ export const groupsPath = {
 
 export const orgUnitTypesPath = {
     baseUrl: baseUrls.orgUnitTypes,
+    routerUrl: `${baseUrls.orgUnitTypes}/*`,
     permissions: [Permission.ORG_UNIT_TYPES],
     element: <Types />,
     params: [
@@ -970,6 +998,7 @@ export const orgUnitTypesPath = {
 };
 export const entitiesPath = {
     baseUrl: baseUrls.entities,
+    routerUrl: `${baseUrls.entities}/*`,
     permissions: [Permission.ENTITIES],
     element: <Beneficiaries />,
     params: [
@@ -1017,6 +1046,7 @@ export const entitiesPath = {
 };
 export const entityDetailsPath = {
     baseUrl: baseUrls.entityDetails,
+    routerUrl: `${baseUrls.entityDetails}/*`,
     permissions: [Permission.ENTITIES],
     element: <BeneficiaryDetail />,
     params: [
@@ -1034,6 +1064,7 @@ export const entityDetailsPath = {
 
 export const entitySubmissionDetailPath = {
     baseUrl: baseUrls.entitySubmissionDetail,
+    routerUrl: `${baseUrls.entitySubmissionDetail}/*`,
     permissions: [Permission.ENTITIES],
     element: <VisitDetails />,
     params: [
@@ -1054,6 +1085,7 @@ export const entitySubmissionDetailPath = {
 
 export const entityTypesPath = {
     baseUrl: baseUrls.entityTypes,
+    routerUrl: `${baseUrls.entityTypes}/*`,
     permissions: [Permission.ENTITIES],
     element: <EntityTypes />,
     params: [
@@ -1073,6 +1105,7 @@ export const entityTypesPath = {
 };
 export const entityDuplicatesPath = {
     baseUrl: baseUrls.entityDuplicates,
+    routerUrl: `${baseUrls.entityDuplicates}/*`,
     permissions: [
         Permission.ENTITIES_DUPLICATE_READ,
         Permission.ENTITIES_DUPLICATE_WRITE,
@@ -1149,6 +1182,7 @@ export const entityDuplicatesPath = {
 };
 export const entityDuplicatesDetailsPath = {
     baseUrl: baseUrls.entityDuplicateDetails,
+    routerUrl: `${baseUrls.entityDuplicateDetails}/*`,
     permissions: [
         Permission.ENTITIES_DUPLICATE_READ,
         Permission.ENTITIES_DUPLICATE_WRITE,
@@ -1159,10 +1193,6 @@ export const entityDuplicatesDetailsPath = {
             isRequired: false,
             key: 'accountId',
         },
-        // ...paginationPathParams.map(p => ({
-        //     ...p,
-        //     isRequired: true,
-        // })),
         {
             isRequired: false,
             key: 'entities',
@@ -1171,6 +1201,7 @@ export const entityDuplicatesDetailsPath = {
 };
 export const planningPath = {
     baseUrl: baseUrls.planning,
+    routerUrl: `${baseUrls.planning}/*`,
     // FIXME use planning permissions when they exist
     permissions: [Permission.PLANNINGS],
     element: <Planning />,
@@ -1203,6 +1234,7 @@ export const planningPath = {
 };
 export const assignmentsPath = {
     baseUrl: baseUrls.assignments,
+    routerUrl: `${baseUrls.assignments}/*`,
     // FIXME use planning permissions when they exist
     permissions: [Permission.PLANNINGS],
     element: <Assignments />,
@@ -1243,6 +1275,7 @@ export const assignmentsPath = {
 };
 export const teamsPath = {
     baseUrl: baseUrls.teams,
+    routerUrl: `${baseUrls.teams}/*`,
     permissions: [Permission.TEAMS],
     element: <Teams />,
     params: [
@@ -1262,6 +1295,7 @@ export const teamsPath = {
 };
 export const storagesPath = {
     baseUrl: baseUrls.storages,
+    routerUrl: `${baseUrls.storages}/*`,
     permissions: [Permission.STORAGES],
     element: <Storages />,
     params: [
@@ -1293,6 +1327,7 @@ export const storagesPath = {
 };
 export const storageDetailPath = {
     baseUrl: baseUrls.storageDetail,
+    routerUrl: `${baseUrls.storageDetail}/*`,
     permissions: [Permission.STORAGES],
     element: <StorageDetails />,
     params: [
@@ -1321,6 +1356,7 @@ export const storageDetailPath = {
 };
 export const workflowsPath = {
     baseUrl: baseUrls.workflows,
+    routerUrl: `${baseUrls.workflows}/*`,
     permissions: [Permission.WORKFLOWS],
     element: <Workflows />,
     params: [
@@ -1348,6 +1384,7 @@ export const workflowsPath = {
 };
 export const workflowsDetailPath = {
     baseUrl: baseUrls.workflowDetail,
+    routerUrl: `${baseUrls.workflowDetail}/*`,
     permissions: [Permission.WORKFLOWS],
     element: <WorkflowDetails />,
     params: [
@@ -1369,6 +1406,7 @@ export const workflowsDetailPath = {
 };
 export const potentialPaymentsPath = {
     baseUrl: baseUrls.potentialPayments,
+    routerUrl: `${baseUrls.potentialPayments}/*`,
     permissions: [Permission.PAYMENTS],
     element: <PotentialPayments />,
     params: [
@@ -1405,6 +1443,7 @@ export const potentialPaymentsPath = {
 };
 export const lotsPaymentsPath = {
     baseUrl: baseUrls.lotsPayments,
+    routerUrl: `${baseUrls.lotsPayments}/*`,
     permissions: [Permission.PAYMENTS],
     element: <LotsPayments />,
     params: [
@@ -1438,24 +1477,28 @@ export const lotsPaymentsPath = {
 
 export const page401 = {
     baseUrl: baseUrls.error401,
+    routerUrl: baseUrls.error401,
     element: () => <PageError errorCode="401" />,
     params: [],
 };
 
 export const page403 = {
     baseUrl: baseUrls.error403,
+    routerUrl: baseUrls.error403,
     element: () => <PageError errorCode="403" />,
     params: [],
 };
 
 export const page404 = {
     baseUrl: baseUrls.error404,
+    routerUrl: baseUrls.error404,
     element: () => <PageError errorCode="404" />,
     params: [],
 };
 
 export const page500 = {
     baseUrl: baseUrls.error500,
+    routerUrl: baseUrls.error500,
     element: () => <PageError errorCode="500" />,
     params: [],
 };

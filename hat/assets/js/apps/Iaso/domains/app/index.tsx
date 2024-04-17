@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { BrowserRouter, Link, RouterProvider } from 'react-router-dom';
+import { BrowserRouter, Link } from 'react-router-dom';
 import { LinkProvider, LoadingSpinner } from 'bluesquare-components';
 import { useSnackBars } from '../../components/snackBars/useSnackBars';
 import { useRoutes } from './hooks/useRoutes';
@@ -13,6 +13,7 @@ const App: FunctionComponent<Props> = ({ userHomePage }) => {
     const { routes, isLoadingRoutes } = useRoutes(
         userHomePage && userHomePage !== '' ? userHomePage : undefined,
     );
+    console.log('ROUTES', routes);
     useSnackBars();
     return (
         <>
@@ -21,7 +22,9 @@ const App: FunctionComponent<Props> = ({ userHomePage }) => {
                 <LinkProvider linkComponent={Link}>
                     {/* <Router routes={routes} history={history} /> */}
                     {/* <RouterProvider router={router} /> */}
-                    <BrowserRouter>{routes}</BrowserRouter>
+                    <BrowserRouter basename="/dashboard">
+                        {routes}
+                    </BrowserRouter>
                 </LinkProvider>
             )}
         </>

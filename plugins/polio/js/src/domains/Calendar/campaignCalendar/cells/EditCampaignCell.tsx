@@ -1,5 +1,8 @@
+import { Box } from '@mui/material';
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import React, { FunctionComponent, useState } from 'react';
+import { SxStyles } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
+
 import MESSAGES from '../../../../constants/messages';
 import { PolioCreateEditDialog as CreateEditDialog } from '../../../Campaigns/MainDialog/CreateEditDialog';
 
@@ -10,12 +13,19 @@ type Props = {
         };
     };
 };
+const styles: SxStyles = {
+    root: {
+        '& svg': {
+            fontSize: 18,
+        },
+    },
+};
 
 const EditCampaignCell: FunctionComponent<Props> = ({ campaign }) => {
     const [dialogOpen, setDialogOpen] = useState(false);
 
     return (
-        <>
+        <Box sx={styles.root}>
             <IconButtonComponent
                 onClick={() => setDialogOpen(true)}
                 icon="edit"
@@ -27,7 +37,7 @@ const EditCampaignCell: FunctionComponent<Props> = ({ campaign }) => {
                 isOpen={dialogOpen}
                 onClose={() => setDialogOpen(false)}
             />
-        </>
+        </Box>
     );
 };
 

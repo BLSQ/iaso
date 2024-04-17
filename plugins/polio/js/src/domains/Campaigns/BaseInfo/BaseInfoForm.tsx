@@ -19,7 +19,7 @@ import { polioViruses } from '../../../constants/virus';
 import { useStyles } from '../../../styles/theme';
 import { useGetGroupedCampaigns } from '../../GroupedCampaigns/hooks/useGetGroupedCampaigns';
 import { useGetCampaignTypes } from '../hooks/api/useGetCampaignTypes';
-import { useIsPolioCampaignCheck } from '../hooks/useIsPolioCampaignCheck';
+import { useIsPolioCampaign } from '../hooks/useIsPolioCampaignCheck';
 import { EmailListForCountry } from './EmailListForCountry/EmailListForCountry';
 
 export const baseInfoFormFields: string[] = [
@@ -59,22 +59,22 @@ export const BaseInfoForm: FunctionComponent = () => {
     const { values, setFieldValue } = useFormikContext<CampaignFormValues>();
     const { data: types, isFetching: isFetchingTypes } =
         useGetCampaignTypes(true);
-    const isPolio = useIsPolioCampaignCheck();
+    const isPolio = useIsPolioCampaign(values);
     const { top_level_org_unit_id } = values;
     const getLabelByKey = useCallback(
         key => {
             if (isPolio === undefined) return '';
             const labels = {
-                obr_name: isPolio(values)
+                obr_name: isPolio
                     ? MESSAGES.obrName
                     : MESSAGES.campaignIdentifier,
-                gpei_coordinator: isPolio(values)
+                gpei_coordinator: isPolio
                     ? MESSAGES.gpeiCoordinator
                     : MESSAGES.responsibleOfficer,
             };
             return formatMessage(labels[key]);
         },
-        [formatMessage, isPolio, values],
+        [formatMessage, isPolio],
     );
 
     const handleChangeCampaignTypes = useCallback(
@@ -88,10 +88,10 @@ export const BaseInfoForm: FunctionComponent = () => {
     );
 
     return (
-        <Box maxWidth={isPolio(values) ? '100%' : '400px'}>
+        <Box maxWidth={isPolio ? '100%' : '400px'}>
             <Grid container spacing={2}>
                 <Grid container item spacing={2}>
-                    <Grid xs={12} md={isPolio(values) ? 6 : 12} item>
+                    <Grid xs={12} md={isPolio ? 6 : 12} item>
                         <Field
                             label={formatMessage(MESSAGES.campaignType)}
                             name="campaign_types"
@@ -166,7 +166,7 @@ export const BaseInfoForm: FunctionComponent = () => {
                         )}
                     </Grid>
                     {/* POLIO FIELDS */}
-                    {isPolio(values) && (
+                    {isPolio && (
                         <Grid item xs={12} md={6}>
                             <Field
                                 label={formatMessage(MESSAGES.virus)}

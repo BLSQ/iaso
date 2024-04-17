@@ -9,7 +9,6 @@ import React, { FunctionComponent, useEffect, useState } from 'react';
 import MESSAGES from '../../../constants/messages';
 import { CampaignFormValues, Round } from '../../../constants/types';
 import { useStyles } from '../../../styles/theme';
-import { ScopeForm } from '../Scope/ScopeForm';
 import { RoundForm } from './RoundForm';
 
 const maxRoundsCount = 6;
@@ -201,10 +200,7 @@ export const RoundsForm: FunctionComponent = () => {
                 )}
             </Box>
             {currentRoundNumber !== undefined && (
-                <>
-                    <RoundForm roundNumber={currentRoundNumber} />
-                    <ScopeForm currentTab={`${currentRoundNumber}`} />
-                </>
+                <RoundForm roundNumber={currentRoundNumber} />
             )}
         </Box>
     );

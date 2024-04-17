@@ -440,6 +440,13 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
         self.assertFalse(serializer.is_valid())
         self.assertIn("You must provide at least one of the following fields", serializer.errors["non_field_errors"][0])
 
+        data = {
+            "org_unit_id": self.org_unit.id,
+            "new_closed_date": None,
+        }
+        serializer = OrgUnitChangeRequestWriteSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+
     def test_validate_new_parent_version(self):
         data_source = m.DataSource.objects.create(name="Data source")
         version1 = m.SourceVersion.objects.create(number=1, data_source=data_source)

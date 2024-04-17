@@ -40,6 +40,7 @@ import { isFieldValid, isFormValid } from '../../utils/forms';
 import { FormAttachments } from './components/FormAttachments';
 import { FormParams } from './types/forms';
 import { Router } from '../../types/general';
+import { NO_PERIOD } from '../periods/constants';
 
 interface FormDetailProps {
     router: Router;
@@ -63,7 +64,7 @@ const defaultForm = {
     project_ids: [],
     period_type: null,
     derived: false,
-    single_per_period: null,
+    single_per_period: false,
     periods_before_allowed: 0,
     periods_after_allowed: 0,
     device_field: 'deviceid',
@@ -116,6 +117,7 @@ const FormDetail: FunctionComponent<FormDetailProps> = ({ router, params }) => {
     const classes: Record<string, string> = useStyles();
     const [currentForm, setFieldValue, setFieldErrors, setFormState] =
         useFormState(formatFormData(form));
+
     const isFormModified = useMemo(() => {
         return (
             !isEqual(
@@ -125,10 +127,23 @@ const FormDetail: FunctionComponent<FormDetailProps> = ({ router, params }) => {
         );
     }, [currentForm, form, isSaved]);
 
+    const detailRequiredFields = useMemo(() => {
+        if (
+            currentForm.period_type.value === NO_PERIOD ||
+            !currentForm.period_type.value
+        ) {
+            return requiredFields.filter(
+                field => field.key !== 'single_per_period',
+            );
+        }
+        return requiredFields;
+    }, [currentForm.period_type.value]);
+
     const onConfirm = async () => {
         let isUpdate;
         let saveForm;
         let formData;
+
         if (params.formId === '0') {
             isUpdate = false;
             formData = mapValues(
@@ -184,13 +199,19 @@ const FormDetail: FunctionComponent<FormDetailProps> = ({ router, params }) => {
         (keyValue, value) => {
             if (isSaved) setIsSaved(false);
             setFieldValue(keyValue, value);
-            if (!isFieldValid(keyValue, value, requiredFields)) {
+            if (!isFieldValid(keyValue, value, detailRequiredFields)) {
                 setFieldErrors(keyValue, [
                     formatMessage(MESSAGES.requiredField),
                 ]);
             }
         },
-        [isSaved, setFieldValue, setFieldErrors, formatMessage],
+        [
+            isSaved,
+            setFieldValue,
+            detailRequiredFields,
+            setFieldErrors,
+            formatMessage,
+        ],
     );
     const handleChangeTab = (newTab: string) => {
         setTab(newTab);
@@ -205,6 +226,17 @@ const FormDetail: FunctionComponent<FormDetailProps> = ({ router, params }) => {
             setFormState(formatFormData(form));
         }
     }, [form, setFormState]);
+
+    const originalSinglePerPeriod = useMemo(() => {
+        let singlePerPeriodValue = false;
+        if (form) {
+            singlePerPeriodValue = form.period_type
+                ? form.single_per_period
+                : null;
+        }
+        return singlePerPeriodValue;
+    }, [form]);
+
     return (
         <>
             <TopBar
@@ -222,7 +254,11 @@ const FormDetail: FunctionComponent<FormDetailProps> = ({ router, params }) => {
             />
             {(isLoading || isFormLoading) && <LoadingSpinner />}
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <FormForm currentForm={currentForm} setFieldValue={onChange} />
+                <FormForm
+                    currentForm={currentForm}
+                    setFieldValue={onChange}
+                    originalSinglePerPeriod={originalSinglePerPeriod}
+                />
                 <Box mt={2} justifyContent="flex-end" display="flex">
                     {currentForm.id.value !== '' && (
                         <Button
@@ -239,7 +275,7 @@ const FormDetail: FunctionComponent<FormDetailProps> = ({ router, params }) => {
                         data-id="form-detail-confirm"
                         disabled={
                             !isFormModified ||
-                            !isFormValid(requiredFields, currentForm)
+                            !isFormValid(detailRequiredFields, currentForm)
                         }
                         variant="contained"
                         className={classes.marginLeft}

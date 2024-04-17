@@ -18,7 +18,9 @@ import { DistrictScopeTable } from './Scopes/DistrictScopeTable';
 import { MapScope } from './Scopes/MapScope';
 
 import { OrgUnit } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
-import { FilteredDistricts, Scope, Values } from './Scopes/types';
+import { CampaignFormValues, Scope, Vaccine } from '../../../constants/types';
+import { useIsPolioCampaign } from '../hooks/useIsPolioCampaignCheck';
+import { FilteredDistricts } from './Scopes/types';
 
 type ExtraProps = {
     filteredDistricts: FilteredDistricts[];
@@ -35,7 +37,7 @@ type ExtraProps = {
     setPage: (page: number) => void;
 };
 
-type Props = FieldProps<Scope[], Values> & ExtraProps;
+type Props = FieldProps<Scope[], CampaignFormValues> & ExtraProps;
 
 export const ScopeInput: FunctionComponent<Props> = ({
     field,
@@ -52,7 +54,8 @@ export const ScopeInput: FunctionComponent<Props> = ({
     setPage,
 }) => {
     const [selectRegion, setSelectRegion] = useState(false);
-    const [selectedVaccine, setSelectedVaccine] = useState<string>('nOPV2');
+    const [selectedVaccine, setSelectedVaccine] = useState<Vaccine>('nOPV2');
+    const isPolio = useIsPolioCampaign(values);
     const [, , helpers] = useField(field.name);
     const { formatMessage } = useSafeIntl();
     const { value: scopes = [] } = field;
@@ -70,17 +73,22 @@ export const ScopeInput: FunctionComponent<Props> = ({
                 .filter(s => s.parent_id === selectOrgUnit.parent_id)
                 .map(s => s.id);
             const newScopes: Scope[] = cloneDeep(scopes);
-            // Find scope for vaccine
-            let scope: Scope | undefined = newScopes.find(
-                s => s.vaccine === selectedVaccine,
-            );
+            let scope: Scope | undefined;
+            if (!isPolio) {
+                [scope] = newScopes;
+            } else {
+                // Find scope for vaccine
+                scope = newScopes.find(s => s.vaccine === selectedVaccine);
+            }
             if (!scope) {
                 scope = {
-                    vaccine: selectedVaccine,
                     group: {
                         org_units: [],
                     },
                 };
+                if (isPolio) {
+                    scope.vaccine = selectedVaccine;
+                }
                 newScopes.push(scope);
             }
             // if all the orgunits from this region are already in this vaccine scope, remove them
@@ -117,24 +125,28 @@ export const ScopeInput: FunctionComponent<Props> = ({
             }
             setScopes(newScopes);
         },
-        [districtShapes, scopes, selectedVaccine, setScopes],
+        [districtShapes, isPolio, scopes, selectedVaccine, setScopes],
     );
-
     const toggleDistrictInVaccineScope = useCallback(
         district => {
             const newScopes: Scope[] = cloneDeep(scopes);
             // check if a scope exists for currently selected vaccine
-            let scope: Scope | undefined = newScopes.find(
-                s => s.vaccine === selectedVaccine,
-            );
+            let scope: Scope | undefined;
+            if (!isPolio) {
+                [scope] = newScopes;
+            } else {
+                scope = newScopes.find(s => s.vaccine === selectedVaccine);
+            }
             // if not create one that is initially empty
             if (!scope) {
                 scope = {
-                    vaccine: selectedVaccine,
                     group: {
                         org_units: [],
                     },
                 };
+                if (isPolio) {
+                    scope.vaccine = selectedVaccine;
+                }
                 newScopes.push(scope);
             }
             // Remove org unit from selection if it's part of the scope
@@ -158,7 +170,7 @@ export const ScopeInput: FunctionComponent<Props> = ({
             }
             setScopes(newScopes);
         },
-        [scopes, selectedVaccine, setScopes],
+        [scopes, setScopes, selectedVaccine, isPolio],
     );
 
     const onSelectOrgUnit = useCallback(
@@ -205,6 +217,7 @@ export const ScopeInput: FunctionComponent<Props> = ({
                         isFetching={isFetching}
                         districtShapes={districtShapes || []}
                         selectedVaccine={selectedVaccine}
+                        isPolio={isPolio}
                     />
                 </Grid>
                 <Grid xs={7} item>
@@ -217,6 +230,7 @@ export const ScopeInput: FunctionComponent<Props> = ({
                         onSelectOrgUnit={onSelectOrgUnit}
                         selectedVaccine={selectedVaccine}
                         setSelectedVaccine={setSelectedVaccine}
+                        isPolio={isPolio}
                     />
                     <FormGroup>
                         <FormControlLabel

@@ -1,13 +1,14 @@
 import React, { FunctionComponent } from 'react';
 
+import { Box, TableCell, TableHead, TableRow, Typography } from '@mui/material';
 import classnames from 'classnames';
-import { TableHead, TableRow, TableCell, Typography, Box } from '@mui/material';
 
 import { useStyles } from './Styles';
 
-import { colSpanTitle } from './constants';
-import { HeadStaticFieldsCells } from './cells/HeadStaticFields';
+import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import { useStaticFields } from '../hooks/useStaticFields';
+import { HeadStaticFieldsCells } from './cells/HeadStaticFields';
+import { colSpanTitle } from './constants';
 import { CalendarData } from './types';
 
 type Props = {
@@ -15,6 +16,7 @@ type Props = {
     orders: string;
     currentWeekIndex: number;
     isPdf: boolean;
+    router: Router;
 };
 
 export const Head: FunctionComponent<Props> = ({
@@ -22,6 +24,7 @@ export const Head: FunctionComponent<Props> = ({
     orders,
     currentWeekIndex,
     isPdf,
+    router,
 }) => {
     const classes = useStyles();
     const fields = useStaticFields(isPdf);
@@ -79,7 +82,7 @@ export const Head: FunctionComponent<Props> = ({
                             classes.tableCellHead,
                             classes.tableCellSmall,
                         )}
-                        style={{ top: 50 }}
+                        style={{ top: 50, fontSize: 11 }}
                         key={`month-${month.year}-${month.value}`}
                         align="center"
                         colSpan={month.daysCount}
@@ -95,7 +98,11 @@ export const Head: FunctionComponent<Props> = ({
             <TableRow
                 className={classnames(classes.tableRow, classes.tableRowSmall)}
             >
-                <HeadStaticFieldsCells orders={orders} isPdf={isPdf} />
+                <HeadStaticFieldsCells
+                    orders={orders}
+                    isPdf={isPdf}
+                    router={router}
+                />
                 {headers.weeks.map((week, weekIndex) => (
                     <TableCell
                         className={classnames(
@@ -111,9 +118,12 @@ export const Head: FunctionComponent<Props> = ({
                         colSpan={7}
                     >
                         <Box position="relative" width="100%" height="100%">
-                            <span className={classes.tableCellSpan}>
+                            <Box
+                                className={classes.tableCellSpan}
+                                sx={{ fontSize: 9 }}
+                            >
                                 {week.value}
-                            </span>
+                            </Box>
                         </Box>
                     </TableCell>
                 ))}

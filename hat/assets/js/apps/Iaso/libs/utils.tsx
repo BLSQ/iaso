@@ -71,6 +71,7 @@ export const BooleanValue = (value: Array<unknown> | unknown): boolean => {
     return Array.isArray(value) ? value.length > 0 : Boolean(value);
 };
 
+// using a span is necessary to allow text styling
 export const PlaceholderValue: ReactElement | Optional<Nullable<string>> = (
-    <>{textPlaceholder}</>
+    <span>{textPlaceholder}</span>
 );

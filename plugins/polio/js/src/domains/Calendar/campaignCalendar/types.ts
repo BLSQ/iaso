@@ -41,6 +41,7 @@ export type MappedCampaign = {
     country_id: number;
     id: string;
     isPreventive: boolean;
+    isTest: boolean;
 };
 
 export type ShapeForCalendarMap = {
@@ -66,6 +67,7 @@ export type CalendarParams = {
     campaignGroups?: string;
     orgUnitGroups?: string;
     currentDate?: string;
+    periodType?: PeriodType;
 };
 
 export type CalendarData = {
@@ -107,3 +109,5 @@ export type Users = {
 export type ReduxState = {
     users: Users;
 };
+
+export type PeriodType = 'quarter' | 'year' | 'semester';

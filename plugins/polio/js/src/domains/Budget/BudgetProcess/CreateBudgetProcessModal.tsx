@@ -66,7 +66,7 @@ const CreateBudgetProcessModal: FunctionComponent<Props> = ({
         );
         formik.setFieldValue('round', '');
         setRoundsOptions(filtered);
-    }, [formik.values.campaign]);
+    }, [dropdownsData?.rounds, formik.values.campaign]);
 
     const titleMessage = formatMessage(MESSAGES.createBudgetProcessTitle);
 

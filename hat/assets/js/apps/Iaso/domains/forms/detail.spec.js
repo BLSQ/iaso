@@ -2,7 +2,7 @@ import React from 'react';
 import nock from 'nock';
 
 import { expect } from 'chai';
-import Detail from './detail';
+import Detail from './detail.tsx';
 import SingleTable from '../../components/tables/SingleTable';
 import { renderWithStore } from '../../../../test/utils/redux';
 import {
@@ -14,7 +14,7 @@ import formsFixture from './fixtures/forms.json';
 import TopBar from '../../components/nav/TopBarComponent';
 import { withQueryClientProvider } from '../../../../test/utils';
 
-const redirectActions = require('../../routing/actions');
+const redirectActions = require('../../routing/actions.ts');
 const requestsStub = require('../../utils/requests');
 
 const newName = 'ZELDA';

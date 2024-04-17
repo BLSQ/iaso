@@ -187,6 +187,10 @@ const routes = [
                 isRequired: false,
                 key: 'orgUnitGroups',
             },
+            {
+                isRequired: false,
+                key: 'periodType',
+            },
         ],
     },
     {
@@ -645,6 +649,10 @@ const routes = [
                 isRequired: false,
                 key: 'orgUnitGroups',
             },
+            {
+                isRequired: false,
+                key: 'periodType',
+            },
         ],
         isRootUrl: false,
     },
@@ -675,6 +683,7 @@ const menu = [
                 label: MESSAGES.campaigns,
                 key: 'list',
                 permissions: ['iaso_polio'],
+                extraPath: '/campaignCategory/all',
                 icon: props => <FormatListBulleted {...props} />,
             },
             {
@@ -686,7 +695,8 @@ const menu = [
             {
                 label: MESSAGES.calendar,
                 key: 'calendar',
-                extraPath: '/campaignType/polio',
+                extraPath:
+                    '/campaignType/polio/campaignCategory/all/periodType/quarter',
                 permissions: ['iaso_polio'],
                 icon: props => <CalendarToday {...props} />,
             },
@@ -815,7 +825,7 @@ export default {
     routes,
     menu,
     translations,
-    homeUrl: `${DASHBOARD_BASE_URL}`,
+    homeUrl: `${DASHBOARD_BASE_URL}/campaignCategory/all`,
     // homeOffline: () => <div>OFFLINE</div>,
     // homeOnline: () => <div>CONNECTED HOME POLIO</div>,
 };

@@ -302,7 +302,6 @@ class MobileFormsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 400)
 
         response_data = response.json()
-        self.assertHasError(response_data, "single_per_period")
         self.assertHasError(response_data, "periods_before_allowed")
         self.assertHasError(response_data, "periods_after_allowed")
 

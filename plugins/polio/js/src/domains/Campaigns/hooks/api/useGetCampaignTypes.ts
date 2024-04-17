@@ -1,13 +1,15 @@
 import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
-import { CampaignType } from '../../../../constants/types';
+import {
+    CampaignType,
+    CampaignTypesDropdown,
+} from '../../../../constants/types';
 
 import { useSnackQuery } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
-import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 export const useGetCampaignTypes = (
     useIds = false,
-): UseQueryResult<DropdownOptions<string>[], Error> => {
+): UseQueryResult<CampaignTypesDropdown[], Error> => {
     return useSnackQuery({
         queryKey: ['campaign_types_dropdown'],
         queryFn: () =>

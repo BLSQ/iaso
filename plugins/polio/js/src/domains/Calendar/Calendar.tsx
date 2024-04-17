@@ -4,7 +4,6 @@ import { Box, Button, Grid, Theme, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     ExcellSvg,
-    LoadingSpinner,
     commonStyles,
     getTableUrl,
     useSafeIntl,
@@ -31,6 +30,8 @@ import MESSAGES from '../../constants/messages';
 import { useGetCampaigns } from '../Campaigns/hooks/api/useGetCampaigns';
 import { ExportCsvModal } from './ExportCsvModal';
 import { CampaignsFilters } from './campaignCalendar/CampaignsFilters';
+import { IsTestLegend } from './campaignCalendar/IsTestLegend';
+import { TogglePeriod } from './campaignCalendar/TogglePeriod';
 import { dateFormat, defaultOrder } from './campaignCalendar/constants';
 import {
     CalendarParams,
@@ -83,6 +84,9 @@ export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
                 ? params.orgUnitGroups.split(',').map(Number)
                 : undefined,
             fieldset: 'calendar',
+            show_test:
+                params.campaignCategory === 'test' ||
+                params.campaignCategory === 'all',
         }),
         [
             orders,
@@ -110,8 +114,8 @@ export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
 
     const currentMonday = currentDate.clone().startOf('isoWeek');
     const calendarData = useMemo(
-        () => getCalendarData(currentMonday),
-        [currentMonday],
+        () => getCalendarData(currentMonday, params.periodType || 'quarter'),
+        [currentMonday, params.periodType],
     );
 
     const mappedCampaigns: MappedCampaign[] = useMemo(
@@ -204,64 +208,73 @@ export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
                     )}
                 >
                     {!isPdf && (
-                        <Box mb={4}>
-                            <CampaignsFilters
-                                disableDates
-                                disableOnlyDeleted
-                                isCalendar
-                                router={router}
-                            />
-                        </Box>
-                    )}
-                    <Grid
-                        container
-                        spacing={1}
-                        display="flex"
-                        justifyContent="flex-end"
-                    >
-                        <Grid item>
-                            <Box mb={2} mt={2}>
-                                <Button
-                                    onClick={createPDF}
-                                    disabled={!isCalendarAndMapLoaded}
-                                    type="button"
-                                    color="primary"
-                                    variant="contained"
-                                    className="createPDF"
-                                >
-                                    <PictureAsPdfIcon
-                                        className={classes.exportIcon}
-                                    />
-                                    {formatMessage(MESSAGES.exportToPdf)}
-                                </Button>
+                        <>
+                            <Box mb={4}>
+                                <CampaignsFilters
+                                    disableDates
+                                    disableOnlyDeleted
+                                    isCalendar
+                                    router={router}
+                                />
                             </Box>
-                        </Grid>
-                        <Grid item>
-                            <Box mb={2} mt={2}>
-                                <Button
-                                    type="button"
-                                    color="primary"
-                                    variant="contained"
-                                    className="createXlsx"
-                                    href={xlsx_url}
-                                >
-                                    <ExcellSvg className={classes.exportIcon} />
-                                    {formatMessage(MESSAGES.exportToExcel)}
-                                </Button>
-                            </Box>
-                        </Grid>
-                        {userHasPermission(
-                            'iaso_polio_config',
-                            currentUser,
-                        ) && (
-                            <Grid item>
-                                <Box mb={2} mt={2}>
-                                    {/* @ts-ignore */}
-                                    <ExportCsvModal params={params} />
-                                </Box>
+                            <Grid
+                                container
+                                spacing={1}
+                                display="flex"
+                                justifyContent="flex-end"
+                            >
+                                <Grid item>
+                                    <Box mb={2} mt={2}>
+                                        <Button
+                                            onClick={createPDF}
+                                            disabled={!isCalendarAndMapLoaded}
+                                            type="button"
+                                            color="primary"
+                                            variant="contained"
+                                            className="createPDF"
+                                        >
+                                            <PictureAsPdfIcon
+                                                className={classes.exportIcon}
+                                            />
+                                            {formatMessage(
+                                                MESSAGES.exportToPdf,
+                                            )}
+                                        </Button>
+                                    </Box>
+                                </Grid>
+                                <Grid item>
+                                    <Box mb={2} mt={2}>
+                                        <Button
+                                            type="button"
+                                            color="primary"
+                                            variant="contained"
+                                            className="createXlsx"
+                                            href={xlsx_url}
+                                        >
+                                            <ExcellSvg
+                                                className={classes.exportIcon}
+                                            />
+                                            {formatMessage(
+                                                MESSAGES.exportToExcel,
+                                            )}
+                                        </Button>
+                                    </Box>
+                                </Grid>
+                                {userHasPermission(
+                                    'iaso_polio_config',
+                                    currentUser,
+                                ) && (
+                                    <Grid item>
+                                        <Box mb={2} mt={2}>
+                                            {/* @ts-ignore */}
+                                            <ExportCsvModal params={params} />
+                                        </Box>
+                                    </Grid>
+                                )}
                             </Grid>
-                        )}
-                    </Grid>
+                        </>
+                    )}
+
                     <Grid container spacing={2}>
                         {isPdf && (
                             <Grid item xs={12}>
@@ -271,16 +284,33 @@ export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
                             </Grid>
                         )}
                         <Grid item xs={12} lg={!isPdf ? 8 : 12}>
-                            <CampaignsCalendar
-                                currentDate={currentDate}
-                                params={params}
-                                orders={orders}
-                                campaigns={filteredCampaigns}
-                                calendarData={calendarData}
-                                currentMonday={currentMonday}
-                                loadingCampaigns={isLoading}
-                                isPdf={isPdf}
-                            />
+                            <Box display="flex" justifyContent="flex-end">
+                                {(params.campaignCategory === 'test' ||
+                                    params.campaignCategory === 'all') && (
+                                    <Box mr={2}>
+                                        <IsTestLegend />
+                                    </Box>
+                                )}
+                                {!isPdf && (
+                                    <TogglePeriod
+                                        params={params}
+                                        router={router}
+                                    />
+                                )}
+                            </Box>
+                            <Box mt={!isPdf ? 1 : 0}>
+                                <CampaignsCalendar
+                                    params={params}
+                                    orders={orders}
+                                    campaigns={filteredCampaigns}
+                                    calendarData={calendarData}
+                                    loadingCampaigns={isLoading}
+                                    isPdf={isPdf}
+                                    router={router}
+                                    currentMonday={currentMonday}
+                                    currentDate={currentDate}
+                                />
+                            </Box>
                         </Grid>
                         <Grid item xs={12} lg={!isPdf ? 4 : 12}>
                             <CalendarMap

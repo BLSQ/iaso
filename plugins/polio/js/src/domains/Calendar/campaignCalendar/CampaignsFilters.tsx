@@ -27,34 +27,26 @@ import {
     dateRangePickerToDateApi,
 } from '../../../../../../../hat/assets/js/apps/Iaso/utils/dates';
 import { appId } from '../../../constants/app';
-import { CalendarParams } from './types';
 import { useGetCampaignTypes } from '../../Campaigns/hooks/api/useGetCampaignTypes';
+import { CalendarParams } from './types';
 
 type Props = {
     router: Router & { params: CalendarParams };
     disableDates?: boolean;
     disableOnlyDeleted?: boolean;
     isCalendar?: boolean;
-    showTest?: boolean;
 };
 
 const campaignCategoryOptions = (
     // eslint-disable-next-line no-unused-vars
     formatMessage: IntlFormatMessage,
-    showTest = false,
 ) => {
-    const options = [
+    return [
         { label: formatMessage(MESSAGES.all), value: 'all' },
         { label: formatMessage(MESSAGES.preventiveShort), value: 'preventive' },
         { label: formatMessage(MESSAGES.regular), value: 'regular' },
+        { label: formatMessage(MESSAGES.testCampaign), value: 'test' },
     ];
-    if (showTest) {
-        return [
-            ...options,
-            { label: formatMessage(MESSAGES.testCampaign), value: 'test' },
-        ];
-    }
-    return options;
 };
 
 export const CampaignsFilters: FunctionComponent<Props> = ({
@@ -62,7 +54,6 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
     disableDates = false,
     disableOnlyDeleted = false,
     isCalendar = false,
-    showTest = false,
 }) => {
     const { formatMessage } = useSafeIntl();
     const { params } = router;
@@ -229,10 +220,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                         }}
                         value={campaignCategory}
                         type="select"
-                        options={campaignCategoryOptions(
-                            formatMessage,
-                            showTest,
-                        )}
+                        options={campaignCategoryOptions(formatMessage)}
                         label={MESSAGES.campaignCategory}
                     />
                     <InputComponent

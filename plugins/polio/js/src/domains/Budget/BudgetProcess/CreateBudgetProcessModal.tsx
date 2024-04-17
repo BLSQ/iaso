@@ -55,7 +55,7 @@ const CreateBudgetProcessModal: FunctionComponent<Props> = ({
         );
         formik.setFieldValue('campaign', '');
         setCampaignOptions(filtered);
-    }, [formik.values.country]);
+    }, [dropdownsData?.campaigns, formik.values.country]);
 
     // Filter "Rounds" values on "Campaign" change.
     const [currentRoundsOptions, setRoundsOptions] = useState<Options[]>([]);

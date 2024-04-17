@@ -1,6 +1,7 @@
 #!/bin/bash
 # This script is used during deployement to fill the version info so we can see them from python
-BRANCH_NAME=$(git symbolic-ref --short HEAD)
+BRANCH_NAME=$(git rev-parse --symbolic-full-name --abbrev-ref HEAD)
+echo $BRANCH_NAME
 cat > hat/__version__.py << EOF
 # Generated at deploy
 VERSION="$(git describe --tags)--$BRANCH_NAME"

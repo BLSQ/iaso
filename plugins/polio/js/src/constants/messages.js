@@ -863,7 +863,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Failed',
     },
     '3lqasFail': {
-        id: 'iaso.polio.label.3lqasFail',
+        id: 'iaso.polio.label.verypoor',
         defaultMessage: 'Very poor',
     },
     '3lqasmoderate': {

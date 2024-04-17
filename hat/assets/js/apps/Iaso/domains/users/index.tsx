@@ -18,6 +18,7 @@ import {
 } from 'bluesquare-components';
 
 import EditIcon from '@mui/icons-material/Settings';
+import { useParams } from 'react-router-dom';
 import TopBar from '../../components/nav/TopBarComponent';
 import Filters from './components/Filters';
 import { AddUsersDialog } from './components/UsersDialog';
@@ -53,15 +54,12 @@ type Params = {
     search?: string;
 };
 
-type Props = {
-    params: Params;
-};
-
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-export const Users: FunctionComponent<Props> = ({ params }) => {
+export const Users: FunctionComponent = () => {
+    const params = useParams() as unknown as Params;
     const classes: Record<string, string> = useStyles();
     const currentUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();

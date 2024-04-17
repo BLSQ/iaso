@@ -1,19 +1,14 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { FunctionComponent, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { Link, useParams } from 'react-router-dom';
 import Alert from '@mui/lab/Alert';
 import { Box, Grid, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import {
-    // @ts-ignore
     commonStyles,
-    // @ts-ignore
     IconButton as IconButtonComponent,
-    // @ts-ignore
     LoadingSpinner,
-    // @ts-ignore
     useSafeIntl,
 } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
@@ -34,7 +29,7 @@ import { useGetInstance } from './compare/hooks/useGetInstance';
 import { useSnackQuery } from '../../libs/apiHooks';
 import SpeedDialInstance from './components/SpeedDialInstance';
 import { ClassNames } from '../../types/utils';
-import { redirectTo } from '../../routing/actions';
+import { useGoBack } from '../../routing/useGoBack';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -50,13 +45,6 @@ const useStyles = makeStyles(theme => ({
         top: 2,
     },
 }));
-
-type Props = {
-    params: {
-        instanceId: string;
-    };
-    router: any;
-};
 
 type Logs = {
     list: any[];
@@ -80,20 +68,18 @@ export const useGetInstanceLogs = (
     );
 };
 
-const InstanceDetails: FunctionComponent<Props> = props => {
+const InstanceDetails: FunctionComponent = () => {
     const [showDial, setShowDial] = useState(true);
     const { formatMessage } = useSafeIntl();
     const classes: ClassNames = useStyles();
-    const {
-        router,
-        params: { instanceId },
-        params,
-    } = props;
+    const goBack = useGoBack();
+
+    const params = useParams() as {
+        instanceId: string;
+    };
+    const { instanceId } = params;
     const { data: currentInstance, isLoading: fetching } =
         useGetInstance(instanceId);
-    // @ts-ignore
-    const prevPathname = useSelector(state => state.routerCustom.prevPathname);
-    const dispatch = useDispatch();
 
     // not showing history link in submission detail if there is only one version/log
     // in the future. add this info directly in the instance api to not make another call;
@@ -111,17 +97,18 @@ const InstanceDetails: FunctionComponent<Props> = props => {
                         : ''
                 }
                 displayBackButton
-                goBack={() => {
-                    if (prevPathname) {
-                        router.goBack();
-                    } else {
-                        dispatch(
-                            redirectTo(baseUrls.instances, {
-                                formIds: currentInstance?.form_id,
-                            }),
-                        );
-                    }
-                }}
+                goBack={() => goBack()}
+                // goBack={() => {
+                //     if (prevPathname) {
+                //         router.goBack();
+                //     } else {
+                //         dispatch(
+                //             redirectTo(baseUrls.instances, {
+                //                 formIds: currentInstance?.form_id,
+                //             }),
+                //         );
+                //     }
+                // }}
             />
             {fetching && <LoadingSpinner />}
             {currentInstance && (

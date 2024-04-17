@@ -7,6 +7,7 @@ import {
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { orderBy } from 'lodash';
+import { useParams } from 'react-router-dom';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 
@@ -29,26 +30,18 @@ import { RegistryDetailParams } from './types';
 
 import { OrgUnitBreadcrumbs } from '../orgUnits/components/breadcrumbs/OrgUnitBreadcrumbs';
 
-type Router = {
-    goBack: () => void;
-    params: RegistryDetailParams;
-};
-type Props = {
-    router: Router;
-};
-
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-export const Details: FunctionComponent<Props> = ({ router }) => {
-    const {
-        params: { orgUnitId, accountId },
-        params,
-    } = router;
+export const Details: FunctionComponent = () => {
+    const params = useParams() as RegistryDetailParams;
+    const { orgUnitId, accountId } = params;
+
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const goBack = useGoBack(router, baseUrls.registry, { accountId });
+    const goBack = useGoBack();
+    // const goBack = useGoBack(router, baseUrls.registry, { accountId });
 
     const { data: orgUnit, isFetching } = useGetOrgUnit(orgUnitId);
     const { data: orgUnitListChildren, isFetching: isFetchingListChildren } =

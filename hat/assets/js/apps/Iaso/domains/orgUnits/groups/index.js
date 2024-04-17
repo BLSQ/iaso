@@ -1,8 +1,6 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
-import { Box, Grid } from '@mui/material';
-
+import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     LoadingSpinner,
@@ -11,13 +9,13 @@ import {
     AddButton as AddButtonComponent,
     useSafeIntl,
 } from 'bluesquare-components';
+import { useParams } from 'react-router-dom';
 import TopBar from '../../../components/nav/TopBarComponent';
 import Filters from './components/Filters';
 import GroupsDialog from './components/GroupsDialog';
 
 import tableColumns, { baseUrl } from './config';
 import MESSAGES from './messages';
-
 import { redirectTo } from '../../../routing/actions.ts';
 
 import { useGetGroups, useSaveGroups, useDeleteGroups } from './hooks/requests';
@@ -26,7 +24,8 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-const Groups = ({ params }) => {
+const Groups = () => {
+    const params = useParams();
     const dispatch = useDispatch();
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
@@ -86,10 +85,6 @@ const Groups = ({ params }) => {
             </Box>
         </>
     );
-};
-
-Groups.propTypes = {
-    params: PropTypes.object.isRequired,
 };
 
 export default Groups;

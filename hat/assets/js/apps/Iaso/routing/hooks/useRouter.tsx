@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 
-type RouterObject = {
+export type RouterObject = {
     params: any;
     location: any;
     navigate: any;

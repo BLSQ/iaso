@@ -7,6 +7,7 @@ import {
     commonStyles,
 } from 'bluesquare-components';
 
+import { useParams } from 'react-router-dom';
 import TopBar from '../../components/nav/TopBarComponent';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import {
@@ -42,12 +43,9 @@ type Params = {
     accountId: 'string';
 };
 
-type Props = {
-    params: Params;
-};
-
-export const Registry: FunctionComponent<Props> = ({ params }) => {
+export const Registry: FunctionComponent = () => {
     const classes: Record<string, string> = useStyles();
+    const params = useParams() as Params;
     const { formatMessage } = useSafeIntl();
 
     const [selectedOrgUnits, setSelectedOrgUnits] = useState<OrgUnit[]>([]);

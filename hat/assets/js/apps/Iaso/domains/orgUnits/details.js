@@ -8,10 +8,10 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import omit from 'lodash/omit';
-import PropTypes from 'prop-types';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
+import { useParams } from 'react-router-dom';
 import Logs from '../../components/logs/LogsComponent';
 import TopBar from '../../components/nav/TopBarComponent';
 import SingleTable from '../../components/tables/SingleTable';
@@ -20,7 +20,8 @@ import {
     onlyChildrenParams,
     orgUnitFiltersWithPrefix,
 } from '../../constants/filters';
-import { redirectTo, redirectToReplace } from '../../routing/actions.ts';
+import { redirectToReplace } from '../../routing/actions.ts';
+import { useGoBack } from '../../routing/useGoBack.tsx';
 import { baseUrls } from '../../constants/urls';
 import {
     deleteForm,
@@ -108,16 +109,16 @@ const tabs = [
     'comments',
 ];
 
-const OrgUnitDetail = ({ params, router }) => {
+const OrgUnitDetail = () => {
     const classes = useStyles();
+    const params = useParams();
+    const goBack = useGoBack();
     const dispatch = useDispatch();
     const { mutateAsync: saveOu, isLoading: savingOu } = useSaveOrgUnit();
     const queryClient = useQueryClient();
     const { formatMessage } = useSafeIntl();
     const refreshOrgUnitQueryCache = useRefreshOrgUnit();
     const childrenColumns = useOrgUnitsTableColumns(classes);
-    const prevPathname =
-        useSelector(state => state.routerCustom.prevPathname) || null;
     const currentUser = useCurrentUser();
 
     const [currentOrgUnit, setCurrentOrgUnit] = useState(null);
@@ -386,17 +387,18 @@ const OrgUnitDetail = ({ params, router }) => {
             <TopBar
                 title={title}
                 displayBackButton
-                goBack={() => {
-                    if (prevPathname) {
-                        setTimeout(() => {
-                            router.goBack();
-                        }, 300);
-                    } else {
-                        dispatch(
-                            redirectTo(getOrgUnitsUrl(params.accountId), {}),
-                        );
-                    }
-                }}
+                goBack={goBack}
+                // goBack={() => {
+                //     if (prevPathname) {
+                //         setTimeout(() => {
+                //             router.goBack();
+                //         }, 300);
+                //     } else {
+                //         dispatch(
+                //             redirectTo(getOrgUnitsUrl(params.accountId), {}),
+                //         );
+                //     }
+                // }}
             >
                 {!isNewOrgunit && (
                     <Tabs
@@ -637,11 +639,6 @@ const OrgUnitDetail = ({ params, router }) => {
             )}
         </section>
     );
-};
-
-OrgUnitDetail.propTypes = {
-    router: PropTypes.object.isRequired,
-    params: PropTypes.object.isRequired,
 };
 
 export default OrgUnitDetail;

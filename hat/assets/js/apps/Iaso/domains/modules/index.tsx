@@ -4,6 +4,7 @@ import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useDispatch } from 'react-redux';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import { useParams } from 'react-router-dom';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { baseUrls } from '../../constants/urls';
@@ -17,11 +18,10 @@ import { ModulesFilters } from './components/ModulesFilters';
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
-type Props = {
-    params: ModuleParams;
-};
+
 const baseUrl = baseUrls.modules;
-export const Modules: FunctionComponent<Props> = ({ params }) => {
+export const Modules: FunctionComponent = () => {
+    const params = useParams() as unknown as ModuleParams;
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
 

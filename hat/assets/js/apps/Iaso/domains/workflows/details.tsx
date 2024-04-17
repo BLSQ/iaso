@@ -22,6 +22,7 @@ import { makeStyles } from '@mui/styles';
 import { useDispatch } from 'react-redux';
 import orderBy from 'lodash/orderBy';
 import uniqWith from 'lodash/uniqWith';
+import { useParams } from 'react-router-dom';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 
@@ -57,14 +58,6 @@ import { useGetFollowUpsColumns, iasoFields } from './config/followUps';
 import { useGetPossibleFieldsByFormVersion } from '../forms/hooks/useGetPossibleFields';
 import { PossibleField } from '../forms/types/forms';
 
-type Router = {
-    goBack: () => void;
-    params: WorkflowParams;
-};
-type Props = {
-    router: Router;
-};
-
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     titleRow: { fontWeight: 'bold' },
@@ -82,8 +75,8 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-export const Details: FunctionComponent<Props> = ({ router }) => {
-    const { params } = router;
+export const Details: FunctionComponent = () => {
+    const params = useParams() as WorkflowParams;
     const classes: Record<string, string> = useStyles();
     const [followUps, setFollowUps] = useState<FollowUps[]>([]);
 
@@ -94,7 +87,8 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         useState<boolean>(false);
     const { entityTypeId, versionId } = params;
     const { formatMessage } = useSafeIntl();
-    const goBack = useGoBack(router, baseUrls.workflows, { entityTypeId });
+    const goBack = useGoBack();
+    // const goBack = useGoBack(router, baseUrls.workflows, { entityTypeId });
 
     const dispatch = useDispatch();
 

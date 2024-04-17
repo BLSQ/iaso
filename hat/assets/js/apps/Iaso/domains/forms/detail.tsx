@@ -6,7 +6,7 @@ import React, {
     FunctionComponent,
 } from 'react';
 import { useQueryClient } from 'react-query';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { Box, Button, Tabs, Tab } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import mapValues from 'lodash/mapValues';
@@ -19,6 +19,7 @@ import {
     useSafeIntl,
     CommonStyles,
 } from 'bluesquare-components';
+import { useParams } from 'react-router-dom';
 import { redirectToReplace } from '../../routing/actions';
 
 import TopBar from '../../components/nav/TopBarComponent';
@@ -41,6 +42,7 @@ import { FormAttachments } from './components/FormAttachments';
 import { FormParams } from './types/forms';
 import { Router } from '../../types/general';
 import { NO_PERIOD } from '../periods/constants';
+import { useGoBack } from '../../routing/useGoBack';
 
 interface FormDetailProps {
     router: Router;
@@ -102,11 +104,10 @@ const formatFormData = value => {
     };
 };
 
-const FormDetail: FunctionComponent<FormDetailProps> = ({ router, params }) => {
+const FormDetail: FunctionComponent<FormDetailProps> = () => {
+    const params = useParams() as FormParams;
+    const goBack = useGoBack();
     const queryClient = useQueryClient();
-    const prevPathname = useSelector(
-        (state: any) => state.routerCustom.prevPathname,
-    );
     const { data: form, isLoading: isFormLoading } = useGetForm(params.formId);
     const [isLoading, setIsLoading] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
@@ -244,13 +245,14 @@ const FormDetail: FunctionComponent<FormDetailProps> = ({ router, params }) => {
                     currentForm.name.value
                 }`}
                 displayBackButton
-                goBack={() => {
-                    if (prevPathname) {
-                        router.goBack();
-                    } else {
-                        dispatch(redirectToReplace(baseUrls.forms, {}));
-                    }
-                }}
+                goBack={() => goBack()}
+                // goBack={() => {
+                //     if (prevPathname) {
+                //         router.goBack();
+                //     } else {
+                //         dispatch(redirectToReplace(baseUrls.forms, {}));
+                //     }
+                // }}
             />
             {(isLoading || isFormLoading) && <LoadingSpinner />}
             <Box className={classes.containerFullHeightNoTabPadded}>

@@ -10,7 +10,7 @@ import {
 import { Box, Button, Divider, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { redirectTo, redirectToReplace } from '../../routing/actions';
@@ -25,10 +25,8 @@ import { XlsxButton } from '../../components/Buttons/XslxButton';
 import { BeneficiaryBaseInfo } from './components/BeneficiaryBaseInfo';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
+import { useGoBack } from '../../routing/useGoBack';
 
-type Props = {
-    router: any;
-};
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     titleRow: { fontWeight: 'bold' },
@@ -37,8 +35,9 @@ const useStyles = makeStyles(theme => ({
     infoPaperBox: { minHeight: '100px' },
 }));
 
-export const Details: FunctionComponent<Props> = ({ router }) => {
-    const { params } = router;
+export const Details: FunctionComponent = () => {
+    const params = useParams();
+    const goBack = useGoBack();
     const classes: Record<string, string> = useStyles();
     const { entityId } = params;
     const { formatMessage } = useSafeIntl();
@@ -80,7 +79,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                 displayBackButton
                 goBack={() => {
                     if (prevPathname) {
-                        router.goBack();
+                        goBack();
                     } else {
                         dispatch(redirectToReplace(baseUrls.entities, {}));
                     }

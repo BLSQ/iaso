@@ -7,6 +7,7 @@ import {
 } from 'bluesquare-components';
 import { Box, useTheme } from '@mui/material';
 import { useDispatch } from 'react-redux';
+import { useParams } from 'react-router-dom';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { PotentialPaymentParams, PotentialPayment } from './types';
@@ -19,12 +20,10 @@ import { usePaymentColumns } from './hooks/config/usePaymentColumns';
 import { Selection } from '../orgUnits/types/selection';
 import { AddPaymentLotDialog } from './components/CreatePaymentLot/PaymentLotDialog';
 
-type Props = {
-    params: PotentialPaymentParams;
-};
 const baseUrl = baseUrls.potentialPayments;
-export const PotentialPayments: FunctionComponent<Props> = ({ params }) => {
+export const PotentialPayments: FunctionComponent = () => {
     const dispatch = useDispatch();
+    const params = useParams() as PotentialPaymentParams;
 
     const { data, isFetching } = useGetPotentialPayments(params);
     const { formatMessage } = useSafeIntl();

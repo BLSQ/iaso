@@ -13,10 +13,9 @@ import {
 import { Box, Grid, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useDispatch, useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
-import { redirectToReplace } from '../../routing/actions';
-import { baseUrls } from '../../constants/urls';
 
 import { useGetDataSource } from './hooks/useGetDataSources';
 
@@ -31,10 +30,7 @@ import {
     getTableParams,
     getTablePages,
 } from './utils';
-
-type Props = {
-    router: any;
-};
+import { useGoBack } from '../../routing/useGoBack';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -45,8 +41,9 @@ const useStyles = makeStyles(theme => ({
     test: { marginTop: '-70px' },
 }));
 
-export const Details: FunctionComponent<Props> = ({ router }) => {
-    const { params } = router;
+export const Details: FunctionComponent = () => {
+    const params = useParams();
+    const goBack = useGoBack();
 
     const classes: Record<string, string> = useStyles();
     const { sourceId } = params;
@@ -120,13 +117,14 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                     dataSource?.name
                 }`}
                 displayBackButton
-                goBack={() => {
-                    if (prevPathname) {
-                        router.goBack();
-                    } else {
-                        dispatch(redirectToReplace(baseUrls.sources, {}));
-                    }
-                }}
+                goBack={() => goBack()}
+                // goBack={() => {
+                //     if (prevPathname) {
+                //         goBack();
+                //     } else {
+                //         dispatch(redirectToReplace(baseUrls.sources, {}));
+                //     }
+                // }}
             />
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>
                 <Grid container spacing={2}>

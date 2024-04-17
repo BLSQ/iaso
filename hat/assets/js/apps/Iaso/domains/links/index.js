@@ -2,10 +2,8 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-
-import PropTypes from 'prop-types';
-
 import { useSafeIntl } from 'bluesquare-components';
+import { useParams } from 'react-router-dom';
 import { saveLink, fetchLinks } from '../../utils/requests';
 
 import { linksTableColumns } from './config';
@@ -20,7 +18,6 @@ import { baseUrls } from '../../constants/urls';
 import { linksFilters } from '../../constants/filters';
 
 import { useLinksFiltersData } from './hooks';
-
 import MESSAGES from './messages';
 import { useGoBack } from '../../routing/useGoBack.tsx';
 
@@ -33,7 +30,8 @@ const useStyles = makeStyles(() => ({
         },
     },
 }));
-export const Links = ({ params }) => {
+export const Links = () => {
+    const params = useParams();
     const goBack = useGoBack();
     const intl = useSafeIntl();
     const classes = useStyles();
@@ -153,10 +151,6 @@ export const Links = ({ params }) => {
             </Box>
         </>
     );
-};
-
-Links.propTypes = {
-    params: PropTypes.object.isRequired,
 };
 
 export default Links;

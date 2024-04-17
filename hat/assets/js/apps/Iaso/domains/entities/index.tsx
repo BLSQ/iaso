@@ -12,6 +12,7 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 
+import { useParams } from 'react-router-dom';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import TopBar from '../../components/nav/TopBarComponent';
 import { Filters } from './components/Filters';
@@ -59,7 +60,8 @@ type Props = {
     params: Params;
 };
 
-export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
+export const Beneficiaries: FunctionComponent<Props> = () => {
+    const params = useParams() as Params;
     const classes: Record<string, string> = useStyles();
     const [displayedLocation, setDisplayedLocation] =
         useState<DisplayedLocation>('submissions');

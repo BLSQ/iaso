@@ -3,8 +3,6 @@ import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useDispatch } from 'react-redux';
 
-import PropTypes from 'prop-types';
-
 import {
     commonStyles,
     selectionInitialState,
@@ -14,6 +12,7 @@ import {
 } from 'bluesquare-components';
 
 import { useQueryClient } from 'react-query';
+import { useParams } from 'react-router-dom';
 import { createInstance } from './actions';
 import { redirectToReplace } from '../../routing/actions.ts';
 import {
@@ -45,7 +44,6 @@ import { PaginatedInstanceFiles } from './components/PaginatedInstancesFiles';
 import { useGetPossibleFields } from '../forms/hooks/useGetPossibleFields.ts';
 import { userHasPermission } from '../users/utils';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
-
 import * as Permission from '../../utils/permissions.ts';
 
 const baseUrl = baseUrls.instances;
@@ -59,7 +57,8 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const Instances = ({ params }) => {
+const Instances = () => {
+    const params = useParams();
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
@@ -277,10 +276,6 @@ const Instances = ({ params }) => {
             </Box>
         </section>
     );
-};
-
-Instances.propTypes = {
-    params: PropTypes.object.isRequired,
 };
 
 export default Instances;

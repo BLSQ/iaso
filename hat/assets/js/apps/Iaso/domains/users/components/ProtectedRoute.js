@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 
+import { useLocation, useParams } from 'react-router-dom';
 import SidebarMenu from '../../app/components/SidebarMenuComponent';
 
 import { redirectToReplace } from '../../../routing/actions.ts';
@@ -15,14 +16,10 @@ import { useCurrentUser } from '../../../utils/usersUtils.ts';
 import { switchLocale } from '../../app/actions';
 import { WrongAccountModal } from './WrongAccountModal.tsx';
 
-const ProtectedRoute = ({
-    routeConfig,
-    allRoutes,
-    location,
-    component,
-    params,
-}) => {
+const ProtectedRoute = ({ routeConfig, allRoutes, component }) => {
     const { featureFlag, permissions, isRootUrl, baseUrl } = routeConfig;
+    const params = useParams;
+    const location = useLocation();
     const currentUser = useCurrentUser();
     const dispatch = useDispatch();
 
@@ -102,8 +99,6 @@ ProtectedRoute.defaultProps = {
 ProtectedRoute.propTypes = {
     component: PropTypes.node.isRequired,
     allRoutes: PropTypes.array,
-    location: PropTypes.object.isRequired,
-    params: PropTypes.object.isRequired,
     routeConfig: PropTypes.object.isRequired,
 };
 

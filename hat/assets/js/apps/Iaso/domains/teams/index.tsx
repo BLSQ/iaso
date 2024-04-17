@@ -5,6 +5,7 @@ import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 
+import { useParams } from 'react-router-dom';
 import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { CreateEditTeam } from './components/CreateEditTeam';
@@ -24,12 +25,9 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-type Props = {
-    params: TeamParams;
-};
-
 const baseUrl = baseUrls.teams;
-export const Teams: FunctionComponent<Props> = ({ params }) => {
+export const Teams: FunctionComponent = () => {
+    const params = useParams() as unknown as TeamParams;
     const dispatch = useDispatch();
     const apiParams = useSingleTableParams(params);
     const classes: Record<string, string> = useStyles();

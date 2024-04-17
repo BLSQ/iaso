@@ -7,7 +7,7 @@ import {
 import { makeStyles } from '@mui/styles';
 import { Box } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import PropTypes from 'prop-types';
+import { useParams } from 'react-router-dom';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { useGetPages } from './hooks/useGetPages';
@@ -18,7 +18,7 @@ import CreateEditDialog from './components/CreateEditDialog';
 import PageActions from './components/PageActions';
 import PageAction from './components/PageAction';
 import { PAGES_TYPES } from './constants';
-import { DateTimeCellRfc } from '../../components/Cells/DateTimeCell';
+import { DateTimeCellRfc } from '../../components/Cells/DateTimeCell.tsx';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink.tsx';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
 import * as Permission from '../../utils/permissions.ts';
@@ -31,9 +31,10 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-const Pages = ({ params }) => {
+const Pages = () => {
     const intl = useSafeIntl();
     const classes = useStyles();
+    const params = useParams();
     const [selectedPageSlug, setSelectedPageSlug] = useState();
     const [isCreateEditDialogOpen, setIsCreateEditDialogOpen] = useState(false);
     const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] =
@@ -217,14 +218,6 @@ const Pages = ({ params }) => {
             </Box>
         </>
     );
-};
-
-Pages.propTypes = {
-    params: PropTypes.shape({
-        order: PropTypes.string,
-        page: PropTypes.string,
-        pageSize: PropTypes.string,
-    }).isRequired,
 };
 
 export default Pages;

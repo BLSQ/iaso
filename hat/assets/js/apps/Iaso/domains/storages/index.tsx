@@ -5,6 +5,7 @@ import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 
+import { useParams } from 'react-router-dom';
 import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { StorageParams } from './types/storages';
@@ -22,11 +23,8 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-type Props = {
-    params: StorageParams;
-};
-
-export const Storages: FunctionComponent<Props> = ({ params }) => {
+export const Storages: FunctionComponent = () => {
+    const params = useParams() as unknown as StorageParams;
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();

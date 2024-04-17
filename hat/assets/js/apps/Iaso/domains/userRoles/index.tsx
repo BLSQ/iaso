@@ -3,6 +3,7 @@ import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useDispatch } from 'react-redux';
+import { useParams } from 'react-router-dom';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { UserRolesFilters } from './components/UserRolesFilters';
@@ -18,11 +19,10 @@ import { CreateUserRoleDialog } from './components/CreateEditUserRole';
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
-type Props = {
-    params: UserRoleParams;
-};
+
 const baseUrl = baseUrls.userRoles;
-export const UserRoles: FunctionComponent<Props> = ({ params }) => {
+export const UserRoles: FunctionComponent = () => {
+    const params = useParams() as unknown as UserRoleParams;
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
 

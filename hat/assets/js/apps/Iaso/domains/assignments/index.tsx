@@ -15,6 +15,7 @@ import {
     useSkipEffectOnMount,
 } from 'bluesquare-components';
 
+import { useParams } from 'react-router-dom';
 import { redirectTo, redirectToReplace } from '../../routing/actions';
 import { baseUrls } from '../../constants/urls';
 
@@ -36,10 +37,6 @@ import { getSaveParams } from './utils';
 
 import MESSAGES from './messages';
 
-type Props = {
-    params: AssignmentParams;
-};
-
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     hiddenOpacity: {
@@ -53,7 +50,8 @@ const useStyles = makeStyles(theme => ({
 
 const baseUrl = baseUrls.assignments;
 
-export const Assignments: FunctionComponent<Props> = ({ params }) => {
+export const Assignments: FunctionComponent = () => {
+    const params: AssignmentParams = useParams() as AssignmentParams;
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();

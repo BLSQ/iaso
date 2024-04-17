@@ -88,7 +88,7 @@ const useStyles = makeStyles(theme => ({
 const baseUrl = baseUrls.orgUnits;
 export const OrgUnits: FunctionComponent = () => {
     // HOOKS
-    const params: OrgUnitParams = useParams();
+    const params = useParams() as OrgUnitParams;
     const queryClient = useQueryClient();
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();

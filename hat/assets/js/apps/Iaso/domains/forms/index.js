@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -8,6 +7,7 @@ import {
     commonStyles,
     AddButton as AddButtonComponent,
 } from 'bluesquare-components';
+import { useParams } from 'react-router-dom';
 import { redirectTo } from '../../routing/actions.ts';
 
 import formsTableColumns from './config';
@@ -30,7 +30,10 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-const Forms = ({ params }) => {
+const Forms = () => {
+    const params = useParams();
+    const { accountId } = params;
+    console.log('params', params, accountId);
     const baseUrl = baseUrls.forms;
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
@@ -120,10 +123,6 @@ const Forms = ({ params }) => {
             </Box>
         </>
     );
-};
-
-Forms.propTypes = {
-    params: PropTypes.object.isRequired,
 };
 
 export default Forms;

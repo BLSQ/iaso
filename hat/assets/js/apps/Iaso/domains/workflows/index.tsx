@@ -4,6 +4,7 @@ import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 
+import { useParams } from 'react-router-dom';
 import { useGoBack } from '../../routing/useGoBack';
 
 import TopBar from '../../components/nav/TopBarComponent';
@@ -26,17 +27,11 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-type Router = {
-    goBack: () => void;
-};
-type Props = {
-    params: WorkflowsParams;
-    router: Router;
-};
-
-export const Workflows: FunctionComponent<Props> = ({ params, router }) => {
+export const Workflows: FunctionComponent = () => {
     const dispatch = useDispatch();
-    const goBack = useGoBack(router, baseUrls.entityTypes);
+    const params = useParams() as WorkflowsParams;
+    const goBack = useGoBack();
+    // const goBack = useGoBack(router, baseUrls.entityTypes);
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetWorkflowVersions(params);

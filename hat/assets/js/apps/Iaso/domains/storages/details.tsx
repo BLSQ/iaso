@@ -8,7 +8,8 @@ import {
 // @ts-ignore
 import { Box, Divider, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
+import { useParams } from 'react-router-dom';
 import TopBar from '../../components/nav/TopBarComponent';
 import { Infos } from './components/Infos';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
@@ -29,26 +30,15 @@ import {
 } from './hooks/requests/useGetStorageLogs';
 
 import { useGetDetailsColumns } from './config';
+import { useGoBack } from '../../routing/useGoBack';
 
-type Props = {
-    params: StorageDetailsParams;
-    router: Router;
-};
-type State = {
-    routerCustom: RouterCustom;
-};
-type RouterCustom = {
-    prevPathname: string | undefined;
-};
-
-type Router = {
-    goBack: () => void;
-};
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-export const Details: FunctionComponent<Props> = ({ params, router }) => {
+export const Details: FunctionComponent = () => {
+    const params = useParams() as StorageDetailsParams;
+    const goBack = useGoBack();
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetStorageLogs(params);
     const { url: apiUrl } = useGetApiParams(params);
@@ -56,9 +46,7 @@ export const Details: FunctionComponent<Props> = ({ params, router }) => {
     const storageDetail = data?.results;
 
     const classes: Record<string, string> = useStyles();
-    const prevPathname: string | undefined = useSelector(
-        (state: State) => state.routerCustom.prevPathname,
-    );
+
     const dispatch = useDispatch();
 
     const columns = useGetDetailsColumns();
@@ -71,13 +59,14 @@ export const Details: FunctionComponent<Props> = ({ params, router }) => {
                     storageDetail ? storageDetail.storage_id : ''
                 }`}
                 displayBackButton
-                goBack={() => {
-                    if (prevPathname) {
-                        router.goBack();
-                    } else {
-                        dispatch(redirectToReplace(baseUrls.storages, {}));
-                    }
-                }}
+                goBack={goBack}
+                // goBack={() => {
+                //     if (prevPathname) {
+                //         router.goBack();
+                //     } else {
+                //         dispatch(redirectToReplace(baseUrls.storages, {}));
+                //     }
+                // }}
             />
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>
                 <Grid container spacing={2}>

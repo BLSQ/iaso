@@ -29,6 +29,14 @@ const MESSAGES = defineMessages({
         id: 'blsq.treeview.displayTypes',
         defaultMessage: 'Show organisation unit types',
     },
+    displayRejected: {
+        id: 'blsq.treeview.displayRejected',
+        defaultMessage: 'Show rejected organisation unit types',
+    },
+    displayNew: {
+        id: 'blsq.treeview.displayNew',
+        defaultMessage: 'Show new organisation unit types',
+    },
 });
 
 export { MESSAGES };

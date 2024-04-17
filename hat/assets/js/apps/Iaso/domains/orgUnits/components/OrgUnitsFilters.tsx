@@ -1,3 +1,11 @@
+import { Box, Divider, Grid, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import {
+    IntlFormatMessage,
+    commonStyles,
+    useSafeIntl,
+    useSkipEffectOnMount,
+} from 'bluesquare-components';
 import React, {
     Dispatch,
     FunctionComponent,
@@ -6,34 +14,26 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { Box, Divider, Grid, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import {
-    commonStyles,
-    IntlFormatMessage,
-    useSafeIntl,
-    useSkipEffectOnMount,
-} from 'bluesquare-components';
 
-import InputComponent from '../../../components/forms/InputComponent';
-import { ColorPicker } from '../../../components/forms/ColorPicker';
-import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
-import { LocationLimit } from '../../../utils/map/LocationLimit';
 import DatesRange from '../../../components/filters/DatesRange';
+import { ColorPicker } from '../../../components/forms/ColorPicker';
+import InputComponent from '../../../components/forms/InputComponent';
+import { LocationLimit } from '../../../utils/map/LocationLimit';
+import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
 
 import { getChipColors } from '../../../constants/chipColors';
 
-import { useGetGroups } from '../hooks/requests/useGetGroups';
-import { useGetDataSources } from '../hooks/requests/useGetDataSources';
-import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
 import { useCurrentUser } from '../../../utils/usersUtils';
+import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
+import { useGetDataSources } from '../hooks/requests/useGetDataSources';
+import { useGetGroups } from '../hooks/requests/useGetGroups';
 import { useGetOrgUnit } from './TreeView/requests';
 
-import { Search } from '../types/search';
-import MESSAGES from '../messages';
+import { InputWithInfos } from '../../../components/InputWithInfos';
 import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
 import { useGetOrgUnitTypes } from '../hooks/requests/useGetOrgUnitTypes';
-import { InputWithInfos } from '../../../components/InputWithInfos';
+import MESSAGES from '../messages';
+import { Search } from '../types/search';
 
 type Props = {
     searches: [Search];
@@ -262,7 +262,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                         label={MESSAGES.search}
                         blockForbiddenChars
                         onEnterPressed={onSearch}
-                        onErrorChange={(hasError) => setTextSearchError(hasError)}
+                        onErrorChange={hasError => setTextSearchError(hasError)}
                     />
                 </InputWithInfos>
                 <InputComponent
@@ -461,7 +461,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                         dateFrom={filters?.dateFrom}
                         dateTo={filters?.dateTo}
                     />
-                    )}
+                )}
             </Grid>
         </Grid>
     );

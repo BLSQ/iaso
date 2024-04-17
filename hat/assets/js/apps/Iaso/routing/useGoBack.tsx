@@ -12,8 +12,8 @@ type State = {
     routerCustom: RouterCustom;
 };
 export const useGoBack = (
-    router: Router,
-    baseUrl: string,
+    router?: Router,
+    baseUrl?: string,
     params?: Record<string, string>,
 ): (() => void) => {
     const prevPathname = useSelector(
@@ -21,7 +21,7 @@ export const useGoBack = (
     );
     const dispatch = useDispatch();
     if (prevPathname) {
-        return () => router.goBack();
+        return () => router?.goBack();
     }
-    return () => dispatch(redirectToReplace(baseUrl, params || {}));
+    return () => dispatch(redirectToReplace(baseUrl || '', params || {}));
 };

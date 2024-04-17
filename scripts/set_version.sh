@@ -1,6 +1,6 @@
 #!/bin/bash
 # This script is used during deployement to fill the version info so we can see them from python
-BRANCH_NAME=$(git rev-parse --symbolic-full-name --abbrev-ref HEAD)
+BRANCH_NAME=$(echo $BUILD_SOURCEBRANCH | sed 's#refs/heads/##')
 echo $BRANCH_NAME
 cat > hat/__version__.py << EOF
 # Generated at deploy

@@ -4,8 +4,8 @@ import React, {
     useState,
     Dispatch,
     SetStateAction,
-    useCallback,
 } from 'react';
+import Color from 'color';
 import { useDispatch } from 'react-redux';
 import { Column, useSafeIntl } from 'bluesquare-components';
 import { Box } from '@mui/material';
@@ -27,8 +27,7 @@ import {
 } from '../Dialogs/ReviewOrgUnitChangesDialog';
 import { UserCell } from '../../../../components/Cells/UserCell';
 import { colorCodes } from '../Dialogs/ReviewOrgUnitChangesInfos';
-
-type ColumnCell<T> = { row: { original: T; index: number } };
+import { ColumnCell } from '../../../../types/general';
 
 const useColumns = (
     setSelectedChangeRequest: Dispatch<SetStateAction<SelectedChangeRequest>>,
@@ -48,13 +47,35 @@ const useColumns = (
             Cell: ({
                 row: { original },
             }: ColumnCell<OrgUnitChangeRequest>): ReactElement => {
-                return (
+                if (original.org_unit_name) {
+                    return (
+                        <LinkToOrgUnit
+                            orgUnit={{
+                                id: original.org_unit_id,
+                                name: original.org_unit_name,
+                            }}
+                        />
+                    );
+                }
+                return <>{formatMessage(MESSAGES.newOrgUnit)}</>;
+            },
+        },
+        {
+            Header: formatMessage(MESSAGES.parent),
+            id: 'org_unit__parent__name',
+            accessor: 'org_unit_parent_name',
+            Cell: settings => {
+                const parentId = settings.row.original?.org_unit_parent_id;
+                const parentName = settings.row.original?.org_unit_parent_name;
+                return parentId && parentName ? (
                     <LinkToOrgUnit
                         orgUnit={{
-                            id: original.org_unit_id,
-                            name: original.org_unit_name,
+                            id: parentId,
+                            name: parentName,
                         }}
                     />
+                ) : (
+                    <>--</>
                 );
             },
         },
@@ -148,6 +169,24 @@ const useColumns = (
     ];
 };
 
+const getRowProps = (row: { original: OrgUnitChangeRequest }) => {
+    if (
+        row.original.org_unit_validation_status === 'NEW' &&
+        row.original.status === 'new'
+    ) {
+        return {
+            'data-test': 'new-org-unit-row',
+            sx: {
+                backgroundColor: theme =>
+                    `${Color(theme.palette.yellow.main).fade(0.5)} !important`,
+            },
+        };
+    }
+    return {
+        'data-test': 'change-request-row',
+    };
+};
+
 export type SelectedChangeRequest = {
     id: number;
     index: number;
@@ -169,9 +208,10 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
         SelectedChangeRequest | undefined
     >();
     const columns = useColumns(setSelectedChangeRequest);
-    const handleCloseDialog = useCallback(() => {
+    const handleCloseDialog = () => {
         setSelectedChangeRequest(undefined);
-    }, []);
+    };
+
     return (
         <>
             {/* This dialog is at this level to keep selected request in state and allow further multiaction/pagination feature */}
@@ -193,6 +233,9 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
                 baseUrl={baseUrl}
                 countOnTop
                 params={params}
+                // The typing problem is in the table
+                // @ts-ignore
+                rowProps={getRowProps}
                 extraProps={{ loading: isFetching, selectedChangeRequest }}
                 onTableParamsChange={p => {
                     dispatch(redirectTo(baseUrl, p));

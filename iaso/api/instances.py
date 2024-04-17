@@ -33,6 +33,7 @@ from iaso.models import (
     InstanceQuerySet,
     InstanceLock,
     Entity,
+    OrgUnitChangeRequest,
 )
 from iaso.utils import timestamp_to_datetime
 from . import common
@@ -40,6 +41,7 @@ from .comment import UserSerializerForComment
 from .common import safe_api_import, TimestampField, FileFormatEnum, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
 from .instance_filters import parse_instance_filters, get_form_from_instance_filters
 from hat.menupermissions import models as permission
+from ..models.forms import CR_MODE_NONE, CR_MODE_IF_REFERENCE_FORM
 
 
 class InstanceSerializer(serializers.ModelSerializer):
@@ -187,6 +189,8 @@ class InstancesViewSet(viewsets.ViewSet):
             {"title": "Période", "width": 20},
             {"title": "Date de création", "width": 20},
             {"title": "Date de modification", "width": 20},
+            {"title": "Créé par", "width": 20},
+            {"title": "Status", "width": 20},
             {"title": "Org unit", "width": 20},
             {"title": "Org unit id", "width": 20},
             {"title": "Référence externe", "width": 20},
@@ -247,6 +251,8 @@ class InstancesViewSet(viewsets.ViewSet):
                 idict.get("period"),
                 created_at,
                 updated_at,
+                idict.get("created_by"),
+                idict.get("status"),
                 org_unit.get("name") if org_unit else None,
                 org_unit.get("id") if org_unit else None,
                 org_unit.get("source_ref") if org_unit else None,
@@ -599,6 +605,7 @@ class InstancesViewSet(viewsets.ViewSet):
 def import_data(instances, user, app_id):
     project = Project.objects.get_for_user_and_app_id(user, app_id)
 
+    feature_flag = project.feature_flags.filter(name="")
     for instance_data in instances:
         uuid = instance_data.get("id", None)
 
@@ -655,3 +662,14 @@ def import_data(instances, user, app_id):
             instance.location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
 
         instance.save()
+
+        if instance.form.change_request_mode == CR_MODE_IF_REFERENCE_FORM:
+            if instance.form in instance.org_unit.org_unit_type.reference_forms.all():
+                oucr = OrgUnitChangeRequest()
+                oucr.org_unit = instance.org_unit
+                previous_reference_instances = list(instance.org_unit.reference_instances.all())
+                new_reference_instances = list(filter(lambda i: i.form != instance.form, previous_reference_instances))
+                new_reference_instances.append(instance)
+                oucr.save()
+                oucr.new_reference_instances.set(new_reference_instances)
+                oucr.save()

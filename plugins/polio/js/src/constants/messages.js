@@ -148,7 +148,11 @@ const MESSAGES = defineMessages({
     },
     weeks: {
         id: 'iaso.polio.calendar.weeks',
-        defaultMessage: 'week(s) were',
+        defaultMessage: 'week(s)',
+    },
+    weeksShort: {
+        id: 'iaso.polio.calendar.weeksShort',
+        defaultMessage: 'w.',
     },
     startDate: {
         id: 'iaso.label.dateFrom',
@@ -241,6 +245,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.epid',
         defaultMessage: 'EPID',
     },
+    campaignIdentifier: {
+        id: 'iaso.polio.form.label.campaignIdentifier',
+        defaultMessage: 'Campaign identifier',
+    },
     obrName: {
         id: 'iaso.polio.form.label.obrName',
         defaultMessage: 'OBR Name',
@@ -256,6 +264,10 @@ const MESSAGES = defineMessages({
     description: {
         id: 'iaso.polio.form.label.description',
         defaultMessage: 'Description',
+    },
+    responsibleOfficer: {
+        id: 'iaso.polio.form.label.responsibleOfficer',
+        defaultMessage: 'Responsible officer',
     },
     gpeiCoordinator: {
         id: 'iaso.polio.form.label.gpeiCoordinator',
@@ -301,10 +313,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.outbreakdeclarationdate',
         defaultMessage: 'Outbreak declaration date',
     },
-    baseInfoFormTitle: {
-        id: 'iaso.polio.form.title.baseInfoFormTitle',
-        defaultMessage: 'Enter information about the new outbreak response',
-    },
     verificationScore: {
         id: 'iaso.polio.form.label.verificationScore',
         defaultMessage: 'Verification Score (/20)',
@@ -342,8 +350,12 @@ const MESSAGES = defineMessages({
         defaultMessage: 'DG Authorization',
     },
     target_population: {
-        id: 'iaso.polio.form.label.targetpopulationRound',
+        id: 'iaso.polio.form.label.targetpopulation',
         defaultMessage: 'Target population Round',
+    },
+    targetPopulation: {
+        id: 'iaso.polio.label.targetPopulation',
+        defaultMessage: 'Target population',
     },
     percentage_covered_target_population: {
         id: 'iaso.polio.form.label.percentageCoveredTargetPopulation',
@@ -1200,6 +1212,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.campaignType',
         defaultMessage: 'Campaign type',
     },
+    campaign_types: {
+        id: 'iaso.polio.label.campaignTypes',
+        defaultMessage: 'Types',
+    },
+    campaignCategory: {
+        id: 'iaso.polio.label.campaignCategory',
+        defaultMessage: 'Campaign category',
+    },
     lqasImDateTooltip: {
         id: 'iaso.polio.tooltip.label.lqasImDate',
         defaultMessage:
@@ -1264,15 +1284,7 @@ const MESSAGES = defineMessages({
     },
     testCampaign: {
         id: 'iaso.polio.label.testCampaign',
-        defaultMessage: 'Test campaign',
-    },
-    is_test: {
-        id: 'iaso.polio.label.is_test',
-        defaultMessage: 'Test campaigns/On hold status',
-    },
-    testCampaigns: {
-        id: 'iaso.polio.label.testCampaigns',
-        defaultMessage: 'Test campaigns',
+        defaultMessage: 'Test campaign/On hold',
     },
     round: {
         id: 'iaso.polio.label.round',
@@ -2487,6 +2499,26 @@ const MESSAGES = defineMessages({
     defaultMutationApiSuccess: {
         id: 'iaso.snackBar.successful',
         defaultMessage: 'Saved successfully',
+    },
+    evaluation: {
+        id: 'iaso.polio.label.evaluation',
+        defaultMessage: 'Evaluation',
+    },
+    period: {
+        defaultMessage: 'Period',
+        id: 'iaso.instance.period',
+    },
+    semester: {
+        defaultMessage: 'Semester',
+        id: 'iaso.polio.periods.semester',
+    },
+    quarter: {
+        defaultMessage: 'Quarter',
+        id: 'iaso.polio.periods.quarter',
+    },
+    year: {
+        defaultMessage: 'Year',
+        id: 'iaso.polio.periods.year',
     },
 });
 

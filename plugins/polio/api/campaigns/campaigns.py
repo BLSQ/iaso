@@ -1,13 +1,13 @@
-from datetime import datetime
 import json
+from datetime import datetime
+from tempfile import NamedTemporaryFile
 from time import gmtime, strftime
 from typing import Any, List, Union
-from tempfile import NamedTemporaryFile
 
 from django.conf import settings
 from django.core.cache import cache
 from django.core.mail import send_mail
-from django.db.models import Max, Min, Q, Prefetch
+from django.db.models import Max, Min, Prefetch, Q
 from django.db.models.expressions import RawSQL
 from django.db.models.query import QuerySet
 from django.db.transaction import atomic
@@ -25,15 +25,14 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.validators import UniqueValidator
 
-
 from hat.api.export_utils import Echo, iter_items
 from iaso.api.common import (
     CONTENT_TYPE_CSV,
     CONTENT_TYPE_XLSX,
+    Custom403Exception,
     CustomFilterBackend,
     DeletionFilterBackend,
     ModelViewSet,
-    Custom403Exception,
 )
 from iaso.models import Group, OrgUnit
 from plugins.polio.api.campaigns.campaigns_log import log_campaign_modification, serialize_campaign
@@ -42,15 +41,13 @@ from plugins.polio.api.campaigns.vaccine_authorization_missing_email import (
 )
 from plugins.polio.api.common import CACHE_VERSION
 from plugins.polio.api.rounds.round import RoundScopeSerializer, RoundSerializer
-from plugins.polio.api.shared_serializers import (
-    GroupSerializer,
-    OrgUnitSerializer,
-)
+from plugins.polio.api.shared_serializers import GroupSerializer, OrgUnitSerializer
 from plugins.polio.export_utils import generate_xlsx_campaigns_calendar, xlsx_file_name
 from plugins.polio.models import (
     Campaign,
     CampaignGroup,
     CampaignScope,
+    CampaignType,
     CountryUsersGroup,
     Round,
     RoundScope,
@@ -125,6 +122,12 @@ def check_total_doses_requested(vaccine_authorization, nOPV2_rounds, current_cam
             raise Custom403Exception(message)
 
 
+class CampaignTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampaignType
+        fields = ["id", "name", "slug"]
+
+
 class CampaignSerializer(serializers.ModelSerializer):
     round_one = serializers.SerializerMethodField(read_only=True)
     round_two = serializers.SerializerMethodField(read_only=True)
@@ -152,6 +155,7 @@ class CampaignSerializer(serializers.ModelSerializer):
     # Account is filed per default the one of the connected user that update it
     account: Field = serializers.PrimaryKeyRelatedField(default=CurrentAccountDefault(), read_only=True)
     has_data_in_budget_tool = serializers.SerializerMethodField(read_only=True)
+    campaign_types = serializers.PrimaryKeyRelatedField(many=True, queryset=CampaignType.objects.all(), required=False)
 
     def get_top_level_org_unit_name(self, campaign):
         if campaign.country:
@@ -185,6 +189,7 @@ class CampaignSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         grouped_campaigns = validated_data.pop("grouped_campaigns", [])
         rounds = validated_data.pop("rounds", [])
+        campaign_types = validated_data.pop("campaign_types", [])
         initial_org_unit = validated_data.get("initial_org_unit")
         obr_name = validated_data["obr_name"]
         account = self.context["request"].user.iaso_profile.account
@@ -200,11 +205,11 @@ class CampaignSerializer(serializers.ModelSerializer):
 
         # noinspection DuplicatedCode
         for scope in campaign_scopes:
-            vaccine = scope.get("vaccine")
+            vaccine = scope.get("vaccine", "")
             org_units = scope.get("group", {}).get("org_units")
             scope, created = campaign.scopes.get_or_create(vaccine=vaccine)
             source_version_id = None
-            name = f"scope for campaign {campaign.obr_name} - {vaccine}"
+            name = f"scope for campaign {campaign.obr_name}" + (f" - {vaccine}" if vaccine else "")
             if org_units:
                 source_version_ids = set([ou.version_id for ou in org_units])
                 if len(source_version_ids) != 1:
@@ -219,6 +224,12 @@ class CampaignSerializer(serializers.ModelSerializer):
 
             scope.group.org_units.set(org_units)
 
+        if campaign_types:
+            campaign.campaign_types.set(campaign_types)
+        else:  # if no campaign_types are given, we assume it's a polio campaign
+            polio_type = CampaignType.objects.get(name=CampaignType.POLIO)
+            campaign.campaign_types.set([polio_type])
+
         for round_data in rounds:
             scopes = round_data.pop("scopes", [])
             round_serializer = RoundSerializer(data={**round_data, "campaign": campaign.id}, context=self.context)
@@ -226,7 +237,7 @@ class CampaignSerializer(serializers.ModelSerializer):
             round = round_serializer.save()
 
             for scope in scopes:
-                vaccine = scope.get("vaccine")
+                vaccine = scope.get("vaccine", "")
                 org_units = scope.get("group", {}).get("org_units")
                 source_version_id = None
                 if org_units:
@@ -234,7 +245,9 @@ class CampaignSerializer(serializers.ModelSerializer):
                     if len(source_version_ids) != 1:
                         raise serializers.ValidationError("All orgunit should be in the same source version")
                     source_version_id = list(source_version_ids)[0]
-                name = f"scope for round {round.number} campaign {campaign.obr_name} - {vaccine}"
+                name = f"scope for round {round.number} campaign {campaign.obr_name}" + (
+                    f" - {vaccine}" if vaccine else ""
+                )
                 scope, created = round.scopes.get_or_create(vaccine=vaccine)
                 if not scope.group:
                     scope.group = Group.objects.create(name=name)
@@ -282,11 +295,11 @@ class CampaignSerializer(serializers.ModelSerializer):
         account = self.context["request"].user.iaso_profile.account
 
         for scope in campaign_scopes:
-            vaccine = scope.get("vaccine")
+            vaccine = scope.get("vaccine", "")
             org_units = scope.get("group", {}).get("org_units")
             scope, created = instance.scopes.get_or_create(vaccine=vaccine)
             source_version_id = None
-            name = f"scope for campaign {instance.obr_name} - {vaccine}"
+            name = f"scope for campaign {instance.obr_name}" + (f" - {vaccine}" if vaccine else "")
             if org_units:
                 source_version_ids = set([ou.version_id for ou in org_units])
                 if len(source_version_ids) != 1:
@@ -336,7 +349,7 @@ class CampaignSerializer(serializers.ModelSerializer):
             round_instances.append(round_instance)
             round_datelogs = []
             for scope in scopes:
-                vaccine = scope.get("vaccine")
+                vaccine = scope.get("vaccine", "")
                 org_units = scope.get("group", {}).get("org_units")
                 source_version_id = None
                 if org_units:
@@ -344,7 +357,9 @@ class CampaignSerializer(serializers.ModelSerializer):
                     if len(source_version_ids) != 1:
                         raise serializers.ValidationError("All orgunit should be in the same source version")
                     source_version_id = list(source_version_ids)[0]
-                name = f"scope for round {round_instance.number} campaign {instance.obr_name} - {vaccine}"
+                name = f"scope for round {round_instance.number} campaign {instance.obr_name}" + (
+                    f" - {vaccine}" if vaccine else ""
+                )
                 scope, created = round_instance.scopes.get_or_create(vaccine=vaccine)
                 if not scope.group:
                     scope.group = Group.objects.create(name=name)
@@ -407,6 +422,8 @@ class ListCampaignSerializer(CampaignSerializer):
 
     rounds = NestedListRoundSerializer(many=True, required=False)
 
+    campaign_types = CampaignTypeSerializer(many=True, required=False)
+
     class Meta:
         model = Campaign
         fields = [
@@ -420,6 +437,7 @@ class ListCampaignSerializer(CampaignSerializer):
             "rounds",
             "general_status",
             "grouped_campaigns",
+            "campaign_types",
         ]
         read_only_fields = fields
 
@@ -440,6 +458,8 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             if round.number == 2:
                 return RoundAnonymousSerializer(round).data
         return None
+
+    campaign_types = CampaignTypeSerializer(many=True, required=False)
 
     class Meta:
         model = Campaign
@@ -494,11 +514,14 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "is_preventive",
             "account",
             "outbreak_declaration_date",
+            "campaign_types",
         ]
         read_only_fields = fields
 
 
 class SmallCampaignSerializer(CampaignSerializer):
+    campaign_types = CampaignTypeSerializer(many=True, required=False)
+
     class Meta:
         model = Campaign
         # TODO: refactor to avoid duplication with AnonymousCampaignSerializer?
@@ -549,6 +572,7 @@ class SmallCampaignSerializer(CampaignSerializer):
             "is_preventive",
             "account",
             "outbreak_declaration_date",
+            "campaign_types",
         ]
         read_only_fields = fields
 
@@ -572,7 +596,7 @@ class CalendarCampaignSerializer(CampaignSerializer):
 
         class Meta:
             model = Round
-            fields = ["id", "number", "started_at", "ended_at", "scopes", "vaccine_names"]
+            fields = ["id", "number", "started_at", "ended_at", "scopes", "vaccine_names", "target_population"]
 
     class NestedScopeSerializer(CampaignScopeSerializer):
         class NestedGroupSerializer(GroupSerializer):
@@ -588,6 +612,7 @@ class CalendarCampaignSerializer(CampaignSerializer):
 
     rounds = NestedListRoundSerializer(many=True, required=False)
     scopes = NestedScopeSerializer(many=True, required=False)
+    campaign_types = CampaignTypeSerializer(many=True, required=False)
 
     class Meta:
         model = Campaign
@@ -609,6 +634,9 @@ class CalendarCampaignSerializer(CampaignSerializer):
             "risk_assessment_status",
             "budget_status",
             "vaccines",
+            "campaign_types",
+            "description",
+            "is_test",
         ]
         read_only_fields = fields
 
@@ -742,24 +770,30 @@ class CampaignViewSet(ModelViewSet):
         queryset = super().filter_queryset(queryset)
         if self.action in ("update", "partial_update", "retrieve", "destroy"):
             return queryset
-        campaign_type = self.request.query_params.get("campaign_type")
+        campaign_category = self.request.query_params.get("campaign_category")
         campaign_groups = self.request.query_params.get("campaign_groups")
         show_test = self.request.query_params.get("show_test", "false")
         org_unit_groups = self.request.query_params.get("org_unit_groups")
+        campaign_types = self.request.query_params.get("campaign_types")
         campaigns = queryset
         if show_test == "false":
             campaigns = campaigns.filter(is_test=False)
-        campaigns.prefetch_related("rounds", "group", "grouped_campaigns")
-        if campaign_type == "preventive":
+        if campaign_category == "preventive":
             campaigns = campaigns.filter(is_preventive=True)
-        if campaign_type == "test":
+        if campaign_category == "test":
             campaigns = campaigns.filter(is_test=True)
-        if campaign_type == "regular":
+        if campaign_category == "regular":
             campaigns = campaigns.filter(is_preventive=False).filter(is_test=False)
         if campaign_groups:
             campaigns = campaigns.filter(grouped_campaigns__in=campaign_groups.split(","))
         if org_unit_groups:
             campaigns = campaigns.filter(country__groups__in=org_unit_groups.split(","))
+        if campaign_types:
+            campaign_types_list = campaign_types.split(",")
+            if all(item.isdigit() for item in campaign_types_list):
+                campaigns = campaigns.filter(campaign_types__id__in=campaign_types_list)
+            else:
+                campaigns = campaigns.filter(campaign_types__slug__in=campaign_types_list)
         org_units_id_only_qs = OrgUnit.objects.only("id", "name")
         country_prefetch = Prefetch("country", queryset=org_units_id_only_qs)
         scopes_group_org_units_prefetch = Prefetch("scopes__group__org_units", queryset=org_units_id_only_qs)
@@ -799,6 +833,12 @@ class CampaignViewSet(ModelViewSet):
                 campaigns = campaigns.filter(account_id=account_id)
 
         return campaigns
+
+    @action(detail=False, methods=["GET"], serializer_class=CampaignTypeSerializer)
+    def available_campaign_types(self, request):
+        campaign_types = CampaignType.objects.all()
+        serializer = CampaignTypeSerializer(campaign_types, many=True)
+        return Response(serializer.data)
 
     @action(methods=["POST"], detail=False, serializer_class=PreparednessPreviewSerializer)
     def preview_preparedness(self, request, **kwargs):
@@ -938,7 +978,12 @@ class CampaignViewSet(ModelViewSet):
                 it generates a csv file export
         """
         columns = self.campaign_csv_columns()
-        campaigns = self.filter_queryset(self.get_queryset())
+        queryset = self.get_queryset()
+
+        if not request.query_params.get("deletion_status"):
+            queryset = queryset.filter(deleted_at__isnull=True)
+
+        campaigns = self.filter_queryset(queryset)
         rounds = Round.objects.order_by("campaign__created_at").filter(campaign_id__in=campaigns)
         data = []
 
@@ -1101,7 +1146,7 @@ class CampaignViewSet(ModelViewSet):
         """
         countries = params.get("countries") if params.get("countries") is not None else None
         campaign_groups = params.get("campaignGroups") if params.get("campaignGroups") is not None else None
-        campaign_type = params.get("campaignType") if params.get("campaignType") is not None else None
+        campaign_category = params.get("campaignCategory") if params.get("campaignCategory") is not None else None
         search = params.get("search")
         org_unit_groups = params.get("orgUnitGroups") if params.get("orgUnitGroups") is not None else None
         # Test campaigns should not appear in the xlsx calendar
@@ -1110,9 +1155,9 @@ class CampaignViewSet(ModelViewSet):
             rounds = rounds.filter(campaign__country_id__in=countries.split(","))
         if campaign_groups:
             rounds = rounds.filter(campaign__group_id__in=campaign_groups.split(","))
-        if campaign_type == "preventive":
+        if campaign_category == "preventive":
             rounds = rounds.filter(campaign__is_preventive=True)
-        if campaign_type == "regular":
+        if campaign_category == "regular":
             rounds = rounds.filter(campaign__is_preventive=False).filter(campaign__is_test=False)
         if search:
             rounds = rounds.filter(Q(campaign__obr_name__icontains=search) | Q(campaign__epid__icontains=search))

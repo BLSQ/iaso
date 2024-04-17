@@ -1,6 +1,8 @@
 /* eslint-disable no-param-reassign */
 /// <reference types="cypress" />
 import * as dotenv from 'dotenv';
+
+const webpackPreprocessor = require('@cypress/webpack-preprocessor');
 // ***********************************************************
 // This example plugins/index.js can be used to load plugins
 //
@@ -18,7 +20,23 @@ import * as dotenv from 'dotenv';
  * @type {Cypress.PluginConfig}
  */
 dotenv.config();
+
+const webpackOptions = {
+    resolve: {
+        extensions: ['.ts', '.tsx', '.js'],
+    },
+    module: {
+        rules: [
+            {
+                test: /\.css$/,
+                use: ['style-loader', 'css-loader'],
+            },
+        ],
+    },
+};
+
 module.exports = (on, config) => {
+    on('file:preprocessor', webpackPreprocessor({ webpackOptions }));
     // `on` is used to hook into various events Cypress emits
     // `config` is the resolved Cypress config
     config.env.siteBaseUrl = process.env.CYPRESS_BASE_URL;

@@ -108,7 +108,7 @@ class FormAttachmentsAPITestCase(APITestCase):
         f"""DELETE {BASE_URL}<form_attachment_id>: is not allowed"""
 
         response = self.client.delete(f"{BASE_URL}{self.attachment1.id}/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     def test_form_attachments_delete(self):
         f"""DELETE {BASE_URL}<form_attachment_id>: allowed"""
@@ -127,7 +127,7 @@ class FormAttachmentsAPITestCase(APITestCase):
                 format="multipart",
                 headers={"accept": "application/json"},
             )
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     def test_form_attachments_create(self):
         f"""POST {BASE_URL}: allowed"""

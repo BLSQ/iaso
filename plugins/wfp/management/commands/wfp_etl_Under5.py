@@ -10,11 +10,28 @@ logger = logging.getLogger(__name__)
 
 
 class Under5:
-    def compute_gained_weight(self, initial_weight, current_weight):
+    def compute_gained_weight(self, initial_weight, current_weight, duration):
         weight_gain = 0
+        weight_loss = 0
+
+        weight_difference = 0
         if initial_weight is not None and current_weight is not None:
-            weight_gain = float(current_weight) - float(initial_weight)
-        return weight_gain
+            initial_weight = float(initial_weight)
+            current_weight = float(current_weight)
+            weight_difference = round((current_weight - initial_weight), 4)
+
+            if weight_difference >= 0:
+                if duration > 0 and current_weight > 0:
+                    weight_gain = round((weight_difference / (initial_weight * float(duration))), 4)
+            elif weight_difference < 0:
+                weight_loss = abs(weight_difference)
+        return {
+            "initial_weight": float(initial_weight) if initial_weight is not None else initial_weight,
+            "discharge_weight": float(current_weight) if current_weight is not None else current_weight,
+            "weight_difference": weight_difference,
+            "weight_gain": weight_gain,
+            "weight_loss": weight_loss,
+        }
 
     def group_visit_by_entity(self, entities):
         instances = []
@@ -22,7 +39,9 @@ class Under5:
         instances_by_entity = groupby(list(entities), key=itemgetter("entity_id"))
         initial_weight = None
         current_weight = None
-
+        initial_date = None
+        current_date = None
+        duration = 0
         for entity_id, entity in instances_by_entity:
             instances.append({"entity_id": entity_id, "visits": [], "journey": []})
             for visit in entity:
@@ -48,12 +67,28 @@ class Under5:
                     form_id = visit.get("form__form_id")
                     current_record["org_unit_id"] = visit.get("org_unit_id", None)
                     current_weight = current_record.get("weight_kgs", None)
+                    current_date = visit.get("created_at", None)
 
                     if form_id == "Anthropometric visit child":
                         initial_weight = current_weight
                         instances[i]["initial_weight"] = initial_weight
+                        visit_date = visit.get("visit_date", current_date)
+                        initial_date = visit.get("_visit_date", visit_date)
 
-                    current_record["weight_gain"] = self.compute_gained_weight(initial_weight, current_weight)
+                    if initial_date is not None:
+                        duration = (current_date - initial_date).days
+                        current_record["start_date"] = initial_date.strftime("%Y-%m-%d")
+
+                    weight = self.compute_gained_weight(initial_weight, current_weight, duration)
+
+                    current_record["end_date"] = current_date.strftime("%Y-%m-%d")
+                    current_record["weight_gain"] = weight["weight_gain"]
+                    current_record["weight_loss"] = weight["weight_loss"]
+                    current_record["initial_weight"] = weight["initial_weight"]
+                    current_record["discharge_weight"] = weight["discharge_weight"]
+                    current_record["weight_difference"] = weight["weight_difference"]
+                    current_record["duration"] = duration
+
                     if visit.get("created_at"):
                         current_record["date"] = visit.get("created_at").strftime("%Y-%m-%d")
 
@@ -79,8 +114,10 @@ class Under5:
 
         for visit in visits:
             if visit:
-                if visit.get("weight_gain", None) is not None and visit.get("weight_gain", None) > 0:
-                    current_journey["weight_gain"] = visit.get("weight_gain")
+                current_journey["weight_gain"] = visit.get("weight_gain", None)
+                current_journey["weight_loss"] = visit.get("weight_loss", None)
+                if visit.get("duration", None) is not None and visit.get("duration", None) != "":
+                    current_journey["duration"] = visit.get("duration")
 
                 if visit["form_id"] == "Anthropometric visit child":
                     current_journey["nutrition_programme"] = ETL().program_mapper(visit)
@@ -157,7 +194,15 @@ class Under5:
         journey.nutrition_programme = record["nutrition_programme"]
         journey.exit_type = record.get("exit_type", None)
         journey.instance_id = record.get("instance_id", None)
-        journey.weight_gain = record.get("weight_gain", 0)
+        journey.initial_weight = record.get("initial_weight", None)
+        journey.start_date = record.get("start_date", None)
+
+        if record.get("exit_type", None) is not None and record.get("exit_type", None) != "":
+            journey.discharge_weight = record.get("discharge_weight", None)
+            journey.weight_gain = record.get("weight_gain", 0)
+            journey.weight_loss = record.get("weight_loss", 0)
+            journey.duration = record.get("duration", None)
+            journey.end_date = record.get("end_date", None)
         journey.save()
         return journey
 

@@ -1,8 +1,8 @@
 import { UseQueryResult } from 'react-query';
-import { useSnackQuery } from '../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { getRequest } from '../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
-import { GroupedCampaigns } from '../../../constants/types';
+import { useSnackQuery } from '../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { makeUrlWithParams } from '../../../../../../../hat/assets/js/apps/Iaso/libs/utils';
+import { GroupedCampaigns } from '../../../constants/types';
 
 const getGroupedCampaigns = async (
     params: Record<string, unknown>,
@@ -14,7 +14,7 @@ const getGroupedCampaigns = async (
 };
 
 export const useGetGroupedCampaigns = (
-    params: Record<string, unknown>,
+    params?: Record<string, unknown>,
 ): UseQueryResult<GroupedCampaigns, Error> => {
     const paramsForBackend = params
         ? {
@@ -27,9 +27,8 @@ export const useGetGroupedCampaigns = (
 
     return useSnackQuery(
         ['groupedCampaigns', paramsForBackend],
-        ({ signal }) => getGroupedCampaigns(paramsForBackend, signal),
+        ({ signal }) => getGroupedCampaigns(paramsForBackend || {}, signal),
         undefined,
         undefined,
-        {},
     );
 };

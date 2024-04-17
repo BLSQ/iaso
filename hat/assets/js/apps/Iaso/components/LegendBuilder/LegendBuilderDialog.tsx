@@ -7,8 +7,7 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import * as Yup from 'yup';
-import SettingsIcon from '@mui/icons-material/Settings';
-import { IconButton, Box, Button } from '@mui/material';
+import { Box, Button } from '@mui/material';
 
 import { useFormik } from 'formik';
 import Add from '@mui/icons-material/Add';
@@ -16,6 +15,7 @@ import { MESSAGES } from './messages';
 import { ScaleThreshold } from './types';
 import { LegendBuilder } from './index';
 import { getRangeValues, getScaleThreshold } from './utils';
+import { EditIconButton } from '../Buttons/EditIconButton';
 
 type Props = {
     titleMessage: IntlMessage;
@@ -105,18 +105,6 @@ type PropsIcon = {
     onClick: () => void;
 };
 
-export const EditIconButton: FunctionComponent<PropsIcon> = ({ onClick }) => {
-    const { formatMessage } = useSafeIntl();
-    return (
-        <IconButton
-            onClick={onClick}
-            aria-label={formatMessage(MESSAGES.edit)}
-            size="small"
-        >
-            <SettingsIcon />
-        </IconButton>
-    );
-};
 const AddButton: FunctionComponent<PropsIcon> = ({ onClick }) => {
     const { formatMessage } = useSafeIntl();
     return (

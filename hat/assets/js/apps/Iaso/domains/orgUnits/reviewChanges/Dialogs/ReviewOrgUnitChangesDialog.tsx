@@ -20,28 +20,6 @@ import { ReviewOrgUnitChangesDetailsTable } from '../Tables/details/ReviewOrgUni
 import { ReviewOrgUnitChangesDialogTitle } from './ReviewOrgUnitChangesDialogTitle';
 import { useGetApprovalProposal } from '../hooks/api/useGetApprovalProposal';
 
-/*
-Org Unit Change Request
-
-3 statuses:
-- New → orange
-- Approved-→ green
-- Rejected → red
-
-If new:
-Left side: old org unit values: org unit values at request creation time  Comes from change request API (old_value field)
-Right side: proposed changes. Red if not selected, green if selected
-
-
-If approved:
-Left side: old org unit values: org unit values at request creation time  Comes from change request API (old_value field)
-Right side: proposed change → approved = green, rejected = red
-
-If rejected:
-Left side: old org unit values: org unit values at request creation time  Comes from change request API (old_value field)
-Right side: proposed changes in red 
-*/
-
 type Props = {
     isOpen: boolean;
     closeDialog: () => void;
@@ -59,6 +37,9 @@ export const ReviewOrgUnitChangesDialog: FunctionComponent<Props> = ({
         useGetApprovalProposal(selectedChangeRequest.id);
     const isNew: boolean =
         !isFetchingChangeRequest && changeRequest?.status === 'new';
+    const isNewOrgUnit = changeRequest
+        ? changeRequest.org_unit.validation_status === 'NEW'
+        : false;
     const { newFields, setSelected } = useNewFields(changeRequest);
     const titleMessage = useMemo(() => {
         if (changeRequest?.status === 'rejected') {
@@ -67,15 +48,18 @@ export const ReviewOrgUnitChangesDialog: FunctionComponent<Props> = ({
         if (changeRequest?.status === 'approved') {
             return formatMessage(MESSAGES.seeApprovedChanges);
         }
+        if (isNewOrgUnit) {
+            return formatMessage(MESSAGES.validateOrRejectNewOrgUnit);
+        }
         return formatMessage(MESSAGES.validateOrRejectChanges);
-    }, [changeRequest?.status, formatMessage]);
+    }, [changeRequest?.status, formatMessage, isNewOrgUnit]);
     const { mutate: submitChangeRequest, isLoading: isSaving } =
         useSaveChangeRequest(closeDialog, selectedChangeRequest.id);
 
     return (
         <SimpleModal
             open={isOpen}
-            maxWidth="xl"
+            maxWidth={isNewOrgUnit ? 'md' : 'lg'}
             onClose={() => null}
             id="approve-orgunit-changes-dialog"
             dataTestId="approve-orgunit-changes-dialog"
@@ -96,6 +80,8 @@ export const ReviewOrgUnitChangesDialog: FunctionComponent<Props> = ({
                         newFields={newFields}
                         isNew={isNew}
                         submitChangeRequest={submitChangeRequest}
+                        isNewOrgUnit={isNewOrgUnit}
+                        changeRequest={changeRequest}
                     />
                 )
             }
@@ -106,6 +92,7 @@ export const ReviewOrgUnitChangesDialog: FunctionComponent<Props> = ({
                 isFetchingChangeRequest={isFetchingChangeRequest}
                 newFields={newFields}
                 setSelected={setSelected}
+                isNewOrgUnit={isNewOrgUnit}
             />
         </SimpleModal>
     );

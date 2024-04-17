@@ -1,7 +1,7 @@
 /// <reference types="cypress" />
 
-import superUser from '../../fixtures/profiles/me/superuser.json';
 import * as Permission from '../../../apps/Iaso/utils/permissions.ts';
+import superUser from '../../fixtures/profiles/me/superuser.json';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
@@ -59,7 +59,7 @@ describe('Tasks', () => {
                 .find('tr')
                 .eq(0)
                 .find('td')
-                .should('have.length', 8);
+                .should('have.length', 9);
         });
         it('should be able to kill a task', () => {
             cy.intercept('/api/tasks/**', { fixture: 'tasks/list.json' });
@@ -90,6 +90,7 @@ describe('Tasks', () => {
                 .eq(1)
                 .find('td')
                 .last()
+                .prev()
                 .find('button')
                 .click();
             cy.get('#notistack-snackbar').should('exist');

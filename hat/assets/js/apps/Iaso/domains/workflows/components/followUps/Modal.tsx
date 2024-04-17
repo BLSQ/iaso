@@ -15,11 +15,10 @@ import {
 } from 'bluesquare-components';
 
 import { Grid, Box, useTheme } from '@mui/material';
+import { EditIconButton } from '../../../../components/Buttons/EditIconButton';
 import InputComponent from '../../../../components/forms/InputComponent';
-import { EditIconButton } from '../ModalButtons';
 import { commaSeparatedIdsToArray } from '../../../../utils/forms';
 import { Popper } from '../../../forms/fields/components/Popper';
-
 import { useGetForms } from '../../hooks/requests/useGetForms';
 import { useBulkUpdateWorkflowFollowUp } from '../../hooks/requests/useBulkUpdateWorkflowFollowUp';
 import { useCreateWorkflowFollowUp } from '../../hooks/requests/useCreateWorkflowFollowUp';

@@ -13,12 +13,13 @@ import { useSafeIntl, IntlMessage } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 
 import { ProjectInfos } from './ProjectInfos';
-import { ProjectFeatureFlags } from './ProjectFeatureFlags';
+import { Form, ProjectFeatureFlags } from './ProjectFeatureFlags';
 
 import { Project } from '../types/project';
 
 import MESSAGES from '../messages';
 import { useGetFeatureFlags } from '../hooks/requests';
+import { FeatureFlag } from '../types/featureFlag';
 
 type RenderTriggerProps = {
     openDialog: () => void;
@@ -56,6 +57,22 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
+const emptyProject = {
+    id: { value: '', errors: [] },
+    app_id: { value: '', errors: [] },
+    name: { value: '', errors: [] },
+    feature_flags: { value: [], errors: [] } as Form,
+};
+
+export const forbiddenCharacters = ['"', '?', '/', '%', '&', ' ', '-'];
+
+export const containsForbiddenCharacter = (value: string): boolean => {
+    for (let i = 0; i < value.length; i += 1) {
+        if (forbiddenCharacters.includes(value[i])) return true;
+    }
+    return false;
+};
+
 const ProjectsDialog: FunctionComponent<Props> = ({
     titleMessage,
     renderTrigger,
@@ -73,10 +90,7 @@ const ProjectsDialog: FunctionComponent<Props> = ({
     const classes: Record<string, string> = useStyles();
     const initialProject = useCallback(
         app => {
-            let pr = initialData || {};
-            if (app) {
-                pr = app;
-            }
+            const pr = app || initialData || {};
             return {
                 id: { value: get(pr, 'id', null), errors: [] },
                 app_id: { value: get(pr, 'app_id', ''), errors: [] },
@@ -85,40 +99,67 @@ const ProjectsDialog: FunctionComponent<Props> = ({
                     errors: [],
                 },
                 feature_flags: {
-                    value: get(pr, 'feature_flags', []).map(v => v.id),
+                    value: get(pr, 'feature_flags', [] as FeatureFlag[]).map(
+                        (v: FeatureFlag): number => v.id,
+                    ),
                     errors: [],
                 },
             };
         },
         [initialData],
     );
-    const [project, setProject] = useState(initialProject(null));
+    const [project, setProject] = useState(emptyProject);
     const [tab, setTab] = useState<Tab>('infos');
+    const appIdError = formatMessage(MESSAGES.appIdError);
 
     const onClosed = () => {
         setProject(initialProject(null));
         setTab('infos');
     };
 
-    const setFieldValue = (fieldName, fieldValue) => {
-        setProject({
-            ...project,
-            [fieldName]: {
-                value: fieldValue,
-                errors: [],
-            },
-        });
-    };
+    const setFieldValue = useCallback(
+        (fieldName, fieldValue) => {
+            setProject({
+                ...project,
+                [fieldName]: {
+                    value: fieldValue,
+                    errors: [],
+                },
+            });
+        },
+        [project],
+    );
 
-    const setFieldErrors = (fieldName, fieldError) => {
-        setProject({
-            ...project,
-            [fieldName]: {
-                value: project[fieldName].value,
-                errors: [fieldError],
-            },
-        });
-    };
+    const setInfoFieldValue = useCallback(
+        (fieldName, fieldValue) => {
+            const errors: unknown[] = [];
+            const hasForbiddenChar = containsForbiddenCharacter(fieldValue);
+            if (fieldName === 'app_id' && hasForbiddenChar) {
+                errors.push(appIdError);
+            }
+            setProject({
+                ...project,
+                [fieldName]: {
+                    value: fieldValue,
+                    errors,
+                },
+            });
+        },
+        [appIdError, project],
+    );
+
+    const setFieldErrors = useCallback(
+        (fieldName, fieldError) => {
+            setProject({
+                ...project,
+                [fieldName]: {
+                    value: project[fieldName].value,
+                    errors: [fieldError],
+                },
+            });
+        },
+        [project],
+    );
 
     const onConfirm = closeDialog => {
         const currentProject: Project = {
@@ -155,6 +196,7 @@ const ProjectsDialog: FunctionComponent<Props> = ({
             project.name.value !== '' &&
             project.app_id &&
             project.app_id.value !== '' &&
+            project.app_id.errors.length === 0 &&
             !isFetchingFeatureFlags,
         [project, isFetchingFeatureFlags],
     );
@@ -199,9 +241,7 @@ const ProjectsDialog: FunctionComponent<Props> = ({
                 </Tabs>
                 {tab === 'infos' && (
                     <ProjectInfos
-                        setFieldValue={(key, value) =>
-                            setFieldValue(key, value)
-                        }
+                        setFieldValue={setInfoFieldValue}
                         currentProject={project}
                     />
                 )}

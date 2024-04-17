@@ -59,3 +59,11 @@ export type PaginationParams = {
     order: string;
     page: string;
 };
+
+declare global {
+    interface Window {
+        STATIC_URL?: string;
+    }
+}
+
+export type ColumnCell<T> = { row: { original: T; index: number } };

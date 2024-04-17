@@ -24,6 +24,9 @@ import StorageIcon from '@mui/icons-material/Storage';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 import ViewModuleIcon from '@mui/icons-material/ViewModule';
+import PaymentsIcon from '@mui/icons-material/Payments';
+import PriceCheckIcon from '@mui/icons-material/PriceCheck';
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 
 import { IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
@@ -238,6 +241,28 @@ const menuItems = (
             icon: props => <StorageIcon {...props} />,
         },
         {
+            label: formatMessage(MESSAGES.payments),
+            key: 'payments',
+            dev: true,
+            icon: props => <PaymentsIcon {...props} />,
+            subMenu: [
+                {
+                    label: formatMessage(MESSAGES.potentialPayments),
+                    permissions: paths.potentialPaymentsPath.permissions,
+                    key: 'potential',
+                    dev: true,
+                    icon: props => <PriceCheckIcon {...props} />,
+                },
+                {
+                    label: formatMessage(MESSAGES.lots),
+                    permissions: paths.potentialPaymentsPath.permissions,
+                    key: 'lots',
+                    dev: true,
+                    icon: props => <AccountBalanceIcon {...props} />,
+                },
+            ],
+        },
+        {
             label: formatMessage(MESSAGES.planning),
             key: 'planning',
             icon: props => <AssignmentIcon {...props} />,
@@ -307,7 +332,7 @@ const filterDevFeatures = (items: MenuItems): MenuItems => {
     items.forEach(item => {
         if (!item.subMenu && !item.dev) {
             result.push(item);
-        } else if (item.subMenu) {
+        } else if (item.subMenu && !item.dev) {
             const subMenu = filterDevFeatures(item.subMenu);
             const filtered = { ...item, subMenu };
             result.push(filtered);

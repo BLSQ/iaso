@@ -179,7 +179,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
         }
 
         # Check that we have 4 entries in the results array
-        self.assertEqual(len(data["results"]), 5)
+        self.assertEqual(len(data["results"]), 4)
 
         # Validate the response data against the schema
         try:

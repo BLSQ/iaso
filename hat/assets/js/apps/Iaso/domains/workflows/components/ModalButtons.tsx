@@ -11,16 +11,6 @@ type Props = {
     dataTestId?: string;
 };
 
-export const EditIconButton: FunctionComponent<Props> = ({ onClick }) => {
-    return (
-        <IconButton
-            onClick={onClick}
-            icon="edit"
-            tooltipMessage={MESSAGES.edit}
-        />
-    );
-};
-
 export const PublishButton: FunctionComponent<Props> = ({
     onClick,
     dataTestId,

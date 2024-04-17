@@ -59,6 +59,8 @@ if __name__ == "__main__":
 
     missing_translations = 0
 
+    missing_translations_keys = []
+
     # keep trace of what we set in previous traduction file. so we can detect properly
     # if a plugin reuse a translation from the main file
     previous_trad: typing.DefaultDict[str, typing.Dict[str, str]]
@@ -83,6 +85,7 @@ if __name__ == "__main__":
                     missing_translations += 1
                     # ADD CHECKME so we can see the new strings easily
                     original[new_key] = value + " CHECKME"
+                    missing_translations_keys.append(new_key)
                 elif "CHECKME" in original.get(new_key, ""):
                     missing_translations += 1
 
@@ -95,6 +98,8 @@ if __name__ == "__main__":
                 json.dump(sorted_dict, fp=file_write, indent=4, ensure_ascii=False)
     if missing_translations:
         print("Please translate the translation containing CHECKME and remove it.")
+        for key in missing_translations_keys:
+            print(key)
         sys.exit(f"Translations to check : {missing_translations}")
     else:
         print("All translations are up to date")

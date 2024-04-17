@@ -12,7 +12,7 @@ class WorkflowsChangesAPITestCase(BaseWorkflowsAPITestCase):
             data={"form": self.form_adults_blue.pk, "mapping": {"fake": "data"}},
         )
 
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
         self.assertEqual(response.data["detail"].code, "not_authenticated")
         self.assertEqual(response.data["detail"], "Authentication credentials were not provided.")
 

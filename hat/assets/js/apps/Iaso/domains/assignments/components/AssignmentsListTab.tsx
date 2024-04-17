@@ -1,21 +1,22 @@
-import React, { FunctionComponent } from 'react';
-import { Box, Paper } from '@mui/material';
+import React, { FunctionComponent, MouseEvent, useCallback } from 'react';
+import { Box, Divider } from '@mui/material';
 import { useDispatch } from 'react-redux';
+import get from 'lodash/get';
 
-import { Table } from 'bluesquare-components';
+import Color from 'color';
+import { Column, Table } from 'bluesquare-components';
 
 import { AssignmentsApi, AssignmentParams } from '../types/assigment';
-import {
-    OrgUnitShape,
-    OrgUnitMarker,
-    AssignmentUnit,
-} from '../types/locations';
+import { AssignmentUnit } from '../types/locations';
 import { useColumns } from '../configs/AssignmentsListTabColumns';
 import { DropdownTeamsOptions, SubTeam, User, Team } from '../types/team';
 import { Profile } from '../../../utils/usersUtils';
 
 import { baseUrls } from '../../../constants/urls';
 import { redirectTo } from '../../../routing/actions';
+import { OrgUnit, ParentOrgUnit } from '../../orgUnits/types/orgUnit';
+import { getStickyTableHeadStyles } from '../../../styles/utils';
+import { parentColor } from '../constants/colors';
 
 type Order = {
     id: string;
@@ -39,20 +40,33 @@ const getOrderArray = (orders: string | undefined): Orders => {
 };
 
 type Props = {
-    orgUnits: Array<AssignmentUnit>;
+    orgUnits?: Array<AssignmentUnit>;
     assignments: AssignmentsApi;
     isFetchingOrgUnits: boolean;
     params: AssignmentParams;
     handleSaveAssignment: (
         // eslint-disable-next-line no-unused-vars
-        selectedOrgUnit: OrgUnitShape | OrgUnitMarker,
+        selectedOrgUnit: AssignmentUnit,
     ) => void;
     teams: DropdownTeamsOptions[];
     profiles: Profile[];
     selectedItem: SubTeam | User | undefined;
     currentTeam?: Team;
     // eslint-disable-next-line no-unused-vars
-    setParentSelected: (orgUnit: OrgUnitShape | undefined) => void;
+    setParentSelected: (orgUnit: ParentOrgUnit | undefined) => void;
+};
+
+export const findParentWithOrgUnitTypeId = (
+    parentOrgUnit: ParentOrgUnit,
+    targetTypeId: string,
+): ParentOrgUnit | undefined => {
+    if (parentOrgUnit.org_unit_type_id.toString() === targetTypeId) {
+        return parentOrgUnit;
+    }
+    if (parentOrgUnit.parent) {
+        return findParentWithOrgUnitTypeId(parentOrgUnit.parent, targetTypeId);
+    }
+    return undefined;
 };
 
 const baseUrl = baseUrls.assignments;
@@ -69,52 +83,96 @@ export const AssignmentsListTab: FunctionComponent<Props> = ({
     setParentSelected,
 }: Props) => {
     const columns = useColumns({
-        orgUnits,
+        orgUnits: orgUnits || [],
         assignments,
         teams,
         profiles,
         currentTeam,
+        params,
     });
     const dispatch = useDispatch();
+
+    const handleClick = useCallback(
+        (row: AssignmentUnit, event: MouseEvent<HTMLElement>) => {
+            const target = event.target as HTMLElement;
+            if (!(target instanceof HTMLAnchorElement) || !target.href) {
+                if (params.parentOrgunitType) {
+                    const matchingParent = findParentWithOrgUnitTypeId(
+                        row.parent,
+                        params.parentOrgunitType,
+                    );
+                    if (matchingParent) {
+                        setParentSelected(matchingParent);
+                    }
+                } else {
+                    handleSaveAssignment(row);
+                }
+            }
+        },
+        [handleSaveAssignment, params.parentOrgunitType, setParentSelected],
+    );
+
+    const getCellProps = useCallback(
+        cell => {
+            const { id } = cell.column as Column;
+            let backgroundColor = 'inherit';
+            if (id?.includes('parent__')) {
+                const orgUnit = cell.row.original as OrgUnit;
+                const parent = get(
+                    orgUnit,
+                    id.replaceAll('__', '.').replace('.name', ''),
+                ) as ParentOrgUnit;
+                if (
+                    parent &&
+                    `${parent.org_unit_type_id}` === params.parentOrgunitType
+                ) {
+                    backgroundColor = Color(parentColor).fade(0.7);
+                }
+            }
+            return {
+                style: {
+                    backgroundColor,
+                },
+            };
+        },
+        [params.parentOrgunitType],
+    );
     return (
-        <Paper>
-            <Box maxHeight="70vh" overflow="auto">
-                <Table
-                    data={orgUnits}
-                    showPagination={false}
-                    defaultSorted={getOrderArray(params.order)}
-                    countOnTop={false}
-                    marginTop={false}
-                    marginBottom={false}
-                    columns={columns}
-                    count={orgUnits?.length ?? 0}
-                    extraProps={{
-                        orgUnits,
-                        loading: isFetchingOrgUnits,
-                        teams,
-                        profiles,
-                        assignments,
-                        selectedItem,
-                    }}
-                    params={{ order: params.order }}
-                    onRowClick={(row, event) => {
-                        if (!event.target.href) {
-                            if (params.parentPicking === 'true') {
-                                setParentSelected(row.parent);
-                            } else {
-                                handleSaveAssignment(row);
-                            }
-                        }
-                    }}
-                    onTableParamsChange={p => {
-                        const newParams = {
-                            ...params,
-                            order: p.order,
-                        };
-                        dispatch(redirectTo(baseUrl, newParams));
-                    }}
-                />
-            </Box>
-        </Paper>
+        <Box sx={getStickyTableHeadStyles('67.8vh')}>
+            <Divider />
+            <Table
+                elevation={0}
+                data={orgUnits || []}
+                showPagination={false}
+                defaultSorted={getOrderArray(params.order)}
+                countOnTop={false}
+                marginTop={false}
+                marginBottom={false}
+                // @ts-ignore
+                cellProps={getCellProps}
+                columns={columns}
+                count={orgUnits?.length ?? 0}
+                extraProps={{
+                    orgUnits,
+                    loading: isFetchingOrgUnits || !orgUnits,
+                    teams,
+                    profiles,
+                    assignments,
+                    selectedItem,
+                    parentOrgunitType: params.parentOrgunitType,
+                }}
+                params={{ order: params.order }}
+                // @ts-ignore
+                onRowClick={handleClick}
+                onTableParamsChange={p => {
+                    const newParams = {
+                        ...params,
+                        order: p.order,
+                    };
+                    dispatch(redirectTo(baseUrl, newParams));
+                }}
+            />
+            <Divider />
+        </Box>
     );
 };

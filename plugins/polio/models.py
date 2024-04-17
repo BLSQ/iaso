@@ -26,6 +26,7 @@ from beanstalk_worker import task_decorator
 from iaso.models import Group, OrgUnit
 from iaso.models.base import Account, Task
 from iaso.models.microplanning import Team
+from iaso.utils import slugify_underscore
 from iaso.utils.models.soft_deletable import DefaultSoftDeletableManager, SoftDeletableModel
 from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
@@ -49,7 +50,7 @@ VACCINES = [
 
 DOSES_PER_VIAL = {
     "mOPV2": 20,
-    "nOPV2": 20,
+    "nOPV2": 50,
     "bOPV": 20,
 }
 
@@ -125,7 +126,7 @@ class RoundScope(models.Model):
     )
     round = models.ForeignKey("Round", on_delete=models.CASCADE, related_name="scopes")
 
-    vaccine = models.CharField(max_length=5, choices=VACCINES)
+    vaccine = models.CharField(max_length=5, choices=VACCINES, blank=True)
 
     class Meta:
         unique_together = [("round", "vaccine")]
@@ -143,7 +144,7 @@ class CampaignScope(models.Model):
         Group, on_delete=models.CASCADE, related_name="campaignScope", default=make_group_campaign_scope
     )
     campaign = models.ForeignKey("Campaign", on_delete=models.CASCADE, related_name="scopes")
-    vaccine = models.CharField(max_length=5, choices=VACCINES)
+    vaccine = models.CharField(max_length=5, choices=VACCINES, blank=True)
 
     class Meta:
         unique_together = [("campaign", "vaccine")]
@@ -261,10 +262,14 @@ class Round(models.Model):
         campaign = self.campaign
 
         if campaign.separate_scopes_per_round:
-            scopes_with_orgunits = filter(lambda s: len(s.group.org_units.all()) > 0, self.scopes.all())
+            scopes_with_orgunits = filter(
+                lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, self.scopes.all()
+            )
             return ", ".join(scope.vaccine for scope in scopes_with_orgunits)
         else:
-            scopes_with_orgunits = filter(lambda s: len(s.group.org_units.all()) > 0, self.campaign.scopes.all())
+            scopes_with_orgunits = filter(
+                lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, self.campaign.scopes.all()
+            )
             return ",".join(scope.vaccine for scope in scopes_with_orgunits)
 
     @property
@@ -292,6 +297,29 @@ class CampaignQuerySet(models.QuerySet):
 CampaignManager = models.Manager.from_queryset(CampaignQuerySet)
 
 
+class CampaignType(models.Model):
+    POLIO = "Polio"
+    MEASLES = "Measles"
+    PIRI = "PIRI"
+    YELLOW_FEVER = "Yellow fever"
+    VITAMIN_A = "Vitamin A"
+    RUBELLA = "Rubella"
+    DEWORMING = "Deworming"
+    # This is the types that we know at the moment.
+    # Clients will have the possibility to add new types
+
+    name = models.CharField(max_length=100, unique=True)
+    slug = models.SlugField(max_length=100, unique=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify_underscore(self.name)
+        super(CampaignType, self).save(*args, **kwargs)
+
+
 class Campaign(SoftDeletableModel):
     class Meta:
         ordering = ["obr_name"]
@@ -308,6 +336,8 @@ class Campaign(SoftDeletableModel):
     is_test = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    campaign_types = models.ManyToManyField(CampaignType, blank=True, related_name="campaigns")
 
     gpei_coordinator = models.CharField(max_length=255, null=True, blank=True)
     gpei_email = models.EmailField(max_length=254, null=True, blank=True)
@@ -678,23 +708,26 @@ class Campaign(SoftDeletableModel):
         if self.separate_scopes_per_round:
             vaccines = set()
             for round in self.rounds.all():
-                scopes_with_orgunits = filter(lambda s: len(s.group.org_units.all()) > 0, round.scopes.all())
+                scopes_with_orgunits = filter(
+                    lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, round.scopes.all()
+                )
                 for scope in scopes_with_orgunits:
                     vaccines.add(scope.vaccine)
-            return ", ".join(list(vaccines))
+            return ", ".join(sorted(vaccines))
         else:
-            scopes_with_orgunits = filter(lambda s: len(s.group.org_units.all()) > 0, self.scopes.all())
-            return ",".join(scope.vaccine for scope in scopes_with_orgunits)
+            scopes_with_orgunits = filter(
+                lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, self.scopes.all()
+            )
+            return ",".join(sorted({scope.vaccine for scope in scopes_with_orgunits}))
 
     def vaccine_names(self):
-        # only take into account scope which have orgunit attached
-        campaign = self.campaign
-        scopes_with_orgunits = filter(lambda s: len(s.group.org_units.all()) > 0, self.scopes.all())
+        # only take into account scope which have orgunit attached and vaccine is not None
+        scopes_with_orgunits_and_vaccine = filter(
+            lambda s: len(s.group.org_units.all()) > 0 and s.vaccine is not None, self.scopes.all()
+        )
 
-        if campaign.separate_scopes_per_round:
-            return ", ".join(scope.vaccine for scope in scopes_with_orgunits)
-        else:
-            return ",".join(scope.vaccine for scope in scopes_with_orgunits)
+        vaccine_names = sorted({scope.vaccine for scope in scopes_with_orgunits_and_vaccine})
+        return ", ".join(vaccine_names)
 
     def get_round_one(self):
         try:
@@ -715,7 +748,7 @@ class Campaign(SoftDeletableModel):
         campaign = self
         features = []
         if not self.separate_scopes_per_round:
-            campaign_scopes = self.scopes
+            campaign_scopes = self.scopes.all()
 
             # noinspection SqlResolve
             campaign_scopes = campaign_scopes.annotate(
@@ -735,14 +768,14 @@ class Campaign(SoftDeletableModel):
                         "properties": {
                             "obr_name": campaign.obr_name,
                             "id": str(campaign.id),
-                            "vaccine": scope.vaccine,
+                            "vaccine": scope.vaccine if scope.vaccine else None,
                             "scope_key": f"campaignScope-{scope.id}",
                             "top_level_org_unit_name": scope.campaign.country.name,
                         },
                     }
                     features.append(feature)
         else:
-            round_scopes = RoundScope.objects.filter(round__campaign=campaign)
+            round_scopes = RoundScope.objects.filter(round__campaign=campaign).all()
             round_scopes = round_scopes.prefetch_related("round")
             # noinspection SqlResolve
             round_scopes = round_scopes.annotate(
@@ -762,7 +795,7 @@ class Campaign(SoftDeletableModel):
                         "properties": {
                             "obr_name": campaign.obr_name,
                             "id": str(campaign.id),
-                            "vaccine": scope.vaccine,
+                            "vaccine": scope.vaccine if scope.vaccine else None,
                             "scope_key": f"roundScope-{scope.id}",
                             "top_level_org_unit_name": campaign.country.name,
                             "round_number": scope.round.number,
@@ -962,9 +995,9 @@ class VaccineRequestForm(SoftDeletableModel):
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
     vaccine_type = models.CharField(max_length=5, choices=VACCINES)
     rounds = models.ManyToManyField(Round)
-    date_vrf_signature = models.DateField()
-    date_vrf_reception = models.DateField()
-    date_dg_approval = models.DateField()
+    date_vrf_signature = models.DateField(null=True, blank=True)
+    date_vrf_reception = models.DateField(null=True, blank=True)
+    date_dg_approval = models.DateField(null=True, blank=True)
     quantities_ordered_in_doses = models.PositiveIntegerField()
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -1093,7 +1126,7 @@ class OutgoingStockMovement(models.Model):
     )  # Country can be deduced from the campaign
     report_date = models.DateField()
     form_a_reception_date = models.DateField()
-    usable_vials_used = models.PositiveIntegerField()
+    usable_vials_used = models.PositiveIntegerField(default=0)
     unusable_vials = models.PositiveIntegerField()
     lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
     missing_vials = models.PositiveIntegerField()

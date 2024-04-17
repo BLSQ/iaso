@@ -7,6 +7,7 @@ import {
 } from '@mui/icons-material';
 
 import { EditUsersDialog } from './components/UsersDialog.tsx';
+import { ExportMobileAppSetupDialog } from './components/ExportMobileAppSetupDialog.tsx';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import MESSAGES from './messages';
 import { userHasPermission } from './utils';
@@ -20,6 +21,7 @@ export const usersTableColumns = ({
     params,
     currentUser,
     saveProfile,
+    exportMobileSetup,
 }) => [
     {
         Header: formatMessage(MESSAGES.userName),
@@ -71,6 +73,14 @@ export const usersTableColumns = ({
                             }
                         />
                     )}
+                {currentUser.is_superuser && (
+                    <ExportMobileAppSetupDialog
+                        selectedUser={settings.row.original}
+                        titleMessage={MESSAGES.exportMobileAppTitle}
+                        params={params}
+                        onCreateExport={exportMobileSetup}
+                    />
+                )}
             </section>
         ),
     },

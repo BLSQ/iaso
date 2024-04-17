@@ -1,5 +1,8 @@
-import { Pagination, IntlFormatMessage } from 'bluesquare-components';
-import { Nullable } from '../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { IntlFormatMessage, Pagination } from 'bluesquare-components';
+import {
+    DropdownOptionsWithOriginal,
+    Nullable,
+} from '../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { Profile } from '../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { ReasonForDelay } from '../domains/Campaigns/Rounds/ReasonForDelayModal/hooks/reasons';
 
@@ -203,8 +206,8 @@ export type Translations = {
 };
 
 export type Scope = {
-    vaccine: Vaccine;
-    group: { name: string; id: number; org_units: number[] };
+    vaccine?: Vaccine;
+    group: { name?: string; id?: number; org_units: number[] };
 };
 
 export type RoundVaccine = {
@@ -246,8 +249,8 @@ export type RoundDateHistoryEntry = {
 
 export type Round = {
     id: number;
-    started_at: string;
-    ended_at: string;
+    started_at: Nullable<string>;
+    ended_at: Nullable<string>;
     mop_up_started_at: Nullable<string>; // date
     mop_up_ended_at: Nullable<string>; // date
     im_started_at: Nullable<string>; // date
@@ -368,6 +371,7 @@ export type Campaign = {
     country: Nullable<number>;
     group: Nullable<number>; // Doesn't appear nullbale in swagger but had anull value in payload
     last_budget_event: Nullable<number>;
+    campaign_types: CampaignType[];
 };
 
 export type MergedShapeProperties = {
@@ -420,7 +424,7 @@ export type Shape = {
     org_unit_type_depth: number;
     org_unit_type_id: number;
     parent_id: number;
-    parent_name: Nullable<string>;
+    parent_name?: string;
     short_name: string;
     source_id: number;
     source_name: string;
@@ -437,3 +441,99 @@ export type MapColor = {
 export type Side = 'left' | 'right';
 
 export const Sides = { left: 'left', right: 'right' };
+
+export type CampaignType = {
+    id: number;
+    name: string;
+    slug: string;
+};
+
+type NestedRound = {
+    id: number;
+    number: number;
+    started_at: Nullable<string>;
+    ended_at: Nullable<string>;
+};
+
+export type CampaignListItem = {
+    id: string;
+    epid: Nullable<string>;
+    obr_name: string;
+    account: number;
+    cvdpv2_notified_at: Nullable<string>;
+    top_level_org_unit_name: Nullable<string>;
+    top_level_org_unit_id: number;
+    rounds: NestedRound[];
+    general_status: string;
+    grouped_campaigns: number[];
+    campaign_types: CampaignType[];
+};
+
+export type DefaultCampaignValues = {
+    initial_org_unit?: number;
+    top_level_org_unit_id?: number;
+    campaign_types: number[];
+    obr_name?: string;
+    description?: string;
+    gpei_coordinator?: string;
+    is_preventive: boolean;
+    is_test: boolean;
+    rounds: Round[];
+    scopes: Scope[];
+    org_unit?: Shape;
+    separate_scopes_per_round: boolean;
+};
+export type PolioCampaignValues = DefaultCampaignValues & {
+    virus?: string;
+    vaccines?: string;
+    epid?: string;
+    grouped_campaigns?: number[];
+    onset_at?: string | null;
+    cvdpv2_notified_at?: string | null;
+    outbreak_declaration_date?: string | null;
+    detection_first_draft_submitted_at?: string | null;
+    detection_rrt_oprtt_approval_at?: string | null;
+    investigation_at?: string | null;
+    risk_assessment_first_draft_submitted_at?: string | null;
+    risk_assessment_rrt_oprtt_approval_at?: string | null;
+    ag_nopv_group_met_at?: string | null;
+    dg_authorized_at?: string | null;
+    // Budget-related dates
+    who_sent_budget_at_WFEDITABLE?: string | null;
+    unicef_sent_budget_at_WFEDITABLE?: string | null;
+    gpei_consolidated_budgets_at_WFEDITABLE?: string | null;
+    submitted_to_rrt_at_WFEDITABLE?: string | null;
+    feedback_sent_to_gpei_at_WFEDITABLE?: string | null;
+    re_submitted_to_rrt_at_WFEDITABLE?: string | null;
+    submitted_to_orpg_operations1_at_WFEDITABLE?: string | null;
+    feedback_sent_to_rrt1_at_WFEDITABLE?: string | null;
+    submitted_to_orpg_wider_at_WFEDITABLE?: string | null;
+    submission_to_orpg_operations_2_at_WFEDITABLE?: string | null;
+    feedback_sent_to_rrt2_at_WFEDITABLE?: string | null;
+    re_submitted_to_orpg_operations1_at_WFEDITABLE?: string | null;
+    re_submitted_to_orpg_operations2_at_WFEDITABLE?: string | null;
+    submitted_for_approval_at_WFEDITABLE?: string | null;
+    approved_by_who_at_WFEDITABLE?: string | null;
+    feedback_sent_to_orpg_operations_who_at_WFEDITABLE?: string | null;
+    feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE?: string | null;
+    approved_by_unicef_at_WFEDITABLE?: string | null;
+    approved_at_WFEDITABLE?: string | null;
+    approval_confirmed_at_WFEDITABLE?: string | null;
+    unicef_disbursed_to_moh_at?: string | null;
+    unicef_disbursed_to_co_at?: string | null;
+    who_disbursed_to_moh_at?: string | null;
+    who_disbursed_to_co_at?: string | null;
+    spreadsheet_url?: string | null;
+    eomg?: string | null;
+    budget_submitted_at?: string | null;
+    district_count?: number;
+    no_regret_fund_amount?: number;
+    verification_score?: number;
+};
+
+export type CampaignFormValues = DefaultCampaignValues | PolioCampaignValues;
+
+export type CampaignTypesDropdown = DropdownOptionsWithOriginal<
+    string,
+    CampaignType
+>;

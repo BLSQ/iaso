@@ -36,10 +36,10 @@ class JsonDataStoreAPITestCase(APITestCase):
         )
 
     def test_datastore_list_without_auth(self):
-        """GET /datastore/ without auth should result in a 403"""
+        """GET /datastore/ without auth should result in a 401"""
 
         response = self.client.get(api_url)
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     def test_datastore_list_permissions(self):
         """GET /datastore/ with auth but without the proper permission should return a 403"""
@@ -55,10 +55,10 @@ class JsonDataStoreAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
 
     def test_datastore_detail_without_auth(self):
-        """GET /datastore/{slug} without auth should result in a 403"""
+        """GET /datastore/{slug} without auth should result in a 401"""
 
         response = self.client.get(f"{api_url}{self.data_store1.slug}/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     def test_datastore_detail_permissions(self):
         """GET /datastore/{slug} with auth but without the proper permission should return a 403. Wrong account should return a 404"""

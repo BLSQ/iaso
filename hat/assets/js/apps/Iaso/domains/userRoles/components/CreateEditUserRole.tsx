@@ -20,7 +20,7 @@ import {
 import InputComponent from '../../../components/forms/InputComponent';
 import { PermissionsSwitches } from './PermissionsSwitches';
 import { Permission } from '../types/userRoles';
-import { EditIconButton } from '../../users/components/UsersDialog';
+import { EditIconButton } from '../../../components/Buttons/EditIconButton';
 
 type ModalMode = 'create' | 'edit';
 type Props = Partial<SaveUserRoleQuery> & {

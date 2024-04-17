@@ -13,12 +13,14 @@ import { SupplyChainFormData } from '../../types';
 import { grayText, usePaperStyles } from '../shared';
 import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 import { Optional } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { dosesPerVial } from '../../hooks/utils';
 
 type Props = {
     index: number;
+    vaccine?: string;
 };
 
-export const PreAlert: FunctionComponent<Props> = ({ index }) => {
+export const PreAlert: FunctionComponent<Props> = ({ index, vaccine }) => {
     const classes: Record<string, string> = usePaperStyles();
     const { formatMessage } = useSafeIntl();
     const { values, setFieldValue, setFieldTouched } =
@@ -26,11 +28,12 @@ export const PreAlert: FunctionComponent<Props> = ({ index }) => {
     const { pre_alerts } = values as SupplyChainFormData;
     const markedForDeletion = pre_alerts?.[index].to_delete ?? false;
     const uneditableTextStyling = markedForDeletion ? grayText : undefined;
-    const doses_per_vial = pre_alerts?.[index].doses_per_vial ?? 20;
-    const current_vials_shipped = Math.ceil(
+    const doses_per_vial_default = vaccine ? dosesPerVial[vaccine] : undefined;
+    const doses_per_vial = pre_alerts?.[index].doses_per_vial ?? doses_per_vial_default;
+    const current_vials_shipped = doses_per_vial ? Math.ceil(
         ((pre_alerts?.[index].doses_shipped as Optional<number>) ?? 0) /
-            doses_per_vial,
-    );
+        doses_per_vial,
+    ) : 0;
 
     const onDelete = useCallback(() => {
         if (values?.pre_alerts?.[index].id) {

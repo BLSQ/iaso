@@ -1,17 +1,16 @@
 /* eslint-disable camelcase */
-import React, { FunctionComponent } from 'react';
-import { Box, TableCell, TableRow } from '@mui/material';
+import { TableCell } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import classNames from 'classnames';
-import InputComponent from '../../../../../components/forms/InputComponent';
+import React, { FunctionComponent } from 'react';
 import { NewOrgUnitField } from '../../hooks/useNewFields';
 import { OrgUnitChangeRequestDetails } from '../../types';
 
 type Props = {
     field: NewOrgUnitField;
     // eslint-disable-next-line no-unused-vars
-    setSelected: (key: string) => void;
     isNew: boolean;
+    isNewOrgUnit: boolean;
     isFetchingChangeRequest: boolean;
     changeRequest?: OrgUnitChangeRequestDetails;
 };
@@ -73,8 +72,8 @@ const useStyles = makeStyles(theme => ({
 
 export const ReviewOrgUnitChangesDetailsTableRow: FunctionComponent<Props> = ({
     field,
-    setSelected,
     isNew,
+    isNewOrgUnit,
     changeRequest,
     isFetchingChangeRequest,
 }) => {
@@ -91,17 +90,20 @@ export const ReviewOrgUnitChangesDetailsTableRow: FunctionComponent<Props> = ({
             changeRequest?.status === 'approved' &&
             changeRequest.approved_fields.includes(`new_${field.key}`));
     return (
-        <TableRow key={field.key}>
-            <TableCell className={classes.labelCell}>{field.label}</TableCell>
-            <TableCell className={classes.verticalTop}>
-                {field.oldValue}
-            </TableCell>
+        <>
+            {!isNewOrgUnit && (
+                <TableCell className={classes.verticalTop}>
+                    {field.oldValue}
+                </TableCell>
+            )}
             <TableCell
                 className={classNames(
-                    !isFetchingChangeRequest &&
+                    !isNewOrgUnit &&
+                        !isFetchingChangeRequest &&
                         isCellRejected &&
                         classes.cellRejected,
-                    !isFetchingChangeRequest &&
+                    !isNewOrgUnit &&
+                        !isFetchingChangeRequest &&
                         isCellApproved &&
                         classes.cellApproved,
                     !isCellApproved && !isCellRejected && classes.cell,
@@ -110,28 +112,6 @@ export const ReviewOrgUnitChangesDetailsTableRow: FunctionComponent<Props> = ({
             >
                 {field.newValue}
             </TableCell>
-            {isNew && (
-                <TableCell className={classes.checkBoxCell}>
-                    {field.isChanged && (
-                        <Box
-                            display="flex"
-                            justifyContent="center"
-                            className={classes.checkBoxContainer}
-                        >
-                            <InputComponent
-                                type="checkbox"
-                                withMarginTop={false}
-                                value={field.isSelected}
-                                keyValue={field.key}
-                                onChange={() => {
-                                    setSelected(field.key);
-                                }}
-                                labelString=""
-                            />
-                        </Box>
-                    )}
-                </TableCell>
-            )}
-        </TableRow>
+        </>
     );
 };

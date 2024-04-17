@@ -153,3 +153,20 @@ export const apiDateFormats: ApiDateFormat[] = [
         momentFormat: getLocaleDateFormat('LTS'),
     },
 ];
+
+/**
+ * Formats a date string from one format to another. Returns undefined if the input date is not provided.
+ *
+ * @param date - The date string to format.
+ * @param inputFormat - The format of the input date string.
+ * @param outputFormat - The desired format of the output date string.
+ * @returns The formatted date string or undefined.
+ */
+export const formatDateString = (
+    date: string | undefined,
+    inputFormat: string,
+    outputFormat: string,
+): string | undefined => {
+    if (!date) return undefined;
+    return moment(date, inputFormat).format(outputFormat);
+};

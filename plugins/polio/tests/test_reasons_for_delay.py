@@ -143,7 +143,7 @@ class PolioReasonSForDelayTestCase(APITestCase):
             },
         )
         jr = self.assertJSONResponse(response, 200)
-        print(jr)
+
         self.assertEqual(jr["key_name"], self.cat_ate_my_homework.key_name)
         self.assertEqual(jr["name_en"], new_name_en)
         self.assertEqual(jr["name_fr"], self.cat_ate_my_homework.name_fr)

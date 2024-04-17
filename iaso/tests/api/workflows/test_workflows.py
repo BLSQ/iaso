@@ -22,7 +22,7 @@ class WorkflowsAPITestCase(BaseWorkflowsAPITestCase):
     def test_user_without_auth(self):
         response = self.client.get(f"{BASE_API}?workflow__entity_type={self.et_adults_blue.pk}/")
 
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
         self.assertEqual(response.data["detail"].code, "not_authenticated")
         self.assertEqual(response.data["detail"], "Authentication credentials were not provided.")
 

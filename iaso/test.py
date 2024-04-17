@@ -1,5 +1,8 @@
+import importlib
 import typing
 from unittest import mock
+
+from rest_framework.test import APITestCase as BaseAPITestCase, APIClient
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
@@ -7,7 +10,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
 from django.http import StreamingHttpResponse, HttpResponse
 from django.test import TestCase as BaseTestCase
-from rest_framework.test import APITestCase as BaseAPITestCase, APIClient
+from django.urls import clear_url_caches
 
 from hat.menupermissions.models import CustomPermissionSupport
 from hat.api_import.models import APIImport
@@ -66,6 +69,26 @@ class IasoTestCaseMixin:
             setattr(file_mock, key, value)
 
         return file_mock
+
+    @staticmethod
+    def reload_urls(urlconfs: list) -> None:
+        """
+        Clear the URL cache, because Django caches URLs as soon as they are first loaded.
+        This is useful when testing dynamic URLs (e.g. URLs depending on a setting flag).
+
+        Usage:
+
+            with self.settings(settings.FOO=True):
+                self.reload_urls(urlconfs)
+                // tests
+
+            // Reload URLs without `settings.FOO=True`.
+            self.reload_urls(urlconfs)
+
+        """
+        for urlconf in urlconfs:
+            importlib.reload(importlib.import_module(urlconf))
+        clear_url_caches()
 
 
 class TestCase(BaseTestCase, IasoTestCaseMixin):

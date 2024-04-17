@@ -1,18 +1,20 @@
-from typing import Union
-from django.shortcuts import get_object_or_404
-import logging
-from rest_framework import permissions, serializers
 from datetime import datetime
+from typing import Union
+import logging
+
+from django.utils.text import slugify
+from django.shortcuts import get_object_or_404
+from gql.transport.requests import RequestsHTTPTransport
+from gql import Client, gql
+from rest_framework import permissions, serializers
+from rest_framework.decorators import action
 from rest_framework.response import Response
-from iaso.models import Task
+
 from iaso.models.json_config import Config
 from ..common import ModelViewSet, TimestampField, UserSerializer, HasPermission
 from hat.menupermissions import models as permission
 from iaso.models.base import ERRORED, RUNNING, SKIPPED, KILLED, SUCCESS, Task
-
-from gql.transport.requests import RequestsHTTPTransport
-from gql import Client, gql
-from django.utils.text import slugify
+from iaso.utils.s3_client import generate_presigned_url_from_s3
 
 
 logger = logging.getLogger(__name__)
@@ -80,6 +82,24 @@ class TaskSourceViewSet(ModelViewSet):
         profile = self.request.user.iaso_profile
         order = self.request.query_params.get("order", "created_at").split(",")
         return Task.objects.filter(account=profile.account).order_by(*order)
+
+    @action(detail=True, methods=["get"], url_path="presigned-url")
+    def generate_presigned_url(self, request, pk=None):
+        task = get_object_or_404(Task, pk=pk)
+
+        if task.result and task.result["data"] and task.result["data"].startswith("file:"):
+            s3_object_name = task.result["data"].replace("file:", "")
+
+            try:
+                response = generate_presigned_url_from_s3(s3_object_name)
+            except Exception as e:
+                return Response({"error": str(e)}, status=400)
+
+            return Response({"presigned_url": response})
+        else:
+            raise serializers.ValidationError(
+                {"presigned_url": "Could not create a presigned URL, are you sure the task generated a file?"}
+            )
 
 
 class ExternalTaskSerializer(TaskSerializer):

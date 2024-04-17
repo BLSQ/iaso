@@ -83,7 +83,7 @@ class EnketoAPITestCase(APITestCase):
         """GET /api/enketo/edit/{uuid}/"""
         instance = self.form_1.instances.first()
         response = self.client.get(f"/api/enketo/edit/{instance.uuid}/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     @override_settings(ENKETO=enketo_test_settings)
     @responses.activate

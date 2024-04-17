@@ -18,7 +18,6 @@ import isEqual from 'lodash/isEqual';
 
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { EditIconButton } from '../ModalButtons';
 import { MappingTable } from './MappingTable';
 import { Popper } from './InfoPopper';
 
@@ -33,6 +32,7 @@ import {
     useGetPossibleFieldsByFormVersion,
 } from '../../../forms/hooks/useGetPossibleFields';
 import { DropdownOptions } from '../../../../types/utils';
+import { EditIconButton } from '../../../../components/Buttons/EditIconButton';
 
 type Props = {
     isOpen: boolean;

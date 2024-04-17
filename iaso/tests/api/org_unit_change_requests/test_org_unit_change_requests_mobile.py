@@ -57,4 +57,4 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
 
     def test_list_without_auth(self):
         response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project.app_id}")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)

@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Box } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import {
     useSafeIntl,
     AddButton as AddButtonComponent,
@@ -24,9 +24,11 @@ const FormVersionsComponent = ({
     periodType,
     formId,
 }) => {
-    const intl = useSafeIntl();
+    const { formatMessage } = useSafeIntl();
     if (!formId) return null;
-
+    const templateUrl = `${
+        window.STATIC_URL ?? '/static/'
+    }templates/XLSForm_Template.xlsx`;
     return (
         <Box>
             <Box
@@ -35,6 +37,15 @@ const FormVersionsComponent = ({
                 alignItems="center"
                 display="flex"
             >
+                <Button
+                    sx={{ mr: 2 }}
+                    variant="outlined"
+                    href={templateUrl}
+                    target="_blank"
+                    download
+                >
+                    {formatMessage(MESSAGES.downloadTemplate)}
+                </Button>
                 <FormVersionsDialog
                     formId={formId}
                     periodType={periodType}
@@ -66,7 +77,7 @@ const FormVersionsComponent = ({
                 }
                 defaultSorted={[{ id: defaultOrder, desc: true }]}
                 columns={formVersionsTableColumns(
-                    intl.formatMessage,
+                    formatMessage,
                     setForceRefresh,
                     formId,
                     periodType,

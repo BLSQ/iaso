@@ -7,6 +7,9 @@ from plugins.polio.preparedness.calculator import get_preparedness_score
 from plugins.polio.preparedness.client import get_client
 from plugins.polio.preparedness.exceptions import InvalidFormatError
 from plugins.polio.preparedness.spread_cache import CachedSpread, CachedSheet
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 
 def parse_value(value: str):
@@ -137,10 +140,10 @@ def get_national_level_preparedness(spread: CachedSpread):
             "Resumo da preparação em Nível Central",
         )
         if not cell:
-            print(f"No national data found on worksheet: {worksheet.title}")
+            logger.warning(f"No national data found on worksheet: {worksheet.title}")
             continue
 
-        print(f"Data found on worksheet: {worksheet.title}")
+        logger.info(f"Data found on worksheet: {worksheet.title}")
         kv = worksheet.get_dict_position(NATIONAL_INDICATORS)
         if kv.get("communication_sm_activities"):
             kv["communication_sm_activities"] = from_percent(kv["communication_sm_activities"])
@@ -187,15 +190,15 @@ def get_regional_level_preparedness(spread: CachedSpread):
             "Summary of district Level Preparedness",
         )
         if not cell:
-            print(f"No regional data found on worksheet: {sheet.title}")
+            logger.warning(f"No regional data found on worksheet: {sheet.title}")
             continue
-        print(f"Regional Data found on worksheet: {sheet.title}")
+        logger.info(f"Regional Data found on worksheet: {sheet.title}")
 
         start_region = sheet.find_formula("=C4")
         if not start_region:
             start_region = sheet.find_formula("=C5")
         if not start_region:
-            print(f"start of data for region not found in {sheet.title}")
+            logger.info(f"start of data for region not found in {sheet.title}")
             start_region = (7, 5)
         regional_name = sheet.get_rc(*start_region)
 

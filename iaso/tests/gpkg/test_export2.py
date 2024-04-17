@@ -57,7 +57,6 @@ class GPKGExport(TestCase):
             validation_status="new",
             description="",
         )
-        print(m.SourceVersion.objects.all())
 
         v2 = m.SourceVersion.objects.get(data_source__name=self.source_name, number=2)
         self.assertEqual(v2.orgunit_set.all().count(), 3)

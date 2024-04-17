@@ -25,7 +25,6 @@ class IasoJSONEditorWidget(JSONEditorWidget):
             "mode": mode,
             "search": True,
         }
-
         if options:
             default_options.update(options)
 
@@ -84,6 +83,9 @@ from .models import (
     WorkflowFollowup,
     WorkflowVersion,
     OrgUnitReferenceInstance,
+    PotentialPayment,
+    Payment,
+    PaymentLot,
 )
 from .models.microplanning import Team, Planning, Assignment
 from .models.data_store import JsonDataStore
@@ -414,6 +416,15 @@ class SourceVersionAdmin(admin.ModelAdmin):
 @admin.register(Entity)
 @admin_attr_decorator
 class EntityAdmin(admin.ModelAdmin):
+    search_fields = [
+        "uuid",
+        "account__name",
+        "entity_type__name",
+        "attributes__json",
+        "attributes__id",
+        "attributes__uuid",
+    ]
+
     def get_form(self, request, obj=None, **kwargs):
         # In the <select> for the entity type, we also want to indicate the account name
         form = super().get_form(request, obj, **kwargs)
@@ -429,8 +440,11 @@ class EntityAdmin(admin.ModelAdmin):
         "account",
         "entity_type",
     )
-    list_filter = ("entity_type",)
+    list_filter = ("entity_type", "deleted_at")
     raw_id_fields = ("attributes",)
+
+    def get_queryset(self, request):
+        return Entity.objects_include_deleted.all()
 
 
 @admin.register(JsonDataStore)
@@ -655,7 +669,7 @@ class EntityDuplicateAnalyzisAdmin(admin.ModelAdmin):
 class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
     list_display = ("pk", "org_unit", "created_at", "status")
     list_display_links = ("pk", "org_unit")
-    list_filter = ("status",)
+    list_filter = ("status", "created_by")
     readonly_fields = (
         "uuid",
         "created_at",
@@ -677,6 +691,8 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
         "new_org_unit_type",
         "new_groups",
         "new_reference_instances",
+        "payment",
+        "potential_payment",
     )
     fieldsets = (
         (
@@ -686,6 +702,8 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
                     "uuid",
                     "org_unit",
                     "status",
+                    "payment",
+                    "potential_payment",
                 )
             },
         ),
@@ -706,8 +724,13 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
             },
         ),
         (
-            "Approved changes",
-            {"fields": ("approved_fields",)},
+            "Changes",
+            {
+                "fields": (
+                    "requested_fields",
+                    "approved_fields",
+                )
+            },
         ),
         (
             "Metadata",
@@ -745,6 +768,21 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
 @admin.register(Config)
 class ConfigAdmin(admin.ModelAdmin):
     raw_id_fields = ["users"]
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+
+
+@admin.register(PotentialPayment)
+class PotentialPaymentAdmin(admin.ModelAdmin):
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+
+
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+
+
+@admin.register(PaymentLot)
+class PaymentLotAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 

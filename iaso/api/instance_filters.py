@@ -2,6 +2,7 @@ import datetime
 import json
 from typing import Dict, Any, Optional
 
+from django.shortcuts import get_object_or_404
 from django.http import QueryDict
 from rest_framework.exceptions import ValidationError
 
@@ -84,10 +85,10 @@ def get_form_from_instance_filters(instance_filters: Dict[str, Any]) -> Optional
 
     form = None
     if form_id:
-        form = Form.objects.get(pk=form_id)
+        form = get_object_or_404(Form, pk=form_id)
     elif form_ids:
         form_ids = form_ids.split(",")
         if len(form_ids) == 1:  # if there is only one form_ids specified
-            form = Form.objects.get(pk=form_ids[0])
+            form = get_object_or_404(Form, pk=form_ids[0])
 
     return form

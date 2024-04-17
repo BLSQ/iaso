@@ -3,12 +3,13 @@
 
 # Please refer to the diagram in ../docs/test_completeness_stats.png to understand the expected results
 
-import pprint
 from typing import Any
 
 from django.contrib.auth.models import User, Permission
 
 from iaso.models import Account, Form, OrgUnitType, OrgUnit, Instance
+from iaso.models.base import Profile
+from iaso.models.microplanning import Team
 from iaso.test import APITestCase
 
 
@@ -136,11 +137,36 @@ class CompletenessStatsAPITestCase(APITestCase):
         cls.form_hs_4.org_unit_types.add(cls.org_unit_type_aire_sante)
         cls.form_hs_4.org_unit_types.add(cls.org_unit_type_country)
         cls.hopital_aaa_ou = OrgUnit.objects.filter(org_unit_type=cls.org_unit_type_hopital).first()
-        cls.create_form_instance(form=cls.form_hs_1, org_unit=cls.hopital_aaa_ou)
+        cls.instance_1 = cls.create_form_instance(form=cls.form_hs_1, org_unit=cls.hopital_aaa_ou)
 
         cls.as_abb_ou = OrgUnit.objects.get(pk=10)
-        cls.create_form_instance(form=cls.form_hs_4, org_unit=cls.as_abb_ou)
-        cls.create_form_instance(form=cls.form_hs_4, org_unit=cls.as_abb_ou)
+        cls.instance_2 = cls.create_form_instance(form=cls.form_hs_4, org_unit=cls.as_abb_ou)
+        cls.instance_3 = cls.create_form_instance(form=cls.form_hs_4, org_unit=cls.as_abb_ou)
+
+        cls.user_1 = User.objects.create(username="test 1")
+        Profile.objects.create(user=cls.user_1, account=cls.account)
+        cls.user_2 = User.objects.create(username="test 2")
+        Profile.objects.create(user=cls.user_2, account=cls.account)
+        cls.user_3 = User.objects.create(username="test 3")
+        Profile.objects.create(user=cls.user_3, account=cls.account)
+        cls.user_4 = User.objects.create(username="test 4")
+        Profile.objects.create(user=cls.user_4, account=cls.account)
+
+        cls.team_1 = Team.objects.create(
+            name="team 1", description="first team", manager=cls.user_1, project=cls.project_1, path=1
+        )
+        cls.team_1.users.set([cls.user_1, cls.user_3])
+        cls.team_1.save()
+
+        cls.team_2 = Team.objects.create(
+            name="team 2",
+            description="second team",
+            manager=cls.user_1,
+            project=cls.project_1,
+            path=2,
+        )
+        cls.team_2.users.set([cls.user_2, cls.user_4])
+        cls.team_2.save()
 
     def assertAlmostEqualRecursive(self, first, second, msg: Any = None) -> None:
         "to use when float are the worst"
@@ -152,7 +178,7 @@ class CompletenessStatsAPITestCase(APITestCase):
     def test_row_listing_anonymous(self):
         """An anonymous user should not be able to access the API"""
         response = self.client.get("/api/v2/completeness_stats/")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
     def test_row_listing_insufficient_permissions(self):
         """A user without the permission should not be able to access the API"""
@@ -324,11 +350,6 @@ class CompletenessStatsAPITestCase(APITestCase):
             ],
         }
 
-        pp = pprint.PrettyPrinter(indent=4)
-        print("expected_result:")
-        pp.pprint(expected_result)
-        print("\nj:")
-        pp.pprint(j)
         self.assertAlmostEqualRecursive(
             expected_result,
             j,
@@ -503,6 +524,89 @@ class CompletenessStatsAPITestCase(APITestCase):
         for result in json["results"]:
             for form in result["form_stats"].values():
                 self.assertIn(form["name"], [self.form_hs_1.name, self.form_hs_4.name])
+
+    def test_filter_by_team(self):
+        """Filtering by team"""
+        self.client.force_authenticate(self.user)
+
+        self.instance_1.created_by = self.user_1
+        self.instance_1.save()
+        self.instance_1.refresh_from_db()
+
+        self.instance_3.created_by = self.user_3
+        self.instance_3.save()
+        self.instance_3.refresh_from_db()
+
+        response = self.client.get(f"/api/v2/completeness_stats/?team_ids={self.team_1.id}")
+        json = response.json()
+        for result in json["results"]:
+            forms_stats = result["form_stats"]
+            self.assertEqual(forms_stats[f"form_{self.form_hs_1.id}"]["total_instances"], 1)
+            self.assertEqual(forms_stats[f"form_{self.form_hs_2.id}"]["total_instances"], 0)
+            self.assertEqual(forms_stats[f"form_{self.form_hs_4.id}"]["total_instances"], 1)
+
+    def test_filter_by_multiple_teams(self):
+        """Filtering by multiple teams"""
+        self.client.force_authenticate(self.user)
+
+        self.instance_1.created_by = self.user_1
+        self.instance_1.save()
+        self.instance_1.refresh_from_db()
+
+        self.instance_2.created_by = self.user_2
+        self.instance_2.save()
+        self.instance_2.refresh_from_db()
+
+        self.instance_3.created_by = self.user_4
+        self.instance_3.save()
+        self.instance_3.refresh_from_db()
+
+        response = self.client.get(f"/api/v2/completeness_stats/?team_ids={self.team_1.id},{self.team_2.id}")
+        json = response.json()
+        for result in json["results"]:
+            forms_stats = result["form_stats"]
+            self.assertEqual(forms_stats[f"form_{self.form_hs_1.id}"]["total_instances"], 1)
+            self.assertEqual(forms_stats[f"form_{self.form_hs_4.id}"]["total_instances"], 2)
+
+    def test_filter_by_user(self):
+        """Filtering by user"""
+        self.client.force_authenticate(self.user)
+
+        self.instance_1.created_by = self.user_1
+        self.instance_1.save()
+        self.instance_1.refresh_from_db()
+
+        response = self.client.get(f"/api/v2/completeness_stats/?user_ids={self.user_1.id}")
+        json = response.json()
+        for result in json["results"]:
+            forms_stats = result["form_stats"]
+            self.assertEqual(forms_stats[f"form_{self.form_hs_1.id}"]["total_instances"], 1)
+            self.assertEqual(forms_stats[f"form_{self.form_hs_2.id}"]["total_instances"], 0)
+
+    def test_filter_by_multiple_users(self):
+        """Filtering by multiple users"""
+        self.client.force_authenticate(self.user)
+
+        self.instance_1.created_by = self.user_1
+        self.instance_1.save()
+        self.instance_1.refresh_from_db()
+
+        self.instance_2.created_by = self.user_2
+        self.instance_2.save()
+        self.instance_2.refresh_from_db()
+
+        self.instance_3.created_by = self.user_4
+        self.instance_3.save()
+        self.instance_3.refresh_from_db()
+
+        response = self.client.get(
+            f"/api/v2/completeness_stats/?user_ids={self.user_1.id},{self.user_2.id}, {self.user_4.id}"
+        )
+        json = response.json()
+        for result in json["results"]:
+            forms_stats = result["form_stats"]
+            self.assertEqual(forms_stats[f"form_{self.form_hs_1.id}"]["total_instances"], 1)
+            self.assertEqual(forms_stats[f"form_{self.form_hs_4.id}"]["total_instances"], 2)
 
     def test_only_forms_from_account(self):
         """Only forms from the account are returned"""

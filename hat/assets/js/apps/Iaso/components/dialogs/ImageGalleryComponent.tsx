@@ -12,6 +12,7 @@ import {
     Typography,
 } from '@mui/material';
 import { ShortFile } from '../../domains/instances/types/instance';
+import { ImageGalleryLink } from './ImageGalleryLink';
 
 const styles = {
     paper: {
@@ -21,10 +22,13 @@ const styles = {
         width: '80%',
     },
     content: {
-        padding: '0 !important',
+        padding: '2vh !important',
         borderRadius: 0,
         height: '90vh',
         overflow: 'hidden',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     image: {
         width: '110%',
@@ -68,9 +72,9 @@ const styles = {
     },
     infos: {
         color: 'white',
-        position: 'fixed',
-        bottom: theme => theme.spacing(2),
-        left: theme => theme.spacing(2),
+        position: 'absolute',
+        top: theme => theme.spacing(1),
+        right: theme => theme.spacing(1),
     },
 };
 
@@ -80,6 +84,8 @@ type Props = {
     currentIndex: number;
     // eslint-disable-next-line no-unused-vars
     setCurrentIndex: (index: number) => void;
+    url: string | null;
+    urlLabel: { id: string; defaultMessage: string } | undefined;
     // eslint-disable-next-line no-unused-vars
     getExtraInfos?: (image: ShortFile) => React.ReactNode;
 };
@@ -89,11 +95,14 @@ const ImageGallery: FunctionComponent<Props> = ({
     imageList,
     currentIndex,
     setCurrentIndex,
+    url,
+    urlLabel,
     getExtraInfos = () => null,
 }) => {
     const currentImg = imageList[currentIndex];
     if (!currentImg) return null;
     const currentImgSrc = currentImg.path;
+
     return (
         <>
             <Dialog
@@ -134,6 +143,7 @@ const ImageGallery: FunctionComponent<Props> = ({
                     >
                         <Close sx={styles.closeIcon} />
                     </IconButton>
+                    <ImageGalleryLink url={url} urlLabel={urlLabel} />
                     <Box sx={styles.infos}>{getExtraInfos(currentImg)}</Box>
                     <Typography color="primary" variant="h6" sx={styles.count}>
                         {`${currentIndex + 1} / ${imageList.length}`}

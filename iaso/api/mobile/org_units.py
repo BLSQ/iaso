@@ -9,6 +9,7 @@ from django.contrib.gis.geos import Point
 from django.core.cache import cache
 from django.db.models.expressions import RawSQL
 from django.db.models.functions import Cast
+from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404
 from rest_framework import permissions
 from rest_framework.fields import SerializerMethodField
@@ -18,7 +19,7 @@ from rest_framework import serializers
 
 from hat.api.export_utils import timestamp_to_utc_datetime
 from iaso.api.common import get_timestamp, TimestampField, ModelViewSet, Paginator, safe_api_import
-from iaso.api.query_params import APP_ID, LIMIT, PAGE
+from iaso.api.query_params import APP_ID, LIMIT, PAGE, IDS
 from iaso.api.serializers import AppIdSerializer
 from iaso.models import Instance, OrgUnit, Project, FeatureFlag
 from hat.menupermissions import models as permission
@@ -83,6 +84,8 @@ class MobileOrgUnitSerializer(serializers.ModelSerializer):
             "aliases",
             "geo_json",
             "groups",
+            "opening_date",
+            "closed_date",
         ]
 
     parent_id = SerializerMethodField()
@@ -177,6 +180,10 @@ class MobileOrgUnitViewSet(ModelViewSet):
     You can also list the reference instances of a given `OrgUnit` ID.
 
     GET /api/mobile/orgunits/ID or UUID/reference_instances/?app_id={APP_ID}
+
+    It is also possible to pass a list of ids to retrieve them regardless of their status:
+
+    GET /api/mobile/orgunits/?app_id={APP_ID}&ids=id_1,id_2,id_3
     """
 
     permission_classes = [HasOrgUnitPermission]
@@ -224,6 +231,22 @@ class MobileOrgUnitViewSet(ModelViewSet):
         app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=False)
         if not app_id:
             return Response()
+
+        ids = request.query_params.get(IDS, None)
+        if ids is not None:
+            ids = ids.split(",")
+            queryset = (
+                OrgUnit.objects.filter_for_user_and_app_id(None, app_id)
+                .order_by("path")
+                .prefetch_related("parent", "org_unit_type", "groups")
+                .select_related("org_unit_type")
+                .filter(id__in=ids)
+            )
+            if len(queryset) != len(ids):
+                return HttpResponseNotFound("One or more IDs were not found.")
+            serializer = self.get_serializer(queryset, many=True)
+            return Response({self.results_key: serializer.data})
+
         roots_key = ""
         roots = []
         if request.user.is_authenticated:

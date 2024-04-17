@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import React from 'react';
+import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import isEmpty from 'lodash/isEmpty';
 import { Grid } from '@mui/material';
@@ -42,6 +42,16 @@ const UsersInfos = ({
     const isInitialDataEmpty = isEmpty(initialData)
         ? MESSAGES.password
         : MESSAGES.newPassword;
+
+    const handlePhoneNumberChange = useCallback(
+        (_, phoneNumber, countryCode) => {
+            setFieldValue('phone_number_obj', {
+                phone_number: phoneNumber,
+                country_code: countryCode,
+            });
+        },
+        [setFieldValue],
+    );
 
     return (
         <form>
@@ -150,6 +160,14 @@ const UsersInfos = ({
                                 label: locale.label,
                             };
                         })}
+                    />
+                    <InputComponent
+                        keyValue="phone_number"
+                        onChange={handlePhoneNumberChange}
+                        value={currentUser.phone_number?.value}
+                        type="phone"
+                        country={currentUser.country_code?.value}
+                        label={MESSAGES.phoneNumber}
                     />
 
                     {allowSendEmailInvitation && (

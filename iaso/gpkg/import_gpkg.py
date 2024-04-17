@@ -245,7 +245,6 @@ def import_gpkg_file2(
 
             total_org_unit += 1
 
-    print(f"OrgUnit updated or created : {total_org_unit}")
     for ref, parent_ref in to_update_with_parent:
         ou = ref_ou[ref]
         if parent_ref and parent_ref not in ref_ou:

@@ -82,7 +82,7 @@ class ReportsAPITestCase(APITestCase):
 
         response = self.client.get("/api/reports/")
 
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(401, response.status_code)
 
     def test_get_reports_mobile(self):
         self.client.force_authenticate(self.kefla)

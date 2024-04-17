@@ -1,4 +1,5 @@
 from typing import Tuple, Optional, List
+from datetime import date
 
 PERIOD_TYPE_DAY = "DAY"
 PERIOD_TYPE_MONTH = "MONTH"
@@ -122,6 +123,9 @@ class Period:
         return r
 
 
+QUARTER_TO_MONTHS = {1: [1, 2, 3], 2: [4, 5, 6], 3: [7, 8, 9], 4: [10, 11, 12]}
+
+
 class QuarterPeriod(Period):
     LOWER_BOUND = "2000Q1"
     HIGHER_BOUND = "2030Q4"
@@ -149,8 +153,12 @@ class QuarterPeriod(Period):
 
     def gen_sub_periods(self):
         year, quarter = self.parts
-        quarter_to_months = {1: [1, 2, 3], 2: [4, 5, 6], 3: [7, 8, 9], 4: [10, 11, 12]}
-        return [MonthPeriod.from_parts(year, month) for month in quarter_to_months[quarter]]
+        return [MonthPeriod.from_parts(year, month) for month in QUARTER_TO_MONTHS[quarter]]
+
+    def start_date(self):
+        year, quarter = self.parts
+        month = QUARTER_TO_MONTHS[quarter][0]
+        return date(year=year, month=month, day=1)
 
 
 class YearPeriod(Period):
@@ -168,6 +176,21 @@ class YearPeriod(Period):
         for semester in semesters:
             sub_semesters += semester.gen_sub_periods()
         return semesters + sub_semesters
+
+    def start_date(self):
+        year = int(self.value)
+        return date(year=year, month=1, day=1)
+
+
+SEMESTERS_TO_QUARTERS = {
+    1: [1, 2],
+    2: [3, 4],
+}
+
+SEMESTERS_TO_MONTHS = {
+    1: [1, 2, 3, 4, 5, 6],
+    2: [7, 8, 9, 10, 11, 12],
+}
 
 
 class SemesterPeriod(Period):
@@ -195,15 +218,17 @@ class SemesterPeriod(Period):
 
     def gen_sub_periods(self):
         year, semester = self.parts
-        semester_to_quarters = {
-            1: [1, 2],
-            2: [3, 4],
-        }
-        quarters = [QuarterPeriod.from_parts(year, quarter) for quarter in semester_to_quarters[semester]]
+
+        quarters = [QuarterPeriod.from_parts(year, quarter) for quarter in SEMESTERS_TO_QUARTERS[semester]]
         months = []
         for quarter in quarters:
             months += quarter.gen_sub_periods()
         return quarters + months
+
+    def start_date(self):
+        year, semester = self.parts
+        month = SEMESTERS_TO_MONTHS[semester][0]
+        return date(year=year, month=month, day=1)
 
 
 class MonthPeriod(Period):
@@ -235,6 +260,10 @@ class MonthPeriod(Period):
     def gen_sub_periods(self):
         return []
 
+    def start_date(self):
+        year, month = self.parts
+        return date(year=year, month=month, day=1)
+
 
 class DayPeriod(Period):
     LOWER_BOUND = "20000101"
@@ -254,3 +283,7 @@ class DayPeriod(Period):
 
     def gen_sub_periods(self):
         return []
+
+    def start_date(self):
+        year, month, day = int(self.value[:4]), int(self.value[4:6]), int(self.value[6:])
+        return date(year=year, month=month, day=day)

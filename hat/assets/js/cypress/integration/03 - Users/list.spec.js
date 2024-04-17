@@ -1,9 +1,9 @@
 /// <reference types="cypress" />
 
+import { search, searchWithForbiddenChars } from '../../constants/search';
 import listFixture from '../../fixtures/profiles/list.json';
 import superUser from '../../fixtures/profiles/me/superuser.json';
 import { testSearchField } from '../../support/testSearchField';
-import { search, searchWithForbiddenChars } from '../../constants/search';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 const baseUrl = `${siteBaseUrl}/dashboard/settings/users`;
@@ -149,11 +149,11 @@ describe('Users', () => {
                 table = cy.get('table');
                 row = table.find('tbody').find('tr').eq(1);
                 const actionCol = row.find('td').eq(4);
-                actionCol.find('button').should('have.length', 2);
+                actionCol.find('button').should('have.length', 3);
                 table = cy.get('table');
                 row = table.find('tbody').find('tr').eq(0);
                 const actionColCurrentUser = row.find('td').eq(4);
-                actionColCurrentUser.find('button').should('have.length', 1);
+                actionColCurrentUser.find('button').should('have.length', 2);
             });
         });
     });

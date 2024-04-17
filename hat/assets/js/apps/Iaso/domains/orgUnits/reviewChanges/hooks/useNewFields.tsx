@@ -22,25 +22,29 @@ import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
 import MESSAGES from '../messages';
 import InstanceDetail from '../../../instances/compare/components/InstanceDetail';
 import { ShortOrgUnit } from '../../types/orgUnit';
+import { Nullable, Optional } from '../../../../types/utils';
+import { BooleanValue, PlaceholderValue } from '../../../../libs/utils';
 
 export type NewOrgUnitField = {
     key: string;
     isChanged: boolean;
     isSelected: boolean;
-    newValue: ReactElement;
-    oldValue: ReactElement;
+    newValue: ReactElement | Optional<Nullable<string>>;
+    oldValue: ReactElement | Optional<Nullable<string>>;
     label: string;
     order: number;
+    fieldType: string;
 };
 type FieldDefinition = {
     label: string;
     order: number;
+    fieldType: string;
     formatValue: (
         // eslint-disable-next-line no-unused-vars
         val: any,
         // eslint-disable-next-line no-unused-vars
         isOld: boolean,
-    ) => ReactElement;
+    ) => ReactElement | Optional<Nullable<string>>;
 };
 
 type FieldDefinitions = Record<string, FieldDefinition>;
@@ -102,6 +106,31 @@ const getLocationValue = (
         />
     );
 };
+
+const getPlaceholderValue = (key: string) => {
+    if (key === 'location') {
+        return <></>;
+    }
+    return PlaceholderValue;
+};
+
+const computeNewValue = (
+    key: string,
+    changeRequest: OrgUnitChangeRequestDetails,
+    fieldDef: FieldDefinition,
+    isChanged: boolean,
+): Optional<Nullable<string>> | ReactElement => {
+    if (!isChanged) {
+        return changeRequest[`old_${key}`]
+            ? fieldDef.formatValue(changeRequest[`old_${key}`], false)
+            : getPlaceholderValue(key);
+    }
+    // This will not work if we have to show fields with boolean values
+    return changeRequest[`new_${key}`]
+        ? fieldDef.formatValue(changeRequest[`new_${key}`], false)
+        : getPlaceholderValue(key);
+};
+
 export const useNewFields = (
     changeRequest?: OrgUnitChangeRequestDetails,
 ): UseNewFields => {
@@ -112,25 +141,31 @@ export const useNewFields = (
             new_name: {
                 label: formatMessage(MESSAGES.name),
                 order: 1,
+                fieldType: '',
+                // span is necessary to enable text styling
                 formatValue: val => <span>{val.toString()}</span>,
-            },
-            new_parent: {
-                label: formatMessage(MESSAGES.parent),
-                order: 3,
-                formatValue: val => (
-                    <LinkToOrgUnit orgUnit={val as ShortOrgUnit} />
-                ),
             },
             new_org_unit_type: {
                 label: formatMessage(MESSAGES.orgUnitsType),
                 order: 2,
+                fieldType: 'string',
+                // span is necessary to enable text styling
                 formatValue: val => (
-                    <span>{(val as NestedOrgUnitType).short_name}</span>
+                    <span>{(val as NestedOrgUnitType)?.short_name}</span>
+                ),
+            },
+            new_parent: {
+                label: formatMessage(MESSAGES.parent),
+                order: 3,
+                fieldType: '',
+                formatValue: val => (
+                    <LinkToOrgUnit orgUnit={val as ShortOrgUnit} />
                 ),
             },
             new_groups: {
                 label: formatMessage(MESSAGES.groups),
                 order: 4,
+                fieldType: 'array',
                 formatValue: val => (
                     <span>{getGroupsValue(val as NestedGroup[])}</span>
                 ),
@@ -138,6 +173,7 @@ export const useNewFields = (
             new_location: {
                 label: formatMessage(MESSAGES.location),
                 order: 5,
+                fieldType: '',
                 formatValue: (val, isOld) =>
                     changeRequest ? (
                         getLocationValue(
@@ -152,16 +188,19 @@ export const useNewFields = (
             new_opening_date: {
                 label: formatMessage(MESSAGES.openingDate),
                 order: 6,
+                fieldType: '',
                 formatValue: val => <span>{moment(val).format('L')}</span>,
             },
             new_closed_date: {
                 label: formatMessage(MESSAGES.closingDate),
                 order: 7,
+                fieldType: '',
                 formatValue: val => <span>{moment(val).format('L')}</span>,
             },
             new_reference_instances: {
                 label: formatMessage(MESSAGES.multiReferenceInstancesLabel),
                 order: 8,
+                fieldType: '',
                 formatValue: val => (
                     <ReferenceInstances
                         instances={val as InstanceForChangeRequest[]}
@@ -176,36 +215,35 @@ export const useNewFields = (
             key: string,
             value: any,
         ): {
-            oldValue: ReactElement;
-            newValue: ReactElement;
+            oldValue: ReactElement | Optional<Nullable<string>>;
+            newValue: ReactElement | Optional<Nullable<string>>;
             isChanged: boolean;
         } => {
             const fieldDef = fieldDefinitions[`new_${key}`];
-            let oldValue: ReactElement = <>{textPlaceholder}</>;
-            let newValue: ReactElement = <>{textPlaceholder}</>;
-            const isChanged = Array.isArray(value)
-                ? value.length > 0
-                : Boolean(value);
-            if (changeRequest) {
-                if (isChanged && changeRequest[`new_${key}`]) {
-                    newValue = fieldDef.formatValue(
-                        changeRequest[`new_${key}`],
-                        false,
-                    );
-                }
-                if (changeRequest[`old_${key}`]) {
-                    oldValue = fieldDef.formatValue(
-                        changeRequest[`old_${key}`],
-                        true,
-                    );
-                    if (!isChanged) {
-                        newValue = fieldDef.formatValue(
-                            changeRequest[`old_${key}`],
-                            false,
-                        );
-                    }
-                }
+
+            if (!changeRequest) {
+                return {
+                    oldValue: PlaceholderValue,
+                    newValue: PlaceholderValue,
+                    isChanged: BooleanValue(value),
+                };
             }
+
+            const requestedFields = changeRequest.requested_fields;
+
+            const isChanged = requestedFields.includes(`new_${key}`);
+
+            // This will not work if we have to show fields with boolean values
+            const newValue = computeNewValue(
+                key,
+                changeRequest,
+                fieldDef,
+                isChanged,
+            );
+
+            const oldValue = changeRequest[`old_${key}`]
+                ? fieldDef.formatValue(changeRequest[`old_${key}`], true)
+                : getPlaceholderValue(key);
 
             return {
                 oldValue,
@@ -230,7 +268,7 @@ export const useNewFields = (
                         fieldKey,
                         value,
                     );
-                    const { label, order } = fieldDef;
+                    const { label, order, fieldType } = fieldDef;
                     return {
                         key: fieldKey,
                         label,
@@ -239,6 +277,7 @@ export const useNewFields = (
                         newValue,
                         oldValue,
                         order,
+                        fieldType,
                     };
                 }),
             ['order'],

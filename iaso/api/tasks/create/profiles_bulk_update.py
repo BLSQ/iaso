@@ -27,6 +27,8 @@ class ProfilesBulkUpdate(viewsets.ViewSet):
         location_ids_added = request.data.get("location_ids_added", None)
         location_ids_removed = request.data.get("location_ids_removed", None)
         language = request.data.get("language", None)
+        teams_id_added = request.data.get("teams_id_added", None)
+        teams_id_removed = request.data.get("teams_id_removed", None)
 
         search = request.data.get("search", None)
         perms = request.data.get("permissions", None)
@@ -47,6 +49,8 @@ class ProfilesBulkUpdate(viewsets.ViewSet):
             projects_ids_removed=projects_ids_removed,
             roles_id_added=roles_id_added,
             roles_id_removed=roles_id_removed,
+            teams_id_added=teams_id_added,
+            teams_id_removed=teams_id_removed,
             location_ids_added=location_ids_added,
             location_ids_removed=location_ids_removed,
             language=language,

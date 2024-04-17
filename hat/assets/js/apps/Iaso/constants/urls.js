@@ -55,4 +55,6 @@ export const baseUrls = {
     error500: '500',
     modules: 'settings/modules',
     login: 'login',
+    potentialPayments: 'payments/potential',
+    lotsPayments: 'payments/lots',
 };

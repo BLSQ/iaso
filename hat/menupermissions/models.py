@@ -42,6 +42,7 @@ _ORG_UNITS_GROUPS = "iaso_org_unit_groups"
 _ORG_UNITS_CHANGE_REQUEST_REVIEW = "iaso_org_unit_change_request_review"
 _PAGES = "iaso_pages"
 _PAGE_WRITE = "iaso_page_write"
+_PAYMENTS = "iaso_payments"
 _PLANNING = "iaso_planning"
 _POLIO = "iaso_polio"
 _POLIO_BUDGET = "iaso_polio_budget"
@@ -123,6 +124,7 @@ ORG_UNITS = _PREFIX + _ORG_UNITS
 ORG_UNITS_TYPES = _PREFIX + _ORG_UNITS_TYPES
 ORG_UNITS_GROUPS = _PREFIX + _ORG_UNITS_GROUPS
 ORG_UNITS_CHANGE_REQUEST_REVIEW = _PREFIX + _ORG_UNITS_CHANGE_REQUEST_REVIEW
+PAYMENTS = _PREFIX + _PAYMENTS
 PAGES = _PREFIX + _PAGES
 PAGE_WRITE = _PREFIX + _PAGE_WRITE
 PLANNING = _PREFIX + _PLANNING
@@ -254,6 +256,7 @@ class CustomPermissionSupport(models.Model):
             (_ORG_UNITS_CHANGE_REQUEST_REVIEW, _("Org unit change request review")),
             (_SOURCE_WRITE, _("Write data source")),
             (_PAGE_WRITE, _("Write page")),
+            (_PAYMENTS, _("Payments page")),
             (_POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY, _("Polio Vaccine Authorizations Read Only")),
             (_POLIO_VACCINE_AUTHORIZATIONS_ADMIN, _("Polio Vaccine Authorizations Admin")),
             (_POLIO_VACCINE_SUPPLY_CHAIN_READ, _("Polio Vaccine Supply Chain Read")),

@@ -1,20 +1,14 @@
 /* eslint-disable camelcase */
+import { Box, FormControlLabel, FormGroup, Grid, Switch } from '@mui/material';
+import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
+import { FieldProps, useField } from 'formik';
+import cloneDeep from 'lodash/cloneDeep';
 import React, {
     FunctionComponent,
+    ReactNode,
     useCallback,
     useState,
-    ReactNode,
 } from 'react';
-import { useField, FieldProps } from 'formik';
-import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
-import {
-    FormControlLabel,
-    FormGroup,
-    Grid,
-    Switch,
-    Box,
-} from '@mui/material';
-import cloneDeep from 'lodash/cloneDeep';
 
 // @ts-ignore
 import InputComponent from 'Iaso/components/forms/InputComponent';
@@ -23,8 +17,10 @@ import MESSAGES from '../../../constants/messages';
 import { DistrictScopeTable } from './Scopes/DistrictScopeTable';
 import { MapScope } from './Scopes/MapScope';
 
-import { Scope, Values, FilteredDistricts } from './Scopes/types';
 import { OrgUnit } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
+import { CampaignFormValues, Scope, Vaccine } from '../../../constants/types';
+import { useIsPolioCampaign } from '../hooks/useIsPolioCampaignCheck';
+import { FilteredDistricts } from './Scopes/types';
 
 type ExtraProps = {
     filteredDistricts: FilteredDistricts[];
@@ -41,7 +37,7 @@ type ExtraProps = {
     setPage: (page: number) => void;
 };
 
-type Props = FieldProps<Scope[], Values> & ExtraProps;
+type Props = FieldProps<Scope[], CampaignFormValues> & ExtraProps;
 
 export const ScopeInput: FunctionComponent<Props> = ({
     field,
@@ -58,7 +54,8 @@ export const ScopeInput: FunctionComponent<Props> = ({
     setPage,
 }) => {
     const [selectRegion, setSelectRegion] = useState(false);
-    const [selectedVaccine, setSelectedVaccine] = useState<string>('nOPV2');
+    const [selectedVaccine, setSelectedVaccine] = useState<Vaccine>('nOPV2');
+    const isPolio = useIsPolioCampaign(values);
     const [, , helpers] = useField(field.name);
     const { formatMessage } = useSafeIntl();
     const { value: scopes = [] } = field;
@@ -76,17 +73,22 @@ export const ScopeInput: FunctionComponent<Props> = ({
                 .filter(s => s.parent_id === selectOrgUnit.parent_id)
                 .map(s => s.id);
             const newScopes: Scope[] = cloneDeep(scopes);
-            // Find scope for vaccine
-            let scope: Scope | undefined = newScopes.find(
-                s => s.vaccine === selectedVaccine,
-            );
+            let scope: Scope | undefined;
+            if (!isPolio) {
+                [scope] = newScopes;
+            } else {
+                // Find scope for vaccine
+                scope = newScopes.find(s => s.vaccine === selectedVaccine);
+            }
             if (!scope) {
                 scope = {
-                    vaccine: selectedVaccine,
                     group: {
                         org_units: [],
                     },
                 };
+                if (isPolio) {
+                    scope.vaccine = selectedVaccine;
+                }
                 newScopes.push(scope);
             }
             // if all the orgunits from this region are already in this vaccine scope, remove them
@@ -123,24 +125,28 @@ export const ScopeInput: FunctionComponent<Props> = ({
             }
             setScopes(newScopes);
         },
-        [districtShapes, scopes, selectedVaccine, setScopes],
+        [districtShapes, isPolio, scopes, selectedVaccine, setScopes],
     );
-
     const toggleDistrictInVaccineScope = useCallback(
         district => {
             const newScopes: Scope[] = cloneDeep(scopes);
             // check if a scope exists for currently selected vaccine
-            let scope: Scope | undefined = newScopes.find(
-                s => s.vaccine === selectedVaccine,
-            );
+            let scope: Scope | undefined;
+            if (!isPolio) {
+                [scope] = newScopes;
+            } else {
+                scope = newScopes.find(s => s.vaccine === selectedVaccine);
+            }
             // if not create one that is initially empty
             if (!scope) {
                 scope = {
-                    vaccine: selectedVaccine,
                     group: {
                         org_units: [],
                     },
                 };
+                if (isPolio) {
+                    scope.vaccine = selectedVaccine;
+                }
                 newScopes.push(scope);
             }
             // Remove org unit from selection if it's part of the scope
@@ -164,7 +170,7 @@ export const ScopeInput: FunctionComponent<Props> = ({
             }
             setScopes(newScopes);
         },
-        [scopes, selectedVaccine, setScopes],
+        [scopes, setScopes, selectedVaccine, isPolio],
     );
 
     const onSelectOrgUnit = useCallback(
@@ -184,58 +190,64 @@ export const ScopeInput: FunctionComponent<Props> = ({
     );
 
     return (
-        <Grid container spacing={2}>
-            <Grid xs={5} item>
-                <Box mb={2} mt={2}>
-                    {searchComponent}
-                    <InputComponent
-                        keyValue="searchScope"
-                        type="checkbox"
-                        withMarginTop={false}
-                        onChange={onChangeSearchScope}
-                        value={searchScope}
-                        label={MESSAGES.searchInScopeOrAllDistricts}
-                    />
-                </Box>
-                <DistrictScopeTable
-                    field={field}
-                    regionShapes={regionShapes || []}
-                    filteredDistricts={filteredDistricts}
-                    toggleDistrictInVaccineScope={toggleDistrictInVaccineScope}
-                    toggleRegion={toggleRegion}
-                    setPage={setPage}
-                    page={page}
-                    isFetching={isFetching}
-                    districtShapes={districtShapes || []}
-                    selectedVaccine={selectedVaccine}
-                />
-            </Grid>
-            <Grid xs={7} item>
-                {isFetching && <LoadingSpinner />}
-                <MapScope
-                    field={field}
-                    values={values}
-                    regionShapes={regionShapes || []}
-                    districtShapes={districtShapes || []}
-                    onSelectOrgUnit={onSelectOrgUnit}
-                    selectedVaccine={selectedVaccine}
-                    setSelectedVaccine={setSelectedVaccine}
-                />
-                <FormGroup>
-                    <FormControlLabel
-                        style={{ width: 'max-content' }}
-                        control={
-                            <Switch
-                                size="medium"
-                                checked={selectRegion}
-                                onChange={toggleRegionSelect}
-                                color="primary"
-                            />
+        <Box width="100%" overflow="hidden">
+            <Grid container spacing={2}>
+                <Grid xs={5} item>
+                    <Box mb={2} mt={2}>
+                        {searchComponent}
+                        <InputComponent
+                            keyValue="searchScope"
+                            type="checkbox"
+                            withMarginTop={false}
+                            onChange={onChangeSearchScope}
+                            value={searchScope}
+                            label={MESSAGES.searchInScopeOrAllDistricts}
+                        />
+                    </Box>
+                    <DistrictScopeTable
+                        field={field}
+                        regionShapes={regionShapes || []}
+                        filteredDistricts={filteredDistricts}
+                        toggleDistrictInVaccineScope={
+                            toggleDistrictInVaccineScope
                         }
-                        label={formatMessage(MESSAGES.selectRegion)}
+                        toggleRegion={toggleRegion}
+                        setPage={setPage}
+                        page={page}
+                        isFetching={isFetching}
+                        districtShapes={districtShapes || []}
+                        selectedVaccine={selectedVaccine}
+                        isPolio={isPolio}
                     />
-                </FormGroup>
+                </Grid>
+                <Grid xs={7} item>
+                    {isFetching && <LoadingSpinner />}
+                    <MapScope
+                        field={field}
+                        values={values}
+                        regionShapes={regionShapes || []}
+                        districtShapes={districtShapes || []}
+                        onSelectOrgUnit={onSelectOrgUnit}
+                        selectedVaccine={selectedVaccine}
+                        setSelectedVaccine={setSelectedVaccine}
+                        isPolio={isPolio}
+                    />
+                    <FormGroup>
+                        <FormControlLabel
+                            style={{ width: 'max-content' }}
+                            control={
+                                <Switch
+                                    size="medium"
+                                    checked={selectRegion}
+                                    onChange={toggleRegionSelect}
+                                    color="primary"
+                                />
+                            }
+                            label={formatMessage(MESSAGES.selectRegion)}
+                        />
+                    </FormGroup>
+                </Grid>
             </Grid>
-        </Grid>
+        </Box>
     );
 };

@@ -9,7 +9,6 @@ import {
     makeFullModal,
     ConfirmCancelModal,
     AddButton,
-    IconButton,
 } from 'bluesquare-components';
 
 import { MutateFunction } from 'react-query';
@@ -23,6 +22,7 @@ import { Profile, useCurrentUser } from '../../../utils/usersUtils';
 import { useInitialUser } from './useInitialUser';
 import { InitialUserData } from '../types';
 import { WarningModal } from './WarningModal/WarningModal';
+import { EditIconButton } from '../../../components/Buttons/EditIconButton';
 
 const useStyles = makeStyles(theme => ({
     tabs: {
@@ -219,20 +219,6 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                 </div>
             </ConfirmCancelModal>
         </>
-    );
-};
-
-type PropsIcon = {
-    onClick: () => void;
-};
-
-export const EditIconButton: FunctionComponent<PropsIcon> = ({ onClick }) => {
-    return (
-        <IconButton
-            onClick={onClick}
-            icon="edit"
-            tooltipMessage={MESSAGES.edit}
-        />
     );
 };
 

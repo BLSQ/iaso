@@ -5,6 +5,7 @@ import React from 'react';
 import { TablePagination } from '@mui/material';
 import InstancesFilesList from './InstancesFilesListComponent.tsx';
 import { useGetInstancesFiles } from '../requests';
+import MESSAGES from '../messages';
 
 const DEFAULT_FILES_PER_PAGES = 100;
 export const PaginatedInstanceFiles = ({ params, updateParams }) => {
@@ -26,12 +27,16 @@ export const PaginatedInstanceFiles = ({ params, updateParams }) => {
             fileRowsPerPage: newRowsPerPage,
         });
     };
+
     return (
         <>
             {loadingFiles && <LoadingSpinner />}
             <InstancesFilesList
                 files={instancesFiles?.results}
                 fetching={loadingFiles}
+                fetchingFile
+                showLink
+                urlLabel={MESSAGES.formSubmissionLinkLabel}
             />
             {instancesFiles?.count > 0 && (
                 <TablePagination

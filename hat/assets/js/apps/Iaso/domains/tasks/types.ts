@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import { Nullable } from '../../types/utils';
 
-type TaskStatus =
+export type TaskStatus =
     | 'RUNNING'
     | 'QUEUED'
     | 'SUCCESS'

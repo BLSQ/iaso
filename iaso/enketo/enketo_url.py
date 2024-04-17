@@ -84,7 +84,7 @@ def get_url_from_enketo(url, data):
         handle_enketo_error(response)
 
     except requests.exceptions.ConnectionError as connectionError:
-        logger.error(str(connectionError))
+        logger.warning(str(connectionError))
         raise EnketoError("Enketo is not available")
 
 

@@ -45,15 +45,22 @@ type Props = {
     files: ShortFile[];
     // eslint-disable-next-line no-unused-vars
     onLightBoxToggled?: (value: boolean) => void;
+    // eslint-disable-next-line no-unused-vars
     fetchDetails?: boolean;
+    fetchingFile?: boolean;
     fetching?: boolean;
+    showLink?: boolean;
+    urlLabel?: { id: string; defaultMessage: string } | undefined;
 };
 const InstancesFilesList: FunctionComponent<Props> = ({
     instanceDetail,
     files = [],
     fetchDetails = false,
+    fetchingFile = false,
     onLightBoxToggled = () => null,
     fetching = false,
+    showLink = false,
+    urlLabel = undefined,
 }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
@@ -74,7 +81,7 @@ const InstancesFilesList: FunctionComponent<Props> = ({
     const handleSetCurrentIndex = (fileIndex, fileTypeKey) => {
         if (fileIndex >= 0) {
             const file = sortedFiles[fileTypeKey][fileIndex];
-            if (fetchDetails) {
+            if (fetchDetails || fetchingFile) {
                 setCurrentInstance(undefined);
                 if (file) {
                     fetchInstanceDetail(dispatch, file.itemId).then(
@@ -105,6 +112,7 @@ const InstancesFilesList: FunctionComponent<Props> = ({
     if (files.length === 0) {
         return <Box p={2}>{formatMessage(MESSAGES.missingFile)}</Box>;
     }
+
     return (
         <section className={classes.root}>
             <Tabs
@@ -172,6 +180,12 @@ const InstancesFilesList: FunctionComponent<Props> = ({
                     setCurrentIndex={newIndex =>
                         handleSetCurrentIndex(newIndex, 'images')
                     }
+                    url={
+                        showLink
+                            ? `/forms/submission/instanceId/${sortedFiles.images[currentImageIndex].itemId}`
+                            : null
+                    }
+                    urlLabel={urlLabel}
                     getExtraInfos={() => (
                         <InstancePopover instanceDetail={currentInstance} />
                     )}

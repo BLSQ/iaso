@@ -3,22 +3,26 @@ import React, {
     createContext,
     useState,
     useMemo,
+    Dispatch,
+    SetStateAction,
 } from 'react';
 
 type RoundPopperContextObject = {
-    anchorEl: any;
-    setAnchorEl: any;
+    anchorEl?: HTMLElement;
+    setAnchorEl: Dispatch<SetStateAction<HTMLElement | undefined>>;
 };
 
 const defaultContext: RoundPopperContextObject = {
-    anchorEl: null,
-    setAnchorEl: () => null,
+    anchorEl: undefined,
+    setAnchorEl: () => undefined,
 };
 const RoundPopperContext =
     createContext<RoundPopperContextObject>(defaultContext);
 
 const RoundPopperContextProvider: FunctionComponent = ({ children }) => {
-    const [anchorEl, setAnchorEl] = useState(null);
+    const [anchorEl, setAnchorEl] = useState<undefined | HTMLElement>(
+        undefined,
+    );
     const contextValue: RoundPopperContextObject = useMemo(
         () => ({
             anchorEl,

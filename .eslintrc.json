@@ -1,4 +1,5 @@
 {
+    "ignorePatterns": ["node_modules/", "build/", "dist/", "*.min.js"],
     "env": {
       "browser": true,
       "commonjs": true,
@@ -47,7 +48,7 @@
           "no-tabs": "off",
           "no-console":["error",{"allow":["warn","error"]}],
           "prettier/prettier": "warn",
-          "camelcase": "warn",
+          "camelcase": "off",
           "constructor-super": "warn",
           "import/no-extraneous-dependencies": "off",
           "import/no-named-as-default": "warn",
@@ -148,7 +149,7 @@
       "no-tabs": "off",
       "no-console":["error",{"allow":["warn","error"]}],
       "prettier/prettier": "warn",
-      "camelcase": "warn",
+      "camelcase": "off",
       "constructor-super": "warn",
       "import/no-extraneous-dependencies": "off",
       "import/no-named-as-default": "warn",

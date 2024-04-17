@@ -1,33 +1,34 @@
+from typing import Any, List, Optional, Union
+
 from django.conf import settings
-from django.contrib.auth import update_session_auth_hash
-from django.contrib.auth.models import Permission
-from django.contrib.auth.models import User
-from django.contrib.auth import models
+from django.contrib.auth import models, update_session_auth_hash
+from django.contrib.auth.models import Permission, User
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.sites.shortcuts import get_current_site
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.db.models import Q, QuerySet
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
+from django.template import Context, Template
 from django.urls import reverse
 from django.utils.encoding import force_bytes
+from django.utils.html import strip_tags
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
-from django.core.exceptions import ObjectDoesNotExist
-from django.utils.html import strip_tags
-from django.template import Context, Template
-from iaso.utils.module_permissions import account_module_permissions
-from rest_framework import viewsets, permissions, status
+from phonenumber_field.phonenumber import PhoneNumber
+from rest_framework import permissions, status, viewsets
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
-from typing import Any, List, Optional, Union
-from hat.api.export_utils import Echo, iter_items, generate_xlsx
+
+from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.menupermissions import models as permission
 from hat.menupermissions.models import CustomPermissionSupport
 from iaso.api.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
-from iaso.api.common import FileFormatEnum, CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX
-from iaso.models import Profile, OrgUnit, UserRole, Project
+from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum
+from iaso.models import OrgUnit, Profile, Project, UserRole
+from iaso.utils.module_permissions import account_module_permissions
 
 PK_ME = "me"
 
@@ -399,6 +400,12 @@ class ProfilesViewSet(viewsets.ViewSet):
         user.last_name = request.data.get("last_name", "")
         user.username = username
         user.email = request.data.get("email", "")
+
+        phone_number = self.extract_phone_number(request)
+
+        if phone_number is not None:
+            profile.phone_number = phone_number
+
         profile.language = request.data.get("language", "")
         profile.home_page = request.data.get("home_page", "")
         profile.dhis2_id = request.data.get("dhis2_id", "")
@@ -424,6 +431,29 @@ class ProfilesViewSet(viewsets.ViewSet):
         account_modules = current_account.modules if current_account.modules else []
         # Get and return all permissions linked to the modules
         return account_module_permissions(account_modules)
+
+    @staticmethod
+    def extract_phone_number(request):
+        phone_number = request.data.get("phone_number", None)
+        country_code = request.data.get("country_code", None)
+        number = None
+
+        if (phone_number is not None and country_code is None) or (country_code is not None and phone_number is None):
+            raise ProfileError(
+                field="phone_number",
+                detail=_("Both phone number and country code must be provided"),
+            )
+
+        if phone_number and country_code:
+            number = PhoneNumber.from_string(phone_number, region=country_code.upper())
+
+            if number and number.is_valid():
+                return number
+            else:
+                raise ProfileError(
+                    field="phone_number",
+                    detail=_("Invalid phone number"),
+                )
 
     @staticmethod
     def update_password(user, request):

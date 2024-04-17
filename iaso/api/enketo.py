@@ -80,7 +80,6 @@ def enketo_create_url(request):
 
         return JsonResponse({"edit_url": edit_url}, status=201)
     except EnketoError as error:
-        print(error)
         return JsonResponse({"error": str(error)}, status=409)
 
 
@@ -183,7 +182,6 @@ def enketo_public_create_url(request):
 
             return JsonResponse({"url": edit_url}, status=201)
         except EnketoError as error:
-            print(error)
             return JsonResponse({"error": str(error)}, status=409)
 
 
@@ -246,7 +244,6 @@ def enketo_edit_url(request, instance_uuid):
         instance.to_export = False  # could be controlled but, by default, for a normal edit, no auto export
         edit_url = _build_url_for_edition(request, instance, request.user.id)
     except EnketoError as error:
-        print(error)
         return JsonResponse({"error": str(error)}, status=409)
 
     return JsonResponse({"edit_url": edit_url}, status=201)

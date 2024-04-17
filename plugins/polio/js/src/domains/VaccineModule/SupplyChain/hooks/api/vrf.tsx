@@ -29,7 +29,7 @@ import {
 import MESSAGES from '../../messages';
 import {
     CAMPAIGNS_ENDPOINT,
-    CampaignType,
+    CampaignCategory,
     useGetCampaigns,
 } from '../../../../Campaigns/hooks/api/useGetCampaigns';
 import { Campaign, Round } from '../../../../../constants/types';
@@ -120,7 +120,7 @@ export const useCampaignDropDowns = (
     const options = {
         enabled: Boolean(countryId),
         countries: countryId ? [`${countryId}`] : undefined,
-        campaignType: 'regular' as CampaignType,
+        campaignCategory: 'regular' as CampaignCategory,
     };
 
     const { data, isFetching } = useGetCampaigns(options, CAMPAIGNS_ENDPOINT);

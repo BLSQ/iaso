@@ -789,6 +789,9 @@ class PolioAPICampaignCsvTestCase(APITestCase):
         cls.c = create_campaign(cls.org_unit.id, "orb campaign", cls.account)
         cls.c2 = create_campaign(cls.org_unit_2.id, "orb campaign 2", cls.account)
         cls.c3 = create_campaign(None, "orb campaign 3", cls.account)
+        cls.c_deleted = create_campaign(None, "orb campaign deleted", cls.account)
+        cls.c_deleted.deleted_at = datetime.date(2022, 3, 5)
+        cls.c_deleted.save()
 
     def row_data(self, campaign, round):
         return [
@@ -898,7 +901,7 @@ class PolioAPICampaignCsvTestCase(APITestCase):
         )
         self.c2.rounds.create(number=2, started_at=datetime.date(2022, 1, 4), ended_at=datetime.date(2022, 1, 7))
         response = self.client.get(
-            "/api/polio/campaigns/csv_campaigns_export/?campaign_type=test&show_test=true&enabled=true"
+            "/api/polio/campaigns/csv_campaigns_export/?campaign_category=test&show_test=true&enabled=true"
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
@@ -968,6 +971,57 @@ class PolioAPICampaignCsvTestCase(APITestCase):
         self.assertEqual(
             first_data_row,
             row_data,
+        )
+
+    def test_csv_campaigns_export_no_deleted_and_deleted_campaigns(self):
+        """
+        It tests the csv export of no deleted and deleted compaigns:
+            1. If the export succeed
+            2. If it return the right header
+            3. If the columns names are correct
+            4. If the data in cells are correct
+            5. First test it will display no deleted campaigns
+            6. Second test it will display only deleted
+        """
+
+        self.c3.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2))
+        self.c3.rounds.create(number=2, started_at=datetime.date(2022, 3, 1), ended_at=datetime.date(2022, 3, 2))
+        self.c_deleted.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2))
+
+        # It test the export with no deleted campaigns
+        response_no_deleted = self.client.get("/api/polio/campaigns/csv_campaigns_export/")
+        self.assertEqual(response_no_deleted.status_code, 200)
+        self.assertEqual(
+            response_no_deleted.get("Content-Disposition"),
+            "attachment; filename=campaigns-rounds--" + strftime("%Y-%m-%d-%H-%M", gmtime()) + ".csv",
+        )
+
+        response_string = "\n".join(s.decode("U8") for s in response_no_deleted).replace("\r\n\n", "\r\n")
+        reader = csv.reader(io.StringIO(response_string), delimiter=",")
+        data = list(reader)
+        self.assertEqual(len(data), 3)
+        data_headers = data[0]
+        self.assertEqual(
+            data_headers,
+            self.campaign_csv_columns,
+        )
+
+        # It test the export with only deleted campaigns
+        response_deleted = self.client.get("/api/polio/campaigns/csv_campaigns_export/?deletion_status=deleted")
+        self.assertEqual(response_deleted.status_code, 200)
+        self.assertEqual(
+            response_deleted.get("Content-Disposition"),
+            "attachment; filename=campaigns-rounds--" + strftime("%Y-%m-%d-%H-%M", gmtime()) + ".csv",
+        )
+
+        response_string = "\n".join(s.decode("U8") for s in response_deleted).replace("\r\n\n", "\r\n")
+        reader = csv.reader(io.StringIO(response_string), delimiter=",")
+        data = list(reader)
+        self.assertEqual(len(data), 2)
+        data_headers = data[0]
+        self.assertEqual(
+            data_headers,
+            self.campaign_csv_columns,
         )
 
 

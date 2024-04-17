@@ -36,7 +36,7 @@ class ModuleAPITestCase(APITestCase):
     def test_list_all_modules_without_authentication(self):
         response = self.client.get("/api/modules/")
 
-        r = self.assertJSONResponse(response, 403)
+        r = self.assertJSONResponse(response, 401)
         self.assertEqual(r["detail"], "Authentication credentials were not provided.")
 
     def test_list_all_modules_user_without_iaso_modules(self):

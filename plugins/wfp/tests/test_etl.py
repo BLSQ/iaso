@@ -8,8 +8,7 @@ class ETLTestCase(TestCase):
     def test_create_beneficiary(self):
         beneficiary = Beneficiary(birth_date="2022-08-08", gender="Male", entity_id=18)
         beneficiary.save()
-        print(f"CREATED BENEFICIARY WITH ENTITY ID {beneficiary.entity_id}")
-        print("\n")
+
         self.assertEqual(beneficiary.entity_id, 18)
 
     def test_create_journey(self):
@@ -29,7 +28,7 @@ class ETLTestCase(TestCase):
             instance_id=1,
         )
         journey.save()
-        print("CREATED JOURNEY ", journey.id)
+
         self.assertEqual(journey.instance_id, 1)
 
     def test_create_visit(self):
@@ -43,7 +42,7 @@ class ETLTestCase(TestCase):
             orgUnit.save()
             visit = Visit(number=visit_number, org_unit=orgUnit, instance_id=421, journey=journey)
             visit.save()
-            print("CREATED VISIT ", visit.id)
+
             self.assertEqual(visit.instance_id, 421)
 
             for ration in ["RUSF", "RUTF", "CSB++", ""]:
@@ -54,6 +53,5 @@ class ETLTestCase(TestCase):
                     instance_id=visit.instance_id,
                 )
                 step.save()
-                print("CREATED STEP ", step.id)
+
                 self.assertEqual(step.instance_id, visit.instance_id)
-            print("\n")

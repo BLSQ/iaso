@@ -219,6 +219,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Edit selected users',
         id: 'iaso.users.multiSelectionAction',
     },
+    project: {
+        defaultMessage: 'Project',
+        id: 'iaso.label.project',
+    },
     projects: {
         defaultMessage: 'Projects',
         id: 'iaso.label.projects',
@@ -287,6 +291,76 @@ const MESSAGES = defineMessages({
     homePageInfos: {
         defaultMessage: 'Copy/paste the url after "dashboard/"',
         id: 'iaso.users.homePageInfos',
+    },
+    addTeams: {
+        id: 'iaso.users.addTeams',
+        defaultMessage: 'Add to team(s)',
+    },
+    removeTeams: {
+        id: 'iaso.users.removeTeams',
+        defaultMessage: 'Remove from team(s)',
+    },
+    exportMobileAppTooltip: {
+        defaultMessage:
+            'Download a zip file to allow setting up the mobile application without Internet connection',
+        id: 'iaso.users.exportMobileAppTooltip',
+    },
+    exportMobileAppTitle: {
+        defaultMessage: 'Export zip file for mobile app setup',
+        id: 'iaso.users.exportMobileAppTitle',
+    },
+    exportMobileAppBody: {
+        defaultMessage:
+            'This will create a zip file containing all data needed to perform the initial set up for the mobile application for:',
+        id: 'iaso.users.exportMobileAppBody',
+    },
+    exportMobileAppBodyWarning: {
+        defaultMessage:
+            'Caution: This file will contain sensitive information, for this reason the exported file will be encrypted. Please choose a password of at least 8 characters to encrypt the file. You will need to provide this password when setting up the mobile application.',
+        id: 'iaso.users.exportMobileAppBodyWarning',
+    },
+    exportMobileAppBodySure: {
+        defaultMessage: 'Are you sure you wish to create the export file?',
+        id: 'iaso.users.exportMobileAppBodySure',
+    },
+    exportMobileAppBtn: {
+        defaultMessage: 'Generate file',
+        id: 'iaso.users.exportMobileAppBtn',
+    },
+    exportMobileAppInProgress: {
+        defaultMessage: 'Generating export file, please wait...',
+        id: 'iaso.users.exportMobileAppInProgress',
+    },
+    exportMobileAppDownloadBtn: {
+        defaultMessage: 'Download file',
+        id: 'iaso.users.exportMobileAppDownloadBtn',
+    },
+    exportMobileAppBodyNoProjects: {
+        defaultMessage:
+            "This user doesn't have any assigned projects. The mobile app setup needs to be done for a specific project. Please assign at least one project to this user in order to proceed.",
+        id: 'iaso.users.exportMobileAppBodyNoProjects',
+    },
+    exportMobileAppUser: {
+        defaultMessage: 'User:',
+        id: 'iaso.users.exportMobileAppUser',
+    },
+    exportMobileAppProject: {
+        defaultMessage: 'Project:',
+        id: 'iaso.users.exportMobileAppProject',
+    },
+    exportMobileAppError: {
+        defaultMessage:
+            'Something went wrong, please refer to the tasks overview page for more details.',
+        id: 'iaso.users.exportMobileAppError',
+    },
+    exportMobileAppViewTasks: {
+        defaultMessage:
+            'Closing this modal will not stop the document export. You can find all tasks and their progress on the tasks overview page.',
+        id: 'iaso.users.exportMobileAppViewTasks',
+    },
+    password: {
+        defaultMessage: 'password',
+        id: 'iaso.users.password',
     },
 });
 

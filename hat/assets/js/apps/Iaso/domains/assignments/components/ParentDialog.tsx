@@ -4,16 +4,11 @@ import {
     DialogTitle,
     DialogActions,
     Button,
+    Box,
+    Divider,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import {
-    // @ts-ignore
-    commonStyles,
-    // @ts-ignore
-    useSafeIntl,
-    // @ts-ignore
-    Table,
-} from 'bluesquare-components';
+import { commonStyles, useSafeIntl, Table } from 'bluesquare-components';
 import React, {
     FunctionComponent,
     useState,
@@ -22,7 +17,7 @@ import React, {
     useMemo,
 } from 'react';
 
-import { ChildrenOrgUnits, ParentOrgUnit } from '../types/orgUnit';
+import { ChildrenOrgUnits } from '../types/orgUnit';
 import { SubTeam, User, DropdownTeamsOptions, Team } from '../types/team';
 import { SaveAssignmentQuery } from '../types/assigment';
 import { Profile } from '../../../utils/usersUtils';
@@ -33,6 +28,8 @@ import { useColumns } from '../configs/ParentDialogColumns';
 import { getTeamUserName, getMultiSaveParams } from '../utils';
 
 import MESSAGES from '../messages';
+import { ParentOrgUnit } from '../../orgUnits/types/orgUnit';
+import { getStickyTableHeadStyles } from '../../../styles/utils';
 
 type Props = {
     currentTeam: Team | undefined;
@@ -51,11 +48,13 @@ type Props = {
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     paper: {
-        overflow: 'visible',
+        overflow: 'hidden',
     },
     content: {
-        overflow: 'visible',
-        padding: theme.spacing(0),
+        padding: '0 !important',
+        '& .MuiSpeedDial-root': {
+            display: 'none',
+        },
     },
 }));
 
@@ -138,7 +137,6 @@ export const ParentDialog: FunctionComponent<Props> = ({
                     closeDialog();
                 }
             }}
-            scroll="body"
             data-test=""
         >
             {childrenOrgunits && (
@@ -168,22 +166,26 @@ export const ParentDialog: FunctionComponent<Props> = ({
                 </>
             )}
             <DialogContent className={classes.content}>
-                <Table
-                    elevation={0}
-                    data={childrenOrgunits?.orgUnits || []}
-                    showPagination={false}
-                    defaultSorted={[{ id: 'name', desc: false }]}
-                    countOnTop={false}
-                    marginTop={false}
-                    marginBottom={false}
-                    columns={columns}
-                    count={childrenOrgunits?.orgUnits.length || 0}
-                    extraProps={{
-                        childrenOrgunits,
-                        orgUnitsToUpdate,
-                        loading: isFetchingChildrenOrgunits,
-                    }}
-                />
+                <Box sx={getStickyTableHeadStyles('70vh')}>
+                    <Divider />
+                    {/* @ts-ignore */}
+                    <Table
+                        elevation={0}
+                        data={childrenOrgunits?.orgUnits || []}
+                        showPagination={false}
+                        defaultSorted={[{ id: 'name', desc: false }]}
+                        countOnTop={false}
+                        marginTop={false}
+                        marginBottom={false}
+                        columns={columns}
+                        count={childrenOrgunits?.orgUnits.length || 0}
+                        extraProps={{
+                            childrenOrgunits,
+                            orgUnitsToUpdate,
+                            loading: isFetchingChildrenOrgunits,
+                        }}
+                    />
+                </Box>
             </DialogContent>
             <DialogActions>
                 <Button

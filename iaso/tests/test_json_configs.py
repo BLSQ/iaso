@@ -27,9 +27,9 @@ class ConfigTestCase(APITestCase):
     def test_anonymous_user(self):
         c = APIClient()
         response = c.get("/api/configs/", accept="application/json")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
         response = c.get("/api/configs/test/", accept="application/json")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
     def test_unauthorized_user(self):
         c = APIClient()

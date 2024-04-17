@@ -1,14 +1,14 @@
 /* eslint-disable camelcase */
-import React, { FunctionComponent } from 'react';
-import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
-import { useSafeIntl } from 'bluesquare-components';
 import { Box, Divider, Grid, Typography } from '@mui/material';
+import { useSafeIntl } from 'bluesquare-components';
+import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
 import { isEqual } from 'lodash';
 import moment from 'moment';
+import React, { FunctionComponent } from 'react';
 import { dateFormat } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/dates';
-import MESSAGES from '../../../../constants/messages';
 import { DateInput } from '../../../../components/Inputs';
-import { Campaign, Round } from '../../../../constants/types';
+import MESSAGES from '../../../../constants/messages';
+import { CampaignFormValues, Round } from '../../../../constants/types';
 import { ReasonForDelayModal } from '../ReasonForDelayModal/ReasonForDelayModal';
 import { useRoundDateHistorySchema } from '../ReasonForDelayModal/validation';
 import { RoundDatesHistoryModal } from '../RoundDatesHistory/RoundDatesHistoryModal/RoundDatesHistoryModal';
@@ -38,15 +38,15 @@ export const RoundDates: FunctionComponent<Props> = ({
     const {
         values: { rounds = [] },
         initialValues,
-    } = useFormikContext<Campaign>();
+    } = useFormikContext<CampaignFormValues>();
     const currentStartDate = rounds?.[roundIndex]?.started_at;
     const currentEndDate = rounds?.[roundIndex]?.ended_at;
     // For initial data, wee need to perform a find, because if we're adding round 0
     // We'll be addinga round at the start of the rounds array which will lead to index related errors
     const hasInitialData = Boolean(
-        initialValues.rounds.find(round => round.number === roundNumber)
+        initialValues?.rounds?.find(round => round.number === roundNumber)
             ?.started_at &&
-            initialValues.rounds.find(round => round.number === roundNumber)
+            initialValues?.rounds?.find(round => round.number === roundNumber)
                 ?.ended_at,
     );
     const save = (
@@ -101,6 +101,7 @@ export const RoundDates: FunctionComponent<Props> = ({
                         label={formatMessage(MESSAGES.startDate)}
                         name={`rounds[${roundIndex}].started_at`}
                         component={DateInput}
+                        required
                         fullWidth
                     />
 
@@ -108,6 +109,7 @@ export const RoundDates: FunctionComponent<Props> = ({
                         label={formatMessage(MESSAGES.endDate)}
                         name={`rounds[${roundIndex}].ended_at`}
                         component={DateInput}
+                        required
                         fullWidth
                     />
                 </>

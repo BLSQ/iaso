@@ -48,7 +48,7 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                 destruction?.rrt_destruction_report_reception_date,
             destruction_report_date: destruction?.destruction_report_date,
             unusable_vials_destroyed: destruction?.unusable_vials_destroyed,
-            lot_numbers: destruction?.lot_numbers,
+            // lot_numbers: destruction?.lot_numbers,
             vaccine_stock: vaccineStockId,
         },
         onSubmit: values => save(values),
@@ -109,14 +109,14 @@ export const CreateEditDestruction: FunctionComponent<Props> = ({
                         required
                     />
                 </Box>
-                <Box>
+                {/* <Box>
                     <Field
                         label={formatMessage(MESSAGES.lot_numbers)}
                         name="lot_numbers"
                         component={TextInput}
                         shrinkLabel={false}
                     />
-                </Box>
+                </Box> */}
             </ConfirmCancelModal>
         </FormikProvider>
     );

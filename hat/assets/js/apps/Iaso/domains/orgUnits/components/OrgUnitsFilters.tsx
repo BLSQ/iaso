@@ -33,6 +33,7 @@ import { Search } from '../types/search';
 import MESSAGES from '../messages';
 import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
 import { useGetOrgUnitTypes } from '../hooks/requests/useGetOrgUnitTypes';
+import { InputWithInfos } from '../../../components/InputWithInfos';
 
 type Props = {
     searches: [Search];
@@ -252,16 +253,18 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                         }
                     />
                 </Box>
-                <InputComponent
-                    keyValue="search"
-                    onChange={handleChange}
-                    value={filters.search}
-                    type="search"
-                    label={MESSAGES.search}
-                    blockForbiddenChars
-                    onEnterPressed={onSearch}
-                    onErrorChange={(hasError) => setTextSearchError(hasError)}
-                />
+                <InputWithInfos infos={formatMessage(MESSAGES.searchParams)}>
+                    <InputComponent
+                        keyValue="search"
+                        onChange={handleChange}
+                        value={filters.search}
+                        type="search"
+                        label={MESSAGES.search}
+                        blockForbiddenChars
+                        onEnterPressed={onSearch}
+                        onErrorChange={(hasError) => setTextSearchError(hasError)}
+                    />
+                </InputWithInfos>
                 <InputComponent
                     type="select"
                     disabled={isFetchingDataSources}
@@ -458,7 +461,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                         dateFrom={filters?.dateFrom}
                         dateTo={filters?.dateTo}
                     />
-                )}
+                    )}
             </Grid>
         </Grid>
     );

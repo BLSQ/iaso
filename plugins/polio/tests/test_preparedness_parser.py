@@ -24,5 +24,4 @@ class PreparednessParserTests(TestCase):
         PREPAREDNESS_EXPECTED_STATS = "plugins/polio/tests/fixtures/preparedness_expected_stats.json"
 
         stats = get_preparedness(CachedSpread(self.load_fixture(PREPAREDNESS_SHEET)))
-        print(json.dumps(stats, indent=4))
         self.assertEqual(stats, self.load_fixture(PREPAREDNESS_EXPECTED_STATS))

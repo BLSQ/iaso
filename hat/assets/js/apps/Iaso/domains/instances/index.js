@@ -237,6 +237,7 @@ const Instances = ({ params }) => {
                             () => refetchInstances(),
                             params.showDeleted === 'true',
                             classes,
+                            currentUser,
                         )}
                         selection={selection}
                         setTableSelection={(

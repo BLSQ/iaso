@@ -1,27 +1,34 @@
-import { useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { FormikProps } from 'formik';
+import { useMemo } from 'react';
 import MESSAGES from '../../../constants/messages';
+import { Campaign, CampaignFormValues } from '../../../constants/types';
 import { compareArraysValues } from '../../../utils/compareArraysValues';
 import { BaseInfoForm, baseInfoFormFields } from '../BaseInfo/BaseInfoForm';
-import { RoundsForm, roundFormFields } from '../Rounds/RoundsForm';
-import { Campaign } from '../../../constants/types';
+import { BudgetForm, budgetFormFields } from '../Budget/BudgetForm';
+import {
+    EvaluationsForms,
+    evaluationFormFields,
+} from '../Evaluations/EvaluationsForms';
+import { PreparednessForm } from '../Preparedness/PreparednessForm';
 import {
     RiskAssessmentForm,
     riskAssessmentFormFields,
 } from '../RiskAssessment/RiskAssessmentForm';
+import { RoundsForm, roundFormFields } from '../Rounds/RoundsForm';
 import { ScopeForm, scopeFormFields } from '../Scope/ScopeForm';
-import { BudgetForm, budgetFormFields } from '../Budget/BudgetForm';
-import { PreparednessForm } from '../Preparedness/PreparednessForm';
+import { useIsPolioCampaign } from '../hooks/useIsPolioCampaignCheck';
 import { Tab } from './PolioDialogTabs';
 
 export const usePolioDialogTabs = (
-    formik: FormikProps<any>,
+    formik: FormikProps<CampaignFormValues>,
     selectedCampaign: Campaign,
 ): Tab[] => {
     const { formatMessage } = useSafeIntl();
+    const isPolio = useIsPolioCampaign(formik.values);
+
     return useMemo(() => {
-        return [
+        const defaultTabs = [
             {
                 title: formatMessage(MESSAGES.baseInfo),
                 form: BaseInfoForm,
@@ -35,11 +42,27 @@ export const usePolioDialogTabs = (
                 title: formatMessage(MESSAGES.rounds),
                 form: RoundsForm,
                 key: 'rounds',
+                diabled: !formik.values.initial_org_unit,
+                hasTabError:
+                    compareArraysValues(
+                        roundFormFields(selectedCampaign?.rounds ?? []),
+                        formik.errors,
+                    ) || compareArraysValues(scopeFormFields, formik.errors),
+            },
+            {
+                title: formatMessage(MESSAGES.scope),
+                form: ScopeForm,
+                disabled:
+                    !formik.values.initial_org_unit ||
+                    formik.values.rounds?.length === 0,
                 hasTabError: compareArraysValues(
-                    roundFormFields(selectedCampaign?.rounds ?? []),
+                    scopeFormFields,
                     formik.errors,
                 ),
+                key: 'scope',
             },
+        ];
+        const polioTabs = [
             {
                 title: formatMessage(MESSAGES.riskAssessment),
                 form: RiskAssessmentForm,
@@ -50,16 +73,16 @@ export const usePolioDialogTabs = (
                 key: 'riskAssessment',
             },
             {
-                title: formatMessage(MESSAGES.scope),
-                form: ScopeForm,
+                title: formatMessage(MESSAGES.evaluation),
+                form: EvaluationsForms,
                 disabled:
                     !formik.values.initial_org_unit ||
-                    formik.values.rounds.length === 0,
+                    formik.values.rounds?.length === 0,
                 hasTabError: compareArraysValues(
-                    scopeFormFields,
+                    evaluationFormFields(selectedCampaign?.rounds ?? []),
                     formik.errors,
                 ),
-                key: 'scope',
+                key: 'evaluation',
             },
             {
                 title: formatMessage(MESSAGES.budget),
@@ -77,11 +100,15 @@ export const usePolioDialogTabs = (
                 hasTabError: false,
             },
         ];
+        if (isPolio) {
+            return [...defaultTabs, ...polioTabs];
+        }
+        return defaultTabs;
     }, [
         formatMessage,
         formik.errors,
-        formik.values.initial_org_unit,
-        formik.values.rounds.length,
+        formik.values,
+        isPolio,
         selectedCampaign?.rounds,
     ]);
 };

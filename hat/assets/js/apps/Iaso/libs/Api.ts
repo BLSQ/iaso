@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
-import { FETCHING_ABORTED } from './constants';
-import { Nullable, Optional } from '../types/utils';
 import { PostArg } from '../types/general';
+import { Nullable, Optional } from '../types/utils';
+import { FETCHING_ABORTED } from './constants';
 
 export class ApiError extends Error {
     private status: any;
@@ -68,6 +68,16 @@ export const iasoFetch = async (
         return emptyRes;
     }
     if (!response.ok) {
+        if (response.status === 401) {
+            const currentPath = encodeURIComponent(
+                window.location.pathname + window.location.search,
+            );
+            const loginUrl = `/login/?next=${currentPath}`;
+            window.location.href = loginUrl;
+            return Promise.reject(
+                new ApiError('Redirecting to login', response),
+            );
+        }
         const json = await tryJson(response);
         throw new ApiError(`Error on ${method} ${url} `, response, json);
     }

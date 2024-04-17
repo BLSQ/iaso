@@ -12,17 +12,20 @@ const MESSAGES = defineMessages({
 type Props = {
     onClick: () => void;
     message?: IntlMessage;
+    disabled?: boolean;
 };
 
 export const EditIconButton: FunctionComponent<Props> = ({
     onClick,
     message,
+    disabled = false,
 }) => {
     return (
         <IconButton
             onClick={onClick}
             icon="edit"
             tooltipMessage={message ?? MESSAGES.edit}
+            disabled={disabled}
         />
     );
 };

@@ -1,263 +1,173 @@
-# Web interface
+# IASO Modules
 
-### Overview
+IASO is organized according to Modules, which are groups of functionalities which can be added up depending on the use case to cover. Here are the Modules available in IASO:
 
-Iaso is a platform (a georegistry) developed mainly
-at Bluesquare which has 3 main functionalities:
+## Data collection functionalities
+- Manage data collection forms (XLS forms) and their related data submissions
+- Manage geographic data (import/export of geo data from Excel, DHIS2 or Geopackages, manage the Organizations Units and their hierarchy)
+- Monitor the data collection process with the completeness statistics table and map
+- Manage users and their permissions and geographies, user roles and teams
+- Create mobile application(s) IDs and manage related features options
 
--   Data collection (trough forms)
-    -   Create forms
-    -   Validation of data collection
-    -   View forms sent from the mobile app
-    -   Export results ( CSV/Geopackage) into a data warehouse, such as
-    -   Export collected data to DHIS2
--   Data management (trough territorial hierarchies)
-    -   Location of structures using GPS
-    -   Mapping of multiple data sources
-    -   Distribution of validation work by geographic sub-area
-    -   Traceability of changes
+## Georegistry 
+- Import several data sources from Excel, DHIS2 or Geopackages, compare and merge them as needed
+- Visualize on a dynamic map data collected at the different levels of the hierarchy (e.g. Country, Region, District, facility)
+- Validate changes on Organization Units (Name, Type, GPS coordinates, opening/closing dates) submitted from the field via the mobile application
+- Validate data submitted via data collection forms that are linked to specific Organization Units types, called "Reference forms"
+- Based on the validated proposed changes per user, generate payment lots to send to Mobile Money provider
 
--   Micro planning
-    - Manage teams of users
-    - Create plannings with deadlines
-    - In the context of a planning, assign org units to visit to teams and individual users
-    - Monitor the good execution of your planning
+## DHIS2 bi-directional integration 
+- Manage the mappings with DHIS2 data elements for import/export of data
 
-Iaso supports the continuous management of geographical
-information based on master lists of generic
-geographical objects called organizational units (“org. units”),
-which are for example health areas, schools, provinces, health
-districts, or wells).
+## Planning
+-  Plan ahead your data collection activities by creating a planning with a set timeframe, geography, data collection forms and teams
+- Assign data collection tasks to teams and users from the map-based interface available on the web
+- Once tasks have been assigned, the mobile application users on the field will only see the forms that have been assigned to them
 
-Iaso prevents data fragmentation and lack of standardisation that can
-lead to duplicative efforts, imprecise metrics, time consuming data
-integration efforts and errors.
+## Entities
+- Entities are items that can move from a geography to another, for instance a person, a pallet of goods, or other
+- Entities can be created from the mobile application and then managed from the web application
+- Find the entities duplicates by using the web application interface and make the decision to merge two similar entities or not
+- Assign workflows to entity types, enabling specific data collection forms to open according to previsouly given answers
 
-Iaso as georegistry is used in several countries in support of a process
-where updated data improves the health information system based on
-DHIS2.
+# Useful vocabulary in IASO
 
-Iaso provides a number of core features in support of continuous
-geospatial data management: a **mobile application**, a **web
-dashboard**, a **matching featur**e to merge various data sources, a
-**data scienc**e and **scripting** interface and a seamless
-bi-directional **integration** with DHIS2.
+## Questionnaires or XLS data collection forms
+What comes with data collection are questions, and to organize these questions, **data collection forms**. These are basically lists of the questions one would like to collect answers for, while specifying options (mandatory or not, skip a question depending on previous answer, etc.).
+IASO builds on [XLS forms](https://xlsform.org/en/) for its questionnaires, which are therefore pre-defined using an Excel file.
+
+In IASO, data collection forms are **versioned** meaning that every time a new version is created, the former version is kept and available in the system. 
+
+## <a id="OU"></a>Organization Units ##
+IASO uses the notion of **Organization Units (Org unit or OU)** to manage geographic data. 
+The **organisation unit types (OUT)** represent levels in the hierarchy
+Example:
+- Country
+- Region
+- District
+- Area
+- Facility/Village/Point of Interest
+
+The organization units are classified in the pyramid according to a parent and one or several children (except the top parent(s) and the lowest child/children). Example below:
+- Democratic Republic of Congo (Org unit type "Country") is the parent org unit of
+- Kinshasa (Org unit type "City"), which is the parent org unit of 
+- Bluesquare office (Org unit type "Office")
 
 
+Data collection in IASO is structured according to the defined hierarchy, and any user needs to explicitly select an organization unit before proceeding to opening the questionnaire and answer questions. This way, one makes sure that the data collected is correctly associated with the relevant geography. 
+
+## <a id="Projects"></a>Projects ##
+In IASO, a Project is a mobile application instance, with its own App ID. Within one account, you can have one or several Project(s) with different feature option(s). 
+Users can be linked to one or several Project(s). 
+
+Good to know:
+- One Project is linked one data source
+- One Project  can be linked to one or several users
+- Some users can be limited to one or several Project(s)/App ID(s) - you can define this in the User management part
+- Every Org Unit Type has to be linked to one or several Project(s)
+- Every Form has to be linked to one or several Project(s)
+
+# IASO Web platform
+
+IASO web platform is intended to administrators for them to define the details of the data collection they would like to proceed with.
+Some key assets of IASO are:
+- the versioning of all data - every change is tracked and former versions can be retrieved as needed
+- geo-structured data collection - forms are linked to clear Geographical levels or "Organization Units"
+- the traceability of changes - allowing decentralization of the activities and responsibilities
+Administrators can therefore use the web platform to plan, monitor and then evaluate the data collection efforts.
 
 ### Login
 
 To log into the web interface, go to
 [<u>https://iaso.bluesquare.org/login/</u>](https://iaso.bluesquare.org/login/)
-and sign in with the username and password.
+and sign in with your username and password.
 
-<img src="./attachments/image78.png"
-style="width:2.34896in;height:2.59779in" />
+![alt text](attachments/iasologin.png)
 
-Once in the interface, you will see the Menu button in the top left of
-the screen:
+You can also reset your password by clicking on the link "Forgot password". This will send an automatic email and allow you to create a new password. 
 
-<img src="./attachments/image49.png"
-style="width:0.61979in;height:0.57284in" />
+### Navigating in IASO
 
-The menu allows you to navigate to the different windows for managing:
+![alt text](<attachments/Web interface intro.jpg>)
 
--   Forms
+## Manage data collection forms
 
--   Org. units
+### Forms list
 
--   Planning
+From the forms list, you can search through the available forms of the IASO account you are connected to using the filters:
 
--   Admin
+![alt text](attachments/formsmanagementv2.png)
 
-In this manual, we’ll first start with an overview of buttons and then
-move to the different functionalities by following the order of the
-menu.
+The below buttons allow you to manage the data collections forms.
 
-## Quick overview of buttons
+![alt text](attachments/formsbuttons.png)
 
-|Button                                                                       | Description
-|-----------------------------------------------------------------------------|-----------------------------------------------------------------------------------|
-| <img src="./attachments/image39.png" style="width:0.5625in;height:0.41667in" />   | Allows to show the main menu for the app                                          |
-| <img src="./attachments/image67.png" style="width:0.46875in;height:0.32292in" />  | This is the view icon to show more details about the selected element             |
-| <img src="./attachments/image26.png" style="width:0.5in;height:0.41667in" />      | The pencil icon allows to edit or modify an element                               |
-| <img src="./attachments/image53.png" style="width:0.46875in;height:0.34375in" />  | DHIS mapping allows to map questions with DHIS2 dataElements                      |
-| <img src="./attachments/image86.png" style="width:0.53125in;height:0.41667in" />  | This icon allow to hide the menu bar                                              |
-| <img src="./attachments/image89.png" style="width:0.47554in;height:0.39063in" /><img src="./attachments/image109.png" style="width:0.43791in;height:0.36979in" />| This buttons allow to scroll-up the content of a table |
-| <img src="./attachments/image82.png" style="width:1.21354in;height:0.46476in" />  | This button allows to create a new element in the platform                        |
-| <img src="./attachments/image24.png" style="width:1.11979in;height:0.4552in" />   | This button allows to download forms to CSV format                                |
-| <img src="./attachments/image101.png" style="width:1.02604in;height:0.44492in" /> | Download forms to XLSX format                                                     |
-| <img src="./attachments/image41.png" style="width:1.10156in;height:0.39063in" />  | This button allows searching for an element by many criteria                      |
-| <img src="./attachments/image103.png" style="width:1.31771in;height:0.43027in" /> | Allows to refresh data                                                            |
-| <img src="./attachments/image4.png" style="width:0.4375in;height:0.40625in" />    | Allows to add a tabpanel for searching a element                                  |
-| <img src="./attachments/image54.png" style="width:1.76654in;height:0.48438in" />  | Allows to define that a question name will not map with a dataElement             |
-| <img src="./attachments/image105.png" style="width:1.10938in;height:0.46554in" /> | Validate the mapping between a selected form question with a data element Dhis2   |
-| <img src="./attachments/image31.png" style="width:3.10417in;height:0.375in" />    | These buttons allow to filter forms sent by status (ready, with error or Exported)|
+### Create/Upload a data collection form
+Access the Forms entry in the menu, then click on Form list. 
+Click on the button "Create". Once on the Form creation page, follow the below steps:
 
-## Forms
+- Enter a name for your form in the field "Name". 
+- Assign one or several [Project(s)](Projects) to your form. 
+- Assign an [Org unit type](OU) to your form. 
+- Assign a Period to your form. This is intended for regular data collection (e.g. daily/weekly/yearly). If you don't need this option, just select "No Period".
 
-Forms (in the context of data collection surveys) are used to collect
-information from a targeted group of people. Forms are written
-questionnaires that will be filled by field agents when they are
-face-to-face with the person, household, health centre of interest.
+![alt text](attachments/createformv2.png)
 
-This view allows you to create and view forms then map to DHIS2 and get
-data entry completeness.
+Tips:
+- Check your XLS form before uploading it to IASO using this link: https://getodk.org/xlsform/
+- Form ID should stay the same across versions (it cannot be different from a version to another). You will have an error if this is the case.
+- Form version (which is not a mandatory field in the settings of the XLS forms) should stay consistent across versions. For instance, if it is a date such as 20240410, then you will not be able to upload a version names 20231025. IASO makes automatic checks to ensure that you are not uploading a former version.
 
-<img src="./attachments/image96.png" style="width:6.5in;height:3.09722in" />
 
-### List
+### Form submissions
 
-The "list" view contains the list of forms available in Iaso. It allows
-you to search, view, modify or create forms.
+Once a form has been completed and sent to the server, it creates a "form submission". Every form submission is recorded into the platform and data submitted can be consulted from there. You can use the filters to consult the form submissions as needed:
+- Open search (type some key words)
+- Per form
+- Per Org unit (select the relevant one in the dropdown pyramid)
+- Per Org unit type (e.g. Country, District, Village)
+- Per submission date (creation from/creation until)
+- Per user (type a user name and it will show as dropdown)
 
--   Search:
-
-<img src="./attachments/image97.png" style="width:6.5in;height:2.11111in" />
-
-The textbox “search” allows you to search on the name of the form or the
-form ID using the command line "ids:" followed by the form IDs separated
-by commas. This allows multiple questionnaires to be searched at once.
-
-Example: ids: 17727, 16768, 19999, 14444
-
--   Click on View button to view the form :
-
-<img src="./attachments/image47.png" style="width:6.5in;height:0.73611in" />
-
-In the Form view you can see details of
-
-· When the form has been updated
-
-· What Organisation Unit
-
-· For what period
-
-· Download the file in XML
-
-· When the form was created
-
--   To modify click on the edition button of the form
-
-<img src="./attachments/image113.png" style="width:6.5in;height:1in" />
-
-An edition window opens where you can modify the form informations
-
--   Name
-
--   XLSForm
-
--   Periodicity : Frequency of encoding the form. Ex: 'Monthly' when
-    > there is a form to fill in every month. This is an optional field
-    > that should not be filled if the form is a “one shot” event.
-    > However, if you plan to re-use the form the following year, you
-    > could indicate 'Annual'.
-
--   Number of periods before and after : defines in the mobile
-    > application how many months in the past or future it is possible
-    > to enter the form. Ex: If you note 2 forward and 2 backward, it
-    > will be possible today (August 1) to fill the form for the periods
-    > from June to October.
-
--   Whether only one answer is possible or more
-
--   Project
-
--   Type of organisation unit
-
--   Name of field in “device” : Allows you to filter by the unique
-    > identifier assigned to each smartphone (IMEI number) that has
-    > submitted a form.
-
--   Name of “location” field : Allows to filter on GPS positions
-    > (provided through the form submission but also automatically).
-
--   Synchronise with another form
-
-<img src="./attachments/image107.png"
-style="width:6.17188in;height:3.43212in" />
-
--   To add a new form, click on the “**create**”
-    > button<img src="./attachments/image30.png" style="width:6.5in;height:0.76389in" />
-
-A window will open allowing you to enter the information required to
-create a new form.
-
--   Form name
-
--   XLSForm
-
--   Periodicity
-
--   Number of periods before and after
-
--   If only one answer is possible or more
-
--   Project
-
--   Type of organisational unit
-
--   Name of the “device” field
-
--   Name of the “location” field
-
-> And you can choose whether or not to save the changes made.
-
--   Archive
-
-Whenever a form is deleted, it is sent to the Archives. This allows
-tracking of deletion and restoring forms that were deleted by mistake.
-
-To restore a form click on the restore button.
-
-<img src="./attachments/image58.png" style="width:6.5in;height:2.65278in" />
-
-**Download**
-
--   To download the **list of forms**, you can click on the CSV and XLSX
-    > buttons. You will find the different forms, the groups they are
-    > assigned to, the creation and modification dates...
-
-<img src="./attachments/image59.png" style="width:6.5in;height:1.27778in" />
-
--   To download a **specific form**, click on the XLS or XML links on
-    > the form line. This option allows you to see the different
-    > questions, options and details of the form.
-
-<img src="./attachments/image12.png" style="width:6.5in;height:1.27778in" />
-
-You can search the results with the filters provided, and export results
-in CSV or XLSX.
-
-### Submissions
-
-Submissions are forms that have been submitted by the field agents
-(usually through the mobile app).
 
 This view allows you to search forms through free text entry and several
-filters that can be combined.
+filters that can be combined. 
 
-<img src="./attachments/image42.png"
-style="width:6.31771in;height:2.96649in" />
 
-The "verify" button allows you to select all, unselect all, export the
-selection to DHIS2, compare submissions (Ex : remove duplicates, compare
-2 hospitals in the same region..) or delete the selection. If you hover
-the mouse over the verify button, the options appear.
+![alt text](attachments/Formsubmissions.png)
+
+Once you have applied at least one form filter, you can download submissions using the "CSV" or "XLSX" buttons.
+
+You can also create a new submission by clicking on "Create". This will open Enketo and ask you which Organization Unit it relates to.
+
+![alt text](attachments/downloadsubmissions.png)
+
+You can also check the submissions on the map view, on which the filters apply. To make sure to have this map view enabled, make sure you have added the feature flag "GPS for each form" to the related [Project](Projects).
+
+![alt text](attachments/mapviewsubmissions.png)
+
+The tab "File" allows you to visualize the files that have been submitted together with the forms, such as pictures. When clicking on a given file, you can then be redirected to the relevant form submission. 
+
+![alt text](attachments/formsubmissionsfiles.png)
+
+#### Manage submissions
+
+On the Submissions page, you can see the list of submissions that have been done for the account. You can manage them using the below options.
+
+![alt text](attachments/submissionsmanagement.png)
+
+![alt text](attachments/Submissionsbuttons.png)
 
 **Visualise a submission**
 
 You can view a specific submission/submitted form by clicking on the
-"View" button.
-
-<img src="./attachments/image63.png" style="width:6.5in;height:0.47222in" />
+"View" button (see above).
 
 This allows you to see the data submitted and edit it on Enketo
 ([open-source](https://github.com/enketo/enketo-express/) web
-application that uses a popular [open-source form
-format](https://getodk.github.io/xforms-spec/)).
+application.
 
-<img src="./attachments/image72.png" style="width:6.5in;height:2.5in" />
+![alt text](attachments/submissionview.png)
 
 The “Information” section provides a technical overview of the form.
 
@@ -272,55 +182,6 @@ The “Files” section can contain images, videos, documents.
 The “Form” section shows all form questions and answers entered during
 data collection.
 
-The icons at the top right (after clicking on the pencil) allow you to:
-
--   Correct a form submission: click on the Enketo icon
-
--   Export the submission
-
--   Modify the time period and/or the organisational unit
-
--   Delete the form submission
-
-**Edit a submission**
-
-To edit a form, click the Enketo button <img src="./attachments/image18.png"
-style="width:0.27032in;height:0.3334in"/> to open the edit page.
-
-Edit the form by changing the answers to the questions that need to be
-changed. Click on submit at the bottom of the form
-<img src="./attachments/image7.png"
-style="width:1.04311in;height:0.32269in" /><img src="./attachments/image18.png"
-style="width:0.31771in;height:0.42361in" /><img src="./attachments/image57.png"
-style="width:6.15663in;height:3.40104in" />
-
-**Export a submission**
-
-The export function allows you to export the form to DHIS2.
-
-**Modify the period or the organisation unit**
-<img src="./attachments/image18.png"
-style="width:0.32292in;height:0.41979in" />
-
-When you click on “Edit Period and/or Organisational Unit”, a window
-opens allowing you to reassign the instance. You can change the time
-period or organisational unit that has been assigned to the submitted
-form.
-
-<img src="./attachments/image76.png"
-style="width:1.56771in;height:1.65794in" />
-
-**Delete a submission**
-
-Allows you to delete the form. If it has already been exported to DHIS2,
-this will not delete the data in DHIS2. A warning message will appear:
-
-<img src="./attachments/image66.png"
-style="width:4.52131in;height:1.05729in" />
-
-If this was done by mistake, you can restore the form via the
-[<u>Archives</u>](#kix.gvzp3gqzxu9n) page.
-
 **Download a submission**
 
 The "XML" icon allows you to download a submission in XML format.
@@ -330,6 +191,61 @@ style="width:5.96354in;height:2.29367in" />
 
 <img src="./attachments/image71.png"
 style="width:5.95313in;height:2.73806in" />
+
+The gear icon on the bottom corner at the right hand side shows you a series of icons upon hover. These allow you to:
+
+- Delete a submission
+- Edit attached Org Unit or Period
+- Export (e.g. to DHIS2)
+- Push GPS coordinates from the submission to the Org Unit
+- Edit this submission via Enketo
+- Lock submission
+
+See below the dedicated sections for more information on each of these actions.
+
+**Delete a submission**
+
+Allows you to delete the form. If it has already been exported to DHIS2,
+this will not delete the data in DHIS2. A warning message will appear:
+
+<img src="./attachments/image66.png"
+style="width:4.52131in;height:1.05729in" />
+
+**Edit attached Org Unit or Period**
+
+When you click on “Edit Period and/or Organisational Unit”, a window
+opens allowing you to reassign the instance. You can change the time
+period or organization unit that has been assigned to the submitted
+form.
+
+<img src="./attachments/image76.png"
+style="width:1.56771in;height:1.65794in" />
+
+**Export a submission**
+
+The export function allows you to export the form to DHIS2. Beforehand, it needs to have been mapped using the [DHIS2 mapping](DHIS2) functionality. 
+
+**Edit the submission via Enketo**
+
+To edit a form, click on the Enketo icon (see above).
+
+Edit the form by changing the answers to the questions that need to be
+changed. Then click on submit at the bottom of the form.
+
+<img src="./attachments/image57.png"
+style="width:6.15663in;height:3.40104in" />
+
+<img src="./attachments/image7.png"
+style="width:1.04311in;height:0.32269in" />
+
+**Push GPS coordinates from the submission to the Org Unit**
+
+This will use the GPS coordinate collected via the form to push to the Organization Unit GPS coordinates.
+
+**Lock submission**
+
+This functionalty allows you to protect the form submissions from further editing by users who have less permissions than you.
+
 
 ### Form statistics
 
@@ -341,16 +257,16 @@ second one shows the new submissions per month per form.
 
 <img src="./attachments/image74.png" style="width:6.5in;height:1.75in" />
 
-### DHIS2 mappings
+### <a id="DHIS2"></a>DHIS2 mappings ##
 
-A great advantage of Iaso is that you can export data to DHIS2. When
+A great advantage of IASO is that you can export data to DHIS2. When
 doing so, prior mapping is necessary. After the form is uploaded, map
-the form to match the data item in DHIS2. To match, use match with
-DHIS2.
+the form to match the data item in DHIS2. 
 
 Click on DHIS mappings to see the forms :
 
 <img src="./attachments/image75.png" style="width:6.5in;height:2.59722in" />
+
 
 In the Form view you can see details of:
 
@@ -376,7 +292,7 @@ In the Form view you can see details of:
 
 -   Date of last modification
 
-Click on action to take of a form and a window will open allowing you to
+Click "Create" and a window will open allowing you to
 map each questionnaire of the xls forms to the correspondent DHIS2 data
 element<img src="./attachments/image93.png"
 style="width:2.03704in;height:1.83333in" /><img src="./attachments/image98.png"
@@ -398,6 +314,7 @@ style="width:7.03646in;height:3.20249in" />
 
 ### Completeness
 
+This functionality is intended to use cases where Periods have been set to the data collection forms.
 In the view “completeness” you will see details of :
 
 -   Buttons to select forms “ready” to be exported, form with “errors”
@@ -429,33 +346,52 @@ Eg: to get aggregate data from community verification survey, all the
 client forms should be synchronised to a single form.
 <img src="./attachments/image17.png" style="width:6.5in;height:2.95833in" />
 
+### Completeness statistics
 
-## Organisation Unit
+This table view shows you the completeness of the forms submissions in number (number of completed forms) and in percentages (Data completeness). A distinction is made between “direct forms” (which relate to the select Organization unit level) and “lower level forms” (which relates to forms down the hierarchy).
 
-The location of the data, the geographical context, is represented as
-organisational units. Organisational units can be either a health
-facility or department/sub-unit providing services or an administrative
-unit representing a geographical area (e.g. a health district).
+Use the filters (Form name, Parent Organization Unit, Organization Unit type, User, Planning, Teams, Period) to only see statistics in a more specific way.
 
-Organisation units are located within a hierarchy, also referred to as a
-tree. The hierarchy will reflect the health administrative structure and
-its levels. Typical levels in such a hierarchy are the national,
-province, district and facility levels.
+The "See children" action button allows you to drilldown the geographical hierarchy to identify the level of completeness and spot where issues may have happened. 
 
-Example of an Org Unit : Kerala Child Hospital, Benue district,..
 
-### List
+The first two columns "itself" indicate the number of forms completed at the level of the Organization Unit highlighted.
+The next column "descendants" give information on the number of forms completed at the level in question, but also at all lower levels.
 
-This view allows you to search the Organisation Unit pyramid (in order
-to find an org unit) through free text entry and several filters that
-can be combined.
+![](<attachments/completeness stats.png>)
 
-<img src="./attachments/image111.png"
-style="width:7.4465in;height:2.05729in" />
+You can also view data completeness with a map view by clicking on the "Map" tab. Be aware that you need to select a Form in the filters beforehand to enable this view.
+You can adjust the thresholds to apply to the legend on completeness in the relevant form's advanced settings.
+
+![alt text](attachments/Completenessmap.png)
+
+
+
+## Georegistry - Organization Units Management
+
+See the [Organization Unit](OU) definition for more insight on what Organization Units are.
+In a nutshell, you can manage your geographical data associated to your account using the Organization Unit part of IASO.
+
+### Organization Units List
+
+Click Organization Units in the menu and then on Organization Unit List to navigate the organization unit pyramid.
+
+You can view in list or map.
+
+You can select an Organization Unit Navigation and:
+- Change the name, type, validation status, place in the pyramid, etc. of the OU
+- Visualize the OU on a map
+- See the history of its modifications
+
+
+![alt text](attachments/Orgunitlist.png)
+
+![alt text](attachments/orgunitmap.png)
 
 The search results can be exported in CSV, XLSX or GPKG.
 
-<img src="./attachments/image29.png" style="width:3.625in;height:0.5625in" />
+![alt text](<attachments/download orgunits.png>)
+
 
 Results can be seen in a list or on a map
 
@@ -484,75 +420,117 @@ style="width:6.95313in;height:2.9466in" />
 
 ## <img src="./attachments/image120.png" style="width:6.26042in;height:2.38542in" />
 
-**Creation** of an organisational unit in the platform
+**Creation of an Organization Unit**
 
-Allows you to create an organisational unit at any level. We can
-therefore add a municipality, a province, etc. (Reserved for System
-Administrator only).
+On the Organization Unit list page, click on "Create". You can then create an Organization Unit as needed. 
+
 
 <img src="./attachments/image16.png" style="width:6.86961in;height:2.80729in" />
 
-Advantage:
+You will need to enter the below information before saving:
+- Name of the Organization Unit
+- Type of the Organization Unit (that you would have previously defined in the Organization Unit Type part)
+- Status: New, Validated, or Rejected. 
+    - New: the Organization unit has been created but has not been validated yet. If you activate the possibility to create Organization Units from the IASO mobile application, they will first appear as "New" on the web
+    - Validated: the Organization unit is validated
+    - Rejected: the Organization unit no longer exists or has been merged/split or replaced by another one. IASO does not allow to erase Organization Units in order to keep track of past changes.
 
--   Easier than creating via tablet for the administrator
+Optional fields:
+- Aliases: you can add as many aliases as necessary to track the different ways of writing the name of the Organization Unit (e.g. "Ste Marie", "Sainte-Marie", "Sainte Marie", etc.)
+- Group: you can organize Organization Units in Groups in IASO. You can multi-select the group(s) that the organization unit you are creating is associated to
+- Parent Org Unit: place your Organization Unit at its relevant place in the hierarchy
+- Opening and/or Closing date(s): use these fields to indicate the opening or closing date(s) of the Organization Unit
 
--   Allows you to create an organisational unit at any level and
-    > directly validate it
+**Edit an Organization Unit or consult details**
 
--   Allows before creation to verify that this unit does not already
-    > exist elsewhere and therefore to move it rather than create it.
+To access the detailed view of an Organization Unit, proceed as described below: 
 
-### Group
+![alt text](attachments/orgunitdetailsedit.png)
+
+In this view, you have a set of tabs that allow you to edit the Organization Unit as needed:
+- Infos: edit the main information relating to this Organization Unit
+- Map: consult the geographical information available for this Organization Unit (boundaries or GPS coordinates). You can view geographical data across data sources (if there are several sources). You can also leave a comment
+- Children: lists this Organization Unit's children. You can use filter to go through the list in a more detailed way
+![alt text](<attachments/children org units.png>)
+- Links: in the case of matching an Organization Unit across multiple data sources, the links among the data sources can be found here
+- History: allows you to trace back all modifications that were done to the Organization Unit by user
+- Forms: lists all data collection forms that are linked to the Organization Unit type of this Organization Unit
+- Comments: you can leave a comment about this Organization Unit using this section
+
+**Bulk edition of Organization Units**
+
+You can also edit Organization Units in bulk. 
+In order to do this, from the Organization Unit list, tick the boxes of the Organization Units you would like to bulk edit, then hover on the action button. Click on the gear action button, and select the action you would like to perform. 
+
+![alt text](attachments/Orgunitbulkedit.png)
+
+### Organization Unit Groups
 
 Organisation units can be grouped in organisation unit groups, and these
 groups can be further organised into group sets. Together they can mimic
 an alternative organisational hierarchy which can be used when creating
 reports and other data output. In addition to representing alternative
 geographical locations not part of the main hierarchy, these groups are
-useful for assigning classification schemes to health facilities, e.g.
-based on the type or ownership of the facilities. Example:
+useful for assigning classification schemes to Organization Units. 
 
 <img src="./attachments/image44.png" style="width:6.5in;height:2.41667in" />
 
+
+**Manage Organization Unit Groups**
+
+In order to manage the Organization Unit Groups, access the menu entry Organization Units > Groups. 
+
 <img src="./attachments/image5.png" style="width:6.5in;height:2.29167in" />
 
-This view allows you to search the Organisation Unit Groups through free
-text entry. Groups can be edited by clicking on the pencil icon
-<img src="./attachments/image37.png"
-style="width:0.57292in;height:0.5625in" />or deleted by clicking on the
-delete button <img src="./attachments/image20.png" style="width:0.58333in;height:0.52083in" />or a new group can be created
-by clicking on the create button
-<img src="./attachments/image1.png" style="width:1.29167in;height:0.4375in" />.
 
-When you click on “Org Units” , you will see the list of that Org Unit
+This view allows you to search the Organisation Unit Groups through free
+text entry. 
+
+You can create a new group 
+by clicking on the create button. 
+
+Groups can be edited by clicking on the gear icon
+or deleted by clicking on the
+delete button.
+
+
+In the table, the column "Org Units" shows the number of Organization Units that are assigned to this group. When you click on the number, you will see the list of that Org Unit
 group.
 
-### Organisation unit type
 
-This is specific to Iaso and not exported to DHIS2.
+**Assign Organization Units to Groups**
 
-Example DRC Health Pyramid:
+To assign Organization Units to Groups, go to the Organization Units List view from the menu and make a bulk edit of the selected organization Units. See above in section "Bulk edition of Organization Units" for more details on bulk edition of Organization Units.  
 
--   Country (level 0) = Org Unit Type
 
--   Province (level 1) = Org Unit Type
+### Organization Unit types management
 
--   Health zone (level 2) = Org Unit Type
+Organization Unit types are specific to IASO (i.e. this is not handled in DHIS2). See the part about [Organization Units](OU) for more details on what Organization Unit types are.
 
--   Air de santé (level 3) = Org Unit Type
+From the Organization Unit menu entry, click on "Organization Unit types". This view lists the Organization Unit types existing in your IASO account. 
 
--   Health Centre (level 4), Hospital (level 4), School (level 4),
-    > Village (level 4), Individual (level 4) = Org Unit Type
+**Create an Organization Unit type**
 
-<img src="./attachments/image84.png" style="width:6.5in;height:2.38889in" />
+Click on "Create" and enter the below mandatory fields:
+- Name of the Organization Unit type. Beware that this should be the "category" / "level in the hierarchy", NOT the specific name of an Organization Unit. E.g. "Country, "Province", "District", and NOT "DRC", "Kinshasa", "Gombe"
+- Short name: this will appear on other IASO views. It should be a short version of the full name 
+- Project(s): select one or multiple project(s) the Organization Unit type is linked to
 
-### Data Source
+These other fields are not mandatory:
+- Level: start with 0 for the highest point in the hierarchy, for instance "Country". E.g. Country - 0, Province - 1, District - 2, Village - 3
+- Sub org unit types to display: select the below Org Unit type(s) that you would like to display on the Registry view if this main Org Unit type that you are editing is selected.
+- Sub Org unit types to create: select the Org Unit type(s) that you would like to enable the creation for in the IASO mobile application. For instance, if you are editing the Org unit type "District", you can enable the creation of "Village" and/or "Point of Interest"
+- Reference forms: select one or several data collection Form(s) that will be assigned as reference for this Org Unit type. Reference forms are Forms that are closely linked to the Org Unit type. A typical use case is for an Area to assign a reference Form for Population data. 
 
-The data source is the place where the data comes from.
+![alt text](attachments/editorgunittype.png)
 
-#### List 
+### Data Source(s) management
 
-Data sources with their names, versions, descriptions. It is possible to
+IASO allows to import and handle one or several geographic data source(s). 
+
+#### Data Source(s) List 
+
+Find here the data sources with their names, versions and descriptions. It is possible to
 edit the data source, check up on the files’ version history or compare
 data sources and export them to DHIS2.
 
@@ -560,363 +538,379 @@ data sources and export them to DHIS2.
 
 #### Matching
 
-1.  List
-
-<img src="./attachments/image51.png" style="width:6.5in;height:1.48611in" />
-
-This part is for the "management of the pyramid".
-
-This is rather a "geospatial" functionality : to have several pyramid
+This is rather a "geospatial" functionality : to have several geographical pyramid
 sources and try to make links (Example: where in a csv “province x” is
 called "PROVINCE X" and in another source it is called "DPS X").
-
-1.  Algorithms runs
 
 The algorithms run part is intended for data science work.
 
 <img src="./attachments/image40.png" style="width:6.5in;height:1.26389in" />
 
-## Planning
+### Registry
 
-The micro planning feature makes it possible to plan for field work
-(census, surveys, etc.) It can be found in the main menu panel.
+The Registry entry in Organization Unit is a visualization tool allowing users to drilldown in the geographical hierarchy and consult the geographical data as well as data collection associated to the different level(s). 
 
-<img src="./attachments/image9.png" style="width:6.5in;height:3.09722in" />
+![alt text](attachments/registry.png)
 
-Before jumping straight to the “Planning” feature, some steps are
-required. You need to create a project, forms, users and teams
-beforehand.
 
-To create new user.s, see [here](#users). However, during the
-User creation process, in the “Location” tab, it might be a good idea to
-restrict each user to the org unit s.he is/will be assigned to.
-Optionally, you can also edit the user afterward, once the org unit has
-been assigned.
+### Review change proposals
 
-To create teams, see [here](#user-permissions).
+With IASO, supervisors can compare and validate data submissions as they are sent to the server. 
+Note that this feature will only work provided that you have activated the "Change requests" feature flag on the IASO Project you would like to validate data collected for. See the Projects part for more information on mobile feature flags in IASO.
 
-### List 
+On the Review change proposals page, users can use the filters to select the proposals they would like to focus on. See on the picture below the detailed filters.
 
-Under "List" you will see the list of schedules/plannings that have been
-created in Iaso. This is also the place where you can proceed to create
-a schedule or planning.
 
-Click on “Planning” in the menu panel and on the
-<img src="./attachments/image1.png" style="width:1.29167in;height:0.4375in" />
-icon.
+![alt text](attachments/reviewchangeproposals.png)
+
+Supervisors can then click on the gear icon at the end of the relevant line to be able to see the details of the change proposal submitted and compare with the former version on the left.
+
+![alt text](attachments/reviewchanges.png)
+
+Supervisors can then select the changes they would like to approve by ticking the boxes of the changes selected on the right column, and then hit "Approve selected changes".
+If the changes proposed are not satisfactory, supervisors can reject all changes and provide a comment.
+
+For each change proposal sent, IASO mobile application users will be able to see if they have been approved or rejected, and if rejected, consult the comment. 
+
+## <a id="Planning"></a>Planning ##
+
+The Planning feature in IASO allows you to plan field work per team and user in defined zones/organization units and according to a specific timeline. Once data collection activities would have been assigned via the interface, field agents using the mobile application would only be able to see the activities assigned to them, and navigate towards the relevant GPS point(s). 
+
+In order to be able to create a Planning, you will need to have created beforehand Organization units, Users, a Project, Teams of Users/Teams of Teams and data collection Forms for which you would like to use the Planning feature.
+
+### Planning List 
+
+Click on Planning in the menu panel. Under Planning List you will see the list of schedules/plannings that have been
+created in IASO. You can search through the different Plannings using the different filters and take the below actions:
+- Create Planning
+- View Planning: this is where you will access the interface to assign data collection activities to Teams and Users according to geographies
+- Edit Planning: edit the Name, Project, Parent Organization Unit and Team it applies to, Form(s), Description
+- Duplicate Planning: allows users to copy an existing Planning and readapt it as needed
+- Erase Planning
+
+![alt text](attachments/planninglist.png)
+
+**Create a Planning**
+
+Click on "Create" and you will see the below window opening:
 
 <img src="./attachments/image48.png" style="width:6.5in;height:3.80556in" />
 
-The “Project” field will define in which mobile app environment the info
-will be visible. The “Teams” is the team responsible for the planning.
-The “Forms” field defines which form they will have to complete.
+The below fields are mandatory:
+- Name
+- Project: defines in which mobile app environment the Planning info
+will be visible
+- Team: it is the team responsible for the planning - this is usually a Team of Teams
+- Form(s): select one or several Form(s) to apply to this Planning 
+- Org unit: select the base Organization Unit your Planning applies to. Keep in mind that you will drilldown from this base Organization Unit to assign your data collection activities to Teams/Users. 
+- start and end dates for your Planning
 
-Once you have completed the fields, click Save to finish. Click on the
-<img src="./attachments/image37.png" style="width:0.57292in;height:0.5625in" /> button from the Planning list
-to edit your new planning. The “Publishing status” (in the lower left
+You can add a description as an option. 
+
+The “Publishing status” (in the lower left
 corner ) feature makes it possible to ensure, once completed (and all
 assignments made), the newly created planning will be available in the
-Iaso mobile app for the relevant project.
+IASO mobile app for the relevant project.
 
-In order to assign areas to the teams, click on
-<img src="./attachments/image67.png" style="width:0.46875in;height:0.32292in" />. This gives you the list of
-teams in your project along with the map of the project area. You can do
-the assignment either through the “Map” tab or the “List” tab. If
-processing through the map, first activate the “Parent picking mode” to
-help you select the level at which you want to work. Next, select the
-relevant team and then the areas on the map by clicking on them.
+Once you have completed the fields, click "Save" to finish.  
 
-In other words, the field “Base organisation unit type” permits you to
-define the level (within the pyramid) at which you distribute the work.
-The “Parent organisation unit type” field helps you in that work by
-letting you select a whole district at once (without having to click on
-every area separately and manually).
+Click on the eye icon
+button from the Planning list
+to start editing your new Planning via the Map interface.
+
+You can do
+the assignment either through the “Map” or the “List” tab. If
+processing through the map, first select the Team you would like to assign a geography to in the dropdown, as well as the relevant “Base Org Unit type” in the dropdown. You can then start assigning geographic areas or points directly to the selected Team members directly on the map.
+
+![alt text](<attachments/planning assignment.png>)
+
+
+Selected areas will be highlighted with the team’s colour, that you can change as needed. 
+
+In order to assign all children Org Unit of a given parent Org unit to the same Team/User, you can select the "Parent picking mode" before proceeding to your selection.
 
 <img src="./attachments/image10.png" style="width:2.97396in;height:2.55034in" />
-<img src="./attachments/image25.png" style="width:2.9343in;height:2.41146in" />
 
-Selected areas will be highlighted with the team’s colour.
 
-<img src="./attachments/image95.png" style="width:1.36979in;height:1.78073in" />
-
-You can change the colours of each team by simply clicking on the colour
-in front of the team and choosing the one you prefer.
-
-<img src="./attachments/image19.png" style="width:4.04688in;height:2.90469in" />
 
 If you prefer using the List tab, the process is pretty similar. The
 main difference being that you work here with a list of names, according
 to the selected level. Org units are assigned by clicking in front of
 the item name, in the “Assignment” column.
 
+
 <img src="./attachments/image73.png" style="width:6.5in;height:2.68056in" />
+
 
 You can sort Org units and Parents by clicking on the column name.
 
-It is also possible to go to a lower level (user / team member) to
-assign org units to each team member, using the same process (through
-list or map). Select the team in the dropdown list and choose the
-relevant org unit level (must be lower than the team level) then click
-on <img src="./attachments/image106.png" style="width:1.15625in;height:0.51042in" /> to apply the filter. You can
-now assign org units in a similar way as you did for teams.
-
-<img src="./attachments/image11.png" style="width:5.94271in;height:2.63803in" />
-
-Assignments are not limited to org units in the form of areas. It is
-possible to assign interest points/facilities (places such as health
-centres, schools, churches etc.) to teams or users. Like other types of
-org units, it can be managed through the “Map” or the “List” tabs
-
-Example below presents the steps to schedule a campaign using the
-micro-planning functionality:
-
-Step 1: Create the project
-
-Step 2: Create teams
-
-Step 3: Specify the expected start date and end date of the campaign
-
-Step 4: Create and assign a form to the schedule
-
-Step 5: Specify areas / part of the country/ org units involved in the
-census
-
-Step 6: Assign teams to their org units
-
-The screenshot below allows you to see the work content of the different
-teams per colour.
-
-<img src="./attachments/image61.png" style="width:5.68229in;height:3.08701in" />
-
 ## Admin
+
+The Admin part of IASO comprises several parts, which will appear or not depending on the user's permissions:
+- Tasks
+- Monitoring
+- Projects
+- Modules
+- Users
+- User roles
+- Teams
 
 ### Tasks
 
-This is the Iaso operations log that is usually used by admins to
-trace/debug errors.
-
-An operation log contains information about when and where an operation
+This is the IASO batch updates log. An operation log contains information about when and where an operation
 ran, the operation status, the number of source and target records
 processed, and any log messages.
 
-### Projects
+Examples of tasks include:
+- Organization unit bulk update
+- DHIS2 data import
+- Geopackage import
 
-The basis of Iaso. Usually the first thing that will be created in Iaso.
+The statuses are:
+- Errored: the Task did not make it through. Users are advised to try again.
+- Running: the Task is in process
+- Queued: the Task has stopped and will restart if the conditions are met (for instance, if there is better connectivity)
+- Killed: the Task was interrupted by the user after it had been started
+- Success: the Task has been successfully run
+
+The Task list can be refreshed by pressing the button "Refresh" on the right top hand side. 
+
+![alt text](attachments/tasks.png)
+
+### Monitoring
+
+This part allows supervisors to monitor devices that are linked with the IASO account. 
+From this page, you can consult:
+- The IMEI or device identifier
+- If this is a test device or not
+- the name of the last owner
+- the last time it has been synchronized
+- the creation date (first time it has been synchronized)
+- the modification date
+
+On the right hand side, you can see the number of devices that are connected under the IASO account you are connected to.
+
+![alt text](attachments/Devices.png)
+
+### Projects 
+
+A Project in IASO relates to an instance of mobile application. 
+Each Project is identified by a Name and an App ID. See [here](Projects) or a more detailed definition of Projects in IASO.
+
+
+**Create a Project**
+
+From the menu, Admin > Projects > Click on "Create"
+
+![alt text](attachments/Project.png)
+
+Then, add a Project name, and an App ID. 
+Be aware that the App ID will have to be entered by IASO mobile application users the first time they connect to the IASO app, so it should not be overly complicated to avoid typing errors. 
+
+You can then select the Feature flags you would like to apply to your Project in the next tab and press "Save". 
+
+![alt text](attachments/featureflags2.png)
+
+**Feature flags definition**
+
+See the table below for more details on the Project Feature flags:
+
+| Feature flag      | Description |
+| ----------- | ----------- |
+| Authentication      | Users have to enter their login and password on the mobile application before proceeding to the data collection. Please note that this is possible in IASO to proceed to data collection without authentication for simplified processes (also called “anonymous mode”)
+| Mobile: show data collection screen   | Enable the feature to collect data from the IASO mobile application (data collection that is not linked to a planning or a change request workflow)       |
+| GPS for each form      | Every time a data collection form is submitted, a GPS point is automatically taken and associated to the form submission |
+| Enforce users are within reach of the org unit before starting the form      | IASO mobile application users have to be close (50m) to the organization unit GPS point they are collecting data for in order for the form to open |
+| Mobile. Show planning screen      | When a planning has been done in IASO via the web interface, the assigned data collection points and tasks are reflected via this tab |
+| Mobile: limit download of org unit to what the user has access to      | When loading data into the mobile application, only the geographical zone that is assigned to the user is downloaded, so as to enable offline use. This allows a lighter (and then quicker and less data-consuming) download of data at the start of the IASO mobile application |
+| Mobile. Show Map of org unit      | Adds a tab in the mobile application to show the geographic information available for the selected Org Unit in the mobile application. For instance, if a GPS coordinate is available for a health facility, it would show on the map via this tab |
+| Request changes to org units      | Enable the feature to propose changes to org units and their related reference form(s) |
+| Mobile: Change requests      | Adds the tab allowing to propose changes to org units and their reference form(s) |
+| GPS for trajectory     | Enable the user to activate a function that track their position every 15 minutes over a period of time |
+| Mobile. Warn the user when forms have been updated     | When new form versions have been uploaded on the web, the IASO mobile application user is notified. Then the user can choose to apply them or not |
+| Mobile. Warn the user when forms have been updated and force them to update      | When new form versions have been uploaded on the web, the IASO mobile application user is notified and the update happens automatically |
+| Mobile. Warn the user when the org units have been updated      | When changes to the Org units (health pyramid) have been done on the web, the IASO mobile application user is notified. Then the user can choose to apply them or not |
+| Mobile. Warn the user when the org units have been updated and force them to update      | When changes to the Org units (health pyramid) have been done on the web, the IASO mobile application user is notified and the update happens automatically |
+| Auto upload of finalized forms      | The synchronization of forms that have been filled takes place automatically as soon as the user has connectivity |
+| Mobile. Finalized forms are read only      | IASO mobile application users cannot edit the forms once finalized in the mobile application |
 
 ### Users
 
-Users are the people using Iaso (web and/or mobile version). A user has
-a user account (login and password).
+Users can access IASO web and mobile application with login credentials. Each user is assigned permissions and can be limited by location.
 
-This view allows you to manage users and their access. You can search
-for a user through a free text entry.
+Permissions are relatively granular:
+- By screen/tab
+- Different read/write permissions for important domains
+- Restriction of access using the health pyramid
+- Batch creation/modification of users
+- Customizable user roles (Administrator, Data manager, etc.)
 
-In the view you can see details of:
+Please note that the permissions assigned from the User management apply to **IASO web only**. IASO does not have a system of permissions for its mobile application, but rather a set of Feature Flags. 
 
--   Users names
+**Create a new IASO user**
 
--   First name
+From the menu Admin > Users, click on "Create". 
 
--   Last name
+1. Fill in user information
 
--   Email address
+![alt text](attachments/Createuser.png)
 
--   Action(s)
+Note that you can also indicate the following information:
+- DHIS2 id of the user: you can import a list of DHIS2 users to IASO and keep track of their DHIS2 id in IASO to link then across both systems
+- Home page: you can set up a default landing page for that user when connecting to this IASO account
+- Projects: select one or several Project(s) to which the newly created user will be linked. If there is no Project indicated here, the user will have access to all Projects of the IASO account by default.
+- Language: you can specify in which default language this user will use IASO web. IASO mobile application is based on the default language of the users's device.
 
-<img src="./attachments/image6.png" style="width:6.5in;height:2.77778in" />
+2. Assign user permissions
 
-Click on edit under actions(s) to update user roles
+On the next tab “Permissions”, you can enable/disable permissions for that user as needed. Note that in the “?” are tooltips to explain what the permissions do.
+![alt text](attachments/Permissions.png)
 
-Click on **+CREATE** to add a new user. Fill in the details and define
-permission levels. For example, you can limit access by region.
+3. Restrict user to a specific Location
 
-<img src="./attachments/image50.png" style="width:2.00006in;height:2.61979in" /><img src="./attachments/image69.png" style="width:2.22917in;height:2.65104in" /><img src="./attachments/image114.png" style="width:2.05037in;height:2.64063in" />
+On the last tab "Location", you can restrict the access of the user you are editing to a sub-part of the Organization Unit hierarchy (hence the user will only be able to see data relating to his/her Geography).
+If no Location is specified here, by default the user will see all data available across the entire hierarchy.
 
-You can modify info and permissions for a user by clicking on the pencil
-icon <img src="./attachments/image37.png" style="width:0.37044in;height:0.37044in" />.
+![alt text](attachments/locationrestrict.png)
 
-You can change the app language by clicking on the language version
-menu.
 
-###  User Permissions
+**Create users in bulk**
 
--   Data completeness
+You can create several users at once using a CSV file that you import to IASO.
 
-> This allows to see the number of forms filled in in a specific area.
-> In real time
+Use the button “Create from file” and you can then import your list of users (or download the relevant template to do so beforehand). 
 
--   Statistic data completeness  
-    > Completeness per org unit% gens remplis entierement le formulaire
-    > terminé formulaire
 
--   submissions
+**Manage IASO users**
 
-> This feature allows app users to fill in a form and submit it
+This view allows you to manage users and their permissions. You can search
+for a user using the different filters.
 
--   Update submissions  
-    > Allow user to updates the submissions
+![alt text](attachments/userfilters.png)
 
--   Forms
+You can edit IASO users in bulk using the bulk update feature. First, tick each user you would like to update using the check boxes on the right side of each user line. 
 
-> This role enables you to create a new form
+![alt text](attachments/editusersbulk.png)
 
--   Mapping with DHIS2
+Then select the action(s) you would like to perform for these users. They can be:
+- Add or remove from user role(s)
+- Add or remove from Project(s)
+- Add or remove from Team(s)
+- Update default language
+- Add or Remove Location (hence limiting these users to the selected Geography)
 
-> To map data element from DHIS2 with data element in Iaso. Access to
-> the datasource
+Click on "Validate" when done. 
 
--   Organisation units
+![alt text](attachments/usersbulkeditactions.png)
 
-> To manage the health pyramid behind the project ( edit, add, delete
-> health facilities, health zone) and access to the organizat!ion unit
-> menu
+### User roles
 
--   Pages
+User roles allow to group users that are granted a set of permissions under the same role. In the User role, you are able to create User roles with their matching permissions, to which Users can be assigned to.
 
-> This allows to add links with external pages such as dashboards (Power
-> BI)
+**Create a User role**
 
--   Projects
+From the Admin > User roles page, click on "Create".
+ 
+ ![alt text](attachments/userroles.png)
 
-> This allows the user to create a new project, (one app per project) →
-> to check
+You can then assign this user role to any user through the Permission tab in the User edit popup. Be aware that the User role permissions will apply to the user, but if the User has more permissions that had been previsouly assigned to him/her, he/she will not lose them but they will add up. 
 
--   Sources
+![alt text](attachments/Userrolespermissions.png)
 
-> WHen you have different pyramids, and data source ex: project data and
-> pyramid SNIS. Allow users to change the source version.
-
--   Sources matching
-
-> ?
-
--   Tasks
-
-> This permission allows you to create new tasks to a user in bulk and
-> to access to the background tasks.
-
--   Teams
-
-> Create/update teams with specific rights according to the permission,
-> project or geographical area. Access to teams.
-
--   Update submissions
-
-> Rights to change values in a form submission on the web interface
-
--   Users
-
-> This allows you to see all users, change their permissions and their
-> allowed geographies, create a new user or an administrator
-
--   Links  
-    > Access to algorithms runs in orgunit/datasource
-
--   Report  
-    > Access to report API what is it?
-
--   Planning  
-    > Access to the planning ( just access to rights to change/ create
-    > it?)
-
--   Assignments  
-    > Access to planning assignment, what is it?
-
--   Entities  
-    > Access to entities but what’s an entity?
-
--   Storages  
-    > Access to storages what’s a storage?
-
--   Workflows  
-    > Access to workflows, what’s a workflow?
-
--   Polio_budget-admin  
-    > Make user admin of budgets
-
--   Iaso Polio  
-    > Access to polio plug in
-
-The api is very restrictive, the csv file format must follow the exact
-example as shown above. Org units accept full names or ids. ID is
-preferred as there can be multiple org units with the same name.
-
-User type (example of RDC)
-
--   System administrator
-
-Tasks: Set up the basic structure (metadata) of the system.  
-Recommended authorities: Add, update and delete the core elements of the
-system, for example data elements, indicators and data sets, plan
-campaigns, create micro planning, Data completeness stat, Mapping with
-DHIS2, Organisation units, Pages, Projects, Sources, Sources matching,
-Tasks, Teams, Update submissions, Users, Create a new user (later pay
-user)  
-see all results of people below, edit results, change forms, Only system
-administrators should modify metadata.
-
--   National health managers/Province/Zone health managers
-
-Tasks: Monitor and analyse data  
-Recommended authorities: Access to the reports module, the GIS, Data
-Quality apps and the dashboard, plan campaigns, create new users, update
-submissions, validate submissions, create teams, see Data completeness
-dashboard, Form submissions, Forms, Mapping with DHIS2, Organisation
-units, Pages, Projects, Sources, Sources matching, Tasks, Teams, Users,
-→ only for specific area/ provinces/HZ.  
-Don't need access to enter data, modify data elements or data sets.
-
--   National/District/Facility health information system division
-    > officer
-
-Tasks: Enter data that comes from facilities which are not able to do so
-directly, Monitor, evaluate and analyse data  
-Recommended authorities: Access to all the analysis and validation apps,
-Access to the Data Entry app. Data completeness, Form submissions,
-O<span class="mark">rganization Units validation and edition. Ideally
-user management within their entity when this will be
-decentralised.</span>
+ To assign multiple Users to this newly created user role in bulk, go back to the Users list and proceed to a bulk update (see Manage Users above).
 
 ###  Teams
 
-A team is a group of users that work towards a same goal (ex: group of
-field agents that collect data in a same region).
+The notion of Teams in IASO is used mainly for the [Planning](Planning) feature. It allows to organize Users in Team hierarchies and assign data collection activities to the relevant geographies as needed for the Planning purposes. 
 
-The team creation feature is located in the main menu panel, in the
-section “Admin”.
+There are two types of Teams:
+- Teams of Users: gathers IASO Users under the same team 
+- Teams of Teams: gathers several Teams under a same Team. You can then create hierarchies of Teams
 
-<img src="./attachments/image112.png" style="width:6.5in;height:3.19444in" />
+**Create a Team**
 
-Use the
-<img src="./attachments/image1.png" style="width:1.29167in;height:0.4375in" />
-icon to create a new team. Fill the form by entering the appropriate
-information
+From the menu, access Admin > Teams. Click on “Create”
 
-<img src="./attachments/image100.png" style="width:2.3674in;height:2.54688in" />
 
-If it is the first team you are creating, in the “Type” field, select
-“Team of users”. Once selected, a new field named “Users” will appear,
-allowing you to choose users who will be part of the team. Once done,
-save the changes. The newly created team will appear in the list.
-Members of the team are displayed in the team’s row.
+![alt text](attachments/createteam.png)
 
-<img src="./attachments/image15.png" style="width:2.09992in;height:2.79688in" />
+Fill out the below fields:
+- Team name
+- Manager: select from the Users in IASO
+- Project: select the Project to be linked to this Team
+- Type: select in the dropdown the type of Team
+    - If you select "Team of Users" - then select the Users to be added to that Team
+    - If you select "Team of Teams" - then select the Teams to be added to that Team
+- Parent: select the Parent Team for this newly created team
 
-<img src="./attachments/image43.png" style="width:6.5in;height:2.54167in" />
+You can then use the gear or bin icon on the main page to edit or delete Team(s) as needed. 
 
-Once you’re done with creating teams and assigning users to each team,
-you can now create teams of teams if needed. Teams of teams are created
-the same way as Team of users by choosing “Team of teams” in the “Type”
-field. Instead of “Users”, you’ll now have to choose “Team”. Select all
-the teams part of the new team of teams.
+# IASO Mobile Application
 
-Teams can be edited by clicking on the pencil icon
-<img src="./attachments/image37.png" style="width:0.57292in;height:0.5625in" />or deleted by clicking on the
-<img src="./attachments/image20.png" style="width:0.58333in;height:0.52083in" />button
 
-## Logout 
+IASO mobile application is available on Google Play Store (Android phones only).
 
-Finally, you disconnect from the app by clicking on the “**logout”**
-button.
+It can work completely offline - once the end user has encoded the data needed, he/she can upload the data collected offline all at once when network is available.
 
-<img src="./attachments/image34.png" style="width:7.53233in;height:3.57813in" />
+Updates made from the web (forms versions, health pyramid) will be reflected in the App only **after the App data has been refreshed** and this requires network connectivity.
+
+Key tip before testing / using the App - **Make sure you have refreshed data beforehand**
+
+## Run the mobile application for the first time
+
+IASO Mobile application has to be configured on the web part before using (see the part “Project”).
+
+Then you can:
+- Download [IASO App](https://play.google.com/store/apps/details?id=com.bluesquarehub.iaso&pcampaignid=web_share) on Google Play
+- Insert the server url : https://iaso.bluesquare.org
+- Then, enter the App ID 
+
+
+
+![](attachments/iasomobileapplicationsetup.png)
+
+
+## Overview of buttons
+
+See below an overview of the main buttons that you can find on the main screen in data collection mode. 
+
+![](attachments/mobileappbuttons.png)
+
+In the More Options part, you can take the below actions:
+- Refresh data: you need to have internet connectivity to do so. It will synchronize the mobile application with IASO web data. In order to avoid that it takes too long in low-connectivity settings, you can choose to refresh only sub-parts such as Forms, Organization Units, or other. 
+- Change the App ID: you can switch Project by entering another App ID. In order to make sure that there is no data from the former App ID left on the IASO mobile application, please access your parameters and erase storage and cache data from IASO beforehand. 
+- Change the URL of the server: this can be handy if you need to switch from Production to Staging server
+- Logout: your user can logout. This does not prevent data consultation of local data (data available on IASO on the user's device)
+- About: gives the version of the IASO mobile application. It can be good to have to debug.
+
+## Collect data
+
+Once you are connected to the IASO mobile application, you can then proceed with your data collection. Here below are the different screens that you would see for a simple data collection.
+
+![alt text](attachments/datacollection.png)
+
+You will then have data collection form chosen opening. You can proceed with answering the different questions and press "Next" until the end of the Form.
+
+If you wish to interrupt data collection during input, you can press the back button on the tablet or smartphone.
+
+Once you click on the button, you have 2 options:
+- Save Changes: to save all data already filled and the form with unfinalized status. With this option you can, come back and continue enter data 
+- Ignore Changes: to delete data filled and the form
+
+**Upload collected data**
+
+If you collect data with your mobile device, they are stored in your device. You need to upload data to the server to make them visible at central level. *Keep in mind that you need internet connection in order to be able to upload data*.
+
+Click on the "Send Finalized Forms" icon on the mobile application home page on the top right corner.
+
+![alt text](attachments/uploaddata.png)
+
+Then, a specific page will open to let you know if the data has been correctly uploaded. Finalize the operation by clicking on "Send to server".
+
+![alt text](attachments/sendserver.png)
+
+
+
+
+
+

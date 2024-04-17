@@ -18,7 +18,6 @@ export const Logo: FunctionComponent = () => {
         useContext(ThemeConfigContext);
     const classes = useStyles();
     const showAppName = SHOW_NAME_WITH_LOGO === 'yes';
-    // @ts-ignore
     const staticUrl = window.STATIC_URL ?? '/static/';
     if (LOGO_PATH && APP_TITLE !== 'Iaso') {
         return (

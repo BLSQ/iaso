@@ -283,7 +283,7 @@ class FormsVersionAPITestCase(APITestCase):
         self.assertHasError(response_data, "form_id")
 
     def test_form_versions_create_no_auth(self):
-        """POST /form-versions/ , without auth -> we expect a 403 error"""
+        """POST /form-versions/ , without auth -> we expect a 401 error"""
 
         with open("iaso/tests/fixtures/odk_form_valid_no_settings.xls", "rb") as xls_file:
             response = self.client.post(
@@ -292,7 +292,7 @@ class FormsVersionAPITestCase(APITestCase):
                 format="multipart",
                 headers={"accept": "application/json"},
             )
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     def test_form_versions_create_wrong_form(self):
         """POST /form-versions/ - user has no access to the underlying form"""

@@ -35,7 +35,7 @@ class StorageAPITestCase(APITestCase):
 
     def test_retrieve_passwords_without_authentication(self):
         response = self.client.get("/api/mobile/storage/passwords/", data={APP_ID: self.rebels.app_id})
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
     def test_post_passwords_without_authentication(self):
         response = self.client.post(
@@ -47,7 +47,7 @@ class StorageAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
     def test_post_passwords_with_authentication(self):
         self.client.force_authenticate(self.yoda)
@@ -71,7 +71,7 @@ class StorageAPITestCase(APITestCase):
             },
             format="json",
         )
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
     def test_patch_passwords_with_authentication(self):
         self.client.force_authenticate(self.yoda)
@@ -87,7 +87,7 @@ class StorageAPITestCase(APITestCase):
 
     def test_delete_passwords_without_authentication(self):
         response = self.client.delete(f"/api/mobile/storage/passwords/{self.rebels_password1}/")
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 401)
 
     def test_delete_passwords_with_authentication(self):
         self.client.force_authenticate(self.yoda)

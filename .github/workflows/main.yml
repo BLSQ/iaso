@@ -131,7 +131,7 @@ jobs:
         run: |
           . ./venv/bin/activate &&  python manage.py migrate
           . ./venv/bin/activate &&  python manage.py createcachetable
-          . ./venv/bin/activate &&  python manage.py test
+          . ./venv/bin/activate &&  python -W "ignore" manage.py test
           # check we don't have missing migration
           . ./venv/bin/activate &&  python manage.py makemigrations --check
         env:

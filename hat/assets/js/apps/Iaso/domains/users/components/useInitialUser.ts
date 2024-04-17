@@ -74,6 +74,14 @@ export const useInitialUser = (
                 ),
                 errors: [],
             },
+            phone_number: {
+                value: get(initialData, 'phone_number', ''),
+                errors: [],
+            },
+            country_code: {
+                value: get(initialData, 'country_code', ''),
+                errors: [],
+            },
         };
     }, [initialData]);
     const [user, setUser] = useState<UserDialogData>(initialUser);
@@ -95,11 +103,24 @@ export const useInitialUser = (
         (fieldName, fieldValue) => {
             const newUser = {
                 ...user,
-                [fieldName]: {
+            };
+
+            if (fieldName === 'phone_number_obj') {
+                newUser.phone_number = {
+                    value: fieldValue.phone_number,
+                    errors: [],
+                };
+                newUser.country_code = {
+                    value: fieldValue.country_code?.countryCode,
+                    errors: [],
+                };
+            } else {
+                newUser[fieldName] = {
                     value: fieldValue,
                     errors: [],
-                },
-            };
+                };
+            }
+
             if (fieldName === 'user_roles') {
                 const userRolesPermissions: UserRole[] = (userRoles || [])
                     .filter(userRole => fieldValue.includes(userRole.value))
@@ -117,6 +138,7 @@ export const useInitialUser = (
                     errors: [],
                 };
             }
+
             setUser(newUser);
         },
         [user, userRoles],

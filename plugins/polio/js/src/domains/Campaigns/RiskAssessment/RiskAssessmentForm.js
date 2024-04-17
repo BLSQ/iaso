@@ -1,10 +1,10 @@
-import React, { useCallback } from 'react';
-import { Grid, Box, Typography, Divider } from '@mui/material';
-import { Field, useFormikContext } from 'formik';
+import { Box, Divider, Grid, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import { useStyles } from '../../../styles/theme';
-import MESSAGES from '../../../constants/messages';
+import { Field, useFormikContext } from 'formik';
+import React, { useCallback } from 'react';
 import { DateInput, NumberInput } from '../../../components/Inputs';
+import MESSAGES from '../../../constants/messages';
+import { useStyles } from '../../../styles/theme';
 
 export const riskAssessmentFormFields = [
     'risk_assessment_status',
@@ -200,20 +200,6 @@ export const RiskAssessmentForm = () => {
                             <Field
                                 key={round.number}
                                 label={`${formatMessage(
-                                    MESSAGES.target_population,
-                                )} ${round.number}`}
-                                name={`rounds[${i}].target_population`}
-                                component={NumberInput}
-                                className={classes.input}
-                                shrinkLabel={false}
-                            />
-                        );
-                    })}
-                    {rounds.map((round, i) => {
-                        return (
-                            <Field
-                                key={round.number}
-                                label={`${formatMessage(
                                     MESSAGES.dosesRequested,
                                 )} ${formatMessage(MESSAGES.round)} ${
                                     round.number
@@ -221,7 +207,6 @@ export const RiskAssessmentForm = () => {
                                 name={`rounds[${i}].doses_requested`}
                                 component={NumberInput}
                                 className={classes.input}
-                                withMarginTop
                             />
                         );
                     })}

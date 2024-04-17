@@ -16,6 +16,7 @@ import {
     fetchMappingVersionDetail as fetchMappingVersionDetailAction,
     setCurrentQuestion as setCurrentQuestionAction,
     applyPartialUpdate as applyPartialUpdateAction,
+    applyUpdate as applyUpdateAction,
 } from './actions';
 
 import { redirectToReplace as redirectToReplaceAction } from '../../routing/actions';
@@ -26,7 +27,7 @@ import QuestionInfos from './components/QuestionInfos';
 import QuestionMappingForm from './components/QuestionMappingForm';
 import DerivedQuestionMappingForm from './components/DerivedQuestionMappingForm';
 import { baseUrls } from '../../constants/urls';
-
+import GeneraMappingInfo from './components/GeneraMappingInfo';
 import Descriptor from './descriptor';
 import MESSAGES from './messages';
 
@@ -80,6 +81,7 @@ class MappingDetails extends Component {
             hesabuDescriptor,
             setCurrentQuestion,
             applyPartialUpdate,
+            applyUpdate,
             router,
             prevPathname,
             redirectToReplace,
@@ -145,6 +147,7 @@ class MappingDetails extends Component {
                     }}
                 />
                 {fetching && <LoadingSpinner />}
+
                 {currentMappingVersion && (
                     <Box className={classes.containerFullHeightNoTabPadded}>
                         <Grid container spacing={4}>
@@ -160,6 +163,15 @@ class MappingDetails extends Component {
                                 </Grid>
                             )}
                             <Grid item xs={8} md={9}>
+                                {currentQuestion == null &&
+                                    currentMappingVersion && (
+                                        <GeneraMappingInfo
+                                            applyUpdate={applyUpdate}
+                                            currentMappingVersion={
+                                                currentMappingVersion
+                                            }
+                                        />
+                                    )}
                                 {currentQuestion && (
                                     <>
                                         <QuestionInfos
@@ -238,6 +250,7 @@ MappingDetails.propTypes = {
     fetchMappingVersionDetail: PropTypes.func.isRequired,
     setCurrentMappingVersion: PropTypes.func.isRequired,
     applyPartialUpdate: PropTypes.func.isRequired,
+    applyUpdate: PropTypes.func.isRequired,
     setCurrentQuestion: PropTypes.func.isRequired,
     currentQuestion: PropTypes.object,
     hesabuDescriptor: PropTypes.any,
@@ -261,6 +274,7 @@ const MapDispatchToProps = dispatch => ({
             setCurrentMappingVersion: setCurrentMappingVersionAction,
             setCurrentQuestion: setCurrentQuestionAction,
             applyPartialUpdate: applyPartialUpdateAction,
+            applyUpdate: applyUpdateAction,
         },
         dispatch,
     ),

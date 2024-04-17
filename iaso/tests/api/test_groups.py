@@ -39,10 +39,10 @@ class GroupsAPITestCase(APITestCase):
         cls.project_1.save()
 
     def test_groups_list_without_auth(self):
-        """GET /groups/ without auth: 403"""
+        """GET /groups/ without auth: 401"""
 
         response = self.client.get("/api/groups/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     def test_groups_list_wrong_permission(self):
         f"""GET /groups/ with authenticated user, without the {permission.ORG_UNITS} permission"""
@@ -82,10 +82,10 @@ class GroupsAPITestCase(APITestCase):
         self.assertEqual(response_data["count"], 2)
 
     def test_groups_retrieve_without_auth(self):
-        """GET /groups/<group_id> without auth should result in a 404"""
+        """GET /groups/<group_id> without auth should result in a 401"""
 
         response = self.client.get(f"/api/groups/{self.group_1.id}/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     def test_groups_retrieve_wrong_auth(self):
         """GET /groups/<group_id> with auth of unrelated user should result in a 404"""
@@ -111,10 +111,10 @@ class GroupsAPITestCase(APITestCase):
         self.assertValidGroupData(response.json())
 
     def test_groups_create_without_auth(self):
-        """POST /groups/ without auth: 403"""
+        """POST /groups/ without auth: 401"""
 
         response = self.client.post(f"/api/groups/", data={"name": "test group"}, format="json")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     def test_groups_create_no_source_version(self):
         """POST /groups/ (user has no source version, cannot work)"""
@@ -170,10 +170,10 @@ class GroupsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 405)
 
     def test_groups_destroy_no_auth(self):
-        """DELETE /groups/<group_id> without auth -> 403"""
+        """DELETE /groups/<group_id> without auth -> 401"""
 
         response = self.client.delete(f"/api/groups/{self.group_1.id}/", format="json")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     def test_groups_destroy_wrong_auth(self):
         """DELETE /groups/<group_id> with user that cannot access group -> 404"""

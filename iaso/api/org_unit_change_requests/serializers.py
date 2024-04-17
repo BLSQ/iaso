@@ -3,6 +3,8 @@ import uuid
 from rest_framework import serializers
 from django.contrib.auth.models import User
 
+from hat.audit.audit_logger import AuditLogger
+from hat.audit.models import ORG_UNIT_CHANGE_REQUEST_API, Modification
 from iaso.api.mobile.org_units import ReferenceInstancesSerializer
 from iaso.models import Instance, OrgUnit, OrgUnitChangeRequest, OrgUnitType
 from iaso.utils.serializer.id_or_uuid_field import IdOrUuidRelatedField
@@ -81,6 +83,7 @@ class OrgUnitForChangeRequestSerializer(serializers.ModelSerializer):
             "opening_date",
             "closed_date",
             "reference_instances",
+            "validation_status",
         ]
 
     def get_groups(self, obj: OrgUnitChangeRequest):
@@ -131,8 +134,11 @@ class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
     org_unit_id = serializers.IntegerField(source="org_unit.id")
     org_unit_uuid = serializers.UUIDField(source="org_unit.uuid")
     org_unit_name = serializers.CharField(source="org_unit.name")
-    org_unit_type_id = serializers.IntegerField(source="org_unit.org_unit_type.id")
-    org_unit_type_name = serializers.CharField(source="org_unit.org_unit_type.name")
+    org_unit_parent_id = serializers.IntegerField(source="org_unit.parent.id", allow_null=True)
+    org_unit_parent_name = serializers.CharField(source="org_unit.parent.name", allow_null=True)
+    org_unit_validation_status = serializers.CharField(source="org_unit.validation_status")
+    org_unit_type_id = serializers.IntegerField(source="org_unit.org_unit_type.id", allow_null=True)
+    org_unit_type_name = serializers.CharField(source="org_unit.org_unit_type.name", allow_null=True)
     groups = serializers.SerializerMethodField(method_name="get_current_org_unit_groups")
     created_by = UserNestedSerializer()
     updated_by = UserNestedSerializer()
@@ -147,6 +153,9 @@ class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
             "org_unit_id",
             "org_unit_uuid",
             "org_unit_name",
+            "org_unit_parent_id",
+            "org_unit_parent_name",
+            "org_unit_validation_status",
             "org_unit_type_id",
             "org_unit_type_name",
             "status",
@@ -240,13 +249,18 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
         source="new_parent",
         queryset=OrgUnit.objects.all(),
         required=False,
+        allow_null=True,
     )
     new_org_unit_type_id = serializers.PrimaryKeyRelatedField(
         source="new_org_unit_type",
         queryset=OrgUnitType.objects.all(),
         required=False,
+        allow_null=True,
     )
-    new_location = ThreeDimPointField(required=False)
+    new_location = ThreeDimPointField(
+        required=False,
+        allow_null=True,
+    )
     new_reference_instances = IdOrUuidRelatedField(
         many=True,
         queryset=Instance.objects.all(),
@@ -280,28 +294,27 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
 
     def validate_new_org_unit_type_id(self, new_org_unit_type):
         request = self.context.get("request")
-        if request and not new_org_unit_type.projects.filter(account=request.user.iaso_profile.account).exists():
+        if (
+            request
+            and new_org_unit_type
+            and not new_org_unit_type.projects.filter(account=request.user.iaso_profile.account).exists()
+        ):
             raise serializers.ValidationError("`new_org_unit_type_id` is not part of the user account.")
         return new_org_unit_type
 
     def validate(self, validated_data):
         # Fields names are different between API and model, e.g. `new_parent_id` VS `new_parent`.
         new_fields_api = [name for name in self.Meta.fields if name.startswith("new_")]
-        new_fields_model = OrgUnitChangeRequest.get_new_fields()
 
-        if not any([validated_data.get(field) for field in new_fields_model]):
-            raise serializers.ValidationError(
-                f"You must provide at least one of the following fields: {', '.join(new_fields_api)}."
-            )
-
-        new_opening_date = validated_data.get("new_opening_date")
         new_closed_date = validated_data.get("new_closed_date")
+        new_opening_date = validated_data.get("new_opening_date")
+        new_parent = validated_data.get("new_parent")
+        org_unit = validated_data.get("org_unit")
 
         if (new_opening_date and new_closed_date) and (new_closed_date <= new_opening_date):
             raise serializers.ValidationError("`new_closed_date` must be later than `new_opening_date`.")
-
-        org_unit = validated_data.get("org_unit")
-        new_parent = validated_data.get("new_parent")
+        elif (org_unit.closed_date and new_opening_date) and (new_opening_date >= org_unit.closed_date):
+            raise serializers.ValidationError("`new_opening_date` must be before the current org_unit closed date.")
 
         if org_unit and new_parent:
             if new_parent.version_id != org_unit.version_id:
@@ -309,6 +322,18 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
 
             if OrgUnit.objects.hierarchy(org_unit).filter(pk=new_parent.pk).exists():
                 raise serializers.ValidationError("`new_parent_id` is already a child of `org_unit_id`.")
+
+        # All `new_*` fields passed in the payload are those for which the user requests a change.
+        # If a value is None or "" (depending on what the field refers to in the model), it means
+        # the user is asking to erase the value of this field (e.g. reset a `closed_date`).
+        validated_data["requested_fields"] = [
+            field for field in validated_data if field in OrgUnitChangeRequest.get_new_fields()
+        ]
+
+        if not validated_data["requested_fields"]:
+            raise serializers.ValidationError(
+                f"You must provide at least one of the following fields: {', '.join(new_fields_api)}."
+            )
 
         return validated_data
 
@@ -348,3 +373,14 @@ class OrgUnitChangeRequestReviewSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("At least one `approved_fields` must be provided.")
 
         return validated_data
+
+
+class AuditOrgUnitChangeRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrgUnitChangeRequest
+        fields = "__all__"
+
+
+class OrgUnitChangeRequestAuditLogger(AuditLogger):
+    serializer = AuditOrgUnitChangeRequestSerializer
+    default_source = ORG_UNIT_CHANGE_REQUEST_API

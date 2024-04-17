@@ -543,6 +543,12 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.closingDate',
         defaultMessage: 'Closing date',
     },
+    searchParams: {
+        id: 'iaso.orgUnits.searchParams',
+        defaultMessage:
+            // eslint-disable-next-line max-len
+            'Use prefix “refs:” for external org unit ID search. Use prefix “ids:” for internal org unit ID search. You can also search multiple IDs at once, separated by a comma or a space. E.g. “ids: 123456, 654321” or “refs: O6uvpzGd5pu, ImspTQPwCqd”',
+    },
 });
 
 export default MESSAGES;

@@ -5,7 +5,7 @@ import { boundariesZoomLimit } from './constants';
 import { polioVaccines } from '../../../../constants/virus';
 import { appId } from '../../../../constants/app';
 import { getRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
-import { MappedCampaign, Query } from '../types';
+import { CalendarRound, MappedCampaign, Query } from '../types';
 import {
     DropdownOptions,
     Nullable,
@@ -26,10 +26,10 @@ export const getGeoJsonStyle = (
 
 type ShapeQueryArgs = {
     loadingCampaigns: boolean;
-    groupId: any;
-    campaign: any;
-    vaccine: any;
-    round?: any;
+    groupId: string;
+    campaign: MappedCampaign;
+    vaccine: string;
+    round?: CalendarRound;
 };
 
 export const getShapeQuery = ({
@@ -144,11 +144,11 @@ export const makeQueriesForCampaigns = (
     campaigns.forEach(campaign => {
         if (campaign.separateScopesPerRound) {
             campaign.rounds.forEach(round => {
-                round.scopes.forEach((scope: any) => {
+                round.scopes.forEach(scope => {
                     queries.push(
                         getShapeQuery({
                             loadingCampaigns,
-                            groupId: scope.group.id,
+                            groupId: `${scope.group.id}`,
                             campaign,
                             vaccine: scope.vaccine,
                             round,
@@ -161,7 +161,7 @@ export const makeQueriesForCampaigns = (
                 queries.push(
                     getShapeQuery({
                         loadingCampaigns,
-                        groupId: scope.group.id,
+                        groupId: `${scope.group.id}`,
                         campaign,
                         vaccine: scope.vaccine,
                     }) as never,

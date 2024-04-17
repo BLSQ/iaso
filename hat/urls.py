@@ -1,34 +1,68 @@
+import importlib
+
 import django_sql_dashboard  # type: ignore
 from django.apps import apps
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin, auth
 from django.urls import include, path, re_path
-from django.views.generic import RedirectView
+from django.views.generic import RedirectView, TemplateView
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
-import importlib
-from iaso.views import health, page
+from importlib import import_module
 
+from iaso.views import health, page
 
 admin.site.site_header = "Administration de Iaso"
 admin.site.site_title = "Iaso"
 admin.site.index_title = "Administration de Iaso"
 
-urlpatterns = [
+
+if settings.DISABLE_PASSWORD_LOGINS:
+    login_template = "iaso/disabled_password_login.html"
+    urlpatterns = [
+        path("admin/login/", TemplateView.as_view(template_name=login_template), name="admin-login"),
+        path("login/", TemplateView.as_view(template_name=login_template), name="login"),
+    ]
+else:
+    login_template = "iaso/login.html"
+    urlpatterns = [
+        path("admin/login/", auth.views.LoginView.as_view(template_name=login_template), name="admin-login"),
+        path("login/", auth.views.LoginView.as_view(template_name=login_template), name="login"),
+    ]
+
+if settings.ACTIVATE_SOCIAL_ACCOUNT:
+    # ------------------ adding urls of allauth for social account ------------------
+    # this snippet is lifted from allauth.account.urls.py. It's the only way I found to ONLY load the features we need
+    # It means that with the current allauth version, only the following urls will be added (for a WFP account):
+    # /accounts/wfp/login/	allauth.socialaccount.providers.oauth2.views.view	wfp_login
+    # /accounts/wfp/login/callback/	allauth.socialaccount.providers.oauth2.views.view	wfp_callback
+    # /accounts/wfp/token/	plugins.wfp_auth.views.token_view	wfp_token
+    from allauth.socialaccount import providers
+
+    # Provider urlpatterns, as separate attribute (for reusability).
+    provider_urlpatterns = []
+    for provider in providers.registry.get_list():
+        try:
+            prov_mod = import_module(provider.get_package() + ".urls")
+        except ImportError:
+            continue
+        prov_urlpatterns = getattr(prov_mod, "urlpatterns", None)
+        if prov_urlpatterns:
+            provider_urlpatterns += prov_urlpatterns
+    urlpatterns += [path("accounts/", include(provider_urlpatterns))]
+
+urlpatterns += [
     path("", RedirectView.as_view(pattern_name="dashboard:home_iaso", permanent=False), name="index"),
     path("_health/", health),
     path("_health", health),  # same without slash otherwise AWS complain about redirect
     path("health/", health),  # alias since current apache config hide _health/
-    path("accounts/", include("django.contrib.auth.urls")),
-    path("accounts/", include("allauth.urls")),
     path("admin/", admin.site.urls),
     path("api/", include("iaso.urls")),
     path("pages/<page_slug>/", page, name="pages"),
     path("i18n/", include("django.conf.urls.i18n")),
-    path("login/", auth.views.LoginView.as_view(template_name="iaso/login.html"), name="login"),
-    path("logout-iaso", auth.views.LogoutView.as_view(next_page="login"), name="logout-iaso"),
+    path("logout-iaso", auth.views.LogoutView.as_view(next_page="/login/"), name="logout-iaso"),
     path(
         "forgot-password/",
         auth.views.PasswordResetView.as_view(
@@ -59,11 +93,11 @@ urlpatterns = [
     path("sync/", include("hat.sync.urls")),
 ]
 
+
 for plugin_name in settings.PLUGINS:
     urls_module_name = "plugins." + plugin_name + ".urls"
     urls_module = importlib.util.find_spec(urls_module_name)  # checking if the urls module exists for this plugin
     if urls_module:
-        print("importing urls for plugin", plugin_name)
         urlpatterns = urlpatterns + [
             path(plugin_name + "/", include(urls_module_name)),
         ]

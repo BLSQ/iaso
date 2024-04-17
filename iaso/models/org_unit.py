@@ -10,7 +10,7 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
 from django.contrib.postgres.fields import ArrayField
-from django.contrib.postgres.indexes import GistIndex
+from django.contrib.postgres.indexes import GinIndex, GistIndex
 from django.db import models, transaction
 from django.db.models import QuerySet, Q
 from django.db.models.expressions import RawSQL
@@ -23,6 +23,7 @@ from hat.audit.models import log_modification, ORG_UNIT_CHANGE_REQUEST
 from iaso.models.data_source import SourceVersion
 from .project import Project
 from ..utils.expressions import ArraySubquery
+from ..utils.models.common import get_creator_name
 
 try:  # for typing
     from .base import Account, Instance
@@ -244,14 +245,6 @@ class OrgUnitManager(models.Manager):
         return q
 
 
-def get_creator_name(creator):
-    if creator is None:
-        return None
-    if creator.first_name or creator.last_name:
-        return f"{creator.username} ({creator.get_full_name()})"
-    return f"{creator.username}"
-
-
 class OrgUnit(TreeModel):
     VALIDATION_NEW = "NEW"
     VALIDATION_VALID = "VALID"
@@ -292,13 +285,17 @@ class OrgUnit(TreeModel):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+    extra_fields = models.JSONField(default=dict)
 
     opening_date = models.DateField(blank=True, null=True)  # Start date of activities of the organisation unit
     closed_date = models.DateField(blank=True, null=True)  # End date of activities of the organisation unit
     objects = OrgUnitManager.from_queryset(OrgUnitQuerySet)()  # type: ignore
 
     class Meta:
-        indexes = [GistIndex(fields=["path"], buffering=True)]
+        indexes = [
+            GistIndex(fields=["path"], buffering=True),
+            GinIndex(fields=["extra_fields"]),
+        ]
 
     def root(self):
         if self.path is not None and len(self.path) > 1:
@@ -436,15 +433,19 @@ class OrgUnit(TreeModel):
             "sub_source": self.sub_source,
             "sub_source_id": self.sub_source,
             "source_ref": self.source_ref,
-            "source_url": self.version.data_source.credentials.url
-            if self.version and self.version.data_source and self.version.data_source.credentials
-            else None,
+            "source_url": (
+                self.version.data_source.credentials.url
+                if self.version and self.version.data_source and self.version.data_source.credentials
+                else None
+            ),
             "parent_id": self.parent_id,
             "validation_status": self.validation_status,
             "parent_name": self.parent.name if self.parent else None,
-            "parent": self.parent.as_dict_with_parents(light=light_parents, light_parents=light_parents)
-            if self.parent
-            else None,
+            "parent": (
+                self.parent.as_dict_with_parents(light=light_parents, light_parents=light_parents)
+                if self.parent
+                else None
+            ),
             "org_unit_type_id": self.org_unit_type_id,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
@@ -551,36 +552,9 @@ class OrgUnit(TreeModel):
     def get_reference_instances_details_for_api(self) -> list:
         return [instance.as_full_model() for instance in self.reference_instances.all()]
 
-    def get_extra_fields(self):
-        from iaso.models import Account
-        from iaso.models.data_store import JsonDataStore
-
-        try:
-            datastore = self.jsondatastore_set.get(
-                account=Account.objects.filter(default_version=self.version).first(),
-                slug="extra_fields",
-            )
-            return datastore.content
-        except JsonDataStore.DoesNotExist:
-            return {}
-
-    def set_extra_fields(self, content):
-        from iaso.models import Account
-        from iaso.models.data_store import JsonDataStore
-
-        try:
-            datastore = self.jsondatastore_set.get(
-                account=Account.objects.filter(default_version=self.version).first(),
-                slug="extra_fields",
-            )
-            datastore.content = {**datastore.content, **content}
-            datastore.save()
-        except JsonDataStore.DoesNotExist:
-            self.jsondatastore_set.create(
-                account=Account.objects.filter(default_version=self.version).first(),
-                slug="extra_fields",
-                content=content,
-            )
+    def set_extra_fields(self, fields):
+        self.extra_fields = self.extra_fields | fields
+        self.save()
 
 
 class OrgUnitReferenceInstance(models.Model):
@@ -625,7 +599,7 @@ class OrgUnitChangeRequest(models.Model):
         REJECTED = "rejected", _("Rejected")
         APPROVED = "approved", _("Approved")
 
-    uuid = models.UUIDField(default=uuid.uuid4, editable=False)
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
     org_unit = models.ForeignKey("OrgUnit", on_delete=models.CASCADE)
     status = models.CharField(choices=Statuses.choices, default=Statuses.NEW, max_length=40)
 
@@ -657,11 +631,17 @@ class OrgUnitChangeRequest(models.Model):
     new_closed_date = models.DateField(blank=True, null=True)
     new_reference_instances = models.ManyToManyField("Instance", blank=True)
 
-    # Stores approved fields (only a subset can be approved).
+    requested_fields = ArrayField(
+        models.CharField(max_length=30, blank=True),
+        default=list,
+        blank=True,
+        help_text="List of fields names for which a change is requested.",
+    )
     approved_fields = ArrayField(
         models.CharField(max_length=30, blank=True),
         default=list,
         blank=True,
+        help_text="List of approved fields names (only a subset can be approved).",
     )
 
     # Old values are populated after a change has been approved.
@@ -676,6 +656,13 @@ class OrgUnitChangeRequest(models.Model):
     old_opening_date = models.DateField(blank=True, null=True)
     old_closed_date = models.DateField(blank=True, null=True)
     old_reference_instances = models.ManyToManyField("Instance", blank=True, related_name="+")
+
+    payment = models.ForeignKey(
+        "Payment", on_delete=models.SET_NULL, null=True, blank=True, related_name="change_requests"
+    )
+    potential_payment = models.ForeignKey(
+        "PotentialPayment", on_delete=models.SET_NULL, null=True, blank=True, related_name="change_requests"
+    )
 
     class Meta:
         verbose_name = _("Org unit change request")
@@ -709,21 +696,6 @@ class OrgUnitChangeRequest(models.Model):
         self.approved_fields = list(set(self.approved_fields))
         self.clean_approved_fields()
         self.clean_new_dates()
-
-    @property
-    def requested_fields(self) -> typing.List[str]:
-        """
-        Returns the list of fields names for which a change was requested.
-        `prefetch_related` of m2m are required when used in bulk.
-        """
-        requested = []
-        for name in self.get_new_fields():
-            field = getattr(self, name)
-            is_m2m = field.__class__.__name__ == "ManyRelatedManager"
-            is_requested = field.exists() if is_m2m else field
-            if is_requested:
-                requested.append(name)
-        return requested
 
     def clean_approved_fields(self) -> None:
         for name in self.approved_fields:

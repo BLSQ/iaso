@@ -1,11 +1,11 @@
 import React, { FunctionComponent } from 'react';
-import { Column, UrlParams } from 'bluesquare-components';
+import { Column, UrlParams, Setting } from 'bluesquare-components';
 import { TableWithDeepLink } from './TableWithDeepLink';
 
 type Props = {
     params: Partial<UrlParams>;
     paramsPrefix?: string;
-    data: { results?: any[]; count?: number; pages?: number };
+    data?: { results?: any[]; count?: number; pages?: number };
     isFetching: boolean;
     columns?: Column[];
     baseUrl: string;
@@ -17,6 +17,10 @@ type Props = {
     columnSelectorEnabled?: boolean;
     defaultSorted?: any;
     multiSelect?: boolean;
+    // eslint-disable-next-line no-unused-vars
+    rowProps?: (row: Setting<any>['row']) => Record<string, unknown>;
+    // eslint-disable-next-line no-unused-vars
+    cellProps?: (cell: any) => Record<string, unknown>;
 };
 
 /**
@@ -29,9 +33,11 @@ type Props = {
 export const SimpleTableWithDeepLink: FunctionComponent<Props> = ({
     params,
     paramsPrefix,
-    data,
+    data = { results: [], count: 0, pages: 0 },
     isFetching,
     baseUrl,
+    rowProps,
+    cellProps,
     extraProps = {},
     columns = [],
     elevation = 2,
@@ -63,6 +69,12 @@ export const SimpleTableWithDeepLink: FunctionComponent<Props> = ({
             columnSelectorEnabled={columnSelectorEnabled}
             columnSelectorButtonDisabled={columnSelectorButtonDisabled}
             columnSelectorButtonType={columnSelectorButtonType}
+            // typing is wrong in Table
+            // @ts-ignore
+            rowProps={rowProps}
+            // typing is wrong in Table
+            // @ts-ignore
+            cellProps={cellProps}
         />
     );
 };

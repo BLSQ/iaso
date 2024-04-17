@@ -35,9 +35,7 @@ def run_algo(algo_name, algo_params, task=None) -> List[PotentialDuplicate]:
     """
     if algo_name in DeduplicationAlgorithm.ALGORITHMS:
         algo = DeduplicationAlgorithm.ALGORITHMS[algo_name]()
-        print(f"Running algo {algo_name} with params {algo_params}")
         enriched_params = enrich_params(algo_params)
-        print(f"Enriched params: {enriched_params}")
         return algo.run(algo_params, task)
     else:
         raise ValueError(f"Unknown algorithm {algo_name}")

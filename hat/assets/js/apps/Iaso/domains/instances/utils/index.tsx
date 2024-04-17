@@ -43,9 +43,9 @@ import { baseUrls } from '../../../constants/urls';
 
 import { Selection } from '../../orgUnits/types/selection';
 
-import { userHasOneOfPermissions } from '../../users/utils';
+import { userHasOneOfPermissions, userHasPermission } from '../../users/utils';
 
-import { useCurrentUser } from '../../../utils/usersUtils';
+import { User, useCurrentUser } from '../../../utils/usersUtils';
 import * as Permission from '../../../utils/permissions';
 
 const NO_VALUE = '/';
@@ -74,18 +74,78 @@ type Field = {
     name: string;
 };
 type Locales = {
-    fr: string;
-    en: string;
+    fr: string[];
+    en: string[];
+    es: string[];
+    pt: string[];
 };
-const labelLocales: Locales = { fr: 'French', en: 'English' };
+
+/*
+The array of strings 'labelLocales' is used to handle different formats for multilingual labels.
+Some forms use the format 'label::French' or 'label::English', while others use lowercase locales like 'label::french' or 'label::english'.
+Additionally, to align with ODK standards (https://docs.getodk.org/guide-form-language/#guide-form-language-building),
+the format 'label::French (fr)', 'label::English (en)', 'label::Español (es)', and 'label::Português (pt)' is also supported.
+We also include the locale codes 'fr', 'en', 'es', and 'pt' to cover cases where labels might be defined using just the locale code.
+This array-based approach ensures compatibility with all these formats without disrupting the display for older multilingual forms.
+*/
+const labelLocales: Locales = {
+    fr: [
+        'French',
+        'french',
+        'Français (fr)',
+        'fr',
+        'français (fr)',
+        'fre',
+        'fra',
+        'français',
+        'francés',
+        'francês',
+        'frances',
+    ],
+    en: [
+        'English',
+        'english',
+        'English (en)',
+        'en',
+        'english (en)',
+        'eng',
+        'anglais',
+        'inglés',
+        'inglês',
+        'ingles',
+    ],
+    es: [
+        'Spanish',
+        'spanish',
+        'Español (es)',
+        'es',
+        'español (es)',
+        'spa',
+        'español',
+        'espagnol',
+        'espanhol',
+        'espanol',
+    ],
+    pt: [
+        'Portuguese',
+        'portuguese',
+        'Português (pt)',
+        'pt',
+        'português (pt)',
+        'por',
+        'português',
+        'portugais',
+        'portugués',
+        'portugues',
+    ],
+};
 
 const localizeLabel = (field: Field): string => {
     // Localize a label. Sometimes a label may be a string, that is somewhat json but not totally
     // sometime it's already a Mapping.
     const locale: string = getCookie('django_language') ?? 'en';
-    const localeKey = labelLocales[locale] ?? labelLocales.en;
+    let localeOptions: Record<string, string> = { [field.name]: field.name };
 
-    let localeOptions: Record<string, string> = { [localeKey]: field.name };
     if (typeof field === 'object') {
         if (typeof field.label === 'string') {
             // Replacing all single quotes used as apostrophe into html entities, and put it back after replacing other single quotes into double quotes
@@ -110,15 +170,15 @@ const localizeLabel = (field: Field): string => {
             typeof field.label === 'object' &&
             !Array.isArray(field.label)
         ) {
-            // console.log('JSON', field.label);
             localeOptions = field.label;
         }
     } else {
         localeOptions = field;
     }
-    return localeOptions[localeKey];
-};
 
+    const localeKey = labelLocales[locale].find(key => localeOptions[key]);
+    return localeKey ? localeOptions[localeKey] : field.name;
+};
 /**
  * Pretty Format value for display
  * Try to guess if it is a date or datetime to display in appropriate locale
@@ -350,70 +410,76 @@ export const getSelectionActions = (
     setForceRefresh: () => void,
     isUnDeleteAction = false,
     classes: Record<string, string>,
+    currentUser: User,
 ): SelectionAction[] => {
     const label = formatMessage(
         isUnDeleteAction ? MESSAGES.unDeleteInstance : MESSAGES.deleteInstance,
     );
-    return [
-        {
-            icon: newSelection => {
-                const isDisabled =
-                    newSelection.selectCount <= 1 || newSelection.selectAll;
-                if (isDisabled) {
-                    return <CompareArrowsIcon color="disabled" />;
-                }
-                const instancesIds = newSelection.selectedItems
-                    .map(s => s.id)
-                    .join(',');
-                return (
-                    <Link
-                        style={{ color: 'inherit', display: 'flex' }}
-                        to={`${baseUrls.compareInstances}/instanceIds/${instancesIds}`}
-                    >
-                        <CompareArrowsIcon />
-                    </Link>
-                );
-            },
-            label: formatMessage(MESSAGES.compare),
-            disabled: false,
+
+    const exportAction: SelectionAction = {
+        icon: newSelection => (
+            <ExportInstancesDialogComponent
+                // @ts-ignore need to refactor this component to TS
+                selection={newSelection}
+                getFilters={() => filters}
+                renderTrigger={openDialog => {
+                    const iconDisabled = newSelection.selectCount === 0;
+                    const iconProps = {
+                        className: iconDisabled ? classes.iconDisabled : null,
+                        onClick: !iconDisabled ? openDialog : () => null,
+                        disabled: iconDisabled,
+                    };
+                    // @ts-ignore
+                    return <CallMade {...iconProps} />;
+                }}
+            />
+        ),
+        label: formatMessage(MESSAGES.exportRequest),
+        disabled: false,
+    };
+
+    const deleteAction: SelectionAction = {
+        icon: (newSelection, resetSelection) => (
+            <DeleteDialog
+                selection={newSelection}
+                filters={filters}
+                setForceRefresh={setForceRefresh}
+                resetSelection={resetSelection}
+                isUnDeleteAction={isUnDeleteAction}
+            />
+        ),
+        label,
+        disabled: false,
+    };
+
+    const compareAction: SelectionAction = {
+        icon: newSelection => {
+            const isDisabled =
+                newSelection.selectCount <= 1 || newSelection.selectAll;
+            if (isDisabled) {
+                return <CompareArrowsIcon color="disabled" />;
+            }
+            const instancesIds = newSelection.selectedItems
+                .map(s => s.id)
+                .join(',');
+            return (
+                <Link
+                    style={{ color: 'inherit', display: 'flex' }}
+                    to={`${baseUrls.compareInstances}/instanceIds/${instancesIds}`}
+                >
+                    <CompareArrowsIcon />
+                </Link>
+            );
         },
-        {
-            icon: newSelection => (
-                <ExportInstancesDialogComponent
-                    // @ts-ignore need to refactor this component to TS
-                    selection={newSelection}
-                    getFilters={() => filters}
-                    renderTrigger={openDialog => {
-                        const iconDisabled = newSelection.selectCount === 0;
-                        const iconProps = {
-                            className: iconDisabled
-                                ? classes.iconDisabled
-                                : null,
-                            onClick: !iconDisabled ? openDialog : () => null,
-                            disabled: iconDisabled,
-                        };
-                        // @ts-ignore
-                        return <CallMade {...iconProps} />;
-                    }}
-                />
-            ),
-            label: formatMessage(MESSAGES.exportRequest),
-            disabled: false,
-        },
-        {
-            icon: (newSelection, resetSelection) => (
-                <DeleteDialog
-                    selection={newSelection}
-                    filters={filters}
-                    setForceRefresh={setForceRefresh}
-                    resetSelection={resetSelection}
-                    isUnDeleteAction={isUnDeleteAction}
-                />
-            ),
-            label,
-            disabled: false,
-        },
-    ];
+        label: formatMessage(MESSAGES.compare),
+        disabled: false,
+    };
+
+    const actions: SelectionAction[] = [compareAction];
+    if (userHasPermission(Permission.SUBMISSIONS_UPDATE, currentUser)) {
+        actions.push(exportAction, deleteAction);
+    }
+    return actions;
 };
 
 const asBackendStatus = status => {

@@ -200,7 +200,6 @@ class Exporter:
 
             self.iaso_logger.info(resp)
             report = resp.json()
-            pprint(report)
 
             if resp.status_code == 200 and report["status"] == "ERROR":
                 my_exc = dhis2.exceptions.RequestException(code=resp.status_code, url=resp.url, description=resp.text)

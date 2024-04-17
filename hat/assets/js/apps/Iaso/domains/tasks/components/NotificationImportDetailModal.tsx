@@ -4,8 +4,8 @@ import {
     LoadingSpinner,
     makeFullModal,
     useSafeIntl,
+    AlertModal,
 } from 'bluesquare-components';
-import { AlertModal } from '../../../components/AlertModal/AlertModal';
 
 import MESSAGES from '../messages';
 import { NotificationImportDetailButton } from './NotificationImportDetailButton';

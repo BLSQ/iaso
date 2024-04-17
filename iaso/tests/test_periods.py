@@ -127,3 +127,23 @@ class PeriodTests(TestCase):
         self.assertLess(current.year + 2, year)
         year, _ = Period.from_string(SemesterPeriod.HIGHER_BOUND).parts
         self.assertLess(current.year + 2, year)
+
+    def test_start_date(self):
+        test_data = [
+            ["20240413", "2024-04-13"],
+            ["20241231", "2024-12-31"],
+            ["2024Q1", "2024-01-01"],
+            ["2024Q2", "2024-04-01"],
+            ["2024Q3", "2024-07-01"],
+            ["2024Q4", "2024-10-01"],
+            ["2024S1", "2024-01-01"],
+            ["2024S2", "2024-07-01"],
+            ["202403", "2024-03-01"],
+            ["202407", "2024-07-01"],
+            ["2024", "2024-01-01"],
+        ]
+
+        for data in test_data:
+            dhis2_period = Period.from_string(data[0])
+            start_date = dhis2_period.start_date().strftime("%Y-%m-%d")
+            self.assertEqual(start_date, data[1], data[0] + " to formatted start date " + start_date + " vs " + data[1])

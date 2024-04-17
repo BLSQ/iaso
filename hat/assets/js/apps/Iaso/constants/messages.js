@@ -185,6 +185,18 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Review change proposals',
         id: 'iaso.label.reviewChangeProposals',
     },
+    payments: {
+        defaultMessage: 'Payments',
+        id: 'iaso.payments.title',
+    },
+    potentialPayments: {
+        defaultMessage: 'Potential payments',
+        id: 'iaso.payments.potentialPayments',
+    },
+    lots: {
+        defaultMessage: 'Payments lots',
+        id: 'iaso.payments.lots',
+    },
 });
 
 export default MESSAGES;

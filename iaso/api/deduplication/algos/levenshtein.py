@@ -100,7 +100,6 @@ class InverseAlgorithm(DeduplicationAlgorithm):
                     break
 
                 for record in records:
-                    print(record[0], record[1], record[2])
                     potential_duplicates.append(PotentialDuplicate(record[0], record[1], record[2]))
         finally:
             cursor.close()
@@ -112,7 +111,5 @@ class InverseAlgorithm(DeduplicationAlgorithm):
         )
 
         finalize_from_task(task, potential_duplicates)
-
-        print(f"found duplicates :{len(potential_duplicates)}")
 
         return potential_duplicates

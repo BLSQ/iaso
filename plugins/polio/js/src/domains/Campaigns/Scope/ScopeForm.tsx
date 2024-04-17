@@ -1,47 +1,46 @@
 /* eslint-disable camelcase */
-import React, { FunctionComponent, useState, useMemo } from 'react';
 import { Field, useFormikContext } from 'formik';
-import { useDebounce } from 'use-debounce';
 import cloneDeep from 'lodash/cloneDeep';
+import React, { FunctionComponent, useMemo, useState } from 'react';
+import { useDebounce } from 'use-debounce';
 // @ts-ignore
-import { useSafeIntl, useSkipEffectOnMount } from 'bluesquare-components';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { Tab, Grid } from '@mui/material';
+import { Box, Grid, Tab } from '@mui/material';
+import { useSafeIntl, useSkipEffectOnMount } from 'bluesquare-components';
 
 import { BooleanInput } from '../../../components/Inputs';
 
 import MESSAGES from '../../../constants/messages';
 import { useStyles } from '../../../styles/theme';
 
-import { useGetParentOrgUnit } from './hooks/useGetParentOrgUnit';
-import { useGetGeoJson } from './hooks/useGetGeoJson';
-import { findScopeWithOrgUnit, findRegion } from './Scopes/utils';
 import { ScopeField } from './ScopeField';
+import { findRegion, findScopeWithOrgUnit } from './Scopes/utils';
+import { useGetGeoJson } from './hooks/useGetGeoJson';
+import { useGetParentOrgUnit } from './hooks/useGetParentOrgUnit';
 
-import { FilteredDistricts, Round, Scope } from './Scopes/types';
-
-type Values = {
-    separate_scopes_per_round?: boolean;
-    rounds: Round[];
-    scopes: Scope[];
-    initial_org_unit: number;
-};
+import { CampaignFormValues } from '../../../constants/types';
+import { useIsPolioCampaign } from '../hooks/useIsPolioCampaignCheck';
+import { FilteredDistricts, Round } from './Scopes/types';
 
 export const scopeFormFields = ['separate_scopes_per_round', 'scopes'];
 
 export const ScopeForm: FunctionComponent = () => {
-    const { values } = useFormikContext<Values>();
+    const { values } = useFormikContext<CampaignFormValues>();
+    const isPolio = useIsPolioCampaign(values);
     const { formatMessage } = useSafeIntl();
     const { separate_scopes_per_round: scopePerRound, rounds } = values;
     const classes: Record<string, string> = useStyles();
     const [page, setPage] = useState<number>(0);
     const [searchScope, setSearchScope] = useState<boolean>(true);
-    const [currentTab, setCurrentTab] = useState<string>(
-        rounds[0] ? `${rounds[0].number}` : '1',
-    );
     const [search, setSearch] = useState('');
     const [debouncedSearch] = useDebounce(search, 500);
 
+    const [currentTab, setCurrentTab] = useState<string>(
+        rounds?.[0] ? `${rounds[0].number}` : '1',
+    );
+    const handleChangeTab = (event, newValue) => {
+        setCurrentTab(newValue);
+    };
     const sortedRounds: Round[] = useMemo(
         () =>
             rounds
@@ -62,10 +61,6 @@ export const ScopeForm: FunctionComponent = () => {
         'REGION',
     );
 
-    const handleChangeTab = (event, newValue) => {
-        setCurrentTab(newValue);
-    };
-
     const scopes = useMemo(() => {
         if (!scopePerRound) {
             return values.scopes;
@@ -84,14 +79,15 @@ export const ScopeForm: FunctionComponent = () => {
     const filteredDistricts: FilteredDistricts[] | undefined = useMemo(() => {
         if (districtShapes && regionShapes) {
             let filtered: FilteredDistricts[] = districtShapes.map(district => {
+                const scope = findScopeWithOrgUnit(scopes, district.id);
                 return {
                     ...cloneDeep(district),
                     region: findRegion(district, regionShapes),
-                    vaccineName: findScopeWithOrgUnit(scopes, district.id)
-                        ?.vaccine,
+                    scope,
+                    vaccineName: scope?.vaccine,
                 };
             }) as FilteredDistricts[];
-            if (scopes) {
+            if (scopes && isPolio) {
                 filtered.forEach((d, index) => {
                     scopes.forEach(scope => {
                         scope.group.org_units.forEach(ouId => {
@@ -119,14 +115,21 @@ export const ScopeForm: FunctionComponent = () => {
             return filtered;
         }
         return undefined;
-    }, [districtShapes, regionShapes, scopes, debouncedSearch, searchScope]);
+    }, [
+        districtShapes,
+        regionShapes,
+        scopes,
+        debouncedSearch,
+        searchScope,
+        isPolio,
+    ]);
 
     useSkipEffectOnMount(() => {
         setPage(0);
     }, [filteredDistricts]);
 
     return (
-        <>
+        <Box minWidth="70vw">
             <Grid container spacing={4} justifyContent="space-between">
                 <Grid xs={12} md={6} item>
                     <Field
@@ -173,6 +176,7 @@ export const ScopeForm: FunctionComponent = () => {
                         <TabPanel
                             value={`${round.number}`}
                             key={round.number}
+                            sx={{ p: 0 }}
                             className={classes.tabPanel}
                         >
                             <ScopeField
@@ -197,6 +201,6 @@ export const ScopeForm: FunctionComponent = () => {
                         </TabPanel>
                     ))}
             </TabContext>
-        </>
+        </Box>
     );
 };

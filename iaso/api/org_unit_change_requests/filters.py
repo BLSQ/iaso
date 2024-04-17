@@ -22,7 +22,7 @@ class MobileOrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterS
 
 class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
     org_unit_id = django_filters.NumberFilter(field_name="org_unit_id", label=_("Org unit ID"))
-    org_unit_type_id = django_filters.NumberFilter(method="filter_org_unit_type_id", label=_("Org unit type ID"))
+    org_unit_type_id = django_filters.CharFilter(method="filter_org_unit_type_id", label=_("Org unit type ID"))
     parent_id = django_filters.NumberFilter(method="filter_parent_id", label=_("Parent ID"))
     groups = django_filters.CharFilter(method="filter_groups", label=_("Groups IDs (comma-separated)"))
     project = django_filters.NumberFilter(field_name="org_unit__org_unit_type__projects", label=_("Project ID"))
@@ -62,8 +62,11 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
         except OrgUnit.DoesNotExist:
             raise ValidationError({"parent_id": [f"OrgUnit with id {value} does not exist."]})
 
-    def filter_org_unit_type_id(self, queryset: QuerySet, _, value: str) -> QuerySet:
-        return queryset.filter(Q(old_org_unit_type_id=value) | Q(new_org_unit_type_id=value))
+    def filter_org_unit_type_id(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
+        org_unit_type_ids = self.parse_comma_separated_numeric_values(value, name)
+        return queryset.filter(
+            Q(old_org_unit_type__id__in=org_unit_type_ids) | Q(new_org_unit_type__id__in=org_unit_type_ids)
+        )
 
     def filter_groups(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
         groups_ids = self.parse_comma_separated_numeric_values(value, name)

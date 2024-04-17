@@ -27,10 +27,10 @@ class PagesAPITestCase(APITestCase):
         cls.sayen = m.OrgUnitType.objects.create(name="Sayen", short_name="Sy")
 
     def test_pages_list_without_auth(self):
-        """GET /pages/ without auth should result in a 403"""
+        """GET /pages/ without auth should result in a 401"""
 
         response = self.client.get("/api/pages/")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 401)
 
     def test_pages_list_without_pages_permission(self):
         """GET /pages/ without iaso_pages permission should result in a 403"""

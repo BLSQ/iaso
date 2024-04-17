@@ -13,7 +13,11 @@ import {
     Select,
     useSafeIntl,
     IntlMessage,
+    LangOptions,
+    PhoneInput,
+    BaseCountryData,
 } from 'bluesquare-components';
+import { useSelector } from 'react-redux';
 import MESSAGES from '../../domains/forms/messages';
 import { DropdownOptions } from '../../types/utils';
 import {
@@ -24,15 +28,16 @@ import {
 type Option = DropdownOptions<string | number>;
 
 export type InputComponentType =
-    | 'text'
-    | 'email'
-    | 'password'
-    | 'number'
-    | 'radio'
-    | 'checkbox'
     | 'arrayInput'
+    | 'email'
+    | 'checkbox'
+    | 'password'
+    | 'phone'
+    | 'radio'
+    | 'number'
     | 'search'
-    | 'select';
+    | 'select'
+    | 'text';
 
 export type NumberInputOptions = {
     min?: number;
@@ -43,13 +48,23 @@ export type NumberInputOptions = {
     thousandsGroupStyle?: 'thousand' | 'lakh' | 'wan';
 };
 
+export type PhoneInputOptions = {
+    onlyCountries?: string[];
+    preferredCountries?: string[];
+    excludeCountries?: string[];
+    country?: string | number;
+    lang?: LangOptions;
+    countryCodeEditable?: boolean;
+};
+
 export type InputComponentProps = {
     type: InputComponentType;
     keyValue: string;
     value?: any;
     errors?: string[];
-    // eslint-disable-next-line no-unused-vars
-    onChange?: (key: string, value: any) => void;
+    onChange?: // eslint-disable-next-line no-unused-vars
+    (key: string, value: any, countryData?: BaseCountryData) => void;
+
     options?: any[];
     disabled?: boolean;
     multiline?: boolean;
@@ -92,6 +107,7 @@ export type InputComponentProps = {
         decimalSeparator?: '.' | ',';
         thousandSeparator?: '.' | ',';
     };
+    phoneInputOptions?: PhoneInputOptions;
     // eslint-disable-next-line no-unused-vars
     setFieldError?: (keyValue: string, message: string) => void;
     autoComplete?: string;
@@ -148,9 +164,12 @@ const InputComponent: React.FC<InputComponentProps> = ({
     numberInputOptions = {},
     setFieldError = () => null,
     autoComplete = 'off',
+    phoneInputOptions = {},
 }) => {
     const [displayPassword, setDisplayPassword] = useState(false);
     const { formatMessage } = useSafeIntl();
+    // @ts-ignore
+    const activeLocale = useSelector(state => state.app.locale);
 
     const localizedNumberOptions =
         useLocalizedNumberInputOptions(numberInputOptions);
@@ -290,6 +309,21 @@ const InputComponent: React.FC<InputComponentProps> = ({
                         options={options}
                         value={value}
                         required={required}
+                    />
+                );
+            case 'phone':
+                return (
+                    <PhoneInput
+                        className={className}
+                        label={labelText}
+                        onChange={(newValue, countryData) =>
+                            onChange(keyValue, newValue, countryData)
+                        }
+                        value={value}
+                        lang={activeLocale.code}
+                        required={required}
+                        disabled={disabled}
+                        {...phoneInputOptions}
                     />
                 );
             default:

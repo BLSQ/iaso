@@ -49,4 +49,4 @@ export const getColor = (i: number, reverse = false): string => {
 
 export const disabledColor = grey[400];
 export const unSelectedColor = grey[600];
-export const parentColor = red[300];
+export const parentColor = pink[300];

@@ -59,7 +59,7 @@ class GPKGExport(TestCase):
         )
 
         v2 = m.SourceVersion.objects.get(data_source__name=self.source_name, number=2)
-        self.assertEqual(v2.orgunit_set.all().count(), 2)
+        self.assertEqual(v2.orgunit_set.all().count(), 3)
 
         self.assertEqual(
             m.OrgUnitType.objects.filter(projects=new_project).count(), 3
@@ -84,7 +84,9 @@ class GPKGExport(TestCase):
         self.assertEqual(c1.geom, c1.simplified_geom)
         self.assertEqual(c1.geom, self.polygon)
         c2 = c1.orgunit_set.first()
-        self.assertEqual(c2, None)
+        self.assertEqual(c2.name, "ou3")
+        self.assertEqual(c2.org_unit_type.name, "Unknown")
+        self.assertQuerySetEqual(c2.groups.all(), [])
 
     def test_export_mixed(self):
         # new type with two orgunit of mixed type geography
@@ -106,7 +108,7 @@ class GPKGExport(TestCase):
             description="",
         )
         v2 = m.SourceVersion.objects.get(data_source__name=self.source_name, number=2)
-        self.assertEqual(v2.orgunit_set.all().count(), 4)
+        self.assertEqual(v2.orgunit_set.all().count(), 5)
 
         # The unknown type created because ou3 don't have one
         self.assertEqual(m.OrgUnitType.objects.filter(projects=new_project).count(), 4)

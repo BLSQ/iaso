@@ -2,7 +2,14 @@ import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { Box, Button, Grid, Typography, Tooltip } from '@mui/material';
+import {
+    Box,
+    Button,
+    Grid,
+    Typography,
+    Tooltip,
+    IconButton,
+} from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import Search from '@mui/icons-material/Search';
@@ -565,10 +572,9 @@ const InstancesFiltersComponent = ({
                             title={formatMessage(MESSAGES.filterParam)}
                             arrow
                         >
-                            <InfoIcon
-                                color="primary"
-                                style={{ cursor: 'pointer' }}
-                            />
+                            <IconButton>
+                                <InfoIcon />
+                            </IconButton>
                         </Tooltip>
                     </Box>
                 </Grid>

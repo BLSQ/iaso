@@ -1152,6 +1152,7 @@
     "iaso.storages.usb": "USB",
     "iaso.storages.writeProfile": "Sauvegarde du profile",
     "iaso.storages.writeRecord": "Sauvegarde enregistrement",
+    "iaso.submissions.filterParam": "Appliquer au moins un filtre pour pouvoir télécharger les données",
     "iaso.table.label.close": "Fermer",
     "iaso.table.label.resetSearch": "Vider la recherche",
     "iaso.table.label.search": "Rechercher",

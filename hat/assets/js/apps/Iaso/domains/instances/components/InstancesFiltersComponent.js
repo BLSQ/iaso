@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { Box, Button, Grid, Typography } from '@mui/material';
+import { Box, Button, Grid, Typography, Tooltip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import Search from '@mui/icons-material/Search';
@@ -13,8 +13,9 @@ import {
     useSkipEffectOnMount,
     useHumanReadableJsonLogic,
 } from 'bluesquare-components';
-import InputComponent from '../../../components/forms/InputComponent.tsx';
 
+import InfoIcon from '@mui/icons-material/Info';
+import InputComponent from '../../../components/forms/InputComponent.tsx';
 import { periodTypeOptions } from '../../periods/constants';
 import { isValidPeriod } from '../../periods/utils';
 import DatesRange from '../../../components/filters/DatesRange';
@@ -560,6 +561,15 @@ const InstancesFiltersComponent = ({
                             <Search className={classes.buttonIcon} />
                             {formatMessage(MESSAGES.search)}
                         </Button>
+                        <Tooltip
+                            title={formatMessage(MESSAGES.filterParam)}
+                            arrow
+                        >
+                            <InfoIcon
+                                color="primary"
+                                style={{ cursor: 'pointer' }}
+                            />
+                        </Tooltip>
                     </Box>
                 </Grid>
             </Grid>

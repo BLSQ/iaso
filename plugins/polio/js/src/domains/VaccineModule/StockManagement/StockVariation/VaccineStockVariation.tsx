@@ -13,7 +13,7 @@ import {
 } from '../../../../constants/routes';
 import { useTabs } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useTabs';
 import { Router } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
-import { useGoBack } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/useGoBack';
+import { useGoBack } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useGoBack';
 import { DESTRUCTION, FORM_A, INCIDENT } from '../constants';
 import { StockVariationParams, StockVariationTab } from '../types';
 import TopBar from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';

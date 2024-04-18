@@ -14,7 +14,7 @@ import { HomeOnline } from '../../home/HomeOnline';
 import { PluginsContext } from '../../../utils';
 import { Plugins, RouteCustom } from '../types';
 import { useCurrentUser, useHasNoAccount } from '../../../utils/usersUtils';
-import { useRedirections } from '../../../routing/useRedirections';
+import { useRedirections } from '../../../routing/hooks/useRedirections';
 import { useGetAndStoreCurrentUser } from '../../home/hooks/useGetAndStoreCurrentUser';
 import { SHOW_HOME_ONLINE, hasFeatureFlag } from '../../../utils/featureFlags';
 
@@ -60,7 +60,7 @@ const useHomeOnlineRoute = (userHomePage?: string): RouteCustom[] => {
     return [
         {
             baseUrl: baseUrls.home,
-            routerUrl: baseUrls.home,
+            routerUrl: `${baseUrls.home}/*`,
             permissions: [],
             allowAnonymous: false,
             element: <HomeComponent />,

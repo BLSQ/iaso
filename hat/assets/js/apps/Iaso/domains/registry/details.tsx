@@ -11,7 +11,7 @@ import { useParams } from 'react-router-dom';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 
-import { useGoBack } from '../../routing/useGoBack';
+import { useGoBack } from '../../routing/hooks/useGoBack';
 import { baseUrls } from '../../constants/urls';
 import { getOtChipColors } from '../../constants/chipColors';
 

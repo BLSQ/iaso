@@ -23,7 +23,7 @@ const ProtectedRoute = ({ routeConfig, allRoutes, component }) => {
     const dispatch = useDispatch();
 
     const isWrongAccount = Boolean(
-        params.accountId && params.accountId !== `${currentUser.account.id}`,
+        params?.accountId && params?.accountId !== `${currentUser.account.id}`,
     );
 
     let isAuthorized =
@@ -48,7 +48,6 @@ const ProtectedRoute = ({ routeConfig, allRoutes, component }) => {
     }, [
         allRoutes,
         currentUser,
-        dispatch,
         isAuthorized,
         isRootUrl,
         navigate,
@@ -56,7 +55,7 @@ const ProtectedRoute = ({ routeConfig, allRoutes, component }) => {
     ]);
 
     useEffect(() => {
-        if (!params.includes('accountId') && currentUser.account) {
+        if (!(params ?? '').includes('accountId') && currentUser.account) {
             navigate(`./accountId/${currentUser.account.id}/${params}`, {
                 replace: true,
             });

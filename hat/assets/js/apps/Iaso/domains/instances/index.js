@@ -45,6 +45,7 @@ import { useGetPossibleFields } from '../forms/hooks/useGetPossibleFields.ts';
 import { userHasPermission } from '../users/utils';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
 import * as Permission from '../../utils/permissions.ts';
+import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
 
 const baseUrl = baseUrls.instances;
 
@@ -58,7 +59,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const Instances = () => {
-    const params = useParams();
+    const params = useParamsObject(baseUrl);
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();

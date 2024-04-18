@@ -6,7 +6,7 @@ import { Router } from '../../../../../../../../hat/assets/js/apps/Iaso/types/ge
 import MESSAGES from '../../../../constants/messages';
 import TopBar from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { Nopv2AuthorisationsDetailsTable } from './Nopv2AuthorisationsDetailsTable';
-import { useGoBack } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/useGoBack';
+import { useGoBack } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useGoBack';
 import { NOPV2_AUTH } from '../../../../constants/routes';
 import { CreateAuthorisationModal } from './Modals/CreateEdit/CreateEditAuthorisationModal';
 import { userHasPermission } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';

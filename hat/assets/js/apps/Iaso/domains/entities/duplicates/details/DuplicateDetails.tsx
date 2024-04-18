@@ -26,7 +26,7 @@ import MESSAGES from '../messages';
 import { DuplicateInfos } from './DuplicateInfos';
 import { useDuplicateInfos } from './hooks/useDuplicateInfos';
 import { DuplicateData, DuplicateEntityForTable } from '../types';
-import { useGoBack } from '../../../../routing/useGoBack';
+import { useGoBack } from '../../../../routing/hooks/useGoBack';
 import { Router } from '../../../../types/general';
 import { DuplicateDetailsTableButtons } from './DuplicateDetailsTableButtons';
 import { SubmissionsForEntity } from './submissions/SubmissionsForEntity';

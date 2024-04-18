@@ -30,7 +30,7 @@ import {
 } from './hooks/requests/useGetStorageLogs';
 
 import { useGetDetailsColumns } from './config';
-import { useGoBack } from '../../routing/useGoBack';
+import { useGoBack } from '../../routing/hooks/useGoBack';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

@@ -1,14 +1,14 @@
 import { getSort } from 'bluesquare-components';
 import { Navigate, Route } from 'react-router-dom';
 import React, { ReactElement } from 'react';
-import { baseUrls } from '../constants/urls';
-import Page404 from '../components/errors/Page404';
+import { baseUrls } from '../../constants/urls';
+import Page404 from '../../components/errors/Page404';
 
-import { defaultSorted as storageDefaultSort } from '../domains/storages/config';
-import { defaultSorted as workflowDefaultSort } from '../domains/workflows/config/index';
-import { getOrgUnitsUrl } from '../domains/orgUnits/utils';
-import { useHomeOfflineComponent } from '../domains/app/hooks/useRoutes';
-import { useCurrentUser } from '../utils/usersUtils';
+import { defaultSorted as storageDefaultSort } from '../../domains/storages/config';
+import { defaultSorted as workflowDefaultSort } from '../../domains/workflows/config/index';
+import { getOrgUnitsUrl } from '../../domains/orgUnits/utils';
+import { useHomeOfflineComponent } from '../../domains/app/hooks/useRoutes';
+import { useCurrentUser } from '../../utils/usersUtils';
 
 const getPaginationParams = (order = 'id', pageSize = 20) =>
     `/order/${order}/pageSize/${pageSize}/page/1`;

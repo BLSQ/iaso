@@ -21,7 +21,7 @@ import {
     orgUnitFiltersWithPrefix,
 } from '../../constants/filters';
 import { redirectToReplace } from '../../routing/actions.ts';
-import { useGoBack } from '../../routing/useGoBack.tsx';
+import { useGoBack } from '../../routing/hooks/useGoBack';
 import { baseUrls } from '../../constants/urls';
 import {
     deleteForm,

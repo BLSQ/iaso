@@ -15,7 +15,7 @@ import {
 } from '../../../../constants/routes';
 import { useTabs } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useTabs';
 import { Router } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
-import { useGoBack } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/useGoBack';
+import { useGoBack } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useGoBack';
 import { UNUSABLE_VIALS, USABLE_VIALS } from '../constants';
 import { StockManagementDetailsParams, TabValue } from '../types';
 import TopBar from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';

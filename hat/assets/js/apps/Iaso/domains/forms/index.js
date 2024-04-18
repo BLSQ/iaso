@@ -7,34 +7,28 @@ import {
     commonStyles,
     AddButton as AddButtonComponent,
 } from 'bluesquare-components';
-import { useParams } from 'react-router-dom';
 import { redirectTo } from '../../routing/actions.ts';
-
 import formsTableColumns from './config';
-
 import { Filters } from './components/Filters.tsx';
 import TopBar from '../../components/nav/TopBarComponent';
 import SingleTable, {
     useSingleTableParams,
 } from '../../components/tables/SingleTable';
 import { deleteForm, restoreForm, fetchForms } from '../../utils/requests';
-
 import MESSAGES from './messages';
-
 import { baseUrls } from '../../constants/urls';
 import { userHasPermission } from '../users/utils';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
 import * as Permission from '../../utils/permissions.ts';
+import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
 const Forms = () => {
-    const params = useParams();
-    const { accountId } = params;
-    console.log('params', params, accountId);
     const baseUrl = baseUrls.forms;
+    const params = useParamsObject(baseUrl);
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();

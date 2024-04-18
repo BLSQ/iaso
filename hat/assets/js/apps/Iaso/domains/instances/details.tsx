@@ -29,7 +29,7 @@ import { useGetInstance } from './compare/hooks/useGetInstance';
 import { useSnackQuery } from '../../libs/apiHooks';
 import SpeedDialInstance from './components/SpeedDialInstance';
 import { ClassNames } from '../../types/utils';
-import { useGoBack } from '../../routing/useGoBack';
+import { useGoBack } from '../../routing/hooks/useGoBack';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

@@ -42,7 +42,7 @@ import { FormAttachments } from './components/FormAttachments';
 import { FormParams } from './types/forms';
 import { Router } from '../../types/general';
 import { NO_PERIOD } from '../periods/constants';
-import { useGoBack } from '../../routing/useGoBack';
+import { useGoBack } from '../../routing/hooks/useGoBack';
 
 interface FormDetailProps {
     router: Router;

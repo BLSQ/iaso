@@ -30,7 +30,7 @@ import {
     getTableParams,
     getTablePages,
 } from './utils';
-import { useGoBack } from '../../routing/useGoBack';
+import { useGoBack } from '../../routing/hooks/useGoBack';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

@@ -25,7 +25,7 @@ import { XlsxButton } from '../../components/Buttons/XslxButton';
 import { BeneficiaryBaseInfo } from './components/BeneficiaryBaseInfo';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
-import { useGoBack } from '../../routing/useGoBack';
+import { useGoBack } from '../../routing/hooks/useGoBack';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

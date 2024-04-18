@@ -19,7 +19,7 @@ import { linksFilters } from '../../constants/filters';
 
 import { useLinksFiltersData } from './hooks';
 import MESSAGES from './messages';
-import { useGoBack } from '../../routing/useGoBack.tsx';
+import { useGoBack } from '../../routing/hooks/useGoBack';
 
 const baseUrl = baseUrls.links;
 

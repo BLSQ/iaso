@@ -1,4 +1,4 @@
-# Introduction to IASO web platform
+# Introduction to IASO web platform #
 
 IASO web platform is intended to administrators for them to define the details of the data collection they would like to proceed with.
 Some key assets of IASO are:

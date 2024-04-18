@@ -27,14 +27,12 @@ nav: # nav configures the side bar menu
   - Users: 
     - IASO User Guide:
       - IASO Modules:
-        - ./pages/users/reference/user_guide/iaso_modules.md
+        - ./pages/users/reference/iaso_modules/iaso_modules.md
       - IASO Concepts:
-        - ./pages/users/reference/user_guide/iaso_vocabulary.md
+        - ./pages/users/reference/iaso_concepts/iaso_concepts.md
       - IASO Web & Mobile:
-        - IASO Web
-        - ./pages/users/reference/user_guide/user_guide.md
-        - IASO mobile
-        - ./pages/users/reference/user_guide/iaso_mobile.md
+        - ./pages/users/reference/iaso_web/user_guide.md
+        - ./pages/users/reference/iaso_web/iaso_mobile.md
       # - How to:
       #   - ./pages/users/how_to/convert_docx_to_md/convert_docx_to_md.md
       # - FAQ: ./pages/users/FAQ/faq.md

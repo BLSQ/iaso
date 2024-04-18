@@ -25,11 +25,16 @@ use_directory_urls: false # IMPORTANT: without this the paths to pictures will b
 nav: # nav configures the side bar menu
   - Home: index.md
   - Users: 
-    - References:
-      - User guides:
+    - IASO User Guide:
+      - IASO Modules:
+        - ./pages/users/reference/user_guide/iaso_modules.md
+      - IASO Concepts:
+        - ./pages/users/reference/user_guide/iaso_vocabulary.md
+      - IASO Web & Mobile:
+        - IASO Web
         - ./pages/users/reference/user_guide/user_guide.md
-      - Interoperability road map:
-        - ./pages/users/reference/interop/interop.md
+        - IASO mobile
+        - ./pages/users/reference/user_guide/iaso_mobile.md
       # - How to:
       #   - ./pages/users/how_to/convert_docx_to_md/convert_docx_to_md.md
       # - FAQ: ./pages/users/FAQ/faq.md

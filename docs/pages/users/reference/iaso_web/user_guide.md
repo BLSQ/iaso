@@ -1,5 +1,3 @@
-# IASO Web platform
-
 IASO web platform is intended to administrators for them to define the details of the data collection they would like to proceed with.
 Some key assets of IASO are:
 - the versioning of all data - every change is tracked and former versions can be retrieved as needed

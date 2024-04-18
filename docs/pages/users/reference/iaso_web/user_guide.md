@@ -1,7 +1,12 @@
+# Introduction to IASO web platform
+
 IASO web platform is intended to administrators for them to define the details of the data collection they would like to proceed with.
 Some key assets of IASO are:
+
 - the versioning of all data - every change is tracked and former versions can be retrieved as needed
+
 - geo-structured data collection - forms are linked to clear Geographical levels or "Organization Units"
+
 - the traceability of changes - allowing decentralization of the activities and responsibilities
 Administrators can therefore use the web platform to plan, monitor and then evaluate the data collection efforts.
 

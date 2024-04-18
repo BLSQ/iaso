@@ -598,6 +598,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.formSubmissionLinkLabel',
         defaultMessage: 'Link to form submission',
     },
+    searchSubmissionFormsParams: {
+        id: 'iaso.submissions.searchSubmissionFormsParams',
+        defaultMessage:
+            'Select one or several form(s) to enable advanced search options',
+    },
 });
 
 export default MESSAGES;

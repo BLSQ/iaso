@@ -16,19 +16,14 @@ from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from hat.api.export_utils import (Echo, generate_xlsx, iter_items,
-                                  timestamp_to_utc_datetime)
+from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
 from hat.audit import models as audit_models
 from hat.menupermissions import models as permission
-from iaso.api.common import (CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX,
-                             safe_api_import)
+from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, safe_api_import
 from iaso.api.org_unit_search import annotate_query, build_org_units_queryset
-from iaso.api.serializers import (OrgUnitSearchSerializer,
-                                  OrgUnitSmallSearchSerializer,
-                                  OrgUnitTreeSearchSerializer)
+from iaso.api.serializers import OrgUnitSearchSerializer, OrgUnitSmallSearchSerializer, OrgUnitTreeSearchSerializer
 from iaso.gpkg import org_units_to_gpkg_bytes
-from iaso.models import (DataSource, Form, Group, Instance, OrgUnit,
-                         OrgUnitType, Project, SourceVersion)
+from iaso.models import DataSource, Form, Group, Instance, OrgUnit, OrgUnitType, Project, SourceVersion
 from iaso.utils import geojson_queryset
 
 from ..utils.models.common import get_creator_name, get_org_unit_parents_ref

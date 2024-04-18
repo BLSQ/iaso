@@ -41,6 +41,8 @@ const styles: SxStyles = {
     },
 };
 
+const settingKeys: string[] = ['displayTypes', 'displayRejected', 'displayNew'];
+
 type Props = {
     settings: Settings;
     setSettings: Dispatch<SetStateAction<Settings>>;
@@ -82,25 +84,23 @@ export const SettingsPopper: FunctionComponent<Props> = ({
                     <CancelOutlinedIcon color="primary" fontSize="small" />
                 </IconButton>
                 <Paper sx={styles.paper} elevation={1}>
-                    {['displayTypes', 'displayRejected', 'displayNew'].map(
-                        setting => (
-                            <Box key={setting} py={0.5}>
-                                <FormControlLabel
-                                    control={
-                                        <Switch
-                                            size="small"
-                                            checked={settings[setting]}
-                                            onChange={() =>
-                                                handleChangeSettings(setting)
-                                            }
-                                            color="primary"
-                                        />
-                                    }
-                                    label={formatMessage(MESSAGES[setting])}
-                                />
-                            </Box>
-                        ),
-                    )}
+                    {settingKeys.map(settingKey => (
+                        <Box key={settingKey} py={0.5}>
+                            <FormControlLabel
+                                control={
+                                    <Switch
+                                        size="small"
+                                        checked={settings[settingKey]}
+                                        onChange={() =>
+                                            handleChangeSettings(settingKey)
+                                        }
+                                        color="primary"
+                                    />
+                                }
+                                label={formatMessage(MESSAGES[settingKey])}
+                            />
+                        </Box>
+                    ))}
                 </Paper>
             </Popper>
         </Box>

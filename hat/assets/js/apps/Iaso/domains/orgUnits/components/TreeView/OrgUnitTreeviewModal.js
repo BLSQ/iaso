@@ -12,13 +12,7 @@ import {
     oneOfType,
     string,
 } from 'prop-types';
-import React, {
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState,
-} from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import { OrgUnitLabel, getOrgUnitAncestors } from '../../utils';
 import { OrgUnitTreeviewPicker } from './OrgUnitTreeviewPicker';
@@ -57,8 +51,8 @@ const OrgUnitTreeviewModal = ({
     const classes = useStyles();
     const [settings, setSettings] = useState({
         displayTypes: true,
-        displayRejected: true,
-        displayNew: true,
+        displayRejected: false,
+        displayNew: false,
     });
 
     const [selectedOrgUnits, setSelectedOrgUnits] = useState(initialSelection);
@@ -120,21 +114,17 @@ const OrgUnitTreeviewModal = ({
         },
         [selectedOrgUnitsIdsCopy, selectedOrgUnitParentsCopy],
     );
-    const validationSatus = useMemo(() => {
-        let status = 'VALID';
-        if (settings.displayRejected) {
-            status += ',REJECTED';
-        }
-        if (settings.displayNew) {
-            status += ',NEW';
-        }
-        return status;
-    }, [settings.displayNew, settings.displayRejected]);
+
+    const { displayTypes, displayRejected, displayNew } = settings;
+
+    const validationStatus = `VALID${displayRejected ? ',REJECTED' : ''}${
+        displayNew ? ',NEW' : ''
+    }`;
 
     const getRootDataWithSource = useCallback(async () => {
-        if (version) return getRootData(version, 'version', validationSatus);
-        return getRootData(source, 'source', validationSatus);
-    }, [source, version, validationSatus]);
+        if (version) return getRootData(version, 'version', validationStatus);
+        return getRootData(source, 'source', validationStatus);
+    }, [source, version, validationStatus]);
 
     const searchOrgUnitsWithSource = useCallback(
         async (value, count) => {
@@ -143,10 +133,10 @@ const OrgUnitTreeviewModal = ({
                 count,
                 source,
                 version,
-                validationStatus: validationSatus,
+                validationStatus,
             });
         },
-        [source, version, validationSatus],
+        [source, version, validationStatus],
     );
 
     const resetSelection = useCallback(() => {
@@ -228,7 +218,7 @@ const OrgUnitTreeviewModal = ({
                     label={makeTreeviewLabel(
                         classes,
                         showStatusIconInTree,
-                        settings.displayTypes,
+                        displayTypes,
                     )}
                     toggleOnLabelClick={toggleOnLabelClick}
                     onSelect={onOrgUnitSelect}
@@ -248,8 +238,8 @@ const OrgUnitTreeviewModal = ({
                         if (allowedTypes.length === 0) return true;
                         return allowedTypes.includes(item.org_unit_type_id);
                     }}
-                    dependency={validationSatus}
-                    childrenDependency={validationSatus}
+                    dependency={validationStatus}
+                    childrenDependency={validationStatus}
                 />
             </Box>
         </ConfirmCancelDialogComponent>

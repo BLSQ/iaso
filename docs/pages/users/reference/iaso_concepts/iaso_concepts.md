@@ -8,15 +8,21 @@ In IASO, data collection forms are **versioned** meaning that every time a new v
 # <a id="OU"></a>Organization Units #
 IASO uses the notion of **Organization Units (Org unit or OU)** to manage geographic data. 
 The **organisation unit types (OUT)** represent levels in the hierarchy
+
 Example:
+
 - Country
+
 - Region
 - District
 - Area
 - Facility/Village/Point of Interest
 
-The organization units are classified in the pyramid according to a parent and one or several children (except the top parent(s) and the lowest child/children). Example below:
+The organization units are classified in the pyramid according to a parent and one or several children (except the top parent(s) and the lowest child/children). 
+Example below:
+
 - Democratic Republic of Congo (Org unit type "Country") is the parent org unit of
+
 - Kinshasa (Org unit type "City"), which is the parent org unit of 
 - Bluesquare office (Org unit type "Office")
 
@@ -28,7 +34,9 @@ In IASO, a Project is a mobile application instance, with its own App ID. Within
 Users can be linked to one or several Project(s). 
 
 Good to know:
+
 - One Project is linked one data source
+
 - One Project  can be linked to one or several users
 - Some users can be limited to one or several Project(s)/App ID(s) - you can define this in the User management part
 - Every Org Unit Type has to be linked to one or several Project(s)

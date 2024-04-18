@@ -312,7 +312,108 @@ class BudgetProcessSerializerTestCase(TestCase):
         Test BudgetProcess instance -> JSON.
         """
 
-        # Fetch some required annotated fields.
+        expected_rounds = [
+            OrderedDict({"id": self.round_1.pk, "number": 1}),
+            OrderedDict({"id": self.round_2.pk, "number": 2}),
+            OrderedDict({"id": self.round_3.pk, "number": 3}),
+        ]
+        expected_possible_states = [
+            OrderedDict({"key": None, "label": "No budget"}),
+            OrderedDict({"key": "budget_submitted", "label": "Budget submitted"}),
+            OrderedDict({"key": "accepted", "label": "Budget accepted"}),
+            OrderedDict({"key": "rejected", "label": "Budget rejected"}),
+        ]
+        expected_next_transitions = [
+            OrderedDict(
+                {
+                    "key": "submit_budget",
+                    "label": "Submit budget",
+                    "help_text": "",
+                    "allowed": True,
+                    "reason_not_allowed": None,
+                    "required_fields": [],
+                    "displayed_fields": ["comment"],
+                    "color": None,
+                    "emails_destination_team_ids": [],
+                }
+            ),
+        ]
+        expected_possible_transitions = [
+            OrderedDict(
+                {
+                    "key": "submit_budget",
+                    "label": "Submit budget",
+                    "help_text": "",
+                    "allowed": None,
+                    "reason_not_allowed": None,
+                    "required_fields": [],
+                    "displayed_fields": ["comment"],
+                    "color": None,
+                }
+            ),
+            OrderedDict(
+                {
+                    "key": "accept_budget",
+                    "label": "Accept budget",
+                    "help_text": "",
+                    "allowed": None,
+                    "reason_not_allowed": None,
+                    "required_fields": [],
+                    "displayed_fields": ["comment"],
+                    "color": "green",
+                }
+            ),
+            OrderedDict(
+                {
+                    "key": "reject_budget",
+                    "label": "Provide feedback",
+                    "help_text": "",
+                    "allowed": None,
+                    "reason_not_allowed": None,
+                    "required_fields": [],
+                    "displayed_fields": ["comment"],
+                    "color": "primary",
+                }
+            ),
+            OrderedDict(
+                {
+                    "key": "override",
+                    "label": "Override",
+                    "help_text": "",
+                    "allowed": None,
+                    "reason_not_allowed": None,
+                    "required_fields": [],
+                    "displayed_fields": [],
+                    "color": "red",
+                }
+            ),
+        ]
+        expected_timeline = {
+            "categories": [
+                OrderedDict(
+                    {
+                        "key": "category_1",
+                        "label": "Category 1",
+                        "color": "green",
+                        "items": [],
+                        "completed": True,
+                        "active": False,
+                    }
+                ),
+                OrderedDict(
+                    {
+                        "key": "category_2",
+                        "label": "Category 2",
+                        "color": "green",
+                        "items": [],
+                        "completed": True,
+                        "active": False,
+                    }
+                ),
+            ]
+        }
+
+        # Fetch required annotated fields.
         budget_process = (
             BudgetProcess.objects.filter(pk=self.budget_process.pk)
             .annotate(
@@ -333,11 +434,7 @@ class BudgetProcessSerializerTestCase(TestCase):
                 "campaign_id": str(self.campaign.pk),
                 "obr_name": "Test Campaign",
                 "country_name": "ANGOLA",
-                "rounds": [
-                    OrderedDict({"id": self.round_1.pk, "number": 1}),
-                    OrderedDict({"id": self.round_2.pk, "number": 2}),
-                    OrderedDict({"id": self.round_3.pk, "number": 3}),
-                ],
+                "rounds": expected_rounds,
                 "current_state": {"key": "-", "label": "-"},
                 "updated_at": "2024-02-07T11:00:00Z",
             },
@@ -354,108 +451,13 @@ class BudgetProcessSerializerTestCase(TestCase):
                 "campaign_id": str(self.campaign.pk),
                 "obr_name": "Test Campaign",
                 "country_name": "ANGOLA",
-                "rounds": [
-                    OrderedDict({"id": self.round_1.pk, "number": 1}),
-                    OrderedDict({"id": self.round_2.pk, "number": 2}),
-                    OrderedDict({"id": self.round_3.pk, "number": 3}),
-                ],
+                "rounds": expected_rounds,
                 "current_state": {"key": "-", "label": "-"},
                 "updated_at": "2024-02-07T11:00:00Z",
-                "possible_states": [
-                    OrderedDict({"key": None, "label": "No budget"}),
-                    OrderedDict({"key": "budget_submitted", "label": "Budget submitted"}),
-                    OrderedDict({"key": "accepted", "label": "Budget accepted"}),
-                    OrderedDict({"key": "rejected", "label": "Budget rejected"}),
-                ],
-                "next_transitions": [
-                    OrderedDict(
-                        {
-                            "key": "submit_budget",
-                            "label": "Submit budget",
-                            "help_text": "",
-                            "allowed": True,
-                            "reason_not_allowed": None,
-                            "required_fields": [],
-                            "displayed_fields": ["comment"],
-                            "color": None,
-                            "emails_destination_team_ids": [],
-                        }
-                    ),
-                ],
-                "possible_transitions": [
-                    OrderedDict(
-                        {
-                            "key": "submit_budget",
-                            "label": "Submit budget",
-                            "help_text": "",
-                            "allowed": None,
-                            "reason_not_allowed": None,
-                            "required_fields": [],
-                            "displayed_fields": ["comment"],
-                            "color": None,
-                        }
-                    ),
-                    OrderedDict(
-                        {
-                            "key": "accept_budget",
-                            "label": "Accept budget",
-                            "help_text": "",
-                            "allowed": None,
-                            "reason_not_allowed": None,
-                            "required_fields": [],
-                            "displayed_fields": ["comment"],
-                            "color": "green",
-                        }
-                    ),
-                    OrderedDict(
-                        {
-                            "key": "reject_budget",
-                            "label": "Provide feedback",
-                            "help_text": "",
-                            "allowed": None,
-                            "reason_not_allowed": None,
-                            "required_fields": [],
-                            "displayed_fields": ["comment"],
-                            "color": "primary",
-                        }
-                    ),
-                    OrderedDict(
-                        {
-                            "key": "override",
-                            "label": "Override",
-                            "help_text": "",
-                            "allowed": None,
-                            "reason_not_allowed": None,
-                            "required_fields": [],
-                            "displayed_fields": [],
-                            "color": "red",
-                        }
-                    ),
-                ],
-                "timeline": {
-                    "categories": [
-                        OrderedDict(
-                            {
-                                "key": "category_1",
-                                "label": "Category 1",
-                                "color": "green",
-                                "items": [],
-                                "completed": True,
-                                "active": False,
-                            }
-                        ),
-                        OrderedDict(
-                            {
-                                "key": "category_2",
-                                "label": "Category 2",
-                                "color": "green",
-                                "items": [],
-                                "completed": True,
-                                "active": False,
-                            }
-                        ),
-                    ]
-                },
+                "possible_states": expected_possible_states,
+                "next_transitions": expected_next_transitions,
+                "possible_transitions": expected_possible_transitions,
+                "timeline": expected_timeline,
                 "ra_completed_at_WFEDITABLE": "2024-02-07",
                 "who_sent_budget_at_WFEDITABLE": "2024-02-07",
                 "unicef_sent_budget_at_WFEDITABLE": "2024-02-07",

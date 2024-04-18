@@ -1152,6 +1152,7 @@
     "iaso.storages.usb": "USB",
     "iaso.storages.writeProfile": "Sauvegarde du profile",
     "iaso.storages.writeRecord": "Sauvegarde enregistrement",
+    "iaso.submissions.searchSubmissionFormsParams": "Sélectionnez un ou plusieurs formulaire(s) pour activer les options de recherche avancées",
     "iaso.table.label.close": "Fermer",
     "iaso.table.label.resetSearch": "Vider la recherche",
     "iaso.table.label.search": "Rechercher",

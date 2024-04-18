@@ -1152,6 +1152,7 @@
     "iaso.storages.usb": "USB",
     "iaso.storages.writeProfile": "Write profile",
     "iaso.storages.writeRecord": "Write record",
+    "iaso.submissions.searchSubmissionFormsParams": "Select one or several form(s) to enable advanced search options",
     "iaso.table.label.close": "Close",
     "iaso.table.label.resetSearch": "Empty search",
     "iaso.table.label.search": "Search",

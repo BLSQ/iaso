@@ -1553,3 +1553,8 @@ export const routeConfigs = [
     potentialPaymentsPath,
     lotsPaymentsPath,
 ];
+// TODO to avoid dependency cycle
+export const routeConfigsNoElement = routeConfigs.map(config => {
+    const { baseUrl, params } = config;
+    return { baseUrl, params };
+});

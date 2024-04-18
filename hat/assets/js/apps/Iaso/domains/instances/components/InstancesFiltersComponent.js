@@ -60,6 +60,7 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
+// TODO source full list of params elsewhere
 const filterDefault = params => ({
     ...params,
     mapResults: params.mapResults ? 3000 : params.mapResults,
@@ -82,6 +83,7 @@ const InstancesFiltersComponent = ({
     const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
+    console.log('params instance', params);
 
     const [hasLocationLimitError, setHasLocationLimitError] = useState(false);
     const [fetchingOrgUnitTypes, setFetchingOrgUnitTypes] = useState(false);

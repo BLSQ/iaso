@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { routeConfigsNoElement } from '../../constants/routeParams';
+import { routeConfigsNoElement } from '../../constants/routes';
 
 const emptyObject = {};
 const getParamsForBaseUrl = (baseUrl: string) => {
@@ -23,10 +23,12 @@ export const useParamsObject = (
         paramsForUrl.forEach(configParam => {
             const index = paramsList.findIndex(param => param === configParam);
             if (index > -1) {
-                result[paramsList[index]] =
+                result[configParam] =
                     index + 1 < paramsList.length
                         ? paramsList[index + 1]
                         : undefined;
+            } else {
+                result[configParam] = undefined;
             }
         });
         return result;

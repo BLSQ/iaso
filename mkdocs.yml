@@ -30,8 +30,9 @@ nav: # nav configures the side bar menu
         - ./pages/users/reference/iaso_modules/iaso_modules.md
       - IASO Concepts:
         - ./pages/users/reference/iaso_concepts/iaso_concepts.md
-      - IASO Web & Mobile:
+      - IASO Web:
         - ./pages/users/reference/iaso_web/user_guide.md
+      - IASO Mobile:
         - ./pages/users/reference/iaso_web/iaso_mobile.md
       # - How to:
       #   - ./pages/users/how_to/convert_docx_to_md/convert_docx_to_md.md

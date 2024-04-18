@@ -29,6 +29,9 @@ class BudgetProcessWriteSerializerTestCase(TestCase):
         # User.
         cls.account = m.Account.objects.create(name="Account")
         cls.user = cls.create_user_with_profile(username="username", account=cls.account)
+        # Request.
+        cls.request = APIRequestFactory().get("/")
+        cls.request.user = cls.user
         # Campaign.
         cls.campaign = Campaign.objects.create(
             obr_name="Test Campaign",

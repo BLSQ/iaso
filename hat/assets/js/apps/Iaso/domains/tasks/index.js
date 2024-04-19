@@ -11,12 +11,12 @@ import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { baseUrls } from 'Iaso/constants/urls';
 import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink.tsx';
 import { TaskDetails } from 'Iaso/domains/tasks/components/TaskDetails.tsx';
-import { useParams } from 'react-router-dom';
 import tasksTableColumns from './config.tsx';
 import MESSAGES from './messages';
 import { POLIO_NOTIFICATIONS } from '../../utils/permissions.ts';
 import { userHasPermission } from '../users/utils';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
+import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
 
 const baseUrl = baseUrls.tasks;
 
@@ -49,7 +49,7 @@ const defaultOrder = 'created_at';
 const Tasks = () => {
     const intl = useSafeIntl();
     const classes = useStyles();
-    const params = useParams();
+    const params = useParamsObject(baseUrl);
 
     const { mutateAsync: killTaskAction } = useSnackMutation(
         task => patchRequest(`/api/tasks/${task.id}/`, task),

@@ -18,7 +18,6 @@ import {
 } from 'bluesquare-components';
 
 import EditIcon from '@mui/icons-material/Settings';
-import { useParams } from 'react-router-dom';
 import TopBar from '../../components/nav/TopBarComponent';
 import Filters from './components/Filters';
 import { AddUsersDialog } from './components/UsersDialog';
@@ -46,6 +45,7 @@ import { UsersMultiActionsDialog } from './components/UsersMultiActionsDialog';
 import { useBulkSaveProfiles } from './hooks/useBulkSaveProfiles';
 import { userHasPermission } from './utils';
 import * as Permission from '../../utils/permissions';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
 
 const baseUrl = baseUrls.users;
 
@@ -59,7 +59,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export const Users: FunctionComponent = () => {
-    const params = useParams() as unknown as Params;
+    const params = useParamsObject(baseUrls.users) as unknown as Params;
     const classes: Record<string, string> = useStyles();
     const currentUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();

@@ -2,15 +2,15 @@ import React from 'react';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { getRequest } from 'Iaso/libs/Api.ts';
 import { useSnackQuery } from 'Iaso/libs/apiHooks.ts';
-import { useParams } from 'react-router-dom';
 import TopBar from '../../components/nav/TopBarComponent';
 import CompletenessListComponent from './components/CompletenessListComponent';
-
+import { baseUrls } from '../../constants/urls';
+import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
 import MESSAGES from './messages';
 import snackMessages from '../../components/snackBars/messages';
 
 const Completeness = () => {
-    const params = useParams();
+    const params = useParamsObject(baseUrls.completenesss);
     const { formatMessage } = useSafeIntl();
     const { data = [], isFetching } = useSnackQuery(
         ['completeness'],

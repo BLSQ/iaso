@@ -11,7 +11,6 @@ import { Box, Grid, useTheme, Tabs, Tab, Paper } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import Color from 'color';
 
-import { useParams } from 'react-router';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
 import { redirectTo } from '../../routing/actions';
@@ -35,6 +34,7 @@ import { CompletenessRouterParams } from './types';
 import { Map } from './components/Map';
 import { useGetFormsOptions } from './hooks/api/useGetFormsOptions';
 import { useRouter } from '../../routing/hooks/useRouter';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
 
 const baseUrl = baseUrls.completenessStats;
 const useStyles = makeStyles(theme => ({
@@ -55,7 +55,9 @@ const useStyles = makeStyles(theme => ({
 const snackbarKey = 'completenessMapWarning';
 export const CompletenessStats: FunctionComponent = () => {
     const classes: Record<string, string> = useStyles();
-    const params = useParams() as CompletenessRouterParams;
+    const params = useParamsObject(
+        baseUrls.completenessStats,
+    ) as CompletenessRouterParams;
     const router = useRouter();
 
     const [tab, setTab] = useState<'list' | 'map'>(params.tab ?? 'list');

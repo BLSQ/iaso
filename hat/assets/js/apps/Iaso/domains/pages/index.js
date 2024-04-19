@@ -7,7 +7,6 @@ import {
 import { makeStyles } from '@mui/styles';
 import { Box } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import { useParams } from 'react-router-dom';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { useGetPages } from './hooks/useGetPages';
@@ -22,6 +21,8 @@ import { DateTimeCellRfc } from '../../components/Cells/DateTimeCell.tsx';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink.tsx';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
 import * as Permission from '../../utils/permissions.ts';
+import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
+import { baseUrls } from '../../constants/urls';
 
 const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_PAGE = 1;
@@ -34,7 +35,7 @@ const useStyles = makeStyles(theme => ({
 const Pages = () => {
     const intl = useSafeIntl();
     const classes = useStyles();
-    const params = useParams();
+    const params = useParamsObject(baseUrls.pages);
     const [selectedPageSlug, setSelectedPageSlug] = useState();
     const [isCreateEditDialogOpen, setIsCreateEditDialogOpen] = useState(false);
     const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] =

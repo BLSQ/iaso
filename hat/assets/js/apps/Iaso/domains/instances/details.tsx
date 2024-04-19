@@ -1,6 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { FunctionComponent, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Alert from '@mui/lab/Alert';
 import { Box, Grid, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -30,6 +30,7 @@ import { useSnackQuery } from '../../libs/apiHooks';
 import SpeedDialInstance from './components/SpeedDialInstance';
 import { ClassNames } from '../../types/utils';
 import { useGoBack } from '../../routing/hooks/useGoBack';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -74,7 +75,7 @@ const InstanceDetails: FunctionComponent = () => {
     const classes: ClassNames = useStyles();
     const goBack = useGoBack();
 
-    const params = useParams() as {
+    const params = useParamsObject(baseUrls.instanceDetail) as {
         instanceId: string;
     };
     const { instanceId } = params;

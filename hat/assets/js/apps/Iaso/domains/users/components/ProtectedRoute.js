@@ -13,10 +13,12 @@ import { hasFeatureFlag } from '../../../utils/featureFlags';
 import { useCurrentUser } from '../../../utils/usersUtils.ts';
 import { switchLocale } from '../../app/actions';
 import { WrongAccountModal } from './WrongAccountModal.tsx';
+import { useParamsObject } from '../../../routing/hooks/useParamsObject.tsx';
 
 const ProtectedRoute = ({ routeConfig, allRoutes, component }) => {
     const { featureFlag, permissions, isRootUrl, baseUrl } = routeConfig;
-    const params = useParams()['*'];
+    const params = useParamsObject(baseUrl);
+    const paramsString = useParams()['*'];
     const navigate = useNavigate();
     const location = useLocation();
     const currentUser = useCurrentUser();
@@ -55,12 +57,12 @@ const ProtectedRoute = ({ routeConfig, allRoutes, component }) => {
     ]);
 
     useEffect(() => {
-        if (!(params ?? '').includes('accountId') && currentUser.account) {
-            navigate(`./accountId/${currentUser.account.id}/${params}`, {
+        if (!params?.accountId && currentUser.account) {
+            navigate(`./accountId/${currentUser.account.id}/${paramsString}`, {
                 replace: true,
             });
         }
-    }, [currentUser.account, baseUrl, navigate, params]);
+    }, [currentUser.account, baseUrl, navigate, params, paramsString]);
 
     useEffect(() => {
         // Use defined default language if it exists and if the user didn't set it manually

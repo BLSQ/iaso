@@ -1,11 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-// @ts-ignore
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
-
-import { useParams } from 'react-router-dom';
 import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { StorageParams } from './types/storages';
@@ -14,17 +11,20 @@ import DownloadButtonsComponent from '../../components/DownloadButtonsComponent'
 import { useGetStorages } from './hooks/requests/useGetStorages';
 import { useGetStorageApiParams } from './hooks/requests/requests';
 import { redirectToReplace } from '../../routing/actions';
-
 import MESSAGES from './messages';
 import { useGetColumns, defaultSorted, baseUrl } from './config';
 import { useSingleTableParams } from '../../components/tables/SingleTable';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { baseUrls } from '../../constants/urls';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
 export const Storages: FunctionComponent = () => {
-    const params = useParams() as unknown as StorageParams;
+    const params = useParamsObject(
+        baseUrls.storages,
+    ) as unknown as StorageParams;
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();

@@ -4,7 +4,6 @@ import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 
-import { useParams } from 'react-router-dom';
 import { useGoBack } from '../../routing/hooks/useGoBack';
 
 import TopBar from '../../components/nav/TopBarComponent';
@@ -22,6 +21,7 @@ import { baseUrls } from '../../constants/urls';
 
 import MESSAGES from './messages';
 import { useGetColumns, defaultSorted, baseUrl } from './config';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -29,7 +29,7 @@ const useStyles = makeStyles(theme => ({
 
 export const Workflows: FunctionComponent = () => {
     const dispatch = useDispatch();
-    const params = useParams() as WorkflowsParams;
+    const params = useParamsObject(baseUrls.workflows) as WorkflowsParams;
     const goBack = useGoBack();
     // const goBack = useGoBack(router, baseUrls.entityTypes);
     const classes: Record<string, string> = useStyles();
@@ -55,6 +55,7 @@ export const Workflows: FunctionComponent = () => {
                         }}
                     />
                 </Box>
+                {/* @ts-ignore */}
                 <TableWithDeepLink
                     baseUrl={baseUrl}
                     data={data?.workflow_versions ?? []}

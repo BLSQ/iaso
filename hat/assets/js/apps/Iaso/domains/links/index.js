@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
-import { useParams } from 'react-router-dom';
 import { saveLink, fetchLinks } from '../../utils/requests';
 
 import { linksTableColumns } from './config';
@@ -13,13 +12,12 @@ import LinksDetails from './components/LinksDetailsComponent';
 import SingleTable, {
     useSingleTableParams,
 } from '../../components/tables/SingleTable';
-
 import { baseUrls } from '../../constants/urls';
 import { linksFilters } from '../../constants/filters';
-
 import { useLinksFiltersData } from './hooks';
+import { useGoBack } from '../../routing/hooks/useGoBack.tsx';
+import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
 import MESSAGES from './messages';
-import { useGoBack } from '../../routing/hooks/useGoBack';
 
 const baseUrl = baseUrls.links;
 
@@ -31,7 +29,7 @@ const useStyles = makeStyles(() => ({
     },
 }));
 export const Links = () => {
-    const params = useParams();
+    const params = useParamsObject(baseUrl);
     const goBack = useGoBack();
     const intl = useSafeIntl();
     const classes = useStyles();

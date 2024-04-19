@@ -22,7 +22,6 @@ import { makeStyles } from '@mui/styles';
 import { useDispatch } from 'react-redux';
 import orderBy from 'lodash/orderBy';
 import uniqWith from 'lodash/uniqWith';
-import { useParams } from 'react-router-dom';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 
@@ -57,6 +56,7 @@ import { useGetChangesColumns } from './config/changes';
 import { useGetFollowUpsColumns, iasoFields } from './config/followUps';
 import { useGetPossibleFieldsByFormVersion } from '../forms/hooks/useGetPossibleFields';
 import { PossibleField } from '../forms/types/forms';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -76,7 +76,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export const Details: FunctionComponent = () => {
-    const params = useParams() as WorkflowParams;
+    const params = useParamsObject(baseUrls.workflowDetail) as WorkflowParams;
     const classes: Record<string, string> = useStyles();
     const [followUps, setFollowUps] = useState<FollowUps[]>([]);
 
@@ -295,6 +295,7 @@ export const Details: FunctionComponent = () => {
                             {`${formatThousand(changes?.length ?? 0)} `}
                             {formatMessage(MESSAGES.results)}
                         </Box>
+                        {/* @ts-ignore */}
                         <TableWithDeepLink
                             marginTop={false}
                             countOnTop={false}

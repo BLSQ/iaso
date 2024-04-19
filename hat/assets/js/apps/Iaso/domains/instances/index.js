@@ -12,7 +12,6 @@ import {
 } from 'bluesquare-components';
 
 import { useQueryClient } from 'react-query';
-import { useParams } from 'react-router-dom';
 import { createInstance } from './actions';
 import { redirectToReplace } from '../../routing/actions.ts';
 import {

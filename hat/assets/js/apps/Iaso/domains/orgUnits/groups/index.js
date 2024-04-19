@@ -9,23 +9,24 @@ import {
     AddButton as AddButtonComponent,
     useSafeIntl,
 } from 'bluesquare-components';
-import { useParams } from 'react-router-dom';
 import TopBar from '../../../components/nav/TopBarComponent';
 import Filters from './components/Filters';
 import GroupsDialog from './components/GroupsDialog';
 
-import tableColumns, { baseUrl } from './config';
+import tableColumns from './config';
 import MESSAGES from './messages';
 import { redirectTo } from '../../../routing/actions.ts';
 
 import { useGetGroups, useSaveGroups, useDeleteGroups } from './hooks/requests';
+import { baseUrls } from '../../../constants/urls';
+import { useParamsObject } from '../../../routing/hooks/useParamsObject.tsx';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
 const Groups = () => {
-    const params = useParams();
+    const params = useParamsObject(baseUrls.groups);
     const dispatch = useDispatch();
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();

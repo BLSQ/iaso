@@ -7,7 +7,6 @@ import {
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { orderBy } from 'lodash';
-import { useParams } from 'react-router-dom';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 
@@ -29,13 +28,16 @@ import { OrgunitTypeRegistry } from './types/orgunitTypes';
 import { RegistryDetailParams } from './types';
 
 import { OrgUnitBreadcrumbs } from '../orgUnits/components/breadcrumbs/OrgUnitBreadcrumbs';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
 export const Details: FunctionComponent = () => {
-    const params = useParams() as RegistryDetailParams;
+    const params = useParamsObject(
+        baseUrls.registryDetail,
+    ) as RegistryDetailParams;
     const { orgUnitId, accountId } = params;
 
     const classes: Record<string, string> = useStyles();

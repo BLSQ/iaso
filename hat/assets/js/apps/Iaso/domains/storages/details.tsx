@@ -9,7 +9,6 @@ import {
 import { Box, Divider, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useDispatch } from 'react-redux';
-import { useParams } from 'react-router-dom';
 import TopBar from '../../components/nav/TopBarComponent';
 import { Infos } from './components/Infos';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
@@ -31,13 +30,16 @@ import {
 
 import { useGetDetailsColumns } from './config';
 import { useGoBack } from '../../routing/hooks/useGoBack';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
 export const Details: FunctionComponent = () => {
-    const params = useParams() as StorageDetailsParams;
+    const params = useParamsObject(
+        baseUrls.storageDetail,
+    ) as StorageDetailsParams;
     const goBack = useGoBack();
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetStorageLogs(params);

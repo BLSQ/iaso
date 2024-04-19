@@ -10,7 +10,7 @@ import {
 import { Box, Button, Divider, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useDispatch, useSelector } from 'react-redux';
-import { Link, useParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { redirectTo, redirectToReplace } from '../../routing/actions';
@@ -26,6 +26,7 @@ import { BeneficiaryBaseInfo } from './components/BeneficiaryBaseInfo';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { useGoBack } from '../../routing/hooks/useGoBack';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -36,7 +37,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export const Details: FunctionComponent = () => {
-    const params = useParams();
+    const params = useParamsObject(baseUrls.entityDetails);
     const goBack = useGoBack();
     const classes: Record<string, string> = useStyles();
     const { entityId } = params;

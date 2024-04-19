@@ -19,7 +19,6 @@ import {
     useSafeIntl,
     CommonStyles,
 } from 'bluesquare-components';
-import { useParams } from 'react-router-dom';
 import { redirectToReplace } from '../../routing/actions';
 
 import TopBar from '../../components/nav/TopBarComponent';
@@ -43,6 +42,7 @@ import { FormParams } from './types/forms';
 import { Router } from '../../types/general';
 import { NO_PERIOD } from '../periods/constants';
 import { useGoBack } from '../../routing/hooks/useGoBack';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
 
 interface FormDetailProps {
     router: Router;
@@ -105,7 +105,7 @@ const formatFormData = value => {
 };
 
 const FormDetail: FunctionComponent<FormDetailProps> = () => {
-    const params = useParams() as FormParams;
+    const params = useParamsObject(baseUrls.formDetail) as FormParams;
     const goBack = useGoBack();
     const queryClient = useQueryClient();
     const { data: form, isLoading: isFormLoading } = useGetForm(params.formId);

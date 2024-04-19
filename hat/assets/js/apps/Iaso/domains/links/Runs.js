@@ -7,7 +7,6 @@ import { makeStyles } from '@mui/styles';
 import Autorenew from '@mui/icons-material/Autorenew';
 
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
-import { useParams } from 'react-router-dom';
 import {
     fetchAlgorithmRuns,
     deleteAlgorithmRun,
@@ -29,6 +28,7 @@ import { baseUrls } from '../../constants/urls';
 import { useRunsFiltersData } from './hooks';
 
 import MESSAGES from './messages';
+import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
 
 const baseUrl = baseUrls.algos;
 
@@ -37,7 +37,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const Runs = () => {
-    const params = useParams();
+    const params = useParamsObject(baseUrl);
     const classes = useStyles();
     const dispatch = useDispatch();
     const intl = useSafeIntl();

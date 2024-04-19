@@ -11,7 +11,6 @@ import omit from 'lodash/omit';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { useDispatch } from 'react-redux';
-import { useParams } from 'react-router-dom';
 import Logs from '../../components/logs/LogsComponent';
 import TopBar from '../../components/nav/TopBarComponent';
 import SingleTable from '../../components/tables/SingleTable';
@@ -52,6 +51,7 @@ import {
     getOrgUnitsTree,
 } from './utils';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
+import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
 
 const baseUrl = baseUrls.orgUnitDetails;
 const useStyles = makeStyles(theme => ({
@@ -110,7 +110,7 @@ const tabs = [
 
 const OrgUnitDetail = () => {
     const classes = useStyles();
-    const params = useParams();
+    const params = useParamsObject(baseUrl);
     const goBack = useGoBack();
     const dispatch = useDispatch();
     const { mutateAsync: saveOu, isLoading: savingOu } = useSaveOrgUnit();

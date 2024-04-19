@@ -4,7 +4,6 @@ import { makeStyles } from '@mui/styles';
 // @ts-ignore
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
-import { useParams } from 'react-router-dom';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { PlanningParams } from './types';
@@ -17,6 +16,7 @@ import { planningColumns } from './config';
 import { CreateEditPlanning } from './CreateEditPlanning/CreateEditPlanning';
 import { useDeletePlanning } from './hooks/requests/useDeletePlanning';
 import { useSingleTableParams } from '../../components/tables/SingleTable';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -24,7 +24,7 @@ const useStyles = makeStyles(theme => ({
 
 const baseUrl = baseUrls.planning;
 export const Planning: FunctionComponent = () => {
-    const params = useParams() as PlanningParams;
+    const params = useParamsObject(baseUrl) as PlanningParams;
     const apiParams = useSingleTableParams(params);
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();

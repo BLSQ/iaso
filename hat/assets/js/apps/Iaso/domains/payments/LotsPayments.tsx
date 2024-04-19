@@ -2,7 +2,6 @@ import React, { FunctionComponent } from 'react';
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { Box, useTheme } from '@mui/material';
 import Color from 'color';
-import { useParams } from 'react-router-dom';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { baseUrls } from '../../constants/urls';
@@ -12,6 +11,7 @@ import { usePaymentLotsColumns } from './hooks/config/usePaymentLotsColumns';
 import { PaymentLotsFilters } from './components/CreatePaymentLot/PaymentLotsFilters';
 import { SimpleTableWithDeepLink } from '../../components/tables/SimpleTableWithDeepLink';
 import { RefreshButton } from '../../components/Buttons/RefreshButton';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
 
 const getRowProps = row => {
     if (
@@ -34,7 +34,7 @@ const getRowProps = row => {
 
 const baseUrl = baseUrls.lotsPayments;
 export const LotsPayments: FunctionComponent = () => {
-    const params = useParams() as PotentialPaymentParams;
+    const params = useParamsObject(baseUrl) as PotentialPaymentParams;
     const theme = useTheme();
     // Replaced isFetching with isLoading to avoid flicker effect when refreshing data, eg when PATCHing a payment
     const {

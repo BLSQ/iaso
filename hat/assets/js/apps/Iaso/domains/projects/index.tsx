@@ -12,20 +12,21 @@ import {
     UrlParams,
 } from 'bluesquare-components';
 
-import { useParams } from 'react-router-dom';
 import TopBar from '../../components/nav/TopBarComponent';
 import { ProjectsDialog } from './components/ProjectsDialog';
 import { useGetProjectsPaginated, useSave } from './hooks/requests';
 import { columns, baseUrl } from './config';
 import MESSAGES from './messages';
 import { redirectTo } from '../../routing/actions';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { baseUrls } from '../../constants/urls';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
 export const Projects: FunctionComponent = () => {
-    const params = useParams() as UrlParams;
+    const params = useParamsObject(baseUrls.projects) as UrlParams;
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
@@ -63,6 +64,7 @@ export const Projects: FunctionComponent = () => {
                         saveProject={saveProject}
                     />
                 </Grid>
+                {/* @ts-ignore */}
                 <Table
                     data={data?.projects ?? []}
                     pages={data?.pages ?? 1}

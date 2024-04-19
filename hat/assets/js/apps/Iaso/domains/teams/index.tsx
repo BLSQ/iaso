@@ -1,25 +1,21 @@
 import React, { FunctionComponent } from 'react';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-// @ts-ignore
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
-
-import { useParams } from 'react-router-dom';
 import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { CreateEditTeam } from './components/CreateEditTeam';
-
 import { TeamParams } from './types/team';
 import { TeamFilters } from './components/TeamFilters';
 import { useGetTeams } from './hooks/requests/useGetTeams';
 import { useDeleteTeam } from './hooks/requests/useDeleteTeam';
 import { redirectTo } from '../../routing/actions';
-
 import { baseUrls } from '../../constants/urls';
-import MESSAGES from './messages';
 import { teamColumns } from './config';
 import { useSingleTableParams } from '../../components/tables/SingleTable';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import MESSAGES from './messages';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -27,7 +23,7 @@ const useStyles = makeStyles(theme => ({
 
 const baseUrl = baseUrls.teams;
 export const Teams: FunctionComponent = () => {
-    const params = useParams() as unknown as TeamParams;
+    const params = useParamsObject(baseUrl) as unknown as TeamParams;
     const dispatch = useDispatch();
     const apiParams = useSingleTableParams(params);
     const classes: Record<string, string> = useStyles();

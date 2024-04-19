@@ -17,7 +17,6 @@ import { useDispatch } from 'react-redux';
 import { useQueryClient } from 'react-query';
 
 // COMPONENTS
-import { useParams } from 'react-router-dom';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import { OrgUnitFiltersContainer } from './components/OrgUnitFiltersContainer';
 import TopBar from '../../components/nav/TopBarComponent';
@@ -50,6 +49,7 @@ import {
 } from './hooks/requests/useGetOrgUnits';
 import { useBulkSaveOrgUnits } from './hooks/requests/useBulkSaveOrgUnits';
 import { useGetApiParams } from './hooks/useGetApiParams';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
 // HOOKS
 
 const useStyles = makeStyles(theme => ({
@@ -88,7 +88,7 @@ const useStyles = makeStyles(theme => ({
 const baseUrl = baseUrls.orgUnits;
 export const OrgUnits: FunctionComponent = () => {
     // HOOKS
-    const params = useParams() as OrgUnitParams;
+    const params = useParamsObject(baseUrl) as OrgUnitParams;
     const queryClient = useQueryClient();
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();

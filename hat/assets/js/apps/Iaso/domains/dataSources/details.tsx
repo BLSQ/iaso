@@ -12,13 +12,9 @@ import {
 } from 'bluesquare-components';
 import { Box, Grid, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useDispatch, useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
-
 import { useGetDataSource } from './hooks/useGetDataSources';
-
 import { DataSource } from './types/dataSources';
 import { DataSourceInfo } from './components/DataSourceInfo';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
@@ -31,6 +27,8 @@ import {
     getTablePages,
 } from './utils';
 import { useGoBack } from '../../routing/hooks/useGoBack';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { baseUrls } from '../../constants/urls';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -42,7 +40,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export const Details: FunctionComponent = () => {
-    const params = useParams();
+    const params = useParamsObject(baseUrls.sourceDetails);
     const goBack = useGoBack();
 
     const classes: Record<string, string> = useStyles();
@@ -50,8 +48,8 @@ export const Details: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
 
     // @ts-ignore
-    const prevPathname = useSelector(state => state.routerCustom.prevPathname);
-    const dispatch = useDispatch();
+    // const prevPathname = useSelector(state => state.routerCustom.prevPathname);
+    // const dispatch = useDispatch();
 
     const {
         data: dataSource,

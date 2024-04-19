@@ -276,7 +276,7 @@ const InstancesFiltersComponent = ({
                     />
                     <InputWithInfos
                         infos={formatMessage(
-                            MESSAGES.searchSubmissionFormsParams,
+                            MESSAGES.searchSubmissionFormsParamsInfo,
                         )}
                     >
                         <InputComponent

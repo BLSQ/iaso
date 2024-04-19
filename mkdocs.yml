@@ -25,10 +25,8 @@ use_directory_urls: false # IMPORTANT: without this the paths to pictures will b
 nav: # nav configures the side bar menu
   - Home: index.md
   - Users: 
-      # - IASO Modules: ./pages/users/reference/iaso_modules/iaso_modules.md
-      # - IASO Concepts: ./pages/users/reference/iaso_concepts/iaso_concepts.md
-      # - IASO Web: ./pages/users/reference/iaso_web/user_guide.md
-      # - IASO Mobile: ./pages/users/reference/iaso_mobile/iaso_mobile.md
+     - IASO user guide:
+      - ./pages/users/reference/iaso_web/user_guide.md
   - Developers:
     - References:
       # - Data model glossary:

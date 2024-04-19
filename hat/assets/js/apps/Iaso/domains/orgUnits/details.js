@@ -21,7 +21,7 @@ import {
     orgUnitFiltersWithPrefix,
 } from '../../constants/filters';
 import { redirectToReplace } from '../../routing/actions.ts';
-import { useGoBack } from '../../routing/hooks/useGoBack';
+import { useGoBack } from '../../routing/hooks/useGoBack.tsx';
 import { baseUrls } from '../../constants/urls';
 import {
     deleteForm,
@@ -50,7 +50,6 @@ import {
     getAliasesArrayFromString,
     getLinksSources,
     getOrgUnitsTree,
-    getOrgUnitsUrl,
 } from './utils';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
 

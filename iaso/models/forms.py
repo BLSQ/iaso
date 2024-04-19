@@ -195,13 +195,16 @@ def _reformat_questions(questions):
     r = []
 
     for question in questions.values():
-        if question["type"] == "note":
+        print(question)
+        question_type = question.get("type")
+
+        if question_type == "note":
             continue
 
         n = {
             "name": question["name"],
             "label": strip_tags(question["label"]) if "label" in question else "",
-            "type": question["type"],
+            "type": question_type,
         }
         r.append(n)
     return r

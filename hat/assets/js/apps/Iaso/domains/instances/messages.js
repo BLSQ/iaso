@@ -601,7 +601,7 @@ const MESSAGES = defineMessages({
     searchSubmissionFormsParamsInfo: {
         id: 'iaso.submissions.searchSubmissionFormsParamsInfo',
         defaultMessage:
-            'Select one or several form(s) to enable search using form fields',
+            'Select one form to enable search using form submitted fields',
     },
 });
 

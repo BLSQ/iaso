@@ -600,7 +600,8 @@ const MESSAGES = defineMessages({
     },
     searchSubmissionFormsParamsInfo: {
         id: 'iaso.submissions.searchSubmissionFormsParamsInfo',
-        defaultMessage: 'Select form(s) to enable advanced search options',
+        defaultMessage:
+            'Select one or several form(s) to enable search using form fields',
     },
 });
 

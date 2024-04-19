@@ -1,7 +1,7 @@
 import csv
 import json
 from io import BytesIO
-from random import randint, random
+from random import randint, random, sample
 from uuid import uuid4
 
 import requests
@@ -567,14 +567,26 @@ class Command(BaseCommand):
                         # quality or quantity
                         for key in mapping_version.json["question_mappings"]:
                             test_data[key] = randint(1, 10)
-                    else:
-                        # CVS
-                        test_data["cs_304"] = randint(1, 100)
 
                     instance.json = test_data
                     instance.form = form
 
-                    if mapping_version.mapping.is_event_tracker():
+                    if mapping_version.mapping.is_simple_event():
+                        instance.json.clear()
+                        multi_select_choices = sample(
+                            ["pregnant", "checkup", "vaccination", "malnutrition"], randint(1, 4)
+                        )
+
+                        instance.json = {
+                            "imei": "testimeivalue" + str(randint(1, 100)),
+                            "_version": 1,
+                            "instanceID": "uuid:" + instance.uuid,
+                            "cs_304": str(randint(1, 100)),
+                            "visit_reason": " ".join(multi_select_choices),
+                        }
+
+                        self.generate_xml_file(instance, form.latest_version)
+                    elif mapping_version.mapping.is_event_tracker():
                         instance.json.clear()
 
                         instance.json = {

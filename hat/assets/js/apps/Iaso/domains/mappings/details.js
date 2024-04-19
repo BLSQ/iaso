@@ -89,17 +89,20 @@ class MappingDetails extends Component {
         } = this.props;
 
         const onQuestionSelected = node => {
+            if (node && node.type === "select all that apply") {
+                return
+            }
             setCurrentQuestion(node);
             redirectToReplace(baseUrls.mappingDetail, {
                 mappingVersionId: currentMappingVersion.id,
-                questionName: node.name,
+                questionName: Descriptor.getKey(node),
             });
         };
 
         const onConfirmedQuestionMapping = questionMapping => {
             applyPartialUpdate(
                 currentMappingVersion.id,
-                currentQuestion.name,
+                Descriptor.getKey(currentQuestion),
                 questionMapping,
             );
         };

@@ -40,7 +40,7 @@ export const Details: FunctionComponent = () => {
     const params = useParamsObject(
         baseUrls.storageDetail,
     ) as StorageDetailsParams;
-    const goBack = useGoBack();
+    const goBack = useGoBack(baseUrls.storages);
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetStorageLogs(params);
     const { url: apiUrl } = useGetApiParams(params);

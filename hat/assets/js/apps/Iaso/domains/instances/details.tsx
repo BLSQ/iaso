@@ -73,7 +73,7 @@ const InstanceDetails: FunctionComponent = () => {
     const [showDial, setShowDial] = useState(true);
     const { formatMessage } = useSafeIntl();
     const classes: ClassNames = useStyles();
-    const goBack = useGoBack();
+    const goBack = useGoBack(baseUrls.instances);
 
     const params = useParamsObject(baseUrls.instanceDetail) as {
         instanceId: string;

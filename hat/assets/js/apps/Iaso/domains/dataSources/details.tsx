@@ -41,7 +41,7 @@ const useStyles = makeStyles(theme => ({
 
 export const Details: FunctionComponent = () => {
     const params = useParamsObject(baseUrls.sourceDetails);
-    const goBack = useGoBack();
+    const goBack = useGoBack(baseUrls.sources);
 
     const classes: Record<string, string> = useStyles();
     const { sourceId } = params;

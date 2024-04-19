@@ -15,7 +15,6 @@ import SingleTable, {
 import { baseUrls } from '../../constants/urls';
 import { linksFilters } from '../../constants/filters';
 import { useLinksFiltersData } from './hooks';
-import { useGoBack } from '../../routing/hooks/useGoBack.tsx';
 import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
 import MESSAGES from './messages';
 
@@ -30,11 +29,10 @@ const useStyles = makeStyles(() => ({
 }));
 export const Links = () => {
     const params = useParamsObject(baseUrl);
-    const goBack = useGoBack();
+    // const goBack = useGoBack();
     const intl = useSafeIntl();
     const classes = useStyles();
     const dispatch = useDispatch();
-    const prevPathname = useSelector(state => state.routerCustom.prevPathname);
     const orgUnitTypes = useSelector(state => state.orgUnits.orgUnitTypes);
     const sources = useSelector(state => state.orgUnits.sources);
     const profiles = useSelector(state => state.users.list);
@@ -75,8 +73,8 @@ export const Links = () => {
         setExpanded({});
     };
 
-    const displayBackButton =
-        prevPathname && prevPathname.includes('/links/runs/');
+    // const displayBackButton =
+    //     prevPathname && prevPathname.includes('/links/runs/');
     let currentOrigin;
     if (params.origin && sources) {
         currentOrigin = sources.find(s => s.id === parseInt(params.origin, 10));
@@ -93,8 +91,8 @@ export const Links = () => {
         <>
             <TopBar
                 title={intl.formatMessage(MESSAGES.title)}
-                displayBackButton={displayBackButton}
-                goBack={() => goBack()}
+                // displayBackButton={displayBackButton}
+                // goBack={() => goBack()}
             />
             <Box className={classes.table}>
                 <SingleTable

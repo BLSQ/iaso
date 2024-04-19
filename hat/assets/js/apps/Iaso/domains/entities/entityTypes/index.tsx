@@ -28,6 +28,8 @@ import { PaginationParams } from '../../../types/general';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { userHasPermission } from '../../users/utils';
 import * as Permission from '../../../utils/permissions';
+import { useParamsObject } from '../../../routing/hooks/useParamsObject';
+import { baseUrls } from '../../../constants/urls';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -41,7 +43,8 @@ type Props = {
     params: Params;
 };
 
-export const EntityTypes: FunctionComponent<Props> = ({ params }) => {
+export const EntityTypes: FunctionComponent<Props> = () => {
+    const params = useParamsObject(baseUrls.entityTypes) as Params;
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
@@ -85,6 +88,7 @@ export const EntityTypes: FunctionComponent<Props> = ({ params }) => {
                         />
                     )}
                 </Grid>
+                {/* @ts-ignore */}
                 <Table
                     data={data?.types ?? []}
                     pages={data?.pages ?? 1}

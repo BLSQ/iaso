@@ -42,7 +42,7 @@ export const Details: FunctionComponent = () => {
 
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const goBack = useGoBack();
+    const goBack = useGoBack(baseUrls.registry);
     // const goBack = useGoBack(router, baseUrls.registry, { accountId });
 
     const { data: orgUnit, isFetching } = useGetOrgUnit(orgUnitId);

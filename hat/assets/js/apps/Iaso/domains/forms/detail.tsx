@@ -106,7 +106,7 @@ const formatFormData = value => {
 
 const FormDetail: FunctionComponent<FormDetailProps> = () => {
     const params = useParamsObject(baseUrls.formDetail) as FormParams;
-    const goBack = useGoBack();
+    const goBack = useGoBack(baseUrls.forms);
     const queryClient = useQueryClient();
     const { data: form, isLoading: isFormLoading } = useGetForm(params.formId);
     const [isLoading, setIsLoading] = useState(false);

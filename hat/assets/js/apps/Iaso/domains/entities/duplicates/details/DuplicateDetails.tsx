@@ -30,6 +30,7 @@ import { useGoBack } from '../../../../routing/hooks/useGoBack';
 import { Router } from '../../../../types/general';
 import { DuplicateDetailsTableButtons } from './DuplicateDetailsTableButtons';
 import { SubmissionsForEntity } from './submissions/SubmissionsForEntity';
+import { useParamsObject } from '../../../../routing/hooks/useParamsObject';
 
 const updateCellColors =
     (selected: 'entity1' | 'entity2') =>
@@ -101,10 +102,11 @@ const useStyles = makeStyles(theme => {
     };
 });
 
-export const DuplicateDetails: FunctionComponent<Props> = ({
-    router,
-    params,
-}) => {
+export const DuplicateDetails: FunctionComponent<Props> = () => {
+    const params = useParamsObject(baseUrls.entityDuplicateDetails) as {
+        accountId?: string;
+        entities: string;
+    };
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     const [tableState, setTableState] = useArrayState([]);
@@ -112,7 +114,7 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
     const [query, setQuery] = useObjectState();
     const [onlyShowUnmatched, setOnlyShowUnmatched] = useState<boolean>(false);
     const classes: Record<string, string> = useStyles();
-    const goBack = useGoBack(router, baseUrls.entityDuplicates);
+    const goBack = useGoBack(baseUrls.entityDuplicates);
     const { data: duplicatesInfos } = useGetDuplicates({
         params: { entities: params.entities },
     }) as { data: { results: DuplicateData[] } };
@@ -323,7 +325,9 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
                             countOnTop={false}
                             elevation={0}
                             data={tableState}
+                            // @ts-ignore
                             rowProps={getRowProps}
+                            // @ts-ignore
                             cellProps={getCellProps}
                             params={params}
                             extraProps={{

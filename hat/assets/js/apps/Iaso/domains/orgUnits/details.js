@@ -111,7 +111,7 @@ const tabs = [
 const OrgUnitDetail = () => {
     const classes = useStyles();
     const params = useParamsObject(baseUrl);
-    const goBack = useGoBack();
+    const goBack = useGoBack(baseUrls.orgUnits);
     const dispatch = useDispatch();
     const { mutateAsync: saveOu, isLoading: savingOu } = useSaveOrgUnit();
     const queryClient = useQueryClient();

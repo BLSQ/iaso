@@ -38,7 +38,7 @@ const useStyles = makeStyles(theme => ({
 
 export const Details: FunctionComponent = () => {
     const params = useParamsObject(baseUrls.entityDetails);
-    const goBack = useGoBack();
+    const goBack = useGoBack(baseUrls.entities);
     const classes: Record<string, string> = useStyles();
     const { entityId } = params;
     const { formatMessage } = useSafeIntl();
@@ -53,12 +53,12 @@ export const Details: FunctionComponent = () => {
     }: {
         data?: Beneficiary;
         isLoading: boolean;
-    } = useGetBeneficiary(entityId);
+    } = useGetBeneficiary(entityId as string);
     const columns = useBeneficiariesDetailsColumns(beneficiary?.id ?? null, []);
 
     const { data, isLoading: isLoadingSubmissions } = useGetSubmissions(
         params,
-        entityId,
+        parseInt(entityId as string, 10),
     );
 
     const duplicates = useMemo(() => {
@@ -139,6 +139,7 @@ export const Details: FunctionComponent = () => {
                         className={classes.fullWidth}
                         title={formatMessage(MESSAGES.submissions)}
                     >
+                        {/* @ts-ignore */}
                         <TableWithDeepLink
                             marginTop={false}
                             countOnTop={false}

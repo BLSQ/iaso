@@ -6,7 +6,7 @@ const emptyObject = {};
 
 export const useParamsObject = (
     baseUrl: string,
-): Record<string, string | Record<string, unknown>> => {
+): Record<string, string | Record<string, unknown> | undefined> => {
     const params = useParams()['*'];
     return useMemo(() => {
         if (!params) return emptyObject;

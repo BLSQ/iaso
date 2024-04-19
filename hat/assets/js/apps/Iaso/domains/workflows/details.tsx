@@ -87,8 +87,9 @@ export const Details: FunctionComponent = () => {
         useState<boolean>(false);
     const { entityTypeId, versionId } = params;
     const { formatMessage } = useSafeIntl();
-    const goBack = useGoBack();
-    // const goBack = useGoBack(router, baseUrls.workflows, { entityTypeId });
+    const goBack = useGoBack(
+        `${baseUrls.workflows}/entityTypeId/${entityTypeId}`,
+    );
 
     const dispatch = useDispatch();
 

@@ -642,6 +642,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.downloadTemplate',
         defaultMessage: 'Template for a XLS form',
     },
+    cr_mode_none: {
+        id: 'iaso.form.cr_mode_none',
+        defaultMessage: 'No change request',
+    },
+    cr_mode_if_reference_form: {
+        id: 'iaso.form.cr_mode_if_reference_form',
+        defaultMessage: 'Create change request if form is reference form',
+    },
+    changeRequestMode: {
+        id: 'iaso.form.label.changeRequestMode',
+        defaultMessage: 'Change request mode',
+    },
 });
 
 export default MESSAGES;

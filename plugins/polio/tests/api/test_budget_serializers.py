@@ -427,7 +427,7 @@ class BudgetProcessSerializerTestCase(TestCase):
             .prefetch_related("rounds")[0]
         )
 
-        # Only `default_fields`.
+        # Ask for default fields (this is done via `DynamicFieldsModelSerializer`).
         serializer = BudgetProcessSerializer(instance=budget_process, context={"request": self.request})
         self.assertEqual(
             serializer.data,
@@ -443,7 +443,20 @@ class BudgetProcessSerializerTestCase(TestCase):
             },
         )
 
-        # All fields.
+        # Ask for a set of fields (this is done via `DynamicFieldsModelSerializer`).
+        self.request.query_params["fields"] = "id,who_sent_budget_at_WFEDITABLE,payment_mode,district_count"
+        serializer = BudgetProcessSerializer(instance=budget_process, context={"request": self.request})
+        self.assertEqual(
+            serializer.data,
+            {
+                "id": 95,
+                "who_sent_budget_at_WFEDITABLE": "2024-02-07",
+                "payment_mode": "DIRECT",
+                "district_count": 3,
+            },
+        )
+
+        # Ask for all fields (this is done via `DynamicFieldsModelSerializer`).
         self.request.query_params["fields"] = ":all"
         serializer = BudgetProcessSerializer(instance=budget_process, context={"request": self.request})
         self.assertEqual(

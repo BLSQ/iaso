@@ -449,7 +449,7 @@ class BudgetProcessSerializerTestCase(TestCase):
         self.assertEqual(
             serializer.data,
             {
-                "id": 95,
+                "id": self.budget_process.pk,
                 "who_sent_budget_at_WFEDITABLE": "2024-02-07",
                 "payment_mode": "DIRECT",
                 "district_count": 3,

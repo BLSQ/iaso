@@ -51,6 +51,7 @@ import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPla
 import { getUsersDropDown } from '../hooks/requests/getUsersDropDown.tsx';
 import { AsyncSelect } from '../../../components/forms/AsyncSelect.tsx';
 import { useGetProfilesDropdown } from '../hooks/useGetProfilesDropdown.tsx';
+import { InputWithInfos } from '../../../components/InputWithInfos.tsx';
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
     value: status,
@@ -281,20 +282,26 @@ const InstancesFiltersComponent = ({
                         onErrorChange={setTextSearchError}
                         blockForbiddenChars
                     />
-                    <InputComponent
-                        keyValue="formIds"
-                        clearable
-                        multi
-                        onChange={handleFormChange}
-                        value={formState.formIds.value || null}
-                        type="select"
-                        options={formsList.map(t => ({
-                            label: t.name,
-                            value: t.id,
-                        }))}
-                        label={MESSAGES.forms}
-                        loading={fetchingForms}
-                    />
+                    <InputWithInfos
+                        infos={formatMessage(
+                            MESSAGES.searchSubmissionFormsParamsInfo,
+                        )}
+                    >
+                        <InputComponent
+                            keyValue="formIds"
+                            clearable
+                            multi
+                            onChange={handleFormChange}
+                            value={formState.formIds.value || null}
+                            type="select"
+                            options={formsList.map(t => ({
+                                label: t.name,
+                                value: t.id,
+                            }))}
+                            label={MESSAGES.forms}
+                            loading={fetchingForms}
+                        />
+                    </InputWithInfos>
                     {formState.formIds.value?.split(',').length === 1 && (
                         <QueryBuilderInput
                             label={MESSAGES.queryBuilder}

@@ -603,6 +603,11 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Apply at least one filter in order to be able to download data',
     },
+    searchSubmissionFormsParamsInfo: {
+        id: 'iaso.submissions.searchSubmissionFormsParamsInfo',
+        defaultMessage:
+            'Select one form to enable search using form submitted fields',
+    },
 });
 
 export default MESSAGES;

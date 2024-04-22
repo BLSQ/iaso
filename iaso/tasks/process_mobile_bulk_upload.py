@@ -10,7 +10,9 @@ and it's executed in a database transaction to avoid data loss.
 
 import json
 import logging
+import os
 import zipfile
+
 
 from beanstalk_worker import task_decorator
 from django.contrib.auth.models import User
@@ -61,43 +63,64 @@ def process_mobile_bulk_upload(user_id, project_id, zip_file_object_name, task=N
                 else:
                     logger.info(f"The file {ORG_UNITS_JSON} does not exist in the zip file.")
 
-                with zip_ref.open(INSTANCES_JSON) as file:
-                    import_instances(json.load(file), user, project.app_id)
+                if INSTANCES_JSON in zip_ref.namelist():
+                    with zip_ref.open(INSTANCES_JSON) as file:
+                        import_instances(json.load(file), user, project.app_id)
+                else:
+                    logger.info(f"The file {INSTANCES_JSON} does not exist in the zip file.")
 
                 logger.info("Processing forms and files")
-                for item in zipfile.Path(zip_ref).iterdir():
-                    if item.is_dir():
-                        directory = item
-                        i = None
-                        for instance_file in directory.iterdir():
-                            if instance_file.name.endswith(".xml"):
-                                with instance_file.open("rb") as f:
-                                    logger.info(f"Processing {instance_file}")
-                                    i = Instance.objects.get(uuid=directory.name)
-                                    i.created_by = user
-                                    i.last_modified_by = user
-                                    i.file = File(f)
-                                    i.save()
-                                    i.get_and_save_json_of_xml()
-                                    try:
-                                        i.convert_location_from_field()
-                                        i.convert_device()
-                                        i.convert_correlation()
-                                    except ValueError as error:
-                                        logger.exception(error)
+                instance_files = []
+                for directory in zipfile.Path(zip_ref).iterdir():
+                    if not directory.is_dir():
+                        continue
 
-                        for instance_file in directory.iterdir():
-                            if not instance_file.name.endswith(".xml"):
-                                with instance_file.open("rb") as f:
-                                    logger.info(f"Processing {instance_file}")
-                                    fi = InstanceFile()
-                                    fi.file = File(f)
-                                    fi.instance_id = i.id
-                                    fi.name = instance_file.name
-                                    fi.save()
+                    instance = Instance.objects.get(uuid=directory.name)
+                    logger.info(f"Processing instance {instance.uuid}")
+                    with zip_ref.open(os.path.join(directory.name, instance.file_name), "r") as f:
+                        instance.file = File(f)
+                        instance.created_by = user
+                        instance.last_modified_by = user
+                        instance.save()
+                        instance.get_and_save_json_of_xml()
+                        try:
+                            instance.convert_location_from_field()
+                            instance.convert_device()
+                            instance.convert_correlation()
+                        except ValueError as error:
+                            logger.exception(error)
+
+                    for instance_file in directory.iterdir():
+                        if instance_file.name != instance.file_name:
+                            with instance_file.open("rb") as f:
+                                logger.info(f"\tProcessing attachment {instance_file.name}")
+                                fi = InstanceFile()
+                                fi.file = File(f)
+                                fi.instance_id = instance.id
+                                fi.name = instance_file.name
+                                fi.save()
+                                instance_files.append(fi)
+
+                # Trypelim-specific:
+                for instance_file in instance_files:
+                    if "serie_id" in instance_file.instance.json:
+                        for i in Instance.objects.filter(
+                            json__serie_id=instance_file.instance.json["serie_id"]
+                        ).exclude(
+                            id=instance_file.instance_id,
+                        ):
+                            instance_file.pk = None  # trick to duplicate
+                            instance_file.instance = i
+                            instance_file.save()
+
     except Exception as e:
-        logger.error("Exception: " + str(e))
+        logger.error("Exception! Rolling back import: " + str(e))
         api_import.has_problem = True
         api_import.exception = format_exc()
         api_import.save()
         raise e
+
+    the_task.report_success_with_result(
+        message=f"Mobile bulk import successful setup zipfile was created for user {user.username} and project {project.name}.",
+        result_data="TODO",
+    )

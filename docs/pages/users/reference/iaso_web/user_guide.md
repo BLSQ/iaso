@@ -41,8 +41,8 @@ Access the Forms entry in the menu, then click on Form list.
 Click on the button "Create". Once on the Form creation page, follow the below steps:
 
 - Enter a name for your form in the field "Name". 
-- Assign one or several [Project(s)](Projects) to your form. 
-- Assign an [Org unit type](OU) to your form. 
+- Assign one or several [Project(s)](https://iaso.readthedocs.io/en/doc_test/pages/users/reference/iaso_concepts/iaso_concepts.html#projects) to your form. 
+- Assign an [Org unit type](https://iaso.readthedocs.io/en/doc_test/pages/users/reference/iaso_concepts/iaso_concepts.html#organization-units) to your form. 
 - Assign a Period to your form. This is intended for regular data collection (e.g. daily/weekly/yearly). If you don't need this option, just select "No Period".
 
 ![alt text](attachments/createformv2.png)
@@ -193,7 +193,7 @@ second one shows the new submissions per month per form.
 
 <img src="./attachments/image74.png" style="width:6.5in;height:1.75in" />
 
-### <a id="DHIS2"></a>DHIS2 mappings ###
+### DHIS2 mappings
 
 A great advantage of IASO is that you can export data to DHIS2. When
 doing so, prior mapping is necessary. After the form is uploaded, map
@@ -305,7 +305,7 @@ You can adjust the thresholds to apply to the legend on completeness in the rele
 
 ## Georegistry - Organization Units Management
 
-See the [Organization Unit](OU) definition for more insight on what Organization Units are.
+See the [Organization Unit](https://iaso.readthedocs.io/en/doc_test/pages/users/reference/iaso_concepts/iaso_concepts.html#organization-units) definition for more insight on what Organization Units are.
 In a nutshell, you can manage your geographical data associated to your account using the Organization Unit part of IASO.
 
 ### Organization Units List
@@ -514,7 +514,7 @@ If the changes proposed are not satisfactory, supervisors can reject all changes
 
 For each change proposal sent, IASO mobile application users will be able to see if they have been approved or rejected, and if rejected, consult the comment. 
 
-## <a id="Planning"></a>Planning ##
+## Planning
 
 The Planning feature in IASO allows you to plan field work per team and user in defined zones/organization units and according to a specific timeline. Once data collection activities would have been assigned via the interface, field agents using the mobile application would only be able to see the activities assigned to them, and navigate towards the relevant GPS point(s). 
 

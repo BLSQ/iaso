@@ -132,6 +132,8 @@ type PeriodType =
     | 'YEAR'
     | null;
 
+type ChangeRequestModeType = 'CR_MODE_NONE' | 'CR_MODE_IF_REFERENCE_FORM';
+
 export type FormDataType = {
     id: FieldError<number | null>;
     name: FieldError<string>;
@@ -149,4 +151,5 @@ export type FormDataType = {
     possible_fields: FieldError<PossibleField[]>;
     label_keys: FieldError<string[]>;
     legend_threshold?: FieldError<ScaleThreshold>;
+    change_request_mode: FieldError<ChangeRequestModeType>;
 };

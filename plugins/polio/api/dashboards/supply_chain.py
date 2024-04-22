@@ -13,30 +13,33 @@ from plugins.polio.models import (
 )
 
 
-def get_or_create_vaccine_stock(ser_obj, obj):
-    accnt = ser_obj.context["request"].user.iaso_profile.account
-    vaccine_stock, _ = VaccineStock.objects.get_or_create(
-        country=obj.campaign.country, vaccine=obj.vaccine_type, account=accnt
-    )
-
-    return vaccine_stock
-
-
 class VaccineRequestFormDashboardSerializer(serializers.ModelSerializer):
     obr_name = serializers.CharField(source="campaign.obr_name")
-    country = serializers.SerializerMethodField()
-    stock_in_hand = serializers.SerializerMethodField()
-    form_a_reception_date = serializers.SerializerMethodField()
-    destruction_report_reception_date = serializers.SerializerMethodField()
+    country = serializers.IntegerField(source="campaign.country.pk")
+    stock_in_hand = serializers.IntegerField(read_only=True)
+    form_a_reception_date = serializers.DateField(read_only=True)
+    destruction_report_reception_date = serializers.DateField(read_only=True)
 
     class Meta:
         model = VaccineRequestForm
         fields = "__all__"
 
-    def get_country(self, obj):
-        return obj.campaign.country.pk
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
 
-    def get_stock_in_hand(self, obj):
+        accnt = self.context["request"].user.iaso_profile.account
+
+        vaccine_stock, _ = VaccineStock.objects.get_or_create(
+            country=instance.campaign.country, vaccine=instance.vaccine_type, account=accnt
+        )
+
+        representation["stock_in_hand"] = self.get_stock_in_hand(instance, vaccine_stock)
+        representation["form_a_reception_date"] = self.get_form_a_reception_date(vaccine_stock)
+        representation["destruction_report_reception_date"] = self.get_destruction_report_reception_date(vaccine_stock)
+
+        return representation
+
+    def get_stock_in_hand(self, obj, vaccine_stock):
         # Create a cache dictionary in the context if it doesn't exist
         if "stock_in_hand_cache" not in self.context:
             self.context["stock_in_hand_cache"] = {}
@@ -46,21 +49,18 @@ class VaccineRequestFormDashboardSerializer(serializers.ModelSerializer):
 
         # If the value is not in the cache, calculate it
         if cache_key not in self.context["stock_in_hand_cache"]:
-            vaccine_stock = get_or_create_vaccine_stock(self, obj)
             vaccine_stock_calculator = VaccineStockCalculator(vaccine_stock)
             self.context["stock_in_hand_cache"][cache_key] = vaccine_stock_calculator.get_stock_of_usable_vials()
 
         return self.context["stock_in_hand_cache"][cache_key]
 
-    def get_form_a_reception_date(self, obj):
-        vaccine_stock = get_or_create_vaccine_stock(self, obj)
+    def get_form_a_reception_date(self, vaccine_stock):
         latest_outgoing_stock_movement = (
             OutgoingStockMovement.objects.filter(vaccine_stock=vaccine_stock).order_by("-form_a_reception_date").first()
         )
         return latest_outgoing_stock_movement.form_a_reception_date if latest_outgoing_stock_movement else None
 
-    def get_destruction_report_reception_date(self, obj):
-        vaccine_stock = get_or_create_vaccine_stock(self, obj)
+    def get_destruction_report_reception_date(self, vaccine_stock):
         latest_destruction_report = (
             DestructionReport.objects.filter(vaccine_stock=vaccine_stock)
             .order_by("-rrt_destruction_report_reception_date")

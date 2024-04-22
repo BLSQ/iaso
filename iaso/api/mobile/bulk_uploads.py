@@ -74,14 +74,12 @@ class MobileBulkUploadsViewSet(ViewSet):
                 ]
             )
 
-            print("object_name ", object_name)
-
             upload_file_to_s3(
                 file_name=zip_file.temporary_file_path(),
                 object_name=object_name,
             )
 
-            _task = process_mobile_bulk_upload(
+            process_mobile_bulk_upload(
                 user_id=user.id,
                 project_id=project.id,
                 zip_file_object_name=object_name,
@@ -89,12 +87,8 @@ class MobileBulkUploadsViewSet(ViewSet):
             )
 
             return Response(status=status.HTTP_204_NO_CONTENT)
-            # except Exception as e:
-            #     # Handle any errors that occur during processing
-            #     return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-        # TODO: this eats everything?
-        except ValueError:
+        except ValueError as exc:
+            logger.exception(f"ValueError: {str(exc)}")
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except ClientError as exc:
             logger.exception(f"Upload to S3 failed: {str(exc)}")

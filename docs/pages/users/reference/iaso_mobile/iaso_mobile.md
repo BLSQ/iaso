@@ -1,4 +1,4 @@
-# Introduction to IASO Mobile Application
+# Mobile Application
 
 IASO mobile application is available on Google Play Store (Android phones only).
 
@@ -8,7 +8,7 @@ Updates made from the web (forms versions, health pyramid) will be reflected in 
 
 Key tip before testing / using the App - **Make sure you have refreshed data beforehand**
 
-# Run the mobile application for the first time
+## Run the mobile application for the first time
 
 IASO Mobile application has to be configured on the web part before using (see the part “Project”).
 
@@ -24,7 +24,7 @@ Then you can:
 ![](attachments/iasomobileapplicationsetup.png)
 
 
-# Overview of buttons
+## Overview of buttons
 
 See below an overview of the main buttons that you can find on the main screen in data collection mode. 
 
@@ -37,7 +37,7 @@ In the More Options part, you can take the below actions:
 - Logout: your user can logout. This does not prevent data consultation of local data (data available on IASO on the user's device)
 - About: gives the version of the IASO mobile application. It can be good to have to debug.
 
-# Collect data
+## Collect data
 
 Once you are connected to the IASO mobile application, you can then proceed with your data collection. Here below are the different screens that you would see for a simple data collection.
 

@@ -9,7 +9,7 @@ IASO comprises:
 - a **web dashboard** - intended for supervisors to organize data collection and geographical data management
 - a **mobile application** that also works **offline** - intended to field users to fill out forms and send data when network is available
 - a **matching and scripting interface** to analyze, compare and merge several geographic data sources
-- a bi-directional **integration with DHIS2**, the widely used HMIS in LMICs
+- a bi-directional **integration with DHIS2**, the widely used Health Management Information System in Low- and middle-income countries
 
 
 In terms of features, IASO can be summarized around **three main components** which are interconnected and expand the powers of one another:

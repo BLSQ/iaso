@@ -643,7 +643,7 @@ On the right hand side, you can see the number of devices that are connected und
 ### Projects 
 
 A Project in IASO relates to an instance of mobile application. 
-Each Project is identified by a Name and an App ID. See [here](Projects) or a more detailed definition of Projects in IASO.
+Each Project is identified by a Name and an App ID. See [here](https://iaso.readthedocs.io/en/doc_test/pages/users/reference/iaso_concepts/iaso_concepts.html#projects) for a more detailed definition of Projects in IASO.
 
 
 **Create a Project**

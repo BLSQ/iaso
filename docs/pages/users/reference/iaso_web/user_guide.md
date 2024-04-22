@@ -41,8 +41,8 @@ Access the Forms entry in the menu, then click on Form list.
 Click on the button "Create". Once on the Form creation page, follow the below steps:
 
 - Enter a name for your form in the field "Name". 
-- Assign one or several [Project(s)](https://iaso.readthedocs.io/en/doc_test/pages/users/reference/iaso_concepts/iaso_concepts.html#projects) to your form. 
-- Assign an [Org unit type](https://iaso.readthedocs.io/en/doc_test/pages/users/reference/iaso_concepts/iaso_concepts.html#organization-units) to your form. 
+- Assign one or several [Project(s)](https://iaso.readthedocs.io/en/latest/pages/users/reference/iaso_concepts/iaso_concepts.html#projects) to your form. 
+- Assign an [Org unit type](https://iaso.readthedocs.io/en/latest/pages/users/reference/iaso_concepts/iaso_concepts.html#organization-units) to your form. 
 - Assign a Period to your form. This is intended for regular data collection (e.g. daily/weekly/yearly). If you don't need this option, just select "No Period".
 
 ![alt text](attachments/createformv2.png)
@@ -643,7 +643,7 @@ On the right hand side, you can see the number of devices that are connected und
 ### Projects 
 
 A Project in IASO relates to an instance of mobile application. 
-Each Project is identified by a Name and an App ID. See [here](https://iaso.readthedocs.io/en/doc_test/pages/users/reference/iaso_concepts/iaso_concepts.html#projects) for a more detailed definition of Projects in IASO.
+Each Project is identified by a Name and an App ID. See [here](https://iaso.readthedocs.io/en/latest/pages/users/reference/iaso_concepts/iaso_concepts.html#projects) for a more detailed definition of Projects in IASO.
 
 
 **Create a Project**

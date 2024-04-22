@@ -26,7 +26,7 @@ nav: # nav configures the side bar menu
   - Home: index.md
   - Users:
      - ./pages/users/reference/iaso_concepts/iaso_concepts.md
-     - ./pages/users/reference/iaso_module/iaso_module.md
+     - ./pages/users/reference/iaso_modules/iaso_modules.md
      - ./pages/users/reference/iaso_web/user_guide.md
      - ./pages/users/reference/iaso_mobile/iaso_mobile.md
   - Developers:

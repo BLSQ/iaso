@@ -11,6 +11,7 @@ IASO comprises:
 - a **matching and scripting interface** to analyze, compare and merge several geographic data sources
 - a bi-directional **integration with DHIS2**, the widely used HMIS in LMICs
 
+
 In terms of features, IASO can be summarized around **three main components** which are interconnected and expand the powers of one another:
 
 -  Geospatial data management (Georegistry)

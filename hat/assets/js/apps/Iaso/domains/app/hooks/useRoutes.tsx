@@ -64,12 +64,6 @@ const useHomeOnlineRoute = (userHomePage?: string): RouteCustom[] => {
             permissions: [],
             allowAnonymous: false,
             element: <HomeComponent />,
-            params: [
-                {
-                    isRequired: false,
-                    key: 'accountId',
-                },
-            ],
         },
     ];
 };
@@ -81,15 +75,15 @@ export const useHomeOfflineRoute = (): RouteCustom[] => {
     return [
         {
             baseUrl: baseUrls.home,
-            routerUrl: baseUrls.home,
+            routerUrl: `${baseUrls.home}/*`,
             permissions: [],
             allowAnonymous: true,
             element: <HomeComponent />,
-            params: [],
         },
     ];
 };
 
+// TODO fix plugin config
 const usePluginsRoutes = (): RouteCustom[] => {
     const { plugins }: Plugins = useContext(PluginsContext);
     return plugins
@@ -98,13 +92,7 @@ const usePluginsRoutes = (): RouteCustom[] => {
                 if (route.allowAnonymous) return route;
                 return {
                     ...route,
-                    params: [
-                        {
-                            isRequired: false,
-                            key: 'accountId',
-                        },
-                        ...route.params,
-                    ],
+                    params: ['accountId', ...route.params],
                 };
             }),
         )

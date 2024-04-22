@@ -24,6 +24,7 @@ const ProtectedRoute = ({ routeConfig, allRoutes, component }) => {
     const currentUser = useCurrentUser();
     const dispatch = useDispatch();
 
+    // TODO test wrong account feature
     const isWrongAccount = Boolean(
         params?.accountId && params?.accountId !== `${currentUser.account.id}`,
     );
@@ -57,12 +58,11 @@ const ProtectedRoute = ({ routeConfig, allRoutes, component }) => {
     ]);
 
     useEffect(() => {
-        if (!params?.accountId && currentUser.account) {
-            navigate(`./accountId/${currentUser.account.id}/${paramsString}`, {
-                replace: true,
-            });
+        // Checking with paramsString because params maybe empty if the config is not correct for useParamsObject
+        if (!paramsString.includes('accountId') && currentUser.account) {
+            navigate(`./accountId/${currentUser.account.id}/${paramsString}`);
         }
-    }, [currentUser.account, baseUrl, navigate, params, paramsString]);
+    }, [currentUser.account, baseUrl, navigate, paramsString]);
 
     useEffect(() => {
         // Use defined default language if it exists and if the user didn't set it manually

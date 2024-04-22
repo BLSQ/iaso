@@ -1,5 +1,5 @@
 import { getSort } from 'bluesquare-components';
-import { Navigate, Route } from 'react-router-dom';
+import { Route } from 'react-router-dom';
 import React, { ReactElement } from 'react';
 import { baseUrls } from '../../constants/urls';
 import Page404 from '../../components/errors/Page404';
@@ -8,6 +8,7 @@ import { defaultSorted as workflowDefaultSort } from '../../domains/workflows/co
 import { useHomeOfflineComponent } from '../../domains/app/hooks/useRoutes';
 import { useCurrentUser } from '../../utils/usersUtils';
 import { getOrgUnitsUrl } from '../utils';
+import { Redirect } from '../Redirect';
 
 const getPaginationParams = (order = 'id', pageSize = 20) =>
     `/order/${order}/pageSize/${pageSize}/page/1`;
@@ -28,59 +29,69 @@ const setupRedirections = [
 
 const baseRedirections = [
     {
-        path: `${baseUrls.orgUnits}`,
+        path: `/${baseUrls.orgUnits}`,
         // @ts-ignore
         to: getOrgUnitsUrl(),
     },
     {
-        path: `${baseUrls.mappings}`,
-        to: `${baseUrls.mappings}${getPaginationParams(
+        path: `/${baseUrls.mappings}`,
+        to: `/${baseUrls.mappings}${getPaginationParams(
             'form_version__form__name,form_version__version_id,mapping__mapping_type',
         )}`,
     },
     {
-        path: `${baseUrls.users}`,
-        to: `${baseUrls.users}${getPaginationParams('user__username')}`,
+        path: `/${baseUrls.users}`,
+        to: `/${baseUrls.users}${getPaginationParams('user__username')}`,
     },
     {
-        path: `${baseUrls.entities}`,
-        to: `${baseUrls.entities}${getPaginationParams('last_saved_instance')}`,
+        path: `/${baseUrls.entities}`,
+        to: `/${baseUrls.entities}${getPaginationParams(
+            'last_saved_instance',
+        )}`,
     },
     {
-        path: `${baseUrls.entityTypes}`,
-        to: `${baseUrls.entityTypes}${getPaginationParams('name')}`,
+        path: `/${baseUrls.entityTypes}`,
+        to: `/${baseUrls.entityTypes}${getPaginationParams('name')}`,
     },
     {
-        path: `${baseUrls.entityDuplicates}`,
-        to: `${baseUrls.entityDuplicates}${getPaginationParams()}`,
+        path: `/${baseUrls.entityDuplicates}`,
+        to: `/${baseUrls.entityDuplicates}${getPaginationParams()}`,
     },
     {
-        path: `${baseUrls.groups}`,
-        to: `${baseUrls.groups}${getPaginationParams('name')}`,
+        path: `/${baseUrls.groups}`,
+        to: `/${baseUrls.groups}${getPaginationParams('name')}`,
     },
     {
-        path: `${baseUrls.orgUnitTypes}`,
-        to: `${baseUrls.orgUnitTypes}${getPaginationParams('name')}`,
+        path: `/${baseUrls.orgUnitTypes}`,
+        to: `/${baseUrls.orgUnitTypes}${getPaginationParams('name')}`,
     },
     {
-        path: `${baseUrls.planning}`,
-        to: `${baseUrls.planning}/publishingStatus/all${getPaginationParams(
+        path: `/${baseUrls.planning}`,
+        to: `/${baseUrls.planning}/publishingStatus/all${getPaginationParams(
             'name',
         )}`,
     },
     {
-        path: `${baseUrls.teams}`,
-        to: `${baseUrls.teams}${getPaginationParams('id')}`,
+        path: `/${baseUrls.teams}`,
+        to: `/${baseUrls.teams}${getPaginationParams('id')}`,
     },
     {
-        path: `${baseUrls.storages}`,
-        to: `${baseUrls.storages}${getPaginationParams(
+        path: `/${baseUrls.storages}`,
+        to: `/${baseUrls.storages}${getPaginationParams(
             getSort(storageDefaultSort),
         )}`,
     },
     {
-        path: `${baseUrls.workflows}/entityTypeId/:entityTypeId`,
-        to: `${baseUrls.workflows}/entityTypeId/:entityTypeId/order/${getSort(
+        path: `/${baseUrls.workflows}/entityTypeId/:entityTypeId`,
+        to: `/${baseUrls.workflows}/entityTypeId/:entityTypeId/order/${getSort(
+            workflowDefaultSort,
+        )}/pageSize/20/page/1`,
+    },
+    {
+        path: `/${baseUrls.workflows}/accountId/:accountId/entityTypeId/:entityTypeId`,
+        to: `/${
+            baseUrls.workflows
+        }/accountId/:accountId/entityTypeId/:entityTypeId/order/${getSort(
             workflowDefaultSort,
         )}/pageSize/20/page/1`,
     },
@@ -91,15 +102,21 @@ const baseRedirections = [
     },
     // idem and the formId parameter was renamed to formIds (with s) to support multiple form
     {
-        path:
-            '/instances/formId/:formId(/order/:order)(/pageSize/:pageSize)(/page/:page)(/dateFrom/:dateFrom)' +
-            '(/dateTo/:dateTo)(/periods/:periods)(/status/:status)(/levels/:levels)(/orgUnitTypeId/:orgUnitTypeId)' +
-            '(/withLocation/:withLocation)(/deviceId/:deviceId)(/deviceOwnershipId/:deviceOwnershipId)(/tab/:tab)(/columns/:columns)(/search/:search)(/showDeleted/:showDeleted)',
-        to:
-            '/forms/submissions(/formIds/:formId)(/order/:order)(/pageSize/:pageSize)(/page/:page)(/dateFrom/:dateFrom)' +
-            '(/dateTo/:dateTo)(/periods/:periods)(/status/:status)(/levels/:levels)(/orgUnitTypeId/:orgUnitTypeId)' +
-            '(/withLocation/:withLocation)(/deviceId/:deviceId)(/deviceOwnershipId/:deviceOwnershipId)(/tab/:tab)(/columns/:columns)(/search/:search)(/showDeleted/:showDeleted)',
+        path: '/instances/formId/:formId/*',
+        conversions: { formId: 'formIds' },
+        to: '/forms/submissions/formIds/:formId/',
     },
+    // legacy
+    // {
+    //     path:
+    //         '/instances/formId/:formId(/order/:order)(/pageSize/:pageSize)(/page/:page)(/dateFrom/:dateFrom)' +
+    //         '(/dateTo/:dateTo)(/periods/:periods)(/status/:status)(/levels/:levels)(/orgUnitTypeId/:orgUnitTypeId)' +
+    //         '(/withLocation/:withLocation)(/deviceId/:deviceId)(/deviceOwnershipId/:deviceOwnershipId)(/tab/:tab)(/columns/:columns)(/search/:search)(/showDeleted/:showDeleted)',
+    //     to:
+    //         '/forms/submissions(/formIds/:formId)(/order/:order)(/pageSize/:pageSize)(/page/:page)(/dateFrom/:dateFrom)' +
+    //         '(/dateTo/:dateTo)(/periods/:periods)(/status/:status)(/levels/:levels)(/orgUnitTypeId/:orgUnitTypeId)' +
+    //         '(/withLocation/:withLocation)(/deviceId/:deviceId)(/deviceOwnershipId/:deviceOwnershipId)(/tab/:tab)(/columns/:columns)(/search/:search)(/showDeleted/:showDeleted)',
+    // },
     {
         path: '/*',
         element: <Page404 />,
@@ -118,7 +135,7 @@ type RedirectionsMethod = (
 export const useRedirections: RedirectionsMethod = (
     hasNoAccount,
     isFetchingCurrentUser,
-    homeUrl = baseUrls.forms,
+    homeUrl = `/${baseUrls.forms}`,
 ) => {
     let redirections;
     const currentUser = useCurrentUser();
@@ -164,17 +181,9 @@ export const useRedirections: RedirectionsMethod = (
                 path={`${redirection.path}`}
                 key={`${redirection.path}${redirection.to}`}
                 element={
-                    <Navigate to={`../../${redirection.to}`} relative="path" />
+                    <Redirect to={redirection.to} path={redirection.path} />
                 }
-                // element={
-                //     <div>
-                //         <span>REDIRECTION BROKEN, LOL</span>
-                //         <p>{redirection.to}</p>
-                //     </div>
-                // }
             />
         );
-
-        // return <Redirect path={redirection.path} to={redirection.to} />;
     });
 };

@@ -4,7 +4,7 @@ import { getChipColors } from '../constants/chipColors';
 import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants';
 
 export const getOrgUnitsUrl = accountId =>
-    `${baseUrls.orgUnits}${createUrl(
+    `/${baseUrls.orgUnits}${createUrl(
         {
             accountId,
             locationLimit: locationLimitMax,

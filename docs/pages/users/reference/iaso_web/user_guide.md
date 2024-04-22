@@ -48,6 +48,7 @@ Click on the button "Create". Once on the Form creation page, follow the below s
 ![alt text](attachments/createformv2.png)
 
 Tips:
+
 - Check your XLS form before uploading it to IASO using this link: https://getodk.org/xlsform/
 - Form ID should stay the same across versions (it cannot be different from a version to another). You will have an error if this is the case.
 - Form version (which is not a mandatory field in the settings of the XLS forms) should stay consistent across versions. For instance, if it is a date such as 20240410, then you will not be able to upload a version names 20231025. IASO makes automatic checks to ensure that you are not uploading a former version.
@@ -56,6 +57,7 @@ Tips:
 ### Form submissions
 
 Once a form has been completed and sent to the server, it creates a "form submission". Every form submission is recorded into the platform and data submitted can be consulted from there. You can use the filters to consult the form submissions as needed:
+
 - Open search (type some key words)
 - Per form
 - Per Org unit (select the relevant one in the dropdown pyramid)
@@ -313,6 +315,7 @@ Click Organization Units in the menu and then on Organization Unit List to navig
 You can view in list or map.
 
 You can select an Organization Unit Navigation and:
+
 - Change the name, type, validation status, place in the pyramid, etc. of the OU
 - Visualize the OU on a map
 - See the history of its modifications
@@ -362,6 +365,7 @@ On the Organization Unit list page, click on "Create". You can then create an Or
 <img src="./attachments/image16.png" style="width:6.86961in;height:2.80729in" />
 
 You will need to enter the below information before saving:
+
 - Name of the Organization Unit
 - Type of the Organization Unit (that you would have previously defined in the Organization Unit Type part)
 - Status: New, Validated, or Rejected. 
@@ -370,6 +374,7 @@ You will need to enter the below information before saving:
     - Rejected: the Organization unit no longer exists or has been merged/split or replaced by another one. IASO does not allow to erase Organization Units in order to keep track of past changes.
 
 Optional fields:
+
 - Aliases: you can add as many aliases as necessary to track the different ways of writing the name of the Organization Unit (e.g. "Ste Marie", "Sainte-Marie", "Sainte Marie", etc.)
 - Group: you can organize Organization Units in Groups in IASO. You can multi-select the group(s) that the organization unit you are creating is associated to
 - Parent Org Unit: place your Organization Unit at its relevant place in the hierarchy
@@ -382,6 +387,7 @@ To access the detailed view of an Organization Unit, proceed as described below:
 ![alt text](attachments/orgunitdetailsedit.png)
 
 In this view, you have a set of tabs that allow you to edit the Organization Unit as needed:
+
 - Infos: edit the main information relating to this Organization Unit
 - Map: consult the geographical information available for this Organization Unit (boundaries or GPS coordinates). You can view geographical data across data sources (if there are several sources). You can also leave a comment
 - Children: lists this Organization Unit's children. You can use filter to go through the list in a more detailed way
@@ -446,11 +452,13 @@ From the Organization Unit menu entry, click on "Organization Unit types". This 
 **Create an Organization Unit type**
 
 Click on "Create" and enter the below mandatory fields:
+
 - Name of the Organization Unit type. Beware that this should be the "category" / "level in the hierarchy", NOT the specific name of an Organization Unit. E.g. "Country, "Province", "District", and NOT "DRC", "Kinshasa", "Gombe"
 - Short name: this will appear on other IASO views. It should be a short version of the full name 
 - Project(s): select one or multiple project(s) the Organization Unit type is linked to
 
 These other fields are not mandatory:
+
 - Level: start with 0 for the highest point in the hierarchy, for instance "Country". E.g. Country - 0, Province - 1, District - 2, Village - 3
 - Sub org unit types to display: select the below Org Unit type(s) that you would like to display on the Registry view if this main Org Unit type that you are editing is selected.
 - Sub Org unit types to create: select the Org Unit type(s) that you would like to enable the creation for in the IASO mobile application. For instance, if you are editing the Org unit type "District", you can enable the creation of "Village" and/or "Point of Interest"
@@ -516,6 +524,7 @@ In order to be able to create a Planning, you will need to have created beforeha
 
 Click on Planning in the menu panel. Under Planning List you will see the list of schedules/plannings that have been
 created in IASO. You can search through the different Plannings using the different filters and take the below actions:
+
 - Create Planning
 - View Planning: this is where you will access the interface to assign data collection activities to Teams and Users according to geographies
 - Edit Planning: edit the Name, Project, Parent Organization Unit and Team it applies to, Form(s), Description
@@ -531,6 +540,7 @@ Click on "Create" and you will see the below window opening:
 <img src="./attachments/image48.png" style="width:6.5in;height:3.80556in" />
 
 The below fields are mandatory:
+
 - Name
 - Project: defines in which mobile app environment the Planning info
 will be visible
@@ -542,7 +552,7 @@ will be visible
 You can add a description as an option. 
 
 The “Publishing status” (in the lower left
-corner ) feature makes it possible to ensure, once completed (and all
+corner) feature makes it possible to ensure, once completed (and all
 assignments made), the newly created planning will be available in the
 IASO mobile app for the relevant project.
 
@@ -581,6 +591,7 @@ You can sort Org units and Parents by clicking on the column name.
 ## Admin
 
 The Admin part of IASO comprises several parts, which will appear or not depending on the user's permissions:
+
 - Tasks
 - Monitoring
 - Projects
@@ -596,11 +607,13 @@ ran, the operation status, the number of source and target records
 processed, and any log messages.
 
 Examples of tasks include:
+
 - Organization unit bulk update
 - DHIS2 data import
 - Geopackage import
 
 The statuses are:
+
 - Errored: the Task did not make it through. Users are advised to try again.
 - Running: the Task is in process
 - Queued: the Task has stopped and will restart if the conditions are met (for instance, if there is better connectivity)
@@ -615,6 +628,7 @@ The Task list can be refreshed by pressing the button "Refresh" on the right top
 
 This part allows supervisors to monitor devices that are linked with the IASO account. 
 From this page, you can consult:
+
 - The IMEI or device identifier
 - If this is a test device or not
 - the name of the last owner
@@ -690,6 +704,7 @@ From the menu Admin > Users, click on "Create".
 ![alt text](attachments/Createuser.png)
 
 Note that you can also indicate the following information:
+
 - DHIS2 id of the user: you can import a list of DHIS2 users to IASO and keep track of their DHIS2 id in IASO to link then across both systems
 - Home page: you can set up a default landing page for that user when connecting to this IASO account
 - Projects: select one or several Project(s) to which the newly created user will be linked. If there is no Project indicated here, the user will have access to all Projects of the IASO account by default.
@@ -727,6 +742,7 @@ You can edit IASO users in bulk using the bulk update feature. First, tick each 
 ![alt text](attachments/editusersbulk.png)
 
 Then select the action(s) you would like to perform for these users. They can be:
+
 - Add or remove from user role(s)
 - Add or remove from Project(s)
 - Add or remove from Team(s)
@@ -758,6 +774,7 @@ You can then assign this user role to any user through the Permission tab in the
 The notion of Teams in IASO is used mainly for the [Planning](Planning) feature. It allows to organize Users in Team hierarchies and assign data collection activities to the relevant geographies as needed for the Planning purposes. 
 
 There are two types of Teams:
+
 - Teams of Users: gathers IASO Users under the same team 
 - Teams of Teams: gathers several Teams under a same Team. You can then create hierarchies of Teams
 
@@ -769,6 +786,7 @@ From the menu, access Admin > Teams. Click on “Create”
 ![alt text](attachments/createteam.png)
 
 Fill out the below fields:
+
 - Team name
 - Manager: select from the Users in IASO
 - Project: select the Project to be linked to this Team

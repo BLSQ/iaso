@@ -6,24 +6,25 @@ from copy import deepcopy
 from functools import reduce
 
 import django_cte
-from django.core.exceptions import ValidationError
-from django.contrib.auth.models import User, AnonymousUser
-from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
+from django.contrib.auth.models import AnonymousUser, User
+from django.contrib.gis.db.models.fields import MultiPolygonField, PointField
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.indexes import GinIndex, GistIndex
+from django.core.exceptions import ValidationError
 from django.db import models, transaction
-from django.db.models import QuerySet, Q
+from django.db.models import Q, QuerySet
 from django.db.models.expressions import RawSQL
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_ltree.fields import PathField  # type: ignore
 from django_ltree.models import TreeModel  # type: ignore
 
-from hat.audit.models import log_modification, ORG_UNIT_CHANGE_REQUEST
+from hat.audit.models import ORG_UNIT_CHANGE_REQUEST, log_modification
 from iaso.models.data_source import SourceVersion
-from .project import Project
+
 from ..utils.expressions import ArraySubquery
 from ..utils.models.common import get_creator_name
+from .project import Project
 
 try:  # for typing
     from .base import Account, Instance
@@ -687,7 +688,7 @@ class OrgUnitChangeRequest(models.Model):
             self.old_closed_date = self.org_unit.closed_date
         super().save(*args, **kwargs)
         if is_new:
-            # Wait for the instance to have an ID to save old m2m relations.
+            # Wait for the instance to have an ID to save old m2m relations
             self.old_groups.set(self.org_unit.groups.all())
             self.old_reference_instances.set(self.org_unit.reference_instances.all())
 
@@ -712,10 +713,11 @@ class OrgUnitChangeRequest(models.Model):
         self.rejection_comment = rejection_comment
         self.save()
 
-    def approve(self, user: User, approved_fields: typing.List[str]) -> None:
+    def approve(self, user: User, approved_fields: typing.List[str], rejection_comment: str = "") -> None:
         self.__apply_changes(user, approved_fields)
         self.updated_by = user
         self.status = self.Statuses.APPROVED
+        self.rejection_comment = rejection_comment
         self.approved_fields = approved_fields
         self.save()
 

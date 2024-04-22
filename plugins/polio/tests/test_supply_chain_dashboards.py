@@ -136,7 +136,8 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
             action="destroyed",
         )
 
-        response = self.client.get(self.vrf_url)
+        with self.assertNumQueries(MAKE_ME_DREAM_NUMBER):
+            response = self.client.get(self.vrf_url)
         jr = self.assertJSONResponse(response, 200)
         results = jr["results"]
         self.assertEqual(len(results), 1)

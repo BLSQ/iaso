@@ -121,6 +121,7 @@ export const useCampaignDropDowns = (
         enabled: Boolean(countryId),
         countries: countryId ? [`${countryId}`] : undefined,
         campaignCategory: 'regular' as CampaignCategory,
+        campaignType: 'polio',
     };
 
     const { data, isFetching } = useGetCampaigns(options, CAMPAIGNS_ENDPOINT);

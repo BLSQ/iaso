@@ -1,34 +1,34 @@
-import React, { FunctionComponent, useState, useCallback } from 'react';
-import {
-    useSafeIntl,
-    useSkipEffectOnMount,
-    LoadingSpinner,
-} from 'bluesquare-components';
-import { Box, useMediaQuery, useTheme, Collapse, Grid } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import SearchIcon from '@mui/icons-material/Search';
 import { Pagination } from '@mui/lab';
+import { Box, Collapse, useMediaQuery, useTheme } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import {
+    LoadingSpinner,
+    useSafeIntl,
+    useSkipEffectOnMount,
+} from 'bluesquare-components';
+import React, { FunctionComponent, useCallback, useState } from 'react';
 
 // @ts-ignore
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 
+import { userHasPermission } from '../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import { handleTableDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/utils/table';
+import MESSAGES from '../../constants/messages';
+import { BUDGET } from '../../constants/routes';
+import { useStyles } from '../../styles/theme';
+import { BudgetButtons } from './BudgetButtons';
 import { BudgetFilters } from './BudgetFilters';
 import { BudgetCard } from './cards/BudgetCard';
-import { useBudgetColumns } from './hooks/config';
 import {
     useBudgetParams,
     useGetBudgets,
     useGetWorkflowStatesForDropdown,
 } from './hooks/api/useGetBudget';
+import { useBudgetColumns } from './hooks/config';
 import { Budget } from './types';
-import { handleTableDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/utils/table';
-import { useStyles } from '../../styles/theme';
-import { BUDGET } from '../../constants/routes';
-import MESSAGES from '../../constants/messages';
-import { BudgetButtons } from './BudgetButtons';
-import { userHasPermission } from '../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 
 type Props = {
     router: any;
@@ -143,6 +143,7 @@ export const BudgetProcessList: FunctionComponent<Props> = ({ router }) => {
                             csvUrl={`/api/polio/budget/export_csv/?${csvParams}`}
                             isUserPolioBudgetAdmin={isUserPolioBudgetAdmin}
                         />
+                        {/* @ts-ignore */}
                         <TableWithDeepLink
                             data={budgets?.results ?? []}
                             count={budgets?.count}

@@ -1,35 +1,35 @@
 /* eslint-disable camelcase */
-import React, { useMemo, useState } from 'react';
-import { Box, Tooltip, Typography } from '@mui/material';
+import { Box, Theme, Tooltip, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
-    useSafeIntl,
-    IconButton as IconButtonComponent,
-    useSkipEffectOnMount,
     Column,
+    IconButton as IconButtonComponent,
     Paginated,
+    useSafeIntl,
+    useSkipEffectOnMount,
 } from 'bluesquare-components';
+import React, { useMemo, useState } from 'react';
 
-import MESSAGES from '../../../constants/messages';
-import getDisplayName from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-import { BUDGET_DETAILS } from '../../../constants/routes';
-import { BudgetStep, Transition, Params } from '../types';
 import {
     DateCell,
     DateTimeCellRfc,
 } from '../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import { Optional } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { StepActionCell } from '../BudgetDetails/StepActionCell';
-import { convertObjectToString } from '../../../utils';
-import { formatComment } from '../cards/utils';
-import { formatRoundNumbers, makeFileLinks, makeLinks } from '../utils';
 import { formatThousand } from '../../../../../../../hat/assets/js/apps/Iaso/utils';
-import { EditBudgetProcessModal } from '../BudgetProcess/EditBudgetProcessModal';
+import getDisplayName from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import MESSAGES from '../../../constants/messages';
+import { BUDGET_DETAILS } from '../../../constants/routes';
+import { convertObjectToString } from '../../../utils';
+import { StepActionCell } from '../BudgetDetails/StepActionCell';
 import { DeleteBudgetProcessModal } from '../BudgetProcess/DeleteBudgetProcessModal';
+import { EditBudgetProcessModal } from '../BudgetProcess/EditBudgetProcessModal';
+import { formatComment } from '../cards/utils';
+import { BudgetStep, Params, Transition } from '../types';
+import { formatRoundNumbers, makeFileLinks, makeLinks } from '../utils';
 
 const baseUrl = BUDGET_DETAILS;
 
-export const styles = theme => {
+export const styles = (theme: Theme): Record<string, React.CSSProperties> => {
     return {
         hiddenRow: {
             color: theme.palette.secondary.main,
@@ -40,9 +40,11 @@ export const styles = theme => {
 
 // @ts-ignore
 export const useStyles = makeStyles(styles);
-export const getStyle = classes => isHidden => {
-    return isHidden ? classes.hiddenRow : '';
-};
+export const getStyle =
+    (classes: ReturnType<typeof useStyles>) =>
+    (isHidden: boolean): string => {
+        return isHidden ? classes.hiddenRow : '';
+    };
 
 export const useBudgetColumns = (isUserPolioBudgetAdmin: boolean): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -87,12 +89,12 @@ export const useBudgetColumns = (isUserPolioBudgetAdmin: boolean): Column[] => {
                         <>
                             <IconButtonComponent
                                 icon="remove-red-eye"
+                                size="small"
                                 tooltipMessage={MESSAGES.details}
                                 url={`${baseUrl}/campaignName/${settings.row.original.obr_name}/budgetProcessId/${settings.row.original.id}`}
                             />
                             {isUserPolioBudgetAdmin && (
                                 <EditBudgetProcessModal
-                                    iconProps={{}}
                                     budgetProcess={settings.row.original}
                                 />
                             )}
@@ -108,7 +110,7 @@ export const useBudgetColumns = (isUserPolioBudgetAdmin: boolean): Column[] => {
             },
         ];
         return cols;
-    }, [formatMessage]);
+    }, [formatMessage, isUserPolioBudgetAdmin]);
 };
 
 export const useBudgetDetailsColumns = (

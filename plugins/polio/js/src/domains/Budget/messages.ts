@@ -73,6 +73,106 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.error.requiredUuid',
         defaultMessage: 'Please use an UUID',
     },
+    budgetRequest: {
+        id: 'iaso.polio.form.label.budgetRequest',
+        defaultMessage: 'Budget request',
+    },
+    RRTReview: {
+        id: 'iaso.polio.form.label.RRTReview',
+        defaultMessage: 'RRT review',
+    },
+    ORPGReview: {
+        id: 'iaso.polio.form.label.ORPGReview',
+        defaultMessage: 'ORPG review',
+    },
+    approval: {
+        id: 'iaso.polio.form.label.approval',
+        defaultMessage: 'Approval',
+    },
+    ra_completed: {
+        id: 'iaso.polio.form.label.ra_completed',
+        defaultMessage: 'Risk Assessment completed',
+    },
+    who_sent_budget: {
+        id: 'iaso.polio.form.label.who_sent_budget',
+        defaultMessage: 'WHO CO sent budget',
+    },
+    unicef_sent_budget: {
+        id: 'iaso.polio.form.label.unicef_sent_budget',
+        defaultMessage: 'UNICEF CO sent budget',
+    },
+    gpei_consolidated_budgets: {
+        id: 'iaso.polio.form.label.gpei_consolidated_budgets',
+        defaultMessage: 'Consolidation by GPEI coordinator',
+    },
+    submitted_to_rrt: {
+        id: 'iaso.polio.form.label.submitted_to_rrt',
+        defaultMessage: 'Submitted to RRT',
+    },
+    feedback_sent_to_gpei: {
+        id: 'iaso.polio.form.label.feedback_sent_to_gpei',
+        defaultMessage: 'Feedback sent to GPEI coordinator',
+    },
+    re_submitted_to_rrt: {
+        id: 'iaso.polio.form.label.re_submitted_to_rrt',
+        defaultMessage: 'Resubmitted to RRT',
+    },
+    submitted_to_orpg_operations1: {
+        id: 'iaso.polio.form.label.submitted_to_orpg_operations1',
+        defaultMessage: 'Submitted to ORPG Ops',
+    },
+    feedback_sent_to_rrt1: {
+        id: 'iaso.polio.form.label.feedback_sent_to_rrt1',
+        defaultMessage: 'Feedback sent to RRT',
+    },
+    re_submitted_to_orpg_operations1: {
+        id: 'iaso.polio.form.label.re_submitted_to_orpg_operations1',
+        defaultMessage: 'Resubmitted to ORPG Operations',
+    },
+    submitted_to_orpg_wider: {
+        id: 'iaso.polio.form.label.submitted_to_orpg_wider',
+        defaultMessage: 'Submitted to ORPG wider',
+    },
+    re_submitted_to_orpg_operations2: {
+        id: 'iaso.polio.form.label.re_submitted_to_orpg_operations2',
+        defaultMessage: 'Resubmitted to ORPG Operations (ORPG wider)',
+    },
+    feedback_sent_to_rrt2: {
+        id: 'iaso.polio.form.label.feedback_sent_to_rrt2',
+        defaultMessage: 'Feedback sent to RRT (ORPG wider)',
+    },
+    submitted_to_orpg_operations2: {
+        id: 'iaso.polio.form.label.submitted_to_orpg_operations2',
+        defaultMessage: 'Submitted to ORPG Operations (ORPG wider)',
+    },
+    submitted_for_approval: {
+        id: 'iaso.polio.form.label.submitted_for_approval',
+        defaultMessage: 'Submitted for approval',
+    },
+    feedback_sent_to_orpg_operations_unicef: {
+        id: 'iaso.polio.form.label.feedback_sent_to_orpg_operations_unicef',
+        defaultMessage: 'Feedback requested by UNICEF',
+    },
+    feedback_sent_to_orpg_operations_who: {
+        id: 'iaso.polio.form.label.feedback_sent_to_orpg_operations_who',
+        defaultMessage: 'Feedback requested by WHO',
+    },
+    approved_by_who: {
+        id: 'iaso.polio.form.label.approved_by_who',
+        defaultMessage: 'Approved by WHO',
+    },
+    approved_by_unicef: {
+        id: 'iaso.polio.form.label.approved_by_unicef',
+        defaultMessage: 'Approved by UNICEF',
+    },
+    approved: {
+        id: 'iaso.polio.label.approved',
+        defaultMessage: 'Approved',
+    },
+    approval_confirmed: {
+        id: 'iaso.polio.form.label.approval_confirmed',
+        defaultMessage: 'Approval confirmed',
+    },
 });
 
 export default MESSAGES;

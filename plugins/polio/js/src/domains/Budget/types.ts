@@ -80,6 +80,18 @@ export type Budget = {
     rounds?: Round[];
     timeline?: Timeline;
 };
+export type BudgetDetail = {
+    id: number;
+    rounds?: Round[];
+    campaign_id: string;
+    has_data_in_budget_tool?: boolean;
+};
+
+export type BudgetDetailForm = {
+    id: number;
+    rounds?: number[];
+    has_data_in_budget_tool?: boolean;
+};
 
 export type LinkWithAlias = { alias: string; url: string };
 

@@ -156,8 +156,11 @@ class GroupsViewSet(ModelViewSet):
             versions = SourceVersion.objects.filter(data_source__projects__account=account)
 
         else:
-            # this check if project need auth
-            project = Project.objects.get_for_user_and_app_id(user, app_id)
+            try:
+                # this check if project need auth
+                project = Project.objects.get_for_user_and_app_id(user, app_id)
+            except Project.DoesNotExist:
+                raise serializers.ValidationError("Invalid app_id")
             versions = SourceVersion.objects.filter(data_source__projects=project)
         groups = Group.objects.filter(source_version__in=versions).distinct()
 

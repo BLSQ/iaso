@@ -1,9 +1,18 @@
 from datetime import date
+
+from hat.menupermissions import models as permission
 from iaso.models.base import Account
 from iaso.models.org_unit import OrgUnit, OrgUnitType
 from iaso.test import APITestCase
-from plugins.polio.models import Campaign, VaccineArrivalReport, VaccinePreAlert, VaccineRequestForm
-from hat.menupermissions import models as permission
+from plugins.polio.models import (
+    Campaign,
+    DestructionReport,
+    OutgoingStockMovement,
+    VaccineArrivalReport,
+    VaccinePreAlert,
+    VaccineRequestForm,
+    VaccineStock,
+)
 
 
 class SupplyChainDashboardsAPITestCase(APITestCase):
@@ -30,6 +39,7 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
         cls.campaign = Campaign.objects.create(
             obr_name="Outsiplou-2024", account=cls.account, initial_org_unit=cls.country
         )
+        cls.vaccine_type = "mOPV2"
         cls.other_campaign = Campaign.objects.create(obr_name="Not the expected result", account=cls.other_account)
         cls.vrf = VaccineRequestForm.objects.create(
             campaign=cls.campaign,
@@ -37,7 +47,7 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
             date_vrf_reception=date.today(),
             date_dg_approval=date.today(),
             quantities_ordered_in_doses=1000,
-            vaccine_type="mOPV2",
+            vaccine_type=cls.vaccine_type,
         )
         cls.vrf.rounds.set([])
         cls.other_vrf = VaccineRequestForm.objects.create(
@@ -46,7 +56,7 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
             date_vrf_reception=date.today(),
             date_dg_approval=date.today(),
             quantities_ordered_in_doses=1000,
-            vaccine_type="mOPV2",
+            vaccine_type=cls.vaccine_type,
         )
         cls.other_vrf.rounds.set([])
         cls.pre_alert = VaccinePreAlert.objects.create(request_form=cls.vrf, date_pre_alert_reception=date.today())
@@ -58,6 +68,10 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
         )
         cls.other_arrival_report = VaccineArrivalReport.objects.create(
             request_form=cls.other_vrf, arrival_report_date=date.today(), doses_received=1000
+        )
+
+        cls.vaccine_stock = VaccineStock.objects.create(
+            country=cls.country, vaccine=cls.vaccine_type, account=cls.account
         )
 
     def test_user_has_permission_vrf(self):
@@ -99,6 +113,46 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
         self.assertEqual(len(results), 1)
         vrf = results[0]
         self.assertEqual(vrf["obr_name"], self.campaign.obr_name)
+
+    def test_vrf_new_fields(self):
+        self.client.force_authenticate(self.authorized_user_read)
+
+        # Create ArrivalReport and DestructionReport
+        form_a = OutgoingStockMovement.objects.create(
+            campaign=self.campaign,
+            vaccine_stock=self.vaccine_stock,
+            report_date=date.today(),
+            form_a_reception_date=date.today(),
+            usable_vials_used=100,
+            unusable_vials=100,
+            missing_vials=10,
+        )
+
+        destruction_report = DestructionReport.objects.create(
+            vaccine_stock=self.vaccine_stock,
+            rrt_destruction_report_reception_date=date.today(),
+            destruction_report_date=date.today(),
+            unusable_vials_destroyed=10,
+            action="destroyed",
+        )
+
+        with self.assertNumQueries(12):
+            response = self.client.get(self.vrf_url)
+
+        jr = self.assertJSONResponse(response, 200)
+        results = jr["results"]
+        self.assertEqual(len(results), 1)
+        vrf = results[0]
+        self.assertEqual(vrf["obr_name"], self.campaign.obr_name)
+        self.assertIn("stock_in_hand", vrf)
+        self.assertIn("form_a_reception_date", vrf)
+        self.assertIn("destruction_report_reception_date", vrf)
+
+        # Check if the dates match with the created ArrivalReport and DestructionReport
+        self.assertEqual(vrf["form_a_reception_date"], str(form_a.form_a_reception_date))
+        self.assertEqual(
+            vrf["destruction_report_reception_date"], str(destruction_report.rrt_destruction_report_reception_date)
+        )
 
     def test_pre_alerts_filters_by_account(self):
         self.client.force_authenticate(self.authorized_user_read)

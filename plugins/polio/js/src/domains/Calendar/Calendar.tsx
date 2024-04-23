@@ -4,6 +4,7 @@ import { Box, Button, Grid, Theme, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     ExcellSvg,
+    LoadingSpinner,
     commonStyles,
     getTableUrl,
     useSafeIntl,

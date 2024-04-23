@@ -97,8 +97,7 @@ def process_mobile_bulk_upload(user_id, project_id, zip_file_object_name, task=N
         raise e
 
     the_task.report_success_with_result(
-        message=f"Mobile bulk import successful setup zipfile was created for user {user.username} and project {project.name}.",
-        result_data=result_message(start_date, start_time, stats),
+        message=result_message(user, project, start_date, start_time, stats),
     )
 
 
@@ -154,8 +153,9 @@ def duplicate_instance_files(new_instance_files):
     return count
 
 
-def result_message(start_date, start_time, stats):
+def result_message(user, project, start_date, start_time, stats):
     return f"""
+Mobile bulk import successful for user {user.username} and project {project.name}.
 Started: {str(start_date)}, time spent: {time.time()-start_time} sec
 Number of imported org units: {stats["new_org_units"]}
 Number of imported form submissions: {stats["new_instances"]}

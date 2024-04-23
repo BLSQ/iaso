@@ -339,7 +339,7 @@ export const compareInstanceLogsPath = {
 
 export const compareInstancesPath = {
     baseUrl: baseUrls.compareInstances,
-    permissions: [Permission.SUBMISSIONS],
+    permissions: [Permission.SUBMISSIONS, Permission.SUBMISSIONS_UPDATE],
     component: props => <CompareSubmissions {...props} />,
     params: [
         {

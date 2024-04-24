@@ -1,14 +1,14 @@
-import React, { FunctionComponent } from 'react';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, getTableUrl, useSafeIntl } from 'bluesquare-components';
+import React, { FunctionComponent } from 'react';
+import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
+import TopBar from '../../../components/nav/TopBarComponent';
 import { ReviewOrgUnitChangesFilter } from './Filter/ReviewOrgUnitChangesFilter';
 import { ReviewOrgUnitChangesTable } from './Tables/ReviewOrgUnitChangesTable';
 import { useGetApprovalProposals } from './hooks/api/useGetApprovalProposals';
-import TopBar from '../../../components/nav/TopBarComponent';
-import { ApproveOrgUnitParams } from './types';
 import MESSAGES from './messages';
-import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
+import { ApproveOrgUnitParams } from './types';
 /*
 # Org Unit Change Request
 
@@ -44,6 +44,8 @@ The mobile app and Django backend check for the existence of required fields (na
 The frontend does not perform this check, as the API will reject the change request if these fields are missing.
 
 When the org unit creation is approved, the status changes from "NEW" to "VALID".
+
+A prompt should appear if the change request is rejected or partially approved asking the reason of the rejection.
 
 The layout only shows new fields if the org unit is created using a change request, and all fields can either be approved or rejected in bulk.
 

@@ -41,6 +41,7 @@ import { FormAttachments } from './components/FormAttachments';
 import { FormParams } from './types/forms';
 import { Router } from '../../types/general';
 import { NO_PERIOD } from '../periods/constants';
+import { CR_MODE_NONE } from './constants';
 
 interface FormDetailProps {
     router: Router;
@@ -72,6 +73,7 @@ const defaultForm = {
     possible_fields: [],
     label_keys: [],
     legend_threshold: null,
+    change_request_mode: CR_MODE_NONE,
 };
 
 const formatFormData = value => {
@@ -99,6 +101,7 @@ const formatFormData = value => {
         possible_fields: form.possible_fields ?? defaultForm.possible_fields,
         label_keys: form.label_keys ?? defaultForm.label_keys,
         legend_threshold: form.legend_threshold,
+        change_request_mode: form.change_request_mode,
     };
 };
 

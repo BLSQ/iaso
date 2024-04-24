@@ -16,6 +16,7 @@ type Props = {
     onChange?: (_keyValue: string, value: any) => void;
     // eslint-disable-next-line no-unused-vars
     renderTags?: (tagValue: Array<any>, getTagProps: any) => Array<any>;
+    freeSolo?: boolean;
 };
 
 export const Select: FunctionComponent<Props> = ({
@@ -29,6 +30,7 @@ export const Select: FunctionComponent<Props> = ({
     clearable = true,
     withMarginTop = false,
     required = false,
+    freeSolo = false,
 }) => {
     const hasError =
         form.errors &&
@@ -55,6 +57,7 @@ export const Select: FunctionComponent<Props> = ({
                 }
             }}
             errors={hasError ? [get(form.errors, field.name)] : []}
+            freeSolo={freeSolo}
         />
     );
 };

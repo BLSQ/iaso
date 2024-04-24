@@ -1,5 +1,7 @@
 export const OK_COLOR = 'green';
-export const FAIL_COLOR = 'red';
+export const FAIL_COLOR = '#8b0000';
+export const MODERATE_COLOR = '#FFD835';
+export const POOR_COLOR = 'red';
 export const WARNING_COLOR = '#FFD835';
 
 // Scope map values

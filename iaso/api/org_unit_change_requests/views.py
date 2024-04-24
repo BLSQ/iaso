@@ -1,16 +1,15 @@
 import csv
 from datetime import datetime
+
 import django_filters
+from django.http import HttpResponse
+from django.utils import timezone
+from rest_framework import filters, viewsets
+from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.response import Response
 
 from iaso.api.common import CONTENT_TYPE_CSV
-from iaso.utils.models.common import get_creator_name
-from rest_framework import filters
-from rest_framework import viewsets
-from rest_framework.exceptions import PermissionDenied, ValidationError
-from rest_framework.decorators import action
-from django.utils import timezone
-from rest_framework.response import Response
-from django.http import HttpResponse
 from iaso.api.org_unit_change_requests.filters import OrgUnitChangeRequestListFilter
 from iaso.api.org_unit_change_requests.pagination import OrgUnitChangeRequestPagination
 from iaso.api.org_unit_change_requests.permissions import (
@@ -24,7 +23,8 @@ from iaso.api.org_unit_change_requests.serializers import (
     OrgUnitChangeRequestWriteSerializer,
 )
 from iaso.api.serializers import AppIdSerializer
-from iaso.models import OrgUnitChangeRequest, OrgUnit
+from iaso.models import OrgUnit, OrgUnitChangeRequest
+from iaso.utils.models.common import get_creator_name
 
 
 class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
@@ -116,17 +116,19 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
 
         status = serializer.validated_data["status"]
+        rejection_comment = serializer.validated_data.get("rejection_comment", "")
 
         if status == change_request.Statuses.APPROVED:
             change_request.approve(
                 user=self.request.user,
                 approved_fields=serializer.validated_data["approved_fields"],
+                rejection_comment=rejection_comment,
             )
 
         if status == change_request.Statuses.REJECTED:
             change_request.reject(
                 user=self.request.user,
-                rejection_comment=serializer.validated_data["rejection_comment"],
+                rejection_comment=rejection_comment,
             )
 
         response_serializer = OrgUnitChangeRequestRetrieveSerializer(change_request)

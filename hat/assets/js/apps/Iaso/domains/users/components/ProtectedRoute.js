@@ -62,9 +62,10 @@ const ProtectedRoute = ({ routeConfig, allRoutes, component }) => {
         if (!paramsString.includes('accountId') && currentUser.account) {
             navigate(`./accountId/${currentUser.account.id}/${paramsString}`, {
                 replace: true,
+                state: { ...location.state },
             });
         }
-    }, [currentUser.account, baseUrl, navigate, paramsString]);
+    }, [currentUser.account, baseUrl, navigate, paramsString, location.state]);
 
     useEffect(() => {
         // Use defined default language if it exists and if the user didn't set it manually

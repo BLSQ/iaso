@@ -1,32 +1,17 @@
-import { Box, Divider, Grid } from '@mui/material';
-import {
-    Field,
-    FormikErrors,
-    FormikProvider,
-    FormikTouched,
-    useFormik,
-} from 'formik';
+import { Box, Divider, Grid, Tab, Tabs } from '@mui/material';
+import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
-import React, { FunctionComponent, useCallback, useEffect } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 
 import {
     ConfirmCancelModal,
     LoadingSpinner,
     makeFullModal,
-    useSafeIntl
+    useSafeIntl,
 } from 'bluesquare-components';
 import { EditIconButton } from '../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 
-import { hasFormikFieldError } from '../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
 import { MultiSelect } from '../../../components/Inputs/MultiSelect';
-import {
-    BUDGET_REQUEST,
-    BUDGET_STATES,
-    ORPG_REVIEW,
-    REVIEW_FOR_APPROVAL,
-    RRT_REVIEW,
-    WORKFLOW_SUFFIX,
-} from '../../../constants/budget';
 import { useEditBudgetProcess } from '../hooks/api/useEditBudgetProcess';
 import { useGetBudget } from '../hooks/api/useGetBudget';
 import { useAvailableRoundsForUpdate } from '../hooks/api/useGetBudgetProcessAvailableRounds';
@@ -34,6 +19,7 @@ import MESSAGES from '../messages';
 import { Budget, BudgetDetail } from '../types';
 import { formatRoundNumber } from '../utils';
 import { EditBudgetProcessApproval } from './EditBudgetProcessApproval';
+import { EditBudgetProcessRelease } from './EditBudgetProcessRelease';
 import { useEditBudgetProcessSchema } from './validation';
 
 type Props = {
@@ -41,44 +27,14 @@ type Props = {
     closeDialog: () => void;
     budgetProcess: Budget;
 };
-const findErrorInFieldList = (
-    keys: string[],
-    errors: FormikErrors<any>,
-    touched: FormikTouched<any>,
-): boolean => {
-    return Boolean(
-        keys.find(key =>
-            hasFormikFieldError(`${key}${WORKFLOW_SUFFIX}`, errors, touched),
-        ),
-    );
-};
-const findBudgetStateIndex = (values: Record<string, any>): number => {
-    for (let i = BUDGET_STATES.length - 1; i >= 0; i -= 1) {
-        const key = `${BUDGET_STATES[i]}${WORKFLOW_SUFFIX}`;
-        if (values[key]) {
-            return i;
-        }
-    }
-    return -1;
-};
-const findNewBudgetState = (
-    fieldIndex: number,
-    values: Record<string, any>,
-): string | null => {
-    for (let i = fieldIndex - 1; i >= 0; i -= 1) {
-        const key = `${BUDGET_STATES[i]}${WORKFLOW_SUFFIX}`;
-        if (values[key]) {
-            return BUDGET_STATES[i];
-        }
-    }
-    return null;
-};
 const EditBudgetProcessModal: FunctionComponent<Props> = ({
     isOpen,
     closeDialog,
     budgetProcess,
 }) => {
     const { formatMessage } = useSafeIntl();
+
+    const [tab, setTab] = useState<'approval' | 'release'>('approval');
     const { data: budget } = useGetBudget(budgetProcess.id);
     const { data: availableRounds, isFetching: isFetchingAvailableRounds } =
         useAvailableRoundsForUpdate(
@@ -120,49 +76,10 @@ const EditBudgetProcessModal: FunctionComponent<Props> = ({
         // only change formik values while fetching budget detail
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [budget]);
-    const { values, isSubmitting, isValid, errors, touched, setFieldValue } =
-        formik;
+    const { values, isSubmitting, isValid } = formik;
     const isFormChanged = !isEqual(values, budget);
     const allowConfirm = !isSubmitting && isValid && isFormChanged;
-    const updateBudgetStatus = useCallback(
-        (fieldName: string, value: any) => {
-            const fieldKey = fieldName.replace(WORKFLOW_SUFFIX, '');
-            const computedBudgetStatusIndex = findBudgetStateIndex(values);
-            const fieldIndex = BUDGET_STATES.findIndex(
-                budgetState => budgetState === fieldKey,
-            );
-            if (fieldIndex > computedBudgetStatusIndex && value) {
-                // setFieldValue('budget_status', fieldKey);
-                setFieldValue('current_state_key', fieldKey);
-            } else if (!value && fieldIndex >= computedBudgetStatusIndex) {
-                const newBudgetState = findNewBudgetState(fieldIndex, values);
-                // setFieldValue('budget_status', newBudgetState);
-                setFieldValue('current_state_key', newBudgetState ?? '-');
-            }
-        },
-        [setFieldValue, values],
-    );
-    const hasRequestFieldsError: boolean = findErrorInFieldList(
-        BUDGET_REQUEST,
-        errors,
-        touched,
-    );
-    const hasRRTReviewError: boolean = findErrorInFieldList(
-        RRT_REVIEW,
-        errors,
-        touched,
-    );
-    const hasORPGReviewError: boolean = findErrorInFieldList(
-        ORPG_REVIEW,
-        errors,
-        touched,
-    );
-    const hasApprovalFieldsError: boolean = findErrorInFieldList(
-        REVIEW_FOR_APPROVAL,
-        errors,
-        touched,
-    );
-    const disableEdition = budget?.has_data_in_budget_tool ?? false;
+    console.log('values', values);
     return (
         <FormikProvider value={formik}>
             {isFetchingAvailableRounds && <LoadingSpinner />}
@@ -195,132 +112,27 @@ const EditBudgetProcessModal: FunctionComponent<Props> = ({
                                 returnFullObject
                             />
                         </Grid>
-                        <EditBudgetProcessApproval budget={budget} />
-                        {/* <Grid item xs={12}>
-                            <Box mb={2}>
-                                <Typography variant="button">
-                                    {`${formatMessage(MESSAGES.status)}: ${
-                                        budget?.current_state?.label
-                                    }`}
-                                </Typography>
-                            </Box>
-                            <Box>
-                                <Divider />
-                            </Box>
-                        </Grid>
-                        <Grid item xs={12} lg={6}>
-                            <ExpandableItem
-                                label={formatMessage(MESSAGES.budgetRequest)}
-                                preventCollapse={hasRequestFieldsError}
+                        <Grid item xs={12}>
+                            <Tabs
+                                value={tab}
+                                onChange={(_, newtab) => setTab(newtab)}
                             >
-                                {BUDGET_REQUEST.map((node, index) => {
-                                    return (
-                                        <Box
-                                            mt={index === 0 ? 2 : 0}
-                                            key={node}
-                                        >
-                                            <Field
-                                                label={formatMessage(
-                                                    MESSAGES[node],
-                                                )}
-                                                name={`${node}${WORKFLOW_SUFFIX}`}
-                                                component={DateInput}
-                                                fullWidth
-                                                disabled={disableEdition}
-                                                onChange={updateBudgetStatus}
-                                            />
-                                        </Box>
-                                    );
-                                })}
-                            </ExpandableItem>
-                            <Divider style={{ height: '1px', width: '100%' }} />
-                            <ExpandableItem
-                                label={formatMessage(MESSAGES.RRTReview)}
-                                preventCollapse={hasRRTReviewError}
-                            >
-                                {RRT_REVIEW.map((node, index) => {
-                                    return (
-                                        <Box
-                                            mt={index === 0 ? 2 : 0}
-                                            key={node}
-                                        >
-                                            <Field
-                                                label={formatMessage(
-                                                    MESSAGES[node],
-                                                )}
-                                                name={`${node}${WORKFLOW_SUFFIX}`}
-                                                component={DateInput}
-                                                fullWidth
-                                                disabled={disableEdition}
-                                                onChange={updateBudgetStatus}
-                                            />
-                                        </Box>
-                                    );
-                                })}
-                            </ExpandableItem>
-                            <Box mb={2}>
-                                <Divider />
-                            </Box>
-                        </Grid>
-
-                        <Grid item xs={12} lg={6}>
-                            <ExpandableItem
-                                label={formatMessage(MESSAGES.ORPGReview)}
-                                preventCollapse={hasORPGReviewError}
-                            >
-                                {ORPG_REVIEW.map((node, index) => {
-                                    return (
-                                        <Box
-                                            mt={index === 0 ? 2 : 0}
-                                            key={node}
-                                        >
-                                            <Field
-                                                label={formatMessage(
-                                                    MESSAGES[node],
-                                                )}
-                                                name={`${node}${WORKFLOW_SUFFIX}`}
-                                                component={DateInput}
-                                                fullWidth
-                                                disabled={disableEdition}
-                                                onChange={updateBudgetStatus}
-                                            />
-                                        </Box>
-                                    );
-                                })}
-                            </ExpandableItem>
-                            <Box>
-                                <Divider />
-                            </Box>
-                            <ExpandableItem
-                                label={formatMessage(MESSAGES.approval)}
-                                preventCollapse={hasApprovalFieldsError}
-                            >
-                                {REVIEW_FOR_APPROVAL.map((node, index) => {
-                                    return (
-                                        <Box
-                                            mt={index === 0 ? 2 : 0}
-                                            key={node}
-                                        >
-                                            <Field
-                                                label={formatMessage(
-                                                    MESSAGES[node],
-                                                )}
-                                                name={`${node}${WORKFLOW_SUFFIX}`}
-                                                component={DateInput}
-                                                fullWidth
-                                                disabled={disableEdition}
-                                                onChange={updateBudgetStatus}
-                                            />
-                                        </Box>
-                                    );
-                                })}
-                            </ExpandableItem>
-                            <Box mb={2}>
-                                <Divider
-                                    style={{ height: '1px', width: '100%' }}
+                                <Tab
+                                    value="approval"
+                                    label={formatMessage(
+                                        MESSAGES.budgetApproval,
+                                    )}
                                 />
-                            </Box>
-                        </Grid> */}
+                                <Tab
+                                    value="release"
+                                    label={formatMessage(MESSAGES.fundsRelease)}
+                                />
+                            </Tabs>
+                        </Grid>
+                        {tab === 'approval' && (
+                            <EditBudgetProcessApproval budget={budget} />
+                        )}
+                        {tab === 'release' && <EditBudgetProcessRelease />}
                     </Grid>
                 </ConfirmCancelModal>
             )}

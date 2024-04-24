@@ -177,6 +177,38 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.table.label.status',
         defaultMessage: 'Status',
     },
+    budgetApproval: {
+        id: 'iaso.polio.budget.budgetApproval',
+        defaultMessage: 'Budget approval',
+    },
+    fundsRelease: {
+        id: 'iaso.polio.budget.fundsRelease',
+        defaultMessage: 'Funds release',
+    },
+    disbursedToCoWho: {
+        id: 'iaso.polio.form.label.disbursedToCoWho',
+        defaultMessage: 'Disbursed to CO (WHO)',
+    },
+    disbursedToMohWho: {
+        id: 'iaso.polio.form.label.disbursedToMohWho',
+        defaultMessage: 'Disbursed to MOH (WHO)',
+    },
+    disbursedToCoUnicef: {
+        id: 'iaso.polio.form.label.disbursedToCoUnicef',
+        defaultMessage: 'Disbursed to CO (Unicef)',
+    },
+    disbursedToMohUnicef: {
+        id: 'iaso.polio.form.label.disbursedToMohUnicef',
+        defaultMessage: 'Disbursed to MOH (Unicef)',
+    },
+    district_count: {
+        id: 'iaso.polio.form.label.districtCount',
+        defaultMessage: 'District Count',
+    },
+    noRegretFund: {
+        id: 'iaso.polio.form.label.noRegretFund',
+        defaultMessage: 'No Regret Fund',
+    },
 });
 
 export default MESSAGES;

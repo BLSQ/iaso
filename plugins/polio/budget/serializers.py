@@ -168,9 +168,17 @@ class BudgetProcessWriteSerializer(serializers.ModelSerializer):
     def update(self, budget_process: BudgetProcess, validated_data: dict) -> BudgetProcess:
         # Unlink old rounds.
         budget_process.rounds.update(budget_process=None)
+
         # Link new rounds.
-        rounds_ids = [round.id for round in self.validated_data["rounds"]]
+        rounds_ids = [round.id for round in validated_data["rounds"]]
         Round.objects.filter(id__in=rounds_ids).update(budget_process=budget_process)
+
+        # Update other fields of budget_process with validated_data.
+        for attr, value in validated_data.items():
+            if attr != "rounds":  # Exclude rounds as they are already handled.
+                setattr(budget_process, attr, value)
+
+        budget_process.save()
         return budget_process
 
 

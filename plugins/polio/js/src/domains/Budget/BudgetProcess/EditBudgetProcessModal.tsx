@@ -180,23 +180,24 @@ const EditBudgetProcessModal: FunctionComponent<Props> = ({
                     confirmMessage={MESSAGES.modalWriteConfirm}
                     allowConfirm={allowConfirm}
                     cancelMessage={MESSAGES.modalWriteCancel}
+                    maxWidth="md"
                 >
                     <Box mb={2}>
                         <Divider />
                     </Box>
-                    <Box mb={2}>
-                        <Field
-                            label={formatMessage(MESSAGES.labelRound)}
-                            name="rounds"
-                            component={MultiSelect}
-                            options={availableRounds}
-                            returnFullObject
-                        />
-                    </Box>
 
                     <Grid container direction="row" item spacing={2}>
-                        <Grid item>
-                            <Box mb={2} px={2} py={2}>
+                        <Grid item xs={6}>
+                            <Field
+                                label={formatMessage(MESSAGES.labelRound)}
+                                name="rounds"
+                                component={MultiSelect}
+                                options={availableRounds}
+                                returnFullObject
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <Box mb={2}>
                                 <Typography variant="button">
                                     {`${formatMessage(MESSAGES.status)}: ${
                                         budget?.current_state?.label

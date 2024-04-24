@@ -160,6 +160,7 @@ class BudgetProcessWriteSerializer(serializers.ModelSerializer):
         return budget_process
 
     def update(self, budget_process: BudgetProcess, validated_data: dict) -> BudgetProcess:
+        budget_process = super().update(budget_process, validated_data)
         # Unlink old rounds.
         budget_process.rounds.update(budget_process=None)
         # Link new rounds.

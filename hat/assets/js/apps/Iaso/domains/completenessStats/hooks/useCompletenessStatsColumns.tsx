@@ -6,8 +6,9 @@ import {
 } from 'bluesquare-components';
 import { ArrowUpward, AccountTree } from '@mui/icons-material';
 
+import { useLocation } from 'react-router-dom';
 import MESSAGES from '../messages';
-import { userHasPermission } from '../../users/utils';
+import { userHasOneOfPermissions } from '../../users/utils';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { baseUrls } from '../../../constants/urls';
 import {
@@ -29,10 +30,11 @@ export const useCompletenessStatsColumns = (
     const currentUser = useCurrentUser();
 
     const getParentPageUrl = usetGetParentPageUrl(router);
-    const hasSubmissionPermission = userHasPermission(
-        Permission.SUBMISSIONS,
+    const hasSubmissionPermission = userHasOneOfPermissions(
+        [Permission.SUBMISSIONS, Permission.SUBMISSIONS_UPDATE],
         currentUser,
     );
+    const { path } = useLocation();
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
         let columns: Column[] = [
@@ -145,6 +147,7 @@ export const useCompletenessStatsColumns = (
                                     url={childrenPageUrl}
                                     tooltipMessage={MESSAGES.seeChildren}
                                     overrideIcon={AccountTree}
+                                    location={{ location: path }}
                                 />
                             )}
                         {settings.row.original.is_root && (
@@ -152,6 +155,7 @@ export const useCompletenessStatsColumns = (
                                 url={parentPageUrl}
                                 tooltipMessage={MESSAGES.seeParent}
                                 overrideIcon={ArrowUpward}
+                                location={{ location: path }}
                             />
                         )}
                         {hasSubmissionPermission && hasFormSubmissions && (
@@ -160,6 +164,7 @@ export const useCompletenessStatsColumns = (
                                 url={`/${baseUrls.instances}/accountId/${params.accountId}/page/1/levels/${orgunitId}`}
                                 icon="remove-red-eye"
                                 tooltipMessage={MESSAGES.viewInstances}
+                                location={{ location: path }}
                             />
                         )}
                     </>

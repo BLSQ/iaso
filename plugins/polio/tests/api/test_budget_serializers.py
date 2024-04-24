@@ -208,7 +208,10 @@ class BudgetProcessWriteSerializerTestCase(TestCase):
         self.round_2.budget_process = self.budget_process
         self.round_2.save()
 
-        data = {"rounds": [self.round_3.pk]}
+        data = {
+            "rounds": [self.round_3.pk],
+            "no_regret_fund_amount": 50.0,
+        }
         context = {"request": self.request}
         serializer = BudgetProcessWriteSerializer(self.budget_process, data=data, partial=True, context=context)
         self.assertTrue(serializer.is_valid())
@@ -217,6 +220,7 @@ class BudgetProcessWriteSerializerTestCase(TestCase):
         rounds = budget_process.rounds.all()
         self.assertEqual(1, len(rounds))
         self.assertIn(self.round_3, rounds)
+        self.assertEqual(budget_process.no_regret_fund_amount, 50.0)
 
     def test_validate_raises_for_invalid_rounds(self):
         invalid_round = Round.objects.create(number=1)

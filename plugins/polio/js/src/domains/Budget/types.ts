@@ -53,6 +53,8 @@ export type Transition = {
 
 export type Round = {
     id: number;
+    value?: number;
+    label?: string;
     number: string;
 };
 
@@ -80,17 +82,17 @@ export type Budget = {
     rounds?: Round[];
     timeline?: Timeline;
 };
+type BudgetState = {
+    key: string;
+    label: string;
+};
 export type BudgetDetail = {
     id: number;
-    rounds?: Round[];
+    rounds: Round[];
     campaign_id: string;
-    has_data_in_budget_tool?: boolean;
-};
-
-export type BudgetDetailForm = {
-    id: number;
-    rounds?: number[];
-    has_data_in_budget_tool?: boolean;
+    has_data_in_budget_tool: boolean;
+    current_state_key: string;
+    current_state: BudgetState;
 };
 
 export type LinkWithAlias = { alias: string; url: string };

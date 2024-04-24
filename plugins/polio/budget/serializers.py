@@ -7,17 +7,18 @@ from rest_framework import serializers
 from iaso.api.common import DynamicFieldsModelSerializer
 from iaso.models.microplanning import Team
 from plugins.polio.api.shared_serializers import UserSerializer
+
+from ..models import Campaign, Round
 from .models import (
+    BudgetProcess,
     BudgetStep,
     BudgetStepFile,
     BudgetStepLink,
+    get_workflow,
     model_field_exists,
     send_budget_mails,
-    get_workflow,
-    BudgetProcess,
 )
-from .workflow import next_transitions, can_user_transition, Category, effective_teams
-from ..models import Round, Campaign
+from .workflow import Category, can_user_transition, effective_teams, next_transitions
 
 
 class TransitionSerializer(serializers.Serializer):
@@ -226,6 +227,7 @@ class BudgetProcessSerializer(DynamicFieldsModelSerializer, serializers.ModelSer
             "unicef_disbursed_to_co_at",
             "unicef_disbursed_to_moh_at",
             "no_regret_fund_amount",
+            "has_data_in_budget_tool",
         ]
         default_fields = [
             "created_at",
@@ -247,6 +249,10 @@ class BudgetProcessSerializer(DynamicFieldsModelSerializer, serializers.ModelSer
     possible_transitions = serializers.SerializerMethodField()
     timeline = serializers.SerializerMethodField()
     next_transitions = serializers.SerializerMethodField()
+    has_data_in_budget_tool = serializers.SerializerMethodField(read_only=True)
+
+    def get_has_data_in_budget_tool(self, budget_process: BudgetProcess):
+        return budget_process.budget_steps.count() > 0
 
     def get_current_state(self, budget_process: BudgetProcess):
         workflow = get_workflow()

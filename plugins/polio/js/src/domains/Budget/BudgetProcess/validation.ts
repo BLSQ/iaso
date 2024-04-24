@@ -27,11 +27,13 @@ export const useCreateBudgetProcessSchema = () => {
 };
 
 export const useEditBudgetProcessSchema = () => {
-    const { formatMessage } = useSafeIntl();
     return yup.object().shape({
         rounds: yup
-            .string()
-            .nullable()
-            .required(formatMessage(MESSAGES.requiredField)),
+            .array(
+                yup.object().shape({
+                    id: yup.number().nullable(),
+                }),
+            )
+            .nullable(),
     });
 };

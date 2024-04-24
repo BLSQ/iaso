@@ -73,7 +73,8 @@ const budgetDetailsFields: string[] = [
     'unicef_disbursed_to_co_at',
     'unicef_disbursed_to_moh_at',
     'no_regret_fund_amount',
-    // 'has_data_in_budget_tool',
+    'current_state',
+    'has_data_in_budget_tool',
 ];
 export const useGetBudget = (
     id: number,

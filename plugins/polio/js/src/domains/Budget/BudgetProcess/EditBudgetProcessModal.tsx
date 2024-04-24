@@ -1,4 +1,4 @@
-import { Box, Divider, Grid } from '@mui/material';
+import { Box, Divider, Grid, Typography } from '@mui/material';
 import {
     Field,
     FormikErrors,
@@ -33,7 +33,8 @@ import { useEditBudgetProcess } from '../hooks/api/useEditBudgetProcess';
 import { useGetBudget } from '../hooks/api/useGetBudget';
 import { useAvailableRoundsForUpdate } from '../hooks/api/useGetBudgetProcessAvailableRounds';
 import MESSAGES from '../messages';
-import { Budget, BudgetDetailForm } from '../types';
+import { Budget, BudgetDetail } from '../types';
+import { formatRoundNumber } from '../utils';
 import { useEditBudgetProcessSchema } from './validation';
 
 type Props = {
@@ -88,23 +89,30 @@ const EditBudgetProcessModal: FunctionComponent<Props> = ({
 
     const { mutate: confirm } = useEditBudgetProcess();
     const schema = useEditBudgetProcessSchema();
-    const formik = useFormik<BudgetDetailForm>({
-        initialValues: {
-            id: budgetProcess.id,
-        },
+    const formik = useFormik<Partial<BudgetDetail>>({
+        initialValues: {},
         enableReinitialize: true,
         validateOnBlur: true,
         validationSchema: schema,
         onSubmit: async newValues => {
-            confirm({ id: budgetProcess.id, rounds: newValues.rounds });
+            confirm({
+                id: budgetProcess.id,
+                ...newValues,
+                rounds: newValues.rounds,
+            });
         },
     });
 
     useEffect(() => {
         if (budget) {
-            const newValues = {
+            const newValues: BudgetDetail = {
                 ...budget,
-                rounds: budget.rounds?.map(round => round.id) || [],
+                rounds:
+                    budget.rounds?.map(round => ({
+                        ...round,
+                        value: round.id,
+                        label: formatRoundNumber(round.number),
+                    })) || [],
             };
             if (!isEqual(formik.values, newValues)) {
                 formik.setValues(newValues);
@@ -113,19 +121,10 @@ const EditBudgetProcessModal: FunctionComponent<Props> = ({
         // only change formik values while fetching budget detail
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [budget]);
-    const {
-        values,
-        initialValues,
-        isSubmitting,
-        isValid,
-        errors,
-        touched,
-        setFieldValue,
-    } = formik;
-    const { rounds, has_data_in_budget_tool: disableEdition } = values;
-    const isFormChanged = !isEqual(values, initialValues);
-    const allowConfirm =
-        !isSubmitting && isValid && isFormChanged && Boolean(rounds);
+    const { values, isSubmitting, isValid, errors, touched, setFieldValue } =
+        formik;
+    const isFormChanged = !isEqual(values, budget);
+    const allowConfirm = !isSubmitting && isValid && isFormChanged;
     const updateBudgetStatus = useCallback(
         (fieldName: string, value: any) => {
             const fieldKey = fieldName.replace(WORKFLOW_SUFFIX, '');
@@ -134,15 +133,12 @@ const EditBudgetProcessModal: FunctionComponent<Props> = ({
                 budgetState => budgetState === fieldKey,
             );
             if (fieldIndex > computedBudgetStatusIndex && value) {
-                setFieldValue('budget_status', fieldKey);
-                setFieldValue('budget_current_state_key', fieldKey);
+                // setFieldValue('budget_status', fieldKey);
+                setFieldValue('current_state_key', fieldKey);
             } else if (!value && fieldIndex >= computedBudgetStatusIndex) {
                 const newBudgetState = findNewBudgetState(fieldIndex, values);
-                setFieldValue('budget_status', newBudgetState);
-                setFieldValue(
-                    'budget_current_state_key',
-                    newBudgetState ?? '-',
-                );
+                // setFieldValue('budget_status', newBudgetState);
+                setFieldValue('current_state_key', newBudgetState ?? '-');
             }
         },
         [setFieldValue, values],
@@ -167,6 +163,7 @@ const EditBudgetProcessModal: FunctionComponent<Props> = ({
         errors,
         touched,
     );
+    const disableEdition = budget?.has_data_in_budget_tool ?? false;
     return (
         <FormikProvider value={formik}>
             {isFetchingAvailableRounds && <LoadingSpinner />}
@@ -193,10 +190,23 @@ const EditBudgetProcessModal: FunctionComponent<Props> = ({
                             name="rounds"
                             component={MultiSelect}
                             options={availableRounds}
+                            returnFullObject
                         />
                     </Box>
 
                     <Grid container direction="row" item spacing={2}>
+                        <Grid item>
+                            <Box mb={2} px={2} py={2}>
+                                <Typography variant="button">
+                                    {`${formatMessage(MESSAGES.status)}: ${
+                                        budget?.current_state?.label
+                                    }`}
+                                </Typography>
+                            </Box>
+                            <Box>
+                                <Divider />
+                            </Box>
+                        </Grid>
                         <Grid item xs={12} lg={6}>
                             <ExpandableItem
                                 label={formatMessage(MESSAGES.budgetRequest)}

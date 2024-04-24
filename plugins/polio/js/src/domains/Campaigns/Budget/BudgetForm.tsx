@@ -238,6 +238,7 @@ export const BudgetForm: FunctionComponent = () => {
                                             mt={index === 0 ? 2 : 0}
                                             key={node}
                                         >
+                                            {`${node}${WORKFLOW_SUFFIX}`}
                                             <Field
                                                 label={formatMessage(
                                                     MESSAGES[node],
@@ -263,6 +264,7 @@ export const BudgetForm: FunctionComponent = () => {
                                             mt={index === 0 ? 2 : 0}
                                             key={node}
                                         >
+                                            {`${node}${WORKFLOW_SUFFIX}`}
                                             <Field
                                                 label={formatMessage(
                                                     MESSAGES[node],
@@ -293,6 +295,7 @@ export const BudgetForm: FunctionComponent = () => {
                                             mt={index === 0 ? 2 : 0}
                                             key={node}
                                         >
+                                            {`${node}${WORKFLOW_SUFFIX}`}
                                             <Field
                                                 label={formatMessage(
                                                     MESSAGES[node],
@@ -320,6 +323,7 @@ export const BudgetForm: FunctionComponent = () => {
                                             mt={index === 0 ? 2 : 0}
                                             key={node}
                                         >
+                                            {`${node}${WORKFLOW_SUFFIX}`}
                                             <Field
                                                 label={formatMessage(
                                                     MESSAGES[node],

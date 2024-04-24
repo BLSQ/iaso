@@ -173,6 +173,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.approval_confirmed',
         defaultMessage: 'Approval confirmed',
     },
+    status: {
+        id: 'iaso.polio.table.label.status',
+        defaultMessage: 'Status',
+    },
 });
 
 export default MESSAGES;

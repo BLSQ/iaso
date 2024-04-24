@@ -1,19 +1,19 @@
-import React, { useCallback, useState, useMemo } from 'react';
-import { Box, Grid } from '@mui/material';
+import { Box, Grid, Tooltip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
 import {
+    LoadingSpinner,
     commonStyles,
     selectionInitialState,
     setTableSelection,
     useSafeIntl,
-    LoadingSpinner,
 } from 'bluesquare-components';
 
 import { useQueryClient } from 'react-query';
-import { createInstance } from './actions';
 import { redirectToReplace } from '../../routing/actions.ts';
+import { createInstance } from './actions';
 import {
     fetchFormDetailsForInstance,
     fetchInstancesAsDict,
@@ -22,27 +22,28 @@ import {
 
 import {
     getEndpointUrl,
+    getExportUrl,
     getFilters,
     getSelectionActions,
-    getExportUrl,
 } from './utils/index.tsx';
 
-import { InstancesTopBar as TopBar } from './components/TopBar.tsx';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent.tsx';
-import { InstancesMap } from './components/InstancesMap/InstancesMap.tsx';
-import InstancesFiltersComponent from './components/InstancesFiltersComponent';
 import { CreateReAssignDialog } from './components/CreateReAssignDialogComponent.tsx';
+import InstancesFiltersComponent from './components/InstancesFiltersComponent';
+import { InstancesMap } from './components/InstancesMap/InstancesMap.tsx';
+import { InstancesTopBar as TopBar } from './components/TopBar.tsx';
 
 import { baseUrls } from '../../constants/urls';
 
-import MESSAGES from './messages';
-import { useSnackQuery } from '../../libs/apiHooks.ts';
 import snackMessages from '../../components/snackBars/messages';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink.tsx';
-import { PaginatedInstanceFiles } from './components/PaginatedInstancesFiles';
+import { useSnackQuery } from '../../libs/apiHooks.ts';
+import { useCurrentUser } from '../../utils/usersUtils.ts';
 import { useGetPossibleFields } from '../forms/hooks/useGetPossibleFields.ts';
 import { userHasPermission } from '../users/utils';
-import { useCurrentUser } from '../../utils/usersUtils.ts';
+import { PaginatedInstanceFiles } from './components/PaginatedInstancesFiles';
+import MESSAGES from './messages';
+
 import * as Permission from '../../utils/permissions.ts';
 import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
 
@@ -210,16 +211,27 @@ const Instances = () => {
                                     />
                                 </Box>
                             )}
-
-                            <Box display="flex" justifyContent="flex-end">
-                                <DownloadButtonsComponent
-                                    csvUrl={getExportUrl(params, 'csv')}
-                                    xlsxUrl={getExportUrl(params, 'xlsx')}
-                                />
-                            </Box>
                         </Grid>
                     </Grid>
                 )}
+                <Box display="flex" justifyContent="flex-end">
+                    <Tooltip
+                        title={
+                            isSingleFormSearch
+                                ? ''
+                                : formatMessage(MESSAGES.filterParam)
+                        }
+                        arrow
+                    >
+                        <Box>
+                            <DownloadButtonsComponent
+                                csvUrl={getExportUrl(params, 'csv')}
+                                xlsxUrl={getExportUrl(params, 'xlsx')}
+                                disabled={!isSingleFormSearch}
+                            />
+                        </Box>
+                    </Tooltip>
+                </Box>
                 {tab === 'list' && tableColumns.length > 0 && (
                     <TableWithDeepLink
                         data={data?.instances ?? []}

@@ -23,6 +23,7 @@ import MESSAGES from '../messages';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import { FormDataType } from '../types/forms';
 import { FormLegendInput } from './FormLegendInput';
+import { CR_MODE_NONE, changeRequestModeOptions } from '../constants';
 
 const useStyles = makeStyles((theme: Theme) => ({
     radio: {
@@ -315,6 +316,21 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                                         ),
                                     )}
                                 label={MESSAGES.fields}
+                            />
+                            <InputComponent
+                                keyValue="change_request_mode"
+                                clearable
+                                onChange={(key, value) =>
+                                    setFieldValue(key, value)
+                                }
+                                value={
+                                    currentForm.change_request_mode.value ||
+                                    CR_MODE_NONE
+                                }
+                                errors={currentForm.change_request_mode.errors}
+                                type="select"
+                                options={changeRequestModeOptions}
+                                label={MESSAGES.changeRequestMode}
                             />
                             <Box
                                 style={{

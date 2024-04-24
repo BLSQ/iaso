@@ -1,3 +1,4 @@
+import datetime
 import json
 from io import StringIO
 from typing import List, Dict
@@ -126,15 +127,84 @@ class BudgetProcessViewSetTestCase(APITestCase):
         """
         self.client.force_login(self.user)
         self.assertEqual(self.budget_process_1.rounds.count(), 2)
+        data = {
+            "id": self.budget_process_1.pk,
+            "campaign_id": self.campaign.id,
+            "obr_name": "test staging",
+            "country_name": "BURUNDI",
+            "rounds": [self.round_1.pk],
+            "current_state": {"key": "-", "label": "No budget submitted"},
+            "ra_completed_at_WFEDITABLE": "2026-04-01",
+            "who_sent_budget_at_WFEDITABLE": "2026-04-01",
+            "unicef_sent_budget_at_WFEDITABLE": "2026-04-01",
+            "gpei_consolidated_budgets_at_WFEDITABLE": "2026-04-01",
+            "submitted_to_rrt_at_WFEDITABLE": "2026-04-01",
+            "feedback_sent_to_gpei_at_WFEDITABLE": "2026-04-01",
+            "re_submitted_to_rrt_at_WFEDITABLE": "2026-04-01",
+            "submitted_to_orpg_operations1_at_WFEDITABLE": "2026-04-01",
+            "feedback_sent_to_rrt1_at_WFEDITABLE": "2026-04-01",
+            "re_submitted_to_orpg_operations1_at_WFEDITABLE": "2026-04-01",
+            "submitted_to_orpg_wider_at_WFEDITABLE": "2026-04-01",
+            "submitted_to_orpg_operations2_at_WFEDITABLE": "2026-04-01",
+            "feedback_sent_to_rrt2_at_WFEDITABLE": "2026-04-01",
+            "re_submitted_to_orpg_operations2_at_WFEDITABLE": "2026-04-01",
+            "submitted_for_approval_at_WFEDITABLE": "2026-04-01",
+            "feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE": "2026-04-01",
+            "feedback_sent_to_orpg_operations_who_at_WFEDITABLE": "2026-04-01",
+            "approved_by_who_at_WFEDITABLE": "2026-04-01",
+            "approved_by_unicef_at_WFEDITABLE": "2026-04-01",
+            "approved_at_WFEDITABLE": "2026-04-01",
+            "approval_confirmed_at_WFEDITABLE": "2026-04-01",
+            "payment_mode": "",
+            "district_count": None,
+            "who_disbursed_to_co_at": None,
+            "who_disbursed_to_moh_at": None,
+            "unicef_disbursed_to_co_at": None,
+            "unicef_disbursed_to_moh_at": None,
+            "no_regret_fund_amount": 30.0,
+            "has_data_in_budget_tool": False,
+        }
         response = self.client.patch(
             f"/api/polio/budget/{self.budget_process_1.pk}/",
-            data={"rounds": [self.round_1.pk]},
+            data=data,
             format="json",
         )
+
+        self.budget_process_1.refresh_from_db()
+        self.assertEqual(self.budget_process_1.rounds.count(), 1)
+        self.assertEqual(self.budget_process_1.ra_completed_at_WFEDITABLE, datetime.date(2026, 4, 1))
+
         response_data = self.assertJSONResponse(response, 200)
         self.assertEqual(response_data["id"], self.budget_process_1.pk)
         self.assertEqual(response_data["rounds"], [self.round_1.pk])
-        self.assertEqual(self.budget_process_1.rounds.count(), 1)
+        self.assertEqual(response_data["ra_completed_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["who_sent_budget_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["unicef_sent_budget_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["gpei_consolidated_budgets_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["submitted_to_rrt_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["feedback_sent_to_gpei_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["re_submitted_to_rrt_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["submitted_to_orpg_operations1_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["feedback_sent_to_rrt1_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["re_submitted_to_orpg_operations1_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["submitted_to_orpg_wider_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["submitted_to_orpg_operations2_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["feedback_sent_to_rrt2_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["re_submitted_to_orpg_operations2_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["submitted_for_approval_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["feedback_sent_to_orpg_operations_who_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["approved_by_who_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["approved_by_unicef_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["approved_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["approval_confirmed_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["payment_mode"], "")
+        self.assertEqual(response_data["district_count"], None)
+        self.assertEqual(response_data["who_disbursed_to_co_at"], None)
+        self.assertEqual(response_data["who_disbursed_to_moh_at"], None)
+        self.assertEqual(response_data["unicef_disbursed_to_co_at"], None)
+        self.assertEqual(response_data["unicef_disbursed_to_moh_at"], None)
+        self.assertEqual(response_data["no_regret_fund_amount"], "30.00")
 
     def test_soft_delete(self):
         """

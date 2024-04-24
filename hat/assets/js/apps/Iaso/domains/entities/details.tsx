@@ -78,13 +78,7 @@ export const Details: FunctionComponent = () => {
             <TopBar
                 title={formatMessage(MESSAGES.beneficiary)}
                 displayBackButton
-                goBack={() => {
-                    if (prevPathname) {
-                        goBack();
-                    } else {
-                        dispatch(redirectToReplace(baseUrls.entities, {}));
-                    }
-                }}
+                goBack={goBack}
             />
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>
                 <Grid container spacing={2}>

@@ -4,8 +4,7 @@ export const useGoBack = (fallBackUrl = 'home'): (() => void) => {
     const navigate = useNavigate();
     const { state, pathname } = useLocation();
     if (!state) {
-        return () =>
-            navigate(`../${fallBackUrl}`, { state: { from: pathname } });
+        return () => navigate(`/${fallBackUrl}`, { state: { from: pathname } });
     }
     return () => navigate(-1);
 };

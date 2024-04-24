@@ -60,7 +60,9 @@ const ProtectedRoute = ({ routeConfig, allRoutes, component }) => {
     useEffect(() => {
         // Checking with paramsString because params maybe empty if the config is not correct for useParamsObject
         if (!paramsString.includes('accountId') && currentUser.account) {
-            navigate(`./accountId/${currentUser.account.id}/${paramsString}`);
+            navigate(`./accountId/${currentUser.account.id}/${paramsString}`, {
+                replace: true,
+            });
         }
     }, [currentUser.account, baseUrl, navigate, paramsString]);
 

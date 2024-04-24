@@ -18,21 +18,21 @@ export const ActionCell: FunctionComponent<Props> = ({ orgUnit }) => {
         return (
             <section>
                 <IconButtonComponent
-                    url={`${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}/tab/infos`}
+                    url={`/${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}/tab/infos`}
                     icon="remove-red-eye"
                     tooltipMessage={MESSAGES.details}
                 />
                 {(orgUnit.has_geo_json ||
                     isValidCoordinate(orgUnit.latitude, orgUnit.longitude)) && (
                     <IconButtonComponent
-                        url={`${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}/tab/map`}
+                        url={`/${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}/tab/map`}
                         icon="map"
                         tooltipMessage={MESSAGES.map}
                     />
                 )}
 
                 <IconButtonComponent
-                    url={`${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}/tab/history`}
+                    url={`/${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}/tab/history`}
                     icon="history"
                     tooltipMessage={MESSAGES.history}
                 />

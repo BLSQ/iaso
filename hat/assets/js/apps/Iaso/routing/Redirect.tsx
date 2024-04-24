@@ -24,9 +24,11 @@ export const Redirect: FunctionComponent<Props> = ({ to, path }) => {
             destination = destination.replace(`:${key}`, `${value}`);
         }
     });
+    // After the params specified in the redirection have been matched and the values replaced,
+    // append all other params (ie the rest of the url) as is
     if (params['*']) {
         destination = `${destination}${params['*']}`;
     }
 
-    return <Navigate to={`${destination}`} relative="path" />;
+    return <Navigate to={`${destination}`} />;
 };

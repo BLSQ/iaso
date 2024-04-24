@@ -1,4 +1,4 @@
-import { Box, Divider, Grid, Typography } from '@mui/material';
+import { Box, Divider, Grid } from '@mui/material';
 import {
     Field,
     FormikErrors,
@@ -11,15 +11,13 @@ import React, { FunctionComponent, useCallback, useEffect } from 'react';
 
 import {
     ConfirmCancelModal,
-    ExpandableItem,
     LoadingSpinner,
     makeFullModal,
-    useSafeIntl,
+    useSafeIntl
 } from 'bluesquare-components';
 import { EditIconButton } from '../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 
 import { hasFormikFieldError } from '../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
-import { DateInput } from '../../../components/Inputs';
 import { MultiSelect } from '../../../components/Inputs/MultiSelect';
 import {
     BUDGET_REQUEST,
@@ -35,6 +33,7 @@ import { useAvailableRoundsForUpdate } from '../hooks/api/useGetBudgetProcessAva
 import MESSAGES from '../messages';
 import { Budget, BudgetDetail } from '../types';
 import { formatRoundNumber } from '../utils';
+import { EditBudgetProcessApproval } from './EditBudgetProcessApproval';
 import { useEditBudgetProcessSchema } from './validation';
 
 type Props = {
@@ -196,7 +195,8 @@ const EditBudgetProcessModal: FunctionComponent<Props> = ({
                                 returnFullObject
                             />
                         </Grid>
-                        <Grid item xs={12}>
+                        <EditBudgetProcessApproval budget={budget} />
+                        {/* <Grid item xs={12}>
                             <Box mb={2}>
                                 <Typography variant="button">
                                     {`${formatMessage(MESSAGES.status)}: ${
@@ -320,7 +320,7 @@ const EditBudgetProcessModal: FunctionComponent<Props> = ({
                                     style={{ height: '1px', width: '100%' }}
                                 />
                             </Box>
-                        </Grid>
+                        </Grid> */}
                     </Grid>
                 </ConfirmCancelModal>
             )}

@@ -2,14 +2,11 @@ import { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { paramsConfig } from '../../constants/urls';
 
-const emptyObject = {};
-
 export const useParamsObject = (
     baseUrl: string,
 ): Record<string, string | Record<string, unknown> | undefined> => {
-    const params = useParams()['*'];
+    const params = useParams()['*'] ?? '';
     return useMemo(() => {
-        if (!params) return emptyObject;
         const paramsList = params.split('/');
         const paramsForUrl = paramsConfig[baseUrl];
         const result = {};

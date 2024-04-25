@@ -5,19 +5,18 @@ import React, {
     useMemo,
     useCallback,
 } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import moment from 'moment';
 import { Tooltip } from '@mui/material';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import CallMade from '@mui/icons-material/CallMade';
 import {
     truncateText,
-    useSafeIntl,
     getTableUrl,
     Column,
     Setting,
     RenderCell,
-    IntlFormatMessage,
+    useSafeIntl,
 } from 'bluesquare-components';
 
 import instancesTableColumns from '../config';
@@ -404,82 +403,97 @@ type SelectionAction = {
     disabled: boolean;
 };
 
-export const getSelectionActions = (
-    formatMessage: IntlFormatMessage,
+export const useSelectionActions = (
     filters: Record<string, string>,
     setForceRefresh: () => void,
     isUnDeleteAction = false,
     classes: Record<string, string>,
-    currentUser: User,
 ): SelectionAction[] => {
+    const { formatMessage } = useSafeIntl();
+    const currentUser = useCurrentUser();
+    const { pathname } = useLocation();
     const label = formatMessage(
         isUnDeleteAction ? MESSAGES.unDeleteInstance : MESSAGES.deleteInstance,
     );
 
-    const exportAction: SelectionAction = {
-        icon: newSelection => (
-            <ExportInstancesDialogComponent
-                // @ts-ignore need to refactor this component to TS
-                selection={newSelection}
-                getFilters={() => filters}
-                renderTrigger={openDialog => {
-                    const iconDisabled = newSelection.selectCount === 0;
-                    const iconProps = {
-                        className: iconDisabled ? classes.iconDisabled : null,
-                        onClick: !iconDisabled ? openDialog : () => null,
-                        disabled: iconDisabled,
-                    };
-                    // @ts-ignore
-                    return <CallMade {...iconProps} />;
-                }}
-            />
-        ),
-        label: formatMessage(MESSAGES.exportRequest),
-        disabled: false,
-    };
+    return useMemo(() => {
+        const exportAction: SelectionAction = {
+            icon: newSelection => (
+                <ExportInstancesDialogComponent
+                    // @ts-ignore need to refactor this component to TS
+                    selection={newSelection}
+                    getFilters={() => filters}
+                    renderTrigger={openDialog => {
+                        const iconDisabled = newSelection.selectCount === 0;
+                        const iconProps = {
+                            className: iconDisabled
+                                ? classes.iconDisabled
+                                : null,
+                            onClick: !iconDisabled ? openDialog : () => null,
+                            disabled: iconDisabled,
+                        };
+                        // @ts-ignore
+                        return <CallMade {...iconProps} />;
+                    }}
+                />
+            ),
+            label: formatMessage(MESSAGES.exportRequest),
+            disabled: false,
+        };
 
-    const deleteAction: SelectionAction = {
-        icon: (newSelection, resetSelection) => (
-            <DeleteDialog
-                selection={newSelection}
-                filters={filters}
-                setForceRefresh={setForceRefresh}
-                resetSelection={resetSelection}
-                isUnDeleteAction={isUnDeleteAction}
-            />
-        ),
+        const deleteAction: SelectionAction = {
+            icon: (newSelection, resetSelection) => (
+                <DeleteDialog
+                    selection={newSelection}
+                    filters={filters}
+                    setForceRefresh={setForceRefresh}
+                    resetSelection={resetSelection}
+                    isUnDeleteAction={isUnDeleteAction}
+                />
+            ),
+            label,
+            disabled: false,
+        };
+
+        const compareAction: SelectionAction = {
+            icon: newSelection => {
+                const isDisabled =
+                    newSelection.selectCount <= 1 || newSelection.selectAll;
+                if (isDisabled) {
+                    return <CompareArrowsIcon color="disabled" />;
+                }
+                const instancesIds = newSelection.selectedItems
+                    .map(s => s.id)
+                    .join(',');
+                return (
+                    <Link
+                        style={{ color: 'inherit', display: 'flex' }}
+                        to={`/${baseUrls.compareInstances}/instanceIds/${instancesIds}`}
+                        state={{ location: pathname }}
+                    >
+                        <CompareArrowsIcon />
+                    </Link>
+                );
+            },
+            label: formatMessage(MESSAGES.compare),
+            disabled: false,
+        };
+
+        const actions: SelectionAction[] = [compareAction];
+        if (userHasPermission(Permission.SUBMISSIONS_UPDATE, currentUser)) {
+            actions.push(exportAction, deleteAction);
+        }
+        return actions;
+    }, [
+        classes.iconDisabled,
+        currentUser,
+        filters,
+        formatMessage,
+        isUnDeleteAction,
         label,
-        disabled: false,
-    };
-
-    const compareAction: SelectionAction = {
-        icon: newSelection => {
-            const isDisabled =
-                newSelection.selectCount <= 1 || newSelection.selectAll;
-            if (isDisabled) {
-                return <CompareArrowsIcon color="disabled" />;
-            }
-            const instancesIds = newSelection.selectedItems
-                .map(s => s.id)
-                .join(',');
-            return (
-                <Link
-                    style={{ color: 'inherit', display: 'flex' }}
-                    to={`${baseUrls.compareInstances}/instanceIds/${instancesIds}`}
-                >
-                    <CompareArrowsIcon />
-                </Link>
-            );
-        },
-        label: formatMessage(MESSAGES.compare),
-        disabled: false,
-    };
-
-    const actions: SelectionAction[] = [compareAction];
-    if (userHasPermission(Permission.SUBMISSIONS_UPDATE, currentUser)) {
-        actions.push(exportAction, deleteAction);
-    }
-    return actions;
+        pathname,
+        setForceRefresh,
+    ]);
 };
 
 const asBackendStatus = status => {
@@ -527,6 +541,14 @@ export const getFilters = (
         }
     });
     return filters;
+};
+
+export const useGetFilters = (
+    params: Record<string, string>,
+): Record<string, string> => {
+    return useMemo(() => {
+        return getFilters(params);
+    }, [params]);
 };
 
 const defaultOrder = 'updated_at';

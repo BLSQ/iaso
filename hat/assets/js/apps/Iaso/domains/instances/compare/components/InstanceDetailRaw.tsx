@@ -6,6 +6,7 @@ import {
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
 
+import { useLocation } from 'react-router-dom';
 import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
 import MESSAGES from '../messages';
 import InstanceDetailsInfos from '../../components/InstanceDetailsInfos';
@@ -47,6 +48,7 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
     height = '70vh',
 }) => {
     const { formatMessage } = useSafeIntl();
+    const { pathname: location } = useLocation();
 
     if (isLoading)
         return (
@@ -83,6 +85,7 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
                             url={`/forms/submission/instanceId/${data?.id}`}
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.viewSubmissionDetails}
+                            location={location}
                         />
                     </Box>
                 </Box>

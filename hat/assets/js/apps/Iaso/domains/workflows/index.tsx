@@ -30,7 +30,7 @@ const useStyles = makeStyles(theme => ({
 export const Workflows: FunctionComponent = () => {
     const dispatch = useDispatch();
     const params = useParamsObject(baseUrls.workflows) as WorkflowsParams;
-    const goBack = useGoBack();
+    const goBack = useGoBack(baseUrls.entityTypes);
     // const goBack = useGoBack(router, baseUrls.entityTypes);
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();

@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Navigate, useParams } from 'react-router-dom';
+import { Navigate, useLocation, useParams } from 'react-router-dom';
 
 type Props = {
     to: string; // redirection url
@@ -10,8 +10,10 @@ type Props = {
  * Wrapper for react-router-dom `<Navigate/>`. Manually replaces param values in destination url
  *
  */
+
 export const Redirect: FunctionComponent<Props> = ({ to, path }) => {
     const params = useParams();
+    const { state } = useLocation();
     let destination = to;
     const keysToConvert = Object.keys(path?.conversions ?? {});
     Object.entries(params).forEach(([key, value]) => {
@@ -30,5 +32,5 @@ export const Redirect: FunctionComponent<Props> = ({ to, path }) => {
         destination = `${destination}${params['*']}`;
     }
 
-    return <Navigate to={`${destination}`} />;
+    return <Navigate to={`${destination}`} state={state} replace />;
 };

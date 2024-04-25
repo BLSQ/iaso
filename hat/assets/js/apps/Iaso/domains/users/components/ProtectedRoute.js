@@ -62,7 +62,7 @@ const ProtectedRoute = ({ routeConfig, allRoutes, component }) => {
         if (!paramsString.includes('accountId') && currentUser.account) {
             navigate(`./accountId/${currentUser.account.id}/${paramsString}`, {
                 replace: true,
-                state: { ...location.state },
+                state: location.state ? { ...location.state } : null,
             });
         }
     }, [currentUser.account, baseUrl, navigate, paramsString, location.state]);

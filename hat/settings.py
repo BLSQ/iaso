@@ -205,25 +205,6 @@ if USE_CELERY:
 # see https://django-contrib-comments.readthedocs.io/en/latest/custom.htm
 COMMENTS_APP = "iaso"
 
-print("Enabled plugins:", PLUGINS, end=" ")
-for plugin_name in PLUGINS:
-    try:
-        plugin_settings = importlib.import_module(f"plugins.{plugin_name}.plugin_settings")
-
-        if hasattr(plugin_settings, "INSTALLED_APPS"):
-            INSTALLED_APPS.extend(plugin_settings.INSTALLED_APPS)
-        else:
-            print(f"WARNING: found plugin_settings.py for plugin {plugin_name}, but it doesn't contain INSTALLED_APPS")
-
-        if hasattr(plugin_settings, "CONSTANTS"):
-            # Inject CONSTANTS dictionary into the Django settings
-            for constant, value in plugin_settings.CONSTANTS.items():
-                globals()[constant] = value
-        else:
-            print(f"WARNING: found plugin_settings.py for plugin {plugin_name}, but it doesn't contain CONSTANTS")
-    except ModuleNotFoundError:  # Use "simple" plugin system if no settings file found
-        INSTALLED_APPS.append(f"plugins.{plugin_name}")
-
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -241,6 +222,10 @@ MIDDLEWARE += [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "hat.middleware.ThreadLocalMiddleware",
 ]
+if DEBUG:
+    MIDDLEWARE += [
+        "querycount.middleware.QueryCountMiddleware",
+    ]
 
 ROOT_URLCONF = "hat.urls"
 
@@ -258,7 +243,6 @@ TEMPLATES = [
         "DIRS": [
             "./hat/templates",
             "./django_sql_dashboard_export/templates",
-            os.path.join(BASE_DIR, "plugins/trypelim/templates"),
         ],
         "APP_DIRS": True,
         "OPTIONS": {
@@ -469,12 +453,10 @@ else:
     STATIC_ROOT = os.path.join(BASE_DIR, "static")
     MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-STATICFILES_DIRS = (
+STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "iaso/static"),
     os.path.join(BASE_DIR, "hat/assets/webpack"),
-    os.path.join(BASE_DIR, "plugins/trypelim/assets/webpack"),
-    os.path.join(BASE_DIR, "plugins/trypelim/dashboard/static"),
-)
+]
 
 # Javascript/CSS Files:
 WEBPACK_LOADER = {
@@ -488,16 +470,6 @@ WEBPACK_LOADER = {
                 if (DEBUG and not os.environ.get("TEST_PROD", None) and not USE_S3)
                 else "webpack-stats-prod.json"
             ),
-        ),
-    },
-    "TRYPELIM_OLD": {
-        "BUNDLE_DIR_NAME": "",  # used in prod, same as default, set to root
-        "STATS_FILE": os.path.join(
-            BASE_DIR,
-            "plugins/trypelim/assets/webpack",
-            "webpack-stats.json"
-            if (DEBUG and not os.environ.get("TEST_PROD", None) and not USE_S3)
-            else "webpack-stats-prod.json",
         ),
     },
 }
@@ -666,3 +638,32 @@ CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379"
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://localhost:6379")
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_RESULT_EXTENDED = True
+
+# Plugin config
+print("Enabled plugins:", PLUGINS, end=" ")
+for plugin_name in PLUGINS:
+    try:
+        plugin_settings = importlib.import_module(f"plugins.{plugin_name}.plugin_settings")
+
+        if hasattr(plugin_settings, "INSTALLED_APPS"):
+            INSTALLED_APPS.extend(plugin_settings.INSTALLED_APPS)
+
+        if hasattr(plugin_settings, "CONSTANTS"):
+            # Inject CONSTANTS dictionary into the Django settings
+            for constant, value in plugin_settings.CONSTANTS.items():
+                globals()[constant] = value
+
+        if hasattr(plugin_settings, "TEMPLATES_DIRS"):
+            TEMPLATES[0]["DIRS"].extend(plugin_settings.TEMPLATES_DIRS)
+
+        if hasattr(plugin_settings, "STATICFILES_DIRS"):
+            STATICFILES_DIRS.extend(plugin_settings.STATICFILES_DIRS)
+
+        if hasattr(plugin_settings, "WEBPACK_LOADER"):
+            WEBPACK_LOADER |= plugin_settings.WEBPACK_LOADER
+
+    except ModuleNotFoundError:  # Use "simple" plugin system if no settings file found
+        INSTALLED_APPS.append(f"plugins.{plugin_name}")
+
+
+FILE_SERVER_URL = os.environ.get("FILE_SERVER_URL", "https://bram.ngrok.app")

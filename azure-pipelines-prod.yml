@@ -77,6 +77,14 @@ steps:
     . ./venv/bin/activate && black --check .
   displayName: 'Check formatting with black'
 
+# Setting the details for the health page
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: |
+      ./scripts/set_version.sh
+  displayName: 'Set Version Info for Health'
+
 # The secret key is done with an export because Azure pipelines will
 # remove all env variables that start with SECRET_
 - script: |

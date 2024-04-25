@@ -1,7 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-// @ts-ignore
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 import TopBar from '../../components/nav/TopBarComponent';
@@ -12,7 +11,7 @@ import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
 import { useGetPlannings } from './hooks/requests/useGetPlannings';
 import { redirectTo } from '../../routing/actions';
-import { planningColumns } from './config';
+import { usePlanningColumns } from './config';
 import { CreateEditPlanning } from './CreateEditPlanning/CreateEditPlanning';
 import { useDeletePlanning } from './hooks/requests/useDeletePlanning';
 import { useSingleTableParams } from '../../components/tables/SingleTable';
@@ -31,6 +30,7 @@ export const Planning: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetPlannings(apiParams);
     const { mutateAsync: deletePlanning } = useDeletePlanning();
+    const columns = usePlanningColumns(deletePlanning);
 
     return (
         <>
@@ -44,12 +44,13 @@ export const Planning: FunctionComponent = () => {
                 <Grid container item justifyContent="flex-end">
                     <CreateEditPlanning type="create" />
                 </Grid>
+                {/* @ts-ignore */}
                 <TableWithDeepLink
                     baseUrl={baseUrl}
                     data={data?.results ?? []}
                     pages={data?.pages ?? 1}
                     defaultSorted={[{ id: 'name', desc: false }]}
-                    columns={planningColumns(formatMessage, deletePlanning)}
+                    columns={columns}
                     count={data?.count ?? 0}
                     params={apiParams}
                     onTableParamsChange={p => dispatch(redirectTo(baseUrl, p))}

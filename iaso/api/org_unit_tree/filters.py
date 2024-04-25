@@ -13,20 +13,22 @@ class OrgUnitTreeFilter(django_filters.rest_framework.FilterSet):
     parent_id = django_filters.NumberFilter(method="filter_parent_id", label=_("Parent ID"))
     roots_for_user = django_filters.BooleanFilter(method="filter_roots_for_user", label=_("Roots for user"))
     source_id = django_filters.NumberFilter(method="filter_source_id", label=_("Source ID"))
+    validation_status = django_filters.ChoiceFilter(
+        method="filter_validation_status", label=_("Validation status"), choices=OrgUnit.VALIDATION_STATUS_CHOICES
+    )
 
     class Meta:
         model = OrgUnit
-        fields = ["validation_status", "version"]
+        fields = ["version"]
 
     def filter_default_version(self, queryset: QuerySet, _, use_default_version: bool) -> QuerySet:
-        if not use_default_version or self.request.user.is_anonymous:
+        user = self.request.user
+        if user.is_anonymous or not use_default_version:
             return queryset
-        return queryset.filter(version=self.request.user.iaso_profile.account.default_version)
+        return queryset.filter(version=user.iaso_profile.account.default_version)
 
     def filter_empty_names(self, queryset: QuerySet, _, use_empty_names: bool) -> QuerySet:
-        if use_empty_names:
-            return queryset.exclude(name="")
-        return queryset
+        return queryset.exclude(name="") if use_empty_names else queryset
 
     def filter_parent_id(self, queryset: QuerySet, _, parent_id: int) -> QuerySet:
         try:
@@ -36,10 +38,11 @@ class OrgUnitTreeFilter(django_filters.rest_framework.FilterSet):
         return queryset.filter(parent=parent.pk)
 
     def filter_roots_for_user(self, queryset: QuerySet, _, use_roots_for_user: bool) -> QuerySet:
-        if not use_roots_for_user or self.request.user.is_anonymous:
+        user = self.request.user
+        if user.is_anonymous or not use_roots_for_user:
             return queryset
-        org_unit_ids_for_profile = self.request.user.iaso_profile.org_units.only("id")
-        if org_unit_ids_for_profile and not self.request.user.is_superuser:
+        org_unit_ids_for_profile = user.iaso_profile.org_units.only("id")
+        if org_unit_ids_for_profile and not user.is_superuser:
             return queryset.filter(id__in=org_unit_ids_for_profile)
         return queryset.filter(parent__isnull=True)
 
@@ -51,3 +54,6 @@ class OrgUnitTreeFilter(django_filters.rest_framework.FilterSet):
         if source.default_version:
             return queryset.filter(version=source.default_version)
         return queryset.filter(version__data_source_id=source_id)
+
+    def filter_validation_status(self, queryset: QuerySet, _, validation_status: str) -> QuerySet:
+        return queryset

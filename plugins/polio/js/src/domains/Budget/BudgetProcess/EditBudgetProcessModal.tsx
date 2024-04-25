@@ -19,6 +19,7 @@ import MESSAGES from '../messages';
 import { Budget, BudgetDetail } from '../types';
 import { formatRoundNumber } from '../utils';
 import { EditBudgetProcessApproval } from './EditBudgetProcessApproval';
+import { EditBudgetProcessCostPerChild } from './EditBudgetProcessCostPerChild';
 import { EditBudgetProcessRelease } from './EditBudgetProcessRelease';
 import { useEditBudgetProcessSchema } from './validation';
 
@@ -34,7 +35,9 @@ const EditBudgetProcessModal: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
 
-    const [tab, setTab] = useState<'approval' | 'release'>('approval');
+    const [tab, setTab] = useState<'approval' | 'release' | 'costPerChild'>(
+        'approval',
+    );
     const { data: budget } = useGetBudget(budgetProcess.id);
     const { data: availableRounds, isFetching: isFetchingAvailableRounds } =
         useAvailableRoundsForUpdate(
@@ -49,12 +52,8 @@ const EditBudgetProcessModal: FunctionComponent<Props> = ({
         enableReinitialize: true,
         validateOnBlur: true,
         validationSchema: schema,
-        onSubmit: async newValues => {
-            confirm({
-                id: budgetProcess.id,
-                ...newValues,
-                rounds: newValues.rounds,
-            });
+        onSubmit: newValues => {
+            confirm(newValues);
         },
     });
 
@@ -79,7 +78,6 @@ const EditBudgetProcessModal: FunctionComponent<Props> = ({
     const { values, isSubmitting, isValid } = formik;
     const isFormChanged = !isEqual(values, budget);
     const allowConfirm = !isSubmitting && isValid && isFormChanged;
-    console.log('values', values);
     return (
         <FormikProvider value={formik}>
             {isFetchingAvailableRounds && <LoadingSpinner />}
@@ -127,12 +125,19 @@ const EditBudgetProcessModal: FunctionComponent<Props> = ({
                                     value="release"
                                     label={formatMessage(MESSAGES.fundsRelease)}
                                 />
+                                <Tab
+                                    value="costPerChild"
+                                    label={formatMessage(MESSAGES.costPerChild)}
+                                />
                             </Tabs>
                         </Grid>
                         {tab === 'approval' && (
                             <EditBudgetProcessApproval budget={budget} />
                         )}
                         {tab === 'release' && <EditBudgetProcessRelease />}
+                        {tab === 'costPerChild' && (
+                            <EditBudgetProcessCostPerChild />
+                        )}
                     </Grid>
                 </ConfirmCancelModal>
             )}

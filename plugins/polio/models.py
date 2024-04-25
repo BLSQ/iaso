@@ -31,7 +31,6 @@ from iaso.utils.models.soft_deletable import DefaultSoftDeletableManager, SoftDe
 from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
 
-
 VIRUSES = [
     ("PV1", _("PV1")),
     ("PV2", _("PV2")),
@@ -219,7 +218,14 @@ class RoundQuerySet(models.QuerySet):
                 campaign_uuid,
                 {"value": campaign_uuid, "label": rnd.campaign.obr_name, "country_id": rnd.campaign.country_id},
             )
-            data["rounds"].append({"value": rnd.id, "label": rnd.number, "campaign_id": campaign_uuid})
+            data["rounds"].append(
+                {
+                    "value": rnd.id,
+                    "label": rnd.number,
+                    "campaign_id": campaign_uuid,
+                    "target_population": rnd.target_population,
+                }
+            )
 
         data["countries"] = data["countries"].values()
         data["campaigns"] = data["campaigns"].values()

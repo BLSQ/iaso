@@ -209,6 +209,35 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.noRegretFund',
         defaultMessage: 'No Regret Fund',
     },
+    cost: {
+        id: 'iaso.polio.form.label.cost',
+        defaultMessage: 'Cost',
+    },
+    costPerChildRound: {
+        id: 'iaso.polio.form.label.costPerChildRound',
+        defaultMessage: 'Cost/Child',
+    },
+    costPerChild: {
+        id: 'iaso.polio.form.label.costPerChild',
+        defaultMessage: 'Cost per child',
+    },
+    costPerChildTotal: {
+        id: 'iaso.polio.form.label.costPerChildTotal',
+        defaultMessage: 'Cost/Child Total',
+    },
+    roundNumber: {
+        id: 'iaso.polio.label.round.number',
+        defaultMessage: 'Round number',
+    },
+    targetPopulation: {
+        id: 'iaso.polio.label.targetPopulation',
+        defaultMessage: 'Target population',
+    },
+    targetPopulationMessage: {
+        id: 'iaso.polio.label.targetPopulationMessage',
+        defaultMessage:
+            'Target population can be change on "Rounds" tab while editing the campaign',
+    },
 });
 
 export default MESSAGES;

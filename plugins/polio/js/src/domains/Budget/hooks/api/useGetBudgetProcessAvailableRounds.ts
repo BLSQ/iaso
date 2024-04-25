@@ -50,6 +50,9 @@ const filterAvailableRoundsForUpdate = (data: OptionsRounds[]) => {
                 value: round.value,
                 label: formatRoundNumber(round.label),
                 campaign_id: round.campaign_id,
+                number: round.label,
+                id: round.value,
+                target_population: round.target_population,
             };
         });
     }

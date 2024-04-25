@@ -56,6 +56,8 @@ export type Round = {
     value?: number;
     label?: string;
     number: string;
+    target_population?: number;
+    cost: string;
 };
 
 export type Budget = {
@@ -93,6 +95,8 @@ export type BudgetDetail = {
     has_data_in_budget_tool: boolean;
     current_state_key: string;
     current_state: BudgetState;
+    district_count?: number;
+    no_regret_fund_amount?: number;
 };
 
 export type LinkWithAlias = { alias: string; url: string };
@@ -162,6 +166,7 @@ export type OptionsRounds = {
     value: number;
     label: string;
     campaign_id: number;
+    target_population?: number;
 };
 
 export type DropdownOptions = {

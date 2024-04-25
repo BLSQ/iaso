@@ -23,8 +23,8 @@ import {
 import {
     getEndpointUrl,
     getExportUrl,
-    getFilters,
-    getSelectionActions,
+    useGetFilters,
+    useSelectionActions,
 } from './utils/index.tsx';
 
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent.tsx';
@@ -64,6 +64,7 @@ const Instances = () => {
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     const queryClient = useQueryClient();
+    console.log('params', params);
 
     const [selection, setSelection] = useState(selectionInitialState);
     const [tableColumns, setTableColumns] = useState([]);
@@ -150,6 +151,13 @@ const Instances = () => {
     );
     const isSingleFormSearch = params.formIds?.split(',').length === 1;
     const currentUser = useCurrentUser();
+    const filters = useGetFilters(params);
+    const selectionActions = useSelectionActions(
+        filters,
+        () => refetchInstances(),
+        params.showDeleted === 'true',
+        classes,
+    );
 
     return (
         <section className={classes.relativeContainer}>
@@ -242,14 +250,7 @@ const Instances = () => {
                         baseUrl={baseUrl}
                         multiSelect
                         defaultSorted={[{ id: 'updated_at', desc: true }]}
-                        selectionActions={getSelectionActions(
-                            formatMessage,
-                            getFilters(params),
-                            () => refetchInstances(),
-                            params.showDeleted === 'true',
-                            classes,
-                            currentUser,
-                        )}
+                        selectionActions={selectionActions}
                         selection={selection}
                         setTableSelection={(
                             selectionType,

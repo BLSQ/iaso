@@ -236,7 +236,7 @@ export const useFormsTableColumns = ({
                                                 MESSAGES.viewInstances
                                             }
                                             overrideIcon={FormatListBulleted}
-                                            location={{ location }}
+                                            location={location}
                                         />
                                     )}
                                     {userHasPermission(
@@ -277,9 +277,10 @@ export const useFormsTableColumns = ({
                                         user,
                                     ) && (
                                         <IconButtonComponent
-                                            url={`${baseUrls.formDetail}/formId/${settings.row.original.id}`}
+                                            url={`/${baseUrls.formDetail}/formId/${settings.row.original.id}`}
                                             icon="edit"
                                             tooltipMessage={MESSAGES.edit}
+                                            location={location}
                                         />
                                     )}
                                     {userHasPermission(
@@ -292,6 +293,7 @@ export const useFormsTableColumns = ({
                                             tooltipMessage={
                                                 MESSAGES.dhis2Mappings
                                             }
+                                            location={location}
                                         />
                                     )}
                                     {userHasPermission(

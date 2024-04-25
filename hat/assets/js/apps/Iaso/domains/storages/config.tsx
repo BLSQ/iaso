@@ -6,6 +6,7 @@ import {
     IntlFormatMessage,
     Column,
 } from 'bluesquare-components';
+import { useLocation } from 'react-router-dom';
 import MESSAGES from './messages';
 
 import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
@@ -29,6 +30,7 @@ export const baseUrl = baseUrls.storages;
 export const useGetColumns = (params: StorageParams): Array<Column> => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
+    const { pathname } = useLocation();
     const columns: Array<Column> = [
         {
             Header: formatMessage(MESSAGES.last_sync_at),
@@ -82,6 +84,7 @@ export const useGetColumns = (params: StorageParams): Array<Column> => {
                         url={`${baseUrls.storageDetail}/type/${settings.row.original.storage_type}/storageId/${settings.row.original.storage_id}`}
                         icon="remove-red-eye"
                         tooltipMessage={MESSAGES.see}
+                        location={pathname}
                     />
                 );
             },

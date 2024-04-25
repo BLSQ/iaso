@@ -104,7 +104,7 @@ export const Map: FunctionComponent<Props> = ({
         () => locations && getOrgUnitsBounds(locations),
         [locations],
     );
-    const { path } = useLocation();
+    const { pathname } = useLocation();
 
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
 
@@ -212,7 +212,7 @@ export const Map: FunctionComponent<Props> = ({
                             tooltipMessage={MESSAGES.seeParent}
                             overrideIcon={ArrowUpwardOutlined}
                             color="primary"
-                            location={{ location: path }}
+                            location={pathname}
                         />
                     </Box>
                 )}

@@ -5,6 +5,7 @@ import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import MergeIcon from '@mui/icons-material/Merge';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import { Box } from '@mui/material';
+import { useLocation } from 'react-router-dom';
 import { StarsComponent } from '../../../../components/stars/StarsComponent';
 import { DuplicateCell } from './DuplicateCell';
 import { formatLabel } from '../../../instances/utils';
@@ -13,6 +14,7 @@ import MESSAGES from '../messages';
 
 export const useDuplicationTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
+    const { pathname: location } = useLocation();
     return useMemo(() => {
         const columns = [
             {
@@ -93,6 +95,7 @@ export const useDuplicationTableColumns = (): Column[] => {
                                 url={`/${baseUrls.entityDuplicateDetails}/entities/${entity1.id},${entity2.id}`}
                                 overrideIcon={CompareArrowsIcon}
                                 tooltipMessage={MESSAGES.seeDetails}
+                                location={location}
                             />
                         </>
                     );

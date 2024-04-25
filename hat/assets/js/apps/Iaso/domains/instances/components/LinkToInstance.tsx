@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { userHasPermission } from '../../users/utils';
 import { baseUrls } from '../../../constants/urls';
 import { useCurrentUser } from '../../../utils/usersUtils';
@@ -19,6 +19,7 @@ export const LinkToInstance: FunctionComponent<Props> = ({
     color = 'inherit',
 }) => {
     const user = useCurrentUser();
+    const { pathname: location } = useLocation();
     if (userHasPermission(Permission.SUBMISSIONS, user)) {
         const formUrl = `/${baseUrls.instanceDetail}/instanceId/${instanceId}`;
         if (useIcon) {
@@ -28,6 +29,7 @@ export const LinkToInstance: FunctionComponent<Props> = ({
                     url={formUrl}
                     tooltipMessage={MESSAGES.details}
                     color={color}
+                    location={location}
                 />
             );
         }

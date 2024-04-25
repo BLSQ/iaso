@@ -34,7 +34,7 @@ export const useCompletenessStatsColumns = (
         [Permission.SUBMISSIONS, Permission.SUBMISSIONS_UPDATE],
         currentUser,
     );
-    const { path } = useLocation();
+    const { pathname: location } = useLocation();
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
         let columns: Column[] = [
@@ -147,7 +147,7 @@ export const useCompletenessStatsColumns = (
                                     url={childrenPageUrl}
                                     tooltipMessage={MESSAGES.seeChildren}
                                     overrideIcon={AccountTree}
-                                    location={{ location: path }}
+                                    location={location}
                                 />
                             )}
                         {settings.row.original.is_root && (
@@ -155,7 +155,7 @@ export const useCompletenessStatsColumns = (
                                 url={parentPageUrl}
                                 tooltipMessage={MESSAGES.seeParent}
                                 overrideIcon={ArrowUpward}
-                                location={{ location: path }}
+                                location={location}
                             />
                         )}
                         {hasSubmissionPermission && hasFormSubmissions && (
@@ -164,7 +164,7 @@ export const useCompletenessStatsColumns = (
                                 url={`/${baseUrls.instances}/accountId/${params.accountId}/page/1/levels/${orgunitId}`}
                                 icon="remove-red-eye"
                                 tooltipMessage={MESSAGES.viewInstances}
-                                location={{ location: path }}
+                                location={location}
                             />
                         )}
                     </>

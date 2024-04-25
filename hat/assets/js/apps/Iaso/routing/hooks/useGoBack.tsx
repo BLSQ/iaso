@@ -6,7 +6,7 @@ export const useGoBack = (
 ): (() => void) => {
     const navigate = useNavigate();
     const { state, pathname } = useLocation();
-    // We need different behaviour for "nested" back arrows, otherwise depp-linking will lead to circular rerouting
+    // We need different behaviour for "nested" back arrows, otherwise deep-linking will lead to circular rerouting
     const options = !nested ? { from: pathname } : null;
     if (!state) {
         return () => navigate(`/${fallBackUrl}`, { state: options });

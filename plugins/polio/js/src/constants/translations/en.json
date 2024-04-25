@@ -568,7 +568,7 @@
     "iaso.polio.label.submitted": "Submitted",
     "iaso.polio.label.supplyChainStatus": "Supply chain status",
     "iaso.polio.label.targetPopulation": "Target population",
-    "iaso.polio.label.targetPopulationMessage": "Target population can be change on \"Rounds\" tab while editing the campaign",
+    "iaso.polio.label.targetPopulationMessage": "Target population can be edited in \"Campaigns\" > \"Rounds\" tab",
     "iaso.polio.label.Teachers_Student": "Teachers",
     "iaso.polio.label.testCampaign": "Test campaign/On hold",
     "iaso.polio.label.timesSelected": "Times selected",

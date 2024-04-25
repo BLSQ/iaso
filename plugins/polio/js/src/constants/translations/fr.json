@@ -19,7 +19,7 @@
     "iaso.label.unusableDoses": "Doses inutilisables",
     "iaso.label.unusableVials": "Flacons inutilisables",
     "iaso.label.usable": "Utilisables",
-    "iaso.polio.label.targetPopulationMessage": "La population cible peut être changée sur l'onglet \"Rounds\" lors de l'édition de la campagne",
+    "iaso.polio.label.targetPopulationMessage": "La population cible peut être éditée dans \"Campagnes\" > onglet \"Rounds\"",
     "iaso.label.usableDoses": "Doses utilisables",
     "iaso.label.usableVials": "Flacons utilisables",
     "iaso.label.vials_in": "Flacons IN",

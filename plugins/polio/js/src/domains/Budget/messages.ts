@@ -236,7 +236,7 @@ const MESSAGES = defineMessages({
     targetPopulationMessage: {
         id: 'iaso.polio.label.targetPopulationMessage',
         defaultMessage:
-            'Target population can be change on "Rounds" tab while editing the campaign',
+            'Target population can be edited in "Campaigns" > "Rounds" tab',
     },
 });
 

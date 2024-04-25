@@ -6,21 +6,16 @@ import {
 } from 'bluesquare-components';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useDispatch, useSelector } from 'react-redux';
 import moment from 'moment';
 import InstanceFileContent from '../../instances/components/InstanceFileContent';
 import { useGetVisitSubmission, useGetBeneficiary } from '../hooks/requests';
 import { BeneficiaryBaseInfo } from './BeneficiaryBaseInfo';
 import TopBar from '../../../components/nav/TopBarComponent';
 import MESSAGES from '../messages';
-import { redirectToReplace } from '../../../routing/actions';
 import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 import { baseUrls } from '../../../constants/urls';
-
-type Props = {
-    params: { instanceId: string; entityId: string };
-    router: Record<string, any>;
-};
+import { useParamsObject } from '../../../routing/hooks/useParamsObject';
+import { useGoBack } from '../../../routing/hooks/useGoBack';
 
 const useStyles = makeStyles(theme => {
     return {
@@ -28,17 +23,24 @@ const useStyles = makeStyles(theme => {
     };
 });
 
-export const VisitDetails: FunctionComponent<Props> = ({ params, router }) => {
+const baseUrl = baseUrls.entitySubmissionDetail;
+
+export const VisitDetails: FunctionComponent = () => {
+    const params = useParamsObject(baseUrl) as {
+        instanceId: string;
+        entityId: string;
+    };
     const { instanceId, entityId } = params;
+    const goBack = useGoBack(
+        `${baseUrls.entityDetails}/entityId/${entityId}`,
+        true,
+    );
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const { data: submission, isLoading: isLoadingSubmission } =
         useGetVisitSubmission(instanceId);
     const { data: beneficiary, isLoading: isLoadingbeneficiary } =
         useGetBeneficiary(entityId);
-    // @ts-ignore
-    const prevPathname = useSelector(state => state.routerCustom.prevPathname);
-    const dispatch = useDispatch();
     // Null checking beforehand because moment will return a date by default
     const visitDate =
         submission?.created_at &&
@@ -50,17 +52,7 @@ export const VisitDetails: FunctionComponent<Props> = ({ params, router }) => {
             <TopBar
                 title={formatMessage(MESSAGES.visitDetails)}
                 displayBackButton
-                goBack={() => {
-                    if (prevPathname) {
-                        router.goBack();
-                    } else {
-                        dispatch(
-                            redirectToReplace(baseUrls.entityDetails, {
-                                entityId,
-                            }),
-                        );
-                    }
-                }}
+                goBack={goBack}
             />
             {/* @ts-ignore */}
             <Box className={classes.containerFullHeightNoTabPadded}>

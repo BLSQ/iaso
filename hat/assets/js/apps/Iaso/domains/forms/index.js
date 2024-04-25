@@ -8,7 +8,7 @@ import {
     AddButton as AddButtonComponent,
 } from 'bluesquare-components';
 import { redirectTo } from '../../routing/actions.ts';
-import formsTableColumns from './config';
+import { useFormsTableColumns } from './config';
 import { Filters } from './components/Filters.tsx';
 import TopBar from '../../components/nav/TopBarComponent';
 import SingleTable, {
@@ -40,6 +40,7 @@ const Forms = () => {
     const [forceRefresh, setForceRefresh] = useState(false);
     const [textSearchError, setTextSearchError] = useState(false);
     const [showDeleted, setShowDeleted] = useState(params.showDeleted);
+
     const handleDeleteForm = formId =>
         deleteForm(dispatch, formId).then(() => {
             setForceRefresh(true);
@@ -48,6 +49,11 @@ const Forms = () => {
         restoreForm(dispatch, formId).then(() => {
             setForceRefresh(true);
         });
+    const columns = useFormsTableColumns({
+        deleteForm: handleDeleteForm,
+        restoreForm: handleRestoreForm,
+        showDeleted,
+    });
     useEffect(() => {
         // This fix a bug in redux cache when we passed from "archived" to "non-archived" form page and vice versa
         setForceRefresh(true);
@@ -84,14 +90,7 @@ const Forms = () => {
                         })
                     }
                     defaultSorted={[{ id: 'instance_updated_at', desc: false }]}
-                    columns={formsTableColumns({
-                        formatMessage,
-                        user: currentUser,
-                        deleteForm: handleDeleteForm,
-                        restoreForm: handleRestoreForm,
-                        showDeleted,
-                        dispatch,
-                    })}
+                    columns={columns}
                     hideGpkg
                     defaultPageSize={50}
                     forceRefresh={forceRefresh}

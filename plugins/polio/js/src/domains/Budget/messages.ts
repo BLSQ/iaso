@@ -238,6 +238,10 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Target population can be edited in "Campaigns" > "Rounds" tab',
     },
+    invalidDate: {
+        id: 'iaso.polio.form.invalidDate',
+        defaultMessage: 'Invalid date',
+    },
 });
 
 export default MESSAGES;

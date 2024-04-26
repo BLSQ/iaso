@@ -1,6 +1,6 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
 import { Box } from '@mui/material';
 import { Field, FormikProvider, useFormik } from 'formik';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 
 import {
     AddButton,
@@ -10,12 +10,12 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 
-import MESSAGES from '../messages';
 import { MultiSelect } from '../../../components/Inputs/MultiSelect';
-import { Options } from '../types';
 import { SingleSelect } from '../../../components/Inputs/SingleSelect';
-import { useAvailableRoundsForCreate } from '../hooks/api/useGetBudgetProcessAvailableRounds';
 import { useCreateBudgetProcess } from '../hooks/api/useCreateBudgetProcess';
+import { useAvailableRoundsForCreate } from '../hooks/api/useGetBudgetProcessAvailableRounds';
+import MESSAGES from '../messages';
+import { Options } from '../types';
 import { useCreateBudgetProcessSchema } from './validation';
 
 type Props = {
@@ -109,6 +109,7 @@ const CreateBudgetProcessModal: FunctionComponent<Props> = ({
                             name="rounds"
                             component={MultiSelect}
                             options={currentRoundsOptions}
+                            returnFullObject
                         />
                     </Box>
                 </ConfirmCancelModal>

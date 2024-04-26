@@ -41,6 +41,9 @@ const getRoundData = (round: Round): DataForBudget => {
 };
 
 const styles: SxStyles = {
+    table: {
+        marginLeft: theme => theme.spacing(1),
+    },
     header: {
         fontWeight: 'bold',
         '&>div': {
@@ -97,7 +100,7 @@ export const EditBudgetProcessCostPerChild: FunctionComponent = () => {
         return totalPopulation ? (totalCost / totalPopulation).toFixed(2) : '-';
     }, [rounds]);
     return (
-        <Table size="small">
+        <Table size="small" sx={styles.table}>
             <TableHead>
                 <TableRow>
                     <TableCell sx={styles.header}>

@@ -3,6 +3,7 @@ import {
     Nullable,
     Optional,
 } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { PaymentMode } from '../../constants/types';
 
 export type Timeline = {
     categories: Categories;
@@ -97,8 +98,29 @@ export type BudgetDetail = {
     current_state: BudgetState;
     district_count?: number;
     no_regret_fund_amount?: number;
+    payment_mode?: PaymentMode;
+    ra_completed_at_WFEDITABLE?: string;
+    who_sent_budget_at_WFEDITABLE?: string;
+    unicef_sent_budget_at_WFEDITABLE?: string;
+    gpei_consolidated_budgets_at_WFEDITABLE?: string;
+    submitted_to_rrt_at_WFEDITABLE?: string;
+    feedback_sent_to_gpei_at_WFEDITABLE?: string;
+    re_submitted_to_rrt_at_WFEDITABLE?: string;
+    submitted_to_orpg_operations1_at_WFEDITABLE?: string;
+    feedback_sent_to_rrt1_at_WFEDITABLE?: string;
+    re_submitted_to_orpg_operations1_at_WFEDITABLE?: string;
+    submitted_to_orpg_wider_at_WFEDITABLE?: string;
+    submitted_to_orpg_operations2_at_WFEDITABLE?: string;
+    feedback_sent_to_rrt2_at_WFEDITABLE?: string;
+    re_submitted_to_orpg_operations2_at_WFEDITABLE?: string;
+    submitted_for_approval_at_WFEDITABLE?: string;
+    feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE?: string;
+    feedback_sent_to_orpg_operations_who_at_WFEDITABLE?: string;
+    approved_by_who_at_WFEDITABLE?: string;
+    approved_by_unicef_at_WFEDITABLE?: string;
+    approved_at_WFEDITABLE?: string;
+    approval_confirmed_at_WFEDITABLE?: string;
 };
-
 export type LinkWithAlias = { alias: string; url: string };
 
 export type FileWithName = {

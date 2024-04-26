@@ -10,7 +10,10 @@ export const useCreateBudgetProcess = (): UseMutationResult => {
     return useSnackMutation({
         mutationFn: body =>
             postRequest('/api/polio/budget/', {
-                rounds: body.rounds.split(','),
+                rounds: body.rounds.map(round => ({
+                    id: round.id,
+                    // cost: round.cost,
+                })),
             }),
         snackSuccessMessage: MESSAGES.messageCreateSuccess,
         options: {

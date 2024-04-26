@@ -1,7 +1,6 @@
 import { Box, Divider, Grid, Tab, Tabs } from '@mui/material';
 import { Field, FormikProvider, useFormik } from 'formik';
-import { isEqual } from 'lodash';
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import React, { FunctionComponent, useCallback, useState } from 'react';
 
 import {
     ConfirmCancelModal,
@@ -38,7 +37,6 @@ const EditBudgetProcessModal: FunctionComponent<Props> = ({
     const [tab, setTab] = useState<'approval' | 'release' | 'costPerChild'>(
         'approval',
     );
-    const { data: budget } = useGetBudget(budgetProcess.id);
     const { data: availableRounds, isFetching: isFetchingAvailableRounds } =
         useAvailableRoundsForUpdate(
             budgetProcess.campaign_id,
@@ -49,35 +47,33 @@ const EditBudgetProcessModal: FunctionComponent<Props> = ({
     const schema = useEditBudgetProcessSchema();
     const formik = useFormik<Partial<BudgetDetail>>({
         initialValues: {},
-        enableReinitialize: true,
         validateOnBlur: true,
+        validateOnChange: true,
         validationSchema: schema,
         onSubmit: newValues => {
             confirm(newValues);
         },
     });
+    const resetFormWithNewValues = useCallback(
+        newValues => {
+            const rounds =
+                newValues.rounds?.map(round => ({
+                    ...round,
+                    value: round.id,
+                    label: formatRoundNumber(round.number),
+                })) || [];
+            formik.resetForm({ values: { ...newValues, rounds } });
+        },
+        [formik],
+    );
 
-    useEffect(() => {
-        if (budget) {
-            const newValues: BudgetDetail = {
-                ...budget,
-                rounds:
-                    budget.rounds?.map(round => ({
-                        ...round,
-                        value: round.id,
-                        label: formatRoundNumber(round.number),
-                    })) || [],
-            };
-            if (!isEqual(formik.values, newValues)) {
-                formik.setValues(newValues);
-            }
-        }
-        // only change formik values while fetching budget detail
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [budget]);
-    const { values, isSubmitting, isValid } = formik;
-    const isFormChanged = !isEqual(values, budget);
-    const allowConfirm = !isSubmitting && isValid && isFormChanged;
+    const { data: budget } = useGetBudget(
+        budgetProcess.id,
+        resetFormWithNewValues,
+    );
+
+    const { isSubmitting, isValid, dirty } = formik;
+    const allowConfirm = !isSubmitting && isValid && dirty;
     return (
         <FormikProvider value={formik}>
             {isFetchingAvailableRounds && <LoadingSpinner />}

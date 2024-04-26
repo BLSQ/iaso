@@ -158,12 +158,9 @@ class BudgetProcessWriteSerializer(serializers.ModelSerializer):
         request = self.context["request"]
         is_new = self.instance is None
 
-        print(f"Received submitted_rounds: {pformat(submitted_rounds)}")
         valid_rounds_ids = Campaign.objects.filter_for_user(request.user).values_list("rounds", flat=True)
         for round_dict in submitted_rounds:
             round_id = round_dict.get("id")
-            print("round_id")
-            print(round_id)
             if round_id not in valid_rounds_ids:
                 raise serializers.ValidationError(f"The user does not have the permissions for round ID: {round_id}")
 
@@ -176,41 +173,35 @@ class BudgetProcessWriteSerializer(serializers.ModelSerializer):
 
         return submitted_rounds
 
-    def create(self, validated_data: dict) -> BudgetProcess:
-        request = self.context["request"]
+    def handle_rounds(self, budget_process, rounds_data):
+        for round_data in rounds_data:
+            round_id = round_data.get("id")
+            if round_id:
+                round_instance = Round.objects.get(id=round_id)
+                round_serializer = BudgetProcessUWriteRoundSerializer(round_instance, data=round_data, partial=True)
+                if round_serializer.is_valid():
+                    round_serializer.save(budget_process=budget_process)
 
-        # Create a new `BudgetProcess`.
+    def create(self, validated_data):
+        request = self.context["request"]
+        rounds_data = validated_data.pop("rounds", [])
         validated_data["created_by"] = request.user
         budget_process = super().create(validated_data)
-
-        # Link rounds.
-        rounds_ids = [round.id for round in self.validated_data["rounds"]]
-        Round.objects.filter(id__in=rounds_ids).update(budget_process=budget_process)
-
+        self.handle_rounds(budget_process, rounds_data)
         return budget_process
 
     def update(self, budget_process: BudgetProcess, validated_data: dict) -> BudgetProcess:
         rounds_data = validated_data.pop("rounds", [])
 
-        print("Rounds data received:", rounds_data)
         budget_process = super().update(budget_process, validated_data)
-        # Unlink old rounds if necessary
         existing_round_ids = set(budget_process.rounds.values_list("id", flat=True))
         new_round_ids = set(round_data["id"] for round_data in rounds_data if "id" in round_data)
 
-        # Unlink rounds that are no longer linked to this budget process
         # should we also empty cost?
         rounds_to_unlink = existing_round_ids - new_round_ids
         if rounds_to_unlink:
             Round.objects.filter(id__in=rounds_to_unlink).update(budget_process=None)
-
-        # Update existing rounds and link new rounds
-        for round_data in rounds_data:
-            round_id = round_data.get("id")
-            round_instance = Round.objects.get(id=round_id)
-            round_serializer = BudgetProcessUWriteRoundSerializer(round_instance, data=round_data, partial=True)
-            if round_serializer.is_valid():
-                round_serializer.save(budget_process=budget_process)
+        self.handle_rounds(budget_process, rounds_data)
         return budget_process
 
 

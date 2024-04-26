@@ -78,6 +78,8 @@ const budgetDetailsFields: string[] = [
 ];
 export const useGetBudget = (
     id: number,
+    // eslint-disable-next-line no-unused-vars
+    onSuccess: (data: BudgetDetail) => void = () => null,
 ): UseQueryResult<BudgetDetail, Error> => {
     return useSnackQuery({
         queryFn: () =>
@@ -90,6 +92,9 @@ export const useGetBudget = (
         options: {
             enabled: Boolean(id),
             keepPreviousData: true,
+            onSuccess: data => {
+                onSuccess(data);
+            },
         },
     });
 };

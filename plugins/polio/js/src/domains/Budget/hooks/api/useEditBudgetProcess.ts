@@ -7,7 +7,6 @@ import MESSAGES from '../../messages';
 import { BudgetDetail } from '../../types';
 
 const editBudgetProcess = async (payload: BudgetDetail): Promise<any> => {
-    console.log('payload', payload);
     return patchRequest(`/api/polio/budget/${payload.id}/`, {
         ...payload,
         rounds: payload.rounds.map(round => ({

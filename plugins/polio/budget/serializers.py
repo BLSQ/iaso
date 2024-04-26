@@ -110,7 +110,6 @@ class BudgetProcessWriteSerializer(serializers.ModelSerializer):
 
     created_by = UserSerializer(read_only=True)
     rounds = BudgetProcessUWriteRoundSerializer(many=True)
-    # rounds = serializers.PrimaryKeyRelatedField(queryset=Round.objects.all(), many=True)
 
     class Meta:
         model = BudgetProcess

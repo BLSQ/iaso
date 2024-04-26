@@ -242,6 +242,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.invalidDate',
         defaultMessage: 'Invalid date',
     },
+    noRounds: {
+        id: 'iaso.polio.form.label.noRounds',
+        defaultMessage: 'No rounds selected',
+    },
 });
 
 export default MESSAGES;

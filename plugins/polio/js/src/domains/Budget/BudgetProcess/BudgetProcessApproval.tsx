@@ -18,7 +18,8 @@ import MESSAGES from '../messages';
 import { BudgetDetail } from '../types';
 
 type Props = {
-    budget?: BudgetDetail;
+    disableEdition?: boolean;
+    currentState?: string;
 };
 const findErrorInFieldList = (
     keys: string[],
@@ -52,8 +53,9 @@ const findNewBudgetState = (
     }
     return null;
 };
-export const EditBudgetProcessApproval: FunctionComponent<Props> = ({
-    budget,
+export const BudgetProcessApproval: FunctionComponent<Props> = ({
+    disableEdition,
+    currentState,
 }) => {
     const { formatMessage } = useSafeIntl();
 
@@ -97,21 +99,22 @@ export const EditBudgetProcessApproval: FunctionComponent<Props> = ({
         errors,
         touched,
     );
-    const disableEdition = budget?.has_data_in_budget_tool ?? false;
     return (
         <>
-            <Grid item xs={12}>
-                <Box mb={2}>
-                    <Typography variant="button">
-                        {`${formatMessage(MESSAGES.status)}: ${
-                            budget?.current_state?.label
-                        }`}
-                    </Typography>
-                </Box>
-                <Box>
-                    <Divider />
-                </Box>
-            </Grid>
+            {currentState && (
+                <Grid item xs={12}>
+                    <Box mb={2}>
+                        <Typography variant="button">
+                            {`${formatMessage(
+                                MESSAGES.status,
+                            )}: ${currentState}`}
+                        </Typography>
+                    </Box>
+                    <Box>
+                        <Divider />
+                    </Box>
+                </Grid>
+            )}
             <Grid item xs={12} lg={6}>
                 <ExpandableItem
                     label={formatMessage(MESSAGES.budgetRequest)}

@@ -1,4 +1,4 @@
-import { UseMutationResult, useQueryClient } from 'react-query';
+import { UseMutationResult } from 'react-query';
 
 import { postRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useSnackMutation } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
@@ -6,20 +6,16 @@ import { useSnackMutation } from '../../../../../../../../hat/assets/js/apps/Ias
 import MESSAGES from '../../messages';
 
 export const useCreateBudgetProcess = (): UseMutationResult => {
-    const queryClient = useQueryClient();
     return useSnackMutation({
         mutationFn: body =>
             postRequest('/api/polio/budget/', {
+                ...body,
                 rounds: body.rounds.map(round => ({
                     id: round.id,
-                    // cost: round.cost,
+                    cost: round.cost,
                 })),
             }),
         snackSuccessMessage: MESSAGES.messageCreateSuccess,
-        options: {
-            onSuccess: () => {
-                queryClient.invalidateQueries('budget');
-            },
-        },
+        invalidateQueryKey: 'budget',
     });
 };

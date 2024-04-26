@@ -7,7 +7,7 @@ import { DateInput, PaymentField } from '../../../components/Inputs';
 import MESSAGES from '../messages';
 import { BudgetDetail } from '../types';
 
-export const EditBudgetProcessRelease: FunctionComponent = () => {
+export const BudgetProcessRelease: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
     const { setFieldValue, values } = useFormikContext<BudgetDetail>();
     return (

@@ -1,6 +1,6 @@
-import { Box, Divider, Grid, Tab, Tabs } from '@mui/material';
+import { Box, Divider, Grid } from '@mui/material';
 import { Field, FormikProvider, useFormik } from 'formik';
-import React, { FunctionComponent, useCallback, useState } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 
 import {
     ConfirmCancelModal,
@@ -17,9 +17,7 @@ import { useAvailableRoundsForUpdate } from '../hooks/api/useGetBudgetProcessAva
 import MESSAGES from '../messages';
 import { Budget, BudgetDetail } from '../types';
 import { formatRoundNumber } from '../utils';
-import { EditBudgetProcessApproval } from './EditBudgetProcessApproval';
-import { EditBudgetProcessCostPerChild } from './EditBudgetProcessCostPerChild';
-import { EditBudgetProcessRelease } from './EditBudgetProcessRelease';
+import { BudgetProcessModalTabs } from './BudgetProcessModalTabs';
 import { useEditBudgetProcessSchema } from './validation';
 
 type Props = {
@@ -33,10 +31,6 @@ const EditBudgetProcessModal: FunctionComponent<Props> = ({
     budgetProcess,
 }) => {
     const { formatMessage } = useSafeIntl();
-
-    const [tab, setTab] = useState<'approval' | 'release' | 'costPerChild'>(
-        'approval',
-    );
     const { data: availableRounds, isFetching: isFetchingAvailableRounds } =
         useAvailableRoundsForUpdate(
             budgetProcess.campaign_id,
@@ -74,6 +68,8 @@ const EditBudgetProcessModal: FunctionComponent<Props> = ({
 
     const { isSubmitting, isValid, dirty } = formik;
     const allowConfirm = !isSubmitting && isValid && dirty;
+    const disableEdition = budget?.has_data_in_budget_tool ?? false;
+    const currentState = budget?.current_state?.label;
     return (
         <FormikProvider value={formik}>
             {isFetchingAvailableRounds && <LoadingSpinner />}
@@ -106,34 +102,10 @@ const EditBudgetProcessModal: FunctionComponent<Props> = ({
                                 returnFullObject
                             />
                         </Grid>
-                        <Grid item xs={12}>
-                            <Tabs
-                                value={tab}
-                                onChange={(_, newtab) => setTab(newtab)}
-                            >
-                                <Tab
-                                    value="approval"
-                                    label={formatMessage(
-                                        MESSAGES.budgetApproval,
-                                    )}
-                                />
-                                <Tab
-                                    value="release"
-                                    label={formatMessage(MESSAGES.fundsRelease)}
-                                />
-                                <Tab
-                                    value="costPerChild"
-                                    label={formatMessage(MESSAGES.costPerChild)}
-                                />
-                            </Tabs>
-                        </Grid>
-                        {tab === 'approval' && (
-                            <EditBudgetProcessApproval budget={budget} />
-                        )}
-                        {tab === 'release' && <EditBudgetProcessRelease />}
-                        {tab === 'costPerChild' && (
-                            <EditBudgetProcessCostPerChild />
-                        )}
+                        <BudgetProcessModalTabs
+                            disableEdition={disableEdition}
+                            currentState={currentState}
+                        />
                     </Grid>
                 </ConfirmCancelModal>
             )}

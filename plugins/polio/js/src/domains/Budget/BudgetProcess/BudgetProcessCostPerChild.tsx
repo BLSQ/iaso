@@ -66,11 +66,15 @@ const styles: SxStyles = {
         fontWeight: 'bold',
         textAlign: 'right',
     },
+    noRounds: {
+        textAlign: 'center',
+    },
 };
 
 const currency = '$';
+const placeholder = '--';
 
-export const EditBudgetProcessCostPerChild: FunctionComponent = () => {
+export const BudgetProcessCostPerChild: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
     const {
         values: { rounds },
@@ -97,7 +101,9 @@ export const EditBudgetProcessCostPerChild: FunctionComponent = () => {
                 ? roundData.population
                 : 0;
         });
-        return totalPopulation ? (totalCost / totalPopulation).toFixed(2) : '-';
+        return totalPopulation
+            ? `${currency}${(totalCost / totalPopulation).toFixed(2)}`
+            : placeholder;
     }, [rounds]);
     return (
         <Table size="small" sx={styles.table}>
@@ -124,6 +130,13 @@ export const EditBudgetProcessCostPerChild: FunctionComponent = () => {
                 </TableRow>
             </TableHead>
             <TableBody>
+                {rounds.length === 0 && (
+                    <TableRow>
+                        <TableCell colSpan={4} sx={styles.noRounds}>
+                            {formatMessage(MESSAGES.noRounds)}
+                        </TableCell>
+                    </TableRow>
+                )}
                 {rounds.map((round, i) => {
                     const roundData = getRoundData(round);
                     return (
@@ -143,13 +156,13 @@ export const EditBudgetProcessCostPerChild: FunctionComponent = () => {
                             <TableCell>
                                 {round.target_population
                                     ? formatThousand(round.target_population)
-                                    : '-'}
+                                    : placeholder}
                             </TableCell>
                             <TableCell>
                                 <Typography variant="body2">
                                     {roundData.calculateRound
                                         ? `${currency}${roundData.costRoundPerChild}`
-                                        : ' -'}
+                                        : ` ${placeholder}`}
                                 </Typography>
                             </TableCell>
                         </TableRow>
@@ -160,10 +173,7 @@ export const EditBudgetProcessCostPerChild: FunctionComponent = () => {
                     <TableCell sx={styles.totalTitle}>
                         {formatMessage(MESSAGES.costPerChildTotal)}:
                     </TableCell>
-                    <TableCell sx={styles.total}>
-                        {currency}
-                        {totalCostPerChild}
-                    </TableCell>
+                    <TableCell sx={styles.total}>{totalCostPerChild}</TableCell>
                 </TableRow>
             </TableBody>
         </Table>

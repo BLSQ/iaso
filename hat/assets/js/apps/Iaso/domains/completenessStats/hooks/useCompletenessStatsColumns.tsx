@@ -17,19 +17,17 @@ import {
     FormDesc,
 } from '../types';
 import * as Permission from '../../../utils/permissions';
-import { usetGetParentPageUrl } from '../utils';
+import { useGetParentPageUrl } from '../utils';
 import { DescendantsCell } from '../components/DescendantsCell';
 import { ItselfCell } from '../components/ItselfCell';
-import { RouterObject } from '../../../routing/hooks/useRouter';
 
 export const useCompletenessStatsColumns = (
-    router: RouterObject,
     params: CompletenessRouterParams,
     completenessStats?: CompletenessApiResponse,
 ): Column[] => {
     const currentUser = useCurrentUser();
 
-    const getParentPageUrl = usetGetParentPageUrl(router);
+    const getParentPageUrl = useGetParentPageUrl();
     const hasSubmissionPermission = userHasOneOfPermissions(
         [Permission.SUBMISSIONS, Permission.SUBMISSIONS_UPDATE],
         currentUser,

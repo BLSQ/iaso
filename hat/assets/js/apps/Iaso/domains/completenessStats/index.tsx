@@ -58,7 +58,6 @@ export const CompletenessStats: FunctionComponent = () => {
     const params = useParamsObject(
         baseUrls.completenessStats,
     ) as CompletenessRouterParams;
-    const router = useRouter();
 
     const [tab, setTab] = useState<'list' | 'map'>(params.tab ?? 'list');
     const dispatch = useDispatch();
@@ -67,11 +66,7 @@ export const CompletenessStats: FunctionComponent = () => {
         useGetCompletenessStats(params);
     const { data: completenessMapStats, isFetching: isFetchingMapStats } =
         useGetCompletnessMapStats(params, tab === 'map');
-    const columns = useCompletenessStatsColumns(
-        router,
-        params,
-        completenessStats,
-    );
+    const columns = useCompletenessStatsColumns(params, completenessStats);
     const { data: forms, isFetching: fetchingForms } = useGetFormsOptions([
         'period_type',
         'legend_threshold',
@@ -87,9 +82,11 @@ export const CompletenessStats: FunctionComponent = () => {
     useEffect(() => {
         if (displayWarning) {
             dispatch(enqueueSnackbar(warningSnackBar(snackbarKey)));
-        } else {
-            dispatch(closeFixedSnackbar(snackbarKey));
         }
+        // TODO restore this feature. Commented code causes an infinite loop
+        // else {
+        //     dispatch(closeFixedSnackbar(snackbarKey));
+        // }
         return () => {
             if (displayWarning) {
                 dispatch(closeFixedSnackbar(snackbarKey));
@@ -206,7 +203,6 @@ export const CompletenessStats: FunctionComponent = () => {
                             isLoading={isFetchingMapStats}
                             params={params}
                             selectedFormId={selectedFormsId}
-                            router={router}
                             threshold={selectedForm?.original.legend_threshold}
                         />
                     )}

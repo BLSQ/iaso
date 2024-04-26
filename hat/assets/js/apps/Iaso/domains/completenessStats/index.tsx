@@ -33,7 +33,6 @@ import { CsvButton } from '../../components/Buttons/CsvButton';
 import { CompletenessRouterParams } from './types';
 import { Map } from './components/Map';
 import { useGetFormsOptions } from './hooks/api/useGetFormsOptions';
-import { useRouter } from '../../routing/hooks/useRouter';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 
 const baseUrl = baseUrls.completenessStats;

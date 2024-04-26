@@ -3,7 +3,8 @@ import { baseUrls } from '../constants/urls';
 import { getChipColors } from '../constants/chipColors';
 import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants';
 
-export const getOrgUnitsUrl = accountId =>
+// TODO replace createUrl to avoid multiple methods with same use
+export const getOrgUnitsUrl = (accountId: string | number): string =>
     `/${baseUrls.orgUnits}${createUrl(
         {
             accountId,

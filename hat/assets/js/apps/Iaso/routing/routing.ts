@@ -1,8 +1,8 @@
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useCallback } from 'react';
 import { baseUrls } from '../constants/urls';
 import { useParamsObject } from './hooks/useParamsObject';
-import { convertObjectToUrlParams } from './utils';
+import { convertObjectToUrlParams, makeRedirectionUrl } from './utils';
 
 // FIXME: delete - depredcated in react-router6
 /* Modify the parameters for the current page and return the new url */
@@ -50,5 +50,34 @@ export const useGenUrl = (): GenUrlFunction => {
             return `/${currentBaseUrl}${paramsAsString}`;
         },
         [currentBaseUrl, currentParams],
+    );
+};
+
+// eslint-disable-next-line no-unused-vars
+type RedirectFn = (url: string, params: Record<string, string>) => void;
+
+export const useRedirectTo = (): RedirectFn => {
+    const navigate = useNavigate();
+    const { pathname } = useLocation();
+    return useCallback(
+        (url: string, params: Record<string, string>) => {
+            const destination = makeRedirectionUrl(url, params);
+            navigate(destination, { state: { location: pathname } });
+        },
+        [navigate, pathname],
+    );
+};
+export const useRedirectToReplace = (): RedirectFn => {
+    const navigate = useNavigate();
+    const { pathname } = useLocation();
+    return useCallback(
+        (url: string, params: Record<string, string>) => {
+            const destination = makeRedirectionUrl(url, params);
+            navigate(destination, {
+                replace: true,
+                state: { location: pathname },
+            });
+        },
+        [navigate, pathname],
     );
 };

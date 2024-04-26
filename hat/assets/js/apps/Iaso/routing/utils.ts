@@ -28,7 +28,7 @@ export const convertObjectToUrlParams = (
     // Exclude undefined and null values
     keys.forEach(key => {
         const param = params[key];
-        if (param === null || param === undefined) {
+        if (param === null || param === undefined || param === '') {
             delete paramsNoUndef[key];
             return;
         }

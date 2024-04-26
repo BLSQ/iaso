@@ -1,11 +1,10 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
 import {
     useGetMultipleOrgUnits,
     useGetOrgUnit,
 } from '../domains/orgUnits/components/TreeView/requests';
 import { OrgUnit } from '../domains/orgUnits/types/orgUnit';
-import { redirectTo, redirectToReplace } from '../routing/actions';
+import { useRedirectTo, useRedirectToReplace } from '../routing/routing';
 
 export type FilterState = {
     filters: Record<string, any>;
@@ -44,7 +43,8 @@ export const useFilterState = ({
     saveSearchInHistory = true,
 }: FilterStateParams): FilterState => {
     const [filtersUpdated, setFiltersUpdated] = useState(false);
-    const dispatch = useDispatch();
+    const redirectTo = useRedirectTo();
+    const redirectToReplace = useRedirectToReplace();
     const [filters, setFilters] = useState({
         ...removePaginationParams(params),
     });
@@ -60,9 +60,9 @@ export const useFilterState = ({
                 tempParams.page = '1';
             }
             if (saveSearchInHistory) {
-                dispatch(redirectTo(baseUrl, tempParams));
+                redirectTo(baseUrl, tempParams);
             } else {
-                dispatch(redirectToReplace(baseUrl, tempParams));
+                redirectToReplace(baseUrl, tempParams);
             }
         }
     }, [
@@ -71,8 +71,9 @@ export const useFilterState = ({
         filters,
         withPagination,
         saveSearchInHistory,
-        dispatch,
+        redirectTo,
         baseUrl,
+        redirectToReplace,
     ]);
 
     const handleChange = useCallback(

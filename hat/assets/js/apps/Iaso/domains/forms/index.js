@@ -7,7 +7,6 @@ import {
     commonStyles,
     AddButton as AddButtonComponent,
 } from 'bluesquare-components';
-import { useNavigate } from 'react-router-dom';
 import { useFormsTableColumns } from './config';
 import { Filters } from './components/Filters.tsx';
 import TopBar from '../../components/nav/TopBarComponent';
@@ -106,7 +105,7 @@ const Forms = () => {
                                 dataTestId="add-form-button"
                                 onClick={() => {
                                     redirectTo(baseUrls.formDetail, {
-                                        formIds: '0',
+                                        formId: '0',
                                     });
                                 }}
                             />

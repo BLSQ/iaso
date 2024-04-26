@@ -84,7 +84,6 @@ const InstancesFiltersComponent = ({
     const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    console.log('params instance', params);
 
     const [hasLocationLimitError, setHasLocationLimitError] = useState(false);
     const [fetchingOrgUnitTypes, setFetchingOrgUnitTypes] = useState(false);

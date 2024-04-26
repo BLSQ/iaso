@@ -1,5 +1,4 @@
 import { Box, Grid } from '@mui/material';
-import { useDispatch } from 'react-redux';
 import React, {
     FunctionComponent,
     useCallback,
@@ -29,13 +28,13 @@ import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
 import { useGetGroups } from '../orgUnits/hooks/requests/useGetGroups';
 import { PERIOD_TYPE_PLACEHOLDER } from '../periods/constants';
 import { useGetValidationStatus } from '../forms/hooks/useGetValidationStatus';
-import { redirectToReplace } from '../../routing/actions';
 import { InputWithInfos } from '../../components/InputWithInfos';
 import { DropdownOptionsWithOriginal } from '../../types/utils';
 import { useGetTeamsDropdown } from '../teams/hooks/requests/useGetTeams';
 import { AsyncSelect } from '../../components/forms/AsyncSelect';
 import { getUsersDropDown } from '../instances/hooks/requests/getUsersDropDown';
 import { useGetProfilesDropdown } from '../instances/hooks/useGetProfilesDropdown';
+import { useRedirectToReplace } from '../../routing/routing';
 
 type Props = {
     params: UrlParams & any;
@@ -51,7 +50,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
     fetchingForms,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
+    const redirectToReplace = useRedirectToReplace();
 
     const { filters, handleChange, filtersUpdated, setFiltersUpdated } =
         useFilterState({
@@ -66,9 +65,9 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                 ...filters,
             };
             tempParams.page = '1';
-            dispatch(redirectToReplace(baseUrl, tempParams));
+            redirectToReplace(baseUrl, tempParams);
         }
-    }, [filtersUpdated, setFiltersUpdated, params, filters, dispatch]);
+    }, [filtersUpdated, setFiltersUpdated, params, filters, redirectToReplace]);
     const [initialParentId, setInitialParentId] = useState(params?.parentId);
     const { data: initialParent } = useGetOrgUnit(initialParentId);
 

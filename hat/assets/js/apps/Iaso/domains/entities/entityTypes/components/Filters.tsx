@@ -1,17 +1,12 @@
 import React, { useState, FunctionComponent, useCallback } from 'react';
-import { useDispatch } from 'react-redux';
-
 import { Grid, Button } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import SearchIcon from '@mui/icons-material/Search';
-// @ts-ignore
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-
 import InputComponent from '../../../../components/forms/InputComponent';
-import { redirectTo } from '../../../../routing/actions';
 import MESSAGES from '../../messages';
-
 import { baseUrl } from '../config';
+import { useRedirectToReplace } from '../../../../routing/routing';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -33,7 +28,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
+    const redirectToReplace = useRedirectToReplace();
     const [filters, setFilters] = useState({
         search: params.search,
     });
@@ -46,9 +41,9 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                 ...filters,
             };
             tempParams.page = '1';
-            dispatch(redirectTo(baseUrl, tempParams));
+            redirectToReplace(baseUrl, tempParams);
         }
-    }, [filtersUpdated, dispatch, filters, params]);
+    }, [filtersUpdated, params, filters, redirectToReplace]);
 
     const handleChange = useCallback(
         (key, value) => {

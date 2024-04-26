@@ -2,9 +2,8 @@ import datetime
 from collections import OrderedDict
 from unittest import mock
 
-from django.db.models import F
-
 import time_machine
+from django.db.models import F
 from rest_framework.test import APIRequestFactory
 
 from iaso import models as m
@@ -13,7 +12,6 @@ from plugins.polio.budget.models import BudgetProcess
 from plugins.polio.budget.serializers import BudgetProcessSerializer, BudgetProcessWriteSerializer
 from plugins.polio.models import Campaign, Round
 from plugins.polio.tests.utils.budget import get_mocked_workflow
-
 
 DT = datetime.datetime(2024, 2, 7, 11, 0, 0, 0, tzinfo=datetime.timezone.utc)
 
@@ -129,7 +127,7 @@ class BudgetProcessWriteSerializerTestCase(TestCase):
         Test JSON -> BudgetProcess instance.
         """
         data = {
-            "rounds": [self.round_1.pk, self.round_2.pk],
+            "rounds": [{"id": self.round_1.pk}, {"id": self.round_2.pk}],
             "ra_completed_at_WFEDITABLE": DT.date(),
             "who_sent_budget_at_WFEDITABLE": DT.date(),
             "unicef_sent_budget_at_WFEDITABLE": DT.date(),
@@ -209,7 +207,7 @@ class BudgetProcessWriteSerializerTestCase(TestCase):
         self.round_2.save()
 
         data = {
-            "rounds": [self.round_3.pk],
+            "rounds": [{"id": self.round_3.pk}],
             "no_regret_fund_amount": 50.0,
         }
         context = {"request": self.request}
@@ -225,21 +223,23 @@ class BudgetProcessWriteSerializerTestCase(TestCase):
     def test_validate_raises_for_invalid_rounds(self):
         invalid_round = Round.objects.create(number=1)
         data = {
-            "rounds": [invalid_round.id],
+            "rounds": [{"id": invalid_round.id}],
         }
         serializer = BudgetProcessWriteSerializer(data=data, context={"request": self.request})
         self.assertFalse(serializer.is_valid())
-        self.assertIn("The user does not have the permissions for rounds:", serializer.errors["rounds"][0])
+        expected_error_msg = "The user does not have the permissions for rounds:"
+        self.assertIn(expected_error_msg, str(serializer.errors["rounds"][0]))
 
     def test_validate_raises_for_already_linked_rounds(self):
         budget_process = BudgetProcess.objects.create(created_by=self.user)
         linked_round = Round.objects.create(number=1, campaign=self.campaign, budget_process=budget_process)
         data = {
-            "rounds": [linked_round.id],
+            "rounds": [{"id": linked_round.id}],
         }
         serializer = BudgetProcessWriteSerializer(data=data, context={"request": self.request})
         self.assertFalse(serializer.is_valid())
-        self.assertIn("A BudgetProcess already exists for rounds:", serializer.errors["rounds"][0])
+        expected_error_msg = "A BudgetProcess already exists for rounds:"
+        self.assertIn(expected_error_msg, str(serializer.errors["rounds"][0]))
 
     def test_validate_raises_for_rounds_of_different_campaigns(self):
         other_campaign = Campaign.objects.create(
@@ -248,11 +248,12 @@ class BudgetProcessWriteSerializerTestCase(TestCase):
         )
         other_campaign_round = Round.objects.create(number=1, campaign=other_campaign, budget_process=None)
         data = {
-            "rounds": [self.round_1.pk, other_campaign_round.pk],
+            "rounds": [{"id": self.round_1.pk}, {"id": other_campaign_round.pk}],
         }
         serializer = BudgetProcessWriteSerializer(data=data, context={"request": self.request})
         self.assertFalse(serializer.is_valid())
-        self.assertIn("Rounds must be from the same campaign:", serializer.errors["rounds"][0])
+        expected_error_msg = "Rounds must be from the same campaign."
+        self.assertIn(expected_error_msg, str(serializer.errors["rounds"][0]))
 
 
 @time_machine.travel(DT, tick=False)
@@ -320,9 +321,9 @@ class BudgetProcessSerializerTestCase(TestCase):
         """
 
         expected_rounds = [
-            OrderedDict({"id": self.round_1.pk, "number": 1}),
-            OrderedDict({"id": self.round_2.pk, "number": 2}),
-            OrderedDict({"id": self.round_3.pk, "number": 3}),
+            OrderedDict({"id": self.round_1.pk, "number": 1, "cost": "0.00", "target_population": None}),
+            OrderedDict({"id": self.round_2.pk, "number": 2, "cost": "0.00", "target_population": None}),
+            OrderedDict({"id": self.round_3.pk, "number": 3, "cost": "0.00", "target_population": None}),
         ]
         expected_possible_states = [
             OrderedDict({"key": None, "label": "No budget"}),
@@ -463,48 +464,51 @@ class BudgetProcessSerializerTestCase(TestCase):
         # Ask for all fields (this is done via `DynamicFieldsModelSerializer`).
         self.request.query_params["fields"] = ":all"
         serializer = BudgetProcessSerializer(instance=budget_process, context={"request": self.request})
+
+        expected = {
+            "created_at": "2024-02-07T11:00:00Z",
+            "id": self.budget_process.pk,
+            "campaign_id": str(self.campaign.pk),
+            "obr_name": "Test Campaign",
+            "country_name": "ANGOLA",
+            "rounds": expected_rounds,
+            "current_state": {"key": "-", "label": "-"},
+            "updated_at": "2024-02-07T11:00:00Z",
+            "possible_states": expected_possible_states,
+            "next_transitions": expected_next_transitions,
+            "possible_transitions": expected_possible_transitions,
+            "timeline": expected_timeline,
+            "ra_completed_at_WFEDITABLE": "2024-02-07",
+            "who_sent_budget_at_WFEDITABLE": "2024-02-07",
+            "unicef_sent_budget_at_WFEDITABLE": "2024-02-07",
+            "gpei_consolidated_budgets_at_WFEDITABLE": "2024-02-07",
+            "submitted_to_rrt_at_WFEDITABLE": "2024-02-07",
+            "feedback_sent_to_gpei_at_WFEDITABLE": "2024-02-07",
+            "re_submitted_to_rrt_at_WFEDITABLE": "2024-02-07",
+            "submitted_to_orpg_operations1_at_WFEDITABLE": "2024-02-07",
+            "feedback_sent_to_rrt1_at_WFEDITABLE": "2024-02-07",
+            "re_submitted_to_orpg_operations1_at_WFEDITABLE": "2024-02-07",
+            "submitted_to_orpg_wider_at_WFEDITABLE": "2024-02-07",
+            "submitted_to_orpg_operations2_at_WFEDITABLE": "2024-02-07",
+            "feedback_sent_to_rrt2_at_WFEDITABLE": "2024-02-07",
+            "re_submitted_to_orpg_operations2_at_WFEDITABLE": "2024-02-07",
+            "submitted_for_approval_at_WFEDITABLE": "2024-02-07",
+            "feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE": "2024-02-07",
+            "feedback_sent_to_orpg_operations_who_at_WFEDITABLE": "2024-02-07",
+            "approved_by_who_at_WFEDITABLE": "2024-02-07",
+            "approved_by_unicef_at_WFEDITABLE": "2024-02-07",
+            "approved_at_WFEDITABLE": "2024-02-07",
+            "approval_confirmed_at_WFEDITABLE": "2024-02-07",
+            "payment_mode": "DIRECT",
+            "district_count": 3,
+            "who_disbursed_to_co_at": "2024-02-07",
+            "who_disbursed_to_moh_at": "2024-02-07",
+            "unicef_disbursed_to_co_at": "2024-02-07",
+            "unicef_disbursed_to_moh_at": "2024-02-07",
+            "no_regret_fund_amount": "100.00",
+            "has_data_in_budget_tool": False,
+        }
         self.assertEqual(
             serializer.data,
-            {
-                "created_at": "2024-02-07T11:00:00Z",
-                "id": self.budget_process.pk,
-                "campaign_id": str(self.campaign.pk),
-                "obr_name": "Test Campaign",
-                "country_name": "ANGOLA",
-                "rounds": expected_rounds,
-                "current_state": {"key": "-", "label": "-"},
-                "updated_at": "2024-02-07T11:00:00Z",
-                "possible_states": expected_possible_states,
-                "next_transitions": expected_next_transitions,
-                "possible_transitions": expected_possible_transitions,
-                "timeline": expected_timeline,
-                "ra_completed_at_WFEDITABLE": "2024-02-07",
-                "who_sent_budget_at_WFEDITABLE": "2024-02-07",
-                "unicef_sent_budget_at_WFEDITABLE": "2024-02-07",
-                "gpei_consolidated_budgets_at_WFEDITABLE": "2024-02-07",
-                "submitted_to_rrt_at_WFEDITABLE": "2024-02-07",
-                "feedback_sent_to_gpei_at_WFEDITABLE": "2024-02-07",
-                "re_submitted_to_rrt_at_WFEDITABLE": "2024-02-07",
-                "submitted_to_orpg_operations1_at_WFEDITABLE": "2024-02-07",
-                "feedback_sent_to_rrt1_at_WFEDITABLE": "2024-02-07",
-                "re_submitted_to_orpg_operations1_at_WFEDITABLE": "2024-02-07",
-                "submitted_to_orpg_wider_at_WFEDITABLE": "2024-02-07",
-                "submitted_to_orpg_operations2_at_WFEDITABLE": "2024-02-07",
-                "feedback_sent_to_rrt2_at_WFEDITABLE": "2024-02-07",
-                "re_submitted_to_orpg_operations2_at_WFEDITABLE": "2024-02-07",
-                "submitted_for_approval_at_WFEDITABLE": "2024-02-07",
-                "feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE": "2024-02-07",
-                "feedback_sent_to_orpg_operations_who_at_WFEDITABLE": "2024-02-07",
-                "approved_by_who_at_WFEDITABLE": "2024-02-07",
-                "approved_by_unicef_at_WFEDITABLE": "2024-02-07",
-                "approved_at_WFEDITABLE": "2024-02-07",
-                "approval_confirmed_at_WFEDITABLE": "2024-02-07",
-                "payment_mode": "DIRECT",
-                "district_count": 3,
-                "who_disbursed_to_co_at": "2024-02-07",
-                "who_disbursed_to_moh_at": "2024-02-07",
-                "unicef_disbursed_to_co_at": "2024-02-07",
-                "unicef_disbursed_to_moh_at": "2024-02-07",
-                "no_regret_fund_amount": "100.00",
-            },
+            expected,
         )

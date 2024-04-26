@@ -81,9 +81,6 @@ class BudgetProcessViewSetTestCase(APITestCase):
             },
             format="json",
         )
-        if response.status_code != 201:
-            print("Response Data:", response.data)
-            print("Response:", response)
         response_data = self.assertJSONResponse(response, 201)
         new_budget_process = BudgetProcess.objects.get(id=response_data["id"])
         self.assertEqual(

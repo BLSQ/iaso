@@ -156,19 +156,27 @@ class BudgetProcessWriteSerializer(serializers.ModelSerializer):
     def validate_rounds(self, submitted_rounds: list[OrderedDict]) -> list[OrderedDict]:
         request = self.context["request"]
         is_new = self.instance is None
+        round_ids = [round_dict.get("id") for round_dict in submitted_rounds]
+
+        rounds = Round.objects.filter(id__in=round_ids).select_related("campaign", "budget_process")
 
         valid_rounds_ids = Campaign.objects.filter_for_user(request.user).values_list("rounds", flat=True)
-        for round_dict in submitted_rounds:
-            round_id = round_dict.get("id")
-            if round_id not in valid_rounds_ids:
-                raise serializers.ValidationError(f"The user does not have the permissions for round ID: {round_id}")
+        invalid_round_ids = [round.id for round in rounds if round.id not in valid_rounds_ids]
+        if invalid_round_ids:
+            raise serializers.ValidationError(
+                f"The user does not have the permissions for rounds: {invalid_round_ids}."
+            )
 
-            if is_new and "budget_process" in round_dict and round_dict["budget_process"]:
-                raise serializers.ValidationError(f"A BudgetProcess already exists for round ID: {round_id}")
+        if is_new:
+            already_linked_round_ids = [round.id for round in rounds if round.budget_process]
+            if already_linked_round_ids:
+                raise serializers.ValidationError(
+                    f"A BudgetProcess already exists for rounds: {already_linked_round_ids}."
+                )
 
-        rounds_campaigns = {round_dict["campaign_id"] for round_dict in submitted_rounds if "campaign_id" in round_dict}
+        rounds_campaigns = {round.campaign_id for round in rounds}
         if len(rounds_campaigns) > 1:
-            raise serializers.ValidationError(f"Rounds must be from the same campaign: {submitted_rounds}.")
+            raise serializers.ValidationError("Rounds must be from the same campaign.")
 
         return submitted_rounds
 

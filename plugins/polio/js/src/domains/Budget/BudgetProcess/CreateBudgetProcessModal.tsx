@@ -36,14 +36,14 @@ const CreateBudgetProcessModal: FunctionComponent<Props> = ({
     const { mutate: confirm } = useCreateBudgetProcess();
     const schema = useCreateBudgetProcessSchema();
     const formik = useFormik({
-        initialValues: { country: '', campaign: '', rounds: [] },
+        initialValues: { country: '', campaign: '' },
         validationSchema: schema,
         onSubmit: async values => {
             confirm(values);
         },
     });
-    const allowConfirm =
-        !formik.isSubmitting && formik.isValid && Boolean(formik.values.rounds);
+    const { isSubmitting, isValid, dirty } = formik;
+    const allowConfirm = !isSubmitting && isValid && dirty;
 
     // Filter "Campaign" values on "Country" change.
     const [currentCampaignOptions, setCampaignOptions] = useState<Options[]>(
@@ -66,7 +66,7 @@ const CreateBudgetProcessModal: FunctionComponent<Props> = ({
         const filtered = rounds.filter(
             i => String(i.campaign_id) === String(formik.values.campaign),
         );
-        formik.setFieldValue('round', '');
+        formik.setFieldValue('round', undefined);
         setRoundsOptions(filtered);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dropdownsData?.rounds, formik.values.campaign]);

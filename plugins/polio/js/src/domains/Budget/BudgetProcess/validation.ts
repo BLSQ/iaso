@@ -4,27 +4,9 @@ import { useSafeIntl } from 'bluesquare-components';
 
 import MESSAGES from '../messages';
 
-export const useCreateBudgetProcessSchema = (): ObjectSchema<any> => {
+const useBaseSchemaFields = () => {
     const { formatMessage } = useSafeIntl();
-    return object().shape({
-        country: number()
-            .nullable()
-            .required(formatMessage(MESSAGES.requiredField))
-            .integer()
-            .typeError(formatMessage(MESSAGES.requiredPositiveInteger)),
-        campaign: string()
-            .nullable()
-            .required(formatMessage(MESSAGES.requiredField))
-            .uuid()
-            .typeError(formatMessage(MESSAGES.requiredUuid)),
-        rounds: array()
-            .nullable()
-            .required(formatMessage(MESSAGES.requiredField)),
-    });
-};
-export const useEditBudgetProcessSchema = (): ObjectSchema<any> => {
-    const { formatMessage } = useSafeIntl();
-    return object().shape({
+    return {
         rounds: array()
             .nullable()
             .required(formatMessage(MESSAGES.requiredField)),
@@ -206,5 +188,28 @@ export const useEditBudgetProcessSchema = (): ObjectSchema<any> => {
                 /^\d{4}-\d{2}-\d{2}$/,
                 formatMessage(MESSAGES.invalidDate),
             ),
+    };
+};
+
+export const useCreateBudgetProcessSchema = (): ObjectSchema<any> => {
+    const { formatMessage } = useSafeIntl();
+    const baseSchemaFields = useBaseSchemaFields();
+    return object().shape({
+        country: number()
+            .nullable()
+            .required(formatMessage(MESSAGES.requiredField))
+            .integer()
+            .typeError(formatMessage(MESSAGES.requiredPositiveInteger)),
+        campaign: string()
+            .nullable()
+            .required(formatMessage(MESSAGES.requiredField))
+            .uuid()
+            .typeError(formatMessage(MESSAGES.requiredUuid)),
+        ...baseSchemaFields,
     });
+};
+
+export const useEditBudgetProcessSchema = (): ObjectSchema<any> => {
+    const baseSchemaFields = useBaseSchemaFields();
+    return object().shape(baseSchemaFields);
 };

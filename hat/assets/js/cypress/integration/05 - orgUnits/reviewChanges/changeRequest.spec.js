@@ -6,15 +6,15 @@ import page2 from '../../../fixtures/orgunits/changes/orgUnitChanges-page2.json'
 import emptyFixture from '../../../fixtures/orgunits/changes/empty.json';
 import { testTablerender } from '../../../support/testTableRender';
 import { testPagination } from '../../../support/testPagination';
-import { testTableSort } from '../../../support/testTableSort';
-import { testPageFilters } from '../../../support/testPageFilters';
+// import { testTableSort } from '../../../support/testTableSort';
+// import { testPageFilters } from '../../../support/testPageFilters';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 const baseUrl = `${siteBaseUrl}/dashboard/orgunits/changeRequest`;
 
 let interceptFlag = false;
-let table;
-let row;
+// let table;
+// let row;
 const defaultQuery = {
     limit: '10',
     order: '-updated_at',
@@ -117,12 +117,40 @@ const goToPage = (
     cy.visit(url);
 };
 
-// const testRowContent = (index, p = listFixture.instances[index]) => {
-//     cy.get('table').as('table');
-//     cy.get('@table').find('tbody').find('tr').eq(index).as('row');
-//     cy.get('@row').find('td').eq(0).should('contain', p.form_name);
-//     cy.get('@row').find('td').eq(3).should('contain', p.org_unit.name);
-// };
+const testRowContent = (index, changeRequest = listFixture.results[index]) => {
+    const groups = [];
+    cy.get('table').as('table');
+    cy.get('@table').find('tbody').find('tr').eq(index).as('row');
+    cy.get('@row').find('td').eq(0).should('contain', changeRequest.id);
+    cy.get('@row')
+        .find('td')
+        .eq(1)
+        .should('contain', changeRequest.org_unit_name);
+    cy.get('@row')
+        .find('td')
+        .eq(2)
+        .should('contain', changeRequest.org_unit_parent_name);
+    cy.get('@row')
+        .find('td')
+        .eq(3)
+        .should('contain', changeRequest.org_unit_type_name);
+
+    changeRequest.groups.forEach(group => {
+        groups.push(group.name);
+    });
+    cy.get('@row').find('td').eq(4).should('contain', groups.join(', '));
+    cy.get('@row')
+        .find('td')
+        .eq(5)
+        .find('div')
+        .eq(0)
+        .should(
+            'contain',
+            changeRequest.status.charAt(0).toUpperCase() +
+                changeRequest.status.slice(1),
+        );
+    cy.get('@row').find('td').eq(6).should('contain', changeRequest.created_at);
+};
 
 // const getActionCol = (index = 0) => {
 //     table = cy.get('table');
@@ -203,13 +231,6 @@ describe('Organisations changes', () => {
             const errorCode = cy.get('#error-code');
             errorCode.should('contain', '403');
         });
-        // describe('Search field', () => {
-        //     beforeEach(() => {
-        //         goToPage();
-        //     });
-
-        //     testSearchField(search, searchWithForbiddenChars);
-        // });
     });
     describe('Table', () => {
         beforeEach(() => {
@@ -238,11 +259,11 @@ describe('Organisations changes', () => {
                 order: '-updated_at',
             },
         });
-        // it('should render correct row infos', () => {
-        //     cy.wait('@getSubmissions').then(() => {
-        //         testRowContent(0);
-        //     });
-        // });
+        it('should render correct row infos', () => {
+            cy.wait('@getOrgUnitChanges').then(() => {
+                testRowContent(0);
+            });
+        });
 
         // describe('Action columns', () => {
         //     it('should display correct amount of buttons', () => {

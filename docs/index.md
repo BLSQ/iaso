@@ -1,12 +1,16 @@
-## Welcome to the documentation of IASO
+# Welcome to the documentation of IASO
+
+## Introduction to IASO
 
 IASO is an innovative, open-source, bilingual (EN/FR) data collection platform with advanced geospatial features to plan, monitor and evaluate health, environmental or social programmes in low- and middle-income settings (LMICs). IASO is recognized as a Digital Public Good by the Digital Public Good Alliance and listed as a Digital Square Software Global Good, a testament to its proven impact.
 
 IASO comprises:
+
 - a **web dashboard** - intended for supervisors to organize data collection and geographical data management
 - a **mobile application** that also works **offline** - intended to field users to fill out forms and send data when network is available
 - a **matching and scripting interface** to analyze, compare and merge several geographic data sources
-- a bi-directional **integration with DHIS2**, the widely used HMIS in LMICs
+- a bi-directional **integration with DHIS2**, the widely used Health Management Information System in Low- and middle-income countries
+
 
 In terms of features, IASO can be summarized around **three main components** which are interconnected and expand the powers of one another:
 
@@ -37,4 +41,4 @@ IASO is made of a white labeled Android application using Java/Kotlin, reusing l
 
 The companion mobile app for Android allow submitting forms and creating org unit.
 
-Forms can also be filled in a web interface via the Enketo companion service. Both Iaso and Enketo need to be configured to work together. It is possible to run an Enketo service locally.
+Forms can also be filled in a web interface via the Enketo companion service. Both IASO and Enketo need to be configured to work together. It is possible to run an Enketo service locally.

@@ -21,7 +21,8 @@ class InstanceExportError(BaseException):
     def __init__(self, *args):
         self.counts = args[1]
         self.descriptions = args[2]
-        self.message = str(args[0]) + " : " + self.descriptions[0]
+        description = self.descriptions[0] if len(self.descriptions) > 0 else ""
+        self.message = str(args[0]) + " : " + description
 
     def __str__(self):
         return "InstanceExportError, {0} ".format(self.message)
@@ -75,6 +76,7 @@ class AggregateHandler(BaseHandler):
         response = resp["response"]
         counts = {}
         descriptions = []
+
         if "importCount" in response:
             for count_type in ("imported", "updated", "deleted", "ignored"):
                 counts[count_type] = response["importCount"][count_type]
@@ -337,11 +339,11 @@ class EventHandler(BaseHandler):
             message = "ERROR while processing " + prefix
             resp = json.loads(dhis2_exception.description)
             exception = self.handle_exception(resp, message)
+
             raise exception
 
     def handle_exception(self, resp, message):
         response = resp["response"]
-
         if response["status"] == "ERROR":
             counts = {}
 
@@ -354,6 +356,8 @@ class EventHandler(BaseHandler):
             self.logger.error("---------------------------------------------------------")
             self.logger.error("----------------------- EXPORT ERROR --------------------")
             self.logger.error("Failed to create events got" + str(descriptions) + str(conflicts) + str(resp))
+            if len(descriptions) == 0:
+                descriptions = [json.dumps(conflicts)]
             return InstanceExportError(message, counts, descriptions)
 
 

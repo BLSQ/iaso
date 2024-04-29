@@ -95,12 +95,12 @@ export const MapScope: FunctionComponent<Props> = ({
     const filterOrgUnits = useCallback(
         (orgUnits: OrgUnit[]) =>
             orgUnits.filter(
-                ogrUnit =>
-                    (ogrUnit.has_geo_json ||
-                        (ogrUnit.latitude && ogrUnit.longitude)) &&
-                    (ogrUnit.validation_status === 'VALID' ||
+                orgUnit =>
+                    (orgUnit.has_geo_json ||
+                        (orgUnit.latitude && orgUnit.longitude)) &&
+                    (orgUnit.validation_status === 'VALID' ||
                         // display REJECTED or NEW org unit if already present in a scope
-                        findScopeWithOrgUnit(scopes, ogrUnit.id)),
+                        findScopeWithOrgUnit(scopes, orgUnit.id)),
             ),
         [scopes],
     );

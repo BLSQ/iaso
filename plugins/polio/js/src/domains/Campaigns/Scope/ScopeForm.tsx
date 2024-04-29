@@ -87,35 +87,31 @@ export const ScopeForm: FunctionComponent = () => {
                 });
             });
         }
-
-        const filtered = districtShapes.reduce((acc, district) => {
-            const scope = findScopeWithOrgUnit(scopes, district.id);
-            const vaccineName =
-                orgUnitIdToVaccine.get(district.id) || undefined;
-            const isInScope = scopes.some(sc =>
-                sc.group.org_units.includes(district.id),
-            );
-            if (
-                // Hide REJECTED or NEW org units if not already present in a scope
-                (district.validation_status !== 'VALID' && !isInScope) ||
-                (searchScope && !isInScope) ||
-                (debouncedSearch &&
-                    !district.name
-                        .toLowerCase()
-                        .includes(debouncedSearch.toLowerCase()))
-            ) {
-                return acc;
-            }
-
-            acc.push({
-                ...cloneDeep(district),
-                region: findRegion(district, regionShapes),
-                scope,
-                vaccineName,
+        const filtered = districtShapes
+            .filter(district => {
+                const isInScope = scopes.some(sc =>
+                    sc.group.org_units.includes(district.id),
+                );
+                return (
+                    (district.validation_status === 'VALID' || isInScope) &&
+                    (!searchScope || isInScope) &&
+                    (!debouncedSearch ||
+                        district.name
+                            .toLowerCase()
+                            .includes(debouncedSearch.toLowerCase()))
+                );
+            })
+            .map(district => {
+                const scope = findScopeWithOrgUnit(scopes, district.id);
+                const vaccineName =
+                    orgUnitIdToVaccine.get(district.id) || undefined;
+                return {
+                    ...cloneDeep(district),
+                    region: findRegion(district, regionShapes),
+                    scope,
+                    vaccineName,
+                };
             });
-
-            return acc;
-        }, [] as FilteredDistricts[]);
 
         return filtered;
     }, [

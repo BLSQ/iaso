@@ -8,7 +8,6 @@ import get from 'lodash/get';
 import { useSafeIntl, Column } from 'bluesquare-components';
 
 import { Checkbox, Box, Tooltip } from '@mui/material';
-import { useDispatch } from 'react-redux';
 import { AssignmentParams, AssignmentsApi } from '../types/assigment';
 import { AssignmentUnit } from '../types/locations';
 import { DropdownTeamsOptions, Team } from '../types/team';
@@ -18,12 +17,12 @@ import { Profile } from '../../../utils/usersUtils';
 
 import { UsersTeamsCell } from '../components/UsersTeamsCell';
 import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
-import { redirectTo } from '../../../routing/actions';
 
 import MESSAGES from '../messages';
 import { OrgUnit, ParentOrgUnit } from '../../orgUnits/types/orgUnit';
 import { baseUrls } from '../../../constants/urls';
 import { SxStyles } from '../../../types/general';
+import { useRedirectTo } from '../../../routing/routing';
 
 const getParentCount = (
     orgUnit: AssignmentUnit | ParentOrgUnit,
@@ -59,7 +58,7 @@ const ParentHeadCell: FunctionComponent<ParentHeadCellProps> = ({
     params,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
+    const redirectTo = useRedirectTo();
     const orgUnit = settings.data[index] as OrgUnit;
     const parent = get(
         orgUnit,
@@ -70,16 +69,13 @@ const ParentHeadCell: FunctionComponent<ParentHeadCellProps> = ({
     const toggleParentPicking = useCallback(
         (e: MouseEvent<HTMLElement>) => {
             e.stopPropagation();
-            dispatch(
-                redirectTo(baseUrl, {
-                    ...params,
-                    parentOrgunitType: isActive
-                        ? ''
-                        : `${parent.org_unit_type_id}`,
-                }),
-            );
+
+            redirectTo(baseUrl, {
+                ...params,
+                parentOrgunitType: isActive ? '' : `${parent.org_unit_type_id}`,
+            });
         },
-        [dispatch, isActive, params, parent?.org_unit_type_id],
+        [isActive, params, parent.org_unit_type_id, redirectTo],
     );
     return (
         <>

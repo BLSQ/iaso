@@ -9,6 +9,8 @@ import { ReviewOrgUnitChangesTable } from './Tables/ReviewOrgUnitChangesTable';
 import { useGetApprovalProposals } from './hooks/api/useGetApprovalProposals';
 import MESSAGES from './messages';
 import { ApproveOrgUnitParams } from './types';
+import { useParamsObject } from '../../../routing/hooks/useParamsObject';
+import { baseUrls } from '../../../constants/urls';
 /*
 # Org Unit Change Request
 
@@ -53,13 +55,14 @@ Change requests to create an org unit should be highlighted in the table.
 
 */
 
-type Props = { params: ApproveOrgUnitParams };
-
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-export const ReviewOrgUnitChanges: FunctionComponent<Props> = ({ params }) => {
+export const ReviewOrgUnitChanges: FunctionComponent = () => {
+    const params = useParamsObject(
+        baseUrls.orgUnitsChangeRequest,
+    ) as ApproveOrgUnitParams;
     const { data, isFetching } = useGetApprovalProposals(params);
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();

@@ -6,7 +6,6 @@ import React, {
     SetStateAction,
 } from 'react';
 import Color from 'color';
-import { useDispatch } from 'react-redux';
 import { Column, useSafeIntl } from 'bluesquare-components';
 import { Box } from '@mui/material';
 import { TableWithDeepLink } from '../../../../components/tables/TableWithDeepLink';
@@ -17,7 +16,6 @@ import {
     OrgUnitChangeRequest,
     ChangeRequestValidationStatus,
 } from '../types';
-import { redirectTo } from '../../../../routing/actions';
 import MESSAGES from '../messages';
 import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
 import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
@@ -203,7 +201,6 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
     isFetching,
     params,
 }) => {
-    const dispatch = useDispatch();
     const [selectedChangeRequest, setSelectedChangeRequest] = useState<
         SelectedChangeRequest | undefined
     >();
@@ -233,13 +230,8 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
                 baseUrl={baseUrl}
                 countOnTop
                 params={params}
-                // The typing problem is in the table
-                // @ts-ignore
                 rowProps={getRowProps}
                 extraProps={{ loading: isFetching, selectedChangeRequest }}
-                onTableParamsChange={p => {
-                    dispatch(redirectTo(baseUrl, p));
-                }}
             />
         </>
     );

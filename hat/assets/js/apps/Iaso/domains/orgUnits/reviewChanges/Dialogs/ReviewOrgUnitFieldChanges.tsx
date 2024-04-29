@@ -6,22 +6,27 @@ import { AccordionDetails } from '../../../../components/Accordion/AccordionDeta
 import { AccordionSummary } from '../../../../components/Accordion/AccordionSummary';
 import { NewOrgUnitField } from '../hooks/useNewFields';
 import MESSAGES from '../messages';
-import { ExtendedNestedGroup } from '../types';
+import { ExtendedNestedGroup, OrgUnitChangeRequestDetails } from '../types';
 
 type Props = {
     fieldValues: ExtendedNestedGroup[];
-    status: string;
+    changeRequest?: OrgUnitChangeRequestDetails;
     field: NewOrgUnitField;
 };
 
 export const ReviewOrgUnitFieldChanges: FunctionComponent<Props> = ({
     fieldValues,
-    status,
+    changeRequest,
     field,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const { status } = changeRequest || {};
     const isCellApproved =
-        (status && status === 'approved' && 'success.light') || '';
+        (status &&
+            status === 'approved' &&
+            changeRequest?.approved_fields.includes(`new_${field.key}`) &&
+            'success.light') ||
+        '';
     const isSelected =
         (status && field?.isSelected === true && 'success.light') || '';
 

@@ -319,7 +319,7 @@ export const baseRouteConfigs = {
     },
     entityDuplicateDetails: {
         url: 'entities/duplicates/details',
-        params: ['accountId', 'entities'],
+        params: ['accountId', 'entities', ...paginationPathParams],
     },
     pages: { url: 'pages', params: ['accountId', ...paginationPathParams] },
     planning: {

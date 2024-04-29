@@ -108,7 +108,6 @@ export const DuplicateDetails: FunctionComponent<Props> = () => {
         entities: string;
     };
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
     const [tableState, setTableState] = useArrayState([]);
     const [unfilteredTableState, setUnfilteredTableState] = useArrayState([]);
     const [query, setQuery] = useObjectState();
@@ -124,7 +123,7 @@ export const DuplicateDetails: FunctionComponent<Props> = () => {
     const disableMerge = Boolean(
         tableState.find(row => row.final.status === 'dropped'),
     );
-
+    console.log('params', params);
     const { data: dupDetailData, isFetching } = useGetDuplicateDetails({
         params,
     });
@@ -325,9 +324,7 @@ export const DuplicateDetails: FunctionComponent<Props> = () => {
                             countOnTop={false}
                             elevation={0}
                             data={tableState}
-                            // @ts-ignore
                             rowProps={getRowProps}
-                            // @ts-ignore
                             cellProps={getCellProps}
                             params={params}
                             extraProps={{
@@ -336,14 +333,6 @@ export const DuplicateDetails: FunctionComponent<Props> = () => {
                                 entities,
                                 getRowProps,
                             }}
-                            onTableParamsChange={p =>
-                                dispatch(
-                                    redirectTo(
-                                        baseUrls.entityDuplicateDetails,
-                                        p,
-                                    ),
-                                )
-                            }
                         />
                     </Paper>
                 </Box>

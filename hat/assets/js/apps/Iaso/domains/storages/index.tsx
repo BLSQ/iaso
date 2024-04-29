@@ -2,7 +2,6 @@ import React, { FunctionComponent } from 'react';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import { useDispatch } from 'react-redux';
 import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { StorageParams } from './types/storages';
@@ -10,7 +9,6 @@ import { Filters } from './components/Filters';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import { useGetStorages } from './hooks/requests/useGetStorages';
 import { useGetStorageApiParams } from './hooks/requests/requests';
-import { redirectToReplace } from '../../routing/actions';
 import MESSAGES from './messages';
 import { useGetColumns, defaultSorted, baseUrl } from './config';
 import { useSingleTableParams } from '../../components/tables/SingleTable';
@@ -25,7 +23,6 @@ export const Storages: FunctionComponent = () => {
     const params = useParamsObject(
         baseUrls.storages,
     ) as unknown as StorageParams;
-    const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
 
@@ -57,9 +54,6 @@ export const Storages: FunctionComponent = () => {
                     columns={columns}
                     count={data?.count ?? 0}
                     params={apiParams}
-                    onTableParamsChange={p =>
-                        dispatch(redirectToReplace(baseUrl, p))
-                    }
                     extraProps={{ loading: isFetching }}
                 />
             </Box>

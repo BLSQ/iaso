@@ -1,64 +1,82 @@
-import Layers from '@mui/icons-material/Layers';
-import { Box, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import Settings from '@mui/icons-material/Settings';
+import { Box, FormControlLabel, Switch } from '@mui/material';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
-import classNames from 'classnames';
 import React, { FunctionComponent, useState } from 'react';
 
+import { SxStyles } from '../../../types/general';
 import MESSAGES from '../messages';
 
-const useStyles = makeStyles(theme => ({
-    legendLayers: {
+const styles: SxStyles = {
+    root: {
         position: 'absolute',
-        zIndex: 500,
-        borderRadius: 4,
-        border: '2px solid rgba(0,0,0,0.2)',
-        minHeight: 28,
-        minWidth: 28,
-        top: 200,
-        left: 8,
+        zIndex: 1101,
+        borderRadius: 0,
+        boxShadow: 'none',
+        minHeight: 34,
+        minWidth: 34,
+        top: 164,
+        backgroundColor: 'transparent',
+        left: 10,
     },
     iconContainer: {
         position: 'absolute',
-        paddingRight: theme.spacing(0.5),
-        paddingTop: theme.spacing(1),
-        top: 0,
-        right: 0,
+        top: '4px',
+        left: '190px',
         backgroundColor: 'white',
     },
     barButton: {
         display: 'flex',
         position: 'absolute',
-        backgroundColor: 'white',
-        borderRadius: '4px',
-        padding: '2px',
         cursor: 'pointer',
-        outline: 'none',
-        top: 0,
+        top: '2px',
         right: 0,
-        boxShadow: 'none',
-        // @ts-ignore
-        color: `${theme.textColor} !important`,
+        minHeight: 34,
+        justifyContent: 'center',
+        alignItems: 'center',
+        minWidth: 34,
+        borderBottomLeftRadius: 4,
+        borderBottomRightRadius: 4,
+        borderLeft: '2px solid rgba(0,0,0,0.2)',
+        borderRight: '2px solid rgba(0,0,0,0.2)',
+        borderBottom: '2px solid rgba(0,0,0,0.2)',
+        // color: theme => `${theme.textColor}`,
+    },
+    button: {
+        display: 'flex',
+        minHeight: 32,
+        justifyContent: 'center',
+        alignItems: 'center',
+        minWidth: 30,
+        backgroundColor: 'white',
+        borderBottomLeftRadius: 4,
+        borderBottomRightRadius: 4,
+        '&:hover': {
+            backgroundColor: '#f4f4f4',
+        },
     },
     container: {
-        backgroundColor: 'white',
         position: 'relative',
-        transition: 'width .1s ease-in-out, height .1s ease-in-out',
+        transition: 'width .1s ease-in-out, height .3s ease-in-out',
         overflow: 'hidden',
     },
+    tooltip: {
+        backgroundColor: 'white',
+        width: 233,
+        height: 90,
+    },
     open: {
-        width: 235,
-        height: 275,
+        width: 237,
+        height: 94,
+        border: '2px solid rgba(0,0,0,0.2)',
+        borderRadius: '4px',
+        transition: 'width .1s ease-in-out, height .3s ease-in-out',
     },
     closed: {
         width: 0,
         height: 0,
+        transition: 'width .1s ease-in-out, height .3s ease-in-out',
     },
-    title: {
-        paddingLeft: theme.spacing(1),
-        paddingTop: theme.spacing(1),
-    },
-}));
+};
 export type Settings = {
     showTooltip: boolean;
     useCluster: boolean;
@@ -77,46 +95,34 @@ export const MapSettings: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const [tilePopup, setTilePopup] = useState<boolean>(false);
 
-    const classes: Record<string, string> = useStyles();
-
     const toggleTilePopup = () => {
         setTilePopup(!tilePopup);
     };
-
     return (
         <>
-            <Box
-                className={classNames(
-                    classes.legendLayers,
-                    'tile-switch-control',
-                )}
-            >
+            <Box sx={styles.root}>
                 {!tilePopup && (
-                    <span
-                        className={classes.barButton}
+                    <Box
+                        sx={styles.barButton}
                         role="button"
                         tabIndex={0}
                         onClick={() => toggleTilePopup()}
                     >
-                        <Layers fontSize="small" />
-                    </span>
+                        <Box sx={styles.button}>
+                            <Settings fontSize="small" />
+                        </Box>
+                    </Box>
                 )}
 
                 <Box
-                    className={classNames(
-                        tilePopup ? classes.open : classes.closed,
-                        classes.container,
-                    )}
+                    sx={{
+                        ...styles.container,
+                        ...(tilePopup ? styles.open : styles.closed),
+                    }}
                 >
                     {tilePopup && (
-                        <Box width={235}>
-                            <Typography
-                                variant="subtitle1"
-                                className={classes.title}
-                            >
-                                MESSAGE
-                            </Typography>
-                            <Box className={classes.iconContainer}>
+                        <Box sx={styles.tooltip}>
+                            <Box sx={styles.iconContainer}>
                                 <IconButton
                                     size="small"
                                     onClick={() => toggleTilePopup()}
@@ -124,7 +130,42 @@ export const MapSettings: FunctionComponent<Props> = ({
                                     tooltipMessage={MESSAGES.close}
                                 />
                             </Box>
-                            CONTENT
+                            <Box px={3} pt="20px">
+                                <FormControlLabel
+                                    label={formatMessage(MESSAGES.showNames)}
+                                    control={
+                                        <Switch
+                                            size="small"
+                                            checked={settings.showTooltip}
+                                            onChange={() =>
+                                                handleChangeSettings(
+                                                    'showTooltip',
+                                                )
+                                            }
+                                            color="primary"
+                                        />
+                                    }
+                                />
+                            </Box>
+                            <Box px={3} pt={1}>
+                                <FormControlLabel
+                                    label={formatMessage(
+                                        MESSAGES.markerClustering,
+                                    )}
+                                    control={
+                                        <Switch
+                                            size="small"
+                                            checked={settings.useCluster}
+                                            onChange={() =>
+                                                handleChangeSettings(
+                                                    'useCluster',
+                                                )
+                                            }
+                                            color="primary"
+                                        />
+                                    }
+                                />
+                            </Box>
                         </Box>
                     )}
                 </Box>

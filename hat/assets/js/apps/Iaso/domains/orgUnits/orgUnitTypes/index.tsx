@@ -1,7 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useDispatch } from 'react-redux';
 import {
     commonStyles,
     AddButton,
@@ -13,29 +12,24 @@ import TopBar from '../../../components/nav/TopBarComponent';
 import { OrgUnitsTypesDialog } from './components/OrgUnitsTypesDialog';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
 
-import { OrgUnitTypesParams } from '../types/orgunitTypes';
-
-import { useGetColumns } from './config/tableColumns';
 import { baseUrls } from '../../../constants/urls';
+import { OrgUnitTypesParams } from '../types/orgunitTypes';
 import MESSAGES from './messages';
 
-import { redirectTo } from '../../../routing/actions';
-
+import { useGetColumns } from './config/tableColumns';
 import { useGetOrgUnitTypes } from './hooks/useGetOrgUnitTypes';
+import { useParamsObject } from '../../../routing/hooks/useParamsObject';
 
 const baseUrl = baseUrls.orgUnitTypes;
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
-type Props = {
-    params: OrgUnitTypesParams;
-};
 
-const OrgUnitTypes: FunctionComponent<Props> = ({ params }) => {
+const OrgUnitTypes: FunctionComponent = () => {
+    const params = useParamsObject(baseUrl) as OrgUnitTypesParams;
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
     const columns: Column[] = useGetColumns();
     const { data, isFetching } = useGetOrgUnitTypes(params);
     return (
@@ -72,7 +66,6 @@ const OrgUnitTypes: FunctionComponent<Props> = ({ params }) => {
                     baseUrl={baseUrl}
                     params={params}
                     extraProps={{ loading: isFetching }}
-                    onTableParamsChange={p => dispatch(redirectTo(baseUrl, p))}
                 />
             </Box>
         </>

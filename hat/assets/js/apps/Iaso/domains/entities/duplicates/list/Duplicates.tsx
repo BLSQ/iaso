@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
-import { useDispatch } from 'react-redux';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { PaginationParams } from '../../../../types/general';
@@ -11,7 +10,6 @@ import {
     useGetDuplicates,
 } from '../hooks/api/useGetDuplicates';
 import { TableWithDeepLink } from '../../../../components/tables/TableWithDeepLink';
-import { redirectTo } from '../../../../routing/actions';
 import { baseUrls } from '../../../../constants/urls';
 import { DuplicatesFilters } from './DuplicatesFilters';
 import { starsStyleForTable } from '../../../../components/stars/StarsComponent';
@@ -48,7 +46,6 @@ export const Duplicates: FunctionComponent<Props> = () => {
         params,
         refresh: latestAnalysis?.finished_at,
     });
-    const dispatch = useDispatch();
     const columns = useDuplicationTableColumns();
     const { results, pages, count } = (data as DuplicatesList) ?? {
         results: [],
@@ -82,9 +79,6 @@ export const Duplicates: FunctionComponent<Props> = () => {
                         extraProps={{
                             loading: isFetching,
                         }}
-                        onTableParamsChange={p =>
-                            dispatch(redirectTo(baseUrl, p))
-                        }
                     />
                 </Box>
             </Box>

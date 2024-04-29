@@ -13,7 +13,6 @@ import Color from 'color';
 
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
-import { redirectTo } from '../../routing/actions';
 import { warningSnackBar } from '../../constants/snackBars';
 import {
     closeFixedSnackbar,
@@ -34,6 +33,7 @@ import { CompletenessRouterParams } from './types';
 import { Map } from './components/Map';
 import { useGetFormsOptions } from './hooks/api/useGetFormsOptions';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { useRedirectTo } from '../../routing/routing';
 
 const baseUrl = baseUrls.completenessStats;
 const useStyles = makeStyles(theme => ({
@@ -60,6 +60,7 @@ export const CompletenessStats: FunctionComponent = () => {
 
     const [tab, setTab] = useState<'list' | 'map'>(params.tab ?? 'list');
     const dispatch = useDispatch();
+    const redirectTo = useRedirectTo();
     const { formatMessage } = useSafeIntl();
     const { data: completenessStats, isFetching } =
         useGetCompletenessStats(params);
@@ -114,9 +115,9 @@ export const CompletenessStats: FunctionComponent = () => {
                 ...params,
                 tab: newTab,
             };
-            dispatch(redirectTo(baseUrl, newParams));
+            redirectTo(baseUrl, newParams);
         },
-        [dispatch, params],
+        [params, redirectTo],
     );
     const getRowStyles = useCallback(
         ({ original }) => {
@@ -220,9 +221,6 @@ export const CompletenessStats: FunctionComponent = () => {
                             countOnTop={false}
                             params={params}
                             extraProps={{ loading: isFetching }}
-                            onTableParamsChange={p => {
-                                dispatch(redirectTo(baseUrl, p));
-                            }}
                             // @ts-ignore
                             rowProps={getRowStyles}
                         />

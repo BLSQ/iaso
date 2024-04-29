@@ -2,7 +2,6 @@ import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import { useDispatch } from 'react-redux';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { PlanningParams } from './types';
@@ -10,7 +9,6 @@ import { PlanningFilters } from './PlanningFilters';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
 import { useGetPlannings } from './hooks/requests/useGetPlannings';
-import { redirectTo } from '../../routing/actions';
 import { usePlanningColumns } from './config';
 import { CreateEditPlanning } from './CreateEditPlanning/CreateEditPlanning';
 import { useDeletePlanning } from './hooks/requests/useDeletePlanning';
@@ -25,7 +23,6 @@ const baseUrl = baseUrls.planning;
 export const Planning: FunctionComponent = () => {
     const params = useParamsObject(baseUrl) as PlanningParams;
     const apiParams = useSingleTableParams(params);
-    const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetPlannings(apiParams);
@@ -53,7 +50,6 @@ export const Planning: FunctionComponent = () => {
                     columns={columns}
                     count={data?.count ?? 0}
                     params={apiParams}
-                    onTableParamsChange={p => dispatch(redirectTo(baseUrl, p))}
                     extraProps={{ loading: isFetching }}
                 />
             </Box>

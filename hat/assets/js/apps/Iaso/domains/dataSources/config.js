@@ -160,57 +160,63 @@ export const useDataSourcesTableColumns = (
     );
 };
 
-export const sourceVersionsTableColumns = (source, formatMessage) => [
-    {
-        Header: formatMessage(MESSAGES.defaultVersion),
-        accessor: 'id',
-        sortable: false,
-        Cell: settings =>
-            source.default_version?.id === settings.value && (
-                <Tooltip title={formatMessage(MESSAGES.defaultVersion)}>
-                    <CheckCircleIcon color="primary" />
-                </Tooltip>
-            ),
-    },
-    {
-        Header: formatMessage({
-            id: 'iaso.versionsDialog.label.number',
-            defaultMessage: 'Number',
-        }),
-        sortable: true,
-        accessor: 'number',
-    },
-    {
-        Header: formatMessage({
-            id: 'iaso.versionsDialog.label.createdAt',
-            defaultMessage: 'Created',
-        }),
-        accessor: 'created_at',
-        sortable: false,
-        Cell: DateTimeCell,
-    },
-    {
-        Header: formatMessage({
-            id: 'iaso.versionsDialog.label.updatedAt',
-            defaultMessage: 'Updated',
-        }),
-        accessor: 'updated_at',
-        sortable: false,
-        Cell: DateTimeCell,
-    },
-    {
-        Header: formatMessage({
-            id: 'iaso.label.orgUnit',
-            defaultMessage: 'Org units',
-        }),
-        accessor: 'org_units_count',
-    },
-    {
-        Header: formatMessage({
-            id: 'iaso.versionsDialog.label.description',
-            defaultMessage: 'Description',
-        }),
-        accessor: 'description',
-        sortable: false,
-    },
-];
+export const useSourceVersionsTableColumns = source => {
+    const { formatMessage } = useSafeIntl();
+    return useMemo(
+        () => [
+            {
+                Header: formatMessage(MESSAGES.defaultVersion),
+                accessor: 'id',
+                sortable: false,
+                Cell: settings =>
+                    source.default_version?.id === settings.value && (
+                        <Tooltip title={formatMessage(MESSAGES.defaultVersion)}>
+                            <CheckCircleIcon color="primary" />
+                        </Tooltip>
+                    ),
+            },
+            {
+                Header: formatMessage({
+                    id: 'iaso.versionsDialog.label.number',
+                    defaultMessage: 'Number',
+                }),
+                sortable: true,
+                accessor: 'number',
+            },
+            {
+                Header: formatMessage({
+                    id: 'iaso.versionsDialog.label.createdAt',
+                    defaultMessage: 'Created',
+                }),
+                accessor: 'created_at',
+                sortable: false,
+                Cell: DateTimeCell,
+            },
+            {
+                Header: formatMessage({
+                    id: 'iaso.versionsDialog.label.updatedAt',
+                    defaultMessage: 'Updated',
+                }),
+                accessor: 'updated_at',
+                sortable: false,
+                Cell: DateTimeCell,
+            },
+            {
+                Header: formatMessage({
+                    id: 'iaso.label.orgUnit',
+                    defaultMessage: 'Org units',
+                }),
+                accessor: 'org_units_count',
+            },
+            {
+                Header: formatMessage({
+                    id: 'iaso.versionsDialog.label.description',
+                    defaultMessage: 'Description',
+                }),
+                accessor: 'description',
+                sortable: false,
+            },
+        ],
+        [formatMessage, source.default_version?.id],
+    );
+};

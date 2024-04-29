@@ -62,6 +62,9 @@ export const useGetPlannings = (
         queryKey,
         queryFn: () => getPlannings(options),
         options: {
+            keepPreviousData: true,
+            cacheTime: 1000 * 60 * 5,
+            staleTime: 1000 * 60 * 5,
             select: data => {
                 return {
                     ...data,

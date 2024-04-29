@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 
 import { Grid, Button, Box, useTheme, useMediaQuery } from '@mui/material';
@@ -8,18 +7,18 @@ import SearchIcon from '@mui/icons-material/Search';
 
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 
-import InputComponent from 'Iaso/components/forms/InputComponent';
-import { redirectTo } from '../../../routing/actions.ts';
-import MESSAGES from '../messages';
+import InputComponent from 'Iaso/components/forms/InputComponent.tsx';
+import { stringToBoolean } from '../../../utils/dataManipulation.ts';
+import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
+
 import { useGetPermissionsDropDown } from '../hooks/useGetPermissionsDropdown.ts';
 import { useGetOrgUnitTypes } from '../../orgUnits/hooks/requests/useGetOrgUnitTypes.ts';
-import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
-import { stringToBoolean } from '../../../utils/dataManipulation.ts';
 import { useGetUserRolesDropDown } from '../hooks/useGetUserRolesDropDown.ts';
-
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
-import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
+import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams.ts';
+import { useRedirectTo } from '../../../routing/routing.ts';
+import MESSAGES from '../messages';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -34,7 +33,7 @@ const Filters = ({ baseUrl, params }) => {
         stringToBoolean(params.ouChildren),
     );
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
+    const redirectTo = useRedirectTo();
     const [filters, setFilters] = useState({
         search: params.search,
         permissions: params.permissions,
@@ -80,9 +79,9 @@ const Filters = ({ baseUrl, params }) => {
                 ...filters,
             };
             tempParams.page = 1;
-            dispatch(redirectTo(baseUrl, tempParams));
+            redirectTo(baseUrl, tempParams);
         }
-    }, [baseUrl, dispatch, filters, filtersUpdated, params]);
+    }, [baseUrl, filters, filtersUpdated, params, redirectTo]);
 
     const handleChange = useCallback(
         (key, value) => {
@@ -106,9 +105,9 @@ const Filters = ({ baseUrl, params }) => {
                 ...filters,
             };
             tempParams.page = 1;
-            dispatch(redirectTo(baseUrl, tempParams));
+            redirectTo(baseUrl, tempParams);
         }
-    }, [baseUrl, dispatch, filters, filtersUpdated, params]);
+    }, [baseUrl, filters, filtersUpdated, params, redirectTo]);
 
     const handleSearchUserRoles = useCallback(() => {
         if (filtersUpdated) {
@@ -118,9 +117,9 @@ const Filters = ({ baseUrl, params }) => {
                 ...filters,
             };
             tempParams.page = 1;
-            dispatch(redirectTo(baseUrl, tempParams));
+            redirectTo(baseUrl, tempParams);
         }
-    }, [baseUrl, dispatch, filters, filtersUpdated, params]);
+    }, [baseUrl, filters, filtersUpdated, params, redirectTo]);
 
     return (
         <>

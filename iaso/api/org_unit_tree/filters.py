@@ -1,7 +1,7 @@
+import django_filters
 from django.db.models.query import QuerySet
 from django.utils.translation import gettext_lazy as _
 
-import django_filters
 from rest_framework.exceptions import ValidationError
 
 from iaso.models import OrgUnit, DataSource
@@ -56,4 +56,22 @@ class OrgUnitTreeFilter(django_filters.rest_framework.FilterSet):
         return queryset.filter(version__data_source_id=source_id)
 
     def filter_validation_status(self, queryset: QuerySet, _, validation_status: str) -> QuerySet:
-        return queryset
+        if validation_status == OrgUnit.VALIDATION_VALID:
+            # Fetch children of `REJECTED` org units which are not themselves `REJECTED`.
+            children_of_rejected_org_units_sql = """
+WITH RECURSIVE rejected AS (
+    SELECT id, validation_status
+    FROM iaso_orgunit
+    WHERE validation_status = 'REJECTED'
+    UNION
+    SELECT descendant.id, descendant.validation_status
+    FROM iaso_orgunit as descendant, rejected
+    WHERE descendant.parent_id = rejected.id
+)
+SELECT 1 as id, array_agg(id) as ids
+FROM rejected
+WHERE validation_status != 'REJECTED';"""
+            ids_to_exclude = OrgUnit.objects.raw(children_of_rejected_org_units_sql)[0].ids
+            queryset = queryset.exclude(id__in=ids_to_exclude)
+
+        return queryset.filter(validation_status=validation_status)

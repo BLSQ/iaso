@@ -282,7 +282,7 @@ class ExternalTaskModelViewSet(ModelViewSet):
             oh_config["task_id"] = task_id
         # We can specify a version in case the latest version gets bugged
         mutation_input = (
-            {"id": pipeline, "version": int(pipeline_version), "config": oh_config}
+            {"id": pipeline, "versionId": pipeline_version, "config": oh_config}
             if pipeline_version
             else {"id": pipeline, "config": config}
         )
@@ -306,6 +306,7 @@ class ExternalTaskModelViewSet(ModelViewSet):
             # The SUCCESS state will be set by the OpenHexa pipeline
             if run_result["success"]:
                 return RUNNING
+            logger.info(f"Launched OpenHexa run: {run_result['id']}")
         except:
             logger.exception("Could not launch pipeline")
             return ERRORED

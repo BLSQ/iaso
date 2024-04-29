@@ -450,7 +450,7 @@ class EntityAdmin(admin.ModelAdmin):
 @admin.register(JsonDataStore)
 @admin_attr_decorator
 class JsonDataStoreAdmin(admin.ModelAdmin):
-    raw_id_fields = ["account"]
+    raw_id_fields = ["account", "org_unit"]
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 

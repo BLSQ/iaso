@@ -1,12 +1,17 @@
 /* eslint-disable camelcase */
-import React, { FunctionComponent, useCallback, useState } from 'react';
-import { useSafeIntl } from 'bluesquare-components';
 import { Box, Button } from '@mui/material';
-import MESSAGES from '../messages';
-import { NewOrgUnitField } from '../hooks/useNewFields';
+import { useSafeIntl } from 'bluesquare-components';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 import { UseSaveChangeRequestQueryData } from '../hooks/api/useSaveChangeRequest';
-import { ReviewOrgUnitChangesDeleteDialog } from './ReviewOrgUnitChangesDeleteDialog';
+import { NewOrgUnitField } from '../hooks/useNewFields';
+import MESSAGES from '../messages';
 import { OrgUnitChangeRequestDetails } from '../types';
+import { ReviewOrgUnitChangesCommentDialog } from './ReviewOrgUnitChangesCommentDialog';
 
 type SubmitChangeRequest = (
     // eslint-disable-next-line no-unused-vars
@@ -33,24 +38,40 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const selectedFields = newFields.filter(field => field.isSelected);
 
-    const [isRejectDialogOpen, setIsRejectDialogOpen] =
+    const [isCommentDialogOpen, setIsCommentDialogOpen] =
         useState<boolean>(false);
+
+    const approvedFields: string[] = useMemo(() => {
+        return isNewOrgUnit && changeRequest
+            ? [...changeRequest.requested_fields]
+            : selectedFields.map(field => `new_${field.key}`);
+    }, [isNewOrgUnit, changeRequest, selectedFields]);
+
+    const isPartiallyApproved = Boolean(
+        changeRequest?.requested_fields &&
+            changeRequest?.requested_fields.length > approvedFields.length &&
+            approvedFields.length > 0,
+    );
     const handleConfirm = useCallback(() => {
-        submitChangeRequest({
-            status: 'approved',
-            approved_fields:
-                isNewOrgUnit && changeRequest
-                    ? [...changeRequest.requested_fields]
-                    : selectedFields.map(field => `new_${field.key}`),
-        });
-    }, [changeRequest, isNewOrgUnit, selectedFields, submitChangeRequest]);
+        if (isPartiallyApproved) {
+            setIsCommentDialogOpen(true);
+        } else {
+            submitChangeRequest({
+                status: 'approved',
+                approved_fields: approvedFields,
+            });
+        }
+    }, [approvedFields, submitChangeRequest, isPartiallyApproved]);
+
     const allowConfirm = isNewOrgUnit || selectedFields.length > 0;
     return (
         <>
-            <ReviewOrgUnitChangesDeleteDialog
+            <ReviewOrgUnitChangesCommentDialog
                 submitChangeRequest={submitChangeRequest}
-                isRejectDialogOpen={isRejectDialogOpen}
-                setIsRejectDialogOpen={setIsRejectDialogOpen}
+                isCommentDialogOpen={isCommentDialogOpen}
+                setIsCommentDialogOpen={setIsCommentDialogOpen}
+                isPartiallyApproved={isPartiallyApproved}
+                approvedFields={approvedFields}
             />
             <Box display="flex" justifyContent="flex-end" m={2}>
                 <Button
@@ -69,7 +90,7 @@ export const ApproveOrgUnitChangesButtons: FunctionComponent<Props> = ({
                         <Box pl={1} display="inline-block">
                             <Button
                                 data-test="reject-button"
-                                onClick={() => setIsRejectDialogOpen(true)}
+                                onClick={() => setIsCommentDialogOpen(true)}
                                 variant="contained"
                                 color="error"
                                 autoFocus

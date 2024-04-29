@@ -44,8 +44,11 @@ export const convertObjectToUrlParams = (
         }
     });
     // concatenate string
+    let result = '';
     const entries = Object.entries(paramsNoUndef);
-    let result = '/';
+    if (entries.length > 0) {
+        result = '/';
+    }
     entries.forEach(([key, value]) => {
         result = `${result}/${key}/${value}`;
     });
@@ -54,11 +57,11 @@ export const convertObjectToUrlParams = (
 
 export const makeRedirectionUrl = (
     baseUrl: string,
-    params: Record<
+    params?: Record<
         string,
         string | number | Array<unknown> | Record<string, any>
     >,
 ): string => {
-    const paramsAsString = convertObjectToUrlParams(params);
+    const paramsAsString = convertObjectToUrlParams(params ?? {});
     return `/${baseUrl}${paramsAsString}`;
 };

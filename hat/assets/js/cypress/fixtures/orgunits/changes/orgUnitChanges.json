@@ -9,6 +9,12 @@
     {
       "approved_fields": [],
       "created_at": 1710752635.757136,
+      "created_by": {
+        "id": 1,
+        "username": "user",
+        "first_name": "user first name",
+        "last_name": "user last name"
+      },
       "groups": [
         {
           "id": 5,
@@ -40,11 +46,23 @@
         "new_groups"
       ],
       "status": "new",
-      "updated_at": 1710752635.75715
+      "updated_at": 1710752635.75715,
+      "updated_by": {
+        "id": 2,
+        "username": "user 2",
+        "first_name": "user 2 first name",
+        "last_name": "user 2 last name"
+      }
     },
     {
       "approved_fields": [],
       "created_at": 1710168604.18277,
+      "created_by": {
+        "id": 999,
+        "username": "user",
+        "first_name": "user first name",
+        "last_name": "user last name"
+      },
       "groups": [],
       "id": 23,
       "org_unit_id": 9356,
@@ -2592,7 +2610,7 @@
       "old_name": "Test Fosa 1 MCHP",
       "old_org_unit_name": "Test Fosa 1 MCHP",
       "new_name": "Test Fosa 2 CHP",
-        "new_org_unit_name": "Test Fosa 2 CHP",
+      "new_org_unit_name": "Test Fosa 2 CHP",
       "org_unit_name": "Test Fosa 1 MCHP",
       "org_unit_type": {
         "id": 9,

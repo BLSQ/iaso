@@ -1,82 +1,96 @@
 /// <reference types="cypress" />
-
+import moment from 'moment';
 import superUser from '../../../fixtures/profiles/me/superuser.json';
 import listFixture from '../../../fixtures/orgunits/changes/orgUnitChanges.json';
 import page2 from '../../../fixtures/orgunits/changes/orgUnitChanges-page2.json';
 import emptyFixture from '../../../fixtures/orgunits/changes/empty.json';
 import { testTablerender } from '../../../support/testTableRender';
 import { testPagination } from '../../../support/testPagination';
-// import { testTableSort } from '../../../support/testTableSort';
-// import { testPageFilters } from '../../../support/testPageFilters';
+import { testTableSort } from '../../../support/testTableSort';
+import { testPageFilters } from '../../../support/testPageFilters';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 const baseUrl = `${siteBaseUrl}/dashboard/orgunits/changeRequest`;
 
 let interceptFlag = false;
-// let table;
-// let row;
+let table;
+let row;
 const defaultQuery = {
     limit: '10',
     order: '-updated_at',
 };
-// const newFilters = {
-//     search: {
-//         value: 'ZELDA',
-//         urlValue: 'ZELDA',
-//         selector: '#search-search',
-//         type: 'text',
-//     },
-//     formIds: {
-//         value: [0],
-//         urlValue: '1',
-//         selector: '#formIds',
-//         type: 'multi',
-//     },
-//     levels: {
-//         value: 2,
-//         urlValue: '3',
-//         selector: '#ou-tree-input',
-//         type: 'tree',
-//     },
-//     orgUnitTypeId: {
-//         value: [0],
-//         urlValue: '47',
-//         selector: '#orgUnitTypeId',
-//         type: 'multi',
-//     },
-//     mapResults: {
-//         value: '100',
-//         urlValue: '100',
-//         selector: '#input-text-mapResults',
-//         type: 'text',
-//     },
-//     status: {
-//         value: [0],
-//         urlValue: 'READY',
-//         selector: '#status',
-//         type: 'multi',
-//     },
-//     withLocation: {
-//         value: [0],
-//         urlValue: 'true',
-//         selector: '#withLocation',
-//         type: 'multi',
-//     },
-//     dateFrom: {
-//         value: '10032022',
-//         urlValue: '10-03-2022',
-//         apiValue: '2022-03-10 00:00',
-//         selector: '[data-test="start-date"] input',
-//         type: 'text',
-//     },
-//     dateTo: {
-//         value: '10032023',
-//         urlValue: '10-03-2023',
-//         apiValue: '2023-03-10 23:59',
-//         selector: '[data-test="end-date"] input',
-//         type: 'text',
-//     },
-// };
+const newFilters = {
+    groups: {
+        value: [0],
+        urlValue: '1',
+        selector: '#groups',
+        type: 'multi',
+        clear: false,
+    },
+    forms: {
+        value: [0],
+        urlValue: '1',
+        selector: '#forms',
+        type: 'multi',
+        clear: false,
+    },
+    parent_id: {
+        value: 2,
+        urlValue: '29681',
+        selector: '#ou-tree-input',
+        type: 'tree',
+    },
+    org_unit_type_id: {
+        value: [0],
+        urlValue: '47',
+        selector: '#org_unit_type_id',
+        type: 'multi',
+        clear: false,
+    },
+    withLocation: {
+        value: [0],
+        urlValue: 'true',
+        selector: '#withLocation',
+        type: 'multi',
+        clear: false,
+    },
+    created_at_after: {
+        value: '10032022',
+        urlValue: '10-03-2022',
+        apiValue: '2022-03-10 00:00',
+        selector: '[data-test="start-date"] input',
+        type: 'text',
+    },
+    created_at_before: {
+        value: '10032023',
+        urlValue: '10-03-2023',
+        apiValue: '2023-03-10 23:59',
+        selector: '[data-test="end-date"] input',
+        type: 'text',
+    },
+    userRoles: {
+        value: [0],
+        urlValue: '13',
+        selector: '#userRoles',
+        type: 'multi',
+        clear: false,
+    },
+    status: {
+        value: [0],
+        urlValue: 'new',
+        selector: '#status',
+        type: 'multi',
+        clear: false,
+    },
+};
+const openDialogForChangeRequestIndex = index => {
+    table = cy.get('table');
+    row = table.find('tbody').find('tr').eq(index);
+    const actionCol = row.find('td').eq(10);
+    const editButton = actionCol.find('button').first();
+    editButton.click();
+    cy.get('#approve-orgunit-changes-dialog').should('be.visible');
+};
 
 const goToPage = (
     fakeUser = superUser,
@@ -119,6 +133,15 @@ const goToPage = (
 
 const testRowContent = (index, changeRequest = listFixture.results[index]) => {
     const groups = [];
+    changeRequest.groups.forEach(group => {
+        groups.push(group.name);
+    });
+    const changeRequestCreatedAt = moment
+        .unix(changeRequest.created_at)
+        .format('DD/MM/YYYY HH:mm');
+    const changeRequestUpdatedAt = moment
+        .unix(changeRequest.updated_at)
+        .format('DD/MM/YYYY HH:mm');
     cy.get('table').as('table');
     cy.get('@table').find('tbody').find('tr').eq(index).as('row');
     cy.get('@row').find('td').eq(0).should('contain', changeRequest.id);
@@ -135,9 +158,6 @@ const testRowContent = (index, changeRequest = listFixture.results[index]) => {
         .eq(3)
         .should('contain', changeRequest.org_unit_type_name);
 
-    changeRequest.groups.forEach(group => {
-        groups.push(group.name);
-    });
     cy.get('@row').find('td').eq(4).should('contain', groups.join(', '));
     cy.get('@row')
         .find('td')
@@ -149,14 +169,25 @@ const testRowContent = (index, changeRequest = listFixture.results[index]) => {
             changeRequest.status.charAt(0).toUpperCase() +
                 changeRequest.status.slice(1),
         );
-    cy.get('@row').find('td').eq(6).should('contain', changeRequest.created_at);
+
+    cy.get('@row').find('td').eq(6).should('contain', changeRequestCreatedAt);
+    cy.get('@row')
+        .find('td')
+        .eq(7)
+        .should('contain', changeRequest.created_by.username);
+
+    cy.get('@row').find('td').eq(8).should('contain', changeRequestUpdatedAt);
+    cy.get('@row')
+        .find('td')
+        .eq(9)
+        .should('contain', changeRequest.updated_by.username);
 };
 
-// const getActionCol = (index = 0) => {
-//     table = cy.get('table');
-//     row = table.find('tbody').find('tr').eq(1);
-//     row.find('td').eq(index).as('actionCol');
-// };
+const getActionCol = (index = 0) => {
+    table = cy.get('table');
+    row = table.find('tbody').find('tr').eq(1);
+    row.find('td').eq(index).as('actionCol');
+};
 
 describe('Organisations changes', () => {
     it('Api should be called with base params', () => {
@@ -166,61 +197,6 @@ describe('Organisations changes', () => {
         });
     });
 
-    // it('change filters should deep link and call api with correct params', () => {
-    //     goToPage();
-    //     cy.intercept(
-    //         'GET',
-    //         '/api/orgunits/treesearch/?&rootsForUser=true&defaultVersion=true&validation_status=all&ignoreEmptyNames=true',
-    //         {
-    //             fixture: 'orgunits/list.json',
-    //         },
-    //     ).as('getOrgunits');
-    //     cy.intercept(
-    //         'GET',
-    //         '/api/forms/1/?fields=name,period_type,label_keys,id,org_unit_type_ids',
-    //         {
-    //             fixture: 'forms/detail.json',
-    //         },
-    //     );
-    //     cy.intercept('GET', '/api/forms/1/?fields=possible_fields', {
-    //         fixture: 'forms/possibleFields.json',
-    //     });
-    //     cy.intercept('GET', '/api/orgunits/3/', {
-    //         fixture: 'orgunits/details.json',
-    //     });
-    //     cy.wait(['@getSubmissions', '@getOrgunittypes']).then(() => {
-    //         interceptFlag = false;
-    //         cy.intercept(
-    //             {
-    //                 method: 'GET',
-    //                 pathname: '/api/instances/**',
-    //                 query: {
-    //                     ...defaultQuery,
-    //                     withLocation: newFilters.withLocation.urlValue,
-    //                     orgUnitTypeId: newFilters.orgUnitTypeId.urlValue,
-    //                     status: newFilters.status.urlValue,
-    //                     search: newFilters.search.urlValue,
-    //                     orgUnitParentId: newFilters.levels.urlValue,
-    //                     dateFrom: newFilters.dateFrom.apiValue,
-    //                     dateTo: newFilters.dateTo.apiValue,
-    //                     form_ids: newFilters.formIds.urlValue,
-    //                 },
-    //             },
-    //             req => {
-    //                 interceptFlag = true;
-    //                 req.reply({
-    //                     statusCode: 200,
-    //                     body: listFixture,
-    //                 });
-    //             },
-    //         ).as('getSubmissionsSearch');
-    //         testPageFilters(newFilters);
-
-    //         cy.wait('@getSubmissionsSearch').then(() => {
-    //             cy.wrap(interceptFlag).should('eq', true);
-    //         });
-    //     });
-    // });
     describe('page', () => {
         it('page should not be accessible if user does not have permission', () => {
             goToPage({
@@ -265,376 +241,273 @@ describe('Organisations changes', () => {
             });
         });
 
-        // describe('Action columns', () => {
-        //     it('should display correct amount of buttons', () => {
-        //         cy.wait('@getSubmissions').then(() => {
-        //             getActionCol(5);
-        //             cy.get('@actionCol')
-        //                 .find('button')
-        //                 .should('have.length', 2);
-        //         });
-        //     });
-        //     // This test is flakey
-        //     it('buttons should link to submission', () => {
-        //         cy.wait('@getSubmissions').then(() => {
-        //             getActionCol(5);
-        //             cy.get('@actionCol')
-        //                 .find('button')
-        //                 .eq(0)
-        //                 .find('a')
-        //                 .should(
-        //                     'have.attr',
-        //                     'href',
-        //                     '/dashboard/forms/submission/instanceId/1',
-        //                 );
-        //         });
-        //     });
-        //     it('buttons should link to linked org unit', () => {
-        //         cy.wait('@getSubmissions').then(() => {
-        //             getActionCol(5);
-        //             cy.get('@actionCol')
-        //                 .find('button')
-        //                 .eq(1)
-        //                 .find('a')
-        //                 .should(
-        //                     'have.attr',
-        //                     'href',
-        //                     '/dashboard/orgunits/detail/orgUnitId/1/formId/1/instanceId/1',
-        //                 );
-        //         });
-        //     });
-        //     it('form name should link to submission link', () => {
-        //         cy.wait('@getSubmissions').then(() => {
-        //             table = cy.get('table');
-        //             row = table.find('tbody').find('tr').eq(1);
-        //             row.find('td')
-        //                 .eq(0)
-        //                 .find('a')
-        //                 .should(
-        //                     'have.attr',
-        //                     'href',
-        //                     '/dashboard/forms/detail/formId/1',
-        //                 );
-        //         });
-        //     });
-        // });
-        // it('sort should deep link and call api with correct params', () => {
-        //     cy.wait('@getSubmissions').then(() => {
-        //         const sorts = [
-        //             {
-        //                 colIndex: 1,
-        //                 order: 'updated_at',
-        //             },
-        //             {
-        //                 colIndex: 2,
-        //                 order: 'period',
-        //             },
-        //             {
-        //                 colIndex: 3,
-        //                 order: 'org_unit__name',
-        //             },
-        //             {
-        //                 colIndex: 4,
-        //                 order: 'status',
-        //             },
-        //         ];
-        //         sorts.forEach(s => {
-        //             testTableSort({
-        //                 colIndex: s.colIndex,
-        //                 order: s.order,
-        //                 apiPath: 'instances',
-        //                 fixture: listFixture,
-        //                 defaultQuery,
-        //             });
-        //         });
-        //     });
-        // });
+        describe('Action columns', () => {
+            it('should display correct amount of buttons', () => {
+                cy.wait('@getOrgUnitChanges').then(() => {
+                    getActionCol(10);
+                    cy.get('@actionCol')
+                        .find('button')
+                        .should('have.length', 1);
+                });
+            });
+            it('should display correct changes request infos and approve', () => {
+                goToPage();
+                cy.intercept('GET', '/api/orgunits/changes/27', {
+                    fixture: 'orgunits/changes/orgUnitChange-27.json',
+                });
+                cy.wait('@getOrgUnitChanges').then(() => {
+                    const orgUnitChangeIndex = 0;
+                    openDialogForChangeRequestIndex(orgUnitChangeIndex);
+
+                    interceptFlag = false;
+                    cy.intercept(
+                        {
+                            method: 'PATCH',
+                            pathname: `/api/orgunits/changes/27`,
+                        },
+                        req => {
+                            interceptFlag = true;
+                            req.reply({
+                                statusCode: 200,
+                                body: {
+                                    status: 'approved',
+                                    approved_fields: ['new_name'],
+                                },
+                            });
+                        },
+                    ).as('approveChanges');
+
+                    cy.get('#check-box-name').click();
+                    cy.get('#approve-orgunit-changes-dialog')
+                        .find('button')
+                        .eq(3)
+                        .click()
+                        .then(() => {});
+                    cy.wait('@approveChanges').then(() => {
+                        cy.wrap(interceptFlag).should('eq', true);
+                    });
+                });
+            });
+
+            it('should display correct changes request infos and reject all', () => {
+                goToPage();
+                cy.intercept('GET', '/api/orgunits/changes/27', {
+                    fixture: 'orgunits/changes/orgUnitChange-27.json',
+                });
+                cy.wait('@getOrgUnitChanges').then(() => {
+                    const orgUnitChangeIndex = 0;
+                    openDialogForChangeRequestIndex(orgUnitChangeIndex);
+                    cy.get('#approve-orgunit-changes-dialog')
+                        .find('button')
+                        .eq(2)
+                        .click()
+                        .then(() => {});
+                    const textArea = cy.get('textarea');
+                    textArea.type('test comment');
+                    const comment = textArea.value;
+                    cy.intercept(
+                        {
+                            method: 'PATCH',
+                            pathname: `/api/orgunits/changes/27`,
+                        },
+                        req => {
+                            interceptFlag = true;
+                            req.reply({
+                                statusCode: 200,
+                                body: {
+                                    status: 'rejected',
+                                    rejection_comment: comment,
+                                },
+                            });
+                        },
+                    ).as('approveChanges');
+                    cy.get('[data-test="confirm-comment-button"]').click();
+                    interceptFlag = false;
+
+                    cy.wait('@approveChanges').then(() => {
+                        cy.wrap(interceptFlag).should('eq', true);
+                    });
+                });
+            });
+
+            it('should display approved changes request infos and close', () => {
+                goToPage();
+                cy.intercept('GET', '/api/orgunits/changes/27', {
+                    fixture: 'orgunits/changes/approvedOrgUnitChange-27.json',
+                });
+                cy.wait('@getOrgUnitChanges').then(() => {
+                    const orgUnitChangeIndex = 0;
+                    openDialogForChangeRequestIndex(orgUnitChangeIndex);
+                    cy.get('#approve-orgunit-changes-dialog')
+                        .find('button')
+                        .eq(1)
+                        .click()
+                        .then(() => {});
+                });
+            });
+        });
+        it('sort should deep link and call api with correct params', () => {
+            cy.wait('@getOrgUnitChanges').then(() => {
+                const sorts = [
+                    {
+                        colIndex: 0,
+                        order: 'id',
+                    },
+                    {
+                        colIndex: 1,
+                        order: 'org_unit__name',
+                    },
+                    {
+                        colIndex: 2,
+                        order: 'org_unit__parent__name',
+                    },
+                    {
+                        colIndex: 3,
+                        order: 'org_unit__org_unit_type__name',
+                    },
+                    {
+                        colIndex: 5,
+                        order: 'status',
+                    },
+                    {
+                        colIndex: 6,
+                        order: 'created_at',
+                    },
+                    {
+                        colIndex: 7,
+                        order: 'created_by__username',
+                    },
+                    {
+                        colIndex: 8,
+                        order: 'updated_at',
+                    },
+                    {
+                        colIndex: 9,
+                        order: 'updated_by__username',
+                    },
+                ];
+                sorts.forEach(s => {
+                    testTableSort({
+                        colIndex: s.colIndex,
+                        order: s.order,
+                        apiPath: 'orgunits/changes',
+                        fixture: listFixture,
+                        defaultQuery,
+                    });
+                });
+            });
+        });
     });
 
-    // it('select users should filter by user ids', () => {
-    //     cy.intercept('GET', '/api/profiles/?search=lui', {
-    //         fixture: 'profiles/search/lui.json',
-    //     });
-    //     cy.intercept('GET', '/api/profiles/?ids=69', {
-    //         fixture: 'profiles/search/mario.json',
-    //     });
-    //     cy.intercept('GET', '/api/profiles/?ids=999', {
-    //         fixture: 'profiles/search/lui.json',
-    //     });
-    //     cy.intercept('GET', '/api/profiles/?search=mario', {
-    //         fixture: 'profiles/search/mario.json',
-    //     });
-    //     cy.intercept('GET', '/api/profiles/?ids=999%2C69', {
-    //         fixture: 'profiles/ids/69-999.json',
-    //     });
-    //     cy.intercept('GET', '/api/profiles/?ids=69%2C999', {
-    //         fixture: 'profiles/ids/69-999.json',
-    //     });
-    //     goToPage();
-    //     cy.wait('@getSubmissions').then(() => {
-    //         interceptFlag = false;
-    //         cy.intercept(
-    //             {
-    //                 method: 'GET',
-    //                 pathname: '/api/instances/**',
-    //                 query: {
-    //                     ...defaultQuery,
-    //                     userIds: '999',
-    //                 },
-    //             },
-    //             req => {
-    //                 interceptFlag = true;
-    //                 req.reply({
-    //                     statusCode: 200,
-    //                     body: listFixture,
-    //                 });
-    //             },
-    //         ).as('Luigi');
-    //     });
+    describe('Filters', () => {
+        beforeEach(() => {
+            goToPage();
+        });
+        it('change filters should deep link and call api with correct params', () => {
+            cy.wait('@getOrgUnitChanges').then(() => {
+                cy.intercept(
+                    {
+                        method: 'GET',
+                        pathname: '/api/orgunits/changes/**',
+                    },
+                    {
+                        ...defaultQuery,
+                        groups: newFilters.groups.urlValue,
+                        forms: newFilters.forms.urlValue,
+                        parent_id: newFilters.parent_id.urlValue,
+                        org_unit_type_id: newFilters.org_unit_type_id.urlValue,
+                        withLocation: newFilters.withLocation.urlValue,
+                        created_at_after: newFilters.created_at_after.urlValue,
+                        created_at_before:
+                            newFilters.created_at_before.urlValue,
+                        userRoles: newFilters.userRoles.urlValue,
+                        status: newFilters.status.urlValue,
+                    },
 
-    //     cy.get('#userIds').type('lui');
-    //     cy.wait(800);
-    //     cy.get('#userIds').type('{downarrow}').type('{enter}');
-    //     cy.get('[data-test="search-button"]').click();
-    //     cy.wait('@Luigi').then(() => {
-    //         cy.wrap(interceptFlag).should('eq', true);
-    //     });
-    //     interceptFlag = false;
-    //     cy.intercept(
-    //         {
-    //             method: 'GET',
-    //             pathname: '/api/instances/**',
-    //             query: {
-    //                 ...defaultQuery,
-    //                 userIds: '999,69',
-    //             },
-    //         },
-    //         req => {
-    //             interceptFlag = true;
-    //             req.reply({
-    //                 statusCode: 200,
-    //                 body: listFixture,
-    //             });
-    //         },
-    //     ).as('LuigiMario');
+                    req => {
+                        interceptFlag = true;
+                        req.reply({
+                            statusCode: 200,
+                            body: listFixture,
+                        });
+                    },
+                ).as('getOrgUnitChangesSearch');
 
-    //     cy.get('#userIds').type('mario');
-    //     cy.wait(800);
-    //     cy.get('#userIds').type('{downarrow}').type('{enter}');
-    //     cy.get('[data-test="search-button"]').click();
-    //     cy.wait('@LuigiMario').then(() => {
-    //         cy.wrap(interceptFlag).should('eq', true);
-    //     });
-    // });
+                testPageFilters(newFilters);
+                cy.wait('@getOrgUnitChangesSearch').then(() => {
+                    cy.wrap(interceptFlag).should('eq', true);
+                });
+            });
+        });
 
-    // it('period picker should correctly deep link changes and call api with correct params', () => {
-    //     goToPage();
-    //     const fillPeriodPicker = (id, optionId, defaultValueIndex = 0) => {
-    //         cy.get(id).as('multiSelect');
-    //         cy.get('@multiSelect').click();
-    //         cy.get(`${optionId}-option-${defaultValueIndex}`).click();
-    //         cy.get('@multiSelect').click();
-    //         cy.get('body').click();
-    //     };
-    //     const testPeriod = (periodTypeIndex, startPeriod, endPeriod) => {
-    //         const mapping = ['#day', '#month', '#quarter'];
-    //         const secondId = mapping[periodTypeIndex];
-    //         cy.fillMultiSelect('#periodType', [periodTypeIndex], false);
-    //         cy.get('[data-test="search-button"]').as('searchButton');
-    //         fillPeriodPicker('#startPeriod #year', '#year');
-    //         if (secondId) {
-    //             cy.get('@searchButton').should('be.disabled');
-    //             fillPeriodPicker(`#startPeriod ${secondId}`, secondId);
-    //             cy.get('@searchButton').should('not.be.disabled');
-    //         }
-    //         fillPeriodPicker('#endPeriod #year', '#year', 1);
-    //         if (secondId) {
-    //             cy.get('@searchButton').should('be.disabled');
-    //             fillPeriodPicker(`#endPeriod ${secondId}`, secondId);
-    //         }
+        it('select users should filter change requests by user ids', () => {
+            cy.intercept('GET', '/api/profiles/?search=lui', {
+                fixture: 'profiles/search/lui.json',
+            });
+            cy.intercept('GET', '/api/profiles/?ids=69', {
+                fixture: 'profiles/search/mario.json',
+            });
+            cy.intercept('GET', '/api/profiles/?ids=999', {
+                fixture: 'profiles/search/lui.json',
+            });
+            cy.intercept('GET', '/api/profiles/?search=mario', {
+                fixture: 'profiles/search/mario.json',
+            });
+            cy.intercept('GET', '/api/profiles/?ids=999%2C69', {
+                fixture: 'profiles/ids/69-999.json',
+            });
+            cy.intercept('GET', '/api/profiles/?ids=69%2C999', {
+                fixture: 'profiles/ids/69-999.json',
+            });
+            goToPage();
+            cy.wait('@getOrgUnitChanges').then(() => {
+                cy.intercept(
+                    { method: 'GET', pathname: '/api/orgunits/changes/**' },
+                    {
+                        ...defaultQuery,
+                        userIds: '999',
+                    },
+                    req => {
+                        interceptFlag = true;
+                        req.reply({
+                            statusCode: 200,
+                            body: listFixture,
+                        });
+                    },
+                ).as('Luigi');
+            });
 
-    //         cy.get('@searchButton').should('not.be.disabled');
-    //         interceptFlag = false;
-    //         cy.intercept(
-    //             {
-    //                 method: 'GET',
-    //                 pathname: '/api/instances/**',
-    //                 query: {
-    //                     ...defaultQuery,
-    //                     startPeriod,
-    //                     endPeriod,
-    //                 },
-    //             },
-    //             req => {
-    //                 interceptFlag = true;
-    //                 req.reply({
-    //                     statusCode: 200,
-    //                     body: listFixture,
-    //                 });
-    //             },
-    //         ).as('getSubmissionsSearch');
-    //         cy.get('@searchButton').click();
+            cy.get('#userIds').type('lui');
+            cy.wait(800);
+            cy.get('#userIds').type('{downarrow}').type('{enter}');
+            cy.get('[data-test="search-button"]').click();
+            cy.wait('@Luigi').then(() => {
+                cy.wrap(interceptFlag).should('eq', true);
+            });
+            interceptFlag = false;
+            cy.intercept(
+                { method: 'GET', pathname: '/api/orgunits/changes/**' },
+                {
+                    ...defaultQuery,
+                    userIds: '999,69',
+                },
 
-    //         cy.url().should(
-    //             'contain',
-    //             `/startPeriod/${startPeriod}/endPeriod/${endPeriod}`,
-    //         );
-    //         cy.wait('@getSubmissionsSearch').then(() => {
-    //             cy.wrap(interceptFlag).should('eq', true);
-    //         });
-    //     };
-    //     cy.wait('@getSubmissions').then(() => {
-    //         // TODO: test new period type day
-    //         const currentYear = new Date().getFullYear();
-    //         const startYear = currentYear - 9;
-    //         const endYear = currentYear - 8;
-    //         testPeriod(1, `${startYear}01`, `${endYear}01`);
-    //         testPeriod(2, `${startYear}Q1`, `${endYear}Q1`);
-    //         testPeriod(3, `${startYear}`, `${endYear}`);
-    //     });
-    // });
+                req => {
+                    interceptFlag = true;
+                    req.reply({
+                        statusCode: 200,
+                        body: listFixture,
+                    });
+                },
+            ).as('LuigiMario');
 
-    // it('advanced settings should filter correctly', () => {
-    //     goToPage();
-    //     cy.get('[data-test="advanced-settings"]').click({ force: true });
-    //     cy.get('[data-test="modificationDate"]')
-    //         .find('[data-test="start-date"]')
-    //         .find('input.MuiInputBase-input')
-    //         .clear()
-    //         .type('14/07/2023');
-    //     cy.get('[data-test="modificationDate"]')
-    //         .find('[data-test="end-date"]')
-    //         .find('input.MuiInputBase-input')
-    //         .clear()
-    //         .type('15/07/2023');
-    //     cy.get('[data-test="sentDate"]')
-    //         .find('[data-test="start-date"]')
-    //         .find('input.MuiInputBase-input')
-    //         .clear()
-    //         .type('12/07/2023');
-    //     cy.get('[data-test="sentDate"]')
-    //         .find('[data-test="end-date"]')
-    //         .find('input.MuiInputBase-input')
-    //         .clear()
-    //         .type('13/07/2023');
-    //     cy.wait('@getSubmissions')
-    //         .then(() => {
-    //             interceptFlag = false;
-    //             cy.intercept(
-    //                 {
-    //                     method: 'GET',
-    //                     pathname: '/api/instances/**',
-    //                 },
-    //                 req => {
-    //                     interceptFlag = true;
-    //                     req.reply({
-    //                         statusCode: 200,
-    //                         body: listFixture,
-    //                     });
-    //                 },
-    //             );
-    //         })
-    //         .as('getSubmissionsSearch');
-    //     cy.get('[data-test="search-button"]').click();
-    //     cy.wait('@getSubmissionsSearch').then(xhr => {
-    //         cy.wrap(interceptFlag).should('eq', true);
-    //         cy.wrap(xhr.request.query).should('deep.equal', {
-    //             ...defaultQuery,
-    //             showDeleted: 'false',
-    //             modificationDateFrom: '2023-07-14',
-    //             modificationDateTo: '2023-07-15',
-    //             sentDateFrom: '2023-07-12',
-    //             sentDateTo: '2023-07-13',
-    //         });
-    //     });
-    // });
-
-    // it('columns selection should render correctly ', () => {
-    //     cy.intercept(
-    //         'GET',
-    //         '/api/forms/1/?fields=name,period_type,label_keys,id,org_unit_type_ids',
-    //         {
-    //             fixture: 'forms/detail.json',
-    //         },
-    //     );
-    //     cy.intercept('GET', '/api/forms/1/?fields=possible_fields', {
-    //         fixture: 'forms/possibleFields.json',
-    //     });
-    //     goToPage(
-    //         superUser,
-    //         {},
-    //         listFixture,
-    //         `${siteBaseUrl}/dashboard/forms/submissions/formIds/1/tab/list/mapResults/3000`,
-    //     );
-    //     cy.wait('@getSubmissions').then(() => {
-    //         cy.get('#ColumnsSelectDrawer-toggleDrawer').click();
-    //         cy.get('#ColumnsSelectDrawer-list')
-    //             .as('selectColumnsList')
-    //             .should('be.visible');
-    //         cy.get('#ColumnsSelectDrawer-search').type('form');
-    //         cy.get('@selectColumnsList').find('li').should('have.length', 2);
-    //         cy.get('#ColumnsSelectDrawer-search-empty').click();
-    //         cy.get('@selectColumnsList').find('li').should('have.length', 13);
-    //         const testIsActive = (keyName, withUrl = true) => {
-    //             cy.get('table').as('table');
-    //             cy.get('@table').find('thead').find('th').as('thead');
-    //             cy.get(`[data-test-column-switch="${keyName}"]`).should(
-    //                 'be.checked',
-    //             );
-    //             cy.get('@thead').should('contain', keyName);
-    //             if (withUrl) {
-    //                 cy.url().should(url => {
-    //                     expect(url.split('columns')[1]).to.contain(keyName);
-    //                 });
-    //             }
-    //         };
-    //         const tstIsInactiveActive = keyName => {
-    //             cy.get('table').as('table');
-    //             cy.get('@table').find('thead').find('th').as('thead');
-    //             cy.get(`[data-test-column-switch="${keyName}"]`).should(
-    //                 'not.be.checked',
-    //             );
-    //             cy.get('@thead').should('not.contain', keyName);
-    //             cy.url().should(url => {
-    //                 expect(url.split('columns')[1]).not.to.contain(keyName);
-    //             });
-    //         };
-    //         possibleFields.possible_fields.forEach(pf => {
-    //             cy.get(`[data-test-column-switch="${pf.name}"]`).as('switch');
-    //             if (formDetail.label_keys.includes(pf.name)) {
-    //                 testIsActive(pf.name, false);
-    //                 cy.get(`@switch`).click();
-    //                 tstIsInactiveActive(pf.name);
-    //             } else {
-    //                 tstIsInactiveActive(pf.name);
-    //                 cy.get(`@switch`).click();
-    //                 testIsActive(pf.name);
-    //             }
-    //             cy.get(`@switch`).parent().parent().should('be.visible');
-    //         });
-
-    //         cy.get('@selectColumnsList')
-    //             .find('input[type="checkbox"]')
-    //             .each($el => {
-    //                 const keyName = $el.prop('data-test-column-switch');
-    //                 if (
-    //                     keyName &&
-    //                     !possibleFields.possible_fields.includes(keyName)
-    //                 ) {
-    //                     cy.get(`[data-test-column-switch="${keyName}"]`).as(
-    //                         'switch',
-    //                     );
-    //                     if ($el.prop('checked')) {
-    //                         testIsActive(keyName);
-    //                         cy.get(`@switch`).click();
-    //                         tstIsInactiveActive(keyName);
-    //                     } else {
-    //                         tstIsInactiveActive(keyName);
-    //                         cy.get(`@switch`).click();
-    //                         testIsActive(keyName);
-    //                     }
-    //                 }
-    //             });
-    //     });
-    // });
+            cy.get('#userIds').type('mario');
+            cy.wait(800);
+            cy.get('#userIds').type('{downarrow}').type('{enter}');
+            cy.get('[data-test="search-button"]').click();
+            cy.wait('@LuigiMario').then(() => {
+                cy.wrap(interceptFlag).should('eq', true);
+            });
+        });
+    });
 });

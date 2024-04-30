@@ -1,7 +1,7 @@
 {
-    "count": 15,
-    "results": [
-        {
+  "count": 15,
+  "results": [
+    {
       "approved_fields": [],
       "created_at": 1710752635.757136,
       "groups": [
@@ -54,10 +54,10 @@
       "status": "new",
       "updated_at": 1710168604.182783
     }
-    ],
-    "has_next": true,
-    "has_previous": true,
-    "page": 2,
-    "pages": 2,
-    "limit": 10
+  ],
+  "has_next": true,
+  "has_previous": true,
+  "page": 2,
+  "pages": 2,
+  "limit": 10
 }

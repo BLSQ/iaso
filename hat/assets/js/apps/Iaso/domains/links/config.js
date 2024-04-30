@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import Link from '@mui/material/Link';
 import Checkbox from '@mui/material/Checkbox';
 import { Box } from '@mui/material';
-
 import {
+    useSafeIntl,
     LoadingSpinner,
     formatThousand,
     textPlaceholder,
@@ -15,9 +15,8 @@ import getDisplayName from '../../utils/usersUtils.ts';
 
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import { StarsComponent } from '../../components/stars/StarsComponent.tsx';
-
+import { DateTimeCell } from '../../components/Cells/DateTimeCell.tsx';
 import MESSAGES from './messages';
-import { DateTimeCell } from '../../components/Cells/DateTimeCell';
 
 export const linksTableColumns = (formatMessage, validateLink) => [
     {
@@ -111,111 +110,122 @@ export const linksTableColumns = (formatMessage, validateLink) => [
     },
 ];
 
-export const runsTableColumns = (
-    formatMessage,
-    onSelectRunLinks,
-    deleteRuns,
-) => [
-    {
-        Header: formatMessage(MESSAGES.endedAt),
-        accessor: 'ended_at',
-        Cell: settings => (
-            <span>
-                {settings.row.original.ended_at ? (
-                    displayDateFromTimestamp(settings.value)
-                ) : (
-                    <LoadingSpinner
-                        fixed={false}
-                        transparent
-                        padding={4}
-                        size={25}
-                    />
-                )}
-            </span>
-        ),
-    },
-    {
-        Header: formatMessage(MESSAGES.launchedAt),
-        accessor: 'created_at',
-        Cell: DateTimeCell,
-    },
-    {
-        Header: formatMessage(MESSAGES.name),
-        id: 'algorithm__name',
-        accessor: row => row.algorithm.description,
-    },
-    {
-        Header: formatMessage(MESSAGES.launcher),
-        accessor: 'launcher',
-        Cell: settings =>
-            settings.value ? getDisplayName(settings.value) : textPlaceholder,
-    },
-    {
-        Header: formatMessage(MESSAGES.links),
-        accessor: 'links_count',
-        sortable: false,
-        Cell: settings => (
-            <span>
-                {settings.row.original.links_count === 0 && textPlaceholder}
-                {settings.row.original.links_count > 0 && (
-                    <Link
-                        size="small"
-                        onClick={() => onSelectRunLinks(settings.row.original)}
-                    >
-                        {formatThousand(settings.row.original.links_count)}
-                    </Link>
-                )}
-            </span>
-        ),
-    },
-    {
-        Header: formatMessage(MESSAGES.origin),
-        id: 'version_1',
-        accessor: 'source',
-        Cell: settings => (
-            <span>
-                {`${formatMessage(MESSAGES.source)}: ${
-                    settings.row.original.source.data_source.name
-                }`}
-                <br />
-                {`${formatMessage(MESSAGES.version)}: ${
-                    settings.row.original.source.number
-                }`}
-            </span>
-        ),
-    },
-    {
-        Header: formatMessage(MESSAGES.destination),
-        id: 'version_2',
-        accessor: 'destination',
-        Cell: settings => (
-            <span>
-                {`${formatMessage(MESSAGES.source)}: ${
-                    settings.row.original.destination.data_source.name
-                }`}
-                <br />
-                {`${formatMessage(MESSAGES.version)}: ${
-                    settings.row.original.destination.number
-                }`}
-            </span>
-        ),
-    },
-    {
-        resizable: false,
-        accessor: 'action',
-        sortable: false,
-        width: 100,
-        Cell: settings => (
-            <section>
-                <DeleteDialog
-                    disabled={Boolean(!settings.row.original.ended_at)}
-                    titleMessage={MESSAGES.deleteRunTitle}
-                    message={MESSAGES.deleteRunText}
-                    onConfirm={closeDialog =>
-                        deleteRuns(settings.row.original).then(closeDialog)
-                    }
-                />
-            </section>
-        ),
-    },
-];
+export const useRunsTableColumns = (onSelectRunLinks, deleteRuns) => {
+    const { formatMessage } = useSafeIntl();
+    return useMemo(
+        () => [
+            {
+                Header: formatMessage(MESSAGES.endedAt),
+                accessor: 'ended_at',
+                Cell: settings => (
+                    <span>
+                        {settings.row.original.ended_at ? (
+                            displayDateFromTimestamp(settings.value)
+                        ) : (
+                            <LoadingSpinner
+                                fixed={false}
+                                transparent
+                                padding={4}
+                                size={25}
+                            />
+                        )}
+                    </span>
+                ),
+            },
+            {
+                Header: formatMessage(MESSAGES.launchedAt),
+                accessor: 'created_at',
+                Cell: DateTimeCell,
+            },
+            {
+                Header: formatMessage(MESSAGES.name),
+                id: 'algorithm__name',
+                accessor: row => row.algorithm.description,
+            },
+            {
+                Header: formatMessage(MESSAGES.launcher),
+                accessor: 'launcher',
+                Cell: settings =>
+                    settings.value
+                        ? getDisplayName(settings.value)
+                        : textPlaceholder,
+            },
+            {
+                Header: formatMessage(MESSAGES.links),
+                accessor: 'links_count',
+                sortable: false,
+                Cell: settings => (
+                    <span>
+                        {settings.row.original.links_count === 0 &&
+                            textPlaceholder}
+                        {settings.row.original.links_count > 0 && (
+                            <Link
+                                size="small"
+                                onClick={() =>
+                                    onSelectRunLinks(settings.row.original)
+                                }
+                            >
+                                {formatThousand(
+                                    settings.row.original.links_count,
+                                )}
+                            </Link>
+                        )}
+                    </span>
+                ),
+            },
+            {
+                Header: formatMessage(MESSAGES.origin),
+                id: 'version_1',
+                accessor: 'source',
+                Cell: settings => (
+                    <span>
+                        {`${formatMessage(MESSAGES.source)}: ${
+                            settings.row.original.source.data_source.name
+                        }`}
+                        <br />
+                        {`${formatMessage(MESSAGES.version)}: ${
+                            settings.row.original.source.number
+                        }`}
+                    </span>
+                ),
+            },
+            {
+                Header: formatMessage(MESSAGES.destination),
+                id: 'version_2',
+                accessor: 'destination',
+                Cell: settings => (
+                    <span>
+                        {`${formatMessage(MESSAGES.source)}: ${
+                            settings.row.original.destination.data_source.name
+                        }`}
+                        <br />
+                        {`${formatMessage(MESSAGES.version)}: ${
+                            settings.row.original.destination.number
+                        }`}
+                    </span>
+                ),
+            },
+            {
+                resizable: false,
+                accessor: 'action',
+                sortable: false,
+                width: 100,
+                Cell: settings => (
+                    <section>
+                        <DeleteDialog
+                            disabled={Boolean(!settings.row.original.ended_at)}
+                            titleMessage={MESSAGES.deleteRunTitle}
+                            message={MESSAGES.deleteRunText}
+                            onConfirm={closeDialog =>
+                                deleteRuns(settings.row.original).then(
+                                    closeDialog,
+                                )
+                            }
+                        />
+                    </section>
+                ),
+            },
+        ],
+        [deleteRuns, formatMessage, onSelectRunLinks],
+    );
+};

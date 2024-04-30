@@ -2,7 +2,6 @@ import React, { FunctionComponent } from 'react';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import { useDispatch } from 'react-redux';
 
 import { useGoBack } from '../../routing/hooks/useGoBack';
 
@@ -15,20 +14,17 @@ import { useGetWorkflowVersions } from './hooks/requests/useGetWorkflowVersions'
 import { useGetType } from '../entities/entityTypes/hooks/requests/entitiyTypes';
 import { WorkflowsParams } from './types';
 
-import { redirectToReplace } from '../../routing/actions';
-
 import { baseUrls } from '../../constants/urls';
 
-import MESSAGES from './messages';
 import { useGetColumns, defaultSorted, baseUrl } from './config';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import MESSAGES from './messages';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
 export const Workflows: FunctionComponent = () => {
-    const dispatch = useDispatch();
     const params = useParamsObject(baseUrls.workflows) as WorkflowsParams;
     const goBack = useGoBack(baseUrls.entityTypes);
     // const goBack = useGoBack(router, baseUrls.entityTypes);
@@ -64,9 +60,6 @@ export const Workflows: FunctionComponent = () => {
                     columns={columns}
                     count={data?.count ?? 0}
                     params={params}
-                    onTableParamsChange={p =>
-                        dispatch(redirectToReplace(baseUrl, p))
-                    }
                     extraProps={{ loading: isFetching }}
                 />
             </Box>

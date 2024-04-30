@@ -1,12 +1,10 @@
 import React, { FunctionComponent, useCallback, ChangeEvent } from 'react';
 import { Paper, Radio, RadioGroup, FormControlLabel } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useDispatch } from 'react-redux';
-
 import { useSafeIntl } from 'bluesquare-components';
 import { CompletenessRouterParams } from '../types';
-import { redirectToReplace } from '../../../routing/actions';
 import { baseUrls } from '../../../constants/urls';
+import { useRedirectToReplace } from '../../../routing/routing';
 import MESSAGES from '../messages';
 
 const useStyles = makeStyles(theme => ({
@@ -30,16 +28,16 @@ const baseUrl = baseUrls.completenessStats;
 export const CompletenessSelect: FunctionComponent<Props> = ({ params }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
+    const redirectToReplace = useRedirectToReplace();
     const handleChange = useCallback(
         (event: ChangeEvent<HTMLInputElement>) => {
             const tempParams = {
                 ...params,
                 showDirectCompleteness: event.target.value,
             };
-            dispatch(redirectToReplace(baseUrl, tempParams));
+            redirectToReplace(baseUrl, tempParams);
         },
-        [dispatch, params],
+        [params, redirectToReplace],
     );
 
     return (

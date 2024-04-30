@@ -1,5 +1,4 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import {
     Tabs,
     Tab,
@@ -15,13 +14,12 @@ import classnames from 'classnames';
 import AddIcon from '@mui/icons-material/Add';
 
 import { useLocation } from 'react-router-dom';
+import { useRedirectToReplace } from '../../../routing/routing';
 import MESSAGES from '../messages';
 
 import { baseUrls } from '../../../constants/urls';
 
 import { OrgUnitChildrenMap } from './OrgUnitChildrenMap';
-
-import { redirectToReplace } from '../../../routing/actions';
 
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { OrgUnitChildrenList } from './OrgUnitChildrenList';
@@ -97,7 +95,7 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
         params.orgUnitListTab || 'map',
     );
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
+    const redirectToReplace = useRedirectToReplace();
     const { pathname } = useLocation();
 
     const handleChangeTab = useCallback(
@@ -107,9 +105,9 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
                 ...params,
                 orgUnitListTab: newTab,
             };
-            dispatch(redirectToReplace(baseUrls.registryDetail, newParams));
+            redirectToReplace(baseUrls.registryDetail, newParams);
         },
-        [dispatch, params],
+        [params, redirectToReplace],
     );
     return (
         <Paper elevation={1} className={classes.paper}>

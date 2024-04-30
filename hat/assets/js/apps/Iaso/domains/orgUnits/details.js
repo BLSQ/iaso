@@ -19,7 +19,6 @@ import {
     onlyChildrenParams,
     orgUnitFiltersWithPrefix,
 } from '../../constants/filters';
-import { redirectToReplace } from '../../routing/actions.ts';
 import { useGoBack } from '../../routing/hooks/useGoBack.tsx';
 import { baseUrls } from '../../constants/urls';
 import {
@@ -50,8 +49,8 @@ import {
     getLinksSources,
     getOrgUnitsTree,
 } from './utils';
-import { useCurrentUser } from '../../utils/usersUtils.ts';
 import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
+import { useRedirectToReplace } from '../../routing/routing.ts';
 
 const baseUrl = baseUrls.orgUnitDetails;
 const useStyles = makeStyles(theme => ({
@@ -118,7 +117,7 @@ const OrgUnitDetail = () => {
     const { formatMessage } = useSafeIntl();
     const refreshOrgUnitQueryCache = useRefreshOrgUnit();
     const childrenColumns = useOrgUnitsTableColumns(classes);
-    const currentUser = useCurrentUser();
+    const redirectToReplace = useRedirectToReplace();
 
     const [currentOrgUnit, setCurrentOrgUnit] = useState(null);
     const [tab, setTab] = useState(params.tab ? params.tab : 'infos');
@@ -165,7 +164,7 @@ const OrgUnitDetail = () => {
             ...params,
             levels: null,
         };
-        dispatch(redirectToReplace(baseUrl, newParams));
+        redirectToReplace(baseUrl, newParams);
         queryClient.invalidateQueries('currentOrgUnit');
     };
 
@@ -196,11 +195,11 @@ const OrgUnitDetail = () => {
                     ...params,
                     tab: newTab,
                 };
-                dispatch(redirectToReplace(baseUrl, newParams));
+                redirectToReplace(baseUrl, newParams);
             }
             setTab(newTab);
         },
-        [params, dispatch],
+        [params],
     );
 
     const handleChangeShape = useCallback(
@@ -295,12 +294,10 @@ const OrgUnitDetail = () => {
                     setOrgUnitLocationModified(false);
                     dispatch(resetOrgUnits());
                     if (isNewOrgunit) {
-                        dispatch(
-                            redirectToReplace(baseUrl, {
-                                ...params,
-                                orgUnitId: ou.id,
-                            }),
-                        );
+                        redirectToReplace(baseUrl, {
+                            ...params,
+                            orgUnitId: ou.id,
+                        });
                     }
                     refreshOrgUnitQueryCache(ou);
                     onSuccess(ou);
@@ -312,6 +309,7 @@ const OrgUnitDetail = () => {
             dispatch,
             isNewOrgunit,
             params,
+            redirectToReplace,
             refreshOrgUnitQueryCache,
             saveOu,
         ],
@@ -341,11 +339,11 @@ const OrgUnitDetail = () => {
                     levels,
                 };
                 if (params.levels !== levels.join(',') && levels.length > 0) {
-                    dispatch(redirectToReplace(baseUrl, newParams));
+                    redirectToReplace(baseUrl, newParams);
                 }
             }
         }
-    }, [originalOrgUnit, dispatch, isNewOrgunit, params]);
+    }, [originalOrgUnit, dispatch, isNewOrgunit, params, redirectToReplace]);
 
     // Set selected sources for current org unit
     useEffect(() => {
@@ -388,22 +386,7 @@ const OrgUnitDetail = () => {
     ]);
     return (
         <section className={classes.root}>
-            <TopBar
-                title={title}
-                displayBackButton
-                goBack={goBack}
-                // goBack={() => {
-                //     if (prevPathname) {
-                //         setTimeout(() => {
-                //             router.goBack();
-                //         }, 300);
-                //     } else {
-                //         dispatch(
-                //             redirectTo(getOrgUnitsUrl(params.accountId), {}),
-                //         );
-                //     }
-                // }}
-            >
+            <TopBar title={title} displayBackButton goBack={goBack}>
                 {!isNewOrgunit && (
                     <Tabs
                         textColor="inherit"

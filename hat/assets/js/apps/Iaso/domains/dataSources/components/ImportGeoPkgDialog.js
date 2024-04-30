@@ -1,5 +1,4 @@
 import React from 'react';
-import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Grid, Typography } from '@mui/material';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
@@ -7,13 +6,13 @@ import { FormattedMessage } from 'react-intl';
 import { useFormState } from '../../../hooks/form';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { baseUrls } from '../../../constants/urls';
-import { redirectTo } from '../../../routing/actions';
 import FileInputComponent from '../../../components/forms/FileInputComponent';
 import MESSAGES from '../messages';
-import InputComponent from '../../../components/forms/InputComponent';
+import InputComponent from '../../../components/forms/InputComponent.tsx';
 import { postGeoPkg } from '../requests';
 import { useSnackMutation } from '../../../libs/apiHooks.ts';
 import { VersionDescription } from './VersionDescription.tsx';
+import { useRedirectTo } from '../../../routing/routing.ts';
 
 const initialFormState = () => ({
     file: null,
@@ -33,7 +32,8 @@ const ImportGeoPkgDialog = ({
         initialFormState(),
     );
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
+    const redirectTo = useRedirectTo();
+
     const mutation = useSnackMutation(
         postGeoPkg,
         MESSAGES.importGpkgSuccess,
@@ -58,8 +58,8 @@ const ImportGeoPkgDialog = ({
         closeDialogCallBack();
 
         if (redirect) {
-            dispatch(redirectTo(baseUrls.tasks, {}));
             reset();
+            redirectTo(baseUrls.tasks);
         }
     };
 

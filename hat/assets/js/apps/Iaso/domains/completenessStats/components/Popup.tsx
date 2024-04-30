@@ -1,7 +1,6 @@
 import React, { createRef, FunctionComponent, useCallback } from 'react';
 
 import { Popup } from 'react-leaflet';
-import { useDispatch } from 'react-redux';
 import classNames from 'classnames';
 
 import { makeStyles } from '@mui/styles';
@@ -28,7 +27,7 @@ import {
 
 import { PopupRow } from './PopUpRow';
 
-import { redirectTo } from '../../../routing/actions';
+import { useRedirectTo } from '../../../routing/routing';
 
 const useStyles = makeStyles(theme => ({
     ...mapPopupStyles(theme),
@@ -71,7 +70,8 @@ export const PopupComponent: FunctionComponent<Props> = ({
     stats,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
+    const redirectTo = useRedirectTo();
+
     const classes: Record<string, string> = useStyles();
     const popup = createRef();
     const handleClick = useCallback(
@@ -80,9 +80,9 @@ export const PopupComponent: FunctionComponent<Props> = ({
                 ...params,
                 parentId: `${locationId}`,
             };
-            dispatch(redirectTo(baseUrl, tempParams));
+            redirectTo(baseUrl, tempParams);
         },
-        [dispatch, params],
+        [params, redirectTo],
     );
 
     const getPercent = useCallback((): string => {

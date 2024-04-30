@@ -19,14 +19,12 @@ import {
 import { isEqual } from 'lodash';
 import { Box, Grid, Button } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useDispatch } from 'react-redux';
 import orderBy from 'lodash/orderBy';
 import uniqWith from 'lodash/uniqWith';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 
 import { useGoBack } from '../../routing/hooks/useGoBack';
-import { redirectToReplace } from '../../routing/actions';
 import { baseUrls } from '../../constants/urls';
 
 import { useGetWorkflowVersion } from './hooks/requests/useGetWorkflowVersions';
@@ -90,8 +88,6 @@ export const Details: FunctionComponent = () => {
     const goBack = useGoBack(
         `${baseUrls.workflows}/entityTypeId/${entityTypeId}`,
     );
-
-    const dispatch = useDispatch();
 
     const {
         data: workflowVersion,
@@ -296,7 +292,6 @@ export const Details: FunctionComponent = () => {
                             {`${formatThousand(changes?.length ?? 0)} `}
                             {formatMessage(MESSAGES.results)}
                         </Box>
-                        {/* @ts-ignore */}
                         <TableWithDeepLink
                             marginTop={false}
                             countOnTop={false}
@@ -309,14 +304,6 @@ export const Details: FunctionComponent = () => {
                             columns={changesColumns}
                             count={changes?.length}
                             params={params}
-                            onTableParamsChange={p =>
-                                dispatch(
-                                    redirectToReplace(
-                                        baseUrls.workflowDetail,
-                                        p,
-                                    ),
-                                )
-                            }
                             extraProps={{
                                 isLoading,
                                 targetPossibleFieldsByVersion,

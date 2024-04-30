@@ -103,7 +103,7 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
             const tempParams: Params = getParams(params, filters);
             redirectTo(baseUrl, tempParams);
         }
-    }, [filtersUpdated, getParams, params, filters]);
+    }, [filtersUpdated, getParams, params, filters, redirectTo]);
 
     const handleChange = useCallback(
         (key, value) => {

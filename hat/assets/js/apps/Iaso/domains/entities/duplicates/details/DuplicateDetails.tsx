@@ -9,14 +9,12 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { useDispatch } from 'react-redux';
 import { isEqual } from 'lodash';
 import TopBar from '../../../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../../../constants/urls';
 import { useArrayState } from '../../../../hooks/useArrayState';
 import { useObjectState } from '../../../../hooks/useObjectState';
-import { redirectTo } from '../../../../routing/actions';
 import { useDuplicationDetailsColumns } from './hooks/useDuplicationDetailsColumns';
 import {
     useGetDuplicateDetails,

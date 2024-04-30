@@ -11,7 +11,6 @@ import React, {
 } from 'react';
 import { GeoJSON, MapContainer, Pane, ScaleControl } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
-import { useDispatch } from 'react-redux';
 import {
     circleColorMarkerOptions,
     colorClusterCustomMarker,
@@ -37,10 +36,10 @@ import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer'
 import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
 import TILES from '../../../constants/mapTiles';
 import { baseUrls } from '../../../constants/urls';
-import { redirectToReplace } from '../../../routing/actions';
 import { RegistryDetailParams } from '../types';
 import { MapPopUp } from './MapPopUp';
 import { MapToolTip } from './MapTooltip';
+import { useRedirectToReplace } from '../../../routing/routing';
 
 type Props = {
     orgUnit: OrgUnit;
@@ -84,7 +83,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
 }) => {
     const classes: Record<string, string> = useStyles();
     const theme = useTheme();
-    const dispatch = useDispatch();
+    const redirectToReplace = useRedirectToReplace();
 
     const [isMapFullScreen, setIsMapFullScreen] = useState<boolean>(
         params.isFullScreen === 'true',
@@ -125,26 +124,22 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
     const handleToggleTooltip = useCallback(
         (isVisible: boolean) => {
             setShowTooltip(isVisible);
-            dispatch(
-                redirectToReplace(baseUrls.registryDetail, {
-                    ...params,
-                    showTooltip: `${isVisible}`,
-                }),
-            );
+            redirectToReplace(baseUrls.registryDetail, {
+                ...params,
+                showTooltip: `${isVisible}`,
+            });
         },
-        [dispatch, params],
+        [params, redirectToReplace],
     );
     const handleToggleFullScreen = useCallback(
         (isFull: boolean) => {
             setIsMapFullScreen(isFull);
-            dispatch(
-                redirectToReplace(baseUrls.registryDetail, {
-                    ...params,
-                    isFullScreen: `${isFull}`,
-                }),
-            );
+            redirectToReplace(baseUrls.registryDetail, {
+                ...params,
+                isFullScreen: `${isFull}`,
+            });
         },
-        [dispatch, params],
+        [params, redirectToReplace],
     );
     if (isFetchingChildren)
         return (

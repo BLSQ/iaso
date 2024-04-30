@@ -19,7 +19,6 @@ import {
     useSafeIntl,
     CommonStyles,
 } from 'bluesquare-components';
-import { redirectToReplace } from '../../routing/actions';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages.js';
@@ -43,6 +42,7 @@ import { Router } from '../../types/general';
 import { NO_PERIOD } from '../periods/constants';
 import { useGoBack } from '../../routing/hooks/useGoBack';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { useRedirectToReplace } from '../../routing/routing';
 import { CR_MODE_NONE } from './constants';
 
 interface FormDetailProps {
@@ -117,6 +117,7 @@ const FormDetail: FunctionComponent<FormDetailProps> = () => {
     const [tab, setTab] = useState(params.tab || 'versions');
     const [forceRefreshVersions, setForceRefreshVersions] = useState(false);
     const dispatch = useDispatch();
+    const redirectToReplace = useRedirectToReplace();
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const [currentForm, setFieldValue, setFieldErrors, setFormState] =
@@ -169,11 +170,9 @@ const FormDetail: FunctionComponent<FormDetailProps> = () => {
             savedFormData = await saveForm;
             dispatch(enqueueSnackbar(succesfullSnackBar()));
             if (!isUpdate) {
-                dispatch(
-                    redirectToReplace(baseUrls.formDetail, {
-                        formId: savedFormData.id,
-                    }),
-                );
+                redirectToReplace(baseUrls.formDetail, {
+                    formId: savedFormData.id,
+                });
                 setForceRefreshVersions(true);
             } else {
                 queryClient.resetQueries([
@@ -223,7 +222,7 @@ const FormDetail: FunctionComponent<FormDetailProps> = () => {
             ...params,
             tab: newTab,
         };
-        dispatch(redirectToReplace(baseUrls.formDetail, newParams));
+        redirectToReplace(baseUrls.formDetail, newParams);
     };
     useEffect(() => {
         if (form) {
@@ -249,13 +248,6 @@ const FormDetail: FunctionComponent<FormDetailProps> = () => {
                 }`}
                 displayBackButton
                 goBack={() => goBack()}
-                // goBack={() => {
-                //     if (prevPathname) {
-                //         router.goBack();
-                //     } else {
-                //         dispatch(redirectToReplace(baseUrls.forms, {}));
-                //     }
-                // }}
             />
             {(isLoading || isFormLoading) && <LoadingSpinner />}
             <Box className={classes.containerFullHeightNoTabPadded}>

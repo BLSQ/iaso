@@ -41,7 +41,6 @@ import { useGetLegend } from '../../../components/LegendBuilder/Legend';
 import { CompletenessSelect } from './CompletenessSelect';
 
 import MESSAGES from '../messages';
-import { Router } from '../../../types/general';
 
 import { useGetParentPageUrl } from '../utils';
 import {

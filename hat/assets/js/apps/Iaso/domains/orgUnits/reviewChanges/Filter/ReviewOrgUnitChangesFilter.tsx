@@ -87,6 +87,7 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                     <InputComponent
                         type="select"
                         multi
+                        clearable
                         keyValue="groups"
                         value={filters.groups}
                         onChange={handleChange}

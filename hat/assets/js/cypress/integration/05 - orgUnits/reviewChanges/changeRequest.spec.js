@@ -510,4 +510,25 @@ describe('Organisations changes', () => {
             });
         });
     });
+
+    describe('Export csv buttons', () => {
+        it('should download orgUnit change request csv file via an anchor click', () => {
+            goToPage();
+            cy.wait('@getOrgUnitChanges').then(() => {
+                cy.fillMultiSelect('#groups', [1, 2], false);
+                cy.fillMultiSelect('#status', [0], false);
+                cy.get('[data-test="search-button"]').click();
+                cy.get('[data-test="download-buttons"]')
+                    .find('a')
+                    .eq(0)
+                    .as('csvExportButton');
+
+                cy.get('@csvExportButton').should(
+                    'have.attr',
+                    'href',
+                    `/api/orgunits/changes/export_to_csv/?&groups=2,3&status=new`,
+                );
+            });
+        });
+    });
 });

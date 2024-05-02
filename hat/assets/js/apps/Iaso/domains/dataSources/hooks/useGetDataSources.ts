@@ -20,6 +20,8 @@ export const useGetDataSource = (
         snackErrorMsg: undefined,
         options: {
             staleTime: 60000,
+            cacheTime: 1000 * 60 * 5,
+            keepPreviousData: true,
         },
     });
 };

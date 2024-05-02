@@ -5,10 +5,7 @@ import React, {
     ReactNode,
     ReactElement,
 } from 'react';
-import { useDispatch } from 'react-redux';
 import { useSafeIntl, Column } from 'bluesquare-components';
-
-import { redirectToReplace } from '../../../routing/actions';
 
 import { useInstancesColumns, useInstanceVisibleColumns } from '../utils';
 
@@ -20,6 +17,7 @@ import { Form } from '../../forms/types/forms';
 
 import MESSAGES from '../messages';
 import { Instance } from '../types/instance';
+import { useRedirectToReplace } from '../../../routing/routing';
 
 type Params = {
     order?: string;
@@ -76,7 +74,7 @@ export const ColumnSelect: FunctionComponent<Props> = ({
         [params.formIds],
     );
     const formId = formIds?.length === 1 ? parseInt(formIds[0], 10) : undefined;
-    const dispatch = useDispatch();
+    const redirectToReplace = useRedirectToReplace();
     const { possibleFields } = useGetPossibleFields(formId);
 
     const visibleColumns = useInstanceVisibleColumns({
@@ -101,7 +99,7 @@ export const ColumnSelect: FunctionComponent<Props> = ({
         if (columns.length > 0) {
             newParams.columns = columns.map(c => c.key).join(',');
         }
-        dispatch(redirectToReplace(baseUrl, newParams));
+        redirectToReplace(baseUrl, newParams);
     };
 
     useEffect(() => {

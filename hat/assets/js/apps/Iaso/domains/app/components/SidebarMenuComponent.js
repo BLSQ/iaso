@@ -123,7 +123,7 @@ const SidebarMenu = ({
     return (
         <Drawer anchor="left" open={isOpen} onClose={toggleSidebar}>
             <div className={classes.toolbar}>
-                <Link className={classes.homeLink} to={baseUrls.home}>
+                <Link className={classes.homeLink} to={`/${baseUrls.home}`}>
                     <Logo />
                 </Link>
                 <IconButton

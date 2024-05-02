@@ -7,7 +7,6 @@ import {
     commonStyles,
     AddButton as AddButtonComponent,
 } from 'bluesquare-components';
-import { redirectTo } from '../../routing/actions.ts';
 import { useFormsTableColumns } from './config';
 import { Filters } from './components/Filters.tsx';
 import TopBar from '../../components/nav/TopBarComponent';
@@ -21,6 +20,7 @@ import { userHasPermission } from '../users/utils';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
 import * as Permission from '../../utils/permissions.ts';
 import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
+import { useRedirectTo } from '../../routing/routing.ts';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -32,6 +32,7 @@ const Forms = () => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
+    const redirectTo = useRedirectTo();
     const currentUser = useCurrentUser();
     const userHasFormsPermission = userHasPermission(
         Permission.FORMS,
@@ -103,11 +104,9 @@ const Forms = () => {
                             <AddButtonComponent
                                 dataTestId="add-form-button"
                                 onClick={() => {
-                                    dispatch(
-                                        redirectTo(baseUrls.formDetail, {
-                                            formId: '0',
-                                        }),
-                                    );
+                                    redirectTo(baseUrls.formDetail, {
+                                        formId: '0',
+                                    });
                                 }}
                             />
                         )

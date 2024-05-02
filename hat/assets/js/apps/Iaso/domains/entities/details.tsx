@@ -1,19 +1,14 @@
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import {
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     commonStyles,
-    // @ts-ignore
     LoadingSpinner,
 } from 'bluesquare-components';
 import { Box, Button, Divider, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
-import { redirectTo, redirectToReplace } from '../../routing/actions';
 import { baseUrls } from '../../constants/urls';
 
 import { useGetBeneficiary, useGetSubmissions } from './hooks/requests';
@@ -27,6 +22,7 @@ import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { useGoBack } from '../../routing/hooks/useGoBack';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { useRedirectTo } from '../../routing/routing';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -42,10 +38,7 @@ export const Details: FunctionComponent = () => {
     const classes: Record<string, string> = useStyles();
     const { entityId } = params;
     const { formatMessage } = useSafeIntl();
-
-    // @ts-ignore
-    const prevPathname = useSelector(state => state.routerCustom.prevPathname);
-    const dispatch = useDispatch();
+    const redirectTo = useRedirectTo();
 
     const {
         data: beneficiary,
@@ -70,8 +63,8 @@ export const Details: FunctionComponent = () => {
             duplicates.length === 1
                 ? `${baseUrls.entityDuplicateDetails}/entities/${entityId},${duplicates[0]}/`
                 : `${baseUrls.entityDuplicates}/order/id/pageSize/50/page/1/entity_id/${entityId}/`;
-        dispatch(redirectTo(duplicateUrl));
-    }, [dispatch, duplicates, entityId]);
+        redirectTo(duplicateUrl);
+    }, [duplicates, entityId, redirectTo]);
 
     return (
         <>
@@ -133,7 +126,6 @@ export const Details: FunctionComponent = () => {
                         className={classes.fullWidth}
                         title={formatMessage(MESSAGES.submissions)}
                     >
-                        {/* @ts-ignore */}
                         <TableWithDeepLink
                             marginTop={false}
                             countOnTop={false}
@@ -145,14 +137,6 @@ export const Details: FunctionComponent = () => {
                             columns={columns}
                             count={data?.count}
                             params={params}
-                            onTableParamsChange={p =>
-                                dispatch(
-                                    redirectToReplace(
-                                        baseUrls.entityDetails,
-                                        p,
-                                    ),
-                                )
-                            }
                             extraProps={{
                                 loading:
                                     isLoadingBeneficiary ||

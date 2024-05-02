@@ -38,12 +38,11 @@ export const Details: FunctionComponent = () => {
     const params = useParamsObject(
         baseUrls.registryDetail,
     ) as RegistryDetailParams;
-    const { orgUnitId, accountId } = params;
+    const { orgUnitId } = params;
 
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const goBack = useGoBack(baseUrls.registry);
-    // const goBack = useGoBack(router, baseUrls.registry, { accountId });
 
     const { data: orgUnit, isFetching } = useGetOrgUnit(orgUnitId);
     const { data: orgUnitListChildren, isFetching: isFetchingListChildren } =

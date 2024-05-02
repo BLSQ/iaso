@@ -1,6 +1,5 @@
 import React, { FunctionComponent, MouseEvent, useCallback } from 'react';
 import { Box, Divider } from '@mui/material';
-import { useDispatch } from 'react-redux';
 import get from 'lodash/get';
 
 import Color from 'color';
@@ -13,10 +12,10 @@ import { DropdownTeamsOptions, SubTeam, User, Team } from '../types/team';
 import { Profile } from '../../../utils/usersUtils';
 
 import { baseUrls } from '../../../constants/urls';
-import { redirectTo } from '../../../routing/actions';
 import { OrgUnit, ParentOrgUnit } from '../../orgUnits/types/orgUnit';
 import { getStickyTableHeadStyles } from '../../../styles/utils';
 import { parentColor } from '../constants/colors';
+import { useRedirectTo } from '../../../routing/routing';
 
 type Order = {
     id: string;
@@ -90,7 +89,7 @@ export const AssignmentsListTab: FunctionComponent<Props> = ({
         currentTeam,
         params,
     });
-    const dispatch = useDispatch();
+    const redirectTo = useRedirectTo();
 
     const handleClick = useCallback(
         (row: AssignmentUnit, event: MouseEvent<HTMLElement>) => {
@@ -169,7 +168,7 @@ export const AssignmentsListTab: FunctionComponent<Props> = ({
                         ...params,
                         order: p.order,
                     };
-                    dispatch(redirectTo(baseUrl, newParams));
+                    redirectTo(baseUrl, newParams);
                 }}
             />
             <Divider />

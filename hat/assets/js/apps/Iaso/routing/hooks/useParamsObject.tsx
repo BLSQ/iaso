@@ -8,20 +8,26 @@ export const useParamsObject = (
     const params = useParams()['*'] ?? '';
     return useMemo(() => {
         const paramsList = params.split('/');
+        // Even indexes are the params key
+        // This check is necessary for ambiguous cases.Eg: /order/status/pageSize/20/ where status is also an acceptable param key
+        const paramsKeyIndexes = paramsList
+            .map((_, index) => index)
+            .filter(index => index % 2 === 0);
         const paramsForUrl = paramsConfig[baseUrl];
         const result = {};
-        // This assumes we can never have a param value equal to a param key, eg, /pageSize/20/otherParam/pageSize
         paramsForUrl.forEach(configParam => {
             const index = paramsList.findIndex(param => param === configParam);
-            if (index > -1) {
-                result[configParam] =
+            if (index > -1 && paramsKeyIndexes.includes(index)) {
+                const paramValue =
                     index + 1 < paramsList.length
                         ? paramsList[index + 1]
                         : undefined;
+                result[configParam] = paramValue;
             } else {
                 result[configParam] = undefined;
             }
         });
+
         return result;
     }, [baseUrl, params]);
 };

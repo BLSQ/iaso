@@ -41,7 +41,7 @@ export const recursiveReducer = (state, fieldDict): Record<string, any> => {
     return recursiveCheck(state, fieldDict);
 };
 
-/** Use and modify an object (dictionnay) state in the same fashion as the class components of old:
+/** Use and modify an object (dictionnary) state in the same fashion as the class components of old:
  * Example:
  * const [state, setState] = useObjectState(initialState)
  * setState({name: "Bond"})

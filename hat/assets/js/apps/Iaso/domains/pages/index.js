@@ -7,7 +7,6 @@ import {
 import { makeStyles } from '@mui/styles';
 import { Box } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import { useLocation } from 'react-router-dom';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { useGetPages } from './hooks/useGetPages';
@@ -37,7 +36,6 @@ const Pages = () => {
     const intl = useSafeIntl();
     const classes = useStyles();
     const params = useParamsObject(baseUrls.pages);
-    const { pathname } = useLocation();
     const [selectedPageSlug, setSelectedPageSlug] = useState();
     const [isCreateEditDialogOpen, setIsCreateEditDialogOpen] = useState(false);
     const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] =
@@ -142,15 +140,19 @@ const Pages = () => {
                 Cell: settings => {
                     return (
                         <>
-                            <IconButtonComponent
-                                icon="remove-red-eye"
-                                tooltipMessage={{
-                                    ...MESSAGES.viewPage,
-                                    values: { linebreak: <br /> },
-                                }}
-                                url={`/pages/${settings.row.original.slug}`}
-                                location={pathname}
-                            />
+                            {/* We use the <a> tag to avoid router's redirections
+                        i.e: adding /dashboard to the path and /accountId to the params
+                        */}
+                            <a href={`/pages/${settings.row.original.slug}`}>
+                                <IconButtonComponent
+                                    icon="remove-red-eye"
+                                    tooltipMessage={{
+                                        ...MESSAGES.viewPage,
+                                        values: { linebreak: <br /> },
+                                    }}
+                                    onClick={() => null}
+                                />
+                            </a>
 
                             {userHasPermission(
                                 Permission.PAGE_WRITE,

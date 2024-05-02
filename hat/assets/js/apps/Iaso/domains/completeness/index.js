@@ -10,7 +10,7 @@ import MESSAGES from './messages';
 import snackMessages from '../../components/snackBars/messages';
 
 const Completeness = () => {
-    const params = useParamsObject(baseUrls.completenesss);
+    const params = useParamsObject(baseUrls.completeness);
     const { formatMessage } = useSafeIntl();
     const { data = [], isFetching } = useSnackQuery(
         ['completeness'],

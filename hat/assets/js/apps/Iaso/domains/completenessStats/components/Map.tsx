@@ -43,7 +43,7 @@ import { CompletenessSelect } from './CompletenessSelect';
 import MESSAGES from '../messages';
 import { Router } from '../../../types/general';
 
-import { usetGetParentPageUrl } from '../utils';
+import { useGetParentPageUrl } from '../utils';
 import {
     AssignmentsResult,
     useGetAssignments,
@@ -60,7 +60,6 @@ type Props = {
     isLoading: boolean;
     params: CompletenessRouterParams;
     selectedFormId: number;
-    router: Router;
     threshold?: ScaleThreshold;
 };
 
@@ -90,7 +89,6 @@ export const Map: FunctionComponent<Props> = ({
     isLoading,
     params,
     selectedFormId,
-    router,
     threshold,
 }) => {
     const effectiveThreshold = useMemo(
@@ -191,7 +189,7 @@ export const Map: FunctionComponent<Props> = ({
         ],
     );
 
-    const getParentPageUrl = usetGetParentPageUrl(router);
+    const getParentPageUrl = useGetParentPageUrl();
     return (
         <section className={classes.mapContainer}>
             <Box position="relative">

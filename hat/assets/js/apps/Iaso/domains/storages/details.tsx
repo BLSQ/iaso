@@ -1,14 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import {
-    // @ts-ignore
-    useSafeIntl,
-    // @ts-ignore
-    commonStyles,
-} from 'bluesquare-components';
-// @ts-ignore
+import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { Box, Divider, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useDispatch } from 'react-redux';
 import TopBar from '../../components/nav/TopBarComponent';
 import { Infos } from './components/Infos';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
@@ -16,7 +9,6 @@ import DownloadButtonsComponent from '../../components/DownloadButtonsComponent'
 
 import MESSAGES from './messages';
 
-import { redirectToReplace } from '../../routing/actions';
 import { baseUrls } from '../../constants/urls';
 
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
@@ -49,8 +41,6 @@ export const Details: FunctionComponent = () => {
 
     const classes: Record<string, string> = useStyles();
 
-    const dispatch = useDispatch();
-
     const columns = useGetDetailsColumns();
 
     const storageDetailLogs = storageDetail?.logs ?? [];
@@ -62,13 +52,6 @@ export const Details: FunctionComponent = () => {
                 }`}
                 displayBackButton
                 goBack={goBack}
-                // goBack={() => {
-                //     if (prevPathname) {
-                //         router.goBack();
-                //     } else {
-                //         dispatch(redirectToReplace(baseUrls.storages, {}));
-                //     }
-                // }}
             />
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>
                 <Grid container spacing={2}>
@@ -99,14 +82,6 @@ export const Details: FunctionComponent = () => {
                                     columns={columns}
                                     count={data?.count}
                                     params={params}
-                                    onTableParamsChange={p =>
-                                        dispatch(
-                                            redirectToReplace(
-                                                baseUrls.storageDetail,
-                                                p,
-                                            ),
-                                        )
-                                    }
                                     extraProps={{ loading: isFetching }}
                                 />
                             </Box>

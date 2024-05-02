@@ -1,9 +1,7 @@
 import React, { FunctionComponent, useCallback } from 'react';
 import { Table, TableComponentProps } from 'bluesquare-components';
 import { useQueryClient } from 'react-query';
-import { useDispatch } from 'react-redux';
-import { handleTableDeepLink } from '../../utils/table';
-import { redirectToReplace } from '../../routing/actions';
+import { useRedirectToReplace } from '../../routing/routing';
 
 type TableWithDeepLinkProps = TableComponentProps & {
     baseUrl: string;
@@ -13,9 +11,15 @@ export const TableWithDeepLink: FunctionComponent<TableWithDeepLinkProps> = ({
     baseUrl,
     ...props
 }) => {
+    const redirectToReplace = useRedirectToReplace();
     return (
         // eslint-disable-next-line react/jsx-props-no-spreading
-        <Table {...props} onTableParamsChange={handleTableDeepLink(baseUrl)} />
+        <Table
+            {...props}
+            onTableParamsChange={newParams =>
+                redirectToReplace(baseUrl, newParams)
+            }
+        />
     );
 };
 
@@ -37,7 +41,7 @@ export const useDeleteTableRow = ({
     baseUrl,
 }: UseDeleteTableRowArgs): (() => void) => {
     const queryClient = useQueryClient();
-    const dispatch = useDispatch();
+    const redirectToReplace = useRedirectToReplace();
     return useCallback(() => {
         const page = parseInt(params[pageKey], 10);
         const pageSize = parseInt(params[pageSizeKey], 10);
@@ -48,7 +52,7 @@ export const useDeleteTableRow = ({
                 ...params,
                 [pageKey]: `${page - 1}`,
             };
-            dispatch(redirectToReplace(baseUrl, newParams));
+            redirectToReplace(baseUrl, newParams);
         }
         if (invalidateQueries) {
             queryClient.invalidateQueries(invalidateQueries);
@@ -56,11 +60,11 @@ export const useDeleteTableRow = ({
     }, [
         baseUrl,
         count,
-        dispatch,
         invalidateQueries,
         pageKey,
         pageSizeKey,
         params,
         queryClient,
+        redirectToReplace,
     ]);
 };

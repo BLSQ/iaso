@@ -15,11 +15,11 @@ const getPaginationParams = (order = 'id', pageSize = 20) =>
 const setupRedirections = [
     {
         path: '/',
-        to: baseUrls.setupAccount,
+        to: `/${baseUrls.setupAccount}`,
     },
     {
         path: '/home',
-        to: baseUrls.setupAccount,
+        to: `/${baseUrls.setupAccount}`,
     },
     {
         path: '/*',

@@ -12,7 +12,6 @@ import {
 } from 'bluesquare-components';
 
 import { useQueryClient } from 'react-query';
-import { redirectToReplace } from '../../routing/actions.ts';
 import { createInstance } from './actions';
 import {
     fetchFormDetailsForInstance,
@@ -46,6 +45,7 @@ import MESSAGES from './messages';
 
 import * as Permission from '../../utils/permissions.ts';
 import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
+import { useRedirectToReplace } from '../../routing/routing.ts';
 
 const baseUrl = baseUrls.instances;
 
@@ -64,7 +64,7 @@ const Instances = () => {
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     const queryClient = useQueryClient();
-    console.log('params', params);
+    const redirectToReplace = useRedirectToReplace();
 
     const [selection, setSelection] = useState(selectionInitialState);
     const [tableColumns, setTableColumns] = useState([]);
@@ -137,17 +137,17 @@ const Instances = () => {
                 tab: newTab,
             };
             setTab(newTab);
-            dispatch(redirectToReplace(baseUrl, newParams));
+            redirectToReplace(baseUrl, newParams);
         },
-        [params, dispatch],
+        [params, redirectToReplace],
     );
 
     const onSearch = useCallback(
         newParams => {
             setSelection(selectionInitialState);
-            dispatch(redirectToReplace(baseUrl, newParams));
+            redirectToReplace(baseUrl, newParams);
         },
-        [dispatch],
+        [redirectToReplace],
     );
     const isSingleFormSearch = params.formIds?.split(',').length === 1;
     const currentUser = useCurrentUser();

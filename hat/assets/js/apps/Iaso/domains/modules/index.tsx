@@ -2,7 +2,6 @@ import React, { FunctionComponent } from 'react';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useDispatch } from 'react-redux';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
@@ -11,7 +10,6 @@ import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { ModuleParams } from './types/modules';
 import { useModulesColumns } from './config';
 import { useGetModules } from './hooks/requests/useGetModules';
-import { redirectTo } from '../../routing/actions';
 import { ModulesFilters } from './components/ModulesFilters';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 
@@ -22,7 +20,6 @@ const useStyles = makeStyles(theme => ({
 const baseUrl = baseUrls.modules;
 export const Modules: FunctionComponent = () => {
     const params = useParamsObject(baseUrl) as unknown as ModuleParams;
-    const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
 
     const { data, isFetching } = useGetModules(params);
@@ -55,7 +52,6 @@ export const Modules: FunctionComponent = () => {
                     baseUrl={baseUrl}
                     params={params}
                     extraProps={{ loading: isFetching }}
-                    onTableParamsChange={p => dispatch(redirectTo(baseUrl, p))}
                     columnSelectorEnabled={false}
                 />
             </Box>

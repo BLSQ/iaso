@@ -3,7 +3,8 @@ import { baseUrls } from '../constants/urls';
 import { getChipColors } from '../constants/chipColors';
 import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants';
 
-export const getOrgUnitsUrl = accountId =>
+// TODO replace createUrl to avoid multiple methods with same use
+export const getOrgUnitsUrl = (accountId: string | number): string =>
     `/${baseUrls.orgUnits}${createUrl(
         {
             accountId,
@@ -27,7 +28,7 @@ export const convertObjectToUrlParams = (
     // Exclude undefined and null values
     keys.forEach(key => {
         const param = params[key];
-        if (param === null || param === undefined) {
+        if (param === null || param === undefined || param === '') {
             delete paramsNoUndef[key];
             return;
         }
@@ -43,8 +44,11 @@ export const convertObjectToUrlParams = (
         }
     });
     // concatenate string
+    let result = '';
     const entries = Object.entries(paramsNoUndef);
-    let result = '/';
+    if (entries.length > 0) {
+        result = '/';
+    }
     entries.forEach(([key, value]) => {
         result = `${result}/${key}/${value}`;
     });
@@ -53,11 +57,11 @@ export const convertObjectToUrlParams = (
 
 export const makeRedirectionUrl = (
     baseUrl: string,
-    params: Record<
+    params?: Record<
         string,
         string | number | Array<unknown> | Record<string, any>
     >,
 ): string => {
-    const paramsAsString = convertObjectToUrlParams(params);
+    const paramsAsString = convertObjectToUrlParams(params ?? {});
     return `/${baseUrl}${paramsAsString}`;
 };

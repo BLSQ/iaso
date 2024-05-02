@@ -4,10 +4,16 @@ import { patchRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/li
 import { useSnackMutation } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 
 import MESSAGES from '../../messages';
+import { BudgetDetail } from '../../types';
 
-const editBudgetProcess = async (payload: any): Promise<any> => {
-    const rounds: string[] = payload.rounds.split(',');
-    return patchRequest(`/api/polio/budget/${payload.id}/`, { rounds });
+const editBudgetProcess = async (payload: BudgetDetail): Promise<any> => {
+    return patchRequest(`/api/polio/budget/${payload.id}/`, {
+        ...payload,
+        rounds: payload.rounds.map(round => ({
+            id: round.id,
+            cost: round.cost,
+        })),
+    });
 };
 
 export const useEditBudgetProcess = (

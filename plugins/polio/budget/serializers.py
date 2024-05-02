@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from enum import Enum
 
 from django.db import transaction
@@ -7,17 +8,18 @@ from rest_framework import serializers
 from iaso.api.common import DynamicFieldsModelSerializer
 from iaso.models.microplanning import Team
 from plugins.polio.api.shared_serializers import UserSerializer
+
+from ..models import Campaign, Round
 from .models import (
+    BudgetProcess,
     BudgetStep,
     BudgetStepFile,
     BudgetStepLink,
+    get_workflow,
     model_field_exists,
     send_budget_mails,
-    get_workflow,
-    BudgetProcess,
 )
-from .workflow import next_transitions, can_user_transition, Category, effective_teams
-from ..models import Round, Campaign
+from .workflow import Category, can_user_transition, effective_teams, next_transitions
 
 
 class TransitionSerializer(serializers.Serializer):
@@ -79,21 +81,70 @@ class AvailableRoundsSerializer(serializers.Serializer):
     budget_process_id = serializers.IntegerField()
 
 
+class BudgetProcessNestedRoundSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Round
+        fields = [
+            "id",
+            "number",
+            "cost",
+            "target_population",
+        ]
+
+
+class BudgetProcessWriteRoundSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Round
+        fields = [
+            "id",
+            "cost",
+        ]
+        extra_kwargs = {"id": {"read_only": False}}
+
+
 class BudgetProcessWriteSerializer(serializers.ModelSerializer):
     """
     Create or update a `BudgetProcess` that is linked to one (or more) `Round`(s).
     """
 
     created_by = UserSerializer(read_only=True)
-    rounds = serializers.PrimaryKeyRelatedField(queryset=Round.objects.all(), many=True)
+    rounds = BudgetProcessWriteRoundSerializer(many=True)
 
     class Meta:
         model = BudgetProcess
         fields = [
-            "id",
-            "created_by",
-            "created_at",
-            "rounds",  # This is the only required field.
+            "id",  # Read only.
+            "created_by",  # Read only.
+            "created_at",  # Read only.
+            "rounds",
+            "ra_completed_at_WFEDITABLE",
+            "who_sent_budget_at_WFEDITABLE",
+            "unicef_sent_budget_at_WFEDITABLE",
+            "gpei_consolidated_budgets_at_WFEDITABLE",
+            "submitted_to_rrt_at_WFEDITABLE",
+            "feedback_sent_to_gpei_at_WFEDITABLE",
+            "re_submitted_to_rrt_at_WFEDITABLE",
+            "submitted_to_orpg_operations1_at_WFEDITABLE",
+            "feedback_sent_to_rrt1_at_WFEDITABLE",
+            "re_submitted_to_orpg_operations1_at_WFEDITABLE",
+            "submitted_to_orpg_wider_at_WFEDITABLE",
+            "submitted_to_orpg_operations2_at_WFEDITABLE",
+            "feedback_sent_to_rrt2_at_WFEDITABLE",
+            "re_submitted_to_orpg_operations2_at_WFEDITABLE",
+            "submitted_for_approval_at_WFEDITABLE",
+            "feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE",
+            "feedback_sent_to_orpg_operations_who_at_WFEDITABLE",
+            "approved_by_who_at_WFEDITABLE",
+            "approved_by_unicef_at_WFEDITABLE",
+            "approved_at_WFEDITABLE",
+            "approval_confirmed_at_WFEDITABLE",
+            "payment_mode",
+            "district_count",
+            "who_disbursed_to_co_at",
+            "who_disbursed_to_moh_at",
+            "unicef_disbursed_to_co_at",
+            "unicef_disbursed_to_moh_at",
+            "no_regret_fund_amount",
         ]
         extra_kwargs = {
             "id": {"read_only": True},
@@ -101,57 +152,65 @@ class BudgetProcessWriteSerializer(serializers.ModelSerializer):
             "created_at": {"read_only": True},
         }
 
-    def validate_rounds(self, submitted_rounds: list[Round]) -> list[Round]:
+    def validate_rounds(self, submitted_rounds: list[OrderedDict]) -> list[OrderedDict]:
         request = self.context["request"]
         is_new = self.instance is None
+        round_ids = [round_dict.get("id") for round_dict in submitted_rounds]
+
+        rounds = Round.objects.filter(id__in=round_ids).select_related("campaign", "budget_process")
 
         valid_rounds_ids = Campaign.objects.filter_for_user(request.user).values_list("rounds", flat=True)
-        invalid_rounds = [round for round in submitted_rounds if round.id not in valid_rounds_ids]
-        if invalid_rounds:
-            raise serializers.ValidationError(f"The user does not have the permissions for rounds: {invalid_rounds}.")
+        invalid_round_ids = [round.id for round in rounds if round.id not in valid_rounds_ids]
+        if invalid_round_ids:
+            raise serializers.ValidationError(
+                f"The user does not have the permissions for rounds: {invalid_round_ids}."
+            )
 
         if is_new:
-            already_linked_rounds = [round for round in submitted_rounds if round.budget_process]
-            if already_linked_rounds:
+            already_linked_round_ids = [round.id for round in rounds if round.budget_process]
+            if already_linked_round_ids:
                 raise serializers.ValidationError(
-                    f"A BudgetProcess already exists for rounds: {already_linked_rounds}."
+                    f"A BudgetProcess already exists for rounds: {already_linked_round_ids}."
                 )
 
-        rounds_campaigns = {round.campaign_id for round in submitted_rounds}
+        rounds_campaigns = {round.campaign_id for round in rounds}
         if len(rounds_campaigns) > 1:
-            raise serializers.ValidationError(f"Rounds must be from the same campaign: {submitted_rounds}.")
+            raise serializers.ValidationError("Rounds must be from the same campaign.")
 
         return submitted_rounds
 
+    def handle_rounds(self, budget_process: BudgetProcess, rounds_data: dict) -> None:
+        for round_data in rounds_data:
+            round_id = round_data.get("id")
+            if round_id:
+                round_instance = Round.objects.get(id=round_id)
+                round_serializer = BudgetProcessWriteRoundSerializer(round_instance, data=round_data, partial=True)
+                if round_serializer.is_valid():
+                    round_serializer.save(budget_process=budget_process)
+
     def create(self, validated_data: dict) -> BudgetProcess:
         request = self.context["request"]
-
-        # Create a new `BudgetProcess`.
+        rounds_data = validated_data.pop("rounds", [])
         validated_data["created_by"] = request.user
         budget_process = super().create(validated_data)
-
-        # Link rounds.
-        rounds_ids = [round.id for round in self.validated_data["rounds"]]
-        Round.objects.filter(id__in=rounds_ids).update(budget_process=budget_process)
-
+        self.handle_rounds(budget_process, rounds_data)
         return budget_process
 
     def update(self, budget_process: BudgetProcess, validated_data: dict) -> BudgetProcess:
+        rounds_data = validated_data.pop("rounds", [])
+
+        budget_process = super().update(budget_process, validated_data)
+        existing_round_ids = set(budget_process.rounds.values_list("id", flat=True))
+        new_round_ids = set(round_data["id"] for round_data in rounds_data if "id" in round_data)
+
+        # should we also empty cost?
+        rounds_to_unlink = existing_round_ids - new_round_ids
         # Unlink old rounds.
-        budget_process.rounds.update(budget_process=None)
+        if rounds_to_unlink:
+            Round.objects.filter(id__in=rounds_to_unlink).update(budget_process=None)
         # Link new rounds.
-        rounds_ids = [round.id for round in self.validated_data["rounds"]]
-        Round.objects.filter(id__in=rounds_ids).update(budget_process=budget_process)
+        self.handle_rounds(budget_process, rounds_data)
         return budget_process
-
-
-class BudgetProcessNestedRoundSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Round
-        fields = [
-            "id",
-            "number",
-        ]
 
 
 class BudgetProcessSerializer(DynamicFieldsModelSerializer, serializers.ModelSerializer):
@@ -170,6 +229,35 @@ class BudgetProcessSerializer(DynamicFieldsModelSerializer, serializers.ModelSer
             "next_transitions",
             "possible_transitions",
             "timeline",
+            "ra_completed_at_WFEDITABLE",
+            "who_sent_budget_at_WFEDITABLE",
+            "unicef_sent_budget_at_WFEDITABLE",
+            "gpei_consolidated_budgets_at_WFEDITABLE",
+            "submitted_to_rrt_at_WFEDITABLE",
+            "feedback_sent_to_gpei_at_WFEDITABLE",
+            "re_submitted_to_rrt_at_WFEDITABLE",
+            "submitted_to_orpg_operations1_at_WFEDITABLE",
+            "feedback_sent_to_rrt1_at_WFEDITABLE",
+            "re_submitted_to_orpg_operations1_at_WFEDITABLE",
+            "submitted_to_orpg_wider_at_WFEDITABLE",
+            "submitted_to_orpg_operations2_at_WFEDITABLE",
+            "feedback_sent_to_rrt2_at_WFEDITABLE",
+            "re_submitted_to_orpg_operations2_at_WFEDITABLE",
+            "submitted_for_approval_at_WFEDITABLE",
+            "feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE",
+            "feedback_sent_to_orpg_operations_who_at_WFEDITABLE",
+            "approved_by_who_at_WFEDITABLE",
+            "approved_by_unicef_at_WFEDITABLE",
+            "approved_at_WFEDITABLE",
+            "approval_confirmed_at_WFEDITABLE",
+            "payment_mode",
+            "district_count",
+            "who_disbursed_to_co_at",
+            "who_disbursed_to_moh_at",
+            "unicef_disbursed_to_co_at",
+            "unicef_disbursed_to_moh_at",
+            "no_regret_fund_amount",
+            "has_data_in_budget_tool",
         ]
         default_fields = [
             "created_at",
@@ -191,6 +279,10 @@ class BudgetProcessSerializer(DynamicFieldsModelSerializer, serializers.ModelSer
     possible_transitions = serializers.SerializerMethodField()
     timeline = serializers.SerializerMethodField()
     next_transitions = serializers.SerializerMethodField()
+    has_data_in_budget_tool = serializers.SerializerMethodField(read_only=True)
+
+    def get_has_data_in_budget_tool(self, budget_process: BudgetProcess):
+        return budget_process.budget_steps.count() > 0
 
     def get_current_state(self, budget_process: BudgetProcess):
         workflow = get_workflow()

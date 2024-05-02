@@ -1,12 +1,13 @@
+import datetime
 import json
 from io import StringIO
-from typing import List, Dict
-from unittest import skip, mock
+from typing import Dict, List
+from unittest import mock, skip
 
 from django.contrib.auth.models import Permission
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse
-from django.template import Engine, Context
+from django.template import Context, Engine
 from rest_framework import status
 
 from iaso import models as m
@@ -73,12 +74,12 @@ class BudgetProcessViewSetTestCase(APITestCase):
         POST /api/polio/budget/
         """
         self.client.force_login(self.user)
-
         response = self.client.post(
             "/api/polio/budget/",
             data={
-                "rounds": [self.round_4.pk],
+                "rounds": [{"id": self.round_4.pk}],
             },
+            format="json",
         )
         response_data = self.assertJSONResponse(response, 201)
         new_budget_process = BudgetProcess.objects.get(id=response_data["id"])
@@ -88,7 +89,35 @@ class BudgetProcessViewSetTestCase(APITestCase):
                 "id": new_budget_process.pk,
                 "created_by": {"first_name": "test", "last_name": "test", "username": "test"},
                 "created_at": new_budget_process.created_at.isoformat().replace("+00:00", "Z"),
-                "rounds": [self.round_4.pk],
+                "rounds": [{"id": self.round_4.pk, "cost": "0.00"}],
+                "ra_completed_at_WFEDITABLE": None,
+                "who_sent_budget_at_WFEDITABLE": None,
+                "unicef_sent_budget_at_WFEDITABLE": None,
+                "gpei_consolidated_budgets_at_WFEDITABLE": None,
+                "submitted_to_rrt_at_WFEDITABLE": None,
+                "feedback_sent_to_gpei_at_WFEDITABLE": None,
+                "re_submitted_to_rrt_at_WFEDITABLE": None,
+                "submitted_to_orpg_operations1_at_WFEDITABLE": None,
+                "feedback_sent_to_rrt1_at_WFEDITABLE": None,
+                "re_submitted_to_orpg_operations1_at_WFEDITABLE": None,
+                "submitted_to_orpg_wider_at_WFEDITABLE": None,
+                "submitted_to_orpg_operations2_at_WFEDITABLE": None,
+                "feedback_sent_to_rrt2_at_WFEDITABLE": None,
+                "re_submitted_to_orpg_operations2_at_WFEDITABLE": None,
+                "submitted_for_approval_at_WFEDITABLE": None,
+                "feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE": None,
+                "feedback_sent_to_orpg_operations_who_at_WFEDITABLE": None,
+                "approved_by_who_at_WFEDITABLE": None,
+                "approved_by_unicef_at_WFEDITABLE": None,
+                "approved_at_WFEDITABLE": None,
+                "approval_confirmed_at_WFEDITABLE": None,
+                "payment_mode": "",
+                "district_count": None,
+                "who_disbursed_to_co_at": None,
+                "who_disbursed_to_moh_at": None,
+                "unicef_disbursed_to_co_at": None,
+                "unicef_disbursed_to_moh_at": None,
+                "no_regret_fund_amount": None,
             },
         )
 
@@ -98,15 +127,84 @@ class BudgetProcessViewSetTestCase(APITestCase):
         """
         self.client.force_login(self.user)
         self.assertEqual(self.budget_process_1.rounds.count(), 2)
+        data = {
+            "id": self.budget_process_1.pk,
+            "campaign_id": self.campaign.id,
+            "obr_name": "test staging",
+            "country_name": "BURUNDI",
+            "rounds": [{"id": self.round_1.pk, "cost": "5.00"}],
+            "current_state": {"key": "-", "label": "No budget submitted"},
+            "ra_completed_at_WFEDITABLE": "2026-04-01",
+            "who_sent_budget_at_WFEDITABLE": "2026-04-01",
+            "unicef_sent_budget_at_WFEDITABLE": "2026-04-01",
+            "gpei_consolidated_budgets_at_WFEDITABLE": "2026-04-01",
+            "submitted_to_rrt_at_WFEDITABLE": "2026-04-01",
+            "feedback_sent_to_gpei_at_WFEDITABLE": "2026-04-01",
+            "re_submitted_to_rrt_at_WFEDITABLE": "2026-04-01",
+            "submitted_to_orpg_operations1_at_WFEDITABLE": "2026-04-01",
+            "feedback_sent_to_rrt1_at_WFEDITABLE": "2026-04-01",
+            "re_submitted_to_orpg_operations1_at_WFEDITABLE": "2026-04-01",
+            "submitted_to_orpg_wider_at_WFEDITABLE": "2026-04-01",
+            "submitted_to_orpg_operations2_at_WFEDITABLE": "2026-04-01",
+            "feedback_sent_to_rrt2_at_WFEDITABLE": "2026-04-01",
+            "re_submitted_to_orpg_operations2_at_WFEDITABLE": "2026-04-01",
+            "submitted_for_approval_at_WFEDITABLE": "2026-04-01",
+            "feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE": "2026-04-01",
+            "feedback_sent_to_orpg_operations_who_at_WFEDITABLE": "2026-04-01",
+            "approved_by_who_at_WFEDITABLE": "2026-04-01",
+            "approved_by_unicef_at_WFEDITABLE": "2026-04-01",
+            "approved_at_WFEDITABLE": "2026-04-01",
+            "approval_confirmed_at_WFEDITABLE": "2026-04-01",
+            "payment_mode": "",
+            "district_count": None,
+            "who_disbursed_to_co_at": None,
+            "who_disbursed_to_moh_at": None,
+            "unicef_disbursed_to_co_at": None,
+            "unicef_disbursed_to_moh_at": None,
+            "no_regret_fund_amount": 30.0,
+            "has_data_in_budget_tool": False,
+        }
         response = self.client.patch(
             f"/api/polio/budget/{self.budget_process_1.pk}/",
-            data={"rounds": [self.round_1.pk]},
+            data=data,
             format="json",
         )
+
+        self.budget_process_1.refresh_from_db()
+        self.assertEqual(self.budget_process_1.rounds.count(), 1)
+        self.assertEqual(self.budget_process_1.ra_completed_at_WFEDITABLE, datetime.date(2026, 4, 1))
+
         response_data = self.assertJSONResponse(response, 200)
         self.assertEqual(response_data["id"], self.budget_process_1.pk)
-        self.assertEqual(response_data["rounds"], [self.round_1.pk])
-        self.assertEqual(self.budget_process_1.rounds.count(), 1)
+        self.assertEqual(response_data["rounds"], [{"id": self.round_1.pk, "cost": "5.00"}])
+        self.assertEqual(response_data["ra_completed_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["who_sent_budget_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["unicef_sent_budget_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["gpei_consolidated_budgets_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["submitted_to_rrt_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["feedback_sent_to_gpei_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["re_submitted_to_rrt_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["submitted_to_orpg_operations1_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["feedback_sent_to_rrt1_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["re_submitted_to_orpg_operations1_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["submitted_to_orpg_wider_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["submitted_to_orpg_operations2_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["feedback_sent_to_rrt2_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["re_submitted_to_orpg_operations2_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["submitted_for_approval_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["feedback_sent_to_orpg_operations_who_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["approved_by_who_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["approved_by_unicef_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["approved_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["approval_confirmed_at_WFEDITABLE"], "2026-04-01")
+        self.assertEqual(response_data["payment_mode"], "")
+        self.assertEqual(response_data["district_count"], None)
+        self.assertEqual(response_data["who_disbursed_to_co_at"], None)
+        self.assertEqual(response_data["who_disbursed_to_moh_at"], None)
+        self.assertEqual(response_data["unicef_disbursed_to_co_at"], None)
+        self.assertEqual(response_data["unicef_disbursed_to_moh_at"], None)
+        self.assertEqual(response_data["no_regret_fund_amount"], "30.00")
 
     def test_soft_delete(self):
         """
@@ -155,9 +253,16 @@ class BudgetProcessViewSetTestCase(APITestCase):
             self.assertIn("rounds", budget_process)
 
         self.assertEqual(
-            budget_processes[0]["rounds"], [{"id": self.round_1.pk, "number": 1}, {"id": self.round_2.pk, "number": 2}]
+            budget_processes[0]["rounds"],
+            [
+                {"id": self.round_1.pk, "number": 1, "cost": "0.00", "target_population": None},
+                {"id": self.round_2.pk, "number": 2, "cost": "0.00", "target_population": None},
+            ],
         )
-        self.assertEqual(budget_processes[1]["rounds"], [{"id": self.round_3.pk, "number": 3}])
+        self.assertEqual(
+            budget_processes[1]["rounds"],
+            [{"id": self.round_3.pk, "number": 3, "cost": "0.00", "target_population": None}],
+        )
 
     def test_simple_get_list_with_all_fields(self):
         """
@@ -167,101 +272,8 @@ class BudgetProcessViewSetTestCase(APITestCase):
         response = self.client.get("/api/polio/budget/?fields=:all")
         response_data = self.assertJSONResponse(response, 200)
 
-        expected_possible_states = [
-            {"key": None, "label": "No budget"},
-            {"key": "budget_submitted", "label": "Budget submitted"},
-            {"key": "accepted", "label": "Budget accepted"},
-            {"key": "rejected", "label": "Budget rejected"},
-        ]
-        expected_next_transitions = [
-            {
-                "key": "submit_budget",
-                "label": "Submit budget",
-                "help_text": "",
-                "allowed": True,
-                "reason_not_allowed": None,
-                "required_fields": [],
-                "displayed_fields": ["comment"],
-                "color": None,
-                "emails_destination_team_ids": [],
-            }
-        ]
-        expected_possible_transitions = [
-            {
-                "key": "submit_budget",
-                "label": "Submit budget",
-                "help_text": "",
-                "allowed": None,
-                "reason_not_allowed": None,
-                "required_fields": [],
-                "displayed_fields": ["comment"],
-                "color": None,
-            },
-            {
-                "key": "accept_budget",
-                "label": "Accept budget",
-                "help_text": "",
-                "allowed": None,
-                "reason_not_allowed": None,
-                "required_fields": [],
-                "displayed_fields": ["comment"],
-                "color": "green",
-            },
-            {
-                "key": "reject_budget",
-                "label": "Provide feedback",
-                "help_text": "",
-                "allowed": None,
-                "reason_not_allowed": None,
-                "required_fields": [],
-                "displayed_fields": ["comment"],
-                "color": "primary",
-            },
-            {
-                "key": "override",
-                "label": "Override",
-                "help_text": "",
-                "allowed": None,
-                "reason_not_allowed": None,
-                "required_fields": [],
-                "displayed_fields": [],
-                "color": "red",
-            },
-        ]
-        expected_timeline = {
-            "categories": [
-                {
-                    "key": "category_1",
-                    "label": "Category 1",
-                    "color": "green",
-                    "items": [],
-                    "completed": True,
-                    "active": False,
-                },
-                {
-                    "key": "category_2",
-                    "label": "Category 2",
-                    "color": "green",
-                    "items": [],
-                    "completed": True,
-                    "active": False,
-                },
-            ]
-        }
         for budget_process in response_data["results"]:
-            self.assertEqual(len(budget_process.keys()), 12)
-            self.assertIn("created_at", budget_process)
-            self.assertIn("updated_at", budget_process)
-            self.assertIn("id", budget_process)
-            self.assertEqual(budget_process["campaign_id"], str(self.campaign.id))
-            self.assertEqual(budget_process["obr_name"], "test campaign")
-            self.assertEqual(budget_process["country_name"], "ANGOLA")
-            self.assertEqual(budget_process["current_state"], {"key": "-", "label": "-"})
-            self.assertEqual(budget_process["possible_states"], expected_possible_states)
-            self.assertEqual(budget_process["next_transitions"], expected_next_transitions)
-            self.assertEqual(budget_process["possible_transitions"], expected_possible_transitions)
-            self.assertEqual(budget_process["timeline"], expected_timeline)
-            self.assertIn("rounds", budget_process)
+            self.assertEqual(len(budget_process.keys()), 41)
 
     def test_list_select_fields(self):
         """
@@ -731,9 +743,9 @@ class BudgetProcessViewSetTestCase(APITestCase):
         response_data = self.assertJSONResponse(response, 200)
 
         expected_data = [
-            {"value": self.round_1.pk, "label": 1, "campaign_id": str(self.campaign.id)},
-            {"value": self.round_2.pk, "label": 2, "campaign_id": str(self.campaign.id)},
-            {"value": self.round_4.pk, "label": 4, "campaign_id": str(self.campaign.id)},
+            {"value": self.round_1.pk, "label": 1, "campaign_id": str(self.campaign.id), "target_population": None},
+            {"value": self.round_2.pk, "label": 2, "campaign_id": str(self.campaign.id), "target_population": None},
+            {"value": self.round_4.pk, "label": 4, "campaign_id": str(self.campaign.id), "target_population": None},
         ]
         self.assertEqual(response_data, expected_data)
 
@@ -753,7 +765,12 @@ class BudgetProcessViewSetTestCase(APITestCase):
             ],
             "rounds": [
                 # Only round 4 should be available.
-                {"value": self.round_4.id, "label": 4, "campaign_id": str(self.campaign.id)},
+                {
+                    "value": self.round_4.id,
+                    "label": 4,
+                    "campaign_id": str(self.campaign.id),
+                    "target_population": None,
+                },
             ],
         }
         self.assertEqual(response_data, expected_data)

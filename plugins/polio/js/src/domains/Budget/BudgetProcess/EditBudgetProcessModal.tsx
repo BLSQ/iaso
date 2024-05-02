@@ -1,7 +1,6 @@
-import React, { FunctionComponent } from 'react';
-import { Box, Divider } from '@mui/material';
+import { Box, Divider, Grid } from '@mui/material';
 import { Field, FormikProvider, useFormik } from 'formik';
-import { isEqual } from 'lodash';
+import React, { FunctionComponent, useCallback } from 'react';
 
 import {
     ConfirmCancelModal,
@@ -11,26 +10,27 @@ import {
 } from 'bluesquare-components';
 import { EditIconButton } from '../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 
-import MESSAGES from '../messages';
-import { Budget } from '../types';
 import { MultiSelect } from '../../../components/Inputs/MultiSelect';
 import { useEditBudgetProcess } from '../hooks/api/useEditBudgetProcess';
-import { useEditBudgetProcessSchema } from './validation';
+import { useGetBudget } from '../hooks/api/useGetBudget';
 import { useAvailableRoundsForUpdate } from '../hooks/api/useGetBudgetProcessAvailableRounds';
+import MESSAGES from '../messages';
+import { Budget, BudgetDetail } from '../types';
+import { formatRoundNumber } from '../utils';
+import { BudgetProcessModalTabs } from './BudgetProcessModalTabs';
+import { useEditBudgetProcessSchema } from './validation';
 
 type Props = {
     isOpen: boolean;
     closeDialog: () => void;
     budgetProcess: Budget;
 };
-
 const EditBudgetProcessModal: FunctionComponent<Props> = ({
     isOpen,
     closeDialog,
     budgetProcess,
 }) => {
     const { formatMessage } = useSafeIntl();
-
     const { data: availableRounds, isFetching: isFetchingAvailableRounds } =
         useAvailableRoundsForUpdate(
             budgetProcess.campaign_id,
@@ -39,24 +39,37 @@ const EditBudgetProcessModal: FunctionComponent<Props> = ({
 
     const { mutate: confirm } = useEditBudgetProcess();
     const schema = useEditBudgetProcessSchema();
-    const formik = useFormik({
-        initialValues: {
-            rounds: budgetProcess?.rounds?.map(round => round.id),
-        },
-        enableReinitialize: true,
+    const formik = useFormik<Partial<BudgetDetail>>({
+        initialValues: {},
         validateOnBlur: true,
+        validateOnChange: true,
         validationSchema: schema,
-        onSubmit: async values => {
-            confirm({ id: budgetProcess.id, rounds: values.rounds });
+        onSubmit: newValues => {
+            confirm(newValues);
         },
     });
-    const isFormChanged = !isEqual(formik.values, formik.initialValues);
-    const allowConfirm =
-        !formik.isSubmitting &&
-        formik.isValid &&
-        isFormChanged &&
-        Boolean(formik.values.rounds);
+    const resetFormWithNewValues = useCallback(
+        newValues => {
+            const rounds =
+                newValues.rounds?.map(round => ({
+                    ...round,
+                    value: round.id,
+                    label: formatRoundNumber(round.number),
+                })) || [];
+            formik.resetForm({ values: { ...newValues, rounds } });
+        },
+        [formik],
+    );
 
+    const { data: budget } = useGetBudget(
+        budgetProcess.id,
+        resetFormWithNewValues,
+    );
+
+    const { isSubmitting, isValid, dirty } = formik;
+    const allowConfirm = !isSubmitting && isValid && dirty;
+    const disableEdition = budget?.has_data_in_budget_tool ?? false;
+    const currentState = budget?.current_state?.label;
     return (
         <FormikProvider value={formik}>
             {isFetchingAvailableRounds && <LoadingSpinner />}
@@ -73,18 +86,27 @@ const EditBudgetProcessModal: FunctionComponent<Props> = ({
                     confirmMessage={MESSAGES.modalWriteConfirm}
                     allowConfirm={allowConfirm}
                     cancelMessage={MESSAGES.modalWriteCancel}
+                    maxWidth="md"
                 >
                     <Box mb={2}>
                         <Divider />
                     </Box>
-                    <Box mb={2}>
-                        <Field
-                            label={formatMessage(MESSAGES.labelRound)}
-                            name="rounds"
-                            component={MultiSelect}
-                            options={availableRounds}
+
+                    <Grid container direction="row" item spacing={2}>
+                        <Grid item xs={6}>
+                            <Field
+                                label={formatMessage(MESSAGES.labelRound)}
+                                name="rounds"
+                                component={MultiSelect}
+                                options={availableRounds}
+                                returnFullObject
+                            />
+                        </Grid>
+                        <BudgetProcessModalTabs
+                            disableEdition={disableEdition}
+                            currentState={currentState}
                         />
-                    </Box>
+                    </Grid>
                 </ConfirmCancelModal>
             )}
         </FormikProvider>

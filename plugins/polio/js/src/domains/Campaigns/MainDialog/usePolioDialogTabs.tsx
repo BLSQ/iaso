@@ -5,7 +5,6 @@ import MESSAGES from '../../../constants/messages';
 import { Campaign, CampaignFormValues } from '../../../constants/types';
 import { compareArraysValues } from '../../../utils/compareArraysValues';
 import { BaseInfoForm, baseInfoFormFields } from '../BaseInfo/BaseInfoForm';
-import { BudgetForm, budgetFormFields } from '../Budget/BudgetForm';
 import {
     EvaluationsForms,
     evaluationFormFields,
@@ -83,15 +82,6 @@ export const usePolioDialogTabs = (
                     formik.errors,
                 ),
                 key: 'evaluation',
-            },
-            {
-                title: formatMessage(MESSAGES.budget),
-                form: BudgetForm,
-                hasTabError: compareArraysValues(
-                    budgetFormFields(selectedCampaign?.rounds ?? []),
-                    formik.errors,
-                ),
-                key: 'budget',
             },
             {
                 title: formatMessage(MESSAGES.preparedness),

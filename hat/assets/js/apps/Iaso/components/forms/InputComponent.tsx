@@ -114,6 +114,7 @@ export type InputComponentProps = {
     // eslint-disable-next-line no-unused-vars
     renderTags?: (tagValue: Array<any>, getTagProps: any) => Array<any>;
     freeSolo?: boolean; // this props i only use on single select and allow user to give an option not present in the list. Errors will be ignored
+    returnFullObject?: boolean;
 };
 
 const useLocalizedNumberInputOptions = (
@@ -167,6 +168,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
     autoComplete = 'off',
     phoneInputOptions = {},
     freeSolo = false,
+    returnFullObject = false,
 }) => {
     const [displayPassword, setDisplayPassword] = useState(false);
     const { formatMessage } = useSafeIntl();
@@ -260,6 +262,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
                         renderTags={renderTags}
                         helperText={helperText}
                         freeSolo={!multi && freeSolo}
+                        returnFullObject={returnFullObject}
                     />
                 );
             case 'arrayInput':

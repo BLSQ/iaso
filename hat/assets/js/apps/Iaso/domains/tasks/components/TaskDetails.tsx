@@ -31,7 +31,10 @@ const TaskDetails: FunctionComponent<Props> = ({ task }) => {
     const { formatMessage } = useSafeIntl();
 
     const taskHasDownloadableFile =
-        task.result && task.result.data && task.result.data.startsWith('file:');
+        task.result &&
+        task.result.data &&
+        typeof task.result.data === 'string' &&
+        task.result.data.startsWith('file:');
 
     const { data } = useQuery(
         ['taskDetails', task.id],

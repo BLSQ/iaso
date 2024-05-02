@@ -1,8 +1,8 @@
-import { useSnackQuery } from '../../../../libs/apiHooks.ts';
-import { getRequest } from '../../../../libs/Api';
-import { dispatch } from '../../../../redux/store';
-import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
 import { errorSnackBar } from '../../../../constants/snackBars';
+import { getRequest } from '../../../../libs/Api';
+import { useSnackQuery } from '../../../../libs/apiHooks.ts';
+import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
+import { dispatch } from '../../../../redux/store';
 
 export const getChildrenData = (id, validationStatus = 'all') => {
     return getRequest(
@@ -59,23 +59,30 @@ export const getRootData = (id, type = 'source', validationStatus = 'all') => {
 };
 
 const endpoint = '/api/orgunits/';
-const search = (input1, input2, type) => {
+const search = (input1, validationStatus = 'all', input2, type) => {
     switch (type) {
         case 'source':
-            return `searches=[{"validation_status":"all","search":"${input1}","source":${input2}}]`;
+            return `searches=[{"validation_status":"${validationStatus}","search":"${input1}","source":${input2}}]`;
         case 'version':
-            return `searches=[{"validation_status":"all","search":"${input1}","version":${input2}}]`;
+            return `searches=[{"validation_status":"${validationStatus}","search":"${input1}","version":${input2}}]`;
         default:
-            return `searches=[{"validation_status":"all","search":"${input1}","defaultVersion":"true"}]`;
+            return `searches=[{"validation_status":"${validationStatus}","search":"${input1}","defaultVersion":"true"}]`;
     }
 };
 const sortingAndPaging = resultsCount =>
     `order=name&page=1&limit=${resultsCount}&smallSearch=true`;
 
-const makeSearchUrl = ({ value, count, source, version }) => {
+const makeSearchUrl = ({
+    value,
+    count,
+    source,
+    version,
+    validationStatus = 'all',
+}) => {
     if (source) {
         return `${endpoint}?${search(
             value,
+            validationStatus,
             source,
             'source',
         )}&${sortingAndPaging(count)}`;
@@ -83,19 +90,35 @@ const makeSearchUrl = ({ value, count, source, version }) => {
     if (version) {
         return `${endpoint}?${search(
             value,
+            validationStatus,
             version,
             'version',
+            validationStatus,
         )}&${sortingAndPaging(count)}`;
     }
-    return `${endpoint}?${search(value)}&${sortingAndPaging(count)}`;
+    return `${endpoint}?${search(value, validationStatus)}&${sortingAndPaging(
+        count,
+    )}`;
 };
 
 /**
  * @param {string} searchValue
  * @param {number} resultsCount
  */
-export const searchOrgUnits = ({ value, count, source, version }) => {
-    const url = makeSearchUrl({ value, count, source, version });
+export const searchOrgUnits = ({
+    value,
+    count,
+    source,
+    version,
+    validationStatus = 'all',
+}) => {
+    const url = makeSearchUrl({
+        value,
+        count,
+        source,
+        version,
+        validationStatus,
+    });
     return getRequest(url)
         .then(result => result.orgunits)
         .catch(error => {

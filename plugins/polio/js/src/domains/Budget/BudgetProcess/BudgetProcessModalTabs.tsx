@@ -6,7 +6,7 @@ import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
 import { BudgetProcessApproval } from './BudgetProcessApproval';
 import { BudgetProcessCostPerChild } from './BudgetProcessCostPerChild';
-import { BudgetProcessRelease } from './BudgetProcessRelease';
+import { BudgetProcessFundsRelease } from './BudgetProcessFundsRelease';
 
 type Props = {
     disableEdition?: boolean;
@@ -46,7 +46,7 @@ export const BudgetProcessModalTabs: FunctionComponent<Props> = ({
                     currentState={currentState}
                 />
             )}
-            {tab === 'release' && <BudgetProcessRelease />}
+            {tab === 'release' && <BudgetProcessFundsRelease />}
             {tab === 'costPerChild' && <BudgetProcessCostPerChild />}
         </>
     );

@@ -1,6 +1,5 @@
 from collections import OrderedDict
 from enum import Enum
-from pprint import pformat
 
 from django.db import transaction
 from drf_yasg.utils import swagger_serializer_method
@@ -93,7 +92,7 @@ class BudgetProcessNestedRoundSerializer(serializers.ModelSerializer):
         ]
 
 
-class BudgetProcessUWriteRoundSerializer(serializers.ModelSerializer):
+class BudgetProcessWriteRoundSerializer(serializers.ModelSerializer):
     class Meta:
         model = Round
         fields = [
@@ -109,7 +108,7 @@ class BudgetProcessWriteSerializer(serializers.ModelSerializer):
     """
 
     created_by = UserSerializer(read_only=True)
-    rounds = BudgetProcessUWriteRoundSerializer(many=True)
+    rounds = BudgetProcessWriteRoundSerializer(many=True)
 
     class Meta:
         model = BudgetProcess
@@ -180,16 +179,16 @@ class BudgetProcessWriteSerializer(serializers.ModelSerializer):
 
         return submitted_rounds
 
-    def handle_rounds(self, budget_process, rounds_data):
+    def handle_rounds(self, budget_process: BudgetProcess, rounds_data: dict) -> None:
         for round_data in rounds_data:
             round_id = round_data.get("id")
             if round_id:
                 round_instance = Round.objects.get(id=round_id)
-                round_serializer = BudgetProcessUWriteRoundSerializer(round_instance, data=round_data, partial=True)
+                round_serializer = BudgetProcessWriteRoundSerializer(round_instance, data=round_data, partial=True)
                 if round_serializer.is_valid():
                     round_serializer.save(budget_process=budget_process)
 
-    def create(self, validated_data):
+    def create(self, validated_data: dict) -> BudgetProcess:
         request = self.context["request"]
         rounds_data = validated_data.pop("rounds", [])
         validated_data["created_by"] = request.user
@@ -206,8 +205,10 @@ class BudgetProcessWriteSerializer(serializers.ModelSerializer):
 
         # should we also empty cost?
         rounds_to_unlink = existing_round_ids - new_round_ids
+        # Unlink old rounds.
         if rounds_to_unlink:
             Round.objects.filter(id__in=rounds_to_unlink).update(budget_process=None)
+        # Link new rounds.
         self.handle_rounds(budget_process, rounds_data)
         return budget_process
 

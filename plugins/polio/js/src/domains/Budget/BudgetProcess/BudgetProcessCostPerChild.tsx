@@ -82,7 +82,7 @@ export const BudgetProcessCostPerChild: FunctionComponent = () => {
     } = useFormikContext<BudgetDetail>();
     const handleCostChange = useCallback(
         (index: number, newValue: number) => {
-            const updatedRounds = [...rounds];
+            const updatedRounds = rounds ? [...rounds] : [];
             updatedRounds[index] = {
                 ...updatedRounds[index],
                 cost: `${newValue}`,
@@ -94,6 +94,7 @@ export const BudgetProcessCostPerChild: FunctionComponent = () => {
     const totalCostPerChild: string = useMemo(() => {
         let totalCost = 0;
         let totalPopulation = 0;
+        if (!rounds) return placeholder;
         rounds.forEach(r => {
             const roundData = getRoundData(r);
             totalCost += roundData.calculateRound ? roundData.cost : 0;
@@ -130,14 +131,14 @@ export const BudgetProcessCostPerChild: FunctionComponent = () => {
                 </TableRow>
             </TableHead>
             <TableBody>
-                {rounds.length === 0 && (
+                {(!rounds || rounds?.length) === 0 && (
                     <TableRow>
                         <TableCell colSpan={4} sx={styles.noRounds}>
                             {formatMessage(MESSAGES.noRounds)}
                         </TableCell>
                     </TableRow>
                 )}
-                {rounds.map((round, i) => {
+                {rounds?.map((round, i) => {
                     const roundData = getRoundData(round);
                     return (
                         <TableRow key={round.number}>

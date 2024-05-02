@@ -69,11 +69,9 @@ export const BudgetProcessApproval: FunctionComponent<Props> = ({
                 budgetState => budgetState === fieldKey,
             );
             if (fieldIndex > computedBudgetStatusIndex && value) {
-                // setFieldValue('budget_status', fieldKey);
                 setFieldValue('current_state_key', fieldKey);
             } else if (!value && fieldIndex >= computedBudgetStatusIndex) {
                 const newBudgetState = findNewBudgetState(fieldIndex, values);
-                // setFieldValue('budget_status', newBudgetState);
                 setFieldValue('current_state_key', newBudgetState ?? '-');
             }
         },

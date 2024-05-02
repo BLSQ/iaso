@@ -1,16 +1,16 @@
-from datetime import datetime
 import re
+from datetime import datetime
 
-from django.contrib.gis.db.models import PointField, MultiPolygonField
+from django.contrib.gis.db.models import MultiPolygonField, PointField
 from django.contrib.gis.geos import GEOSGeometry
-from django.db.models import Q, Count, Sum, Case, When, IntegerField
+from django.db.models import Case, Count, IntegerField, Q, Sum, When
 from django.db.models.functions import Cast
 
-from iaso.models import OrgUnit, Instance, DataSource
+from iaso.models import DataSource, Instance, OrgUnit
 
 
 def build_org_units_queryset(queryset, params, profile):
-    validation_status = params.get("validation_status", OrgUnit.VALIDATION_VALID)
+    validation_statuses = params.get("validation_status", OrgUnit.VALIDATION_VALID)
     has_instances = params.get("hasInstances", None)
     date_from = params.get("dateFrom", None)
     date_to = params.get("dateTo", None)
@@ -46,8 +46,9 @@ def build_org_units_queryset(queryset, params, profile):
     opening_date = params.get("opening_date", None)
     closed_date = params.get("closed_date", None)
 
-    if validation_status != "all":
-        queryset = queryset.filter(validation_status=validation_status)
+    if validation_statuses != "all":
+        validation_statuses_list = validation_statuses.split(",")
+        queryset = queryset.filter(validation_status__in=validation_statuses_list)
 
     if search:
         if search.startswith("ids:"):

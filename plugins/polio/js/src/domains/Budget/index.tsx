@@ -1,32 +1,34 @@
-import React, { FunctionComponent, useState, useCallback } from 'react';
-import {
-    useSafeIntl,
-    useSkipEffectOnMount,
-    LoadingSpinner,
-} from 'bluesquare-components';
-import { Box, useMediaQuery, useTheme, Collapse, Grid } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import SearchIcon from '@mui/icons-material/Search';
 import { Pagination } from '@mui/lab';
+import { Box, Collapse, useMediaQuery, useTheme } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import {
+    LoadingSpinner,
+    useSafeIntl,
+    useSkipEffectOnMount,
+} from 'bluesquare-components';
+import React, { FunctionComponent, useCallback, useState } from 'react';
 
 // @ts-ignore
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
+import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 
+import { userHasPermission } from '../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import { handleTableDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/utils/table';
+import MESSAGES from '../../constants/messages';
+import { BUDGET } from '../../constants/routes';
+import { useStyles } from '../../styles/theme';
+import { BudgetButtons } from './BudgetButtons';
 import { BudgetFilters } from './BudgetFilters';
 import { BudgetCard } from './cards/BudgetCard';
-import { useBudgetColumns } from './hooks/config';
-import { CsvButton } from '../../../../../../hat/assets/js/apps/Iaso/components/Buttons/CsvButton';
 import {
     useBudgetParams,
     useGetBudgets,
     useGetWorkflowStatesForDropdown,
 } from './hooks/api/useGetBudget';
+import { useBudgetColumns } from './hooks/config';
 import { Budget } from './types';
-import { handleTableDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/utils/table';
-import { useStyles } from '../../styles/theme';
-import { BUDGET } from '../../constants/routes';
-import MESSAGES from '../../constants/messages';
 
 type Props = {
     router: any;
@@ -58,7 +60,7 @@ const usePaginationStyles = makeStyles({
     alignRight: { textAlign: 'right' },
 });
 
-export const BudgetList: FunctionComponent<Props> = ({ router }) => {
+export const BudgetProcessList: FunctionComponent<Props> = ({ router }) => {
     const { params } = router;
     const { formatMessage } = useSafeIntl();
     const paginationStyle = usePaginationStyles();
@@ -68,8 +70,14 @@ export const BudgetList: FunctionComponent<Props> = ({ router }) => {
     const apiParams = useBudgetParams(params);
     const csvParams = getCsvParams(apiParams);
 
+    const currentUser = useCurrentUser();
+    const isUserPolioBudgetAdmin = userHasPermission(
+        'iaso_polio_budget_admin',
+        currentUser,
+    );
+
     const { data: budgets, isFetching } = useGetBudgets(apiParams);
-    const columns = useBudgetColumns();
+    const columns = useBudgetColumns(isUserPolioBudgetAdmin);
     const theme = useTheme();
     const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -118,13 +126,10 @@ export const BudgetList: FunctionComponent<Props> = ({ router }) => {
                             buttonSize="small"
                             statesList={possibleStates}
                         />
-                        <Grid container justifyContent="flex-end">
-                            <Box mb={4}>
-                                <CsvButton
-                                    csvUrl={`/api/polio/budget/export_csv/?${csvParams}`}
-                                />
-                            </Box>
-                        </Grid>
+                        <BudgetButtons
+                            csvUrl={`/api/polio/budget/export_csv/?${csvParams}`}
+                            isUserPolioBudgetAdmin={isUserPolioBudgetAdmin}
+                        />
                     </Collapse>
                 )}
 
@@ -134,12 +139,11 @@ export const BudgetList: FunctionComponent<Props> = ({ router }) => {
                             params={params}
                             statesList={possibleStates}
                         />
-                        <Box mb={2} className={paginationStyle.alignRight}>
-                            <CsvButton
-                                csvUrl={`/api/polio/budget/export_csv/?${csvParams}`}
-                            />
-                        </Box>
-
+                        <BudgetButtons
+                            csvUrl={`/api/polio/budget/export_csv/?${csvParams}`}
+                            isUserPolioBudgetAdmin={isUserPolioBudgetAdmin}
+                        />
+                        {/* @ts-ignore */}
                         <TableWithDeepLink
                             data={budgets?.results ?? []}
                             count={budgets?.count}

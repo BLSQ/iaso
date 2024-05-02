@@ -42,7 +42,7 @@ import { useSaveOverrideStep } from '../hooks/api/useSaveOverrideStep';
 import { useGetWorkflowStatesForDropdown } from '../hooks/api/useGetBudget';
 
 type Props = {
-    campaignId: string;
+    budgetProcessId: string;
     closeDialog: () => void;
     isOpen: boolean;
     id?: string;
@@ -57,7 +57,7 @@ const useStyles = makeStyles({
 });
 
 const CreateOverrideStep: FunctionComponent<Props> = ({
-    campaignId,
+    budgetProcessId,
     closeDialog,
     isOpen,
     id,
@@ -104,7 +104,7 @@ const CreateOverrideStep: FunctionComponent<Props> = ({
     const formik = useFormik<OverrideStepForm>({
         initialValues: {
             new_state_key: undefined,
-            campaign: campaignId,
+            budget_process: budgetProcessId,
             comment: undefined,
             files: undefined,
             links: undefined,

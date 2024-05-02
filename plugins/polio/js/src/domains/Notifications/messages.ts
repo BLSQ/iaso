@@ -101,7 +101,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Do you really want to delete this notification?',
     },
     modalDeleteNo: {
-        id: 'iaso.polio.notifications.modal.delete.no',
+        id: 'iaso.polio.modal.no',
         defaultMessage: 'No',
     },
     modalDeleteTitle: {
@@ -109,7 +109,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Delete notification',
     },
     modalDeleteYes: {
-        id: 'iaso.polio.notifications.modal.delete.yes',
+        id: 'iaso.polio.modal.yes',
         defaultMessage: 'Yes',
     },
     modalEditTitle: {

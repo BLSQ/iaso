@@ -22,6 +22,7 @@ type Props = {
     size?: 'small' | 'medium' | 'large' | 'default' | 'inherit';
     tooltipMessage?: IntlMessage;
     color?: string;
+    target?: '_blank' | '_self' | '_parent' | '_top';
 };
 
 const useStyles = makeStyles(() => ({
@@ -39,11 +40,13 @@ export const LinkTo: FunctionComponent<Props> = ({
     replace = false,
     iconSize = 'medium',
     size = 'medium',
+    target = '_self',
     color,
     tooltipMessage = MESSAGES.see,
 }) => {
     const { pathname: location } = useLocation();
     const targetBlankEnabled = useKeyPressListener('Meta');
+    const actualTarget = targetBlankEnabled ? '_blank' : target;
     const classes: Record<string, string> = useStyles();
     if (condition) {
         if (useIcon) {
@@ -58,16 +61,18 @@ export const LinkTo: FunctionComponent<Props> = ({
                     url={url}
                     replace={replace}
                     color={color}
+                    target={actualTarget}
                 />
             );
         }
         return (
             <Link
                 className={classNames(className, classes.link)}
-                state={{ location }}
                 reloadDocument={targetBlankEnabled}
                 to={url}
+                state={{ location }}
                 replace={replace}
+                target={actualTarget}
             >
                 {text || textPlaceholder}
             </Link>

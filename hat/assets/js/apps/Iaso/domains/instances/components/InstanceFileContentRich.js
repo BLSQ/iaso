@@ -1,11 +1,11 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
-import PropTypes from 'prop-types';
+import CommentIcon from '@mui/icons-material/Comment';
+import FunctionsIcon from '@mui/icons-material/Functions';
 import { Table, TableBody, TableCell, TableRow, Tooltip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import FunctionsIcon from '@mui/icons-material/Functions';
-import CommentIcon from '@mui/icons-material/Comment';
 import isPlainObject from 'lodash/isPlainObject';
+import PropTypes from 'prop-types';
+import React from 'react';
+import { useSelector } from 'react-redux';
 
 import { textPlaceholder } from 'bluesquare-components';
 
@@ -250,6 +250,7 @@ function FormGroup({ descriptor, data, showQuestionKey }) {
                     key={childDescriptor.name}
                     descriptor={childDescriptor}
                     data={data}
+                    showQuestionKey={showQuestionKey}
                 />
             ))}
         </>
@@ -269,7 +270,6 @@ FormGroup.propTypes = {
 function FormField({ descriptor, data, showQuestionKey }) {
     const classes = useStyle();
     const activeLocale = useSelector(state => state.app.locale.code);
-
     return (
         <TableRow>
             <TableCell className={classes.tableCell}>

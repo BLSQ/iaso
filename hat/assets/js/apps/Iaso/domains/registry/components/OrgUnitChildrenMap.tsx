@@ -6,6 +6,7 @@ import { keyBy } from 'lodash';
 import React, {
     FunctionComponent,
     useCallback,
+    useEffect,
     useMemo,
     useState,
 } from 'react';
@@ -93,10 +94,13 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
     const [showTooltip, setShowTooltip] = useState<boolean>(
         params.showTooltip === 'true',
     );
-    const getlegendOptions = useGetlegendOptions(orgUnit, subOrgUnitTypes);
-    const [legendOptions, setLegendOptions] = useState<Legend[]>(
-        getlegendOptions(),
-    );
+    const getlegendOptions = useGetlegendOptions(orgUnit);
+    const [legendOptions, setLegendOptions] = useState<Legend[]>([]);
+    useEffect(() => {
+        if (legendOptions.length === 0 && subOrgUnitTypes.length > 0) {
+            setLegendOptions(getlegendOptions(subOrgUnitTypes));
+        }
+    }, [getlegendOptions, legendOptions, subOrgUnitTypes]);
 
     const optionsObject = useMemo(
         () => keyBy(legendOptions, 'value'),

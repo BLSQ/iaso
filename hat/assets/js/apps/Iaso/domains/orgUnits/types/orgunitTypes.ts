@@ -1,5 +1,6 @@
 import { Pagination, UrlParams } from 'bluesquare-components';
 import { Form } from '../../forms/types/forms';
+import { OrgUnit } from './orgUnit';
 /* eslint-disable camelcase */
 
 type FeatureFlag = {
@@ -34,6 +35,7 @@ export type OrgunitType = {
     reference_forms: Form[];
     projects: Project[];
     color?: string;
+    orgUnits?: OrgUnit[];
 };
 
 export type OrgunitTypes = OrgunitType[];

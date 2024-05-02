@@ -1,18 +1,18 @@
-import React, { FunctionComponent, useMemo } from 'react';
-import {
-    useSafeIntl,
-    commonStyles,
-    LoadingSpinner,
-} from 'bluesquare-components';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import {
+    LoadingSpinner,
+    commonStyles,
+    useSafeIntl,
+} from 'bluesquare-components';
 import { orderBy } from 'lodash';
+import React, { FunctionComponent, useMemo } from 'react';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 
-import { useGoBack } from '../../routing/useGoBack';
-import { baseUrls } from '../../constants/urls';
 import { getOtChipColors } from '../../constants/chipColors';
+import { baseUrls } from '../../constants/urls';
+import { useGoBack } from '../../routing/useGoBack';
 
 import {
     useGetOrgUnit,
@@ -21,8 +21,8 @@ import {
 } from './hooks/useGetOrgUnit';
 
 import { Instances } from './components/Instances';
-import { OrgUnitPaper } from './components/OrgUnitPaper';
 import { OrgUnitInstances } from './components/OrgUnitInstances';
+import { OrgUnitPaper } from './components/OrgUnitPaper';
 import { OrgunitTypeRegistry } from './types/orgunitTypes';
 
 import { RegistryDetailParams } from './types';
@@ -63,11 +63,14 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
             orgUnit?.org_unit_type?.sub_unit_types,
         );
     const subOrgUnitTypes: OrgunitTypeRegistry[] = useMemo(() => {
+        if (!orgUnitMapChildren) {
+            return [];
+        }
         const options =
             orgUnit?.org_unit_type?.sub_unit_types.map((subType, index) => ({
                 ...subType,
                 color: getOtChipColors(index) as string,
-                orgUnits: (orgUnitMapChildren || []).filter(
+                orgUnits: orgUnitMapChildren.filter(
                     subOrgUnit => subOrgUnit.org_unit_type_id === subType.id,
                 ),
             })) || [];

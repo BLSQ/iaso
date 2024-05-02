@@ -1,18 +1,18 @@
-import React, { FunctionComponent, useCallback, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import AddIcon from '@mui/icons-material/Add';
 import {
-    Tabs,
-    Tab,
     Box,
-    Paper,
-    Grid,
-    Typography,
     Divider,
+    Grid,
+    Paper,
+    Tab,
+    Tabs,
+    Typography,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { commonStyles, IconButton, useSafeIntl } from 'bluesquare-components';
+import { IconButton, commonStyles, useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
-import AddIcon from '@mui/icons-material/Add';
+import React, { FunctionComponent, useCallback, useState } from 'react';
+import { useDispatch } from 'react-redux';
 
 import MESSAGES from '../messages';
 
@@ -25,9 +25,9 @@ import { redirectToReplace } from '../../../routing/actions';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { OrgUnitChildrenList } from './OrgUnitChildrenList';
 
-import { RegistryDetailParams, OrgUnitListTab } from '../types';
-import { OrgUnitListChildren } from '../hooks/useGetOrgUnit';
 import { OrgunitTypes } from '../../orgUnits/types/orgunitTypes';
+import { OrgUnitListChildren } from '../hooks/useGetOrgUnit';
+import { OrgUnitListTab, RegistryDetailParams } from '../types';
 
 type Props = {
     orgUnit: OrgUnit;

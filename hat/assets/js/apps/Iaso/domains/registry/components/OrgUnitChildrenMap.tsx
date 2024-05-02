@@ -1,4 +1,5 @@
-import { Box, useTheme } from '@mui/material';
+import { Box } from '@mui/material';
+import { red } from '@mui/material/colors';
 import { makeStyles } from '@mui/styles';
 import { LoadingSpinner, commonStyles } from 'bluesquare-components';
 import classNames from 'classnames';
@@ -76,6 +77,7 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
+export const selectedOrgUnitColor = red[500];
 export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
     orgUnit,
     subOrgUnitTypes,
@@ -84,9 +86,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
     params,
 }) => {
     const classes: Record<string, string> = useStyles();
-    const theme = useTheme();
     const dispatch = useDispatch();
-
     const [isMapFullScreen, setIsMapFullScreen] = useState<boolean>(
         params.isFullScreen === 'true',
     );
@@ -115,7 +115,9 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
         [orgUnitChildren, optionsObject],
     );
     const isOrgUnitActive: boolean =
-        optionsObject[`${orgUnit.id}`]?.active || false;
+        Object.keys(optionsObject).length === 0
+            ? true
+            : optionsObject[`${orgUnit.id}`]?.active || false;
 
     const bounds = useMemo(
         () =>
@@ -204,10 +206,9 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                         {orgUnit.geo_json && (
                             <Pane name="orgunit-shapes">
                                 <GeoJSON
-                                    className="secondary"
                                     data={orgUnit.geo_json}
                                     style={() => ({
-                                        color: theme.palette.secondary.main,
+                                        color: selectedOrgUnitColor,
                                     })}
                                 >
                                     <MapPopUp orgUnit={orgUnit} />
@@ -235,7 +236,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                                 }}
                                 markerProps={() => ({
                                     ...circleColorMarkerOptions(
-                                        theme.palette.secondary.main,
+                                        selectedOrgUnitColor,
                                     ),
                                     key: `markers-${orgUnit.id}-${showTooltip}`,
                                 })}

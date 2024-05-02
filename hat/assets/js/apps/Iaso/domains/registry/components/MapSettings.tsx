@@ -117,7 +117,9 @@ export const MapSettings: FunctionComponent<Props> = ({
                 <Box
                     sx={{
                         ...styles.container,
-                        ...(tilePopup ? styles.open : styles.closed),
+                        ...((tilePopup
+                            ? styles.open
+                            : styles.closed) as SxStyles),
                     }}
                 >
                     {tilePopup && (

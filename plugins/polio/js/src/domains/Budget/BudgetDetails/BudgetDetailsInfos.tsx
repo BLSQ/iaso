@@ -15,12 +15,13 @@ import { useSafeIntl, Paginated } from 'bluesquare-components';
 import classnames from 'classnames';
 import WidgetPaperComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/papers/WidgetPaperComponent';
 import MESSAGES from '../../../constants/messages';
-import { BudgetStep, Categories, Transition } from '../types';
+import { Budget, BudgetStep, Transition } from '../types';
 import { CreateBudgetStep } from '../CreateBudgetStep/CreateBudgetStep';
 import { CreateOverrideStep } from '../CreateBudgetStep/CreateOverrideStep';
 import { BudgetTimeline } from './BudgetTimeline';
 import { userHasPermission } from '../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { formatRoundNumbers } from '../utils';
 
 type NextSteps = {
     regular?: Transition[];
@@ -28,15 +29,13 @@ type NextSteps = {
 };
 
 type Params = {
-    campaignId: string;
     previousStep: string;
     quickTransition?: string;
 };
 
 type Props = {
-    status: string;
+    budgetProcess: Partial<Budget>;
     nextSteps?: NextSteps;
-    categories?: Categories;
     budgetDetails?: Paginated<BudgetStep>;
     params: Params;
 };
@@ -68,13 +67,16 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export const BudgetDetailsInfos: FunctionComponent<Props> = ({
-    status = '--',
+    budgetProcess = {},
     nextSteps,
-    categories = [],
     budgetDetails,
     params,
 }) => {
-    const { previousStep, quickTransition, campaignId } = params;
+    const status = budgetProcess?.current_state?.label;
+    const rounds = budgetProcess?.rounds ?? [];
+    const categories = budgetProcess?.timeline?.categories;
+
+    const { previousStep, quickTransition } = params;
     const { formatMessage } = useSafeIntl();
     const theme = useTheme();
     const classes = useStyles();
@@ -96,7 +98,9 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
 
     return (
         <WidgetPaperComponent
-            title={formatMessage(MESSAGES.budgetStatus)}
+            title={`${formatRoundNumbers(rounds)} - ${formatMessage(
+                MESSAGES.budgetStatus,
+            )}`}
             className={classes.paper}
         >
             <Grid container spacing={0}>
@@ -168,7 +172,9 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
                                                         isMobileLayout={
                                                             isMobileLayout
                                                         }
-                                                        campaignId={campaignId}
+                                                        budgetProcessId={
+                                                            budgetProcess?.id
+                                                        }
                                                         iconProps={{
                                                             label: step.label,
                                                             // @ts-ignore
@@ -208,7 +214,7 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
                                         {/* @ts-ignore */}
                                         <CreateOverrideStep
                                             isMobileLayout={isMobileLayout}
-                                            campaignId={campaignId}
+                                            budgetProcessId={budgetProcess?.id}
                                             params={params}
                                         />
                                     </Grid>

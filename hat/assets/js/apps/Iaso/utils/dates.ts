@@ -18,8 +18,9 @@ export const apiDateTimeFormat = 'YYYY-MM-DD HH:mm';
 
 // this is the short date format used in api calls (only date not time!)
 export const apiDateFormat = 'YYYY-MM-DD';
-// Mapping of API date and time formats to moment.js formats
+export const apiRegexDateFormat = /^\d{4}-\d{2}-\d{2}$/;
 
+// Mapping of API date and time formats to moment.js formats
 export const apiMobileDateFormat = 'YYYY-MM-DDTHH:mm:ss.SSSZ';
 
 /**

@@ -1,57 +1,57 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
+import PageError from '../components/errors/PageError';
+import { Assignments } from '../domains/assignments/index.tsx';
+import Completeness from '../domains/completeness';
+import { CompletenessStats } from '../domains/completenessStats/index.tsx';
+import DataSources from '../domains/dataSources';
+import { Details as DataSourceDetail } from '../domains/dataSources/details.tsx';
+import Devices from '../domains/devices';
+import { VisitDetails } from '../domains/entities/components/VisitDetails.tsx';
+import { Details as BeneficiaryDetail } from '../domains/entities/details.tsx';
+import { DuplicateDetails } from '../domains/entities/duplicates/details/DuplicateDetails.tsx';
+import { Duplicates } from '../domains/entities/duplicates/list/Duplicates.tsx';
+import { EntityTypes } from '../domains/entities/entityTypes/index.tsx';
+import { Beneficiaries } from '../domains/entities/index.tsx';
 import Forms from '../domains/forms';
 import FormDetail from '../domains/forms/detail.tsx';
 import FormsStats from '../domains/forms/stats';
-import { OrgUnits } from '../domains/orgUnits/index.tsx';
-import { Links } from '../domains/links';
-import Runs from '../domains/links/Runs';
-import OrgUnitDetail from '../domains/orgUnits/details';
-import Completeness from '../domains/completeness';
 import Instances from '../domains/instances';
+import { CompareInstanceLogs } from '../domains/instances/compare/components/CompareInstanceLogs.tsx';
 import CompareSubmissions from '../domains/instances/compare/index.tsx';
 import InstanceDetail from '../domains/instances/details.tsx';
+import { Links } from '../domains/links';
+import Runs from '../domains/links/Runs';
 import Mappings from '../domains/mappings';
 import MappingDetails from '../domains/mappings/details';
-import { Users } from '../domains/users/index.tsx';
-import { UserRoles } from '../domains/userRoles/index.tsx';
 import { Modules } from '../domains/modules/index.tsx';
-import { Projects } from '../domains/projects/index.tsx';
-import DataSources from '../domains/dataSources';
-import { Details as DataSourceDetail } from '../domains/dataSources/details.tsx';
-import Tasks from '../domains/tasks';
-import Devices from '../domains/devices';
-import { CompletenessStats } from '../domains/completenessStats/index.tsx';
+import OrgUnitDetail from '../domains/orgUnits/details';
 import Groups from '../domains/orgUnits/groups';
+import { OrgUnits } from '../domains/orgUnits/index.tsx';
 import Types from '../domains/orgUnits/orgUnitTypes/index.tsx';
-import { Beneficiaries } from '../domains/entities/index.tsx';
-import { Details as BeneficiaryDetail } from '../domains/entities/details.tsx';
-import { EntityTypes } from '../domains/entities/entityTypes/index.tsx';
-import PageError from '../components/errors/PageError';
-import { baseUrls } from './urls';
-import { capitalize } from '../utils/index.ts';
-import { linksFiltersWithPrefix, orgUnitFiltersWithPrefix } from './filters';
-import Pages from '../domains/pages';
-import { Planning } from '../domains/plannings/index.tsx';
-import { Teams } from '../domains/teams/index.tsx';
-import { Storages } from '../domains/storages/index.tsx';
-import { Workflows } from '../domains/workflows/index.tsx';
-import { Details as WorkflowDetails } from '../domains/workflows/details.tsx';
-import { Details as StorageDetails } from '../domains/storages/details.tsx';
-import { Assignments } from '../domains/assignments/index.tsx';
-import { CompareInstanceLogs } from '../domains/instances/compare/components/CompareInstanceLogs.tsx';
-import { Registry } from '../domains/registry/index.tsx';
-import { Details as RegistryDetail } from '../domains/registry/details.tsx';
-import { SHOW_PAGES } from '../utils/featureFlags';
-import { paginationPathParams } from '../routing/common.ts';
-import { Duplicates } from '../domains/entities/duplicates/list/Duplicates.tsx';
-import { DuplicateDetails } from '../domains/entities/duplicates/details/DuplicateDetails.tsx';
 import { ReviewOrgUnitChanges } from '../domains/orgUnits/reviewChanges/ReviewOrgUnitChanges.tsx';
-import { VisitDetails } from '../domains/entities/components/VisitDetails.tsx';
-import * as Permission from '../utils/permissions.ts';
-import { SetupAccount } from '../domains/setup/index.tsx';
-import { PotentialPayments } from '../domains/payments/PotentialPayments.tsx';
+import Pages from '../domains/pages';
 import { LotsPayments } from '../domains/payments/LotsPayments.tsx';
+import { PotentialPayments } from '../domains/payments/PotentialPayments.tsx';
+import { Planning } from '../domains/plannings/index.tsx';
+import { Projects } from '../domains/projects/index.tsx';
+import { Details as RegistryDetail } from '../domains/registry/details.tsx';
+import { Registry } from '../domains/registry/index.tsx';
+import { SetupAccount } from '../domains/setup/index.tsx';
+import { Details as StorageDetails } from '../domains/storages/details.tsx';
+import { Storages } from '../domains/storages/index.tsx';
+import Tasks from '../domains/tasks';
+import { Teams } from '../domains/teams/index.tsx';
+import { UserRoles } from '../domains/userRoles/index.tsx';
+import { Users } from '../domains/users/index.tsx';
+import { Details as WorkflowDetails } from '../domains/workflows/details.tsx';
+import { Workflows } from '../domains/workflows/index.tsx';
+import { paginationPathParams } from '../routing/common.ts';
+import { SHOW_PAGES } from '../utils/featureFlags';
+import { capitalize } from '../utils/index.ts';
+import * as Permission from '../utils/permissions.ts';
+import { linksFiltersWithPrefix, orgUnitFiltersWithPrefix } from './filters';
+import { baseUrls } from './urls';
 
 const paginationPathParamsWithPrefix = prefix =>
     paginationPathParams.map(p => ({
@@ -579,6 +579,10 @@ export const registryDetailPath = {
         {
             isRequired: false,
             key: 'showTooltip',
+        },
+        {
+            isRequired: false,
+            key: 'useCluster',
         },
         {
             isRequired: false,

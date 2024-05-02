@@ -13,6 +13,7 @@ import {
     LoadingSpinner,
     IconButton,
 } from 'bluesquare-components';
+import { useLocation } from 'react-router-dom';
 import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
 import { PopupComponent as Popup } from './Popup';
 
@@ -42,7 +43,7 @@ import { CompletenessSelect } from './CompletenessSelect';
 import MESSAGES from '../messages';
 import { Router } from '../../../types/general';
 
-import { usetGetParentPageUrl } from '../utils';
+import { useGetParentPageUrl } from '../utils';
 import {
     AssignmentsResult,
     useGetAssignments,
@@ -59,7 +60,6 @@ type Props = {
     isLoading: boolean;
     params: CompletenessRouterParams;
     selectedFormId: number;
-    router: Router;
     threshold?: ScaleThreshold;
 };
 
@@ -89,7 +89,6 @@ export const Map: FunctionComponent<Props> = ({
     isLoading,
     params,
     selectedFormId,
-    router,
     threshold,
 }) => {
     const effectiveThreshold = useMemo(
@@ -103,6 +102,7 @@ export const Map: FunctionComponent<Props> = ({
         () => locations && getOrgUnitsBounds(locations),
         [locations],
     );
+    const { pathname } = useLocation();
 
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
 
@@ -189,7 +189,7 @@ export const Map: FunctionComponent<Props> = ({
         ],
     );
 
-    const getParentPageUrl = usetGetParentPageUrl(router);
+    const getParentPageUrl = useGetParentPageUrl();
     return (
         <section className={classes.mapContainer}>
             <Box position="relative">
@@ -210,6 +210,7 @@ export const Map: FunctionComponent<Props> = ({
                             tooltipMessage={MESSAGES.seeParent}
                             overrideIcon={ArrowUpwardOutlined}
                             color="primary"
+                            location={pathname}
                         />
                     </Box>
                 )}

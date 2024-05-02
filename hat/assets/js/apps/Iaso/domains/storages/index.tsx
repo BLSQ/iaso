@@ -1,10 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-// @ts-ignore
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import { useDispatch } from 'react-redux';
-
 import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { StorageParams } from './types/storages';
@@ -12,22 +9,20 @@ import { Filters } from './components/Filters';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import { useGetStorages } from './hooks/requests/useGetStorages';
 import { useGetStorageApiParams } from './hooks/requests/requests';
-import { redirectToReplace } from '../../routing/actions';
-
 import MESSAGES from './messages';
 import { useGetColumns, defaultSorted, baseUrl } from './config';
 import { useSingleTableParams } from '../../components/tables/SingleTable';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { baseUrls } from '../../constants/urls';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-type Props = {
-    params: StorageParams;
-};
-
-export const Storages: FunctionComponent<Props> = ({ params }) => {
-    const dispatch = useDispatch();
+export const Storages: FunctionComponent = () => {
+    const params = useParamsObject(
+        baseUrls.storages,
+    ) as unknown as StorageParams;
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
 
@@ -59,9 +54,6 @@ export const Storages: FunctionComponent<Props> = ({ params }) => {
                     columns={columns}
                     count={data?.count ?? 0}
                     params={apiParams}
-                    onTableParamsChange={p =>
-                        dispatch(redirectToReplace(baseUrl, p))
-                    }
                     extraProps={{ loading: isFetching }}
                 />
             </Box>

@@ -1,5 +1,5 @@
 import React, { ReactElement, useMemo } from 'react';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 import { useSafeIntl, IconButton, Column } from 'bluesquare-components';
 import GetAppIcon from '@mui/icons-material/GetApp';
 

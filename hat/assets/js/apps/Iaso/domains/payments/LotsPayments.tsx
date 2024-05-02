@@ -11,10 +11,7 @@ import { usePaymentLotsColumns } from './hooks/config/usePaymentLotsColumns';
 import { PaymentLotsFilters } from './components/CreatePaymentLot/PaymentLotsFilters';
 import { SimpleTableWithDeepLink } from '../../components/tables/SimpleTableWithDeepLink';
 import { RefreshButton } from '../../components/Buttons/RefreshButton';
-
-type Props = {
-    params: PotentialPaymentParams;
-};
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
 
 const getRowProps = row => {
     if (
@@ -36,7 +33,8 @@ const getRowProps = row => {
 };
 
 const baseUrl = baseUrls.lotsPayments;
-export const LotsPayments: FunctionComponent<Props> = ({ params }) => {
+export const LotsPayments: FunctionComponent = () => {
+    const params = useParamsObject(baseUrl) as PotentialPaymentParams;
     const theme = useTheme();
     // Replaced isFetching with isLoading to avoid flicker effect when refreshing data, eg when PATCHing a payment
     const {

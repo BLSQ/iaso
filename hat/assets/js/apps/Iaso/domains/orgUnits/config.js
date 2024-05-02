@@ -6,6 +6,7 @@ import {
     Expander,
     useSafeIntl,
 } from 'bluesquare-components';
+import { useLocation } from 'react-router-dom';
 import { baseUrls } from '../../constants/urls';
 import OrgUnitTooltip from './components/OrgUnitTooltip';
 import getDisplayName from '../../utils/usersUtils.ts';
@@ -14,11 +15,12 @@ import { useGetStatusMessage, getOrgUnitGroups } from './utils';
 import {
     DateTimeCell,
     DateTimeCellRfc,
-} from '../../components/Cells/DateTimeCell';
+} from '../../components/Cells/DateTimeCell.tsx';
 
 export const useOrgUnitsTableColumns = searches => {
     const { formatMessage } = useSafeIntl();
     const getStatusMessage = useGetStatusMessage();
+    const { pathname } = useLocation();
     const columns = [
         {
             Header: 'Id',
@@ -82,6 +84,7 @@ export const useOrgUnitsTableColumns = searches => {
                         url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.row.original.id}/tab/infos`}
                         icon="remove-red-eye"
                         tooltipMessage={MESSAGES.details}
+                        location={pathname}
                     />
                     {(settings.row.original.has_geo_json ||
                         Boolean(
@@ -92,6 +95,7 @@ export const useOrgUnitsTableColumns = searches => {
                             url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.row.original.id}/tab/map`}
                             icon="map"
                             tooltipMessage={MESSAGES.map}
+                            location={pathname}
                         />
                     )}
 
@@ -99,6 +103,7 @@ export const useOrgUnitsTableColumns = searches => {
                         url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.row.original.id}/tab/history`}
                         icon="history"
                         tooltipMessage={MESSAGES.history}
+                        location={pathname}
                     />
                 </section>
             ),

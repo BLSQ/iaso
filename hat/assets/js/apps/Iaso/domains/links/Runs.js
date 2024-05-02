@@ -6,8 +6,6 @@ import { Button, Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import Autorenew from '@mui/icons-material/Autorenew';
 
-import PropTypes from 'prop-types';
-
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import {
     fetchAlgorithmRuns,
@@ -17,7 +15,6 @@ import {
 
 import { redirectTo } from '../../routing/actions.ts';
 import TopBar from '../../components/nav/TopBarComponent';
-
 import { runsTableColumns } from './config';
 
 import SingleTable, {
@@ -31,6 +28,7 @@ import { baseUrls } from '../../constants/urls';
 import { useRunsFiltersData } from './hooks';
 
 import MESSAGES from './messages';
+import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
 
 const baseUrl = baseUrls.algos;
 
@@ -38,7 +36,8 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-const Runs = ({ params }) => {
+const Runs = () => {
+    const params = useParamsObject(baseUrl);
     const classes = useStyles();
     const dispatch = useDispatch();
     const intl = useSafeIntl();
@@ -152,10 +151,6 @@ const Runs = ({ params }) => {
             />
         </>
     );
-};
-
-Runs.propTypes = {
-    params: PropTypes.object.isRequired,
 };
 
 export default Runs;

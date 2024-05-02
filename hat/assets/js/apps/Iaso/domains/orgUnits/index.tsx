@@ -8,19 +8,15 @@ import React, {
 import { Box, Tabs, Tab } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
-    // @ts-ignore
     commonStyles,
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     LoadingSpinner,
-    // @ts-ignore
     useSkipEffectOnMount,
 } from 'bluesquare-components';
-import { useDispatch } from 'react-redux';
 import { useQueryClient } from 'react-query';
 
 // COMPONENTS
+import { useNavigate } from 'react-router-dom';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import { OrgUnitFiltersContainer } from './components/OrgUnitFiltersContainer';
 import TopBar from '../../components/nav/TopBarComponent';
@@ -36,7 +32,6 @@ import { Search } from './types/search';
 // UTILS
 import { decodeSearch } from './utils';
 import { convertObjectToString } from '../../utils/dataManipulation';
-import { redirectTo, redirectToReplace } from '../../routing/actions';
 import { getChipColors } from '../../constants/chipColors';
 // UTILS
 
@@ -53,6 +48,8 @@ import {
 } from './hooks/requests/useGetOrgUnits';
 import { useBulkSaveOrgUnits } from './hooks/requests/useBulkSaveOrgUnits';
 import { useGetApiParams } from './hooks/useGetApiParams';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { makeRedirectionUrl } from '../../routing/utils';
 // HOOKS
 
 const useStyles = makeStyles(theme => ({
@@ -84,15 +81,16 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-type Props = {
-    params: OrgUnitParams;
-};
+// type Props = {
+//     params: OrgUnitParams;
+// };
 
 const baseUrl = baseUrls.orgUnits;
-export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
+export const OrgUnits: FunctionComponent = () => {
     // HOOKS
+    const params = useParamsObject(baseUrl) as OrgUnitParams;
     const queryClient = useQueryClient();
-    const dispatch = useDispatch();
+    const navigate = useNavigate();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     // HOOKS
@@ -180,12 +178,13 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                 tempParams.searchActive = true;
             }
             setResetPageToOne(convertObjectToString(tempParams));
-            dispatch(redirectTo(baseUrl, tempParams));
+            navigate(makeRedirectionUrl(baseUrl, tempParams), {
+                replace: true,
+            });
             setRefresh(true);
         },
-        [dispatch],
+        [navigate],
     );
-
     // TABS
     const handleChangeTab = useCallback(
         newtab => {
@@ -194,9 +193,9 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                 ...params,
                 tab: newtab,
             };
-            dispatch(redirectToReplace(baseUrl, newParams));
+            navigate(makeRedirectionUrl(baseUrl, newParams));
         },
-        [params, dispatch],
+        [params, navigate],
     );
     // TABS
 

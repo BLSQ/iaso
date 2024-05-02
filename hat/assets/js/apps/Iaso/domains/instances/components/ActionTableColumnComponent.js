@@ -8,6 +8,7 @@ import LockIcon from '@mui/icons-material/Lock';
 import omit from 'lodash/omit';
 import { DialogContentText } from '@mui/material';
 import { FormattedMessage } from 'react-intl';
+import { useLocation } from 'react-router-dom';
 import { useSaveOrgUnit } from '../../orgUnits/hooks';
 import { baseUrls } from '../../../constants/urls';
 import { userHasPermission } from '../../users/utils';
@@ -42,8 +43,32 @@ const initialFormState = (
     };
 };
 
+const getUrlOrgUnit = data => {
+    const rowOriginal = data.row.original;
+    // each instance should have a formId
+    let initialUrl = `/${baseUrls.orgUnitDetails}/orgUnitId/${rowOriginal.org_unit.id}/formId/${rowOriginal.form_id}`;
+    // there are some instances which don't have a reference form Id
+    if (rowOriginal.is_reference_instance) {
+        initialUrl = `${initialUrl}/referenceFormId/${rowOriginal.form_id}`;
+    }
+    // each instance has an id
+    return `${initialUrl}/instanceId/${rowOriginal.id}`;
+};
+
+const getUrlInstance = data => {
+    const rowOriginal = data.row.original;
+    // each instance should have a formId
+    let initialUrl = `/${baseUrls.instanceDetail}/instanceId/${rowOriginal.id}`;
+    // there are some instances which don't have a reference form Id
+    if (rowOriginal.is_reference_instance) {
+        initialUrl = `${initialUrl}/referenceFormId/${rowOriginal.form_id}`;
+    }
+    return `${initialUrl}`;
+};
+
 const ActionTableColumnComponent = ({ settings }) => {
     const user = useCurrentUser();
+    const { pathname: location } = useLocation();
     // eslint-disable-next-line no-unused-vars
     const [_formState, _setFieldValue, setFieldErrors] = useFormState(
         initialFormState(
@@ -60,29 +85,6 @@ const ActionTableColumnComponent = ({ settings }) => {
                 setFieldErrors(entry.errorKey, [entry.errorMessage]);
             });
         }
-    };
-
-    const getUrlOrgUnit = data => {
-        const rowOriginal = data.row.original;
-        // each instance should have a formId
-        let initialUrl = `${baseUrls.orgUnitDetails}/orgUnitId/${rowOriginal.org_unit.id}/formId/${rowOriginal.form_id}`;
-        // there are some instances which don't have a reference form Id
-        if (rowOriginal.is_reference_instance) {
-            initialUrl = `${initialUrl}/referenceFormId/${rowOriginal.form_id}`;
-        }
-        // each instance has an id
-        return `${initialUrl}/instanceId/${rowOriginal.id}`;
-    };
-
-    const getUrlInstance = data => {
-        const rowOriginal = data.row.original;
-        // each instance should have a formId
-        let initialUrl = `${baseUrls.instanceDetail}/instanceId/${settings.row.original.id}`;
-        // there are some instances which don't have a reference form Id
-        if (rowOriginal.is_reference_instance) {
-            initialUrl = `${initialUrl}/referenceFormId/${rowOriginal.form_id}`;
-        }
-        return `${initialUrl}`;
     };
 
     const linkOrgUnitToReferenceSubmission = (
@@ -152,12 +154,14 @@ const ActionTableColumnComponent = ({ settings }) => {
                 url={getUrlInstance(settings)}
                 icon="remove-red-eye"
                 tooltipMessage={MESSAGES.view}
+                location={location}
             />
             {showOrgUnitButton && (
                 <IconButtonComponent
                     url={getUrlOrgUnit(settings)}
                     icon="orgUnit"
                     tooltipMessage={MESSAGES.viewOrgUnit}
+                    location={location}
                 />
             )}
             {showLinkOrgUnitInstanceReferenceButton && (
@@ -198,12 +202,14 @@ const ActionTableColumnComponent = ({ settings }) => {
                                     <LockIcon color="primary" />
                                 )}
                                 tooltipMessage={MESSAGES.lockedCanModify}
+                                location={location}
                             />
                         ) : (
                             <IconButtonComponent
                                 url={getUrlInstance(settings)}
                                 overrideIcon={LockIcon}
                                 tooltipMessage={MESSAGES.lockedCannotModify}
+                                location={location}
                             />
                         )}
                     </>

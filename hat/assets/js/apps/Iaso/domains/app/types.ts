@@ -8,14 +8,15 @@ export type RouteParam = {
 
 export type RouteCustom = {
     baseUrl: string;
+    routerUrl: string;
     permissions?: string[];
-    params: RouteParam[];
     allowAnonymous?: boolean;
     isRootUrl?: boolean;
     // eslint-disable-next-line no-unused-vars
-    component: (props: any) => ReactNode;
+    element: ReactNode;
 };
 
+// TODO Check component type
 export type MenuItem = {
     label: IntlMessage | string;
     key: string;

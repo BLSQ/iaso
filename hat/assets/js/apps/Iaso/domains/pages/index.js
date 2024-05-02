@@ -7,7 +7,6 @@ import {
 import { makeStyles } from '@mui/styles';
 import { Box } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import PropTypes from 'prop-types';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { useGetPages } from './hooks/useGetPages';
@@ -18,10 +17,12 @@ import CreateEditDialog from './components/CreateEditDialog';
 import PageActions from './components/PageActions';
 import PageAction from './components/PageAction';
 import { PAGES_TYPES } from './constants';
-import { DateTimeCellRfc } from '../../components/Cells/DateTimeCell';
+import { DateTimeCellRfc } from '../../components/Cells/DateTimeCell.tsx';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink.tsx';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
 import * as Permission from '../../utils/permissions.ts';
+import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
+import { baseUrls } from '../../constants/urls';
 
 const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_PAGE = 1;
@@ -31,9 +32,10 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-const Pages = ({ params }) => {
+const Pages = () => {
     const intl = useSafeIntl();
     const classes = useStyles();
+    const params = useParamsObject(baseUrls.pages);
     const [selectedPageSlug, setSelectedPageSlug] = useState();
     const [isCreateEditDialogOpen, setIsCreateEditDialogOpen] = useState(false);
     const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] =
@@ -138,6 +140,9 @@ const Pages = ({ params }) => {
                 Cell: settings => {
                     return (
                         <>
+                            {/* We use the <a> tag to avoid router's redirections
+                        i.e: adding /dashboard to the path and /accountId to the params
+                        */}
                             <a href={`/pages/${settings.row.original.slug}`}>
                                 <IconButtonComponent
                                     icon="remove-red-eye"
@@ -145,9 +150,10 @@ const Pages = ({ params }) => {
                                         ...MESSAGES.viewPage,
                                         values: { linebreak: <br /> },
                                     }}
-                                    onClick={() => {}}
+                                    onClick={() => null}
                                 />
                             </a>
+
                             {userHasPermission(
                                 Permission.PAGE_WRITE,
                                 currentUser,
@@ -217,14 +223,6 @@ const Pages = ({ params }) => {
             </Box>
         </>
     );
-};
-
-Pages.propTypes = {
-    params: PropTypes.shape({
-        order: PropTypes.string,
-        page: PropTypes.string,
-        pageSize: PropTypes.string,
-    }).isRequired,
 };
 
 export default Pages;

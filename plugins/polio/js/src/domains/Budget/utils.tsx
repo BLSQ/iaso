@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import { Typography } from '@mui/material';
 import React from 'react';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 import { Profile } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { fileExtensions } from '../../constants/fileExtensions';
 import {

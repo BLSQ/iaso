@@ -13,11 +13,11 @@ import {
     LoadingSpinner,
     Table,
 } from 'bluesquare-components';
-import { redirectTo as redirectToAction } from '../../routing/actions';
+import { redirectTo as redirectToAction } from '../../routing/actions.ts';
 import { fetchMappingVersions as fetchMappingVersionsAction } from './actions';
 import TopBar from '../../components/nav/TopBarComponent';
 import mappingsTableColumns from './config';
-
+import withParams from '../../routing/withParams.tsx';
 import CreateMappingVersionDialogComponent from './components/CreateMappingVersionDialogComponent';
 
 import { baseUrls } from '../../constants/urls';
@@ -121,5 +121,8 @@ const MapDispatchToProps = dispatch => ({
 });
 
 export default withStyles(styles)(
-    connect(MapStateToProps, MapDispatchToProps)(injectIntl(Mappings)),
+    connect(
+        MapStateToProps,
+        MapDispatchToProps,
+    )(injectIntl(withParams(Mappings))),
 );

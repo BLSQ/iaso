@@ -10,7 +10,7 @@ import { orderBy } from 'lodash';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 
-import { useGoBack } from '../../routing/useGoBack';
+import { useGoBack } from '../../routing/hooks/useGoBack';
 import { baseUrls } from '../../constants/urls';
 import { getOtChipColors } from '../../constants/chipColors';
 
@@ -28,27 +28,21 @@ import { OrgunitTypeRegistry } from './types/orgunitTypes';
 import { RegistryDetailParams } from './types';
 
 import { OrgUnitBreadcrumbs } from '../orgUnits/components/breadcrumbs/OrgUnitBreadcrumbs';
-
-type Router = {
-    goBack: () => void;
-    params: RegistryDetailParams;
-};
-type Props = {
-    router: Router;
-};
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-export const Details: FunctionComponent<Props> = ({ router }) => {
-    const {
-        params: { orgUnitId, accountId },
-        params,
-    } = router;
+export const Details: FunctionComponent = () => {
+    const params = useParamsObject(
+        baseUrls.registryDetail,
+    ) as RegistryDetailParams;
+    const { orgUnitId } = params;
+
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const goBack = useGoBack(router, baseUrls.registry, { accountId });
+    const goBack = useGoBack(baseUrls.registry);
 
     const { data: orgUnit, isFetching } = useGetOrgUnit(orgUnitId);
     const { data: orgUnitListChildren, isFetching: isFetchingListChildren } =

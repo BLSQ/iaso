@@ -1,10 +1,9 @@
 import React, { ElementType, useContext, useMemo, ReactElement } from 'react';
-import { Route } from 'react-router';
+import { Route, Routes } from 'react-router';
 import { last } from 'lodash';
 
 import {
     routeConfigs as appRoutes,
-    getPath,
     setupAccountPath,
     page404,
 } from '../../../constants/routes';
@@ -15,12 +14,12 @@ import { HomeOnline } from '../../home/HomeOnline';
 import { PluginsContext } from '../../../utils';
 import { Plugins, RouteCustom } from '../types';
 import { useCurrentUser, useHasNoAccount } from '../../../utils/usersUtils';
-import { useRedirections } from '../../../routing/useRedirections';
+import { useRedirections } from '../../../routing/hooks/useRedirections';
 import { useGetAndStoreCurrentUser } from '../../home/hooks/useGetAndStoreCurrentUser';
 import { SHOW_HOME_ONLINE, hasFeatureFlag } from '../../../utils/featureFlags';
 
 type Result = {
-    routes: ReactElement[];
+    routes: ReactElement | null;
     isLoadingRoutes: boolean;
 };
 
@@ -61,15 +60,10 @@ const useHomeOnlineRoute = (userHomePage?: string): RouteCustom[] => {
     return [
         {
             baseUrl: baseUrls.home,
+            routerUrl: `${baseUrls.home}/*`,
             permissions: [],
             allowAnonymous: false,
-            component: props => <HomeComponent {...props} />,
-            params: [
-                {
-                    isRequired: false,
-                    key: 'accountId',
-                },
-            ],
+            element: <HomeComponent />,
         },
     ];
 };
@@ -81,14 +75,15 @@ export const useHomeOfflineRoute = (): RouteCustom[] => {
     return [
         {
             baseUrl: baseUrls.home,
+            routerUrl: `${baseUrls.home}/*`,
             permissions: [],
             allowAnonymous: true,
-            component: props => <HomeComponent {...props} />,
-            params: [],
+            element: <HomeComponent />,
         },
     ];
 };
 
+// TODO fix plugin config
 const usePluginsRoutes = (): RouteCustom[] => {
     const { plugins }: Plugins = useContext(PluginsContext);
     return plugins
@@ -97,13 +92,7 @@ const usePluginsRoutes = (): RouteCustom[] => {
                 if (route.allowAnonymous) return route;
                 return {
                     ...route,
-                    params: [
-                        {
-                            isRequired: false,
-                            key: 'accountId',
-                        },
-                        ...route.params,
-                    ],
+                    params: ['accountId', ...route.params],
                 };
             }),
         )
@@ -114,29 +103,35 @@ const useGetProtectedRoutes = (
     routes: RouteCustom[],
     hasNoAccount: boolean,
 ): ReactElement[] => {
-    return useMemo(
-        () =>
-            routes.map(routeConfig => {
-                const { allowAnonymous = false, component: Component } =
-                    routeConfig;
-                const ProtectedComponent = props => (
-                    <ProtectedRoute
-                        // eslint-disable-next-line react/jsx-props-no-spreading
-                        {...props}
-                        routeConfig={routeConfig}
-                        component={routeConfig.component(props)}
-                        allRoutes={routes}
-                        hasNoAccount={hasNoAccount}
-                    />
+    return useMemo(() => {
+        return routes.map(routeConfig => {
+            const { allowAnonymous = false, element: Component } = routeConfig;
+            const ProtectedComponent = props => (
+                <ProtectedRoute
+                    {...props}
+                    key={routeConfig.routerUrl}
+                    routeConfig={routeConfig}
+                    allRoutes={routes}
+                    component={routeConfig.element}
+                    hasNoAccount={hasNoAccount}
+                />
+            );
+            const Page =
+                allowAnonymous || hasNoAccount ? (
+                    Component
+                ) : (
+                    <ProtectedComponent />
                 );
-                const page =
-                    allowAnonymous || hasNoAccount
-                        ? Component
-                        : ProtectedComponent;
-                return <Route path={getPath(routeConfig)} component={page} />;
-            }),
-        [hasNoAccount, routes],
-    );
+
+            return (
+                <Route
+                    path={routeConfig.routerUrl}
+                    element={Page}
+                    key={routeConfig.routerUrl}
+                />
+            );
+        });
+    }, [hasNoAccount, routes]);
 };
 
 const useCurrentRoute = (routes: RouteCustom[]): RouteCustom | undefined => {
@@ -187,11 +182,12 @@ export const useRoutes = (userHomePage?: string): Result => {
     );
 
     // routes should only change if currentUser has changed
-    const routes: ReactElement[] = useMemo(
+    const routes: ReactElement | null = useMemo(
         () =>
-            isFetchingCurrentUser ? [] : [...protectedRoutes, ...redirections],
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [isFetchingCurrentUser],
+            isFetchingCurrentUser ? null : (
+                <Routes>{[...protectedRoutes, ...redirections]}</Routes>
+            ),
+        [isFetchingCurrentUser, protectedRoutes, redirections],
     );
 
     return useMemo(

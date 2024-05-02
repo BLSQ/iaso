@@ -12,7 +12,7 @@ import {
 } from '../../../../constants/routes';
 import { Router } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import TopBar from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
-import { useGoBack } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/useGoBack';
+import { useGoBack } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useGoBack';
 import { useSaveVaccineSupplyChainForm } from '../hooks/api/useSaveSupplyChainForm';
 import { VaccineRequestForm } from './VaccineRequestForm/VaccineRequestForm';
 import { PreAlerts } from './PreAlerts/PreAlerts';

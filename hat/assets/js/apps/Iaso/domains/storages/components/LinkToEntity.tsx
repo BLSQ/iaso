@@ -1,14 +1,14 @@
 import React, { FunctionComponent } from 'react';
 
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 import { userHasPermission } from '../../users/utils';
 import { baseUrls } from '../../../constants/urls';
 import { useCurrentUser } from '../../../utils/usersUtils';
-import { Entity } from '../../entities/types/entity';
+import { Beneficiary } from '../../entities/types/beneficiary';
 import * as Permission from '../../../utils/permissions';
 
 type Props = {
-    entity?: Entity;
+    entity?: Beneficiary;
 };
 
 export const LinkToEntity: FunctionComponent<Props> = ({ entity }) => {

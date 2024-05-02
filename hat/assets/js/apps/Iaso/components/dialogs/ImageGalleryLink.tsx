@@ -2,7 +2,7 @@ import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 
 const useStyles = makeStyles(theme => ({
     link: {

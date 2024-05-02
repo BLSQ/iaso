@@ -6,6 +6,7 @@ import {
     useSkipEffectOnMount,
     Column,
     Paginated,
+    formatThousand,
 } from 'bluesquare-components';
 import { Box, Tooltip, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -18,7 +19,6 @@ import {
 import { makeFileLinks, makeLinks } from '../utils';
 import { Optional } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { convertObjectToString } from '../../../utils';
-import { formatThousand } from '../../../../../../../hat/assets/js/apps/Iaso/utils';
 import { formatComment } from '../cards/utils';
 import { BudgetStep, Transition, Params } from '../types';
 import getDisplayName from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';

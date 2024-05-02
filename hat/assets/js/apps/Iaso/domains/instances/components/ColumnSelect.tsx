@@ -5,26 +5,19 @@ import React, {
     ReactNode,
     ReactElement,
 } from 'react';
-import { useDispatch } from 'react-redux';
 import { useSafeIntl, Column } from 'bluesquare-components';
 
-import { redirectToReplace } from '../../../routing/actions';
-
-import {
-    useGetInstancesColumns,
-    useGetInstancesVisibleColumns,
-} from '../utils';
+import { useInstancesColumns, useInstanceVisibleColumns } from '../utils';
 
 import { useGetPossibleFields } from '../../forms/hooks/useGetPossibleFields';
 
 import { ColumnsSelectDrawer } from '../../../components/tables/ColumnSelectDrawer';
-import { INSTANCE_METAS_FIELDS } from '../constants';
 
-import { VisibleColumn } from '../types/visibleColumns';
 import { Form } from '../../forms/types/forms';
 
 import MESSAGES from '../messages';
 import { Instance } from '../types/instance';
+import { useRedirectToReplace } from '../../../routing/routing';
 
 type Params = {
     order?: string;
@@ -63,27 +56,6 @@ type Props = {
 
 const defaultOrder = 'updated_at';
 
-const getDefaultCols = (
-    formIds: string[],
-    labelKeys: string[],
-    instanceMetasFields: InstanceMetasField[],
-    periodType?: string,
-): string => {
-    let newCols: string[] = instanceMetasFields
-        .filter(f => Boolean(f.tableOrder) && f.active)
-        .map(f => f.accessor || f.key);
-    if (formIds && formIds.length === 1) {
-        newCols = newCols.filter(c => c !== 'form__name');
-        if (periodType === null) {
-            newCols = newCols.filter(c => c !== 'period');
-        }
-    }
-    let newColsString = newCols.join(',');
-    if (labelKeys.length > 0) {
-        newColsString = `${newColsString},${labelKeys.join(',')}`;
-    }
-    return newColsString;
-};
 export const ColumnSelect: FunctionComponent<Props> = ({
     params,
     periodType,
@@ -102,13 +74,23 @@ export const ColumnSelect: FunctionComponent<Props> = ({
         [params.formIds],
     );
     const formId = formIds?.length === 1 ? parseInt(formIds[0], 10) : undefined;
-    const dispatch = useDispatch();
+    const redirectToReplace = useRedirectToReplace();
     const { possibleFields } = useGetPossibleFields(formId);
-    const getInstancesVisibleColumns = useGetInstancesVisibleColumns({
+
+    const visibleColumns = useInstanceVisibleColumns({
+        formDetails,
+        formIds,
+        instanceMetasFields,
+        labelKeys,
+        columns: params.columns,
+        periodType,
+        possibleFields,
         order: params.order,
         defaultOrder,
     });
-    const getInstancesColumns = useGetInstancesColumns(getActionCell);
+
+    const instancesColumns = useInstancesColumns(getActionCell, visibleColumns);
+
     const handleChangeVisibleColmuns = cols => {
         const columns = cols.filter(c => c.active);
         const newParams: Params = {
@@ -117,52 +99,17 @@ export const ColumnSelect: FunctionComponent<Props> = ({
         if (columns.length > 0) {
             newParams.columns = columns.map(c => c.key).join(',');
         }
-        dispatch(redirectToReplace(baseUrl, newParams));
+        redirectToReplace(baseUrl, newParams);
     };
 
-    const visibleColumns: VisibleColumn[] = useMemo(() => {
-        const newColsString: string = params.columns
-            ? params.columns
-            : getDefaultCols(
-                  formIds,
-                  labelKeys,
-                  instanceMetasFields || INSTANCE_METAS_FIELDS,
-                  periodType,
-              );
-        let newCols: VisibleColumn[] = [];
-        // single form
-        if (formIds?.length === 1) {
-            // if detail loaded
-            if (formDetails) {
-                newCols = getInstancesVisibleColumns(
-                    newColsString,
-                    possibleFields,
-                );
-            }
-            // multi forms
-        } else {
-            newCols = getInstancesVisibleColumns(newColsString);
-        }
-        return newCols;
-    }, [
-        formDetails,
-        formIds,
-        getInstancesVisibleColumns,
-        instanceMetasFields,
-        labelKeys,
-        params.columns,
-        periodType,
-        possibleFields,
-    ]);
     useEffect(() => {
-        const newTablecols = getInstancesColumns(visibleColumns);
         if (
-            JSON.stringify(newTablecols) !== JSON.stringify(tableColumns) &&
-            newTablecols.length > 1
+            JSON.stringify(instancesColumns) !== JSON.stringify(tableColumns) &&
+            instancesColumns.length > 1
         ) {
-            setTableColumns(newTablecols);
+            setTableColumns(instancesColumns);
         }
-    }, [getInstancesColumns, setTableColumns, tableColumns, visibleColumns]);
+    }, [instancesColumns, setTableColumns, tableColumns]);
 
     return (
         <ColumnsSelectDrawer

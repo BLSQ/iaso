@@ -1,7 +1,7 @@
-import { useRouterHistory } from 'react-router';
-import { syncHistoryWithStore, routerMiddleware } from 'react-router-redux';
+// import { useRouterHistory } from 'react-router';
+// import { syncHistoryWithStore, routerMiddleware } from 'react-router-redux';
 import thunk from 'redux-thunk';
-import { createHistory } from 'history';
+// import { createHistory } from 'history';
 
 import createStore from './createStore';
 
@@ -29,9 +29,9 @@ import { usersReducer, usersInitialState } from '../domains/users/reducer';
 import { localeMiddleware } from '../domains/app/middleware';
 
 // eslint-disable-next-line react-hooks/rules-of-hooks
-let storeHistory = useRouterHistory(createHistory)({
-    basename: '/dashboard',
-});
+// let storeHistory = useRouterHistory(createHistory)({
+//     basename: '/dashboard',
+// });
 // TODO: to check, this initial state argument is probably useless
 const store = createStore(
     {
@@ -55,12 +55,20 @@ const store = createStore(
         users: usersReducer,
         mappings: mappingReducer,
     },
-    [routerMiddleware(storeHistory), thunk, localeMiddleware],
+    [
+        // routerMiddleware(storeHistory),
+        thunk,
+        localeMiddleware,
+    ],
 );
 
-storeHistory = syncHistoryWithStore(storeHistory, store);
+// storeHistory = syncHistoryWithStore(storeHistory, store);
 
-const history = storeHistory;
+// const history = storeHistory;
 const { dispatch } = store;
 
-export { store, history, dispatch };
+export {
+    store,
+    // history,
+    dispatch,
+};

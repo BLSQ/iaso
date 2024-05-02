@@ -1,7 +1,7 @@
 import React, { createRef, FunctionComponent } from 'react';
 
 import { Popup } from 'react-leaflet';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 import classNames from 'classnames';
 
 import {

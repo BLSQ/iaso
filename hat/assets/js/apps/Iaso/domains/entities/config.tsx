@@ -11,6 +11,7 @@ import {
 import moment from 'moment';
 import _ from 'lodash';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
+import { useLocation } from 'react-router-dom';
 import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
 import {
     DateCell,
@@ -80,6 +81,7 @@ export const useColumns = (
         useSafeIntl();
     const staticColumns = useStaticColumns();
     const getValue = useGetFieldValue();
+    const location = useLocation();
     return useMemo(() => {
         const columns: Array<Column> = staticColumns;
         if (entityTypeIds.length !== 1) {
@@ -120,12 +122,14 @@ export const useColumns = (
                             url={`/${baseUrls.entityDetails}/entityId/${settings.row.original.id}`}
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.see}
+                            location={location.pathname}
                         />
                         {settings.row.original.duplicates.length === 1 && (
                             <IconButtonComponent
                                 url={`/${baseUrls.entityDuplicateDetails}/entities/${settings.row.original.id},${settings.row.original.duplicates[0]}/`}
                                 overrideIcon={FileCopyIcon}
                                 tooltipMessage={MESSAGES.seeDuplicate}
+                                location={location.pathname}
                             />
                         )}
                         {/* When there's more than one dupe for the entity */}
@@ -134,6 +138,7 @@ export const useColumns = (
                                 url={`/${baseUrls.entityDuplicates}/entity_id/${settings.row.original.id}/order/id/pageSize/50/page/1/`}
                                 overrideIcon={FileCopyIcon}
                                 tooltipMessage={MESSAGES.seeDuplicates}
+                                location={location.pathname}
                             />
                         )}
                     </>
@@ -147,6 +152,7 @@ export const useColumns = (
         extraColumns,
         formatMessage,
         getValue,
+        location.pathname,
     ]);
 };
 
@@ -240,6 +246,7 @@ export const useBeneficiariesDetailsColumns = (
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.see}
                             disabled={!entityId}
+                            location={location.pathname}
                         />
                     </section>
                 ),

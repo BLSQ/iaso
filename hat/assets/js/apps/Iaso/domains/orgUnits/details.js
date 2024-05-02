@@ -30,7 +30,7 @@ import {
     fetchOrgUnitsList,
     saveLink,
 } from '../../utils/requests';
-import formsTableColumns from '../forms/config';
+import { useFormsTableColumns } from '../forms/config';
 import LinksDetails from '../links/components/LinksDetailsComponent';
 import { linksTableColumns } from '../links/config';
 import { resetOrgUnits } from './actions';
@@ -226,6 +226,11 @@ const OrgUnitDetail = () => {
         },
         [currentOrgUnit],
     );
+
+    const formsTableColumns = useFormsTableColumns({
+        deleteForm: handleDeleteForm,
+        orgUnitId: params.orgUnitId,
+    });
 
     const {
         algorithms,
@@ -517,13 +522,7 @@ const OrgUnitDetail = () => {
                                         endPointPath="forms"
                                         propsToWatch={params.orgUnitId}
                                         fetchItems={fetchForms}
-                                        columns={formsTableColumns({
-                                            formatMessage,
-                                            user: currentUser,
-                                            deleteForm: handleDeleteForm,
-                                            orgUnitId: params.orgUnitId,
-                                            dispatch,
-                                        })}
+                                        columns={formsTableColumns}
                                         forceRefresh={forceSingleTableRefresh}
                                         onForceRefreshDone={() =>
                                             resetSingleTableForceRefresh()

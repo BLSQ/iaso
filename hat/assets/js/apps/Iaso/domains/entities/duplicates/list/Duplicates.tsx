@@ -19,6 +19,7 @@ import { useDuplicationTableColumns } from './useDuplicationTableColumns';
 import { DuplicatesList } from '../types';
 import { AnalyseAction } from './AnalyseAction';
 import { useGetLatestAnalysis } from '../hooks/api/analyzes';
+import { useParamsObject } from '../../../../routing/hooks/useParamsObject';
 
 type Params = PaginationParams & DuplicatesGETParams;
 
@@ -36,7 +37,9 @@ const useStyles = makeStyles(theme => {
     };
 });
 
-export const Duplicates: FunctionComponent<Props> = ({ params }) => {
+export const Duplicates: FunctionComponent<Props> = () => {
+    const params = useParamsObject(baseUrl) as PaginationParams &
+        DuplicatesGETParams;
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const { data: latestAnalysis, isFetching: isFetchingLatestAnalysis } =
@@ -66,6 +69,7 @@ export const Duplicates: FunctionComponent<Props> = ({ params }) => {
                 />
                 <DuplicatesFilters params={params} />
                 <Box className={classes.table}>
+                    {/* @ts-ignore */}
                     <TableWithDeepLink
                         marginTop={false}
                         data={results}

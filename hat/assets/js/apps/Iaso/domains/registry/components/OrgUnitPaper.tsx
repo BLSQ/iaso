@@ -14,6 +14,7 @@ import { commonStyles, IconButton, useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
 import AddIcon from '@mui/icons-material/Add';
 
+import { useLocation } from 'react-router-dom';
 import MESSAGES from '../messages';
 
 import { baseUrls } from '../../../constants/urls';
@@ -97,6 +98,7 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
     );
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
+    const { pathname } = useLocation();
 
     const handleChangeTab = useCallback(
         (_, newTab: OrgUnitListTab) => {
@@ -130,16 +132,18 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
                 >
                     <Box className={classes.paperTitleButton}>
                         <IconButton
-                            url={`${baseUrls.orgUnitDetails}/orgUnitId/0/levels/${orgUnit.id}`}
+                            url={`/${baseUrls.orgUnitDetails}/orgUnitId/0/levels/${orgUnit.id}`}
                             color="secondary"
                             overrideIcon={AddIcon}
                             tooltipMessage={MESSAGES.addOrgUnitChild}
+                            location={pathname}
                         />
                         <IconButton
-                            url={`${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}`}
+                            url={`/${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}`}
                             color="secondary"
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.editOrgUnit}
+                            location={pathname}
                         />
                     </Box>
                 </Grid>

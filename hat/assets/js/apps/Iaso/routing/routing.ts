@@ -69,15 +69,16 @@ export const useRedirectTo = (): RedirectFn => {
 };
 export const useRedirectToReplace = (): RedirectFn => {
     const navigate = useNavigate();
-    const { pathname } = useLocation();
+    // When replacing, we pass the old state to avoid losing the point of origin
+    const { state } = useLocation();
     return useCallback(
         (url: string, params?: Record<string, string>) => {
             const destination = makeRedirectionUrl(url, params);
             navigate(destination, {
                 replace: true,
-                state: { location: pathname },
+                state,
             });
         },
-        [navigate, pathname],
+        [navigate, state],
     );
 };

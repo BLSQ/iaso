@@ -1,13 +1,13 @@
 import datetime
 import json
 from io import StringIO
-from typing import List, Dict
-from unittest import skip, mock
+from typing import Dict, List
+from unittest import mock, skip
 
 from django.contrib.auth.models import Permission
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse
-from django.template import Engine, Context
+from django.template import Context, Engine
 from rest_framework import status
 
 from iaso import models as m
@@ -74,12 +74,12 @@ class BudgetProcessViewSetTestCase(APITestCase):
         POST /api/polio/budget/
         """
         self.client.force_login(self.user)
-
         response = self.client.post(
             "/api/polio/budget/",
             data={
-                "rounds": [self.round_4.pk],
+                "rounds": [{"id": self.round_4.pk}],
             },
+            format="json",
         )
         response_data = self.assertJSONResponse(response, 201)
         new_budget_process = BudgetProcess.objects.get(id=response_data["id"])
@@ -89,7 +89,7 @@ class BudgetProcessViewSetTestCase(APITestCase):
                 "id": new_budget_process.pk,
                 "created_by": {"first_name": "test", "last_name": "test", "username": "test"},
                 "created_at": new_budget_process.created_at.isoformat().replace("+00:00", "Z"),
-                "rounds": [self.round_4.pk],
+                "rounds": [{"id": self.round_4.pk, "cost": "0.00"}],
                 "ra_completed_at_WFEDITABLE": None,
                 "who_sent_budget_at_WFEDITABLE": None,
                 "unicef_sent_budget_at_WFEDITABLE": None,
@@ -132,7 +132,7 @@ class BudgetProcessViewSetTestCase(APITestCase):
             "campaign_id": self.campaign.id,
             "obr_name": "test staging",
             "country_name": "BURUNDI",
-            "rounds": [self.round_1.pk],
+            "rounds": [{"id": self.round_1.pk, "cost": "5.00"}],
             "current_state": {"key": "-", "label": "No budget submitted"},
             "ra_completed_at_WFEDITABLE": "2026-04-01",
             "who_sent_budget_at_WFEDITABLE": "2026-04-01",
@@ -176,7 +176,7 @@ class BudgetProcessViewSetTestCase(APITestCase):
 
         response_data = self.assertJSONResponse(response, 200)
         self.assertEqual(response_data["id"], self.budget_process_1.pk)
-        self.assertEqual(response_data["rounds"], [self.round_1.pk])
+        self.assertEqual(response_data["rounds"], [{"id": self.round_1.pk, "cost": "5.00"}])
         self.assertEqual(response_data["ra_completed_at_WFEDITABLE"], "2026-04-01")
         self.assertEqual(response_data["who_sent_budget_at_WFEDITABLE"], "2026-04-01")
         self.assertEqual(response_data["unicef_sent_budget_at_WFEDITABLE"], "2026-04-01")
@@ -253,9 +253,16 @@ class BudgetProcessViewSetTestCase(APITestCase):
             self.assertIn("rounds", budget_process)
 
         self.assertEqual(
-            budget_processes[0]["rounds"], [{"id": self.round_1.pk, "number": 1}, {"id": self.round_2.pk, "number": 2}]
+            budget_processes[0]["rounds"],
+            [
+                {"id": self.round_1.pk, "number": 1, "cost": "0.00", "target_population": None},
+                {"id": self.round_2.pk, "number": 2, "cost": "0.00", "target_population": None},
+            ],
         )
-        self.assertEqual(budget_processes[1]["rounds"], [{"id": self.round_3.pk, "number": 3}])
+        self.assertEqual(
+            budget_processes[1]["rounds"],
+            [{"id": self.round_3.pk, "number": 3, "cost": "0.00", "target_population": None}],
+        )
 
     def test_simple_get_list_with_all_fields(self):
         """
@@ -266,7 +273,7 @@ class BudgetProcessViewSetTestCase(APITestCase):
         response_data = self.assertJSONResponse(response, 200)
 
         for budget_process in response_data["results"]:
-            self.assertEqual(len(budget_process.keys()), 40)
+            self.assertEqual(len(budget_process.keys()), 41)
 
     def test_list_select_fields(self):
         """
@@ -736,9 +743,9 @@ class BudgetProcessViewSetTestCase(APITestCase):
         response_data = self.assertJSONResponse(response, 200)
 
         expected_data = [
-            {"value": self.round_1.pk, "label": 1, "campaign_id": str(self.campaign.id)},
-            {"value": self.round_2.pk, "label": 2, "campaign_id": str(self.campaign.id)},
-            {"value": self.round_4.pk, "label": 4, "campaign_id": str(self.campaign.id)},
+            {"value": self.round_1.pk, "label": 1, "campaign_id": str(self.campaign.id), "target_population": None},
+            {"value": self.round_2.pk, "label": 2, "campaign_id": str(self.campaign.id), "target_population": None},
+            {"value": self.round_4.pk, "label": 4, "campaign_id": str(self.campaign.id), "target_population": None},
         ]
         self.assertEqual(response_data, expected_data)
 
@@ -758,7 +765,12 @@ class BudgetProcessViewSetTestCase(APITestCase):
             ],
             "rounds": [
                 # Only round 4 should be available.
-                {"value": self.round_4.id, "label": 4, "campaign_id": str(self.campaign.id)},
+                {
+                    "value": self.round_4.id,
+                    "label": 4,
+                    "campaign_id": str(self.campaign.id),
+                    "target_population": None,
+                },
             ],
         }
         self.assertEqual(response_data, expected_data)

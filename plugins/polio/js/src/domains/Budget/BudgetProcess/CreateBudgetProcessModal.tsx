@@ -1,6 +1,6 @@
-import React, { FunctionComponent, useEffect, useState } from 'react';
-import { Box } from '@mui/material';
+import { Box, Divider, Grid } from '@mui/material';
 import { Field, FormikProvider, useFormik } from 'formik';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 
 import {
     AddButton,
@@ -10,12 +10,13 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 
-import MESSAGES from '../messages';
 import { MultiSelect } from '../../../components/Inputs/MultiSelect';
-import { Options } from '../types';
 import { SingleSelect } from '../../../components/Inputs/SingleSelect';
-import { useAvailableRoundsForCreate } from '../hooks/api/useGetBudgetProcessAvailableRounds';
 import { useCreateBudgetProcess } from '../hooks/api/useCreateBudgetProcess';
+import { useAvailableRoundsForCreate } from '../hooks/api/useGetBudgetProcessAvailableRounds';
+import MESSAGES from '../messages';
+import { Options } from '../types';
+import { BudgetProcessModalTabs } from './BudgetProcessModalTabs';
 import { useCreateBudgetProcessSchema } from './validation';
 
 type Props = {
@@ -35,14 +36,14 @@ const CreateBudgetProcessModal: FunctionComponent<Props> = ({
     const { mutate: confirm } = useCreateBudgetProcess();
     const schema = useCreateBudgetProcessSchema();
     const formik = useFormik({
-        initialValues: { country: '', campaign: '', rounds: '' },
+        initialValues: { country: '', campaign: '' },
         validationSchema: schema,
         onSubmit: async values => {
             confirm(values);
         },
     });
-    const allowConfirm =
-        !formik.isSubmitting && formik.isValid && Boolean(formik.values.rounds);
+    const { isSubmitting, isValid, dirty } = formik;
+    const allowConfirm = !isSubmitting && isValid && dirty;
 
     // Filter "Campaign" values on "Country" change.
     const [currentCampaignOptions, setCampaignOptions] = useState<Options[]>(
@@ -55,6 +56,7 @@ const CreateBudgetProcessModal: FunctionComponent<Props> = ({
         );
         formik.setFieldValue('campaign', '');
         setCampaignOptions(filtered);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dropdownsData?.campaigns, formik.values.country]);
 
     // Filter "Rounds" values on "Campaign" change.
@@ -64,8 +66,9 @@ const CreateBudgetProcessModal: FunctionComponent<Props> = ({
         const filtered = rounds.filter(
             i => String(i.campaign_id) === String(formik.values.campaign),
         );
-        formik.setFieldValue('round', '');
+        formik.setFieldValue('round', undefined);
         setRoundsOptions(filtered);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dropdownsData?.rounds, formik.values.campaign]);
 
     const titleMessage = formatMessage(MESSAGES.createBudgetProcessTitle);
@@ -86,31 +89,39 @@ const CreateBudgetProcessModal: FunctionComponent<Props> = ({
                     confirmMessage={MESSAGES.save}
                     allowConfirm={allowConfirm}
                     cancelMessage={MESSAGES.cancel}
+                    maxWidth="md"
                 >
-                    <Box mb={2} mt={2}>
-                        <Field
-                            label={formatMessage(MESSAGES.labelCountry)}
-                            name="country"
-                            component={SingleSelect}
-                            options={dropdownsData?.countries || []}
-                        />
-                    </Box>
                     <Box mb={2}>
-                        <Field
-                            label={formatMessage(MESSAGES.labelCampaign)}
-                            name="campaign"
-                            component={SingleSelect}
-                            options={currentCampaignOptions}
-                        />
+                        <Divider />
                     </Box>
-                    <Box mb={2}>
-                        <Field
-                            label={formatMessage(MESSAGES.labelRound)}
-                            name="rounds"
-                            component={MultiSelect}
-                            options={currentRoundsOptions}
-                        />
-                    </Box>
+                    <Grid container direction="row" item spacing={2}>
+                        <Grid item xs={6}>
+                            <Box mb={2}>
+                                <Field
+                                    label={formatMessage(MESSAGES.labelCountry)}
+                                    name="country"
+                                    component={SingleSelect}
+                                    options={dropdownsData?.countries || []}
+                                />
+                            </Box>
+                            <Field
+                                label={formatMessage(MESSAGES.labelCampaign)}
+                                name="campaign"
+                                component={SingleSelect}
+                                options={currentCampaignOptions}
+                            />
+                        </Grid>
+                        <Grid item xs={6}>
+                            <Field
+                                label={formatMessage(MESSAGES.labelRound)}
+                                name="rounds"
+                                component={MultiSelect}
+                                options={currentRoundsOptions}
+                                returnFullObject
+                            />
+                        </Grid>
+                        <BudgetProcessModalTabs />
+                    </Grid>
                 </ConfirmCancelModal>
             )}
         </FormikProvider>

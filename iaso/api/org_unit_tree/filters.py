@@ -93,3 +93,36 @@ class OrgUnitTreeFilter(django_filters.rest_framework.FilterSet):
                 queryset = queryset.exclude(id__in=rejected_children.ids)
 
         return queryset.filter(validation_status=validation_status)
+
+
+class OrgUnitTreeSearchFilter(django_filters.rest_framework.FilterSet):
+    class Meta:
+        model = OrgUnit
+        fields = ["name"]
+
+    @property
+    def qs(self):
+        parent_qs = super().qs
+
+        # Find the children of `REJECTED` org units which are not `REJECTED` themselves.
+        rejected_children = OrgUnit.objects.raw(
+            """
+            WITH RECURSIVE rejected AS (
+                SELECT id, validation_status
+                FROM iaso_orgunit
+                WHERE validation_status = 'REJECTED'
+                UNION
+                SELECT descendant.id, descendant.validation_status
+                FROM iaso_orgunit as descendant, rejected
+                WHERE descendant.parent_id = rejected.id
+            )
+            SELECT 1 as id, array_agg(id) as ids
+            FROM rejected
+            WHERE validation_status != 'REJECTED';
+            """,
+        )[0]
+
+        if rejected_children.ids:
+            parent_qs = parent_qs.exclude(id__in=rejected_children.ids)
+
+        return parent_qs

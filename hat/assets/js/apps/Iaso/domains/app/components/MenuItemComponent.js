@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 
 import {
     ListItemIcon,
@@ -76,13 +76,9 @@ function MenuItem(props) {
     const itemStyle = {
         paddingLeft: muiTheme.spacing(subMenuLevel * 2),
     };
-    return (
-        <>
-            <Link
-                className={classes.linkButton}
-                to={!hasSubMenu ? fullPath : ''}
-                target={urlLink ? '_blank' : ''}
-            >
+    if (hasSubMenu) {
+        return (
+            <>
                 <ListItem
                     style={itemStyle}
                     button
@@ -110,38 +106,77 @@ function MenuItem(props) {
                     />
                     {hasSubMenu ? subMenuIcon : null}
                 </ListItem>
-            </Link>
-            {hasSubMenu && (
-                <Collapse in={open} timeout="auto" unmountOnExit>
-                    <List component="div" disablePadding>
-                        {menuItem.subMenu.map(subMenu => {
-                            const permissionsList = listMenuPermission(subMenu);
-                            if (
-                                userHasOneOfPermissions(
-                                    permissionsList,
-                                    currentUser,
-                                )
-                            ) {
-                                return (
-                                    <MenuItem
-                                        classes={classes}
-                                        key={subMenu.mapKey || subMenu.key}
-                                        menuItem={subMenu}
-                                        url={subMenu.url}
-                                        onClick={subPath => onClick(subPath)}
-                                        subMenuLevel={subMenuLevel + 1}
-                                        location={location}
-                                        currentPath={path}
-                                        currentUser={currentUser}
-                                    />
-                                );
-                            }
-                            return null;
-                        })}
-                    </List>
-                </Collapse>
-            )}
-        </>
+                {hasSubMenu && (
+                    <Collapse in={open} timeout="auto" unmountOnExit>
+                        <List component="div" disablePadding>
+                            {menuItem.subMenu.map(subMenu => {
+                                const permissionsList =
+                                    listMenuPermission(subMenu);
+                                if (
+                                    userHasOneOfPermissions(
+                                        permissionsList,
+                                        currentUser,
+                                    )
+                                ) {
+                                    return (
+                                        <MenuItem
+                                            classes={classes}
+                                            key={subMenu.mapKey || subMenu.key}
+                                            menuItem={subMenu}
+                                            url={subMenu.url}
+                                            onClick={subPath =>
+                                                onClick(subPath)
+                                            }
+                                            subMenuLevel={subMenuLevel + 1}
+                                            location={location}
+                                            currentPath={path}
+                                            currentUser={currentUser}
+                                        />
+                                    );
+                                }
+                                return null;
+                            })}
+                        </List>
+                    </Collapse>
+                )}
+            </>
+        );
+    }
+
+    return (
+        <Link
+            className={classes.linkButton}
+            to={!hasSubMenu ? fullPath : ''}
+            target={urlLink ? '_blank' : ''}
+        >
+            <ListItem
+                style={itemStyle}
+                button
+                onClick={() =>
+                    !hasSubMenu ? onClick(path, url) : toggleOpen()
+                }
+            >
+                {menuItem.icon && (
+                    <ListItemIcon className={classes.listItemIcon}>
+                        {menuItem.icon({ color })}
+                    </ListItemIcon>
+                )}
+                <ListItemText
+                    primary={
+                        <Box pl={menuItem.icon ? 0 : 2}>
+                            <Typography type="body2" color={color}>
+                                {menuItem.label.defaultMessage &&
+                                    menuItem.label.id &&
+                                    formatMessage(menuItem.label)}
+                                {typeof menuItem.label === 'string' &&
+                                    menuItem.label}
+                            </Typography>
+                        </Box>
+                    }
+                />
+                {hasSubMenu ? subMenuIcon : null}
+            </ListItem>
+        </Link>
     );
 }
 

@@ -4,7 +4,6 @@ import React, {
     useMemo,
     useCallback,
 } from 'react';
-import { useDispatch } from 'react-redux';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
@@ -36,7 +35,6 @@ import MESSAGES from './messages';
 
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import { BulkImportUsersDialog } from './components/BulkImportDialog/BulkImportDialog';
-import { redirectTo } from '../../routing/actions';
 import { useCurrentUser } from '../../utils/usersUtils';
 
 import { Selection } from '../orgUnits/types/selection';
@@ -45,6 +43,8 @@ import { UsersMultiActionsDialog } from './components/UsersMultiActionsDialog';
 import { useBulkSaveProfiles } from './hooks/useBulkSaveProfiles';
 import { userHasPermission } from './utils';
 import * as Permission from '../../utils/permissions';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { useRedirectTo } from '../../routing/routing';
 
 const baseUrl = baseUrls.users;
 
@@ -53,19 +53,16 @@ type Params = {
     search?: string;
 };
 
-type Props = {
-    params: Params;
-};
-
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-export const Users: FunctionComponent<Props> = ({ params }) => {
+export const Users: FunctionComponent = () => {
+    const params = useParamsObject(baseUrls.users) as unknown as Params;
     const classes: Record<string, string> = useStyles();
     const currentUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
+    const redirectTo = useRedirectTo();
 
     const [multiActionPopupOpen, setMultiActionPopupOpen] =
         useState<boolean>(false);
@@ -178,7 +175,7 @@ export const Users: FunctionComponent<Props> = ({ params }) => {
                         pageSize: params.pageSize,
                         search: params.search,
                     }}
-                    redirectTo={(b, p) => dispatch(redirectTo(b, p))}
+                    redirectTo={(b, p) => redirectTo(b, p)}
                     multiSelect
                     selection={selection}
                     selectionActions={selectionActions}

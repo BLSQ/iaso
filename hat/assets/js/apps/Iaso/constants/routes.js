@@ -29,8 +29,6 @@ import { Details as BeneficiaryDetail } from '../domains/entities/details.tsx';
 import { EntityTypes } from '../domains/entities/entityTypes/index.tsx';
 import PageError from '../components/errors/PageError';
 import { baseUrls } from './urls';
-import { capitalize } from '../utils/index.ts';
-import { linksFiltersWithPrefix, orgUnitFiltersWithPrefix } from './filters';
 import Pages from '../domains/pages';
 import { Planning } from '../domains/plannings/index.tsx';
 import { Teams } from '../domains/teams/index.tsx';
@@ -43,7 +41,6 @@ import { CompareInstanceLogs } from '../domains/instances/compare/components/Com
 import { Registry } from '../domains/registry/index.tsx';
 import { Details as RegistryDetail } from '../domains/registry/details.tsx';
 import { SHOW_PAGES } from '../utils/featureFlags';
-import { paginationPathParams } from '../routing/common.ts';
 import { Duplicates } from '../domains/entities/duplicates/list/Duplicates.tsx';
 import { DuplicateDetails } from '../domains/entities/duplicates/details/DuplicateDetails.tsx';
 import { ReviewOrgUnitChanges } from '../domains/orgUnits/reviewChanges/ReviewOrgUnitChanges.tsx';
@@ -53,1409 +50,338 @@ import { SetupAccount } from '../domains/setup/index.tsx';
 import { PotentialPayments } from '../domains/payments/PotentialPayments.tsx';
 import { LotsPayments } from '../domains/payments/LotsPayments.tsx';
 
-const paginationPathParamsWithPrefix = prefix =>
-    paginationPathParams.map(p => ({
-        ...p,
-        key: `${prefix}${capitalize(p.key, true)}`,
-    }));
-
-const orgUnitsFiltersPathParamsWithPrefix = (prefix, withChildren) =>
-    orgUnitFiltersWithPrefix(prefix, withChildren).map(f => ({
-        isRequired: false,
-        key: f.urlKey,
-    }));
-
-const linksFiltersPathParamsWithPrefix = prefix =>
-    linksFiltersWithPrefix(prefix).map(f => ({
-        isRequired: false,
-        key: f.urlKey,
-    }));
-
-export const getPath = path => {
-    let url = `/${path.baseUrl}`;
-    path.params.forEach(p => {
-        if (p.isRequired) {
-            url += `/${p.key}/:${p.key}`;
-        } else {
-            url += `(/${p.key}/:${p.key})`;
-        }
-    });
-    return url;
-};
-
 export const setupAccountPath = {
     baseUrl: baseUrls.setupAccount,
+    routerUrl: `${baseUrls.setupAccount}/*`,
     permissions: [],
-    component: props => <SetupAccount {...props} />,
-    params: [],
+    element: <SetupAccount />,
 };
 
 export const formsPath = {
     baseUrl: baseUrls.forms,
+    routerUrl: `${baseUrls.forms}/*`,
     permissions: [Permission.FORMS, Permission.SUBMISSIONS],
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        ...paginationPathParams,
-        {
-            isRequired: false,
-            key: 'search',
-        },
-        {
-            isRequired: false,
-            key: 'searchActive',
-        },
-        {
-            isRequired: false,
-            key: 'showDeleted',
-        },
-        {
-            isRequired: false,
-            key: 'planning',
-        },
-        {
-            isRequired: false,
-            key: 'orgUnitTypeIds',
-        },
-        {
-            isRequired: false,
-            key: 'projectsIds',
-        },
-    ],
-    component: props => <Forms {...props} />,
+    element: <Forms />,
     isRootUrl: true,
 };
 
 export const pagesPath = {
     baseUrl: baseUrls.pages,
+    routerUrl: `${baseUrls.pages}/*`,
     permissions: [Permission.PAGES, Permission.PAGE_WRITE],
     featureFlag: SHOW_PAGES,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        ...paginationPathParams,
-    ],
-    component: props => <Pages {...props} />,
+    element: <Pages />,
 };
 
 export const formDetailPath = {
     baseUrl: baseUrls.formDetail,
+    routerUrl: `${baseUrls.formDetail}/*`,
     permissions: [Permission.FORMS, Permission.SUBMISSIONS],
-    component: props => <FormDetail {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        {
-            isRequired: true,
-            key: 'formId',
-        },
-        {
-            isRequired: false,
-            key: 'tab',
-        },
-        ...paginationPathParams,
-        ...paginationPathParamsWithPrefix('attachments'),
-    ],
+    element: <FormDetail />,
 };
 
 export const formsStatsPath = {
     baseUrl: baseUrls.formsStats,
+    routerUrl: `${baseUrls.formsStats}/*`,
     permissions: [Permission.FORMS],
-    component: () => <FormsStats />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-    ],
+    element: <FormsStats />,
 };
 
 export const instancesPath = {
     baseUrl: baseUrls.instances,
+    routerUrl: `${baseUrls.instances}/*`,
     permissions: [Permission.SUBMISSIONS, Permission.SUBMISSIONS_UPDATE],
-    component: props => <Instances {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        {
-            isRequired: false,
-            key: 'formIds',
-        },
-        ...paginationPathParams,
-        {
-            isRequired: false,
-            key: 'periodType',
-        },
-        {
-            isRequired: false,
-            key: 'dateFrom',
-        },
-        {
-            isRequired: false,
-            key: 'dateTo',
-        },
-        {
-            isRequired: false,
-            key: 'startPeriod',
-        },
-        {
-            isRequired: false,
-            key: 'endPeriod',
-        },
-        {
-            isRequired: false,
-            key: 'status',
-        },
-        {
-            isRequired: false,
-            key: 'levels',
-        },
-        {
-            isRequired: false,
-            key: 'orgUnitTypeId',
-        },
-        {
-            isRequired: false,
-            key: 'withLocation',
-        },
-        {
-            isRequired: false,
-            key: 'deviceId',
-        },
-        {
-            isRequired: false,
-            key: 'deviceOwnershipId',
-        },
-        {
-            isRequired: false,
-            key: 'tab',
-        },
-        {
-            isRequired: false,
-            key: 'columns',
-        },
-        {
-            isRequired: false,
-            key: 'search',
-        },
-        {
-            isRequired: false,
-            key: 'showDeleted',
-        },
-        {
-            isRequired: false,
-            key: 'mapResults',
-        },
-        {
-            isRequired: false,
-            key: 'filePage',
-        },
-        {
-            isRequired: false,
-            key: 'fileRowsPerPage',
-        },
-        {
-            isRequired: false,
-            key: 'fieldsSearch',
-        },
-        {
-            isRequired: false,
-            key: 'planningIds',
-        },
-        {
-            isRequired: false,
-            key: 'userIds',
-        },
-        {
-            isRequired: false,
-            key: 'modificationDateFrom',
-        },
-        {
-            isRequired: false,
-            key: 'modificationDateTo',
-        },
-        {
-            isRequired: false,
-            key: 'sentDateFrom',
-        },
-        {
-            isRequired: false,
-            key: 'sentDateTo',
-        },
-    ],
+    element: <Instances />,
 };
 
 export const instanceDetailPath = {
     baseUrl: baseUrls.instanceDetail,
+    routerUrl: `${baseUrls.instanceDetail}/*`,
     permissions: [Permission.SUBMISSIONS],
-    component: props => <InstanceDetail {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        {
-            isRequired: true,
-            key: 'instanceId',
-        },
-        {
-            isRequired: false,
-            key: 'referenceFormId',
-        },
-    ],
+    element: <InstanceDetail />,
 };
 
 export const compareInstanceLogsPath = {
     baseUrl: baseUrls.compareInstanceLogs,
+    routerUrl: `${baseUrls.compareInstanceLogs}/*`,
     permissions: [Permission.SUBMISSIONS],
-    component: props => <CompareInstanceLogs {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        {
-            isRequired: true,
-            key: 'instanceIds',
-        },
-        {
-            isRequired: false,
-            key: 'logA',
-        },
-        {
-            isRequired: false,
-            key: 'logB',
-        },
-    ],
+    element: <CompareInstanceLogs />,
 };
 
 export const compareInstancesPath = {
     baseUrl: baseUrls.compareInstances,
+    routerUrl: `${baseUrls.compareInstances}/*`,
     permissions: [Permission.SUBMISSIONS, Permission.SUBMISSIONS_UPDATE],
-    component: props => <CompareSubmissions {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        {
-            isRequired: true,
-            key: 'instanceIds',
-        },
-    ],
+    element: <CompareSubmissions />,
 };
 
 export const mappingsPath = {
     baseUrl: baseUrls.mappings,
+    routerUrl: `${baseUrls.mappings}/*`,
     permissions: [Permission.MAPPINGS],
-    component: props => <Mappings {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        {
-            isRequired: false,
-            key: 'formId',
-        },
-        ...paginationPathParams.map(p => ({
-            ...p,
-            isRequired: true,
-        })),
-    ],
+    element: <Mappings />,
 };
 
 export const mappingDetailPath = {
     baseUrl: baseUrls.mappingDetail,
+    routerUrl: `${baseUrls.mappingDetail}/*`,
     permissions: [Permission.MAPPINGS],
-    component: props => <MappingDetails {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        {
-            isRequired: true,
-            key: 'mappingVersionId',
-        },
-        {
-            isRequired: false,
-            key: 'questionName',
-        },
-    ],
+    element: <MappingDetails />,
 };
 
 export const orgUnitsPath = {
     baseUrl: baseUrls.orgUnits,
+    routerUrl: `${baseUrls.orgUnits}/*`,
     permissions: [Permission.ORG_UNITS],
-    component: props => <OrgUnits {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        {
-            isRequired: true,
-            key: 'locationLimit',
-        },
-        ...paginationPathParams.map(p => ({
-            ...p,
-            isRequired: true,
-        })),
-        {
-            isRequired: false,
-            key: 'tab',
-        },
-        {
-            isRequired: false,
-            key: 'searchTabIndex',
-        },
-        {
-            isRequired: false,
-            key: 'searchActive',
-        },
-        {
-            isRequired: false,
-            key: 'searches',
-        },
-    ],
+    element: <OrgUnits />,
 };
 
 export const orgUnitsDetailsPath = {
     baseUrl: baseUrls.orgUnitDetails,
+    routerUrl: `${baseUrls.orgUnitDetails}/*`,
     permissions: [Permission.ORG_UNITS],
-    component: props => <OrgUnitDetail {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        {
-            isRequired: true,
-            key: 'orgUnitId',
-        },
-        {
-            isRequired: false,
-            key: 'levels',
-        },
-        ...paginationPathParams,
-        {
-            isRequired: false,
-            key: 'logsOrder',
-        },
-        {
-            isRequired: false,
-            key: 'tab',
-        },
-        {
-            isRequired: false,
-            key: 'formId',
-        },
-        {
-            isRequired: false,
-            key: 'referenceFormId',
-        },
-        {
-            isRequired: false,
-            key: 'instanceId',
-        },
-        ...orgUnitsFiltersPathParamsWithPrefix('childrenParams', true),
-        ...paginationPathParamsWithPrefix('childrenParams'),
-        ...linksFiltersPathParamsWithPrefix('linksParams'),
-        ...paginationPathParamsWithPrefix('linksParams'),
-        ...paginationPathParamsWithPrefix('formsParams'),
-        ...paginationPathParamsWithPrefix('logsParams'),
-    ],
+    element: <OrgUnitDetail />,
 };
 
 export const orgUnitChangeRequestPath = {
     baseUrl: baseUrls.orgUnitsChangeRequest,
+    routerUrl: `${baseUrls.orgUnitsChangeRequest}/*`,
     permissions: [Permission.ORG_UNITS_CHANGE_REQUEST_REVIEW],
-    component: props => <ReviewOrgUnitChanges {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        ...paginationPathParams,
-        {
-            key: 'parent_id',
-            isRequired: false,
-        },
-        {
-            key: 'groups',
-            isRequired: false,
-        },
-        {
-            key: 'org_unit_type_id',
-            isRequired: false,
-        },
-        {
-            key: 'status',
-            isRequired: false,
-        },
-        {
-            key: 'created_at_after',
-            isRequired: false,
-        },
-        {
-            key: 'created_at_before',
-            isRequired: false,
-        },
-        {
-            key: 'forms',
-            isRequired: false,
-        },
-        {
-            key: 'userIds',
-            isRequired: false,
-        },
-        {
-            key: 'userRoles',
-            isRequired: false,
-        },
-        {
-            key: 'withLocation',
-            isRequired: false,
-        },
-    ],
+    element: <ReviewOrgUnitChanges />,
 };
 export const registryPath = {
     baseUrl: baseUrls.registry,
+    routerUrl: `${baseUrls.registry}/*`,
     permissions: [Permission.REGISTRY],
-    component: props => <Registry {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-    ],
+    element: <Registry />,
 };
 export const registryDetailPath = {
     baseUrl: baseUrls.registryDetail,
+    routerUrl: `${baseUrls.registryDetail}/*`,
     permissions: [Permission.REGISTRY],
-    component: props => <RegistryDetail {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        {
-            isRequired: true,
-            key: 'orgUnitId',
-        },
-        {
-            isRequired: false,
-            key: 'formIds',
-        },
-        {
-            isRequired: false,
-            key: 'columns',
-        },
-        {
-            isRequired: false,
-            key: 'tab',
-        },
-        {
-            isRequired: false,
-            key: 'orgUnitListTab',
-        },
-        {
-            isRequired: false,
-            key: 'submissionId',
-        },
-        {
-            isRequired: false,
-            key: 'missingSubmissionVisible',
-        },
-        {
-            isRequired: false,
-            key: 'showTooltip',
-        },
-        {
-            isRequired: false,
-            key: 'isFullScreen',
-        },
-        ...paginationPathParams,
-        ...paginationPathParamsWithPrefix('orgUnitList'),
-        ...paginationPathParamsWithPrefix('missingSubmissions'),
-    ],
+    element: <RegistryDetail />,
 };
 
 export const linksPath = {
     baseUrl: baseUrls.links,
+    routerUrl: `${baseUrls.links}/*`,
     permissions: [Permission.LINKS],
-    component: props => <Links {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        {
-            isRequired: false,
-            key: 'search',
-        },
-        {
-            isRequired: false,
-            key: 'origin',
-        },
-        {
-            isRequired: false,
-            key: 'originVersion',
-        },
-        {
-            isRequired: false,
-            key: 'destination',
-        },
-        {
-            isRequired: false,
-            key: 'destinationVersion',
-        },
-        {
-            isRequired: false,
-            key: 'validated',
-        },
-        {
-            isRequired: false,
-            key: 'validatorId',
-        },
-        {
-            isRequired: false,
-            key: 'orgUnitTypeId',
-        },
-        {
-            isRequired: false,
-            key: 'algorithmId',
-        },
-        {
-            isRequired: false,
-            key: 'algorithmRunId',
-        },
-        {
-            isRequired: false,
-            key: 'score',
-        },
-        ...paginationPathParams,
-        {
-            isRequired: false,
-            key: 'searchActive',
-        },
-        {
-            isRequired: false,
-            key: 'validation_status',
-        },
-    ],
+    element: <Links />,
 };
 
 export const algosPath = {
     baseUrl: baseUrls.algos,
+    routerUrl: `${baseUrls.algos}/*`,
     permissions: [Permission.LINKS],
-    component: props => <Runs {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        {
-            isRequired: false,
-            key: 'algorithmId',
-        },
-        {
-            isRequired: false,
-            key: 'origin',
-        },
-        {
-            isRequired: false,
-            key: 'originVersion',
-        },
-        {
-            isRequired: false,
-            key: 'destination',
-        },
-        {
-            isRequired: false,
-            key: 'destinationVersion',
-        },
-        {
-            isRequired: false,
-            key: 'launcher',
-        },
-        ...paginationPathParams,
-        {
-            isRequired: false,
-            key: 'searchActive',
-        },
-    ],
+    element: <Runs />,
 };
 
 export const completenessPath = {
     baseUrl: baseUrls.completeness,
+    routerUrl: `${baseUrls.completeness}/*`,
     permissions: [Permission.COMPLETENESS],
-    component: props => <Completeness {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-    ],
+    element: <Completeness />,
 };
 
 export const completenessStatsPath = {
     baseUrl: baseUrls.completenessStats,
+    routerUrl: `${baseUrls.completenessStats}/*`,
     permissions: [Permission.COMPLETENESS_STATS],
-    component: props => <CompletenessStats {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        ...paginationPathParams,
-        {
-            isRequired: false,
-            key: 'tab',
-        },
-        {
-            isRequired: false,
-            key: 'orgUnitId',
-        },
-        {
-            isRequired: false,
-            key: 'formId',
-        },
-        {
-            isRequired: false,
-            key: 'orgUnitTypeIds',
-        },
-        {
-            isRequired: false,
-            key: 'period',
-        },
-        {
-            isRequired: false,
-            key: 'parentId',
-        },
-        {
-            isRequired: false,
-            key: 'planningId',
-        },
-        {
-            isRequired: false,
-            key: 'groupId',
-        },
-        {
-            isRequired: false,
-            key: 'orgunitValidationStatus',
-        },
-        {
-            isRequired: false,
-            key: 'showDirectCompleteness',
-        },
-        {
-            isRequired: false,
-            key: 'teamsIds',
-        },
-        {
-            isRequired: false,
-            key: 'userIds',
-        },
-    ],
+    element: <CompletenessStats />,
 };
 
 export const modulesPath = {
     baseUrl: baseUrls.modules,
+    routerUrl: `${baseUrls.modules}/*`,
     permissions: [Permission.MODULES],
-    component: props => <Modules {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        {
-            isRequired: false,
-            key: 'search',
-        },
-        ...paginationPathParams,
-    ],
+    element: <Modules />,
 };
 
 export const usersPath = {
     baseUrl: baseUrls.users,
+    routerUrl: `${baseUrls.users}/*`,
     permissions: [Permission.USERS_ADMIN, Permission.USERS_MANAGEMENT],
-    component: props => <Users {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        {
-            isRequired: false,
-            key: 'search',
-        },
-        {
-            isRequired: false,
-            key: 'permissions',
-        },
-        {
-            isRequired: false,
-            key: 'location',
-        },
-        {
-            isRequired: false,
-            key: 'orgUnitTypes',
-        },
-        {
-            isRequired: false,
-            key: 'ouParent',
-        },
-        {
-            isRequired: false,
-            key: 'ouChildren',
-        },
-        {
-            isRequired: false,
-            key: 'projectsIds',
-        },
-        {
-            isRequired: false,
-            key: 'userRoles',
-        },
-        {
-            isRequired: false,
-            key: 'teamsIds',
-        },
-        ...paginationPathParams.map(p => ({
-            ...p,
-            isRequired: true,
-        })),
-    ],
+    element: <Users />,
 };
 
 export const userRolesPath = {
     baseUrl: baseUrls.userRoles,
+    routerUrl: `${baseUrls.userRoles}/*`,
     permissions: [Permission.USER_ROLES],
-    component: props => <UserRoles {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        {
-            isRequired: false,
-            key: 'search',
-        },
-        ...paginationPathParams.map(p => ({
-            ...p,
-            isRequired: false,
-        })),
-    ],
+    element: <UserRoles />,
 };
 
 export const projectsPath = {
     baseUrl: baseUrls.projects,
+    routerUrl: `${baseUrls.projects}/*`,
     permissions: [Permission.PROJECTS],
-    component: props => <Projects {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        ...paginationPathParams,
-    ],
+    element: <Projects />,
 };
 
 export const dataSourcesPath = {
     baseUrl: baseUrls.sources,
+    routerUrl: `${baseUrls.sources}/*`,
     permissions: [Permission.SOURCES, Permission.SOURCE_WRITE],
-    component: props => <DataSources {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        ...paginationPathParams,
-    ],
+    element: <DataSources />,
 };
 
 export const dataSourceDetailsPath = {
     baseUrl: baseUrls.sourceDetails,
+    routerUrl: `${baseUrls.sourceDetails}/*`,
     permissions: [Permission.SOURCES, Permission.SOURCE_WRITE],
-    component: props => <DataSourceDetail {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        {
-            isRequired: true,
-            key: 'sourceId',
-        },
-        ...paginationPathParams,
-    ],
+    element: <DataSourceDetail />,
 };
 
 export const tasksPath = {
     baseUrl: baseUrls.tasks,
+    routerUrl: `${baseUrls.tasks}/*`,
     permissions: [Permission.DATA_TASKS],
-    component: props => <Tasks {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        ...paginationPathParams,
-    ],
+    element: <Tasks />,
 };
 
 export const devicesPath = {
     baseUrl: baseUrls.devices,
+    routerUrl: `${baseUrls.devices}/*`,
     permissions: [Permission.DATA_DEVICES],
-    component: props => <Devices {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        ...paginationPathParams,
-    ],
+    element: <Devices />,
 };
 
 export const groupsPath = {
     baseUrl: baseUrls.groups,
+    routerUrl: `${baseUrls.groups}/*`,
     permissions: [Permission.ORG_UNIT_GROUPS],
-    component: props => <Groups {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        {
-            isRequired: false,
-            key: 'search',
-        },
-        ...paginationPathParams.map(p => ({
-            ...p,
-            isRequired: true,
-        })),
-    ],
+    element: <Groups />,
 };
 
 export const orgUnitTypesPath = {
     baseUrl: baseUrls.orgUnitTypes,
+    routerUrl: `${baseUrls.orgUnitTypes}/*`,
     permissions: [Permission.ORG_UNIT_TYPES],
-    component: props => <Types {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        {
-            isRequired: false,
-            key: 'search',
-        },
-        ...paginationPathParams.map(p => ({
-            ...p,
-            isRequired: true,
-        })),
-    ],
+    element: <Types />,
 };
 export const entitiesPath = {
     baseUrl: baseUrls.entities,
+    routerUrl: `${baseUrls.entities}/*`,
     permissions: [Permission.ENTITIES],
-    component: props => <Beneficiaries {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        {
-            isRequired: false,
-            key: 'tab',
-        },
-        {
-            isRequired: false,
-            key: 'search',
-        },
-        {
-            isRequired: false,
-            key: 'location',
-        },
-        {
-            isRequired: false,
-            key: 'dateFrom',
-        },
-        {
-            isRequired: false,
-            key: 'dateTo',
-        },
-        {
-            isRequired: false,
-            key: 'submitterId',
-        },
-        {
-            isRequired: false,
-            key: 'submitterTeamId',
-        },
-        {
-            isRequired: false,
-            key: 'entityTypeIds',
-        },
-        ...paginationPathParams.map(p => ({
-            ...p,
-            isRequired: true,
-        })),
-    ],
+    element: <Beneficiaries />,
 };
 export const entityDetailsPath = {
     baseUrl: baseUrls.entityDetails,
+    routerUrl: `${baseUrls.entityDetails}/*`,
     permissions: [Permission.ENTITIES],
-    component: props => <BeneficiaryDetail {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        {
-            isRequired: true,
-            key: 'entityId',
-        },
-        ...paginationPathParams,
-    ],
+    element: <BeneficiaryDetail />,
 };
 
 export const entitySubmissionDetailPath = {
     baseUrl: baseUrls.entitySubmissionDetail,
+    routerUrl: `${baseUrls.entitySubmissionDetail}/*`,
     permissions: [Permission.ENTITIES],
-    component: props => <VisitDetails {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        {
-            isRequired: true,
-            key: 'instanceId',
-        },
-        {
-            isRequired: true,
-            key: 'entityId',
-        },
-    ],
+    element: <VisitDetails />,
 };
 
 export const entityTypesPath = {
     baseUrl: baseUrls.entityTypes,
+    routerUrl: `${baseUrls.entityTypes}/*`,
     permissions: [Permission.ENTITIES],
-    component: props => <EntityTypes {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        {
-            isRequired: false,
-            key: 'search',
-        },
-        ...paginationPathParams.map(p => ({
-            ...p,
-            isRequired: true,
-        })),
-    ],
+    element: <EntityTypes />,
 };
 export const entityDuplicatesPath = {
     baseUrl: baseUrls.entityDuplicates,
+    routerUrl: `${baseUrls.entityDuplicates}/*`,
     permissions: [
         Permission.ENTITIES_DUPLICATE_READ,
         Permission.ENTITIES_DUPLICATE_WRITE,
     ],
-    component: props => <Duplicates {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-
-        {
-            isRequired: false,
-            key: 'search',
-        },
-        {
-            isRequired: false,
-            key: 'algorithm',
-        },
-        {
-            isRequired: false,
-            key: 'similarity',
-        },
-        {
-            isRequired: false,
-            key: 'entity_type',
-        },
-        {
-            isRequired: false,
-            key: 'org_unit',
-        },
-        {
-            isRequired: false,
-            key: 'start_date',
-        },
-        {
-            isRequired: false,
-            key: 'end_date',
-        },
-        {
-            isRequired: false,
-            key: 'submitter',
-        },
-        {
-            isRequired: false,
-            key: 'submitter_team',
-        },
-        {
-            isRequired: false,
-            key: 'ignored',
-        },
-        {
-            isRequired: false,
-            key: 'merged',
-        },
-
-        {
-            isRequired: false,
-            key: 'fields',
-        },
-        {
-            isRequired: false,
-            key: 'form',
-        },
-        {
-            isRequired: false,
-            key: 'entity_id',
-        },
-        ...paginationPathParams.map(p => ({
-            ...p,
-            isRequired: true,
-        })),
-    ],
+    element: <Duplicates />,
 };
 export const entityDuplicatesDetailsPath = {
     baseUrl: baseUrls.entityDuplicateDetails,
+    routerUrl: `${baseUrls.entityDuplicateDetails}/*`,
     permissions: [
         Permission.ENTITIES_DUPLICATE_READ,
         Permission.ENTITIES_DUPLICATE_WRITE,
     ],
-    component: props => <DuplicateDetails {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        // ...paginationPathParams.map(p => ({
-        //     ...p,
-        //     isRequired: true,
-        // })),
-        {
-            isRequired: false,
-            key: 'entities',
-        },
-    ],
+    element: <DuplicateDetails />,
 };
 export const planningPath = {
     baseUrl: baseUrls.planning,
+    routerUrl: `${baseUrls.planning}/*`,
     // FIXME use planning permissions when they exist
     permissions: [Permission.PLANNINGS],
-    component: props => <Planning {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        {
-            isRequired: false,
-            key: 'search',
-        },
-        {
-            isRequired: false,
-            key: 'dateFrom',
-        },
-        {
-            isRequired: false,
-            key: 'dateTo',
-        },
-        {
-            isRequired: false,
-            key: 'publishingStatus',
-        },
-        ...paginationPathParams.map(p => ({
-            ...p,
-            isRequired: true,
-        })),
-    ],
+    element: <Planning />,
 };
 export const assignmentsPath = {
     baseUrl: baseUrls.assignments,
+    routerUrl: `${baseUrls.assignments}/*`,
     // FIXME use planning permissions when they exist
     permissions: [Permission.PLANNINGS],
-    component: props => <Assignments {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        {
-            isRequired: true,
-            key: 'planningId',
-        },
-        {
-            isRequired: false,
-            key: 'team',
-        },
-        {
-            isRequired: false,
-            key: 'baseOrgunitType',
-        },
-        {
-            isRequired: false,
-            key: 'parentOrgunitType',
-        },
-        {
-            isRequired: false,
-            key: 'tab',
-        },
-        {
-            isRequired: false,
-            key: 'order',
-        },
-        {
-            isRequired: false,
-            key: 'search',
-        },
-    ],
+    element: <Assignments />,
 };
 export const teamsPath = {
     baseUrl: baseUrls.teams,
+    routerUrl: `${baseUrls.teams}/*`,
     permissions: [Permission.TEAMS],
-    component: props => <Teams {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        {
-            isRequired: false,
-            key: 'search',
-        },
-        ...paginationPathParams.map(p => ({
-            ...p,
-            isRequired: true,
-        })),
-    ],
+    element: <Teams />,
 };
 export const storagesPath = {
     baseUrl: baseUrls.storages,
+    routerUrl: `${baseUrls.storages}/*`,
     permissions: [Permission.STORAGES],
-    component: props => <Storages {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        {
-            isRequired: false,
-            key: 'search',
-        },
-        {
-            isRequired: false,
-            key: 'type',
-        },
-        {
-            isRequired: false,
-            key: 'status',
-        },
-        {
-            isRequired: false,
-            key: 'reason',
-        },
-        ...paginationPathParams.map(p => ({
-            ...p,
-            isRequired: true,
-        })),
-    ],
+    element: <Storages />,
 };
 export const storageDetailPath = {
     baseUrl: baseUrls.storageDetail,
+    routerUrl: `${baseUrls.storageDetail}/*`,
     permissions: [Permission.STORAGES],
-    component: props => <StorageDetails {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        {
-            isRequired: true,
-            key: 'type',
-        },
-        {
-            isRequired: true,
-            key: 'storageId',
-        },
-        {
-            isRequired: false,
-            key: 'operationType',
-        },
-        {
-            isRequired: false,
-            key: 'performedAt',
-        },
-        ...paginationPathParams,
-    ],
+    element: <StorageDetails />,
 };
 export const workflowsPath = {
     baseUrl: baseUrls.workflows,
+    routerUrl: `${baseUrls.workflows}/*`,
     permissions: [Permission.WORKFLOWS],
-    component: props => <Workflows {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        {
-            isRequired: true,
-            key: 'entityTypeId',
-        },
-        {
-            isRequired: false,
-            key: 'search',
-        },
-        {
-            isRequired: false,
-            key: 'status',
-        },
-        ...paginationPathParams.map(p => ({
-            ...p,
-            isRequired: true,
-        })),
-    ],
+    element: <Workflows />,
 };
 export const workflowsDetailPath = {
     baseUrl: baseUrls.workflowDetail,
+    routerUrl: `${baseUrls.workflowDetail}/*`,
     permissions: [Permission.WORKFLOWS],
-    component: props => <WorkflowDetails {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        {
-            isRequired: true,
-            key: 'entityTypeId',
-        },
-        {
-            isRequired: true,
-            key: 'versionId',
-        },
-        // pagination to sort changes
-        ...paginationPathParams,
-    ],
+    element: <WorkflowDetails />,
 };
 export const potentialPaymentsPath = {
     baseUrl: baseUrls.potentialPayments,
+    routerUrl: `${baseUrls.potentialPayments}/*`,
     permissions: [Permission.PAYMENTS],
-    component: props => <PotentialPayments {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        ...paginationPathParams,
-        {
-            isRequired: false,
-            key: 'change_requests__created_at_after',
-        },
-        {
-            isRequired: false,
-            key: 'change_requests__created_at_before',
-        },
-        {
-            isRequired: false,
-            key: 'parent_id',
-        },
-        {
-            isRequired: false,
-            key: 'forms',
-        },
-        {
-            isRequired: false,
-            key: 'users',
-        },
-        {
-            isRequired: false,
-            key: 'user_roles',
-        },
-    ],
+    element: <PotentialPayments />,
 };
 export const lotsPaymentsPath = {
     baseUrl: baseUrls.lotsPayments,
+    routerUrl: `${baseUrls.lotsPayments}/*`,
     permissions: [Permission.PAYMENTS],
-    component: props => <LotsPayments {...props} />,
-    params: [
-        {
-            isRequired: false,
-            key: 'accountId',
-        },
-        ...paginationPathParams,
-        {
-            isRequired: false,
-            key: 'created_at_after',
-        },
-        {
-            isRequired: false,
-            key: 'created_at_before',
-        },
-        {
-            isRequired: false,
-            key: 'status',
-        },
-        {
-            isRequired: false,
-            key: 'users',
-        },
-        {
-            isRequired: false,
-            key: 'parent_id',
-        },
-    ],
+    element: <LotsPayments />,
 };
 
 export const page401 = {
     baseUrl: baseUrls.error401,
-    component: () => <PageError errorCode="401" />,
-    params: [],
+    routerUrl: baseUrls.error401,
+    element: () => <PageError errorCode="401" />,
 };
 
 export const page403 = {
     baseUrl: baseUrls.error403,
-    component: () => <PageError errorCode="403" />,
-    params: [],
+    routerUrl: baseUrls.error403,
+    element: () => <PageError errorCode="403" />,
 };
 
 export const page404 = {
     baseUrl: baseUrls.error404,
-    component: () => <PageError errorCode="404" />,
-    params: [],
+    routerUrl: baseUrls.error404,
+    element: () => <PageError errorCode="404" />,
 };
 
 export const page500 = {
     baseUrl: baseUrls.error500,
-    component: () => <PageError errorCode="500" />,
-    params: [],
+    routerUrl: baseUrls.error500,
+    element: () => <PageError errorCode="500" />,
 };
 
 export const routeConfigs = [

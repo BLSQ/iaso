@@ -11,10 +11,8 @@ import { Box, Grid, useTheme, Tabs, Tab, Paper } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import Color from 'color';
 
-import { Router } from 'react-router';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
-import { redirectTo } from '../../routing/actions';
 import { warningSnackBar } from '../../constants/snackBars';
 import {
     closeFixedSnackbar,
@@ -34,6 +32,8 @@ import { CsvButton } from '../../components/Buttons/CsvButton';
 import { CompletenessRouterParams } from './types';
 import { Map } from './components/Map';
 import { useGetFormsOptions } from './hooks/api/useGetFormsOptions';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { useRedirectTo } from '../../routing/routing';
 
 const baseUrl = baseUrls.completenessStats;
 const useStyles = makeStyles(theme => ({
@@ -51,30 +51,22 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-type Props = {
-    params: CompletenessRouterParams;
-    router: Router;
-};
-
 const snackbarKey = 'completenessMapWarning';
-export const CompletenessStats: FunctionComponent<Props> = ({
-    params,
-    router,
-}) => {
+export const CompletenessStats: FunctionComponent = () => {
     const classes: Record<string, string> = useStyles();
+    const params = useParamsObject(
+        baseUrls.completenessStats,
+    ) as CompletenessRouterParams;
 
     const [tab, setTab] = useState<'list' | 'map'>(params.tab ?? 'list');
     const dispatch = useDispatch();
+    const redirectTo = useRedirectTo();
     const { formatMessage } = useSafeIntl();
     const { data: completenessStats, isFetching } =
         useGetCompletenessStats(params);
     const { data: completenessMapStats, isFetching: isFetchingMapStats } =
         useGetCompletnessMapStats(params, tab === 'map');
-    const columns = useCompletenessStatsColumns(
-        router,
-        params,
-        completenessStats,
-    );
+    const columns = useCompletenessStatsColumns(params, completenessStats);
     const { data: forms, isFetching: fetchingForms } = useGetFormsOptions([
         'period_type',
         'legend_threshold',
@@ -90,9 +82,11 @@ export const CompletenessStats: FunctionComponent<Props> = ({
     useEffect(() => {
         if (displayWarning) {
             dispatch(enqueueSnackbar(warningSnackBar(snackbarKey)));
-        } else {
-            dispatch(closeFixedSnackbar(snackbarKey));
         }
+        // TODO restore this feature. Commented code causes an infinite loop
+        // else {
+        //     dispatch(closeFixedSnackbar(snackbarKey));
+        // }
         return () => {
             if (displayWarning) {
                 dispatch(closeFixedSnackbar(snackbarKey));
@@ -121,9 +115,9 @@ export const CompletenessStats: FunctionComponent<Props> = ({
                 ...params,
                 tab: newTab,
             };
-            dispatch(redirectTo(baseUrl, newParams));
+            redirectTo(baseUrl, newParams);
         },
-        [dispatch, params],
+        [params, redirectTo],
     );
     const getRowStyles = useCallback(
         ({ original }) => {
@@ -209,7 +203,6 @@ export const CompletenessStats: FunctionComponent<Props> = ({
                             isLoading={isFetchingMapStats}
                             params={params}
                             selectedFormId={selectedFormsId}
-                            router={router}
                             threshold={selectedForm?.original.legend_threshold}
                         />
                     )}
@@ -228,9 +221,6 @@ export const CompletenessStats: FunctionComponent<Props> = ({
                             countOnTop={false}
                             params={params}
                             extraProps={{ loading: isFetching }}
-                            onTableParamsChange={p => {
-                                dispatch(redirectTo(baseUrl, p));
-                            }}
                             // @ts-ignore
                             rowProps={getRowStyles}
                         />

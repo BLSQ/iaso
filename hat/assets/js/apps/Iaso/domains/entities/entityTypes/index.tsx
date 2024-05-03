@@ -1,5 +1,4 @@
 import React, { FunctionComponent } from 'react';
-import { useDispatch } from 'react-redux';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
@@ -23,11 +22,13 @@ import {
 import { useColumns, baseUrl } from './config';
 import MESSAGES from './messages';
 
-import { redirectTo } from '../../../routing/actions';
 import { PaginationParams } from '../../../types/general';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { userHasPermission } from '../../users/utils';
 import * as Permission from '../../../utils/permissions';
+import { useParamsObject } from '../../../routing/hooks/useParamsObject';
+import { baseUrls } from '../../../constants/urls';
+import { useRedirectTo } from '../../../routing/routing';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -41,11 +42,12 @@ type Props = {
     params: Params;
 };
 
-export const EntityTypes: FunctionComponent<Props> = ({ params }) => {
+export const EntityTypes: FunctionComponent<Props> = () => {
+    const params = useParamsObject(baseUrls.entityTypes) as Params;
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
-    const dispatch = useDispatch();
+    const redirectTo = useRedirectTo();
 
     const { data, isFetching: fetchingEntities } = useGetTypesPaginated(params);
     const { mutate: deleteEntityType, isLoading: deleting } = useDelete();
@@ -93,7 +95,7 @@ export const EntityTypes: FunctionComponent<Props> = ({ params }) => {
                     count={data?.count ?? 0}
                     baseUrl={baseUrl}
                     params={params}
-                    onTableParamsChange={p => dispatch(redirectTo(baseUrl, p))}
+                    onTableParamsChange={p => redirectTo(baseUrl, p)}
                 />
             </Box>
         </>

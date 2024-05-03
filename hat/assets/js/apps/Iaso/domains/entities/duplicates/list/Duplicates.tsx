@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
-import { useDispatch } from 'react-redux';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { PaginationParams } from '../../../../types/general';
@@ -11,7 +10,6 @@ import {
     useGetDuplicates,
 } from '../hooks/api/useGetDuplicates';
 import { TableWithDeepLink } from '../../../../components/tables/TableWithDeepLink';
-import { redirectTo } from '../../../../routing/actions';
 import { baseUrls } from '../../../../constants/urls';
 import { DuplicatesFilters } from './DuplicatesFilters';
 import { starsStyleForTable } from '../../../../components/stars/StarsComponent';
@@ -19,6 +17,7 @@ import { useDuplicationTableColumns } from './useDuplicationTableColumns';
 import { DuplicatesList } from '../types';
 import { AnalyseAction } from './AnalyseAction';
 import { useGetLatestAnalysis } from '../hooks/api/analyzes';
+import { useParamsObject } from '../../../../routing/hooks/useParamsObject';
 
 type Params = PaginationParams & DuplicatesGETParams;
 
@@ -36,7 +35,9 @@ const useStyles = makeStyles(theme => {
     };
 });
 
-export const Duplicates: FunctionComponent<Props> = ({ params }) => {
+export const Duplicates: FunctionComponent<Props> = () => {
+    const params = useParamsObject(baseUrl) as PaginationParams &
+        DuplicatesGETParams;
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const { data: latestAnalysis, isFetching: isFetchingLatestAnalysis } =
@@ -45,7 +46,6 @@ export const Duplicates: FunctionComponent<Props> = ({ params }) => {
         params,
         refresh: latestAnalysis?.finished_at,
     });
-    const dispatch = useDispatch();
     const columns = useDuplicationTableColumns();
     const { results, pages, count } = (data as DuplicatesList) ?? {
         results: [],
@@ -66,6 +66,7 @@ export const Duplicates: FunctionComponent<Props> = ({ params }) => {
                 />
                 <DuplicatesFilters params={params} />
                 <Box className={classes.table}>
+                    {/* @ts-ignore */}
                     <TableWithDeepLink
                         marginTop={false}
                         data={results}
@@ -78,9 +79,6 @@ export const Duplicates: FunctionComponent<Props> = ({ params }) => {
                         extraProps={{
                             loading: isFetching,
                         }}
-                        onTableParamsChange={p =>
-                            dispatch(redirectTo(baseUrl, p))
-                        }
                     />
                 </Box>
             </Box>

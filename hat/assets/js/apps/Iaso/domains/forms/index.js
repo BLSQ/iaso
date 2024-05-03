@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -8,33 +7,32 @@ import {
     commonStyles,
     AddButton as AddButtonComponent,
 } from 'bluesquare-components';
-import { redirectTo } from '../../routing/actions.ts';
-
-import formsTableColumns from './config';
-
+import { useFormsTableColumns } from './config';
 import { Filters } from './components/Filters.tsx';
 import TopBar from '../../components/nav/TopBarComponent';
 import SingleTable, {
     useSingleTableParams,
 } from '../../components/tables/SingleTable';
 import { deleteForm, restoreForm, fetchForms } from '../../utils/requests';
-
 import MESSAGES from './messages';
-
 import { baseUrls } from '../../constants/urls';
 import { userHasPermission } from '../users/utils';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
 import * as Permission from '../../utils/permissions.ts';
+import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
+import { useRedirectTo } from '../../routing/routing.ts';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-const Forms = ({ params }) => {
+const Forms = () => {
     const baseUrl = baseUrls.forms;
+    const params = useParamsObject(baseUrl);
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
+    const redirectTo = useRedirectTo();
     const currentUser = useCurrentUser();
     const userHasFormsPermission = userHasPermission(
         Permission.FORMS,
@@ -43,6 +41,7 @@ const Forms = ({ params }) => {
     const [forceRefresh, setForceRefresh] = useState(false);
     const [textSearchError, setTextSearchError] = useState(false);
     const [showDeleted, setShowDeleted] = useState(params.showDeleted);
+
     const handleDeleteForm = formId =>
         deleteForm(dispatch, formId).then(() => {
             setForceRefresh(true);
@@ -51,6 +50,11 @@ const Forms = ({ params }) => {
         restoreForm(dispatch, formId).then(() => {
             setForceRefresh(true);
         });
+    const columns = useFormsTableColumns({
+        deleteForm: handleDeleteForm,
+        restoreForm: handleRestoreForm,
+        showDeleted,
+    });
     useEffect(() => {
         // This fix a bug in redux cache when we passed from "archived" to "non-archived" form page and vice versa
         setForceRefresh(true);
@@ -87,14 +91,7 @@ const Forms = ({ params }) => {
                         })
                     }
                     defaultSorted={[{ id: 'instance_updated_at', desc: false }]}
-                    columns={formsTableColumns({
-                        formatMessage,
-                        user: currentUser,
-                        deleteForm: handleDeleteForm,
-                        restoreForm: handleRestoreForm,
-                        showDeleted,
-                        dispatch,
-                    })}
+                    columns={columns}
                     hideGpkg
                     defaultPageSize={50}
                     forceRefresh={forceRefresh}
@@ -107,11 +104,9 @@ const Forms = ({ params }) => {
                             <AddButtonComponent
                                 dataTestId="add-form-button"
                                 onClick={() => {
-                                    dispatch(
-                                        redirectTo(baseUrls.formDetail, {
-                                            formId: '0',
-                                        }),
-                                    );
+                                    redirectTo(baseUrls.formDetail, {
+                                        formId: '0',
+                                    });
                                 }}
                             />
                         )
@@ -120,10 +115,6 @@ const Forms = ({ params }) => {
             </Box>
         </>
     );
-};
-
-Forms.propTypes = {
-    params: PropTypes.object.isRequired,
 };
 
 export default Forms;

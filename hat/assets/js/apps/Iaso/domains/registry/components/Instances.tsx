@@ -5,7 +5,6 @@ import React, {
     useCallback,
 } from 'react';
 import { Box, Tabs, Tab, Grid } from '@mui/material';
-import { useDispatch } from 'react-redux';
 
 import { Column } from 'bluesquare-components';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
@@ -14,8 +13,6 @@ import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink'
 import { ColumnSelect } from '../../instances/components/ColumnSelect';
 import { ActionCell } from './ActionCell';
 import { MissingInstanceDialog } from './MissingInstanceDialog';
-
-import { redirectToReplace } from '../../../routing/actions';
 
 import { OrgunitType } from '../../orgUnits/types/orgunitTypes';
 import { OrgunitTypeRegistry } from '../types/orgunitTypes';
@@ -32,6 +29,7 @@ import { userHasPermission } from '../../users/utils';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { useGetEmptyInstanceOrgUnits } from '../hooks/useGetEmptyInstanceOrgUnits';
 import * as Permission from '../../../utils/permissions';
+import { useRedirectToReplace } from '../../../routing/routing';
 
 type Props = {
     isLoading: boolean;
@@ -45,7 +43,7 @@ export const Instances: FunctionComponent<Props> = ({
     params,
 }) => {
     const currentUser = useCurrentUser();
-    const dispatch = useDispatch();
+    const redirectToReplace = useRedirectToReplace();
     const [tableColumns, setTableColumns] = useState<Column[]>([]);
     const { formIds, tab } = params;
     const currentType: OrgunitTypeRegistry | undefined = useMemo(() => {
@@ -75,26 +73,22 @@ export const Instances: FunctionComponent<Props> = ({
 
     const handleFilterChange = useCallback(
         (key: string, value: number | string) => {
-            dispatch(
-                redirectToReplace(baseUrls.registryDetail, {
-                    ...params,
-                    [key]: value,
-                }),
-            );
+            redirectToReplace(baseUrls.registryDetail, {
+                ...params,
+                [key]: value,
+            });
         },
-        [dispatch, params],
+        [params, redirectToReplace],
     );
 
     const handleChangeTab = useCallback(
         (newType: OrgunitType) => {
-            dispatch(
-                redirectToReplace(baseUrls.registryDetail, {
-                    ...params,
-                    tab: newType.id,
-                }),
-            );
+            redirectToReplace(baseUrls.registryDetail, {
+                ...params,
+                tab: `${newType.id}`,
+            });
         },
-        [dispatch, params],
+        [params, redirectToReplace],
     );
 
     const currentForm: Form | undefined = useMemo(() => {
@@ -218,14 +212,6 @@ export const Instances: FunctionComponent<Props> = ({
                             columns={tableColumns}
                             count={data?.count ?? 0}
                             params={params}
-                            onTableParamsChange={p =>
-                                dispatch(
-                                    redirectToReplace(
-                                        baseUrls.registryDetail,
-                                        p,
-                                    ),
-                                )
-                            }
                             extraProps={{ loading: isFetchingList }}
                         />
                     </Box>

@@ -25,7 +25,7 @@ import uniqWith from 'lodash/uniqWith';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 
-import { useGoBack } from '../../routing/useGoBack';
+import { useGoBack } from '../../routing/hooks/useGoBack';
 import { redirectToReplace } from '../../routing/actions';
 import { baseUrls } from '../../constants/urls';
 
@@ -56,14 +56,7 @@ import { useGetChangesColumns } from './config/changes';
 import { useGetFollowUpsColumns, iasoFields } from './config/followUps';
 import { useGetPossibleFieldsByFormVersion } from '../forms/hooks/useGetPossibleFields';
 import { PossibleField } from '../forms/types/forms';
-
-type Router = {
-    goBack: () => void;
-    params: WorkflowParams;
-};
-type Props = {
-    router: Router;
-};
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -82,8 +75,8 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-export const Details: FunctionComponent<Props> = ({ router }) => {
-    const { params } = router;
+export const Details: FunctionComponent = () => {
+    const params = useParamsObject(baseUrls.workflowDetail) as WorkflowParams;
     const classes: Record<string, string> = useStyles();
     const [followUps, setFollowUps] = useState<FollowUps[]>([]);
 
@@ -94,7 +87,9 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         useState<boolean>(false);
     const { entityTypeId, versionId } = params;
     const { formatMessage } = useSafeIntl();
-    const goBack = useGoBack(router, baseUrls.workflows, { entityTypeId });
+    const goBack = useGoBack(
+        `${baseUrls.workflows}/entityTypeId/${entityTypeId}`,
+    );
 
     const dispatch = useDispatch();
 
@@ -301,6 +296,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                             {`${formatThousand(changes?.length ?? 0)} `}
                             {formatMessage(MESSAGES.results)}
                         </Box>
+                        {/* @ts-ignore */}
                         <TableWithDeepLink
                             marginTop={false}
                             countOnTop={false}

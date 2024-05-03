@@ -5,7 +5,6 @@ import React, {
     useMemo,
     useEffect,
 } from 'react';
-import { useDispatch } from 'react-redux';
 
 import { Grid, Button, Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -23,7 +22,6 @@ import DatesRange from 'Iaso/components/filters/DatesRange';
 import InputComponent from '../../../components/forms/InputComponent';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 
-import { redirectTo } from '../../../routing/actions';
 import MESSAGES from '../messages';
 
 import { baseUrl } from '../config';
@@ -44,6 +42,7 @@ import {
     SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,
     hasFeatureFlag,
 } from '../../../utils/featureFlags';
+import { useRedirectTo } from '../../../routing/routing';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -59,7 +58,7 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
     const currentUser = useCurrentUser();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
+    const redirectTo = useRedirectTo();
     const [filters, setFilters] = useState<FilterType>({
         search: params.search,
         location: params.location,
@@ -102,9 +101,9 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
         if (filtersUpdated) {
             setFiltersUpdated(false);
             const tempParams: Params = getParams(params, filters);
-            dispatch(redirectTo(baseUrl, tempParams));
+            redirectTo(baseUrl, tempParams);
         }
-    }, [filtersUpdated, getParams, params, filters, dispatch]);
+    }, [filtersUpdated, getParams, params, filters]);
 
     const handleChange = useCallback(
         (key, value) => {

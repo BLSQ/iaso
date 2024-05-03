@@ -11,7 +11,7 @@ import './libs/polyfills';
 import { GlobalStyles } from '@mui/material';
 import { SnackbarProvider } from 'notistack';
 import App from './domains/app/index';
-import { store, history } from './redux/store.js';
+import { store } from './redux/store.js';
 import { getPlugins, PluginsContext } from './utils';
 import { getOverriddenTheme, getGlobalOverrides } from './styles';
 import {
@@ -68,7 +68,7 @@ const iasoApp = (element, enabledPluginsName, themeConfig, userHomePage) => {
                                     }}
                                 >
                                     <App
-                                        history={history}
+                                        // history={history}
                                         userHomePage={
                                             pluginHomePage || userHomePage
                                         }

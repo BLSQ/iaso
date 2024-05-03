@@ -3,7 +3,7 @@ import React, { useState, FunctionComponent, useEffect } from 'react';
 import { Box, Grid, Typography, Theme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 
 import { History, FormatListBulleted } from '@mui/icons-material';
 import { baseUrls } from '../../../constants/urls';

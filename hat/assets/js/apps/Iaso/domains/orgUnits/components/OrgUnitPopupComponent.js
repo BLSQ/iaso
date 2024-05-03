@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 
 import PropTypes from 'prop-types';
 import { Popup } from 'react-leaflet';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 import { FormattedMessage } from 'react-intl';
 import classNames from 'classnames';
 

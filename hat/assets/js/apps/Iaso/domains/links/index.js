@@ -1,11 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { withRouter } from 'react-router';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-
-import PropTypes from 'prop-types';
-
 import { useSafeIntl } from 'bluesquare-components';
 import { saveLink, fetchLinks } from '../../utils/requests';
 
@@ -16,12 +12,10 @@ import LinksDetails from './components/LinksDetailsComponent';
 import SingleTable, {
     useSingleTableParams,
 } from '../../components/tables/SingleTable';
-
 import { baseUrls } from '../../constants/urls';
 import { linksFilters } from '../../constants/filters';
-
 import { useLinksFiltersData } from './hooks';
-
+import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
 import MESSAGES from './messages';
 
 const baseUrl = baseUrls.links;
@@ -33,11 +27,12 @@ const useStyles = makeStyles(() => ({
         },
     },
 }));
-export const Links = ({ params, router }) => {
+export const Links = () => {
+    const params = useParamsObject(baseUrl);
+    // const goBack = useGoBack();
     const intl = useSafeIntl();
     const classes = useStyles();
     const dispatch = useDispatch();
-    const prevPathname = useSelector(state => state.routerCustom.prevPathname);
     const orgUnitTypes = useSelector(state => state.orgUnits.orgUnitTypes);
     const sources = useSelector(state => state.orgUnits.sources);
     const profiles = useSelector(state => state.users.list);
@@ -78,8 +73,8 @@ export const Links = ({ params, router }) => {
         setExpanded({});
     };
 
-    const displayBackButton =
-        prevPathname && prevPathname.includes('/links/runs/');
+    // const displayBackButton =
+    //     prevPathname && prevPathname.includes('/links/runs/');
     let currentOrigin;
     if (params.origin && sources) {
         currentOrigin = sources.find(s => s.id === parseInt(params.origin, 10));
@@ -96,8 +91,8 @@ export const Links = ({ params, router }) => {
         <>
             <TopBar
                 title={intl.formatMessage(MESSAGES.title)}
-                displayBackButton={displayBackButton}
-                goBack={() => router.goBack()}
+                // displayBackButton={displayBackButton}
+                // goBack={() => goBack()}
             />
             <Box className={classes.table}>
                 <SingleTable
@@ -154,9 +149,4 @@ export const Links = ({ params, router }) => {
     );
 };
 
-Links.propTypes = {
-    router: PropTypes.object.isRequired,
-    params: PropTypes.object.isRequired,
-};
-
-export default withRouter(Links);
+export default Links;

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { withRouter } from 'react-router';
 import { makeStyles } from '@mui/styles';
 import { Box } from '@mui/material';
 import { useDispatch } from 'react-redux';
@@ -19,10 +18,11 @@ import {
 
 import Filters from './TableFilters';
 
-import DownloadButtonsComponent from '../DownloadButtonsComponent';
-import { redirectToReplace } from '../../routing/actions';
+import DownloadButtonsComponent from '../DownloadButtonsComponent.tsx';
 import { convertObjectToString } from '../../utils/dataManipulation.ts';
 import { useAbortController } from '../../libs/apiHooks.ts';
+import { useRedirectToReplace } from '../../routing/routing.ts';
+import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
 
 export const useSingleTableParams = params => {
     return useMemo(() => {
@@ -40,7 +40,7 @@ const SingleTable = ({
     filtersColumnsCount,
     columns,
     paramsPrefix,
-    params,
+    params: paramsProp,
     baseUrl,
     apiParams,
     endPointPath,
@@ -75,9 +75,12 @@ const SingleTable = ({
     const [resetPagination, setResetPagination] = useState(resetPageToOne);
     const { list, pages, count } = tableResults;
     const dispatch = useDispatch();
+    const redirectToReplace = useRedirectToReplace();
     const classes = useStyles();
     // Can't use pattern matching or the reference to the AbortController object will be lost and the abort() function will error
     const abortController = useAbortController();
+    const paramsObj = useParamsObject(baseUrl);
+    const params = paramsProp ?? paramsObj;
 
     const tableParams = getTableParams(
         params,
@@ -179,6 +182,9 @@ const SingleTable = ({
         orderParam,
         onlyDeletedParam,
         abortController.signal,
+        // firstLoad,
+        // searchActive,
+        // handleFetch,
     ]);
 
     const handleTableSelection = (
@@ -228,6 +234,7 @@ const SingleTable = ({
     const extraProps = {
         loading,
         defaultPageSize: defaultPageSize || limit,
+        tableParams,
     };
     if (subComponent && abortController.signal) {
         extraProps.SubComponent = original =>
@@ -251,7 +258,7 @@ const SingleTable = ({
                     extraComponent={searchExtraComponent}
                     redirectTo={(key, newParams) => {
                         setResetPagination(convertObjectToString(newParams));
-                        dispatch(redirectToReplace(key, newParams));
+                        redirectToReplace(key, newParams);
                     }}
                     filtersColumnsCount={filtersColumnsCount}
                 />
@@ -287,7 +294,7 @@ const SingleTable = ({
                     extraProps={extraProps}
                     baseUrl={baseUrl}
                     redirectTo={(key, newParams) =>
-                        dispatch(redirectToReplace(key, newParams))
+                        redirectToReplace(key, newParams)
                     }
                     marginTop={Boolean(
                         filters.length > 0 ||
@@ -315,11 +322,7 @@ SingleTable.defaultProps = {
     exportButtons: true,
     forceRefresh: false,
     onForceRefreshDone: () => null,
-    params: {
-        pageSize: 10,
-        page: 1,
-        order: '-created_at',
-    },
+    params: undefined,
     extraComponent: null,
     searchExtraComponent: <></>,
     hideGpkg: false,
@@ -370,4 +373,4 @@ SingleTable.propTypes = {
     filtersColumnsCount: PropTypes.number,
 };
 
-export default withRouter(SingleTable);
+export default SingleTable;

@@ -1,8 +1,5 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { useDispatch } from 'react-redux';
-import { Box, Grid } from '@mui/material';
-
+import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     LoadingSpinner,
@@ -15,19 +12,21 @@ import TopBar from '../../../components/nav/TopBarComponent';
 import Filters from './components/Filters';
 import GroupsDialog from './components/GroupsDialog';
 
-import tableColumns, { baseUrl } from './config';
+import tableColumns from './config';
 import MESSAGES from './messages';
 
-import { redirectTo } from '../../../routing/actions.ts';
-
 import { useGetGroups, useSaveGroups, useDeleteGroups } from './hooks/requests';
+import { baseUrls } from '../../../constants/urls';
+import { useParamsObject } from '../../../routing/hooks/useParamsObject.tsx';
+import { useRedirectTo } from '../../../routing/routing.ts';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
-
-const Groups = ({ params }) => {
-    const dispatch = useDispatch();
+const baseUrl = baseUrls.groups;
+const Groups = () => {
+    const params = useParamsObject(baseUrl);
+    const redirectTo = useRedirectTo();
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
 
@@ -79,17 +78,13 @@ const Groups = ({ params }) => {
                     baseUrl={baseUrl}
                     params={params}
                     redirectTo={(_, newParams) =>
-                        dispatch(redirectTo(baseUrl, newParams))
+                        redirectTo(baseUrl, newParams)
                     }
                     marginTop={false}
                 />
             </Box>
         </>
     );
-};
-
-Groups.propTypes = {
-    params: PropTypes.object.isRequired,
 };
 
 export default Groups;

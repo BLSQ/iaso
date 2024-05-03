@@ -4,7 +4,7 @@ import { makeStyles } from '@mui/styles';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 
-import { useGoBack } from '../../routing/useGoBack';
+import { useGoBack } from '../../routing/hooks/useGoBack';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
@@ -21,22 +21,17 @@ import { baseUrls } from '../../constants/urls';
 
 import MESSAGES from './messages';
 import { useGetColumns, defaultSorted, baseUrl } from './config';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-type Router = {
-    goBack: () => void;
-};
-type Props = {
-    params: WorkflowsParams;
-    router: Router;
-};
-
-export const Workflows: FunctionComponent<Props> = ({ params, router }) => {
+export const Workflows: FunctionComponent = () => {
     const dispatch = useDispatch();
-    const goBack = useGoBack(router, baseUrls.entityTypes);
+    const params = useParamsObject(baseUrls.workflows) as WorkflowsParams;
+    const goBack = useGoBack(baseUrls.entityTypes);
+    // const goBack = useGoBack(router, baseUrls.entityTypes);
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetWorkflowVersions(params);
@@ -60,6 +55,7 @@ export const Workflows: FunctionComponent<Props> = ({ params, router }) => {
                         }}
                     />
                 </Box>
+                {/* @ts-ignore */}
                 <TableWithDeepLink
                     baseUrl={baseUrl}
                     data={data?.workflow_versions ?? []}

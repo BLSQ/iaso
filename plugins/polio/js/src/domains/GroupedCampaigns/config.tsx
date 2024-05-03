@@ -1,5 +1,5 @@
 import React, { ReactElement, ReactNode } from 'react';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 import {
     IconButton as IconButtonComponent,
     Column,

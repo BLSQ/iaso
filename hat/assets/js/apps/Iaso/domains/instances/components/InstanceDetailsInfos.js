@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import get from 'lodash/get';
 
-import { injectIntl, useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import InstanceDetailsField from './InstanceDetailsField';
 import { INSTANCE_METAS_FIELDS } from '../constants';
 import MESSAGES from '../messages';
@@ -53,4 +53,4 @@ InstanceDetailsInfos.propTypes = {
     currentInstance: PropTypes.object.isRequired,
     fieldsToHide: PropTypes.array,
 };
-export default injectIntl(InstanceDetailsInfos);
+export default InstanceDetailsInfos;

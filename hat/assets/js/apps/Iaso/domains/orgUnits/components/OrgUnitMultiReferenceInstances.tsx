@@ -8,7 +8,7 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 import { baseUrls } from '../../../constants/urls';
 import InputComponent from '../../../components/forms/InputComponent';
 import InstanceFileContent from '../../instances/components/InstanceFileContent';

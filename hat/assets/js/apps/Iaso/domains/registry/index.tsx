@@ -25,6 +25,8 @@ import {
 import { OrgUnit } from '../orgUnits/types/orgUnit';
 
 import MESSAGES from './messages';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { baseUrls } from '../../constants/urls';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -42,12 +44,9 @@ type Params = {
     accountId: 'string';
 };
 
-type Props = {
-    params: Params;
-};
-
-export const Registry: FunctionComponent<Props> = ({ params }) => {
+export const Registry: FunctionComponent = () => {
     const classes: Record<string, string> = useStyles();
+    const params = useParamsObject(baseUrls.registry) as Params;
     const { formatMessage } = useSafeIntl();
 
     const [selectedOrgUnits, setSelectedOrgUnits] = useState<OrgUnit[]>([]);

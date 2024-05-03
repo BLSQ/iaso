@@ -6,7 +6,6 @@ import React, {
 } from 'react';
 import { Box, Tabs, Tab, Grid, Paper } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useDispatch } from 'react-redux';
 
 import {
     commonStyles,
@@ -15,7 +14,6 @@ import {
     useSkipEffectOnMount,
 } from 'bluesquare-components';
 
-import { redirectTo, redirectToReplace } from '../../routing/actions';
 import { baseUrls } from '../../constants/urls';
 
 import TopBar from '../../components/nav/TopBarComponent';
@@ -35,10 +33,8 @@ import { useGetAssignmentData } from './hooks/useGetAssignmentData';
 import { getSaveParams } from './utils';
 
 import MESSAGES from './messages';
-
-type Props = {
-    params: AssignmentParams;
-};
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { useRedirectTo, useRedirectToReplace } from '../../routing/routing';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -53,9 +49,13 @@ const useStyles = makeStyles(theme => ({
 
 const baseUrl = baseUrls.assignments;
 
-export const Assignments: FunctionComponent<Props> = ({ params }) => {
+export const Assignments: FunctionComponent = () => {
+    const params: AssignmentParams = useParamsObject(
+        baseUrls.assignments,
+    ) as AssignmentParams;
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
+    const redirectTo = useRedirectTo();
+    const redirectToReplace = useRedirectToReplace();
     const classes: Record<string, string> = useStyles();
     const [tab, setTab] = useState(params.tab ?? 'map');
     const [currentTeam, setCurrentTeam] = useState<Team>();
@@ -72,7 +72,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
             ...params,
             tab: newTab,
         };
-        dispatch(redirectTo(baseUrl, newParams));
+        redirectTo(baseUrl, newParams);
     };
 
     const { planningId, team: currentTeamId, baseOrgunitType } = params;
@@ -144,10 +144,10 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                 ...params,
                 baseOrgunitType: newBaseOrgUnitType,
             };
-            dispatch(redirectTo(baseUrl, newParams as Record<string, any>));
+            redirectTo(baseUrl, newParams as Record<string, any>);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [assignments]);
+    }, [assignments, redirectTo]);
 
     useEffect(() => {
         let newCurrentTeam;
@@ -180,18 +180,14 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                             ...params,
                             baseOrgunitType: newBaseOrgUnitType,
                         };
-                        dispatch(
-                            redirectTo(
-                                baseUrl,
-                                newParams as Record<string, any>,
-                            ),
-                        );
+
+                        redirectTo(baseUrl, newParams as Record<string, any>);
                     }
                 }
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentTeamId, teams]);
+    }, [currentTeamId, teams, redirectTo]);
 
     useEffect(() => {
         if (params.order) {
@@ -200,7 +196,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                     ...params,
                     order: `${params.order?.startsWith('-') ? '-' : ''}${to}`,
                 };
-                dispatch(redirectToReplace(baseUrl, tempParams));
+                redirectToReplace(baseUrl, tempParams);
             };
             if (
                 params.order?.includes('assignment__team__name') &&
@@ -215,19 +211,17 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                 redirect('assignment__team__name');
             }
         }
-    }, [params, currentTeam?.type, dispatch]);
+    }, [params, currentTeam?.type, redirectToReplace]);
 
     useSkipEffectOnMount(() => {
         // Change order if baseOrgunitType or team changed and current order is on a parent column that will probably disappear
         if (params.order?.includes('parent__name')) {
-            dispatch(
-                redirectToReplace(baseUrl, {
-                    ...params,
-                    order: 'name',
-                }),
-            );
+            redirectToReplace(baseUrl, {
+                ...params,
+                order: 'name',
+            });
         }
-    }, [params.baseOrgunitType, params.team]);
+    }, [params.baseOrgunitType, params.team, redirectToReplace]);
 
     useEffect(() => {
         if (planning && currentTeam) {

@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 
-import { Link } from 'react-router';
+import { Link, useLocation } from 'react-router-dom';
 import { userHasPermission } from '../../users/utils';
 import { baseUrls } from '../../../constants/urls';
 import { useCurrentUser } from '../../../utils/usersUtils';
@@ -13,9 +13,14 @@ type Props = {
 
 export const LinkToForm: FunctionComponent<Props> = ({ formId, formName }) => {
     const user = useCurrentUser();
+    const { pathname } = useLocation();
     if (userHasPermission(Permission.FORMS, user)) {
         const formUrl = `/${baseUrls.formDetail}/formId/${formId}`;
-        return <Link to={formUrl}>{formName}</Link>;
+        return (
+            <Link to={formUrl} state={{ location: pathname }}>
+                {formName}
+            </Link>
+        );
     }
     return <>{formName}</>;
 };

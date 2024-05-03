@@ -1,30 +1,31 @@
 /* eslint-disable camelcase */
-import { Box, Theme, Tooltip, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import {
-    Column,
-    IconButton as IconButtonComponent,
-    Paginated,
-    useSafeIntl,
-    useSkipEffectOnMount,
-} from 'bluesquare-components';
 import React, { useMemo, useState } from 'react';
+import {
+    useSafeIntl,
+    IconButton as IconButtonComponent,
+    useSkipEffectOnMount,
+    Column,
+    Paginated,
+    formatThousand,
+} from 'bluesquare-components';
+import { Box, Tooltip, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import { Theme } from '@mui/material/styles';
 
 import {
     DateCell,
     DateTimeCellRfc,
 } from '../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import { Optional } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { formatThousand } from '../../../../../../../hat/assets/js/apps/Iaso/utils';
+import { convertObjectToString } from '../../../utils';
+import { BudgetStep, Transition, Params } from '../types';
 import getDisplayName from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import MESSAGES from '../../../constants/messages';
 import { BUDGET_DETAILS } from '../../../constants/routes';
-import { convertObjectToString } from '../../../utils';
 import { StepActionCell } from '../BudgetDetails/StepActionCell';
 import { DeleteBudgetProcessModal } from '../BudgetProcess/DeleteBudgetProcessModal';
 import { EditBudgetProcessModal } from '../BudgetProcess/EditBudgetProcessModal';
 import { formatComment } from '../cards/utils';
-import { BudgetStep, Params, Transition } from '../types';
 import { formatRoundNumbers, makeFileLinks, makeLinks } from '../utils';
 
 const baseUrl = BUDGET_DETAILS;
@@ -96,6 +97,7 @@ export const useBudgetColumns = (isUserPolioBudgetAdmin: boolean): Column[] => {
                             {isUserPolioBudgetAdmin && (
                                 <EditBudgetProcessModal
                                     budgetProcess={settings.row.original}
+                                    iconProps={{}}
                                 />
                             )}
                             {isUserPolioBudgetAdmin && (

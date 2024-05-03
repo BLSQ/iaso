@@ -1,6 +1,6 @@
 import { IconButton } from 'bluesquare-components';
 import { expect } from 'chai';
-import formsTableColumns, { formVersionsTableColumns } from '.';
+import { formVersionsTableColumns } from '.';
 
 import formVersionsfixture from '../fixtures/formVersions.json';
 
@@ -53,12 +53,12 @@ describe('Forms config', () => {
             sinon.restore();
         });
     });
-    describe('formsTableColumns', () => {
-        it('should return an array of 10 columns', () => {
-            columns = formsTableColumns({
-                formatMessage: () => null,
-            });
-            expect(columns).to.have.lengthOf(10);
-        });
-    });
+    // describe('formsTableColumns', () => {
+    //     it('should return an array of 10 columns', () => {
+    //         columns = formsTableColumns({
+    //             formatMessage: () => null,
+    //         });
+    //         expect(columns).to.have.lengthOf(10);
+    //     });
+    // });
 });

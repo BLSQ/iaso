@@ -1,7 +1,6 @@
 import uuid
 from datetime import datetime, timedelta
 from submissions import submission2xml
-from fake import fake_person
 import random
 
 
@@ -82,9 +81,6 @@ def setup_instances(account_name, iaso_client):
             estimated_pop_village = int(random.randint(50, 100))
 
             instance_json = {
-                # "title": None,
-                # "name": person["lastname"] + " " + person["firstname"],
-                # "test_submission": "yes",
                 "note_intro": {
                     "presence_cdf": bool_choice,
                     "type_equipement": (

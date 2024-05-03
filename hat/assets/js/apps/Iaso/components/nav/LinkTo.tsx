@@ -8,8 +8,9 @@ import {
     useKeyPressListener,
 } from 'bluesquare-components';
 
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import MESSAGES from './messages';
+import { LinkWithLocation } from './LinkWithLocation';
 
 type Props = {
     condition: boolean;
@@ -66,16 +67,15 @@ export const LinkTo: FunctionComponent<Props> = ({
             );
         }
         return (
-            <Link
+            <LinkWithLocation
                 className={classNames(className, classes.link)}
                 reloadDocument={targetBlankEnabled}
                 to={url}
-                state={{ location }}
                 replace={replace}
                 target={actualTarget}
             >
                 {text || textPlaceholder}
-            </Link>
+            </LinkWithLocation>
         );
     }
     if (useIcon) return null;

@@ -2,7 +2,6 @@ import React from 'react';
 import HourglassEmpty from '@mui/icons-material/HourglassEmpty';
 import ErrorOutline from '@mui/icons-material/ErrorOutline';
 import CheckCircleOutline from '@mui/icons-material/CheckCircleOutline';
-import { Link } from 'react-router-dom';
 
 import {
     IconButton as IconButtonComponent,
@@ -22,6 +21,7 @@ import {
 import { INSTANCE_STATUSES } from '../instances/constants';
 
 import MESSAGES from './messages';
+import { LinkWithLocation } from '../../components/nav/LinkWithLocation.tsx';
 
 const STATUS_COLUMN_SIZES = {
     [PERIOD_TYPE_MONTH]: undefined,
@@ -111,7 +111,7 @@ export const getColumns = (
                             settings.row.original.months[month][status];
                         if (!value) return textPlaceholder;
                         return (
-                            <Link
+                            <LinkWithLocation
                                 className={`${classes.linkButton}
                                 ${value ? classes[status] : ''}`}
                                 to={getFormUrl(
@@ -121,7 +121,7 @@ export const getColumns = (
                                 )}
                             >
                                 {value || '-'}
-                            </Link>
+                            </LinkWithLocation>
                         );
                     },
                     Footer: info => {

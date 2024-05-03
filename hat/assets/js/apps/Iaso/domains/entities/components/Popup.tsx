@@ -1,7 +1,6 @@
 import React, { createRef, FunctionComponent } from 'react';
 
 import { Popup } from 'react-leaflet';
-import { Link } from 'react-router-dom';
 import classNames from 'classnames';
 
 import {
@@ -26,6 +25,7 @@ import { useGetFieldValue } from '../hooks/useGetFieldValue';
 import { formatLabel } from '../../instances/utils';
 
 import MESSAGES from '../messages';
+import { LinkWithLocation } from '../../../components/nav/LinkWithLocation';
 
 const useStyles = makeStyles(theme => ({
     ...mapPopupStyles(theme),
@@ -120,13 +120,13 @@ export const PopupComponent: FunctionComponent<Props> = ({
                                         color="primary"
                                         size="small"
                                     >
-                                        <Link
+                                        <LinkWithLocation
                                             target="_blank"
                                             to={`/${baseUrls.entityDetails}/entityId/${location.id}`}
                                             className={classes.linkButton}
                                         >
                                             {formatMessage(MESSAGES.see)}
-                                        </Link>
+                                        </LinkWithLocation>
                                     </Button>
                                 </Grid>
                             </Box>

@@ -5,7 +5,6 @@ import {
     Column,
     useSafeIntl,
 } from 'bluesquare-components';
-import { useLocation } from 'react-router-dom';
 import { EntityTypesDialog } from './components/EntityTypesDialog';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
@@ -36,7 +35,6 @@ export const useColumns = ({
 }: Props): Array<Column> => {
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
-    const location = useLocation();
 
     return useMemo(
         () => [
@@ -94,7 +92,6 @@ export const useColumns = ({
                                 icon="remove-red-eye"
                                 tooltipMessage={MESSAGES.beneficiaries}
                                 disabled={type.entities_count === 0}
-                                location={location.pathname}
                             />
                             {settings.row.original?.reference_form && (
                                 <IconButtonComponent
@@ -102,7 +99,6 @@ export const useColumns = ({
                                     url={`/${baseUrls.formDetail}/formId/${settings.row.original.reference_form}`}
                                     overrideIcon={DataSourceIcon}
                                     tooltipMessage={MESSAGES.viewForm}
-                                    location={location.pathname}
                                 />
                             )}
                             {userHasPermission(
@@ -123,13 +119,12 @@ export const useColumns = ({
                                 url={`/${baseUrls.workflows}/entityTypeId/${type.id}`}
                                 tooltipMessage={MESSAGES.workflow}
                                 overrideIcon={Workflow}
-                                location={location.pathname}
                             />
                         </section>
                     );
                 },
             },
         ],
-        [],
+        [currentUser, deleteEntityType, formatMessage, saveEntityType],
     );
 };

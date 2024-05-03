@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { Grid } from '@mui/material';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 import {
     IconButton as IconButtonComponent,
@@ -49,12 +49,8 @@ export const formVersionsTableColumns = (
             <section>
                 {settings.row.original.xls_file && (
                     <IconButtonComponent
-                        onClick={() =>
-                            window.open(
-                                settings.row.original.xls_file,
-                                '_blank',
-                            )
-                        }
+                        url={settings.row.original.xls_file}
+                        download
                         icon="xls"
                         tooltipMessage={MESSAGES.xls_form_file}
                     />
@@ -110,7 +106,6 @@ export const useFormsTableColumns = ({
     const user = useCurrentUser();
     const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
-    const { pathname: location } = useLocation();
     return useMemo(() => {
         const cols = [
             {
@@ -236,7 +231,6 @@ export const useFormsTableColumns = ({
                                                 MESSAGES.viewInstances
                                             }
                                             overrideIcon={FormatListBulleted}
-                                            location={location}
                                         />
                                     )}
                                     {userHasPermission(
@@ -280,7 +274,6 @@ export const useFormsTableColumns = ({
                                             url={`/${baseUrls.formDetail}/formId/${settings.row.original.id}`}
                                             icon="edit"
                                             tooltipMessage={MESSAGES.edit}
-                                            location={location}
                                         />
                                     )}
                                     {userHasPermission(
@@ -288,12 +281,12 @@ export const useFormsTableColumns = ({
                                         user,
                                     ) && (
                                         <IconButtonComponent
-                                            url={`/forms/mappings/formId/${settings.row.original.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}
+                                            // eslint-disable-next-line max-len
+                                            url={`/${baseUrls.mappings}/formId/${settings.row.original.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}
                                             icon="dhis"
                                             tooltipMessage={
                                                 MESSAGES.dhis2Mappings
                                             }
-                                            location={location}
                                         />
                                     )}
                                     {userHasPermission(
@@ -330,7 +323,6 @@ export const useFormsTableColumns = ({
         deleteForm,
         dispatch,
         formatMessage,
-        location,
         orgUnitId,
         restoreForm,
         showDeleted,

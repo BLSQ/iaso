@@ -13,7 +13,6 @@ import {
     LoadingSpinner,
     IconButton,
 } from 'bluesquare-components';
-import { useLocation } from 'react-router-dom';
 import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
 import { PopupComponent as Popup } from './Popup';
 
@@ -101,8 +100,6 @@ export const Map: FunctionComponent<Props> = ({
         () => locations && getOrgUnitsBounds(locations),
         [locations],
     );
-    const { pathname } = useLocation();
-
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
 
     const parentLocation = useMemo(() => {
@@ -209,7 +206,6 @@ export const Map: FunctionComponent<Props> = ({
                             tooltipMessage={MESSAGES.seeParent}
                             overrideIcon={ArrowUpwardOutlined}
                             color="primary"
-                            location={pathname}
                         />
                     </Box>
                 )}

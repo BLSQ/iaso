@@ -6,7 +6,6 @@ import {
 } from 'bluesquare-components';
 import { ArrowUpward, AccountTree } from '@mui/icons-material';
 
-import { useLocation } from 'react-router-dom';
 import MESSAGES from '../messages';
 import { userHasOneOfPermissions } from '../../users/utils';
 import { useCurrentUser } from '../../../utils/usersUtils';
@@ -32,7 +31,6 @@ export const useCompletenessStatsColumns = (
         [Permission.SUBMISSIONS, Permission.SUBMISSIONS_UPDATE],
         currentUser,
     );
-    const { pathname: location } = useLocation();
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
         let columns: Column[] = [
@@ -145,7 +143,6 @@ export const useCompletenessStatsColumns = (
                                     url={childrenPageUrl}
                                     tooltipMessage={MESSAGES.seeChildren}
                                     overrideIcon={AccountTree}
-                                    location={location}
                                 />
                             )}
                         {settings.row.original.is_root && (
@@ -153,7 +150,6 @@ export const useCompletenessStatsColumns = (
                                 url={parentPageUrl}
                                 tooltipMessage={MESSAGES.seeParent}
                                 overrideIcon={ArrowUpward}
-                                location={location}
                             />
                         )}
                         {hasSubmissionPermission && hasFormSubmissions && (
@@ -162,7 +158,6 @@ export const useCompletenessStatsColumns = (
                                 url={`/${baseUrls.instances}/accountId/${params.accountId}/page/1/levels/${orgunitId}`}
                                 icon="remove-red-eye"
                                 tooltipMessage={MESSAGES.viewInstances}
-                                location={location}
                             />
                         )}
                     </>

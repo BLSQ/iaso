@@ -6,7 +6,6 @@ import {
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
 
-import { useLocation } from 'react-router-dom';
 import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
 import MESSAGES from '../messages';
 import InstanceDetailsInfos from '../../components/InstanceDetailsInfos';
@@ -18,6 +17,7 @@ import { getInstancesFilesList } from '../../utils';
 import { Accordion } from '../../../../components/Accordion/Accordion';
 import { AccordionSummary } from '../../../../components/Accordion/AccordionSummary';
 import { AccordionDetails } from '../../../../components/Accordion/AccordionDetails';
+import { baseUrls } from '../../../../constants/urls';
 
 type Props = {
     data?: Instance;
@@ -48,7 +48,6 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
     height = '70vh',
 }) => {
     const { formatMessage } = useSafeIntl();
-    const { pathname: location } = useLocation();
 
     if (isLoading)
         return (
@@ -82,10 +81,9 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
                         <IconButtonComponent
                             size="small"
                             iconSize="small"
-                            url={`/forms/submission/instanceId/${data?.id}`}
+                            url={`/${baseUrls.instances}/instanceId/${data?.id}`}
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.viewSubmissionDetails}
-                            location={location}
                         />
                     </Box>
                 </Box>

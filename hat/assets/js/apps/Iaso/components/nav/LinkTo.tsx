@@ -45,7 +45,6 @@ export const LinkTo: FunctionComponent<Props> = ({
     color,
     tooltipMessage = MESSAGES.see,
 }) => {
-    const { pathname: location } = useLocation();
     const targetBlankEnabled = useKeyPressListener('Meta');
     const actualTarget = targetBlankEnabled ? '_blank' : target;
     const classes: Record<string, string> = useStyles();
@@ -57,7 +56,6 @@ export const LinkTo: FunctionComponent<Props> = ({
                     tooltipMessage={tooltipMessage}
                     iconSize={iconSize}
                     size={size}
-                    location={location}
                     reloadDocument={targetBlankEnabled}
                     url={url}
                     replace={replace}

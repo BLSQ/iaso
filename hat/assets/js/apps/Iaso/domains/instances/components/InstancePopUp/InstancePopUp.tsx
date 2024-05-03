@@ -144,20 +144,6 @@ export const InstancePopup: FunctionComponent<Props> = ({
                                 >
                                     {formatMessage(MESSAGES.see)}
                                 </LinkButton>
-                                {/* <Link
-                                    target="_blank"
-                                    to={`${baseUrls.instanceDetail}/instanceId/${currentInstance.id}`}
-                                    className={classes.linkButton}
-                                >
-                                    <Button
-                                        className={classes.marginLeft}
-                                        variant="outlined"
-                                        color="primary"
-                                        size="small"
-                                    >
-                                        {formatMessage(MESSAGES.see)}
-                                    </Button>
-                                </Link> */}
                             </Grid>
                         </Box>
                     </CardContent>

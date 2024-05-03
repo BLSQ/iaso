@@ -2,17 +2,11 @@ import React, { FunctionComponent, useState, MouseEvent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { Theme } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
-import {
-    Popper,
-    Box,
-    IconButton,
-    Paper,
-    Typography,
-    Link,
-} from '@mui/material';
+import { Popper, Box, IconButton, Paper, Typography } from '@mui/material';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 
+import { Link } from 'react-router-dom';
 import { iasoFields, xlsQuestionsTypesLink } from '../constants';
 import { MESSAGES } from '../messages';
 
@@ -81,7 +75,11 @@ export const InfoPopper: FunctionComponent = () => {
                         {formatMessage(MESSAGES.supportedTypeFields)}:
                     </Typography>
                     <Box mb={1}>{activFields}</Box>
-                    <Link target="_blank" href={xlsQuestionsTypesLink}>
+                    <Link
+                        target="_blank"
+                        to={xlsQuestionsTypesLink}
+                        reloadDocument
+                    >
                         {formatMessage(MESSAGES.xlsQuestionsTypesLink)}
                     </Link>
                 </Paper>

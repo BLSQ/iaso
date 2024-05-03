@@ -1,12 +1,11 @@
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import {
     useSafeIntl,
     commonStyles,
     LoadingSpinner,
 } from 'bluesquare-components';
-import { Box, Button, Divider, Grid } from '@mui/material';
+import { Box, Divider, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { Link } from 'react-router-dom';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { baseUrls } from '../../constants/urls';
@@ -22,7 +21,7 @@ import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { useGoBack } from '../../routing/hooks/useGoBack';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
-import { useRedirectTo } from '../../routing/routing';
+import { LinkButton } from '../../components/nav/LinkButton';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -38,7 +37,6 @@ export const Details: FunctionComponent = () => {
     const classes: Record<string, string> = useStyles();
     const { entityId } = params;
     const { formatMessage } = useSafeIntl();
-    const redirectTo = useRedirectTo();
 
     const {
         data: beneficiary,
@@ -58,13 +56,10 @@ export const Details: FunctionComponent = () => {
         return beneficiary?.duplicates ?? [];
     }, [beneficiary]);
 
-    const onClickDuplicateButton = useCallback(() => {
-        const duplicateUrl =
-            duplicates.length === 1
-                ? `${baseUrls.entityDuplicateDetails}/entities/${entityId},${duplicates[0]}/`
-                : `${baseUrls.entityDuplicates}/order/id/pageSize/50/page/1/entity_id/${entityId}/`;
-        redirectTo(duplicateUrl);
-    }, [duplicates, entityId, redirectTo]);
+    const duplicateUrl =
+        duplicates.length === 1
+            ? `${baseUrls.entityDuplicateDetails}/entities/${entityId},${duplicates[0]}/`
+            : `${baseUrls.entityDuplicates}/order/id/pageSize/50/page/1/entity_id/${entityId}/`;
 
     return (
         <>
@@ -91,15 +86,9 @@ export const Details: FunctionComponent = () => {
                     {duplicates.length > 0 && (
                         <Grid container item xs={8} justifyContent="flex-end">
                             <Box>
-                                <Link>
-                                    <Button
-                                        variant="contained"
-                                        color="primary"
-                                        onClick={onClickDuplicateButton}
-                                    >
-                                        {formatMessage(MESSAGES.seeDuplicates)}
-                                    </Button>
-                                </Link>
+                                <LinkButton to={duplicateUrl}>
+                                    {formatMessage(MESSAGES.seeDuplicates)}
+                                </LinkButton>
                             </Box>
                         </Grid>
                     )}

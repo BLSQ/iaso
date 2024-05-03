@@ -1,12 +1,5 @@
 /* eslint-disable react/require-default-props */
-import {
-    Table,
-    TableBody,
-    TableRow,
-    TableCell,
-    Box,
-    Button,
-} from '@mui/material';
+import { Table, TableBody, TableRow, TableCell, Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
@@ -18,6 +11,7 @@ import MESSAGES from '../messages';
 
 import { useGetOrgUnitType } from '../hooks/useGetOrgUnitType';
 import { baseUrls } from '../../../constants/urls';
+import { LinkButton } from '../../../components/nav/LinkButton';
 
 const useStyles = makeStyles(theme => ({
     leftCell: {
@@ -68,14 +62,12 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                 </TableBody>
             </Table>
             <Box p={2} display="flex" justifyContent="flex-end">
-                <Button
-                    data-test="csv-export-button"
-                    variant="contained"
-                    color="primary"
-                    href={`/dashboard/${baseUrls.registryDetail}/accountId/${accountId}/orgUnitId/${orgUnit.id}`}
+                <LinkButton
+                    to={`/${baseUrls.registryDetail}/accountId/${accountId}/orgUnitId/${orgUnit.id}`}
+                    data-test="see-registry-button"
                 >
                     {formatMessage(MESSAGES.seeRegistry)}
-                </Button>
+                </LinkButton>
             </Box>
         </>
     );

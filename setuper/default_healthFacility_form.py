@@ -1,7 +1,6 @@
 import uuid
 from datetime import datetime
 from submissions import submission2xml
-from fake import fake_person
 import random
 
 
@@ -9,15 +8,13 @@ def setup_health_facility_level_default_form(account_name, iaso_client):
     print("-- Setting up a default form for Health Facility level")
     project_id = iaso_client.get("/api/projects/")["projects"][0]["id"]
     org_unit_types = iaso_client.get("/api/v2/orgunittypes/")["orgUnitTypes"]
-    hf_out = [out for out in org_unit_types if out["name"] == "Formation sanitaire"][0]
+    health_facility_type = [out for out in org_unit_types if out["name"] == "Formation sanitaire"][0]
 
     org_unit_type_id = [out["id"] for out in org_unit_types if out["name"] == "Formation sanitaire"]
 
-    default_fosa_level_form_name = "Data for Health facility/Données Formation sanitaire"
-
     sample_data = {
         "id": None,
-        "name": default_fosa_level_form_name,
+        "name": "Data for Health facility/Données Formation sanitaire",
         "short_name": "Data for HF/Données FOSA",
         "depth": None,
         "org_unit_type_ids": org_unit_type_id,
@@ -43,11 +40,12 @@ def setup_health_facility_level_default_form(account_name, iaso_client):
 
     # fetch orgunit ids
     limit = 20
-    orgunits = iaso_client.get("/api/orgunits/", params={"limit": limit, "orgUnitTypeId": hf_out["id"]})["orgunits"]
+    orgunits = iaso_client.get("/api/orgunits/", params={"limit": limit, "orgUnitTypeId": health_facility_type["id"]})[
+        "orgunits"
+    ]
     org_unit_ids = [ou["id"] for ou in orgunits]
 
     print("-- Submitting %d submissions" % limit)
-    count = 0
 
     for org_unit_id in org_unit_ids:
         the_uuid = str(uuid.uuid4())
@@ -122,5 +120,4 @@ def setup_health_facility_level_default_form(account_name, iaso_client):
                 )
             },
         )
-        count = count + 1
     print(iaso_client.get("/api/instances", params={"limit": 1})["count"], "instances created")

@@ -12,8 +12,8 @@ import { useSafeIntl } from 'bluesquare-components';
 import React, {
     Dispatch,
     FunctionComponent,
-    MouseEvent,
     SetStateAction,
+    useEffect,
     useState,
 } from 'react';
 import { SxStyles } from '../../../../types/general';
@@ -46,17 +46,23 @@ const settingKeys: string[] = ['displayTypes', 'displayRejected', 'displayNew'];
 type Props = {
     settings: Settings;
     setSettings: Dispatch<SetStateAction<Settings>>;
+    anchorEl: React.RefObject<HTMLElement>;
 };
 
 export const SettingsPopper: FunctionComponent<Props> = ({
     settings,
     setSettings,
+    anchorEl,
 }) => {
-    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const [open, setOpen] = useState(false);
+    const [anchorElement, setAnchorElement] = useState(null);
 
+    useEffect(() => {
+        setAnchorElement(anchorEl.current);
+    }, [anchorEl.current]);
     const { formatMessage } = useSafeIntl();
-    const handleClick = (event: MouseEvent<HTMLElement>) => {
-        setAnchorEl(anchorEl ? null : event.currentTarget);
+    const handleClick = () => {
+        setOpen(!open);
     };
     const handleChangeSettings = (setting: string) => {
         setSettings({
@@ -64,7 +70,6 @@ export const SettingsPopper: FunctionComponent<Props> = ({
             [setting]: !settings[setting],
         });
     };
-    const open = Boolean(anchorEl);
     return (
         <Box>
             <IconButton onClick={handleClick}>
@@ -73,7 +78,7 @@ export const SettingsPopper: FunctionComponent<Props> = ({
             <Popper
                 sx={styles.popper}
                 open={open}
-                anchorEl={anchorEl}
+                anchorEl={anchorElement}
                 placement="right"
             >
                 <IconButton

@@ -3,7 +3,6 @@ import React, { useState, FunctionComponent, useEffect } from 'react';
 import { Box, Grid, Typography, Theme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
-import { Link } from 'react-router-dom';
 
 import { History, FormatListBulleted } from '@mui/icons-material';
 import { baseUrls } from '../../../constants/urls';
@@ -24,6 +23,8 @@ import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import { FormDataType } from '../types/forms';
 import { FormLegendInput } from './FormLegendInput';
 import { CR_MODE_NONE, changeRequestModeOptions } from '../constants';
+import { LinkWithLocation } from '../../../components/nav/LinkWithLocation';
+import { SUBMISSIONS, SUBMISSIONS_UPDATE } from '../../../utils/permissions';
 
 const useStyles = makeStyles((theme: Theme) => ({
     radio: {
@@ -377,22 +378,27 @@ const FormForm: FunctionComponent<FormFormProps> = ({
             </Grid>
             {currentForm.id.value && (
                 <Grid justifyContent="flex-end" container spacing={2}>
-                    <DisplayIfUserHasPerm permission="iaso_submissions">
+                    <DisplayIfUserHasPerm
+                        permissions={[SUBMISSIONS, SUBMISSIONS_UPDATE]}
+                    >
                         <Grid item>
-                            <Link
+                            <LinkWithLocation
                                 className={classes.linkWithIcon}
-                                href={`/dashboard/forms/submissions/formIds/${currentForm.id.value}/tab/list`}
+                                to={`/${baseUrls.instances}/formIds/${currentForm.id.value}/tab/list`}
                             >
                                 <FormatListBulleted />
                                 {formatMessage(MESSAGES.records)}
-                            </Link>
+                            </LinkWithLocation>
                         </Grid>
                     </DisplayIfUserHasPerm>
                     <Grid item>
-                        <Link href={logsUrl} className={classes.linkWithIcon}>
+                        <LinkWithLocation
+                            to={logsUrl}
+                            className={classes.linkWithIcon}
+                        >
                             <History />
                             {formatMessage(MESSAGES.formChangeLog)}
-                        </Link>
+                        </LinkWithLocation>
                     </Grid>
                 </Grid>
             )}

@@ -25,9 +25,6 @@ export const PaymentLotActionCell = ({
             mark_payments_as_sent: true,
         });
     }, [paymentLot.id, markAsSent]);
-    const handleExport = useCallback(() => {
-        window.open(`/api/payments/lots/${paymentLot.id}/?xlsx=true`, '_blank');
-    }, [paymentLot.id]);
     const disableButtons =
         paymentLot.task?.status === 'QUEUED' ||
         paymentLot.task?.status === 'RUNNING';
@@ -50,7 +47,8 @@ export const PaymentLotActionCell = ({
             <IconButton
                 tooltipMessage={MESSAGES.download_payments}
                 overrideIcon={FileDownloadIcon}
-                onClick={handleExport}
+                url={`/api/payments/lots/${paymentLot.id}/?xlsx=true`}
+                download
                 iconSize="small"
                 disabled={disableButtons}
             />

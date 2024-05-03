@@ -175,9 +175,9 @@ def setup_instances(account_name, iaso_client):
             count = count + 1
 
             ## mobile code
-            # https://github.com/BLSQ/iaso-mobile-app/blob/develop/odk-collect/src/main/java/org/odk/collect/android/tasks/InstanceServerUploaderTask.java#L88
-            # https://github.com/BLSQ/iaso-mobile-app/blob/develop/odk-collect/src/main/java/org/odk/collect/android/upload/InstanceServerUploader.java#L70
-            # https://github.com/BLSQ/iaso-mobile-app/blob/develop/collect_app/src/main/java/com/bluesquare/iaso/usecase/SyncInstances.kt
+            # https://github.com/BLSQ/iaso-mobile-app/blob/0c6d821056e41d5beb6f745ea807451b07eb35f2/odk-collect/src/main/java/org/odk/collect/android/tasks/InstanceServerUploaderTask.java#L88
+            # https://github.com/BLSQ/iaso-mobile-app/blob/0c6d821056e41d5beb6f745ea807451b07eb35f2/odk-collect/src/main/java/org/odk/collect/android/upload/InstanceServerUploader.java#L70
+            # https://github.com/BLSQ/iaso-mobile-app/blob/0c6d821056e41d5beb6f745ea807451b07eb35f2/collect_app/src/main/java/com/bluesquare/iaso/usecase/SyncInstances.kt
             if count % 5 == 0:
                 print("\t%d submissions done" % count)
 

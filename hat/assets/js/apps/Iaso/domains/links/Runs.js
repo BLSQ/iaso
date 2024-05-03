@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
 
@@ -26,9 +26,8 @@ import { runsFilters } from '../../constants/filters';
 import { baseUrls } from '../../constants/urls';
 import { useRunsFiltersData } from './hooks';
 
-import MESSAGES from './messages';
 import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
-import { useRedirectTo } from '../../routing/routing.ts';
+import MESSAGES from './messages';
 
 const baseUrl = baseUrls.algos;
 
@@ -40,7 +39,6 @@ const Runs = () => {
     const params = useParamsObject(baseUrl);
     const classes = useStyles();
     const dispatch = useDispatch();
-    const redirectTo = useRedirectTo();
     const { formatMessage } = useSafeIntl();
 
     const algorithms = useSelector(state => state.links.algorithmsList);
@@ -60,16 +58,6 @@ const Runs = () => {
         setFetchingAlgorithms,
     );
 
-    const onSelectRunLinks = useCallback(
-        runItem => {
-            redirectTo(baseUrls.links, {
-                algorithmRunId: runItem.id,
-                searchActive: true,
-            });
-        },
-        [redirectTo],
-    );
-
     const onRefresh = () => {
         setForceRefresh(true);
     };
@@ -87,7 +75,7 @@ const Runs = () => {
         setTimeout(() => onRefresh(), 500);
     };
 
-    const tableColumns = useRunsTableColumns(onSelectRunLinks, deleteRuns);
+    const tableColumns = useRunsTableColumns(deleteRuns);
 
     let currentOrigin;
     if (params.origin && sources) {

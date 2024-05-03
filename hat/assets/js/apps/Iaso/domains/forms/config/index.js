@@ -2,10 +2,7 @@ import React, { useMemo } from 'react';
 import { Grid } from '@mui/material';
 import { Link } from 'react-router-dom';
 
-import {
-    IconButton as IconButtonComponent,
-    useSafeIntl,
-} from 'bluesquare-components';
+import { IconButton, useSafeIntl } from 'bluesquare-components';
 import FormatListBulleted from '@mui/icons-material/FormatListBulleted';
 import { useDispatch } from 'react-redux';
 import FormVersionsDialog from '../components/FormVersionsDialogComponent';
@@ -45,38 +42,41 @@ export const formVersionsTableColumns = (
         Header: formatMessage(MESSAGES.actions),
         accessor: 'actions',
         sortable: false,
-        Cell: settings => (
-            <section>
-                {settings.row.original.xls_file && (
-                    <IconButtonComponent
-                        url={settings.row.original.xls_file}
-                        download
-                        icon="xls"
-                        tooltipMessage={MESSAGES.xls_form_file}
-                    />
-                )}
-                <FormVersionsDialog
-                    renderTrigger={({ openDialog }) => (
-                        <IconButtonComponent
-                            onClick={openDialog}
-                            icon="edit"
-                            tooltipMessage={MESSAGES.edit}
+        Cell: settings => {
+            console.log('XLS URL', settings.row.original.xls_file);
+            return (
+                <section>
+                    {settings.row.original.xls_file && (
+                        <IconButton
+                            url={settings.row.original.xls_file}
+                            download
+                            icon="xls"
+                            tooltipMessage={MESSAGES.xls_form_file}
                         />
                     )}
-                    onConfirmed={() => setForceRefresh(true)}
-                    formVersion={settings.row.original}
-                    periodType={periodType}
-                    formId={formId}
-                    titleMessage={{
-                        ...MESSAGES.updateFormVersion,
-                        values: {
-                            version_id: settings.row.original.version_id,
-                        },
-                    }}
-                    key={settings.row.original.updated_at}
-                />
-            </section>
-        ),
+                    <FormVersionsDialog
+                        renderTrigger={({ openDialog }) => (
+                            <IconButton
+                                onClick={openDialog}
+                                icon="edit"
+                                tooltipMessage={MESSAGES.edit}
+                            />
+                        )}
+                        onConfirmed={() => setForceRefresh(true)}
+                        formVersion={settings.row.original}
+                        periodType={periodType}
+                        formId={formId}
+                        titleMessage={{
+                            ...MESSAGES.updateFormVersion,
+                            values: {
+                                version_id: settings.row.original.version_id,
+                            },
+                        }}
+                        key={settings.row.original.updated_at}
+                    />
+                </section>
+            );
+        },
     },
 ];
 
@@ -211,7 +211,7 @@ export const useFormsTableColumns = ({
                     return (
                         <section>
                             {showDeleted && (
-                                <IconButtonComponent
+                                <IconButton
                                     onClick={() =>
                                         restoreForm(settings.row.original.id)
                                     }
@@ -225,7 +225,7 @@ export const useFormsTableColumns = ({
                                         Permission.SUBMISSIONS,
                                         user,
                                     ) && (
-                                        <IconButtonComponent
+                                        <IconButton
                                             url={`${urlToInstances}`}
                                             tooltipMessage={
                                                 MESSAGES.viewInstances
@@ -270,7 +270,7 @@ export const useFormsTableColumns = ({
                                         Permission.FORMS,
                                         user,
                                     ) && (
-                                        <IconButtonComponent
+                                        <IconButton
                                             url={`/${baseUrls.formDetail}/formId/${settings.row.original.id}`}
                                             icon="edit"
                                             tooltipMessage={MESSAGES.edit}
@@ -280,7 +280,7 @@ export const useFormsTableColumns = ({
                                         Permission.FORMS,
                                         user,
                                     ) && (
-                                        <IconButtonComponent
+                                        <IconButton
                                             // eslint-disable-next-line max-len
                                             url={`/${baseUrls.mappings}/formId/${settings.row.original.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}
                                             icon="dhis"

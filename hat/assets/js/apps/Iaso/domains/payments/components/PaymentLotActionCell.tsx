@@ -49,6 +49,7 @@ export const PaymentLotActionCell = ({
                 overrideIcon={FileDownloadIcon}
                 url={`/api/payments/lots/${paymentLot.id}/?xlsx=true`}
                 download
+                reloadDocument // Pass this prop to prevent the router to prepend '/dashboar' to the url
                 iconSize="small"
                 disabled={disableButtons}
             />

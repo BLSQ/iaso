@@ -141,9 +141,8 @@ class ETL:
             visit.get("transfer__int__") is not None and visit.get("transfer__int__") == "1"
         ):
             exit_type = "transfer_to_otp"
-
-        elif (visit.get("_transfer") is not None and visit.get("_transfer") == "1") and (
-            visit.get("_transfer_to_tsfp") is not None and visit.get("_transfer_to_tsfp") == "1"
+        elif (visit.get("_transfer_to_tsfp") is not None and visit.get("_transfer_to_tsfp") == "1") or (
+            visit.get("transfer_from_otp__bool__") is not None and visit.get("transfer_from_otp__bool__") == "1"
         ):
             exit_type = "transfer_to_tsfp"
 

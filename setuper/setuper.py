@@ -5,6 +5,7 @@ from data_collection import setup_instances
 from pyramid import setup_orgunits
 from entities import setup_entities
 from registry import setup_registry
+from default_healthFacility_form import setup_health_facility_level_default_form
 import string
 import random
 
@@ -36,6 +37,8 @@ def setup_account(account_name):
     return iaso_client
 
 
+seed_default_health_facility_form = True
+
 seed_instances = True
 
 seed_entities = True
@@ -48,6 +51,9 @@ if __name__ == "__main__":
     print("Creating account:", account_name)
     iaso_client = setup_account(account_name)
     setup_orgunits(account_name, iaso_client=iaso_client)
+
+    if seed_default_health_facility_form:
+        setup_health_facility_level_default_form(account_name, iaso_client=iaso_client)
 
     if seed_registry:
         setup_registry(account_name, iaso_client=iaso_client)

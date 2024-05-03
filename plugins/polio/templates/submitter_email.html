@@ -22,8 +22,6 @@ Base file to be reused in the MailTemplate for the budget workflow engine
       table, td, div, h1, p {
           font-family: Arial, sans-serif;
       }
-
-      {% comment %} table, td {border:2px solid #000000 !important;} {% endcomment %}
   </style>
 </head>
 <body style="margin:0;padding:0;width:100%;max-width:800px">
@@ -38,7 +36,7 @@ Base file to be reused in the MailTemplate for the budget workflow engine
   </tr>
   <tr>
     <td align="left" style="padding:5px;">
-      The NEW status of the POLIO campaign <strong>{{ campaign.obr_name }}</strong> has been updated to:  <strong>{{ node.label }}</strong> 
+      The NEW status of the POLIO campaign <strong>{{ campaign.obr_name }}</strong> for {% for round in rounds%}Round {{ round.number }}{% if not forloop.last %}, {% endif %}{% endfor %} has been updated to: <strong>{{ node.label }}</strong>
     </td>
   </tr>
    <tr>
@@ -46,7 +44,7 @@ Base file to be reused in the MailTemplate for the budget workflow engine
   </tr>
   <tr>
     <td align="left" style="padding:5px;">
-        For additional information, please, consult the <a href="{{ budget_url }}">campaign page</a>.
+        For additional information, please, consult the <a href="{{ budget_url }}">budget page</a>.
     </td>
   <tr>
  

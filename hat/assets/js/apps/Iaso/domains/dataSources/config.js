@@ -214,6 +214,6 @@ export const useSourceVersionsTableColumns = source => {
                 sortable: false,
             },
         ],
-        [formatMessage, source.default_version?.id],
+        [formatMessage, source?.default_version?.id],
     );
 };

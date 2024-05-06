@@ -20,7 +20,7 @@ const config: Plugin = {
     routes,
     menu,
     translations,
-    homeUrl: `${DASHBOARD_BASE_URL}/campaignCategory/all`,
+    homeUrl: `/${DASHBOARD_BASE_URL}/campaignCategory/all`,
     // homeOffline: () => <div>OFFLINE</div>,
     // homeOnline: () => <div>CONNECTED HOME POLIO</div>,
 };

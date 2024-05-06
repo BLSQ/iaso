@@ -1,19 +1,10 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useCallback } from 'react';
-import { baseUrls } from '../constants/urls';
+import { useCallback, useContext, useMemo } from 'react';
+import { baseUrls, paramsConfig } from '../constants/urls';
 import { useParamsObject } from './hooks/useParamsObject';
 import { convertObjectToUrlParams, makeRedirectionUrl } from './utils';
-
-// FIXME: delete - depredcated in react-router6
-/* Modify the parameters for the current page and return the new url */
-const genUrl = (
-    router: Router,
-    newParams: Record<string, string | number | null | undefined>,
-): string =>
-    // formatPattern(router.routes[0].path, { ...router.params, ...newParams });
-    '/home';
-
-export { genUrl };
+import { PluginsContext } from '../utils';
+import { Plugin } from '../domains/app/types';
 
 export const useCurrentLocationWithParams = (
     newParams: Record<string, string | number | null | undefined>,
@@ -29,6 +20,28 @@ export const useCurrentLocationWithParams = (
     return `/${currentBaseUrl}${paramsAsString}`;
 };
 
+export const useParamsConfig = (): Record<string, string[]> => {
+    const { plugins } = useContext(PluginsContext);
+    return useMemo(() => {
+        const result: Record<string, string[]> = { ...paramsConfig };
+        plugins.forEach((plugin: Plugin) => {
+            Object.assign(result, plugin.paramsConfig);
+        });
+        return result;
+    }, [plugins]);
+};
+
+export const useBaseUrls = (): Record<string, string> => {
+    const { plugins } = useContext(PluginsContext);
+    return useMemo(() => {
+        const result: Record<string, string> = { ...baseUrls };
+        plugins.forEach((plugin: Plugin) => {
+            Object.assign(result, plugin.baseUrls);
+        });
+        return result;
+    }, [plugins]);
+};
+
 type GenUrlFunction = (
     // eslint-disable-next-line no-unused-vars
     newParams: Record<string, string | number | null | undefined>,
@@ -36,7 +49,8 @@ type GenUrlFunction = (
 
 export const useGenUrl = (): GenUrlFunction => {
     const { pathname } = useLocation();
-    const currentBaseUrl = Object.values(baseUrls).find(url =>
+    const allBaseUrls = useBaseUrls();
+    const currentBaseUrl = Object.values(allBaseUrls).find(url =>
         pathname.includes(`${url}/`),
     );
     const currentParams = useParamsObject(currentBaseUrl ?? '');
@@ -53,14 +67,18 @@ export const useGenUrl = (): GenUrlFunction => {
     );
 };
 
-// eslint-disable-next-line no-unused-vars
-type RedirectFn = (url: string, params: Record<string, string>) => void;
+type RedirectFn = (
+    // eslint-disable-next-line no-unused-vars
+    url: string,
+    // eslint-disable-next-line no-unused-vars
+    params: Record<string, string | undefined>,
+) => void;
 
 export const useRedirectTo = (): RedirectFn => {
     const navigate = useNavigate();
     const { pathname } = useLocation();
     return useCallback(
-        (url: string, params?: Record<string, string>) => {
+        (url: string, params?: Record<string, string | undefined>) => {
             const destination = makeRedirectionUrl(url, params);
             navigate(destination, { state: { location: pathname } });
         },
@@ -72,7 +90,7 @@ export const useRedirectToReplace = (): RedirectFn => {
     // When replacing, we pass the old state to avoid losing the point of origin
     const { state } = useLocation();
     return useCallback(
-        (url: string, params?: Record<string, string>) => {
+        (url: string, params?: Record<string, string | undefined>) => {
             const destination = makeRedirectionUrl(url, params);
             navigate(destination, {
                 replace: true,

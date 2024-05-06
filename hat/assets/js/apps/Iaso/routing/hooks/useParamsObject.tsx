@@ -1,21 +1,12 @@
-import { useContext, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
-import { paramsConfig } from '../../constants/urls';
-import { PluginsContext } from '../../utils';
-import { Plugin } from '../../domains/app/types';
+import { useParamsConfig } from '../routing';
 
 export const useParamsObject = (
     baseUrl: string,
 ): Record<string, string | Record<string, unknown> | undefined> => {
     const params = useParams()['*'] ?? '';
-    const { plugins } = useContext(PluginsContext);
-    const configs = useMemo(() => {
-        const result: Record<string, string[]> = { ...paramsConfig };
-        plugins.forEach((plugin: Plugin) => {
-            Object.assign(result, plugin.paramsConfig);
-        });
-        return result;
-    }, [plugins]);
+    const configs = useParamsConfig();
     return useMemo(() => {
         const paramsList = params.split('/');
         // Even indexes are the params key

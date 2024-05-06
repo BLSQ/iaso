@@ -7,21 +7,17 @@ import React, {
     useState,
 } from 'react';
 import { FormattedMessage } from 'react-intl';
-import { useDispatch } from 'react-redux';
-import { replace } from 'react-router-redux';
-
 import FiltersIcon from '@mui/icons-material/FilterList';
 import { Box, Button, Grid, useMediaQuery, useTheme } from '@mui/material';
 import { IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
 import DatesRange from '../../../../../../../hat/assets/js/apps/Iaso/components/filters/DatesRange';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useGetGroupDropdown } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
-import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import MESSAGES from '../../../constants/messages';
 import { useGetCountries } from '../../../hooks/useGetCountries';
 import { useGetGroupedCampaigns } from '../../GroupedCampaigns/hooks/useGetGroupedCampaigns';
 
-import { genUrl } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
+import { useRedirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import {
     dateApiToDateRangePicker,
     dateRangePickerToDateApi,
@@ -29,9 +25,10 @@ import {
 import { appId } from '../../../constants/app';
 import { useGetCampaignTypes } from '../../Campaigns/hooks/api/useGetCampaignTypes';
 import { CalendarParams } from './types';
+import { baseUrls } from '../../../constants/urls';
 
 type Props = {
-    router: Router & { params: CalendarParams };
+    params: CalendarParams;
     disableDates?: boolean;
     disableOnlyDeleted?: boolean;
     isCalendar?: boolean;
@@ -50,13 +47,14 @@ const campaignCategoryOptions = (
 };
 
 export const CampaignsFilters: FunctionComponent<Props> = ({
-    router,
+    params,
     disableDates = false,
     disableOnlyDeleted = false,
     isCalendar = false,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const { params } = router;
+    const redirectToReplace = useRedirectToReplace();
+
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const [countries, setCountries] = useState(params.countries);
     const [orgUnitGroups, setOrgUnitGroups] = useState(params.orgUnitGroups);
@@ -87,20 +85,19 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
         campaignGroups ||
         orgUnitGroups;
 
-    const dispatch = useDispatch();
     const handleSearch = useCallback(() => {
         if (filtersUpdated) {
             setFiltersUpdated(false);
             const urlParams = {
                 countries,
                 search: search && search !== '' ? search : undefined,
-                roundStartFrom: dateRangePickerToDateApi(
-                    roundStartFrom ?? undefined,
-                ),
-                roundStartTo: dateRangePickerToDateApi(
-                    roundStartTo ?? undefined,
-                ),
-                page: null,
+                roundStartFrom:
+                    dateRangePickerToDateApi(roundStartFrom ?? undefined) ??
+                    undefined,
+                roundStartTo:
+                    dateRangePickerToDateApi(roundStartTo ?? undefined) ??
+                    undefined,
+                page: undefined,
                 campaignType,
                 campaignCategory,
                 showOnlyDeleted: showOnlyDeleted ? 'true' : undefined,
@@ -108,8 +105,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                 orgUnitGroups,
                 filterLaunched: filtersFilled ? 'true' : 'false',
             };
-            const url = genUrl(router, urlParams);
-            dispatch(replace(url));
+            redirectToReplace(baseUrls.campaigns, urlParams);
         }
     }, [
         filtersUpdated,
@@ -123,8 +119,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
         campaignGroups,
         orgUnitGroups,
         filtersFilled,
-        router,
-        dispatch,
+        redirectToReplace,
     ]);
     const { data, isFetching: isFetchingCountries } = useGetCountries();
     const { data: types, isFetching: isFetchingTypes } = useGetCampaignTypes();

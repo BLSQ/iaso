@@ -59,7 +59,7 @@ export const makeRedirectionUrl = (
     baseUrl: string,
     params?: Record<
         string,
-        string | number | Array<unknown> | Record<string, any>
+        string | number | Array<unknown> | Record<string, any> | undefined
     >,
 ): string => {
     const paramsAsString = convertObjectToUrlParams(params ?? {});

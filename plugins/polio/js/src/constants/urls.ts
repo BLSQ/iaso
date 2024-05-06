@@ -50,7 +50,7 @@ export const campaignParams = [
 ];
 
 export const polioRouteConfigs: Record<string, RouteConfig> = {
-    dashboard: {
+    campaigns: {
         url: DASHBOARD_BASE_URL,
         params: [
             ...paginationPathParams,
@@ -224,7 +224,7 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
 };
 
 export type PolioBaseUrls = {
-    dashboard: string;
+    campaigns: string;
     campaignHistory: string;
     groupedCampaigns: string;
     calendar: string;

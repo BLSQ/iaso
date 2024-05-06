@@ -8,7 +8,6 @@ import {
     useKeyPressListener,
 } from 'bluesquare-components';
 
-import { useLocation } from 'react-router-dom';
 import MESSAGES from './messages';
 import { LinkWithLocation } from './LinkWithLocation';
 

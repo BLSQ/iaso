@@ -83,20 +83,9 @@ export const useHomeOfflineRoute = (): RouteCustom[] => {
     ];
 };
 
-// TODO fix plugin config
 const usePluginsRoutes = (): RouteCustom[] => {
     const { plugins }: Plugins = useContext(PluginsContext);
-    return plugins
-        .map(plugin =>
-            plugin.routes.map(route => {
-                if (route.allowAnonymous) return route;
-                return {
-                    ...route,
-                    params: ['accountId', ...route.params],
-                };
-            }),
-        )
-        .flat();
+    return plugins.map(plugin => plugin.routes).flat();
 };
 
 const useGetProtectedRoutes = (

@@ -1,5 +1,5 @@
-import { IntlMessage } from 'bluesquare-components';
 import { ElementType, ReactNode } from 'react';
+import { IntlMessage } from 'bluesquare-components';
 
 export type RouteParam = {
     isRequired: boolean;
@@ -16,15 +16,21 @@ export type RouteCustom = {
     element: ReactNode;
 };
 
-// TODO Check component type
 export type MenuItem = {
-    label: IntlMessage | string;
-    key: string;
-    permissions: string[];
-    subMenu?: MenuItem[];
+    label: string | IntlMessage;
+    permissions?: string[];
+    key?: string;
+    mapKey?: string;
     // eslint-disable-next-line no-unused-vars
-    component: (props: any) => ReactNode;
+    icon?: (props: Record<string, any>) => ReactNode;
+    subMenu?: MenuItems;
+    extraPath?: string;
+    url?: string;
+    // eslint-disable-next-line no-unused-vars
+    isActive?: (pathname: string) => boolean;
+    dev?: boolean;
 };
+export type MenuItems = MenuItem[];
 
 export type Plugin = {
     routes: RouteCustom[];
@@ -34,6 +40,8 @@ export type Plugin = {
     homeOnline?: ElementType;
     homeOffline?: ElementType;
     key?: string;
+    baseUrls: Record<string, string>;
+    paramsConfig: Record<string, string[]>;
 };
 
 export type Plugins = {

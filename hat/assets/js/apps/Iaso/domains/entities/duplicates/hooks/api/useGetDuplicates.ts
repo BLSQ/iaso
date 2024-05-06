@@ -35,7 +35,7 @@ export type DuplicatesGETParams = {
         merged?: boolean;
         entity?: string;
     };
-    refresh: string | undefined;
+    refresh?: string;
 };
 
 export const useGetDuplicates = ({

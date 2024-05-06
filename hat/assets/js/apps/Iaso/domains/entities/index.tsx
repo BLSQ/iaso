@@ -53,11 +53,7 @@ type Params = {
     entityTypeIds?: string;
 };
 
-type Props = {
-    params: Params;
-};
-
-export const Beneficiaries: FunctionComponent<Props> = () => {
+export const Beneficiaries: FunctionComponent = () => {
     const params = useParamsObject(baseUrls.entities) as Params;
     const classes: Record<string, string> = useStyles();
     const [displayedLocation, setDisplayedLocation] =

@@ -38,17 +38,11 @@ import { requiredFields } from './config/index';
 import { isFieldValid, isFormValid } from '../../utils/forms';
 import { FormAttachments } from './components/FormAttachments';
 import { FormParams } from './types/forms';
-import { Router } from '../../types/general';
 import { NO_PERIOD } from '../periods/constants';
 import { useGoBack } from '../../routing/hooks/useGoBack';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { useRedirectToReplace } from '../../routing/routing';
 import { CR_MODE_NONE } from './constants';
-
-interface FormDetailProps {
-    router: Router;
-    params: FormParams;
-}
 
 const useStyles = makeStyles(theme => ({
     ...(commonStyles(theme) as unknown as CommonStyles),
@@ -107,7 +101,7 @@ const formatFormData = value => {
     };
 };
 
-const FormDetail: FunctionComponent<FormDetailProps> = () => {
+const FormDetail: FunctionComponent = () => {
     const params = useParamsObject(baseUrls.formDetail) as FormParams;
     const goBack = useGoBack(baseUrls.forms);
     const queryClient = useQueryClient();

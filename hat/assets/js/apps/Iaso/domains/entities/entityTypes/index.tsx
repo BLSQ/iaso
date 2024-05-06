@@ -38,11 +38,7 @@ type Params = PaginationParams & {
     search?: string;
 };
 
-type Props = {
-    params: Params;
-};
-
-export const EntityTypes: FunctionComponent<Props> = () => {
+export const EntityTypes: FunctionComponent = () => {
     const params = useParamsObject(baseUrls.entityTypes) as Params;
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();

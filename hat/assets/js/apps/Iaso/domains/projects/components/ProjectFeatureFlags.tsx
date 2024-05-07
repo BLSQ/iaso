@@ -25,6 +25,28 @@ type Props = {
     isFetchingFeatureFlag: boolean;
 };
 
+const renderOption = (props, option) => (
+    <Tooltip key={option.value} title={option.tooltip} disableInteractive>
+        <span {...props}>{option.label}</span>
+    </Tooltip>
+);
+
+const renderTags = (value, getTagProps) =>
+    value.map((option, index) => (
+        <Tooltip
+            key={option.value}
+            title={option.tooltip}
+            placement="bottom-end"
+            disableInteractive
+        >
+            <Chip
+                color="primary"
+                label={option.label}
+                {...getTagProps({ index })}
+            />
+        </Tooltip>
+    ));
+
 const ProjectFeatureFlags: FunctionComponent<Props> = ({
     setFieldValue,
     currentProject,
@@ -46,28 +68,7 @@ const ProjectFeatureFlags: FunctionComponent<Props> = ({
             }),
         [featureFlags, formatMessage],
     );
-    const renderOption = (props, option) => (
-        <Tooltip key={option.value} title={option.tooltip} disableInteractive>
-            <span {...props}>{option.label}</span>
-        </Tooltip>
-    );
 
-    const renderTags = (value, getTagProps) =>
-        value.map((option, index) => (
-            <Tooltip
-                // eslint-disable-next-line react/no-array-index-key
-                key={index}
-                title={option.tooltip}
-                placement="bottom-end"
-                disableInteractive
-            >
-                <Chip
-                    color="primary"
-                    label={option.label}
-                    {...getTagProps({ index })}
-                />
-            </Tooltip>
-        ));
     return (
         <InputComponent
             multi

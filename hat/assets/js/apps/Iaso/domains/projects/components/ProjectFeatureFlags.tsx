@@ -25,12 +25,6 @@ type Props = {
     isFetchingFeatureFlag: boolean;
 };
 
-const renderOption = (props, option) => (
-    <Tooltip key={option.value} title={option.tooltip} disableInteractive>
-        <span {...props}>{option.label}</span>
-    </Tooltip>
-);
-
 const renderTags = (value, getTagProps) =>
     value.map((option, index) => (
         <Tooltip
@@ -83,7 +77,6 @@ const ProjectFeatureFlags: FunctionComponent<Props> = ({
             type="select"
             options={options}
             label={MESSAGES.featureFlags}
-            renderOption={renderOption}
             renderTags={renderTags}
         />
     );

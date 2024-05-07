@@ -47,7 +47,6 @@ const OrgUnitTreeviewModal = ({
     allowedTypes,
     errors,
 }) => {
-    const modalRef = useRef(null);
     const theme = useTheme();
     const classes = useStyles();
     const [settings, setSettings] = useState({
@@ -204,18 +203,13 @@ const OrgUnitTreeviewModal = ({
             allowConfirm={selectedOrgUnitsIds?.length > 0}
         >
             <Box
-                ref={modalRef}
                 sx={{
                     position: 'absolute',
                     top: theme.spacing(1),
                     right: theme.spacing(2),
                 }}
             >
-                <SettingsPopper
-                    anchorEl={modalRef}
-                    setSettings={setSettings}
-                    settings={settings}
-                />
+                <SettingsPopper setSettings={setSettings} settings={settings} />
             </Box>
             <Box mt={1}>
                 <TreeViewWithSearch

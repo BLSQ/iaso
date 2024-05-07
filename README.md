@@ -873,3 +873,17 @@ In production on AWS, we use Elastic Beanstalk workers which use a SQS queue. Th
 This is the one you get when running locally with `docker-compose run iaso manage tasks_worker`. Instead of enqueuing the tasks to SQS, we enqueue them to our postgres server.
 
 Our `tasks_worker` process (which runs indefinitely) will listen for new tasks and run them when it gets notified (using PostgreSQL NOTIFY/LISTEN features).
+
+# Plugins
+
+The Iaso application can be extended with "plugins". Enhancing Iaso with a plugin is done by adding a subfolder with your plugin's name in the folder `plugins`. Then add the following line to your root `.env`:
+
+```python
+PLUGINS=your_plugin # your plugin folder's name
+```
+
+Ideally, plugins are managed in a separate Git repo and are added to the `plugins` folder upon deploy.
+
+Basic plugins exist of one Django app and are simply appended to the `INSTALLED_APPS` in `settings.py` based on their folder name. You can find an example of such a basic plugin in the `plugins/test/` folder.
+
+For more customization, you can add a `plugin_settings.py` file in the root of your plugin. This allows you to add multiple Django apps, as well as inject constants and more into the `settings.py` file of your Iaso deployment. For an example of such a more advanced plugin, we refer to the file `plugins/plugin_settings.py.example`.

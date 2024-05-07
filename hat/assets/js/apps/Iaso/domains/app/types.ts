@@ -25,6 +25,12 @@ export type MenuItem = {
     component: (props: any) => ReactNode;
 };
 
+export type Redirection = {
+    path: string;
+    // eslint-disable-next-line no-unused-vars
+    component: (args: any) => ReactNode;
+};
+
 export type Plugin = {
     routes: RouteCustom[];
     menu: MenuItem[];
@@ -33,6 +39,7 @@ export type Plugin = {
     homeOnline?: ElementType;
     homeOffline?: ElementType;
     key?: string;
+    redirections?: Redirection[];
 };
 
 export type Plugins = {

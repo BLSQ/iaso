@@ -53,6 +53,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
     isCalendar = false,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const redirectUrl = isCalendar ? baseUrls.calendar : baseUrls.campaigns;
     const redirectToReplace = useRedirectToReplace();
 
     const [filtersUpdated, setFiltersUpdated] = useState(false);
@@ -104,8 +105,9 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                 campaignGroups,
                 orgUnitGroups,
                 filterLaunched: filtersFilled ? 'true' : 'false',
+                periodType: params?.periodType,
             };
-            redirectToReplace(baseUrls.campaigns, urlParams);
+            redirectToReplace(redirectUrl, urlParams);
         }
     }, [
         filtersUpdated,
@@ -119,7 +121,9 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
         campaignGroups,
         orgUnitGroups,
         filtersFilled,
+        params?.periodType,
         redirectToReplace,
+        redirectUrl,
     ]);
     const { data, isFetching: isFetchingCountries } = useGetCountries();
     const { data: types, isFetching: isFetchingTypes } = useGetCampaignTypes();

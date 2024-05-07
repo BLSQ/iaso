@@ -50,9 +50,11 @@ type GenUrlFunction = (
 export const useGenUrl = (): GenUrlFunction => {
     const { pathname } = useLocation();
     const allBaseUrls = useBaseUrls();
-    const currentBaseUrl = Object.values(allBaseUrls).find(url =>
-        pathname.includes(`${url}/`),
-    );
+    // If several urls match, the correct one is the longest
+    const currentBaseUrl =
+        Object.values(allBaseUrls)
+            .filter(url => pathname.includes(`${url}`))
+            .sort((a, b) => a.length - b.length)[0] ?? baseUrls.home;
     const currentParams = useParamsObject(currentBaseUrl ?? '');
     return useCallback(
         (

@@ -22,16 +22,12 @@ type Params = PaginationParams & {
     search?: string;
 };
 
-type Props = {
-    params: Params;
-};
-
 const DEFAULT_PAGE_SIZE = '10';
 const DEFAULT_PAGE = '1';
 const DEFAULT_ORDER = '-updated_at';
 const baseUrl = baseUrls.groupedCampaigns;
 
-export const GroupedCampaigns: FunctionComponent<Props> = () => {
+export const GroupedCampaigns: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const params = useParamsObject(baseUrl) as Params;

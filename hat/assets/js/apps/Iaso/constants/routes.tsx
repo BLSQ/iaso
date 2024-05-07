@@ -51,15 +51,17 @@ import { PotentialPayments } from '../domains/payments/PotentialPayments';
 import { LotsPayments } from '../domains/payments/LotsPayments';
 
 export type RoutePath = {
-    baseUrl:string
-    routerUrl:string // baseUrl+"/*", so we can catch the params
-    permissions:string[] // can be skipped if allowAnonymous === true
-    element:ReactElement // a prop-less Element (not a component)
-    isRootUrl?:boolean
-    allowAnonymous?:boolean
-}
+    baseUrl: string;
+    routerUrl: string; // baseUrl+"/*", so we can catch the params
+    permissions: string[]; // can be skipped if allowAnonymous === true
+    element: ReactElement; // a prop-less Element (not a component)
+    isRootUrl?: boolean;
+    allowAnonymous?: boolean;
+};
 
-export type AnonymousRoutePath = Omit<RoutePath,"permissions"> & {allowAnonymous:true}
+export type AnonymousRoutePath = Omit<RoutePath, 'permissions'> & {
+    allowAnonymous: true;
+};
 
 export const setupAccountPath = {
     baseUrl: baseUrls.setupAccount,
@@ -375,31 +377,31 @@ export const page401 = {
     baseUrl: baseUrls.error401,
     routerUrl: baseUrls.error401,
     element: <PageError errorCode="401" />,
-    permissions:[]
+    permissions: [],
 };
 
 export const page403 = {
     baseUrl: baseUrls.error403,
     routerUrl: baseUrls.error403,
     element: <PageError errorCode="403" />,
-    permissions:[]
+    permissions: [],
 };
 
 export const page404 = {
     baseUrl: baseUrls.error404,
     routerUrl: baseUrls.error404,
-    element:<PageError errorCode="404" />,
-    permissions:[]
+    element: <PageError errorCode="404" />,
+    permissions: [],
 };
 
 export const page500 = {
     baseUrl: baseUrls.error500,
     routerUrl: baseUrls.error500,
-    element:<PageError errorCode="500" />,
-    permissions:[]
+    element: <PageError errorCode="500" />,
+    permissions: [],
 };
 
-export const routeConfigs :(RoutePath|AnonymousRoutePath)[] = [
+export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     formsPath,
     formDetailPath,
     formsStatsPath,

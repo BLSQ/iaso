@@ -1,7 +1,6 @@
 import React, { FunctionComponent, useCallback } from 'react';
 
 import classnames from 'classnames';
-import { useDispatch, useSelector } from 'react-redux';
 
 import {
     getOrderArray,
@@ -11,21 +10,18 @@ import {
 } from 'bluesquare-components';
 
 import { Box, TableCell, TableSortLabel } from '@mui/material';
-import { replace } from 'react-router-redux';
-import { genUrl } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
-import { Router } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
-import { User } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-
-import MESSAGES from '../../../../constants/messages';
+import { useRedirectToReplace } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import { useStaticFields } from '../../hooks/useStaticFields';
 import { Field } from '../../types';
 import { useStyles } from '../Styles';
 import { colSpanTitle } from '../constants';
+import MESSAGES from '../../../../constants/messages';
 
 type Props = {
     orders: string;
-    router: Router;
     isPdf: boolean;
+    url: string;
+    isLogged: boolean;
 };
 
 type Order = {
@@ -35,12 +31,13 @@ type Order = {
 
 export const HeadStaticFieldsCells: FunctionComponent<Props> = ({
     orders,
-    router,
+    url,
     isPdf,
+    isLogged,
 }) => {
     const classes: Record<string, any> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
+    const redirectToReplace = useRedirectToReplace();
     const shiftKeyIsDown = useKeyPressListener('Shift');
     const ordersArray = getOrderArray(orders);
     const handleSort = (field: Field, existingSort: Order) => {
@@ -64,16 +61,12 @@ export const HeadStaticFieldsCells: FunctionComponent<Props> = ({
             newSort.push(currentSort);
         }
 
-        const url = genUrl(router, {
+        redirectToReplace(url, {
             order: getSort(newSort),
         });
-
-        dispatch(replace(url));
     };
     const fields = useStaticFields(isPdf);
-    const isLogged = useSelector((state: { users: { current: User } }) =>
-        Boolean(state.users.current),
-    );
+
     const getWidth = useCallback(
         (f: Field) => {
             if (f.key === 'edit') {

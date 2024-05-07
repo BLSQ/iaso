@@ -1,58 +1,42 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, {
-    FunctionComponent,
-    useState,
-    useCallback,
-    useEffect,
-} from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import FiltersIcon from '@mui/icons-material/FilterList';
 import { Box, Button, Grid } from '@mui/material';
 import { FormattedMessage } from 'react-intl';
-import { useDispatch } from 'react-redux';
-import { replace } from 'react-router-redux';
-import { genUrl } from '../../../../../../hat/assets/js/apps/Iaso/routing/routing';
+
 import MESSAGES from '../../constants/messages';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-import { useRouter } from '../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useRouter';
+import { PaginationParams } from '../../../../../../hat/assets/js/apps/Iaso/types/general';
+import { useFilterState } from '../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
+import { baseUrls } from '../../constants/urls';
 
-type Props = {
-    router: any;
-    disableOnlyDeleted: boolean;
+type Params = PaginationParams & {
+    search?: string;
+    showOnlyDeleted?: string;
 };
 
+type Props = {
+    params: Params;
+    disableOnlyDeleted?: boolean;
+};
+
+const baseUrl = baseUrls.groupedCampaigns;
+
 export const GroupedCampaignsFilter: FunctionComponent<Props> = ({
-    router,
-    // TODO set to false shwoOnlyDeleted is implemented
+    params,
+    // TODO set to false when showOnlyDeleted is implemented
     disableOnlyDeleted = true,
 }) => {
-    const { params } = useRouter();
-    const [filtersUpdated, setFiltersUpdated] = useState<boolean>(false);
-    // const [countries, setCountries] = useState<string>(params.countries);
-    const [search, setSearch] = useState<string>(params.search);
-    const [showOnlyDeleted, setShowOnlyDeleted] = useState(
-        params.showOnlyDeleted === 'true',
-    );
+    const { filters, handleSearch, handleChange, filtersUpdated } =
+        useFilterState({
+            baseUrl,
+            params,
+            saveSearchInHistory: false,
+        });
     const [textSearchError, setTextSearchError] = useState(false);
-    const dispatch = useDispatch();
+
     // const { data, isFetching: isFetchingCountries } = useGetCountries();
     // const countriesList = data?.orgUnits ?? [];
-
-    const handleSearch = useCallback(() => {
-        if (filtersUpdated) {
-            setFiltersUpdated(false);
-            const urlParams = {
-                // countries,
-                search: search && search !== '' ? search : undefined,
-                showOnlyDeleted: showOnlyDeleted || undefined,
-            };
-            const url = genUrl(router, urlParams);
-            dispatch(replace(url));
-        }
-    }, [dispatch, filtersUpdated, router, search, showOnlyDeleted]);
-
-    useEffect(() => {
-        setFiltersUpdated(true);
-    }, [search, showOnlyDeleted]);
 
     return (
         <>
@@ -61,10 +45,11 @@ export const GroupedCampaignsFilter: FunctionComponent<Props> = ({
                     <Grid item xs={3}>
                         <InputComponent
                             keyValue="search"
-                            onChange={(key, value) => {
-                                setSearch(value);
-                            }}
-                            value={search}
+                            onChange={handleChange}
+                            // onChange={(key, value) => {
+                            //     setSearch(value);
+                            // }}
+                            value={filters.search}
                             type="search"
                             label={MESSAGES.search}
                             onEnterPressed={handleSearch}
@@ -74,10 +59,11 @@ export const GroupedCampaignsFilter: FunctionComponent<Props> = ({
                         {!disableOnlyDeleted && (
                             <InputComponent
                                 keyValue="showOnlyDeleted"
-                                onChange={(key, value) => {
-                                    setShowOnlyDeleted(value);
-                                }}
-                                value={showOnlyDeleted}
+                                onChange={handleChange}
+                                // onChange={(key, value) => {
+                                //     setShowOnlyDeleted(value);
+                                // }}
+                                value={filters.showOnlyDeleted}
                                 type="checkbox"
                                 label={MESSAGES.showOnlyDeleted}
                             />

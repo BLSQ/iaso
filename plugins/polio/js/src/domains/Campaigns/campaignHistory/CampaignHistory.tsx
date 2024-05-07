@@ -1,32 +1,28 @@
 /* eslint-disable camelcase */
-import React, { useState, useEffect, FunctionComponent } from 'react';
+import React, {
+    useState,
+    useEffect,
+    FunctionComponent,
+    useCallback,
+} from 'react';
 
 import {
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     commonStyles,
-    // @ts-ignore
     LoadingSpinner,
 } from 'bluesquare-components';
-import { useSelector, useDispatch } from 'react-redux';
 
 import { Box, Grid, Theme, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
+import { useGoBack } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useGoBack';
+import { useRedirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import { CampaignLogDetail } from './CampaignLogDetail';
 
 import WidgetPaper from '../../../../../../../hat/assets/js/apps/Iaso/components/papers/WidgetPaperComponent';
 import ErrorPaperComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/papers/ErrorPaperComponent';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
-import { redirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
-import {
-    CAMPAIGN_HISTORY_URL,
-    DASHBOARD_BASE_URL,
-} from '../../../constants/routes';
-
-import MESSAGES from '../../../constants/messages';
 import {
     useGetCampaignLogs,
     useGetCampaignLogDetail,
@@ -34,35 +30,26 @@ import {
     initialLogDetail,
 } from './hooks/useGetCampaignHistory';
 import { DropdownOptions } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
+import { baseUrls } from '../../../constants/urls';
+import MESSAGES from '../../../constants/messages';
 
-type RouterCustom = {
-    prevPathname?: string;
-};
-type State = {
-    routerCustom: RouterCustom;
-};
 type Params = {
     campaignId: string;
     logId: string;
 };
 
-type Router = {
-    goBack: () => void;
-};
-
-type Props = {
-    params: Params;
-    router: Router;
-};
-
 const useStyles = makeStyles((theme: Theme) => ({
     ...commonStyles(theme),
 }));
-
-export const CampaignHistory: FunctionComponent<Props> = ({
-    params,
-    router,
-}) => {
+const baseUrl = baseUrls.campaignHistory;
+const campaignUrl = baseUrls.campaigns;
+export const CampaignHistory: FunctionComponent = () => {
+    const { formatMessage } = useSafeIntl();
+    const classes: Record<string, string> = useStyles();
+    const params = useParamsObject(baseUrl) as Params;
+    const goBack = useGoBack(campaignUrl);
+    const redirectToReplace = useRedirectToReplace();
     const {
         data: campaignLogsDropdown,
         isFetching: isFetchingCampaignLogsDropdown,
@@ -84,36 +71,30 @@ export const CampaignHistory: FunctionComponent<Props> = ({
         isError: boolean;
     } = useGetCampaignLogDetail(initialLogDetail, params.logId);
 
-    const { formatMessage } = useSafeIntl();
-
-    const classes: Record<string, string> = useStyles();
-
-    const prevPathname: string | undefined = useSelector(
-        (state: State) => state.routerCustom.prevPathname,
-    );
-    const dispatch = useDispatch();
-
     const [logIdInitialValue, setLogIdInitialValue] = useState<
         number | undefined
     >(undefined);
 
-    const handleChange = (key, value) => {
-        const newParams = {
-            ...params,
-            [key]: value,
-        };
-        dispatch(redirectToReplace(CAMPAIGN_HISTORY_URL, newParams));
-    };
+    const handleChange = useCallback(
+        (key, value) => {
+            const newParams = {
+                ...params,
+                [key]: value,
+            };
+            redirectToReplace(baseUrl, newParams);
+        },
+        [params, redirectToReplace],
+    );
 
     useEffect(() => {
         if (campaignLogsDropdown && params.logId === undefined) {
             const defaultParams = {
                 ...params,
-                logId: campaignLogsDropdown[0]?.value,
+                logId: `${campaignLogsDropdown[0]?.value}`,
             };
-            dispatch(redirectToReplace(CAMPAIGN_HISTORY_URL, defaultParams));
+            redirectToReplace(baseUrl, defaultParams);
         }
-    }, [campaignLogsDropdown, params, dispatch]);
+    }, [campaignLogsDropdown, params, redirectToReplace]);
 
     useEffect(() => {
         setLogIdInitialValue(
@@ -130,13 +111,7 @@ export const CampaignHistory: FunctionComponent<Props> = ({
             <TopBar
                 title={formatMessage(MESSAGES.campaignHistory)}
                 displayBackButton
-                goBack={() => {
-                    if (prevPathname) {
-                        router.goBack();
-                    } else {
-                        dispatch(redirectToReplace(DASHBOARD_BASE_URL, {}));
-                    }
-                }}
+                goBack={goBack}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Grid container spacing={4}>

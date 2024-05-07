@@ -24,7 +24,7 @@ import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages.js';
 import { useFormState } from '../../hooks/form.js';
 
-import { baseUrls } from '../../constants/urls.js';
+import { baseUrls } from '../../constants/urls';
 
 import { createForm, updateForm } from '../../utils/requests';
 import FormVersions from './components/FormVersionsComponent';

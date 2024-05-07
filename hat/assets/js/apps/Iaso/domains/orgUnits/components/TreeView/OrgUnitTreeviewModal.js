@@ -213,7 +213,9 @@ const OrgUnitTreeviewModal = ({
             </Box>
             <Box mt={1}>
                 <TreeViewWithSearch
-                    getChildrenData={getChildrenData}
+                    getChildrenData={id =>
+                        getChildrenData(id, validationStatus)
+                    }
                     getRootData={getRootDataWithSource}
                     label={makeTreeviewLabel(
                         classes,
@@ -230,6 +232,7 @@ const OrgUnitTreeviewModal = ({
                     parseNodeIds={getOrgUnitAncestors}
                     multiselect={multiselect}
                     queryOptions={{ keepPreviousData: true }}
+                    childrenQueryOptions={{ keepPreviousData: true }}
                     preselected={selectedOrgUnitsIds}
                     preexpanded={selectedOrgUnitParents}
                     selectedData={selectedOrgUnits}

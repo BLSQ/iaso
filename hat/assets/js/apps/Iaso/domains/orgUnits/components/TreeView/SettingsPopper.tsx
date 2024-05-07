@@ -75,9 +75,6 @@ export const SettingsPopper: FunctionComponent<Props> = ({
         [setSettings],
     );
 
-    const handleClickAway = useCallback(() => {
-        setAnchorEl(null);
-    }, []);
     const open = Boolean(anchorEl);
     return (
         <Box>
@@ -98,7 +95,11 @@ export const SettingsPopper: FunctionComponent<Props> = ({
                     <CancelOutlinedIcon color="primary" fontSize="small" />
                 </IconButton>
 
-                <ClickAwayListener onClickAway={handleClickAway}>
+                <ClickAwayListener
+                    onClickAway={() => {
+                        setAnchorEl(null);
+                    }}
+                >
                     <Paper sx={styles.paper} elevation={1}>
                         {settingKeys.map(settingKey => (
                             <Box key={settingKey} py={0.5}>

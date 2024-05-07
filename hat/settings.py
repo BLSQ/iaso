@@ -638,10 +638,11 @@ CELERY_RESULT_SERIALIZER = "json"
 CELERY_RESULT_EXTENDED = True
 
 # Plugin config
-print("Enabled plugins:", PLUGINS, end=" ")
+print("Enabled plugins:", PLUGINS)
 for plugin_name in PLUGINS:
     try:
         plugin_settings = importlib.import_module(f"plugins.{plugin_name}.plugin_settings")
+        print(f"\tplugin_settings.py file found for plugin {plugin_name}")
 
         if hasattr(plugin_settings, "INSTALLED_APPS"):
             INSTALLED_APPS.extend(plugin_settings.INSTALLED_APPS)
@@ -660,5 +661,8 @@ for plugin_name in PLUGINS:
         if hasattr(plugin_settings, "WEBPACK_LOADER"):
             WEBPACK_LOADER |= plugin_settings.WEBPACK_LOADER
 
-    except ModuleNotFoundError:  # Use "simple" plugin system if no settings file found
+    except ModuleNotFoundError:  # Use "basic" plugin system if no settings file found
+        print(
+            f"\tno plugin_settings.py file found for plugin {plugin_name}, appending plugins.{plugin_name} to INSTALLED_APPS"
+        )
         INSTALLED_APPS.append(f"plugins.{plugin_name}")

@@ -1,0 +1,23 @@
+import os
+
+"""
+Useful for certain settings, BASE_DIR is the root directory of this plugin.
+E.g. to add template directories from your plugin to the main Iaso app:
+
+```python
+TEMPLATES_DIRS = [
+    os.path.join(BASE_DIR, "templates"),
+]
+```
+"""
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+INSTALLED_APPS = []
+
+CONSTANTS = {
+    # "A_CONSTANT": os.environ.get("A_CONSTANT", "something"),
+}
+
+TEMPLATES_DIRS = []
+STATICFILES_DIRS = []
+WEBPACK_LOADER = {}

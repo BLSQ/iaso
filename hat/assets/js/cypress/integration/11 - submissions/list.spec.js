@@ -152,7 +152,7 @@ describe('Submissions', () => {
         goToPage();
         cy.intercept(
             'GET',
-            '/api/orgunits/treesearch/?&rootsForUser=true&defaultVersion=true&validation_status=all&ignoreEmptyNames=true',
+            '/api/orgunits/treesearch/?&rootsForUser=true&defaultVersion=true&validation_status=VALID&ignoreEmptyNames=true',
             {
                 fixture: 'orgunits/list.json',
             },

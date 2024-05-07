@@ -843,29 +843,22 @@ Alternatively this can be done outside of docker by running:
 
 # Background tasks & worker
 
-Iaso queue certain functions (task) for later execution, so they can run
-outside an HTTP request. This is used for functions that take a long time to execute,
-so they don't canceled in the middle by a timeout of a connection closed.
-e.g: bulk import, modifications or export of OrgUnits.  Theses are the functions
-marked by the decorator @task_decorator, when called they get added to a Queue
-and get executed by a worker.
+Iaso queues certain functions (tasks) for later execution, so they can run outside an HTTP request. This is used for functions that take a long time to execute, so they're not canceled in the middle by a timeout of a connection closed.
+Examples include: bulk import, modifications or export of OrgUnits.
+These functions are marked by the decorator `@task_decorator`. When called, they get added to a Queue and get executed by a worker.
 
 In local development, you can run a worker by using the command:
+
 ```
 docker-compose run iaso manage tasks_worker
 ```
 
 Alternatively, you can call the url `tasks/run_all` which will run all the pending tasks in queue.
 
-If you want to develop a new background task, the endpoint `/api/copy_version/`
-is a good example of how to create a task and to plug it to the api.
+If you want to develop a new background task, the endpoint `/api/copy_version/` is a good example of how to create a task and to plug it to the api.
 
-To call a  function with the @task decorator, you need to pass it a User objects, in addition to
-the other function's arguments, this arg represent which user is launching
-the task. At execution time the task will receive a iaso.models.Task
-instance in argument that should be used to report progress. It's
-mandatory for the function, at the end of a successful execution to call
-task.report_success() to mark its proper completion.
+To call a function with the `@task_decorator`, you need to pass it a `User` object, in addition to the other function's arguments. The user argument represents the user that is launching the task. At execution time the task will receive a `iaso.models.Task` instance as an argument that can be used to report progress. It's
+mandatory for the function to call `task.report_success()` at the end of a successful execution to mark its proper completion.
 
 We have two background workers mechanisms: a postgres backed one, and a SQS backed one. You can choose which one to use with the `BACKGROUND_TASK_SERVICE` environment variable, use either `SQS` or `POSTGRES` (it defaults to `SQS` in production).
 
@@ -877,6 +870,6 @@ In production on AWS, we use Elastic Beanstalk workers which use a SQS queue. Th
 
 ## Postgres
 
-This is also the one that you get when running locally with `docker-compose run iaso manage tasks_worker`, instead of enqueuing the tasks to SQS, we now enqueue them to our postgres server.
+This is the one you get when running locally with `docker-compose run iaso manage tasks_worker`. Instead of enqueuing the tasks to SQS, we enqueue them to our postgres server.
 
-Our tasks_worker process (which runs indefinitely) will listen for new tasks and run them when it gets notified (using PostgreSQL NOTIFY/LISTEN features)
+Our `tasks_worker` process (which runs indefinitely) will listen for new tasks and run them when it gets notified (using PostgreSQL NOTIFY/LISTEN features).

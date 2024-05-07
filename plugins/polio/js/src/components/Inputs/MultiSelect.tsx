@@ -3,6 +3,7 @@ import React, { FunctionComponent } from 'react';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { DropdownOptions } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
+export type Option = DropdownOptions<string | number>;
 type Props = {
     options: DropdownOptions<number>[];
     label: string;
@@ -16,6 +17,7 @@ type Props = {
     onChange?: (_keyValue: string, value: any) => void;
     // eslint-disable-next-line no-unused-vars
     renderTags?: (tagValue: Array<any>, getTagProps: any) => Array<any>;
+    returnFullObject?: boolean;
 };
 
 export const MultiSelect: FunctionComponent<Props> = ({
@@ -29,11 +31,11 @@ export const MultiSelect: FunctionComponent<Props> = ({
     clearable = true,
     withMarginTop = false,
     required = false,
+    returnFullObject = false,
 }) => {
     const hasError =
         form.errors &&
         Boolean(get(form.errors, field.name) && get(form.touched, field.name));
-
     return (
         <InputComponent
             keyValue={field.name}
@@ -56,6 +58,7 @@ export const MultiSelect: FunctionComponent<Props> = ({
                 }
             }}
             errors={hasError ? [get(form.errors, field.name)] : []}
+            returnFullObject={returnFullObject}
         />
     );
 };

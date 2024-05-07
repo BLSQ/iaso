@@ -1,33 +1,35 @@
 /* eslint-disable camelcase */
-import React, { useMemo, useState } from 'react';
-import {
-    useSafeIntl,
-    IconButton as IconButtonComponent,
-    useSkipEffectOnMount,
-    Column,
-    Paginated,
-} from 'bluesquare-components';
-import { Box, Tooltip, Typography } from '@mui/material';
+import { Box, Theme, Tooltip, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import MESSAGES from '../../../constants/messages';
-import { BUDGET_DETAILS } from '../../../constants/routes';
+import {
+    Column,
+    IconButton as IconButtonComponent,
+    Paginated,
+    useSafeIntl,
+    useSkipEffectOnMount,
+} from 'bluesquare-components';
+import React, { useMemo, useState } from 'react';
+
 import {
     DateCell,
     DateTimeCellRfc,
 } from '../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
-import { makeFileLinks, makeLinks } from '../utils';
 import { Optional } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { convertObjectToString } from '../../../utils';
 import { formatThousand } from '../../../../../../../hat/assets/js/apps/Iaso/utils';
-import { formatComment } from '../cards/utils';
-import { BudgetStep, Transition, Params } from '../types';
 import getDisplayName from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-
+import MESSAGES from '../../../constants/messages';
+import { BUDGET_DETAILS } from '../../../constants/routes';
+import { convertObjectToString } from '../../../utils';
 import { StepActionCell } from '../BudgetDetails/StepActionCell';
+import { DeleteBudgetProcessModal } from '../BudgetProcess/DeleteBudgetProcessModal';
+import { EditBudgetProcessModal } from '../BudgetProcess/EditBudgetProcessModal';
+import { formatComment } from '../cards/utils';
+import { BudgetStep, Params, Transition } from '../types';
+import { formatRoundNumbers, makeFileLinks, makeLinks } from '../utils';
 
 const baseUrl = BUDGET_DETAILS;
 
-export const styles = theme => {
+export const styles = (theme: Theme): Record<string, React.CSSProperties> => {
     return {
         hiddenRow: {
             color: theme.palette.secondary.main,
@@ -38,11 +40,13 @@ export const styles = theme => {
 
 // @ts-ignore
 export const useStyles = makeStyles(styles);
-export const getStyle = classes => isHidden => {
-    return isHidden ? classes.hiddenRow : '';
-};
+export const getStyle =
+    (classes: ReturnType<typeof useStyles>) =>
+    (isHidden: boolean): string => {
+        return isHidden ? classes.hiddenRow : '';
+    };
 
-export const useBudgetColumns = (): Column[] => {
+export const useBudgetColumns = (isUserPolioBudgetAdmin: boolean): Column[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
         const cols = [
@@ -52,27 +56,28 @@ export const useBudgetColumns = (): Column[] => {
             },
             {
                 Header: formatMessage(MESSAGES.country),
-                id: 'country__name',
-                accessor: 'country_name',
+                id: 'country_name',
                 sortable: true,
+                accessor: 'country_name',
             },
             {
                 Header: formatMessage(MESSAGES.status),
                 sortable: true,
-                accessor: 'budget_current_state_key',
+                accessor: 'current_state_key',
                 Cell: settings =>
                     settings.row.original.current_state?.label ?? '--',
             },
             {
-                Header: formatMessage(MESSAGES.virusNotificationDate),
-                sortable: true,
-                accessor: 'cvdpv2_notified_at',
-                Cell: DateCell,
+                Header: formatMessage(MESSAGES.rounds),
+                sortable: false,
+                accessor: 'rounds',
+                Cell: settings =>
+                    formatRoundNumbers(settings.row.original.rounds),
             },
             {
                 Header: formatMessage(MESSAGES.lastStep),
                 sortable: true,
-                accessor: 'budget_last_updated_at',
+                accessor: 'updated_at',
                 Cell: DateCell,
             },
             {
@@ -81,17 +86,31 @@ export const useBudgetColumns = (): Column[] => {
                 sortable: false,
                 Cell: settings => {
                     return (
-                        <IconButtonComponent
-                            icon="remove-red-eye"
-                            tooltipMessage={MESSAGES.details}
-                            url={`${baseUrl}/campaignName/${settings.row.original.obr_name}/campaignId/${settings.row.original.id}`}
-                        />
+                        <>
+                            <IconButtonComponent
+                                icon="remove-red-eye"
+                                size="small"
+                                tooltipMessage={MESSAGES.details}
+                                url={`${baseUrl}/campaignName/${settings.row.original.obr_name}/budgetProcessId/${settings.row.original.id}`}
+                            />
+                            {isUserPolioBudgetAdmin && (
+                                <EditBudgetProcessModal
+                                    budgetProcess={settings.row.original}
+                                />
+                            )}
+                            {isUserPolioBudgetAdmin && (
+                                <DeleteBudgetProcessModal
+                                    iconProps={{}}
+                                    budgetProcess={settings.row.original}
+                                />
+                            )}
+                        </>
                     );
                 },
             },
         ];
         return cols;
-    }, [formatMessage]);
+    }, [formatMessage, isUserPolioBudgetAdmin]);
 };
 
 export const useBudgetDetailsColumns = (
@@ -285,7 +304,7 @@ export const useTableState = ({
     budgetDetails,
     repeatTransitions,
 }: TablePorps): { resetPageToOne: unknown; columns: Column[] } => {
-    const { campaignName, campaignId } = params;
+    const { campaignName, budgetProcessId } = params;
     const [resetPageToOne, setResetPageToOne] = useState('');
 
     useSkipEffectOnMount(() => {
@@ -295,7 +314,7 @@ export const useTableState = ({
         delete newParams.page;
         delete newParams.order;
         setResetPageToOne(convertObjectToString(newParams));
-    }, [params.pageSize, campaignId, campaignName]);
+    }, [params.pageSize, budgetProcessId, campaignName]);
 
     const columns = useBudgetDetailsColumns(
         params,

@@ -58,7 +58,7 @@ type Props = {
     isFetching: boolean;
     districtShapes: OrgUnit[];
     selectedVaccine: string;
-    isPolio: boolean;
+    isPolio?: boolean;
 };
 
 export const DistrictScopeTable: FunctionComponent<Props> = ({

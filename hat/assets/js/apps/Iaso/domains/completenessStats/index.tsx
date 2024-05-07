@@ -11,7 +11,6 @@ import { Box, Grid, useTheme, Tabs, Tab, Paper } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import Color from 'color';
 
-import { Router } from 'react-router';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
 import { redirectTo } from '../../routing/actions';
@@ -34,6 +33,7 @@ import { CsvButton } from '../../components/Buttons/CsvButton';
 import { CompletenessRouterParams } from './types';
 import { Map } from './components/Map';
 import { useGetFormsOptions } from './hooks/api/useGetFormsOptions';
+import { Router } from '../../types/general';
 
 const baseUrl = baseUrls.completenessStats;
 const useStyles = makeStyles(theme => ({

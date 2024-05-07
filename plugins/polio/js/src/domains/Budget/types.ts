@@ -3,12 +3,13 @@ import {
     Nullable,
     Optional,
 } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { PaymentMode } from '../../constants/types';
 
 export type Timeline = {
     categories: Categories;
 };
 export type Params = {
-    campaignId: string;
+    budgetProcessId: string;
     previousStep: string;
     quickTransition?: string;
     campaignName?: string;
@@ -16,6 +17,7 @@ export type Params = {
     order?: string;
     pageSize?: string;
 };
+
 export type Item = {
     label: string;
     step_id?: number;
@@ -50,6 +52,15 @@ export type Transition = {
     displayed_fields: string[]; // This field determines the columns shown in the "create" modal
 };
 
+export type Round = {
+    id: number;
+    value?: number;
+    label?: string;
+    number: string;
+    target_population?: number;
+    cost: string;
+};
+
 export type Budget = {
     id: number;
     obr_name: string;
@@ -71,10 +82,47 @@ export type Budget = {
         key: string;
         label: string;
     }[];
+    rounds?: Round[];
     timeline?: Timeline;
 };
-
+type BudgetState = {
+    key: string;
+    label: string;
+};
+export type BudgetDetail = {
+    id: number;
+    rounds: Round[];
+    campaign_id: string;
+    has_data_in_budget_tool: boolean;
+    current_state_key: string;
+    current_state: BudgetState;
+    district_count?: number;
+    no_regret_fund_amount?: number;
+    payment_mode?: PaymentMode;
+    ra_completed_at_WFEDITABLE?: string;
+    who_sent_budget_at_WFEDITABLE?: string;
+    unicef_sent_budget_at_WFEDITABLE?: string;
+    gpei_consolidated_budgets_at_WFEDITABLE?: string;
+    submitted_to_rrt_at_WFEDITABLE?: string;
+    feedback_sent_to_gpei_at_WFEDITABLE?: string;
+    re_submitted_to_rrt_at_WFEDITABLE?: string;
+    submitted_to_orpg_operations1_at_WFEDITABLE?: string;
+    feedback_sent_to_rrt1_at_WFEDITABLE?: string;
+    re_submitted_to_orpg_operations1_at_WFEDITABLE?: string;
+    submitted_to_orpg_wider_at_WFEDITABLE?: string;
+    submitted_to_orpg_operations2_at_WFEDITABLE?: string;
+    feedback_sent_to_rrt2_at_WFEDITABLE?: string;
+    re_submitted_to_orpg_operations2_at_WFEDITABLE?: string;
+    submitted_for_approval_at_WFEDITABLE?: string;
+    feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE?: string;
+    feedback_sent_to_orpg_operations_who_at_WFEDITABLE?: string;
+    approved_by_who_at_WFEDITABLE?: string;
+    approved_by_unicef_at_WFEDITABLE?: string;
+    approved_at_WFEDITABLE?: string;
+    approval_confirmed_at_WFEDITABLE?: string;
+};
 export type LinkWithAlias = { alias: string; url: string };
+
 export type FileWithName = {
     file: string;
     filename: string;
@@ -98,7 +146,7 @@ export type BudgetStep = {
 
 export type StepForm = {
     transition_key: string;
-    campaign: string;
+    budget_process: string;
     comment: Optional<string>;
     files: Optional<File[]>;
     links: Optional<LinkWithAlias[]>;
@@ -106,9 +154,10 @@ export type StepForm = {
     general: Nullable<string[]>;
     attachments: Nullable<string[]>;
 };
+
 export type OverrideStepForm = {
     new_state_key: Optional<string>;
-    campaign: string;
+    budget_process: string;
     comment: Optional<string>;
     files: Optional<File[]>;
     links: Optional<LinkWithAlias[]>;
@@ -122,4 +171,28 @@ export type Workflow = {
         key: string;
         label: string;
     }[];
+};
+
+export type Options = {
+    value: number;
+    label: string;
+};
+
+export type OptionsCampaigns = {
+    value: number;
+    label: string;
+    country_id: number;
+};
+
+export type OptionsRounds = {
+    value: number;
+    label: string;
+    campaign_id: number;
+    target_population?: number;
+};
+
+export type DropdownOptions = {
+    countries: Options[];
+    campaigns: OptionsCampaigns[];
+    rounds: OptionsRounds[];
 };

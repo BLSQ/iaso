@@ -343,6 +343,13 @@ class CampaignSerializer(serializers.ModelSerializer):
             ]
             round_data["datelogs"] = datelogs_with_pk
 
+            # At this point `round_data` has already been validated and deserialized to complex Django types.
+            # But it will still be passed to `RoundSerializer.data` as if it were native Python datatypes.
+            # So, we convert it back to a native datatype to prevent `RoundSerializer` to raise an error:
+            # "Incorrect type. Expected pk value, received BudgetProcess."…
+            budget_process = round_data.pop("budget_process", None)
+            round_data["budget_process"] = budget_process.pk if budget_process else None
+
             round_serializer = RoundSerializer(instance=round, data=round_data, context=self.context)
             round_serializer.is_valid(raise_exception=True)
             round_instance = round_serializer.save()
@@ -369,6 +376,17 @@ class CampaignSerializer(serializers.ModelSerializer):
                     scope.group.save()
 
                 scope.group.org_units.set(org_units)
+
+        # When some rounds need to be deleted, the payload contains only the rounds to keep.
+        # So we have to detect if somebody wants to delete a round to prevent deletion of
+        # rounds linked to budget processes.
+        has_rounds_to_delete = round_instances and instance.rounds.count() > len(round_instances)
+        if has_rounds_to_delete:
+            round_instances_ids = [r.id for r in round_instances]
+            rounds_to_delete = instance.rounds.exclude(id__in=round_instances_ids)
+            if rounds_to_delete.filter(budget_process__isnull=False).exists():
+                raise serializers.ValidationError("Cannot delete a round linked to a budget process.")
+
         instance.rounds.set(round_instances)
 
         campaign = super().update(instance, validated_data)

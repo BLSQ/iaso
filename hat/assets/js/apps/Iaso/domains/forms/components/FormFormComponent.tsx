@@ -23,6 +23,7 @@ import MESSAGES from '../messages';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import { FormDataType } from '../types/forms';
 import { FormLegendInput } from './FormLegendInput';
+import { SUBMISSIONS, SUBMISSIONS_UPDATE } from '../../../utils/permissions';
 import { CR_MODE_NONE, changeRequestModeOptions } from '../constants';
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -377,7 +378,9 @@ const FormForm: FunctionComponent<FormFormProps> = ({
             </Grid>
             {currentForm.id.value && (
                 <Grid justifyContent="flex-end" container spacing={2}>
-                    <DisplayIfUserHasPerm permission="iaso_submissions">
+                    <DisplayIfUserHasPerm
+                        permissions={[SUBMISSIONS, SUBMISSIONS_UPDATE]}
+                    >
                         <Grid item>
                             <Link
                                 className={classes.linkWithIcon}

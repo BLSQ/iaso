@@ -31,7 +31,7 @@ const goToPage = (
     interceptFlag = false;
     cy.intercept('GET', '/sockjs-node/**');
     cy.intercept('GET', '/api/profiles/me/**', fakeUser);
-    cy.intercept('GET', '/api/featureflags', {
+    cy.intercept('GET', '/api/featureflags/except_no_activated_modules/', {
         fixture: 'featureflags/list.json',
     }).as('getFeatureFlags');
     const options = {

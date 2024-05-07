@@ -232,6 +232,7 @@ const OrgUnitTreeviewModal = ({
                     parseNodeIds={getOrgUnitAncestors}
                     multiselect={multiselect}
                     queryOptions={{ keepPreviousData: true }}
+                    childrenQueryOptions={{ keepPreviousData: true }}
                     preselected={selectedOrgUnitsIds}
                     preexpanded={selectedOrgUnitParents}
                     selectedData={selectedOrgUnits}

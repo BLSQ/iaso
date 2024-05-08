@@ -1,15 +1,11 @@
 import React, { useMemo } from 'react';
-import {
-    IconButton as IconButtonComponent,
-    useSafeIntl,
-} from 'bluesquare-components';
+import { IconButton, useSafeIntl } from 'bluesquare-components';
 import { object } from 'prop-types';
 import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink.tsx';
-import { useRouter } from 'Iaso/routing/hooks/useRouter.tsx';
 import { useGetCountryUsersGroup, useGetProfiles } from '../requests';
 import MESSAGES from '../../../../constants/messages';
 import { CountryNotificationsConfigModal } from '../CountryNotificationsConfigModal';
-import { CONFIG_BASE_URL } from '../../../../constants/routes';
+import { baseUrls } from '../../../../constants/urls.ts';
 
 const makeUserNameToDisplay = user => {
     if (user.email) return ` ${user.email}`;
@@ -24,9 +20,8 @@ const allLanguages = [
     { value: 'PT', label: 'PT' },
 ];
 
-export const CountryNotificationsConfigTable = () => {
+export const CountryNotificationsConfigTable = ({ params }) => {
     const { formatMessage } = useSafeIntl();
-    const { params } = useRouter();
     const tableParams = useMemo(
         () => ({
             order: params.order ?? 'country__name', // Watch out, needs 2 underscores
@@ -77,7 +72,7 @@ export const CountryNotificationsConfigTable = () => {
                         allUsers={allUsers?.profiles}
                         allLanguages={allLanguages}
                         renderTrigger={({ openDialog }) => (
-                            <IconButtonComponent
+                            <IconButton
                                 onClick={() => {
                                     openDialog();
                                 }}
@@ -96,7 +91,7 @@ export const CountryNotificationsConfigTable = () => {
             data={tableData?.country_users_group ?? []}
             params={tableParams}
             columns={columns}
-            baseUrl={CONFIG_BASE_URL}
+            baseUrl={baseUrls.countryConfig}
             pages={tableData?.pages ?? 1}
             count={tableData?.count ?? 1}
             multiselect={false}

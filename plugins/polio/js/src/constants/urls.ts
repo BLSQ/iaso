@@ -199,6 +199,7 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
     stockVariation: {
         url: STOCK_VARIATION,
         params: [
+            ...paginationPathParams,
             `id`,
             `tab`,
             `${FORM_A}Order`,

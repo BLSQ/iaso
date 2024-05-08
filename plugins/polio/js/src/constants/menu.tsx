@@ -22,19 +22,21 @@ import WatchLaterIcon from '@mui/icons-material/WatchLater';
 import MESSAGES from './messages';
 import { MenuItem } from '../../../../../hat/assets/js/apps/Iaso/domains/app/types';
 import {
-    budgetPath,
-    calendarPath,
     campaignsPath,
-    countryConfigPath,
     groupedCampaignsPath,
-    imPath,
-    lqasAfroPath,
+    calendarPath,
     lqasCountryPath,
+    lqasAfroPath,
+    imGlobalPath,
+    imIhhPath,
+    imOhhPath,
+    budgetPath,
     nopvAuthPath,
-    notificationPath,
-    reasonsForDelayConfigPath,
-    stockManagementPath,
     supplychainPath,
+    stockManagementPath,
+    notificationPath,
+    countryConfigPath,
+    reasonsForDelayConfigPath,
 } from './routes';
 
 export const menu: MenuItem[] = [
@@ -91,19 +93,19 @@ export const menu: MenuItem[] = [
                     {
                         label: MESSAGES.imGlobal,
                         key: 'global',
-                        permissions: imPath.permissions,
+                        permissions: imGlobalPath.permissions,
                         icon: props => <HomeWorkIcon {...props} />,
                     },
                     {
                         label: MESSAGES.imIHH,
                         key: 'ihh',
-                        permissions: imPath.permissions,
+                        permissions: imIhhPath.permissions,
                         icon: props => <HomeIcon {...props} />,
                     },
                     {
                         label: MESSAGES.imOHH,
                         key: 'ohh',
-                        permissions: imPath.permissions,
+                        permissions: imOhhPath.permissions,
                         icon: props => <StorefrontIcon {...props} />,
                     },
                 ],

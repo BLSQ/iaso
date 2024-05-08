@@ -5,20 +5,20 @@ import { useSafeIntl } from 'bluesquare-components';
 import DatesRange from '../../../../../../../hat/assets/js/apps/Iaso/components/filters/DatesRange';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { FilterButton } from '../../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
-import { NOTIFICATIONS_BASE_URL } from '../../../constants/routes';
 import { useFilterState } from '../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 
 import MESSAGES from '../messages';
 import { BulkImportNotificationModal } from '../Modals/NotificationsBulkImportModal';
 import { CreateNotificationModal } from '../Modals/NotificationsCreateEditModal';
 import { NotificationsMetaData, NotificationsParams } from '../types';
+import { baseUrls } from '../../../constants/urls';
 
 type Props = {
     params: NotificationsParams;
     notificationsMetaData: NotificationsMetaData;
 };
 
-const baseUrl = NOTIFICATIONS_BASE_URL;
+const baseUrl = baseUrls.notification;
 
 export const NotificationsFilters: FunctionComponent<Props> = ({
     params,

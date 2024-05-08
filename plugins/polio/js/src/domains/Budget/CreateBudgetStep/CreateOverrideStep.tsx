@@ -9,18 +9,13 @@ import React, {
 } from 'react';
 import { useFormik, FormikProvider } from 'formik';
 import {
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     ConfirmCancelModal,
-    // @ts-ignore
     FilesUpload,
-    // @ts-ignore
     makeFullModal,
 } from 'bluesquare-components';
 import { Box, Chip, Divider, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useDispatch } from 'react-redux';
 import MESSAGES from '../../../constants/messages';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
@@ -33,13 +28,13 @@ import { OverrideStepForm } from '../types';
 import { UserHasTeamWarning } from './UserHasTeamWarning';
 import { AddMultipleLinks } from '../MultipleLinks/AddMultipleLinks';
 import { useOverrideStepValidation } from '../hooks/validation';
-import { redirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
-import { BUDGET_DETAILS } from '../../../constants/routes';
 import { TextArea } from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/TextArea';
 import { useGetRecipientTeams } from '../hooks/api/useGetEmailRecipients';
 import { OverrideStepButton } from './OverrideStepButton';
 import { useSaveOverrideStep } from '../hooks/api/useSaveOverrideStep';
 import { useGetWorkflowStatesForDropdown } from '../hooks/api/useGetBudget';
+import { baseUrls } from '../../../constants/urls';
+import { useRedirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 
 type Props = {
     campaignId: string;
@@ -66,11 +61,11 @@ const CreateOverrideStep: FunctionComponent<Props> = ({
     recipients = [],
 }) => {
     const currentUser = useCurrentUser();
+    const redirectToReplace = useRedirectToReplace();
     const { data: userHasTeam } = useUserHasTeam(currentUser?.user_id);
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: saveOverrideStep } = useSaveOverrideStep();
     const classes = useStyles();
-    const dispatch = useDispatch();
     const onSuccess = useCallback(() => {
         const trimmedParams = { ...params };
         if (params.quickTransition) {
@@ -79,8 +74,8 @@ const CreateOverrideStep: FunctionComponent<Props> = ({
         if (params.previousStep) {
             delete trimmedParams.previousStep;
         }
-        dispatch(redirectToReplace(BUDGET_DETAILS, trimmedParams));
-    }, [dispatch, params]);
+        redirectToReplace(baseUrls.budgetDetails, trimmedParams);
+    }, [params, redirectToReplace]);
 
     const { data: recipientTeams } = useGetRecipientTeams(recipients);
     const { data: possibleStates, isLoading: possibleStatesIsLoading } =
@@ -202,7 +197,7 @@ const CreateOverrideStep: FunctionComponent<Props> = ({
                             options={possibleStates}
                             errors={getErrors('new_state_key')}
                             label={MESSAGES.newBudgetState}
-                            isLoading={possibleStatesIsLoading}
+                            loading={possibleStatesIsLoading}
                             required
                         />
                     </Box>

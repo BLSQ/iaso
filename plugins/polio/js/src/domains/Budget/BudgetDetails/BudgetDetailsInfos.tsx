@@ -10,17 +10,16 @@ import {
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React, { FunctionComponent, useMemo } from 'react';
-// @ts-ignore
 import { useSafeIntl, Paginated } from 'bluesquare-components';
 import classnames from 'classnames';
+import { DisplayIfUserHasPerm } from '../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
 import WidgetPaperComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/papers/WidgetPaperComponent';
 import MESSAGES from '../../../constants/messages';
 import { BudgetStep, Categories, Transition } from '../types';
 import { CreateBudgetStep } from '../CreateBudgetStep/CreateBudgetStep';
 import { CreateOverrideStep } from '../CreateBudgetStep/CreateOverrideStep';
 import { BudgetTimeline } from './BudgetTimeline';
-import { userHasPermission } from '../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
-import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { BUDGET_ADMIN } from '../../../constants/permissions';
 
 type NextSteps = {
     regular?: Transition[];
@@ -29,7 +28,7 @@ type NextSteps = {
 
 type Params = {
     campaignId: string;
-    previousStep: string;
+    previousStep?: string;
     quickTransition?: string;
 };
 
@@ -78,7 +77,6 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const theme = useTheme();
     const classes = useStyles();
-    const currentUser = useCurrentUser();
 
     const isTabletOrDesktopLayout = useMediaQuery(theme.breakpoints.up('sm'));
     const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
@@ -88,7 +86,7 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
         : [];
     const [firstStep, ...steps] = nextStepsToDisplay;
     const previousBudgetStep = useMemo(() => {
-        if (!quickTransition) return null;
+        if (!quickTransition || !previousStep) return null;
         return (budgetDetails?.results ?? []).find(
             step => step.id === parseInt(previousStep, 10),
         );
@@ -199,10 +197,10 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
                                                 </Grid>
                                             );
                                         })}
-                                {userHasPermission(
-                                    'iaso_polio_budget_admin',
-                                    currentUser,
-                                ) && (
+
+                                <DisplayIfUserHasPerm
+                                    permissions={[BUDGET_ADMIN]}
+                                >
                                     <Grid item>
                                         {/* Ignore missing iconProps as it's not really mandatory (typing error in the component) */}
                                         {/* @ts-ignore */}
@@ -212,7 +210,7 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
                                             params={params}
                                         />
                                     </Grid>
-                                )}
+                                </DisplayIfUserHasPerm>
                             </>
                         )}
                     </Grid>

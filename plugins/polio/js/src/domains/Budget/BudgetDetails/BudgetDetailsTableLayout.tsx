@@ -2,16 +2,12 @@ import { Box, Divider, Paper } from '@mui/material';
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl, Column, Paginated } from 'bluesquare-components';
 import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
-
 import { BudgetDetailsFilters } from './BudgetDetailsFilters';
-
-import MESSAGES from '../../../constants/messages';
-import { BUDGET_DETAILS } from '../../../constants/routes';
-
 import { BudgetStep } from '../types';
-
 import { DropdownOptions } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { GraphTitle } from '../../LQAS-IM/shared/GraphTitle';
+import { baseUrls } from '../../../constants/urls';
+import MESSAGES from '../../../constants/messages';
 
 type Props = {
     budgetDetails?: Paginated<BudgetStep>;
@@ -66,7 +62,7 @@ export const BudgetDetailsTableLayout: FunctionComponent<Props> = ({
                         pages={budgetDetails?.pages}
                         params={params}
                         columns={columns}
-                        baseUrl={BUDGET_DETAILS}
+                        baseUrl={baseUrls.budgetDetails}
                         marginTop={false}
                         extraProps={{
                             loading: isFetching,

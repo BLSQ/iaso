@@ -30,5 +30,5 @@ export const useParamsObject = (
         });
 
         return result;
-    }, [baseUrl, params]);
+    }, [baseUrl, configs, params]);
 };

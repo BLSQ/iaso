@@ -2,7 +2,7 @@
 import React, { useMemo, useState } from 'react';
 import {
     useSafeIntl,
-    IconButton as IconButtonComponent,
+    IconButton,
     useSkipEffectOnMount,
     Column,
     Paginated,
@@ -11,7 +11,6 @@ import {
 import { Box, Tooltip, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import MESSAGES from '../../../constants/messages';
-import { BUDGET_DETAILS } from '../../../constants/routes';
 import {
     DateCell,
     DateTimeCellRfc,
@@ -24,8 +23,9 @@ import { BudgetStep, Transition, Params } from '../types';
 import getDisplayName from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 
 import { StepActionCell } from '../BudgetDetails/StepActionCell';
+import { baseUrls } from '../../../constants/urls';
 
-const baseUrl = BUDGET_DETAILS;
+const baseUrl = baseUrls.budgetDetails;
 
 export const styles = theme => {
     return {
@@ -81,10 +81,10 @@ export const useBudgetColumns = (): Column[] => {
                 sortable: false,
                 Cell: settings => {
                     return (
-                        <IconButtonComponent
+                        <IconButton
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.details}
-                            url={`${baseUrl}/campaignName/${settings.row.original.obr_name}/campaignId/${settings.row.original.id}`}
+                            url={`/${baseUrl}/campaignName/${settings.row.original.obr_name}/campaignId/${settings.row.original.id}`}
                         />
                     );
                 },
@@ -273,7 +273,7 @@ export const useBudgetDetailsColumns = (
     ]);
 };
 
-type TablePorps = {
+type TableProps = {
     events: Optional<BudgetStep[]>;
     params: Params;
     budgetDetails: Paginated<BudgetStep> | undefined;
@@ -284,7 +284,7 @@ export const useTableState = ({
     params,
     budgetDetails,
     repeatTransitions,
-}: TablePorps): { resetPageToOne: unknown; columns: Column[] } => {
+}: TableProps): { resetPageToOne: unknown; columns: Column[] } => {
     const { campaignName, campaignId } = params;
     const [resetPageToOne, setResetPageToOne] = useState('');
 

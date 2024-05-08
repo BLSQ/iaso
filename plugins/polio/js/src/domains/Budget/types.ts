@@ -9,7 +9,7 @@ export type Timeline = {
 };
 export type Params = {
     campaignId: string;
-    previousStep: string;
+    previousStep?: string;
     quickTransition?: string;
     campaignName?: string;
     page?: string;

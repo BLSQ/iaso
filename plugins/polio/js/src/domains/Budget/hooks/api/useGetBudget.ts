@@ -24,16 +24,15 @@ type Option = {
 };
 
 type Param = {
-    accountId: string;
-    budget_current_state_key__in: [number | string];
-    country__id__in: [number | string];
-    order: string;
-    orgUnitGroups: [number | string];
-    page: number | string;
-    pageSize: number | string;
-    roundStartFrom: string;
-    roundStartTo: string;
-    search: string;
+    budget_current_state_key__in?: string; // comma separated array
+    country__id__in?: string; // comma separated array
+    order?: string;
+    orgUnitGroups?: string; // comma separated array
+    page?: string;
+    pageSize?: string;
+    roundStartFrom?: string;
+    roundStartTo?: string;
+    search?: string;
 };
 const getBudgets = (params: any) => {
     const filteredParams = Object.entries(params).filter(

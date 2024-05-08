@@ -23,14 +23,11 @@ import {
     useGetWorkflowStatesForDropdown,
 } from './hooks/api/useGetBudget';
 import { Budget } from './types';
-import { handleTableDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/utils/table';
 import { useStyles } from '../../styles/theme';
-import { BUDGET } from '../../constants/routes';
 import MESSAGES from '../../constants/messages';
-
-type Props = {
-    router: any;
-};
+import { baseUrls } from '../../constants/urls';
+import { useParamsObject } from '../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
+import { useRedirectToReplace } from '../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 
 const getCsvParams = (apiParams: Record<string, any>): string => {
     const {
@@ -58,14 +55,28 @@ const usePaginationStyles = makeStyles({
     alignRight: { textAlign: 'right' },
 });
 
-export const BudgetList: FunctionComponent<Props> = ({ router }) => {
-    const { params } = router;
+type Params = {
+    search?: string;
+    budget_current_state_key__in?: string;
+    roundStartFrom?: string;
+    roundStartTo?: string;
+    country__id__in?: string;
+    orgUnitGroups?: string;
+    order?: string;
+    pageSize?: string;
+    page?: string;
+};
+const baseUrl = baseUrls.budget;
+
+export const BudgetList: FunctionComponent = () => {
+    const params = useParamsObject(baseUrl) as Params;
     const { formatMessage } = useSafeIntl();
     const paginationStyle = usePaginationStyles();
     const classes = useStyles();
     const [expand, setExpand] = useState<boolean>(false);
+    const redirectToReplace = useRedirectToReplace();
 
-    const apiParams = useBudgetParams(params);
+    const apiParams = useBudgetParams(params); // TODO fix and export type
     const csvParams = getCsvParams(apiParams);
 
     const { data: budgets, isFetching } = useGetBudgets(apiParams);
@@ -83,9 +94,9 @@ export const BudgetList: FunctionComponent<Props> = ({ router }) => {
 
     const onCardPaginationChange = useCallback(
         (_value, newPage) => {
-            handleTableDeepLink(BUDGET)({ ...apiParams, page: newPage });
+            redirectToReplace(baseUrl, { ...apiParams, page: newPage });
         },
-        [apiParams],
+        [apiParams, redirectToReplace],
     );
     const { data: possibleStates } = useGetWorkflowStatesForDropdown();
 
@@ -146,7 +157,7 @@ export const BudgetList: FunctionComponent<Props> = ({ router }) => {
                             pages={budgets?.pages}
                             params={apiParams}
                             columns={columns}
-                            baseUrl={BUDGET}
+                            baseUrl={baseUrl}
                             marginTop={false}
                             extraProps={{
                                 loading: isFetching,

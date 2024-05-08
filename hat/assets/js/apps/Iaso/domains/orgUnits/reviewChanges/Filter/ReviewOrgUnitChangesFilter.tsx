@@ -108,14 +108,16 @@ export const ReviewOrgUnitChangesFilter: FunctionComponent<Props> = ({
                     />
                 </Grid>
                 <Grid item xs={12} md={4} lg={3}>
-                    <OrgUnitTreeviewModal
-                        toggleOnLabelClick={false}
-                        titleMessage={MESSAGES.parent}
-                        onConfirm={orgUnit => {
-                            handleChange('parent_id', orgUnit?.id);
-                        }}
-                        initialSelection={initialOrgUnit}
-                    />
+                    <Box id="ou-tree-input">
+                        <OrgUnitTreeviewModal
+                            toggleOnLabelClick={false}
+                            titleMessage={MESSAGES.parent}
+                            onConfirm={orgUnit => {
+                                handleChange('parent_id', orgUnit?.id);
+                            }}
+                            initialSelection={initialOrgUnit}
+                        />
+                    </Box>
                     <InputComponent
                         type="select"
                         multi

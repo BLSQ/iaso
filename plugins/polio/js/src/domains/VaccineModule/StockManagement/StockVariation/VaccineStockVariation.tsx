@@ -1,18 +1,17 @@
 import React, { FunctionComponent } from 'react';
 import {
+    UrlParams,
     commonStyles,
     textPlaceholder,
     useSafeIntl,
 } from 'bluesquare-components';
 import { Grid, Box, Paper, Tab, Tabs, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-import {
-    STOCK_MANAGEMENT_DETAILS,
-    STOCK_VARIATION,
-} from '../../../../constants/routes';
+import { STOCK_MANAGEMENT_WRITE } from '../../../../constants/permissions';
+import { DisplayIfUserHasPerm } from '../../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
+import { baseUrls } from '../../../../constants/urls';
+import { useParamsObject } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import { useTabs } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useTabs';
-import { Router } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import { useGoBack } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useGoBack';
 import { DESTRUCTION, FORM_A, INCIDENT } from '../constants';
 import { StockVariationParams, StockVariationTab } from '../types';
@@ -34,10 +33,6 @@ import {
 import { CreateFormA } from './Modals/CreateEditFormA';
 import { CreateDestruction } from './Modals/CreateEditDestruction';
 import { CreateIncident } from './Modals/CreateEditIncident';
-import { userHasPermission } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
-import { POLIO_VACCINE_STOCK_WRITE } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
-
-type Props = { router: Router };
 
 const useStyles = makeStyles(theme => {
     return {
@@ -48,35 +43,34 @@ const useStyles = makeStyles(theme => {
     };
 });
 
-export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
-    const goBack = useGoBack(router, STOCK_MANAGEMENT_DETAILS, {
-        id: router.params.id as string,
-    });
+const baseUrl = baseUrls.stockVariation;
+
+type VaccineStockVariationParams = Partial<UrlParams> & StockVariationParams;
+
+export const VaccineStockVariation: FunctionComponent = () => {
+    const params = useParamsObject(baseUrl) as VaccineStockVariationParams;
+    const goBack = useGoBack(
+        `${baseUrls.stockManagementDetails}/id/${params.id}`,
+        true,
+    );
     const { formatMessage } = useSafeIntl();
-    const currentUser = useCurrentUser();
     const classes: Record<string, string> = useStyles();
-    const initialTab = (router.params.tab as StockVariationTab) ?? FORM_A;
+    const initialTab = (params.tab as StockVariationTab) ?? FORM_A;
     const { tab, handleChangeTab } = useTabs<StockVariationTab>({
-        params: router.params,
+        params,
         defaultTab: initialTab,
-        baseUrl: STOCK_VARIATION,
+        baseUrl,
     });
 
     const { data: formA, isFetching: isFetchingFormA } = useGetFormAList(
-        router.params as StockVariationParams,
+        params,
         tab === FORM_A,
     );
     const { data: destructions, isFetching: isFetchingDestructions } =
-        useGetDestructionList(
-            router.params as StockVariationParams,
-            tab === DESTRUCTION,
-        );
+        useGetDestructionList(params, tab === DESTRUCTION);
     const { data: incidents, isFetching: isFetchingIncidents } =
-        useGetIncidentList(
-            router.params as StockVariationParams,
-            tab === INCIDENT,
-        );
-    const { data: summary } = useGetStockManagementSummary(router.params.id);
+        useGetIncidentList(params, tab === INCIDENT);
+    const { data: summary } = useGetStockManagementSummary(params.id);
     const title = `${formatMessage(MESSAGES.stockVariation)}: ${
         summary?.country_name ?? textPlaceholder
     } - ${summary?.vaccine_type ?? textPlaceholder}`;
@@ -131,54 +125,48 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
                             <Typography variant="h5" color="primary">
                                 {formatMessage(MESSAGES[`${tab}Reports`])}
                             </Typography>
-                            {userHasPermission(
-                                POLIO_VACCINE_STOCK_WRITE,
-                                currentUser,
-                            ) &&
-                                tab === FORM_A && (
+                            <DisplayIfUserHasPerm
+                                permissions={[STOCK_MANAGEMENT_WRITE]}
+                            >
+                                {tab === FORM_A && (
                                     <CreateFormA
                                         iconProps={{}}
                                         countryName={summary?.country_name}
                                         vaccine={summary?.vaccine_type}
-                                        vaccineStockId={
-                                            router.params.id as string
-                                        }
+                                        vaccineStockId={params.id as string}
                                     />
                                 )}
-                            {userHasPermission(
-                                POLIO_VACCINE_STOCK_WRITE,
-                                currentUser,
-                            ) &&
-                                tab === DESTRUCTION && (
+                            </DisplayIfUserHasPerm>
+                            <DisplayIfUserHasPerm
+                                permissions={[STOCK_MANAGEMENT_WRITE]}
+                            >
+                                {tab === DESTRUCTION && (
                                     <CreateDestruction
                                         iconProps={{}}
                                         countryName={summary?.country_name}
                                         vaccine={summary?.vaccine_type}
-                                        vaccineStockId={
-                                            router.params.id as string
-                                        }
+                                        vaccineStockId={params.id as string}
                                     />
                                 )}
-                            {userHasPermission(
-                                POLIO_VACCINE_STOCK_WRITE,
-                                currentUser,
-                            ) &&
-                                tab === INCIDENT && (
+                            </DisplayIfUserHasPerm>
+                            <DisplayIfUserHasPerm
+                                permissions={[STOCK_MANAGEMENT_WRITE]}
+                            >
+                                {tab === INCIDENT && (
                                     <CreateIncident
                                         iconProps={{}}
                                         countryName={summary?.country_name}
                                         vaccine={summary?.vaccine_type}
-                                        vaccineStockId={
-                                            router.params.id as string
-                                        }
+                                        vaccineStockId={params.id as string}
                                     />
                                 )}
+                            </DisplayIfUserHasPerm>
                         </Grid>
                         {tab === FORM_A && (
                             <VaccineStockVariationTable
                                 data={formA}
                                 columns={formAColumns}
-                                params={router.params}
+                                params={params}
                                 paramsPrefix={tab}
                                 isFetching={isFetchingFormA}
                                 defaultSorted={[
@@ -190,7 +178,7 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
                             <VaccineStockVariationTable
                                 data={destructions}
                                 columns={destructionsColumns}
-                                params={router.params}
+                                params={params}
                                 paramsPrefix={tab}
                                 isFetching={isFetchingDestructions}
                                 defaultSorted={[
@@ -205,7 +193,7 @@ export const VaccineStockVariation: FunctionComponent<Props> = ({ router }) => {
                             <VaccineStockVariationTable
                                 data={incidents}
                                 columns={incidentsColumns}
-                                params={router.params}
+                                params={params}
                                 paramsPrefix={tab}
                                 isFetching={isFetchingIncidents}
                                 defaultSorted={[

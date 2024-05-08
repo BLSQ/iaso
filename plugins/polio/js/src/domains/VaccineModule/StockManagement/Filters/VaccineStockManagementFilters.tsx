@@ -3,15 +3,15 @@ import { Box, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { useGetGroupDropdown } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
 import { FilterButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
-import { STOCK_MANAGEMENT } from '../../../../constants/routes';
 import { useFilterState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import MESSAGES from '../messages';
 import { polioVaccines } from '../../../../constants/virus';
 import { useGetCountriesOptions } from '../../SupplyChain/hooks/api/vrf';
 import { StockManagementListParams } from '../types';
+import { baseUrls } from '../../../../constants/urls';
 
-const baseUrl = STOCK_MANAGEMENT;
+const baseUrl = baseUrls.stockManagement;
 type Props = { params: StockManagementListParams };
 
 export const VaccineStockManagementFilters: FunctionComponent<Props> = ({

@@ -18,7 +18,6 @@ export const baseUrls = {
     orgUnitsChangeRequest: ORG_UNITS_CHANGE_REQUEST,
     // orgUnitsChangeRequestList: `${ORG_UNITS_CHANGE_REQUEST}/list`,
     registry: 'orgunits/registry',
-    registryDetail: 'orgunits/registry/details',
     groups: 'orgunits/groups',
     orgUnitTypes: 'orgunits/types',
     orgUnitDetails: 'orgunits/detail',

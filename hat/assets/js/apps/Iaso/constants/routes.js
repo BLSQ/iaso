@@ -35,7 +35,6 @@ import { LotsPayments } from '../domains/payments/LotsPayments.tsx';
 import { PotentialPayments } from '../domains/payments/PotentialPayments.tsx';
 import { Planning } from '../domains/plannings/index.tsx';
 import { Projects } from '../domains/projects/index.tsx';
-import { Details as RegistryDetail } from '../domains/registry/details.tsx';
 import { Registry } from '../domains/registry/index.tsx';
 import { SetupAccount } from '../domains/setup/index.tsx';
 import { Details as StorageDetails } from '../domains/storages/details.tsx';
@@ -528,6 +527,7 @@ export const orgUnitChangeRequestPath = {
         },
     ],
 };
+
 export const registryPath = {
     baseUrl: baseUrls.registry,
     permissions: [Permission.REGISTRY],
@@ -537,19 +537,8 @@ export const registryPath = {
             isRequired: false,
             key: 'accountId',
         },
-    ],
-};
-export const registryDetailPath = {
-    baseUrl: baseUrls.registryDetail,
-    permissions: [Permission.REGISTRY],
-    component: props => <RegistryDetail {...props} />,
-    params: [
         {
             isRequired: false,
-            key: 'accountId',
-        },
-        {
-            isRequired: true,
             key: 'orgUnitId',
         },
         {
@@ -1507,7 +1496,6 @@ export const routeConfigs = [
     workflowsDetailPath,
     orgUnitChangeRequestPath,
     registryPath,
-    registryDetailPath,
     modulesPath,
     potentialPaymentsPath,
     lotsPaymentsPath,

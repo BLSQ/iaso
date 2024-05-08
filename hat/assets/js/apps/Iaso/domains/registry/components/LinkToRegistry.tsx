@@ -1,19 +1,19 @@
-import React, { FunctionComponent } from 'react';
-import { useDispatch } from 'react-redux';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
 import { makeStyles } from '@mui/styles';
 import {
     IconButton as IconButtonComponent,
     useKeyPressListener,
 } from 'bluesquare-components';
-import MenuBookIcon from '@mui/icons-material/MenuBook';
-import { Link } from 'react-router';
 import classNames from 'classnames';
+import React, { FunctionComponent } from 'react';
+import { useDispatch } from 'react-redux';
+import { Link } from 'react-router';
 
-import { userHasPermission } from '../../users/utils';
 import { baseUrls } from '../../../constants/urls';
+import { redirectTo, redirectToReplace } from '../../../routing/actions';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { OrgUnit, ShortOrgUnit } from '../../orgUnits/types/orgUnit';
-import { redirectTo, redirectToReplace } from '../../../routing/actions';
+import { userHasPermission } from '../../users/utils';
 
 import MESSAGES from '../messages';
 
@@ -48,7 +48,7 @@ export const LinkToRegistry: FunctionComponent<Props> = ({
     const classes: Record<string, string> = useStyles();
     const dispatch = useDispatch();
     if (userHasPermission(Permission.REGISTRY, user) && orgUnit) {
-        const url = `/${baseUrls.registryDetail}/orgUnitId/${orgUnit?.id}`;
+        const url = `/${baseUrls.registry}/orgUnitId/${orgUnit?.id}`;
         const handleClick = () => {
             if (targetBlankEnabled) {
                 window.open(`/dashboard${url}`, '_blank');

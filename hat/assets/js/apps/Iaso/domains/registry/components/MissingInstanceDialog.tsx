@@ -1,31 +1,31 @@
-import React, { FunctionComponent, useCallback } from 'react';
-import { useDispatch } from 'react-redux';
 import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
     Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
-    useSafeIntl,
-    makeFullModal,
-    commonStyles,
-    Table,
     IconButton,
+    Table,
+    commonStyles,
+    makeFullModal,
+    useSafeIntl,
 } from 'bluesquare-components';
+import React, { FunctionComponent, useCallback } from 'react';
+import { useDispatch } from 'react-redux';
 import EnketoIcon from '../../instances/components/EnketoIcon';
 
 import { useGetCreateInstance } from '../hooks/useGetCreateInstance';
 
 import { MissingInstanceButton } from './MissingInstanceButton';
 
-import { redirectToReplace } from '../../../routing/actions';
-import { RegistryDetailParams } from '../types';
 import { baseUrls } from '../../../constants/urls';
-import MESSAGES from '../messages';
+import { redirectToReplace } from '../../../routing/actions';
 import { CompletenessApiResponse } from '../../completenessStats/types';
+import MESSAGES from '../messages';
+import { RegistryDetailParams } from '../types';
 
 import { defaultSorted } from '../hooks/useGetEmptyInstanceOrgUnits';
 
@@ -98,7 +98,7 @@ const MissingInstanceDialog: FunctionComponent<Props> = ({
             ...params,
         };
         delete newParams.missingSubmissionVisible;
-        dispatch(redirectToReplace(baseUrls.registryDetail, newParams));
+        dispatch(redirectToReplace(baseUrls.registry, newParams));
         closeDialog();
     }, [closeDialog, dispatch, params]);
     const creteInstance = useGetCreateInstance(window.location.href, formId);
@@ -162,7 +162,7 @@ const MissingInstanceDialog: FunctionComponent<Props> = ({
                     params={params}
                     elevation={0}
                     onTableParamsChange={p => {
-                        dispatch(redirectToReplace(baseUrls.registryDetail, p));
+                        dispatch(redirectToReplace(baseUrls.registry, p));
                     }}
                 />
             </DialogContent>

@@ -105,7 +105,7 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
                 ...params,
                 orgUnitListTab: newTab,
             };
-            dispatch(redirectToReplace(baseUrls.registryDetail, newParams));
+            dispatch(redirectToReplace(baseUrls.registry, newParams));
         },
         [dispatch, params],
     );

@@ -8,7 +8,6 @@ import React, {
 import { Paper, Divider, Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
-import { useDispatch } from 'react-redux';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 
 import { LqasSummary } from './LqasSummary';
@@ -21,9 +20,6 @@ import {
 } from '../../../../constants/types';
 
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { Router } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
-import { LQAS_BASE_URL } from '../../../../constants/routes';
-import { redirectToReplace } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 import MESSAGES from '../../../../constants/messages';
 import { computeScopeCounts, determineLqasImDates } from '../../shared/utils';
 import { LIST, LqasIMView, MAP } from '../../shared/constants';
@@ -31,6 +27,8 @@ import { LqasCountryListOverview } from './LqasCountryListOverview';
 import { useGetGeoJson } from '../../../Campaigns/Scope/hooks/useGetGeoJson';
 import { getLqasImMapLayer } from '../../IM/utils';
 import { LqasCountryMap } from './LqasCountryMap';
+import { useRedirectToReplace } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
+import { baseUrls } from '../../../../constants/urls';
 
 const defaultShapes = [];
 type Props = {
@@ -46,7 +44,7 @@ type Props = {
     // eslint-disable-next-line no-unused-vars
     onRoundChange: (value: number) => void;
     side: Side;
-    router: Router;
+    params: any; // TODO add typing
 };
 
 const useStyles = makeStyles(theme => ({
@@ -63,6 +61,8 @@ const useStyles = makeStyles(theme => ({
     hidden: { visibility: 'hidden', height: 0 },
 }));
 
+const baseUrl = baseUrls.lqasCountry;
+
 export const LqasOverviewContainer: FunctionComponent<Props> = ({
     round,
     campaign,
@@ -75,11 +75,11 @@ export const LqasOverviewContainer: FunctionComponent<Props> = ({
     options,
     onRoundChange,
     side,
-    router,
+    params,
 }) => {
-    const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
+    const redirectToReplace = useRedirectToReplace();
     const campaignObject = campaigns.filter(
         (c: Record<string, unknown>) => c.obr_name === campaign,
     )[0] as Campaign;
@@ -108,8 +108,7 @@ export const LqasOverviewContainer: FunctionComponent<Props> = ({
         round,
         LqasIMView.lqas,
     );
-    const paramTab =
-        side === Sides.left ? router.params.leftTab : router.params.rightTab;
+    const paramTab = side === Sides.left ? params.leftTab : params.rightTab;
 
     const [tab, setTab] = useState(paramTab ?? MAP);
 
@@ -119,12 +118,12 @@ export const LqasOverviewContainer: FunctionComponent<Props> = ({
             const tabKey = side === Sides.left ? 'leftTab' : 'rightTab';
             setTab(newtab);
             const newParams = {
-                ...router.params,
+                ...params,
                 [tabKey]: newtab,
             };
-            dispatch(redirectToReplace(`${LQAS_BASE_URL}/lqas`, newParams));
+            redirectToReplace(baseUrl, newParams);
         },
-        [router.params, dispatch, side],
+        [side, params, redirectToReplace],
     );
     // TABS
 

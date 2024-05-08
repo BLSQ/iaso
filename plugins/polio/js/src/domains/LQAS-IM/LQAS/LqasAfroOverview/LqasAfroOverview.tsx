@@ -1,28 +1,24 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
 import { Box, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import { useDispatch } from 'react-redux';
-import { push } from 'react-router-redux';
 import TopBar from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { LqasAfroMapFilters } from './Filters/LqasAfroMapFilters';
 import { useStyles } from '../../../../styles/theme';
-import { Router } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import { AfroMapParams } from './types';
-import { genUrl } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import MESSAGES from '../../../../constants/messages';
 import { LqasAfroMapWithSelector } from './Map/LqasAfroMapWithSelector';
-import { redirectToReplace } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
-import { LQAS_AFRO_MAP_URL } from '../../../../constants/routes';
+import { baseUrls } from '../../../../constants/urls';
+import { useParamsObject } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
+import { useRedirectToReplace } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 
-type Props = {
-    router: Router;
-};
-export const LqasAfroOverview: FunctionComponent<Props> = ({ router }) => {
+const baseUrl = baseUrls.lqasAfro;
+export const LqasAfroOverview: FunctionComponent = () => {
+    const params = useParamsObject(baseUrl) as AfroMapParams;
+    const redirectToReplace = useRedirectToReplace();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
     const [selectedRounds, setSelectedRounds] = useState(
-        router.params?.rounds?.split(',') ?? ['penultimate', 'latest'],
+        params?.rounds?.split(',') ?? ['penultimate', 'latest'],
     );
 
     const onRoundChange = useCallback(
@@ -34,17 +30,17 @@ export const LqasAfroOverview: FunctionComponent<Props> = ({ router }) => {
                 updatedSelection[1] = value;
             }
             setSelectedRounds(updatedSelection);
-            const url = genUrl(router, {
-                rounds: updatedSelection,
+            redirectToReplace(baseUrl, {
+                ...params,
+                rounds: `${updatedSelection}`,
             });
-            dispatch(push(url));
         },
-        [dispatch, router, selectedRounds],
+        [params, redirectToReplace, selectedRounds],
     );
     const onDisplayedShapeChange = useCallback(
         (value, side) => {
             const tempParams = {
-                ...router.params,
+                ...params,
             };
             if (side === 'left') {
                 tempParams.displayedShapesLeft = value;
@@ -52,14 +48,9 @@ export const LqasAfroOverview: FunctionComponent<Props> = ({ router }) => {
             if (side === 'right') {
                 tempParams.displayedShapesRight = value;
             }
-            dispatch(
-                redirectToReplace(
-                    LQAS_AFRO_MAP_URL,
-                    tempParams as AfroMapParams,
-                ),
-            );
+            redirectToReplace(baseUrl, tempParams as AfroMapParams);
         },
-        [dispatch, router],
+        [params, redirectToReplace],
     );
 
     return (
@@ -69,7 +60,7 @@ export const LqasAfroOverview: FunctionComponent<Props> = ({ router }) => {
                 displayBackButton={false}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <LqasAfroMapFilters params={router.params as AfroMapParams} />
+                <LqasAfroMapFilters params={params} />
 
                 <Box mt={2}>
                     <Grid container spacing={2} direction="row">
@@ -77,9 +68,8 @@ export const LqasAfroOverview: FunctionComponent<Props> = ({ router }) => {
                             <LqasAfroMapWithSelector
                                 onRoundChange={onRoundChange}
                                 side="left"
-                                router={router}
                                 selectedRound={selectedRounds[0]}
-                                params={router.params as AfroMapParams}
+                                params={params}
                                 onDisplayedShapeChange={onDisplayedShapeChange}
                             />
                         </Grid>
@@ -87,9 +77,8 @@ export const LqasAfroOverview: FunctionComponent<Props> = ({ router }) => {
                             <LqasAfroMapWithSelector
                                 onRoundChange={onRoundChange}
                                 side="right"
-                                router={router}
                                 selectedRound={selectedRounds[1]}
-                                params={router.params as AfroMapParams}
+                                params={params}
                                 onDisplayedShapeChange={onDisplayedShapeChange}
                             />
                         </Grid>

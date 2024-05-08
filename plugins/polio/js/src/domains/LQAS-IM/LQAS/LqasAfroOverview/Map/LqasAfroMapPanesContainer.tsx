@@ -6,9 +6,6 @@ import React, {
 } from 'react';
 import { useMapEvents } from 'react-leaflet';
 import { LoadingSpinner } from 'bluesquare-components';
-import { useDispatch } from 'react-redux';
-import { redirectToReplace } from '../../../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
-import { LQAS_AFRO_MAP_URL } from '../../../../../constants/routes';
 import { COUNTRY, DISTRICT } from '../../../shared/constants';
 import { MapPanes } from '../../../../Campaigns/MapComponent/MapPanes';
 import {
@@ -23,6 +20,8 @@ import { LqasAfroPopup } from './LqasAfroPopUp';
 import { getRound } from '../utils';
 import { LqasAfroOverviewContext } from '../Context/LqasAfroOverviewContext';
 import { lqasDistrictColors } from '../../constants';
+import { useRedirectToReplace } from '../../../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
+import { baseUrls } from '../../../../../constants/urls';
 
 const getMainLayerStyle = shape => {
     return lqasDistrictColors[shape.status] ?? defaultShapeStyle;
@@ -41,12 +40,12 @@ type Props = {
     params: AfroMapParams;
     side: Side;
 };
-
+const baseUrl = baseUrls.lqasAfro;
 export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
     params,
     side,
 }) => {
-    const dispatch = useDispatch();
+    const redirectToReplace = useRedirectToReplace();
     const handleEvent = useCallback(
         currentMap => {
             const newParams: Record<string, string> = {
@@ -69,14 +68,9 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
             if (side === 'right') {
                 newParams.centerRight = paramCenter;
             }
-            dispatch(
-                redirectToReplace(
-                    LQAS_AFRO_MAP_URL,
-                    newParams as AfroMapParams,
-                ),
-            );
+            redirectToReplace(baseUrl, newParams);
         },
-        [dispatch, params, side],
+        [params, redirectToReplace, side],
     );
     const map = useMapEvents({
         zoomend: () => {

@@ -38,11 +38,11 @@ export const LinkButton: FunctionComponent<Props> = props => {
             preventScrollReset={preventScrollReset}
         >
             <Button
+                variant="contained"
+                color="primary"
                 // eslint-disable-next-line react/jsx-props-no-spreading
                 {...buttonProps}
                 className={buttonClassName}
-                variant="contained"
-                color="primary"
                 onClick={() => null}
             >
                 {children}

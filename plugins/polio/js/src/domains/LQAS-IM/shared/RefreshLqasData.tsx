@@ -15,7 +15,7 @@ import { useCreateTask } from '../../../../../../../hat/assets/js/apps/Iaso/hook
 import MESSAGES from '../../../constants/messages';
 
 type Props = {
-    countryId?: number;
+    countryId?: string;
     category: string;
 };
 

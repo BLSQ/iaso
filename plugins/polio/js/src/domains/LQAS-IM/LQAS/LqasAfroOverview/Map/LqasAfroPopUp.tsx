@@ -5,11 +5,9 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { Popup } from 'react-leaflet';
-import { Link } from 'react-router-dom';
 import {
     Card,
     CardContent,
-    Button,
     Box,
     Grid,
     Typography,
@@ -18,14 +16,14 @@ import {
 import { makeStyles } from '@mui/styles';
 import PopupItemComponent from '../../../../../../../../../hat/assets/js/apps/Iaso/components/maps/popups/PopupItemComponent';
 import MESSAGES from '../../../../../constants/messages';
-import { LQAS_BASE_URL } from '../../../../../constants/routes';
 import { COUNTRY, DISTRICT } from '../../../shared/constants';
+import { LinkButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/nav/LinkButton';
+import { baseUrls } from '../../../../../constants/urls';
 
-const style = theme => {
+// @ts-ignore
+const useStyle = makeStyles(theme => {
     return { ...commonStyles(theme), ...mapPopupStyles(theme) };
-};
-
-const useStyle = makeStyles(style);
+});
 
 type View = 'district' | 'country';
 type Props = {
@@ -128,19 +126,16 @@ export const LqasAfroPopup: FunctionComponent<Props> = ({
                         alignItems="center"
                     >
                         <Box mt={2}>
-                            <Link
+                            <LinkButton
+                                buttonClassName={classes.marginLeft}
+                                variant="outlined"
+                                color="primary"
+                                size="small"
                                 target="_blank"
-                                to={`${LQAS_BASE_URL}/lqas/campaign/${shape.data.campaign}/country/${countryId}/rounds/${roundNumber},${roundNumber}/rightTab/list`}
+                                to={`/${baseUrls.lqasCountry}/campaign/${shape.data.campaign}/country/${countryId}/rounds/${roundNumber},${roundNumber}/rightTab/list`}
                             >
-                                <Button
-                                    className={classes.marginLeft}
-                                    variant="outlined"
-                                    color="primary"
-                                    size="small"
-                                >
-                                    {formatMessage(MESSAGES.gotoLqasForCountry)}
-                                </Button>
-                            </Link>
+                                {formatMessage(MESSAGES.gotoLqasForCountry)}
+                            </LinkButton>
                         </Box>
                     </Grid>
                 </CardContent>

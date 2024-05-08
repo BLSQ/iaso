@@ -1,4 +1,10 @@
-import {FAIL_COLOR, MODERATE_COLOR, OK_COLOR, POOR_COLOR, WARNING_COLOR} from '../../../styles/constants';
+import {
+    FAIL_COLOR,
+    MODERATE_COLOR,
+    OK_COLOR,
+    POOR_COLOR,
+    WARNING_COLOR,
+} from '../../../styles/constants';
 import { IN_SCOPE } from '../shared/constants';
 
 export const LQAS_PASS = '1lqasOK';

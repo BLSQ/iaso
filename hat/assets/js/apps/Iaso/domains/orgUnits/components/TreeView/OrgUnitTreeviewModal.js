@@ -46,6 +46,7 @@ const OrgUnitTreeviewModal = ({
     clearable,
     allowedTypes,
     errors,
+    defaultOpen,
 }) => {
     const theme = useTheme();
     const classes = useStyles();
@@ -201,6 +202,7 @@ const OrgUnitTreeviewModal = ({
             cancelMessage={MESSAGES.cancel}
             maxWidth="sm"
             allowConfirm={selectedOrgUnitsIds?.length > 0}
+            defaultOpen={defaultOpen}
         >
             <Box
                 sx={{
@@ -266,6 +268,7 @@ OrgUnitTreeviewModal.propTypes = {
     clearable: bool,
     allowedTypes: array,
     errors: arrayOf(string),
+    defaultOpen: bool,
 };
 
 OrgUnitTreeviewModal.defaultProps = {
@@ -284,6 +287,7 @@ OrgUnitTreeviewModal.defaultProps = {
     clearable: true,
     allowedTypes: [],
     errors: [],
+    defaultOpen: false,
 };
 
 export { OrgUnitTreeviewModal };

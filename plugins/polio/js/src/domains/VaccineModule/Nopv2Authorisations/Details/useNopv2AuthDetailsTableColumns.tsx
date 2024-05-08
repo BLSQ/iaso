@@ -1,5 +1,6 @@
 import React, { useMemo } from 'react';
 import { Column, useSafeIntl } from 'bluesquare-components';
+import { VACCINE_AUTH_ADMIN } from '../../../../constants/permissions';
 import MESSAGES from '../../../../constants/messages';
 import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import { DeleteAuthorisationModal } from './Modals/Delete/DeleteAuthorisationModal';
@@ -61,12 +62,7 @@ export const useNopv2AuthDetailsTableColumns = (): Column[] => {
                 accessor: 'comment',
             },
         ];
-        if (
-            userHasPermission(
-                'iaso_polio_vaccine_authorizations_admin',
-                currentUser,
-            )
-        ) {
+        if (userHasPermission(VACCINE_AUTH_ADMIN, currentUser)) {
             columns.push({
                 Header: formatMessage(MESSAGES.actions),
                 accessor: 'account',

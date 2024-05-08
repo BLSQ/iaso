@@ -26,7 +26,7 @@ type Props = {
     closeDialog: () => void;
     authorisationData?: AuthorisationAPIData;
     countryName?: string;
-    countryId?: number;
+    countryId?: string;
 };
 
 const CreateEditAuthorisationModal: FunctionComponent<Props> = ({

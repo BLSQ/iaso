@@ -1,28 +1,27 @@
 import React, { FunctionComponent, useEffect } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { Box } from '@mui/material';
-import { useDispatch } from 'react-redux';
-import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
+import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import MESSAGES from '../../../constants/messages';
 import { useStyles } from '../../../styles/theme';
 import { Nopv2AuthorisationsFilters } from './Filters/Nopv2AuthorisationsFilters';
 import { Nopv2AuthorisationsTable } from './Table/Nopv2AuthorisationsTable';
 import { VaccineAuthParams } from './types';
-import { redirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
-import { NOPV2_AUTH } from '../../../constants/routes';
+import { baseUrls } from '../../../constants/urls';
+import { useRedirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 
 const defaultParams = {
     order: '-current_expiration_date',
-    pageSize: 20,
-    page: 1,
+    pageSize: '20',
+    page: '1',
 };
 
-type Props = { router: Router };
+const baseUrl = baseUrls.nopv2Auth;
 
-export const Nopv2Authorisations: FunctionComponent<Props> = ({ router }) => {
-    const { params } = router;
-    const dispatch = useDispatch();
+export const Nopv2Authorisations: FunctionComponent = () => {
+    const params = useParamsObject(baseUrl) as Partial<VaccineAuthParams>;
+    const redirectToReplace = useRedirectToReplace();
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     useEffect(() => {
@@ -38,9 +37,9 @@ export const Nopv2Authorisations: FunctionComponent<Props> = ({ router }) => {
             newParams.page = defaultParams.page.toString();
         }
         if (!params.order || !params.pageSize || !params.page) {
-            dispatch(redirectToReplace(NOPV2_AUTH, newParams));
+            redirectToReplace(baseUrl, newParams);
         }
-    }, [dispatch, params]);
+    }, [params, redirectToReplace]);
     return (
         <>
             <TopBar

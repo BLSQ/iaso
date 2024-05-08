@@ -7,7 +7,7 @@ import {
     UseHandleSubmitArgs,
     VAR,
 } from '../types';
-import { VACCINE_SUPPLY_CHAIN_DETAILS } from '../../../../constants/routes';
+import { baseUrls } from '../../../../constants/urls';
 
 type SaveAllArgs = {
     changedTabs: TabValue[];
@@ -148,8 +148,8 @@ export const makeNewFormikValues = ({
 export const makeHandleSubmit =
     ({
         formik,
-        router,
         initialValues,
+        params,
         setInitialValues,
         saveForm,
         redirect,
@@ -162,8 +162,9 @@ export const makeHandleSubmit =
             {
                 onSuccess: (data, variables: SupplyChainFormData) => {
                     // if POST request on vrf, redirect to replace so we leave the create screen and move to the details screen
-                    if (!router.params.id) {
-                        redirect(VACCINE_SUPPLY_CHAIN_DETAILS, {
+                    if (!params.id) {
+                        redirect(baseUrls.vaccineSupplyChainDetails, {
+                            ...params,
                             id: data.vrf[0].value.id,
                         });
                     } else if (variables.saveAll) {

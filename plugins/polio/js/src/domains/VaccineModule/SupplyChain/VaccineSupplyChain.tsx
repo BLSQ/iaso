@@ -1,26 +1,22 @@
 import React, { FunctionComponent } from 'react';
 import { AddButton, useSafeIntl } from 'bluesquare-components';
 import { Box, Grid } from '@mui/material';
-import { useDispatch } from 'react-redux';
-import { userHasPermission } from '../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
+import { useRedirectTo } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
+import { DisplayIfUserHasPerm } from '../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
 import { POLIO_SUPPLY_CHAIN_WRITE } from '../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
-import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-import { redirectTo } from '../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
-import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { useStyles } from '../../../styles/theme';
 import MESSAGES from './messages';
 import { VaccineSupplyChainTable } from './Table/VaccineSupplyChainTable';
 import { VaccineSupplyChainFilters } from './Filters/VaccineSupplyChainFilters';
-import { VACCINE_SUPPLY_CHAIN_DETAILS } from '../../../constants/routes';
+import { baseUrls } from '../../../constants/urls';
 
-type Props = { router: Router };
-
-export const VaccineSupplyChain: FunctionComponent<Props> = ({ router }) => {
+export const VaccineSupplyChain: FunctionComponent = () => {
+    const params = useParamsObject(baseUrls.vaccineSupplyChain);
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
-    const dispatch = useDispatch();
-    const currentUser = useCurrentUser();
+    const redirectTo = useRedirectTo();
     return (
         <>
             <TopBar
@@ -28,24 +24,21 @@ export const VaccineSupplyChain: FunctionComponent<Props> = ({ router }) => {
                 displayBackButton={false}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <VaccineSupplyChainFilters params={router.params} />
-                {userHasPermission(POLIO_SUPPLY_CHAIN_WRITE, currentUser) && (
+                <VaccineSupplyChainFilters params={params} />
+                <DisplayIfUserHasPerm permissions={[POLIO_SUPPLY_CHAIN_WRITE]}>
                     <Grid container justifyContent="flex-end">
                         <Box mt={2}>
                             <AddButton
                                 onClick={() =>
-                                    dispatch(
-                                        redirectTo(
-                                            VACCINE_SUPPLY_CHAIN_DETAILS,
-                                            {},
-                                        ),
+                                    redirectTo(
+                                        baseUrls.vaccineSupplyChainDetails,
                                     )
                                 }
                             />
                         </Box>
                     </Grid>
-                )}
-                <VaccineSupplyChainTable params={router.params} />
+                </DisplayIfUserHasPerm>
+                <VaccineSupplyChainTable params={params} />
             </Box>
         </>
     );

@@ -5,12 +5,8 @@ import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { FormikProvider, useFormik } from 'formik';
 import classnames from 'classnames';
+import { useParamsObject } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import { useTabs } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useTabs';
-import {
-    VACCINE_SUPPLY_CHAIN,
-    VACCINE_SUPPLY_CHAIN_DETAILS,
-} from '../../../../constants/routes';
-import { Router } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import TopBar from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { useGoBack } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useGoBack';
 import { useSaveVaccineSupplyChainForm } from '../hooks/api/useSaveSupplyChainForm';
@@ -38,13 +34,12 @@ import {
     useInitializeArrivalReportsOnFetch,
     useInitializePreAlertsOnFetch,
     useInitializeVRFOnFetch,
-    useRedirectToReplace,
     useWatchChangedTabs,
 } from '../hooks/utils';
 import { SupplyChainTabs } from './SupplyChainTabs';
 import { Optional } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
-
-type Props = { router: Router };
+import { baseUrls } from '../../../../constants/urls';
+import { useRedirectToReplace } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 
 const useStyles = makeStyles(theme => {
     return {
@@ -52,16 +47,22 @@ const useStyles = makeStyles(theme => {
     };
 });
 
-export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
-    router,
-}) => {
-    const goBack = useGoBack(router, VACCINE_SUPPLY_CHAIN);
+type VaccineSupplyChainDetailsParams = {
+    id?: string;
+    tab?: string;
+};
+
+export const VaccineSupplyChainDetails: FunctionComponent = () => {
+    const params = useParamsObject(
+        baseUrls.vaccineSupplyChainDetails,
+    ) as VaccineSupplyChainDetailsParams;
+    const goBack = useGoBack(baseUrls.vaccineSupplyChain);
     const classes: Record<string, string> = useStyles();
-    const initialTab = (router.params.tab as TabValue) ?? VRF;
+    const initialTab = (params.tab as TabValue) ?? VRF;
     const { tab, handleChangeTab } = useTabs<TabValue>({
-        params: router.params,
+        params,
         defaultTab: initialTab,
-        baseUrl: VACCINE_SUPPLY_CHAIN_DETAILS,
+        baseUrl: baseUrls.vaccineSupplyChainDetails,
     });
     const [initialValues, setInitialValues] = useObjectState({
         vrf: undefined,
@@ -71,13 +72,13 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
         saveAll: false,
         changedTabs: [],
     });
-    const { data: vrfDetails, isFetching } = useGetVrfDetails(router.params.id);
+    const { data: vrfDetails, isFetching } = useGetVrfDetails(params.id);
 
     const { data: preAlerts, isFetching: isFetchingPreAlerts } =
-        useGetPreAlertDetails(router.params.id);
+        useGetPreAlertDetails(params.id);
 
     const { data: arrivalReports, isFetching: isFetchingArrivalReports } =
-        useGetArrivalReportsDetails(router.params.id);
+        useGetArrivalReportsDetails(params.id);
 
     const { mutateAsync: saveForm, isLoading: isSaving } =
         useSaveVaccineSupplyChainForm();
@@ -122,7 +123,7 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
     const handleSubmit: (saveAll?: boolean | undefined) => void =
         useHandleSubmit({
             formik,
-            router,
+            params,
             initialValues,
             setInitialValues,
             saveForm,

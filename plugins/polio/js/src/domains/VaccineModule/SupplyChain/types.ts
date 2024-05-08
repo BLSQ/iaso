@@ -7,7 +7,6 @@ import {
     DropdownOptions,
     Optional,
 } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
 
 export type TabValue = 'vrf' | 'arrival_reports' | 'pre_alerts';
 
@@ -90,7 +89,7 @@ export type CampaignDropdowns = {
 
 export type UseHandleSubmitArgs = {
     formik: FormikProps<SupplyChainFormData>;
-    router: Router;
+    params: { id?: string };
     initialValues: SupplyChainFormData;
     setInitialValues: React.Dispatch<SupplyChainFormData>;
     saveForm: UseMutateAsyncFunction<any, any, unknown, unknown>;

@@ -1,20 +1,6 @@
 import { ElementType, ReactNode } from 'react';
 import { IntlMessage } from 'bluesquare-components';
-
-export type RouteParam = {
-    isRequired: boolean;
-    key: string;
-};
-
-export type RouteCustom = {
-    baseUrl: string;
-    routerUrl: string;
-    permissions?: string[];
-    allowAnonymous?: boolean;
-    isRootUrl?: boolean;
-    // eslint-disable-next-line no-unused-vars
-    element: ReactNode;
-};
+import { Redirection, RouteCustom } from '../../routing/types';
 
 export type MenuItem = {
     label: string | IntlMessage;
@@ -34,6 +20,7 @@ export type MenuItems = MenuItem[];
 
 export type Plugin = {
     routes: RouteCustom[];
+    redirections?: Redirection[];
     menu: MenuItem[];
     translations: Record<string, any>;
     homeUrl?: string;

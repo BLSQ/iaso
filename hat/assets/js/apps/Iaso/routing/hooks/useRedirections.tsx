@@ -123,20 +123,21 @@ const baseRedirections = [
     },
 ];
 
-type RedirectionsMethod = (
-    // eslint-disable-next-line no-unused-vars
-    hasNoAccount: boolean,
-    // eslint-disable-next-line no-unused-vars
-    isFetchingCurrentUser: boolean,
-    // eslint-disable-next-line no-unused-vars
-    homeUrl,
-) => ReactElement[];
+type UseRedirectionsArgs = {
+    hasNoAccount: boolean;
+    isFetchingCurrentUser: boolean;
+    homeUrl?: string;
+    pluginRedirections: any[];
+};
+// eslint-disable-next-line no-unused-vars
+type RedirectionsMethod = (args: UseRedirectionsArgs) => ReactElement[];
 
-export const useRedirections: RedirectionsMethod = (
+export const useRedirections: RedirectionsMethod = ({
     hasNoAccount,
     isFetchingCurrentUser,
     homeUrl = `/${baseUrls.forms}`,
-) => {
+    pluginRedirections,
+}) => {
     let redirections;
     const currentUser = useCurrentUser();
     const homeOfflineComponent = useHomeOfflineComponent();
@@ -164,6 +165,7 @@ export const useRedirections: RedirectionsMethod = (
                 to: homeUrl,
             },
             ...baseRedirections,
+            ...pluginRedirections,
         ];
     }
     return redirections.map(redirection => {

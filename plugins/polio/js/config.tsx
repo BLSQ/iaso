@@ -1,5 +1,6 @@
 import { Plugin } from '../../../hat/assets/js/apps/Iaso/domains/app/types';
 import { menu } from './src/constants/menu';
+import { redirections } from './src/constants/redirections';
 import { routes } from './src/constants/routes';
 import en from './src/constants/translations/en.json';
 import fr from './src/constants/translations/fr.json';
@@ -18,6 +19,7 @@ const config: Plugin = {
     baseUrls,
     paramsConfig,
     routes,
+    redirections,
     menu,
     translations,
     homeUrl: `/${DASHBOARD_BASE_URL}/campaignCategory/all`,

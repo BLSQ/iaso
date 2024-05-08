@@ -7,11 +7,10 @@ import {
 } from 'bluesquare-components';
 import { Grid, Box, Paper } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
-import { oneOf, PropTypes } from 'prop-types';
-import { useDispatch } from 'react-redux';
-import { push } from 'react-router-redux';
+import { useLocation } from 'react-router-dom';
+import { DisplayIfUserHasPerm } from '../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm.tsx';
+import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject.tsx';
 import { DistrictsNotFound } from '../shared/DistrictsNotFound.tsx';
 import { Filters } from '../shared/Filters.tsx';
 import { GraphTitle } from '../shared/GraphTitle.tsx';
@@ -24,9 +23,10 @@ import { useImData } from './hooks/useImData.ts';
 import MESSAGES from '../../../constants/messages';
 import { BadRoundNumbers } from '../shared/BadRoundNumber.tsx';
 import { makeDropdownOptions } from '../shared/LqasIm.tsx';
-import { genUrl } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing.ts';
+import { useRedirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing.ts';
 import { commaSeparatedIdsToArray } from '../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
 import { defaultRounds, paperElevation } from '../shared/constants.ts';
+import { baseUrls } from '../../../constants/urls.ts';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -35,11 +35,27 @@ const styles = theme => ({
 
 const useStyles = makeStyles(styles);
 
-export const ImStats = ({ imType, router }) => {
-    const { campaign, country, rounds } = router.params;
+const useImType = () => {
+    const { pathname } = useLocation();
+    if (pathname.includes(baseUrls.imGlobal)) {
+        return { url: baseUrls.imGlobal, type: 'imGlobal' };
+    }
+    if (pathname.includes(baseUrls.imIhh)) {
+        return { url: baseUrls.imIhh, type: 'imIHH' };
+    }
+    if (pathname.includes(baseUrls.imOhh)) {
+        return { url: baseUrls.imOhh, type: 'imOHH' };
+    }
+    throw new Error(`Invalid pathname: ${pathname}`);
+};
+
+export const ImStats = () => {
+    const { url: baseUrl, type: imType } = useImType();
+    const params = useParamsObject(baseUrl);
+    const { campaign, country, rounds } = params;
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const dispatch = useDispatch();
+    const redirectToReplace = useRedirectToReplace();
 
     const [selectedRounds, setSelectedRounds] = useState(
         rounds ? commaSeparatedIdsToArray(rounds) : defaultRounds,
@@ -64,12 +80,12 @@ export const ImStats = ({ imType, router }) => {
             const updatedSelection = [...selectedRounds];
             updatedSelection[index] = value;
             setSelectedRounds(updatedSelection);
-            const url = genUrl(router, {
-                rounds: updatedSelection,
+            redirectToReplace(baseUrl, {
+                ...params,
+                rounds: updatedSelection.join(','),
             });
-            dispatch(push(url));
         },
-        [dispatch, router, selectedRounds],
+        [baseUrl, params, redirectToReplace, selectedRounds],
     );
 
     const divider = (
@@ -90,7 +106,8 @@ export const ImStats = ({ imType, router }) => {
                     isFetching={isFetching}
                     campaigns={campaigns}
                     campaignsFetching={campaignsFetching}
-                    category="im"
+                    imType={imType}
+                    params={params}
                 />
                 <Grid container spacing={2} direction="row">
                     {selectedRounds.map((rnd, index) => (
@@ -248,12 +265,4 @@ export const ImStats = ({ imType, router }) => {
             </Box>
         </>
     );
-};
-ImStats.defaultProps = {
-    imType: 'imGlobal',
-};
-
-ImStats.propTypes = {
-    imType: oneOf(['imGlobal', 'imIHH', 'imOHH']),
-    router: PropTypes.object.isRequired,
 };

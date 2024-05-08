@@ -78,7 +78,7 @@ export const Lqas = () => {
             setSelectedRounds(updatedSelection);
             redirectToReplace(baseUrl, {
                 ...params,
-                rounds: updatedSelection,
+                rounds: updatedSelection.join(','),
             });
         },
         [params, redirectToReplace, selectedRounds],
@@ -129,7 +129,7 @@ export const Lqas = () => {
                         isFetching={isFetching}
                         campaigns={campaigns}
                         campaignsFetching={campaignsFetching}
-                        category="lqas"
+                        isLqas
                         params={params}
                     />
                 </Box>

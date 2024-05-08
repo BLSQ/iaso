@@ -22,7 +22,9 @@ export const CONFIG_COUNTRY_URL = `${CONFIG_BASE_URL}/country`;
 export const CONFIG_REASONS_FOR_DELAY_URL = `${CONFIG_BASE_URL}/reasonsfordelay`;
 export const LQAS_BASE_URL = 'polio/lqas/lqas';
 export const LQAS_AFRO_MAP_URL = 'polio/lqas/lqas-map';
-export const IM = 'polio/im';
+export const IM_GLOBAL = 'polio/im/global';
+export const IM_OHH = 'polio/im/ohh';
+export const IM_IHH = 'polio/im/ihh';
 export const GROUPED_CAMPAIGNS = 'polio/groupedcampaigns';
 export const BUDGET = 'polio/budget';
 export const BUDGET_DETAILS = 'polio/budget/details';
@@ -109,9 +111,17 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
             'rightTab',
         ],
     },
-    im: {
-        url: IM,
-        params: ['imType', 'campaign', 'country', 'rounds'],
+    imGlobal: {
+        url: IM_GLOBAL,
+        params: ['campaign', 'country', 'rounds'],
+    },
+    imIhh: {
+        url: IM_IHH,
+        params: ['campaign', 'country', 'rounds'],
+    },
+    imOhh: {
+        url: IM_OHH,
+        params: ['campaign', 'country', 'rounds'],
     },
     budget: {
         url: BUDGET,
@@ -230,7 +240,9 @@ export type PolioBaseUrls = {
     calendar: string;
     lqasCountry: string;
     lqasAfro: string;
-    im: string;
+    imGlobal: string;
+    imIhh: string;
+    imOhh: string;
     budget: string;
     budgetDetails: string;
     nopv2Auth: string;

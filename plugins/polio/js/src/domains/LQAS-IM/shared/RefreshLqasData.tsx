@@ -16,7 +16,7 @@ import MESSAGES from '../../../constants/messages';
 
 type Props = {
     countryId?: string;
-    category: string;
+    isLqas: boolean;
 };
 
 const LQAS_TASK_ENDPOINT = '/api/polio/tasks/refreshlqas/';
@@ -48,9 +48,9 @@ const useLastUpdate = (
 
 export const RefreshLqasData: FunctionComponent<Props> = ({
     countryId,
-    category,
+    isLqas,
 }) => {
-    const taskUrl = category === 'lqas' ? LQAS_TASK_ENDPOINT : undefined;
+    const taskUrl = isLqas ? LQAS_TASK_ENDPOINT : undefined;
     const { formatMessage } = useSafeIntl();
     const [lastTaskStatus, setlastTaskStatus] = useState<string | undefined>();
     const queryClient = useQueryClient();
@@ -58,7 +58,7 @@ export const RefreshLqasData: FunctionComponent<Props> = ({
         endpoint: taskUrl,
     });
     const { data: latestManualRefresh } = useGetLatestLQASIMUpdate(
-        category,
+        isLqas,
         countryId,
     );
 

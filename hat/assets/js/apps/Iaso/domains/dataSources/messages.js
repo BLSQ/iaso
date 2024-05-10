@@ -307,7 +307,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.importFromDhis2Success',
     },
     importFromDhis2Error: {
-        defaulteEssage: 'An error occurred while importing from DHIS2',
+        defaultMessage: 'An error occurred while importing from DHIS2',
         id: 'iaso.snackBar.importFromDhis2Error',
     },
     exportToDhis2Success: {
@@ -323,15 +323,15 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.importGpkgSuccess',
     },
     importGpkgError: {
-        defaultMEssage: 'An error occurred while importing the gpkg file',
+        defaultMessage: 'An error occurred while importing the gpkg file',
         id: 'iaso.snackBar.importGpkgError',
     },
     checkDhis2Success: {
-        defaultMEssage: 'Connection to server ok',
+        defaultMessage: 'Connection to server ok',
         id: 'iaso.dataSources.checkDHIS2.success',
     },
     checkDhis2Error: {
-        defaultMEssage: 'Connection Error check settings',
+        defaultMessage: 'Connection Error check settings',
         id: 'iaso.dataSources.checkDHIS2.error',
     },
     newEmptyVersionSavedSuccess: {

@@ -1,5 +1,8 @@
 /* eslint-disable camelcase */
-import { OrgUnit } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
+import {
+    OrgUnit,
+    OrgUnitStatus,
+} from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
 import { Scope } from '../../../../constants/types';
 
 export type Shape = OrgUnit & {
@@ -21,6 +24,7 @@ export type FilteredDistricts = {
     geo_json?: Shape | undefined;
     has_geo_json: boolean;
     scope?: Scope;
+    validation_status: OrgUnitStatus;
 };
 
 export type ShapeRow = Shape & {

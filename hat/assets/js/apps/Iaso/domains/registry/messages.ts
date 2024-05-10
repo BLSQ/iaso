@@ -141,6 +141,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.add',
         defaultMessage: 'Add',
     },
+    markerClustering: {
+        id: 'iaso.map.title.markerClustering',
+        defaultMessage: 'Clustering',
+    },
 });
 
 export default MESSAGES;

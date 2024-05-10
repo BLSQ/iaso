@@ -1,5 +1,7 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React, { FunctionComponent } from 'react';
-
+import { Chip, Tooltip } from '@mui/material';
+import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import MESSAGES from '../messages';
@@ -23,20 +25,44 @@ type Props = {
     isFetchingFeatureFlag: boolean;
 };
 
+const renderTags = (value, getTagProps) =>
+    value.map((option, index) => (
+        <Tooltip
+            key={option.value}
+            title={option.tooltip}
+            placement="bottom-end"
+            disableInteractive
+        >
+            <Chip
+                color="primary"
+                label={option.label}
+                {...getTagProps({ index })}
+            />
+        </Tooltip>
+    ));
+
 const ProjectFeatureFlags: FunctionComponent<Props> = ({
     setFieldValue,
     currentProject,
     featureFlags,
     isFetchingFeatureFlag,
 }) => {
+    const { formatMessage } = useSafeIntl();
     const options = React.useMemo(
         () =>
-            featureFlags?.map(fF => ({
-                label: fF.name,
-                value: fF.id,
-            })),
-        [featureFlags],
+            featureFlags?.map(fF => {
+                return {
+                    label: fF.name,
+                    value: fF.id,
+                    tooltip:
+                        formatMessage(
+                            MESSAGES[`${fF.code.toLowerCase()}_tooltip`],
+                        ) || fF.name,
+                };
+            }),
+        [featureFlags, formatMessage],
     );
+
     return (
         <InputComponent
             multi
@@ -51,6 +77,7 @@ const ProjectFeatureFlags: FunctionComponent<Props> = ({
             type="select"
             options={options}
             label={MESSAGES.featureFlags}
+            renderTags={renderTags}
         />
     );
 };

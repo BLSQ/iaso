@@ -19,6 +19,9 @@ class DataSource(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     default_version = models.ForeignKey("SourceVersion", null=True, blank=True, on_delete=models.SET_NULL)
+    show_invalid_parents = models.BooleanField(
+        default=False, help_text="Designates whether invalid parents should be displayed in the OrgUnit tree."
+    )
 
     def __str__(self):
         return "%s " % (self.name,)

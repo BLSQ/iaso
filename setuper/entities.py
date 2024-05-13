@@ -11,7 +11,7 @@ def setup_entities(account_name, iaso_client):
     project_id = iaso_client.get("/api/projects/")["projects"][0]["id"]
     org_unit_types = iaso_client.get("/api/v2/orgunittypes/")["orgUnitTypes"]
 
-    hf_out = [out for out in org_unit_types if out["name"] == "Formation sanitaire"][0]
+    hf_out = [out for out in org_unit_types if out["name"] == "Health facility/Formation sanitaire - HF"][0]
 
     print("-- Setting up reference form")
 

@@ -1,16 +1,16 @@
+import FullscreenIcon from '@mui/icons-material/Fullscreen';
+import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
+import { Box, Paper } from '@mui/material';
 import React, {
-    FunctionComponent,
     Dispatch,
+    FunctionComponent,
     SetStateAction,
     useEffect,
 } from 'react';
-import { Paper, Box } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import { useMap } from 'react-leaflet';
-import FullscreenIcon from '@mui/icons-material/Fullscreen';
-import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
+import { SxStyles } from '../../../types/general';
 
-const useStyles = makeStyles(() => ({
+const styles: SxStyles = {
     root: {
         position: 'absolute', // assuming you have a parent relative
         zIndex: 1100,
@@ -25,9 +25,6 @@ const useStyles = makeStyles(() => ({
         width: 34,
         borderLeft: '2px solid rgba(0,0,0,0.2)',
         borderRight: '2px solid rgba(0,0,0,0.2)',
-        borderBottom: '2px solid rgba(0,0,0,0.2)',
-        borderBottomLeftRadius: 4,
-        borderBottomRightRadius: 4,
         backgroundColor: 'transparent',
     },
     box: {
@@ -39,13 +36,12 @@ const useStyles = makeStyles(() => ({
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        borderBottomLeftRadius: 4,
-        borderBottomRightRadius: 4,
+        borderBottom: '1px solid #ccc',
         '&:hover': {
             backgroundColor: '#f4f4f4',
         },
     },
-}));
+};
 
 type Props = {
     isMapFullScreen: boolean;
@@ -56,16 +52,15 @@ export const MapToggleFullscreen: FunctionComponent<Props> = ({
     isMapFullScreen,
     setIsMapFullScreen,
 }) => {
-    const classes = useStyles();
     const map = useMap();
     useEffect(() => {
         map.invalidateSize();
     }, [isMapFullScreen, map]);
     return (
-        <Paper elevation={1} className={classes.root}>
+        <Paper elevation={1} sx={styles.root}>
             <Box
                 onClick={() => setIsMapFullScreen(!isMapFullScreen)}
-                className={classes.box}
+                sx={styles.box}
             >
                 {!isMapFullScreen && <FullscreenIcon fontSize="small" />}
                 {isMapFullScreen && <FullscreenExitIcon fontSize="small" />}

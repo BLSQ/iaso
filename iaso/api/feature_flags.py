@@ -1,7 +1,10 @@
 from rest_framework import serializers, permissions
-
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from iaso.models import FeatureFlag
 from .common import ModelViewSet, TimestampField
+from hat.menupermissions.constants import FEATUREFLAGES_TO_EXCLUDE
+from itertools import chain
 
 
 class FeatureFlagsSerializer(serializers.ModelSerializer):
@@ -28,7 +31,27 @@ class FeatureFlagViewSet(ModelViewSet):
     results_key = "featureflags"
     http_method_names = ["get", "head", "options"]
 
+    def get_results_key(self):
+        return self.results_key
+
     def get_queryset(self):
         featureflags = FeatureFlag.objects.all()
-
         return featureflags.order_by("name")
+
+    @action(methods=["GET"], detail=False)
+    def except_no_activated_modules(self, request):
+        featureflags = self.get_queryset()
+
+        current_account = request.user.iaso_profile.account
+        account_modules = current_account.modules
+
+        not_activated_modules = list(set(FEATUREFLAGES_TO_EXCLUDE.keys()) - set(account_modules))
+        featureflags_to_exclude = list(
+            chain.from_iterable([FEATUREFLAGES_TO_EXCLUDE[module] for module in not_activated_modules])
+        )
+
+        if featureflags_to_exclude:
+            featureflags = featureflags.exclude(code__in=featureflags_to_exclude)
+
+        serializer = FeatureFlagsSerializer(featureflags, many=True)
+        return Response({self.get_results_key(): serializer.data})

@@ -1,5 +1,7 @@
+from itertools import chain
 import typing
 
+from hat.menupermissions.constants import FEATUREFLAGES_TO_EXCLUDE
 from iaso import models as m
 from iaso.test import APITestCase
 
@@ -56,6 +58,21 @@ class ProjectsAPITestCase(APITestCase):
         response = self.client.get("/api/featureflags/", headers={"Content-Type": "application/json"})
         self.assertJSONResponse(response, 200)
         self.assertValidFeatureFlagListData(response.json(), m.FeatureFlag.objects.count())
+
+    def test_feature_flags_list_except_no_activated_modules(self):
+        """GET /featureflags/except_no_activated_modules happy path: we expect one result"""
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(
+            "/api/featureflags/except_no_activated_modules/", headers={"Content-Type": "application/json"}
+        )
+
+        self.assertJSONResponse(response, 200)
+        excluded_feature_flags = list(
+            chain.from_iterable([featureflag for featureflag in FEATUREFLAGES_TO_EXCLUDE.values()])
+        )
+        self.assertValidFeatureFlagListData(
+            response.json(), m.FeatureFlag.objects.count() - len(excluded_feature_flags)
+        )
 
     def test_projects_list_paginated(self):
         """GET /projects/ paginated happy path"""

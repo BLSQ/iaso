@@ -28,7 +28,7 @@ from plugins.polio.api.rounds.reasons_for_delay import ReasonForDelayViewSet
 from plugins.polio.api.rounds.round import RoundViewSet
 from plugins.polio.api.rounds.round_date_history import RoundDateHistoryEntryViewset
 from plugins.polio.api.vaccines.vaccine_authorization import VaccineAuthorizationViewSet
-from plugins.polio.budget.api import BudgetCampaignViewSet, BudgetStepViewSet, WorkflowViewSet
+from plugins.polio.budget.api import BudgetProcessViewSet, BudgetStepViewSet, WorkflowViewSet
 from plugins.polio.tasks.api.create_refresh_preparedness_data import RefreshPreparednessLaucherViewSet
 from plugins.polio.api.vaccines.supply_chain import (
     VaccineRequestFormViewSet,
@@ -45,7 +45,7 @@ from plugins.polio.tasks.api.refresh_lqas_data import RefreshLQASDataViewset
 router = routers.SimpleRouter()
 router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
-router.register(r"polio/budget", BudgetCampaignViewSet, basename="BudgetCampaign")
+router.register(r"polio/budget", BudgetProcessViewSet, basename="BudgetProcess")
 router.register(r"polio/budgetsteps", BudgetStepViewSet, basename="BudgetStep")
 router.register(r"polio/workflow", WorkflowViewSet, basename="BudgetWorkflow")
 router.register(r"polio/campaignsgroup", CampaignGroupViewSet, basename="campaigngroup")

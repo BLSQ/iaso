@@ -30,7 +30,6 @@ import { OrgunitTypes } from '../../orgUnits/types/orgunitTypes';
 import { Legend, useGetlegendOptions } from '../hooks/useGetLegendOptions';
 
 import { MapToggleFullscreen } from './MapToggleFullscreen';
-import { MapToggleTooltips } from './MapToggleTooltips';
 
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
 import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
@@ -40,6 +39,7 @@ import { baseUrls } from '../../../constants/urls';
 import { redirectToReplace } from '../../../routing/actions';
 import { RegistryDetailParams } from '../types';
 import { MapPopUp } from './MapPopUp';
+import { MapSettings, Settings } from './MapSettings';
 import { MapToolTip } from './MapTooltip';
 
 type Props = {
@@ -85,14 +85,16 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
     const classes: Record<string, string> = useStyles();
     const theme = useTheme();
     const dispatch = useDispatch();
+    const [settings, setSettings] = useState<Settings>({
+        showTooltip: params.showTooltip === 'true',
+        useCluster: params.useCluster === 'true',
+    });
 
     const [isMapFullScreen, setIsMapFullScreen] = useState<boolean>(
         params.isFullScreen === 'true',
     );
     const [currentTile, setCurrentTile] = useState<Tile>(TILES.osm);
-    const [showTooltip, setShowTooltip] = useState<boolean>(
-        params.showTooltip === 'true',
-    );
+
     const getlegendOptions = useGetlegendOptions(orgUnit, subOrgUnitTypes);
     const [legendOptions, setLegendOptions] = useState<Legend[]>(
         getlegendOptions(),
@@ -112,7 +114,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
     );
     const isOrgUnitActive: boolean =
         optionsObject[`${orgUnit.id}`]?.active || false;
-
+    const { showTooltip, useCluster } = settings;
     const bounds = useMemo(
         () =>
             mergeBounds(
@@ -121,19 +123,26 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
             ),
         [activeChildren, isOrgUnitActive, orgUnit],
     );
+    const handleChangeSettings = useCallback(
+        (setting: string) => {
+            const newSetting = !settings[setting];
+            setSettings(prevSettings => {
+                return {
+                    ...prevSettings,
+                    [setting]: newSetting,
+                };
+            });
 
-    const handleToggleTooltip = useCallback(
-        (isVisible: boolean) => {
-            setShowTooltip(isVisible);
             dispatch(
                 redirectToReplace(baseUrls.registryDetail, {
                     ...params,
-                    showTooltip: `${isVisible}`,
+                    [setting]: `${newSetting}`,
                 }),
             );
         },
-        [dispatch, params],
+        [dispatch, params, settings],
     );
+
     const handleToggleFullScreen = useCallback(
         (isFull: boolean) => {
             setIsMapFullScreen(isFull);
@@ -176,9 +185,9 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                 boundsOptions={boundsOptions}
                 trackResize
             >
-                <MapToggleTooltips
-                    showTooltip={showTooltip}
-                    setShowTooltip={handleToggleTooltip}
+                <MapSettings
+                    settings={settings}
+                    handleChangeSettings={handleChangeSettings}
                 />
                 <MapToggleFullscreen
                     isMapFullScreen={isMapFullScreen}
@@ -297,41 +306,126 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                                 name={`children-locations-orgunit-type-${subType.id}`}
                                 style={{ zIndex: 600 + index }}
                             >
-                                <MarkerClusterGroup
-                                    iconCreateFunction={cluster =>
-                                        colorClusterCustomMarker(
-                                            cluster,
-                                            subType.color || '',
-                                        )
-                                    }
-                                    polygonOptions={{
-                                        fillColor: subType.color || '',
-                                        color: subType.color || '',
-                                    }}
-                                    key={subType.id}
-                                >
-                                    <MarkersListComponent
-                                        key={`markers-${subType.id}-${showTooltip}`}
-                                        items={orgUnitsMarkers || []}
-                                        markerProps={() => ({
-                                            ...circleColorMarkerOptions(
-                                                subType.color || '',
-                                            ),
-                                            radius: 12,
-                                        })}
-                                        popupProps={location => ({
-                                            orgUnit: location,
-                                        })}
-                                        tooltipProps={e => ({
-                                            permanent: showTooltip,
-                                            pane: 'popupPane',
-                                            label: e.name,
-                                        })}
-                                        PopupComponent={MapPopUp}
-                                        TooltipComponent={MapToolTip}
-                                        isCircle
-                                    />
-                                </MarkerClusterGroup>
+                                {useCluster && (
+                                    <>
+                                        <MarkerClusterGroup
+                                            iconCreateFunction={cluster =>
+                                                colorClusterCustomMarker(
+                                                    cluster,
+                                                    subType.color || '',
+                                                )
+                                            }
+                                            polygonOptions={{
+                                                fillColor: subType.color || '',
+                                                color: subType.color || '',
+                                            }}
+                                            key={subType.id}
+                                        >
+                                            <MarkersListComponent
+                                                key={`markers-${subType.id}-${showTooltip}`}
+                                                items={orgUnitsMarkers || []}
+                                                markerProps={() => ({
+                                                    ...circleColorMarkerOptions(
+                                                        subType.color || '',
+                                                    ),
+                                                    radius: 12,
+                                                })}
+                                                popupProps={location => ({
+                                                    orgUnit: location,
+                                                })}
+                                                tooltipProps={e => ({
+                                                    permanent: showTooltip,
+                                                    pane: 'popupPane',
+                                                    label: e.name,
+                                                })}
+                                                PopupComponent={MapPopUp}
+                                                TooltipComponent={MapToolTip}
+                                                isCircle
+                                            />
+                                        </MarkerClusterGroup>
+                                        <MarkerClusterGroup
+                                            iconCreateFunction={cluster =>
+                                                colorClusterCustomMarker(
+                                                    cluster,
+                                                    subType.color || '',
+                                                )
+                                            }
+                                            polygonOptions={{
+                                                fillColor: subType.color || '',
+                                                color: subType.color || '',
+                                            }}
+                                            key={subType.id}
+                                        >
+                                            <MarkersListComponent
+                                                key={`markers-${subType.id}-${showTooltip}`}
+                                                items={orgUnitsMarkers || []}
+                                                markerProps={() => ({
+                                                    ...circleColorMarkerOptions(
+                                                        subType.color || '',
+                                                    ),
+                                                    radius: 12,
+                                                })}
+                                                popupProps={location => ({
+                                                    orgUnit: location,
+                                                })}
+                                                tooltipProps={e => ({
+                                                    permanent: showTooltip,
+                                                    pane: 'popupPane',
+                                                    label: e.name,
+                                                })}
+                                                PopupComponent={MapPopUp}
+                                                TooltipComponent={MapToolTip}
+                                                isCircle
+                                            />
+                                        </MarkerClusterGroup>
+                                    </>
+                                )}
+                                {!useCluster && (
+                                    <>
+                                        <MarkersListComponent
+                                            key={`markers-${subType.id}-${showTooltip}`}
+                                            items={orgUnitsMarkers || []}
+                                            markerProps={() => ({
+                                                ...circleColorMarkerOptions(
+                                                    subType.color || '',
+                                                ),
+                                                radius: 12,
+                                            })}
+                                            popupProps={location => ({
+                                                orgUnit: location,
+                                            })}
+                                            tooltipProps={e => ({
+                                                permanent: showTooltip,
+                                                pane: 'popupPane',
+                                                label: e.name,
+                                            })}
+                                            PopupComponent={MapPopUp}
+                                            TooltipComponent={MapToolTip}
+                                            isCircle
+                                        />
+                                        <MarkersListComponent
+                                            key={`markers-${subType.id}-${showTooltip}`}
+                                            items={orgUnitsMarkers || []}
+                                            markerProps={() => ({
+                                                ...circleColorMarkerOptions(
+                                                    subType.color || '',
+                                                ),
+                                                radius: 12,
+                                            })}
+                                            popupProps={location => ({
+                                                orgUnit: location,
+                                            })}
+                                            tooltipProps={e => ({
+                                                permanent: showTooltip,
+                                                pane: 'popupPane',
+                                                label: e.name,
+                                            })}
+                                            PopupComponent={MapPopUp}
+                                            TooltipComponent={MapToolTip}
+                                            isCircle
+                                        />
+                                    </>
+                                )}
                             </Pane>
                         </Box>
                     );

@@ -61,3 +61,15 @@ MODULES = [
     {"name": "Registry", "codename": "REGISTRY"},
     {"name": "Payments", "codename": "PAYMENTS"},
 ]
+
+FEATUREFLAGES_TO_EXCLUDE = {
+    "PLANNING": ["PLANNING"],
+    "ENTITIES": [
+        "REPORTS",
+        "ENTITY",
+        "MOBILE_ENTITY_WARN_WHEN_FOUND",
+        "MOBILE_ENTITY_LIMITED_SEARCH",
+        "MOBILE_ENTITY_NO_CREATION",
+        "WRITE_ON_NFC_CARDS",
+    ],
+}

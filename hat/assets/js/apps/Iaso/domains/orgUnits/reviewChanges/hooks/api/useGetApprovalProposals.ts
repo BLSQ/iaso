@@ -10,24 +10,6 @@ import {
 const apiUrl = '/api/orgunits/changes/';
 
 const getOrgUnitChangeProposals = (url: string) => {
-    // const apiParams = {
-    //     parent_id: options.parent_id,
-    //     groups: options.groups,
-    //     org_unit_type_id: options.org_unit_type_id,
-    //     status: options.status,
-    //     order: options.order || '-updated_at',
-    //     limit: options.pageSize || 10,
-    //     page: options.page,
-    //     created_at_after: options.created_at_after,
-    //     created_at_before: options.created_at_before,
-    //     forms: options.forms,
-    //     users: options.userIds,
-    //     user_roles: options.userRoles,
-    //     with_location: options.withLocation,
-    // };
-
-    // const url = makeUrlWithParams(apiUrl, apiParams);
-
     return getRequest(url) as Promise<OrgUnitChangeRequestsPaginated>;
 };
 

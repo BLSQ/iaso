@@ -43,11 +43,11 @@ export const BudgetProcessDetails: FunctionComponent<Props> = ({ router }) => {
     const apiParams = useMemo(() => {
         return {
             ...rest,
-            deletion_status: showHidden ? 'all' : undefined,
+            deletion_status: rest.show_hidden === 'true' ? 'all' : undefined,
             budget_process_id: budgetProcessId,
             transition_key__in: transition_key,
         };
-    }, [budgetProcessId, rest, showHidden, transition_key]);
+    }, [budgetProcessId, rest, transition_key]);
 
     // @ts-ignore
     const prevPathname = useSelector(state => state.routerCustom.prevPathname);

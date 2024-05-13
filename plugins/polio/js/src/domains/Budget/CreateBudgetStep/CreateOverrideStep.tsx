@@ -37,7 +37,7 @@ import { baseUrls } from '../../../constants/urls';
 import { useRedirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 
 type Props = {
-    budgetProcessId: string;
+    budgetProcessId?: string;
     closeDialog: () => void;
     isOpen: boolean;
     id?: string;

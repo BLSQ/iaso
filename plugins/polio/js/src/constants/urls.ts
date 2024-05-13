@@ -128,10 +128,10 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
         params: [
             ...paginationPathParams,
             'search',
-            'budget_current_state_key__in',
+            'current_state_key',
             'roundStartFrom',
             'roundStartTo',
-            'country__id__in',
+            'countries',
             'orgUnitGroups',
         ],
     },
@@ -140,7 +140,7 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
         params: [
             ...paginationPathParams,
             'campaignName',
-            'campaignId',
+            'budgetProcessId',
             'country',
             'show_hidden',
             'action',

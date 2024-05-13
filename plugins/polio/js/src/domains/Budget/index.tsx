@@ -59,15 +59,16 @@ const usePaginationStyles = makeStyles({
 
 type Params = {
     search?: string;
-    budget_current_state_key__in?: string;
+    current_state_key?: string;
     roundStartFrom?: string;
     roundStartTo?: string;
-    country__id__in?: string;
-    orgUnitGroups?: string;
+    countries?: string;
+    org_unit_groups?: string;
     order?: string;
     pageSize?: string;
     page?: string;
 };
+
 const baseUrl = baseUrls.budget;
 
 export const BudgetProcessList: FunctionComponent = () => {
@@ -78,7 +79,7 @@ export const BudgetProcessList: FunctionComponent = () => {
     const [expand, setExpand] = useState<boolean>(false);
     const redirectToReplace = useRedirectToReplace();
 
-    const apiParams = useBudgetParams(params); // TODO fix and export type
+    const apiParams = useBudgetParams(params);
     const csvParams = getCsvParams(apiParams);
 
     const currentUser = useCurrentUser();

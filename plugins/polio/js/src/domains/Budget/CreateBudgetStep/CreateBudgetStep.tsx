@@ -37,7 +37,7 @@ import { useRedirectToReplace } from '../../../../../../../hat/assets/js/apps/Ia
 import { baseUrls } from '../../../constants/urls';
 
 type Props = {
-    budgetProcessId: string;
+    budgetProcessId?: string;
     previousStep?: BudgetStep;
     transitionKey: string;
     transitionLabel: string;

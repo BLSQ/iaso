@@ -17,14 +17,13 @@ from iaso.utils.models.soft_deletable import SoftDeletableModel
 from plugins.polio.budget import workflow
 from plugins.polio.budget.workflow import next_transitions, can_user_transition, Transition, Node, Workflow, Category
 from plugins.polio.time_cache import time_cache
+from plugins.polio.models import Campaign, PAYMENT
 
 
 class BudgetStepQuerySet(models.QuerySet):
     def filter_for_user(self, user: Union[User, AnonymousUser]):
-        from plugins.polio.models import Campaign
-
         campaigns = Campaign.objects.filter_for_user(user)  # type: ignore
-        return self.filter(campaign__in=campaigns)
+        return self.filter(budget_process__rounds__campaign__in=campaigns).distinct()
 
 
 # workaround for MyPy
@@ -38,12 +37,99 @@ def model_field_exists(campaign, field):
     return True if field in campaign_fields else False
 
 
+class BudgetProcess(SoftDeletableModel):
+    """
+    A `Budget Process` for a `Round` of a `Campaign`.
+
+    DB relationships:
+
+    +---------------+      +---------------+      +----------+
+    | BudgetStep(s) |  ->  | BudgetProcess |  <-  | Round(s) |
+    +---------------+      +---------------+      +----------+
+    """
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey("auth.User", on_delete=models.PROTECT)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    status = models.CharField(max_length=100, null=True, blank=True)
+    current_state_key = models.CharField(max_length=100, default="-")
+    current_state_label = models.CharField(max_length=100, blank=True)
+
+    # Budget tab.
+    # These fields can be either filled manually or via the budget workflow when a step is done.
+    ra_completed_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    who_sent_budget_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    unicef_sent_budget_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    gpei_consolidated_budgets_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    submitted_to_rrt_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    feedback_sent_to_gpei_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    re_submitted_to_rrt_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    submitted_to_orpg_operations1_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    feedback_sent_to_rrt1_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    re_submitted_to_orpg_operations1_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    submitted_to_orpg_wider_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    submitted_to_orpg_operations2_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    feedback_sent_to_rrt2_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    re_submitted_to_orpg_operations2_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    submitted_for_approval_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    feedback_sent_to_orpg_operations_who_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    approved_by_who_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    approved_by_unicef_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    approved_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    approval_confirmed_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    payment_mode = models.CharField(max_length=30, choices=PAYMENT, blank=True)
+    district_count = models.IntegerField(null=True, blank=True)
+
+    # Fund release part of the budget form. Will be migrated to workflow fields later.
+    who_disbursed_to_co_at = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_("Disbursed to CO (WHO)"),
+    )
+    who_disbursed_to_moh_at = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_("Disbursed to MOH (WHO)"),
+    )
+    unicef_disbursed_to_co_at = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_("Disbursed to CO (UNICEF)"),
+    )
+    unicef_disbursed_to_moh_at = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_("Disbursed to MOH (UNICEF)"),
+    )
+
+    no_regret_fund_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+
+    class Meta:
+        verbose_name = "Budget Process"
+        verbose_name_plural = "Budget Processes"
+
+    def __str__(self):
+        return f"{self.pk} - {self.status}"
+
+
 class BudgetStep(SoftDeletableModel):
     class Meta:
         ordering = ["-updated_at"]
 
     objects = BudgetManager()
-    campaign = models.ForeignKey("Campaign", on_delete=models.PROTECT, related_name="budget_steps")
+    # `campaign` could have been removed while implementing "Multi Rounds Budget"
+    # because of the new models relationships, but it's heavily used and saves a lot of queries.
+    campaign = models.ForeignKey("Campaign", on_delete=models.PROTECT, related_name="budget_steps", null=True)
+    budget_process = models.ForeignKey(
+        "BudgetProcess", on_delete=models.PROTECT, related_name="budget_steps", null=True
+    )
     transition_key = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey("auth.User", on_delete=models.PROTECT)
@@ -105,12 +191,6 @@ def validator_template(value: str):
         raise ValidationError(_("Error in template: %(error)s"), code="invalid_template", params={"error": str(e)})
 
 
-DEFAUL_MAIL_TEMPLATE = """{% extends "base_budget_email.html" %}
-{% block text %}
-{{ block.super }} 
-{% endblock %}"""
-
-
 class MailTemplate(models.Model):
     slug = models.SlugField(unique=True)
     subject_template = models.TextField(
@@ -136,27 +216,29 @@ class MailTemplate(models.Model):
     def __str__(self):
         return str(self.slug)
 
-    def render_for_step(self, step: BudgetStep, receiver: User, request=None) -> EmailMultiAlternatives:
-        msg = EmailMultiAlternatives(from_email=settings.DEFAULT_FROM_EMAIL, to=[receiver.email])
+    def render_for_step(self, budget_step: BudgetStep, receiver: User, request=None) -> EmailMultiAlternatives:
         site = get_current_site(request)
-        base_url = "https://" if settings.SSL_ON else "http://"
-        base_url += site.domain  # type: ignore
+        protocol = "https://" if settings.SSL_ON else "http://"
+        base_url = f"{protocol}{site.domain}"
 
-        campaign = step.campaign
-        campaign_url = (
-            f"{base_url}/dashboard/polio/budget/details/campaignName/{campaign.obr_name}/campaignId/{campaign.id}"
+        budget_process_url = (
+            f"{base_url}/dashboard/polio/budget/details"
+            f"/campaignName/{budget_step.campaign.obr_name}"
+            f"/budgetProcessId/{budget_step.budget_process_id}"
         )
-        self_auth_campaign_url = generate_auto_authentication_link(campaign_url, receiver)
+        self_auth_budget_process_url = generate_auto_authentication_link(budget_process_url, receiver)
 
         workflow = get_workflow()
-        transitions = next_transitions(workflow.transitions, campaign.budget_current_state_key)
+        transitions = next_transitions(workflow.transitions, budget_step.budget_process.current_state_key)
         # filter out repeat steps. I do it here so it's easy to remove
         filtered_transitions = [transition for transition in transitions if "repeat" not in transition.key.split("_")]
 
         buttons = []
         for transition in filtered_transitions:
             transition_url_template = "/quickTransition/{transition_key}/previousStep/{step_id}"
-            button_url = campaign_url + transition_url_template.format(transition_key=transition.key, step_id=step.id)
+            button_url = budget_process_url + transition_url_template.format(
+                transition_key=transition.key, step_id=budget_step.id
+            )
             # link that will auto auth
 
             buttons.append(
@@ -165,13 +247,13 @@ class MailTemplate(models.Model):
                     "url": generate_auto_authentication_link(button_url, receiver),
                     "label": transition.label,
                     "color": transition.color if transition.color != "primary" else "black",
-                    "allowed": can_user_transition(transition, receiver, campaign),
+                    "allowed": can_user_transition(transition, receiver, budget_step.campaign),
                 }
             )
         # buttons is never empty, so the text accompanying the buttons in the email would always show, even when no buttons are displayed
         # So we check if there are allowed buttons
         show_buttons = list(filter(lambda x: x["allowed"], buttons))
-        transition = workflow.get_transition_by_key(step.transition_key)
+        transition = workflow.get_transition_by_key(budget_step.transition_key)
         if transition.key != "override":
             node = workflow.get_node_by_key(transition.to_node)
         else:
@@ -180,43 +262,47 @@ class MailTemplate(models.Model):
 
         attachments = []
         skipped_attachements = 0
-        override = step.transition_key == "override"
+        override = budget_step.transition_key == "override"
         total_file_size = 0
-        if len(list(step.files.all())) > 0:
+        if len(list(budget_step.files.all())) > 0:
             total_file_size = reduce(
-                lambda file1, file2: file1 + file2, list(map(lambda f: f.file.size, list(step.files.all())))
+                lambda file1, file2: file1 + file2, list(map(lambda f: f.file.size, list(budget_step.files.all())))
             )
 
-        for f in step.files.all():
+        msg = EmailMultiAlternatives(from_email=settings.DEFAULT_FROM_EMAIL, to=[receiver.email])
+
+        for f in budget_step.files.all():
             # only attach files if total is less than 5MB
             if total_file_size < 1024 * 5000:
                 msg.attach(f.filename, f.file.read())
             else:
-                skipped_attachements = len(list(step.files.all()))
+                skipped_attachements = len(list(budget_step.files.all()))
                 file_url = base_url + f.get_absolute_url()
                 attachments.append({"url": generate_auto_authentication_link(file_url, receiver), "name": f.filename})
-        for l in step.links.all():
+        for l in budget_step.links.all():
             attachments.append({"url": l.url, "name": l.alias})
 
         context = Context(
             {
-                "author": step.created_by,
-                "author_name": step.created_by.get_full_name() or step.created_by.username,
-                "buttons": buttons if show_buttons else None,
-                "node": node,
-                "team": step.created_by_team,
-                "step": step,
-                "campaign": campaign,
-                "budget_url": self_auth_campaign_url,
-                "site_url": base_url,
-                "site_name": site.name,
-                "comment": step.comment,
-                "amount": step.amount,
+                "amount": budget_step.amount,
                 "attachments": attachments,
-                "skipped_attachments": skipped_attachements,
-                "files": step.files.all(),
-                "links": step.links.all(),
+                "author": budget_step.created_by,
+                "author_name": budget_step.created_by.get_full_name() or budget_step.created_by.username,
+                "budget_url": self_auth_budget_process_url,
+                "buttons": buttons if show_buttons else None,
+                "campaign": budget_step.campaign,
+                "comment": budget_step.comment,
+                "files": budget_step.files.all(),
+                "links": budget_step.links.all(),
+                "node": node,
                 "override": override,
+                "rounds": budget_step.budget_process.rounds.all(),
+                "site_name": site.name,
+                "site_url": base_url,
+                "skipped_attachments": skipped_attachements,
+                "step": budget_step,
+                "team": budget_step.created_by_team,
+                "transition": transition,
             }
         )
         DEFAULT_HTML_TEMPLATE = '{% extends "base_budget_email.html" %}'
@@ -232,13 +318,15 @@ class MailTemplate(models.Model):
         msg.body = text_content
 
         msg.attach_alternative(html_content, "text/html")
-        return msg
+
+        # Context is returned for usage in tests.
+        return (context, msg)
 
 
 logger = logging.getLogger(__name__)
 
 
-def send_budget_mails(step: BudgetStep, transition, request) -> None:
+def send_budget_mails(budget_step: BudgetStep, transition, request) -> None:
     for email_to_send in transition.emails_to_send:
         template_slug, team_ids = email_to_send
         try:
@@ -246,16 +334,17 @@ def send_budget_mails(step: BudgetStep, transition, request) -> None:
         except MailTemplate.DoesNotExist as e:
             logger.exception(e)
             continue
-
-        teams = workflow.effective_teams(step.campaign, team_ids)
+        teams = workflow.effective_teams(budget_step.campaign, team_ids)
         # Ensure we don't send an email twice to the same user
         users = User.objects.filter(teams__in=teams).distinct()
         for user in users:
             if not user.email:
-                logger.info(f"skip sending email for {step}, user {user} doesn't have an email address configured")
+                logger.info(
+                    f"skip sending email for {budget_step}, user {user} doesn't have an email address configured"
+                )
                 continue
 
-            msg = mt.render_for_step(step, user, request)
+            _, msg = mt.render_for_step(budget_step, user, request)
             logger.debug("sending", msg)
             msg.send(fail_silently=False)
 

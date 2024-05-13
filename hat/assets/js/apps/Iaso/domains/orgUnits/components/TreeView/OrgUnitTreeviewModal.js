@@ -1,29 +1,30 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { Box, useTheme } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import { TreeViewWithSearch } from 'bluesquare-components';
+import { isEqual } from 'lodash';
 import {
+    array,
+    arrayOf,
     bool,
     func,
-    object,
-    arrayOf,
-    oneOfType,
     number,
+    object,
+    oneOfType,
     string,
-    array,
 } from 'prop-types';
-import { isEqual } from 'lodash';
-import { makeStyles } from '@mui/styles';
-import { TreeViewWithSearch, useSafeIntl } from 'bluesquare-components';
-import { Box, FormControlLabel, Switch, useTheme } from '@mui/material';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
-import { MESSAGES } from './messages';
-import { getRootData, getChildrenData, searchOrgUnits } from './requests';
 import { OrgUnitLabel, getOrgUnitAncestors } from '../../utils';
 import { OrgUnitTreeviewPicker } from './OrgUnitTreeviewPicker';
+import { SettingsPopper } from './SettingsPopper.tsx';
+import { MESSAGES } from './messages';
+import { getChildrenData, getRootData, searchOrgUnits } from './requests';
 import {
     formatInitialSelectedIds,
     formatInitialSelectedParents,
-    tooltip,
     makeTreeviewLabel,
     orgUnitTreeviewStatusIconsStyle,
+    tooltip,
 } from './utils';
 
 const useStyles = makeStyles(orgUnitTreeviewStatusIconsStyle);
@@ -47,9 +48,12 @@ const OrgUnitTreeviewModal = ({
     errors,
 }) => {
     const theme = useTheme();
-    const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const [displayTypes, setDisplayTypes] = useState(true);
+    const [settings, setSettings] = useState({
+        displayTypes: true,
+        displayRejected: false,
+        displayNew: false,
+    });
 
     const [selectedOrgUnits, setSelectedOrgUnits] = useState(initialSelection);
 
@@ -111,16 +115,28 @@ const OrgUnitTreeviewModal = ({
         [selectedOrgUnitsIdsCopy, selectedOrgUnitParentsCopy],
     );
 
+    const { displayTypes, displayRejected, displayNew } = settings;
+
+    const validationStatus = `VALID${displayRejected ? ',REJECTED' : ''}${
+        displayNew ? ',NEW' : ''
+    }`;
+
     const getRootDataWithSource = useCallback(async () => {
-        if (version) return getRootData(version, 'version');
-        return getRootData(source);
-    }, [source, version]);
+        if (version) return getRootData(version, 'version', validationStatus);
+        return getRootData(source, 'source', validationStatus);
+    }, [source, version, validationStatus]);
 
     const searchOrgUnitsWithSource = useCallback(
         async (value, count) => {
-            return searchOrgUnits({ value, count, source, version });
+            return searchOrgUnits({
+                value,
+                count,
+                source,
+                version,
+                validationStatus,
+            });
         },
-        [source, version],
+        [source, version, validationStatus],
     );
 
     const resetSelection = useCallback(() => {
@@ -186,45 +202,47 @@ const OrgUnitTreeviewModal = ({
             maxWidth="sm"
             allowConfirm={selectedOrgUnitsIds?.length > 0}
         >
-            <TreeViewWithSearch
-                getChildrenData={getChildrenData}
-                getRootData={getRootDataWithSource}
-                label={makeTreeviewLabel(
-                    classes,
-                    showStatusIconInTree,
-                    displayTypes,
-                )}
-                toggleOnLabelClick={toggleOnLabelClick}
-                onSelect={onOrgUnitSelect}
-                request={searchOrgUnitsWithSource}
-                makeDropDownText={orgUnit => <OrgUnitLabel orgUnit={orgUnit} />}
-                toolTip={tooltip}
-                parseNodeIds={getOrgUnitAncestors}
-                multiselect={multiselect}
-                preselected={selectedOrgUnitsIds}
-                preexpanded={selectedOrgUnitParents}
-                selectedData={selectedOrgUnits}
-                onUpdate={onUpdate}
-                allowSelection={item => {
-                    if (allowedTypes.length === 0) return true;
-                    return allowedTypes.includes(item.org_unit_type_id);
-                }}
-            />
             <Box
-                position="absolute"
-                bottom={theme.spacing(3)}
-                left={theme.spacing(4)}
+                sx={{
+                    position: 'absolute',
+                    top: theme.spacing(1),
+                    right: theme.spacing(2),
+                }}
             >
-                <FormControlLabel
-                    control={
-                        <Switch
-                            size="small"
-                            checked={displayTypes}
-                            onChange={() => setDisplayTypes(!displayTypes)}
-                            color="primary"
-                        />
+                <SettingsPopper setSettings={setSettings} settings={settings} />
+            </Box>
+            <Box mt={1}>
+                <TreeViewWithSearch
+                    getChildrenData={id =>
+                        getChildrenData(id, validationStatus)
                     }
-                    label={formatMessage(MESSAGES.displayTypes)}
+                    getRootData={getRootDataWithSource}
+                    label={makeTreeviewLabel(
+                        classes,
+                        showStatusIconInTree,
+                        displayTypes,
+                    )}
+                    toggleOnLabelClick={toggleOnLabelClick}
+                    onSelect={onOrgUnitSelect}
+                    request={searchOrgUnitsWithSource}
+                    makeDropDownText={orgUnit => (
+                        <OrgUnitLabel orgUnit={orgUnit} />
+                    )}
+                    toolTip={tooltip}
+                    parseNodeIds={getOrgUnitAncestors}
+                    multiselect={multiselect}
+                    queryOptions={{ keepPreviousData: true }}
+                    childrenQueryOptions={{ keepPreviousData: true }}
+                    preselected={selectedOrgUnitsIds}
+                    preexpanded={selectedOrgUnitParents}
+                    selectedData={selectedOrgUnits}
+                    onUpdate={onUpdate}
+                    allowSelection={item => {
+                        if (allowedTypes.length === 0) return true;
+                        return allowedTypes.includes(item.org_unit_type_id);
+                    }}
+                    dependency={validationStatus}
+                    childrenDependency={validationStatus}
                 />
             </Box>
         </ConfirmCancelDialogComponent>

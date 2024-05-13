@@ -35,6 +35,7 @@ import { AsyncSelect } from '../../components/forms/AsyncSelect';
 import { getUsersDropDown } from '../instances/hooks/requests/getUsersDropDown';
 import { useGetProfilesDropdown } from '../instances/hooks/useGetProfilesDropdown';
 import { useRedirectToReplace } from '../../routing/routing';
+import { PLANNINGS } from '../../utils/permissions';
 
 type Props = {
     params: UrlParams & any;
@@ -199,7 +200,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         options={groups}
                         loading={isFetchingGroups}
                     />
-                    <DisplayIfUserHasPerm permission="iaso_planning">
+                    <DisplayIfUserHasPerm permissions={[PLANNINGS]}>
                         <InputComponent
                             type="select"
                             onChange={handleChange}

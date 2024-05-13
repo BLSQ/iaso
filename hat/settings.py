@@ -17,6 +17,7 @@ import os
 import re
 import sys
 import urllib.parse
+import importlib
 from datetime import timedelta
 from typing import Any, Dict
 from urllib.parse import urlparse
@@ -204,10 +205,6 @@ if USE_CELERY:
 # see https://django-contrib-comments.readthedocs.io/en/latest/custom.htm
 COMMENTS_APP = "iaso"
 
-print("Enabled plugins:", PLUGINS, end=" ")
-for plugin_name in PLUGINS:
-    INSTALLED_APPS.append(f"plugins.{plugin_name}")
-
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -224,6 +221,10 @@ MIDDLEWARE += [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+if DEBUG:
+    MIDDLEWARE += [
+        "querycount.middleware.QueryCountMiddleware",
+    ]
 
 ROOT_URLCONF = "hat.urls"
 
@@ -238,7 +239,10 @@ if ENABLE_CORS:
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": ["./hat/templates", "./django_sql_dashboard_export/templates"],
+        "DIRS": [
+            "./hat/templates",
+            "./django_sql_dashboard_export/templates",
+        ],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -448,10 +452,10 @@ else:
     STATIC_ROOT = os.path.join(BASE_DIR, "static")
     MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
-STATICFILES_DIRS = (
+STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "iaso/static"),
     os.path.join(BASE_DIR, "hat/assets/webpack"),
-)
+]
 
 # Javascript/CSS Files:
 WEBPACK_LOADER = {
@@ -466,7 +470,7 @@ WEBPACK_LOADER = {
                 else "webpack-stats-prod.json"
             ),
         ),
-    }
+    },
 }
 
 AUTH_PROFILE_MODULE = "hat.users.Profile"
@@ -632,3 +636,33 @@ CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379"
 CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://localhost:6379")
 CELERY_RESULT_SERIALIZER = "json"
 CELERY_RESULT_EXTENDED = True
+
+# Plugin config
+print("Enabled plugins:", PLUGINS)
+for plugin_name in PLUGINS:
+    try:
+        plugin_settings = importlib.import_module(f"plugins.{plugin_name}.plugin_settings")
+        print(f"\tplugin_settings.py file found for plugin {plugin_name}")
+
+        if hasattr(plugin_settings, "INSTALLED_APPS"):
+            INSTALLED_APPS.extend(plugin_settings.INSTALLED_APPS)
+
+        if hasattr(plugin_settings, "CONSTANTS"):
+            # Inject CONSTANTS dictionary into the Django settings
+            for constant, value in plugin_settings.CONSTANTS.items():
+                globals()[constant] = value
+
+        if hasattr(plugin_settings, "TEMPLATES_DIRS"):
+            TEMPLATES[0]["DIRS"].extend(plugin_settings.TEMPLATES_DIRS)
+
+        if hasattr(plugin_settings, "STATICFILES_DIRS"):
+            STATICFILES_DIRS.extend(plugin_settings.STATICFILES_DIRS)
+
+        if hasattr(plugin_settings, "WEBPACK_LOADER"):
+            WEBPACK_LOADER |= plugin_settings.WEBPACK_LOADER
+
+    except ModuleNotFoundError:  # Use "basic" plugin system if no settings file found
+        print(
+            f"\tno plugin_settings.py file found for plugin {plugin_name}, appending plugins.{plugin_name} to INSTALLED_APPS"
+        )
+        INSTALLED_APPS.append(f"plugins.{plugin_name}")

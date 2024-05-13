@@ -5,7 +5,6 @@ import React, {
     useMemo,
     useCallback,
 } from 'react';
-import { Link, useLocation } from 'react-router-dom';
 import moment from 'moment';
 import { Tooltip } from '@mui/material';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
@@ -48,6 +47,7 @@ import { useCurrentUser } from '../../../utils/usersUtils';
 import * as Permission from '../../../utils/permissions';
 import { INSTANCE_METAS_FIELDS } from '../constants';
 import { InstanceMetasField } from '../components/ColumnSelect';
+import { LinkWithLocation } from '../../../components/nav/LinkWithLocation';
 
 const NO_VALUE = '/';
 // eslint-disable-next-line no-unused-vars
@@ -494,7 +494,6 @@ export const useSelectionActions = (
 ): SelectionAction[] => {
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
-    const { pathname } = useLocation();
     const label = formatMessage(
         isUnDeleteAction ? MESSAGES.unDeleteInstance : MESSAGES.deleteInstance,
     );
@@ -549,13 +548,12 @@ export const useSelectionActions = (
                     .map(s => s.id)
                     .join(',');
                 return (
-                    <Link
+                    <LinkWithLocation
                         style={{ color: 'inherit', display: 'flex' }}
                         to={`/${baseUrls.compareInstances}/instanceIds/${instancesIds}`}
-                        state={{ location: pathname }}
                     >
                         <CompareArrowsIcon />
-                    </Link>
+                    </LinkWithLocation>
                 );
             },
             label: formatMessage(MESSAGES.compare),
@@ -574,7 +572,6 @@ export const useSelectionActions = (
         formatMessage,
         isUnDeleteAction,
         label,
-        pathname,
         setForceRefresh,
     ]);
 };

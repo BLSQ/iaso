@@ -37,7 +37,7 @@ type GenUrlFunction = (
 export const useGenUrl = (): GenUrlFunction => {
     const { pathname } = useLocation();
     const currentBaseUrl = Object.values(baseUrls).find(url =>
-        pathname.includes(url),
+        pathname.includes(`${url}/`),
     );
     const currentParams = useParamsObject(currentBaseUrl ?? '');
     return useCallback(

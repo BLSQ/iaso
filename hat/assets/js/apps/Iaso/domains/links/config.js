@@ -1,5 +1,4 @@
 import React, { useMemo } from 'react';
-import Link from '@mui/material/Link';
 import Checkbox from '@mui/material/Checkbox';
 import { Box } from '@mui/material';
 import {
@@ -16,6 +15,8 @@ import getDisplayName from '../../utils/usersUtils.ts';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import { StarsComponent } from '../../components/stars/StarsComponent.tsx';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell.tsx';
+import { LinkWithLocation } from '../../components/nav/LinkWithLocation.tsx';
+import { baseUrls } from '../../constants/urls';
 import MESSAGES from './messages';
 
 export const linksTableColumns = (formatMessage, validateLink) => [
@@ -110,7 +111,7 @@ export const linksTableColumns = (formatMessage, validateLink) => [
     },
 ];
 
-export const useRunsTableColumns = (onSelectRunLinks, deleteRuns) => {
+export const useRunsTableColumns = deleteRuns => {
     const { formatMessage } = useSafeIntl();
     return useMemo(
         () => [
@@ -159,16 +160,14 @@ export const useRunsTableColumns = (onSelectRunLinks, deleteRuns) => {
                         {settings.row.original.links_count === 0 &&
                             textPlaceholder}
                         {settings.row.original.links_count > 0 && (
-                            <Link
+                            <LinkWithLocation
                                 size="small"
-                                onClick={() =>
-                                    onSelectRunLinks(settings.row.original)
-                                }
+                                to={`${baseUrls.links}/algorithmRunId/${settings.row.original.id}/searchActive/true`}
                             >
                                 {formatThousand(
                                     settings.row.original.links_count,
                                 )}
-                            </Link>
+                            </LinkWithLocation>
                         )}
                     </span>
                 ),
@@ -226,6 +225,6 @@ export const useRunsTableColumns = (onSelectRunLinks, deleteRuns) => {
                 ),
             },
         ],
-        [deleteRuns, formatMessage, onSelectRunLinks],
+        [deleteRuns, formatMessage],
     );
 };

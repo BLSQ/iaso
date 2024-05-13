@@ -6,7 +6,6 @@ import { makeStyles } from '@mui/styles';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 import BlockIcon from '@mui/icons-material/Block';
 
-import { useLocation } from 'react-router-dom';
 import { WorkflowVersion } from '../../types';
 
 import MESSAGES from '../../messages';
@@ -47,14 +46,12 @@ export const VersionsActionCell: FunctionComponent<Props> = ({
     );
     const icon = status === 'DRAFT' ? 'edit' : 'remove-red-eye';
     const tooltipMessage = status === 'DRAFT' ? MESSAGES.edit : MESSAGES.see;
-    const { pathname } = useLocation();
     return (
         <>
             <IconButtonComponent
                 url={`/${baseUrls.workflowDetail}/entityTypeId/${entityTypeId}/versionId/${versionId}`}
                 icon={icon}
                 tooltipMessage={tooltipMessage}
-                location={pathname}
             />
             {status !== 'DRAFT' && (
                 <IconButtonComponent

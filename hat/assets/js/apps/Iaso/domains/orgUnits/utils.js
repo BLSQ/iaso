@@ -69,6 +69,8 @@ export const orgUnitLabelString = (
     return message;
 };
 
+// Not really a React component because it returns strings.
+// TODO refactor with strings as children of span> or <p>, or as hook
 export const OrgUnitLabel = ({ orgUnit, withType, withSource = false }) => {
     const intl = useSafeIntl();
     return orgUnitLabelString(

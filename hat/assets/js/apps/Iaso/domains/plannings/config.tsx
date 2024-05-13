@@ -4,9 +4,7 @@ import {
     IconButton as IconButtonComponent,
     useSafeIntl,
 } from 'bluesquare-components';
-import { useLocation } from 'react-router-dom';
 import { baseUrls } from '../../constants/urls';
-
 import { CreateEditPlanning } from './CreateEditPlanning/CreateEditPlanning';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import { PlanningApi } from './hooks/requests/useGetPlannings';
@@ -20,7 +18,6 @@ export const usePlanningColumns = (
     deletePlanning: (id: number) => void,
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
-    const { pathname } = useLocation();
     return useMemo(
         () => [
             {
@@ -73,7 +70,6 @@ export const usePlanningColumns = (
                                 icon="remove-red-eye"
                                 tooltipMessage={MESSAGES.viewPlanning}
                                 size="small"
-                                location={pathname}
                             />
                             <CreateEditPlanning
                                 type="edit"
@@ -129,6 +125,6 @@ export const usePlanningColumns = (
                 },
             },
         ],
-        [deletePlanning, formatMessage, pathname],
+        [deletePlanning, formatMessage],
     );
 };

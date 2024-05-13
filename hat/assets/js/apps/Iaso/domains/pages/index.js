@@ -1,9 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import {
-    useSafeIntl,
-    commonStyles,
-    IconButton as IconButtonComponent,
-} from 'bluesquare-components';
+import { useSafeIntl, commonStyles, IconButton } from 'bluesquare-components';
 import { makeStyles } from '@mui/styles';
 import { Box } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
@@ -33,7 +29,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const Pages = () => {
-    const intl = useSafeIntl();
+    const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const params = useParamsObject(baseUrls.pages);
     const [selectedPageSlug, setSelectedPageSlug] = useState();
@@ -108,11 +104,11 @@ const Pages = () => {
     const columns = useMemo(
         () => [
             {
-                Header: intl.formatMessage(MESSAGES.name),
+                Header: formatMessage(MESSAGES.name),
                 accessor: 'name',
             },
             {
-                Header: intl.formatMessage(MESSAGES.type),
+                Header: formatMessage(MESSAGES.type),
                 accessor: 'type',
                 Cell: settings => {
                     const pageType = PAGES_TYPES.find(
@@ -121,20 +117,20 @@ const Pages = () => {
                     if (!pageType) {
                         return settings.row.original.type;
                     }
-                    return <span>{intl.formatMessage(pageType.label)}</span>;
+                    return <span>{formatMessage(pageType.label)}</span>;
                 },
             },
             {
-                Header: intl.formatMessage(MESSAGES.address),
+                Header: formatMessage(MESSAGES.address),
                 accessor: 'slug',
             },
             {
-                Header: intl.formatMessage(MESSAGES.updatedAt),
+                Header: formatMessage(MESSAGES.updatedAt),
                 accessor: 'updated_at',
                 Cell: DateTimeCellRfc,
             },
             {
-                Header: intl.formatMessage(MESSAGES.actions),
+                Header: formatMessage(MESSAGES.actions),
                 sortable: false,
                 accessor: 'actions',
                 Cell: settings => {
@@ -144,7 +140,7 @@ const Pages = () => {
                         i.e: adding /dashboard to the path and /accountId to the params
                         */}
                             <a href={`/pages/${settings.row.original.slug}`}>
-                                <IconButtonComponent
+                                <IconButton
                                     icon="remove-red-eye"
                                     tooltipMessage={{
                                         ...MESSAGES.viewPage,
@@ -159,7 +155,7 @@ const Pages = () => {
                                 currentUser,
                             ) && (
                                 <>
-                                    <IconButtonComponent
+                                    <IconButton
                                         icon="edit"
                                         tooltipMessage={MESSAGES.edit}
                                         onClick={() =>
@@ -168,7 +164,7 @@ const Pages = () => {
                                             )
                                         }
                                     />
-                                    <IconButtonComponent
+                                    <IconButton
                                         icon="delete"
                                         tooltipMessage={MESSAGES.delete}
                                         onClick={() =>
@@ -184,7 +180,7 @@ const Pages = () => {
                 },
             },
         ],
-        [currentUser, handleClickDeleteRow, handleClickEditRow, intl],
+        [currentUser, formatMessage, handleClickDeleteRow, handleClickEditRow],
     );
 
     return (
@@ -199,14 +195,14 @@ const Pages = () => {
                 onClose={closeDeleteConfirmDialog}
                 onConfirm={handleDeleteConfirmDialogConfirm}
             />
-            <TopBar title={intl.formatMessage(MESSAGES.pages)} />
+            <TopBar title={formatMessage(MESSAGES.pages)} />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <PageActions>
                     <PageAction
                         icon={AddIcon}
                         onClick={handleClickCreateButton}
                     >
-                        {intl.formatMessage(MESSAGES.create)}
+                        {formatMessage(MESSAGES.create)}
                     </PageAction>
                 </PageActions>
                 <TableWithDeepLink

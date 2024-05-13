@@ -161,6 +161,9 @@ export const HomeOnline: FunctionComponent = () => {
                                     className={classes.logoButton}
                                     key={button.label}
                                     to={button.url}
+                                    // setting state to null in anticipation to breadcrumbs implementation
+                                    // It has no impact at the moment
+                                    state={null}
                                 >
                                     {button.Icon}
                                     <span>{button.label}</span>

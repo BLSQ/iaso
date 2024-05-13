@@ -27,7 +27,6 @@ const useStyles = makeStyles(theme => ({
 export const Workflows: FunctionComponent = () => {
     const params = useParamsObject(baseUrls.workflows) as WorkflowsParams;
     const goBack = useGoBack(baseUrls.entityTypes);
-    // const goBack = useGoBack(router, baseUrls.entityTypes);
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetWorkflowVersions(params);

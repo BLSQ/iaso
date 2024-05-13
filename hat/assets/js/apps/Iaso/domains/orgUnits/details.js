@@ -199,7 +199,7 @@ const OrgUnitDetail = () => {
             }
             setTab(newTab);
         },
-        [params],
+        [params, redirectToReplace],
     );
 
     const handleChangeShape = useCallback(

@@ -11,7 +11,6 @@ import {
 import { Box } from '@mui/material';
 import isEqual from 'lodash/isEqual';
 
-import { useLocation } from 'react-router-dom';
 import InputComponent from '../../../../components/forms/InputComponent';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import { EntityType } from '../types/entityType';
@@ -58,7 +57,6 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
     const [closeModal, setCloseModal] = useState<any>();
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
-    const { pathname: location } = useLocation();
 
     const getSchema = () =>
         yup.lazy(() =>
@@ -174,7 +172,6 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                                     iconSize="small"
                                     fontSize="small"
                                     dataTestId="see-form-button"
-                                    location={location}
                                 />
                             </Box>
                         </Box>

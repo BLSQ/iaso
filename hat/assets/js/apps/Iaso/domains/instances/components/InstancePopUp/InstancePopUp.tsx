@@ -2,9 +2,8 @@
 import React, { FunctionComponent, useCallback, useMemo, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { Popup, useMap } from 'react-leaflet';
-import { Link } from 'react-router-dom';
 
-import { Card, CardMedia, CardContent, Button, Grid, Box } from '@mui/material';
+import { Card, CardMedia, CardContent, Grid, Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import {
@@ -22,6 +21,7 @@ import { baseUrls } from '../../../../constants/urls';
 
 import MESSAGES from '../../messages';
 import { Instance } from '../../types/instance';
+import { LinkButton } from '../../../../components/nav/LinkButton';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -134,20 +134,16 @@ export const InstancePopup: FunctionComponent<Props> = ({
                                         confirm={confirmDialog}
                                     />
                                 )}
-                                <Link
+                                <LinkButton
+                                    variant="outlined"
+                                    color="primary"
+                                    size="small"
                                     target="_blank"
-                                    to={`${baseUrls.instanceDetail}/instanceId/${currentInstance.id}`}
+                                    to={`/${baseUrls.instanceDetail}/instanceId/${currentInstance.id}`}
                                     className={classes.linkButton}
                                 >
-                                    <Button
-                                        className={classes.marginLeft}
-                                        variant="outlined"
-                                        color="primary"
-                                        size="small"
-                                    >
-                                        {formatMessage(MESSAGES.see)}
-                                    </Button>
-                                </Link>
+                                    {formatMessage(MESSAGES.see)}
+                                </LinkButton>
                             </Grid>
                         </Box>
                     </CardContent>

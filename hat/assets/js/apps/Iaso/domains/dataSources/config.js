@@ -9,7 +9,6 @@ import {
 // eslint-disable-next-line import/no-named-as-default-member,import/no-named-as-default
 import PublishIcon from '@mui/icons-material/Publish';
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
-import { useLocation } from 'react-router-dom';
 import { DataSourceDialogComponent as DataSourceDialog } from './components/DataSourceDialogComponent';
 import MESSAGES from './messages';
 import { VersionsDialog } from './components/VersionsDialog';
@@ -26,7 +25,6 @@ export const useDataSourcesTableColumns = (
     defaultSourceVersion,
 ) => {
     const { formatMessage } = useSafeIntl();
-    const { pathname: location } = useLocation();
     return useMemo(
         () => [
             {
@@ -72,7 +70,6 @@ export const useDataSourcesTableColumns = (
                                 url={`/${baseUrls.sourceDetails}/sourceId/${settings.row.original.id}`}
                                 icon="remove-red-eye"
                                 tooltipMessage={MESSAGES.viewDataSource}
-                                location={location}
                             />
                             {userHasPermission(
                                 Permission.SOURCE_WRITE,
@@ -156,7 +153,7 @@ export const useDataSourcesTableColumns = (
                 },
             },
         ],
-        [defaultSourceVersion, formatMessage, location, setForceRefresh],
+        [defaultSourceVersion, formatMessage, setForceRefresh],
     );
 };
 
@@ -217,6 +214,6 @@ export const useSourceVersionsTableColumns = source => {
                 sortable: false,
             },
         ],
-        [formatMessage, source.default_version?.id],
+        [formatMessage, source?.default_version?.id],
     );
 };

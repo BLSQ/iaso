@@ -6,8 +6,6 @@ import {
     IntlFormatMessage,
     Column,
 } from 'bluesquare-components';
-import { useLocation } from 'react-router-dom';
-import MESSAGES from './messages';
 
 import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell';
@@ -16,12 +14,11 @@ import { LinkToEntity } from './components/LinkToEntity';
 import { LinkToInstance } from '../instances/components/LinkToInstance';
 import { baseUrls } from '../../constants/urls';
 import { StorageParams } from './types/storages';
-
 import getDisplayName from '../../utils/usersUtils';
-
 import { useGetOperationsTypesLabel } from './hooks/useGetOperationsTypes';
 import { useGetReasons } from './hooks/useGetReasons';
 import { useGetStatus } from './hooks/useGetStatus';
+import MESSAGES from './messages';
 
 export const defaultSorted = [{ id: 'updated_at', desc: false }];
 
@@ -30,7 +27,6 @@ export const baseUrl = baseUrls.storages;
 export const useGetColumns = (params: StorageParams): Array<Column> => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
-    const { pathname } = useLocation();
     const columns: Array<Column> = [
         {
             Header: formatMessage(MESSAGES.last_sync_at),
@@ -81,10 +77,9 @@ export const useGetColumns = (params: StorageParams): Array<Column> => {
             Cell: settings => {
                 return (
                     <IconButtonComponent
-                        url={`${baseUrls.storageDetail}/type/${settings.row.original.storage_type}/storageId/${settings.row.original.storage_id}`}
+                        url={`/${baseUrls.storageDetail}/type/${settings.row.original.storage_type}/storageId/${settings.row.original.storage_id}`}
                         icon="remove-red-eye"
                         tooltipMessage={MESSAGES.see}
-                        location={pathname}
                     />
                 );
             },

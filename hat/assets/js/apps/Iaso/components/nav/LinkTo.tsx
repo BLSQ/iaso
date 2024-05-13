@@ -8,8 +8,8 @@ import {
     useKeyPressListener,
 } from 'bluesquare-components';
 
-import { Link, useLocation } from 'react-router-dom';
 import MESSAGES from './messages';
+import { LinkWithLocation } from './LinkWithLocation';
 
 type Props = {
     condition: boolean;
@@ -44,7 +44,6 @@ export const LinkTo: FunctionComponent<Props> = ({
     color,
     tooltipMessage = MESSAGES.see,
 }) => {
-    const { pathname: location } = useLocation();
     const targetBlankEnabled = useKeyPressListener('Meta');
     const actualTarget = targetBlankEnabled ? '_blank' : target;
     const classes: Record<string, string> = useStyles();
@@ -56,7 +55,6 @@ export const LinkTo: FunctionComponent<Props> = ({
                     tooltipMessage={tooltipMessage}
                     iconSize={iconSize}
                     size={size}
-                    location={location}
                     reloadDocument={targetBlankEnabled}
                     url={url}
                     replace={replace}
@@ -66,16 +64,15 @@ export const LinkTo: FunctionComponent<Props> = ({
             );
         }
         return (
-            <Link
+            <LinkWithLocation
                 className={classNames(className, classes.link)}
                 reloadDocument={targetBlankEnabled}
                 to={url}
-                state={{ location }}
                 replace={replace}
                 target={actualTarget}
             >
                 {text || textPlaceholder}
-            </Link>
+            </LinkWithLocation>
         );
     }
     if (useIcon) return null;

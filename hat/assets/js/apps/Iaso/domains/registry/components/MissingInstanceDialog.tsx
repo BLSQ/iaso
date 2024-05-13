@@ -100,7 +100,7 @@ const MissingInstanceDialog: FunctionComponent<Props> = ({
         redirectToReplace(baseUrls.registryDetail, newParams);
         closeDialog();
     }, [closeDialog, params, redirectToReplace]);
-    const creteInstance = useGetCreateInstance(window.location.href, formId);
+    const createInstance = useGetCreateInstance(window.location.href, formId);
     return (
         <Dialog
             fullWidth
@@ -141,7 +141,7 @@ const MissingInstanceDialog: FunctionComponent<Props> = ({
                                 return (
                                     <IconButton
                                         onClick={() =>
-                                            creteInstance(
+                                            createInstance(
                                                 settings.row.original.org_unit
                                                     .id,
                                             )

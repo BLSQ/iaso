@@ -13,7 +13,6 @@ import { commonStyles, IconButton, useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
 import AddIcon from '@mui/icons-material/Add';
 
-import { useLocation } from 'react-router-dom';
 import { useRedirectToReplace } from '../../../routing/routing';
 import MESSAGES from '../messages';
 
@@ -96,7 +95,6 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
     );
     const { formatMessage } = useSafeIntl();
     const redirectToReplace = useRedirectToReplace();
-    const { pathname } = useLocation();
 
     const handleChangeTab = useCallback(
         (_, newTab: OrgUnitListTab) => {
@@ -134,14 +132,12 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
                             color="secondary"
                             overrideIcon={AddIcon}
                             tooltipMessage={MESSAGES.addOrgUnitChild}
-                            location={pathname}
                         />
                         <IconButton
                             url={`/${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}`}
                             color="secondary"
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.editOrgUnit}
-                            location={pathname}
                         />
                     </Box>
                 </Grid>

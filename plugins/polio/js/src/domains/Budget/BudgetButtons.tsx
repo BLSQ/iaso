@@ -6,16 +6,21 @@ import MESSAGES from './messages';
 import { CreateBudgetProcessModal } from './BudgetProcess/CreateBudgetProcessModal';
 import { CsvButton } from '../../../../../../hat/assets/js/apps/Iaso/components/Buttons/CsvButton';
 
-type Props = { csvUrl: string; isUserPolioBudgetAdmin: boolean };
+type Props = {
+    csvUrl: string;
+    isUserPolioBudgetAdmin: boolean;
+    isMobileLayout?: boolean;
+};
 
 export const BudgetButtons: FunctionComponent<Props> = ({
     csvUrl,
     isUserPolioBudgetAdmin,
+    isMobileLayout = false,
 }) => {
     return (
         <Grid container justifyContent="flex-end">
             {isUserPolioBudgetAdmin && (
-                <Box mr={2}>
+                <Box mb={isMobileLayout ? 2 : 0}>
                     <CreateBudgetProcessModal
                         iconProps={{
                             message: MESSAGES.createBudgetProcessTitle,

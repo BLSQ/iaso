@@ -37,7 +37,7 @@ export const BudgetProcessDetails: FunctionComponent<Props> = ({ router }) => {
     const { campaignName, budgetProcessId, transition_key, ...rest } = params;
     const classes = useStyles();
     const [showHidden, setShowHidden] = useState<boolean>(
-        rest.show_hidden ?? false,
+        rest.show_hidden === 'true',
     );
 
     const apiParams = useMemo(() => {

@@ -11,7 +11,13 @@ import {
 import { makeStyles } from '@mui/styles';
 import { IconButton, commonStyles, useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
-import React, { FunctionComponent, useCallback, useState } from 'react';
+import React, {
+    Dispatch,
+    FunctionComponent,
+    SetStateAction,
+    useCallback,
+    useState,
+} from 'react';
 import { useDispatch } from 'react-redux';
 
 import MESSAGES from '../messages';
@@ -37,6 +43,8 @@ type Props = {
     isFetchingListChildren: boolean;
     orgUnitMapChildren?: OrgUnit[];
     isFetchingMapChildren: boolean;
+    setSelectedChildren: Dispatch<SetStateAction<OrgUnit | undefined>>;
+    selectedChildren: OrgUnit | undefined;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -90,6 +98,8 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
     isFetchingListChildren,
     orgUnitMapChildren,
     isFetchingMapChildren,
+    setSelectedChildren,
+    selectedChildren,
 }) => {
     const classes: Record<string, string> = useStyles();
     const [tab, setTab] = useState<OrgUnitListTab>(
@@ -118,7 +128,9 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
                         variant="h5"
                         className={classes.title}
                     >
-                        {orgUnit.name ?? ''}
+                        {orgUnit.name
+                            ? `${orgUnit.name} (${orgUnit.org_unit_type_name})`
+                            : ''}
                     </Typography>
                 </Grid>
                 <Grid
@@ -168,6 +180,8 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
                         subOrgUnitTypes={subOrgUnitTypes}
                         orgUnitChildren={orgUnitMapChildren}
                         isFetchingChildren={isFetchingMapChildren}
+                        setSelectedChildren={setSelectedChildren}
+                        selectedChildren={selectedChildren}
                     />
                 </Box>
                 <Box

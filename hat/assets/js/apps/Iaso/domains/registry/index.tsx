@@ -6,7 +6,7 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { orderBy } from 'lodash';
-import React, { FunctionComponent, useMemo } from 'react';
+import React, { FunctionComponent, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
@@ -50,6 +50,10 @@ export const Registry: FunctionComponent<Props> = ({ router }) => {
         params,
     } = router;
     const dispatch = useDispatch();
+
+    const [selectedChildren, setSelectedChildren] = useState<
+        OrgUnit | undefined
+    >();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
 
@@ -134,6 +138,8 @@ export const Registry: FunctionComponent<Props> = ({ router }) => {
                                     isFetchingMapChildren={
                                         isFetchingMapChildren
                                     }
+                                    setSelectedChildren={setSelectedChildren}
+                                    selectedChildren={selectedChildren}
                                 />
                             </Grid>
                             <Grid
@@ -147,6 +153,7 @@ export const Registry: FunctionComponent<Props> = ({ router }) => {
                                     <OrgUnitInstances
                                         orgUnit={orgUnit}
                                         params={params}
+                                        selectedChildren={selectedChildren}
                                     />
                                 )}
                             </Grid>

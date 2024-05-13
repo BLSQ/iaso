@@ -1,12 +1,14 @@
 import { Box } from '@mui/material';
 import { red } from '@mui/material/colors';
-import { makeStyles } from '@mui/styles';
+import { makeStyles, useTheme } from '@mui/styles';
 import { LoadingSpinner, commonStyles } from 'bluesquare-components';
 import classNames from 'classnames';
 import L from 'leaflet';
 import { keyBy } from 'lodash';
 import React, {
+    Dispatch,
     FunctionComponent,
+    SetStateAction,
     useCallback,
     useEffect,
     useMemo,
@@ -41,7 +43,6 @@ import TILES from '../../../constants/mapTiles';
 import { baseUrls } from '../../../constants/urls';
 import { redirectTo, redirectToReplace } from '../../../routing/actions';
 import { RegistryDetailParams } from '../types';
-import { MapPopUp } from './MapPopUp';
 import { MapSettings, Settings } from './MapSettings';
 import { MapToolTip } from './MapTooltip';
 
@@ -51,6 +52,8 @@ type Props = {
     orgUnitChildren?: OrgUnit[];
     isFetchingChildren: boolean;
     params: RegistryDetailParams;
+    setSelectedChildren: Dispatch<SetStateAction<OrgUnit | undefined>>;
+    selectedChildren: OrgUnit | undefined;
 };
 
 const boundsOptions = {
@@ -85,6 +88,8 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
     orgUnitChildren,
     isFetchingChildren,
     params,
+    setSelectedChildren,
+    selectedChildren,
 }) => {
     const classes: Record<string, string> = useStyles();
     const dispatch = useDispatch();
@@ -92,7 +97,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
         showTooltip: params.showTooltip === 'true',
         useCluster: params.useCluster === 'true',
     });
-
+    const theme = useTheme();
     const [isMapFullScreen, setIsMapFullScreen] = useState<boolean>(
         params.isFullScreen === 'true',
     );
@@ -171,12 +176,22 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
         },
         [dispatch],
     );
+    const handleSingleClick = useCallback(
+        (ou: OrgUnit, event: L.LeafletMouseEvent | undefined) => {
+            event?.originalEvent.stopPropagation();
+            setSelectedChildren(
+                ou.id === selectedChildren?.id ? undefined : ou,
+            );
+        },
+        [setSelectedChildren, selectedChildren],
+    );
 
-    const handleFeatureDoubleClick = useCallback(
+    const handleFeatureEvents = useCallback(
         (ou: OrgUnit) => (_, layer) => {
             layer.on('dblclick', event => handleDoubleClick(event, ou));
+            layer.on('click', event => handleSingleClick(ou, event));
         },
-        [handleDoubleClick],
+        [handleDoubleClick, handleSingleClick],
     );
     if (isFetchingChildren)
         return (
@@ -231,14 +246,15 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                 {isOrgUnitActive && (
                     <>
                         {orgUnit.geo_json && (
-                            <Pane name="orgunit-shapes">
+                            <Pane name="orgunit-shapes" style={{ zIndex: 400 }}>
                                 <GeoJSON
                                     data={orgUnit.geo_json}
                                     style={() => ({
-                                        color: selectedOrgUnitColor,
+                                        color: !selectedChildren
+                                            ? selectedOrgUnitColor
+                                            : theme.palette.primary.main,
                                     })}
                                 >
-                                    <MapPopUp orgUnit={orgUnit} />
                                     {showTooltip && (
                                         <MapToolTip
                                             permanent
@@ -263,7 +279,9 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                                 }}
                                 markerProps={() => ({
                                     ...circleColorMarkerOptions(
-                                        selectedOrgUnitColor,
+                                        !selectedChildren
+                                            ? selectedOrgUnitColor
+                                            : theme.palette.primary.main,
                                     ),
                                     key: `markers-${orgUnit.id}-${showTooltip}`,
                                 })}
@@ -275,7 +293,6 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                                     pane: 'popupPane',
                                     label: orgUnit.name,
                                 })}
-                                PopupComponent={MapPopUp}
                                 TooltipComponent={MapToolTip}
                             />
                         )}
@@ -297,20 +314,23 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                         <Box key={subType.id}>
                             <Pane
                                 name={`children-shapes-orgunit-type-${subType.id}`}
-                                style={{ zIndex: 400 + index }}
+                                style={{ zIndex: 401 + index }}
                             >
                                 {orgUnitsShapes.map(childrenOrgUnit => (
                                     <GeoJSON
                                         key={childrenOrgUnit.id}
-                                        onEachFeature={handleFeatureDoubleClick(
+                                        onEachFeature={handleFeatureEvents(
                                             childrenOrgUnit,
                                         )}
                                         style={() => ({
-                                            color: subType.color || '',
+                                            color:
+                                                childrenOrgUnit.id ===
+                                                selectedChildren?.id
+                                                    ? selectedOrgUnitColor
+                                                    : subType.color || '',
                                         })}
                                         data={childrenOrgUnit.geo_json}
                                     >
-                                        <MapPopUp orgUnit={childrenOrgUnit} />
                                         {showTooltip && (
                                             <MapToolTip
                                                 permanent
@@ -348,24 +368,27 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                                             key={subType.id}
                                         >
                                             <MarkersListComponent
-                                                key={`markers-${subType.id}-${showTooltip}`}
+                                                key={`markers-${subType.id}-${showTooltip}-${selectedChildren?.id}`}
                                                 items={orgUnitsMarkers || []}
-                                                markerProps={() => ({
+                                                markerProps={children => ({
                                                     ...circleColorMarkerOptions(
-                                                        subType.color || '',
+                                                        children.id ===
+                                                            selectedChildren?.id
+                                                            ? selectedOrgUnitColor
+                                                            : subType.color ||
+                                                                  '',
                                                     ),
                                                     radius: 12,
                                                 })}
-                                                popupProps={location => ({
-                                                    orgUnit: location,
-                                                })}
                                                 onDblclick={handleDoubleClick}
+                                                onMarkerClick={
+                                                    handleSingleClick
+                                                }
                                                 tooltipProps={e => ({
                                                     permanent: showTooltip,
                                                     pane: 'popupPane',
                                                     label: e.name,
                                                 })}
-                                                PopupComponent={MapPopUp}
                                                 TooltipComponent={MapToolTip}
                                                 isCircle
                                             />
@@ -375,24 +398,24 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                                 {!useCluster && (
                                     <>
                                         <MarkersListComponent
-                                            key={`markers-${subType.id}-${showTooltip}`}
+                                            key={`markers-${subType.id}-${showTooltip}-${selectedChildren?.id}`}
                                             items={orgUnitsMarkers || []}
-                                            markerProps={() => ({
+                                            markerProps={children => ({
                                                 ...circleColorMarkerOptions(
-                                                    subType.color || '',
+                                                    children.id ===
+                                                        selectedChildren?.id
+                                                        ? selectedOrgUnitColor
+                                                        : subType.color || '',
                                                 ),
                                                 radius: 12,
                                             })}
-                                            popupProps={location => ({
-                                                orgUnit: location,
-                                            })}
                                             onDblclick={handleDoubleClick}
+                                            onMarkerClick={handleSingleClick}
                                             tooltipProps={e => ({
                                                 permanent: showTooltip,
                                                 pane: 'popupPane',
                                                 label: e.name,
                                             })}
-                                            PopupComponent={MapPopUp}
                                             TooltipComponent={MapToolTip}
                                             isCircle
                                         />

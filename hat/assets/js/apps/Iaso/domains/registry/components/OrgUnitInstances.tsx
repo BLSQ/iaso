@@ -36,6 +36,7 @@ import { RegistryDetailParams } from '../types';
 type Props = {
     orgUnit: OrgUnit;
     params: RegistryDetailParams;
+    selectedChildren?: OrgUnit;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -79,6 +80,7 @@ const useStyles = makeStyles(theme => ({
 export const OrgUnitInstances: FunctionComponent<Props> = ({
     orgUnit,
     params,
+    selectedChildren,
 }) => {
     const classes: Record<string, string> = useStyles();
     const dispatch = useDispatch();
@@ -87,7 +89,8 @@ export const OrgUnitInstances: FunctionComponent<Props> = ({
     // selected instance should be:
     // submission id from params  OR reference instance OR first submission of the possible ones OR undefined
     // if undefined select should be hidden and a place holder should say no submission
-
+    console.log('orgUnit', orgUnit);
+    console.log('selectedChildren', selectedChildren);
     const [currentInstanceId, setCurrentInstanceId] = useState<
         number | string | undefined
     >(params.submissionId || orgUnit.reference_instance?.id);
@@ -123,6 +126,18 @@ export const OrgUnitInstances: FunctionComponent<Props> = ({
     return (
         <Box position="relative" width="100%" minHeight={300}>
             {isFetchingCurrentInstance && <LoadingSpinner absolute />}
+            {selectedChildren && (
+                <Paper className={classes.paper}>
+                    <Typography
+                        color="primary"
+                        variant="h6"
+                        className={classes.title}
+                    >
+                        {selectedChildren.name} (
+                        {selectedChildren.org_unit_type_name})
+                    </Typography>
+                </Paper>
+            )}
             {instances && instances?.length === 0 && (
                 <Paper className={classes.emptyPaper}>
                     <Typography

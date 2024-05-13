@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 export const useGoBack = (
@@ -7,9 +8,12 @@ export const useGoBack = (
     const navigate = useNavigate();
     const { state, pathname } = useLocation();
     // We need different behaviour for "nested" back arrows, otherwise deep-linking will lead to circular rerouting
-    const options = !nested ? { from: pathname } : null;
-    if (!state) {
-        return () => navigate(`/${fallBackUrl}`, { state: options });
-    }
-    return () => navigate(-1);
+    return useCallback(() => {
+        const options = !nested ? { location: pathname } : null;
+        if (!state) {
+            navigate(`/${fallBackUrl}`, { state: options });
+        } else {
+            navigate(-1);
+        }
+    }, [fallBackUrl, navigate, nested, pathname, state]);
 };

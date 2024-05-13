@@ -1,11 +1,10 @@
 import React, { FunctionComponent } from 'react';
-
-import { Link } from 'react-router-dom';
 import { userHasPermission } from '../../users/utils';
 import { baseUrls } from '../../../constants/urls';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { Beneficiary } from '../../entities/types/beneficiary';
-import * as Permission from '../../../utils/permissions';
+import { ENTITIES } from '../../../utils/permissions';
+import { LinkTo } from '../../../components/nav/LinkTo';
 
 type Props = {
     entity?: Beneficiary;
@@ -13,14 +12,9 @@ type Props = {
 
 export const LinkToEntity: FunctionComponent<Props> = ({ entity }) => {
     const user = useCurrentUser();
-    if (userHasPermission(Permission.ENTITIES, user) && entity?.name) {
-        const url = `/${baseUrls.entityDetails}/entityId/${entity.id}`;
-        return (
-            <Link to={url}>
-                {/*  // TODO this will not work as this field is not in use anymore */}
-                {entity.name}
-            </Link>
-        );
-    }
-    return <>{entity ? entity.name : '-'}</>;
+    const condition =
+        userHasPermission(ENTITIES, user) && Boolean(entity?.name);
+    const url = `/${baseUrls.entityDetails}/entityId/${entity?.id}`;
+
+    return <LinkTo condition={condition} url={url} text={entity?.name} />;
 };

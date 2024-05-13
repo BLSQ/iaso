@@ -121,7 +121,6 @@ export const DuplicateDetails: FunctionComponent<Props> = () => {
     const disableMerge = Boolean(
         tableState.find(row => row.final.status === 'dropped'),
     );
-    console.log('params', params);
     const { data: dupDetailData, isFetching } = useGetDuplicateDetails({
         params,
     });

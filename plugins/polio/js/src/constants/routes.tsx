@@ -6,8 +6,8 @@ import { Calendar } from '../domains/Calendar/Calendar';
 import { Lqas } from '../domains/LQAS-IM/LQAS';
 import { LqasAfroOverview } from '../domains/LQAS-IM/LQAS/LqasAfroOverview/LqasAfroOverview';
 import { ImStats } from '../domains/LQAS-IM/IM';
-import { BudgetList } from '../domains/Budget';
-import { BudgetDetails } from '../domains/Budget/BudgetDetails/BudgetDetails';
+import { BudgetProcessList } from '../domains/Budget';
+import { BudgetProcessDetails } from '../domains/Budget/BudgetDetails/BudgetDetails';
 import { Nopv2Authorisations } from '../domains/VaccineModule/Nopv2Authorisations/Nopv2Authorisations';
 import { Nopv2AuthorisationsDetails } from '../domains/VaccineModule/Nopv2Authorisations/Details/Nopv2AuthorisationsDetails';
 import { VaccineSupplyChain } from '../domains/VaccineModule/SupplyChain/VaccineSupplyChain';
@@ -110,14 +110,14 @@ export const imOhhPath: RoutePath = {
 export const budgetPath: RoutePath = {
     baseUrl: baseUrls.budget,
     routerUrl: `${baseUrls.budget}/*`,
-    element: <BudgetList />,
+    element: <BudgetProcessList />,
     permissions: [BUDGET, BUDGET_ADMIN],
 };
 
 export const budgetDetailsPath: RoutePath = {
     baseUrl: baseUrls.budgetDetails,
     routerUrl: `${baseUrls.budgetDetails}/*`,
-    element: <BudgetDetails />,
+    element: <BudgetProcessDetails />,
     permissions: [BUDGET, BUDGET_ADMIN],
 };
 

@@ -132,7 +132,7 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
             'roundStartFrom',
             'roundStartTo',
             'countries',
-            'orgUnitGroups',
+            'org_unit_groups',
         ],
     },
     budgetDetails: {

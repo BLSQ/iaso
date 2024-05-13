@@ -305,6 +305,7 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         filename = "users"
         response: Union[HttpResponse, StreamingHttpResponse]
+        queryset = queryset.order_by("id")
 
         if file_format == FileFormatEnum.XLSX:
             filename = filename + ".xlsx"

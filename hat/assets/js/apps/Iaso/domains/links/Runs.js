@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
 
@@ -13,9 +13,8 @@ import {
     runAlgorithm,
 } from '../../utils/requests';
 
-import { redirectTo } from '../../routing/actions.ts';
 import TopBar from '../../components/nav/TopBarComponent';
-import { runsTableColumns } from './config';
+import { useRunsTableColumns } from './config';
 
 import SingleTable, {
     useSingleTableParams,
@@ -29,6 +28,7 @@ import { useRunsFiltersData } from './hooks';
 
 import MESSAGES from './messages';
 import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
+import { useRedirectTo } from '../../routing/routing.ts';
 
 const baseUrl = baseUrls.algos;
 
@@ -40,7 +40,8 @@ const Runs = () => {
     const params = useParamsObject(baseUrl);
     const classes = useStyles();
     const dispatch = useDispatch();
-    const intl = useSafeIntl();
+    const redirectTo = useRedirectTo();
+    const { formatMessage } = useSafeIntl();
 
     const algorithms = useSelector(state => state.links.algorithmsList);
     const profiles = useSelector(state => state.users.list);
@@ -59,14 +60,15 @@ const Runs = () => {
         setFetchingAlgorithms,
     );
 
-    const onSelectRunLinks = runItem => {
-        dispatch(
+    const onSelectRunLinks = useCallback(
+        runItem => {
             redirectTo(baseUrls.links, {
                 algorithmRunId: runItem.id,
                 searchActive: true,
-            }),
-        );
-    };
+            });
+        },
+        [redirectTo],
+    );
 
     const onRefresh = () => {
         setForceRefresh(true);
@@ -85,9 +87,7 @@ const Runs = () => {
         setTimeout(() => onRefresh(), 500);
     };
 
-    const [tableColumns] = useState(
-        runsTableColumns(intl.formatMessage, onSelectRunLinks, deleteRuns),
-    );
+    const tableColumns = useRunsTableColumns(onSelectRunLinks, deleteRuns);
 
     let currentOrigin;
     if (params.origin && sources) {
@@ -102,7 +102,7 @@ const Runs = () => {
     const apiParams = useSingleTableParams(params);
     return (
         <>
-            <TopBar title={intl.formatMessage(MESSAGES.runsTitle)} />
+            <TopBar title={formatMessage(MESSAGES.runsTitle)} />
             <SingleTable
                 baseUrl={baseUrl}
                 endPointPath="algorithmsruns"
@@ -119,7 +119,7 @@ const Runs = () => {
                 toggleActiveSearch
                 columns={tableColumns}
                 filters={runsFilters({
-                    formatMessage: intl.formatMessage,
+                    formatMessage,
                     algorithms,
                     profiles,
                     sources,

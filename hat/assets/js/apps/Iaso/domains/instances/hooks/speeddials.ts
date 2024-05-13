@@ -1,19 +1,17 @@
 import { useCallback } from 'react';
 import { UseQueryResult } from 'react-query';
-import { useDispatch } from 'react-redux';
 import { baseUrls } from '../../../constants/urls';
 import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';
-import { redirectTo } from '../../../routing/actions';
 import { useSaveOrgUnit } from '../../orgUnits/hooks';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { Instance } from '../types/instance';
 import { REFERENCE_FLAG_CODE, REFERENCE_UNFLAG_CODE } from '../constants';
 import snackMessages from '../../../components/snackBars/messages';
 import { Nullable } from '../../../types/utils';
+import { useRedirectTo } from '../../../routing/routing';
 
 type LinkToFormParams = {
-    // eslint-disable-next-line no-unused-vars
     formId: number;
     referenceFormId: Nullable<number>;
 };
@@ -28,7 +26,7 @@ export const useLinkOrgUnitToReferenceSubmission = ({
     const { mutateAsync: saveOrgUnit } = useSaveOrgUnit(undefined, [
         'orgUnits',
     ]);
-    const dispatch = useDispatch();
+    const redirectTo = useRedirectTo();
     return useCallback(
         (currentInstance: Instance) => {
             const {
@@ -49,11 +47,11 @@ export const useLinkOrgUnitToReferenceSubmission = ({
                     const url = referenceFormId
                         ? `${baseUrl}/formId/${formId}/referenceFormId/${referenceFormId}/instanceId/${instanceId}`
                         : baseUrl;
-                    dispatch(redirectTo(url, {}));
+                    redirectTo(url);
                 },
             });
         },
-        [formId, referenceFormId, saveOrgUnit, dispatch],
+        [formId, referenceFormId, saveOrgUnit, redirectTo],
     );
 };
 

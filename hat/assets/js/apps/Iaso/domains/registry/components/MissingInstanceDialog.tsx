@@ -1,5 +1,4 @@
 import React, { FunctionComponent, useCallback } from 'react';
-import { useDispatch } from 'react-redux';
 import {
     Dialog,
     DialogTitle,
@@ -21,13 +20,13 @@ import { useGetCreateInstance } from '../hooks/useGetCreateInstance';
 
 import { MissingInstanceButton } from './MissingInstanceButton';
 
-import { redirectToReplace } from '../../../routing/actions';
 import { RegistryDetailParams } from '../types';
 import { baseUrls } from '../../../constants/urls';
 import MESSAGES from '../messages';
 import { CompletenessApiResponse } from '../../completenessStats/types';
 
 import { defaultSorted } from '../hooks/useGetEmptyInstanceOrgUnits';
+import { useRedirectToReplace } from '../../../routing/routing';
 
 type Props = {
     missingOrgUnitsData: CompletenessApiResponse;
@@ -90,7 +89,7 @@ const MissingInstanceDialog: FunctionComponent<Props> = ({
     formId,
     isFetching,
 }) => {
-    const dispatch = useDispatch();
+    const redirectToReplace = useRedirectToReplace();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const handleClose = useCallback(() => {
@@ -98,9 +97,9 @@ const MissingInstanceDialog: FunctionComponent<Props> = ({
             ...params,
         };
         delete newParams.missingSubmissionVisible;
-        dispatch(redirectToReplace(baseUrls.registryDetail, newParams));
+        redirectToReplace(baseUrls.registryDetail, newParams);
         closeDialog();
-    }, [closeDialog, dispatch, params]);
+    }, [closeDialog, params, redirectToReplace]);
     const creteInstance = useGetCreateInstance(window.location.href, formId);
     return (
         <Dialog
@@ -162,7 +161,7 @@ const MissingInstanceDialog: FunctionComponent<Props> = ({
                     params={params}
                     elevation={0}
                     onTableParamsChange={p => {
-                        dispatch(redirectToReplace(baseUrls.registryDetail, p));
+                        redirectToReplace(baseUrls.registryDetail, p);
                     }}
                 />
             </DialogContent>

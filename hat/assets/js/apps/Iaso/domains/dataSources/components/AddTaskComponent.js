@@ -3,17 +3,16 @@ import { Grid, Typography } from '@mui/material';
 import { FormattedMessage } from 'react-intl';
 import { LoadingSpinner } from 'bluesquare-components';
 import PropTypes from 'prop-types';
-import { useDispatch } from 'react-redux';
 import MESSAGES from '../messages';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { EditableTextFields } from '../../../components/forms/EditableTextFields';
 import { Checkboxes } from '../../../components/forms/Checkboxes';
-import { redirectTo } from '../../../routing/actions.ts';
 import { baseUrls } from '../../../constants/urls';
 import { sendDhisOuImporterRequest } from '../requests';
 import { useFormState } from '../../../hooks/form';
 import { useSnackMutation } from '../../../libs/apiHooks.ts';
 import { VersionDescription } from './VersionDescription.tsx';
+import { useRedirectTo } from '../../../routing/routing.ts';
 
 const initialFormState = sourceCredentials => {
     return {
@@ -40,7 +39,7 @@ const AddTask = ({
         sourceCredentials.is_valid,
     );
 
-    const dispatch = useDispatch();
+    const redirectTo = useRedirectTo();
     const mutation = useSnackMutation(
         sendDhisOuImporterRequest,
         MESSAGES.importFromDhis2Success,
@@ -70,11 +69,9 @@ const AddTask = ({
         await mutation.mutateAsync(body);
         closeDialogCallBack();
         if (redirect) {
-            dispatch(
-                redirectTo(baseUrls.tasks, {
-                    order: '-created_at',
-                }),
-            );
+            redirectTo(baseUrls.tasks, {
+                order: '-created_at',
+            });
         }
         reset();
     };

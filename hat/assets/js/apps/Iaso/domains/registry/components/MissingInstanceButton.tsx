@@ -1,5 +1,4 @@
 import React, { FunctionComponent, useCallback } from 'react';
-import { useDispatch } from 'react-redux';
 import { useSafeIntl } from 'bluesquare-components';
 import { Button, Tooltip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -9,7 +8,7 @@ import { RegistryDetailParams } from '../types';
 
 import MESSAGES from '../messages';
 import { baseUrls } from '../../../constants/urls';
-import { redirectToReplace } from '../../../routing/actions';
+import { useRedirectToReplace } from '../../../routing/routing';
 
 type Props = {
     params: RegistryDetailParams;
@@ -42,18 +41,16 @@ export const MissingInstanceButton: FunctionComponent<Props> = ({
     onClick,
     params,
 }) => {
-    const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
+    const redirectToReplace = useRedirectToReplace();
     const handleClick = useCallback(() => {
-        dispatch(
-            redirectToReplace(baseUrls.registryDetail, {
-                ...params,
-                missingSubmissionVisible: true,
-            }),
-        );
+        redirectToReplace(baseUrls.registryDetail, {
+            ...params,
+            missingSubmissionVisible: `true`,
+        });
         onClick();
-    }, [dispatch, onClick, params]);
+    }, [onClick, params, redirectToReplace]);
     return (
         <Tooltip
             arrow

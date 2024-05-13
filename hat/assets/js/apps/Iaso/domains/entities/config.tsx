@@ -199,6 +199,7 @@ export const useBeneficiariesDetailsColumns = (
     fields: Array<string> = [],
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
+    const location = useLocation();
     const columnsFromList: Column[] = useColumnsFromFieldsList(fields);
     return useMemo(
         () => [
@@ -252,6 +253,6 @@ export const useBeneficiariesDetailsColumns = (
                 ),
             },
         ],
-        [entityId, columnsFromList, formatMessage],
+        [formatMessage, columnsFromList, entityId, location.pathname],
     );
 };

@@ -228,7 +228,7 @@ export const useGetSubmissions = (
 
 export const useGetUsersDropDown = (
     team?: Team,
-): UseQueryResult<DropdownOptions<number>, Error> => {
+): UseQueryResult<DropdownOptions<number>[], Error> => {
     return useSnackQuery(
         ['profiles', team],
         () => getRequest('/api/profiles/'),

@@ -8,13 +8,11 @@ import {
 import { makeStyles } from '@mui/styles';
 import { Box, Paper, Typography, Grid, Divider } from '@mui/material';
 import moment from 'moment';
-import { useDispatch } from 'react-redux';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
 import MESSAGES from '../messages';
 import { baseUrls } from '../../../constants/urls';
 
-import { redirectToReplace } from '../../../routing/actions';
 import { useGetEnketoUrl } from '../hooks/useGetEnketoUrl';
 import { useCurrentUser } from '../../../utils/usersUtils';
 
@@ -32,6 +30,7 @@ import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { RegistryDetailParams } from '../types';
 import { LinkToInstance } from '../../instances/components/LinkToInstance';
 import * as Permission from '../../../utils/permissions';
+import { useRedirectToReplace } from '../../../routing/routing';
 
 type Props = {
     orgUnit: OrgUnit;
@@ -81,7 +80,7 @@ export const OrgUnitInstances: FunctionComponent<Props> = ({
     params,
 }) => {
     const classes: Record<string, string> = useStyles();
-    const dispatch = useDispatch();
+    const redirectToReplace = useRedirectToReplace();
     const { formatMessage } = useSafeIntl();
 
     // selected instance should be:
@@ -113,7 +112,7 @@ export const OrgUnitInstances: FunctionComponent<Props> = ({
             ...params,
             submissionId,
         };
-        dispatch(redirectToReplace(baseUrls.registryDetail, newParams));
+        redirectToReplace(baseUrls.registryDetail, newParams);
     };
     useEffect(() => {
         if (!currentInstanceId && instances && instances?.length > 0) {

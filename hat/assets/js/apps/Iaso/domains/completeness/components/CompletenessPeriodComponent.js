@@ -9,14 +9,13 @@ import {
     Table,
     useSafeIntl,
 } from 'bluesquare-components';
-import { useDispatch } from 'react-redux';
-import { postRequest } from 'Iaso/libs/Api';
-import { useSnackMutation } from 'Iaso/libs/apiHooks';
+import { postRequest } from 'Iaso/libs/Api.ts';
+import { useSnackMutation } from 'Iaso/libs/apiHooks.ts';
 import { getColumns } from '../config';
 import { baseUrls } from '../../../constants/urls';
-import { redirectTo } from '../../../routing/actions';
 import MESSAGES from '../../../components/snackBars/messages';
 import { usePrettyPeriod } from '../../periods/utils';
+import { useRedirectTo } from '../../../routing/routing.ts';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -60,7 +59,7 @@ const CompletenessPeriodComponent = ({
     forms,
     activePeriodType,
 }) => {
-    const dispatch = useDispatch();
+    const redirectTo = useRedirectTo();
     const formatPeriod = usePrettyPeriod();
 
     const derivedInstanceMutation = useSnackMutation(
@@ -74,15 +73,13 @@ const CompletenessPeriodComponent = ({
     const classes = useStyles();
     // FIXME: doesn't seem to be actually used
     const onSelectCell = (form, status, selectedPeriod) => {
-        dispatch(
-            redirectTo(baseUrls.instances, {
-                formIds: form.id,
-                periodType: form.period_type.toUpperCase(),
-                startPeriod: selectedPeriod.asPeriodType(form.period_type)
-                    .periodString,
-                status: status.toUpperCase(),
-            }),
-        );
+        redirectTo(baseUrls.instances, {
+            formIds: form.id,
+            periodType: form.period_type.toUpperCase(),
+            startPeriod: selectedPeriod.asPeriodType(form.period_type)
+                .periodString,
+            status: status.toUpperCase(),
+        });
     };
 
     const onClick = form => {

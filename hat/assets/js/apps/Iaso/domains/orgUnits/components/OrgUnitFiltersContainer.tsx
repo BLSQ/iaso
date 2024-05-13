@@ -2,7 +2,6 @@
 import { Box, Button, AppBar } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import Add from '@mui/icons-material/Add';
-import { useDispatch } from 'react-redux';
 import {
     commonStyles,
     useSafeIntl,
@@ -23,7 +22,6 @@ import { useCurrentUser } from '../../../utils/usersUtils';
 
 import { SearchButton } from '../../../components/SearchButton';
 import { OrgUnitFilters as Filters } from './OrgUnitsFilters';
-import { redirectTo } from '../../../routing/actions';
 
 import { OrgUnitParams } from '../types/orgUnit';
 
@@ -36,6 +34,7 @@ import { Count } from '../hooks/requests/useGetOrgUnits';
 import { decodeSearch } from '../utils';
 
 import MESSAGES from '../messages';
+import { useRedirectTo } from '../../../routing/routing';
 
 type Props = {
     params: OrgUnitParams;
@@ -83,8 +82,8 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
     counts,
     setDeletedTab,
 }) => {
-    const dispatch = useDispatch();
     const currentUser = useCurrentUser();
+    const redirectTo = useRedirectTo();
 
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
@@ -120,25 +119,25 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                 ...params,
                 searches: JSON.stringify(newSearches),
             };
-            dispatch(redirectTo(baseUrl, tempParams));
+            redirectTo(baseUrl, tempParams);
         },
-        [searches, params, dispatch],
+        [searches, params, redirectTo],
     );
 
     const handleDeleteDynamicTab = useCallback(
         newParams => {
-            dispatch(redirectTo(baseUrl, newParams));
+            redirectTo(baseUrl, newParams);
             setSearches(decodeSearch(decodeURI(newParams.searches)));
             setDeletedTab(true);
         },
-        [dispatch, setDeletedTab],
+        [redirectTo, setDeletedTab],
     );
     const handleAddDynamicTab = useCallback(
         newParams => {
-            dispatch(redirectTo(baseUrl, newParams));
+            redirectTo(baseUrl, newParams);
             setSearches(decodeSearch(decodeURI(newParams.searches)));
         },
-        [dispatch],
+        [redirectTo],
     );
 
     // update filter state if search changed in the url
@@ -176,7 +175,7 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                     paramKey="searches"
                     tabParamKey="searchTabIndex"
                     onTabChange={newParams => {
-                        dispatch(redirectTo(baseUrl, newParams));
+                        redirectTo(baseUrl, newParams);
                     }}
                     onTabsDeleted={handleDeleteDynamicTab}
                     onTabsAdded={handleAddDynamicTab}
@@ -218,11 +217,9 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                             className={classnames(classes.button)}
                             color="primary"
                             onClick={() =>
-                                dispatch(
-                                    redirectTo(baseUrls.orgUnitDetails, {
-                                        orgUnitId: '0',
-                                    }),
-                                )
+                                redirectTo(baseUrls.orgUnitDetails, {
+                                    orgUnitId: '0',
+                                })
                             }
                         >
                             <Add className={classes.buttonIcon} />

@@ -200,7 +200,7 @@ describe('infos tab', () => {
     it('should save new infos', () => {
         cy.intercept(
             'GET',
-            `/api/orgunits/treesearch/?&rootsForUser=true&source=${orgUnit.source_id}&validation_status=all&ignoreEmptyNames=true`,
+            `/api/orgunits/treesearch/?&rootsForUser=true&source=${orgUnit.source_id}&validation_status=VALID&ignoreEmptyNames=true`,
             {
                 fixture: 'orgunits/list.json',
             },

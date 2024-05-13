@@ -1,31 +1,31 @@
 import json
-from copy import deepcopy
-from time import gmtime, strftime
-from datetime import datetime
 import typing
+from copy import deepcopy
+from datetime import datetime
+from time import gmtime, strftime
 
 from django.conf import settings
-from django.contrib.gis.geos import Point
-from django.contrib.gis.geos import Polygon, GEOSGeometry, MultiPolygon
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Point, Polygon
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
-from django.db.models import Q, IntegerField, Value, Count
-from django.http import StreamingHttpResponse, HttpResponse
+from django.db.models import Count, IntegerField, Q, Value
+from django.http import HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext as _
-from rest_framework import viewsets, permissions
+from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
 from hat.audit import models as audit_models
-from iaso.api.common import safe_api_import, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
-from iaso.api.org_unit_search import build_org_units_queryset, annotate_query
-from iaso.api.serializers import OrgUnitSmallSearchSerializer, OrgUnitSearchSerializer, OrgUnitTreeSearchSerializer
-from iaso.gpkg import org_units_to_gpkg_bytes
-from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form, Instance, DataSource
-from iaso.utils import geojson_queryset
 from hat.menupermissions import models as permission
+from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, safe_api_import
+from iaso.api.org_unit_search import annotate_query, build_org_units_queryset
+from iaso.api.serializers import OrgUnitSearchSerializer, OrgUnitSmallSearchSerializer, OrgUnitTreeSearchSerializer
+from iaso.gpkg import org_units_to_gpkg_bytes
+from iaso.models import DataSource, Form, Group, Instance, OrgUnit, OrgUnitType, Project, SourceVersion
+from iaso.utils import geojson_queryset
+
 from ..utils.models.common import get_creator_name, get_org_unit_parents_ref
 
 
@@ -339,7 +339,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         queryset = self.get_queryset().order_by("name")
         params = request.GET
         parent_id = params.get("parent_id")
-        validation_status = params.get("validation_status")
+        validation_statuses = params.get("validation_status")
         roots_for_user = params.get("rootsForUser", None)
         source = params.get("source", None)
         version = params.get("version", None)
@@ -374,8 +374,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
             get_object_or_404(self.get_queryset().only("id"), id=parent_id)
             queryset = queryset.filter(parent=parent_id)
 
-        if validation_status != "all":
-            queryset = queryset.filter(validation_status=validation_status)
+        if validation_statuses != "all":
+            validation_statuses_list = validation_statuses.split(",")
+            queryset = queryset.filter(validation_status__in=validation_statuses_list)
         if ignore_empty_names:
             queryset = queryset.filter(~Q(name=""))
 

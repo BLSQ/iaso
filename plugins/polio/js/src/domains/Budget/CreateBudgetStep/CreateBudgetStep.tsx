@@ -37,7 +37,7 @@ import { useRedirectToReplace } from '../../../../../../../hat/assets/js/apps/Ia
 import { baseUrls } from '../../../constants/urls';
 
 type Props = {
-    campaignId: string;
+    budgetProcessId: string;
     previousStep?: BudgetStep;
     transitionKey: string;
     transitionLabel: string;
@@ -55,7 +55,7 @@ const useStyles = makeStyles({
 });
 
 const CreateBudgetStep: FunctionComponent<Props> = ({
-    campaignId,
+    budgetProcessId,
     previousStep,
     closeDialog,
     isOpen,
@@ -125,7 +125,7 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
     const formik = useFormik<StepForm>({
         initialValues: {
             transition_key: transitionKey,
-            campaign: campaignId,
+            budget_process: budgetProcessId,
             comment: undefined,
             files: undefined,
             links: intialLinks,

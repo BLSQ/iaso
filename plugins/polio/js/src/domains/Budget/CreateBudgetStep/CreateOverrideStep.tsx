@@ -37,7 +37,7 @@ import { baseUrls } from '../../../constants/urls';
 import { useRedirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 
 type Props = {
-    campaignId: string;
+    budgetProcessId: string;
     closeDialog: () => void;
     isOpen: boolean;
     id?: string;
@@ -52,7 +52,7 @@ const useStyles = makeStyles({
 });
 
 const CreateOverrideStep: FunctionComponent<Props> = ({
-    campaignId,
+    budgetProcessId,
     closeDialog,
     isOpen,
     id,
@@ -99,7 +99,7 @@ const CreateOverrideStep: FunctionComponent<Props> = ({
     const formik = useFormik<OverrideStepForm>({
         initialValues: {
             new_state_key: undefined,
-            campaign: campaignId,
+            budget_process: budgetProcessId,
             comment: undefined,
             files: undefined,
             links: undefined,

@@ -1,25 +1,25 @@
 /* eslint-disable camelcase */
-import React, { useState, FunctionComponent, useEffect } from 'react';
-import { Box, Grid, Typography, Theme } from '@mui/material';
+import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
+import { Box, Grid, Theme, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
 
-import { History, FormatListBulleted } from '@mui/icons-material';
-import { baseUrls } from '../../../constants/urls';
+import { FormatListBulleted, History } from '@mui/icons-material';
+import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import InputComponent from '../../../components/forms/InputComponent';
+import { baseUrls } from '../../../constants/urls';
 import {
     commaSeparatedIdsToArray,
     commaSeparatedIdsToStringArray,
 } from '../../../utils/forms';
-import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
-import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { formatLabel } from '../../instances/utils';
+import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import {
     NO_PERIOD,
     periodTypeOptionsWithNoPeriod,
 } from '../../periods/constants';
+import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import MESSAGES from '../messages';
-import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import { FormDataType } from '../types/forms';
 import { FormLegendInput } from './FormLegendInput';
 import { CR_MODE_NONE, changeRequestModeOptions } from '../constants';
@@ -87,6 +87,16 @@ const FormForm: FunctionComponent<FormFormProps> = ({
         setFieldValue('period_type', periodTypeValue);
     };
 
+    const labelKeysOptions = useMemo(() => {
+        return currentForm.possible_fields.value
+            .map(field => ({
+                label: `${formatLabel(field)} [${field.name}]`,
+                value: field.name,
+            }))
+            .sort((option1, option2) =>
+                option1.label.localeCompare(option2.label),
+            );
+    }, [currentForm.possible_fields.value]);
     let orgUnitTypes;
     if (currentForm.org_unit_type_ids.value.length > 0) {
         orgUnitTypes = currentForm.org_unit_type_ids.value.join(',');
@@ -306,16 +316,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                                 value={currentForm.label_keys.value}
                                 errors={currentForm.possible_fields.errors}
                                 type="select"
-                                options={currentForm.possible_fields.value
-                                    .map(field => ({
-                                        label: formatLabel(field),
-                                        value: field.name,
-                                    }))
-                                    .sort((option1, option2) =>
-                                        option1.label.localeCompare(
-                                            option2.label,
-                                        ),
-                                    )}
+                                options={labelKeysOptions}
                                 label={MESSAGES.fields}
                             />
                             <InputComponent

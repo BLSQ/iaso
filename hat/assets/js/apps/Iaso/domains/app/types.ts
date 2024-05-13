@@ -1,6 +1,9 @@
 import { ElementType, ReactNode } from 'react';
 import { IntlMessage } from 'bluesquare-components';
-import { Redirection, RouteCustom } from '../../routing/types';
+import {
+    Redirection as RoutingRedirection,
+    RouteCustom,
+} from '../../routing/types';
 
 export type MenuItem = {
     label: string | IntlMessage;
@@ -18,9 +21,15 @@ export type MenuItem = {
 };
 export type MenuItems = MenuItem[];
 
+// TODO deprecate or update to react-router 6
+export type Redirection = {
+    path: string;
+    // eslint-disable-next-line no-unused-vars
+    component: (args: any) => ReactNode;
+};
+
 export type Plugin = {
     routes: RouteCustom[];
-    redirections?: Redirection[];
     menu: MenuItem[];
     translations: Record<string, any>;
     homeUrl?: string;
@@ -29,6 +38,7 @@ export type Plugin = {
     key?: string;
     baseUrls: Record<string, string>;
     paramsConfig: Record<string, string[]>;
+    redirections?: RoutingRedirection[];
 };
 
 export type Plugins = {

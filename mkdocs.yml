@@ -24,15 +24,11 @@ edit_uri: edit/main/docs # for the edit on github button
 use_directory_urls: false # IMPORTANT: without this the paths to pictures will break on build
 nav: # nav configures the side bar menu
   - Home: index.md
-  - Users: 
-    - References:
-      - User guides:
-        - ./pages/users/reference/user_guide/user_guide.md
-      - Interoperability road map:
-        - ./pages/users/reference/interop/interop.md
-      # - How to:
-      #   - ./pages/users/how_to/convert_docx_to_md/convert_docx_to_md.md
-      # - FAQ: ./pages/users/FAQ/faq.md
+  - Users:
+     - ./pages/users/reference/iaso_concepts/iaso_concepts.md
+     - ./pages/users/reference/iaso_modules/iaso_modules.md
+     - ./pages/users/reference/iaso_web/user_guide.md
+     - ./pages/users/reference/iaso_mobile/iaso_mobile.md
   - Developers:
     - References:
       # - Data model glossary:

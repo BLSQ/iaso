@@ -7,7 +7,6 @@ from rest_framework import permissions, serializers
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.viewsets import GenericViewSet
 
-from hat.constants import ACCOUNT_FEATURE_FLAGS
 from hat.menupermissions.constants import MODULES
 from hat.menupermissions.models import CustomPermissionSupport
 from iaso.api.common import IsAdminOrSuperUser
@@ -76,9 +75,8 @@ class SetupAccountSerializer(serializers.Serializer):
             modules=account_modules,
             analytics_script=validated_data.get("analytics_script", ""),
         )
-        account_feature_flags = [feature_flag["code"] for feature_flag in ACCOUNT_FEATURE_FLAGS]
+        account_feature_flags = ["SHOW_HOME_ONLINE", "SHOW_BENEFICIARY_TYPES_IN_LIST_MENU", "SHOW_PAGES"]
         account.feature_flags.set(account_feature_flags)
-        account.save()
 
         # Create a setup_account project with an app_id represented by the account name
         app_id = validated_data["account_name"].replace(" ", ".").replace("-", ".")
@@ -98,6 +96,7 @@ class SetupAccountSerializer(serializers.Serializer):
         data_source.save()
 
         Profile.objects.create(account=account, user=user)
+
         # Get all permissions linked to the modules
         modules_permissions = account_module_permissions(account_modules)
 

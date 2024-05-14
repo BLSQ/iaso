@@ -78,7 +78,7 @@ export const Instances: FunctionComponent<Props> = ({
     const handleFilterChange = useCallback(
         (key: string, value: number | string) => {
             dispatch(
-                redirectToReplace(baseUrls.registryDetail, {
+                redirectToReplace(baseUrls.registry, {
                     ...params,
                     [key]: value,
                 }),
@@ -94,7 +94,7 @@ export const Instances: FunctionComponent<Props> = ({
                 tab: `${newType.id}`,
             };
             delete newParams.formIds;
-            dispatch(redirectToReplace(baseUrls.registryDetail, newParams));
+            dispatch(redirectToReplace(baseUrls.registry, newParams));
         },
         [dispatch, params],
     );
@@ -151,7 +151,7 @@ export const Instances: FunctionComponent<Props> = ({
                                         setTableColumns={newCols =>
                                             setTableColumns(newCols)
                                         }
-                                        baseUrl={baseUrls.registryDetail}
+                                        baseUrl={baseUrls.registry}
                                         labelKeys={currentForm.label_keys || []}
                                         formDetails={currentForm}
                                         tableColumns={tableColumns}
@@ -213,7 +213,7 @@ export const Instances: FunctionComponent<Props> = ({
                         </Grid>
                         <TableWithDeepLink
                             marginTop={false}
-                            baseUrl={baseUrls.registryDetail}
+                            baseUrl={baseUrls.registry}
                             data={data?.instances ?? []}
                             pages={data?.pages ?? 1}
                             defaultSorted={defaultSorted}
@@ -222,10 +222,7 @@ export const Instances: FunctionComponent<Props> = ({
                             params={params}
                             onTableParamsChange={p =>
                                 dispatch(
-                                    redirectToReplace(
-                                        baseUrls.registryDetail,
-                                        p,
-                                    ),
+                                    redirectToReplace(baseUrls.registry, p),
                                 )
                             }
                             extraProps={{ loading: isFetchingList }}

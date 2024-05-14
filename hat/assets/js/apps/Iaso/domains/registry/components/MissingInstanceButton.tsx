@@ -1,15 +1,15 @@
-import React, { FunctionComponent, useCallback } from 'react';
-import { useDispatch } from 'react-redux';
-import { useSafeIntl } from 'bluesquare-components';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import { Button, Tooltip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import VisibilityIcon from '@mui/icons-material/Visibility';
+import { useSafeIntl } from 'bluesquare-components';
+import React, { FunctionComponent, useCallback } from 'react';
+import { useDispatch } from 'react-redux';
 
 import { RegistryDetailParams } from '../types';
 
-import MESSAGES from '../messages';
 import { baseUrls } from '../../../constants/urls';
 import { redirectToReplace } from '../../../routing/actions';
+import MESSAGES from '../messages';
 
 type Props = {
     params: RegistryDetailParams;
@@ -47,7 +47,7 @@ export const MissingInstanceButton: FunctionComponent<Props> = ({
     const classes: Record<string, string> = useStyles();
     const handleClick = useCallback(() => {
         dispatch(
-            redirectToReplace(baseUrls.registryDetail, {
+            redirectToReplace(baseUrls.registry, {
                 ...params,
                 missingSubmissionVisible: true,
             }),

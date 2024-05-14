@@ -142,7 +142,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
             });
 
             dispatch(
-                redirectToReplace(baseUrls.registryDetail, {
+                redirectToReplace(baseUrls.registry, {
                     ...params,
                     [setting]: `${newSetting}`,
                 }),
@@ -155,7 +155,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
         (isFull: boolean) => {
             setIsMapFullScreen(isFull);
             dispatch(
-                redirectToReplace(baseUrls.registryDetail, {
+                redirectToReplace(baseUrls.registry, {
                     ...params,
                     isFullScreen: `${isFull}`,
                 }),
@@ -166,7 +166,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
     const handleDoubleClick = useCallback(
         (event: L.LeafletMouseEvent, ou: OrgUnit) => {
             event.originalEvent.stopPropagation();
-            const url = `/${baseUrls.registryDetail}/orgUnitId/${ou?.id}`;
+            const url = `/${baseUrls.registry}/orgUnitId/${ou?.id}`;
             dispatch(redirectTo(url));
         },
         [dispatch],

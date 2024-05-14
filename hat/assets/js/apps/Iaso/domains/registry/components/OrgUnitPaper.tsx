@@ -24,9 +24,8 @@ import MESSAGES from '../messages';
 
 import { baseUrls } from '../../../constants/urls';
 
-import { OrgUnitChildrenMap } from './OrgUnitChildrenMap';
-
 import { redirectToReplace } from '../../../routing/actions';
+import { OrgUnitChildrenMap } from './map/OrgUnitChildrenMap';
 
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { OrgUnitChildrenList } from './OrgUnitChildrenList';

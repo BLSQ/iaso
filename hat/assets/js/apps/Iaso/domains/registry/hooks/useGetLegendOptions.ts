@@ -3,7 +3,7 @@ import { useSafeIntl } from 'bluesquare-components';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { OrgunitTypes } from '../../orgUnits/types/orgunitTypes';
 
-import { selectedOrgUnitColor } from '../components/OrgUnitChildrenMap';
+import { selectedOrgUnitColor } from '../components/map/OrgUnitChildrenMap';
 import MESSAGES from '../messages';
 
 export type Legend = {

@@ -3,8 +3,8 @@ import { Box, FormControlLabel, Switch } from '@mui/material';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent, useState } from 'react';
 
-import { SxStyles } from '../../../types/general';
-import MESSAGES from '../messages';
+import { SxStyles } from '../../../../types/general';
+import MESSAGES from '../../messages';
 
 const styles: SxStyles = {
     root: {

@@ -60,7 +60,6 @@ export const MapPopUp: FunctionComponent<Props> = ({ orgUnit }) => {
                         </Box>
                         <LinkToRegistry
                             orgUnit={orgUnit}
-                            replace
                             useIcon
                             iconSize="small"
                             size="small"

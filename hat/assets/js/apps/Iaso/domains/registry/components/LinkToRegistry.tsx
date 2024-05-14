@@ -28,7 +28,7 @@ export const LinkToRegistry: FunctionComponent<Props> = ({
 }) => {
     const user = useCurrentUser();
     const condition = userHasPermission(REGISTRY, user) && Boolean(orgUnit);
-    const url = `/${baseUrls.registryDetail}/orgUnitId/${orgUnit?.id}`;
+    const url = `/${baseUrls.registry}/orgUnitId/${orgUnit?.id}`;
     const text = orgUnit?.name;
 
     return (

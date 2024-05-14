@@ -1,9 +1,9 @@
 import { useSafeIntl } from 'bluesquare-components';
-import { useTheme } from '@mui/material';
 
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { OrgunitTypes } from '../../orgUnits/types/orgunitTypes';
 
+import { selectedOrgUnitColor } from '../components/OrgUnitChildrenMap';
 import MESSAGES from '../messages';
 
 export type Legend = {
@@ -14,14 +14,13 @@ export type Legend = {
 };
 export const useGetlegendOptions = (
     orgUnit: OrgUnit,
-    subOrgUnitTypes: OrgunitTypes,
-): (() => Legend[]) => {
+    // eslint-disable-next-line no-unused-vars
+): ((subOrgUnitTypes: OrgunitTypes) => Legend[]) => {
     const { formatMessage } = useSafeIntl();
-    const theme = useTheme();
-    const getLegendOptions = (): Legend[] => {
+    const getLegendOptions = (subOrgUnitTypes: OrgunitTypes): Legend[] => {
         const options = subOrgUnitTypes.map(subOuType => ({
             value: `${subOuType.id}`,
-            label: subOuType.name,
+            label: `${subOuType.name} (${subOuType.orgUnits?.length})`,
             color: subOuType.color || '',
             active: true,
         }));
@@ -29,7 +28,7 @@ export const useGetlegendOptions = (
             options.unshift({
                 value: `${orgUnit.id}`,
                 label: formatMessage(MESSAGES.selectedOrgUnit),
-                color: theme.palette.secondary.main,
+                color: selectedOrgUnitColor,
                 active: true,
             });
         }

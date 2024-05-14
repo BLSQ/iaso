@@ -1,20 +1,20 @@
 import {
-    red,
-    pink,
-    purple,
-    indigo,
+    amber,
     blue,
-    lightBlue,
+    blueGrey,
+    brown,
     cyan,
-    teal,
+    deepOrange,
+    grey,
+    indigo,
+    lightBlue,
     lightGreen,
     lime,
+    pink,
+    purple,
+    red,
+    teal,
     yellow,
-    amber,
-    deepOrange,
-    brown,
-    grey,
-    blueGrey,
 } from '@mui/material/colors';
 
 export const chipColors = [
@@ -43,7 +43,6 @@ export const getChipColors = (i, reverse = false, usedColors = []) => {
 };
 
 export const otChipColors = [
-    red[600],
     teal[600],
     lightGreen[900],
     purple[900],

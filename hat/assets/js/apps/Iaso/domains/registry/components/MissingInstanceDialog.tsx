@@ -1,30 +1,26 @@
 import React, { FunctionComponent, useCallback } from 'react';
 import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
     Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
-    useSafeIntl,
-    makeFullModal,
-    commonStyles,
-    Table,
     IconButton,
+    Table,
+    commonStyles,
+    makeFullModal,
+    useSafeIntl,
 } from 'bluesquare-components';
 import EnketoIcon from '../../instances/components/EnketoIcon';
-
 import { useGetCreateInstance } from '../hooks/useGetCreateInstance';
-
 import { MissingInstanceButton } from './MissingInstanceButton';
-
-import { RegistryDetailParams } from '../types';
 import { baseUrls } from '../../../constants/urls';
-import MESSAGES from '../messages';
 import { CompletenessApiResponse } from '../../completenessStats/types';
-
+import MESSAGES from '../messages';
+import { RegistryDetailParams } from '../types';
 import { defaultSorted } from '../hooks/useGetEmptyInstanceOrgUnits';
 import { useRedirectToReplace } from '../../../routing/routing';
 
@@ -97,7 +93,7 @@ const MissingInstanceDialog: FunctionComponent<Props> = ({
             ...params,
         };
         delete newParams.missingSubmissionVisible;
-        redirectToReplace(baseUrls.registryDetail, newParams);
+        redirectToReplace(baseUrls.registry, newParams);
         closeDialog();
     }, [closeDialog, params, redirectToReplace]);
     const createInstance = useGetCreateInstance(window.location.href, formId);
@@ -161,7 +157,7 @@ const MissingInstanceDialog: FunctionComponent<Props> = ({
                     params={params}
                     elevation={0}
                     onTableParamsChange={p => {
-                        redirectToReplace(baseUrls.registryDetail, p);
+                        redirectToReplace(baseUrls.registry, p);
                     }}
                 />
             </DialogContent>

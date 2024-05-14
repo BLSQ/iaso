@@ -39,7 +39,6 @@ import { Details as StorageDetails } from '../domains/storages/details';
 import { Assignments } from '../domains/assignments';
 import { CompareInstanceLogs } from '../domains/instances/compare/components/CompareInstanceLogs';
 import { Registry } from '../domains/registry';
-import { Details as RegistryDetail } from '../domains/registry/details';
 import { SHOW_PAGES } from '../utils/featureFlags';
 import { Duplicates } from '../domains/entities/duplicates/list/Duplicates';
 import { DuplicateDetails } from '../domains/entities/duplicates/details/DuplicateDetails';
@@ -162,17 +161,12 @@ export const orgUnitChangeRequestPath = {
     permissions: [Permission.ORG_UNITS_CHANGE_REQUEST_REVIEW],
     element: <ReviewOrgUnitChanges />,
 };
+
 export const registryPath = {
     baseUrl: baseUrls.registry,
     routerUrl: `${baseUrls.registry}/*`,
     permissions: [Permission.REGISTRY],
     element: <Registry />,
-};
-export const registryDetailPath = {
-    baseUrl: baseUrls.registryDetail,
-    routerUrl: `${baseUrls.registryDetail}/*`,
-    permissions: [Permission.REGISTRY],
-    element: <RegistryDetail />,
 };
 
 export const linksPath = {
@@ -446,7 +440,6 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     workflowsDetailPath,
     orgUnitChangeRequestPath,
     registryPath,
-    registryDetailPath,
     modulesPath,
     potentialPaymentsPath,
     lotsPaymentsPath,

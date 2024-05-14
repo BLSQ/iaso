@@ -170,7 +170,7 @@ const InstanceDetails: FunctionComponent = () => {
                                                 color="inherit"
                                             >
                                                 <LinkWithLocation
-                                                    to={`${baseUrls.compareInstanceLogs}/instanceIds/${currentInstance.id}`}
+                                                    to={`/${baseUrls.compareInstanceLogs}/instanceIds/${currentInstance.id}`}
                                                 >
                                                     {formatMessage(
                                                         MESSAGES.seeAllVersions,

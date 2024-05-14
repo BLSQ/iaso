@@ -162,7 +162,7 @@ export const useRunsTableColumns = deleteRuns => {
                         {settings.row.original.links_count > 0 && (
                             <LinkWithLocation
                                 size="small"
-                                to={`${baseUrls.links}/algorithmRunId/${settings.row.original.id}/searchActive/true`}
+                                to={`/${baseUrls.links}/algorithmRunId/${settings.row.original.id}/searchActive/true`}
                             >
                                 {formatThousand(
                                     settings.row.original.links_count,

@@ -58,8 +58,8 @@ export const Details: FunctionComponent = () => {
 
     const duplicateUrl =
         duplicates.length === 1
-            ? `${baseUrls.entityDuplicateDetails}/entities/${entityId},${duplicates[0]}/`
-            : `${baseUrls.entityDuplicates}/order/id/pageSize/50/page/1/entity_id/${entityId}/`;
+            ? `/${baseUrls.entityDuplicateDetails}/entities/${entityId},${duplicates[0]}/`
+            : `/${baseUrls.entityDuplicates}/order/id/pageSize/50/page/1/entity_id/${entityId}/`;
 
     return (
         <>

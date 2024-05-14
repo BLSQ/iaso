@@ -43,7 +43,6 @@ export const formVersionsTableColumns = (
         accessor: 'actions',
         sortable: false,
         Cell: settings => {
-            console.log('XLS URL', settings.row.original.xls_file);
             return (
                 <section>
                     {settings.row.original.xls_file && (

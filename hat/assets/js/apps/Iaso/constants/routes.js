@@ -37,13 +37,13 @@ import { Storages } from '../domains/storages/index.tsx';
 import { Workflows } from '../domains/workflows/index.tsx';
 import { Details as WorkflowDetails } from '../domains/workflows/details.tsx';
 import { Details as StorageDetails } from '../domains/storages/details.tsx';
-import { Registry } from '../domains/registry/index.tsx';
 import { Details as RegistryDetail } from '../domains/registry/details.tsx';
 import { SHOW_PAGES } from '../utils/featureFlags';
 import { ReviewOrgUnitChanges } from '../domains/orgUnits/reviewChanges/ReviewOrgUnitChanges.tsx';
 import { LotsPayments } from '../domains/payments/LotsPayments.tsx';
 import { PotentialPayments } from '../domains/payments/PotentialPayments.tsx';
 import { Projects } from '../domains/projects/index.tsx';
+import { Registry } from '../domains/registry/index.tsx';
 import { SetupAccount } from '../domains/setup/index.tsx';
 import Tasks from '../domains/tasks';
 import { UserRoles } from '../domains/userRoles/index.tsx';
@@ -149,17 +149,12 @@ export const orgUnitChangeRequestPath = {
     permissions: [Permission.ORG_UNITS_CHANGE_REQUEST_REVIEW],
     element: <ReviewOrgUnitChanges />,
 };
+
 export const registryPath = {
     baseUrl: baseUrls.registry,
     routerUrl: `${baseUrls.registry}/*`,
     permissions: [Permission.REGISTRY],
     element: <Registry />,
-};
-export const registryDetailPath = {
-    baseUrl: baseUrls.registryDetail,
-    routerUrl: `${baseUrls.registryDetail}/*`,
-    permissions: [Permission.REGISTRY],
-    element: <RegistryDetail />,
 };
 
 export const linksPath = {
@@ -429,7 +424,6 @@ export const routeConfigs = [
     workflowsDetailPath,
     orgUnitChangeRequestPath,
     registryPath,
-    registryDetailPath,
     modulesPath,
     potentialPaymentsPath,
     lotsPaymentsPath,

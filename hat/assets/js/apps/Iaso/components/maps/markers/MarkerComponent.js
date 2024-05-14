@@ -22,6 +22,7 @@ const MarkerComponent = props => {
         TooltipComponent,
         tooltipProps,
         onContextmenu,
+        onDblclick,
     } = props;
     if (!item || !isValidCoordinate(item.latitude, item.longitude)) return null;
     return (
@@ -32,6 +33,7 @@ const MarkerComponent = props => {
             eventHandlers={{
                 click: () => onClick(item),
                 dragend: e => onDragend(e.target),
+                dblclick: e => onDblclick(e, item),
             }}
             {...markerProps(item)}
             onContextmenu={event => onContextmenu(event, item)}
@@ -53,6 +55,7 @@ MarkerComponent.defaultProps = {
     TooltipComponent: undefined,
     tooltipProps: () => {},
     onContextmenu: () => {},
+    onDblclick: () => {},
 };
 
 MarkerComponent.propTypes = {
@@ -67,6 +70,7 @@ MarkerComponent.propTypes = {
     TooltipComponent: PropTypes.elementType,
     tooltipProps: PropTypes.func,
     onContextmenu: PropTypes.func,
+    onDblclick: PropTypes.func,
 };
 
 export default MarkerComponent;

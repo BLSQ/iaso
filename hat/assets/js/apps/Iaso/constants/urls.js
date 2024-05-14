@@ -144,9 +144,8 @@ export const baseRouteConfigs = {
             'withLocation',
         ],
     },
-    registry: { url: 'orgunits/registry', params: ['accountId'] },
-    registryDetail: {
-        url: 'orgunits/registry/details',
+    registry: {
+        url: 'orgunits/registry',
         params: [
             'accountId',
             'orgUnitId',

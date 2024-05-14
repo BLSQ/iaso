@@ -1,11 +1,10 @@
+import { Box, Grid, Tab, Tabs } from '@mui/material';
 import React, {
     FunctionComponent,
-    useState,
-    useMemo,
     useCallback,
+    useMemo,
+    useState,
 } from 'react';
-import { Box, Tabs, Tab, Grid } from '@mui/material';
-
 import { Column } from 'bluesquare-components';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 import InputComponent from '../../../components/forms/InputComponent';
@@ -13,23 +12,20 @@ import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink'
 import { ColumnSelect } from '../../instances/components/ColumnSelect';
 import { ActionCell } from './ActionCell';
 import { MissingInstanceDialog } from './MissingInstanceDialog';
-
 import { OrgunitType } from '../../orgUnits/types/orgunitTypes';
 import { OrgunitTypeRegistry } from '../types/orgunitTypes';
 import { RegistryDetailParams } from '../types';
 import { Form } from '../../forms/types/forms';
-
 import { useGetForms } from '../hooks/useGetForms';
 import { useGetInstanceApi, useGetInstances } from '../hooks/useGetInstances';
-
-import MESSAGES from '../messages';
 import { baseUrls } from '../../../constants/urls';
-import { defaultSorted, INSTANCE_METAS_FIELDS } from '../config';
-import { userHasPermission } from '../../users/utils';
-import { useCurrentUser } from '../../../utils/usersUtils';
-import { useGetEmptyInstanceOrgUnits } from '../hooks/useGetEmptyInstanceOrgUnits';
 import * as Permission from '../../../utils/permissions';
 import { useRedirectToReplace } from '../../../routing/routing';
+import { useCurrentUser } from '../../../utils/usersUtils';
+import { userHasPermission } from '../../users/utils';
+import { defaultSorted, INSTANCE_METAS_FIELDS } from '../config';
+import { useGetEmptyInstanceOrgUnits } from '../hooks/useGetEmptyInstanceOrgUnits';
+import MESSAGES from '../messages';
 
 type Props = {
     isLoading: boolean;
@@ -58,7 +54,9 @@ export const Instances: FunctionComponent<Props> = ({
         return undefined;
     }, [subOrgUnitTypes, tab]);
 
-    const { data: formsList, isFetching: isFetchingForms } = useGetForms();
+    const { data: formsList, isFetching: isFetchingForms } = useGetForms({
+        orgUnitTypeIds: currentType?.id,
+    });
 
     const { url: apiUrl } = useGetInstanceApi(params, currentType?.id, 'VALID');
     const { data, isFetching: isFetchingList } = useGetInstances(
@@ -73,7 +71,7 @@ export const Instances: FunctionComponent<Props> = ({
 
     const handleFilterChange = useCallback(
         (key: string, value: number | string) => {
-            redirectToReplace(baseUrls.registryDetail, {
+            redirectToReplace(baseUrls.registry, {
                 ...params,
                 [key]: value,
             });
@@ -83,10 +81,12 @@ export const Instances: FunctionComponent<Props> = ({
 
     const handleChangeTab = useCallback(
         (newType: OrgunitType) => {
-            redirectToReplace(baseUrls.registryDetail, {
+            const newParams = {
                 ...params,
                 tab: `${newType.id}`,
-            });
+            };
+            delete newParams.formIds;
+            redirectToReplace(baseUrls.registry, newParams);
         },
         [params, redirectToReplace],
     );
@@ -143,7 +143,7 @@ export const Instances: FunctionComponent<Props> = ({
                                         setTableColumns={newCols =>
                                             setTableColumns(newCols)
                                         }
-                                        baseUrl={baseUrls.registryDetail}
+                                        baseUrl={baseUrls.registry}
                                         labelKeys={currentForm.label_keys || []}
                                         formDetails={currentForm}
                                         tableColumns={tableColumns}
@@ -203,9 +203,10 @@ export const Instances: FunctionComponent<Props> = ({
                                 </Box>
                             </Grid>
                         </Grid>
+                        {/* @ts-ignore */}
                         <TableWithDeepLink
                             marginTop={false}
-                            baseUrl={baseUrls.registryDetail}
+                            baseUrl={baseUrls.registry}
                             data={data?.instances ?? []}
                             pages={data?.pages ?? 1}
                             defaultSorted={defaultSorted}

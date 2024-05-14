@@ -1,12 +1,12 @@
 import { UseQueryResult } from 'react-query';
 
 import { Pagination } from 'bluesquare-components';
-import { useSnackQuery } from '../../../libs/apiHooks';
 import { getRequest } from '../../../libs/Api';
+import { useSnackQuery } from '../../../libs/apiHooks';
 
+import { makeUrlWithParams } from '../../../libs/utils';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { OrgunitTypes } from '../../orgUnits/types/orgunitTypes';
-import { makeUrlWithParams } from '../../../libs/utils';
 import { RegistryDetailParams } from '../types';
 
 export const useGetOrgUnit = (
@@ -18,6 +18,7 @@ export const useGetOrgUnit = (
         queryFn: () => getRequest(`/api/orgunits/${orgUnitId}/`),
         options: {
             retry: false,
+            enabled: Boolean(orgUnitId),
         },
     });
 };

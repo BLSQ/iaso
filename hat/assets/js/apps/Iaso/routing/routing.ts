@@ -54,7 +54,7 @@ export const useGenUrl = (): GenUrlFunction => {
 };
 
 // eslint-disable-next-line no-unused-vars
-type RedirectFn = (url: string, params: Record<string, string>) => void;
+type RedirectFn = (url: string, params?: Record<string, string>) => void;
 
 export const useRedirectTo = (): RedirectFn => {
     const navigate = useNavigate();

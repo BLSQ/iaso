@@ -5,8 +5,8 @@ import {
     useMemo,
     useState,
 } from 'react';
+import { useRedirectToReplace } from 'bluesquare-components';
 import { Optional } from '../types/utils';
-import { useRedirectToReplace } from '../routing/routing';
 
 type UseTabsParams<T> = {
     params: Record<string, Optional<string>>;

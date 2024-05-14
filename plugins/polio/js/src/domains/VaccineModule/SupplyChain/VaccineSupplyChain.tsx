@@ -1,8 +1,7 @@
 import React, { FunctionComponent } from 'react';
-import { AddButton, useSafeIntl } from 'bluesquare-components';
+import { AddButton, useSafeIntl, useRedirectTo } from 'bluesquare-components';
 import { Box, Grid } from '@mui/material';
 import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
-import { useRedirectTo } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import { DisplayIfUserHasPerm } from '../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
 import { POLIO_SUPPLY_CHAIN_WRITE } from '../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';

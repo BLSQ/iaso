@@ -19,11 +19,11 @@ import {
     LoadingSpinner,
     commonStyles,
     mapPopupStyles,
+    LinkButton,
 } from 'bluesquare-components';
 import PopupItemComponent from '../../../components/maps/popups/PopupItemComponent';
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
 import { baseUrls } from '../../../constants/urls.ts';
-import { LinkButton } from '../../../components/nav/LinkButton.tsx';
 import MESSAGES from '../messages';
 
 const useStyles = makeStyles(theme => ({

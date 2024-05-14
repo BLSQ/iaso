@@ -8,7 +8,11 @@ import React, {
 import { Paper, Divider, Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import {
+    commonStyles,
+    useSafeIntl,
+    useRedirectToReplace,
+} from 'bluesquare-components';
 
 import { LqasSummary } from './LqasSummary';
 import { LqasImMapHeader } from '../../shared/LqasImMapHeader';
@@ -27,7 +31,6 @@ import { LqasCountryListOverview } from './LqasCountryListOverview';
 import { useGetGeoJson } from '../../../Campaigns/Scope/hooks/useGetGeoJson';
 import { getLqasImMapLayer } from '../../IM/utils';
 import { LqasCountryMap } from './LqasCountryMap';
-import { useRedirectToReplace } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import { baseUrls } from '../../../../constants/urls';
 
 const defaultShapes = [];

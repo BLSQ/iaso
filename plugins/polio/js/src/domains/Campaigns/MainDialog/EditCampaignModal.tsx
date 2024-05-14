@@ -1,14 +1,13 @@
-import { IconButton } from 'bluesquare-components';
 import React, {
     FunctionComponent,
     useCallback,
     useEffect,
     useState,
 } from 'react';
+import { IconButton, useRedirectTo } from 'bluesquare-components';
 import MESSAGES from '../../../constants/messages';
 import { PolioCreateEditDialog } from './CreateEditDialog';
 import { DASHBOARD_BASE_URL } from '../../../constants/urls';
-import { useRedirectTo } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 
 type Props = { params?: any; campaignId?: string };
 

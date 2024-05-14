@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
 import { Box, Grid } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, useRedirectToReplace } from 'bluesquare-components';
 import TopBar from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { LqasAfroMapFilters } from './Filters/LqasAfroMapFilters';
 import { useStyles } from '../../../../styles/theme';
@@ -9,7 +9,6 @@ import MESSAGES from '../../../../constants/messages';
 import { LqasAfroMapWithSelector } from './Map/LqasAfroMapWithSelector';
 import { baseUrls } from '../../../../constants/urls';
 import { useParamsObject } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
-import { useRedirectToReplace } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 
 const baseUrl = baseUrls.lqasAfro;
 export const LqasAfroOverview: FunctionComponent = () => {

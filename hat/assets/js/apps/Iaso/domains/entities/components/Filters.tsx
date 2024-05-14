@@ -11,10 +11,9 @@ import { makeStyles } from '@mui/styles';
 import SearchIcon from '@mui/icons-material/Search';
 
 import {
-    // @ts-ignore
     commonStyles,
-    // @ts-ignore
     useSafeIntl,
+    useRedirectTo,
 } from 'bluesquare-components';
 
 // @ts-ignore
@@ -42,7 +41,6 @@ import {
     SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,
     hasFeatureFlag,
 } from '../../../utils/featureFlags';
-import { useRedirectTo } from '../../../routing/routing';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

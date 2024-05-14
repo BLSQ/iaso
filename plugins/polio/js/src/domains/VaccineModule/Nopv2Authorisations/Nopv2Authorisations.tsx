@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useEffect } from 'react';
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, useRedirectToReplace } from 'bluesquare-components';
 import { Box } from '@mui/material';
 import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
@@ -9,7 +9,6 @@ import { Nopv2AuthorisationsFilters } from './Filters/Nopv2AuthorisationsFilters
 import { Nopv2AuthorisationsTable } from './Table/Nopv2AuthorisationsTable';
 import { VaccineAuthParams } from './types';
 import { baseUrls } from '../../../constants/urls';
-import { useRedirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 
 const defaultParams = {
     order: '-current_expiration_date',

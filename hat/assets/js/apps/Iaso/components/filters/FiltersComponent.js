@@ -1,7 +1,7 @@
 import React, { Fragment, useCallback } from 'react';
 import PropTypes from 'prop-types';
+import { useRedirectToReplace } from 'bluesquare-components';
 import InputComponent from '../forms/InputComponent.tsx';
-import { useRedirectToReplace } from '../../routing/routing.ts';
 import { useObjectState } from '../../hooks/useObjectState.ts';
 
 export const FiltersComponent = ({

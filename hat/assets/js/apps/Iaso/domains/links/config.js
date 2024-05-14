@@ -8,14 +8,12 @@ import {
     textPlaceholder,
     Expander,
     displayDateFromTimestamp,
+    LinkWithLocation
 } from 'bluesquare-components';
-
 import getDisplayName from '../../utils/usersUtils.ts';
-
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import { StarsComponent } from '../../components/stars/StarsComponent.tsx';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell.tsx';
-import { LinkWithLocation } from '../../components/nav/LinkWithLocation.tsx';
 import { baseUrls } from '../../constants/urls';
 import MESSAGES from './messages';
 

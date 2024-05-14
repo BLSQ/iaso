@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import { commonStyles, useSafeIntl, useGoBack } from 'bluesquare-components';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { DisplayIfUserHasPerm } from '../../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
@@ -7,7 +7,6 @@ import { useParamsObject } from '../../../../../../../../hat/assets/js/apps/Iaso
 import { VACCINE_AUTH_ADMIN } from '../../../../constants/permissions';
 import TopBar from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { Nopv2AuthorisationsDetailsTable } from './Nopv2AuthorisationsDetailsTable';
-import { useGoBack } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useGoBack';
 import { CreateAuthorisationModal } from './Modals/CreateEdit/CreateEditAuthorisationModal';
 import { baseUrls } from '../../../../constants/urls';
 import MESSAGES from '../../../../constants/messages';

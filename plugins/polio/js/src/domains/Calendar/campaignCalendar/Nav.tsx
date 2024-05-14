@@ -15,17 +15,14 @@ import ChevronLeft from '@mui/icons-material/ChevronLeft';
 import ChevronRight from '@mui/icons-material/ChevronRight';
 import Today from '@mui/icons-material/Today';
 import { DesktopDatePicker as DatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, useRedirectToReplace } from 'bluesquare-components';
 import { Link } from 'react-router-dom';
 // @ts-ignore
 import moment, { Moment } from 'moment';
 import { useStyles } from './Styles';
 import { dateFormat } from './constants';
 import MESSAGES from '../../../constants/messages';
-import {
-    useGenUrl,
-    useRedirectToReplace,
-} from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
+import { useGenUrl } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 
 type Props = {
     currentMonday: Moment;

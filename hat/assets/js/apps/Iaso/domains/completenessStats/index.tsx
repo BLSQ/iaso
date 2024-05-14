@@ -6,11 +6,14 @@ import React, {
     useState,
 } from 'react';
 import { useDispatch } from 'react-redux';
-import { useSafeIntl, commonStyles } from 'bluesquare-components';
+import {
+    useSafeIntl,
+    commonStyles,
+    useRedirectTo,
+} from 'bluesquare-components';
 import { Box, Grid, useTheme, Tabs, Tab, Paper } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import Color from 'color';
-
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
 import { warningSnackBar } from '../../constants/snackBars';
@@ -33,7 +36,6 @@ import { CompletenessRouterParams } from './types';
 import { Map } from './components/Map';
 import { useGetFormsOptions } from './hooks/api/useGetFormsOptions';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
-import { useRedirectTo } from '../../routing/routing';
 
 const baseUrl = baseUrls.completenessStats;
 const useStyles = makeStyles(theme => ({

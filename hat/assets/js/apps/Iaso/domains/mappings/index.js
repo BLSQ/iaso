@@ -17,7 +17,7 @@ import { redirectTo as redirectToAction } from '../../routing/actions.ts';
 import { fetchMappingVersions as fetchMappingVersionsAction } from './actions';
 import TopBar from '../../components/nav/TopBarComponent';
 import mappingsTableColumns from './config';
-import withParams from '../../routing/withParams.tsx';
+import withParams from '../../routing/legacy.tsx';
 import CreateMappingVersionDialogComponent from './components/CreateMappingVersionDialogComponent';
 
 import { baseUrls } from '../../constants/urls';

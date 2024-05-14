@@ -1,21 +1,15 @@
 import React, { FunctionComponent } from 'react';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
-
-import { useGoBack } from '../../routing/hooks/useGoBack';
-
+import { commonStyles, useSafeIntl, useGoBack } from 'bluesquare-components';
 import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { Filters } from './components/Filters';
 import { AddVersionModal } from './components/versions/Modal';
-
 import { useGetWorkflowVersions } from './hooks/requests/useGetWorkflowVersions';
 import { useGetType } from '../entities/entityTypes/hooks/requests/entitiyTypes';
 import { WorkflowsParams } from './types';
-
 import { baseUrls } from '../../constants/urls';
-
 import { useGetColumns, defaultSorted, baseUrl } from './config';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import MESSAGES from './messages';

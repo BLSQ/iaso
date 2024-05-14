@@ -2,7 +2,7 @@ import React, { FunctionComponent, useCallback } from 'react';
 import { Box, Button, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import classnames from 'classnames';
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, useRedirectTo } from 'bluesquare-components';
 import WidgetPaper from '../../../../components/papers/WidgetPaperComponent';
 import MESSAGES from '../messages';
 import { useMergeDuplicate } from '../hooks/api/useMergeDuplicate';
@@ -17,7 +17,6 @@ import { useCurrentUser } from '../../../../utils/usersUtils';
 import { userHasPermission } from '../../../users/utils';
 import { DuplicateInfosTable } from './DuplicateInfosTable';
 import * as Permission from '../../../../utils/permissions';
-import { useRedirectTo } from '../../../../routing/routing';
 
 type Props = {
     isLoading: boolean;

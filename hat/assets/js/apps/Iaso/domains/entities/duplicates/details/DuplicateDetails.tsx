@@ -1,6 +1,6 @@
 import { Box, Divider, Grid, Paper } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import { commonStyles, useSafeIntl, useGoBack } from 'bluesquare-components';
 import classnames from 'classnames';
 import React, {
     FunctionComponent,
@@ -24,7 +24,6 @@ import MESSAGES from '../messages';
 import { DuplicateInfos } from './DuplicateInfos';
 import { useDuplicateInfos } from './hooks/useDuplicateInfos';
 import { DuplicateData, DuplicateEntityForTable } from '../types';
-import { useGoBack } from '../../../../routing/hooks/useGoBack';
 import { DuplicateDetailsTableButtons } from './DuplicateDetailsTableButtons';
 import { SubmissionsForEntity } from './submissions/SubmissionsForEntity';
 import { useParamsObject } from '../../../../routing/hooks/useParamsObject';

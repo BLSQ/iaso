@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
-import { ToggleButton, ToggleButtonGroup } from '@mui/material';
 import React, { FunctionComponent, useCallback } from 'react';
-import { useRedirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
+import { ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { useRedirectToReplace } from 'bluesquare-components';
 import { useGetPeriodTypes } from '../hooks/useGetPeriodTypes';
 import { CalendarParams, PeriodType } from './types';
 

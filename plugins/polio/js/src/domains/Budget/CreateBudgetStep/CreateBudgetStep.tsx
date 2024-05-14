@@ -14,6 +14,7 @@ import {
     ConfirmCancelModal,
     FilesUpload,
     makeFullModal,
+    useRedirectToReplace,
 } from 'bluesquare-components';
 import { Box, Chip, Divider, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -33,7 +34,6 @@ import { AddMultipleLinks } from '../MultipleLinks/AddMultipleLinks';
 import { useBudgetStepValidation } from '../hooks/validation';
 import { TextArea } from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/TextArea';
 import { useGetRecipientTeams } from '../hooks/api/useGetEmailRecipients';
-import { useRedirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import { baseUrls } from '../../../constants/urls';
 
 type Props = {

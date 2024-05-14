@@ -4,14 +4,18 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { Select, useSafeIntl, IconButton } from 'bluesquare-components';
+import {
+    Select,
+    useSafeIntl,
+    IconButton,
+    useRedirectToReplace,
+} from 'bluesquare-components';
 import { Box, Grid } from '@mui/material';
 
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { DisplayIfUserHasPerm } from '../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
 import MESSAGES from '../../../constants/messages';
 import { makeCampaignsDropDown } from '../../../utils/index';
-import { useRedirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import { useGetLqasImCountriesOptions } from './hooks/api/useGetLqasImCountriesOptions';
 import { RefreshLqasData } from './RefreshLqasData';
 import { baseUrls } from '../../../constants/urls';

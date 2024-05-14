@@ -4,6 +4,7 @@ import {
     useSafeIntl,
     commonStyles,
     useSkipEffectOnMount,
+    useRedirectToReplace,
 } from 'bluesquare-components';
 import { Grid, Box, Paper } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -22,7 +23,6 @@ import { useLqasData } from './hooks/useLqasData.ts';
 import { LqasOverviewContainer } from './CountryOverview/LqasOverviewContainer.tsx';
 import MESSAGES from '../../../constants/messages';
 import { BadRoundNumbers } from '../shared/BadRoundNumber.tsx';
-import { useRedirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing.ts';
 import { commaSeparatedIdsToArray } from '../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
 import { LIST, paperElevation } from '../shared/constants.ts';
 import { useLqasIm } from '../shared/requests.ts';

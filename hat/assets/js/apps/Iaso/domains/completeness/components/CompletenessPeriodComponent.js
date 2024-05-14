@@ -8,6 +8,7 @@ import {
     LoadingSpinner,
     Table,
     useSafeIntl,
+    useRedirectTo
 } from 'bluesquare-components';
 import { postRequest } from 'Iaso/libs/Api.ts';
 import { useSnackMutation } from 'Iaso/libs/apiHooks.ts';
@@ -15,7 +16,6 @@ import { getColumns } from '../config';
 import { baseUrls } from '../../../constants/urls';
 import MESSAGES from '../../../components/snackBars/messages';
 import { usePrettyPeriod } from '../../periods/utils';
-import { useRedirectTo } from '../../../routing/routing.ts';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

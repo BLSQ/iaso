@@ -5,24 +5,19 @@ import React, {
     useMemo,
 } from 'react';
 import get from 'lodash/get';
-import { useSafeIntl, Column } from 'bluesquare-components';
-
+import { useSafeIntl, Column, useRedirectTo } from 'bluesquare-components';
 import { Checkbox, Box, Tooltip } from '@mui/material';
 import { AssignmentParams, AssignmentsApi } from '../types/assigment';
 import { AssignmentUnit } from '../types/locations';
 import { DropdownTeamsOptions, Team } from '../types/team';
-
 import { getOrgUnitAssignation } from '../utils';
 import { Profile } from '../../../utils/usersUtils';
-
 import { UsersTeamsCell } from '../components/UsersTeamsCell';
 import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
-
 import MESSAGES from '../messages';
 import { OrgUnit, ParentOrgUnit } from '../../orgUnits/types/orgUnit';
 import { baseUrls } from '../../../constants/urls';
 import { SxStyles } from '../../../types/general';
-import { useRedirectTo } from '../../../routing/routing';
 
 const getParentCount = (
     orgUnit: AssignmentUnit | ParentOrgUnit,

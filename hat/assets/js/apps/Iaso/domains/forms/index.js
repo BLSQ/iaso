@@ -5,7 +5,8 @@ import { makeStyles } from '@mui/styles';
 import {
     useSafeIntl,
     commonStyles,
-    AddButton as AddButtonComponent,
+    AddButton,
+    useRedirectTo,
 } from 'bluesquare-components';
 import { useFormsTableColumns } from './config';
 import { Filters } from './components/Filters.tsx';
@@ -20,7 +21,6 @@ import { userHasPermission } from '../users/utils';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
 import * as Permission from '../../utils/permissions.ts';
 import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
-import { useRedirectTo } from '../../routing/routing.ts';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -101,7 +101,7 @@ const Forms = () => {
                     isFullHeight={false}
                     extraComponent={
                         userHasFormsPermission && (
-                            <AddButtonComponent
+                            <AddButton
                                 dataTestId="add-form-button"
                                 onClick={() => {
                                     redirectTo(baseUrls.formDetail, {

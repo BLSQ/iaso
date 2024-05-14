@@ -9,7 +9,11 @@ import React, {
 import { FormattedMessage } from 'react-intl';
 import FiltersIcon from '@mui/icons-material/FilterList';
 import { Box, Button, Grid, useMediaQuery, useTheme } from '@mui/material';
-import { IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
+import {
+    IntlFormatMessage,
+    useSafeIntl,
+    useRedirectToReplace,
+} from 'bluesquare-components';
 import DatesRange from '../../../../../../../hat/assets/js/apps/Iaso/components/filters/DatesRange';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useGetGroupDropdown } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
@@ -17,7 +21,6 @@ import MESSAGES from '../../../constants/messages';
 import { useGetCountries } from '../../../hooks/useGetCountries';
 import { useGetGroupedCampaigns } from '../../GroupedCampaigns/hooks/useGetGroupedCampaigns';
 
-import { useRedirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import {
     dateApiToDateRangePicker,
     dateRangePickerToDateApi,

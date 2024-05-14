@@ -7,6 +7,7 @@ import {
     LoadingSpinner,
     commonStyles,
     useSafeIntl,
+    useRedirectToReplace,
 } from 'bluesquare-components';
 import moment from 'moment';
 import { baseUrls } from '../../../constants/urls';
@@ -25,7 +26,6 @@ import * as Permission from '../../../utils/permissions';
 import { LinkToInstance } from '../../instances/components/LinkToInstance';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { RegistryDetailParams } from '../types';
-import { useRedirectToReplace } from '../../../routing/routing';
 
 type Props = {
     orgUnit: OrgUnit;

@@ -14,7 +14,11 @@ import {
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
-import { useSafeIntl, mapPopupStyles } from 'bluesquare-components';
+import {
+    useSafeIntl,
+    mapPopupStyles,
+    LinkWithLocation,
+} from 'bluesquare-components';
 import PopupItemComponent from '../../../components/maps/popups/PopupItemComponent';
 import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
 
@@ -25,7 +29,6 @@ import { useGetFieldValue } from '../hooks/useGetFieldValue';
 import { formatLabel } from '../../instances/utils';
 
 import MESSAGES from '../messages';
-import { LinkWithLocation } from '../../../components/nav/LinkWithLocation';
 
 const useStyles = makeStyles(theme => ({
     ...mapPopupStyles(theme),

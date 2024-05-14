@@ -11,17 +11,14 @@ import {
     commonStyles,
     mapPopupStyles,
     LoadingSpinner,
+    LinkButton,
 } from 'bluesquare-components';
 import ConfirmDialog from '../../../../components/dialogs/ConfirmDialogComponent';
 import InstanceDetailsInfos from '../InstanceDetailsInfos';
 import InstanceDetailsField from '../InstanceDetailsField';
 
-import { getOrgUnitsTree } from '../../../orgUnits/utils';
-import { baseUrls } from '../../../../constants/urls';
-
 import MESSAGES from '../../messages';
 import { Instance } from '../../types/instance';
-import { LinkButton } from '../../../../components/nav/LinkButton';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

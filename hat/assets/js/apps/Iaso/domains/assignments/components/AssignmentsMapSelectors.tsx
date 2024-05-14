@@ -1,16 +1,12 @@
-import { Paper, Box } from '@mui/material';
 import React, { FunctionComponent, useCallback } from 'react';
-
+import { Paper, Box } from '@mui/material';
+import { useRedirectTo } from 'bluesquare-components';
 import { baseUrls } from '../../../constants/urls';
 import InputComponent from '../../../components/forms/InputComponent';
-
 import { DropdownOptions } from '../../../types/utils';
 import { AssignmentParams } from '../types/assigment';
-
-import MESSAGES from '../messages';
-
 import { SxStyles } from '../../../types/general';
-import { useRedirectTo } from '../../../routing/routing';
+import MESSAGES from '../messages';
 
 type Props = {
     params: AssignmentParams;

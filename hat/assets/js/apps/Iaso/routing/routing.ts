@@ -1,8 +1,8 @@
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useCallback, useContext, useMemo } from 'react';
+import { convertObjectToUrlParams } from 'bluesquare-components';
 import { baseUrls, paramsConfig } from '../constants/urls';
 import { useParamsObject } from './hooks/useParamsObject';
-import { convertObjectToUrlParams, makeRedirectionUrl } from './utils';
 import { PluginsContext } from '../utils';
 import { Plugin } from '../domains/app/types';
 
@@ -66,39 +66,5 @@ export const useGenUrl = (): GenUrlFunction => {
             return `/${currentBaseUrl}${paramsAsString}`;
         },
         [currentBaseUrl, currentParams],
-    );
-};
-
-type RedirectFn = (
-    // eslint-disable-next-line no-unused-vars
-    url: string,
-    // eslint-disable-next-line no-unused-vars
-    params?: Record<string, string | undefined>,
-) => void;
-
-export const useRedirectTo = (): RedirectFn => {
-    const navigate = useNavigate();
-    const { pathname } = useLocation();
-    return useCallback(
-        (url: string, params?: Record<string, string | undefined>) => {
-            const destination = makeRedirectionUrl(url, params);
-            navigate(destination, { state: { location: pathname } });
-        },
-        [navigate, pathname],
-    );
-};
-export const useRedirectToReplace = (): RedirectFn => {
-    const navigate = useNavigate();
-    // When replacing, we pass the old state to avoid losing the point of origin
-    const { state } = useLocation();
-    return useCallback(
-        (url: string, params?: Record<string, string | undefined>) => {
-            const destination = makeRedirectionUrl(url, params);
-            navigate(destination, {
-                replace: true,
-                state,
-            });
-        },
-        [navigate, state],
     );
 };

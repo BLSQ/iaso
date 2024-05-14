@@ -1,23 +1,18 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
-
 import { Grid, Button, Box, useTheme, useMediaQuery } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import SearchIcon from '@mui/icons-material/Search';
-
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
-
+import { commonStyles, useSafeIntl, useRedirectTo } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent.tsx';
 import { stringToBoolean } from '../../../utils/dataManipulation.ts';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
-
 import { useGetPermissionsDropDown } from '../hooks/useGetPermissionsDropdown.ts';
 import { useGetOrgUnitTypes } from '../../orgUnits/hooks/requests/useGetOrgUnitTypes.ts';
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
 import { useGetUserRolesDropDown } from '../hooks/useGetUserRolesDropDown.ts';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
 import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams.ts';
-import { useRedirectTo } from '../../../routing/routing.ts';
 import MESSAGES from '../messages';
 
 const useStyles = makeStyles(theme => ({

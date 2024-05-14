@@ -7,7 +7,8 @@ import {
     Table,
     LoadingSpinner,
     useSafeIntl,
-    AddButton as AddButtonComponent,
+    AddButton,
+    useRedirectTo,
 } from 'bluesquare-components';
 
 import TopBar from '../../../components/nav/TopBarComponent';
@@ -18,17 +19,14 @@ import {
     useDelete,
     useSave,
 } from './hooks/requests/entitiyTypes';
-
 import { useColumns, baseUrl } from './config';
 import MESSAGES from './messages';
-
 import { PaginationParams } from '../../../types/general';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { userHasPermission } from '../../users/utils';
 import * as Permission from '../../../utils/permissions';
 import { useParamsObject } from '../../../routing/hooks/useParamsObject';
 import { baseUrls } from '../../../constants/urls';
-import { useRedirectTo } from '../../../routing/routing';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -74,7 +72,7 @@ export const EntityTypes: FunctionComponent = () => {
                         <EntityTypesDialog
                             titleMessage={MESSAGES.create}
                             renderTrigger={({ openDialog }) => (
-                                <AddButtonComponent
+                                <AddButton
                                     dataTestId="add-entity-button"
                                     onClick={openDialog}
                                 />

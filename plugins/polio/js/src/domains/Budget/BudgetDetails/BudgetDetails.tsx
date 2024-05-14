@@ -7,9 +7,12 @@ import React, {
     useState,
 } from 'react';
 import { Box, Grid, useMediaQuery, useTheme } from '@mui/material';
-
 import { groupBy } from 'lodash';
-import { Paginated } from 'bluesquare-components';
+import {
+    Paginated,
+    useGoBack,
+    useRedirectToReplace,
+} from 'bluesquare-components';
 import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { useStyles } from '../../../styles/theme';
@@ -24,8 +27,6 @@ import { BudgetDetailsTableLayout } from './BudgetDetailsTableLayout';
 import { BudgetDetailsFiltersMobile } from './mobile/BudgetDetailsFiltersMobile';
 import { BudgetDetailsInfos } from './BudgetDetailsInfos';
 import { baseUrls } from '../../../constants/urls';
-import { useGoBack } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useGoBack';
-import { useRedirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 
 type BudgetProcessDetailsParams = {
     campaignName?: string;

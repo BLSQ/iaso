@@ -31,7 +31,7 @@ class DataSourceSerializer(serializers.ModelSerializer):
             "projects",
             "default_version",
             "credentials",
-            "show_invalid_parents",
+            "tree_config_status_fields",
         ]
 
     url = serializers.SerializerMethodField()

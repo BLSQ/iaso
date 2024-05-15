@@ -6,7 +6,7 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { orderBy } from 'lodash';
-import React, { FunctionComponent, useMemo, useState } from 'react';
+import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
@@ -21,8 +21,8 @@ import {
 } from './hooks/useGetOrgUnit';
 
 import { Instances } from './components/Instances';
-import { OrgUnitInstances } from './components/OrgUnitInstances';
 import { OrgUnitPaper } from './components/OrgUnitPaper';
+import { SelectedOrgUnit } from './components/SelectedOrgUnit';
 import { OrgunitTypeRegistry } from './types/orgunitTypes';
 
 import { RegistryDetailParams } from './types';
@@ -93,23 +93,23 @@ export const Registry: FunctionComponent<Props> = ({ router }) => {
             dispatch(redirectTo(`/${baseUrls.registry}`, newParams));
         }
     };
+    useEffect(() => {
+        setSelectedChildren(undefined);
+    }, [orgUnitId]);
 
     return (
         <>
-            <TopBar title={formatMessage(MESSAGES.title)} />
+            <TopBar
+                title={`${formatMessage(MESSAGES.title)}${
+                    orgUnit
+                        ? `: ${orgUnit.name} (${orgUnit.org_unit_type_name})`
+                        : ''
+                }}`}
+            />
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>
                 {isFetching && <LoadingSpinner />}
 
                 <Grid container spacing={2}>
-                    {!isFetching && orgUnit && (
-                        <Grid item xs={12}>
-                            <OrgUnitBreadcrumbs
-                                orgUnit={orgUnit}
-                                showRegistry
-                                showOnlyParents
-                            />
-                        </Grid>
-                    )}
                     <Grid container item xs={12}>
                         <Grid item xs={4}>
                             <Box mb={-2}>
@@ -125,6 +125,13 @@ export const Registry: FunctionComponent<Props> = ({ router }) => {
                     </Grid>
                     {!isFetching && orgUnit && (
                         <>
+                            <Grid item xs={12}>
+                                <OrgUnitBreadcrumbs
+                                    orgUnit={orgUnit}
+                                    showRegistry
+                                    showOnlyParents
+                                />
+                            </Grid>
                             <Grid item xs={12} md={6}>
                                 <OrgUnitPaper
                                     orgUnit={orgUnit}
@@ -150,10 +157,9 @@ export const Registry: FunctionComponent<Props> = ({ router }) => {
                                 container
                             >
                                 {orgUnit && (
-                                    <OrgUnitInstances
-                                        orgUnit={orgUnit}
+                                    <SelectedOrgUnit
+                                        orgUnit={selectedChildren || orgUnit}
                                         params={params}
-                                        selectedChildren={selectedChildren}
                                     />
                                 )}
                             </Grid>

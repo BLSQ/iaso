@@ -1,5 +1,6 @@
 import { red } from '@mui/material/colors';
 import { useTheme } from '@mui/styles';
+import L from 'leaflet';
 import React, { FunctionComponent } from 'react';
 import { GeoJSON, Pane } from 'react-leaflet';
 import { circleColorMarkerOptions } from '../../../../utils/map/mapUtils';
@@ -15,6 +16,18 @@ type Props = {
     showTooltip: boolean;
     isOrgUnitActive: boolean;
     selectedChildren: OrgUnit | undefined;
+    handleFeatureEvents: (
+        // eslint-disable-next-line no-unused-vars
+        ou: OrgUnit,
+        // eslint-disable-next-line no-unused-vars
+    ) => (feature: any, layer: L.Layer) => void;
+
+    handleSingleClick: (
+        // eslint-disable-next-line no-unused-vars
+        ou: OrgUnit,
+        // eslint-disable-next-line no-unused-vars
+        event: L.LeafletMouseEvent | undefined,
+    ) => void;
 };
 
 export const selectedOrgUnitColor = red[500];
@@ -23,6 +36,8 @@ export const OrgUnitLocation: FunctionComponent<Props> = ({
     showTooltip,
     isOrgUnitActive,
     selectedChildren,
+    handleSingleClick,
+    handleFeatureEvents,
 }) => {
     const theme = useTheme();
     const color = selectedChildren
@@ -36,6 +51,7 @@ export const OrgUnitLocation: FunctionComponent<Props> = ({
                         <Pane name="orgunit-shape" style={{ zIndex: 400 }}>
                             <GeoJSON
                                 data={orgUnit.geo_json}
+                                onEachFeature={handleFeatureEvents(orgUnit)}
                                 style={() => ({
                                     color,
                                 })}
@@ -61,6 +77,7 @@ export const OrgUnitLocation: FunctionComponent<Props> = ({
                             popupProps={() => ({
                                 orgUnit,
                             })}
+                            onClick={handleSingleClick}
                             tooltipProps={() => ({
                                 permanent: showTooltip,
                                 pane: 'popupPane',

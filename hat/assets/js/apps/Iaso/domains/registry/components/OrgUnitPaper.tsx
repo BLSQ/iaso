@@ -1,15 +1,6 @@
-import AddIcon from '@mui/icons-material/Add';
-import {
-    Box,
-    Divider,
-    Grid,
-    Paper,
-    Tab,
-    Tabs,
-    Typography,
-} from '@mui/material';
+import { Box, Paper, Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { IconButton, commonStyles, useSafeIntl } from 'bluesquare-components';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
 import React, {
     Dispatch,
@@ -62,18 +53,6 @@ const useStyles = makeStyles(theme => ({
             fontSize: '1.4rem',
         },
     },
-    paperTitle: {
-        padding: theme.spacing(2),
-        display: 'flex',
-    },
-    paperTitleButtonContainer: {
-        position: 'relative',
-    },
-    paperTitleButton: {
-        position: 'absolute',
-        right: -theme.spacing(1),
-        top: -theme.spacing(1),
-    },
     hiddenOpacity: {
         position: 'absolute',
         top: 0,
@@ -120,42 +99,6 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
     );
     return (
         <Paper elevation={1} className={classes.paper}>
-            <Grid container className={classes.paperTitle}>
-                <Grid xs={8} item>
-                    <Typography
-                        color="primary"
-                        variant="h5"
-                        className={classes.title}
-                    >
-                        {orgUnit.name
-                            ? `${orgUnit.name} (${orgUnit.org_unit_type_name})`
-                            : ''}
-                    </Typography>
-                </Grid>
-                <Grid
-                    xs={4}
-                    item
-                    container
-                    justifyContent="flex-end"
-                    className={classes.paperTitleButtonContainer}
-                >
-                    <Box className={classes.paperTitleButton}>
-                        <IconButton
-                            url={`${baseUrls.orgUnitDetails}/orgUnitId/0/levels/${orgUnit.id}`}
-                            color="secondary"
-                            overrideIcon={AddIcon}
-                            tooltipMessage={MESSAGES.addOrgUnitChild}
-                        />
-                        <IconButton
-                            url={`${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}`}
-                            color="secondary"
-                            icon="remove-red-eye"
-                            tooltipMessage={MESSAGES.editOrgUnit}
-                        />
-                    </Box>
-                </Grid>
-            </Grid>
-            <Divider />
             <Tabs
                 value={tab}
                 classes={{

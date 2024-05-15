@@ -1,3 +1,4 @@
+import AddIcon from '@mui/icons-material/Add';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { Box, Divider, Grid, Paper, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -36,7 +37,6 @@ import { RegistryDetailParams } from '../types';
 type Props = {
     orgUnit: OrgUnit;
     params: RegistryDetailParams;
-    selectedChildren?: OrgUnit;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -77,10 +77,9 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-export const OrgUnitInstances: FunctionComponent<Props> = ({
+export const SelectedOrgUnit: FunctionComponent<Props> = ({
     orgUnit,
     params,
-    selectedChildren,
 }) => {
     const classes: Record<string, string> = useStyles();
     const dispatch = useDispatch();
@@ -90,10 +89,9 @@ export const OrgUnitInstances: FunctionComponent<Props> = ({
     // submission id from params  OR reference instance OR first submission of the possible ones OR undefined
     // if undefined select should be hidden and a place holder should say no submission
     // console.log('orgUnit', orgUnit);
-    // console.log('selectedChildren', selectedChildren);
     const [currentInstanceId, setCurrentInstanceId] = useState<
         number | string | undefined
-    >(params.submissionId || orgUnit.reference_instance?.id);
+    >(params.submissionId || orgUnit.reference_instances?.[0]?.id);
 
     const { data: currentInstance, isFetching: isFetchingCurrentInstance } =
         useGetInstance(currentInstanceId);
@@ -118,6 +116,12 @@ export const OrgUnitInstances: FunctionComponent<Props> = ({
         };
         dispatch(redirectToReplace(baseUrls.registry, newParams));
     };
+    const isReferenceInstance = orgUnit.reference_instances?.some(
+        ref => ref.id === currentInstance?.id,
+    );
+    const referenceInstanceMessage = isReferenceInstance
+        ? ` (${formatMessage(MESSAGES.referenceInstance)})`
+        : '';
     useEffect(() => {
         if (!currentInstanceId && instances && instances?.length > 0) {
             setCurrentInstanceId(instances[0].id);
@@ -126,18 +130,42 @@ export const OrgUnitInstances: FunctionComponent<Props> = ({
     return (
         <Box position="relative" width="100%" minHeight={300}>
             {isFetchingCurrentInstance && <LoadingSpinner absolute />}
-            {selectedChildren && (
-                <Paper className={classes.paper}>
-                    <Typography
-                        color="primary"
-                        variant="h6"
-                        className={classes.title}
+
+            <Paper className={classes.paper}>
+                <Grid container className={classes.paperTitle}>
+                    <Grid xs={8} item>
+                        <Typography
+                            color="primary"
+                            variant="h6"
+                            className={classes.title}
+                        >
+                            {orgUnit.name} ({orgUnit.org_unit_type_name})
+                        </Typography>
+                    </Grid>
+                    <Grid
+                        xs={4}
+                        item
+                        container
+                        justifyContent="flex-end"
+                        className={classes.paperTitleButtonContainer}
                     >
-                        {selectedChildren.name} (
-                        {selectedChildren.org_unit_type_name})
-                    </Typography>
-                </Paper>
-            )}
+                        <Box className={classes.paperTitleButton}>
+                            <IconButton
+                                url={`${baseUrls.orgUnitDetails}/orgUnitId/0/levels/${orgUnit.id}`}
+                                color="secondary"
+                                overrideIcon={AddIcon}
+                                tooltipMessage={MESSAGES.addOrgUnitChild}
+                            />
+                            <IconButton
+                                url={`${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}`}
+                                color="secondary"
+                                icon="remove-red-eye"
+                                tooltipMessage={MESSAGES.editOrgUnit}
+                            />
+                        </Box>
+                    </Grid>
+                </Grid>
+            </Paper>
             {instances && instances?.length === 0 && (
                 <Paper className={classes.emptyPaper}>
                     <Typography
@@ -182,14 +210,7 @@ export const OrgUnitInstances: FunctionComponent<Props> = ({
                                 variant="h5"
                                 className={classes.title}
                             >
-                                {`${currentInstance.form_name}${
-                                    currentInstance.id ===
-                                    orgUnit.reference_instance?.id
-                                        ? ` (${formatMessage(
-                                              MESSAGES.referenceInstance,
-                                          )})`
-                                        : ''
-                                }`}
+                                {`${currentInstance.form_name}${referenceInstanceMessage}`}
                             </Typography>
                         </Grid>
                         <Grid

@@ -35,6 +35,7 @@ import { CustomTileLayer } from '../../../../components/maps/tools/CustomTileLay
 import { CustomZoomControl } from '../../../../components/maps/tools/CustomZoomControl';
 import TILES from '../../../../constants/mapTiles';
 import { baseUrls } from '../../../../constants/urls';
+import { usePrevious } from '../../../../hooks/usePrevious';
 import { redirectTo, redirectToReplace } from '../../../../routing/actions';
 import { RegistryDetailParams } from '../../types';
 import { MapSettings, Settings } from './MapSettings';
@@ -98,12 +99,27 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
     );
     const [currentTile, setCurrentTile] = useState<Tile>(TILES.osm);
     const getlegendOptions = useGetlegendOptions(orgUnit);
+    const prevSelectedChildren = usePrevious<OrgUnit | undefined>(
+        selectedChildren,
+    );
+
     const [legendOptions, setLegendOptions] = useState<Legend[]>([]);
     useEffect(() => {
-        if (legendOptions.length === 0 && subOrgUnitTypes.length > 0) {
-            setLegendOptions(getlegendOptions(subOrgUnitTypes));
+        if (
+            (legendOptions.length === 0 && subOrgUnitTypes.length > 0) ||
+            selectedChildren?.id !== prevSelectedChildren?.id
+        ) {
+            setLegendOptions(
+                getlegendOptions(subOrgUnitTypes, selectedChildren),
+            );
         }
-    }, [getlegendOptions, legendOptions, subOrgUnitTypes]);
+    }, [
+        getlegendOptions,
+        legendOptions,
+        selectedChildren,
+        subOrgUnitTypes,
+        prevSelectedChildren,
+    ]);
 
     const optionsObject = useMemo(
         () => keyBy(legendOptions, 'value'),
@@ -174,11 +190,9 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
     const handleSingleClick = useCallback(
         (ou: OrgUnit, event: L.LeafletMouseEvent | undefined) => {
             event?.originalEvent.stopPropagation();
-            setSelectedChildren(
-                ou.id === selectedChildren?.id ? undefined : ou,
-            );
+            setSelectedChildren(ou.id === orgUnit.id ? undefined : ou);
         },
-        [setSelectedChildren, selectedChildren],
+        [orgUnit, setSelectedChildren],
     );
 
     const handleFeatureEvents = useCallback(
@@ -242,6 +256,8 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                     orgUnit={orgUnit}
                     isOrgUnitActive={isOrgUnitActive}
                     selectedChildren={selectedChildren}
+                    handleSingleClick={handleSingleClick}
+                    handleFeatureEvents={handleFeatureEvents}
                 />
                 {subOrgUnitTypes.map((subType, index) => (
                     <Box key={subType.id}>

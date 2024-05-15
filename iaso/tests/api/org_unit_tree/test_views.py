@@ -68,16 +68,22 @@ class OrgUnitTreeViewsAPITestCase(APITestCase):
         cls.user.iaso_profile.org_units.set([cls.burkina])  # Restrict access to a subset of org units for user.
 
     def test_tree_root_for_anonymous(self):
-        with self.assertNumQueries(1):
-            response = self.client.get("/api/orgunits/tree/")
+        with self.assertNumQueries(2):
+            # Select `DataSource`.
+            # Select `OrgUnit`s.
+            response = self.client.get(f"/api/orgunits/tree/?data_source_id={self.data_source.pk}")
             self.assertJSONResponse(response, 200)
             self.assertEqual(2, len(response.data))
             self.assertEqual(response.data[0]["name"], "Angola")
             self.assertEqual(response.data[1]["name"], "Burkina Faso")
 
     def test_tree_level_for_anonymous(self):
-        with self.assertNumQueries(1):
-            response = self.client.get(f"/api/orgunits/tree/?parent_id={self.angola.pk}")
+        with self.assertNumQueries(2):
+            # Select `DataSource`.
+            # Select `OrgUnit`s.
+            response = self.client.get(
+                f"/api/orgunits/tree/?parent_id={self.angola.pk}&data_source_id={self.data_source.pk}"
+            )
             self.assertJSONResponse(response, 200)
             self.assertEqual(1, len(response.data))
             self.assertEqual(response.data[0]["name"], "Huila")

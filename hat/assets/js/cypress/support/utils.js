@@ -9,3 +9,35 @@ export const containsForbiddenCharacter = (value, forbiddenCharacters) => {
     }
     return false;
 };
+
+export const mockSaveCall = ({
+    method,
+    pathname,
+    requestBody,
+    responseBody,
+    updateInterceptFlag,
+    strict,
+}) => {
+    updateInterceptFlag(false);
+    cy.intercept(
+        {
+            method,
+            pathname,
+        },
+        req => {
+            updateInterceptFlag(true);
+            if (strict) {
+                expect(req.body).to.deep.equal(requestBody);
+            } else {
+                Object.keys(requestBody).forEach(field => {
+                    expect(req.body[field]).to.deep.equal(requestBody[field]);
+                });
+            }
+
+            req.reply({
+                statusCode: 200,
+                body: responseBody,
+            });
+        },
+    ).as('save');
+};

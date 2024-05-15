@@ -1274,6 +1274,7 @@
     "iaso.users.ouParentCheckbox": "Users with access to parent org unit",
     "iaso.users.password": "Password",
     "iaso.users.permissions": "Permissions",
+    "iaso.users.phoneNumber": "Phone number",
     "iaso.users.removeLocations": "Remove location(s)",
     "iaso.users.removeProjects": "Remove from project(s)",
     "iaso.users.removeRoles": "Remove user role(s)",

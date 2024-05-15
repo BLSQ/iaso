@@ -11,17 +11,16 @@ def setup_registry(account_name, iaso_client):
     project_id = iaso_client.get("/api/projects/")["projects"][0]["id"]
     org_unit_types = iaso_client.get("/api/v2/orgunittypes/")["orgUnitTypes"]
 
-    commune_out = [out for out in org_unit_types if out["name"] == "Commune"][0]
-
-    org_unit_type_ids = [out["id"] for out in org_unit_types]
+    health_area_type = [out for out in org_unit_types if out["name"] == "Health area/Aire de santé - AREA"][0]
+    health_area_type_id = health_area_type["id"]
 
     # create a form
     data = {
         "id": None,
-        "name": "Registry - Population Commune",
+        "name": "Registry - Population Health area",
         "short_name": "",
         "depth": None,
-        "org_unit_type_ids": [commune_out["id"]],
+        "org_unit_type_ids": [health_area_type_id],
         "project_ids": [project_id],
         "single_per_period": False,
         "periods_before_allowed": 1,
@@ -42,19 +41,19 @@ def setup_registry(account_name, iaso_client):
 
     form_version = iaso_client.post("/api/formversions/", files=form_files, data=data)
 
-    ou_type = iaso_client.get(f"/api/v2/orgunittypes/{commune_out['id']}/")
+    ou_type = iaso_client.get(f"/api/v2/orgunittypes/{health_area_type_id}/")
     ou_type["reference_forms_ids"] = [form["id"]]
     ou_type["allow_creating_sub_unit_type_ids"] = [p["id"] for p in ou_type["allow_creating_sub_unit_types"]]
     ou_type["sub_unit_type_ids"] = [p["id"] for p in ou_type["sub_unit_types"]]
     ou_type["project_ids"] = [p["id"] for p in ou_type["projects"]]
-    resp = iaso_client.put(f"/api/v2/orgunittypes/{commune_out['id']}/", json=ou_type)
+    resp = iaso_client.put(f"/api/v2/orgunittypes/{health_area_type_id}/", json=ou_type)
     print(resp)
-    ou_type = iaso_client.get(f"/api/v2/orgunittypes/{commune_out['id']}/")
+    ou_type = iaso_client.get(f"/api/v2/orgunittypes/{health_area_type_id}/")
     print(ou_type)
 
     # fetch orgunit ids
     limit = 20
-    orgunits = iaso_client.get("/api/orgunits/", params={"limit": limit, "orgUnitTypeId": commune_out["id"]})[
+    orgunits = iaso_client.get("/api/orgunits/", params={"limit": limit, "orgUnitTypeId": health_area_type_id})[
         "orgunits"
     ]
     print(orgunits)

@@ -62,7 +62,7 @@ export const useGetFeatureFlags = (): UseQueryResult<
     // @ts-ignore
     return useSnackQuery(
         ['featureflags'],
-        () => getRequest('/api/featureflags/'),
+        () => getRequest('/api/featureflags/except_no_activated_modules/'),
         undefined,
         {
             // using this here to avoid multiple identical calls

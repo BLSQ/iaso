@@ -197,7 +197,12 @@ class Under5:
         journey.initial_weight = record.get("initial_weight", None)
         journey.start_date = record.get("start_date", None)
 
-        if record.get("exit_type", None) is not None and record.get("exit_type", None) != "":
+        # Calculate the weight gain only for cured and Transfer from OTP to TSFP cases!
+        if (
+            record.get("exit_type", None) is not None
+            and record.get("exit_type", None) != ""
+            and record.get("exit_type", None) in ["cured", "transfer_to_tsfp"]
+        ):
             journey.discharge_weight = record.get("discharge_weight", None)
             journey.weight_gain = record.get("weight_gain", 0)
             journey.weight_loss = record.get("weight_loss", 0)

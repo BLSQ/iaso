@@ -10,7 +10,6 @@ import React, {
     FunctionComponent,
     SetStateAction,
     useCallback,
-    useEffect,
     useMemo,
     useState,
 } from 'react';
@@ -27,7 +26,7 @@ import { MapLegend } from './MapLegend';
 
 import { OrgUnit } from '../../../orgUnits/types/orgUnit';
 import { OrgunitTypes } from '../../../orgUnits/types/orgunitTypes';
-import { Legend, useGetlegendOptions } from '../../hooks/useGetLegendOptions';
+import { useGetLegendOptions } from '../../hooks/useGetLegendOptions';
 
 import { MapToggleFullscreen } from './MapToggleFullscreen';
 
@@ -35,9 +34,8 @@ import { CustomTileLayer } from '../../../../components/maps/tools/CustomTileLay
 import { CustomZoomControl } from '../../../../components/maps/tools/CustomZoomControl';
 import TILES from '../../../../constants/mapTiles';
 import { baseUrls } from '../../../../constants/urls';
-import { usePrevious } from '../../../../hooks/usePrevious';
 import { redirectTo, redirectToReplace } from '../../../../routing/actions';
-import { RegistryDetailParams } from '../../types';
+import { RegistryParams } from '../../types';
 import { MapSettings, Settings } from './MapSettings';
 import { OrgUnitChildrenLocations } from './OrgUnitChildrenLocations';
 import { OrgUnitChildrenShapes } from './OrgUnitChildrenShapes';
@@ -48,9 +46,9 @@ type Props = {
     subOrgUnitTypes: OrgunitTypes;
     orgUnitChildren?: OrgUnit[];
     isFetchingChildren: boolean;
-    params: RegistryDetailParams;
+    params: RegistryParams;
     setSelectedChildren: Dispatch<SetStateAction<OrgUnit | undefined>>;
-    selectedChildren: OrgUnit | undefined;
+    selectedChildrenId: string | undefined;
 };
 
 const boundsOptions = {
@@ -86,7 +84,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
     isFetchingChildren,
     params,
     setSelectedChildren,
-    selectedChildren,
+    selectedChildrenId,
 }) => {
     const classes: Record<string, string> = useStyles();
     const dispatch = useDispatch();
@@ -98,46 +96,20 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
         params.isFullScreen === 'true',
     );
     const [currentTile, setCurrentTile] = useState<Tile>(TILES.osm);
-    const getlegendOptions = useGetlegendOptions(orgUnit);
-    const prevSelectedChildren = usePrevious<OrgUnit | undefined>(
-        selectedChildren,
-    );
+    const { getLegendOptions, setLegendOptions } = useGetLegendOptions(orgUnit);
+    const legendOptions = useMemo(() => {
+        return getLegendOptions(subOrgUnitTypes, selectedChildrenId);
+    }, [getLegendOptions, selectedChildrenId, subOrgUnitTypes]);
 
-    const [legendOptions, setLegendOptions] = useState<Legend[]>([]);
-    useEffect(() => {
-        if (
-            (legendOptions.length === 0 && subOrgUnitTypes.length > 0) ||
-            selectedChildren?.id !== prevSelectedChildren?.id
-        ) {
-            setLegendOptions(
-                getlegendOptions(subOrgUnitTypes, selectedChildren),
-            );
-        }
-    }, [
-        getlegendOptions,
-        legendOptions,
-        selectedChildren,
-        subOrgUnitTypes,
-        prevSelectedChildren,
-    ]);
-
-    const optionsObject = useMemo(
-        () => keyBy(legendOptions, 'value'),
-        [legendOptions],
-    );
-    const activeChildren: OrgUnit[] = useMemo(
-        () =>
+    const legendOptionsMap = keyBy(legendOptions, 'value');
+    const activeChildren: OrgUnit[] = useMemo(() => {
+        return (
             orgUnitChildren?.filter(
-                children =>
-                    optionsObject[`${children.org_unit_type_id}`]?.active,
-            ) || [],
-        [orgUnitChildren, optionsObject],
-    );
-    const isOrgUnitActive: boolean =
-        Object.keys(optionsObject).length === 0
-            ? true
-            : optionsObject[`${orgUnit.id}`]?.active || false;
-
+                child => legendOptionsMap[child.org_unit_type_id]?.active,
+            ) || []
+        );
+    }, [orgUnitChildren, legendOptionsMap]);
+    const isOrgUnitActive = Boolean(legendOptions[0]?.active);
     const { showTooltip, useCluster } = settings;
     const bounds = useMemo(
         () =>
@@ -183,9 +155,10 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
         (event: L.LeafletMouseEvent, ou: OrgUnit) => {
             event.originalEvent.stopPropagation();
             const url = `/${baseUrls.registry}/orgUnitId/${ou?.id}`;
+            setSelectedChildren(undefined);
             dispatch(redirectTo(url));
         },
-        [dispatch],
+        [dispatch, setSelectedChildren],
     );
     const handleSingleClick = useCallback(
         (ou: OrgUnit, event: L.LeafletMouseEvent | undefined) => {
@@ -255,7 +228,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                     showTooltip={showTooltip}
                     orgUnit={orgUnit}
                     isOrgUnitActive={isOrgUnitActive}
-                    selectedChildren={selectedChildren}
+                    selectedChildrenId={selectedChildrenId}
                     handleSingleClick={handleSingleClick}
                     handleFeatureEvents={handleFeatureEvents}
                 />
@@ -267,7 +240,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                             index={index}
                             subType={subType}
                             handleFeatureEvents={handleFeatureEvents}
-                            selectedChildren={selectedChildren}
+                            selectedChildrenId={selectedChildrenId}
                         />
                         <OrgUnitChildrenLocations
                             activeChildren={activeChildren}
@@ -277,7 +250,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                             subType={subType}
                             handleSingleClick={handleSingleClick}
                             handleDoubleClick={handleDoubleClick}
-                            selectedChildren={selectedChildren}
+                            selectedChildrenId={selectedChildrenId}
                         />
                     </Box>
                 ))}

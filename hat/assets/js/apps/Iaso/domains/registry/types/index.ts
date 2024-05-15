@@ -2,8 +2,9 @@ import { UrlParams } from 'bluesquare-components';
 
 export type OrgUnitListTab = 'map' | 'list';
 
-export type RegistryDetailParams = UrlParams & {
+export type RegistryParams = UrlParams & {
     orgUnitId: string;
+    orgUnitChildrenId?: string;
     accountId: string;
     formIds?: string;
     planningIds?: string;

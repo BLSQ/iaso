@@ -1,4 +1,5 @@
 import { useTheme } from '@mui/styles';
+import { Dispatch, SetStateAction, useCallback, useState } from 'react';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { OrgunitTypes } from '../../orgUnits/types/orgunitTypes';
 
@@ -10,35 +11,46 @@ export type Legend = {
     color: string; // has to be an hexa color
     active?: boolean;
 };
-export const useGetlegendOptions = (
+export const useGetLegendOptions = (
     orgUnit: OrgUnit,
-): ((
-    // eslint-disable-next-line no-unused-vars
-    subOrgUnitTypes: OrgunitTypes,
-    // eslint-disable-next-line no-unused-vars
-    selectedChildren?: OrgUnit,
-) => Legend[]) => {
+): {
+    getLegendOptions: (
+        // eslint-disable-next-line no-unused-vars
+        subOrgUnitTypes: OrgunitTypes,
+        // eslint-disable-next-line no-unused-vars
+        selectedChildrenId?: string,
+    ) => Legend[];
+    setLegendOptions: Dispatch<SetStateAction<Legend[]>>;
+    legendOptions: Legend[];
+} => {
     const theme = useTheme();
-    const getLegendOptions = (subOrgUnitTypes, selectedChildren?): Legend[] => {
-        const options = subOrgUnitTypes.map(subOuType => ({
-            value: `${subOuType.id}`,
-            label: `${subOuType.name} (${subOuType.orgUnits?.length})`,
-            color: subOuType.color || '',
-            active: true,
-        }));
-        if (orgUnit) {
-            // console.log('selectedChildren', selectedChildren);
-            const color = selectedChildren
-                ? theme.palette.primary.main
-                : selectedOrgUnitColor;
-            options.unshift({
-                value: `${orgUnit.id}`,
-                label: orgUnit.name,
-                color,
+    const [legendOptions, setLegendOptions] = useState<Legend[]>([]);
+
+    const getLegendOptions = useCallback(
+        (subOrgUnitTypes: OrgunitTypes, selectedChildrenId?: string) => {
+            const options = subOrgUnitTypes.map(subOuType => ({
+                value: `${subOuType.id}`,
+                label: `${subOuType.name} (${subOuType.orgUnits?.length})`,
+                color: subOuType.color || '',
                 active: true,
-            });
-        }
-        return options;
-    };
-    return getLegendOptions;
+            }));
+
+            if (orgUnit) {
+                const color = selectedChildrenId
+                    ? theme.palette.primary.main
+                    : selectedOrgUnitColor;
+                options.unshift({
+                    value: `${orgUnit.id}`,
+                    label: orgUnit.name,
+                    color,
+                    active: true,
+                });
+            }
+            setLegendOptions(options);
+            return options;
+        },
+        [orgUnit, theme],
+    );
+
+    return { getLegendOptions, setLegendOptions, legendOptions };
 };

@@ -9,10 +9,10 @@ import { redirectToReplace } from '../../../routing/actions';
 
 import { useGetOrgUnitsListColumns } from '../config';
 import { OrgUnitListChildren } from '../hooks/useGetOrgUnit';
-import { RegistryDetailParams } from '../types';
+import { RegistryParams } from '../types';
 
 type Props = {
-    params: RegistryDetailParams;
+    params: RegistryParams;
     orgUnitChildren?: OrgUnitListChildren;
     isFetchingChildren: boolean;
 };

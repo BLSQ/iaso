@@ -6,7 +6,7 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { orderBy } from 'lodash';
-import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
+import React, { FunctionComponent, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
@@ -25,16 +25,16 @@ import { OrgUnitPaper } from './components/OrgUnitPaper';
 import { SelectedOrgUnit } from './components/SelectedOrgUnit';
 import { OrgunitTypeRegistry } from './types/orgunitTypes';
 
-import { RegistryDetailParams } from './types';
+import { RegistryParams } from './types';
 
-import { redirectTo } from '../../routing/actions';
+import { redirectTo, redirectToReplace } from '../../routing/actions';
 import { OrgUnitTreeviewModal } from '../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { OrgUnitBreadcrumbs } from '../orgUnits/components/breadcrumbs/OrgUnitBreadcrumbs';
 import { OrgUnit } from '../orgUnits/types/orgUnit';
 
 type Router = {
     goBack: () => void;
-    params: RegistryDetailParams;
+    params: RegistryParams;
 };
 type Props = {
     router: Router;
@@ -46,18 +46,20 @@ const useStyles = makeStyles(theme => ({
 
 export const Registry: FunctionComponent<Props> = ({ router }) => {
     const {
-        params: { orgUnitId },
+        params: { orgUnitId, orgUnitChildrenId },
         params,
     } = router;
     const dispatch = useDispatch();
 
-    const [selectedChildren, setSelectedChildren] = useState<
-        OrgUnit | undefined
-    >();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
 
     const { data: orgUnit, isFetching } = useGetOrgUnit(orgUnitId);
+    const [selectedChildrenId, setSelectedChildrenId] = useState<
+        string | undefined
+    >(orgUnitChildrenId);
+    const { data: selectedChildren, isFetching: isFetchingSelectedChildren } =
+        useGetOrgUnit(selectedChildrenId);
     const { data: orgUnitListChildren, isFetching: isFetchingListChildren } =
         useGetOrgUnitListChildren(
             orgUnitId,
@@ -90,13 +92,24 @@ export const Registry: FunctionComponent<Props> = ({ router }) => {
                 ...params,
                 orgUnitId: `${newOrgUnit.id}`,
             };
+            delete newParams.orgUnitChildrenId;
+            setSelectedChildrenId(undefined);
             dispatch(redirectTo(`/${baseUrls.registry}`, newParams));
         }
     };
-    useEffect(() => {
-        setSelectedChildren(undefined);
-    }, [orgUnitId]);
-
+    const handleChildrenChange = (newChildren: OrgUnit) => {
+        const newParams = {
+            ...params,
+        };
+        if (newChildren) {
+            setSelectedChildrenId(`${newChildren.id}`);
+            newParams.orgUnitChildrenId = `${newChildren.id}`;
+        } else {
+            setSelectedChildrenId(undefined);
+            delete newParams.orgUnitChildrenId;
+        }
+        dispatch(redirectToReplace(`/${baseUrls.registry}`, newParams));
+    };
     return (
         <>
             <TopBar
@@ -145,8 +158,8 @@ export const Registry: FunctionComponent<Props> = ({ router }) => {
                                     isFetchingMapChildren={
                                         isFetchingMapChildren
                                     }
-                                    setSelectedChildren={setSelectedChildren}
-                                    selectedChildren={selectedChildren}
+                                    setSelectedChildren={handleChildrenChange}
+                                    selectedChildrenId={selectedChildrenId}
                                 />
                             </Grid>
                             <Grid
@@ -158,7 +171,16 @@ export const Registry: FunctionComponent<Props> = ({ router }) => {
                             >
                                 {orgUnit && (
                                     <SelectedOrgUnit
-                                        orgUnit={selectedChildren || orgUnit}
+                                        orgUnit={
+                                            selectedChildrenId
+                                                ? selectedChildren
+                                                : orgUnit
+                                        }
+                                        isFetching={
+                                            selectedChildrenId
+                                                ? isFetchingSelectedChildren
+                                                : isFetching
+                                        }
                                         params={params}
                                     />
                                 )}

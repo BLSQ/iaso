@@ -543,6 +543,10 @@ export const registryPath = {
         },
         {
             isRequired: false,
+            key: 'orgUnitChildrenId',
+        },
+        {
+            isRequired: false,
             key: 'formIds',
         },
         {

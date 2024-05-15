@@ -15,7 +15,7 @@ import { MapToolTip } from './MapTooltip';
 import { selectedOrgUnitColor } from './OrgUnitChildrenMap';
 
 type Props = {
-    selectedChildren: OrgUnit | undefined;
+    selectedChildrenId: string | undefined;
     activeChildren: OrgUnit[];
     handleSingleClick: (
         // eslint-disable-next-line no-unused-vars
@@ -39,7 +39,7 @@ export const OrgUnitChildrenLocations: FunctionComponent<Props> = ({
     useCluster,
     index,
     subType,
-    selectedChildren,
+    selectedChildrenId,
 }) => {
     const orgUnitsMarkers = useMemo(() => {
         return activeChildren?.filter(
@@ -52,11 +52,11 @@ export const OrgUnitChildrenLocations: FunctionComponent<Props> = ({
 
     const getColor = useCallback(
         (children: OrgUnit) => {
-            return children.id === selectedChildren?.id
+            return `${children.id}` === selectedChildrenId
                 ? selectedOrgUnitColor
                 : subType.color || '';
         },
-        [selectedChildren, subType],
+        [selectedChildrenId, subType],
     );
     return (
         <Pane

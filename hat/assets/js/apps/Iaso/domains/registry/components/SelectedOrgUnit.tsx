@@ -32,11 +32,12 @@ import {
 import * as Permission from '../../../utils/permissions';
 import { LinkToInstance } from '../../instances/components/LinkToInstance';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
-import { RegistryDetailParams } from '../types';
+import { RegistryParams } from '../types';
 
 type Props = {
-    orgUnit: OrgUnit;
-    params: RegistryDetailParams;
+    orgUnit?: OrgUnit;
+    params: RegistryParams;
+    isFetching: boolean;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -80,6 +81,7 @@ const useStyles = makeStyles(theme => ({
 export const SelectedOrgUnit: FunctionComponent<Props> = ({
     orgUnit,
     params,
+    isFetching: isFetchingOrgUnit,
 }) => {
     const classes: Record<string, string> = useStyles();
     const dispatch = useDispatch();
@@ -91,12 +93,12 @@ export const SelectedOrgUnit: FunctionComponent<Props> = ({
     // console.log('orgUnit', orgUnit);
     const [currentInstanceId, setCurrentInstanceId] = useState<
         number | string | undefined
-    >(params.submissionId || orgUnit.reference_instances?.[0]?.id);
+    >(params.submissionId || orgUnit?.reference_instances?.[0]?.id);
 
     const { data: currentInstance, isFetching: isFetchingCurrentInstance } =
         useGetInstance(currentInstanceId);
 
-    const { data: instances, isFetching } = useGetOrgUnitInstances(orgUnit.id);
+    const { data: instances, isFetching } = useGetOrgUnitInstances(orgUnit?.id);
     const instancesOptions = useMemo(() => {
         return (instances || []).map(instance => ({
             label: `${instance.form_name} (${moment
@@ -110,13 +112,13 @@ export const SelectedOrgUnit: FunctionComponent<Props> = ({
 
     const handleChange = (_, submissionId) => {
         setCurrentInstanceId(submissionId);
-        const newParams: RegistryDetailParams = {
+        const newParams: RegistryParams = {
             ...params,
             submissionId,
         };
         dispatch(redirectToReplace(baseUrls.registry, newParams));
     };
-    const isReferenceInstance = orgUnit.reference_instances?.some(
+    const isReferenceInstance = orgUnit?.reference_instances?.some(
         ref => ref.id === currentInstance?.id,
     );
     const referenceInstanceMessage = isReferenceInstance
@@ -127,9 +129,14 @@ export const SelectedOrgUnit: FunctionComponent<Props> = ({
             setCurrentInstanceId(instances[0].id);
         }
     }, [currentInstanceId, instances]);
+    if (!orgUnit) {
+        return null;
+    }
     return (
         <Box position="relative" width="100%" minHeight={300}>
-            {isFetchingCurrentInstance && <LoadingSpinner absolute />}
+            {(isFetchingCurrentInstance || isFetchingOrgUnit) && (
+                <LoadingSpinner absolute />
+            )}
 
             <Paper className={classes.paper}>
                 <Grid container className={classes.paperTitle}>

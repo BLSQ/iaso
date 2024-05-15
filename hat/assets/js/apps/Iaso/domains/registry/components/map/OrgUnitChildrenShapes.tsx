@@ -9,7 +9,7 @@ import { MapToolTip } from './MapTooltip';
 import { selectedOrgUnitColor } from './OrgUnitChildrenMap';
 
 type Props = {
-    selectedChildren: OrgUnit | undefined;
+    selectedChildrenId: string | undefined;
     activeChildren: OrgUnit[];
     handleFeatureEvents: (
         // eslint-disable-next-line no-unused-vars
@@ -27,7 +27,7 @@ export const OrgUnitChildrenShapes: FunctionComponent<Props> = ({
     showTooltip,
     index,
     subType,
-    selectedChildren,
+    selectedChildrenId,
 }) => {
     const orgUnitsShapes = useMemo(
         () =>
@@ -50,7 +50,7 @@ export const OrgUnitChildrenShapes: FunctionComponent<Props> = ({
                     onEachFeature={handleFeatureEvents(childrenOrgUnit)}
                     style={() => ({
                         color:
-                            childrenOrgUnit.id === selectedChildren?.id
+                            `${childrenOrgUnit.id}` === selectedChildrenId
                                 ? selectedOrgUnitColor
                                 : subType.color || '',
                     })}

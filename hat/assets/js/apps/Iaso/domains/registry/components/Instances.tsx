@@ -19,7 +19,7 @@ import { redirectToReplace } from '../../../routing/actions';
 
 import { Form } from '../../forms/types/forms';
 import { OrgunitType } from '../../orgUnits/types/orgunitTypes';
-import { RegistryDetailParams } from '../types';
+import { RegistryParams } from '../types';
 import { OrgunitTypeRegistry } from '../types/orgunitTypes';
 
 import { useGetForms } from '../hooks/useGetForms';
@@ -36,7 +36,7 @@ import MESSAGES from '../messages';
 type Props = {
     isLoading: boolean;
     subOrgUnitTypes: OrgunitTypeRegistry[];
-    params: RegistryDetailParams;
+    params: RegistryParams;
 };
 
 export const Instances: FunctionComponent<Props> = ({

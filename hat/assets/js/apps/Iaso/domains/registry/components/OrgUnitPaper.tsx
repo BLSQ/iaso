@@ -23,18 +23,18 @@ import { OrgUnitChildrenList } from './OrgUnitChildrenList';
 
 import { OrgunitTypes } from '../../orgUnits/types/orgunitTypes';
 import { OrgUnitListChildren } from '../hooks/useGetOrgUnit';
-import { OrgUnitListTab, RegistryDetailParams } from '../types';
+import { OrgUnitListTab, RegistryParams } from '../types';
 
 type Props = {
     orgUnit: OrgUnit;
     subOrgUnitTypes: OrgunitTypes;
-    params: RegistryDetailParams;
+    params: RegistryParams;
     orgUnitListChildren?: OrgUnitListChildren;
     isFetchingListChildren: boolean;
     orgUnitMapChildren?: OrgUnit[];
     isFetchingMapChildren: boolean;
     setSelectedChildren: Dispatch<SetStateAction<OrgUnit | undefined>>;
-    selectedChildren: OrgUnit | undefined;
+    selectedChildrenId: string | undefined;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -77,7 +77,7 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
     orgUnitMapChildren,
     isFetchingMapChildren,
     setSelectedChildren,
-    selectedChildren,
+    selectedChildrenId,
 }) => {
     const classes: Record<string, string> = useStyles();
     const [tab, setTab] = useState<OrgUnitListTab>(
@@ -123,7 +123,7 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
                         orgUnitChildren={orgUnitMapChildren}
                         isFetchingChildren={isFetchingMapChildren}
                         setSelectedChildren={setSelectedChildren}
-                        selectedChildren={selectedChildren}
+                        selectedChildrenId={selectedChildrenId}
                     />
                 </Box>
                 <Box

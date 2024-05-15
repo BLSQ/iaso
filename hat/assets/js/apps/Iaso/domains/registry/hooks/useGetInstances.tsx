@@ -3,15 +3,15 @@ import { UseQueryResult } from 'react-query';
 // @ts-ignore
 import { getSort } from 'bluesquare-components';
 
-import { useSnackQuery } from '../../../libs/apiHooks';
 import { getRequest } from '../../../libs/Api';
+import { useSnackQuery } from '../../../libs/apiHooks';
 
-import { PaginatedInstances, Instance } from '../../instances/types/instance';
 import { makeUrlWithParams } from '../../../libs/utils';
+import { Instance, PaginatedInstances } from '../../instances/types/instance';
 
-import { RegistryDetailParams } from '../types';
-import { defaultSorted } from '../config';
 import { OrgUnitStatus } from '../../orgUnits/types/orgUnit';
+import { defaultSorted } from '../config';
+import { RegistryParams } from '../types';
 
 type ApiParams = {
     orgUnitTypeId?: number;
@@ -31,7 +31,7 @@ type InstanceApi = {
 };
 
 export const useGetInstanceApi = (
-    params: RegistryDetailParams,
+    params: RegistryParams,
     orgUnitTypeId?: number,
     orgUnitStatus?: OrgUnitStatus,
 ): InstanceApi => {
@@ -57,7 +57,7 @@ export const useGetInstanceApi = (
 };
 
 export const useGetInstances = (
-    params: RegistryDetailParams,
+    params: RegistryParams,
     orgUnitTypeId?: number,
 ): UseQueryResult<PaginatedInstances, Error> => {
     const { apiParams, url } = useGetInstanceApi(

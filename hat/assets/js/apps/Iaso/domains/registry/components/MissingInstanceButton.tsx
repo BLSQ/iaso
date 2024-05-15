@@ -5,14 +5,14 @@ import { useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { RegistryDetailParams } from '../types';
+import { RegistryParams } from '../types';
 
 import { baseUrls } from '../../../constants/urls';
 import { redirectToReplace } from '../../../routing/actions';
 import MESSAGES from '../messages';
 
 type Props = {
-    params: RegistryDetailParams;
+    params: RegistryParams;
     count: number;
     onClick: () => void;
 };

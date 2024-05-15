@@ -15,7 +15,7 @@ type Props = {
     orgUnit: OrgUnit;
     showTooltip: boolean;
     isOrgUnitActive: boolean;
-    selectedChildren: OrgUnit | undefined;
+    selectedChildrenId: string | undefined;
     handleFeatureEvents: (
         // eslint-disable-next-line no-unused-vars
         ou: OrgUnit,
@@ -35,12 +35,12 @@ export const OrgUnitLocation: FunctionComponent<Props> = ({
     orgUnit,
     showTooltip,
     isOrgUnitActive,
-    selectedChildren,
+    selectedChildrenId,
     handleSingleClick,
     handleFeatureEvents,
 }) => {
     const theme = useTheme();
-    const color = selectedChildren
+    const color = selectedChildrenId
         ? theme.palette.primary.main
         : selectedOrgUnitColor;
     return (

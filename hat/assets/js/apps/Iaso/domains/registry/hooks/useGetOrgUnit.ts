@@ -7,10 +7,10 @@ import { useSnackQuery } from '../../../libs/apiHooks';
 import { makeUrlWithParams } from '../../../libs/utils';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { OrgunitTypes } from '../../orgUnits/types/orgunitTypes';
-import { RegistryDetailParams } from '../types';
+import { RegistryParams } from '../types';
 
 export const useGetOrgUnit = (
-    orgUnitId: string,
+    orgUnitId?: string,
 ): UseQueryResult<OrgUnit, Error> => {
     const queryKey: any[] = ['orgUnit', orgUnitId];
     return useSnackQuery({
@@ -29,7 +29,7 @@ export type OrgUnitListChildren = Pagination & {
 
 export const useGetOrgUnitListChildren = (
     orgUnitParentId: string,
-    params: RegistryDetailParams,
+    params: RegistryParams,
     orgUnitTypes?: OrgunitTypes,
 ): UseQueryResult<OrgUnitListChildren, Error> => {
     let order = '-name';

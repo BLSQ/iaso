@@ -165,3 +165,19 @@ class OrgUnitTreeViewsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertEqual(1, len(response.data))
         self.assertEqual(response.data[0]["has_children"], False)  # It should be excluded from `has_children`.
+
+    def test_search(self):
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get("/api/orgunits/tree/search/?search=b")
+        self.assertJSONResponse(response, 200)
+
+        self.assertEqual(3, len(response.data["results"]))
+        self.assertEqual(response.data["results"][0]["name"], "Banwa")
+        self.assertEqual(response.data["results"][1]["name"], "Boucle du Mouhon")
+        self.assertEqual(response.data["results"][2]["name"], "Burkina Faso")
+
+        response = self.client.get("/api/orgunits/tree/search/?search=BURKINA")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(1, len(response.data["results"]))
+        self.assertEqual(response.data["results"][0]["name"], "Burkina Faso")

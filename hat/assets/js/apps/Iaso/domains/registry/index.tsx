@@ -142,7 +142,7 @@ export const Registry: FunctionComponent<Props> = ({ router }) => {
                                 <OrgUnitBreadcrumbs
                                     orgUnit={orgUnit}
                                     showRegistry
-                                    showOnlyParents
+                                    showOnlyParents={false}
                                 />
                             </Grid>
                             <Grid item xs={12} md={6}>
@@ -188,7 +188,7 @@ export const Registry: FunctionComponent<Props> = ({ router }) => {
                         </>
                     )}
                 </Grid>
-                <Box mt={2}>
+                <Box>
                     <Instances
                         isLoading={isFetching}
                         subOrgUnitTypes={subOrgUnitTypes}

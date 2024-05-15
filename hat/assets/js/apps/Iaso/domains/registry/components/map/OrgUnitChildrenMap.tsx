@@ -35,6 +35,7 @@ import { CustomZoomControl } from '../../../../components/maps/tools/CustomZoomC
 import TILES from '../../../../constants/mapTiles';
 import { baseUrls } from '../../../../constants/urls';
 import { redirectTo, redirectToReplace } from '../../../../routing/actions';
+import { HEIGHT } from '../../config';
 import { RegistryParams } from '../../types';
 import { MapSettings, Settings } from './MapSettings';
 import { OrgUnitChildrenLocations } from './OrgUnitChildrenLocations';
@@ -54,11 +55,13 @@ type Props = {
 const boundsOptions = {
     padding: [50, 50],
 };
-
+const tabsHeight = '50px';
+const mapHeight = `calc(${HEIGHT} - ${tabsHeight})`;
 const useStyles = makeStyles(theme => ({
     mapContainer: {
         ...commonStyles(theme).mapContainer,
-        height: '542px',
+        height: mapHeight,
+        marginBottom: 0,
         position: 'relative',
         '& .leaflet-control-zoom': {
             borderBottom: 'none',
@@ -71,7 +74,7 @@ const useStyles = makeStyles(theme => ({
         top: '64px',
         left: '0',
         width: '100vw',
-        height: 'calc(100vh - 64px)',
+        height: '100vh',
         zIndex: 10000,
     },
 }));
@@ -177,7 +180,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
     );
     if (isFetchingChildren)
         return (
-            <Box position="relative" height={500}>
+            <Box position="relative" height={mapHeight}>
                 <LoadingSpinner absolute />
             </Box>
         );
@@ -194,7 +197,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                 doubleClickZoom={false}
                 maxZoom={currentTile.maxZoom}
                 style={{
-                    minHeight: '542px',
+                    minHeight: mapHeight,
                     height: '100%',
                 }}
                 center={[1, 20]}

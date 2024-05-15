@@ -32,6 +32,7 @@ import {
 import * as Permission from '../../../utils/permissions';
 import { LinkToInstance } from '../../instances/components/LinkToInstance';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
+import { HEIGHT } from '../config';
 import { RegistryParams } from '../types';
 
 type Props = {
@@ -44,13 +45,17 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     paper: {
         width: '100%',
+        height: HEIGHT,
+    },
+    subTitle: {
+        fontSize: '1.15rem',
     },
     formContents: {
-        maxHeight: '485px',
+        maxHeight: `calc(${HEIGHT} - 222px)`,
         overflow: 'auto',
     },
     emptyPaper: {
-        height: '636px',
+        height: '527px',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
@@ -133,7 +138,7 @@ export const SelectedOrgUnit: FunctionComponent<Props> = ({
         return null;
     }
     return (
-        <Box position="relative" width="100%" minHeight={300}>
+        <Box position="relative" width="100%" minHeight={HEIGHT}>
             {(isFetchingCurrentInstance || isFetchingOrgUnit) && (
                 <LoadingSpinner absolute />
             )}
@@ -166,96 +171,108 @@ export const SelectedOrgUnit: FunctionComponent<Props> = ({
                             <IconButton
                                 url={`${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}`}
                                 color="secondary"
-                                icon="remove-red-eye"
+                                icon="edit"
                                 tooltipMessage={MESSAGES.editOrgUnit}
                             />
                         </Box>
                     </Grid>
                 </Grid>
-            </Paper>
-            {instances && instances?.length === 0 && (
-                <Paper className={classes.emptyPaper}>
-                    <Typography
-                        component="p"
-                        className={classes.emptyPaperTypo}
-                    >
-                        <ErrorOutlineIcon className={classes.emptyPaperIcon} />
-                        {formatMessage(MESSAGES.noInstance)}
-                    </Typography>
-                </Paper>
-            )}
-            {instances && instances?.length > 0 && (
-                <Box
-                    width="100%"
-                    display="flex"
-                    justifyContent="flex-end"
-                    mb={2}
-                >
-                    <Box width="50%">
-                        <InputComponent
-                            type="select"
-                            disabled={
-                                isFetching || instancesOptions.length <= 1
-                            }
-                            keyValue="instance"
-                            onChange={handleChange}
-                            value={isFetching ? undefined : currentInstanceId}
-                            label={MESSAGES.submission}
-                            options={instancesOptions}
-                            loading={isFetching}
-                            clearable={false}
-                        />
-                    </Box>
-                </Box>
-            )}
-            {currentInstance && (
-                <Paper elevation={1} className={classes.paper}>
-                    <Grid container className={classes.paperTitle}>
-                        <Grid xs={8} item>
-                            <Typography
-                                color="primary"
-                                variant="h5"
-                                className={classes.title}
-                            >
-                                {`${currentInstance.form_name}${referenceInstanceMessage}`}
-                            </Typography>
-                        </Grid>
-                        <Grid
-                            xs={4}
-                            item
-                            container
-                            justifyContent="flex-end"
-                            className={classes.paperTitleButtonContainer}
+                <Divider />
+                {instances && instances?.length === 0 && (
+                    <Box className={classes.emptyPaper}>
+                        <Typography
+                            component="p"
+                            className={classes.emptyPaperTypo}
                         >
-                            <Box className={classes.paperTitleButton}>
-                                {userHasPermission(
-                                    Permission.SUBMISSIONS_UPDATE,
-                                    currentUser,
-                                ) && (
-                                    <IconButton
-                                        onClick={() => getEnketoUrl()}
-                                        overrideIcon={EnketoIcon}
-                                        color="secondary"
-                                        tooltipMessage={MESSAGES.editOnEnketo}
-                                    />
-                                )}
-                                <LinkToInstance
-                                    instanceId={`${currentInstance.id}`}
-                                    useIcon
-                                    color="secondary"
-                                />
-                            </Box>
-                        </Grid>
-                    </Grid>
-                    <Divider />
-                    <Box className={classes.formContents}>
-                        <InstanceFileContent
-                            instance={currentInstance}
-                            showQuestionKey={false}
-                        />
+                            <ErrorOutlineIcon
+                                className={classes.emptyPaperIcon}
+                            />
+                            {formatMessage(MESSAGES.noInstance)}
+                        </Typography>
                     </Box>
-                </Paper>
-            )}
+                )}
+                {instances && instances?.length > 0 && (
+                    <Box
+                        width="100%"
+                        display="flex"
+                        justifyContent="flex-end"
+                        mb={2}
+                        px={2}
+                    >
+                        <Box width="50%">
+                            <InputComponent
+                                type="select"
+                                disabled={
+                                    isFetching || instancesOptions.length <= 1
+                                }
+                                keyValue="instance"
+                                onChange={handleChange}
+                                value={
+                                    isFetching ? undefined : currentInstanceId
+                                }
+                                label={MESSAGES.submission}
+                                options={instancesOptions}
+                                loading={isFetching}
+                                clearable={false}
+                            />
+                        </Box>
+                    </Box>
+                )}
+
+                {instances && instances?.length > 0 && currentInstance && (
+                    <Divider />
+                )}
+                {currentInstance && (
+                    <>
+                        <Grid container className={classes.paperTitle}>
+                            <Grid xs={8} item>
+                                <Typography
+                                    color="primary"
+                                    variant="h6"
+                                    className={classes.subTitle}
+                                >
+                                    {`${currentInstance.form_name}${referenceInstanceMessage}`}
+                                </Typography>
+                            </Grid>
+                            <Grid
+                                xs={4}
+                                item
+                                container
+                                justifyContent="flex-end"
+                                className={classes.paperTitleButtonContainer}
+                            >
+                                <Box className={classes.paperTitleButton}>
+                                    {userHasPermission(
+                                        Permission.SUBMISSIONS_UPDATE,
+                                        currentUser,
+                                    ) && (
+                                        <IconButton
+                                            onClick={() => getEnketoUrl()}
+                                            overrideIcon={EnketoIcon}
+                                            color="secondary"
+                                            tooltipMessage={
+                                                MESSAGES.editOnEnketo
+                                            }
+                                        />
+                                    )}
+                                    <LinkToInstance
+                                        instanceId={`${currentInstance.id}`}
+                                        useIcon
+                                        color="secondary"
+                                    />
+                                </Box>
+                            </Grid>
+                        </Grid>
+                        <Divider />
+                        <Box className={classes.formContents}>
+                            <InstanceFileContent
+                                instance={currentInstance}
+                                showQuestionKey={false}
+                            />
+                        </Box>
+                    </>
+                )}
+            </Paper>
         </Box>
     );
 };

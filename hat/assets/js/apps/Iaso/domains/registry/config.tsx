@@ -1,18 +1,20 @@
-import React, { ReactElement } from 'react';
-import { useSafeIntl, IntlFormatMessage, Column } from 'bluesquare-components';
-import { Box } from '@mui/material';
 import MapIcon from '@mui/icons-material/Map';
+import { Box } from '@mui/material';
+import { Column, IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
+import React, { ReactElement } from 'react';
 
 import { InstanceMetasField } from '../instances/components/ColumnSelect';
 import { Instance } from '../instances/types/instance';
 
 import { LinkToRegistry } from './components/LinkToRegistry';
 
-import MESSAGES from './messages';
 import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
 import { OrgUnitLocationIcon } from '../orgUnits/components/OrgUnitLocationIcon';
+import MESSAGES from './messages';
 
 export const defaultSorted = [{ id: 'org_unit__name', desc: false }];
+
+export const HEIGHT = '62vh';
 
 export const INSTANCE_METAS_FIELDS: InstanceMetasField[] = [
     {

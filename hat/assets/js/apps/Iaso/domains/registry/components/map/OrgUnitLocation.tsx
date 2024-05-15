@@ -25,33 +25,26 @@ export const OrgUnitLocation: FunctionComponent<Props> = ({
     selectedChildren,
 }) => {
     const theme = useTheme();
+    const color = selectedChildren
+        ? theme.palette.primary.main
+        : selectedOrgUnitColor;
     return (
         <>
             {isOrgUnitActive && (
                 <>
                     {orgUnit.geo_json && (
-                        <Pane name="orgunit-shapes" style={{ zIndex: 400 }}>
+                        <Pane name="orgunit-shape" style={{ zIndex: 400 }}>
                             <GeoJSON
                                 data={orgUnit.geo_json}
                                 style={() => ({
-                                    color: !selectedChildren
-                                        ? selectedOrgUnitColor
-                                        : theme.palette.primary.main,
+                                    color,
                                 })}
                             >
-                                {showTooltip && (
-                                    <MapToolTip
-                                        permanent
-                                        pane="popupPane"
-                                        label={orgUnit.name}
-                                    />
-                                )}
-                                {!showTooltip && (
-                                    <MapToolTip
-                                        pane="popupPane"
-                                        label={orgUnit.name}
-                                    />
-                                )}
+                                <MapToolTip
+                                    permanent={showTooltip}
+                                    pane="popupPane"
+                                    label={orgUnit.name}
+                                />
                             </GeoJSON>
                         </Pane>
                     )}
@@ -62,11 +55,7 @@ export const OrgUnitLocation: FunctionComponent<Props> = ({
                                 longitude: orgUnit.longitude,
                             }}
                             markerProps={() => ({
-                                ...circleColorMarkerOptions(
-                                    !selectedChildren
-                                        ? selectedOrgUnitColor
-                                        : theme.palette.primary.main,
-                                ),
+                                ...circleColorMarkerOptions(color),
                                 key: `markers-${orgUnit.id}-${showTooltip}`,
                             })}
                             popupProps={() => ({

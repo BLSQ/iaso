@@ -1,5 +1,5 @@
 import L from 'leaflet';
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import { GeoJSON, Pane } from 'react-leaflet';
 
 import { OrgUnit } from '../../../orgUnits/types/orgUnit';
@@ -29,14 +29,19 @@ export const OrgUnitChildrenShapes: FunctionComponent<Props> = ({
     subType,
     selectedChildren,
 }) => {
-    const orgUnitsShapes = activeChildren?.filter(
-        childrenOrgUnit =>
-            Boolean(childrenOrgUnit.geo_json) &&
-            childrenOrgUnit.org_unit_type_id === subType.id,
+    const orgUnitsShapes = useMemo(
+        () =>
+            activeChildren?.filter(
+                childrenOrgUnit =>
+                    Boolean(childrenOrgUnit.geo_json) &&
+                    childrenOrgUnit.org_unit_type_id === subType.id,
+            ),
+        [activeChildren, subType.id],
     );
+
     return (
         <Pane
-            name={`children-shapes-orgunit-type-${subType.id}`}
+            name={`children-shapes-orgunit-type-${subType.id}-${showTooltip}`}
             style={{ zIndex: 401 + index }}
         >
             {orgUnitsShapes.map(childrenOrgUnit => (
@@ -51,19 +56,11 @@ export const OrgUnitChildrenShapes: FunctionComponent<Props> = ({
                     })}
                     data={childrenOrgUnit.geo_json}
                 >
-                    {showTooltip && (
-                        <MapToolTip
-                            permanent
-                            pane="popupPane"
-                            label={childrenOrgUnit.name}
-                        />
-                    )}
-                    {!showTooltip && (
-                        <MapToolTip
-                            pane="popupPane"
-                            label={childrenOrgUnit.name}
-                        />
-                    )}
+                    <MapToolTip
+                        permanent={showTooltip}
+                        pane="popupPane"
+                        label={childrenOrgUnit.name}
+                    />
                 </GeoJSON>
             ))}
         </Pane>

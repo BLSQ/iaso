@@ -1,5 +1,5 @@
 import L from 'leaflet';
-import React, { FunctionComponent, useMemo } from 'react';
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { Pane } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import {
@@ -49,62 +49,36 @@ export const OrgUnitChildrenLocations: FunctionComponent<Props> = ({
                 childrenOrgUnit.org_unit_type_id === subType.id,
         );
     }, [activeChildren, subType]);
+
+    const getColor = useCallback(
+        (children: OrgUnit) => {
+            return children.id === selectedChildren?.id
+                ? selectedOrgUnitColor
+                : subType.color || '';
+        },
+        [selectedChildren, subType],
+    );
     return (
         <Pane
             name={`children-locations-orgunit-type-${subType.id}`}
             style={{ zIndex: 600 + index }}
         >
             {useCluster && (
-                <>
-                    <MarkerClusterGroup
-                        iconCreateFunction={cluster =>
-                            colorClusterCustomMarker(
-                                cluster,
-                                subType.color || '',
-                            )
-                        }
-                        polygonOptions={{
-                            fillColor: subType.color || '',
-                            color: subType.color || '',
-                        }}
-                        key={subType.id}
-                    >
-                        <MarkersListComponent
-                            key={`markers-${subType.id}-${showTooltip}-${selectedChildren?.id}`}
-                            items={orgUnitsMarkers || []}
-                            markerProps={children => ({
-                                ...circleColorMarkerOptions(
-                                    children.id === selectedChildren?.id
-                                        ? selectedOrgUnitColor
-                                        : subType.color || '',
-                                ),
-                                radius: 12,
-                            })}
-                            onDblclick={handleDoubleClick}
-                            onMarkerClick={handleSingleClick}
-                            tooltipProps={e => ({
-                                permanent: showTooltip,
-                                pane: 'popupPane',
-                                label: e.name,
-                            })}
-                            TooltipComponent={MapToolTip}
-                            isCircle
-                        />
-                    </MarkerClusterGroup>
-                </>
-            )}
-            {!useCluster && (
-                <>
+                <MarkerClusterGroup
+                    iconCreateFunction={cluster =>
+                        colorClusterCustomMarker(cluster, subType.color || '')
+                    }
+                    polygonOptions={{
+                        fillColor: subType.color || '',
+                        color: subType.color || '',
+                    }}
+                    key={subType.id}
+                >
                     <MarkersListComponent
-                        key={`markers-${subType.id}-${showTooltip}-${selectedChildren?.id}`}
+                        key={`markers-${subType.id}`}
                         items={orgUnitsMarkers || []}
                         markerProps={children => ({
-                            ...circleColorMarkerOptions(
-                                children.id === selectedChildren?.id
-                                    ? selectedOrgUnitColor
-                                    : subType.color || '',
-                            ),
-                            radius: 12,
+                            ...circleColorMarkerOptions(getColor(children), 12),
                         })}
                         onDblclick={handleDoubleClick}
                         onMarkerClick={handleSingleClick}
@@ -116,7 +90,25 @@ export const OrgUnitChildrenLocations: FunctionComponent<Props> = ({
                         TooltipComponent={MapToolTip}
                         isCircle
                     />
-                </>
+                </MarkerClusterGroup>
+            )}
+            {!useCluster && (
+                <MarkersListComponent
+                    key={`markers-${subType.id}`}
+                    items={orgUnitsMarkers || []}
+                    markerProps={children => ({
+                        ...circleColorMarkerOptions(getColor(children), 12),
+                    })}
+                    onDblclick={handleDoubleClick}
+                    onMarkerClick={handleSingleClick}
+                    tooltipProps={e => ({
+                        permanent: showTooltip,
+                        pane: 'popupPane',
+                        label: e.name,
+                    })}
+                    TooltipComponent={MapToolTip}
+                    isCircle
+                />
             )}
         </Pane>
     );

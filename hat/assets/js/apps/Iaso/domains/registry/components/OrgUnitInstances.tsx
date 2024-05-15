@@ -89,8 +89,8 @@ export const OrgUnitInstances: FunctionComponent<Props> = ({
     // selected instance should be:
     // submission id from params  OR reference instance OR first submission of the possible ones OR undefined
     // if undefined select should be hidden and a place holder should say no submission
-    console.log('orgUnit', orgUnit);
-    console.log('selectedChildren', selectedChildren);
+    // console.log('orgUnit', orgUnit);
+    // console.log('selectedChildren', selectedChildren);
     const [currentInstanceId, setCurrentInstanceId] = useState<
         number | string | undefined
     >(params.submissionId || orgUnit.reference_instance?.id);

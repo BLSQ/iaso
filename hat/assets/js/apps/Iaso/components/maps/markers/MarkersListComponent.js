@@ -74,7 +74,6 @@ MarkersListComponent.defaultProps = {
     onContextmenu: () => {},
     onMarkerClick: () => null,
     onDblclick: () => {},
-    onClick: () => {},
 };
 
 MarkersListComponent.propTypes = {
@@ -89,7 +88,6 @@ MarkersListComponent.propTypes = {
     isCircle: PropTypes.bool,
     onContextmenu: PropTypes.func,
     onDblclick: PropTypes.func,
-    onClick: PropTypes.func,
 };
 
 export default MarkersListComponent;

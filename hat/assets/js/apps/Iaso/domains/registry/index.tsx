@@ -117,14 +117,25 @@ export const Registry: FunctionComponent<Props> = ({ router }) => {
                     orgUnit
                         ? `: ${orgUnit.name} (${orgUnit.org_unit_type_name})`
                         : ''
-                }}`}
+                }`}
             />
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>
                 {isFetching && <LoadingSpinner />}
 
                 <Grid container spacing={2}>
                     <Grid container item xs={12}>
-                        <Grid item xs={4}>
+                        {orgUnitId && (
+                            <Grid container item xs={6} alignItems="center">
+                                {!isFetching && orgUnit && (
+                                    <OrgUnitBreadcrumbs
+                                        orgUnit={orgUnit}
+                                        showRegistry
+                                        showOnlyParents={false}
+                                    />
+                                )}
+                            </Grid>
+                        )}
+                        <Grid item xs={6}>
                             <Box mb={-2}>
                                 <OrgUnitTreeviewModal
                                     toggleOnLabelClick
@@ -138,13 +149,6 @@ export const Registry: FunctionComponent<Props> = ({ router }) => {
                     </Grid>
                     {!isFetching && orgUnit && (
                         <>
-                            <Grid item xs={12}>
-                                <OrgUnitBreadcrumbs
-                                    orgUnit={orgUnit}
-                                    showRegistry
-                                    showOnlyParents={false}
-                                />
-                            </Grid>
                             <Grid item xs={12} md={6}>
                                 <OrgUnitPaper
                                     orgUnit={orgUnit}

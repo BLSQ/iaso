@@ -19,8 +19,7 @@ import TopBar from '../../components/nav/TopBarComponent';
 import mappingsTableColumns from './config';
 import withParams from '../../routing/legacy.tsx';
 import CreateMappingVersionDialogComponent from './components/CreateMappingVersionDialogComponent';
-
-import { baseUrls } from '../../constants/urls';
+import { baseUrls } from '../../constants/urls.ts';
 
 import MESSAGES from './messages';
 

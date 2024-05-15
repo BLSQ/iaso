@@ -67,7 +67,7 @@ class OrgUnitTreeViewsAPITestCase(APITestCase):
         cls.data_source.projects.set([cls.project])
         cls.user.iaso_profile.org_units.set([cls.burkina])  # Restrict access to a subset of org units for user.
 
-    def test_tree_root_for_anonymous(self):
+    def test_root_for_anonymous(self):
         with self.assertNumQueries(2):
             # Select `DataSource`.
             # Select `OrgUnit`s.
@@ -77,7 +77,7 @@ class OrgUnitTreeViewsAPITestCase(APITestCase):
             self.assertEqual(response.data[0]["name"], "Angola")
             self.assertEqual(response.data[1]["name"], "Burkina Faso")
 
-    def test_tree_level_for_anonymous(self):
+    def test_specific_level_for_anonymous(self):
         with self.assertNumQueries(2):
             # Select `DataSource`.
             # Select `OrgUnit`s.
@@ -88,7 +88,7 @@ class OrgUnitTreeViewsAPITestCase(APITestCase):
             self.assertEqual(1, len(response.data))
             self.assertEqual(response.data[0]["name"], "Huila")
 
-    def test_restricted_tree_root(self):
+    def test_root_for_authenticated_user(self):
         self.client.force_authenticate(self.user)
         with self.assertNumQueries(3):
             response = self.client.get("/api/orgunits/tree/")
@@ -96,7 +96,7 @@ class OrgUnitTreeViewsAPITestCase(APITestCase):
             self.assertEqual(1, len(response.data))
             self.assertEqual(response.data[0]["name"], "Burkina Faso")
 
-    def test_restricted_tree_level(self):
+    def test_specific_level_for_authenticated_user(self):
         self.client.force_authenticate(self.user)
 
         with self.assertNumQueries(2):
@@ -110,7 +110,7 @@ class OrgUnitTreeViewsAPITestCase(APITestCase):
             self.assertEqual(1, len(response.data))
             self.assertEqual(response.data[0]["name"], "Boucle du Mouhon")
 
-    def test_force_full_tree_root(self):
+    def test_root_with_force_full_tree(self):
         self.client.force_authenticate(self.user)
         with self.assertNumQueries(1):
             response = self.client.get("/api/orgunits/tree/?force_full_tree=true")
@@ -119,7 +119,7 @@ class OrgUnitTreeViewsAPITestCase(APITestCase):
             self.assertEqual(response.data[0]["name"], "Angola")
             self.assertEqual(response.data[1]["name"], "Burkina Faso")
 
-    def test_force_full_tree_level(self):
+    def test_specific_level_with_force_full_tree(self):
         self.client.force_authenticate(self.user)
 
         with self.assertNumQueries(1):
@@ -133,3 +133,35 @@ class OrgUnitTreeViewsAPITestCase(APITestCase):
             self.assertJSONResponse(response, 200)
             self.assertEqual(1, len(response.data))
             self.assertEqual(response.data[0]["name"], "Boucle du Mouhon")
+
+    def test_children_count(self):
+        """
+        When we filter only by VALID org units, then REJECTED or NEW children should not be included in `has_children`.
+        """
+        self.client.force_authenticate(self.user)
+
+        url = f"/api/orgunits/tree/?parent_id={self.burkina.pk}&validation_status={m.OrgUnit.VALIDATION_VALID}"
+
+        response = self.client.get(url)
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(1, len(response.data))
+        self.assertEqual(response.data[0]["name"], "Boucle du Mouhon")
+        self.assertEqual(response.data[0]["has_children"], True)
+
+        # Mark the child of "Boucle du Mouhon" as "rejected".
+        self.burkina_district.validation_status = m.OrgUnit.VALIDATION_REJECTED
+        self.burkina_district.save()
+
+        response = self.client.get(url)
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(1, len(response.data))
+        self.assertEqual(response.data[0]["has_children"], False)  # It should be excluded from `has_children`.
+
+        # Mark the child of "Boucle du Mouhon" as "new".
+        self.burkina_district.validation_status = m.OrgUnit.VALIDATION_NEW
+        self.burkina_district.save()
+
+        response = self.client.get(url)
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(1, len(response.data))
+        self.assertEqual(response.data[0]["has_children"], False)  # It should be excluded from `has_children`.

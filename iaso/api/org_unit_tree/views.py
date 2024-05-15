@@ -1,6 +1,6 @@
 import django_filters
 
-from django.db.models import Count
+from django.db.models import Count, Q
 
 from rest_framework import filters, permissions, viewsets
 from rest_framework import serializers
@@ -17,6 +17,7 @@ class OrgUnitTreeQuerystringSerializer(serializers.Serializer):
     force_full_tree = serializers.BooleanField(required=False)
     parent_id = serializers.IntegerField(required=False)
     data_source_id = serializers.IntegerField(required=False)
+    validation_status = serializers.MultipleChoiceField(choices=OrgUnit.VALIDATION_STATUS_CHOICES)
 
 
 class OrgUnitTreeViewSet(viewsets.ModelViewSet):
@@ -35,36 +36,43 @@ class OrgUnitTreeViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
 
-        querystring_serializer = OrgUnitTreeQuerystringSerializer(data=self.request.query_params)
-        querystring_serializer.is_valid(raise_exception=True)
-        force_full_tree = querystring_serializer.validated_data.get("force_full_tree")
-        parent_id = querystring_serializer.validated_data.get("parent_id")
-        data_source_id = querystring_serializer.validated_data.get("data_source_id")
+        querystring = OrgUnitTreeQuerystringSerializer(data=self.request.query_params)
+        querystring.is_valid(raise_exception=True)
+        force_full_tree = querystring.validated_data.get("force_full_tree")
+        parent_id = querystring.validated_data.get("parent_id")
+        data_source_id = querystring.validated_data.get("data_source_id")
+        validation_status = querystring.validated_data.get("validation_status", set())
 
         if user.is_anonymous:
             if not data_source_id:
-                raise ValidationError({"data_source_id": ["DataSource must be provided for anonymous users."]})
+                raise ValidationError({"data_source_id": ["A `data_source_id` must be provided for anonymous users."]})
             qs = OrgUnit.objects.all()  # `qs` will be filtered by `data_source_id` in `OrgUnitTreeFilter`.
         elif user.is_superuser or force_full_tree:
-            # Filter by the account.
             qs = OrgUnit.objects.filter(version=user.iaso_profile.account.default_version)
         else:
             qs = OrgUnit.objects.filter_for_user(user)
 
         can_view_full_tree = any([user.is_anonymous, user.is_superuser, force_full_tree])
-        display_root_level = self.action == "list" and not parent_id
+        display_root_level = not parent_id
 
-        if display_root_level:
+        if display_root_level and self.action == "list":
             if can_view_full_tree:
                 qs = qs.filter(parent__isnull=True)
-            elif user.is_authenticated:  # The user might be restricted to a subpart of the tree.
+            elif user.is_authenticated:
                 if user.iaso_profile.org_units.exists():
+                    # Root level of the tree for this user (the user may be restricted to a subpart of the tree).
                     qs = qs.filter(id__in=user.iaso_profile.org_units.all())
 
         qs = qs.only("id", "name", "validation_status", "version", "org_unit_type", "parent")
-        qs = qs.annotate(children_count=Count("orgunit__id"))
         qs = qs.order_by("name")
-        qs = qs.select_related("org_unit_type")  # Avoid N+1 in the serializer.
+        qs = qs.select_related("org_unit_type")
+
+        if validation_status == {OrgUnit.VALIDATION_VALID}:
+            exclude_filter = ~Q(orgunit__validation_status__in=[OrgUnit.VALIDATION_REJECTED, OrgUnit.VALIDATION_NEW])
+            children_count = Count("orgunit", filter=exclude_filter)
+        else:
+            children_count = Count("orgunit")
+        qs = qs.annotate(children_count=children_count)
 
         return qs
 

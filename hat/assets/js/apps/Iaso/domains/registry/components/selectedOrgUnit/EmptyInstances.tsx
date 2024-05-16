@@ -4,12 +4,12 @@ import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
 
+import { HEIGHT } from '../../config';
 import MESSAGES from '../../messages';
-
 
 const useStyles = makeStyles(() => ({
     emptyPaper: {
-        height: '527px',
+        height: `calc(${HEIGHT} - 65px)`,
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
@@ -29,7 +29,9 @@ export const EmptyInstances: FunctionComponent = () => {
         <Box className={classes.emptyPaper}>
             <Typography component="p" className={classes.emptyPaperTypo}>
                 <ErrorOutlineIcon className={classes.emptyPaperIcon} />
-                {formatMessage(MESSAGES.noInstance)}
+                <Box component="span" ml={2}>
+                    {formatMessage(MESSAGES.noInstance)}
+                </Box>
             </Typography>
         </Box>
     );

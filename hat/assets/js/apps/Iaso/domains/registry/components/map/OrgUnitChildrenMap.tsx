@@ -99,11 +99,11 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
         params.isFullScreen === 'true',
     );
     const [currentTile, setCurrentTile] = useState<Tile>(TILES.osm);
-    const { getLegendOptions, setLegendOptions } = useGetLegendOptions(orgUnit);
-    const legendOptions = useMemo(() => {
-        return getLegendOptions(subOrgUnitTypes, selectedChildrenId);
-    }, [getLegendOptions, selectedChildrenId, subOrgUnitTypes]);
-
+    const { legendOptions, setLegendOptions } = useGetLegendOptions(
+        orgUnit,
+        subOrgUnitTypes,
+        selectedChildrenId,
+    );
     const legendOptionsMap = keyBy(legendOptions, 'value');
     const activeChildren: OrgUnit[] = useMemo(() => {
         return (

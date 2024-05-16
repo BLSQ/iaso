@@ -98,6 +98,7 @@ export const useGetOrgUnitInstances = (
 
 export const useGetInstance = (
     instanceId: number | string | undefined,
+    keepPreviousData = true,
 ): UseQueryResult<Instance, Error> => {
     return useSnackQuery({
         queryKey: ['instance', instanceId],
@@ -105,7 +106,7 @@ export const useGetInstance = (
         options: {
             enabled: Boolean(instanceId),
             retry: false,
-            keepPreviousData: true,
+            keepPreviousData,
         },
     });
 };

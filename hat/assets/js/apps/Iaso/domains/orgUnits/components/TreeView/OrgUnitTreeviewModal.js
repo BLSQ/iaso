@@ -1,6 +1,6 @@
 import { Box, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { TreeViewWithSearch } from 'bluesquare-components';
+import { IconButton, TreeViewWithSearch } from 'bluesquare-components';
 import { isEqual } from 'lodash';
 import {
     array,
@@ -47,6 +47,7 @@ const OrgUnitTreeviewModal = ({
     allowedTypes,
     errors,
     defaultOpen,
+    useIcon,
 }) => {
     const theme = useTheme();
     const classes = useStyles();
@@ -181,20 +182,37 @@ const OrgUnitTreeviewModal = ({
     }, [resetTrigger, hardReset, resetSelection]);
     return (
         <ConfirmCancelDialogComponent
-            renderTrigger={({ openDialog }) => (
-                <OrgUnitTreeviewPicker
-                    onClick={openDialog}
-                    selectedItems={selectedOrgUnitParents}
-                    resetSelection={resetSelection}
-                    multiselect={multiselect}
-                    placeholder={titleMessage}
-                    required={required}
-                    disabled={disabled}
-                    label={makeTreeviewLabel(classes, showStatusIconInPicker)}
-                    clearable={clearable}
-                    errors={errors}
-                />
-            )}
+            renderTrigger={({ openDialog }) =>
+                useIcon ? (
+                    <IconButton
+                        size="small"
+                        tooltipMessage={
+                            multiselect
+                                ? MESSAGES.selectMultiple
+                                : MESSAGES.selectSingle
+                        }
+                        icon="orgUnit"
+                        onClick={openDialog}
+                        disabled={disabled}
+                    />
+                ) : (
+                    <OrgUnitTreeviewPicker
+                        onClick={openDialog}
+                        selectedItems={selectedOrgUnitParents}
+                        resetSelection={resetSelection}
+                        multiselect={multiselect}
+                        placeholder={titleMessage}
+                        required={required}
+                        disabled={disabled}
+                        label={makeTreeviewLabel(
+                            classes,
+                            showStatusIconInPicker,
+                        )}
+                        clearable={clearable}
+                        errors={errors}
+                    />
+                )
+            }
             titleMessage={titleMessage}
             onConfirm={onModalConfirm}
             onCancel={onModalCancel}
@@ -269,6 +287,7 @@ OrgUnitTreeviewModal.propTypes = {
     allowedTypes: array,
     errors: arrayOf(string),
     defaultOpen: bool,
+    useIcon: bool,
 };
 
 OrgUnitTreeviewModal.defaultProps = {
@@ -288,6 +307,7 @@ OrgUnitTreeviewModal.defaultProps = {
     allowedTypes: [],
     errors: [],
     defaultOpen: false,
+    useIcon: false,
 };
 
 export { OrgUnitTreeviewModal };

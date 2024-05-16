@@ -122,7 +122,6 @@ export const Instances: FunctionComponent<Props> = ({
                         <Grid container spacing={2}>
                             <Grid item xs={12} md={3}>
                                 <InputComponent
-                                    required
                                     keyValue="formIds"
                                     clearable={false}
                                     onChange={handleFilterChange}

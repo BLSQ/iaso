@@ -19,6 +19,7 @@ export const useGetOrgUnit = (
         options: {
             retry: false,
             enabled: Boolean(orgUnitId),
+            keepPreviousData: true,
         },
     });
 };

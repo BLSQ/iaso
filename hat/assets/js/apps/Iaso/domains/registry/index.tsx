@@ -27,6 +27,7 @@ import { OrgunitTypeRegistry } from './types/orgunitTypes';
 import { RegistryParams } from './types';
 
 import { redirectTo, redirectToReplace } from '../../routing/actions';
+import { SxStyles } from '../../types/general';
 import { OrgUnitTreeviewModal } from '../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { OrgUnitBreadcrumbs } from '../orgUnits/components/breadcrumbs/OrgUnitBreadcrumbs';
 import { OrgUnit } from '../orgUnits/types/orgUnit';
@@ -38,6 +39,19 @@ type Router = {
 };
 type Props = {
     router: Router;
+};
+
+const styles: SxStyles = {
+    breadCrumbContainer: {
+        '& nav': {
+            display: 'inline-block',
+        },
+    },
+    treeContainer: {
+        top: '-2px',
+        position: 'relative',
+        display: 'inline-block',
+    },
 };
 
 const useStyles = makeStyles(theme => ({
@@ -93,6 +107,7 @@ export const Registry: FunctionComponent<Props> = ({ router }) => {
                 orgUnitId: `${newOrgUnit.id}`,
             };
             delete newParams.orgUnitChildrenId;
+            delete newParams.submissionId;
             setSelectedChildrenId(undefined);
             dispatch(redirectTo(`/${baseUrls.registry}`, newParams));
         }
@@ -108,6 +123,7 @@ export const Registry: FunctionComponent<Props> = ({ router }) => {
             setSelectedChildrenId(undefined);
             delete newParams.orgUnitChildrenId;
         }
+        delete newParams.submissionId;
         dispatch(redirectToReplace(`/${baseUrls.registry}`, newParams));
     };
     return (
@@ -123,29 +139,29 @@ export const Registry: FunctionComponent<Props> = ({ router }) => {
                 {isFetching && <LoadingSpinner />}
 
                 <Grid container spacing={2}>
-                    <Grid container item xs={12}>
-                        {orgUnitId && (
-                            <Grid container item xs={6} alignItems="center">
-                                {!isFetching && orgUnit && (
-                                    <OrgUnitBreadcrumbs
-                                        orgUnit={orgUnit}
-                                        showRegistry
-                                        showOnlyParents={false}
-                                    />
-                                )}
-                            </Grid>
-                        )}
-                        <Grid item xs={6}>
-                            <Box mb={-2}>
-                                <OrgUnitTreeviewModal
-                                    toggleOnLabelClick
-                                    titleMessage={MESSAGES.search}
-                                    onConfirm={handleOrgUnitChange}
-                                    initialSelection={orgUnit}
-                                    defaultOpen={!orgUnitId}
+                    <Grid item xs={12} sx={styles.breadCrumbContainer}>
+                        <Box sx={styles.treeContainer}>
+                            <OrgUnitTreeviewModal
+                                toggleOnLabelClick
+                                titleMessage={MESSAGES.search}
+                                onConfirm={handleOrgUnitChange}
+                                initialSelection={orgUnit}
+                                defaultOpen={!orgUnitId}
+                                useIcon
+                            />
+                        </Box>
+                        {orgUnitId && !isFetching && orgUnit && (
+                            <>
+                                <Box display="inline-block" ml={1} mr={2}>
+                                    {`>`}
+                                </Box>
+                                <OrgUnitBreadcrumbs
+                                    orgUnit={orgUnit}
+                                    showRegistry
+                                    showOnlyParents={false}
                                 />
-                            </Box>
-                        </Grid>
+                            </>
+                        )}
                     </Grid>
                     {!isFetching && orgUnit && (
                         <>
@@ -192,13 +208,11 @@ export const Registry: FunctionComponent<Props> = ({ router }) => {
                         </>
                     )}
                 </Grid>
-                <Box>
-                    <Instances
-                        isLoading={isFetching}
-                        subOrgUnitTypes={subOrgUnitTypes}
-                        params={params}
-                    />
-                </Box>
+                <Instances
+                    isLoading={isFetching}
+                    subOrgUnitTypes={subOrgUnitTypes}
+                    params={params}
+                />
             </Box>
         </>
     );

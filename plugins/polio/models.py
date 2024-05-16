@@ -230,6 +230,18 @@ class RoundQuerySet(models.QuerySet):
         data["countries"] = data["countries"].values()
         data["campaigns"] = data["campaigns"].values()
         return data
+    
+
+class SubActivity(models.Model):
+    round = models.ForeignKey("Round", related_name="sub_activities", on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    org_units = models.ManyToManyField(OrgUnit, related_name="sub_activities")
+
+    def __str__(self):
+        return self.name
+
 
 
 class Round(models.Model):

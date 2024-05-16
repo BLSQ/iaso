@@ -54,11 +54,15 @@ export const useGetLegendOptions = (
 
     // Adjust the color of the first legend option based on selectedChildrenId
     useEffect(() => {
-        if (legendOptions.length > 0 && selectedChildrenId) {
+        if (legendOptions.length > 0) {
             const adjustedOptions = [...legendOptions];
+
+            const color = selectedChildrenId
+                ? theme.palette.primary.main
+                : selectedOrgUnitColor;
             adjustedOptions[0] = {
                 ...adjustedOptions[0],
-                color: theme.palette.primary.main,
+                color,
             };
             setLegendOptions(adjustedOptions);
         }

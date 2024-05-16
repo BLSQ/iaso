@@ -31,6 +31,7 @@ import { SxStyles } from '../../types/general';
 import { OrgUnitTreeviewModal } from '../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { OrgUnitBreadcrumbs } from '../orgUnits/components/breadcrumbs/OrgUnitBreadcrumbs';
 import { OrgUnit } from '../orgUnits/types/orgUnit';
+import { Placeholder } from './components/Placeholder';
 import { SelectedOrgUnit } from './components/selectedOrgUnit';
 
 type Router = {
@@ -150,17 +151,16 @@ export const Registry: FunctionComponent<Props> = ({ router }) => {
                                 useIcon
                             />
                         </Box>
+                        <Box display="inline-block" ml={1} mr={2}>
+                            {`>`}
+                        </Box>
+                        {!orgUnitId && '...'}
                         {orgUnitId && !isFetching && orgUnit && (
-                            <>
-                                <Box display="inline-block" ml={1} mr={2}>
-                                    {`>`}
-                                </Box>
-                                <OrgUnitBreadcrumbs
-                                    orgUnit={orgUnit}
-                                    showRegistry
-                                    showOnlyParents={false}
-                                />
-                            </>
+                            <OrgUnitBreadcrumbs
+                                orgUnit={orgUnit}
+                                showRegistry
+                                showOnlyParents={false}
+                            />
                         )}
                     </Grid>
                     {!isFetching && orgUnit && (
@@ -213,6 +213,7 @@ export const Registry: FunctionComponent<Props> = ({ router }) => {
                     subOrgUnitTypes={subOrgUnitTypes}
                     params={params}
                 />
+                {!orgUnitId && <Placeholder />}
             </Box>
         </>
     );

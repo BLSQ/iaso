@@ -74,7 +74,7 @@ const useStyles = makeStyles(theme => ({
         top: '64px',
         left: '0',
         width: '100vw',
-        height: '100vh',
+        height: 'calc(100vh - 64px)',
         zIndex: 10000,
     },
 }));

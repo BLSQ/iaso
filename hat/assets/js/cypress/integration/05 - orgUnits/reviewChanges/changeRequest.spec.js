@@ -8,6 +8,7 @@ import { testTablerender } from '../../../support/testTableRender';
 import { testPagination } from '../../../support/testPagination';
 import { testTableSort } from '../../../support/testTableSort';
 import { testPageFilters } from '../../../support/testPageFilters';
+import userRoles from '../../../fixtures/userRoles/list.json';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 const baseUrl = `${siteBaseUrl}/dashboard/orgunits/changeRequest`;
@@ -70,7 +71,7 @@ const newFilters = {
     },
     userRoles: {
         value: [0],
-        urlValue: '13',
+        urlValue: userRoles.results[0].id, // This seems dependant on the DB
         selector: '#userRoles',
         type: 'multi',
         clear: false,
@@ -112,6 +113,9 @@ const goToPage = (
     cy.intercept('GET', '/api/forms/**', {
         fixture: 'forms/list.json',
     });
+    cy.intercept('GET', '/api/userroles/?order=group__name', userRoles).as(
+        'userRoles',
+    );
 
     const options = {
         method: 'GET',

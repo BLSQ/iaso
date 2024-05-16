@@ -99,7 +99,9 @@ Cypress.Commands.add('fillTreeView', (id, newOuIndex, clear = true) => {
         cy.get('@clearButton').click();
     }
     cy.get('@tree').click();
-    cy.get('.MuiTreeView-root .MuiTreeItem-root').eq(newOuIndex).click();
+    cy.get('.MuiTreeView-root .MuiTreeItem-root', { timeout: 10000 })
+        .eq(newOuIndex)
+        .click();
     cy.get('.MuiDialog-container button').last().click();
 });
 

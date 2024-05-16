@@ -12,11 +12,15 @@ type Props = {
     instanceId: string;
     useIcon?: boolean;
     color?: string;
+    iconSize?: 'small' | 'medium' | 'large' | 'default' | 'inherit';
+    size?: 'small' | 'medium' | 'large' | 'default' | 'inherit';
 };
 export const LinkToInstance: FunctionComponent<Props> = ({
     instanceId,
     useIcon = false,
     color = 'inherit',
+    iconSize = 'medium',
+    size = 'medium',
 }) => {
     const user = useCurrentUser();
     if (userHasPermission(Permission.SUBMISSIONS, user)) {
@@ -28,6 +32,8 @@ export const LinkToInstance: FunctionComponent<Props> = ({
                     url={formUrl}
                     tooltipMessage={MESSAGES.details}
                     color={color}
+                    iconSize={iconSize}
+                    size={size}
                 />
             );
         }

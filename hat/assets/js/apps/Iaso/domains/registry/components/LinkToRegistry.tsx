@@ -26,6 +26,7 @@ type Props = {
     replace?: boolean;
     iconSize?: 'small' | 'medium' | 'large' | 'default' | 'inherit';
     size?: 'small' | 'medium' | 'large' | 'default' | 'inherit';
+    color?: string;
 };
 
 const useStyles = makeStyles(() => ({
@@ -41,6 +42,7 @@ export const LinkToRegistry: FunctionComponent<Props> = ({
     replace = false,
     iconSize = 'medium',
     size = 'medium',
+    color = 'inherit',
 }) => {
     const user = useCurrentUser();
 
@@ -66,6 +68,7 @@ export const LinkToRegistry: FunctionComponent<Props> = ({
                     tooltipMessage={MESSAGES.seeRegistry}
                     iconSize={iconSize}
                     size={size}
+                    color={color}
                 />
             );
         }

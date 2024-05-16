@@ -34,6 +34,7 @@ import { LinkToInstance } from '../../instances/components/LinkToInstance';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { HEIGHT } from '../config';
 import { RegistryParams } from '../types';
+import { LinkToRegistry } from './LinkToRegistry';
 
 type Props = {
     orgUnit?: OrgUnit;
@@ -112,6 +113,7 @@ export const SelectedOrgUnit: FunctionComponent<Props> = ({
             value: instance.id,
         }));
     }, [instances]);
+    const isRootOrgUnit = params.orgUnitId === `${orgUnit?.id}`;
     const getEnketoUrl = useGetEnketoUrl(window.location.href, currentInstance);
     const currentUser = useCurrentUser();
 
@@ -162,18 +164,33 @@ export const SelectedOrgUnit: FunctionComponent<Props> = ({
                         className={classes.paperTitleButtonContainer}
                     >
                         <Box className={classes.paperTitleButton}>
-                            <IconButton
-                                url={`${baseUrls.orgUnitDetails}/orgUnitId/0/levels/${orgUnit.id}`}
-                                color="secondary"
-                                overrideIcon={AddIcon}
-                                tooltipMessage={MESSAGES.addOrgUnitChild}
-                            />
+                            {isRootOrgUnit && (
+                                <IconButton
+                                    url={`${baseUrls.orgUnitDetails}/orgUnitId/0/levels/${orgUnit.id}`}
+                                    color="secondary"
+                                    overrideIcon={AddIcon}
+                                    tooltipMessage={MESSAGES.addOrgUnitChild}
+                                    iconSize="small"
+                                    size="small"
+                                />
+                            )}
                             <IconButton
                                 url={`${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}`}
                                 color="secondary"
                                 icon="edit"
                                 tooltipMessage={MESSAGES.editOrgUnit}
+                                iconSize="small"
+                                size="small"
                             />
+                            {!isRootOrgUnit && (
+                                <LinkToRegistry
+                                    orgUnit={orgUnit}
+                                    useIcon
+                                    iconSize="small"
+                                    size="small"
+                                    color="secondary"
+                                />
+                            )}
                         </Box>
                     </Grid>
                 </Grid>
@@ -250,6 +267,8 @@ export const SelectedOrgUnit: FunctionComponent<Props> = ({
                                             onClick={() => getEnketoUrl()}
                                             overrideIcon={EnketoIcon}
                                             color="secondary"
+                                            iconSize="small"
+                                            size="small"
                                             tooltipMessage={
                                                 MESSAGES.editOnEnketo
                                             }
@@ -259,6 +278,8 @@ export const SelectedOrgUnit: FunctionComponent<Props> = ({
                                         instanceId={`${currentInstance.id}`}
                                         useIcon
                                         color="secondary"
+                                        iconSize="small"
+                                        size="small"
                                     />
                                 </Box>
                             </Grid>

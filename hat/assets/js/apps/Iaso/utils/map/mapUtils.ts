@@ -252,3 +252,10 @@ export const getEffectiveThreshold = (
     threshold?: ScaleThreshold,
 ): ScaleThreshold =>
     !threshold || isEqual(threshold, {}) ? defaultScaleThreshold : threshold;
+
+export const hasLocation = (orgUnit: OrgUnit): boolean =>
+    orgUnit.has_geo_json ||
+    (orgUnit.latitude !== undefined &&
+        orgUnit.longitude !== undefined &&
+        orgUnit.latitude !== null &&
+        orgUnit.longitude !== null);

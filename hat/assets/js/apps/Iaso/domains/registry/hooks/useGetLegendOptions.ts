@@ -30,7 +30,6 @@ export const useGetLegendOptions = (
     const getLegendOptions = useCallback(
         (subOrgUnitTypes: OrgunitTypes, selectedChildrenId?: string) => {
             const options = subOrgUnitTypes.map(subOuType => {
-                console.log('subOuType.orgUnits?', subOuType.orgUnits);
                 const orgUnitWithLocationsCount =
                     subOuType.orgUnits?.filter(hasLocation).length || 0;
                 const orgUnitCount = subOuType.orgUnits?.length || 0;

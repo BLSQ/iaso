@@ -22,7 +22,6 @@ import {
 
 import { Instances } from './components/Instances';
 import { OrgUnitPaper } from './components/OrgUnitPaper';
-import { SelectedOrgUnit } from './components/SelectedOrgUnit';
 import { OrgunitTypeRegistry } from './types/orgunitTypes';
 
 import { RegistryParams } from './types';
@@ -31,6 +30,7 @@ import { redirectTo, redirectToReplace } from '../../routing/actions';
 import { OrgUnitTreeviewModal } from '../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { OrgUnitBreadcrumbs } from '../orgUnits/components/breadcrumbs/OrgUnitBreadcrumbs';
 import { OrgUnit } from '../orgUnits/types/orgUnit';
+import { SelectedOrgUnit } from './components/selectedOrgUnit';
 
 type Router = {
     goBack: () => void;

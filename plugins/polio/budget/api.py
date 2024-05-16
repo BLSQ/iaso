@@ -78,7 +78,7 @@ class BudgetProcessViewSet(ModelViewSet, CSVExportMixin):
 
     def get_queryset(self) -> QuerySet:
         user = self.request.user
-        campaigns = Campaign.objects.filter_for_user(user)
+        campaigns = Campaign.polio_objects.filter_for_user(user)
         budget_processes = (
             BudgetProcess.objects.filter(rounds__campaign__in=campaigns)
             .distinct()
@@ -146,7 +146,7 @@ class BudgetProcessViewSet(ModelViewSet, CSVExportMixin):
         campaign_uuid = query_params.validated_data["campaign_id"]
         budget_process_id = query_params.validated_data["budget_process_id"]
 
-        campaign = Campaign.objects.filter(id=campaign_uuid).filter_for_user(self.request.user).first()
+        campaign = Campaign.polio_objects.filter(id=campaign_uuid).filter_for_user(self.request.user).first()
         available_rounds = (
             Round.objects.filter(campaign=campaign)
             .select_related("campaign__country")

@@ -4,11 +4,13 @@ import listFixture from '../../fixtures/forms/list.json';
 import superUser from '../../fixtures/profiles/me/superuser.json';
 import { search, searchWithForbiddenChars } from '../../constants/search';
 import { testSearchField } from '../../support/testSearchField';
+import { testTopBar } from '../../support/testTopBar';
+import { testTablerender } from '../../support/testTableRender';
 import * as Permission from '../../../apps/Iaso/utils/permissions.ts';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
-const baseUrl = `${siteBaseUrl}/dashboard/forms/list/`;
+const baseUrl = `${siteBaseUrl}/dashboard/forms/list`;
 
 let interceptFlag = false;
 let table;
@@ -50,6 +52,8 @@ const goToPage = (
     cy.intercept('GET', '/api/projects/**', {
         fixture: 'projects/list.json',
     }).as('getProject');
+    cy.intercept('GET', '/dashboard/media/forms/*.xls').as('downloadXls');
+    cy.intercept('GET', '/dashboard/media/forms/*.xml').as('downloadXml');
     cy.visit(baseUrl);
 };
 
@@ -73,7 +77,46 @@ describe('Forms', () => {
                 `${siteBaseUrl}/dashboard/forms/detail/accountId/1/formId/0`,
             );
         });
-
+        describe('Top bar and table', () => {
+            beforeEach(() => {
+                goToPage(superUser, true);
+            });
+            testTopBar(baseUrl, 'Forms', false);
+            testTablerender({
+                baseUrl,
+                rows: 3,
+                columns: 10,
+                apiKey: 'forms',
+            });
+        });
+        describe('Create button', () => {
+            it("is hidden if user doesn't have 'forms' permission", () => {
+                const fakeUser = {
+                    ...superUser,
+                    permissions: [
+                        Permission.SUBMISSIONS,
+                        Permission.SUBMISSIONS_UPDATE,
+                    ],
+                    is_superuser: false,
+                };
+                goToPage(fakeUser, true);
+                cy.get('[data-test="add-form-button"]').should('not.exist');
+            });
+            it("is visible if user has 'forms' permission", () => {
+                const fakeUser = {
+                    ...superUser,
+                    permissions: [Permission.FORMS],
+                    is_superuser: false,
+                };
+                goToPage(fakeUser, true);
+                cy.get('[data-test="add-form-button"]').should('exist').click();
+                // check that button redirects to creation page
+                cy.url().should(
+                    'eq',
+                    `${siteBaseUrl}/dashboard/forms/detail/accountId/1/formId/0`,
+                );
+            });
+        });
         describe('Search field', () => {
             beforeEach(() => {
                 goToPage();
@@ -127,7 +170,8 @@ describe('Forms', () => {
                         'contain',
                         listFixture.forms[0].latest_form_version.version_id,
                     );
-                    latestCol.find('a').should('have.length', 2);
+                    latestCol.find('a').as('links').should('have.length', 2);
+                    // TODO Find a way to test file download
                 });
                 it('should be empty if no latest_form_version', () => {
                     table = cy.get('table');
@@ -176,12 +220,12 @@ describe('Forms', () => {
             it('should be visible if we have results', () => {
                 goToPage(superUser, null, 'forms/list.json');
                 cy.wait('@getForms').then(() => {
-                    cy.get('[data-test="csv-export-button"]').should(
-                        'be.visible',
-                    );
-                    cy.get('[data-test="xlsx-export-button"]').should(
-                        'be.visible',
-                    );
+                    cy.get('[data-test="csv-export-button"]')
+                        .as('csvButton')
+                        .should('be.visible');
+                    cy.get('[data-test="xlsx-export-button"]')
+                        .as('xlsxButton')
+                        .should('be.visible');
                 });
             });
             it("should not be visible if we don't have results", () => {
@@ -217,12 +261,17 @@ describe('Forms', () => {
             goToPage(superUser, null, 'forms/list.json');
             cy.wait('@getForms').then(() => {
                 interceptFlag = false;
-                cy.intercept('GET', '/api/forms/**/*', req => {
-                    req.continue(res => {
-                        interceptFlag = true;
-                        res.send({ fixture: 'forms/list.json' });
-                    });
-                }).as('getFormSearch');
+                cy.intercept(
+                    'GET',
+                    // Stubbing the exact url to avoid bugs with intercepts on the same base url
+                    '/api/forms/?&order=instance_updated_at&page=1&search=ZELDA&showDeleted=true&orgUnitTypeIds=47,11&projectsIds=1,2&all=true&limit=50',
+                    req => {
+                        req.continue(res => {
+                            interceptFlag = true;
+                            res.send({ fixture: 'forms/list.json' });
+                        });
+                    },
+                ).as('getFormSearch');
 
                 cy.get('#search-search').type(search);
                 cy.fillMultiSelect('#orgUnitTypeIds', [0, 1], false);
@@ -233,6 +282,7 @@ describe('Forms', () => {
 
                 cy.wait('@getFormSearch').then(xhr => {
                     cy.wrap(interceptFlag).should('eq', true);
+                    cy.log('query', xhr.request.query);
                     cy.wrap(xhr.request.query).should('deep.equal', {
                         all: 'true',
                         limit: '50',

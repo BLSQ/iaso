@@ -4,7 +4,8 @@ import TestUtils, { act } from 'react-dom/test-utils';
 import { IntlProvider } from 'react-intl';
 import { Provider } from 'react-redux';
 import { QueryClient, QueryClientProvider } from 'react-query';
-import InputComponent from '../apps/Iaso/components/forms/InputComponent';
+import { BrowserRouter, Route } from 'react-router-dom';
+import InputComponent from '../apps/Iaso/components/forms/InputComponent.tsx';
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,11 @@ export function withQueryClientProvider(component) {
             {component}
         </QueryClientProvider>
     );
+}
+
+export function withRouter(component) {
+    const route = <Route path="/*" element={component} key="key" />;
+    return <BrowserRouter routes={[route]} />;
 }
 
 export function renderWithStore(store, component, node = null) {

@@ -125,13 +125,19 @@ class BudgetProcessViewSet(ModelViewSet, CSVExportMixin):
         """
         Returns all available rounds that can be used to create a new `BudgetProcess`.
         """
-        user_campaigns = Campaign.objects.filter_for_user(self.request.user).filter(country__isnull=False)
+        user_campaigns = Campaign.polio_objects.filter_for_user(self.request.user).filter(country__isnull=False)
         available_rounds = (
             Round.objects.filter(budget_process__isnull=True, campaign__in=user_campaigns)
             .select_related("campaign__country")
             .order_by("campaign__country__name", "campaign__obr_name", "number")
             .only(
-                "id", "number", "campaign_id", "campaign__obr_name", "campaign__country_id", "campaign__country__name"
+                "id",
+                "number",
+                "campaign_id",
+                "campaign__obr_name",
+                "campaign__country_id",
+                "campaign__country__name",
+                "target_population",
             )
         )
         return Response(available_rounds.as_ui_dropdown_data(), status=status.HTTP_200_OK)
@@ -153,7 +159,13 @@ class BudgetProcessViewSet(ModelViewSet, CSVExportMixin):
             .filter(Q(budget_process_id=budget_process_id) | Q(budget_process__isnull=True))
             .order_by("number")
             .only(
-                "id", "number", "campaign_id", "campaign__obr_name", "campaign__country_id", "campaign__country__name"
+                "id",
+                "number",
+                "campaign_id",
+                "campaign__obr_name",
+                "campaign__country_id",
+                "campaign__country__name",
+                "target_population",
             )
         )
         return Response(available_rounds.as_ui_dropdown_data()["rounds"], status=status.HTTP_200_OK)

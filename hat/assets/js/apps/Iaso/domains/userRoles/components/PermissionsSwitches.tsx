@@ -37,7 +37,7 @@ export const PermissionsSwitches: React.FunctionComponent<Props> = ({
     const classes = useStyles();
     const { data, isLoading } = useSnackQuery<{ permissions: Permission[] }>(
         ['permissions'],
-        () => getRequest('/api/permissions/'),
+        () => getRequest('/api/permissions/grouped_permissions/'),
         MESSAGES.fetchPermissionsError,
     );
 
@@ -85,60 +85,70 @@ export const PermissionsSwitches: React.FunctionComponent<Props> = ({
         }
         return '';
     };
+
     const permissions = useMemo(
         () => data?.permissions ?? [],
         [data?.permissions],
     );
 
+    const DisplayPermissions = ({ group_permissions }) => {
+        return group_permissions
+            .sort((a, b) =>
+                getPermissionLabel(a.codename).localeCompare(
+                    getPermissionLabel(b.codename),
+                    undefined,
+                    {
+                        sensitivity: 'accent',
+                    },
+                ),
+            )
+            .map(p => (
+                <Grid container direction="row" spacing={2} key={p.id}>
+                    <Grid item xs={8}>
+                        <div>
+                            <FormControlLabel
+                                control={
+                                    <Switch
+                                        className="permission-checkbox"
+                                        id={`permission-checkbox-${p.codename}`}
+                                        checked={Boolean(
+                                            userRolePermissions.find(
+                                                up =>
+                                                    up.codename === p.codename,
+                                            ),
+                                        )}
+                                        onChange={e =>
+                                            setPermissions(p, e.target.checked)
+                                        }
+                                        name={p.codename}
+                                        color="primary"
+                                    />
+                                }
+                                label={getPermissionLabel(p.codename)}
+                            />
+                        </div>
+                    </Grid>
+                    <Grid item xs={2}>
+                        {getPermissionToolTip(p.codename)}
+                    </Grid>
+                </Grid>
+            ));
+    };
+
     return (
         <Box className={classes.container}>
             {isLoading && <LoadingSpinner />}
 
-            {permissions
-                .sort((a, b) =>
-                    getPermissionLabel(a.codename).localeCompare(
-                        getPermissionLabel(b.codename),
-                        undefined,
-                        {
-                            sensitivity: 'accent',
-                        },
-                    ),
-                )
-                .map(p => (
-                    <Grid container direction="row" spacing={2} key={p.id}>
-                        <Grid item xs={8}>
-                            <div>
-                                <FormControlLabel
-                                    control={
-                                        <Switch
-                                            className="permission-checkbox"
-                                            id={`permission-checkbox-${p.codename}`}
-                                            checked={Boolean(
-                                                userRolePermissions.find(
-                                                    up =>
-                                                        up.codename ===
-                                                        p.codename,
-                                                ),
-                                            )}
-                                            onChange={e =>
-                                                setPermissions(
-                                                    p,
-                                                    e.target.checked,
-                                                )
-                                            }
-                                            name={p.codename}
-                                            color="primary"
-                                        />
-                                    }
-                                    label={getPermissionLabel(p.codename)}
-                                />
-                            </div>
-                        </Grid>
-                        <Grid item xs={2}>
-                            {getPermissionToolTip(p.codename)}
-                        </Grid>
-                    </Grid>
-                ))}
+            {Object.keys(permissions).map(group => {
+                return (
+                    <div key={group}>
+                        <strong style={{ margin: '10px' }}>{group}</strong>
+                        <DisplayPermissions
+                            group_permissions={permissions[group]}
+                        />
+                    </div>
+                );
+            })}
         </Box>
     );
 };

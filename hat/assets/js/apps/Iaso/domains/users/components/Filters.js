@@ -8,7 +8,7 @@ import SearchIcon from '@mui/icons-material/Search';
 
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 
-import InputComponent from 'Iaso/components/forms/InputComponent';
+import InputComponent from 'Iaso/components/forms/InputComponent.tsx';
 import { redirectTo } from '../../../routing/actions.ts';
 import MESSAGES from '../messages';
 import { useGetPermissionsDropDown } from '../hooks/useGetPermissionsDropdown.ts';
@@ -19,7 +19,7 @@ import { stringToBoolean } from '../../../utils/dataManipulation.ts';
 import { useGetUserRolesDropDown } from '../hooks/useGetUserRolesDropDown.ts';
 
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
-import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
+import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams.ts';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

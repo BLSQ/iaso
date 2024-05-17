@@ -9,7 +9,8 @@ type Row = {
 };
 
 export const useGetUserPermissions = (
-    allPermissions: Permission[],
+    // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+    allPermissions: any,
     userPermissions: string[],
 ): any => {
     const { formatMessage } = useSafeIntl();
@@ -21,20 +22,25 @@ export const useGetUserPermissions = (
         },
         [formatMessage],
     );
+
     const sortedPermissions = useGetSortedPermissions({
         allPermissions,
         permissionLabel,
     });
+
     return useMemo(() => {
-        const data: Row[] = [];
+        const data: any = {};
 
-        sortedPermissions.forEach(p => {
-            const row: any = {};
-            row.permission = permissionLabel(p.codename);
-            row.userPermissions = userPermissions;
-            row.permissionCodeName = p.codename;
+        Object.keys(sortedPermissions).forEach(group => {
+            data[group] = [];
+            sortedPermissions[group].forEach(p => {
+                const row: any = {};
+                row.permission = permissionLabel(p.codename);
+                row.userPermissions = userPermissions;
+                row.permissionCodeName = p.codename;
 
-            data.push(row);
+                data[group].push(row);
+            });
         });
         return data;
     }, [permissionLabel, sortedPermissions, userPermissions]);
@@ -49,18 +55,20 @@ type SortProps = {
 const useGetSortedPermissions = ({
     allPermissions,
     permissionLabel,
-}: SortProps): Permission[] => {
+}: SortProps): any => {
     return useMemo(() => {
-        let sortedPermissions: Permission[] = [];
-        sortedPermissions = allPermissions.sort((a, b) =>
-            permissionLabel(a.codename).localeCompare(
-                permissionLabel(b.codename),
-                undefined,
-                {
-                    sensitivity: 'accent',
-                },
-            ),
-        );
+        const sortedPermissions = {};
+        Object.keys(allPermissions).forEach(group => {
+            sortedPermissions[group] = allPermissions[group].sort((a, b) =>
+                permissionLabel(a.codename).localeCompare(
+                    permissionLabel(b.codename),
+                    undefined,
+                    {
+                        sensitivity: 'accent',
+                    },
+                ),
+            );
+        });
         return sortedPermissions;
     }, [allPermissions, permissionLabel]);
 };

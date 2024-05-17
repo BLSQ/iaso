@@ -247,8 +247,26 @@ describe('Forms', () => {
                 '/order/instance_updated_at/all/true/limit/50/',
                 'forms/empty.json',
             );
-            // TODO:actually check params
-            cy.wait('@getForms');
+            cy.intercept(
+                {
+                    method: 'GET',
+                    pathname: '/api/forms/**',
+                    times: 2,
+                    query: {
+                        order: 'instance_updated_at',
+                        all: 'true',
+                        limit: '50',
+                    },
+                },
+                req => {
+                    req.on('response', response => {
+                        if (response.statusMessage === 'OK') {
+                            response.send({ fixture: 'forms/empty.json' });
+                        }
+                    });
+                },
+            ).as('getFormsWithParams');
+            cy.wait('@getFormsWithParams');
         });
         it('should be called with search params', () => {
             goToPage(superUser, null, 'forms/list.json');

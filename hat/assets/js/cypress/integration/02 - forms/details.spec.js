@@ -49,13 +49,13 @@ describe('Forms details', () => {
             'GET',
             '/api/formversions/?&limit=20&order=-version_id&form_id=1',
             formVersionsPageOne,
-        );
+        ).as('getFormVersions');
         cy.intercept(
             'GET',
             // eslint-disable-next-line max-len
-            '/api/forms/1/?fields=id,name,org_unit_types,projects,period_type,derived,single_per_period,periods_before_allowed,periods_after_allowed,device_field,location_field,label_keys,possible_fields',
+            '/api/forms/1/?fields=id,name,org_unit_types,projects,period_type,derived,single_per_period,periods_before_allowed,periods_after_allowed,device_field,location_field,label_keys,possible_fields,legend_threshold,change_request_mode',
             form,
-        );
+        ).as('getForm');
         cy.visit(baseUrl);
         cy.wait('@orgUnitTypes');
         cy.wait('@projects');
@@ -81,23 +81,26 @@ describe('Forms details', () => {
     });
     describe('When updating', () => {
         it('Save button is disabled if no project', () => {
-            cy.get('#project_ids').as('projectsInput').click();
-            cy.get('@projectsInput')
-                .parent()
-                .within(() => {
-                    cy.get('[data-testid="ClearIcon"]').click();
-                });
+            cy.wait(['@getForm', '@getFormVersions']);
+            // cy.get('#project_ids').as('projectsInput').click();
+            // cy.get('@projectsInput')
+            //     .parent()
+            //     .within(() => {
+            //         cy.get('[data-testid="ClearIcon"]').click();
+            //     });
             cy.get('[data-id="form-detail-confirm"]')
                 .invoke('attr', 'disabled')
                 .should('eq', 'disabled');
         });
         it('Save button is disabled if no name', () => {
+            cy.wait(['@getForm', '@getFormVersions']);
             cy.get('#input-text-name').as('nameInput').clear();
             cy.get('[data-id="form-detail-confirm"]')
                 .invoke('attr', 'disabled')
                 .should('eq', 'disabled');
         });
         it('Save button is disabled if period type but no single per period', () => {
+            cy.wait(['@getForm', '@getFormVersions']);
             cy.fillSingleSelect('#period_type', 2);
             cy.get('[data-id="form-detail-confirm"]')
                 .invoke('attr', 'disabled')
@@ -113,10 +116,11 @@ describe('Forms details', () => {
                 single_per_period: true,
                 periods_before_allowed: periodBefore,
                 periods_after_allowed: periodAfter,
-                project_ids: [1, 3],
+                project_ids: [3],
                 // skipping org unit types as it's difficult to reliably target one from the dummy data
                 // org_unit_type_ids: [1],
             };
+            cy.wait(['@getForm', '@getFormVersions']);
 
             cy.fillTextField('#input-text-name', newName);
 

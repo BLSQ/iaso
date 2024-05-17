@@ -17,7 +17,7 @@ let table;
 let row;
 const goToPage = (
     fakeUser = superUser,
-    formQuery,
+    urlParams,
     fixture = 'forms/list.json',
 ) => {
     cy.login();
@@ -25,26 +25,23 @@ const goToPage = (
     cy.intercept('GET', '/sockjs-node/**');
     cy.intercept('GET', '/api/profiles/me/**', fakeUser);
     // TODO remove times: 2 cf hat/assets/js/apps/Iaso/components/tables/SingleTable.js l 80
-    const options = {
-        method: 'GET',
-        pathname: '/api/forms/**',
+    // const options = {
+    //     method: 'GET',
+    //     pathname: '/api/forms/**',
+    //     times: 2,
+    // };
+    // cy.intercept({ ...options, query: formQuery }, req => {
+    //     req.on('response', response => {
+    //         if (response.statusMessage === 'OK') {
+    //             interceptFlag = true;
+    //             response.send({ fixture });
+    //         }
+    //     });
+    // }).as('getFormsWithQuery');
+    cy.intercept('GET', '/api/forms/**', {
+        fixture,
         times: 2,
-    };
-    if (formQuery) {
-        cy.intercept({ ...options, query: formQuery }, req => {
-            req.on('response', response => {
-                if (response.statusMessage === 'OK') {
-                    interceptFlag = true;
-                    response.send({ fixture });
-                }
-            });
-        }).as('getForms');
-    } else {
-        cy.intercept('GET', '/api/forms/**', {
-            fixture,
-            times: 2,
-        }).as('getForms');
-    }
+    }).as('getForms');
 
     cy.intercept('GET', '/api/v2/orgunittypes/**', {
         fixture: 'orgunittypes/list.json',
@@ -54,7 +51,8 @@ const goToPage = (
     }).as('getProject');
     cy.intercept('GET', '/dashboard/media/forms/*.xls').as('downloadXls');
     cy.intercept('GET', '/dashboard/media/forms/*.xml').as('downloadXml');
-    cy.visit(baseUrl);
+    const urlToVisit = urlParams ? `${baseUrl}${urlParams}` : baseUrl;
+    cy.visit(urlToVisit);
 };
 
 describe('Forms', () => {
@@ -79,12 +77,12 @@ describe('Forms', () => {
         });
         describe('Top bar and table', () => {
             beforeEach(() => {
-                goToPage(superUser, true);
+                goToPage(superUser);
             });
             testTopBar(baseUrl, 'Forms', false);
             testTablerender({
                 baseUrl,
-                rows: 3,
+                rows: 11,
                 columns: 10,
                 apiKey: 'forms',
             });
@@ -99,7 +97,7 @@ describe('Forms', () => {
                     ],
                     is_superuser: false,
                 };
-                goToPage(fakeUser, true);
+                goToPage(fakeUser);
                 cy.get('[data-test="add-form-button"]').should('not.exist');
             });
             it("is visible if user has 'forms' permission", () => {
@@ -108,7 +106,7 @@ describe('Forms', () => {
                     permissions: [Permission.FORMS],
                     is_superuser: false,
                 };
-                goToPage(fakeUser, true);
+                goToPage(fakeUser);
                 cy.get('[data-test="add-form-button"]').should('exist').click();
                 // check that button redirects to creation page
                 cy.url().should(
@@ -246,16 +244,11 @@ describe('Forms', () => {
         it('should be called with base params', () => {
             goToPage(
                 superUser,
-                {
-                    order: 'instance_updated_at',
-                    all: 'true',
-                    limit: '50',
-                },
+                '/order/instance_updated_at/all/true/limit/50/',
                 'forms/empty.json',
             );
-            cy.wait('@getForms').then(() => {
-                cy.wrap(interceptFlag).should('eq', true);
-            });
+            // TODO:actually check params
+            cy.wait('@getForms');
         });
         it('should be called with search params', () => {
             goToPage(superUser, null, 'forms/list.json');

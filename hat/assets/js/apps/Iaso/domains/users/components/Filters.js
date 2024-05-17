@@ -3,7 +3,11 @@ import PropTypes from 'prop-types';
 import { Grid, Button, Box, useTheme, useMediaQuery } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import SearchIcon from '@mui/icons-material/Search';
-import { commonStyles, useSafeIntl, useRedirectTo } from 'bluesquare-components';
+import {
+    commonStyles,
+    useSafeIntl,
+    useRedirectTo,
+} from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent.tsx';
 import { stringToBoolean } from '../../../utils/dataManipulation.ts';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
@@ -173,7 +177,7 @@ const Filters = ({ baseUrl, params }) => {
                             onConfirm={orgUnit =>
                                 handleChange(
                                     'location',
-                                    orgUnit ? [orgUnit.id] : undefined,
+                                    orgUnit ? orgUnit.id : undefined,
                                 )
                             }
                             initialSelection={initialOrgUnit}

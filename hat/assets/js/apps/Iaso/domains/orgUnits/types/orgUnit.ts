@@ -45,6 +45,10 @@ export type ParentOrgUnit = {
     org_unit_type_name: string;
     org_unit_type_id: number;
     parent: ParentOrgUnit;
+    parent_name?: string;
+    source?: string;
+    source_id?: number;
+    validation_status?: OrgUnitStatus;
 };
 
 export type OrgUnit = {

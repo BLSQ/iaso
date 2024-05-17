@@ -9,6 +9,8 @@ import { testPagination } from '../../../support/testPagination';
 import { testTableSort } from '../../../support/testTableSort';
 import { testPageFilters } from '../../../support/testPageFilters';
 import userRoles from '../../../fixtures/userRoles/list.json';
+import orgUnits from '../../../fixtures/orgunits/list.json';
+import orgUnitTypes from '../../../fixtures/orgunittypes/list.json';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 const baseUrl = `${siteBaseUrl}/dashboard/orgunits/changeRequest`;
@@ -37,13 +39,13 @@ const newFilters = {
     },
     parent_id: {
         value: 2,
-        urlValue: '29681',
+        urlValue: orgUnits.orgunits[2].id,
         selector: '#ou-tree-input',
         type: 'tree',
     },
     org_unit_type_id: {
         value: [0],
-        urlValue: '47',
+        urlValue: orgUnitTypes.orgUnitTypes[0].id,
         selector: '#org_unit_type_id',
         type: 'multi',
         clear: false,
@@ -106,9 +108,7 @@ const goToPage = (
     cy.intercept('GET', '/api/groups/dropdown/**', {
         fixture: `groups/dropdownlist.json`,
     });
-    cy.intercept('GET', '/api/v2/orgunittypes/**', {
-        fixture: 'orgunittypes/list.json',
-    });
+    cy.intercept('GET', '/api/v2/orgunittypes/**', orgUnitTypes);
 
     cy.intercept('GET', '/api/forms/**', {
         fixture: 'forms/list.json',

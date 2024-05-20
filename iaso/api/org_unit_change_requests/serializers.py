@@ -270,6 +270,7 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrgUnitChangeRequest
         fields = [
+            "id",
             "uuid",
             "org_unit_id",
             "new_parent_id",

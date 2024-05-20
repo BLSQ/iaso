@@ -46,6 +46,7 @@ from plugins.polio.tasks.api.refresh_lqas_data import RefreshLQASDataViewset
 router = routers.SimpleRouter()
 router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
+router.register(r"polio/campaigns_subactivities", SubActivityViewSet, basename="campaigns_subactivities")
 router.register(r"polio/budget", BudgetProcessViewSet, basename="BudgetProcess")
 router.register(r"polio/budgetsteps", BudgetStepViewSet, basename="BudgetStep")
 router.register(r"polio/workflow", WorkflowViewSet, basename="BudgetWorkflow")
@@ -106,5 +107,3 @@ router.register(
     SpreadSheetImportViewSet,
     basename="dashboard_preparedness_sheets",
 )
-
-router.register(r"polio/campaigns/subactivities", SubActivityViewSet, basename="campaigns_subactivities")

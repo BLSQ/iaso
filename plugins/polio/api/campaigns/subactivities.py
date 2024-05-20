@@ -1,83 +1,123 @@
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.response import Response
 
-from iaso.models import OrgUnit
-from plugins.polio.models import Campaign, SubActivity
 from iaso.api.common import ModelViewSet
+from iaso.models import Group, OrgUnit
+from plugins.polio.api.shared_serializers import GroupSerializer
+from plugins.polio.models import Campaign, Round, SubActivity, SubActivityScope
 
 
-class SubActivitySerializer(serializers.ModelSerializer):
+class SubActivityScopeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubActivityScope
+        fields = ["group", "vaccine"]
+
+    group = GroupSerializer(required=False)
+
+
+class SubActivityCreateUpdateSerializer(serializers.ModelSerializer):
+    round_number = serializers.IntegerField(write_only=True, required=False)
+    campaign = serializers.CharField(write_only=True, required=False)
+    scopes = SubActivityScopeSerializer(many=True, required=False)
+
     class Meta:
         model = SubActivity
-        fields = ["id", "round", "name", "start_date", "end_date", "org_units"]
+        fields = ["id", "round_number", "campaign", "name", "start_date", "end_date", "scopes"]
+
+    def create(self, validated_data):
+        round_number = validated_data.pop("round_number", None)
+        campaign = validated_data.pop("campaign", None)
+        scopes_data = validated_data.pop("scopes", [])
+
+        if round_number is not None and campaign is not None:
+            the_round = get_object_or_404(Round, campaign__obr_name=campaign, number=round_number)
+            validated_data["round"] = the_round
+
+            if self.context["request"].user.iaso_profile.account != the_round.campaign.account:
+                raise serializers.ValidationError(
+                    "You do not have permission to create a SubActivity for this Campaign."
+                )
+
+        else:
+            raise serializers.ValidationError("Both round_number and campaign must be provided.")
+
+        sub_activity = super().create(validated_data)
+
+        for scope_data in scopes_data:
+            group_data = scope_data.pop("group")
+            group_data["source_version"] = self.context["request"].user.iaso_profile.account.default_version
+            group_org_units = group_data.pop("org_units", [])
+            group = Group.objects.create(**group_data)
+            group.org_units.set(group_org_units)
+            SubActivityScope.objects.create(subactivity=sub_activity, group=group, **scope_data)
+
+        return sub_activity
+
+    def update(self, instance, validated_data):
+        scopes_data = validated_data.pop("scopes", None)
+
+        if scopes_data is not None:
+            # Get the groups associated with the current scopes
+            groups_to_check = [scope.group for scope in instance.scopes.all()]
+
+            # Delete the scopes
+            instance.scopes.all().delete()
+
+            # Check if the groups are used by any other SubActivityScope
+            for group in groups_to_check:
+                if not SubActivityScope.objects.filter(group=group).exists():
+                    group.delete()
+
+            for scope_data in scopes_data:
+                group_data = scope_data.pop("group")
+                group_data["source_version"] = self.context["request"].user.iaso_profile.account.default_version
+                group_org_units = group_data.pop("org_units", [])
+                group = Group.objects.create(**group_data)
+                group.org_units.set(group_org_units)
+                SubActivityScope.objects.create(subactivity=instance, group=group, **scope_data)
+
+        return super().update(instance, validated_data)
+
+
+class SubActivityListDetailSerializer(serializers.ModelSerializer):
+    round_id = serializers.IntegerField(source="round.id", read_only=True)
+    scopes = SubActivityScopeSerializer(many=True)
+
+    class Meta:
+        model = SubActivity
+        fields = ["id", "round_id", "name", "start_date", "end_date", "scopes"]
 
 
 class SubActivityViewSet(ModelViewSet):
-    serializer_class = SubActivitySerializer
     permission_classes = [permissions.IsAuthenticated]
+    http_method_names = ["get", "head", "options", "post", "delete", "put"]
+    model = SubActivity
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = {"round__campaign__obr_name": ["exact"], "round__id": ["exact"]}
+
+    def get_serializer_class(self):
+        if self.action in ["create", "update", "partial_update"]:
+            return SubActivityCreateUpdateSerializer
+        return SubActivityListDetailSerializer
 
     def get_queryset(self):
         return SubActivity.objects.filter(round__campaign__account=self.request.user.iaso_profile.account)
 
     def check_object_permissions(self, request, obj):
         super().check_object_permissions(request, obj)
-        if request.user.account != obj.round.campaign.account:
-            self.permission_denied(request)
+        if request.user.iaso_profile.account != obj.round.campaign.account:
+            self.permission_denied(request, message="Cannot access campaign")
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    # def perform_update(self, serializer):
+    #     round = serializer.validated_data["round"]
+    #     campaign = get_object_or_404(Campaign, rounds__in=[round])
+    #     if self.request.iaso_profile.user.account != campaign.account:
+    #         raise serializers.ValidationError("You do not have permission to update a SubActivity for this Campaign.")
+    #     serializer.save()
 
-    def perform_create(self, serializer):
-        round = serializer.validated_data["round"]
-        campaign = get_object_or_404(Campaign, rounds__in=[round])
-        if self.request.user.account != campaign.account:
-            raise serializers.ValidationError("You do not have permission to create a SubActivity for this Campaign.")
-        org_units = serializer.validated_data["org_units"]
-        user_org_units = OrgUnit.objects.filter_for_user_and_app_id(self.request.user)
-        for org_unit in org_units:
-            if org_unit not in user_org_units:
-                raise serializers.ValidationError(
-                    "You do not have permission to create a SubActivity for this OrgUnit."
-                )
-        serializer.save()
-
-    def update(self, request, *args, **kwargs):
-        partial = kwargs.pop("partial", False)
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-        return Response(serializer.data)
-
-    def perform_update(self, serializer):
-        round = serializer.validated_data["round"]
-        campaign = get_object_or_404(Campaign, rounds__in=[round])
-        if self.request.user.account != campaign.account:
-            raise serializers.ValidationError("You do not have permission to update a SubActivity for this Campaign.")
-        org_units = serializer.validated_data["org_units"]
-        user_org_units = OrgUnit.objects.filter_for_user_and_app_id(self.request.user)
-        for org_unit in org_units:
-            if org_unit not in user_org_units:
-                raise serializers.ValidationError(
-                    "You do not have permission to update a SubActivity for this OrgUnit."
-                )
-        serializer.save()
-
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        self.perform_destroy(instance)
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-    def perform_destroy(self, instance):
-        if self.request.user.account != instance.round.campaign.account:
-            raise serializers.ValidationError("You do not have permission to delete this SubActivity.")
-        user_org_units = OrgUnit.objects.filter_for_user_and_app_id(self.request.user)
-        for org_unit in instance.org_units.all():
-            if org_unit not in user_org_units:
-                raise serializers.ValidationError("You do not have permission to delete this SubActivity.")
-        instance.delete()
+    # def perform_destroy(self, instance):
+    #     if self.request.user.account != instance.round.campaign.account:
+    #         raise serializers.ValidationError("You do not have permission to delete this SubActivity.")
+    #     instance.delete()

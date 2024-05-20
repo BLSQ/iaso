@@ -230,18 +230,30 @@ class RoundQuerySet(models.QuerySet):
         data["countries"] = data["countries"].values()
         data["campaigns"] = data["campaigns"].values()
         return data
-    
+
+
+class SubActivityScope(models.Model):
+    "Scope (selection of orgunit) for a SubActivity and vaccines"
+
+    group = models.OneToOneField(
+        Group, on_delete=models.CASCADE, related_name="subactivityScope", default=make_group_round_scope
+    )
+    subactivity = models.ForeignKey("SubActivity", on_delete=models.CASCADE, related_name="scopes")
+
+    vaccine = models.CharField(max_length=5, choices=VACCINES, blank=True)
+
 
 class SubActivity(models.Model):
     round = models.ForeignKey("Round", related_name="sub_activities", on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
-    org_units = models.ManyToManyField(OrgUnit, related_name="sub_activities")
+
+    class Meta:
+        verbose_name_plural = "subactivities"
 
     def __str__(self):
         return self.name
-
 
 
 class Round(models.Model):

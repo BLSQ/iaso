@@ -899,12 +899,12 @@ class Instance(models.Model):
         User, on_delete=models.PROTECT, blank=True, null=True, related_name="last_modified_by"
     )
     updated_at = models.DateTimeField(auto_now=True)
-    uuid = models.TextField(null=True, blank=True)
+    uuid = models.TextField(null=True, blank=True, db_index=True)
     export_id = models.TextField(null=True, blank=True, default=generate_id_for_dhis_2)
     correlation_id = models.BigIntegerField(null=True, blank=True)
     name = models.TextField(null=True, blank=True)  # form.name
     file = models.FileField(upload_to=UPLOADED_TO, null=True, blank=True)
-    file_name = models.TextField(null=True, blank=True)
+    file_name = models.TextField(null=True, blank=True, db_index=True)
     location = PointField(null=True, blank=True, dim=3, srid=4326)
     org_unit = models.ForeignKey("OrgUnit", on_delete=models.DO_NOTHING, null=True, blank=True)
     form = models.ForeignKey(

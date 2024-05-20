@@ -1,4 +1,5 @@
 import { getCoordinates } from './utils';
+import orgUnits from '../fixtures/orgunits/list.json';
 
 // ***********************************************
 // This example commands.js shows you how to
@@ -93,6 +94,11 @@ Cypress.Commands.add(
  * @param {number} newOuIndex - index of the new selected ou
  */
 Cypress.Commands.add('fillTreeView', (id, newOuIndex, clear = true) => {
+    cy.intercept(
+        'GET',
+        '/api/orgunits/treesearch/?&rootsForUser=true&defaultVersion=true&validation_status=VALID&ignoreEmptyNames=true',
+        orgUnits,
+    ).as('getTreeview');
     cy.get(id).as('tree');
     if (clear) {
         cy.get('@tree').find('.clear-tree button').as('clearButton');

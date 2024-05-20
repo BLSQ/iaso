@@ -14,6 +14,7 @@ import { userHasPermission } from './utils';
 
 import * as Permission from '../../utils/permissions.ts';
 import PermissionTooltip from './components/PermissionTooltip.tsx';
+import PERMISSIONS_GROUPS_MESSAGES from './permissionsGroupsMessages.ts';
 
 export const usersTableColumns = ({
     formatMessage,
@@ -111,6 +112,20 @@ export const useUserPermissionColumns = ({ setPermissions, currentUser }) => {
                 sortable: false,
                 width: 250,
                 align: 'left',
+                Cell: settings => {
+                    if (settings.row.original.group) {
+                        return (
+                            <strong>
+                                {formatMessage(
+                                    PERMISSIONS_GROUPS_MESSAGES[
+                                        settings.row.original.permission
+                                    ],
+                                )}
+                            </strong>
+                        );
+                    }
+                    return settings.row.original.permission;
+                },
             },
             {
                 Header: formatMessage(MESSAGES.userPermissions),

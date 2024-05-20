@@ -10,6 +10,7 @@ import { useSnackQuery } from '../../../libs/apiHooks';
 import { getRequest } from '../../../libs/Api';
 import { Permission } from '../types/userRoles';
 import PERMISSIONS_MESSAGES from '../../users/permissionsMessages';
+import PERMISSIONS_GROUPS_MESSAGES from '../../users/permissionsGroupsMessages';
 
 const styles = theme => ({
     container: {
@@ -61,6 +62,12 @@ export const PermissionsSwitches: React.FunctionComponent<Props> = ({
         return PERMISSIONS_MESSAGES[permissionCodeName]
             ? formatMessage(PERMISSIONS_MESSAGES[permissionCodeName])
             : permissionCodeName;
+    };
+
+    const getGroupPermissionLabel = groupName => {
+        return PERMISSIONS_GROUPS_MESSAGES[groupName]
+            ? formatMessage(PERMISSIONS_GROUPS_MESSAGES[groupName])
+            : groupName;
     };
 
     const getPermissionToolTip = permissionCodeName => {
@@ -142,7 +149,9 @@ export const PermissionsSwitches: React.FunctionComponent<Props> = ({
             {Object.keys(permissions).map(group => {
                 return (
                     <div key={group}>
-                        <strong style={{ margin: '10px' }}>{group}</strong>
+                        <strong style={{ marginLeft: '47px' }}>
+                            {getGroupPermissionLabel(group)}
+                        </strong>
                         <DisplayPermissions
                             group_permissions={permissions[group]}
                         />

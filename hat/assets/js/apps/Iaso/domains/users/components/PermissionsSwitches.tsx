@@ -72,7 +72,7 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
     const classes = useStyles();
     const { data, isLoading } = useSnackQuery<PermissionResult>({
         queryKey: ['grouped_permissions'],
-        queryFn: () => getRequest('/api/permissions/grouped_permissions'),
+        queryFn: () => getRequest('/api/permissions/grouped_permissions/'),
         snackErrorMsg: MESSAGES.fetchPermissionsError,
         // Permission list is not displayed for superuser, no need to fetch it from server
         options: { enabled: !isSuperUser },
@@ -101,7 +101,10 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
 
     const userPermissions = currentUser.user_permissions.value;
     const { data: userRoles, isFetching } = useGetUserRolesDropDown();
-    const permissionsData = useGetUserPermissions([], userPermissions);
+    const permissionsData = useGetUserPermissions(
+        allPermissions,
+        userPermissions,
+    );
     // console.log(permissionsData);
     // This is a problem with the type definition of Column is bluesquare-components
     // @ts-ignore

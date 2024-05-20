@@ -118,28 +118,32 @@ export const useUserPermissionColumns = ({ setPermissions, currentUser }) => {
                 accessor: 'userPermission',
                 sortable: false,
                 Cell: settings => {
-                    return (
-                        <Switch
-                            className="permission-checkbox"
-                            id={`permission-checkbox-${settings.row.original.permissionCodeName}`}
-                            checked={Boolean(
-                                settings.row.original.userPermissions.find(
-                                    up =>
-                                        up ===
+                    if (!settings.row.original.group) {
+                        return (
+                            <Switch
+                                className="permission-checkbox"
+                                id={`permission-checkbox-${settings.row.original.permissionCodeName}`}
+                                checked={Boolean(
+                                    settings.row.original.userPermissions.find(
+                                        up =>
+                                            up ===
+                                            settings.row.original
+                                                .permissionCodeName,
+                                    ),
+                                )}
+                                onChange={e =>
+                                    setPermissions(
                                         settings.row.original
                                             .permissionCodeName,
-                                ),
-                            )}
-                            onChange={e =>
-                                setPermissions(
-                                    settings.row.original.permissionCodeName,
-                                    e.target.checked,
-                                )
-                            }
-                            name={settings.row.original.permissionCodeName}
-                            color="primary"
-                        />
-                    );
+                                        e.target.checked,
+                                    )
+                                }
+                                name={settings.row.original.permissionCodeName}
+                                color="primary"
+                            />
+                        );
+                    }
+                    return '';
                 },
             },
         ];
@@ -152,16 +156,19 @@ export const useUserPermissionColumns = ({ setPermissions, currentUser }) => {
                 sortable: false,
                 width: 50,
                 Cell: settings => {
-                    if (
-                        role.permissions.find(
-                            permission =>
-                                permission ===
-                                settings.row.original.permissionCodeName,
-                        )
-                    ) {
-                        return <CheckedIcon style={{ color: 'green' }} />;
+                    if (!settings.row.original.group) {
+                        if (
+                            role.permissions.find(
+                                permission =>
+                                    permission ===
+                                    settings.row.original.permissionCodeName,
+                            )
+                        ) {
+                            return <CheckedIcon style={{ color: 'green' }} />;
+                        }
+                        return <NotCheckedIcon color="disabled" />;
                     }
-                    return <NotCheckedIcon color="disabled" />;
+                    return '';
                 },
             });
         });

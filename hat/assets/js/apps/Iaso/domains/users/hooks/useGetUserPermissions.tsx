@@ -29,17 +29,20 @@ export const useGetUserPermissions = (
     });
 
     return useMemo(() => {
-        const data: any = {};
+        const data: Row[] = [];
 
         Object.keys(sortedPermissions).forEach(group => {
-            data[group] = [];
+            let row: any = {};
+            row.permission = group;
+            row.group = true;
+            data.push(row);
             sortedPermissions[group].forEach(p => {
-                const row: any = {};
+                row = {};
                 row.permission = permissionLabel(p.codename);
                 row.userPermissions = userPermissions;
                 row.permissionCodeName = p.codename;
 
-                data[group].push(row);
+                data.push(row);
             });
         });
         return data;

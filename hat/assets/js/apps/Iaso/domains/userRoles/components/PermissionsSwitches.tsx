@@ -36,7 +36,7 @@ export const PermissionsSwitches: React.FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const { data, isLoading } = useSnackQuery<{ permissions: Permission[] }>(
-        ['permissions'],
+        ['grouped_permissions'],
         () => getRequest('/api/permissions/grouped_permissions/'),
         MESSAGES.fetchPermissionsError,
     );

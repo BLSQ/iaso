@@ -1,12 +1,11 @@
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from rest_framework import permissions, serializers, status, viewsets
-from rest_framework.response import Response
+from rest_framework import permissions, serializers
 
 from iaso.api.common import ModelViewSet
-from iaso.models import Group, OrgUnit
+from iaso.models import Group
 from plugins.polio.api.shared_serializers import GroupSerializer
-from plugins.polio.models import Campaign, Round, SubActivity, SubActivityScope
+from plugins.polio.models import Round, SubActivity, SubActivityScope
 
 
 class SubActivityScopeSerializer(serializers.ModelSerializer):
@@ -109,15 +108,3 @@ class SubActivityViewSet(ModelViewSet):
         super().check_object_permissions(request, obj)
         if request.user.iaso_profile.account != obj.round.campaign.account:
             self.permission_denied(request, message="Cannot access campaign")
-
-    # def perform_update(self, serializer):
-    #     round = serializer.validated_data["round"]
-    #     campaign = get_object_or_404(Campaign, rounds__in=[round])
-    #     if self.request.iaso_profile.user.account != campaign.account:
-    #         raise serializers.ValidationError("You do not have permission to update a SubActivity for this Campaign.")
-    #     serializer.save()
-
-    # def perform_destroy(self, instance):
-    #     if self.request.user.account != instance.round.campaign.account:
-    #         raise serializers.ValidationError("You do not have permission to delete this SubActivity.")
-    #     instance.delete()

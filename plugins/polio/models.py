@@ -232,11 +232,15 @@ class RoundQuerySet(models.QuerySet):
         return data
 
 
+def make_group_subactivity_scope():
+    return Group.objects.create(name="hidden subactivityScope")
+
+
 class SubActivityScope(models.Model):
     "Scope (selection of orgunit) for a SubActivity and vaccines"
 
     group = models.OneToOneField(
-        Group, on_delete=models.CASCADE, related_name="subactivityScope", default=make_group_round_scope
+        Group, on_delete=models.CASCADE, related_name="subactivityScope", default=make_group_subactivity_scope
     )
     subactivity = models.ForeignKey("SubActivity", on_delete=models.CASCADE, related_name="scopes")
 

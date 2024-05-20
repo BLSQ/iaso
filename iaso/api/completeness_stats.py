@@ -261,7 +261,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
             # the requirements
             instance_qs = instance_qs.filter(period=period)
         if planning:
-            instance_qs = instance_qs.filter(planning_id=planning.id)
+            instance_qs = instance_qs.filter(planning=planning)
             form_qs = form_qs.filter(plannings=planning)
 
         # filter instance_qs on users related to selected teams

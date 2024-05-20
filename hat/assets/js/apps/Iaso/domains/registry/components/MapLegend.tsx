@@ -1,12 +1,12 @@
+import CheckIcon from '@mui/icons-material/Check';
+import { Box, Paper } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import React, {
-    FunctionComponent,
     Dispatch,
+    FunctionComponent,
     SetStateAction,
     useCallback,
 } from 'react';
-import { Paper, Box } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import CheckIcon from '@mui/icons-material/Check';
 
 import { Legend } from '../hooks/useGetLegendOptions';
 
@@ -64,6 +64,9 @@ export const MapLegend: FunctionComponent<Props> = ({
         [options, setOptions],
     );
 
+    if (!options || options.length === 0) {
+        return null;
+    }
     return (
         <Paper elevation={1} className={classes.root}>
             <Box p={2}>

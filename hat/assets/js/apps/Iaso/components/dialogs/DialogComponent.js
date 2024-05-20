@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
@@ -43,11 +43,12 @@ function DialogComponent({
     onOpen,
     id,
     dataTestId,
+    defaultOpen,
 }) {
     // we use the renderDialog flag in addition to the open flag to control whether to render the full dialog
     // content, or only the trigger (to avoid rendering multiple heavy contents in list)
-    const [open, setOpen] = useState(false);
-    const [renderDialog, setRenderDialog] = useState(false);
+    const [open, setOpen] = useState(defaultOpen);
+    const [renderDialog, setRenderDialog] = useState(defaultOpen);
     const openDialog = useCallback(() => {
         setOpen(true);
         onOpen();
@@ -105,6 +106,7 @@ DialogComponent.defaultProps = {
     id: undefined,
     dataTestId: '',
     children: null,
+    defaultOpen: false,
 };
 DialogComponent.propTypes = {
     classes: PropTypes.object.isRequired,
@@ -125,5 +127,6 @@ DialogComponent.propTypes = {
     onOpen: PropTypes.func,
     id: PropTypes.string,
     dataTestId: PropTypes.string,
+    defaultOpen: PropTypes.bool,
 };
 export default withStyles(styles)(DialogComponent);

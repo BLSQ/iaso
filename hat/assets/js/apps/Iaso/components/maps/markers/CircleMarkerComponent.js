@@ -9,6 +9,7 @@ const CircleMarkerComponent = props => {
     const {
         item,
         onClick,
+        onDblclick,
         PopupComponent,
         draggable,
         onDragend,
@@ -32,6 +33,7 @@ const CircleMarkerComponent = props => {
             eventHandlers={{
                 click: () => onClick(item),
                 dragend: e => onDragend(e.target),
+                dblclick: e => onDblclick(e, item),
             }}
             {...markerProps(item)}
             onContextmenu={event => {
@@ -54,6 +56,7 @@ CircleMarkerComponent.defaultProps = {
     TooltipComponent: undefined,
     tooltipProps: () => {},
     onContextmenu: () => {},
+    onDblclick: () => {},
 };
 
 CircleMarkerComponent.propTypes = {
@@ -67,6 +70,7 @@ CircleMarkerComponent.propTypes = {
     TooltipComponent: PropTypes.elementType,
     tooltipProps: PropTypes.func,
     onContextmenu: PropTypes.func,
+    onDblclick: PropTypes.func,
 };
 
 export default CircleMarkerComponent;

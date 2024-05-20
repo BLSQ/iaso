@@ -4,8 +4,8 @@ import PropTypes from 'prop-types';
 
 import { isValidCoordinate } from '../../../utils/map/mapUtils.ts';
 
-import MarkerComponent from './MarkerComponent';
 import CircleMarkerComponent from './CircleMarkerComponent';
+import MarkerComponent from './MarkerComponent';
 
 const MarkersListComponent = props => {
     const {
@@ -19,6 +19,7 @@ const MarkersListComponent = props => {
         isCircle,
         tooltipProps,
         onContextmenu,
+        onDblclick,
     } = props;
 
     return items.map(i => {
@@ -40,6 +41,7 @@ const MarkersListComponent = props => {
                         popupProps={popupProps}
                         markerProps={markerProps}
                         onContextmenu={onContextmenu}
+                        onDblclick={onDblclick}
                     />
                 )}
                 {isCircle && (
@@ -52,6 +54,7 @@ const MarkersListComponent = props => {
                         markerProps={markerProps}
                         tooltipProps={tooltipProps}
                         onContextmenu={onContextmenu}
+                        onDblclick={onDblclick}
                     />
                 )}
             </Fragment>
@@ -70,6 +73,7 @@ MarkersListComponent.defaultProps = {
     isCircle: false,
     onContextmenu: () => {},
     onMarkerClick: () => null,
+    onDblclick: () => {},
 };
 
 MarkersListComponent.propTypes = {
@@ -83,6 +87,7 @@ MarkersListComponent.propTypes = {
     markerProps: PropTypes.func,
     isCircle: PropTypes.bool,
     onContextmenu: PropTypes.func,
+    onDblclick: PropTypes.func,
 };
 
 export default MarkersListComponent;

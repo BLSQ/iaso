@@ -79,7 +79,7 @@ describe('Log in page', () => {
             selectLanguage('en');
         });
     });
-    describe.only('Happy flow', () => {
+    describe('Happy flow', () => {
         beforeEach(() => {
             cy.login();
             cy.visit(siteBaseUrl);

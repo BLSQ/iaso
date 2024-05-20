@@ -1,10 +1,10 @@
+import { Box, Grid, Tab, Tabs } from '@mui/material';
 import React, {
     FunctionComponent,
-    useState,
-    useMemo,
     useCallback,
+    useMemo,
+    useState,
 } from 'react';
-import { Box, Tabs, Tab, Grid } from '@mui/material';
 import { useDispatch } from 'react-redux';
 
 import { Column } from 'bluesquare-components';
@@ -17,21 +17,21 @@ import { MissingInstanceDialog } from './MissingInstanceDialog';
 
 import { redirectToReplace } from '../../../routing/actions';
 
-import { OrgunitType } from '../../orgUnits/types/orgunitTypes';
-import { OrgunitTypeRegistry } from '../types/orgunitTypes';
-import { RegistryDetailParams } from '../types';
 import { Form } from '../../forms/types/forms';
+import { OrgunitType } from '../../orgUnits/types/orgunitTypes';
+import { RegistryDetailParams } from '../types';
+import { OrgunitTypeRegistry } from '../types/orgunitTypes';
 
 import { useGetForms } from '../hooks/useGetForms';
 import { useGetInstanceApi, useGetInstances } from '../hooks/useGetInstances';
 
-import MESSAGES from '../messages';
 import { baseUrls } from '../../../constants/urls';
-import { defaultSorted, INSTANCE_METAS_FIELDS } from '../config';
-import { userHasPermission } from '../../users/utils';
-import { useCurrentUser } from '../../../utils/usersUtils';
-import { useGetEmptyInstanceOrgUnits } from '../hooks/useGetEmptyInstanceOrgUnits';
 import * as Permission from '../../../utils/permissions';
+import { useCurrentUser } from '../../../utils/usersUtils';
+import { userHasPermission } from '../../users/utils';
+import { defaultSorted, INSTANCE_METAS_FIELDS } from '../config';
+import { useGetEmptyInstanceOrgUnits } from '../hooks/useGetEmptyInstanceOrgUnits';
+import MESSAGES from '../messages';
 
 type Props = {
     isLoading: boolean;
@@ -60,7 +60,9 @@ export const Instances: FunctionComponent<Props> = ({
         return undefined;
     }, [subOrgUnitTypes, tab]);
 
-    const { data: formsList, isFetching: isFetchingForms } = useGetForms();
+    const { data: formsList, isFetching: isFetchingForms } = useGetForms({
+        orgUnitTypeIds: currentType?.id,
+    });
 
     const { url: apiUrl } = useGetInstanceApi(params, currentType?.id, 'VALID');
     const { data, isFetching: isFetchingList } = useGetInstances(
@@ -76,7 +78,7 @@ export const Instances: FunctionComponent<Props> = ({
     const handleFilterChange = useCallback(
         (key: string, value: number | string) => {
             dispatch(
-                redirectToReplace(baseUrls.registryDetail, {
+                redirectToReplace(baseUrls.registry, {
                     ...params,
                     [key]: value,
                 }),
@@ -87,12 +89,12 @@ export const Instances: FunctionComponent<Props> = ({
 
     const handleChangeTab = useCallback(
         (newType: OrgunitType) => {
-            dispatch(
-                redirectToReplace(baseUrls.registryDetail, {
-                    ...params,
-                    tab: newType.id,
-                }),
-            );
+            const newParams = {
+                ...params,
+                tab: `${newType.id}`,
+            };
+            delete newParams.formIds;
+            dispatch(redirectToReplace(baseUrls.registry, newParams));
         },
         [dispatch, params],
     );
@@ -149,7 +151,7 @@ export const Instances: FunctionComponent<Props> = ({
                                         setTableColumns={newCols =>
                                             setTableColumns(newCols)
                                         }
-                                        baseUrl={baseUrls.registryDetail}
+                                        baseUrl={baseUrls.registry}
                                         labelKeys={currentForm.label_keys || []}
                                         formDetails={currentForm}
                                         tableColumns={tableColumns}
@@ -211,7 +213,7 @@ export const Instances: FunctionComponent<Props> = ({
                         </Grid>
                         <TableWithDeepLink
                             marginTop={false}
-                            baseUrl={baseUrls.registryDetail}
+                            baseUrl={baseUrls.registry}
                             data={data?.instances ?? []}
                             pages={data?.pages ?? 1}
                             defaultSorted={defaultSorted}
@@ -220,10 +222,7 @@ export const Instances: FunctionComponent<Props> = ({
                             params={params}
                             onTableParamsChange={p =>
                                 dispatch(
-                                    redirectToReplace(
-                                        baseUrls.registryDetail,
-                                        p,
-                                    ),
+                                    redirectToReplace(baseUrls.registry, p),
                                 )
                             }
                             extraProps={{ loading: isFetchingList }}

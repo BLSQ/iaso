@@ -1,11 +1,8 @@
 import React, { FunctionComponent, useEffect, useRef, useState } from 'react';
 
 import {
-    // @ts-ignore
     FormControl,
-    // @ts-ignore
     commonStyles,
-    // @ts-ignores
     useSkipEffectOnMount,
 } from 'bluesquare-components';
 import classnames from 'classnames';
@@ -116,7 +113,7 @@ export const TextArea: FunctionComponent<Props> = ({
     return (
         <FormControl errors={errors}>
             <InputLabel
-                shrink={Boolean(textValue)}
+                shrink={Boolean(textValue) || focus}
                 className={classnames(
                     classes.inputLabel,
                     focus && classes.inputLabelFocus,
@@ -130,6 +127,7 @@ export const TextArea: FunctionComponent<Props> = ({
             </InputLabel>
             <textarea
                 onFocus={() => setFocus(true)}
+                onBlur={() => setFocus(false)}
                 className={classnames(
                     classes.textArea,
                     hasErrors && classes.errorArea,

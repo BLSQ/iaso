@@ -94,16 +94,16 @@ const CreateBudgetProcessModal: FunctionComponent<Props> = ({
                     <Box mb={2}>
                         <Divider />
                     </Box>
-                    <Grid container direction="row" item spacing={2}>
-                        <Grid item xs={6}>
-                            <Box mb={2}>
-                                <Field
-                                    label={formatMessage(MESSAGES.labelCountry)}
-                                    name="country"
-                                    component={SingleSelect}
-                                    options={dropdownsData?.countries || []}
-                                />
-                            </Box>
+                    <Grid container direction="row" spacing={2}>
+                        <Grid item xs={12} sm={6}>
+                            <Field
+                                label={formatMessage(MESSAGES.labelCountry)}
+                                name="country"
+                                component={SingleSelect}
+                                options={dropdownsData?.countries || []}
+                            />
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
                             <Field
                                 label={formatMessage(MESSAGES.labelCampaign)}
                                 name="campaign"
@@ -111,7 +111,7 @@ const CreateBudgetProcessModal: FunctionComponent<Props> = ({
                                 options={currentCampaignOptions}
                             />
                         </Grid>
-                        <Grid item xs={6}>
+                        <Grid item xs={12} sm={6}>
                             <Field
                                 label={formatMessage(MESSAGES.labelRound)}
                                 name="rounds"

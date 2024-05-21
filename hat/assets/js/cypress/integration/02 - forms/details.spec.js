@@ -82,12 +82,7 @@ describe('Forms details', () => {
     describe('When updating', () => {
         it('Save button is disabled if no project', () => {
             cy.wait(['@getForm', '@getFormVersions']);
-            // cy.get('#project_ids').as('projectsInput').click();
-            // cy.get('@projectsInput')
-            //     .parent()
-            //     .within(() => {
-            //         cy.get('[data-testid="ClearIcon"]').click();
-            //     });
+            cy.get('#project_ids').as('projectsInput').click();
             cy.get('[data-id="form-detail-confirm"]')
                 .invoke('attr', 'disabled')
                 .should('eq', 'disabled');
@@ -226,7 +221,6 @@ describe('Does not crash on API errors', () => {
         cy.intercept('GET', '/api/v2/orgunittypes/**', orgUnitTypes).as(
             'orgUnitTypes',
         );
-        // cy.intercept('GET', '/api/projects/**', projects).as('projects');
         // TODO parametrise form_id
         cy.intercept(
             'GET',

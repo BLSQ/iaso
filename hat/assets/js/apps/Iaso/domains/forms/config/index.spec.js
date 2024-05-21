@@ -1,16 +1,15 @@
 import { expect } from 'chai';
+import { IconButton } from 'bluesquare-components';
 import { formVersionsTableColumns } from '.';
-
 import formVersionsfixture from '../fixtures/formVersions.json';
-
 import { colOriginal } from '../../../../../test/utils';
 
 // let columns;
 let formVersionscolumns;
 const fakeFormVersion = formVersionsfixture.form_versions[0];
-// let wrapper;
-// let xlsButton;
-// let actionColumn;
+let wrapper;
+let xlsButton;
+let actionColumn;
 const setForceRefreshSpy = sinon.spy();
 
 describe('Forms config', () => {
@@ -41,16 +40,16 @@ describe('Forms config', () => {
             });
         });
         // Broken by react-router update, will be fixed in cypress
-        //     it('should open a tab on click on xls icon', () => {
-        //         actionColumn = formVersionscolumns[formVersionscolumns.length - 1];
-        //         wrapper = shallow(actionColumn.Cell(colOriginal(fakeFormVersion)));
-        //         xlsButton = wrapper.find(IconButton);
+        it.skip('should open a tab on click on xls icon', () => {
+            actionColumn = formVersionscolumns[formVersionscolumns.length - 1];
+            wrapper = shallow(actionColumn.Cell(colOriginal(fakeFormVersion)));
+            xlsButton = wrapper.find(IconButton);
 
-        //         expect(xlsButton).to.have.lengthOf(1);
-        //         const openStub = sinon.stub(window, 'open');
-        //         xlsButton.props().onClick();
-        //         expect(openStub).to.have.been.called;
-        //         sinon.restore();
-        //     });
+            expect(xlsButton).to.have.lengthOf(1);
+            const openStub = sinon.stub(window, 'open');
+            xlsButton.props().onClick();
+            expect(openStub).to.have.been.called;
+            sinon.restore();
+        });
     });
 });

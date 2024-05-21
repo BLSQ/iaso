@@ -25,19 +25,6 @@ const goToPage = (
     cy.intercept('GET', '/sockjs-node/**');
     cy.intercept('GET', '/api/profiles/me/**', fakeUser);
     // TODO remove times: 2 cf hat/assets/js/apps/Iaso/components/tables/SingleTable.js l 80
-    // const options = {
-    //     method: 'GET',
-    //     pathname: '/api/forms/**',
-    //     times: 2,
-    // };
-    // cy.intercept({ ...options, query: formQuery }, req => {
-    //     req.on('response', response => {
-    //         if (response.statusMessage === 'OK') {
-    //             interceptFlag = true;
-    //             response.send({ fixture });
-    //         }
-    //     });
-    // }).as('getFormsWithQuery');
     cy.intercept('GET', '/api/forms/**', {
         fixture,
         times: 2,

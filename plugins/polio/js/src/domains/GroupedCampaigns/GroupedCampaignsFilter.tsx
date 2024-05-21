@@ -46,9 +46,6 @@ export const GroupedCampaignsFilter: FunctionComponent<Props> = ({
                         <InputComponent
                             keyValue="search"
                             onChange={handleChange}
-                            // onChange={(key, value) => {
-                            //     setSearch(value);
-                            // }}
                             value={filters.search}
                             type="search"
                             label={MESSAGES.search}
@@ -60,9 +57,6 @@ export const GroupedCampaignsFilter: FunctionComponent<Props> = ({
                             <InputComponent
                                 keyValue="showOnlyDeleted"
                                 onChange={handleChange}
-                                // onChange={(key, value) => {
-                                //     setShowOnlyDeleted(value);
-                                // }}
                                 value={filters.showOnlyDeleted}
                                 type="checkbox"
                                 label={MESSAGES.showOnlyDeleted}

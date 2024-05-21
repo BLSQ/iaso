@@ -197,6 +197,7 @@ class OrgUnitChangeRequestRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrgUnitChangeRequest
         fields = [
+            "id",
             "uuid",
             "status",
             "created_by",

@@ -166,7 +166,7 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
                             onConfirm={orgUnit =>
                                 handleChange(
                                     'location',
-                                    orgUnit ? [orgUnit.id] : undefined,
+                                    orgUnit ? orgUnit.id : undefined,
                                 )
                             }
                             initialSelection={initialOrgUnit}

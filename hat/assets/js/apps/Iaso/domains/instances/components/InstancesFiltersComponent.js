@@ -366,7 +366,7 @@ const InstancesFiltersComponent = ({
                             onConfirm={orgUnit =>
                                 handleFormChange(
                                     'levels',
-                                    orgUnit ? [orgUnit.id] : undefined,
+                                    orgUnit ? orgUnit.id : undefined,
                                 )
                             }
                             initialSelection={initialOrgUnit}

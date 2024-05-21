@@ -7,8 +7,10 @@
  * @property {object} props.fixture       - fixture used
  * @property {object} props.defaultQuery - default api query params
  */
+
 export const testTableSort = props => {
-    const { colIndex, order, apiPath, fixture, defaultQuery } = props;
+    const { colIndex, order, apiPath, fixture, defaultQuery, refetchDefault } =
+        props;
     cy.get('table').as('table');
     let flag = false;
     const query = {
@@ -32,14 +34,17 @@ export const testTableSort = props => {
     ).as('getRequest');
     cy.get('@table').find('thead').find('th').eq(colIndex).as('col');
     cy.get('@col').click();
-    cy.wait('@getRequest').then(() => {
-        cy.wrap(flag).should('eq', true);
-        cy.url().should('contain', `order/${order}`);
-        if (order.charAt(0) !== '-') {
-            testTableSort({
-                ...props,
-                order: `-${props.order}`,
-            });
-        }
-    });
+    cy.url().should('contain', `order/${order}`);
+    // Some tables are optimized to cache query results, so when trying to sort by default order, there won't be a new query
+    if (order !== defaultQuery.order || refetchDefault) {
+        cy.wait('@getRequest').then(() => {
+            cy.wrap(flag).should('eq', true);
+            if (order.charAt(0) !== '-') {
+                testTableSort({
+                    ...props,
+                    order: `-${props.order}`,
+                });
+            }
+        });
+    }
 };

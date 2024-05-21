@@ -1273,6 +1273,7 @@
     "iaso.users.ouParentCheckbox": "Utilisateurs avec accès aux unités d'organisations parents",
     "iaso.users.password": "Mot de passe",
     "iaso.users.permissions": "Permissions",
+    "iaso.users.phoneNumber": "Numéro de téléphone",
     "iaso.users.removeLocations": "Retirer la(les) localisation(s)",
     "iaso.users.removeProjects": "Retirer du(des) projet(s)",
     "iaso.users.removeRoles": "Retirer le(s) rôle(s)",

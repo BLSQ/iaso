@@ -19,7 +19,7 @@ export const testPageFilters = (
                 break;
             }
             case 'multi': {
-                cy.fillMultiSelect(selector, value, clear !== false);
+                cy.fillMultiSelect(selector, value, clear ?? false);
                 break;
             }
             case 'tree': {

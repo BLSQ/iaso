@@ -187,7 +187,7 @@ describe('Duplicate entities list', () => {
         });
     });
 
-    describe.only('Api', () => {
+    describe('Api', () => {
         it('should be called with base params', () => {
             mockPage(superUser);
             interceptFlag = false;
@@ -201,16 +201,9 @@ describe('Duplicate entities list', () => {
             cy.visit(baseUrl);
             cy.wait('@getDuplicates').then(() => {
                 interceptFlag = false;
-
                 cy.intercept(
                     'GET',
-                    '/api/orgunits/treesearch/?&rootsForUser=true&defaultVersion=true&validation_status=VALID&ignoreEmptyNames=true',
-                    {
-                        fixture: 'orgunits/list.json',
-                    },
-                );
-                cy.intercept(
-                    'GET',
+                    // eslint-disable-next-line max-len
                     '/api/entityduplicates/?search=mario&algorithm=levenshtein&similarity=80&entity_type=7%2C3&org_unit=3&start_date=20-05-2010&end_date=25-05-2010&submitter=69&submitter_team=26&ignored=true&merged=true&fields=first_name%2Cmiddle_name&form=1&order=id&page=1&limit=20',
                     req => {
                         interceptFlag = true;
@@ -243,7 +236,7 @@ describe('Duplicate entities list', () => {
                 cy.fillTreeView('#ou-tree-input', 2, false);
 
                 cy.get('[data-test="search-button"]').click();
-                cy.wait('@getDuplicateSearch').then(xhr => {
+                cy.wait('@getDuplicateSearch').then(() => {
                     cy.wrap(interceptFlag).should('eq', true);
                 });
             });

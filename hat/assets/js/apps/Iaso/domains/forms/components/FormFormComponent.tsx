@@ -194,6 +194,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                                 <Grid item xs={6}>
                                     <InputComponent
                                         className={classes.radio}
+                                        dataTestId="single_per_period"
                                         keyValue="single_per_period"
                                         disabled={
                                             currentForm.period_type.value ===

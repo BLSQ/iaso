@@ -7,7 +7,8 @@ import {
     commonStyles,
     selectionInitialState,
     setTableSelection,
-    useSafeIntl,useRedirectToReplace,
+    useSafeIntl,
+    useRedirectToReplace,
 } from 'bluesquare-components';
 import { useQueryClient } from 'react-query';
 import { createInstance } from './actions';
@@ -27,7 +28,7 @@ import { CreateReAssignDialog } from './components/CreateReAssignDialogComponent
 import InstancesFiltersComponent from './components/InstancesFiltersComponent';
 import { InstancesMap } from './components/InstancesMap/InstancesMap.tsx';
 import { InstancesTopBar as TopBar } from './components/TopBar.tsx';
-import { baseUrls } from '../../constants/urls';
+import { baseUrls } from '../../constants/urls.ts';
 import snackMessages from '../../components/snackBars/messages';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink.tsx';
 import { useSnackQuery } from '../../libs/apiHooks.ts';

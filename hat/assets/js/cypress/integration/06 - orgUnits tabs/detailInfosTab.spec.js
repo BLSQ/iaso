@@ -7,14 +7,7 @@ import { testPermission } from '../../support/testPermission';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
-const baseUrl = `${siteBaseUrl}/dashboard/orgunits/detail/accountId/1/orgUnitId/${orgUnit.id}/levels/1,2`;
-
-const interceptList = [
-    'profiles',
-    'algorithms',
-    'algorithmsruns',
-    // 'orgunittypes',
-];
+const baseUrl = `${siteBaseUrl}/dashboard/orgunits/detail/accountId/1/orgUnitId/${orgUnit.id}/levels/[1,2]`;
 
 const newSourceIndex = 2;
 
@@ -88,37 +81,41 @@ const testReadableInfos = ou => {
     }
 };
 
-const mockCalls = () => {
+const mockCalls = (isSaved = false) => {
     cy.intercept('GET', '/api/profiles/**', {
         fixture: 'profiles/list.json',
-    });
+    }).as('profiles');
     cy.intercept('GET', '/api/profiles/me/**', {
         fixture: 'profiles/me/superuser.json',
-    });
-    interceptList.forEach(i => {
-        cy.intercept('GET', `/api/${i}/`, {
-            fixture: `${i}/list.json`,
-        });
-    });
+    }).as('me');
+    cy.intercept('GET', `/api/profiles/`, {
+        fixture: `profiles/list.json`,
+    }).as('profilesList');
+    cy.intercept('GET', `/api/algorithms/`, {
+        fixture: `algorithms/list.json`,
+    }).as('algos');
+    cy.intercept('GET', `/api/algorithmsruns/`, {
+        fixture: `algorithmsruns/list.json`,
+    }).as('runs');
     cy.intercept('GET', '/api/v2/orgunittypes/', {
         fixture: `orgunittypes/list.json`,
-    });
+    }).as('OUTypes');
     cy.intercept('GET', '/api/groups/', {
         fixture: `groups/list.json`,
-    });
+    }).as('groups');
     cy.intercept('GET', '/api/groups/**/*', {
         fixture: `groups/list.json`,
-    });
+    }).as('groupsDetails');
     cy.intercept('GET', '/api/validationstatus/', {
         fixture: `misc/validationStatuses.json`,
-    });
+    }).as('statuses');
     cy.intercept(
         'GET',
         ` /api/forms/?&orgUnitId=${orgUnit.id}&limit=10&order=name`,
         {
             fixture: `forms/list.json`,
         },
-    );
+    ).as('forms');
 
     cy.intercept(
         'GET',
@@ -126,44 +123,46 @@ const mockCalls = () => {
         {
             fixture: `logs/list-linked-paginated.json`,
         },
-    );
+    ).as('logs');
     cy.intercept('GET', `/api/datasources/?linkedTo=${orgUnit.id}`, {
         fixture: `datasources/details-ou.json`,
-    });
+    }).as('sources');
     cy.intercept('GET', `/api/datasources/?linkedTo=${orgUnit.id}/**/*`, {
         fixture: `datasources/details-ou.json`,
-    });
+    }).as('sourcesParams');
     cy.intercept(
         'GET',
         `/api/comments/?object_pk=${orgUnit.id}&content_type=iaso-orgunit&limit=4`,
         {
             fixture: `comments/list.json`,
         },
-    );
-    cy.intercept('GET', `/api/orgunits/${orgUnit.id}`, {
-        fixture: 'orgunits/details.json',
-    }).as('getOuDetail');
+    ).as('comments');
+    if (!isSaved) {
+        cy.intercept('GET', `/api/orgunits/${orgUnit.id}`, {
+            fixture: 'orgunits/details.json',
+        }).as('getOuDetail');
+    }
     cy.intercept(
         'GET',
         `/api/orgunits/?&parent_id=${orgUnit.id}&limit=10&order=name&validation_status=all`,
         {
             fixture: 'orgunits/details-children-paginated.json',
         },
-    );
+    ).as('children');
     cy.intercept('GET', `/api/links/?orgUnitId=${orgUnit.id}`, {
         fixture: 'links/list-linked.json',
-    });
+    }).as('links');
     cy.intercept(
         'GET',
         `/api/links/?&orgUnitId=${orgUnit.id}&limit=10&order=similarity_score`,
         {
             fixture: 'links/list-linked-paginated.json',
         },
-    );
+    ).as('linksPaginated');
     cy.intercept('GET', `/api/instances/?order=id&orgUnitId=${orgUnit.id}`, {
         instances: [],
-    });
-    cy.intercept('GET', '/sockjs-node/**');
+    }).as('submissions');
+    cy.intercept('GET', '/sockjs-node/**').as('socks');
     cy.intercept(
         'GET',
         `/api/orgunits/?&orgUnitParentId=${orgUnit.id}&orgUnitTypeId=${orgUnit.org_unit_type.sub_unit_types[0].id}&withShapes=true&validation_status=all`,
@@ -176,7 +175,7 @@ const mockCalls = () => {
                 },
             ],
         },
-    );
+    ).as('OUsearch');
 };
 
 describe('infos tab', () => {
@@ -238,6 +237,9 @@ describe('infos tab', () => {
             cy.fillArrayInputField('aliases', newOu.aliases);
             cy.fillTreeView('#ou-tree-input', newSourceIndex);
 
+            cy.intercept('GET', `/api/orgunits/${orgUnit.id}`, newOu).as(
+                'getNewOuDetail',
+            );
             cy.get('#save-ou').click();
             // FIXME this is flaky and will sometimes timeout and fail while running npm run test:e2e
             cy.wait('@saveOu').then(() => {
@@ -274,7 +276,6 @@ describe('infos tab', () => {
         cy.fillTextField('#input-text-source_ref', orgUnit.source_ref);
         cy.fillArrayInputField('aliases', orgUnit.aliases);
         cy.fillTreeView('#ou-tree-input', 0, false);
-
         mockCalls();
         cy.get('#save-ou').click();
         cy.wait('@saveOu').then(() => {

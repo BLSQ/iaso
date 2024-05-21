@@ -39,7 +39,7 @@ const initialState = {
 
 export const renderWithStore = (component, state = null) => (
     <Provider store={getMockedStore({ ...initialState, ...state })}>
-            {renderWithMuiTheme(renderWithIntl(component))}
+        {renderWithMuiTheme(renderWithIntl(component))}
     </Provider>
 );
 
@@ -47,7 +47,5 @@ export const mockedStore = state =>
     getMockedStore({ ...initialState, ...state });
 
 export const renderWithMutableStore = (component, store) => (
-    <Provider store={store}>
-            {renderWithIntl(component)}
-    </Provider>
+    <Provider store={store}>{renderWithIntl(component)}</Provider>
 );

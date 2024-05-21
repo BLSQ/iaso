@@ -67,7 +67,6 @@ def setup_review_change_proposal(account_name, iaso_client):
         proposal_review = iaso_client.post("/api/orgunits/changes/", json=data)
         if status == "approved" or status == "rejected":
             validation = {
-                "id": proposal_review["id"],
                 "approved_fields": approved_fields,
                 "status": status,
                 "rejection_comment": status,

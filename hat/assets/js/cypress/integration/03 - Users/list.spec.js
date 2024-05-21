@@ -275,13 +275,6 @@ describe('Users', () => {
             goToPage(superUser, {}, emptyFixture);
             cy.wait('@getUsers').then(() => {
                 interceptFlag = false;
-                cy.intercept(
-                    'GET',
-                    '/api/orgunits/treesearch/?&rootsForUser=true&defaultVersion=true&validation_status=VALID&ignoreEmptyNames=true',
-                    {
-                        fixture: 'orgunits/list.json',
-                    },
-                );
                 cy.intercept('GET', '/api/profiles/**/*', req => {
                     req.continue(res => {
                         interceptFlag = true;

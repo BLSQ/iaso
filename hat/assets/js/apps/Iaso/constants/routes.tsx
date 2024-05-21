@@ -1,54 +1,66 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React from 'react';
-import PageError from '../components/errors/PageError';
-import { Assignments } from '../domains/assignments/index.tsx';
-import Completeness from '../domains/completeness';
-import { CompletenessStats } from '../domains/completenessStats/index.tsx';
-import DataSources from '../domains/dataSources';
-import { Details as DataSourceDetail } from '../domains/dataSources/details.tsx';
-import Devices from '../domains/devices';
-import { VisitDetails } from '../domains/entities/components/VisitDetails.tsx';
-import { Details as BeneficiaryDetail } from '../domains/entities/details.tsx';
-import { DuplicateDetails } from '../domains/entities/duplicates/details/DuplicateDetails.tsx';
-import { Duplicates } from '../domains/entities/duplicates/list/Duplicates.tsx';
-import { EntityTypes } from '../domains/entities/entityTypes/index.tsx';
-import { Beneficiaries } from '../domains/entities/index.tsx';
+import React, { ReactElement } from 'react';
 import Forms from '../domains/forms';
-import FormDetail from '../domains/forms/detail.tsx';
+import FormDetail from '../domains/forms/detail';
 import FormsStats from '../domains/forms/stats';
-import Instances from '../domains/instances';
-import { CompareInstanceLogs } from '../domains/instances/compare/components/CompareInstanceLogs.tsx';
-import CompareSubmissions from '../domains/instances/compare/index.tsx';
-import InstanceDetail from '../domains/instances/details.tsx';
+import { OrgUnits } from '../domains/orgUnits';
 import { Links } from '../domains/links';
 import Runs from '../domains/links/Runs';
+import OrgUnitDetail from '../domains/orgUnits/details';
+import Completeness from '../domains/completeness';
+import Instances from '../domains/instances';
+import CompareSubmissions from '../domains/instances/compare';
+import InstanceDetail from '../domains/instances/details';
 import Mappings from '../domains/mappings';
 import MappingDetails from '../domains/mappings/details';
-import { Modules } from '../domains/modules/index.tsx';
-import OrgUnitDetail from '../domains/orgUnits/details';
+import { Users } from '../domains/users';
+import { UserRoles } from '../domains/userRoles';
+import { Modules } from '../domains/modules';
+import { Projects } from '../domains/projects';
+import DataSources from '../domains/dataSources';
+import { Details as DataSourceDetail } from '../domains/dataSources/details';
+import Tasks from '../domains/tasks';
+import Devices from '../domains/devices';
+import { CompletenessStats } from '../domains/completenessStats';
 import Groups from '../domains/orgUnits/groups';
-import { OrgUnits } from '../domains/orgUnits/index.tsx';
-import Types from '../domains/orgUnits/orgUnitTypes/index.tsx';
+import Types from '../domains/orgUnits/orgUnitTypes';
+import { Beneficiaries } from '../domains/entities';
+import { Details as BeneficiaryDetail } from '../domains/entities/details';
+import { EntityTypes } from '../domains/entities/entityTypes';
+import PageError from '../components/errors/PageError';
 import { baseUrls } from './urls';
 import Pages from '../domains/pages';
-import { Planning } from '../domains/plannings/index.tsx';
-import { Teams } from '../domains/teams/index.tsx';
-import { Storages } from '../domains/storages/index.tsx';
-import { Workflows } from '../domains/workflows/index.tsx';
-import { Details as WorkflowDetails } from '../domains/workflows/details.tsx';
-import { Details as StorageDetails } from '../domains/storages/details.tsx';
-import { Details as RegistryDetail } from '../domains/registry/details.tsx';
+import { Planning } from '../domains/plannings';
+import { Teams } from '../domains/teams';
+import { Storages } from '../domains/storages';
+import { Workflows } from '../domains/workflows';
+import { Details as WorkflowDetails } from '../domains/workflows/details';
+import { Details as StorageDetails } from '../domains/storages/details';
+import { Assignments } from '../domains/assignments';
+import { CompareInstanceLogs } from '../domains/instances/compare/components/CompareInstanceLogs';
+import { Registry } from '../domains/registry';
 import { SHOW_PAGES } from '../utils/featureFlags';
-import { ReviewOrgUnitChanges } from '../domains/orgUnits/reviewChanges/ReviewOrgUnitChanges.tsx';
-import { LotsPayments } from '../domains/payments/LotsPayments.tsx';
-import { PotentialPayments } from '../domains/payments/PotentialPayments.tsx';
-import { Projects } from '../domains/projects/index.tsx';
-import { Registry } from '../domains/registry/index.tsx';
-import { SetupAccount } from '../domains/setup/index.tsx';
-import Tasks from '../domains/tasks';
-import { UserRoles } from '../domains/userRoles/index.tsx';
-import { Users } from '../domains/users/index.tsx';
-import * as Permission from '../utils/permissions.ts';
+import { Duplicates } from '../domains/entities/duplicates/list/Duplicates';
+import { DuplicateDetails } from '../domains/entities/duplicates/details/DuplicateDetails';
+import { ReviewOrgUnitChanges } from '../domains/orgUnits/reviewChanges/ReviewOrgUnitChanges';
+import { VisitDetails } from '../domains/entities/components/VisitDetails';
+import * as Permission from '../utils/permissions';
+import { SetupAccount } from '../domains/setup';
+import { PotentialPayments } from '../domains/payments/PotentialPayments';
+import { LotsPayments } from '../domains/payments/LotsPayments';
+
+export type RoutePath = {
+    baseUrl: string;
+    routerUrl: string; // baseUrl+"/*", so we can catch the params
+    permissions: string[]; // can be skipped if allowAnonymous === true
+    element: ReactElement; // a prop-less Element (not a component)
+    isRootUrl?: boolean;
+    allowAnonymous?: boolean;
+};
+
+export type AnonymousRoutePath = Omit<RoutePath, 'permissions'> & {
+    allowAnonymous: true;
+};
 
 export const setupAccountPath = {
     baseUrl: baseUrls.setupAccount,
@@ -358,28 +370,32 @@ export const lotsPaymentsPath = {
 export const page401 = {
     baseUrl: baseUrls.error401,
     routerUrl: baseUrls.error401,
-    element: () => <PageError errorCode="401" />,
+    element: <PageError errorCode="401" />,
+    permissions: [],
 };
 
 export const page403 = {
     baseUrl: baseUrls.error403,
     routerUrl: baseUrls.error403,
-    element: () => <PageError errorCode="403" />,
+    element: <PageError errorCode="403" />,
+    permissions: [],
 };
 
 export const page404 = {
     baseUrl: baseUrls.error404,
     routerUrl: baseUrls.error404,
-    element: () => <PageError errorCode="404" />,
+    element: <PageError errorCode="404" />,
+    permissions: [],
 };
 
 export const page500 = {
     baseUrl: baseUrls.error500,
     routerUrl: baseUrls.error500,
-    element: () => <PageError errorCode="500" />,
+    element: <PageError errorCode="500" />,
+    permissions: [],
 };
 
-export const routeConfigs = [
+export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     formsPath,
     formDetailPath,
     formsStatsPath,

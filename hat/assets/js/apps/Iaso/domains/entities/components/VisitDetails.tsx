@@ -3,6 +3,7 @@ import {
     useSafeIntl,
     LoadingSpinner,
     commonStyles,
+    useGoBack,
 } from 'bluesquare-components';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -15,7 +16,6 @@ import MESSAGES from '../messages';
 import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 import { baseUrls } from '../../../constants/urls';
 import { useParamsObject } from '../../../routing/hooks/useParamsObject';
-import { useGoBack } from '../../../routing/hooks/useGoBack';
 
 const useStyles = makeStyles(theme => {
     return {

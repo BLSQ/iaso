@@ -6,7 +6,7 @@ import { IconButton, useSafeIntl } from 'bluesquare-components';
 import FormatListBulleted from '@mui/icons-material/FormatListBulleted';
 import { useDispatch } from 'react-redux';
 import FormVersionsDialog from '../components/FormVersionsDialogComponent';
-import { baseUrls } from '../../../constants/urls';
+import { baseUrls } from '../../../constants/urls.ts';
 import { userHasPermission, userHasOneOfPermissions } from '../../users/utils';
 import MESSAGES from '../messages';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
@@ -43,7 +43,6 @@ export const formVersionsTableColumns = (
         accessor: 'actions',
         sortable: false,
         Cell: settings => {
-            console.log('XLS URL', settings.row.original.xls_file);
             return (
                 <section>
                     {settings.row.original.xls_file && (
@@ -52,6 +51,7 @@ export const formVersionsTableColumns = (
                             download
                             icon="xls"
                             tooltipMessage={MESSAGES.xls_form_file}
+                            reloadDocument
                         />
                     )}
                     <FormVersionsDialog
@@ -171,7 +171,8 @@ export const useFormsTableColumns = ({
                                     <Grid item>
                                         <Link
                                             download
-                                            href={
+                                            reloadDocument
+                                            to={
                                                 settings.row.original
                                                     .latest_form_version
                                                     .xls_file
@@ -184,7 +185,8 @@ export const useFormsTableColumns = ({
                                 <Grid item>
                                     <Link
                                         download
-                                        href={
+                                        reloadDocument
+                                        to={
                                             settings.row.original
                                                 .latest_form_version.file
                                         }

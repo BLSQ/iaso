@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, useGoBack } from 'bluesquare-components';
 import { useLocation } from 'react-router-dom';
 import { saveLink, fetchLinks } from '../../utils/requests';
 
@@ -17,7 +17,6 @@ import { baseUrls } from '../../constants/urls';
 import { linksFilters } from '../../constants/filters';
 import { useLinksFiltersData } from './hooks';
 import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
-import { useGoBack } from '../../routing/hooks/useGoBack.tsx';
 import MESSAGES from './messages';
 
 const baseUrl = baseUrls.links;

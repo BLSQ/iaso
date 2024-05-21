@@ -1,7 +1,10 @@
 import React, { FunctionComponent, useCallback } from 'react';
-import { Table, TableComponentProps } from 'bluesquare-components';
+import {
+    Table,
+    TableComponentProps,
+    useRedirectToReplace,
+} from 'bluesquare-components';
 import { useQueryClient } from 'react-query';
-import { useRedirectToReplace } from '../../routing/routing';
 
 type TableWithDeepLinkProps = TableComponentProps & {
     baseUrl: string;

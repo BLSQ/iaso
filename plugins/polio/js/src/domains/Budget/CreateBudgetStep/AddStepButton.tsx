@@ -1,5 +1,4 @@
 import React, { FunctionComponent } from 'react';
-// import { IconButton } from 'bluesquare-components';
 import { useSafeIntl } from 'bluesquare-components';
 import { Button, useMediaQuery, useTheme, Tooltip } from '@mui/material';
 import { makeStyles } from '@mui/styles';

@@ -14,6 +14,7 @@ import {
     selectionInitialState,
     setTableSelection,
     LoadingSpinner,
+    useRedirectTo,
 } from 'bluesquare-components';
 
 import EditIcon from '@mui/icons-material/Settings';
@@ -44,7 +45,6 @@ import { useBulkSaveProfiles } from './hooks/useBulkSaveProfiles';
 import { userHasPermission } from './utils';
 import * as Permission from '../../utils/permissions';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
-import { useRedirectTo } from '../../routing/routing';
 
 const baseUrl = baseUrls.users;
 

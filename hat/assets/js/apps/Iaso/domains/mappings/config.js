@@ -21,7 +21,7 @@ const mappingsTableColumns = formatMessage => [
         Cell: settings => (
             <section>
                 <IconButtonComponent
-                    url={`${baseUrls.mappingDetail}/mappingVersionId/${settings.row.original.id}`}
+                    url={`/${baseUrls.mappingDetail}/mappingVersionId/${settings.row.original.id}`}
                     icon="remove-red-eye"
                     tooltipMessage={MESSAGES.view}
                     location={`/${baseUrls.mappings}`}

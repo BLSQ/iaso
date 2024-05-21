@@ -14,6 +14,7 @@ import {
     selectionInitialState,
     commonStyles,
     useSkipEffectOnMount,
+    useRedirectToReplace,
 } from 'bluesquare-components';
 
 import Filters from './TableFilters';
@@ -21,7 +22,6 @@ import Filters from './TableFilters';
 import DownloadButtonsComponent from '../DownloadButtonsComponent.tsx';
 import { convertObjectToString } from '../../utils/dataManipulation.ts';
 import { useAbortController } from '../../libs/apiHooks.ts';
-import { useRedirectToReplace } from '../../routing/routing.ts';
 import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
 
 export const useSingleTableParams = params => {

@@ -6,7 +6,6 @@ import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/
 import { useSingleTableParams } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/SingleTable';
 import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 import MESSAGES from '../../../constants/messages';
-import { DASHBOARD_BASE_URL } from '../../../constants/routes';
 import { useStyles } from '../../../styles/theme';
 import { CampaignsFilters } from '../../Calendar/campaignCalendar/CampaignsFilters';
 import {
@@ -19,11 +18,13 @@ import { useRemoveCampaign } from '../hooks/api/useRemoveCampaign';
 import { useRestoreCampaign } from '../hooks/api/useRestoreCampaign';
 import { DashboardButtons } from './DashboardButtons';
 import { useCampaignsTableColumns } from './useCampaignsTableColumns';
-import { useRouter } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useRouter';
+import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
+import { baseUrls } from '../../../constants/urls';
+
+const baseUrl = baseUrls.campaigns;
 
 export const Dashboard: FunctionComponent = () => {
-    const router = useRouter();
-    const { params } = router;
+    const params = useParamsObject(baseUrl);
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const paramsToUse = useSingleTableParams(params);
@@ -68,7 +69,7 @@ export const Dashboard: FunctionComponent = () => {
         showOnlyDeleted: Boolean(params.showOnlyDeleted),
         handleClickDeleteRow: handleDeleteConfirmDialogConfirm,
         handleClickRestoreRow: handleRestoreDialogConfirm,
-        router,
+        params,
     });
     return (
         <>
@@ -77,12 +78,9 @@ export const Dashboard: FunctionComponent = () => {
                 displayBackButton={false}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <CampaignsFilters router={router} />
+                <CampaignsFilters params={params} />
                 <Box mb={2}>
-                    <DashboardButtons
-                        router={router}
-                        exportToCSV={exportToCSV}
-                    />
+                    <DashboardButtons exportToCSV={exportToCSV} />
                 </Box>
                 {/* @ts-ignore */}
                 <TableWithDeepLink
@@ -93,7 +91,7 @@ export const Dashboard: FunctionComponent = () => {
                     // type of `accessor` should be changed to accept a FunctionComponent
                     // @ts-ignore
                     columns={columns}
-                    baseUrl={DASHBOARD_BASE_URL}
+                    baseUrl={baseUrl}
                     marginTop={false}
                     extraProps={{
                         loading: isFetching || isDeleting || isRestoring,

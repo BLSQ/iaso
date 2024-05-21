@@ -1,8 +1,6 @@
 import React, { createRef, FunctionComponent, useCallback } from 'react';
-
 import { Popup } from 'react-leaflet';
 import classNames from 'classnames';
-
 import { makeStyles } from '@mui/styles';
 import {
     Card,
@@ -13,21 +11,20 @@ import {
     Table,
     TableBody,
 } from '@mui/material';
-
-import { useSafeIntl, mapPopupStyles } from 'bluesquare-components';
+import {
+    useSafeIntl,
+    mapPopupStyles,
+    useRedirectTo,
+} from 'bluesquare-components';
 import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
 import { baseUrls } from '../../../constants/urls';
-
 import MESSAGES from '../messages';
 import {
     CompletenessMapStats,
     CompletenessRouterParams,
     FormStat,
 } from '../types';
-
 import { PopupRow } from './PopUpRow';
-
-import { useRedirectTo } from '../../../routing/routing';
 
 const useStyles = makeStyles(theme => ({
     ...mapPopupStyles(theme),

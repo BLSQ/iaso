@@ -21,9 +21,6 @@ import { useParamsObject } from '../../../../routing/hooks/useParamsObject';
 
 type Params = PaginationParams & DuplicatesGETParams;
 
-type Props = {
-    params: Params;
-};
 const baseUrl = baseUrls.entityDuplicates;
 
 const defaultSorted = [{ id: 'similarity_star', desc: true }];
@@ -35,9 +32,8 @@ const useStyles = makeStyles(theme => {
     };
 });
 
-export const Duplicates: FunctionComponent<Props> = () => {
-    const params = useParamsObject(baseUrl) as PaginationParams &
-        DuplicatesGETParams;
+export const Duplicates: FunctionComponent = () => {
+    const params = useParamsObject(baseUrl) as Params;
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const { data: latestAnalysis, isFetching: isFetchingLatestAnalysis } =

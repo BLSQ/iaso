@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Grid, Typography } from '@mui/material';
-import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
+import { LoadingSpinner, useSafeIntl, useRedirectTo } from 'bluesquare-components';
 import { FormattedMessage } from 'react-intl';
 import { useFormState } from '../../../hooks/form';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
@@ -12,7 +12,6 @@ import InputComponent from '../../../components/forms/InputComponent.tsx';
 import { postGeoPkg } from '../requests';
 import { useSnackMutation } from '../../../libs/apiHooks.ts';
 import { VersionDescription } from './VersionDescription.tsx';
-import { useRedirectTo } from '../../../routing/routing.ts';
 
 const initialFormState = () => ({
     file: null,

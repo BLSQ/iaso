@@ -10,6 +10,7 @@ import {
     useSafeIntl,
     useSkipEffectOnMount,
     UrlParams,
+    useRedirectToReplace,
 } from 'bluesquare-components';
 import uniq from 'lodash/uniq';
 import intersection from 'lodash/intersection';
@@ -34,7 +35,6 @@ import { useGetTeamsDropdown } from '../teams/hooks/requests/useGetTeams';
 import { AsyncSelect } from '../../components/forms/AsyncSelect';
 import { getUsersDropDown } from '../instances/hooks/requests/getUsersDropDown';
 import { useGetProfilesDropdown } from '../instances/hooks/useGetProfilesDropdown';
-import { useRedirectToReplace } from '../../routing/routing';
 import { PLANNINGS } from '../../utils/permissions';
 
 type Props = {

@@ -30,7 +30,7 @@ export type VaccineAuthParams = UrlParams & {
     block_country?: string;
     auth_status?: Nopv2AuthStatus;
 };
-export type VaccineAuthDetailsParams = UrlParams & {
-    countryName: string;
-    countryId: string; // number in string form
+export type VaccineAuthDetailsParams = Partial<Omit<UrlParams, 'search'>> & {
+    countryName?: string;
+    countryId?: string; // number in string form
 };

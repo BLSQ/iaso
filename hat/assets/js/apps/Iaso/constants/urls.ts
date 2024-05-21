@@ -1,21 +1,30 @@
 import { capitalize } from 'bluesquare-components';
-import { paginationPathParams } from '../routing/common.ts';
-import { linksFiltersWithPrefix, orgUnitFiltersWithPrefix } from './filters';
+import { paginationPathParams } from '../routing/common';
+import { linksFiltersWithPrefix, orgUnitFiltersWithPrefix } from './filters.js';
 
-export const paginationPathParamsWithPrefix = prefix =>
+export const paginationPathParamsWithPrefix = (prefix: string): string[] =>
     paginationPathParams.map(p => `${prefix}${capitalize(p, true)}`);
 
-export const orgUnitsFiltersPathParamsWithPrefix = (prefix, withChildren) =>
+export const orgUnitsFiltersPathParamsWithPrefix = (
+    prefix: string,
+    withChildren: boolean,
+): string[] =>
     orgUnitFiltersWithPrefix(prefix, withChildren).map(f => f.urlKey);
 
-export const linksFiltersPathParamsWithPrefix = prefix =>
+export const linksFiltersPathParamsWithPrefix = (prefix: string): string[] =>
     linksFiltersWithPrefix(prefix).map(f => f.urlKey);
 
 export const CHANGE_REQUEST = 'changeRequest';
 const ORG_UNITS = 'orgunits';
 const ORG_UNITS_CHANGE_REQUEST = `${ORG_UNITS}/${CHANGE_REQUEST}`;
 
-export const baseRouteConfigs = {
+// TODO export to blsq-comp
+export type RouteConfig = {
+    url: string;
+    params: string[];
+};
+
+export const baseRouteConfigs: Record<string, RouteConfig> = {
     setupAccount: { url: 'setupAccount', params: [] },
     home: { url: 'home', params: [] },
     forms: {
@@ -423,30 +432,95 @@ export const baseRouteConfigs = {
     apiLogs: { url: 'api/logs', params: [] }, // used in FormFormComponents only
 };
 
-const extractUrls = () => {
+// TODO move to blsq-comp
+export const extractUrls = (
+    config: Record<string, RouteConfig>,
+): Record<string, string> => {
     const result = {};
-    Object.entries(baseRouteConfigs).forEach(([key, value]) => {
+    Object.entries(config).forEach(([key, value]) => {
         result[key] = value.url;
     });
     return result;
 };
 
-const extractParams = () => {
+// TODO move to blsq-comp
+export const extractParams = (
+    config: Record<string, RouteConfig>,
+): Record<string, string[]> => {
     const result = {};
-    Object.entries(baseRouteConfigs).forEach(([key, value]) => {
+    Object.entries(config).forEach(([key, value]) => {
         result[key] = value.params;
     });
     return result;
 };
 
-const extractParamsConfig = () => {
+// TODO move to blsq-comp
+export const extractParamsConfig = (
+    config: Record<string, RouteConfig>,
+): Record<string, string[]> => {
     const result = {};
-    Object.values(baseRouteConfigs).forEach(value => {
+    Object.values(config).forEach(value => {
         result[value.url] = value.params;
     });
     return result;
 };
 
-export const baseUrls = extractUrls();
-export const baseParams = extractParams();
-export const paramsConfig = extractParamsConfig();
+// Not super necessary, but it will help the IDE when using baseUrls
+type IasoBaseUrls = {
+    setupAccount: string;
+    home: string;
+    forms: string;
+    formDetail: string;
+    formsStats: string;
+    instances: string;
+    instanceDetail: string;
+    compareInstanceLogs: string;
+    compareInstances: string;
+    mappings: string;
+    mappingDetail: string;
+    orgUnits: string;
+    orgUnitDetails: string;
+    orgUnitsChangeRequest: string;
+    registry: string;
+    registryDetail: string;
+    links: string;
+    algos: string;
+    completeness: string;
+    completenessStats: string;
+    modules: string;
+    users: string;
+    userRoles: string;
+    projects: string;
+    sources: string;
+    sourceDetails: string;
+    tasks: string;
+    devices: string;
+    groups: string;
+    orgUnitTypes: string;
+    entities: string;
+    entityDetails: string;
+    entitySubmissionDetail: string;
+    entityTypes: string;
+    entityDuplicates: string;
+    entityDuplicateDetails: string;
+    pages: string;
+    planning: string;
+    assignments: string;
+    teams: string;
+    storages: string;
+    storageDetail: string;
+    workflows: string;
+    workflowDetail: string;
+    potentialPayments: string;
+    lotsPayments: string;
+    error401: string;
+    error403: string;
+    error404: string;
+    error500: string;
+    login: string;
+    apiLogs: string;
+};
+
+export const baseUrls = extractUrls(baseRouteConfigs) as IasoBaseUrls;
+export const baseParams = extractParams(baseRouteConfigs);
+export const paramsConfig = extractParamsConfig(baseRouteConfigs);

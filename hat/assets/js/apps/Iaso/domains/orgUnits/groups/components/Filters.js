@@ -1,18 +1,12 @@
 import React, { useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
-
 import { Grid, Button } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import SearchIcon from '@mui/icons-material/Search';
-
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
-
+import { commonStyles, useSafeIntl, useRedirectTo } from 'bluesquare-components';
 import InputComponent from '../../../../components/forms/InputComponent.tsx';
-
 import { baseUrl } from '../config';
-
 import MESSAGES from '../messages';
-import { useRedirectTo } from '../../../../routing/routing.ts';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

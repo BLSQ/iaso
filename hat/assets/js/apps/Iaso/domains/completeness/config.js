@@ -4,10 +4,10 @@ import ErrorOutline from '@mui/icons-material/ErrorOutline';
 import CheckCircleOutline from '@mui/icons-material/CheckCircleOutline';
 
 import {
-    IconButton as IconButtonComponent,
+    IconButton,
     formatThousand,
     textPlaceholder,
-    HeaderRowIcon,
+    HeaderRowIcon,LinkWithLocation
 } from 'bluesquare-components';
 import { baseUrls } from '../../constants/urls';
 
@@ -21,7 +21,6 @@ import {
 import { INSTANCE_STATUSES } from '../instances/constants';
 
 import MESSAGES from './messages';
-import { LinkWithLocation } from '../../components/nav/LinkWithLocation.tsx';
 
 const STATUS_COLUMN_SIZES = {
     [PERIOD_TYPE_MONTH]: undefined,
@@ -47,7 +46,7 @@ const getBaseColumns = formatMessage => [
 ];
 
 const getFormUrl = (form, status, period) => {
-    let url = baseUrls.instances;
+    let url = `/${baseUrls.instances}`;
     url += `/formIds/${form.id}`;
     // periodType must come before startPeriod or you get a 404
     url += `/periodType/${form.period_type.toUpperCase()}`;
@@ -153,7 +152,7 @@ export const getColumns = (
                 accessor: 'actions-1',
                 Cell: settings => {
                     return settings.row.original.generate_derived ? (
-                        <IconButtonComponent
+                        <IconButton
                             onClick={() =>
                                 onGenerateDerivedInstances(
                                     settings.row.original,

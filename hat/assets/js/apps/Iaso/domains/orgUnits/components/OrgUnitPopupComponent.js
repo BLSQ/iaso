@@ -19,11 +19,11 @@ import {
     LoadingSpinner,
     commonStyles,
     mapPopupStyles,
+    LinkButton,
 } from 'bluesquare-components';
 import PopupItemComponent from '../../../components/maps/popups/PopupItemComponent';
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
-import { baseUrls } from '../../../constants/urls';
-import { LinkButton } from '../../../components/nav/LinkButton.tsx';
+import { baseUrls } from '../../../constants/urls.ts';
 import MESSAGES from '../messages';
 
 const useStyles = makeStyles(theme => ({
@@ -169,7 +169,7 @@ const OrgUnitPopupComponent = ({
                                 )}
                                 <LinkButton
                                     target="_blank"
-                                    to={`${baseUrls.orgUnitDetails}/orgUnitId/${activeOrgUnit.id}/tab/infos`}
+                                    to={`/${baseUrls.orgUnitDetails}/orgUnitId/${activeOrgUnit.id}/tab/infos`}
                                     className={classes.linkButton}
                                     buttonClassName={classes.marginLeft}
                                     variant="outlined"

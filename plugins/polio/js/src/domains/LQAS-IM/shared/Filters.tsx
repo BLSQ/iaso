@@ -1,82 +1,105 @@
-import React, { FunctionComponent, useMemo, useState } from 'react';
-// @ts-ignore
-import { Select, useSafeIntl } from 'bluesquare-components';
-import { useDispatch } from 'react-redux';
-import { replace } from 'react-router-redux';
-
-import { Box, Grid, IconButton } from '@mui/material';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
+import {
+    Select,
+    useSafeIntl,
+    IconButton,
+    useRedirectToReplace,
+} from 'bluesquare-components';
+import { Box, Grid } from '@mui/material';
 
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import { useRouter } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useRouter';
-import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-import { userHasPermission } from '../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import { DisplayIfUserHasPerm } from '../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
 import MESSAGES from '../../../constants/messages';
 import { makeCampaignsDropDown } from '../../../utils/index';
-import { genUrl } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import { useGetLqasImCountriesOptions } from './hooks/api/useGetLqasImCountriesOptions';
 import { RefreshLqasData } from './RefreshLqasData';
+import { baseUrls } from '../../../constants/urls';
+import { POLIO_ADMIN } from '../../../constants/permissions';
 
-type Params = {
+export type Params = {
     campaign: string | undefined;
     country: string | undefined;
     rounds: string | undefined;
 };
+
 type FiltersState = {
     campaign: string | undefined;
-    country: number | undefined;
+    country: string | undefined;
 };
 
 type Props = {
     isFetching: boolean;
     campaigns: any[];
     campaignsFetching: boolean;
-    category: 'lqas' | 'im';
+    params: Params;
+    imType?: 'imGlobal' | 'imIHH' | 'imOHH';
+};
+
+const getCurrentUrl = (imType?: 'imGlobal' | 'imIHH' | 'imOHH'): string => {
+    if (imType === 'imGlobal') {
+        return baseUrls.imGlobal;
+    }
+    if (imType === 'imIHH') {
+        return baseUrls.imIhh;
+    }
+    if (imType === 'imOHH') {
+        return baseUrls.imOhh;
+    }
+    return baseUrls.lqasCountry;
 };
 
 export const Filters: FunctionComponent<Props> = ({
     isFetching,
     campaigns,
     campaignsFetching,
-    category,
+    params,
+    imType,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
-    const { params } = useRouter();
-
+    const redirectToReplace = useRedirectToReplace();
+    const isLqas = !imType;
+    const currentUrl = getCurrentUrl(imType);
     const [filters, setFilters] = useState<FiltersState>({
-        campaign: params.campaign,
-        country: params.country ? parseInt(params.country, 10) : undefined,
+        campaign: params?.campaign,
+        country: params?.country,
     });
-    const { campaign, country } = filters;
-    const currentUser = useCurrentUser();
+    const { campaign, country } = params;
 
     const { data: countriesOptions, isFetching: countriesLoading } =
-        useGetLqasImCountriesOptions(category);
+        useGetLqasImCountriesOptions(isLqas);
+
     const dropDownOptions = useMemo(() => {
         const displayedCampaigns = country
-            ? campaigns.filter(c => c.top_level_org_unit_id === country)
+            ? campaigns.filter(c => `${c.top_level_org_unit_id}` === country)
             : campaigns;
         return makeCampaignsDropDown(displayedCampaigns);
     }, [country, campaigns]);
 
-    const onChange = (key, value) => {
-        const newFilters = {
-            ...filters,
-            rounds: undefined, // This
-            // rounds: '1,2', // This
-            [key]: value,
-        };
-        if (key === 'country') {
-            newFilters.campaign = undefined;
-        }
+    const onChange = useCallback(
+        (key, value) => {
+            const newFilters = {
+                ...filters,
+                rounds: undefined, // This
+                // rounds: '1,2', // This
+                [key]: value,
+            };
+            if (key === 'country') {
+                newFilters.campaign = undefined;
+            }
 
-        setFilters(newFilters);
-        const url = genUrl(router, newFilters);
-        dispatch(replace(url));
-    };
+            setFilters(newFilters);
+            redirectToReplace(currentUrl, newFilters);
+        },
+        [currentUrl, filters, redirectToReplace],
+    );
     const campaignObj = campaigns.find(c => c.obr_name === campaign);
     const campaignLink = campaignObj
-        ? `/dashboard/polio/list/campaignId/${campaignObj.id}/search/${campaignObj.obr_name}`
+        ? `/${baseUrls.campaigns}/campaignId/${campaignObj.id}/search/${campaignObj.obr_name}`
         : null;
     return (
         <Box mt={2} width="100%">
@@ -111,23 +134,25 @@ export const Filters: FunctionComponent<Props> = ({
                     <Grid item md={1}>
                         <IconButton
                             target="_blank"
-                            href={campaignLink}
+                            url={campaignLink}
                             color="primary"
-                        >
-                            <OpenInNewIcon />
-                        </IconButton>
+                            overrideIcon={OpenInNewIcon}
+                            tooltipMessage={MESSAGES.goToCampaign}
+                            dataTestId="lqas-campaign-link"
+                        />
                     </Grid>
                 )}
                 {/* remove condition when IM pipeline is ready */}
-                {category === 'lqas' &&
-                    userHasPermission('iaso_polio_config', currentUser) && (
+                {!imType && (
+                    <DisplayIfUserHasPerm permissions={[POLIO_ADMIN]}>
                         <Grid item md={campaignLink ? 3 : 4}>
                             <RefreshLqasData
-                                category={category}
+                                isLqas={isLqas}
                                 countryId={country}
                             />
                         </Grid>
-                    )}
+                    </DisplayIfUserHasPerm>
+                )}
             </Grid>
         </Box>
     );

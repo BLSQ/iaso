@@ -6,10 +6,10 @@ import {
     IntlMessage,
     textPlaceholder,
     useKeyPressListener,
+    LinkWithLocation,
 } from 'bluesquare-components';
 
 import MESSAGES from './messages';
-import { LinkWithLocation } from './LinkWithLocation';
 
 type Props = {
     condition: boolean;

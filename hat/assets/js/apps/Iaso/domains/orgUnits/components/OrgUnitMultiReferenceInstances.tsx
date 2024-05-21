@@ -3,8 +3,9 @@ import React, { FunctionComponent, useState } from 'react';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
-    IconButton as IconButtonComponent,
+    IconButton,
     useSafeIntl,
+    LinkWithLocation,
 } from 'bluesquare-components';
 import { baseUrls } from '../../../constants/urls';
 import InputComponent from '../../../components/forms/InputComponent';
@@ -12,7 +13,6 @@ import InstanceFileContent from '../../instances/components/InstanceFileContent'
 import MESSAGES from '../messages';
 import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 import { Instance } from '../../instances/types/instance';
-import { LinkWithLocation } from '../../../components/nav/LinkWithLocation';
 
 type Props = {
     referenceInstances: Instance[];
@@ -71,7 +71,7 @@ export const OrgUnitMultiReferenceInstances: FunctionComponent<Props> = ({
                             {title}
                         </LinkWithLocation>
                     }
-                    IconButton={IconButtonComponent}
+                    IconButton={IconButton}
                     iconButtonProps={{
                         onClick: () => window.open(active.file_url, '_blank'),
                         icon: 'xml',

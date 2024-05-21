@@ -10,7 +10,7 @@ export type Timeline = {
 };
 export type Params = {
     budgetProcessId: string;
-    previousStep: string;
+    previousStep?: string;
     quickTransition?: string;
     campaignName?: string;
     page?: string;
@@ -146,7 +146,7 @@ export type BudgetStep = {
 
 export type StepForm = {
     transition_key: string;
-    budget_process: string;
+    budget_process?: string;
     comment: Optional<string>;
     files: Optional<File[]>;
     links: Optional<LinkWithAlias[]>;
@@ -157,7 +157,7 @@ export type StepForm = {
 
 export type OverrideStepForm = {
     new_state_key: Optional<string>;
-    budget_process: string;
+    budget_process?: string;
     comment: Optional<string>;
     files: Optional<File[]>;
     links: Optional<LinkWithAlias[]>;

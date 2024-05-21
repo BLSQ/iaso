@@ -1,13 +1,12 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { Box, Grid, Theme, GridSize } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useSafeIntl, commonStyles } from 'bluesquare-components';
+import { useSafeIntl, commonStyles, useGoBack } from 'bluesquare-components';
 import TopBar from '../../../components/nav/TopBarComponent';
 import InstanceDetail from './components/InstanceDetail';
 import MESSAGES from './messages';
 import { baseUrls } from '../../../constants/urls';
 import { useParamsObject } from '../../../routing/hooks/useParamsObject';
-import { useGoBack } from '../../../routing/hooks/useGoBack';
 
 type Params = {
     instanceIds: string;

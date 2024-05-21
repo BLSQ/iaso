@@ -1,14 +1,7 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
-import {
-    Box,
-    FormControlLabel,
-    FormGroup,
-    Grid,
-    Switch,
-} from '@mui/material';
+import { Box, FormControlLabel, FormGroup, Grid, Switch } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { InputWithInfos } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/InputWithInfos';
-import { LQAS_AFRO_MAP_URL } from '../../../../../constants/routes';
 import { useFilterState } from '../../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 import DatesRange from '../../../../../../../../../hat/assets/js/apps/Iaso/components/filters/DatesRange';
 import { FilterButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
@@ -16,12 +9,13 @@ import InputComponent from '../../../../../../../../../hat/assets/js/apps/Iaso/c
 import { usePeriodOptions } from '../utils';
 import { AfroMapParams } from '../types';
 import MESSAGES from '../../../../../constants/messages';
+import { baseUrls } from '../../../../../constants/urls';
 
-const baseUrl = LQAS_AFRO_MAP_URL;
 type Props = {
     params: AfroMapParams;
 };
 
+const baseUrl = baseUrls.lqasAfro;
 export const LqasAfroMapFilters: FunctionComponent<Props> = ({ params }) => {
     const { formatMessage } = useSafeIntl();
     const {

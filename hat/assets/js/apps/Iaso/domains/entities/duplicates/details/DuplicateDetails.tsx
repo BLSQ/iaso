@@ -1,6 +1,6 @@
 import { Box, Divider, Grid, Paper } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import { commonStyles, useSafeIntl, useGoBack } from 'bluesquare-components';
 import classnames from 'classnames';
 import React, {
     FunctionComponent,
@@ -24,8 +24,6 @@ import MESSAGES from '../messages';
 import { DuplicateInfos } from './DuplicateInfos';
 import { useDuplicateInfos } from './hooks/useDuplicateInfos';
 import { DuplicateData, DuplicateEntityForTable } from '../types';
-import { useGoBack } from '../../../../routing/hooks/useGoBack';
-import { Router } from '../../../../types/general';
 import { DuplicateDetailsTableButtons } from './DuplicateDetailsTableButtons';
 import { SubmissionsForEntity } from './submissions/SubmissionsForEntity';
 import { useParamsObject } from '../../../../routing/hooks/useParamsObject';
@@ -57,11 +55,6 @@ const resetCellColors = (
         entity2: { ...row.entity2, status: 'diff' },
         final: { ...row.final, status: 'dropped', value: '' },
     };
-};
-
-type Props = {
-    params: { accountId?: string; entities: string };
-    router: Router;
 };
 
 const useStyles = makeStyles(theme => {
@@ -100,7 +93,7 @@ const useStyles = makeStyles(theme => {
     };
 });
 
-export const DuplicateDetails: FunctionComponent<Props> = () => {
+export const DuplicateDetails: FunctionComponent = () => {
     const params = useParamsObject(baseUrls.entityDuplicateDetails) as {
         accountId?: string;
         entities: string;

@@ -2,7 +2,7 @@
 import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { Box, Grid, Theme, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, LinkWithLocation } from 'bluesquare-components';
 
 import { FormatListBulleted, History } from '@mui/icons-material';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
@@ -23,7 +23,6 @@ import MESSAGES from '../messages';
 import { FormDataType } from '../types/forms';
 import { FormLegendInput } from './FormLegendInput';
 import { CR_MODE_NONE, changeRequestModeOptions } from '../constants';
-import { LinkWithLocation } from '../../../components/nav/LinkWithLocation';
 import { SUBMISSIONS, SUBMISSIONS_UPDATE } from '../../../utils/permissions';
 
 const useStyles = makeStyles((theme: Theme) => ({
@@ -195,6 +194,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                                 <Grid item xs={6}>
                                     <InputComponent
                                         className={classes.radio}
+                                        dataTestId="single_per_period"
                                         keyValue="single_per_period"
                                         disabled={
                                             currentForm.period_type.value ===

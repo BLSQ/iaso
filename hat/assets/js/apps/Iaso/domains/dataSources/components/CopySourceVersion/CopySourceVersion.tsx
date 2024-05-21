@@ -10,8 +10,9 @@ import React, {
 import { Grid, Box, Divider } from '@mui/material';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 import {
-    IconButton as IconButtonComponent,
+    IconButton,
     useSafeIntl,
+    useRedirectTo,
 } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import MESSAGES from '../../messages';
@@ -23,7 +24,6 @@ import {
 import { baseUrls } from '../../../../constants/urls';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { WarningMessage } from './CopyVersionWarnings';
-import { useRedirectTo } from '../../../../routing/routing';
 
 type Props = {
     dataSourceId: number;
@@ -32,7 +32,7 @@ type Props = {
 };
 
 const renderTrigger = ({ openDialog }) => (
-    <IconButtonComponent
+    <IconButton
         onClick={openDialog}
         overrideIcon={FileCopyIcon}
         tooltipMessage={MESSAGES.copyVersion}

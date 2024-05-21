@@ -17,6 +17,7 @@ const recursiveCheck = (state, fields): Record<string, any> => {
             if (
                 typeof state[key] === typeof fields[key] ||
                 state[key] === undefined ||
+                state[key] === null || // We need to check null explicitly because typeof null === 'object'
                 // fields[key] should be allowed to be undefined otherwise we can never reset state values
                 fields[key] === undefined
             ) {

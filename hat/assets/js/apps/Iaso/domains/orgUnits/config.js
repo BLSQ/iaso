@@ -96,7 +96,7 @@ export const useOrgUnitsTableColumns = searches => {
                     )}
 
                     <IconButtonComponent
-                        url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.row.original.id}/tab/history`}
+                        url={`/${baseUrls.orgUnitDetails}/orgUnitId/${settings.row.original.id}/tab/history`}
                         icon="history"
                         tooltipMessage={MESSAGES.history}
                     />

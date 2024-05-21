@@ -1,8 +1,7 @@
 import React, { ReactElement } from 'react';
 import { makeStyles } from '@mui/styles';
-import { textPlaceholder } from 'bluesquare-components';
+import { textPlaceholder, LinkWithLocation } from 'bluesquare-components';
 import { OrgUnitLabel } from '../utils';
-import { LinkWithLocation } from '../../../components/nav/LinkWithLocation';
 import { baseUrls } from '../../../constants/urls';
 
 const useStyles = makeStyles(() => ({

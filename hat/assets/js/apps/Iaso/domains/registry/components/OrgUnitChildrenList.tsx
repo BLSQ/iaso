@@ -1,11 +1,10 @@
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { Table } from 'bluesquare-components';
+import { Table, useRedirectToReplace } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
 import { baseUrls } from '../../../constants/urls';
 import { useGetOrgUnitsListColumns } from '../config';
 import { OrgUnitListChildren } from '../hooks/useGetOrgUnit';
-import { useRedirectToReplace } from '../../../routing/routing';
 import { RegistryDetailParams } from '../types';
 
 type Props = {

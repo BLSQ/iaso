@@ -16,6 +16,7 @@ import {
     Setting,
     RenderCell,
     useSafeIntl,
+    LinkWithLocation,
 } from 'bluesquare-components';
 
 import instancesTableColumns from '../config';
@@ -47,7 +48,6 @@ import { useCurrentUser } from '../../../utils/usersUtils';
 import * as Permission from '../../../utils/permissions';
 import { INSTANCE_METAS_FIELDS } from '../constants';
 import { InstanceMetasField } from '../components/ColumnSelect';
-import { LinkWithLocation } from '../../../components/nav/LinkWithLocation';
 
 const NO_VALUE = '/';
 // eslint-disable-next-line no-unused-vars

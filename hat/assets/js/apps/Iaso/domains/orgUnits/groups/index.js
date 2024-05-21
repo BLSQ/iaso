@@ -5,20 +5,17 @@ import {
     LoadingSpinner,
     commonStyles,
     Table,
-    AddButton as AddButtonComponent,
-    useSafeIntl,
+    AddButton,
+    useSafeIntl,useRedirectTo
 } from 'bluesquare-components';
 import TopBar from '../../../components/nav/TopBarComponent';
 import Filters from './components/Filters';
 import GroupsDialog from './components/GroupsDialog';
-
 import tableColumns from './config';
 import MESSAGES from './messages';
-
 import { useGetGroups, useSaveGroups, useDeleteGroups } from './hooks/requests';
 import { baseUrls } from '../../../constants/urls';
 import { useParamsObject } from '../../../routing/hooks/useParamsObject.tsx';
-import { useRedirectTo } from '../../../routing/routing.ts';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -55,7 +52,7 @@ const Groups = () => {
                         saveGroup={saveGroup}
                         titleMessage={MESSAGES.create}
                         renderTrigger={({ openDialog }) => (
-                            <AddButtonComponent
+                            <AddButton
                                 dataTestId="add-group-button"
                                 onClick={openDialog}
                             />

@@ -1,16 +1,15 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-
 import {
     commonStyles,
     Table,
     LoadingSpinner,
     useSafeIntl,
-    AddButton as AddButtonComponent,
+    AddButton,
     UrlParams,
+    useRedirectTo,
 } from 'bluesquare-components';
-
 import TopBar from '../../components/nav/TopBarComponent';
 import { ProjectsDialog } from './components/ProjectsDialog';
 import { useGetProjectsPaginated, useSave } from './hooks/requests';
@@ -18,7 +17,6 @@ import { columns, baseUrl } from './config';
 import MESSAGES from './messages';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { baseUrls } from '../../constants/urls';
-import { useRedirectTo } from '../../routing/routing';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -55,7 +53,7 @@ export const Projects: FunctionComponent = () => {
                     <ProjectsDialog
                         titleMessage={MESSAGES.create}
                         renderTrigger={({ openDialog }) => (
-                            <AddButtonComponent
+                            <AddButton
                                 dataTestId="add-project-button"
                                 onClick={openDialog}
                             />

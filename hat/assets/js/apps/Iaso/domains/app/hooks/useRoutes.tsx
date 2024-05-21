@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React, { ElementType, useContext, useMemo, ReactElement } from 'react';
 import { Route, Routes } from 'react-router';
 import { last } from 'lodash';
@@ -12,11 +13,12 @@ import ProtectedRoute from '../../users/components/ProtectedRoute';
 import { baseUrls } from '../../../constants/urls';
 import { HomeOnline } from '../../home/HomeOnline';
 import { PluginsContext } from '../../../utils';
-import { Plugins, RouteCustom } from '../types';
+import { Plugins } from '../types';
 import { useCurrentUser, useHasNoAccount } from '../../../utils/usersUtils';
 import { useRedirections } from '../../../routing/hooks/useRedirections';
 import { useGetAndStoreCurrentUser } from '../../home/hooks/useGetAndStoreCurrentUser';
 import { SHOW_HOME_ONLINE, hasFeatureFlag } from '../../../utils/featureFlags';
+import { RouteCustom } from '../../../routing/types';
 
 type Result = {
     routes: ReactElement | null;
@@ -83,20 +85,19 @@ export const useHomeOfflineRoute = (): RouteCustom[] => {
     ];
 };
 
-// TODO fix plugin config
-const usePluginsRoutes = (): RouteCustom[] => {
+const usePluginsRouteConfigs = (): {
+    pluginRoutes: RouteCustom[];
+    pluginRedirections: any[];
+} => {
     const { plugins }: Plugins = useContext(PluginsContext);
-    return plugins
-        .map(plugin =>
-            plugin.routes.map(route => {
-                if (route.allowAnonymous) return route;
-                return {
-                    ...route,
-                    params: ['accountId', ...route.params],
-                };
-            }),
-        )
+    const pluginRoutes = plugins.map(plugin => plugin.routes).flat();
+    const pluginRedirections = plugins
+        .map(plugin => plugin.redirections)
         .flat();
+    return useMemo(
+        () => ({ pluginRoutes, pluginRedirections }),
+        [pluginRedirections, pluginRoutes],
+    );
 };
 
 const useGetProtectedRoutes = (
@@ -145,12 +146,18 @@ const useCurrentRoute = (routes: RouteCustom[]): RouteCustom | undefined => {
 };
 
 const setupRoutes: RouteCustom[] = [setupAccountPath, page404];
-const useGetRoutesConfigs = (userHomePage?: string): RouteCustom[] => {
+type UseGetRouteConfigsArgs = {
+    userHomePage?: string;
+    pluginRoutes: RouteCustom[];
+};
+const useGetRoutesConfigs = ({
+    userHomePage,
+    pluginRoutes,
+}: UseGetRouteConfigsArgs): RouteCustom[] => {
     const currentUser = useCurrentUser();
     const hasNoAccount = useHasNoAccount();
     const homeOnlineRoute = useHomeOnlineRoute(userHomePage);
     const homeOfflineRoute = useHomeOfflineRoute();
-    const pluginRoutes = usePluginsRoutes();
     if (hasNoAccount) {
         return setupRoutes;
     }
@@ -166,7 +173,8 @@ const useGetRoutesConfigs = (userHomePage?: string): RouteCustom[] => {
 
 export const useRoutes = (userHomePage?: string): Result => {
     const hasNoAccount = useHasNoAccount();
-    const routesConfigs = useGetRoutesConfigs(userHomePage);
+    const { pluginRoutes, pluginRedirections } = usePluginsRouteConfigs();
+    const routesConfigs = useGetRoutesConfigs({ userHomePage, pluginRoutes });
 
     const protectedRoutes = useGetProtectedRoutes(routesConfigs, hasNoAccount);
     const currentRoute = useCurrentRoute(routesConfigs);
@@ -175,11 +183,12 @@ export const useRoutes = (userHomePage?: string): Result => {
         !currentRoute?.allowAnonymous ||
             currentRoute?.baseUrl === baseUrls.home,
     );
-    const redirections = useRedirections(
+    const redirections = useRedirections({
         hasNoAccount,
         isFetchingCurrentUser,
-        userHomePage,
-    );
+        homeUrl: userHomePage,
+        pluginRedirections,
+    });
 
     // routes should only change if currentUser has changed
     const routes: ReactElement | null = useMemo(

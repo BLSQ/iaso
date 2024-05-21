@@ -247,9 +247,18 @@ class SubActivityScope(models.Model):
     vaccine = models.CharField(max_length=5, choices=VACCINES, blank=True)
 
 
+AGE_UNITS = [
+    ("m", "Months"),
+    ("y", "Years"),
+]
+
+
 class SubActivity(models.Model):
     round = models.ForeignKey("Round", related_name="sub_activities", on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
+    age_unit = models.CharField(max_length=3, choices=AGE_UNITS, null=True, blank=True)
+    age_min = models.IntegerField(null=True, blank=True)
+    age_max = models.IntegerField(null=True, blank=True)
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
 

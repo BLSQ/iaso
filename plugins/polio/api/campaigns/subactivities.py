@@ -23,7 +23,18 @@ class SubActivityCreateUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SubActivity
-        fields = ["id", "round_number", "campaign", "name", "start_date", "end_date", "scopes"]
+        fields = [
+            "id",
+            "round_number",
+            "campaign",
+            "name",
+            "start_date",
+            "end_date",
+            "scopes",
+            "age_unit",
+            "age_min",
+            "age_max",
+        ]
 
     def create(self, validated_data):
         round_number = validated_data.pop("round_number", None)
@@ -86,7 +97,7 @@ class SubActivityListDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = SubActivity
-        fields = ["id", "round_id", "name", "start_date", "end_date", "scopes"]
+        fields = ["id", "round_id", "name", "start_date", "end_date", "scopes", "age_unit", "age_min", "age_max"]
 
 
 class SubActivityViewSet(ModelViewSet):

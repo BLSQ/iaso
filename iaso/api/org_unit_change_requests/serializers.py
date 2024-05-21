@@ -239,6 +239,7 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
     Used to create one `OrgUnitChangeRequest` instance.
     """
 
+    id = serializers.IntegerField(read_only=True)
     uuid = serializers.UUIDField(required=False, default=uuid.uuid4)
     org_unit_id = IdOrUuidRelatedField(
         source="org_unit",

@@ -1,6 +1,10 @@
 import React, { ReactElement, ReactNode, useMemo } from 'react';
-import { IconButton, Column, useSafeIntl } from 'bluesquare-components';
-import { LinkWithLocation } from '../../../../../../hat/assets/js/apps/Iaso/components/nav/LinkWithLocation';
+import {
+    IconButton,
+    Column,
+    useSafeIntl,
+    LinkWithLocation,
+} from 'bluesquare-components';
 import { DateTimeCellRfc } from '../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import MESSAGES from '../../constants/messages';
 import DeleteDialog from '../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';

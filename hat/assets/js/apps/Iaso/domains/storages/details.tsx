@@ -1,27 +1,21 @@
 import React, { FunctionComponent } from 'react';
-import { useSafeIntl, commonStyles } from 'bluesquare-components';
+import { useSafeIntl, commonStyles, useGoBack } from 'bluesquare-components';
 import { Box, Divider, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import TopBar from '../../components/nav/TopBarComponent';
 import { Infos } from './components/Infos';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
-
 import MESSAGES from './messages';
-
 import { baseUrls } from '../../constants/urls';
-
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { LogsFilters } from './components/LogsFilters';
-
 import { StorageDetailsParams } from './types/storages';
 import {
     useGetStorageLogs,
     useGetApiParams,
 } from './hooks/requests/useGetStorageLogs';
-
 import { useGetDetailsColumns } from './config';
-import { useGoBack } from '../../routing/hooks/useGoBack';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 
 const useStyles = makeStyles(theme => ({

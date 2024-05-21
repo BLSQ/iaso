@@ -9,12 +9,11 @@ import {
     useSafeIntl,
     commonStyles,
     LoadingSpinner,
-    // @ts-ignore
     formatThousand,
-    // @ts-ignore
     Column,
     SortableTable,
     useHumanReadableJsonLogic,
+    useGoBack,
 } from 'bluesquare-components';
 import { isEqual } from 'lodash';
 import { Box, Grid, Button } from '@mui/material';
@@ -23,31 +22,23 @@ import orderBy from 'lodash/orderBy';
 import uniqWith from 'lodash/uniqWith';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
-
-import { useGoBack } from '../../routing/hooks/useGoBack';
 import { baseUrls } from '../../constants/urls';
-
 import { useGetWorkflowVersion } from './hooks/requests/useGetWorkflowVersions';
-
 import { useGetWorkflowVersionChanges } from './hooks/requests/useGetWorkflowVersionChanges';
 import { useGetQueryBuildersFields } from '../forms/fields/hooks/useGetQueryBuildersFields';
 import { useGetQueryBuilderListToReplace } from '../forms/fields/hooks/useGetQueryBuilderListToReplace';
-
 import { useGetFormDescriptor } from '../forms/fields/hooks/useGetFormDescriptor';
 import { useBulkUpdateWorkflowFollowUp } from './hooks/requests/useBulkUpdateWorkflowFollowUp';
-
 import {
     WorkflowVersionDetail,
     WorkflowParams,
     FollowUps,
     Change,
 } from './types';
-
 import { WorkflowBaseInfo } from './components/WorkflowBaseInfo';
 import { FollowUpsTable } from './components/followUps/Table';
 import { AddFollowUpsModal } from './components/followUps/Modal';
 import { AddChangeModal } from './components/changes/Modal';
-
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { useGetChangesColumns } from './config/changes';

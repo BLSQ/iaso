@@ -1,13 +1,12 @@
 import React, { FunctionComponent, useState, useMemo } from 'react';
 import { Box, Tabs, Tab } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-
 import {
     commonStyles,
     LoadingSpinner,
     useSafeIntl,
+    useRedirectTo,
 } from 'bluesquare-components';
-
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import TopBar from '../../components/nav/TopBarComponent';
 import { Filters } from './components/Filters';
@@ -16,17 +15,13 @@ import {
     useGetBeneficiariesPaginated,
     useGetBeneficiaryTypesDropdown,
 } from './hooks/requests';
-
 import { useColumns, baseUrl, defaultSorted } from './config';
 import MESSAGES from './messages';
-
 import { ListMap } from './components/ListMap';
-
 import { MENU_HEIGHT_WITH_TABS } from '../../constants/uiConstants';
 import { DisplayedLocation } from './types/locations';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { baseUrls } from '../../constants/urls';
-import { useRedirectTo } from '../../routing/routing';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

@@ -10,9 +10,13 @@ import {
     Typography,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { IconButton, commonStyles, useSafeIntl } from 'bluesquare-components';
+import {
+    IconButton,
+    commonStyles,
+    useSafeIntl,
+    useRedirectToReplace,
+} from 'bluesquare-components';
 import classnames from 'classnames';
-import { useRedirectToReplace } from '../../../routing/routing';
 import MESSAGES from '../messages';
 import { baseUrls } from '../../../constants/urls';
 import { OrgUnitChildrenMap } from './OrgUnitChildrenMap';

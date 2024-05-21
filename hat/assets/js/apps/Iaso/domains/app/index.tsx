@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { BrowserRouter, Link } from 'react-router-dom';
-import { LinkProvider, LoadingSpinner } from 'bluesquare-components';
+import { BrowserRouter } from 'react-router-dom';
+import { LoadingSpinner } from 'bluesquare-components';
 import { useSnackBars } from '../../components/snackBars/useSnackBars';
 import { useRoutes } from './hooks/useRoutes';
 // import { router } from '../../routing/router';
@@ -18,13 +18,7 @@ const App: FunctionComponent<Props> = ({ userHomePage }) => {
         <>
             {isLoadingRoutes && <LoadingSpinner />}
             {!isLoadingRoutes && (
-                <LinkProvider linkComponent={Link}>
-                    {/* <Router routes={routes} history={history} /> */}
-                    {/* <RouterProvider router={router} /> */}
-                    <BrowserRouter basename="/dashboard">
-                        {routes}
-                    </BrowserRouter>
-                </LinkProvider>
+                <BrowserRouter basename="/dashboard">{routes}</BrowserRouter>
             )}
         </>
     );

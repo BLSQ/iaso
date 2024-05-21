@@ -1,18 +1,17 @@
 import React, { useState } from 'react';
 import { Grid, Typography } from '@mui/material';
 import { FormattedMessage } from 'react-intl';
-import { LoadingSpinner } from 'bluesquare-components';
+import { LoadingSpinner, useRedirectTo } from 'bluesquare-components';
 import PropTypes from 'prop-types';
 import MESSAGES from '../messages';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { EditableTextFields } from '../../../components/forms/EditableTextFields';
 import { Checkboxes } from '../../../components/forms/Checkboxes';
-import { baseUrls } from '../../../constants/urls';
+import { baseUrls } from '../../../constants/urls.ts';
 import { sendDhisOuImporterRequest } from '../requests';
 import { useFormState } from '../../../hooks/form';
 import { useSnackMutation } from '../../../libs/apiHooks.ts';
 import { VersionDescription } from './VersionDescription.tsx';
-import { useRedirectTo } from '../../../routing/routing.ts';
 
 const initialFormState = sourceCredentials => {
     return {

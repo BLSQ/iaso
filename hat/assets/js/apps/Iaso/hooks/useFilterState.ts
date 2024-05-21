@@ -4,7 +4,7 @@ import {
     useGetOrgUnit,
 } from '../domains/orgUnits/components/TreeView/requests';
 import { OrgUnit } from '../domains/orgUnits/types/orgUnit';
-import { useRedirectTo, useRedirectToReplace } from '../routing/routing';
+import { useRedirectTo, useRedirectToReplace } from 'bluesquare-components';
 
 export type FilterState = {
     filters: Record<string, any>;

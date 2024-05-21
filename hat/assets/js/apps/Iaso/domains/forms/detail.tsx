@@ -12,36 +12,30 @@ import { makeStyles } from '@mui/styles';
 import mapValues from 'lodash/mapValues';
 import omit from 'lodash/omit';
 import isEqual from 'lodash/isEqual';
-
 import {
     commonStyles,
     LoadingSpinner,
     useSafeIntl,
     CommonStyles,
+    useRedirectToReplace,
+    useGoBack,
 } from 'bluesquare-components';
-
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages.js';
 import { useFormState } from '../../hooks/form.js';
-
 import { baseUrls } from '../../constants/urls';
-
 import { createForm, updateForm } from '../../utils/requests';
 import FormVersions from './components/FormVersionsComponent';
 import FormForm from './components/FormFormComponent';
-
 import { enqueueSnackbar } from '../../redux/snackBarsReducer';
 import { succesfullSnackBar } from '../../constants/snackBars';
 import { useGetForm } from './requests';
 import { requiredFields } from './config/index';
-
 import { isFieldValid, isFormValid } from '../../utils/forms';
 import { FormAttachments } from './components/FormAttachments';
 import { FormParams } from './types/forms';
 import { NO_PERIOD } from '../periods/constants';
-import { useGoBack } from '../../routing/hooks/useGoBack';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
-import { useRedirectToReplace } from '../../routing/routing';
 import { CR_MODE_NONE } from './constants';
 
 const useStyles = makeStyles(theme => ({

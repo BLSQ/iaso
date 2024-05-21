@@ -9,6 +9,7 @@ import {
     commonStyles,
     LoadingSpinner,
     Table,
+    useGoBack,
 } from 'bluesquare-components';
 import { Box, Grid, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -26,7 +27,6 @@ import {
     getTableParams,
     getTablePages,
 } from './utils';
-import { useGoBack } from '../../routing/hooks/useGoBack';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { baseUrls } from '../../constants/urls';
 

@@ -1,10 +1,9 @@
 import React, { FunctionComponent, useCallback, ChangeEvent } from 'react';
 import { Paper, Radio, RadioGroup, FormControlLabel } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, useRedirectToReplace } from 'bluesquare-components';
 import { CompletenessRouterParams } from '../types';
 import { baseUrls } from '../../../constants/urls';
-import { useRedirectToReplace } from '../../../routing/routing';
 import MESSAGES from '../messages';
 
 const useStyles = makeStyles(theme => ({

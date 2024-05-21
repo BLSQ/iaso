@@ -7,10 +7,10 @@ import {
     getSort,
     useKeyPressListener,
     useSafeIntl,
+    useRedirectToReplace,
 } from 'bluesquare-components';
 
 import { Box, TableCell, TableSortLabel } from '@mui/material';
-import { useRedirectToReplace } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import { useStaticFields } from '../../hooks/useStaticFields';
 import { Field } from '../../types';
 import { useStyles } from '../Styles';

@@ -8,6 +8,7 @@ import {
     DynamicTabs,
     useSkipEffectOnMount,
     IntlFormatMessage,
+    useRedirectTo,
 } from 'bluesquare-components';
 import React, {
     FunctionComponent,
@@ -34,7 +35,6 @@ import { Count } from '../hooks/requests/useGetOrgUnits';
 import { decodeSearch } from '../utils';
 
 import MESSAGES from '../messages';
-import { useRedirectTo } from '../../../routing/routing';
 
 type Props = {
     params: OrgUnitParams;

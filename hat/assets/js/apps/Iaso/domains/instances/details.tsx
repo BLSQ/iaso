@@ -6,9 +6,11 @@ import { makeStyles } from '@mui/styles';
 
 import {
     commonStyles,
-    IconButton as IconButtonComponent,
+    IconButton,
     LoadingSpinner,
     useSafeIntl,
+    LinkWithLocation,
+    useGoBack
 } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
 import TopBar from '../../components/nav/TopBarComponent';
@@ -28,9 +30,7 @@ import { useGetInstance } from './compare/hooks/useGetInstance';
 import { useSnackQuery } from '../../libs/apiHooks';
 import SpeedDialInstance from './components/SpeedDialInstance';
 import { ClassNames } from '../../types/utils';
-import { useGoBack } from '../../routing/hooks/useGoBack';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
-import { LinkWithLocation } from '../../components/nav/LinkWithLocation';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -222,7 +222,7 @@ const InstanceDetails: FunctionComponent = () => {
                             <WidgetPaper
                                 id="form-contents"
                                 title={formatMessage(MESSAGES.submission)}
-                                IconButton={IconButtonComponent}
+                                IconButton={IconButton}
                                 iconButtonProps={{
                                     onClick: () =>
                                         window.open(

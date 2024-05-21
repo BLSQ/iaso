@@ -5,24 +5,22 @@ import {
     useSafeIntl,
     commonStyles,
     IntlFormatMessage,
+    useRedirectToReplace,
+    useGoBack,
 } from 'bluesquare-components';
 
 import {
     useGetInstanceLogs,
     useGetInstanceLogDetail,
 } from '../hooks/useGetInstanceLogs';
-
 import InputComponent from '../../../../components/forms/InputComponent';
 import TopBar from '../../../../components/nav/TopBarComponent';
 import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
 import { InstanceLogDetail } from './InstanceLogDetail';
 import { InstanceLogInfos } from './InstanceLogInfos';
-
 import MESSAGES from '../messages';
 import { baseUrls } from '../../../../constants/urls';
 import { useParamsObject } from '../../../../routing/hooks/useParamsObject';
-import { useGoBack } from '../../../../routing/hooks/useGoBack';
-import { useRedirectToReplace } from '../../../../routing/routing';
 
 type Params = {
     instanceIds: string;

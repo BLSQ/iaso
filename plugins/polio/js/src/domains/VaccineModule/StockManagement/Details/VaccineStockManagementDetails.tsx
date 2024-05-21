@@ -3,13 +3,14 @@ import {
     commonStyles,
     textPlaceholder,
     useSafeIntl,
+    useGoBack,
+    useRedirectTo,
 } from 'bluesquare-components';
 import { Box, Button, Grid, Paper, Tab, Tabs, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { baseUrls } from '../../../../constants/urls';
 import { useParamsObject } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import { useTabs } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useTabs';
-import { useGoBack } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useGoBack';
 import { UNUSABLE_VIALS, USABLE_VIALS } from '../constants';
 import { StockManagementDetailsParams, TabValue } from '../types';
 import TopBar from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
@@ -21,7 +22,6 @@ import {
     useGetUsableVials,
 } from '../hooks/api';
 import { VaccineStockManagementSummary } from './Summary/VaccineStockManagementSummary';
-import { useRedirectTo } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 
 const useStyles = makeStyles(theme => {
     return {

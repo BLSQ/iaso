@@ -10,13 +10,13 @@ import {
     useSafeIntl,
     commonStyles,
     LoadingSpinner,
+    useRedirectToReplace,
+    useGoBack,
 } from 'bluesquare-components';
 
 import { Box, Grid, Theme, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
-import { useGoBack } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useGoBack';
-import { useRedirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import { CampaignLogDetail } from './CampaignLogDetail';
 
 import WidgetPaper from '../../../../../../../hat/assets/js/apps/Iaso/components/papers/WidgetPaperComponent';

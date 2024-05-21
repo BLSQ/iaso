@@ -3,15 +3,15 @@ import {
     useSafeIntl,
     commonStyles,
     LoadingSpinner,
+    useGoBack,
+    LinkButton,
 } from 'bluesquare-components';
 import { Box, Divider, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { baseUrls } from '../../constants/urls';
-
 import { useGetBeneficiary, useGetSubmissions } from './hooks/requests';
-
 import { Beneficiary } from './types/beneficiary';
 import { useBeneficiariesDetailsColumns } from './config';
 import { CsvButton } from '../../components/Buttons/CsvButton';
@@ -19,9 +19,7 @@ import { XlsxButton } from '../../components/Buttons/XslxButton';
 import { BeneficiaryBaseInfo } from './components/BeneficiaryBaseInfo';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
-import { useGoBack } from '../../routing/hooks/useGoBack';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
-import { LinkButton } from '../../components/nav/LinkButton';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

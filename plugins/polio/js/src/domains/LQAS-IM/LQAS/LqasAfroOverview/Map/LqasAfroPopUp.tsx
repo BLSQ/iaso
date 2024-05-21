@@ -3,6 +3,7 @@ import {
     commonStyles,
     mapPopupStyles,
     useSafeIntl,
+    LinkButton,
 } from 'bluesquare-components';
 import { Popup } from 'react-leaflet';
 import {
@@ -17,7 +18,6 @@ import { makeStyles } from '@mui/styles';
 import PopupItemComponent from '../../../../../../../../../hat/assets/js/apps/Iaso/components/maps/popups/PopupItemComponent';
 import MESSAGES from '../../../../../constants/messages';
 import { COUNTRY, DISTRICT } from '../../../shared/constants';
-import { LinkButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/nav/LinkButton';
 import { baseUrls } from '../../../../../constants/urls';
 
 // @ts-ignore

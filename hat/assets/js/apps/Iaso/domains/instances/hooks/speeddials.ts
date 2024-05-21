@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { UseQueryResult } from 'react-query';
+import { useRedirectTo } from 'bluesquare-components';
 import { baseUrls } from '../../../constants/urls';
 import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';
@@ -9,7 +10,6 @@ import { Instance } from '../types/instance';
 import { REFERENCE_FLAG_CODE, REFERENCE_UNFLAG_CODE } from '../constants';
 import snackMessages from '../../../components/snackBars/messages';
 import { Nullable } from '../../../types/utils';
-import { useRedirectTo } from '../../../routing/routing';
 
 type LinkToFormParams = {
     formId: number;

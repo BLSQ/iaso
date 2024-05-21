@@ -49,7 +49,7 @@ import {
 import { useBulkSaveOrgUnits } from './hooks/requests/useBulkSaveOrgUnits';
 import { useGetApiParams } from './hooks/useGetApiParams';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
-import { makeRedirectionUrl } from '../../routing/utils';
+import { makeRedirectionUrl } from 'bluesquare-components';
 // HOOKS
 
 const useStyles = makeStyles(theme => ({

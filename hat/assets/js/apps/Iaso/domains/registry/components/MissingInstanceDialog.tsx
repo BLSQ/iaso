@@ -13,6 +13,7 @@ import {
     commonStyles,
     makeFullModal,
     useSafeIntl,
+    useRedirectToReplace,
 } from 'bluesquare-components';
 import EnketoIcon from '../../instances/components/EnketoIcon';
 import { useGetCreateInstance } from '../hooks/useGetCreateInstance';
@@ -22,7 +23,6 @@ import { CompletenessApiResponse } from '../../completenessStats/types';
 import MESSAGES from '../messages';
 import { RegistryDetailParams } from '../types';
 import { defaultSorted } from '../hooks/useGetEmptyInstanceOrgUnits';
-import { useRedirectToReplace } from '../../../routing/routing';
 
 type Props = {
     missingOrgUnitsData: CompletenessApiResponse;

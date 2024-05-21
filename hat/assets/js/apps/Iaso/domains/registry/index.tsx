@@ -4,21 +4,19 @@ import {
     LoadingSpinner,
     commonStyles,
     useSafeIntl,
+    useRedirectTo,
 } from 'bluesquare-components';
 import { orderBy } from 'lodash';
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
-
 import { getOtChipColors } from '../../constants/chipColors';
 import { baseUrls } from '../../constants/urls';
-
 import {
     useGetOrgUnit,
     useGetOrgUnitListChildren,
     useGetOrgUnitsMapChildren,
 } from './hooks/useGetOrgUnit';
-
 import { Instances } from './components/Instances';
 import { OrgUnitInstances } from './components/OrgUnitInstances';
 import { OrgUnitPaper } from './components/OrgUnitPaper';
@@ -28,7 +26,6 @@ import { OrgUnitTreeviewModal } from '../orgUnits/components/TreeView/OrgUnitTre
 import { OrgUnitBreadcrumbs } from '../orgUnits/components/breadcrumbs/OrgUnitBreadcrumbs';
 import { OrgUnit } from '../orgUnits/types/orgUnit';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
-import { useRedirectTo } from '../../routing/routing';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

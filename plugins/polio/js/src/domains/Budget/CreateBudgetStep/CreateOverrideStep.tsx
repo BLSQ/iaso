@@ -13,6 +13,7 @@ import {
     ConfirmCancelModal,
     FilesUpload,
     makeFullModal,
+    useRedirectToReplace,
 } from 'bluesquare-components';
 import { Box, Chip, Divider, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -34,7 +35,6 @@ import { OverrideStepButton } from './OverrideStepButton';
 import { useSaveOverrideStep } from '../hooks/api/useSaveOverrideStep';
 import { useGetWorkflowStatesForDropdown } from '../hooks/api/useGetBudget';
 import { baseUrls } from '../../../constants/urls';
-import { useRedirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 
 type Props = {
     budgetProcessId?: string;

@@ -5,19 +5,17 @@ import React, {
     ReactNode,
     ReactElement,
 } from 'react';
-import { useSafeIntl, Column } from 'bluesquare-components';
-
+import {
+    useSafeIntl,
+    Column,
+    useRedirectToReplace,
+} from 'bluesquare-components';
 import { useInstancesColumns, useInstanceVisibleColumns } from '../utils';
-
 import { useGetPossibleFields } from '../../forms/hooks/useGetPossibleFields';
-
 import { ColumnsSelectDrawer } from '../../../components/tables/ColumnSelectDrawer';
-
 import { Form } from '../../forms/types/forms';
-
 import MESSAGES from '../messages';
 import { Instance } from '../types/instance';
-import { useRedirectToReplace } from '../../../routing/routing';
 
 type Params = {
     order?: string;

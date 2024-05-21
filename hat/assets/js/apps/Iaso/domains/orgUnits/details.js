@@ -6,6 +6,7 @@ import {
     commonStyles,
     LoadingSpinner,
     useSafeIntl,
+    useGoBack,
 } from 'bluesquare-components';
 import omit from 'lodash/omit';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -19,7 +20,6 @@ import {
     onlyChildrenParams,
     orgUnitFiltersWithPrefix,
 } from '../../constants/filters';
-import { useGoBack } from '../../routing/hooks/useGoBack.tsx';
 import { baseUrls } from '../../constants/urls';
 import {
     deleteForm,
@@ -50,7 +50,7 @@ import {
     getOrgUnitsTree,
 } from './utils';
 import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
-import { useRedirectToReplace } from '../../routing/routing.ts';
+import { useRedirectToReplace } from 'bluesquare-components';
 
 const baseUrl = baseUrls.orgUnitDetails;
 const useStyles = makeStyles(theme => ({

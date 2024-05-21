@@ -1,8 +1,9 @@
 import React from 'react';
 import {
     formatThousand,
-    IconButton as IconButtonComponent,
+    IconButton,
     textPlaceholder,
+    LinkWithLocation
 } from 'bluesquare-components';
 import GroupsDialog from './components/GroupsDialog';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
@@ -10,7 +11,6 @@ import MESSAGES from './messages';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell.tsx';
 import { baseUrls } from '../../../constants/urls';
 import { getChipColors } from '../../../constants/chipColors';
-import { LinkWithLocation } from '../../../components/nav/LinkWithLocation.tsx';
 
 export const baseUrl = baseUrls.groups;
 
@@ -67,7 +67,7 @@ const TableColumns = (formatMessage, params, deleteGroup, saveGroup) => [
             <section>
                 <GroupsDialog
                     renderTrigger={({ openDialog }) => (
-                        <IconButtonComponent
+                        <IconButton
                             onClick={openDialog}
                             icon="edit"
                             tooltipMessage={MESSAGES.edit}

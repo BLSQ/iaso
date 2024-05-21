@@ -5,7 +5,7 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { Column } from 'bluesquare-components';
+import { Column, useRedirectToReplace } from 'bluesquare-components';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
@@ -20,7 +20,6 @@ import { useGetForms } from '../hooks/useGetForms';
 import { useGetInstanceApi, useGetInstances } from '../hooks/useGetInstances';
 import { baseUrls } from '../../../constants/urls';
 import * as Permission from '../../../utils/permissions';
-import { useRedirectToReplace } from '../../../routing/routing';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { userHasPermission } from '../../users/utils';
 import { defaultSorted, INSTANCE_METAS_FIELDS } from '../config';

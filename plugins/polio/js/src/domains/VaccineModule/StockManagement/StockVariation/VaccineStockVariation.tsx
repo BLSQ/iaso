@@ -4,6 +4,7 @@ import {
     commonStyles,
     textPlaceholder,
     useSafeIntl,
+    useGoBack,
 } from 'bluesquare-components';
 import { Grid, Box, Paper, Tab, Tabs, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -12,7 +13,6 @@ import { DisplayIfUserHasPerm } from '../../../../../../../../hat/assets/js/apps
 import { baseUrls } from '../../../../constants/urls';
 import { useParamsObject } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import { useTabs } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useTabs';
-import { useGoBack } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useGoBack';
 import { DESTRUCTION, FORM_A, INCIDENT } from '../constants';
 import { StockVariationParams, StockVariationTab } from '../types';
 import TopBar from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';

@@ -1,7 +1,12 @@
 import { Box } from '@mui/material';
 import { red } from '@mui/material/colors';
 import { makeStyles } from '@mui/styles';
-import { LoadingSpinner, commonStyles } from 'bluesquare-components';
+import {
+    LoadingSpinner,
+    commonStyles,
+    useRedirectTo,
+    useRedirectToReplace,
+} from 'bluesquare-components';
 import classNames from 'classnames';
 import L from 'leaflet';
 import { keyBy } from 'lodash';
@@ -21,18 +26,13 @@ import {
     getOrgUnitsBounds,
     mergeBounds,
 } from '../../../utils/map/mapUtils';
-
 import CircleMarkerComponent from '../../../components/maps/markers/CircleMarkerComponent';
 import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
 import { MapLegend } from './MapLegend';
-
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { OrgunitTypes } from '../../orgUnits/types/orgunitTypes';
-
 import { Legend, useGetlegendOptions } from '../hooks/useGetLegendOptions';
-
 import { MapToggleFullscreen } from './MapToggleFullscreen';
-
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
 import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
 import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
@@ -42,7 +42,6 @@ import { RegistryDetailParams } from '../types';
 import { MapPopUp } from './MapPopUp';
 import { MapSettings, Settings } from './MapSettings';
 import { MapToolTip } from './MapTooltip';
-import { useRedirectTo, useRedirectToReplace } from '../../../routing/routing';
 
 type Props = {
     orgUnit: OrgUnit;

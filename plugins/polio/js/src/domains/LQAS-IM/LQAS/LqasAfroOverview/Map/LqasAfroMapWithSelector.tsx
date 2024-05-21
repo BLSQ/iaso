@@ -1,7 +1,11 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
 import { Box, Paper, Tabs, Tab } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useSafeIntl, commonStyles } from 'bluesquare-components';
+import {
+    useSafeIntl,
+    commonStyles,
+    useRedirectToReplace,
+} from 'bluesquare-components';
 import { LIST, MAP, paperElevation } from '../../../shared/constants';
 import { LqasAfroMap } from './LqasAfroMap';
 import MESSAGES from '../../../../../constants/messages';
@@ -10,7 +14,6 @@ import { LqasAfroSelector } from '../LqasAfroSelector';
 import { LqasAfroList } from '../ListView/LqasAfroList';
 import { LqasAfroOverviewContextProvider } from '../Context/LqasAfroOverviewContext';
 import { Sides } from '../../../../../constants/types';
-import { useRedirectToReplace } from '../../../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import { baseUrls } from '../../../../../constants/urls';
 
 const useStyles = makeStyles(theme => ({

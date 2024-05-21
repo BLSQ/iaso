@@ -1,6 +1,11 @@
 /* eslint-disable camelcase */
 import React, { FunctionComponent, useCallback } from 'react';
-import { LoadingSpinner, commonStyles } from 'bluesquare-components';
+import {
+    LoadingSpinner,
+    commonStyles,
+    useRedirectToReplace,
+    useGoBack,
+} from 'bluesquare-components';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { FormikProvider, useFormik } from 'formik';
@@ -8,7 +13,6 @@ import classnames from 'classnames';
 import { useParamsObject } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import { useTabs } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useTabs';
 import TopBar from '../../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
-import { useGoBack } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useGoBack';
 import { useSaveVaccineSupplyChainForm } from '../hooks/api/useSaveSupplyChainForm';
 import { VaccineRequestForm } from './VaccineRequestForm/VaccineRequestForm';
 import { PreAlerts } from './PreAlerts/PreAlerts';
@@ -39,7 +43,6 @@ import {
 import { SupplyChainTabs } from './SupplyChainTabs';
 import { Optional } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { baseUrls } from '../../../../constants/urls';
-import { useRedirectToReplace } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 
 const useStyles = makeStyles(theme => {
     return {

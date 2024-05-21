@@ -6,35 +6,29 @@ import React, {
 } from 'react';
 import { Box, Tabs, Tab, Grid, Paper } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-
 import {
     commonStyles,
     useSafeIntl,
     LoadingSpinner,
     useSkipEffectOnMount,
+    useRedirectTo,
+    useRedirectToReplace,
 } from 'bluesquare-components';
-
 import { baseUrls } from '../../constants/urls';
-
 import TopBar from '../../components/nav/TopBarComponent';
-
 import { AssignmentsFilters } from './components/AssignmentsFilters';
 import { AssignmentsMapTab } from './components/AssignmentsMapTab';
 import { AssignmentsListTab } from './components/AssignmentsListTab';
 import { Sidebar } from './components/AssignmentsSidebar';
 import { ParentDialog } from './components/ParentDialog';
-
 import { AssignmentParams, AssignmentApi } from './types/assigment';
 import { Team, SubTeam, User } from './types/team';
 import { AssignmentUnit } from './types/locations';
 import { ParentOrgUnit } from '../orgUnits/types/orgUnit';
 import { useGetAssignmentData } from './hooks/useGetAssignmentData';
-
 import { getSaveParams } from './utils';
-
 import MESSAGES from './messages';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
-import { useRedirectTo, useRedirectToReplace } from '../../routing/routing';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

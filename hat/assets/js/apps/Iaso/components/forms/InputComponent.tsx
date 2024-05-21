@@ -12,7 +12,6 @@ import {
     SearchInput,
     Select,
     TextInput,
-    // @ts-ignore
     translateOptions,
     useSafeIntl,
 } from 'bluesquare-components';
@@ -115,6 +114,7 @@ export type InputComponentProps = {
     renderTags?: (tagValue: Array<any>, getTagProps: any) => Array<any>;
     freeSolo?: boolean; // this props i only use on single select and allow user to give an option not present in the list. Errors will be ignored
     returnFullObject?: boolean;
+    dataTestId?: string;
 };
 
 const useLocalizedNumberInputOptions = (
@@ -169,6 +169,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
     phoneInputOptions = {},
     freeSolo = false,
     returnFullObject = false,
+    dataTestId,
 }) => {
     const [displayPassword, setDisplayPassword] = useState(false);
     const { formatMessage } = useSafeIntl();
@@ -202,6 +203,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
                         onChange={input => {
                             onChange(keyValue, input);
                         }}
+                        dataTestId={dataTestId}
                     />
                 );
             case 'password':
@@ -220,6 +222,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
                         onClick={toggleDisplayPassword}
                         displayPassword={displayPassword}
                         tooltipMessage={MESSAGES.displayPassword}
+                        dataTestId={dataTestId}
                     />
                 );
             case 'number':
@@ -238,6 +241,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
                             onChange(keyValue, input);
                         }}
                         setFieldError={setFieldError}
+                        dataTestId={dataTestId}
                         // eslint-disable-next-line react/jsx-props-no-spreading
                         {...localizedNumberOptions}
                     />
@@ -263,6 +267,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
                         helperText={helperText}
                         freeSolo={!multi && freeSolo}
                         returnFullObject={returnFullObject}
+                        dataTestId={dataTestId}
                     />
                 );
             case 'arrayInput':
@@ -272,6 +277,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
                         fieldList={value}
                         baseId={keyValue}
                         updateList={list => onChange(keyValue, list)}
+                        dataTestId={dataTestId}
                     />
                 );
             case 'search':
@@ -289,6 +295,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
                         blockForbiddenChars={blockForbiddenChars}
                         onErrorChange={onErrorChange}
                         autoComplete={autoComplete}
+                        dataTestId={dataTestId}
                     />
                 );
             case 'checkbox':
@@ -300,6 +307,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
                         value={value}
                         label={labelText}
                         required={required}
+                        dataTestId={dataTestId}
                     />
                 );
             case 'radio':
@@ -313,6 +321,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
                         options={options}
                         value={value}
                         required={required}
+                        dataTestId={dataTestId}
                     />
                 );
             case 'phone':

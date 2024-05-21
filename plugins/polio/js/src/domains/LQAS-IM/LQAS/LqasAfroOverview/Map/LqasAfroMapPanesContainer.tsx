@@ -5,7 +5,7 @@ import React, {
     useContext,
 } from 'react';
 import { useMapEvents } from 'react-leaflet';
-import { LoadingSpinner } from 'bluesquare-components';
+import { LoadingSpinner, useRedirectToReplace } from 'bluesquare-components';
 import { COUNTRY, DISTRICT } from '../../../shared/constants';
 import { MapPanes } from '../../../../Campaigns/MapComponent/MapPanes';
 import {
@@ -20,7 +20,6 @@ import { LqasAfroPopup } from './LqasAfroPopUp';
 import { getRound } from '../utils';
 import { LqasAfroOverviewContext } from '../Context/LqasAfroOverviewContext';
 import { lqasDistrictColors } from '../../constants';
-import { useRedirectToReplace } from '../../../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import { baseUrls } from '../../../../../constants/urls';
 
 const getMainLayerStyle = shape => {

@@ -31,6 +31,7 @@ class DataSourceSerializer(serializers.ModelSerializer):
             "projects",
             "default_version",
             "credentials",
+            "tree_config_status_fields",
         ]
 
     url = serializers.SerializerMethodField()
@@ -243,7 +244,12 @@ class DataSourceViewSet(ModelViewSet):
         linked_to = self.kwargs.get("linkedTo", None)
         profile = self.request.user.iaso_profile
         order = self.request.GET.get("order", "name").split(",")
-        sources = DataSource.objects.filter(projects__account=profile.account).distinct()
+        sources = (
+            DataSource.objects.select_related("default_version", "credentials")
+            .prefetch_related("projects", "versions")
+            .filter(projects__account=profile.account)
+            .distinct()
+        )
         if linked_to:
             org_unit = OrgUnit.objects.get(pk=linked_to)
             useful_sources = org_unit.source_set.values_list("algorithm_run__version_2__data_source_id", flat=True)

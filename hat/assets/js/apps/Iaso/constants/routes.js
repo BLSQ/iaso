@@ -530,7 +530,7 @@ export const orgUnitChangeRequestPath = {
 
 export const registryPath = {
     baseUrl: baseUrls.registry,
-    permissions: [Permission.REGISTRY],
+    permissions: [Permission.REGISTRY_WRITE, Permission.REGISTRY_READ],
     component: props => <Registry {...props} />,
     params: [
         {

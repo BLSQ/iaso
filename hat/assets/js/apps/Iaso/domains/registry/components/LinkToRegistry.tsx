@@ -13,7 +13,7 @@ import { baseUrls } from '../../../constants/urls';
 import { redirectTo, redirectToReplace } from '../../../routing/actions';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { OrgUnit, ShortOrgUnit } from '../../orgUnits/types/orgUnit';
-import { userHasPermission } from '../../users/utils';
+import { userHasOneOfPermissions } from '../../users/utils';
 
 import MESSAGES from '../messages';
 
@@ -49,7 +49,13 @@ export const LinkToRegistry: FunctionComponent<Props> = ({
     const targetBlankEnabled = useKeyPressListener('Meta');
     const classes: Record<string, string> = useStyles();
     const dispatch = useDispatch();
-    if (userHasPermission(Permission.REGISTRY, user) && orgUnit) {
+    if (
+        userHasOneOfPermissions(
+            [Permission.REGISTRY_WRITE, Permission.REGISTRY_READ],
+            user,
+        ) &&
+        orgUnit
+    ) {
         const url = `/${baseUrls.registry}/orgUnitId/${orgUnit?.id}`;
         const handleClick = () => {
             if (targetBlankEnabled) {

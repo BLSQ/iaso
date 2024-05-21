@@ -1,19 +1,17 @@
 import json
 import ntpath
 from time import gmtime, strftime
-from typing import Dict, Any, Union
+from typing import Any, Dict, Union
 
 import pandas as pd
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
-from django.db import connection
-from django.db import transaction
-from django.db.models import Q, Count, QuerySet
-from django.http import StreamingHttpResponse, HttpResponse
+from django.db import connection, transaction
+from django.db.models import Count, Q, QuerySet
+from django.http import HttpResponse, StreamingHttpResponse
 from django.utils.timezone import now
-from rest_framework import serializers, status
-from rest_framework import viewsets, permissions
+from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
@@ -22,26 +20,27 @@ from typing_extensions import Annotated, TypedDict
 
 import iaso.periods as periods
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
-from hat.audit.models import log_modification, INSTANCE_API
+from hat.audit.models import INSTANCE_API, log_modification
 from hat.common.utils import queryset_iterator
+from hat.menupermissions import models as permission
 from iaso.api.serializers import OrgUnitSerializer
 from iaso.models import (
-    Instance,
-    OrgUnit,
-    Project,
-    InstanceFile,
-    InstanceQuerySet,
-    InstanceLock,
     Entity,
+    Instance,
+    InstanceFile,
+    InstanceLock,
+    InstanceQuerySet,
+    OrgUnit,
     OrgUnitChangeRequest,
+    Project,
 )
 from iaso.utils import timestamp_to_datetime
+
+from ..models.forms import CR_MODE_IF_REFERENCE_FORM, CR_MODE_NONE
 from . import common
 from .comment import UserSerializerForComment
-from .common import safe_api_import, TimestampField, FileFormatEnum, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
-from .instance_filters import parse_instance_filters, get_form_from_instance_filters
-from hat.menupermissions import models as permission
-from ..models.forms import CR_MODE_NONE, CR_MODE_IF_REFERENCE_FORM
+from .common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum, TimestampField, safe_api_import
+from .instance_filters import get_form_from_instance_filters, parse_instance_filters
 
 
 class InstanceSerializer(serializers.ModelSerializer):
@@ -85,7 +84,8 @@ class HasInstancePermission(permissions.BasePermission):
         return request.user.is_authenticated and (
             request.user.has_perm(permission.FORMS)
             or request.user.has_perm(permission.SUBMISSIONS)
-            or request.user.has_perm(permission.REGISTRY)
+            or request.user.has_perm(permission.REGISTRY_WRITE)
+            or request.user.has_perm(permission.REGISTRY_READ)
         )
 
     def has_object_permission(self, request: Request, view, obj: Instance):

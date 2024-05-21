@@ -245,12 +245,12 @@ const PERMISSIONS_MESSAGES = defineMessages({
         defaultMessage:
             'View and edit the entity duplicates - e.g. decide to merge or not similar entities',
     },
-    iaso_registry: {
-        id: 'iaso.permissions.iaso_registry',
-        defaultMessage: 'Registry',
+    iaso_registry_write: {
+        id: 'iaso.permissions.iaso_registry_write',
+        defaultMessage: 'Registry - Write',
     },
     iaso_registry_tooltip: {
-        id: 'iaso.permissions.tooltip.iaso_registry',
+        id: 'iaso.permissions.tooltip.iaso_registry_write',
         defaultMessage: 'Summary view of data collected per organisation unit',
     },
     iaso_org_unit_types: {

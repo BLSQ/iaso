@@ -249,9 +249,19 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.iaso_registry_write',
         defaultMessage: 'Registry - Write',
     },
-    iaso_registry_tooltip: {
+    iaso_registry_read: {
+        id: 'iaso.permissions.iaso_registry_read',
+        defaultMessage: 'Registry - Read',
+    },
+    iaso_registry_read_tooltip: {
+        id: 'iaso.permissions.tooltip.iaso_registry_read',
+        defaultMessage:
+            'Summary view of data collected per organisation unit -- Read',
+    },
+    iaso_registry_write_tooltip: {
         id: 'iaso.permissions.tooltip.iaso_registry_write',
-        defaultMessage: 'Summary view of data collected per organisation unit',
+        defaultMessage:
+            'Summary view of data collected per organisation unit -- Write',
     },
     iaso_org_unit_types: {
         id: 'iaso.permissions.iaso_org_unit_types',

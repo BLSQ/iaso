@@ -162,20 +162,26 @@ export const Instances: FunctionComponent<Props> = ({
                                         )}
                                     />
                                 )}
-                                <Box
-                                    display="flex"
-                                    justifyContent="flex-end"
-                                    width="100%"
-                                    mt={2}
-                                >
-                                    <DownloadButtonsComponent
-                                        csvUrl={`${apiUrl}&csv=true`}
-                                        xlsxUrl={`${apiUrl}&xlsx=true`}
-                                        disabled={
-                                            isFetchingList || data?.count === 0
-                                        }
-                                    />
-                                </Box>
+                                {userHasPermission(
+                                    Permission.REGISTRY_WRITE,
+                                    currentUser,
+                                ) && (
+                                    <Box
+                                        display="flex"
+                                        justifyContent="flex-end"
+                                        width="100%"
+                                        mt={2}
+                                    >
+                                        <DownloadButtonsComponent
+                                            csvUrl={`${apiUrl}&csv=true`}
+                                            xlsxUrl={`${apiUrl}&xlsx=true`}
+                                            disabled={
+                                                isFetchingList ||
+                                                data?.count === 0
+                                            }
+                                        />
+                                    </Box>
+                                )}
                                 <Box
                                     display="flex"
                                     justifyContent="flex-end"
@@ -184,6 +190,10 @@ export const Instances: FunctionComponent<Props> = ({
                                 >
                                     {orgUnitsWithoutCurrentForm &&
                                         orgUnitsWithoutCurrentForm.count > 0 &&
+                                        userHasPermission(
+                                            Permission.REGISTRY_WRITE,
+                                            currentUser,
+                                        ) &&
                                         userHasPermission(
                                             Permission.SUBMISSIONS_UPDATE,
                                             currentUser,
@@ -219,12 +229,9 @@ export const Instances: FunctionComponent<Props> = ({
                             columns={tableColumns}
                             count={data?.count ?? 0}
                             params={params}
-                            onTableParamsChange={p =>
-                                dispatch(
-                                    redirectToReplace(baseUrls.registry, p),
-                                )
-                            }
-                            extraProps={{ loading: isFetchingList }}
+                            extraProps={{
+                                loading: isFetchingList,
+                            }}
                         />
                     </Box>
                 </>

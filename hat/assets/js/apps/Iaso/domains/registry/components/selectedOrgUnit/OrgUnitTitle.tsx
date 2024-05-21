@@ -7,7 +7,10 @@ import React, { FunctionComponent } from 'react';
 import { baseUrls } from '../../../../constants/urls';
 import MESSAGES from '../../messages';
 
+import * as Permissions from '../../../../utils/permissions';
+import { useCurrentUser } from '../../../../utils/usersUtils';
 import { OrgUnit } from '../../../orgUnits/types/orgUnit';
+import { userHasPermission } from '../../../users/utils';
 import { RegistryParams } from '../../types';
 import { LinkToRegistry } from '../LinkToRegistry';
 
@@ -36,6 +39,7 @@ export const OrgUnitTitle: FunctionComponent<Props> = ({ orgUnit, params }) => {
     const classes: Record<string, string> = useStyles();
 
     const isRootOrgUnit = params.orgUnitId === `${orgUnit?.id}`;
+    const currentUser = useCurrentUser();
     return (
         <Grid container className={classes.paperTitle}>
             <Grid xs={8} item>
@@ -55,24 +59,31 @@ export const OrgUnitTitle: FunctionComponent<Props> = ({ orgUnit, params }) => {
                 className={classes.paperTitleButtonContainer}
             >
                 <Box className={classes.paperTitleButton}>
-                    {isRootOrgUnit && (
-                        <IconButton
-                            url={`${baseUrls.orgUnitDetails}/orgUnitId/0/levels/${orgUnit.id}`}
-                            color="secondary"
-                            overrideIcon={AddIcon}
-                            tooltipMessage={MESSAGES.addOrgUnitChild}
-                            iconSize="small"
-                            size="small"
-                        />
+                    {userHasPermission(
+                        Permissions.REGISTRY_WRITE,
+                        currentUser,
+                    ) && (
+                        <>
+                            {isRootOrgUnit && (
+                                <IconButton
+                                    url={`${baseUrls.orgUnitDetails}/orgUnitId/0/levels/${orgUnit.id}`}
+                                    color="secondary"
+                                    overrideIcon={AddIcon}
+                                    tooltipMessage={MESSAGES.addOrgUnitChild}
+                                    iconSize="small"
+                                    size="small"
+                                />
+                            )}
+                            <IconButton
+                                url={`${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}`}
+                                color="secondary"
+                                icon="edit"
+                                tooltipMessage={MESSAGES.editOrgUnit}
+                                iconSize="small"
+                                size="small"
+                            />
+                        </>
                     )}
-                    <IconButton
-                        url={`${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}`}
-                        color="secondary"
-                        icon="edit"
-                        tooltipMessage={MESSAGES.editOrgUnit}
-                        iconSize="small"
-                        size="small"
-                    />
                     {!isRootOrgUnit && (
                         <LinkToRegistry
                             orgUnit={orgUnit}

@@ -17,7 +17,7 @@ import { userHasPermission } from '../../../users/utils';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { baseUrls } from '../../../../constants/urls';
 import { redirectToReplace } from '../../../../routing/actions';
-import * as Permission from '../../../../utils/permissions';
+import * as Permissions from '../../../../utils/permissions';
 import { LinkToInstance } from '../../../instances/components/LinkToInstance';
 import { Instance } from '../../../instances/types/instance';
 import { OrgUnit } from '../../../orgUnits/types/orgUnit';
@@ -110,39 +110,40 @@ export const InstanceTitle: FunctionComponent<Props> = ({
                     withMarginTop={false}
                 />
             </Grid>
-            {currentInstance && (
-                <Grid
-                    xs={4}
-                    item
-                    container
-                    justifyContent="flex-end"
-                    alignItems="center"
-                    className={classes.paperTitleButtonContainer}
-                >
-                    <Box className={classes.paperTitleButton}>
-                        {userHasPermission(
-                            Permission.SUBMISSIONS_UPDATE,
-                            currentUser,
-                        ) && (
-                            <IconButton
-                                onClick={() => getEnketoUrl()}
-                                overrideIcon={EnketoIcon}
+            {currentInstance &&
+                userHasPermission(Permissions.REGISTRY_WRITE, currentUser) && (
+                    <Grid
+                        xs={4}
+                        item
+                        container
+                        justifyContent="flex-end"
+                        alignItems="center"
+                        className={classes.paperTitleButtonContainer}
+                    >
+                        <Box className={classes.paperTitleButton}>
+                            {userHasPermission(
+                                Permissions.SUBMISSIONS_UPDATE,
+                                currentUser,
+                            ) && (
+                                <IconButton
+                                    onClick={() => getEnketoUrl()}
+                                    overrideIcon={EnketoIcon}
+                                    color="secondary"
+                                    iconSize="small"
+                                    size="small"
+                                    tooltipMessage={MESSAGES.editOnEnketo}
+                                />
+                            )}
+                            <LinkToInstance
+                                instanceId={`${currentInstance.id}`}
+                                useIcon
                                 color="secondary"
                                 iconSize="small"
                                 size="small"
-                                tooltipMessage={MESSAGES.editOnEnketo}
                             />
-                        )}
-                        <LinkToInstance
-                            instanceId={`${currentInstance.id}`}
-                            useIcon
-                            color="secondary"
-                            iconSize="small"
-                            size="small"
-                        />
-                    </Box>
-                </Grid>
-            )}
+                        </Box>
+                    </Grid>
+                )}
         </Grid>
     );
 };

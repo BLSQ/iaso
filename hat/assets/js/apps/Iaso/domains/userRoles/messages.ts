@@ -65,6 +65,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.error.fieldRequired',
         defaultMessage: 'This field is required',
     },
+    userRolePermissions: {
+        id: 'iaso.userRoles.userRolePermissions',
+        defaultMessage: 'User role permissions',
+    },
 });
 
 export default MESSAGES;

@@ -1,10 +1,13 @@
 import React, { ReactElement, useMemo } from 'react';
 import { useSafeIntl, Column, IntlFormatMessage } from 'bluesquare-components';
+import { Switch } from '@mui/material';
 import { EditUserRoleDialog } from './components/CreateEditUserRole';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell';
 import MESSAGES from './messages';
+import USER_MESSAGES from '../users/messages';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
-import { UserRole } from './types/userRoles';
+import { UserRole, Permission } from './types/userRoles';
+import PermissionTooltip from '../users/components/PermissionTooltip';
 
 export const useGetUserRolesColumns = (
     // eslint-disable-next-line no-unused-vars
@@ -60,4 +63,78 @@ export const useGetUserRolesColumns = (
         ];
         return columns;
     }, [deleteUserRole, formatMessage]);
+};
+
+export const useUserPermissionColumns = (
+    // eslint-disable-next-line no-unused-vars
+    setPermissions: (permission: Permission, isChecked: boolean) => void,
+    userRolePermissions: Permission[],
+): Array<Column> => {
+    const { formatMessage } = useSafeIntl();
+    return useMemo(() => {
+        return [
+            {
+                Header: '',
+                id: 'tooltip',
+                sortable: false,
+                align: 'center',
+                width: 50,
+                Cell: settings => {
+                    return (
+                        <PermissionTooltip
+                            codename={`${settings.row.original.codename}_tooltip`}
+                        />
+                    );
+                },
+            },
+            {
+                Header: formatMessage(USER_MESSAGES.permissions),
+                id: 'name',
+                accessor: 'name',
+                sortable: false,
+                width: 250,
+                align: 'left',
+                Cell: settings => {
+                    if (settings.row.original.group) {
+                        return (
+                            <strong>{settings.row.original.codename}</strong>
+                        );
+                    }
+                    return settings.row.original.name;
+                },
+            },
+            {
+                Header: formatMessage(MESSAGES.userRolePermissions),
+                id: 'codename',
+                accessor: 'codename',
+                sortable: false,
+                Cell: settings => {
+                    if (!settings.row.original.group) {
+                        return (
+                            <Switch
+                                className="permission-checkbox"
+                                id={`permission-checkbox-${settings.row.original.codename}`}
+                                checked={Boolean(
+                                    userRolePermissions.find(
+                                        permi =>
+                                            permi.codename ===
+                                            settings.row.original.codename,
+                                    ),
+                                )}
+                                onChange={e =>
+                                    setPermissions(
+                                        settings.row.original,
+                                        e.target.checked,
+                                    )
+                                }
+                                name={settings.row.original.codename}
+                                color="primary"
+                            />
+                        );
+                    }
+                    return '';
+                },
+            },
+        ];
+    }, [formatMessage, setPermissions, userRolePermissions]);
 };

@@ -1246,6 +1246,7 @@
     "iaso.userRoles.delete": "Etes-vous sûr(e) de vouloir effacer ce role d'utilisateur?",
     "iaso.userRoles.edit": "Editer un rôle d'utilisateur",
     "iaso.userRoles.title": "Rôles des utilisateurs",
+    "iaso.userRoles.userRolePermissions": "Permissions du rôle d'utilisateurs",
     "iaso.users.addLocations": "Ajouter la(les) localisation(s)",
     "iaso.users.addProjects": "Ajouter au(x) projet(s)",
     "iaso.users.addRoles": "Ajouter le(s) rôle(s)",

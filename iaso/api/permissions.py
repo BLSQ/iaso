@@ -24,9 +24,8 @@ class PermissionsViewSet(viewsets.ViewSet):
 
     permission_classes = [permissions.IsAuthenticated]
 
-    @staticmethod
-    def list(request):
-        perms = PermissionsViewSet.queryset(request)
+    def list(self, request):
+        perms = self.queryset(request)
 
         result = []
         for permission in perms:
@@ -34,19 +33,18 @@ class PermissionsViewSet(viewsets.ViewSet):
 
         return Response({"permissions": sorted(result, key=itemgetter("name"))})
 
-    @staticmethod
     @action(methods=["GET"], detail=False)
-    def grouped_permissions(request):
-        perms = PermissionsViewSet.queryset(request)
+    def grouped_permissions(self, request):
+        perms = self.queryset(request)
         result = {}
         for group in PERMISSIONS_PRESENTATION.keys():
             result[group] = []
             for permission in perms.filter(codename__in=PERMISSIONS_PRESENTATION[group]):
                 result[group].append({"id": permission.id, "name": _(permission.name), "codename": permission.codename})
+
         return Response({"permissions": result})
 
-    @staticmethod
-    def queryset(request):
+    def queryset(self, request):
         if request.user.has_perm(p.USERS_ADMIN) or request.user.has_perm(p.USERS_MANAGED):
             perms = Permission.objects
         else:

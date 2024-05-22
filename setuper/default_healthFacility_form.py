@@ -90,7 +90,7 @@ def setup_health_facility_level_default_form(account_name, iaso_client):
                             "start": "2022-09-07T17:54:55.805+02:00",
                             "end": "2022-09-07T17:55:31.192+02:00",
                             "geo_group": {
-                                "responsable_fosa": random.choice(["Nom 1", "Nom 2", "Nom 3"]),
+                                "responsable_fosa": random.choice(["Respo 1", "Respo 2", "Respo 3"]),
                                 "statut_fosa": random.choice(
                                     ["public", "prive_confessionel", "prive_laic", "militaire", "ong", "autre"]
                                 ),

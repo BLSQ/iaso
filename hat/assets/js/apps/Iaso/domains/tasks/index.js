@@ -1,23 +1,21 @@
 import React from 'react';
-import { FormattedMessage } from 'react-intl';
 import { Box, Button } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import Autorenew from '@mui/icons-material/Autorenew';
 
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-
-import PropTypes from 'prop-types';
-import { getRequest, patchRequest } from 'Iaso/libs/Api';
-import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks';
+import { getRequest, patchRequest } from 'Iaso/libs/Api.ts';
+import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks.ts';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { baseUrls } from 'Iaso/constants/urls';
-import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
-import { TaskDetails } from 'Iaso/domains/tasks/components/TaskDetails';
-import tasksTableColumns from './config';
+import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink.tsx';
+import { TaskDetails } from 'Iaso/domains/tasks/components/TaskDetails.tsx';
 import MESSAGES from './messages';
 import { POLIO_NOTIFICATIONS } from '../../utils/permissions.ts';
 import { userHasPermission } from '../users/utils';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
+import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
+import { useTasksTableColumns } from './config.tsx';
 
 const baseUrl = baseUrls.tasks;
 
@@ -47,9 +45,10 @@ const getRequestParams = (url, params) => {
 
 const defaultOrder = 'created_at';
 
-const Tasks = ({ params }) => {
-    const intl = useSafeIntl();
+const Tasks = () => {
+    const { formatMessage } = useSafeIntl();
     const classes = useStyles();
+    const params = useParamsObject(baseUrl);
 
     const { mutateAsync: killTaskAction } = useSnackMutation(
         task => patchRequest(`/api/tasks/${task.id}/`, task),
@@ -78,10 +77,15 @@ const Tasks = ({ params }) => {
         useCurrentUser(),
     );
 
+    const columns = useTasksTableColumns(
+        killTaskAction,
+        hasPolioNotificationsPerm,
+    );
+
     return (
         <>
             <TopBar
-                title={intl.formatMessage(MESSAGES.tasks)}
+                title={formatMessage(MESSAGES.tasks)}
                 displayBackButton={false}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
@@ -93,7 +97,7 @@ const Tasks = ({ params }) => {
                         onClick={setForceRefresh}
                     >
                         <Autorenew className={classes.buttonIcon} />
-                        <FormattedMessage {...MESSAGES.refresh} />
+                        {formatMessage(MESSAGES.refresh)}
                     </Button>
                 </Box>
                 <TableWithDeepLink
@@ -101,11 +105,7 @@ const Tasks = ({ params }) => {
                     pages={data?.pages}
                     count={data?.count}
                     params={params}
-                    columns={tasksTableColumns(
-                        intl.formatMessage,
-                        killTaskAction,
-                        hasPolioNotificationsPerm,
-                    )}
+                    columns={columns}
                     baseUrl={baseUrl}
                     extraProps={{
                         loading: isLoading,
@@ -117,10 +117,6 @@ const Tasks = ({ params }) => {
             </Box>
         </>
     );
-};
-
-Tasks.propTypes = {
-    params: PropTypes.object.isRequired,
 };
 
 export default Tasks;

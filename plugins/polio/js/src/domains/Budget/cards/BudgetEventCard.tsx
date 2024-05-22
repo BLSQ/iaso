@@ -11,6 +11,7 @@ import {
 import { makeStyles } from '@mui/styles';
 import React, { FunctionComponent, useCallback, useState } from 'react';
 import {
+    formatThousand,
     // @ts-ignore
     useSafeIntl,
 } from 'bluesquare-components';
@@ -24,7 +25,6 @@ import { BudgetFilesModalForCards } from '../pop-ups/BudgetFilesModalForCards';
 
 import { formatComment, shouldOpenModal, useActionMessage } from './utils';
 import { styles as eventStyles } from '../hooks/config';
-import { formatThousand } from '../../../../../../../hat/assets/js/apps/Iaso/utils';
 import { BudgetStep, LinkWithAlias } from '../types';
 import getDisplayName from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { useDeleteRestoreBudgetStep } from '../hooks/api/useGetBudgetDetails';

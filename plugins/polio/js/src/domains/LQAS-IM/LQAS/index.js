@@ -1,17 +1,16 @@
 /* eslint-disable react/no-array-index-key */
 import React, { useCallback, useMemo, useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import {
     useSafeIntl,
     commonStyles,
     useSkipEffectOnMount,
+    useRedirectToReplace,
 } from 'bluesquare-components';
 import { Grid, Box, Paper } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
-import { useDispatch } from 'react-redux';
-import { push } from 'react-router-redux';
+import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject.tsx';
+import { DisplayIfUserHasPerm } from '../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm.tsx';
 import { Filters } from '../shared/Filters.tsx';
 import { CaregiversTable } from '../shared/CaregiversTable.tsx';
 import { GraphTitle } from '../shared/GraphTitle.tsx';
@@ -24,11 +23,11 @@ import { useLqasData } from './hooks/useLqasData.ts';
 import { LqasOverviewContainer } from './CountryOverview/LqasOverviewContainer.tsx';
 import MESSAGES from '../../../constants/messages';
 import { BadRoundNumbers } from '../shared/BadRoundNumber.tsx';
-import { genUrl } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing.ts';
 import { commaSeparatedIdsToArray } from '../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
 import { LIST, paperElevation } from '../shared/constants.ts';
 import { useLqasIm } from '../shared/requests.ts';
 import { Sides } from '../../../constants/types.ts';
+import { baseUrls } from '../../../constants/urls.ts';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -37,11 +36,14 @@ const styles = theme => ({
 
 const useStyles = makeStyles(styles);
 
-export const Lqas = ({ router }) => {
+const baseUrl = baseUrls.lqasCountry;
+
+export const Lqas = () => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const dispatch = useDispatch();
-    const { campaign, country, rounds } = router.params;
+    const params = useParamsObject(baseUrl);
+    const redirectToReplace = useRedirectToReplace();
+    const { campaign, country, rounds } = params;
     // TODO initialize undefined to be able to make boolean check on it
     const [selectedRounds, setSelectedRounds] = useState(
         rounds ? commaSeparatedIdsToArray(rounds) : [undefined, undefined],
@@ -74,12 +76,12 @@ export const Lqas = ({ router }) => {
             const updatedSelection = [...selectedRounds];
             updatedSelection[index] = value;
             setSelectedRounds(updatedSelection);
-            const url = genUrl(router, {
-                rounds: updatedSelection,
+            redirectToReplace(baseUrl, {
+                ...params,
+                rounds: updatedSelection.join(','),
             });
-            dispatch(push(url));
         },
-        [dispatch, router, selectedRounds],
+        [params, redirectToReplace, selectedRounds],
     );
 
     const divider = (
@@ -97,14 +99,14 @@ export const Lqas = ({ router }) => {
                     dropDownOptions[0].value,
                     dropDownOptions[0].value,
                 ]);
-                const url = genUrl(router, {
+                redirectToReplace(baseUrl, {
+                    ...params,
                     rounds: [
                         dropDownOptions[0].value,
                         dropDownOptions[0].value,
                     ],
                     rightTab: LIST,
                 });
-                dispatch(push(url));
             }
             if (dropDownOptions.length > 1) {
                 setSelectedRounds([
@@ -113,7 +115,7 @@ export const Lqas = ({ router }) => {
                 ]);
             }
         }
-    }, [dropDownOptions, campaign, rounds, router, dispatch]);
+    }, [dropDownOptions, campaign, rounds, redirectToReplace, params]);
 
     return (
         <>
@@ -127,11 +129,11 @@ export const Lqas = ({ router }) => {
                         isFetching={isFetching}
                         campaigns={campaigns}
                         campaignsFetching={campaignsFetching}
-                        category="lqas"
+                        isLqas
+                        params={params}
                     />
                 </Box>
                 <Grid container spacing={2} direction="row">
-                    {/* {selectedRounds.map((rnd, index) => ( */}
                     <Grid item xs={6} key={`round_${selectedRounds[0]}_${0}`}>
                         <LqasOverviewContainer
                             round={parseInt(selectedRounds[0], 10)} // parsing the rnd because it will be a string when coming from params
@@ -145,7 +147,7 @@ export const Lqas = ({ router }) => {
                             onRoundChange={onRoundChange(0)}
                             options={dropDownOptions}
                             side={Sides.left}
-                            router={router}
+                            params={params}
                         />
                     </Grid>
                     <Grid item xs={6} key={`round_${selectedRounds[1]}_${1}`}>
@@ -161,10 +163,9 @@ export const Lqas = ({ router }) => {
                             onRoundChange={onRoundChange(1)}
                             options={dropDownOptions}
                             side={Sides.right}
-                            router={router}
+                            params={params}
                         />
                     </Grid>
-                    {/* ))} */}
                 </Grid>
 
                 {campaign && !isFetching && (
@@ -315,8 +316,4 @@ export const Lqas = ({ router }) => {
             </Box>
         </>
     );
-};
-
-Lqas.propTypes = {
-    router: PropTypes.object.isRequired,
 };

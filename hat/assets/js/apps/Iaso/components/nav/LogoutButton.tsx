@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { IconButton, Tooltip } from '@mui/material';
+import { IconButton as MuiIconButton, Tooltip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import ExitIcon from '@mui/icons-material/ExitToApp';
 import { useSafeIntl } from 'bluesquare-components';
@@ -23,14 +23,14 @@ export const LogoutButton: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     return (
         <Tooltip arrow title={formatMessage(MESSAGES.logout)}>
-            <IconButton
+            <MuiIconButton
                 className={classes.logoutButton}
                 color={color}
                 href="/logout-iaso"
                 id="top-bar-logout-button"
             >
                 <ExitIcon />
-            </IconButton>
+            </MuiIconButton>
         </Tooltip>
     );
 };

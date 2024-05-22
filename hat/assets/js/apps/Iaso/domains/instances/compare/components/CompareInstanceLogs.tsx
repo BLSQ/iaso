@@ -1,57 +1,43 @@
 import React, { FunctionComponent, useEffect, useState, useMemo } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
 import { Box, Grid, Theme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     useSafeIntl,
     commonStyles,
     IntlFormatMessage,
+    useRedirectToReplace,
+    useGoBack,
 } from 'bluesquare-components';
 
 import {
     useGetInstanceLogs,
     useGetInstanceLogDetail,
 } from '../hooks/useGetInstanceLogs';
-
 import InputComponent from '../../../../components/forms/InputComponent';
 import TopBar from '../../../../components/nav/TopBarComponent';
 import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
 import { InstanceLogDetail } from './InstanceLogDetail';
 import { InstanceLogInfos } from './InstanceLogInfos';
-
-import { redirectToReplace } from '../../../../routing/actions';
-
 import MESSAGES from '../messages';
 import { baseUrls } from '../../../../constants/urls';
+import { useParamsObject } from '../../../../routing/hooks/useParamsObject';
 
-type RouterCustom = {
-    prevPathname: string | undefined;
-};
-type State = {
-    routerCustom: RouterCustom;
-};
 type Params = {
     instanceIds: string;
     logA: string;
     logB: string;
-};
-type Router = {
-    goBack: () => void;
-};
-
-type Props = {
-    params: Params;
-    router: Router;
 };
 
 const useStyles = makeStyles((theme: Theme) => ({
     ...commonStyles(theme),
 }));
 
-export const CompareInstanceLogs: FunctionComponent<Props> = ({
-    params,
-    router,
-}) => {
+export const CompareInstanceLogs: FunctionComponent = () => {
+    const params = useParamsObject(
+        baseUrls.compareInstanceLogs,
+    ) as unknown as Params;
+    const goBack = useGoBack(baseUrls.instances);
+    const redirectToReplace = useRedirectToReplace();
     const { instanceIds: instanceId } = params;
 
     const {
@@ -87,12 +73,6 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
 
-    const dispatch = useDispatch();
-
-    const prevPathname: string | undefined = useSelector(
-        (state: State) => state.routerCustom.prevPathname,
-    );
-
     const [logAInitialValue, setLogAInitialValue] = useState<
         number | undefined
     >(undefined);
@@ -105,7 +85,7 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
             ...params,
             [key]: value,
         };
-        dispatch(redirectToReplace(baseUrls.compareInstanceLogs, newParams));
+        redirectToReplace(baseUrls.compareInstanceLogs, newParams);
     };
 
     useEffect(() => {
@@ -123,9 +103,7 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
                 (!params.logA && instanceLogsDropdown[0]?.value) ||
                 (!params.logB && instanceLogsDropdown[1]?.value)
             ) {
-                dispatch(
-                    redirectToReplace(baseUrls.compareInstanceLogs, newParams),
-                );
+                redirectToReplace(baseUrls.compareInstanceLogs, newParams);
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -150,13 +128,7 @@ export const CompareInstanceLogs: FunctionComponent<Props> = ({
             <TopBar
                 title={formatMessage(MESSAGES.instanceLogsTitle)}
                 displayBackButton
-                goBack={() => {
-                    if (prevPathname) {
-                        router.goBack();
-                    } else {
-                        dispatch(redirectToReplace(baseUrls.instances, {}));
-                    }
-                }}
+                goBack={goBack}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Grid container spacing={2}>

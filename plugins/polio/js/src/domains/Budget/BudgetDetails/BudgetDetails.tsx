@@ -7,51 +7,62 @@ import React, {
     useState,
 } from 'react';
 import { Box, Grid, useMediaQuery, useTheme } from '@mui/material';
-
-import { useDispatch, useSelector } from 'react-redux';
 import { groupBy } from 'lodash';
-import { Paginated } from 'bluesquare-components';
+import {
+    Paginated,
+    useGoBack,
+    useRedirectToReplace,
+} from 'bluesquare-components';
+import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { useStyles } from '../../../styles/theme';
-import { BUDGET, BUDGET_DETAILS } from '../../../constants/routes';
 import { useTableState } from '../hooks/config';
-import { redirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 import { useBoundState } from '../../../../../../../hat/assets/js/apps/Iaso/hooks/useBoundState';
 import { Optional } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { handleTableDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/utils/table';
 import { useGetBudgetForCampaign } from '../hooks/api/useGetBudget';
 import { useGetBudgetDetails } from '../hooks/api/useGetBudgetDetails';
 import { BudgetStep } from '../types';
-
 import { BudgetDetailsCardsLayout } from './mobile/BudgetDetailsCardsLayout';
 import { BudgetDetailsTableLayout } from './BudgetDetailsTableLayout';
 import { BudgetDetailsFiltersMobile } from './mobile/BudgetDetailsFiltersMobile';
 import { BudgetDetailsInfos } from './BudgetDetailsInfos';
+import { baseUrls } from '../../../constants/urls';
 
-type Props = {
-    router: any;
+type BudgetProcessDetailsParams = {
+    campaignName?: string;
+    budgetProcessId: string;
+    country?: string;
+    show_hidden?: string;
+    action?: string;
+    quickTransition?: string;
+    previousStep?: string;
+    transition_key?: string;
+    pageSize?: string;
+    page?: string;
+    order?: string;
 };
 
-export const BudgetProcessDetails: FunctionComponent<Props> = ({ router }) => {
-    const { params } = router;
-    const { campaignName, budgetProcessId, transition_key, ...rest } = params;
+const baseUrl = baseUrls.budgetDetails;
+export const BudgetProcessDetails: FunctionComponent = () => {
+    const params = useParamsObject(baseUrl) as BudgetProcessDetailsParams;
+    const goBack = useGoBack(baseUrls.budget);
+    const redirectToReplace = useRedirectToReplace();
     const classes = useStyles();
+
+    const { campaignName, budgetProcessId, transition_key, ...rest } = params;
     const [showHidden, setShowHidden] = useState<boolean>(
-        rest.show_hidden === 'true',
+        rest?.show_hidden === 'true',
     );
 
     const apiParams = useMemo(() => {
         return {
             ...rest,
-            deletion_status: rest.show_hidden === 'true' ? 'all' : undefined,
+            show_hidden: rest?.show_hidden === 'true',
+            deletion_status: showHidden ? 'all' : undefined,
             budget_process_id: budgetProcessId,
             transition_key__in: transition_key,
         };
-    }, [budgetProcessId, rest, transition_key]);
-
-    // @ts-ignore
-    const prevPathname = useSelector(state => state.routerCustom.prevPathname);
-    const dispatch = useDispatch();
+    }, [budgetProcessId, rest, showHidden, transition_key]);
 
     const theme = useTheme();
     const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
@@ -74,7 +85,7 @@ export const BudgetProcessDetails: FunctionComponent<Props> = ({ router }) => {
         const repeat = budgetProcess?.next_transitions?.filter(
             step => step.key.includes('repeat') && step.allowed,
         );
-        const toDisplay = new Set(
+        const toDisplay = new Set<string>(
             regular
                 ?.filter(transition => !transition.key.includes('repeat'))
                 .map(transition => transition.label),
@@ -95,9 +106,12 @@ export const BudgetProcessDetails: FunctionComponent<Props> = ({ router }) => {
     const onCardPaginationChange = useCallback(
         (_value, newPage) => {
             setPage(newPage);
-            handleTableDeepLink(BUDGET_DETAILS)({ ...params, page: newPage });
+            redirectToReplace(baseUrls.budgetDetails, {
+                ...params,
+                page: newPage,
+            });
         },
-        [params, setPage],
+        [params, redirectToReplace, setPage],
     );
     const stepsList = Object.entries(
         groupBy(budgetProcess?.possible_transitions, 'label'),
@@ -107,15 +121,9 @@ export const BudgetProcessDetails: FunctionComponent<Props> = ({ router }) => {
     return (
         <>
             <TopBar
-                title={campaignName}
+                title={campaignName as string}
                 displayBackButton
-                goBack={() => {
-                    if (prevPathname) {
-                        router.goBack();
-                    } else {
-                        dispatch(redirectToReplace(BUDGET, {}));
-                    }
-                }}
+                goBack={goBack}
             />
             {/* @ts-ignore */}
             <Box className={classes.containerFullHeightNoTabPadded}>

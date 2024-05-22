@@ -2,7 +2,6 @@ import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { FilterButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
-import { NOPV2_AUTH } from '../../../../constants/routes';
 import { useFilterState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import MESSAGES from '../../../../constants/messages';
@@ -13,8 +12,10 @@ import { VaccineAuthParams } from '../types';
 import { CreateAuthorisationModal } from '../Details/Modals/CreateEdit/CreateEditAuthorisationModal';
 import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { userHasPermission } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import { baseUrls } from '../../../../constants/urls';
+import { VACCINE_AUTH_ADMIN } from '../../../../constants/permissions';
 
-const baseUrl = NOPV2_AUTH;
+const baseUrl = baseUrls.nopv2Auth;
 type Props = { params: VaccineAuthParams };
 
 export const Nopv2AuthorisationsFilters: FunctionComponent<Props> = ({
@@ -69,10 +70,7 @@ export const Nopv2AuthorisationsFilters: FunctionComponent<Props> = ({
                             onFilter={handleSearch}
                         />
                     </Box>
-                    {userHasPermission(
-                        'iaso_polio_vaccine_authorizations_admin',
-                        currentUser,
-                    ) && (
+                    {userHasPermission(VACCINE_AUTH_ADMIN, currentUser) && (
                         <Box mt={2} mb={2}>
                             <CreateAuthorisationModal
                                 iconProps={{

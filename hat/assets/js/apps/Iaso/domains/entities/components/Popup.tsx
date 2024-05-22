@@ -1,7 +1,6 @@
 import React, { createRef, FunctionComponent } from 'react';
 
 import { Popup } from 'react-leaflet';
-import { Link } from 'react-router';
 import classNames from 'classnames';
 
 import {
@@ -15,7 +14,11 @@ import {
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
-import { useSafeIntl, mapPopupStyles } from 'bluesquare-components';
+import {
+    useSafeIntl,
+    mapPopupStyles,
+    LinkWithLocation,
+} from 'bluesquare-components';
 import PopupItemComponent from '../../../components/maps/popups/PopupItemComponent';
 import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
 
@@ -120,13 +123,13 @@ export const PopupComponent: FunctionComponent<Props> = ({
                                         color="primary"
                                         size="small"
                                     >
-                                        <Link
+                                        <LinkWithLocation
                                             target="_blank"
                                             to={`/${baseUrls.entityDetails}/entityId/${location.id}`}
                                             className={classes.linkButton}
                                         >
                                             {formatMessage(MESSAGES.see)}
-                                        </Link>
+                                        </LinkWithLocation>
                                     </Button>
                                 </Grid>
                             </Box>

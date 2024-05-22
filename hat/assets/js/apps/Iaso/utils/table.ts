@@ -3,15 +3,7 @@ import {
     selectionInitialState,
     setTableSelection,
 } from 'bluesquare-components';
-import { redirectToReplace } from '../routing/actions';
-import { dispatch } from '../redux/store';
 import { Selection } from '../domains/orgUnits/types/selection';
-
-export const handleTableDeepLink = (baseUrl: string) => {
-    return newParams => {
-        dispatch(redirectToReplace(baseUrl, newParams));
-    };
-};
 
 type UseTableSelection<T> = {
     selection: Selection<T>;

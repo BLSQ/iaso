@@ -14,7 +14,7 @@ import { useGetStatusMessage, getOrgUnitGroups } from './utils';
 import {
     DateTimeCell,
     DateTimeCellRfc,
-} from '../../components/Cells/DateTimeCell';
+} from '../../components/Cells/DateTimeCell.tsx';
 
 export const useOrgUnitsTableColumns = searches => {
     const { formatMessage } = useSafeIntl();
@@ -79,7 +79,7 @@ export const useOrgUnitsTableColumns = searches => {
             Cell: settings => (
                 <section>
                     <IconButtonComponent
-                        url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.row.original.id}/tab/infos`}
+                        url={`/${baseUrls.orgUnitDetails}/orgUnitId/${settings.row.original.id}/tab/infos`}
                         icon="remove-red-eye"
                         tooltipMessage={MESSAGES.details}
                     />
@@ -89,14 +89,14 @@ export const useOrgUnitsTableColumns = searches => {
                                 settings.row.original.longitude,
                         )) && (
                         <IconButtonComponent
-                            url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.row.original.id}/tab/map`}
+                            url={`/${baseUrls.orgUnitDetails}/orgUnitId/${settings.row.original.id}/tab/map`}
                             icon="map"
                             tooltipMessage={MESSAGES.map}
                         />
                     )}
 
                     <IconButtonComponent
-                        url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.row.original.id}/tab/history`}
+                        url={`/${baseUrls.orgUnitDetails}/orgUnitId/${settings.row.original.id}/tab/history`}
                         icon="history"
                         tooltipMessage={MESSAGES.history}
                     />

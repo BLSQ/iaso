@@ -245,6 +245,6 @@ export const useBeneficiariesDetailsColumns = (
                 ),
             },
         ],
-        [entityId, columnsFromList, formatMessage],
+        [formatMessage, columnsFromList, entityId],
     );
 };

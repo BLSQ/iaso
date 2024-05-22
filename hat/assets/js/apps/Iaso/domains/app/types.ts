@@ -1,30 +1,27 @@
-import { IntlMessage } from 'bluesquare-components';
 import { ElementType, ReactNode } from 'react';
-
-export type RouteParam = {
-    isRequired: boolean;
-    key: string;
-};
-
-export type RouteCustom = {
-    baseUrl: string;
-    permissions?: string[];
-    params: RouteParam[];
-    allowAnonymous?: boolean;
-    isRootUrl?: boolean;
-    // eslint-disable-next-line no-unused-vars
-    component: (props: any) => ReactNode;
-};
+import { IntlMessage } from 'bluesquare-components';
+import {
+    Redirection as RoutingRedirection,
+    RouteCustom,
+} from '../../routing/types';
 
 export type MenuItem = {
-    label: IntlMessage | string;
-    key: string;
-    permissions: string[];
-    subMenu?: MenuItem[];
+    label: string | IntlMessage;
+    permissions?: string[];
+    key?: string;
+    mapKey?: string;
     // eslint-disable-next-line no-unused-vars
-    component: (props: any) => ReactNode;
+    icon?: (props: Record<string, any>) => ReactNode;
+    subMenu?: MenuItems;
+    extraPath?: string;
+    url?: string;
+    // eslint-disable-next-line no-unused-vars
+    isActive?: (pathname: string) => boolean;
+    dev?: boolean;
 };
+export type MenuItems = MenuItem[];
 
+// TODO deprecate or update to react-router 6
 export type Redirection = {
     path: string;
     // eslint-disable-next-line no-unused-vars
@@ -39,7 +36,9 @@ export type Plugin = {
     homeOnline?: ElementType;
     homeOffline?: ElementType;
     key?: string;
-    redirections?: Redirection[];
+    baseUrls: Record<string, string>;
+    paramsConfig: Record<string, string[]>;
+    redirections?: RoutingRedirection[];
 };
 
 export type Plugins = {

@@ -28,7 +28,6 @@ import {
 import { useQueryClient } from 'react-query';
 import { Form } from '../../../components/Form';
 import MESSAGES from '../../../constants/messages';
-import { CAMPAIGN_HISTORY_URL } from '../../../constants/routes';
 import { useStyles } from '../../../styles/theme';
 import { convertEmptyStringToNull } from '../../../utils/convertEmptyStringToNull';
 import { useGetCampaignLogs } from '../campaignHistory/hooks/useGetCampaignHistory';
@@ -37,6 +36,7 @@ import { useSaveCampaign } from '../hooks/api/useSaveCampaign';
 import { useValidateCampaign } from '../hooks/useValidateCampaign';
 import { PolioDialogTabs } from './PolioDialogTabs';
 import { usePolioDialogTabs } from './usePolioDialogTabs';
+import { baseUrls } from '../../../constants/urls';
 
 type Props = {
     isOpen: boolean;
@@ -192,7 +192,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                         >
                             <Box pr={4} alignItems="center">
                                 <IconButtonComponent
-                                    url={`${CAMPAIGN_HISTORY_URL}/campaignId/${selectedCampaign?.id}`}
+                                    url={`/${baseUrls.campaignHistory}/campaignId/${selectedCampaign?.id}`}
                                     icon="history"
                                     tooltipMessage={MESSAGES.campaignHistory}
                                     classes={{

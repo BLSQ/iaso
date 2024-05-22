@@ -1,19 +1,20 @@
 /* eslint-disable camelcase */
-import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import { Box, Button, Grid, Theme, Typography } from '@mui/material';
+import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
+import { Box, Grid, Theme, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
-    ExcellSvg,
     LoadingSpinner,
     commonStyles,
     getTableUrl,
     useSafeIntl,
 } from 'bluesquare-components';
 import classnames from 'classnames';
-import domToPdf from 'dom-to-pdf';
+// @ts-ignore
 import moment from 'moment';
-import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useLocation } from 'react-router-dom';
+import { DisplayIfUserHasPerm } from '../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
+import { XlsxButton } from '../../../../../../hat/assets/js/apps/Iaso/components/Buttons/XslxButton';
+import { useParamsObject } from '../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { getCampaignColor } from '../../constants/campaignsColors';
 import { CampaignsCalendar } from './campaignCalendar';
@@ -24,8 +25,6 @@ import {
     mapCampaigns,
 } from './campaignCalendar/utils';
 
-import { userHasPermission } from '../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
-import { Router } from '../../../../../../hat/assets/js/apps/Iaso/types/general';
 import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import MESSAGES from '../../constants/messages';
 import { useGetCampaigns } from '../Campaigns/hooks/api/useGetCampaigns';
@@ -34,18 +33,10 @@ import { CampaignsFilters } from './campaignCalendar/CampaignsFilters';
 import { IsTestLegend } from './campaignCalendar/IsTestLegend';
 import { TogglePeriod } from './campaignCalendar/TogglePeriod';
 import { dateFormat, defaultOrder } from './campaignCalendar/constants';
-import {
-    CalendarParams,
-    MappedCampaign,
-    ReduxState,
-} from './campaignCalendar/types';
-
-type Props = {
-    params: CalendarParams;
-    router: Router;
-};
-
-const pageWidth = 1980;
+import { CalendarParams, MappedCampaign } from './campaignCalendar/types';
+import { baseUrls } from '../../constants/urls';
+import { POLIO, POLIO_ADMIN } from '../../constants/permissions';
+import { PdfExportButton } from './campaignCalendar/PdfExportButton';
 
 const useStyles = makeStyles(theme => ({
     containerFullHeightNoTabPadded: {
@@ -61,15 +52,22 @@ const useStyles = makeStyles(theme => ({
     isNotPdf: {
         height: 'calc(100vh - 65px)',
     },
-    exportIcon: { marginRight: '8px' },
 }));
 
-export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
+const baseUrl = baseUrls.calendar;
+const embeddedCalendarUrl = baseUrls.embeddedCalendar;
+
+export const Calendar: FunctionComponent = () => {
+    const location = useLocation();
+    const isEmbedded = location.pathname.includes(embeddedCalendarUrl);
+    const currentUrl = isEmbedded ? embeddedCalendarUrl : baseUrl;
+    const params = useParamsObject(currentUrl) as CalendarParams;
+
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const isLogged = useSelector((state: ReduxState) =>
-        Boolean(state.users.current),
-    );
+    const currentUser = useCurrentUser();
+    const isLogged = Boolean(currentUser);
+
     const orders = params.order || defaultOrder;
     const queryOptions = useMemo(
         () => ({
@@ -133,27 +131,6 @@ export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
         [mappedCampaigns, calendarData.firstMonday, calendarData.lastSunday],
     );
 
-    const createPDF = async () => {
-        const element = document.getElementById('pdf');
-        const options = {
-            filename: 'calendar.pdf',
-            excludeClassNames: ['createPDF', 'createXlsx', 'createCsv'],
-            overrideWidth: pageWidth,
-        };
-
-        await setPdf(true);
-
-        document.body.style.width = `${pageWidth}px`;
-        window.dispatchEvent(new Event('resize'));
-        setTimeout(() => {
-            domToPdf(element, options, async () => {
-                await setPdf(false);
-                document.body.style.width = 'auto';
-                window.dispatchEvent(new Event('resize'));
-            });
-        }, 1000);
-    };
-
     const urlParams = {
         currentDate: params.currentDate,
         countries: params.countries,
@@ -182,7 +159,6 @@ export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
         }
     }, [filteredCampaigns, mappedCampaigns, isLoading]);
 
-    const currentUser = useCurrentUser();
     return (
         <div>
             {isLogged && !isPdf && (
@@ -215,7 +191,7 @@ export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
                                     disableDates
                                     disableOnlyDeleted
                                     isCalendar
-                                    router={router}
+                                    params={params}
                                 />
                             </Box>
                             <Grid
@@ -226,52 +202,33 @@ export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
                             >
                                 <Grid item>
                                     <Box mb={2} mt={2}>
-                                        <Button
-                                            onClick={createPDF}
+                                        <PdfExportButton
+                                            setPdf={setPdf}
                                             disabled={!isCalendarAndMapLoaded}
-                                            type="button"
-                                            color="primary"
-                                            variant="contained"
-                                            className="createPDF"
-                                        >
-                                            <PictureAsPdfIcon
-                                                className={classes.exportIcon}
-                                            />
-                                            {formatMessage(
-                                                MESSAGES.exportToPdf,
-                                            )}
-                                        </Button>
+                                        />
                                     </Box>
                                 </Grid>
                                 <Grid item>
                                     <Box mb={2} mt={2}>
-                                        <Button
-                                            type="button"
-                                            color="primary"
-                                            variant="contained"
-                                            className="createXlsx"
-                                            href={xlsx_url}
-                                        >
-                                            <ExcellSvg
-                                                className={classes.exportIcon}
-                                            />
+                                        <XlsxButton xlsxUrl={xlsx_url}>
                                             {formatMessage(
                                                 MESSAGES.exportToExcel,
                                             )}
-                                        </Button>
+                                        </XlsxButton>
                                     </Box>
                                 </Grid>
-                                {userHasPermission(
-                                    'iaso_polio_config',
-                                    currentUser,
-                                ) && (
+                                <DisplayIfUserHasPerm
+                                    permissions={[POLIO, POLIO_ADMIN]}
+                                >
                                     <Grid item>
                                         <Box mb={2} mt={2}>
-                                            {/* @ts-ignore */}
-                                            <ExportCsvModal params={params} />
+                                            <ExportCsvModal
+                                                params={params}
+                                                iconProps={{}}
+                                            />
                                         </Box>
                                     </Grid>
-                                )}
+                                </DisplayIfUserHasPerm>
                             </Grid>
                         </>
                     )}
@@ -295,7 +252,7 @@ export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
                                 {!isPdf && (
                                     <TogglePeriod
                                         params={params}
-                                        router={router}
+                                        url={currentUrl}
                                     />
                                 )}
                             </Box>
@@ -307,7 +264,8 @@ export const Calendar: FunctionComponent<Props> = ({ params, router }) => {
                                     calendarData={calendarData}
                                     loadingCampaigns={isLoading}
                                     isPdf={isPdf}
-                                    router={router}
+                                    url={currentUrl}
+                                    isLogged={isLogged}
                                     currentMonday={currentMonday}
                                     currentDate={currentDate}
                                 />

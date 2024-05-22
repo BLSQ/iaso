@@ -1,27 +1,24 @@
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { Grid, Box } from '@mui/material';
-import { useDispatch } from 'react-redux';
+import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import { useUrlParams } from '../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
 import { useStyles } from '../../../styles/theme';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
-import { redirectTo } from '../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
-import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import MESSAGES from './messages';
 import { useReasonsForDelay } from './hooks/requests';
-import { CONFIG_REASONS_FOR_DELAY_URL } from '../../../constants/routes';
 import { CreateReasonForDelay } from './CreateEdit/CreateEditReasonForDelay';
 import { useReasonsForDelayColumns } from './hooks/columns';
+import { baseUrls } from '../../../constants/urls';
 
-type Props = { router: Router };
-
-export const ReasonsForDelay: FunctionComponent<Props> = ({ router }) => {
+const baseUrl = baseUrls.reasonsForDelayConfig;
+export const ReasonsForDelay: FunctionComponent = () => {
+    const params = useParamsObject(baseUrl);
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
-    const dispatch = useDispatch();
     const columns = useReasonsForDelayColumns();
-    const safeParams = useUrlParams(router.params, {
+    const safeParams = useUrlParams(params, {
         order: 'id',
         pageSize: 10,
         page: 1,
@@ -53,12 +50,9 @@ export const ReasonsForDelay: FunctionComponent<Props> = ({ router }) => {
                     defaultSorted={[{ id: 'name', desc: false }]}
                     columns={columns}
                     count={data?.count ?? 0}
-                    baseUrl={CONFIG_REASONS_FOR_DELAY_URL}
-                    params={router.params}
+                    baseUrl={baseUrl}
+                    params={params}
                     extraProps={{ loading: isFetching }}
-                    onTableParamsChange={p =>
-                        dispatch(redirectTo(CONFIG_REASONS_FOR_DELAY_URL, p))
-                    }
                     columnSelectorEnabled={false}
                 />
             </Box>

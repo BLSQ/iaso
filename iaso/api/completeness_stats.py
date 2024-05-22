@@ -248,7 +248,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         orders = params["order"]
         form_qs = params["forms"]
         period = params.get("period", None)
-        planning_id = params.get("planning_id", None)
+        planning = params.get("planning", None)
         org_unit_validation_status = params["org_unit_validation_status"]
         as_location = params.get("as_location", None)
         teams = params.get("teams")
@@ -256,15 +256,12 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
 
         instance_qs = Instance.objects.all()
 
-        planning = None
-        if planning_id:
-            planning = get_object_or_404(Planning, id=planning_id)
         if period:
             # In the future we would like to support multiple periods, but then we will have to count properly
             # the requirements
             instance_qs = instance_qs.filter(period=period)
         if planning:
-            instance_qs = instance_qs.filter(planning_id=planning)
+            instance_qs = instance_qs.filter(planning=planning)
             form_qs = form_qs.filter(plannings=planning)
 
         # filter instance_qs on users related to selected teams
@@ -279,6 +276,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
 
         org_units: OrgUnitQuerySet
         org_units = OrgUnit.objects.filter(validation_status__in=org_unit_validation_status)  # type: ignore
+
         # Calculate the ou for which we want reporting `top_ous`
         #  We only want ou to which user has access
         #   if no params we return the top ou for the default source

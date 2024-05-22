@@ -126,10 +126,13 @@ export const BudgetProcessList: FunctionComponent<Props> = ({ router }) => {
                             buttonSize="small"
                             statesList={possibleStates}
                         />
-                        <BudgetButtons
-                            csvUrl={`/api/polio/budget/export_csv/?${csvParams}`}
-                            isUserPolioBudgetAdmin={isUserPolioBudgetAdmin}
-                        />
+                        <Box mb={2}>
+                            <BudgetButtons
+                                csvUrl={`/api/polio/budget/export_csv/?${csvParams}`}
+                                isUserPolioBudgetAdmin={isUserPolioBudgetAdmin}
+                                isMobileLayout
+                            />
+                        </Box>
                     </Collapse>
                 )}
 

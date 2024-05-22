@@ -57,7 +57,7 @@ export const OrgUnitTitle: FunctionComponent<Props> = ({ orgUnit, params }) => {
                 <Box className={classes.paperTitleButton}>
                     {isRootOrgUnit && (
                         <IconButton
-                            url={`${baseUrls.orgUnitDetails}/orgUnitId/0/levels/${orgUnit.id}`}
+                            url={`/${baseUrls.orgUnitDetails}/orgUnitId/0/levels/${orgUnit.id}`}
                             color="secondary"
                             overrideIcon={AddIcon}
                             tooltipMessage={MESSAGES.addOrgUnitChild}
@@ -66,7 +66,7 @@ export const OrgUnitTitle: FunctionComponent<Props> = ({ orgUnit, params }) => {
                         />
                     )}
                     <IconButton
-                        url={`${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}`}
+                        url={`/${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}`}
                         color="secondary"
                         icon="edit"
                         tooltipMessage={MESSAGES.editOrgUnit}

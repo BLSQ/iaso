@@ -12,6 +12,7 @@ import {
     useSafeIntl,
     LoadingSpinner,
     useSkipEffectOnMount,
+    makeRedirectionUrl,
 } from 'bluesquare-components';
 import { useQueryClient } from 'react-query';
 
@@ -49,7 +50,6 @@ import {
 import { useBulkSaveOrgUnits } from './hooks/requests/useBulkSaveOrgUnits';
 import { useGetApiParams } from './hooks/useGetApiParams';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
-import { makeRedirectionUrl } from 'bluesquare-components';
 // HOOKS
 
 const useStyles = makeStyles(theme => ({

@@ -113,7 +113,8 @@ export const fetchSources = dispatch =>
             );
             console.error('Error while fetching source list:', error);
         });
-
+/** @deprecated */
+// TODO remove from org unit details and delete
 export const fetchForms = (dispatch, url = '/api/forms', signal) =>
     getRequest(url, signal)
         .then(async forms => {
@@ -240,14 +241,16 @@ export const updateForm = (dispatch, formId, formData) =>
             enqueueSnackbar(errorSnackBar('updateFormError', null, error)),
         );
     });
-
+/** @deprecated */
+// still needs to be removed from org unit details
 export const deleteForm = (dispatch, formId) =>
     deleteRequest(`/api/forms/${formId}/`).catch(error => {
         dispatch(
             enqueueSnackbar(errorSnackBar('deleteFormError', null, error)),
         );
     });
-
+/** @deprecated */
+// still needs to be removed from org unit details
 export const restoreForm = (dispatch, formId) =>
     restoreRequest(`/api/forms/${formId}/?only_deleted=1`).catch(error => {
         dispatch(

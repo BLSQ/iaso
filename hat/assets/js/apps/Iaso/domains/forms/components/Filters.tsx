@@ -1,4 +1,4 @@
-import React, { useState, FunctionComponent } from 'react';
+import React, { useState, FunctionComponent, useCallback } from 'react';
 
 import { Grid, Button, Box, useMediaQuery, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -38,10 +38,19 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { filters, handleSearch, handleChange, filtersUpdated } =
-        useFilterState({ baseUrl, params });
+        useFilterState({ baseUrl, params, searchActive: 'searchActive' });
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
     const [showDeleted, setShowDeleted] = useState<boolean>(
         filters.showDeleted === 'true',
+    );
+    const handleShowDeleted = useCallback(
+        (key, value) => {
+            // converting false to undefined to be able to compute `filtersUpdated` correctly
+            const valueForParam = value || undefined;
+            handleChange(key, valueForParam);
+            setShowDeleted(value);
+        },
+        [handleChange],
     );
     const { data: planningsDropdownOptions } = useGetPlanningsOptions();
     const { data: orgUnitTypes, isFetching: isFetchingOuTypes } =
@@ -68,10 +77,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     />
                     <InputComponent
                         keyValue="showDeleted"
-                        onChange={(_key, value) => {
-                            handleChange('showDeleted', !showDeleted);
-                            setShowDeleted(value);
-                        }}
+                        onChange={handleShowDeleted}
                         value={showDeleted}
                         type="checkbox"
                         label={MESSAGES.showDeleted}

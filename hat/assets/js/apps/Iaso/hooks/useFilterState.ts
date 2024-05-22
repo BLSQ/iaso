@@ -1,10 +1,11 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { useRedirectTo, useRedirectToReplace } from 'bluesquare-components';
+import { isEqual } from 'lodash';
 import {
     useGetMultipleOrgUnits,
     useGetOrgUnit,
 } from '../domains/orgUnits/components/TreeView/requests';
 import { OrgUnit } from '../domains/orgUnits/types/orgUnit';
-import { useRedirectTo, useRedirectToReplace } from 'bluesquare-components';
 
 export type FilterState = {
     filters: Record<string, any>;
@@ -22,6 +23,7 @@ type FilterStateParams = {
     params: Record<string, unknown>;
     withPagination?: boolean;
     saveSearchInHistory?: boolean;
+    searchActive?: string; // the key of the params used to activate search. If no such param exists, and the hook is used with a table, the table will load data onMount
 };
 
 const paginationParams = ['pageSize', 'page', 'order'];
@@ -39,6 +41,7 @@ const removePaginationParams = params => {
 export const useFilterState = ({
     baseUrl,
     params,
+    searchActive,
     withPagination = true,
     saveSearchInHistory = true,
 }: FilterStateParams): FilterState => {
@@ -59,6 +62,9 @@ export const useFilterState = ({
             if (withPagination) {
                 tempParams.page = '1';
             }
+            if (searchActive && Object.keys(params).includes(searchActive)) {
+                tempParams[searchActive] = 'true';
+            }
             if (saveSearchInHistory) {
                 redirectTo(baseUrl, tempParams);
             } else {
@@ -70,6 +76,7 @@ export const useFilterState = ({
         params,
         filters,
         withPagination,
+        searchActive,
         saveSearchInHistory,
         redirectTo,
         baseUrl,
@@ -78,13 +85,20 @@ export const useFilterState = ({
 
     const handleChange = useCallback(
         (key, value) => {
-            setFiltersUpdated(true);
-            setFilters({
+            const newFilters = {
                 ...filters,
-                [key]: value,
-            });
+                [key]: value !== null ? value : undefined,
+            };
+            const initialFilterValue = removePaginationParams(params);
+            if (!isEqual(newFilters, initialFilterValue)) {
+                setFiltersUpdated(true);
+            }
+            if (isEqual(newFilters, initialFilterValue)) {
+                setFiltersUpdated(false);
+            }
+            setFilters(newFilters);
         },
-        [filters],
+        [filters, params],
     );
 
     useEffect(() => {

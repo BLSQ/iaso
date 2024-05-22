@@ -112,6 +112,8 @@ class EntityQuerySet(models.QuerySet):
             ).exclude(file=""),
         )
 
+        self = self.filter(attributes_id__isnull=False)
+
         self = self.prefetch_related(p).prefetch_related("instances__form")
 
         return self

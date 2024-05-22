@@ -25,10 +25,9 @@ import { OrgunitTypeRegistry } from '../types/orgunitTypes';
 import { useGetForms } from '../hooks/useGetForms';
 import { useGetInstanceApi, useGetInstances } from '../hooks/useGetInstances';
 
+import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import { baseUrls } from '../../../constants/urls';
-import * as Permission from '../../../utils/permissions';
-import { useCurrentUser } from '../../../utils/usersUtils';
-import { userHasPermission } from '../../users/utils';
+import * as Permissions from '../../../utils/permissions';
 import { defaultSorted, INSTANCE_METAS_FIELDS } from '../config';
 import { useGetEmptyInstanceOrgUnits } from '../hooks/useGetEmptyInstanceOrgUnits';
 import MESSAGES from '../messages';
@@ -44,7 +43,6 @@ export const Instances: FunctionComponent<Props> = ({
     subOrgUnitTypes,
     params,
 }) => {
-    const currentUser = useCurrentUser();
     const dispatch = useDispatch();
     const [tableColumns, setTableColumns] = useState<Column[]>([]);
     const { formIds, tab } = params;
@@ -162,10 +160,9 @@ export const Instances: FunctionComponent<Props> = ({
                                         )}
                                     />
                                 )}
-                                {userHasPermission(
-                                    Permission.REGISTRY_WRITE,
-                                    currentUser,
-                                ) && (
+                                <DisplayIfUserHasPerm
+                                    permissions={[Permissions.REGISTRY_WRITE]}
+                                >
                                     <Box
                                         display="flex"
                                         justifyContent="flex-end"
@@ -181,7 +178,7 @@ export const Instances: FunctionComponent<Props> = ({
                                             }
                                         />
                                     </Box>
-                                )}
+                                </DisplayIfUserHasPerm>
                                 <Box
                                     display="flex"
                                     justifyContent="flex-end"
@@ -189,37 +186,39 @@ export const Instances: FunctionComponent<Props> = ({
                                     mt={2}
                                 >
                                     {orgUnitsWithoutCurrentForm &&
-                                        orgUnitsWithoutCurrentForm.count > 0 &&
-                                        userHasPermission(
-                                            Permission.REGISTRY_WRITE,
-                                            currentUser,
-                                        ) &&
-                                        userHasPermission(
-                                            Permission.SUBMISSIONS_UPDATE,
-                                            currentUser,
-                                        ) && (
-                                            <MissingInstanceDialog
-                                                isFetching={
-                                                    isFetchingOrgUnitsWithoutCurrentForm
-                                                }
-                                                formId={formIds}
-                                                missingOrgUnitsData={
-                                                    orgUnitsWithoutCurrentForm
-                                                }
-                                                params={params}
-                                                iconProps={{
-                                                    count: orgUnitsWithoutCurrentForm.count,
-                                                    params,
-                                                }}
-                                                defaultOpen={
-                                                    params.missingSubmissionVisible ===
-                                                    'true'
-                                                }
-                                            />
+                                        orgUnitsWithoutCurrentForm.count >
+                                            0 && (
+                                            <DisplayIfUserHasPerm
+                                                strict
+                                                permissions={[
+                                                    Permissions.REGISTRY_WRITE,
+                                                    Permissions.SUBMISSIONS_UPDATE,
+                                                ]}
+                                            >
+                                                <MissingInstanceDialog
+                                                    isFetching={
+                                                        isFetchingOrgUnitsWithoutCurrentForm
+                                                    }
+                                                    formId={formIds}
+                                                    missingOrgUnitsData={
+                                                        orgUnitsWithoutCurrentForm
+                                                    }
+                                                    params={params}
+                                                    iconProps={{
+                                                        count: orgUnitsWithoutCurrentForm.count,
+                                                        params,
+                                                    }}
+                                                    defaultOpen={
+                                                        params.missingSubmissionVisible ===
+                                                        'true'
+                                                    }
+                                                />
+                                            </DisplayIfUserHasPerm>
                                         )}
                                 </Box>
                             </Grid>
                         </Grid>
+                        {/* @ts-ignore */}
                         <TableWithDeepLink
                             marginTop={false}
                             baseUrl={baseUrls.registry}

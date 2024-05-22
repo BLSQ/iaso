@@ -106,8 +106,10 @@ export const InstanceTitle: FunctionComponent<Props> = ({
                     withMarginTop={false}
                 />
             </Grid>
-            {currentInstance &&
-                userHasPermission(Permissions.REGISTRY_WRITE, currentUser) && (
+            {currentInstance && (
+                <DisplayIfUserHasPerm
+                    permissions={[Permissions.REGISTRY_WRITE]}
+                >
                     <Grid
                         xs={4}
                         item
@@ -117,10 +119,9 @@ export const InstanceTitle: FunctionComponent<Props> = ({
                         className={classes.paperTitleButtonContainer}
                     >
                         <Box className={classes.paperTitleButton}>
-                            {userHasPermission(
-                                Permissions.SUBMISSIONS_UPDATE,
-                                currentUser,
-                            ) && (
+                            <DisplayIfUserHasPerm
+                                permissions={[Permissions.SUBMISSIONS_UPDATE]}
+                            >
                                 <IconButton
                                     onClick={() => getEnketoUrl()}
                                     overrideIcon={EnketoIcon}
@@ -129,7 +130,7 @@ export const InstanceTitle: FunctionComponent<Props> = ({
                                     size="small"
                                     tooltipMessage={MESSAGES.editOnEnketo}
                                 />
-                            )}
+                            </DisplayIfUserHasPerm>
                             <LinkToInstance
                                 instanceId={`${currentInstance.id}`}
                                 useIcon
@@ -139,7 +140,8 @@ export const InstanceTitle: FunctionComponent<Props> = ({
                             />
                         </Box>
                     </Grid>
-                )}
+                </DisplayIfUserHasPerm>
+            )}
         </Grid>
     );
 };

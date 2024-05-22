@@ -7,10 +7,9 @@ import React, { FunctionComponent } from 'react';
 import { baseUrls } from '../../../../constants/urls';
 import MESSAGES from '../../messages';
 
+import { DisplayIfUserHasPerm } from '../../../../components/DisplayIfUserHasPerm';
 import * as Permissions from '../../../../utils/permissions';
-import { useCurrentUser } from '../../../../utils/usersUtils';
 import { OrgUnit } from '../../../orgUnits/types/orgUnit';
-import { userHasPermission } from '../../../users/utils';
 import { RegistryParams } from '../../types';
 import { LinkToRegistry } from '../LinkToRegistry';
 
@@ -39,7 +38,6 @@ export const OrgUnitTitle: FunctionComponent<Props> = ({ orgUnit, params }) => {
     const classes: Record<string, string> = useStyles();
 
     const isRootOrgUnit = params.orgUnitId === `${orgUnit?.id}`;
-    const currentUser = useCurrentUser();
     return (
         <Grid container className={classes.paperTitle}>
             <Grid xs={8} item>
@@ -59,10 +57,9 @@ export const OrgUnitTitle: FunctionComponent<Props> = ({ orgUnit, params }) => {
                 className={classes.paperTitleButtonContainer}
             >
                 <Box className={classes.paperTitleButton}>
-                    {userHasPermission(
-                        Permissions.REGISTRY_WRITE,
-                        currentUser,
-                    ) && (
+                    <DisplayIfUserHasPerm
+                        permissions={[Permissions.REGISTRY_WRITE]}
+                    >
                         <>
                             {isRootOrgUnit && (
                                 <IconButton
@@ -83,7 +80,7 @@ export const OrgUnitTitle: FunctionComponent<Props> = ({ orgUnit, params }) => {
                                 size="small"
                             />
                         </>
-                    )}
+                    </DisplayIfUserHasPerm>
                     {!isRootOrgUnit && (
                         <LinkToRegistry
                             orgUnit={orgUnit}

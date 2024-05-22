@@ -11,7 +11,6 @@ BASE_URL = "/api/polio/campaigns_subactivities/"
 
 
 class SubactivitiesAPITestCase(APITestCase):
-
     @classmethod
     def setUpTestData(cls) -> None:
         cls.data_source = DataSource.objects.create(name="Default source")

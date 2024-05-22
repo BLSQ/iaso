@@ -746,21 +746,12 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         if only_reference == "true":
             if org_unit_id:
                 # Create a subquery for OrgUnitReferenceInstance that checks for matching org_unit_id and instance_id
-                subquery = OrgUnitReferenceInstance.objects.filter(
-                    org_unit_id=org_unit_id,
-                    instance_id=OuterRef('pk')
-                )
-                queryset = queryset.annotate(
-                    has_reference=Exists(subquery)
-                ).filter(has_reference=True)
+                subquery = OrgUnitReferenceInstance.objects.filter(org_unit_id=org_unit_id, instance_id=OuterRef("pk"))
+                queryset = queryset.annotate(has_reference=Exists(subquery)).filter(has_reference=True)
             else:
                 # If no specific org_unit_id is provided, check for any OrgUnitReferenceInstance matching the instance_id
-                subquery = OrgUnitReferenceInstance.objects.filter(
-                    instance_id=OuterRef('pk')
-                )
-                queryset = queryset.annotate(
-                    has_reference=Exists(subquery)
-                ).filter(has_reference=True)
+                subquery = OrgUnitReferenceInstance.objects.filter(instance_id=OuterRef("pk"))
+                queryset = queryset.annotate(has_reference=Exists(subquery)).filter(has_reference=True)
         else:
             if org_unit_id:
                 # Filter by org unit id if only_reference is not true
@@ -1088,8 +1079,7 @@ class Instance(models.Model):
 
     def export(self, launcher=None, force_export=False):
         from iaso.dhis2.datavalue_exporter import DataValueExporter
-        from iaso.dhis2.export_request_builder import (ExportRequestBuilder,
-                                                       NothingToExportError)
+        from iaso.dhis2.export_request_builder import ExportRequestBuilder, NothingToExportError
 
         try:
             export_request = ExportRequestBuilder().build_export_request(

@@ -19,25 +19,29 @@ from rest_framework.response import Response
 from typing_extensions import Annotated, TypedDict
 
 import iaso.periods as periods
-from hat.api.export_utils import (Echo, generate_xlsx, iter_items,
-                                  timestamp_to_utc_datetime)
+from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
 from hat.audit.models import INSTANCE_API, log_modification
 from hat.common.utils import queryset_iterator
 from hat.menupermissions import models as permission
 from iaso.api.serializers import OrgUnitSerializer
-from iaso.models import (Entity, Instance, InstanceFile, InstanceLock,
-                         InstanceQuerySet, OrgUnit, OrgUnitChangeRequest,
-                         Project)
+from iaso.models import (
+    Entity,
+    Instance,
+    InstanceFile,
+    InstanceLock,
+    InstanceQuerySet,
+    OrgUnit,
+    OrgUnitChangeRequest,
+    Project,
+)
 from iaso.models.org_unit import OrgUnitReferenceInstance
 from iaso.utils import timestamp_to_datetime
 
 from ..models.forms import CR_MODE_IF_REFERENCE_FORM, CR_MODE_NONE
 from . import common
 from .comment import UserSerializerForComment
-from .common import (CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum,
-                     TimestampField, safe_api_import)
-from .instance_filters import (get_form_from_instance_filters,
-                               parse_instance_filters)
+from .common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, FileFormatEnum, TimestampField, safe_api_import
+from .instance_filters import get_form_from_instance_filters, parse_instance_filters
 
 
 class InstanceSerializer(serializers.ModelSerializer):

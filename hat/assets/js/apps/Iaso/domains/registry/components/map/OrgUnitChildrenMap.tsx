@@ -34,10 +34,11 @@ import { CustomTileLayer } from '../../../../components/maps/tools/CustomTileLay
 import { CustomZoomControl } from '../../../../components/maps/tools/CustomZoomControl';
 import TILES from '../../../../constants/mapTiles';
 import { baseUrls } from '../../../../constants/urls';
+import { useObjectState } from '../../../../hooks/useObjectState';
 import { redirectTo, redirectToReplace } from '../../../../routing/actions';
 import { HEIGHT } from '../../config';
 import { RegistryParams } from '../../types';
-import { MapSettings, Settings } from './MapSettings';
+import { MapSettings } from './MapSettings';
 import { OrgUnitChildrenLocations } from './OrgUnitChildrenLocations';
 import { OrgUnitChildrenShapes } from './OrgUnitChildrenShapes';
 import { OrgUnitLocation } from './OrgUnitLocation';
@@ -91,9 +92,9 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
 }) => {
     const classes: Record<string, string> = useStyles();
     const dispatch = useDispatch();
-    const [settings, setSettings] = useState<Settings>({
+    const [settings, setSettings] = useObjectState({
         showTooltip: params.showTooltip === 'true',
-        useCluster: params.useCluster === 'true',
+        clusterEnabled: params.clusterEnabled === 'true',
     });
     const [isMapFullScreen, setIsMapFullScreen] = useState<boolean>(
         params.isFullScreen === 'true',
@@ -113,7 +114,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
         );
     }, [orgUnitChildren, legendOptionsMap]);
     const isOrgUnitActive = Boolean(legendOptions[0]?.active);
-    const { showTooltip, useCluster } = settings;
+    const { showTooltip, clusterEnabled } = settings;
     const bounds = useMemo(
         () =>
             mergeBounds(
@@ -125,11 +126,8 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
     const handleChangeSettings = useCallback(
         (setting: string) => {
             const newSetting = !settings[setting];
-            setSettings(prevSettings => {
-                return {
-                    ...prevSettings,
-                    [setting]: newSetting,
-                };
+            setSettings({
+                [setting]: newSetting,
             });
 
             dispatch(
@@ -139,7 +137,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                 }),
             );
         },
-        [dispatch, params, settings],
+        [dispatch, params, setSettings, settings],
     );
 
     const handleToggleFullScreen = useCallback(
@@ -248,7 +246,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                         <OrgUnitChildrenLocations
                             activeChildren={activeChildren}
                             showTooltip={showTooltip}
-                            useCluster={useCluster}
+                            clusterEnabled={clusterEnabled}
                             index={index}
                             subType={subType}
                             handleSingleClick={handleSingleClick}

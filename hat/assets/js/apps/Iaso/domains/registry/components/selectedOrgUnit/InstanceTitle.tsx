@@ -7,13 +7,11 @@ import moment from 'moment';
 import { useDispatch } from 'react-redux';
 import MESSAGES from '../../messages';
 
-import { useCurrentUser } from '../../../../utils/usersUtils';
 import { useGetEnketoUrl } from '../../hooks/useGetEnketoUrl';
 
 import EnketoIcon from '../../../instances/components/EnketoIcon';
 
-import { userHasPermission } from '../../../users/utils';
-
+import { DisplayIfUserHasPerm } from '../../../../components/DisplayIfUserHasPerm';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { baseUrls } from '../../../../constants/urls';
 import { redirectToReplace } from '../../../../routing/actions';
@@ -61,8 +59,6 @@ export const InstanceTitle: FunctionComponent<Props> = ({
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const getEnketoUrl = useGetEnketoUrl(window.location.href, currentInstance);
-    const currentUser = useCurrentUser();
-
     const currentInstanceId = useMemo(() => {
         return params.submissionId || orgUnit?.reference_instances?.[0]?.id;
     }, [params.submissionId, orgUnit]);
@@ -120,10 +116,9 @@ export const InstanceTitle: FunctionComponent<Props> = ({
                     className={classes.paperTitleButtonContainer}
                 >
                     <Box className={classes.paperTitleButton}>
-                        {userHasPermission(
-                            Permission.SUBMISSIONS_UPDATE,
-                            currentUser,
-                        ) && (
+                        <DisplayIfUserHasPerm
+                            permissions={[Permission.SUBMISSIONS_UPDATE]}
+                        >
                             <IconButton
                                 onClick={() => getEnketoUrl()}
                                 overrideIcon={EnketoIcon}
@@ -132,7 +127,7 @@ export const InstanceTitle: FunctionComponent<Props> = ({
                                 size="small"
                                 tooltipMessage={MESSAGES.editOnEnketo}
                             />
-                        )}
+                        </DisplayIfUserHasPerm>
                         <LinkToInstance
                             instanceId={`${currentInstance.id}`}
                             useIcon

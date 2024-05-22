@@ -14,6 +14,8 @@ import MarkersListComponent from '../../../../components/maps/markers/MarkersLis
 import { MapToolTip } from './MapTooltip';
 import { selectedOrgUnitColor } from './OrgUnitChildrenMap';
 
+const MARKER_RADIUS = 12;
+
 type Props = {
     selectedChildrenId: string | undefined;
     activeChildren: OrgUnit[];
@@ -26,7 +28,7 @@ type Props = {
     // eslint-disable-next-line no-unused-vars
     handleDoubleClick: (event: L.LeafletMouseEvent, ou: OrgUnit) => void;
     showTooltip: boolean;
-    useCluster: boolean;
+    clusterEnabled: boolean;
     index: number;
     subType: OrgunitType;
 };
@@ -36,7 +38,7 @@ export const OrgUnitChildrenLocations: FunctionComponent<Props> = ({
     handleDoubleClick,
     activeChildren,
     showTooltip,
-    useCluster,
+    clusterEnabled,
     index,
     subType,
     selectedChildrenId,
@@ -50,11 +52,13 @@ export const OrgUnitChildrenLocations: FunctionComponent<Props> = ({
         );
     }, [activeChildren, subType]);
 
-    const getColor = useCallback(
-        (children: OrgUnit) => {
-            return `${children.id}` === selectedChildrenId
-                ? selectedOrgUnitColor
-                : subType.color || '';
+    const getMarkerProps = useCallback(
+        children => {
+            const color =
+                `${children.id}` === selectedChildrenId
+                    ? selectedOrgUnitColor
+                    : subType.color || '';
+            return { ...circleColorMarkerOptions(color, MARKER_RADIUS) };
         },
         [selectedChildrenId, subType],
     );
@@ -63,7 +67,7 @@ export const OrgUnitChildrenLocations: FunctionComponent<Props> = ({
             name={`children-locations-orgunit-type-${subType.id}`}
             style={{ zIndex: 600 + index }}
         >
-            {useCluster && (
+            {clusterEnabled && (
                 <MarkerClusterGroup
                     iconCreateFunction={cluster =>
                         colorClusterCustomMarker(cluster, subType.color || '')
@@ -77,9 +81,7 @@ export const OrgUnitChildrenLocations: FunctionComponent<Props> = ({
                     <MarkersListComponent
                         key={`markers-${subType.id}`}
                         items={orgUnitsMarkers || []}
-                        markerProps={children => ({
-                            ...circleColorMarkerOptions(getColor(children), 12),
-                        })}
+                        markerProps={getMarkerProps}
                         onDblclick={handleDoubleClick}
                         onMarkerClick={handleSingleClick}
                         tooltipProps={e => ({
@@ -92,13 +94,11 @@ export const OrgUnitChildrenLocations: FunctionComponent<Props> = ({
                     />
                 </MarkerClusterGroup>
             )}
-            {!useCluster && (
+            {!clusterEnabled && (
                 <MarkersListComponent
                     key={`markers-${subType.id}`}
                     items={orgUnitsMarkers || []}
-                    markerProps={children => ({
-                        ...circleColorMarkerOptions(getColor(children), 12),
-                    })}
+                    markerProps={getMarkerProps}
                     onDblclick={handleDoubleClick}
                     onMarkerClick={handleSingleClick}
                     tooltipProps={e => ({

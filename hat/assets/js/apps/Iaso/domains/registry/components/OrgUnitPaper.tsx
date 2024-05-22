@@ -1,39 +1,39 @@
-import React, { FunctionComponent, useCallback, useState } from 'react';
-import AddIcon from '@mui/icons-material/Add';
-import {
-    Box,
-    Divider,
-    Grid,
-    Paper,
-    Tab,
-    Tabs,
-    Typography,
-} from '@mui/material';
+import { Box, Paper, Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
-    IconButton,
     commonStyles,
-    useSafeIntl,
     useRedirectToReplace,
+    useSafeIntl,
 } from 'bluesquare-components';
 import classnames from 'classnames';
-import MESSAGES from '../messages';
+import React, {
+    Dispatch,
+    FunctionComponent,
+    SetStateAction,
+    useCallback,
+    useState,
+} from 'react';
 import { baseUrls } from '../../../constants/urls';
-import { OrgUnitChildrenMap } from './OrgUnitChildrenMap';
+import MESSAGES from '../messages';
+
+import { OrgUnitChildrenMap } from './map/OrgUnitChildrenMap';
+
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
-import { OrgUnitChildrenList } from './OrgUnitChildrenList';
 import { OrgunitTypes } from '../../orgUnits/types/orgunitTypes';
 import { OrgUnitListChildren } from '../hooks/useGetOrgUnit';
-import { OrgUnitListTab, RegistryDetailParams } from '../types';
+import { OrgUnitListTab, RegistryParams } from '../types';
+import { OrgUnitChildrenList } from './OrgUnitChildrenList';
 
 type Props = {
     orgUnit: OrgUnit;
     subOrgUnitTypes: OrgunitTypes;
-    params: RegistryDetailParams;
+    params: RegistryParams;
     orgUnitListChildren?: OrgUnitListChildren;
     isFetchingListChildren: boolean;
     orgUnitMapChildren?: OrgUnit[];
     isFetchingMapChildren: boolean;
+    setSelectedChildren: Dispatch<SetStateAction<OrgUnit | undefined>>;
+    selectedChildrenId: string | undefined;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -51,18 +51,6 @@ const useStyles = makeStyles(theme => ({
         [theme.breakpoints.down('md')]: {
             fontSize: '1.4rem',
         },
-    },
-    paperTitle: {
-        padding: theme.spacing(2),
-        display: 'flex',
-    },
-    paperTitleButtonContainer: {
-        position: 'relative',
-    },
-    paperTitleButton: {
-        position: 'absolute',
-        right: -theme.spacing(1),
-        top: -theme.spacing(1),
     },
     hiddenOpacity: {
         position: 'absolute',
@@ -87,6 +75,8 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
     isFetchingListChildren,
     orgUnitMapChildren,
     isFetchingMapChildren,
+    setSelectedChildren,
+    selectedChildrenId,
 }) => {
     const classes: Record<string, string> = useStyles();
     const [tab, setTab] = useState<OrgUnitListTab>(
@@ -108,40 +98,6 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
     );
     return (
         <Paper elevation={1} className={classes.paper}>
-            <Grid container className={classes.paperTitle}>
-                <Grid xs={8} item>
-                    <Typography
-                        color="primary"
-                        variant="h5"
-                        className={classes.title}
-                    >
-                        {orgUnit.name ?? ''}
-                    </Typography>
-                </Grid>
-                <Grid
-                    xs={4}
-                    item
-                    container
-                    justifyContent="flex-end"
-                    className={classes.paperTitleButtonContainer}
-                >
-                    <Box className={classes.paperTitleButton}>
-                        <IconButton
-                            url={`/${baseUrls.orgUnitDetails}/orgUnitId/0/levels/${orgUnit.id}`}
-                            color="secondary"
-                            overrideIcon={AddIcon}
-                            tooltipMessage={MESSAGES.addOrgUnitChild}
-                        />
-                        <IconButton
-                            url={`/${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}`}
-                            color="secondary"
-                            icon="remove-red-eye"
-                            tooltipMessage={MESSAGES.editOrgUnit}
-                        />
-                    </Box>
-                </Grid>
-            </Grid>
-            <Divider />
             <Tabs
                 value={tab}
                 classes={{
@@ -165,6 +121,8 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
                         subOrgUnitTypes={subOrgUnitTypes}
                         orgUnitChildren={orgUnitMapChildren}
                         isFetchingChildren={isFetchingMapChildren}
+                        setSelectedChildren={setSelectedChildren}
+                        selectedChildrenId={selectedChildrenId}
                     />
                 </Box>
                 <Box

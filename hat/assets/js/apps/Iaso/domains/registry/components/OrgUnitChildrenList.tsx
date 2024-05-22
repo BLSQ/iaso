@@ -5,10 +5,10 @@ import React, { FunctionComponent } from 'react';
 import { baseUrls } from '../../../constants/urls';
 import { useGetOrgUnitsListColumns } from '../config';
 import { OrgUnitListChildren } from '../hooks/useGetOrgUnit';
-import { RegistryDetailParams } from '../types';
+import { RegistryParams } from '../types';
 
 type Props = {
-    params: RegistryDetailParams;
+    params: RegistryParams;
     orgUnitChildren?: OrgUnitListChildren;
     isFetchingChildren: boolean;
 };

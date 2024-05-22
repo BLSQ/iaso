@@ -13,6 +13,7 @@ import { ColumnSelect } from '../../instances/components/ColumnSelect';
 import { ActionCell } from './ActionCell';
 import { MissingInstanceDialog } from './MissingInstanceDialog';
 import { OrgunitType } from '../../orgUnits/types/orgunitTypes';
+import { RegistryParams } from '../types';
 import { OrgunitTypeRegistry } from '../types/orgunitTypes';
 import { RegistryDetailParams } from '../types';
 import { Form } from '../../forms/types/forms';
@@ -29,7 +30,7 @@ import MESSAGES from '../messages';
 type Props = {
     isLoading: boolean;
     subOrgUnitTypes: OrgunitTypeRegistry[];
-    params: RegistryDetailParams;
+    params: RegistryParams;
 };
 
 export const Instances: FunctionComponent<Props> = ({
@@ -113,7 +114,6 @@ export const Instances: FunctionComponent<Props> = ({
                         <Grid container spacing={2}>
                             <Grid item xs={12} md={3}>
                                 <InputComponent
-                                    required
                                     keyValue="formIds"
                                     clearable={false}
                                     onChange={handleFilterChange}

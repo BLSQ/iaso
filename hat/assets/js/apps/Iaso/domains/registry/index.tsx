@@ -3,42 +3,61 @@ import { makeStyles } from '@mui/styles';
 import {
     LoadingSpinner,
     commonStyles,
-    useSafeIntl,
     useRedirectTo,
+    useSafeIntl,
 } from 'bluesquare-components';
 import { orderBy } from 'lodash';
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import React, { FunctionComponent, useMemo, useState } from 'react';
 import TopBar from '../../components/nav/TopBarComponent';
-import MESSAGES from './messages';
 import { getOtChipColors } from '../../constants/chipColors';
 import { baseUrls } from '../../constants/urls';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { SxStyles } from '../../types/general';
+import { OrgUnitTreeviewModal } from '../orgUnits/components/TreeView/OrgUnitTreeviewModal';
+import { OrgUnitBreadcrumbs } from '../orgUnits/components/breadcrumbs/OrgUnitBreadcrumbs';
+import { OrgUnit } from '../orgUnits/types/orgUnit';
+import { Instances } from './components/Instances';
+import { OrgUnitPaper } from './components/OrgUnitPaper';
+import { Placeholder } from './components/Placeholder';
+import { SelectedOrgUnit } from './components/selectedOrgUnit';
 import {
     useGetOrgUnit,
     useGetOrgUnitListChildren,
     useGetOrgUnitsMapChildren,
 } from './hooks/useGetOrgUnit';
-import { Instances } from './components/Instances';
-import { OrgUnitInstances } from './components/OrgUnitInstances';
-import { OrgUnitPaper } from './components/OrgUnitPaper';
+import MESSAGES from './messages';
+import { RegistryParams } from './types';
 import { OrgunitTypeRegistry } from './types/orgunitTypes';
-import { RegistryDetailParams } from './types';
-import { OrgUnitTreeviewModal } from '../orgUnits/components/TreeView/OrgUnitTreeviewModal';
-import { OrgUnitBreadcrumbs } from '../orgUnits/components/breadcrumbs/OrgUnitBreadcrumbs';
-import { OrgUnit } from '../orgUnits/types/orgUnit';
-import { useParamsObject } from '../../routing/hooks/useParamsObject';
 
+const styles: SxStyles = {
+    breadCrumbContainer: {
+        '& nav': {
+            display: 'inline-block',
+        },
+    },
+    treeContainer: {
+        top: '-2px',
+        position: 'relative',
+        display: 'inline-block',
+    },
+};
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
 export const Registry: FunctionComponent = () => {
     const classes: Record<string, string> = useStyles();
-    const params = useParamsObject(baseUrls.registry) as RegistryDetailParams;
+    const params = useParamsObject(baseUrls.registry) as RegistryParams;
     const redirectTo = useRedirectTo();
-    const { orgUnitId } = params;
+    const { orgUnitId, orgUnitChildrenId } = params;
     const { formatMessage } = useSafeIntl();
 
     const { data: orgUnit, isFetching } = useGetOrgUnit(orgUnitId);
+    const [selectedChildrenId, setSelectedChildrenId] = useState<
+        string | undefined
+    >(orgUnitChildrenId);
+    const { data: selectedChildren, isFetching: isFetchingSelectedChildren } =
+        useGetOrgUnit(selectedChildrenId);
     const { data: orgUnitListChildren, isFetching: isFetchingListChildren } =
         useGetOrgUnitListChildren(
             orgUnitId,
@@ -65,47 +84,69 @@ export const Registry: FunctionComponent = () => {
         return orderBy(options, [f => f.depth], ['asc']);
     }, [orgUnit, orgUnitMapChildren]);
 
-    const handleOrgUnitChange = useCallback(
-        (newOrgUnit: OrgUnit) => {
-            if (newOrgUnit) {
-                const newParams = {
-                    ...params,
-                    orgUnitId: `${newOrgUnit.id}`,
-                };
-                redirectTo(`/${baseUrls.registry}`, newParams);
-            }
-        },
-        [params, redirectTo],
-    );
+    const handleOrgUnitChange = (newOrgUnit: OrgUnit) => {
+        if (newOrgUnit) {
+            const newParams = {
+                ...params,
+                orgUnitId: `${newOrgUnit.id}`,
+            };
+            delete newParams.orgUnitChildrenId;
+            delete newParams.submissionId;
+            setSelectedChildrenId(undefined);
+            redirectTo(`/${baseUrls.registry}`, newParams);
+        }
+    };
+
+    const handleChildrenChange = (newChildren: OrgUnit) => {
+        const newParams = {
+            ...params,
+        };
+        if (newChildren) {
+            setSelectedChildrenId(`${newChildren.id}`);
+            newParams.orgUnitChildrenId = `${newChildren.id}`;
+        } else {
+            setSelectedChildrenId(undefined);
+            delete newParams.orgUnitChildrenId;
+        }
+        delete newParams.submissionId;
+        redirectTo(`/${baseUrls.registry}`, newParams);
+    };
 
     return (
         <>
-            <TopBar title={formatMessage(MESSAGES.title)} />
+            <TopBar
+                title={`${formatMessage(MESSAGES.title)}${
+                    orgUnit
+                        ? `: ${orgUnit.name} (${orgUnit.org_unit_type_name})`
+                        : ''
+                }`}
+            />
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>
                 {isFetching && <LoadingSpinner />}
 
                 <Grid container spacing={2}>
-                    {!isFetching && orgUnit && (
-                        <Grid item xs={12}>
+                    <Grid item xs={12} sx={styles.breadCrumbContainer}>
+                        <Box sx={styles.treeContainer}>
+                            <OrgUnitTreeviewModal
+                                toggleOnLabelClick
+                                titleMessage={MESSAGES.search}
+                                onConfirm={handleOrgUnitChange}
+                                initialSelection={orgUnit}
+                                defaultOpen={!orgUnitId}
+                                useIcon
+                            />
+                        </Box>
+                        <Box display="inline-block" ml={1} mr={2}>
+                            {`>`}
+                        </Box>
+                        {!orgUnitId && '...'}
+                        {orgUnitId && !isFetching && orgUnit && (
                             <OrgUnitBreadcrumbs
                                 orgUnit={orgUnit}
                                 showRegistry
-                                showOnlyParents
+                                showOnlyParents={false}
                             />
-                        </Grid>
-                    )}
-                    <Grid container item xs={12}>
-                        <Grid item xs={4}>
-                            <Box mb={-2}>
-                                <OrgUnitTreeviewModal
-                                    toggleOnLabelClick
-                                    titleMessage={MESSAGES.search}
-                                    onConfirm={handleOrgUnitChange}
-                                    initialSelection={orgUnit}
-                                    defaultOpen={!orgUnitId}
-                                />
-                            </Box>
-                        </Grid>
+                        )}
                     </Grid>
                     {!isFetching && orgUnit && (
                         <>
@@ -122,6 +163,8 @@ export const Registry: FunctionComponent = () => {
                                     isFetchingMapChildren={
                                         isFetchingMapChildren
                                     }
+                                    setSelectedChildren={handleChildrenChange}
+                                    selectedChildrenId={selectedChildrenId}
                                 />
                             </Grid>
                             <Grid
@@ -132,8 +175,17 @@ export const Registry: FunctionComponent = () => {
                                 container
                             >
                                 {orgUnit && (
-                                    <OrgUnitInstances
-                                        orgUnit={orgUnit}
+                                    <SelectedOrgUnit
+                                        orgUnit={
+                                            selectedChildrenId
+                                                ? selectedChildren
+                                                : orgUnit
+                                        }
+                                        isFetching={
+                                            selectedChildrenId
+                                                ? isFetchingSelectedChildren
+                                                : isFetching
+                                        }
                                         params={params}
                                     />
                                 )}
@@ -141,13 +193,12 @@ export const Registry: FunctionComponent = () => {
                         </>
                     )}
                 </Grid>
-                <Box mt={2}>
-                    <Instances
-                        isLoading={isFetching}
-                        subOrgUnitTypes={subOrgUnitTypes}
-                        params={params}
-                    />
-                </Box>
+                <Instances
+                    isLoading={isFetching}
+                    subOrgUnitTypes={subOrgUnitTypes}
+                    params={params}
+                />
+                {!orgUnitId && <Placeholder />}
             </Box>
         </>
     );

@@ -1,9 +1,9 @@
-import React, { FunctionComponent, useMemo } from 'react';
-import { Breadcrumbs } from '@mui/material';
+import { Breadcrumbs, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import React, { FunctionComponent, useMemo } from 'react';
+import { LinkToRegistry } from '../../../registry/components/LinkToRegistry';
 import { OrgUnit } from '../../types/orgUnit';
 import { LinkToOrgUnit } from '../LinkToOrgUnit';
-import { LinkToRegistry } from '../../../registry/components/LinkToRegistry';
 
 type BreadCrumbsArgs = {
     orgUnit?: OrgUnit;
@@ -53,6 +53,7 @@ type Props = {
     orgUnit: OrgUnit;
     showOnlyParents?: boolean;
     showRegistry?: boolean;
+    color?: string;
 };
 
 export const OrgUnitBreadcrumbs: FunctionComponent<Props> = ({
@@ -60,13 +61,25 @@ export const OrgUnitBreadcrumbs: FunctionComponent<Props> = ({
     orgUnit,
     showOnlyParents,
     showRegistry = false,
+    color = 'inherit',
 }) => {
     const { link } = useStyles();
     const breadcrumbs = useOrgUnitBreadCrumbs({ orgUnit, showOnlyParents });
     return (
-        <Breadcrumbs separator={separator}>
-            {breadcrumbs.map(ou =>
-                showRegistry ? (
+        <Breadcrumbs separator={separator} sx={{ '& *': { color } }}>
+            {breadcrumbs.map((ou, index) => {
+                if (index === breadcrumbs.length - 1 && !showOnlyParents) {
+                    return (
+                        <Typography
+                            key={ou.id}
+                            component="span"
+                            color="primary"
+                        >
+                            {ou.name}
+                        </Typography>
+                    );
+                }
+                return showRegistry ? (
                     <LinkToRegistry
                         orgUnit={ou}
                         key={ou.id}
@@ -80,8 +93,8 @@ export const OrgUnitBreadcrumbs: FunctionComponent<Props> = ({
                         className={link}
                         replace
                     />
-                ),
-            )}
+                );
+            })}
         </Breadcrumbs>
     );
 };

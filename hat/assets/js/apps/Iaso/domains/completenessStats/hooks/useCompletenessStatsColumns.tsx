@@ -5,6 +5,7 @@ import {
     Column,
 } from 'bluesquare-components';
 import { ArrowUpward, AccountTree } from '@mui/icons-material';
+
 import MESSAGES from '../messages';
 import { userHasOneOfPermissions } from '../../users/utils';
 import { useCurrentUser } from '../../../utils/usersUtils';
@@ -15,19 +16,17 @@ import {
     FormDesc,
 } from '../types';
 import * as Permission from '../../../utils/permissions';
-import { usetGetParentPageUrl } from '../utils';
+import { useGetParentPageUrl } from '../utils';
 import { DescendantsCell } from '../components/DescendantsCell';
 import { ItselfCell } from '../components/ItselfCell';
-import { Router } from '../../../types/general';
 
 export const useCompletenessStatsColumns = (
-    router: Router,
     params: CompletenessRouterParams,
     completenessStats?: CompletenessApiResponse,
 ): Column[] => {
     const currentUser = useCurrentUser();
 
-    const getParentPageUrl = usetGetParentPageUrl(router);
+    const getParentPageUrl = useGetParentPageUrl();
     const hasSubmissionPermission = userHasOneOfPermissions(
         [Permission.SUBMISSIONS, Permission.SUBMISSIONS_UPDATE],
         currentUser,

@@ -1,15 +1,14 @@
 /* eslint-disable react/require-default-props */
 /* eslint-disable camelcase */
 import React, { FunctionComponent } from 'react';
-// @ts-ignore
 import { useSafeIntl, UrlParams } from 'bluesquare-components';
 import { Box, Grid, useMediaQuery, useTheme } from '@mui/material';
-import { BUDGET_DETAILS } from '../../../constants/routes';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useFilterState } from '../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 import MESSAGES from '../../../constants/messages';
 import { FilterButton } from '../../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
 import { DropdownOptions } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { baseUrls } from '../../../constants/urls';
 
 type Props = {
     params: UrlParams & {
@@ -38,7 +37,7 @@ export const BudgetDetailsFilters: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({
-            baseUrl: BUDGET_DETAILS,
+            baseUrl: baseUrls.budgetDetails,
             params,
             saveSearchInHistory: false,
         });

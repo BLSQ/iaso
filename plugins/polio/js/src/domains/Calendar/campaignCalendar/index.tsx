@@ -1,12 +1,12 @@
-import { LoadingSpinner } from 'bluesquare-components';
-import { Moment } from 'moment';
 import React, { FunctionComponent } from 'react';
+import { LoadingSpinner } from 'bluesquare-components';
+// @ts-ignore
+import { Moment } from 'moment';
 
 import { Box, Table, TableContainer } from '@mui/material';
 
 import { useStyles } from './Styles';
 
-import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import { Body } from './Body';
 import { Head } from './Head';
 import { Nav } from './Nav';
@@ -21,7 +21,8 @@ type Props = {
     orders: string;
     currentDate: Moment;
     isPdf?: boolean;
-    router: Router;
+    url: string;
+    isLogged: boolean;
 };
 
 const CampaignsCalendar: FunctionComponent<Props> = ({
@@ -32,8 +33,9 @@ const CampaignsCalendar: FunctionComponent<Props> = ({
     params,
     orders,
     currentDate,
+    url,
+    isLogged,
     isPdf = false,
-    router,
 }) => {
     const classes = useStyles();
     const { headers, currentWeekIndex, firstMonday, lastSunday } = calendarData;
@@ -42,7 +44,7 @@ const CampaignsCalendar: FunctionComponent<Props> = ({
             {!isPdf && (
                 <Nav
                     currentMonday={currentMonday}
-                    params={params}
+                    url={url}
                     currentDate={currentDate}
                 />
             )}
@@ -58,7 +60,8 @@ const CampaignsCalendar: FunctionComponent<Props> = ({
                         orders={orders}
                         currentWeekIndex={currentWeekIndex}
                         isPdf={isPdf}
-                        router={router}
+                        isLogged={isLogged}
+                        url={url}
                     />
                     <Body
                         loadingCampaigns={loadingCampaigns}

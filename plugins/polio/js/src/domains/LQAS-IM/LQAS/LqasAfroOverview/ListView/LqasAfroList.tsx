@@ -25,7 +25,6 @@ import MESSAGES from '../../../../../constants/messages';
 import { useStyles } from '../../../../../styles/theme';
 import { TableText } from '../../../../Campaigns/Scope/Scopes/TableText';
 import { TablePlaceHolder } from '../../../../Campaigns/Scope/Scopes/TablePlaceHolder';
-import { Router } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import { AfroMapParams, Side } from '../types';
 import {
     useAfroMapShapes,
@@ -47,7 +46,7 @@ type SortFocus =
     | 'ROUND';
 
 type Props = {
-    router: Router;
+    params: AfroMapParams;
     side: Side;
 };
 
@@ -70,28 +69,28 @@ const useTableStyle = makeStyles(theme => {
     };
 });
 
-export const LqasAfroList: FunctionComponent<Props> = ({ router, side }) => {
+export const LqasAfroList: FunctionComponent<Props> = ({ params, side }) => {
     const classes: Record<string, string> = useStyles();
     const tableClasses: Record<string, string> = useTableStyle();
     const { bounds } = useContext(LqasAfroOverviewContext);
     const { formatMessage } = useSafeIntl();
     const currentView =
         side === 'left'
-            ? router.params.displayedShapesLeft
-            : router.params.displayedShapesRight;
+            ? params.displayedShapesLeft
+            : params.displayedShapesRight;
 
     const showCountries = currentView !== 'district';
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [orderBy, setOrderBy] = useState('asc');
     const [sortFocus, setSortFocus] = useState<SortFocus>('COUNTRY');
     const [page, setPage] = useState<number>(0);
-    const selectedRound = getRound(router.params.rounds, side);
+    const selectedRound = getRound(params.rounds, side);
 
     const { data: countryShapes, isFetching: isFetchingCountries } =
         useAfroMapShapes({
             category: 'lqas',
             enabled: showCountries,
-            params: router.params as AfroMapParams,
+            params,
             selectedRound,
             side,
         });
@@ -101,7 +100,7 @@ export const LqasAfroList: FunctionComponent<Props> = ({ router, side }) => {
             bounds: JSON.stringify(bounds),
             category: 'lqas',
             enabled: !showCountries && Boolean(bounds),
-            params: router.params as AfroMapParams,
+            params,
             selectedRound,
             side,
         });

@@ -1,13 +1,17 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Chip } from '@mui/material';
 import {
-    IconButton as IconButtonComponent,
+    IconButton,
     displayDateFromTimestamp,
     Expander,
+    Column,
+    useSafeIntl,
 } from 'bluesquare-components';
+import { UseMutateAsyncFunction } from 'react-query';
 import MESSAGES from './messages';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell';
 import { NotificationImportDetailModal } from './components/NotificationImportDetailModal';
+import { SxStyles } from '../../types/general';
 
 const getTranslatedStatusMessage = (formatMessage, status) => {
     // Return untranslated status if not translation available
@@ -19,13 +23,14 @@ const getTranslatedStatusMessage = (formatMessage, status) => {
 const getStatusColor = status => {
     if (['QUEUED', 'RUNNING'].includes(status)) {
         return 'info';
-    } else if (['EXPORTED', 'SUCCESS'].includes(status)) {
-        return 'success';
-    } else if (status === 'ERRORED') {
-        return 'error';
-    } else {
-        return 'warning';
     }
+    if (['EXPORTED', 'SUCCESS'].includes(status)) {
+        return 'success';
+    }
+    if (status === 'ERRORED') {
+        return 'error';
+    }
+    return 'warning';
 };
 
 const safePercent = (a, b) => {
@@ -42,144 +47,154 @@ const styles: SxStyles = {
     },
 };
 
-const tasksTableColumns = (
-    formatMessage,
-    killTaskAction,
-    hasPolioNotificationsPerm,
-) => [
-    {
-        Header: formatMessage(MESSAGES.name),
-        sortable: true,
-        accessor: 'name',
-    },
-    {
-        Header: formatMessage(MESSAGES.progress),
-        sortable: true,
-        accessor: 'status',
-        Cell: settings => {
-            return (
-                <span>
-                    {settings.value === 'RUNNING' &&
-                    settings.row.original.end_value > 0 ? (
-                        `${settings.row.original.progress_value}/${
-                            settings.row.original.end_value
-                        } (${safePercent(
-                            settings.row.original.progress_value,
-                            settings.row.original.end_value,
-                        )})`
-                    ) : (
-                        <Chip
-                            label={getTranslatedStatusMessage(
-                                formatMessage,
-                                settings.value,
+type TaskColumn = Partial<Column> & { expander?: boolean; Expander?: any };
+
+export const useTasksTableColumns = (
+    killTaskAction: UseMutateAsyncFunction<any, any, any, any>,
+    hasPolioNotificationsPerm: boolean,
+): TaskColumn[] => {
+    const { formatMessage } = useSafeIntl();
+    return useMemo(
+        () => [
+            {
+                Header: formatMessage(MESSAGES.name),
+                sortable: true,
+                accessor: 'name',
+            },
+            {
+                Header: formatMessage(MESSAGES.progress),
+                sortable: true,
+                accessor: 'status',
+                Cell: settings => {
+                    return (
+                        <span>
+                            {settings.value === 'RUNNING' &&
+                            settings.row.original.end_value > 0 ? (
+                                `${settings.row.original.progress_value}/${
+                                    settings.row.original.end_value
+                                } (${safePercent(
+                                    settings.row.original.progress_value,
+                                    settings.row.original.end_value,
+                                )})`
+                            ) : (
+                                <Chip
+                                    label={getTranslatedStatusMessage(
+                                        formatMessage,
+                                        settings.value,
+                                    )}
+                                    color={getStatusColor(settings.value)}
+                                    size="small"
+                                    sx={styles.chip}
+                                />
                             )}
-                            color={getStatusColor(settings.value)}
-                            size="small"
-                            sx={styles.chip}
-                        />
-                    )}
-                </span>
-            );
-        },
-    },
-    {
-        Header: formatMessage(MESSAGES.message),
-        sortable: false,
-        align: 'left',
-        width: 550,
-        accessor: 'progress_message',
-        Cell: settings => {
-            if (!settings.value) return null;
-            return settings.value?.length < 40
-                ? settings.value
-                : `${settings.value.slice(0, 40)}...`;
-        },
-    },
-    {
-        Header: formatMessage(MESSAGES.launcher),
-        sortable: true,
-        accessor: 'launcher',
-        Cell: settings => settings.value?.username ?? null,
-    },
-    {
-        Header: formatMessage(MESSAGES.timeCreated),
-        sortable: true,
-        accessor: 'created_at',
-        Cell: DateTimeCell,
-    },
-    {
-        Header: formatMessage(MESSAGES.timeStart),
-        sortable: true,
-        accessor: 'started_at',
-        Cell: settings => (
-            <span>
-                {settings.row.original.status === 'QUEUED' ||
-                settings.row.original.started_at === null
-                    ? ''
-                    : displayDateFromTimestamp(
-                          settings.row.original.started_at,
-                      )}
-            </span>
-        ),
-    },
-    {
-        Header: formatMessage(MESSAGES.timeEnd),
-        sortable: true,
-        accessor: 'ended_at',
-        Cell: settings => (
-            <span>
-                {settings.row.original.status === 'RUNNING' ||
-                settings.row.original.status === 'QUEUED' ||
-                settings.row.original.ended_at === null
-                    ? '-'
-                    : displayDateFromTimestamp(settings.row.original.ended_at)}
-            </span>
-        ),
-    },
-    {
-        Header: formatMessage(MESSAGES.actions),
-        accessor: 'actions',
-        resizable: false,
-        sortable: false,
-        width: 150,
-        Cell: settings => (
-            <section>
-                {['QUEUED', 'RUNNING', 'UNKNOWN'].includes(
-                    settings.row.original.status,
-                ) === true &&
-                    settings.row.original.should_be_killed === false && (
-                        <IconButtonComponent
-                            onClick={() =>
-                                killTaskAction({
-                                    id: settings.row.original.id,
-                                    should_be_killed: true,
-                                })
-                            }
-                            icon="stop"
-                            tooltipMessage={MESSAGES.killTask}
-                        />
-                    )}
-                {settings.row.original.should_be_killed === true &&
-                    settings.row.original.status === 'RUNNING' &&
-                    formatMessage(MESSAGES.killSignalSent)}
-                {hasPolioNotificationsPerm &&
-                    ['SUCCESS', 'ERRORED'].includes(
-                        settings.row.original.status,
-                    ) &&
-                    settings.row.original.name ===
-                        'create_polio_notifications_async' && (
-                        <NotificationImportDetailModal
-                            task={settings.row.original}
-                        />
-                    )}
-            </section>
-        ),
-    },
-    {
-        expander: true,
-        accessor: 'expander',
-        width: 65,
-        Expander,
-    },
-];
-export default tasksTableColumns;
+                        </span>
+                    );
+                },
+            },
+            {
+                Header: formatMessage(MESSAGES.message),
+                sortable: false,
+                align: 'left',
+                width: 550,
+                accessor: 'progress_message',
+                Cell: settings => {
+                    if (!settings.value) return null;
+                    return settings.value?.length < 40
+                        ? settings.value
+                        : `${settings.value.slice(0, 40)}...`;
+                },
+            },
+            {
+                Header: formatMessage(MESSAGES.launcher),
+                sortable: true,
+                accessor: 'launcher',
+                Cell: settings => settings.value?.username ?? null,
+            },
+            {
+                Header: formatMessage(MESSAGES.timeCreated),
+                sortable: true,
+                accessor: 'created_at',
+                Cell: DateTimeCell,
+            },
+            {
+                Header: formatMessage(MESSAGES.timeStart),
+                sortable: true,
+                accessor: 'started_at',
+                Cell: settings => (
+                    <span>
+                        {settings.row.original.status === 'QUEUED' ||
+                        settings.row.original.started_at === null
+                            ? ''
+                            : displayDateFromTimestamp(
+                                  settings.row.original.started_at,
+                              )}
+                    </span>
+                ),
+            },
+            {
+                Header: formatMessage(MESSAGES.timeEnd),
+                sortable: true,
+                accessor: 'ended_at',
+                Cell: settings => (
+                    <span>
+                        {settings.row.original.status === 'RUNNING' ||
+                        settings.row.original.status === 'QUEUED' ||
+                        settings.row.original.ended_at === null
+                            ? '-'
+                            : displayDateFromTimestamp(
+                                  settings.row.original.ended_at,
+                              )}
+                    </span>
+                ),
+            },
+            {
+                Header: formatMessage(MESSAGES.actions),
+                accessor: 'actions',
+                resizable: false,
+                sortable: false,
+                width: 150,
+                Cell: settings => (
+                    <section>
+                        {['QUEUED', 'RUNNING', 'UNKNOWN'].includes(
+                            settings.row.original.status,
+                        ) === true &&
+                            settings.row.original.should_be_killed ===
+                                false && (
+                                <IconButton
+                                    onClick={() =>
+                                        killTaskAction({
+                                            id: settings.row.original.id,
+                                            should_be_killed: true,
+                                        })
+                                    }
+                                    icon="stop"
+                                    tooltipMessage={MESSAGES.killTask}
+                                />
+                            )}
+                        {settings.row.original.should_be_killed === true &&
+                            settings.row.original.status === 'RUNNING' &&
+                            formatMessage(MESSAGES.killSignalSent)}
+                        {hasPolioNotificationsPerm &&
+                            ['SUCCESS', 'ERRORED'].includes(
+                                settings.row.original.status,
+                            ) &&
+                            settings.row.original.name ===
+                                'create_polio_notifications_async' && (
+                                <NotificationImportDetailModal
+                                    task={settings.row.original}
+                                    iconProps={{}}
+                                />
+                            )}
+                    </section>
+                ),
+            },
+            {
+                expander: true,
+                accessor: 'expander',
+                width: 65,
+                Expander,
+            },
+        ],
+        [formatMessage, hasPolioNotificationsPerm, killTaskAction],
+    );
+};

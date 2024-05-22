@@ -8,7 +8,7 @@ import { makeStyles } from '@mui/styles';
 import SearchIcon from '@mui/icons-material/Search';
 
 import { commonStyles, getParamsKey } from 'bluesquare-components';
-import FiltersComponent from '../filters/FiltersComponent';
+import { FiltersComponent } from '../filters/FiltersComponent';
 
 const MESSAGES = defineMessages({
     search: {

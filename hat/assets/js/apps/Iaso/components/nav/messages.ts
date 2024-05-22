@@ -29,6 +29,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Logout',
         id: 'iaso.logout',
     },
+    see: {
+        defaultMessage: 'See',
+        id: 'iaso.label.see',
+    },
 });
 
 export default MESSAGES;

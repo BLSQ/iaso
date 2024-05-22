@@ -1,36 +1,29 @@
 import { Box, Grid, Tab, Tabs } from '@mui/material';
+import { Column, useRedirectToReplace } from 'bluesquare-components';
 import React, {
     FunctionComponent,
     useCallback,
     useMemo,
     useState,
 } from 'react';
-import { useDispatch } from 'react-redux';
-
-import { Column } from 'bluesquare-components';
+import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
-import { ColumnSelect } from '../../instances/components/ColumnSelect';
-import { ActionCell } from './ActionCell';
-import { MissingInstanceDialog } from './MissingInstanceDialog';
-
-import { redirectToReplace } from '../../../routing/actions';
-
-import { Form } from '../../forms/types/forms';
-import { OrgunitType } from '../../orgUnits/types/orgunitTypes';
-import { RegistryParams } from '../types';
-import { OrgunitTypeRegistry } from '../types/orgunitTypes';
-
-import { useGetForms } from '../hooks/useGetForms';
-import { useGetInstanceApi, useGetInstances } from '../hooks/useGetInstances';
-
-import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import { baseUrls } from '../../../constants/urls';
 import * as Permissions from '../../../utils/permissions';
-import { defaultSorted, INSTANCE_METAS_FIELDS } from '../config';
+import { Form } from '../../forms/types/forms';
+import { ColumnSelect } from '../../instances/components/ColumnSelect';
+import { OrgunitType } from '../../orgUnits/types/orgunitTypes';
+import { INSTANCE_METAS_FIELDS, defaultSorted } from '../config';
 import { useGetEmptyInstanceOrgUnits } from '../hooks/useGetEmptyInstanceOrgUnits';
+import { useGetForms } from '../hooks/useGetForms';
+import { useGetInstanceApi, useGetInstances } from '../hooks/useGetInstances';
 import MESSAGES from '../messages';
+import { RegistryParams } from '../types';
+import { OrgunitTypeRegistry } from '../types/orgunitTypes';
+import { ActionCell } from './ActionCell';
+import { MissingInstanceDialog } from './MissingInstanceDialog';
 
 type Props = {
     isLoading: boolean;
@@ -43,7 +36,7 @@ export const Instances: FunctionComponent<Props> = ({
     subOrgUnitTypes,
     params,
 }) => {
-    const dispatch = useDispatch();
+    const redirectToReplace = useRedirectToReplace();
     const [tableColumns, setTableColumns] = useState<Column[]>([]);
     const { formIds, tab } = params;
     const currentType: OrgunitTypeRegistry | undefined = useMemo(() => {
@@ -75,14 +68,12 @@ export const Instances: FunctionComponent<Props> = ({
 
     const handleFilterChange = useCallback(
         (key: string, value: number | string) => {
-            dispatch(
-                redirectToReplace(baseUrls.registry, {
-                    ...params,
-                    [key]: value,
-                }),
-            );
+            redirectToReplace(baseUrls.registry, {
+                ...params,
+                [key]: value,
+            });
         },
-        [dispatch, params],
+        [params, redirectToReplace],
     );
 
     const handleChangeTab = useCallback(
@@ -92,9 +83,9 @@ export const Instances: FunctionComponent<Props> = ({
                 tab: `${newType.id}`,
             };
             delete newParams.formIds;
-            dispatch(redirectToReplace(baseUrls.registry, newParams));
+            redirectToReplace(baseUrls.registry, newParams);
         },
-        [dispatch, params],
+        [params, redirectToReplace],
     );
 
     const currentForm: Form | undefined = useMemo(() => {

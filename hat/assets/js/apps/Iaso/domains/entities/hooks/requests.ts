@@ -99,6 +99,8 @@ export const useGetBeneficiariesPaginated = (
         queryFn: () => getRequest(url),
         options: {
             staleTime: 60000,
+            cacheTime: 1000 * 60 * 5,
+            keepPreviousData: true,
         },
     });
 };
@@ -217,13 +219,16 @@ export const useGetSubmissions = (
         options: {
             retry: false,
             enabled: Boolean(entityId),
+            keepPreviousData: true,
+            cacheTime: 1000 * 60 * 5,
+            staleTime: 1000 * 60 * 5,
         },
     });
 };
 
 export const useGetUsersDropDown = (
     team?: Team,
-): UseQueryResult<DropdownOptions<number>, Error> => {
+): UseQueryResult<DropdownOptions<number>[], Error> => {
     return useSnackQuery(
         ['profiles', team],
         () => getRequest('/api/profiles/'),

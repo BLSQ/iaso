@@ -3,44 +3,31 @@ import { makeStyles } from '@mui/styles';
 import {
     LoadingSpinner,
     commonStyles,
+    useRedirectTo,
     useSafeIntl,
 } from 'bluesquare-components';
 import { orderBy } from 'lodash';
 import React, { FunctionComponent, useMemo, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import TopBar from '../../components/nav/TopBarComponent';
-import MESSAGES from './messages';
-
 import { getOtChipColors } from '../../constants/chipColors';
 import { baseUrls } from '../../constants/urls';
-
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { SxStyles } from '../../types/general';
+import { OrgUnitTreeviewModal } from '../orgUnits/components/TreeView/OrgUnitTreeviewModal';
+import { OrgUnitBreadcrumbs } from '../orgUnits/components/breadcrumbs/OrgUnitBreadcrumbs';
+import { OrgUnit } from '../orgUnits/types/orgUnit';
+import { Instances } from './components/Instances';
+import { OrgUnitPaper } from './components/OrgUnitPaper';
+import { Placeholder } from './components/Placeholder';
+import { SelectedOrgUnit } from './components/selectedOrgUnit';
 import {
     useGetOrgUnit,
     useGetOrgUnitListChildren,
     useGetOrgUnitsMapChildren,
 } from './hooks/useGetOrgUnit';
-
-import { Instances } from './components/Instances';
-import { OrgUnitPaper } from './components/OrgUnitPaper';
-import { OrgunitTypeRegistry } from './types/orgunitTypes';
-
+import MESSAGES from './messages';
 import { RegistryParams } from './types';
-
-import { redirectTo, redirectToReplace } from '../../routing/actions';
-import { SxStyles } from '../../types/general';
-import { OrgUnitTreeviewModal } from '../orgUnits/components/TreeView/OrgUnitTreeviewModal';
-import { OrgUnitBreadcrumbs } from '../orgUnits/components/breadcrumbs/OrgUnitBreadcrumbs';
-import { OrgUnit } from '../orgUnits/types/orgUnit';
-import { Placeholder } from './components/Placeholder';
-import { SelectedOrgUnit } from './components/selectedOrgUnit';
-
-type Router = {
-    goBack: () => void;
-    params: RegistryParams;
-};
-type Props = {
-    router: Router;
-};
+import { OrgunitTypeRegistry } from './types/orgunitTypes';
 
 const styles: SxStyles = {
     breadCrumbContainer: {
@@ -54,19 +41,15 @@ const styles: SxStyles = {
         display: 'inline-block',
     },
 };
-
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-export const Registry: FunctionComponent<Props> = ({ router }) => {
-    const {
-        params: { orgUnitId, orgUnitChildrenId },
-        params,
-    } = router;
-    const dispatch = useDispatch();
-
+export const Registry: FunctionComponent = () => {
     const classes: Record<string, string> = useStyles();
+    const params = useParamsObject(baseUrls.registry) as RegistryParams;
+    const redirectTo = useRedirectTo();
+    const { orgUnitId, orgUnitChildrenId } = params;
     const { formatMessage } = useSafeIntl();
 
     const { data: orgUnit, isFetching } = useGetOrgUnit(orgUnitId);
@@ -110,9 +93,10 @@ export const Registry: FunctionComponent<Props> = ({ router }) => {
             delete newParams.orgUnitChildrenId;
             delete newParams.submissionId;
             setSelectedChildrenId(undefined);
-            dispatch(redirectTo(`/${baseUrls.registry}`, newParams));
+            redirectTo(`/${baseUrls.registry}`, newParams);
         }
     };
+
     const handleChildrenChange = (newChildren: OrgUnit) => {
         const newParams = {
             ...params,
@@ -125,8 +109,9 @@ export const Registry: FunctionComponent<Props> = ({ router }) => {
             delete newParams.orgUnitChildrenId;
         }
         delete newParams.submissionId;
-        dispatch(redirectToReplace(`/${baseUrls.registry}`, newParams));
+        redirectTo(`/${baseUrls.registry}`, newParams);
     };
+
     return (
         <>
             <TopBar

@@ -8,11 +8,11 @@ import React, {
     useEffect,
 } from 'react';
 import { Grid, Box, Divider } from '@mui/material';
-import { useDispatch } from 'react-redux';
 import FileCopyIcon from '@mui/icons-material/FileCopy';
 import {
-    IconButton as IconButtonComponent,
+    IconButton,
     useSafeIntl,
+    useRedirectTo,
 } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import MESSAGES from '../../messages';
@@ -21,7 +21,6 @@ import {
     useDataSourceAsDropDown,
     useDataSourceVersions,
 } from '../../requests';
-import { redirectTo } from '../../../../routing/actions';
 import { baseUrls } from '../../../../constants/urls';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { WarningMessage } from './CopyVersionWarnings';
@@ -33,7 +32,7 @@ type Props = {
 };
 
 const renderTrigger = ({ openDialog }) => (
-    <IconButtonComponent
+    <IconButton
         onClick={openDialog}
         overrideIcon={FileCopyIcon}
         tooltipMessage={MESSAGES.copyVersion}
@@ -82,10 +81,10 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
     dataSourceVersionNumber,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const redirectTo = useRedirectTo();
     const [destinationSourceId, setDestinationSourceId] =
         useState(dataSourceId);
     const { mutateAsync: copyVersion } = useCopyDataSourceVersion();
-    const dispatch = useDispatch();
     const { data: datasourcesDropdown } = useDataSourceAsDropDown();
     const { data: allSourceVersions } = useDataSourceVersions();
     const allowConfirm = Boolean(destinationSourceId);
@@ -138,13 +137,11 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
         async closeDialog => {
             await copyAndReset();
             closeDialog();
-            dispatch(
-                redirectTo(baseUrls.tasks, {
-                    order: '-created_at',
-                }),
-            );
+            redirectTo(baseUrls.tasks, {
+                order: '-created_at',
+            });
         },
-        [copyAndReset, dispatch],
+        [copyAndReset, redirectTo],
     );
 
     const onCancel = useCallback(

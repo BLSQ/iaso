@@ -2,7 +2,6 @@ import React, { FunctionComponent } from 'react';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useDispatch } from 'react-redux';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { UserRolesFilters } from './components/UserRolesFilters';
@@ -11,19 +10,17 @@ import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { UserRoleParams } from './types/userRoles';
 import { useGetUserRolesColumns } from './config';
 import { useGetUserRoles } from './hooks/requests/useGetUserRoles';
-import { redirectTo } from '../../routing/actions';
 import { useDeleteUserRole } from './hooks/requests/useDeleteUserRole';
 import { CreateUserRoleDialog } from './components/CreateEditUserRole';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
-type Props = {
-    params: UserRoleParams;
-};
+
 const baseUrl = baseUrls.userRoles;
-export const UserRoles: FunctionComponent<Props> = ({ params }) => {
-    const dispatch = useDispatch();
+export const UserRoles: FunctionComponent = () => {
+    const params = useParamsObject(baseUrl) as unknown as UserRoleParams;
     const classes: Record<string, string> = useStyles();
 
     const { data, isFetching } = useGetUserRoles(params);
@@ -51,7 +48,6 @@ export const UserRoles: FunctionComponent<Props> = ({ params }) => {
                     baseUrl={baseUrl}
                     params={params}
                     extraProps={{ loading: isFetching }}
-                    onTableParamsChange={p => dispatch(redirectTo(baseUrl, p))}
                 />
             </Box>
         </>

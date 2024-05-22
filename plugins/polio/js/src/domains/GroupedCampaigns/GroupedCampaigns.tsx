@@ -5,39 +5,32 @@ import {
     AddButton as AddButtonComponent,
 } from 'bluesquare-components';
 import { Box, Grid } from '@mui/material';
-import { useDispatch } from 'react-redux';
+import { PaginationParams } from '../../../../../../hat/assets/js/apps/Iaso/types/general';
+import { useParamsObject } from '../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
-
-import MESSAGES from '../../constants/messages';
 import { GroupedCampaignsFilter } from './GroupedCampaignsFilter';
 import { useStyles } from '../../styles/theme';
-import { GROUPED_CAMPAIGNS } from '../../constants/routes';
-
-import { makeColumns } from './config';
 import { GroupedCampaignDialog } from './GroupedCampaignDialog';
-
 import { TableWithDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
+import { useGroupedCampaignsColumns } from './config';
 import { useDeleteGroupedCampaign } from './hooks/useDeleteGroupedCampaign';
 import { useGetGroupedCampaigns } from './hooks/useGetGroupedCampaigns';
-import { redirectTo } from '../../../../../../hat/assets/js/apps/Iaso/routing/actions';
+import { baseUrls } from '../../constants/urls';
+import MESSAGES from '../../constants/messages';
 
-type Params = {
-    pageSize: string;
-    order: string;
-    page: string;
+type Params = PaginationParams & {
     search?: string;
 };
-type Props = {
-    params: Params;
-};
 
-const DEFAULT_PAGE_SIZE = 10;
-const DEFAULT_PAGE = 1;
+const DEFAULT_PAGE_SIZE = '10';
+const DEFAULT_PAGE = '1';
 const DEFAULT_ORDER = '-updated_at';
+const baseUrl = baseUrls.groupedCampaigns;
 
-export const GroupedCampaigns: FunctionComponent<Props> = ({ params }) => {
+export const GroupedCampaigns: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
+    const params = useParamsObject(baseUrl) as Params;
     const tableParams = useMemo(() => {
         return {
             order: params.order ?? DEFAULT_ORDER,
@@ -48,8 +41,8 @@ export const GroupedCampaigns: FunctionComponent<Props> = ({ params }) => {
     }, [params]);
     const { data: groupedCampaigns, isFetching } =
         useGetGroupedCampaigns(tableParams);
-    const dispatch = useDispatch();
     const { mutateAsync: deleteGroupedCampaign } = useDeleteGroupedCampaign();
+    const columns = useGroupedCampaignsColumns(deleteGroupedCampaign);
 
     return (
         <>
@@ -58,7 +51,7 @@ export const GroupedCampaigns: FunctionComponent<Props> = ({ params }) => {
                 displayBackButton={false}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <GroupedCampaignsFilter />
+                <GroupedCampaignsFilter params={params} />
                 <Grid
                     container
                     spacing={0}
@@ -80,13 +73,10 @@ export const GroupedCampaigns: FunctionComponent<Props> = ({ params }) => {
                     data={groupedCampaigns?.results ?? []}
                     pages={groupedCampaigns?.pages ?? 1}
                     defaultSorted={[{ id: 'updated_at', desc: true }]}
-                    columns={makeColumns(formatMessage, deleteGroupedCampaign)}
+                    columns={columns}
                     count={groupedCampaigns?.count ?? 0}
-                    baseUrl={GROUPED_CAMPAIGNS}
+                    baseUrl={baseUrl}
                     params={tableParams}
-                    onTableParamsChange={p =>
-                        dispatch(redirectTo(GROUPED_CAMPAIGNS, p))
-                    }
                     extraProps={{ loading: isFetching }}
                 />
             </Box>

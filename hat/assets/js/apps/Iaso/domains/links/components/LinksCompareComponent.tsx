@@ -3,12 +3,7 @@ import isEqual from 'lodash/isEqual';
 
 import { Table, TableBody, Paper, Grid, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import {
-    // @ts-ignore
-    IconButton as IconButtonComponent,
-    // @ts-ignore
-    useSafeIntl,
-} from 'bluesquare-components';
+import { IconButton, useSafeIntl } from 'bluesquare-components';
 import { baseUrls } from '../../../constants/urls';
 import { LinksValue } from './LinksValueComponent';
 import MESSAGES from '../messages';
@@ -58,8 +53,8 @@ export const LinksCompare: FunctionComponent<Props> = ({
                         </Typography>
                     </Grid>
                     <Grid item xs={1}>
-                        <IconButtonComponent
-                            url={`${baseUrls.orgUnitDetails}/orgUnitId/${link.id}/tab/infos`}
+                        <IconButton
+                            url={`/${baseUrls.orgUnitDetails}/orgUnitId/${link.id}/tab/infos`}
                             icon="orgUnit"
                             tooltipMessage={MESSAGES.details}
                         />

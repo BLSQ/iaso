@@ -24,16 +24,15 @@ type Option = {
 };
 
 type Param = {
-    accountId: string;
-    current_state_key: [number | string];
-    countries: [number | string];
-    order: string;
-    org_unit_groups: [number | string];
-    page: number | string;
-    pageSize: number | string;
-    roundStartFrom: string;
-    roundStartTo: string;
-    search: string;
+    current_state_key?: string; // comma separated array
+    countries?: string; // comma separated array
+    order?: string;
+    org_unit_groups?: string; // comma separated array
+    page?: number | string;
+    pageSize?: number | string;
+    roundStartFrom?: string;
+    roundStartTo?: string;
+    search?: string;
 };
 
 const budgetDetailsFields: string[] = [

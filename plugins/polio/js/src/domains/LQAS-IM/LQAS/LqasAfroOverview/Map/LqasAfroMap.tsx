@@ -8,20 +8,18 @@ import { CustomTileLayer } from '../../../../../../../../../hat/assets/js/apps/I
 import { Tile } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/TilesSwitchControl';
 import { LqasAfroMapPanesContainer } from './LqasAfroMapPanesContainer';
 import { AfroMapParams, Side } from '../types';
-import { Router } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import { LqasAfroMapLegend } from './LqasAfroMapLegend';
 import { defaultViewport } from '../../../../Calendar/campaignCalendar/map/constants';
 import { LqasAfroOverviewContext } from '../Context/LqasAfroOverviewContext';
 
 type Props = {
-    router: Router;
+    params: AfroMapParams;
     side: Side;
 };
 
-export const LqasAfroMap: FunctionComponent<Props> = ({ router, side }) => {
+export const LqasAfroMap: FunctionComponent<Props> = ({ params, side }) => {
     const { bounds, setBounds } = useContext(LqasAfroOverviewContext);
     const [currentTile, setCurrentTile] = useState<Tile>(TILES.osm);
-    const { params } = router;
     const defaultCenter = useMemo(
         () =>
             (side === 'left'
@@ -69,10 +67,7 @@ export const LqasAfroMap: FunctionComponent<Props> = ({ router, side }) => {
                         bounds={bounds}
                     />
                 )}
-                <LqasAfroMapPanesContainer
-                    params={router.params as AfroMapParams}
-                    side={side}
-                />
+                <LqasAfroMapPanesContainer params={params} side={side} />
             </MapContainer>
         </>
     );

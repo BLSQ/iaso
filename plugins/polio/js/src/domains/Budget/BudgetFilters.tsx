@@ -43,7 +43,7 @@ export const BudgetFilters: FunctionComponent<Props> = ({
         useGetGroupDropdown({ blockOfCountries: 'True' });
     const countriesList = (data && data.orgUnits) || [];
     return (
-        <Box mb={4}>
+        <Box mb={isXSLayout ? 4 : 2}>
             <Grid container spacing={isXSLayout ? 0 : 2}>
                 <Grid item xs={12} sm={6} md={3}>
                     <InputComponent

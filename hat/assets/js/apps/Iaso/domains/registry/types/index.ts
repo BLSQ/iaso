@@ -17,7 +17,7 @@ export type RegistryParams = UrlParams & {
     submissionId?: string;
     missingSubmissionVisible?: 'true';
     showTooltip?: 'true';
-    useCluster?: 'true';
+    clusterEnabled?: 'true';
     isFullScreen?: 'true';
     missingSubmissionsPageSize?: string;
     missingSubmissionsOrder?: string;

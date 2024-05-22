@@ -575,7 +575,7 @@ export const registryPath = {
         },
         {
             isRequired: false,
-            key: 'useCluster',
+            key: 'clusterEnabled',
         },
         {
             isRequired: false,

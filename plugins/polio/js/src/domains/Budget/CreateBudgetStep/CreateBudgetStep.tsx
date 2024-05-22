@@ -234,14 +234,16 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                 onClose={() => null}
             >
                 <>
-                    <TextArea
-                        value={values.comment}
-                        errors={getErrors('comment')}
-                        label={formatMessage(MESSAGES.notes)}
-                        onChange={onCommentChange}
-                        required={requiredFields.includes('comment')}
-                        debounceTime={0}
-                    />
+                    <Box mt={1}>
+                        <TextArea
+                            value={values.comment}
+                            errors={getErrors('comment')}
+                            label={formatMessage(MESSAGES.notes)}
+                            onChange={onCommentChange}
+                            required={requiredFields.includes('comment')}
+                            debounceTime={0}
+                        />
+                    </Box>
                     <InputComponent
                         type="number"
                         keyValue="amount"

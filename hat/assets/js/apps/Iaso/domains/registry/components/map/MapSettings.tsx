@@ -79,7 +79,7 @@ const styles: SxStyles = {
 };
 export type Settings = {
     showTooltip: boolean;
-    useCluster: boolean;
+    clusterEnabled: boolean;
 };
 
 type Props = {
@@ -157,10 +157,10 @@ export const MapSettings: FunctionComponent<Props> = ({
                                     control={
                                         <Switch
                                             size="small"
-                                            checked={settings.useCluster}
+                                            checked={settings.clusterEnabled}
                                             onChange={() =>
                                                 handleChangeSettings(
-                                                    'useCluster',
+                                                    'clusterEnabled',
                                                 )
                                             }
                                             color="primary"

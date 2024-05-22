@@ -75,7 +75,12 @@ class SetupAccountSerializer(serializers.Serializer):
             modules=account_modules,
             analytics_script=validated_data.get("analytics_script", ""),
         )
-        account_feature_flags = ["SHOW_HOME_ONLINE", "SHOW_BENEFICIARY_TYPES_IN_LIST_MENU", "SHOW_PAGES"]
+        account_feature_flags = [
+            "SHOW_HOME_ONLINE",
+            "SHOW_BENEFICIARY_TYPES_IN_LIST_MENU",
+            "SHOW_PAGES",
+            "SHOW_LINK_INSTANCE_REFERENCE",
+        ]
         account.feature_flags.set(account_feature_flags)
 
         # Create a setup_account project with an app_id represented by the account name

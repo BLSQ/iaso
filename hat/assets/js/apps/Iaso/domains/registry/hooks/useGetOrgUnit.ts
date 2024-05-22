@@ -20,6 +20,8 @@ export const useGetOrgUnit = (
             retry: false,
             enabled: Boolean(orgUnitId),
             keepPreviousData: true,
+            staleTime: 1000 * 60 * 15, // in MS
+            cacheTime: 1000 * 60 * 5,
         },
     });
 };
@@ -64,6 +66,8 @@ export const useGetOrgUnitListChildren = (
         options: {
             keepPreviousData: true,
             enabled: Boolean(orgUnitParentId && orgUnitTypes),
+            staleTime: 1000 * 60 * 15, // in MS
+            cacheTime: 1000 * 60 * 5,
             select: data => {
                 if (!data) return undefined;
                 const orgunits: OrgUnit[] = data.orgunits.filter(
@@ -101,6 +105,8 @@ export const useGetOrgUnitsMapChildren = (
         queryKey: ['orgUnits', params],
         queryFn: () => getRequest(url),
         options: {
+            staleTime: 1000 * 60 * 15, // in MS
+            cacheTime: 1000 * 60 * 5,
             enabled: Boolean(orgUnitParentId && orgUnitTypes),
             select: (data: Result): OrgUnit[] => data?.orgUnits || [],
         },

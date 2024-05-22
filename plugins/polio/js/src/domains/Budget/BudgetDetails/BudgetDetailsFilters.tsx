@@ -63,10 +63,11 @@ export const BudgetDetailsFilters: FunctionComponent<Props> = ({
                     />
                     <InputComponent
                         type="checkbox"
-                        keyValue="showHidden"
+                        keyValue="show_hidden"
                         labelString={formatMessage(MESSAGES.showHidden)}
-                        onChange={(_keyValue, newValue) => {
+                        onChange={(keyValue, newValue) => {
                             setShowHidden(newValue);
+                            handleChange(keyValue, newValue);
                         }}
                         value={showHidden}
                         withMarginTop={false}

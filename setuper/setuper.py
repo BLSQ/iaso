@@ -6,6 +6,8 @@ from pyramid import setup_orgunits
 from entities import setup_entities
 from registry import setup_registry
 from default_healthFacility_form import setup_health_facility_level_default_form
+from review_change_proposal import setup_review_change_proposal
+from create_submission_with_picture import create_submission_with_picture
 import string
 import random
 
@@ -45,6 +47,8 @@ seed_entities = True
 
 seed_registry = True
 
+seed_review_change_proposal = True
+
 
 if __name__ == "__main__":
     account_name = "".join(random.choices(string.ascii_lowercase, k=7))
@@ -54,6 +58,7 @@ if __name__ == "__main__":
 
     if seed_default_health_facility_form:
         setup_health_facility_level_default_form(account_name, iaso_client=iaso_client)
+        create_submission_with_picture(account_name, iaso_client=iaso_client)
 
     if seed_registry:
         setup_registry(account_name, iaso_client=iaso_client)
@@ -64,6 +69,9 @@ if __name__ == "__main__":
 
     if seed_entities:
         setup_entities(account_name, iaso_client=iaso_client)
+
+    if seed_review_change_proposal:
+        setup_review_change_proposal(account_name, iaso_client=iaso_client)
 
     print("-----------------------------------------------")
     print("Account created:", account_name)

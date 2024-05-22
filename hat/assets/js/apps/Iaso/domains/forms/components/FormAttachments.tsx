@@ -1,8 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { Box } from '@mui/material';
-import { useDispatch } from 'react-redux';
 
-import { redirectToReplace } from '../../../routing/actions';
 import { useGetAttachments } from '../hooks/useGetAttachments';
 import { useGetColumns } from '../config/attachments';
 
@@ -25,7 +23,6 @@ export const FormAttachments: FunctionComponent<Props> = ({ params }) => {
     const { mutateAsync: upload, isLoading: isUploading } = useUploadAttachment(
         params.formId,
     );
-    const dispatch = useDispatch();
     const columns = useGetColumns(params, attachments?.count ?? 0);
     return (
         <Box>
@@ -52,9 +49,6 @@ export const FormAttachments: FunctionComponent<Props> = ({ params }) => {
                 params={params}
                 paramsPrefix="attachments"
                 extraProps={{ loading: isFetchingAttachments || isUploading }}
-                onTableParamsChange={p =>
-                    dispatch(redirectToReplace(baseUrls.formDetail, p))
-                }
             />
         </Box>
     );

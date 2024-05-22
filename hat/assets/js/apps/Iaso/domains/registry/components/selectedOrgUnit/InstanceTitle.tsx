@@ -1,10 +1,14 @@
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { IconButton, commonStyles, useSafeIntl } from 'bluesquare-components';
+import {
+    IconButton,
+    commonStyles,
+    useRedirectToReplace,
+    useSafeIntl,
+} from 'bluesquare-components';
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
 
 import moment from 'moment';
-import { useDispatch } from 'react-redux';
 import MESSAGES from '../../messages';
 
 import { useGetEnketoUrl } from '../../hooks/useGetEnketoUrl';
@@ -14,7 +18,6 @@ import EnketoIcon from '../../../instances/components/EnketoIcon';
 import { DisplayIfUserHasPerm } from '../../../../components/DisplayIfUserHasPerm';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { baseUrls } from '../../../../constants/urls';
-import { redirectToReplace } from '../../../../routing/actions';
 import * as Permission from '../../../../utils/permissions';
 import { LinkToInstance } from '../../../instances/components/LinkToInstance';
 import { Instance } from '../../../instances/types/instance';
@@ -55,9 +58,9 @@ export const InstanceTitle: FunctionComponent<Props> = ({
     instances,
     isFetching,
 }) => {
-    const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
+    const redirectToReplace = useRedirectToReplace();
     const getEnketoUrl = useGetEnketoUrl(window.location.href, currentInstance);
     const currentInstanceId = useMemo(() => {
         return params.submissionId || orgUnit?.reference_instances?.[0]?.id;
@@ -86,9 +89,9 @@ export const InstanceTitle: FunctionComponent<Props> = ({
                 ...params,
                 submissionId,
             };
-            dispatch(redirectToReplace(baseUrls.registry, newParams));
+            redirectToReplace(baseUrls.registry, newParams);
         },
-        [params, dispatch],
+        [redirectToReplace, params],
     );
     return (
         <Grid container className={classes.paperTitle}>

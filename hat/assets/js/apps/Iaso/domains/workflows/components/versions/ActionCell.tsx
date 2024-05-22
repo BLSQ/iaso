@@ -49,7 +49,7 @@ export const VersionsActionCell: FunctionComponent<Props> = ({
     return (
         <>
             <IconButtonComponent
-                url={`${baseUrls.workflowDetail}/entityTypeId/${entityTypeId}/versionId/${versionId}`}
+                url={`/${baseUrls.workflowDetail}/entityTypeId/${entityTypeId}/versionId/${versionId}`}
                 icon={icon}
                 tooltipMessage={tooltipMessage}
             />

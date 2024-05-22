@@ -5,26 +5,20 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { useDispatch } from 'react-redux';
-
-import { Column } from 'bluesquare-components';
+import { Column, useRedirectToReplace } from 'bluesquare-components';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
 import { ColumnSelect } from '../../instances/components/ColumnSelect';
 import { ActionCell } from './ActionCell';
 import { MissingInstanceDialog } from './MissingInstanceDialog';
-
-import { redirectToReplace } from '../../../routing/actions';
-
-import { Form } from '../../forms/types/forms';
 import { OrgunitType } from '../../orgUnits/types/orgunitTypes';
 import { RegistryParams } from '../types';
 import { OrgunitTypeRegistry } from '../types/orgunitTypes';
-
+import { RegistryDetailParams } from '../types';
+import { Form } from '../../forms/types/forms';
 import { useGetForms } from '../hooks/useGetForms';
 import { useGetInstanceApi, useGetInstances } from '../hooks/useGetInstances';
-
 import { baseUrls } from '../../../constants/urls';
 import * as Permission from '../../../utils/permissions';
 import { useCurrentUser } from '../../../utils/usersUtils';
@@ -45,7 +39,7 @@ export const Instances: FunctionComponent<Props> = ({
     params,
 }) => {
     const currentUser = useCurrentUser();
-    const dispatch = useDispatch();
+    const redirectToReplace = useRedirectToReplace();
     const [tableColumns, setTableColumns] = useState<Column[]>([]);
     const { formIds, tab } = params;
     const currentType: OrgunitTypeRegistry | undefined = useMemo(() => {
@@ -77,14 +71,12 @@ export const Instances: FunctionComponent<Props> = ({
 
     const handleFilterChange = useCallback(
         (key: string, value: number | string) => {
-            dispatch(
-                redirectToReplace(baseUrls.registry, {
-                    ...params,
-                    [key]: value,
-                }),
-            );
+            redirectToReplace(baseUrls.registry, {
+                ...params,
+                [key]: value,
+            });
         },
-        [dispatch, params],
+        [params, redirectToReplace],
     );
 
     const handleChangeTab = useCallback(
@@ -94,9 +86,9 @@ export const Instances: FunctionComponent<Props> = ({
                 tab: `${newType.id}`,
             };
             delete newParams.formIds;
-            dispatch(redirectToReplace(baseUrls.registry, newParams));
+            redirectToReplace(baseUrls.registry, newParams);
         },
-        [dispatch, params],
+        [params, redirectToReplace],
     );
 
     const currentForm: Form | undefined = useMemo(() => {
@@ -210,6 +202,7 @@ export const Instances: FunctionComponent<Props> = ({
                                 </Box>
                             </Grid>
                         </Grid>
+                        {/* @ts-ignore */}
                         <TableWithDeepLink
                             marginTop={false}
                             baseUrl={baseUrls.registry}
@@ -219,11 +212,6 @@ export const Instances: FunctionComponent<Props> = ({
                             columns={tableColumns}
                             count={data?.count ?? 0}
                             params={params}
-                            onTableParamsChange={p =>
-                                dispatch(
-                                    redirectToReplace(baseUrls.registry, p),
-                                )
-                            }
                             extraProps={{ loading: isFetchingList }}
                         />
                     </Box>

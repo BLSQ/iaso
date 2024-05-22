@@ -5,7 +5,6 @@ export type OrgUnitListTab = 'map' | 'list';
 export type RegistryParams = UrlParams & {
     orgUnitId: string;
     orgUnitChildrenId?: string;
-    accountId: string;
     formIds?: string;
     planningIds?: string;
     columns?: string;

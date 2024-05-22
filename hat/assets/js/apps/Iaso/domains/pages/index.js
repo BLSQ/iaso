@@ -1,13 +1,8 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import {
-    useSafeIntl,
-    commonStyles,
-    IconButton as IconButtonComponent,
-} from 'bluesquare-components';
+import { useSafeIntl, commonStyles, IconButton } from 'bluesquare-components';
 import { makeStyles } from '@mui/styles';
 import { Box } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import PropTypes from 'prop-types';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { useGetPages } from './hooks/useGetPages';
@@ -18,10 +13,12 @@ import CreateEditDialog from './components/CreateEditDialog';
 import PageActions from './components/PageActions';
 import PageAction from './components/PageAction';
 import { PAGES_TYPES } from './constants';
-import { DateTimeCellRfc } from '../../components/Cells/DateTimeCell';
+import { DateTimeCellRfc } from '../../components/Cells/DateTimeCell.tsx';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink.tsx';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
 import * as Permission from '../../utils/permissions.ts';
+import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
+import { baseUrls } from '../../constants/urls';
 
 const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_PAGE = 1;
@@ -31,9 +28,10 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-const Pages = ({ params }) => {
-    const intl = useSafeIntl();
+const Pages = () => {
+    const { formatMessage } = useSafeIntl();
     const classes = useStyles();
+    const params = useParamsObject(baseUrls.pages);
     const [selectedPageSlug, setSelectedPageSlug] = useState();
     const [isCreateEditDialogOpen, setIsCreateEditDialogOpen] = useState(false);
     const [isConfirmDeleteDialogOpen, setIsConfirmDeleteDialogOpen] =
@@ -106,11 +104,11 @@ const Pages = ({ params }) => {
     const columns = useMemo(
         () => [
             {
-                Header: intl.formatMessage(MESSAGES.name),
+                Header: formatMessage(MESSAGES.name),
                 accessor: 'name',
             },
             {
-                Header: intl.formatMessage(MESSAGES.type),
+                Header: formatMessage(MESSAGES.type),
                 accessor: 'type',
                 Cell: settings => {
                     const pageType = PAGES_TYPES.find(
@@ -119,41 +117,45 @@ const Pages = ({ params }) => {
                     if (!pageType) {
                         return settings.row.original.type;
                     }
-                    return <span>{intl.formatMessage(pageType.label)}</span>;
+                    return <span>{formatMessage(pageType.label)}</span>;
                 },
             },
             {
-                Header: intl.formatMessage(MESSAGES.address),
+                Header: formatMessage(MESSAGES.address),
                 accessor: 'slug',
             },
             {
-                Header: intl.formatMessage(MESSAGES.updatedAt),
+                Header: formatMessage(MESSAGES.updatedAt),
                 accessor: 'updated_at',
                 Cell: DateTimeCellRfc,
             },
             {
-                Header: intl.formatMessage(MESSAGES.actions),
+                Header: formatMessage(MESSAGES.actions),
                 sortable: false,
                 accessor: 'actions',
                 Cell: settings => {
                     return (
                         <>
+                            {/* We use the <a> tag to avoid router's redirections
+                        i.e: adding /dashboard to the path and /accountId to the params
+                        */}
                             <a href={`/pages/${settings.row.original.slug}`}>
-                                <IconButtonComponent
+                                <IconButton
                                     icon="remove-red-eye"
                                     tooltipMessage={{
                                         ...MESSAGES.viewPage,
                                         values: { linebreak: <br /> },
                                     }}
-                                    onClick={() => {}}
+                                    onClick={() => null}
                                 />
                             </a>
+
                             {userHasPermission(
                                 Permission.PAGE_WRITE,
                                 currentUser,
                             ) && (
                                 <>
-                                    <IconButtonComponent
+                                    <IconButton
                                         icon="edit"
                                         tooltipMessage={MESSAGES.edit}
                                         onClick={() =>
@@ -162,7 +164,7 @@ const Pages = ({ params }) => {
                                             )
                                         }
                                     />
-                                    <IconButtonComponent
+                                    <IconButton
                                         icon="delete"
                                         tooltipMessage={MESSAGES.delete}
                                         onClick={() =>
@@ -178,7 +180,7 @@ const Pages = ({ params }) => {
                 },
             },
         ],
-        [currentUser, handleClickDeleteRow, handleClickEditRow, intl],
+        [currentUser, formatMessage, handleClickDeleteRow, handleClickEditRow],
     );
 
     return (
@@ -193,14 +195,14 @@ const Pages = ({ params }) => {
                 onClose={closeDeleteConfirmDialog}
                 onConfirm={handleDeleteConfirmDialogConfirm}
             />
-            <TopBar title={intl.formatMessage(MESSAGES.pages)} />
+            <TopBar title={formatMessage(MESSAGES.pages)} />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <PageActions>
                     <PageAction
                         icon={AddIcon}
                         onClick={handleClickCreateButton}
                     >
-                        {intl.formatMessage(MESSAGES.create)}
+                        {formatMessage(MESSAGES.create)}
                     </PageAction>
                 </PageActions>
                 <TableWithDeepLink
@@ -217,14 +219,6 @@ const Pages = ({ params }) => {
             </Box>
         </>
     );
-};
-
-Pages.propTypes = {
-    params: PropTypes.shape({
-        order: PropTypes.string,
-        page: PropTypes.string,
-        pageSize: PropTypes.string,
-    }).isRequired,
 };
 
 export default Pages;

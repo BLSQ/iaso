@@ -1,6 +1,10 @@
 import { Box, Paper, Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import {
+    commonStyles,
+    useRedirectToReplace,
+    useSafeIntl,
+} from 'bluesquare-components';
 import classnames from 'classnames';
 import React, {
     Dispatch,
@@ -9,21 +13,16 @@ import React, {
     useCallback,
     useState,
 } from 'react';
-import { useDispatch } from 'react-redux';
-
+import { baseUrls } from '../../../constants/urls';
 import MESSAGES from '../messages';
 
-import { baseUrls } from '../../../constants/urls';
-
-import { redirectToReplace } from '../../../routing/actions';
 import { OrgUnitChildrenMap } from './map/OrgUnitChildrenMap';
 
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
-import { OrgUnitChildrenList } from './OrgUnitChildrenList';
-
 import { OrgunitTypes } from '../../orgUnits/types/orgunitTypes';
 import { OrgUnitListChildren } from '../hooks/useGetOrgUnit';
 import { OrgUnitListTab, RegistryParams } from '../types';
+import { OrgUnitChildrenList } from './OrgUnitChildrenList';
 
 type Props = {
     orgUnit: OrgUnit;
@@ -84,7 +83,7 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
         params.orgUnitListTab || 'map',
     );
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
+    const redirectToReplace = useRedirectToReplace();
 
     const handleChangeTab = useCallback(
         (_, newTab: OrgUnitListTab) => {
@@ -93,9 +92,9 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
                 ...params,
                 orgUnitListTab: newTab,
             };
-            dispatch(redirectToReplace(baseUrls.registry, newParams));
+            redirectToReplace(baseUrls.registry, newParams);
         },
-        [dispatch, params],
+        [params, redirectToReplace],
     );
     return (
         <Paper elevation={1} className={classes.paper}>

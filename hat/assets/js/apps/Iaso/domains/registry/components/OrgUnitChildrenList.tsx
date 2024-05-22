@@ -1,12 +1,8 @@
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { Table } from 'bluesquare-components';
+import { Table, useRedirectToReplace } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
-import { useDispatch } from 'react-redux';
-
 import { baseUrls } from '../../../constants/urls';
-import { redirectToReplace } from '../../../routing/actions';
-
 import { useGetOrgUnitsListColumns } from '../config';
 import { OrgUnitListChildren } from '../hooks/useGetOrgUnit';
 import { RegistryParams } from '../types';
@@ -50,10 +46,9 @@ export const OrgUnitChildrenList: FunctionComponent<Props> = ({
     orgUnitChildren,
     isFetchingChildren,
 }) => {
-    const dispatch = useDispatch();
-
     const classes: Record<string, string> = useStyles();
     const columns = useGetOrgUnitsListColumns();
+    const redirectToReplace = useRedirectToReplace();
     return (
         <Box className={classes.root}>
             <Table
@@ -70,7 +65,7 @@ export const OrgUnitChildrenList: FunctionComponent<Props> = ({
                 extraProps={{ loading: isFetchingChildren }}
                 elevation={0}
                 onTableParamsChange={p => {
-                    dispatch(redirectToReplace(baseUrls.registry, p));
+                    redirectToReplace(baseUrls.registry, p);
                 }}
             />
         </Box>

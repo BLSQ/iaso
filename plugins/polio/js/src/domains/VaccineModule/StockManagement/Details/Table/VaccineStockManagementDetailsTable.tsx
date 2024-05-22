@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { UrlParams } from 'bluesquare-components';
-import { STOCK_MANAGEMENT_DETAILS } from '../../../../../constants/routes';
+import { baseUrls } from '../../../../../constants/urls';
 import { TableWithDeepLink } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 import { TabValue } from '../../types';
 import { useVaccineStockManagementDetailsColumns } from './useVaccineStockManagementDetailsColumns';
@@ -21,7 +21,6 @@ export const VaccineStockManagementDetailsTable: FunctionComponent<Props> = ({
     const columns = useVaccineStockManagementDetailsColumns();
 
     return (
-        // @ts-ignore
         <TableWithDeepLink
             data={data?.results ?? []}
             count={data?.count}
@@ -29,7 +28,7 @@ export const VaccineStockManagementDetailsTable: FunctionComponent<Props> = ({
             params={params}
             paramsPrefix={paramsPrefix}
             columns={columns}
-            baseUrl={STOCK_MANAGEMENT_DETAILS}
+            baseUrl={baseUrls.stockManagementDetails}
             marginTop={false}
             elevation={0}
             extraProps={{

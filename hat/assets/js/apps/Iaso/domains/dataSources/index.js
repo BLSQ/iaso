@@ -17,7 +17,7 @@ import { DataSourceDialogComponent } from './components/DataSourceDialogComponen
 import { baseUrls } from '../../constants/urls';
 import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
 
-import { dataSourcesTableColumns } from './config';
+import { useDataSourcesTableColumns } from './config';
 
 import MESSAGES from './messages';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
@@ -34,6 +34,10 @@ const DataSources = () => {
     const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
     const defaultSourceVersion = getDefaultSourceVersion(currentUser);
+    const columns = useDataSourcesTableColumns(
+        setForceRefresh,
+        defaultSourceVersion,
+    );
 
     const dataSourceDialog = () => {
         if (userHasPermission(Permission.SOURCE_WRITE, currentUser)) {
@@ -68,11 +72,7 @@ const DataSources = () => {
                     defaultPageSize={20}
                     fetchItems={fetchAllDataSources}
                     defaultSorted={[{ id: defaultOrder, desc: false }]}
-                    columns={dataSourcesTableColumns(
-                        formatMessage,
-                        setForceRefresh,
-                        defaultSourceVersion,
-                    )}
+                    columns={columns}
                     forceRefresh={forceRefresh}
                     onForceRefreshDone={() => setForceRefresh(false)}
                     extraComponent={dataSourceDialog()}

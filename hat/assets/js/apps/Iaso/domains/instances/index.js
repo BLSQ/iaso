@@ -2,41 +2,33 @@ import { Box, Grid, Tooltip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React, { useCallback, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
-
-import PropTypes from 'prop-types';
-
 import {
     LoadingSpinner,
     commonStyles,
     selectionInitialState,
     setTableSelection,
     useSafeIntl,
+    useRedirectToReplace,
 } from 'bluesquare-components';
-
 import { useQueryClient } from 'react-query';
-import { redirectToReplace } from '../../routing/actions.ts';
 import { createInstance } from './actions';
 import {
     fetchFormDetailsForInstance,
     fetchInstancesAsDict,
     fetchInstancesAsSmallDict,
 } from './requests';
-
 import {
     getEndpointUrl,
     getExportUrl,
-    getFilters,
-    getSelectionActions,
+    useGetFilters,
+    useSelectionActions,
 } from './utils/index.tsx';
-
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent.tsx';
 import { CreateReAssignDialog } from './components/CreateReAssignDialogComponent.tsx';
 import InstancesFiltersComponent from './components/InstancesFiltersComponent';
 import { InstancesMap } from './components/InstancesMap/InstancesMap.tsx';
 import { InstancesTopBar as TopBar } from './components/TopBar.tsx';
-
-import { baseUrls } from '../../constants/urls';
-
+import { baseUrls } from '../../constants/urls.ts';
 import snackMessages from '../../components/snackBars/messages';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink.tsx';
 import { useSnackQuery } from '../../libs/apiHooks.ts';
@@ -45,8 +37,8 @@ import { useGetPossibleFields } from '../forms/hooks/useGetPossibleFields.ts';
 import { userHasPermission } from '../users/utils';
 import { PaginatedInstanceFiles } from './components/PaginatedInstancesFiles';
 import MESSAGES from './messages';
-
 import * as Permission from '../../utils/permissions.ts';
+import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
 
 const baseUrl = baseUrls.instances;
 
@@ -59,11 +51,13 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const Instances = ({ params }) => {
+const Instances = () => {
+    const params = useParamsObject(baseUrl);
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     const queryClient = useQueryClient();
+    const redirectToReplace = useRedirectToReplace();
 
     const [selection, setSelection] = useState(selectionInitialState);
     const [tableColumns, setTableColumns] = useState([]);
@@ -136,20 +130,27 @@ const Instances = ({ params }) => {
                 tab: newTab,
             };
             setTab(newTab);
-            dispatch(redirectToReplace(baseUrl, newParams));
+            redirectToReplace(baseUrl, newParams);
         },
-        [params, dispatch],
+        [params, redirectToReplace],
     );
 
     const onSearch = useCallback(
         newParams => {
             setSelection(selectionInitialState);
-            dispatch(redirectToReplace(baseUrl, newParams));
+            redirectToReplace(baseUrl, newParams);
         },
-        [dispatch],
+        [redirectToReplace],
     );
     const isSingleFormSearch = params.formIds?.split(',').length === 1;
     const currentUser = useCurrentUser();
+    const filters = useGetFilters(params);
+    const selectionActions = useSelectionActions(
+        filters,
+        () => refetchInstances(),
+        params.showDeleted === 'true',
+        classes,
+    );
 
     return (
         <section className={classes.relativeContainer}>
@@ -242,14 +243,7 @@ const Instances = ({ params }) => {
                         baseUrl={baseUrl}
                         multiSelect
                         defaultSorted={[{ id: 'updated_at', desc: true }]}
-                        selectionActions={getSelectionActions(
-                            formatMessage,
-                            getFilters(params),
-                            () => refetchInstances(),
-                            params.showDeleted === 'true',
-                            classes,
-                            currentUser,
-                        )}
+                        selectionActions={selectionActions}
                         selection={selection}
                         setTableSelection={(
                             selectionType,
@@ -288,10 +282,6 @@ const Instances = ({ params }) => {
             </Box>
         </section>
     );
-};
-
-Instances.propTypes = {
-    params: PropTypes.object.isRequired,
 };
 
 export default Instances;

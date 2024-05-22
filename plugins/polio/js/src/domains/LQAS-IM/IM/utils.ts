@@ -70,17 +70,17 @@ export const makeImMapLegendItems =
         const passedLegendItem = makeLegendItem({
             color: OK_COLOR,
             value: passed?.length,
-            message: formatMessage(MESSAGES['1imOK']),
+            label: formatMessage(MESSAGES['1imOK']),
         });
         const disqualifiedLegendItem = makeLegendItem({
             color: WARNING_COLOR,
             value: disqualified?.length,
-            message: formatMessage(MESSAGES['2imWarning']),
+            label: formatMessage(MESSAGES['2imWarning']),
         });
         const failedLegendItem = makeLegendItem({
             color: FAIL_COLOR,
             value: failed?.length,
-            message: formatMessage(MESSAGES['3imFail']),
+            label: formatMessage(MESSAGES['3imFail']),
         });
 
         return [passedLegendItem, disqualifiedLegendItem, failedLegendItem];

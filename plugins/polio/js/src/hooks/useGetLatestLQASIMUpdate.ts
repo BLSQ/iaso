@@ -5,21 +5,21 @@ import { Optional } from '../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 const endpoint = '/api/polio/tasks/refreshlqas/last_run_for_country/';
 
-const getLatestRefresh = (category: string, countryId: Optional<number>) => {
+const getLatestRefresh = (isLqas: boolean, countryId: Optional<string>) => {
     const url = countryId ? `${endpoint}?country_id=${countryId}` : endpoint;
-    if (category === 'lqas' && countryId !== undefined) {
+    if (isLqas && countryId !== undefined) {
         return getRequest(url);
     }
     return null;
 };
 
 export const useGetLatestLQASIMUpdate = (
-    category: string,
-    countryId: Optional<number>,
+    isLqas: boolean,
+    countryId: Optional<string>,
 ): UseQueryResult<any, any> => {
     return useSnackQuery({
-        queryKey: ['get-latest-task-run', category, countryId],
-        queryFn: () => getLatestRefresh(category, countryId),
+        queryKey: ['get-latest-task-run', isLqas, countryId],
+        queryFn: () => getLatestRefresh(isLqas, countryId),
         options: {
             select: data => data?.task ?? {},
             refetchInterval: 5000,

@@ -4,7 +4,6 @@ import moment from 'moment';
 import React, { useMemo } from 'react';
 import { DeleteModal } from '../../../../../../../hat/assets/js/apps/Iaso/components/DeleteRestoreModals/DeleteModal';
 import { RestoreModal } from '../../../../../../../hat/assets/js/apps/Iaso/components/DeleteRestoreModals/RestoreModal';
-import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import MESSAGES from '../../../constants/messages';
 import { CampaignListItem } from '../../../constants/types';
 import { EditCampaignModal } from '../MainDialog/EditCampaignModal';
@@ -15,14 +14,14 @@ type Args = {
     handleClickRestoreRow: (value: number) => void;
     // eslint-disable-next-line no-unused-vars
     handleClickDeleteRow: (value: number) => void;
-    router: Router;
+    params: any;
 };
 
 export const useCampaignsTableColumns = ({
     showOnlyDeleted,
     handleClickRestoreRow,
     handleClickDeleteRow,
-    router,
+    params,
 }: Args): Column[] => {
     const { formatMessage } = useSafeIntl();
     // type Column need to be updated so accessor can also be FunctionComponent
@@ -93,8 +92,7 @@ export const useCampaignsTableColumns = ({
                         {!showOnlyDeleted && (
                             <>
                                 <EditCampaignModal
-                                    router={router}
-                                    params={router.params}
+                                    params={params}
                                     campaignId={settings.value}
                                 />
                                 <DeleteModal
@@ -137,7 +135,7 @@ export const useCampaignsTableColumns = ({
     }, [
         formatMessage,
         showOnlyDeleted,
-        router,
+        params,
         handleClickDeleteRow,
         handleClickRestoreRow,
     ]);

@@ -2388,6 +2388,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Year',
         id: 'iaso.polio.periods.year',
     },
+    goToCampaign: {
+        defaultMessage: 'Go to campaign',
+        id: 'iaso.polio.lqas.goToCampaign',
+    },
 });
 
 export default MESSAGES;

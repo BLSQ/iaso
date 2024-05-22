@@ -17,9 +17,11 @@ export const PreAlerts: FunctionComponent<Props> = ({
     const vaccine = values.vrf?.vaccine_type;
 
     const onClick = useCallback(() => {
-        setFieldValue(PREALERT, [...values[PREALERT], createEmptyPreAlert(vaccine)]);
+        setFieldValue(PREALERT, [
+            ...values[PREALERT],
+            createEmptyPreAlert(vaccine),
+        ]);
     }, [setFieldValue, values, vaccine]);
-
 
     return (
         <MultiFormTab

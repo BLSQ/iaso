@@ -204,7 +204,7 @@ describe('Duplicate entities list', () => {
                 cy.intercept(
                     'GET',
                     // eslint-disable-next-line max-len
-                    '/api/entityduplicates/?search=mario&algorithm=levenshtein&similarity=80&entity_type=7%2C3&org_unit=3&start_date=20-05-2010&end_date=25-05-2010&submitter=69&submitter_team=26&ignored=true&merged=true&fields=first_name%2Cmiddle_name&form=1&order=id&page=1&limit=20',
+                    '/api/entityduplicates/?search=mario&algorithm=levenshtein&similarity=80&entity_type=7%2C3&org_unit=%5B%223%22%5D&start_date=20-05-2010&end_date=25-05-2010&submitter=69&submitter_team=26&ignored=true&merged=true&fields=first_name%2Cmiddle_name&form=1&order=id&page=1&limit=20',
                     req => {
                         interceptFlag = true;
                         req.reply({

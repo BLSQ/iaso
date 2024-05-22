@@ -61,6 +61,7 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
+// TODO source full list of params elsewhere
 const filterDefault = params => ({
     ...params,
     mapResults: params.mapResults ? 3000 : params.mapResults,
@@ -365,7 +366,7 @@ const InstancesFiltersComponent = ({
                             onConfirm={orgUnit =>
                                 handleFormChange(
                                     'levels',
-                                    orgUnit ? [orgUnit.id] : undefined,
+                                    orgUnit ? orgUnit.id : undefined,
                                 )
                             }
                             initialSelection={initialOrgUnit}

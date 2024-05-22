@@ -1,18 +1,11 @@
 import React, { useState, useCallback } from 'react';
-import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
-
 import { Grid, Button } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import SearchIcon from '@mui/icons-material/Search';
-
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
-
-import InputComponent from '../../../../components/forms/InputComponent';
-import { redirectTo } from '../../../../routing/actions';
-
+import { commonStyles, useSafeIntl, useRedirectTo } from 'bluesquare-components';
+import InputComponent from '../../../../components/forms/InputComponent.tsx';
 import { baseUrl } from '../config';
-
 import MESSAGES from '../messages';
 
 const useStyles = makeStyles(theme => ({
@@ -25,7 +18,7 @@ const Filters = ({ params }) => {
     const classes = useStyles();
 
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
+    const redirectTo = useRedirectTo();
     const [filters, setFilters] = useState({
         search: params.search,
     });
@@ -38,9 +31,9 @@ const Filters = ({ params }) => {
                 ...filters,
             };
             tempParams.page = '1';
-            dispatch(redirectTo(baseUrl, tempParams));
+            redirectTo(baseUrl, tempParams);
         }
-    }, [filtersUpdated, dispatch, filters, params]);
+    }, [filtersUpdated, params, filters, redirectTo]);
 
     const handleChange = useCallback(
         (key, value) => {

@@ -9,7 +9,6 @@ import {
     IconButton,
 } from 'bluesquare-components';
 import { Box } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import isEqual from 'lodash/isEqual';
 
 import InputComponent from '../../../../components/forms/InputComponent';

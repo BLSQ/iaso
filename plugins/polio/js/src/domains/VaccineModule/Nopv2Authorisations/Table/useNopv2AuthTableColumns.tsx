@@ -1,11 +1,11 @@
 import React, { useMemo } from 'react';
 import { Column, IconButton, useSafeIntl } from 'bluesquare-components';
-import { NOPV2_AUTH_DETAILS } from '../../../../constants/routes';
 import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import MESSAGES from '../../../../constants/messages';
 import { Nopv2AuthorisationsStatusCell } from './Nopv2AuthorisationsStatusCell';
+import { baseUrls } from '../../../../constants/urls';
 
-const baseUrl = NOPV2_AUTH_DETAILS;
+const baseUrl = baseUrls.nopv2AuthDetails;
 
 export const useNopv2AuthTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -66,7 +66,7 @@ export const useNopv2AuthTableColumns = (): Column[] => {
                         <IconButton
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.seeHistory}
-                            url={`${baseUrl}/order/-expiration_date/pageSize/20/page/1/country/${id}/countryName/${name}`}
+                            url={`/${baseUrl}/order/-expiration_date/pageSize/20/page/1/country/${id}/countryName/${name}`}
                         />
                     );
                 },

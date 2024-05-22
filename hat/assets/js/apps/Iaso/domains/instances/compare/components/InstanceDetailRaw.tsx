@@ -17,6 +17,7 @@ import { getInstancesFilesList } from '../../utils';
 import { Accordion } from '../../../../components/Accordion/Accordion';
 import { AccordionSummary } from '../../../../components/Accordion/AccordionSummary';
 import { AccordionDetails } from '../../../../components/Accordion/AccordionDetails';
+import { baseUrls } from '../../../../constants/urls';
 
 type Props = {
     data?: Instance;
@@ -80,7 +81,7 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
                         <IconButtonComponent
                             size="small"
                             iconSize="small"
-                            url={`/forms/submission/instanceId/${data?.id}`}
+                            url={`/${baseUrls.instances}/instanceId/${data?.id}`}
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.viewSubmissionDetails}
                         />

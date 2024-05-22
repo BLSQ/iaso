@@ -6,7 +6,6 @@ import {
     setTableSelection,
 } from 'bluesquare-components';
 import { Box, useTheme } from '@mui/material';
-import { useDispatch } from 'react-redux';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { PotentialPaymentParams, PotentialPayment } from './types';
@@ -14,17 +13,14 @@ import { useGetPotentialPayments } from './hooks/requests/useGetPotentialPayment
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
 import { PotentialPaymentsFilters } from './components/CreatePaymentLot/PotentialPaymentsFilters';
-import { redirectTo } from '../../routing/actions';
 import { usePaymentColumns } from './hooks/config/usePaymentColumns';
 import { Selection } from '../orgUnits/types/selection';
 import { AddPaymentLotDialog } from './components/CreatePaymentLot/PaymentLotDialog';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
 
-type Props = {
-    params: PotentialPaymentParams;
-};
 const baseUrl = baseUrls.potentialPayments;
-export const PotentialPayments: FunctionComponent<Props> = ({ params }) => {
-    const dispatch = useDispatch();
+export const PotentialPayments: FunctionComponent = () => {
+    const params = useParamsObject(baseUrl) as PotentialPaymentParams;
 
     const { data, isFetching } = useGetPotentialPayments(params);
     const { formatMessage } = useSafeIntl();
@@ -64,7 +60,6 @@ export const PotentialPayments: FunctionComponent<Props> = ({ params }) => {
                         setSelection={setSelection}
                     />
                 </Box>
-                {/* @ts-ignore */}
                 <TableWithDeepLink
                     marginTop={false}
                     data={data?.results ?? []}
@@ -82,7 +77,6 @@ export const PotentialPayments: FunctionComponent<Props> = ({ params }) => {
                     setTableSelection={(selectionType, items, totalCount) =>
                         handleTableSelection(selectionType, items, totalCount)
                     }
-                    onTableParamsChange={p => dispatch(redirectTo(baseUrl, p))}
                 />
             </Box>
         </>

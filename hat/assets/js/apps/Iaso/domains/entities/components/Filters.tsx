@@ -18,6 +18,7 @@ import {
 
 // @ts-ignore
 import DatesRange from 'Iaso/components/filters/DatesRange';
+import { LocationLimit } from 'Iaso/utils/map/LocationLimit';
 import InputComponent from '../../../components/forms/InputComponent';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 
@@ -65,6 +66,7 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
         submitterId: params.submitterId,
         submitterTeamId: params.submitterTeamId,
         entityTypeIds: params.entityTypeIds,
+        locationLimit: params.locationLimit,
     });
 
     useEffect(() => {
@@ -76,6 +78,7 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
             submitterId: params.submitterId,
             submitterTeamId: params.submitterTeamId,
             entityTypeIds: params.entityTypeIds,
+            locationLimit: params.locationLimit,
         });
     }, [params]);
     const [filtersUpdated, setFiltersUpdated] = useState(false);
@@ -172,6 +175,15 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
                             initialSelection={initialOrgUnit}
                         />
                     </Box>
+                    {params.tab === 'map' && (
+                        <Box mt={2}>
+                            <LocationLimit
+                                keyValue="locationLimit"
+                                onChange={handleChange}
+                                value={filters.locationLimit}
+                            />
+                        </Box>
+                    )}
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
                     <DatesRange

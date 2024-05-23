@@ -18,6 +18,9 @@ module.exports = {
         iaso: './assets/js/apps/Iaso/index',
     },
 
+    stats: {
+        children: true,
+    },
     output: {
         path: path.resolve(__dirname, './assets/webpack'),
         filename: '[name]-[chunkhash].js',
@@ -35,7 +38,10 @@ module.exports = {
             '../translations/fr.json',
         ),
         new BundleTracker({
-            filename: `${__dirname}./assets/webpack/webpack-stats-prod.json`,
+            filename: path.resolve(
+                __dirname,
+                './assets/webpack/webpack-stats-prod.json',
+            ),
         }),
         new MiniCssExtractPlugin({ filename: '[name]-[chunkhash].css' }),
         new webpack.DefinePlugin({

@@ -1,11 +1,11 @@
 import React, { FunctionComponent } from 'react';
-import { userHasPermission } from '../../users/utils';
+import { IconVariant, LinkTo } from '../../../components/nav/LinkTo';
 import { baseUrls } from '../../../constants/urls';
-import { useCurrentUser } from '../../../utils/usersUtils';
-import { OrgUnit, ShortOrgUnit } from '../types/orgUnit';
 import { ORG_UNITS } from '../../../utils/permissions';
-import { LinkTo } from '../../../components/nav/LinkTo';
+import { useCurrentUser } from '../../../utils/usersUtils';
 import MESSAGES from '../../assignments/messages';
+import { userHasPermission } from '../../users/utils';
+import { OrgUnit, ShortOrgUnit } from '../types/orgUnit';
 
 type Props = {
     orgUnit?: OrgUnit | ShortOrgUnit;
@@ -14,6 +14,7 @@ type Props = {
     replace?: boolean;
     iconSize?: 'small' | 'medium' | 'large' | 'default' | 'inherit';
     size?: 'small' | 'medium' | 'large' | 'default' | 'inherit';
+    icon?: IconVariant;
 };
 
 export const LinkToOrgUnit: FunctionComponent<Props> = ({
@@ -23,6 +24,7 @@ export const LinkToOrgUnit: FunctionComponent<Props> = ({
     replace,
     iconSize,
     size,
+    icon,
 }) => {
     const user = useCurrentUser();
     const condition = userHasPermission(ORG_UNITS, user) && Boolean(orgUnit);
@@ -40,6 +42,7 @@ export const LinkToOrgUnit: FunctionComponent<Props> = ({
             iconSize={iconSize}
             text={text}
             tooltipMessage={MESSAGES.details}
+            icon={icon}
         />
     );
 };

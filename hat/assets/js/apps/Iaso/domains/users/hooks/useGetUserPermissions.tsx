@@ -14,7 +14,7 @@ export const useGetUserPermissions = (
     userPermissions: string[],
 ): any => {
     const { formatMessage } = useSafeIntl();
-    const permissionLabel = useCallback(
+    const getPermissionLabel = useCallback(
         permissionCodeName => {
             return PERMISSIONS_MESSAGES[permissionCodeName]
                 ? formatMessage(PERMISSIONS_MESSAGES[permissionCodeName])
@@ -25,7 +25,7 @@ export const useGetUserPermissions = (
 
     const sortedPermissions = useGetSortedPermissions({
         allPermissions,
-        permissionLabel,
+        getPermissionLabel,
     });
 
     return useMemo(() => {
@@ -38,7 +38,7 @@ export const useGetUserPermissions = (
             data.push(row);
             sortedPermissions[group].forEach(p => {
                 row = {};
-                row.permission = permissionLabel(p.codename);
+                row.permission = getPermissionLabel(p.codename);
                 row.userPermissions = userPermissions;
                 row.permissionCodeName = p.codename;
 
@@ -46,25 +46,25 @@ export const useGetUserPermissions = (
             });
         });
         return data;
-    }, [permissionLabel, sortedPermissions, userPermissions]);
+    }, [getPermissionLabel, sortedPermissions, userPermissions]);
 };
 
 type SortProps = {
     allPermissions: Permission[];
     // eslint-disable-next-line no-unused-vars
-    permissionLabel: (codename: string) => string;
+    getPermissionLabel: (codename: string) => string;
 };
 
 const useGetSortedPermissions = ({
     allPermissions,
-    permissionLabel,
+    getPermissionLabel,
 }: SortProps): any => {
     return useMemo(() => {
         const sortedPermissions = {};
         Object.keys(allPermissions).forEach(group => {
             sortedPermissions[group] = allPermissions[group].sort((a, b) =>
-                permissionLabel(a.codename).localeCompare(
-                    permissionLabel(b.codename),
+                getPermissionLabel(a.codename).localeCompare(
+                    getPermissionLabel(b.codename),
                     undefined,
                     {
                         sensitivity: 'accent',
@@ -73,5 +73,5 @@ const useGetSortedPermissions = ({
             );
         });
         return sortedPermissions;
-    }, [allPermissions, permissionLabel]);
+    }, [allPermissions, getPermissionLabel]);
 };

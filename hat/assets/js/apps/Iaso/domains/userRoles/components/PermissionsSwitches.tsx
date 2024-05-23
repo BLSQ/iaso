@@ -76,18 +76,21 @@ export const PermissionsSwitches: React.FunctionComponent<Props> = ({
         [handleChange, userRolePermissions],
     );
 
-    const groupPermissionLabel = groupName => {
-        return PERMISSIONS_GROUPS_MESSAGES[groupName]
-            ? formatMessage(PERMISSIONS_GROUPS_MESSAGES[groupName])
-            : groupName;
-    };
+    const groupPermissionLabel = useCallback(
+        groupName => {
+            return PERMISSIONS_GROUPS_MESSAGES[groupName]
+                ? formatMessage(PERMISSIONS_GROUPS_MESSAGES[groupName])
+                : groupName;
+        },
+        [formatMessage],
+    );
 
     const permissions_groups = useMemo(
         () => data?.permissions ?? [],
         [data?.permissions],
     );
 
-    const permissionLabel = useCallback(
+    const getPermissionLabel = useCallback(
         permissionCodeName => {
             return PERMISSIONS_MESSAGES[permissionCodeName]
                 ? formatMessage(PERMISSIONS_MESSAGES[permissionCodeName])
@@ -96,21 +99,23 @@ export const PermissionsSwitches: React.FunctionComponent<Props> = ({
         [formatMessage],
     );
 
-    const permissions: any = [];
-
-    Object.keys(permissions_groups).forEach(group => {
-        let row: Row = {};
-        row.codename = groupPermissionLabel(group);
-        row.group = true;
-        permissions.push(row);
-        permissions_groups[group].forEach(permission => {
-            row = {};
-            row.id = permission.id;
-            row.codename = permission.codename;
-            row.name = permissionLabel(permission.codename);
-            permissions.push(row);
+    const permissions: Row[] = useMemo(() => {
+        const grouped_permissions: Row[] = [];
+        Object.keys(permissions_groups).forEach(group => {
+            let row: Row = {};
+            row.codename = groupPermissionLabel(group);
+            row.group = true;
+            grouped_permissions.push(row);
+            permissions_groups[group].forEach(permission => {
+                row = {};
+                row.id = permission.id;
+                row.codename = permission.codename;
+                row.name = getPermissionLabel(permission.codename);
+                grouped_permissions.push(row);
+            });
         });
-    });
+        return grouped_permissions;
+    }, [getPermissionLabel, groupPermissionLabel, permissions_groups]);
 
     const columns = useUserPermissionColumns(
         setPermissions,

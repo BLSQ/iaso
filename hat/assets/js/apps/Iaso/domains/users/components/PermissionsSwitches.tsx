@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Box, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -89,15 +89,18 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
         handleChange(newUserPerms);
     };
     const loggedInUser = useCurrentUser();
-    const groups = data?.permissions ? Object.keys(data?.permissions) : [];
 
-    const allPermissions = {};
-    groups.forEach(group => {
-        allPermissions[group] =
-            data?.permissions[group]?.filter(permission =>
-                canAssignPermission(loggedInUser, permission),
-            ) ?? [];
-    });
+    const allPermissions = useMemo(() => {
+        const groups = data?.permissions ? Object.keys(data?.permissions) : [];
+        const permissions = {};
+        groups.forEach(group => {
+            permissions[group] =
+                data?.permissions[group]?.filter(permission =>
+                    canAssignPermission(loggedInUser, permission),
+                ) ?? [];
+        });
+        return permissions;
+    }, [data?.permissions, loggedInUser]);
 
     const userPermissions = currentUser.user_permissions.value;
     const { data: userRoles, isFetching } = useGetUserRolesDropDown();
@@ -105,7 +108,7 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
         allPermissions,
         userPermissions,
     );
-    // console.log(permissionsData);
+
     // This is a problem with the type definition of Column is bluesquare-components
     // @ts-ignore
     const columns: Column[] = useUserPermissionColumns({

@@ -14,7 +14,7 @@ import { userHasPermission } from './utils';
 
 import * as Permission from '../../utils/permissions.ts';
 import PermissionTooltip from './components/PermissionTooltip.tsx';
-import PERMISSIONS_GROUPS_MESSAGES from './permissionsGroupsMessages.ts';
+import PERMISSIONS_GROUPS_MESSAGES from './permissionsGroupsMessages';
 
 export const usersTableColumns = ({
     formatMessage,

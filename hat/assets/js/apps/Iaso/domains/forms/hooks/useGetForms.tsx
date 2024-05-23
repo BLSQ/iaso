@@ -14,7 +14,17 @@ export const tableDefaults = {
     limit: 50,
     page: 1,
 };
-export const useGetForms = (params): UseQueryResult<Form[], Error> => {
+
+type FormResponse = {
+    limit: number;
+    count: number;
+    forms: Form[];
+    has_previous: boolean;
+    has_next: boolean;
+    page: number;
+    pages: number;
+};
+export const useGetForms = (params): UseQueryResult<FormResponse, Error> => {
     const safeParams = useApiParams(params, tableDefaults);
     if (safeParams?.accountId) {
         delete safeParams.accountId;

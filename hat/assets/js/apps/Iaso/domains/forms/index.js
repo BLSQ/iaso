@@ -7,7 +7,6 @@ import {
     AddButton,
     useRedirectTo,
 } from 'bluesquare-components';
-import { useFormsTableColumns } from './config';
 import { Filters } from './components/Filters.tsx';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent.tsx';
 import TopBar from '../../components/nav/TopBarComponent';
@@ -15,12 +14,10 @@ import MESSAGES from './messages';
 import { baseUrls } from '../../constants/urls.ts';
 import * as Permission from '../../utils/permissions.ts';
 import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
-import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink.tsx';
 import { tableDefaults, useGetForms } from './hooks/useGetForms.tsx';
 import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm.tsx';
-import { useDeleteForm } from './hooks/useDeleteForm.tsx';
-import { useRestoreForm } from './hooks/useRestoreForm.tsx';
 import { cleanupParams } from '../../utils/requests';
+import { FormsTable } from './components/FormsTable.tsx';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -57,15 +54,6 @@ const Forms = () => {
     const [textSearchError, setTextSearchError] = useState(false);
     const { data: forms, isLoading: isLoadingForms } = useGetForms(params);
 
-    const { mutateAsync: deleteForm } = useDeleteForm();
-    const { mutateAsync: restoreForm } = useRestoreForm();
-
-    const columns = useFormsTableColumns({
-        deleteForm,
-        restoreForm,
-        showDeleted: params.showDeleted === 'true',
-    });
-
     const csvUrl = `${dwnldBaseUrl}/?${makeQueryString(
         params,
     )}&all=true&csv=true`;
@@ -101,19 +89,7 @@ const Forms = () => {
                         />
                     </Grid>
                 </Box>
-                <TableWithDeepLink
-                    baseUrl={baseUrl}
-                    defaultSorted={[{ id: 'instance_updated_at', desc: false }]}
-                    columns={columns}
-                    params={params}
-                    data={forms?.forms ?? []}
-                    count={forms?.count}
-                    pages={forms?.pages}
-                    extraProps={{
-                        loading: isLoadingForms,
-                        defaultPageSize: forms?.limit ?? 50,
-                    }}
-                />
+                <FormsTable baseUrl={baseUrl} params={params} />
             </Box>
         </>
     );

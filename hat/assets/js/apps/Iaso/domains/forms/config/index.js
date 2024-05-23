@@ -17,6 +17,8 @@ import { createInstance } from '../../instances/actions';
 import * as Permission from '../../../utils/permissions.ts';
 import { BreakWordCell } from '../../../components/Cells/BreakWordCell.tsx';
 import { useCurrentUser } from '../../../utils/usersUtils.ts';
+import { useDeleteForm } from '../hooks/useDeleteForm.tsx';
+import { useRestoreForm } from '../hooks/useRestoreForm.tsx';
 
 export const baseUrl = baseUrls.forms;
 
@@ -97,15 +99,12 @@ const getActionsColWidth = user => {
     return width;
 };
 
-export const useFormsTableColumns = ({
-    orgUnitId,
-    showDeleted,
-    deleteForm = () => null,
-    restoreForm = () => null,
-}) => {
+export const useFormsTableColumns = ({ orgUnitId, showDeleted }) => {
     const user = useCurrentUser();
     const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
+    const { mutateAsync: deleteForm } = useDeleteForm();
+    const { mutateAsync: restoreForm } = useRestoreForm();
     return useMemo(() => {
         const cols = [
             {

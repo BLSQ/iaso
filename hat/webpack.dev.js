@@ -194,8 +194,7 @@ module.exports = {
         ),
         new webpack.NoEmitOnErrorsPlugin(), // don't reload if there is an error
         new BundleTracker({
-            path: WEBPACK_PATH,
-            filename: 'webpack-stats.json',
+            filename: `${WEBPACK_PATH}/webpack-stats.json`,
         }),
         new webpack.DefinePlugin({
             __LOCALE: JSON.stringify(LOCALE),

@@ -35,8 +35,7 @@ module.exports = {
             '../translations/fr.json',
         ),
         new BundleTracker({
-            path: __dirname,
-            filename: './assets/webpack/webpack-stats-prod.json',
+            filename: `${__dirname}./assets/webpack/webpack-stats-prod.json`,
         }),
         new MiniCssExtractPlugin({ filename: '[name]-[chunkhash].css' }),
         new webpack.DefinePlugin({

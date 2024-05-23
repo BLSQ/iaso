@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
-      - name: Use node.js 14
+      - name: Use node.js 20
         uses: actions/setup-node@v2
         with:
           node-version: '20.13.1'
@@ -34,7 +34,7 @@ jobs:
           npm --version
       - name: npm install and test
         run: |
-          npm ci
+          npm ci --legacy-peer-deps
           npm test
       - name: Check that no JS translation are missing
         run: |

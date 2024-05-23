@@ -1,0 +1,6 @@
+{
+  "status": "compile",
+  "assets": {},
+  "chunks": {},
+  "publicPath": "http://localhost:3000/static/"
+}

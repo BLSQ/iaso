@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
-import { Switch } from '@mui/material';
 import {
     HighlightOffOutlined as NotCheckedIcon,
     CheckCircleOutlineOutlined as CheckedIcon,
@@ -15,6 +14,7 @@ import { userHasPermission } from './utils';
 import * as Permission from '../../utils/permissions.ts';
 import PermissionTooltip from './components/PermissionTooltip.tsx';
 import PERMISSIONS_GROUPS_MESSAGES from './permissionsGroupsMessages.ts';
+import PermissionSwitch from './components/PermissionSwitch.tsx';
 
 export const usersTableColumns = ({
     formatMessage,
@@ -133,32 +133,15 @@ export const useUserPermissionColumns = ({ setPermissions, currentUser }) => {
                 accessor: 'userPermission',
                 sortable: false,
                 Cell: settings => {
-                    if (!settings.row.original.group) {
-                        return (
-                            <Switch
-                                className="permission-checkbox"
-                                id={`permission-checkbox-${settings.row.original.permissionCodeName}`}
-                                checked={Boolean(
-                                    settings.row.original.userPermissions.find(
-                                        up =>
-                                            up ===
-                                            settings.row.original
-                                                .permissionCodeName,
-                                    ),
-                                )}
-                                onChange={e =>
-                                    setPermissions(
-                                        settings.row.original
-                                            .permissionCodeName,
-                                        e.target.checked,
-                                    )
-                                }
-                                name={settings.row.original.permissionCodeName}
-                                color="primary"
-                            />
-                        );
-                    }
-                    return '';
+                    return (
+                        <PermissionSwitch
+                            codeName="permissionCodeName"
+                            settings={settings}
+                            setPermissions={setPermissions}
+                            value={settings.row.original.permissionCodeName}
+                            permissions={settings.row.original.userPermissions}
+                        />
+                    );
                 },
             },
         ];

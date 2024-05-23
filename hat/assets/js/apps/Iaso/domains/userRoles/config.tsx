@@ -1,6 +1,5 @@
 import React, { ReactElement, useMemo } from 'react';
 import { useSafeIntl, Column, IntlFormatMessage } from 'bluesquare-components';
-import { Switch } from '@mui/material';
 import { EditUserRoleDialog } from './components/CreateEditUserRole';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell';
 import MESSAGES from './messages';
@@ -8,6 +7,7 @@ import USER_MESSAGES from '../users/messages';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import { UserRole, Permission } from './types/userRoles';
 import PermissionTooltip from '../users/components/PermissionTooltip';
+import PermissionSwitch from '../users/components/PermissionSwitch';
 
 export const useGetUserRolesColumns = (
     // eslint-disable-next-line no-unused-vars
@@ -109,30 +109,15 @@ export const useUserPermissionColumns = (
                 accessor: 'codename',
                 sortable: false,
                 Cell: settings => {
-                    if (!settings.row.original.group) {
-                        return (
-                            <Switch
-                                className="permission-checkbox"
-                                id={`permission-checkbox-${settings.row.original.codename}`}
-                                checked={Boolean(
-                                    userRolePermissions.find(
-                                        permi =>
-                                            permi.codename ===
-                                            settings.row.original.codename,
-                                    ),
-                                )}
-                                onChange={e =>
-                                    setPermissions(
-                                        settings.row.original,
-                                        e.target.checked,
-                                    )
-                                }
-                                name={settings.row.original.codename}
-                                color="primary"
-                            />
-                        );
-                    }
-                    return '';
+                    return (
+                        <PermissionSwitch
+                            codeName="codename"
+                            settings={settings}
+                            setPermissions={setPermissions}
+                            value={settings.row.original}
+                            permissions={userRolePermissions}
+                        />
+                    );
                 },
             },
         ];

@@ -31,7 +31,7 @@ export const useGetForms = (params): UseQueryResult<FormResponse, Error> => {
     }
     return useSnackQuery({
         queryKey: ['forms', safeParams],
-        queryFn: () => getForms({ ...safeParams, all: true }),
+        queryFn: () => getForms({ ...safeParams }),
         options: {
             staleTime: 60000,
             cacheTime: 60000,

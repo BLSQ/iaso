@@ -7,6 +7,7 @@ import {
     LoadingSpinner,
     useSafeIntl,
     useGoBack,
+    useRedirectToReplace,
 } from 'bluesquare-components';
 import omit from 'lodash/omit';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -20,16 +21,13 @@ import {
     onlyChildrenParams,
     orgUnitFiltersWithPrefix,
 } from '../../constants/filters';
-import { baseUrls } from '../../constants/urls';
+import { baseUrls } from '../../constants/urls.ts';
 import {
-    deleteForm,
     fetchAssociatedOrgUnits,
-    fetchForms,
     fetchLinks,
     fetchOrgUnitsList,
     saveLink,
 } from '../../utils/requests';
-import { useFormsTableColumns } from '../forms/config';
 import LinksDetails from '../links/components/LinksDetailsComponent';
 import { linksTableColumns } from '../links/config';
 import { resetOrgUnits } from './actions';
@@ -50,7 +48,7 @@ import {
     getOrgUnitsTree,
 } from './utils';
 import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
-import { useRedirectToReplace } from 'bluesquare-components';
+import { FormsTable } from '../forms/components/FormsTable.tsx';
 
 const baseUrl = baseUrls.orgUnitDetails;
 const useStyles = makeStyles(theme => ({
@@ -107,6 +105,8 @@ const tabs = [
     'comments',
 ];
 
+const FORMS_PREFIX = 'formsParams';
+
 const OrgUnitDetail = () => {
     const classes = useStyles();
     const params = useParamsObject(baseUrl);
@@ -126,8 +126,18 @@ const OrgUnitDetail = () => {
         useState(undefined);
     const [orgUnitLocationModified, setOrgUnitLocationModified] =
         useState(false);
-    const [forceSingleTableRefresh, setForceSingleTableRefresh] =
-        useState(false);
+
+    const formParams = useMemo(() => {
+        const { orgUnitId, ...rest } = params;
+        const tableFormParams = { orgUnitId };
+        const formKeys = Object.keys(rest).filter(k =>
+            k.includes(FORMS_PREFIX),
+        );
+        formKeys.forEach(formKey => {
+            tableFormParams[formKey] = rest[formKey];
+        });
+        return tableFormParams;
+    }, [params]);
 
     const isNewOrgunit = useMemo(
         () => params.orgUnitId === '0',
@@ -166,18 +176,6 @@ const OrgUnitDetail = () => {
         };
         redirectToReplace(baseUrl, newParams);
         queryClient.invalidateQueries('currentOrgUnit');
-    };
-
-    const handleDeleteForm = useCallback(
-        async formId => {
-            await deleteForm(dispatch, formId);
-            setForceSingleTableRefresh(true);
-        },
-        [dispatch],
-    );
-
-    const resetSingleTableForceRefresh = () => {
-        setForceSingleTableRefresh(false);
     };
 
     const validateLink = (link, handleFetch) => {
@@ -225,11 +223,6 @@ const OrgUnitDetail = () => {
         },
         [currentOrgUnit],
     );
-
-    const formsTableColumns = useFormsTableColumns({
-        deleteForm: handleDeleteForm,
-        orgUnitId: params.orgUnitId,
-    });
 
     const {
         algorithms,
@@ -494,22 +487,11 @@ const OrgUnitDetail = () => {
                             )}
                             {tab === 'forms' && (
                                 <div data-test="forms-tab">
-                                    <SingleTable
-                                        paramsPrefix="formsParams"
-                                        apiParams={{
-                                            orgUnitId: currentOrgUnit.id,
-                                        }}
-                                        hideGpkg
-                                        exportButtons={false}
+                                    <FormsTable
                                         baseUrl={baseUrl}
-                                        endPointPath="forms"
-                                        propsToWatch={params.orgUnitId}
-                                        fetchItems={fetchForms}
-                                        columns={formsTableColumns}
-                                        forceRefresh={forceSingleTableRefresh}
-                                        onForceRefreshDone={() =>
-                                            resetSingleTableForceRefresh()
-                                        }
+                                        params={formParams}
+                                        defaultPageSize={10}
+                                        paramsPrefix={FORMS_PREFIX}
                                     />
                                 </div>
                             )}

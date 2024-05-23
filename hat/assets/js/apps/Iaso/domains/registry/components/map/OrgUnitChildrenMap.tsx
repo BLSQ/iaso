@@ -39,6 +39,7 @@ import { CustomZoomControl } from '../../../../components/maps/tools/CustomZoomC
 import TILES from '../../../../constants/mapTiles';
 import { baseUrls } from '../../../../constants/urls';
 import { useObjectState } from '../../../../hooks/useObjectState';
+import { FitToBounds } from '../../../../utils/map/FitToBounds';
 import { HEIGHT } from '../../config';
 import { RegistryParams } from '../../types';
 import { MapSettings } from './MapSettings';
@@ -209,6 +210,11 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                 boundsOptions={boundsOptions}
                 trackResize
             >
+                <FitToBounds
+                    bounds={bounds}
+                    options={boundsOptions}
+                    triggerId={params.orgUnitId}
+                />
                 <MapSettings
                     settings={settings}
                     handleChangeSettings={handleChangeSettings}

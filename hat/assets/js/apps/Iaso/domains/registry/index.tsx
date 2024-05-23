@@ -4,6 +4,7 @@ import {
     LoadingSpinner,
     commonStyles,
     useRedirectTo,
+    useRedirectToReplace,
     useSafeIntl,
 } from 'bluesquare-components';
 import { orderBy } from 'lodash';
@@ -49,9 +50,9 @@ export const Registry: FunctionComponent = () => {
     const classes: Record<string, string> = useStyles();
     const params = useParamsObject(baseUrls.registry) as RegistryParams;
     const redirectTo = useRedirectTo();
+    const redirectToReplace = useRedirectToReplace();
     const { orgUnitId, orgUnitChildrenId } = params;
     const { formatMessage } = useSafeIntl();
-
     const { data: orgUnit, isFetching } = useGetOrgUnit(orgUnitId);
     const [selectedChildrenId, setSelectedChildrenId] = useState<
         string | undefined
@@ -109,7 +110,7 @@ export const Registry: FunctionComponent = () => {
             delete newParams.orgUnitChildrenId;
         }
         delete newParams.submissionId;
-        redirectTo(`/${baseUrls.registry}`, newParams);
+        redirectToReplace(`/${baseUrls.registry}`, newParams);
     };
 
     return (

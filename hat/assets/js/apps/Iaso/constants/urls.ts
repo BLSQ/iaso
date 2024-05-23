@@ -158,6 +158,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         params: [
             'accountId',
             'orgUnitId',
+            'orgUnitChildrenId',
             'formIds',
             'columns',
             'tab',
@@ -165,6 +166,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'submissionId',
             'missingSubmissionVisible',
             'showTooltip',
+            'clusterEnabled',
             'isFullScreen',
             ...paginationPathParams,
             ...paginationPathParamsWithPrefix('orgUnitList'),

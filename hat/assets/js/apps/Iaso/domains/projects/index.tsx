@@ -1,38 +1,32 @@
 import React, { FunctionComponent } from 'react';
-import { useDispatch } from 'react-redux';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-
 import {
     commonStyles,
     Table,
     LoadingSpinner,
     useSafeIntl,
-    AddButton as AddButtonComponent,
+    AddButton,
     UrlParams,
+    useRedirectTo,
 } from 'bluesquare-components';
-
 import TopBar from '../../components/nav/TopBarComponent';
 import { ProjectsDialog } from './components/ProjectsDialog';
 import { useGetProjectsPaginated, useSave } from './hooks/requests';
-
 import { columns, baseUrl } from './config';
 import MESSAGES from './messages';
-
-import { redirectTo } from '../../routing/actions';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { baseUrls } from '../../constants/urls';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-type Props = {
-    params: UrlParams;
-};
-
-export const Projects: FunctionComponent<Props> = ({ params }) => {
+export const Projects: FunctionComponent = () => {
+    const params = useParamsObject(baseUrls.projects) as UrlParams;
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
+    const redirectTo = useRedirectTo();
 
     const { data, isFetching: fetchingProjects } =
         useGetProjectsPaginated(params);
@@ -59,7 +53,7 @@ export const Projects: FunctionComponent<Props> = ({ params }) => {
                     <ProjectsDialog
                         titleMessage={MESSAGES.create}
                         renderTrigger={({ openDialog }) => (
-                            <AddButtonComponent
+                            <AddButton
                                 dataTestId="add-project-button"
                                 onClick={openDialog}
                             />
@@ -67,6 +61,7 @@ export const Projects: FunctionComponent<Props> = ({ params }) => {
                         saveProject={saveProject}
                     />
                 </Grid>
+                {/* @ts-ignore */}
                 <Table
                     data={data?.projects ?? []}
                     pages={data?.pages ?? 1}
@@ -75,7 +70,7 @@ export const Projects: FunctionComponent<Props> = ({ params }) => {
                     count={data?.count ?? 0}
                     baseUrl={baseUrl}
                     params={params}
-                    onTableParamsChange={p => dispatch(redirectTo(baseUrl, p))}
+                    onTableParamsChange={p => redirectTo(baseUrl, p)}
                 />
             </Box>
         </>

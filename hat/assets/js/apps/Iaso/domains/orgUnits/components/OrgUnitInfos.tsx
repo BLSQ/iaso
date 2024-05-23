@@ -97,6 +97,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
             <Grid item xs={12} md={4}>
                 <InputComponent
                     keyValue="name"
+                    type="text"
                     required
                     onChange={onChangeInfo}
                     value={orgUnitState.name.value}
@@ -152,7 +153,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
             <Grid item xs={12} md={4}>
                 <InputComponent
                     keyValue="validation_status"
-                    isClearable={false}
+                    clearable={false}
                     onChange={onChangeInfo}
                     errors={orgUnitState.validation_status.errors}
                     value={orgUnitState.validation_status.value}
@@ -163,6 +164,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                 />
                 <InputComponent
                     keyValue="source_ref"
+                    type="text"
                     value={orgUnitState.source_ref.value || ''}
                     onChange={onChangeInfo}
                     errors={orgUnitState.source_ref.errors}

@@ -4,9 +4,9 @@ import React, {
     useState,
     Dispatch,
     SetStateAction,
+    useMemo,
 } from 'react';
 import Color from 'color';
-import { useDispatch } from 'react-redux';
 import { Column, useSafeIntl } from 'bluesquare-components';
 import { Box } from '@mui/material';
 import { TableWithDeepLink } from '../../../../components/tables/TableWithDeepLink';
@@ -17,7 +17,6 @@ import {
     OrgUnitChangeRequest,
     ChangeRequestValidationStatus,
 } from '../types';
-import { redirectTo } from '../../../../routing/actions';
 import MESSAGES from '../messages';
 import { LinkToOrgUnit } from '../../components/LinkToOrgUnit';
 import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
@@ -33,140 +32,146 @@ const useColumns = (
     setSelectedChangeRequest: Dispatch<SetStateAction<SelectedChangeRequest>>,
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
-    return [
-        {
-            Header: 'id',
-            id: 'id',
-            accessor: 'id',
-            width: 30,
-        },
-        {
-            Header: formatMessage(MESSAGES.name),
-            id: 'org_unit__name',
-            accessor: 'org_unit_name',
-            Cell: ({
-                row: { original },
-            }: ColumnCell<OrgUnitChangeRequest>): ReactElement => {
-                if (original.org_unit_name) {
-                    return (
+    return useMemo(
+        () => [
+            {
+                Header: 'id',
+                id: 'id',
+                accessor: 'id',
+                width: 30,
+            },
+            {
+                Header: formatMessage(MESSAGES.name),
+                id: 'org_unit__name',
+                accessor: 'org_unit_name',
+                Cell: ({
+                    row: { original },
+                }: ColumnCell<OrgUnitChangeRequest>): ReactElement => {
+                    if (original.org_unit_name) {
+                        return (
+                            <LinkToOrgUnit
+                                orgUnit={{
+                                    id: original.org_unit_id,
+                                    name: original.org_unit_name,
+                                }}
+                            />
+                        );
+                    }
+                    return <>{formatMessage(MESSAGES.newOrgUnit)}</>;
+                },
+            },
+            {
+                Header: formatMessage(MESSAGES.parent),
+                id: 'org_unit__parent__name',
+                accessor: 'org_unit_parent_name',
+                Cell: settings => {
+                    const parentId = settings.row.original?.org_unit_parent_id;
+                    const parentName =
+                        settings.row.original?.org_unit_parent_name;
+                    return parentId && parentName ? (
                         <LinkToOrgUnit
                             orgUnit={{
-                                id: original.org_unit_id,
-                                name: original.org_unit_name,
+                                id: parentId,
+                                name: parentName,
                             }}
                         />
+                    ) : (
+                        <>--</>
                     );
-                }
-                return <>{formatMessage(MESSAGES.newOrgUnit)}</>;
+                },
             },
-        },
-        {
-            Header: formatMessage(MESSAGES.parent),
-            id: 'org_unit__parent__name',
-            accessor: 'org_unit_parent_name',
-            Cell: settings => {
-                const parentId = settings.row.original?.org_unit_parent_id;
-                const parentName = settings.row.original?.org_unit_parent_name;
-                return parentId && parentName ? (
-                    <LinkToOrgUnit
-                        orgUnit={{
-                            id: parentId,
-                            name: parentName,
-                        }}
-                    />
-                ) : (
-                    <>--</>
-                );
+            {
+                Header: formatMessage(MESSAGES.orgUnitsType),
+                id: 'org_unit__org_unit_type__name',
+                accessor: 'org_unit_type_name',
             },
-        },
-        {
-            Header: formatMessage(MESSAGES.orgUnitsType),
-            id: 'org_unit__org_unit_type__name',
-            accessor: 'org_unit_type_name',
-        },
-        {
-            Header: formatMessage(MESSAGES.groups),
-            id: 'groups',
-            accessor: 'groups',
-            sortable: false,
-            Cell: ({
-                row: { original: changeRequest },
-            }: ColumnCell<OrgUnitChangeRequest>): ReactElement => {
-                const { groups } = changeRequest;
-                return (
-                    <>
-                        {groups.length > 0
-                            ? groups.map(group => group.name).join(', ')
-                            : '--'}
-                    </>
-                );
+            {
+                Header: formatMessage(MESSAGES.groups),
+                id: 'groups',
+                accessor: 'groups',
+                sortable: false,
+                Cell: ({
+                    row: { original: changeRequest },
+                }: ColumnCell<OrgUnitChangeRequest>): ReactElement => {
+                    const { groups } = changeRequest;
+                    return (
+                        <>
+                            {groups.length > 0
+                                ? groups.map(group => group.name).join(', ')
+                                : '--'}
+                        </>
+                    );
+                },
             },
-        },
-        {
-            Header: formatMessage(MESSAGES.status),
-            id: 'status',
-            accessor: 'status',
-            Cell: ({
-                value: status,
-            }: {
-                value: ChangeRequestValidationStatus;
-            }): ReactElement => {
-                return (
-                    <>
-                        {status && MESSAGES[status] ? (
-                            <Box sx={{ color: `${colorCodes[status]}.main` }}>
-                                {formatMessage(MESSAGES[status])}
-                            </Box>
-                        ) : (
-                            '--'
-                        )}
-                    </>
-                );
+            {
+                Header: formatMessage(MESSAGES.status),
+                id: 'status',
+                accessor: 'status',
+                Cell: ({
+                    value: status,
+                }: {
+                    value: ChangeRequestValidationStatus;
+                }): ReactElement => {
+                    return (
+                        <>
+                            {status && MESSAGES[status] ? (
+                                <Box
+                                    sx={{ color: `${colorCodes[status]}.main` }}
+                                >
+                                    {formatMessage(MESSAGES[status])}
+                                </Box>
+                            ) : (
+                                '--'
+                            )}
+                        </>
+                    );
+                },
             },
-        },
-        {
-            Header: formatMessage(MESSAGES.created_at),
-            id: 'created_at',
-            accessor: 'created_at',
-            Cell: DateTimeCell,
-        },
-        {
-            Header: formatMessage(MESSAGES.created_by),
-            id: 'created_by__username',
-            accessor: 'created_by',
-            Cell: UserCell,
-        },
-        {
-            Header: formatMessage(MESSAGES.updated_at),
-            id: 'updated_at',
-            accessor: 'updated_at',
-            Cell: DateTimeCell,
-        },
-        {
-            Header: formatMessage(MESSAGES.updated_by),
-            id: 'updated_by__username',
-            accessor: 'updated_by',
-            Cell: UserCell,
-        },
-        {
-            Header: formatMessage(MESSAGES.actions),
-            id: 'actions',
-            accessor: 'actions',
-            sortable: false,
-            Cell: ({
-                row: { original: changeRequest, index },
-            }: ColumnCell<OrgUnitChangeRequest>): ReactElement => {
-                return (
-                    <IconButton
-                        changeRequestId={changeRequest.id}
-                        status={changeRequest.status}
-                        index={index}
-                        setSelectedChangeRequest={setSelectedChangeRequest}
-                    />
-                );
+            {
+                Header: formatMessage(MESSAGES.created_at),
+                id: 'created_at',
+                accessor: 'created_at',
+                Cell: DateTimeCell,
             },
-        },
-    ];
+            {
+                Header: formatMessage(MESSAGES.created_by),
+                id: 'created_by__username',
+                accessor: 'created_by',
+                Cell: UserCell,
+            },
+            {
+                Header: formatMessage(MESSAGES.updated_at),
+                id: 'updated_at',
+                accessor: 'updated_at',
+                Cell: DateTimeCell,
+            },
+            {
+                Header: formatMessage(MESSAGES.updated_by),
+                id: 'updated_by__username',
+                accessor: 'updated_by',
+                Cell: UserCell,
+            },
+            {
+                Header: formatMessage(MESSAGES.actions),
+                id: 'actions',
+                accessor: 'actions',
+                sortable: false,
+                Cell: ({
+                    row: { original: changeRequest, index },
+                }: ColumnCell<OrgUnitChangeRequest>): ReactElement => {
+                    return (
+                        <IconButton
+                            changeRequestId={changeRequest.id}
+                            status={changeRequest.status}
+                            index={index}
+                            setSelectedChangeRequest={setSelectedChangeRequest}
+                        />
+                    );
+                },
+            },
+        ],
+        [formatMessage, setSelectedChangeRequest],
+    );
 };
 
 const getRowProps = (row: { original: OrgUnitChangeRequest }) => {
@@ -203,7 +208,6 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
     isFetching,
     params,
 }) => {
-    const dispatch = useDispatch();
     const [selectedChangeRequest, setSelectedChangeRequest] = useState<
         SelectedChangeRequest | undefined
     >();
@@ -222,7 +226,6 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
                     closeDialog={handleCloseDialog}
                 />
             )}
-            {/* @ts-ignore */}
             <TableWithDeepLink
                 marginTop={false}
                 data={data?.results ?? []}
@@ -233,13 +236,8 @@ export const ReviewOrgUnitChangesTable: FunctionComponent<Props> = ({
                 baseUrl={baseUrl}
                 countOnTop
                 params={params}
-                // The typing problem is in the table
-                // @ts-ignore
                 rowProps={getRowProps}
                 extraProps={{ loading: isFetching, selectedChangeRequest }}
-                onTableParamsChange={p => {
-                    dispatch(redirectTo(baseUrl, p));
-                }}
             />
         </>
     );

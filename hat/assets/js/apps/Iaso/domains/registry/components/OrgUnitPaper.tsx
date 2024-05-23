@@ -1,3 +1,4 @@
+import React, { FunctionComponent, useCallback, useState } from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import {
     Box,
@@ -9,22 +10,18 @@ import {
     Typography,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { IconButton, commonStyles, useSafeIntl } from 'bluesquare-components';
+import {
+    IconButton,
+    commonStyles,
+    useSafeIntl,
+    useRedirectToReplace,
+} from 'bluesquare-components';
 import classnames from 'classnames';
-import React, { FunctionComponent, useCallback, useState } from 'react';
-import { useDispatch } from 'react-redux';
-
 import MESSAGES from '../messages';
-
 import { baseUrls } from '../../../constants/urls';
-
 import { OrgUnitChildrenMap } from './OrgUnitChildrenMap';
-
-import { redirectToReplace } from '../../../routing/actions';
-
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { OrgUnitChildrenList } from './OrgUnitChildrenList';
-
 import { OrgunitTypes } from '../../orgUnits/types/orgunitTypes';
 import { OrgUnitListChildren } from '../hooks/useGetOrgUnit';
 import { OrgUnitListTab, RegistryDetailParams } from '../types';
@@ -96,7 +93,7 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
         params.orgUnitListTab || 'map',
     );
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
+    const redirectToReplace = useRedirectToReplace();
 
     const handleChangeTab = useCallback(
         (_, newTab: OrgUnitListTab) => {
@@ -105,9 +102,9 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
                 ...params,
                 orgUnitListTab: newTab,
             };
-            dispatch(redirectToReplace(baseUrls.registry, newParams));
+            redirectToReplace(baseUrls.registry, newParams);
         },
-        [dispatch, params],
+        [params, redirectToReplace],
     );
     return (
         <Paper elevation={1} className={classes.paper}>
@@ -130,13 +127,13 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
                 >
                     <Box className={classes.paperTitleButton}>
                         <IconButton
-                            url={`${baseUrls.orgUnitDetails}/orgUnitId/0/levels/${orgUnit.id}`}
+                            url={`/${baseUrls.orgUnitDetails}/orgUnitId/0/levels/${orgUnit.id}`}
                             color="secondary"
                             overrideIcon={AddIcon}
                             tooltipMessage={MESSAGES.addOrgUnitChild}
                         />
                         <IconButton
-                            url={`${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}`}
+                            url={`/${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}`}
                             color="secondary"
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.editOrgUnit}

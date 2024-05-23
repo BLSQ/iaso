@@ -2,23 +2,6 @@ import { createContext } from 'react';
 import pluginsConfigs from '../../../../../../plugins';
 import { Plugin } from '../domains/app/types';
 
-export const capitalize = (text: string, keepEndCase = false): string =>
-    text
-        .split(' ')
-        .map(
-            word =>
-                word.slice(0, 1).toUpperCase() +
-                (keepEndCase ? word.slice(1) : word.slice(1).toLowerCase()),
-        )
-        .join(' ');
-
-export const formatThousand = (number: number): string => {
-    if (number) {
-        return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-    }
-    return '0';
-};
-
 export const getYears = (
     yearsCount: number,
     offset = 0,

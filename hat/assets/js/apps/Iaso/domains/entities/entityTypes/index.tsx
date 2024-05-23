@@ -1,5 +1,4 @@
 import React, { FunctionComponent } from 'react';
-import { useDispatch } from 'react-redux';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
@@ -8,7 +7,8 @@ import {
     Table,
     LoadingSpinner,
     useSafeIntl,
-    AddButton as AddButtonComponent,
+    AddButton,
+    useRedirectTo,
 } from 'bluesquare-components';
 
 import TopBar from '../../../components/nav/TopBarComponent';
@@ -19,15 +19,14 @@ import {
     useDelete,
     useSave,
 } from './hooks/requests/entitiyTypes';
-
 import { useColumns, baseUrl } from './config';
 import MESSAGES from './messages';
-
-import { redirectTo } from '../../../routing/actions';
 import { PaginationParams } from '../../../types/general';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { userHasPermission } from '../../users/utils';
 import * as Permission from '../../../utils/permissions';
+import { useParamsObject } from '../../../routing/hooks/useParamsObject';
+import { baseUrls } from '../../../constants/urls';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -37,15 +36,12 @@ type Params = PaginationParams & {
     search?: string;
 };
 
-type Props = {
-    params: Params;
-};
-
-export const EntityTypes: FunctionComponent<Props> = ({ params }) => {
+export const EntityTypes: FunctionComponent = () => {
+    const params = useParamsObject(baseUrls.entityTypes) as Params;
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
-    const dispatch = useDispatch();
+    const redirectTo = useRedirectTo();
 
     const { data, isFetching: fetchingEntities } = useGetTypesPaginated(params);
     const { mutate: deleteEntityType, isLoading: deleting } = useDelete();
@@ -76,7 +72,7 @@ export const EntityTypes: FunctionComponent<Props> = ({ params }) => {
                         <EntityTypesDialog
                             titleMessage={MESSAGES.create}
                             renderTrigger={({ openDialog }) => (
-                                <AddButtonComponent
+                                <AddButton
                                     dataTestId="add-entity-button"
                                     onClick={openDialog}
                                 />
@@ -93,7 +89,7 @@ export const EntityTypes: FunctionComponent<Props> = ({ params }) => {
                     count={data?.count ?? 0}
                     baseUrl={baseUrl}
                     params={params}
-                    onTableParamsChange={p => dispatch(redirectTo(baseUrl, p))}
+                    onTableParamsChange={p => redirectTo(baseUrl, p)}
                 />
             </Box>
         </>

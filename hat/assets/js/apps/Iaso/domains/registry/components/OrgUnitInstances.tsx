@@ -1,3 +1,4 @@
+import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import { Box, Divider, Grid, Paper, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -6,28 +7,21 @@ import {
     LoadingSpinner,
     commonStyles,
     useSafeIntl,
+    useRedirectToReplace,
 } from 'bluesquare-components';
 import moment from 'moment';
-import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
-import { useDispatch } from 'react-redux';
-
 import { baseUrls } from '../../../constants/urls';
 import MESSAGES from '../messages';
-
-import { redirectToReplace } from '../../../routing/actions';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { useGetEnketoUrl } from '../hooks/useGetEnketoUrl';
-
 import InputComponent from '../../../components/forms/InputComponent';
 import EnketoIcon from '../../instances/components/EnketoIcon';
 import InstanceFileContent from '../../instances/components/InstanceFileContent';
-
 import { userHasPermission } from '../../users/utils';
 import {
     useGetInstance,
     useGetOrgUnitInstances,
 } from '../hooks/useGetInstances';
-
 import * as Permission from '../../../utils/permissions';
 import { LinkToInstance } from '../../instances/components/LinkToInstance';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
@@ -81,7 +75,7 @@ export const OrgUnitInstances: FunctionComponent<Props> = ({
     params,
 }) => {
     const classes: Record<string, string> = useStyles();
-    const dispatch = useDispatch();
+    const redirectToReplace = useRedirectToReplace();
     const { formatMessage } = useSafeIntl();
 
     // selected instance should be:
@@ -113,7 +107,7 @@ export const OrgUnitInstances: FunctionComponent<Props> = ({
             ...params,
             submissionId,
         };
-        dispatch(redirectToReplace(baseUrls.registry, newParams));
+        redirectToReplace(baseUrls.registry, newParams);
     };
     useEffect(() => {
         if (!currentInstanceId && instances && instances?.length > 0) {

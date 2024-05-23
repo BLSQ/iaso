@@ -1,6 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { replace } from 'react-router-redux';
+import React, { FunctionComponent, useCallback, useState } from 'react';
 
 import {
     Box,
@@ -17,54 +15,60 @@ import ChevronLeft from '@mui/icons-material/ChevronLeft';
 import ChevronRight from '@mui/icons-material/ChevronRight';
 import Today from '@mui/icons-material/Today';
 import { DesktopDatePicker as DatePicker } from '@mui/x-date-pickers/DesktopDatePicker';
-import { useSafeIntl } from 'bluesquare-components';
-
-import { Link, withRouter } from 'react-router';
-
+import { useSafeIntl, useRedirectToReplace } from 'bluesquare-components';
+import { Link } from 'react-router-dom';
+// @ts-ignore
 import moment, { Moment } from 'moment';
 import { useStyles } from './Styles';
 import { dateFormat } from './constants';
-
-import { genUrl } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
-import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import MESSAGES from '../../../constants/messages';
+import { useGenUrl } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 
 type Props = {
     currentMonday: Moment;
-    router: Router;
     currentDate: Moment;
+    url: string;
 };
 
-const Nav: FunctionComponent<Props> = ({
+export const Nav: FunctionComponent<Props> = ({
     currentMonday,
-    router,
     currentDate,
+    url,
 }) => {
     const classes = useStyles();
-    const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
-    const urlForDate = (date: Moment) =>
-        genUrl(router, {
-            currentDate: date.format(dateFormat),
-        });
+    const genUrl = useGenUrl();
+    const redirectToReplace = useRedirectToReplace();
+    const urlForDate = useCallback(
+        (date: Moment) =>
+            genUrl({
+                currentDate: date.format(dateFormat),
+            }),
+        [genUrl],
+    );
 
-    const handleClickDate = (
-        event?: React.MouseEvent<HTMLElement> | MouseEvent | TouchEvent,
-    ) => {
-        if (event && 'currentTarget' in event) {
-            setAnchorEl(anchorEl ? null : (event.currentTarget as HTMLElement));
-        } else {
-            setAnchorEl(null);
-        }
-    };
-    const handleDateChange = (newDate: string) => {
-        handleClickDate();
-        const url = genUrl(router, {
-            currentDate: newDate,
-        });
-        dispatch(replace(url));
-    };
+    const handleClickDate = useCallback(
+        (event?: React.MouseEvent<HTMLElement> | MouseEvent | TouchEvent) => {
+            if (event && 'currentTarget' in event) {
+                setAnchorEl(
+                    anchorEl ? null : (event.currentTarget as HTMLElement),
+                );
+            } else {
+                setAnchorEl(null);
+            }
+        },
+        [anchorEl],
+    );
+    const handleDateChange = useCallback(
+        (newDate: string) => {
+            handleClickDate();
+            redirectToReplace(url, {
+                currentDate: newDate,
+            });
+        },
+        [handleClickDate, redirectToReplace, url],
+    );
     const prev = (range: number) =>
         currentMonday.clone().subtract(range, 'week');
     const next = (range: number) => currentMonday.clone().add(range, 'week');
@@ -160,6 +164,3 @@ const Nav: FunctionComponent<Props> = ({
         </Box>
     );
 };
-
-const wrappedNav = withRouter(Nav);
-export { wrappedNav as Nav };

@@ -2,8 +2,9 @@ import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { Theme } from '@mui/material/styles';
 import { makeStyles } from '@mui/styles';
-import { Box, Typography, Link } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 
+import { Link } from 'react-router-dom';
 import { iasoFields, xlsQuestionsTypesLink } from '../constants';
 import { MESSAGES } from '../messages';
 
@@ -29,7 +30,7 @@ export const Popper: FunctionComponent = () => {
                 {formatMessage(MESSAGES.supportedTypeFields)}:
             </Typography>
             <Box mb={1}>{activeFields}</Box>
-            <Link target="_blank" href={xlsQuestionsTypesLink}>
+            <Link target="_blank" to={xlsQuestionsTypesLink} reloadDocument>
                 {formatMessage(MESSAGES.xlsQuestionsTypesLink)}
             </Link>
         </InfoPopper>

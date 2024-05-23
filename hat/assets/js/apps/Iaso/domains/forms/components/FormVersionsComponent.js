@@ -10,7 +10,7 @@ import { fetchList } from '../../../utils/requests';
 import SingleTable from '../../../components/tables/SingleTable';
 import FormVersionsDialog from './FormVersionsDialogComponent';
 
-import { baseUrls } from '../../../constants/urls';
+import { baseUrls } from '../../../constants/urls.ts';
 
 import { formVersionsTableColumns } from '../config';
 import MESSAGES from '../messages';
@@ -54,6 +54,7 @@ const FormVersionsComponent = ({
                         <AddButtonComponent
                             onClick={openDialog}
                             message={MESSAGES.createFormVersion}
+                            dataTestId="open-dialog-button"
                         />
                     )}
                     onConfirmed={() => setForceRefresh(true)}

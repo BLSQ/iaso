@@ -6,7 +6,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { expect } from 'chai';
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import FormVersionsDialog from './FormVersionsDialogComponent';
-import PeriodPicker from '../../periods/components/PeriodPicker';
+import PeriodPicker from '../../periods/components/PeriodPicker.tsx';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { renderWithStore } from '../../../../../test/utils/redux';
 import formVersionFixture from '../fixtures/formVersions.json';

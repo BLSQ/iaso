@@ -2,8 +2,7 @@ import React, { FunctionComponent, useCallback } from 'react';
 import { Box, Button, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import classnames from 'classnames';
-import { useSafeIntl } from 'bluesquare-components';
-import { useDispatch } from 'react-redux';
+import { useSafeIntl, useRedirectTo } from 'bluesquare-components';
 import WidgetPaper from '../../../../components/papers/WidgetPaperComponent';
 import MESSAGES from '../messages';
 import { useMergeDuplicate } from '../hooks/api/useMergeDuplicate';
@@ -14,7 +13,6 @@ import {
     // successfullSnackBarWithButtons,
 } from '../../../../constants/snackBars';
 import { baseUrls } from '../../../../constants/urls';
-import { redirectTo } from '../../../../routing/actions';
 import { useCurrentUser } from '../../../../utils/usersUtils';
 import { userHasPermission } from '../../../users/utils';
 import { DuplicateInfosTable } from './DuplicateInfosTable';
@@ -63,11 +61,12 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
     const classes: Record<string, string> = useStyles();
-    const dispatch = useDispatch();
+    const redirectTo = useRedirectTo();
+
     // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
     const successSnackBar = (msg, data) => {
         return succesfullSnackBar(formSuccessFullMessageKey, msg);
-        // TODO uncomment when we figured out hwo to style the button
+        // TODO uncomment when we figured out how to style the button
         // return successfullSnackBar({
         // messageObject: msg,
         // persist: true,
@@ -79,8 +78,8 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
         // });
     };
     const onSuccess = useCallback(() => {
-        dispatch(redirectTo(baseUrls.entityDuplicates, {}));
-    }, [dispatch]);
+        redirectTo(baseUrls.entityDuplicates);
+    }, [redirectTo]);
     const { mutate: mergeEntities } = useMergeDuplicate(
         successSnackBar,
         onSuccess,

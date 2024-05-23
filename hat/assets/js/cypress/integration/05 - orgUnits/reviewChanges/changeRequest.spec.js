@@ -397,6 +397,7 @@ describe('Organisations changes', () => {
                         apiPath: 'orgunits/changes',
                         fixture: listFixture,
                         defaultQuery,
+                        refetchDefault: false,
                     });
                 });
             });

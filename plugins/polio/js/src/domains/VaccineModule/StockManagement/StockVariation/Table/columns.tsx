@@ -11,7 +11,8 @@ import { EditDestruction } from '../Modals/CreateEditDestruction';
 import { EditIncident } from '../Modals/CreateEditIncident';
 import { useCurrentUser } from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { userHasPermission } from '../../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
-import { POLIO_VACCINE_STOCK_WRITE } from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
+import { STOCK_MANAGEMENT_WRITE } from '../../../../../constants/permissions';
+
 import {
     useDeleteDestruction,
     useDeleteFormA,
@@ -74,7 +75,7 @@ export const useFormATableColumns = (
                 },
             },
         ];
-        if (userHasPermission(POLIO_VACCINE_STOCK_WRITE, currentUser)) {
+        if (userHasPermission(STOCK_MANAGEMENT_WRITE, currentUser)) {
             columns.push({
                 Header: formatMessage(MESSAGES.actions),
                 id: 'account',
@@ -152,7 +153,7 @@ export const useDestructionTableColumns = (
                 ),
             },
         ];
-        if (userHasPermission(POLIO_VACCINE_STOCK_WRITE, currentUser)) {
+        if (userHasPermission(STOCK_MANAGEMENT_WRITE, currentUser)) {
             columns.push({
                 Header: formatMessage(MESSAGES.actions),
                 accessor: 'account',
@@ -203,8 +204,8 @@ export const useIncidentTableColumns = (
                 Cell: settings =>
                     settings.row.original.stock_correction
                         ? formatMessage(
-                            MESSAGES[settings.row.original.stock_correction],
-                        )
+                              MESSAGES[settings.row.original.stock_correction],
+                          )
                         : textPlaceholder,
             },
             {
@@ -240,7 +241,7 @@ export const useIncidentTableColumns = (
                 ),
             },
         ];
-        if (userHasPermission(POLIO_VACCINE_STOCK_WRITE, currentUser)) {
+        if (userHasPermission(STOCK_MANAGEMENT_WRITE, currentUser)) {
             columns.push({
                 Header: formatMessage(MESSAGES.actions),
                 accessor: 'account',

@@ -28,7 +28,7 @@ import MESSAGES from '../messages';
 import { AddTask } from './AddTaskComponent';
 import { ImportGeoPkgDialog } from './ImportGeoPkgDialog';
 import { AddNewEmptyVersion } from './AddNewEmptyVersion.tsx';
-import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
+import { DateTimeCell } from '../../../components/Cells/DateTimeCell.tsx';
 import { EditSourceVersion } from './EditSourceVersion.tsx';
 import {
     getSortedSourceVersions,

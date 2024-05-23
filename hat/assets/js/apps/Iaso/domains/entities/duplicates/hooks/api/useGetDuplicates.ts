@@ -35,7 +35,7 @@ export type DuplicatesGETParams = {
         merged?: boolean;
         entity?: string;
     };
-    refresh: string | undefined;
+    refresh?: string;
 };
 
 export const useGetDuplicates = ({
@@ -83,6 +83,7 @@ export const useGetDuplicateDetails = ({
 > => {
     // TODO see with backend exact api
     const queryString = new URLSearchParams(formatParams(params)).toString();
+    console.log('QS', queryString);
     return useSnackQuery({
         queryKey: ['entityDuplicateDetails', params],
         queryFn: () => getDuplicatesDetails(queryString),

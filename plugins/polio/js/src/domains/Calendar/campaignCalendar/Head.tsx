@@ -4,8 +4,6 @@ import { Box, TableCell, TableHead, TableRow, Typography } from '@mui/material';
 import classnames from 'classnames';
 
 import { useStyles } from './Styles';
-
-import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import { useStaticFields } from '../hooks/useStaticFields';
 import { HeadStaticFieldsCells } from './cells/HeadStaticFields';
 import { colSpanTitle } from './constants';
@@ -16,7 +14,8 @@ type Props = {
     orders: string;
     currentWeekIndex: number;
     isPdf: boolean;
-    router: Router;
+    url: string;
+    isLogged: boolean;
 };
 
 export const Head: FunctionComponent<Props> = ({
@@ -24,7 +23,8 @@ export const Head: FunctionComponent<Props> = ({
     orders,
     currentWeekIndex,
     isPdf,
-    router,
+    url,
+    isLogged,
 }) => {
     const classes = useStyles();
     const fields = useStaticFields(isPdf);
@@ -101,7 +101,8 @@ export const Head: FunctionComponent<Props> = ({
                 <HeadStaticFieldsCells
                     orders={orders}
                     isPdf={isPdf}
-                    router={router}
+                    url={url}
+                    isLogged={isLogged}
                 />
                 {headers.weeks.map((week, weekIndex) => (
                     <TableCell

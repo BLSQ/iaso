@@ -2,13 +2,11 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-
 import {
-    IconButton as IconButtonComponent,
+    IconButton,
     useSafeIntl,
+    LinkWithLocation,
 } from 'bluesquare-components';
-
-import { Link } from 'react-router';
 import { baseUrls } from '../../../constants/urls';
 import InputComponent from '../../../components/forms/InputComponent';
 import InstanceFileContent from '../../instances/components/InstanceFileContent';
@@ -43,7 +41,7 @@ export const OrgUnitMultiReferenceInstances: FunctionComponent<Props> = ({
         value: instance.id,
         label: instance.form_name,
     }));
-    const url = `${baseUrls.instanceDetail}/instanceId/${active.id}/referenceFormId/${active.form_id}`;
+    const url = `/${baseUrls.instanceDetail}/instanceId/${active.id}/referenceFormId/${active.form_id}`;
     const title = `${formatMessage(MESSAGES.detailTitle)} - ${
         active.form_name
     }`;
@@ -69,11 +67,11 @@ export const OrgUnitMultiReferenceInstances: FunctionComponent<Props> = ({
                 <br />
                 <WidgetPaper
                     title={
-                        <Link to={url} className={classes.link}>
+                        <LinkWithLocation to={url} className={classes.link}>
                             {title}
-                        </Link>
+                        </LinkWithLocation>
                     }
-                    IconButton={IconButtonComponent}
+                    IconButton={IconButton}
                     iconButtonProps={{
                         onClick: () => window.open(active.file_url, '_blank'),
                         icon: 'xml',

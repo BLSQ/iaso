@@ -1,37 +1,38 @@
 import React, { FunctionComponent } from 'react';
-
-import { IconButton as IconButtonComponent } from 'bluesquare-components';
-import { Link } from 'react-router';
-import { userHasPermission } from '../../users/utils';
+import { userHasOneOfPermissions } from '../../users/utils';
 import { baseUrls } from '../../../constants/urls';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import MESSAGES from '../../assignments/messages';
-import * as Permission from '../../../utils/permissions';
+import { SUBMISSIONS, SUBMISSIONS_UPDATE } from '../../../utils/permissions';
+import { LinkTo } from '../../../components/nav/LinkTo';
 
 type Props = {
     instanceId: string;
     useIcon?: boolean;
     color?: string;
+    replace?: boolean;
 };
 export const LinkToInstance: FunctionComponent<Props> = ({
     instanceId,
     useIcon = false,
     color = 'inherit',
+    replace = false,
 }) => {
     const user = useCurrentUser();
-    if (userHasPermission(Permission.SUBMISSIONS, user)) {
-        const formUrl = `/${baseUrls.instanceDetail}/instanceId/${instanceId}`;
-        if (useIcon) {
-            return (
-                <IconButtonComponent
-                    icon="remove-red-eye"
-                    url={formUrl}
-                    tooltipMessage={MESSAGES.details}
-                    color={color}
-                />
-            );
-        }
-        return <Link to={formUrl}>{instanceId}</Link>;
-    }
-    return <>{instanceId}</>;
+    const condition = userHasOneOfPermissions(
+        [SUBMISSIONS, SUBMISSIONS_UPDATE],
+        user,
+    );
+    const url = `/${baseUrls.instanceDetail}/instanceId/${instanceId}`;
+    return (
+        <LinkTo
+            condition={condition}
+            url={url}
+            useIcon={useIcon}
+            replace={replace}
+            tooltipMessage={MESSAGES.details}
+            text={instanceId}
+            color={color}
+        />
+    );
 };

@@ -1,9 +1,6 @@
 import React, { FunctionComponent } from 'react';
 
-import {
-    // @ts-ignore
-    IconButton as IconButtonComponent,
-} from 'bluesquare-components';
+import { IconButton } from 'bluesquare-components';
 
 import MESSAGES from '../messages';
 
@@ -11,7 +8,7 @@ type Props = {
     onClick: () => void;
 };
 export const ModalButton: FunctionComponent<Props> = ({ onClick }) => (
-    <IconButtonComponent
+    <IconButton
         size="small"
         onClick={onClick}
         icon="edit"

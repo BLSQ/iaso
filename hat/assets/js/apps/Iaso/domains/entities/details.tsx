@@ -1,23 +1,17 @@
-import React, { FunctionComponent, useCallback, useMemo } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import {
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     commonStyles,
-    // @ts-ignore
     LoadingSpinner,
+    useGoBack,
+    LinkButton,
 } from 'bluesquare-components';
-import { Box, Button, Divider, Grid } from '@mui/material';
+import { Box, Divider, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useDispatch, useSelector } from 'react-redux';
-import { Link } from 'react-router';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
-import { redirectTo, redirectToReplace } from '../../routing/actions';
 import { baseUrls } from '../../constants/urls';
-
 import { useGetBeneficiary, useGetSubmissions } from './hooks/requests';
-
 import { Beneficiary } from './types/beneficiary';
 import { useBeneficiariesDetailsColumns } from './config';
 import { CsvButton } from '../../components/Buttons/CsvButton';
@@ -25,10 +19,8 @@ import { XlsxButton } from '../../components/Buttons/XslxButton';
 import { BeneficiaryBaseInfo } from './components/BeneficiaryBaseInfo';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
 
-type Props = {
-    router: any;
-};
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     titleRow: { fontWeight: 'bold' },
@@ -37,15 +29,12 @@ const useStyles = makeStyles(theme => ({
     infoPaperBox: { minHeight: '100px' },
 }));
 
-export const Details: FunctionComponent<Props> = ({ router }) => {
-    const { params } = router;
+export const Details: FunctionComponent = () => {
+    const params = useParamsObject(baseUrls.entityDetails);
+    const goBack = useGoBack(baseUrls.entities);
     const classes: Record<string, string> = useStyles();
     const { entityId } = params;
     const { formatMessage } = useSafeIntl();
-
-    // @ts-ignore
-    const prevPathname = useSelector(state => state.routerCustom.prevPathname);
-    const dispatch = useDispatch();
 
     const {
         data: beneficiary,
@@ -53,38 +42,29 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     }: {
         data?: Beneficiary;
         isLoading: boolean;
-    } = useGetBeneficiary(entityId);
+    } = useGetBeneficiary(entityId as string);
     const columns = useBeneficiariesDetailsColumns(beneficiary?.id ?? null, []);
 
     const { data, isLoading: isLoadingSubmissions } = useGetSubmissions(
         params,
-        entityId,
+        parseInt(entityId as string, 10),
     );
 
     const duplicates = useMemo(() => {
         return beneficiary?.duplicates ?? [];
     }, [beneficiary]);
 
-    const onClickDuplicateButton = useCallback(() => {
-        const duplicateUrl =
-            duplicates.length === 1
-                ? `${baseUrls.entityDuplicateDetails}/entities/${entityId},${duplicates[0]}/`
-                : `${baseUrls.entityDuplicates}/order/id/pageSize/50/page/1/entity_id/${entityId}/`;
-        dispatch(redirectTo(duplicateUrl));
-    }, [dispatch, duplicates, entityId]);
+    const duplicateUrl =
+        duplicates.length === 1
+            ? `/${baseUrls.entityDuplicateDetails}/entities/${entityId},${duplicates[0]}/`
+            : `/${baseUrls.entityDuplicates}/order/id/pageSize/50/page/1/entity_id/${entityId}/`;
 
     return (
         <>
             <TopBar
                 title={formatMessage(MESSAGES.beneficiary)}
                 displayBackButton
-                goBack={() => {
-                    if (prevPathname) {
-                        router.goBack();
-                    } else {
-                        dispatch(redirectToReplace(baseUrls.entities, {}));
-                    }
-                }}
+                goBack={goBack}
             />
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>
                 <Grid container spacing={2}>
@@ -104,15 +84,9 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                     {duplicates.length > 0 && (
                         <Grid container item xs={8} justifyContent="flex-end">
                             <Box>
-                                <Link>
-                                    <Button
-                                        variant="contained"
-                                        color="primary"
-                                        onClick={onClickDuplicateButton}
-                                    >
-                                        {formatMessage(MESSAGES.seeDuplicates)}
-                                    </Button>
-                                </Link>
+                                <LinkButton to={duplicateUrl}>
+                                    {formatMessage(MESSAGES.seeDuplicates)}
+                                </LinkButton>
                             </Box>
                         </Grid>
                     )}
@@ -150,14 +124,6 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                             columns={columns}
                             count={data?.count}
                             params={params}
-                            onTableParamsChange={p =>
-                                dispatch(
-                                    redirectToReplace(
-                                        baseUrls.entityDetails,
-                                        p,
-                                    ),
-                                )
-                            }
                             extraProps={{
                                 loading:
                                     isLoadingBeneficiary ||

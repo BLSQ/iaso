@@ -33,7 +33,6 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'accountId',
             ...paginationPathParams,
             'search',
-            'searchActive',
             'showDeleted',
             'planning',
             'orgUnitTypeIds',

@@ -30,8 +30,6 @@ const dwnldBaseUrl = '/api/forms';
 
 const makeQueryString = params => {
     const searchParams = { ...cleanupParams(params) };
-    // const keys = Object.keys(params);
-    delete searchParams.searchActive;
     delete searchParams.accountId;
     if (params?.order === undefined) {
         searchParams.order = tableDefaults.order;
@@ -57,10 +55,7 @@ const Forms = () => {
     const { formatMessage } = useSafeIntl();
     const redirectTo = useRedirectTo();
     const [textSearchError, setTextSearchError] = useState(false);
-    const { data: forms, isLoading: isLoadingForms } = useGetForms(
-        params,
-        params.searchActive === 'true',
-    );
+    const { data: forms, isLoading: isLoadingForms } = useGetForms(params);
 
     const { mutateAsync: deleteForm } = useDeleteForm();
     const { mutateAsync: restoreForm } = useRestoreForm();
@@ -114,7 +109,10 @@ const Forms = () => {
                     data={forms?.forms ?? []}
                     count={forms?.count}
                     pages={forms?.pages}
-                    extraProps={{ loading: isLoadingForms }}
+                    extraProps={{
+                        loading: isLoadingForms,
+                        defaultPageSize: forms?.limit ?? 50,
+                    }}
                 />
             </Box>
         </>

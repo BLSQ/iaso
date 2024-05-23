@@ -38,7 +38,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { filters, handleSearch, handleChange, filtersUpdated } =
-        useFilterState({ baseUrl, params, searchActive: 'searchActive' });
+        useFilterState({ baseUrl, params });
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
     const [showDeleted, setShowDeleted] = useState<boolean>(
         filters.showDeleted === 'true',

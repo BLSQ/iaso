@@ -14,23 +14,18 @@ export const tableDefaults = {
     limit: 50,
     page: 1,
 };
-export const useGetForms = (
-    params,
-    enabled: boolean,
-): UseQueryResult<Form[], Error> => {
+export const useGetForms = (params): UseQueryResult<Form[], Error> => {
     const safeParams = useApiParams(params, tableDefaults);
     if (safeParams?.accountId) {
         delete safeParams.accountId;
     }
     return useSnackQuery({
-        queryKey: ['forms', safeParams, enabled],
+        queryKey: ['forms', safeParams],
         queryFn: () => getForms({ ...safeParams, all: true }),
         options: {
             staleTime: 60000,
             cacheTime: 60000,
             keepPreviousData: true,
-            enabled,
-            // select: data => data?.forms ?? [],
         },
     });
 };

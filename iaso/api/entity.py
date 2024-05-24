@@ -27,7 +27,7 @@ from iaso.api.common import (
     ModelViewSet,
     TimestampField,
 )
-from iaso.models import Entity, EntityType, Instance
+from iaso.models import Entity, EntityType, Instance, OrgUnit
 from iaso.models.deduplication import ValidationStatus
 
 
@@ -259,7 +259,8 @@ class EntityViewSet(ModelViewSet):
         if entity_type_ids:
             queryset = queryset.filter(entity_type_id__in=entity_type_ids.split(","))
         if org_unit_id:
-            queryset = queryset.filter(attributes__org_unit__id=org_unit_id)
+            parent = OrgUnit.objects.get(id=org_unit_id)
+            queryset = queryset.filter(attributes__org_unit__path__descendants=parent.path)
 
         if date_from or date_to:
             date_from_dt = datetime.datetime.strptime(date_from, "%Y-%m-%d") if date_from else datetime.datetime.min

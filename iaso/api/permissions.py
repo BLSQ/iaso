@@ -38,9 +38,13 @@ class PermissionsViewSet(viewsets.ViewSet):
         perms = self.queryset(request)
         result = {}
         for group in PERMISSIONS_PRESENTATION.keys():
-            result[group] = []
-            for permission in perms.filter(codename__in=PERMISSIONS_PRESENTATION[group]):
-                result[group].append({"id": permission.id, "name": _(permission.name), "codename": permission.codename})
+            permissions = perms.filter(codename__in=PERMISSIONS_PRESENTATION[group])
+            if permissions:
+                result[group] = []
+                for permission in permissions:
+                    result[group].append(
+                        {"id": permission.id, "name": _(permission.name), "codename": permission.codename}
+                    )
 
         return Response({"permissions": result})
 

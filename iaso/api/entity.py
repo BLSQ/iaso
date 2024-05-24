@@ -389,10 +389,8 @@ class EntityViewSet(ModelViewSet):
                 attributes_latitude = attributes.location.y if attributes.location else None  # type: ignore
                 attributes_longitude = attributes.location.x if attributes.location else None  # type: ignore
             name = None
-            program = None
             if file_content is not None:
                 name = file_content.get("name")
-                program = file_content.get("program")
             duplicates = []
             # invokes many SQL queries and not needed for map display
             if not as_location and not is_export:
@@ -407,7 +405,6 @@ class EntityViewSet(ModelViewSet):
                 "entity_type": entity.entity_type.name,
                 "last_saved_instance": entity.last_saved_instance,
                 "org_unit": attributes_ou,
-                "program": program,
                 "duplicates": duplicates,
                 "latitude": attributes_latitude,
                 "longitude": attributes_longitude,
@@ -434,7 +431,6 @@ class EntityViewSet(ModelViewSet):
                 {"title": "Creation Date", "width": 20},
                 {"title": "HC", "width": 20},
                 {"title": "Last update", "width": 20},
-                {"title": "Program", "width": 20},
             ]
             for col in columns_list:
                 columns.append({"title": col["label"]})
@@ -458,7 +454,6 @@ class EntityViewSet(ModelViewSet):
                     created_at,
                     entity["org_unit"]["name"] if entity["org_unit"] else "",
                     last_saved_instance,
-                    entity["program"],
                 ]
                 for col in columns_list:
                     values.append(entity.get(col["name"]))

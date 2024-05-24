@@ -49,10 +49,7 @@ export const FormsTable: FunctionComponent<Props> = ({
         return newParams;
     }, [params, paramsPrefix]);
 
-    const { data: forms, isLoading: isLoadingForms } = useGetForms({
-        ...apiParams,
-        pageSize: defaultPageSize,
-    });
+    const { data: forms, isLoading: isLoadingForms } = useGetForms(apiParams);
     return (
         <TableWithDeepLink
             baseUrl={baseUrl}

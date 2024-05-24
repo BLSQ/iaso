@@ -3,12 +3,12 @@ import { useSafeIntl, useRedirectToReplace } from 'bluesquare-components';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { Button, Tooltip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { RegistryDetailParams } from '../types';
+import { RegistryParams } from '../types';
 import { baseUrls } from '../../../constants/urls';
 import MESSAGES from '../messages';
 
 type Props = {
-    params: RegistryDetailParams;
+    params: RegistryParams;
     count: number;
     onClick: () => void;
 };

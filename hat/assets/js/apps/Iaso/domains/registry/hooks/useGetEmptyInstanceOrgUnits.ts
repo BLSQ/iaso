@@ -3,13 +3,13 @@ import { UseQueryResult } from 'react-query';
 // @ts-ignore
 import { getSort } from 'bluesquare-components';
 
-import { useSnackQuery } from '../../../libs/apiHooks';
 import { getRequest } from '../../../libs/Api';
+import { useSnackQuery } from '../../../libs/apiHooks';
 
 import { makeUrlWithParams } from '../../../libs/utils';
 
-import { RegistryDetailParams } from '../types';
 import { CompletenessApiResponse } from '../../completenessStats/types';
+import { RegistryParams } from '../types';
 
 type ApiParams = {
     org_unit_type_ids?: number;
@@ -23,7 +23,7 @@ type ApiParams = {
 export const defaultSorted = [{ id: 'name', desc: false }];
 
 export const useGetEmptyInstanceOrgUnits = (
-    params: RegistryDetailParams,
+    params: RegistryParams,
     orgUnitTypeId?: number,
 ): UseQueryResult<CompletenessApiResponse, Error> => {
     const apiParams: ApiParams = {

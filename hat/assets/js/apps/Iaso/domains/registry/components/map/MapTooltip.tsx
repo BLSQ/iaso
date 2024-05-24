@@ -13,7 +13,11 @@ export const MapToolTip: FunctionComponent<Props> = ({
     pane,
 }) => {
     return (
-        <Tooltip permanent={permanent} pane={pane}>
+        <Tooltip
+            key={`${label}-${pane}-${permanent}`}
+            permanent={permanent}
+            pane={pane}
+        >
             {label}
         </Tooltip>
     );

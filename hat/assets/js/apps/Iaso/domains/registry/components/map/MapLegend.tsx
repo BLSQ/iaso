@@ -8,7 +8,7 @@ import React, {
     useCallback,
 } from 'react';
 
-import { Legend } from '../hooks/useGetLegendOptions';
+import { Legend } from '../../hooks/useGetLegendOptions';
 
 const useStyles = makeStyles(theme => ({
     root: {

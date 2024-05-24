@@ -8,7 +8,7 @@ import React, {
     useEffect,
 } from 'react';
 import { useMap } from 'react-leaflet';
-import { SxStyles } from '../../../types/general';
+import { SxStyles } from '../../../../types/general';
 
 const styles: SxStyles = {
     root: {

@@ -1,9 +1,9 @@
 import React, { FunctionComponent } from 'react';
-import { userHasPermission } from '../../users/utils';
+import { LinkTo } from '../../../components/nav/LinkTo';
 import { baseUrls } from '../../../constants/urls';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { OrgUnit, ShortOrgUnit } from '../../orgUnits/types/orgUnit';
-import { LinkTo } from '../../../components/nav/LinkTo';
+import { userHasPermission } from '../../users/utils';
 
 import MESSAGES from '../messages';
 
@@ -16,15 +16,17 @@ type Props = {
     replace?: boolean;
     iconSize?: 'small' | 'medium' | 'large' | 'default' | 'inherit';
     size?: 'small' | 'medium' | 'large' | 'default' | 'inherit';
+    color?: string;
 };
 
 export const LinkToRegistry: FunctionComponent<Props> = ({
     orgUnit,
-    useIcon,
-    className,
-    replace,
-    iconSize,
-    size,
+    useIcon = false,
+    className = '',
+    replace = false,
+    iconSize = 'medium',
+    size = 'medium',
+    color = 'inherit',
 }) => {
     const user = useCurrentUser();
     const condition = userHasPermission(REGISTRY, user) && Boolean(orgUnit);
@@ -42,6 +44,7 @@ export const LinkToRegistry: FunctionComponent<Props> = ({
             iconSize={iconSize}
             text={text}
             tooltipMessage={MESSAGES.seeRegistry}
+            color={color}
         />
     );
 };

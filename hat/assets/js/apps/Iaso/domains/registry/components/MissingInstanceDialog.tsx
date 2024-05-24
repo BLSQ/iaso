@@ -21,14 +21,14 @@ import { MissingInstanceButton } from './MissingInstanceButton';
 import { baseUrls } from '../../../constants/urls';
 import { CompletenessApiResponse } from '../../completenessStats/types';
 import MESSAGES from '../messages';
-import { RegistryDetailParams } from '../types';
+import { RegistryParams } from '../types';
 import { defaultSorted } from '../hooks/useGetEmptyInstanceOrgUnits';
 
 type Props = {
     missingOrgUnitsData: CompletenessApiResponse;
     isOpen: boolean;
     closeDialog: () => void;
-    params: RegistryDetailParams;
+    params: RegistryParams;
     formId?: string;
     isFetching: boolean;
 };

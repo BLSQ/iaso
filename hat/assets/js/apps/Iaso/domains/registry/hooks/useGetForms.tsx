@@ -30,6 +30,8 @@ export const useGetForms = (
         queryKey: ['forms', apiParams],
         queryFn: () => getRequest(url),
         options: {
+            staleTime: 1000 * 60 * 15, // in MS
+            cacheTime: 1000 * 60 * 5,
             select: data =>
                 data?.forms?.map(t => ({
                     label: t.name,

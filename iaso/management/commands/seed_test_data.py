@@ -55,13 +55,14 @@ seed_test_data --mode=export --force
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--mode", type=str, help="seed or export", required=True)
-        parser.add_argument("--dhis2version", type=str, help="seed or export", required=True, default="2.38.3")
+        parser.add_argument("--dhis2version", type=str, help="seed or export", required=True, default="2.40.3.1")
         parser.add_argument("-f", "--force", action="store_true", help="Force the re-export of exported submissions")
 
     def handle(self, *args, **options):
         dhis2_version = options.get("dhis2version")
+        dhis2_version = "stable-" + dhis2_version.replace(".","-")
 
-        response = requests.get(f"http://play.dhis2.org/{dhis2_version}")
+        response = requests.get(f"http://play.im.dhis2.org/{dhis2_version}")
         dhis2_url = response.url.replace("/dhis-web-commons/security/login.action", "")
         dhis2_version = dhis2_url.split("/")[-1]
         print("dhis2_version resolved to ", dhis2_version)
@@ -103,7 +104,7 @@ class Command(BaseCommand):
 
         credentials, creds_created = ExternalCredentials.objects.get_or_create(
             name="Test export api",
-            url="https://play.dhis2.org/" + dhis2_version,
+            url="https://play.im.dhis2.org/" + dhis2_version,
             login="admin",
             password="district",
             account=account,
@@ -131,7 +132,7 @@ class Command(BaseCommand):
         )
 
         page.type = "RAW"
-        page.content = f"<html><body>https://play.dhis2.org/{dhis2_version}</body></html>"
+        page.content = f"<html><body>https://play.im.dhis2.org/{dhis2_version}</body></html>"
 
         page.save()
         user.pages.add(page)

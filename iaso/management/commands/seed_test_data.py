@@ -60,7 +60,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         dhis2_version = options.get("dhis2version")
-        dhis2_version = "stable-" + dhis2_version.replace(".","-")
+        dhis2_version = "stable-" + dhis2_version.replace(".", "-")
 
         response = requests.get(f"http://play.im.dhis2.org/{dhis2_version}")
         dhis2_url = response.url.replace("/dhis-web-commons/security/login.action", "")

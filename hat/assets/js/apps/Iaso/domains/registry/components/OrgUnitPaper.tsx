@@ -34,6 +34,7 @@ type Props = {
     isFetchingMapChildren: boolean;
     setSelectedChildren: Dispatch<SetStateAction<OrgUnit | undefined>>;
     selectedChildrenId: string | undefined;
+    isFetchingOrgUnit: boolean;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -77,6 +78,7 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
     isFetchingMapChildren,
     setSelectedChildren,
     selectedChildrenId,
+    isFetchingOrgUnit,
 }) => {
     const classes: Record<string, string> = useStyles();
     const [tab, setTab] = useState<OrgUnitListTab>(
@@ -123,6 +125,7 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
                         isFetchingChildren={isFetchingMapChildren}
                         setSelectedChildren={setSelectedChildren}
                         selectedChildrenId={selectedChildrenId}
+                        isFetchingOrgUnit={isFetchingOrgUnit}
                     />
                 </Box>
                 <Box

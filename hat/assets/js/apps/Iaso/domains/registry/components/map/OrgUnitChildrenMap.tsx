@@ -39,7 +39,6 @@ import { CustomZoomControl } from '../../../../components/maps/tools/CustomZoomC
 import TILES from '../../../../constants/mapTiles';
 import { baseUrls } from '../../../../constants/urls';
 import { useObjectState } from '../../../../hooks/useObjectState';
-import { FitToBounds } from '../../../../utils/map/FitToBounds';
 import { HEIGHT } from '../../config';
 import { RegistryParams } from '../../types';
 import { MapSettings } from './MapSettings';
@@ -55,6 +54,7 @@ type Props = {
     params: RegistryParams;
     setSelectedChildren: Dispatch<SetStateAction<OrgUnit | undefined>>;
     selectedChildrenId: string | undefined;
+    isFetchingOrgUnit: boolean;
 };
 
 const boundsOptions = {
@@ -93,6 +93,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
     params,
     setSelectedChildren,
     selectedChildrenId,
+    isFetchingOrgUnit,
 }) => {
     const classes: Record<string, string> = useStyles();
 
@@ -179,12 +180,6 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
         },
         [handleDoubleClick, handleSingleClick],
     );
-    if (isFetchingChildren)
-        return (
-            <Box position="relative" height={mapHeight}>
-                <LoadingSpinner absolute />
-            </Box>
-        );
     return (
         <Box
             className={classNames(
@@ -192,6 +187,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                 isMapFullScreen && classes.fullScreen,
             )}
         >
+            {isFetchingChildren && <LoadingSpinner absolute />}
             <MapLegend options={legendOptions} setOptions={setLegendOptions} />
 
             <MapContainer
@@ -210,11 +206,6 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                 boundsOptions={boundsOptions}
                 trackResize
             >
-                <FitToBounds
-                    bounds={bounds}
-                    options={boundsOptions}
-                    triggerId={params.orgUnitId}
-                />
                 <MapSettings
                     settings={settings}
                     handleChangeSettings={handleChangeSettings}
@@ -227,6 +218,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                     bounds={bounds}
                     boundsOptions={boundsOptions}
                     fitOnLoad
+                    triggerFitToBoundsId={`${params.orgUnitId}-${isFetchingOrgUnit}`}
                 />
                 <ScaleControl imperial={false} />
                 <CustomTileLayer

@@ -1,11 +1,10 @@
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
-    LoadingSpinner,
     commonStyles,
     useRedirectTo,
     useRedirectToReplace,
-    useSafeIntl,
+    useSafeIntl
 } from 'bluesquare-components';
 import { orderBy } from 'lodash';
 import React, { FunctionComponent, useMemo, useState } from 'react';
@@ -123,8 +122,6 @@ export const Registry: FunctionComponent = () => {
                 }`}
             />
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>
-                {isFetching && <LoadingSpinner />}
-
                 <Grid container spacing={2}>
                     <Grid item xs={12} sx={styles.breadCrumbContainer}>
                         <Box sx={styles.treeContainer}>
@@ -149,7 +146,7 @@ export const Registry: FunctionComponent = () => {
                             />
                         )}
                     </Grid>
-                    {!isFetching && orgUnit && (
+                    {orgUnit && (
                         <>
                             <Grid item xs={12} md={6}>
                                 <OrgUnitPaper
@@ -164,6 +161,7 @@ export const Registry: FunctionComponent = () => {
                                     isFetchingMapChildren={
                                         isFetchingMapChildren
                                     }
+                                    isFetchingOrgUnit={isFetching}
                                     setSelectedChildren={handleChildrenChange}
                                     selectedChildrenId={selectedChildrenId}
                                 />

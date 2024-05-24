@@ -35,6 +35,8 @@ type Props = {
     setSelectedChildren: Dispatch<SetStateAction<OrgUnit | undefined>>;
     selectedChildrenId: string | undefined;
     isFetchingOrgUnit: boolean;
+    // eslint-disable-next-line no-unused-vars
+    handleOrgUnitChange: (newOrgUnit: OrgUnit) => void;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -79,6 +81,7 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
     setSelectedChildren,
     selectedChildrenId,
     isFetchingOrgUnit,
+    handleOrgUnitChange,
 }) => {
     const classes: Record<string, string> = useStyles();
     const [tab, setTab] = useState<OrgUnitListTab>(
@@ -126,6 +129,7 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
                         setSelectedChildren={setSelectedChildren}
                         selectedChildrenId={selectedChildrenId}
                         isFetchingOrgUnit={isFetchingOrgUnit}
+                        handleOrgUnitChange={handleOrgUnitChange}
                     />
                 </Box>
                 <Box

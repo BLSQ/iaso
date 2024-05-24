@@ -4,7 +4,6 @@ import { makeStyles } from '@mui/styles';
 import {
     LoadingSpinner,
     commonStyles,
-    useRedirectTo,
     useRedirectToReplace,
 } from 'bluesquare-components';
 import classNames from 'classnames';
@@ -55,6 +54,8 @@ type Props = {
     setSelectedChildren: Dispatch<SetStateAction<OrgUnit | undefined>>;
     selectedChildrenId: string | undefined;
     isFetchingOrgUnit: boolean;
+    // eslint-disable-next-line no-unused-vars
+    handleOrgUnitChange: (newOrgUnit: OrgUnit) => void;
 };
 
 const boundsOptions = {
@@ -76,11 +77,11 @@ const useStyles = makeStyles(theme => ({
     },
     fullScreen: {
         position: 'fixed',
-        top: '64px',
+        top: '127px',
         left: '0',
         width: '100vw',
-        height: 'calc(100vh - 64px)',
-        zIndex: 10000,
+        height: 'calc(100vh - 127px)',
+        zIndex: 40,
     },
 }));
 
@@ -94,10 +95,10 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
     setSelectedChildren,
     selectedChildrenId,
     isFetchingOrgUnit,
+    handleOrgUnitChange,
 }) => {
     const classes: Record<string, string> = useStyles();
 
-    const redirectTo = useRedirectTo();
     const redirectToReplace = useRedirectToReplace();
 
     const [settings, setSettings] = useObjectState({
@@ -105,7 +106,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
         clusterEnabled: params.clusterEnabled === 'true',
     });
     const [isMapFullScreen, setIsMapFullScreen] = useState<boolean>(
-        params.isFullScreen === 'true',
+        params.fullScreen === 'true',
     );
     const [currentTile, setCurrentTile] = useState<Tile>(TILES.osm);
     const { legendOptions, setLegendOptions } = useGetLegendOptions(
@@ -151,7 +152,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
             setIsMapFullScreen(isFull);
             redirectToReplace(baseUrls.registry, {
                 ...params,
-                isFullScreen: `${isFull}`,
+                fullScreen: `${isFull}`,
             });
         },
         [params, redirectToReplace],
@@ -159,11 +160,9 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
     const handleDoubleClick = useCallback(
         (event: L.LeafletMouseEvent, ou: OrgUnit) => {
             event.originalEvent.stopPropagation();
-            const url = `/${baseUrls.registry}/orgUnitId/${ou?.id}`;
-            setSelectedChildren(undefined);
-            redirectTo(url);
+            handleOrgUnitChange(ou);
         },
-        [redirectTo, setSelectedChildren],
+        [handleOrgUnitChange],
     );
     const handleSingleClick = useCallback(
         (ou: OrgUnit, event: L.LeafletMouseEvent | undefined) => {
@@ -205,6 +204,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                 bounds={bounds}
                 boundsOptions={boundsOptions}
                 trackResize
+                key={`${params.orgUnitId}-${params.fullScreen}`}
             >
                 <MapSettings
                     settings={settings}
@@ -218,7 +218,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                     bounds={bounds}
                     boundsOptions={boundsOptions}
                     fitOnLoad
-                    triggerFitToBoundsId={`${params.orgUnitId}-${isFetchingOrgUnit}`}
+                    triggerFitToBoundsId={`${params.orgUnitId}-${isFetchingOrgUnit}-${params.fullScreen}`}
                 />
                 <ScaleControl imperial={false} />
                 <CustomTileLayer

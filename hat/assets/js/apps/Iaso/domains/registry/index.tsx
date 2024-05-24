@@ -1,13 +1,16 @@
 import { Box, Grid } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import {
-    commonStyles,
     useRedirectTo,
     useRedirectToReplace,
-    useSafeIntl
+    useSafeIntl,
 } from 'bluesquare-components';
 import { orderBy } from 'lodash';
-import React, { FunctionComponent, useMemo, useState } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 import TopBar from '../../components/nav/TopBarComponent';
 import { getOtChipColors } from '../../constants/chipColors';
 import { baseUrls } from '../../constants/urls';
@@ -40,13 +43,29 @@ const styles: SxStyles = {
         position: 'relative',
         display: 'inline-block',
     },
+    mainContainer: {
+        width: '100%',
+        height: 'calc(100vh - 65px)',
+        margin: 0,
+        padding: theme => theme.spacing(2, 4, 4, 4),
+        overflow: 'auto',
+        backgroundColor: 'white',
+    },
+    fullScreenBreadcrumb: {
+        position: 'fixed',
+        backgroundColor: 'white',
+        height: '63px',
+        width: '100vw',
+        left: 0,
+        paddingLeft: theme => theme.spacing(4),
+        top: '64px',
+        paddingTop: theme => theme.spacing(2),
+        zIndex: 100,
+        boxShadow:
+            'inset 0px 2px 4px -1px rgba(0,0,0,0.2),inset 0px 4px 5px 0px rgba(0,0,0,0.14),inset 0px 1px 10px 0px rgba(0,0,0,0.12)',
+    },
 };
-const useStyles = makeStyles(theme => ({
-    ...commonStyles(theme),
-}));
-
 export const Registry: FunctionComponent = () => {
-    const classes: Record<string, string> = useStyles();
     const params = useParamsObject(baseUrls.registry) as RegistryParams;
     const redirectTo = useRedirectTo();
     const redirectToReplace = useRedirectToReplace();
@@ -84,34 +103,41 @@ export const Registry: FunctionComponent = () => {
         return orderBy(options, [f => f.depth], ['asc']);
     }, [orgUnit, orgUnitMapChildren]);
 
-    const handleOrgUnitChange = (newOrgUnit: OrgUnit) => {
-        if (newOrgUnit) {
+    const handleOrgUnitChange = useCallback(
+        (newOrgUnit: OrgUnit) => {
+            if (newOrgUnit) {
+                const newParams = {
+                    ...params,
+                    orgUnitId: `${newOrgUnit.id}`,
+                };
+                delete newParams.orgUnitChildrenId;
+                delete newParams.submissionId;
+
+                setSelectedChildrenId(undefined);
+                redirectTo(`/${baseUrls.registry}`, newParams);
+            }
+        },
+        [params, redirectTo],
+    );
+
+    const handleChildrenChange = useCallback(
+        (newChildren: OrgUnit) => {
             const newParams = {
                 ...params,
-                orgUnitId: `${newOrgUnit.id}`,
             };
-            delete newParams.orgUnitChildrenId;
+            if (newChildren) {
+                setSelectedChildrenId(`${newChildren.id}`);
+                newParams.orgUnitChildrenId = `${newChildren.id}`;
+            } else {
+                setSelectedChildrenId(undefined);
+                delete newParams.orgUnitChildrenId;
+            }
             delete newParams.submissionId;
-            setSelectedChildrenId(undefined);
-            redirectTo(`/${baseUrls.registry}`, newParams);
-        }
-    };
-
-    const handleChildrenChange = (newChildren: OrgUnit) => {
-        const newParams = {
-            ...params,
-        };
-        if (newChildren) {
-            setSelectedChildrenId(`${newChildren.id}`);
-            newParams.orgUnitChildrenId = `${newChildren.id}`;
-        } else {
-            setSelectedChildrenId(undefined);
-            delete newParams.orgUnitChildrenId;
-        }
-        delete newParams.submissionId;
-        redirectToReplace(`/${baseUrls.registry}`, newParams);
-    };
-
+            redirectToReplace(`/${baseUrls.registry}`, newParams);
+        },
+        [params, redirectToReplace],
+    );
+    const isFullScreen = params.fullScreen === 'true';
     return (
         <>
             <TopBar
@@ -121,30 +147,40 @@ export const Registry: FunctionComponent = () => {
                         : ''
                 }`}
             />
-            <Box className={`${classes.containerFullHeightNoTabPadded}`}>
+            <Box
+                sx={{
+                    ...styles.mainContainer,
+                    overflow: isFullScreen ? 'hidden' : 'auto',
+                }}
+            >
                 <Grid container spacing={2}>
                     <Grid item xs={12} sx={styles.breadCrumbContainer}>
-                        <Box sx={styles.treeContainer}>
-                            <OrgUnitTreeviewModal
-                                toggleOnLabelClick
-                                titleMessage={MESSAGES.search}
-                                onConfirm={handleOrgUnitChange}
-                                initialSelection={orgUnit}
-                                defaultOpen={!orgUnitId}
-                                useIcon
-                            />
+                        <Box
+                            sx={isFullScreen ? styles.fullScreenBreadcrumb : {}}
+                        >
+                            <Box sx={styles.treeContainer}>
+                                <OrgUnitTreeviewModal
+                                    toggleOnLabelClick
+                                    titleMessage={MESSAGES.search}
+                                    onConfirm={handleOrgUnitChange}
+                                    initialSelection={orgUnit}
+                                    defaultOpen={!orgUnitId}
+                                    useIcon
+                                />
+                            </Box>
+                            <Box display="inline-block" ml={1} mr={2}>
+                                {`>`}
+                            </Box>
+                            {!orgUnitId && '...'}
+                            {orgUnitId && orgUnit && (
+                                <OrgUnitBreadcrumbs
+                                    orgUnit={orgUnit}
+                                    showRegistry
+                                    showOnlyParents={false}
+                                    params={params}
+                                />
+                            )}
                         </Box>
-                        <Box display="inline-block" ml={1} mr={2}>
-                            {`>`}
-                        </Box>
-                        {!orgUnitId && '...'}
-                        {orgUnitId && !isFetching && orgUnit && (
-                            <OrgUnitBreadcrumbs
-                                orgUnit={orgUnit}
-                                showRegistry
-                                showOnlyParents={false}
-                            />
-                        )}
                     </Grid>
                     {orgUnit && (
                         <>
@@ -163,6 +199,7 @@ export const Registry: FunctionComponent = () => {
                                     }
                                     isFetchingOrgUnit={isFetching}
                                     setSelectedChildren={handleChildrenChange}
+                                    handleOrgUnitChange={handleOrgUnitChange}
                                     selectedChildrenId={selectedChildrenId}
                                 />
                             </Grid>

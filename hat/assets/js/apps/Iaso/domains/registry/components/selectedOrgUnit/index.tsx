@@ -67,9 +67,8 @@ export const SelectedOrgUnit: FunctionComponent<Props> = ({
     }
     return (
         <Box position="relative" width="100%" minHeight={HEIGHT}>
-            {(isFetchingCurrentInstance || isFetchingOrgUnit) && (
-                <LoadingSpinner absolute />
-            )}
+            {(isFetchingCurrentInstance || isFetchingOrgUnit) &&
+                params.fullScreen !== 'true' && <LoadingSpinner absolute />}
 
             <Paper className={classes.paper}>
                 <OrgUnitTitle orgUnit={orgUnit} params={params} />

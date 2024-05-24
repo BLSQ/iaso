@@ -1,53 +1,53 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { ReactElement } from 'react';
+import PageError from '../components/errors/PageError';
+import { Assignments } from '../domains/assignments';
+import Completeness from '../domains/completeness';
+import { CompletenessStats } from '../domains/completenessStats';
+import DataSources from '../domains/dataSources';
+import { Details as DataSourceDetail } from '../domains/dataSources/details';
+import Devices from '../domains/devices';
+import { Beneficiaries } from '../domains/entities';
+import { VisitDetails } from '../domains/entities/components/VisitDetails';
+import { Details as BeneficiaryDetail } from '../domains/entities/details';
+import { DuplicateDetails } from '../domains/entities/duplicates/details/DuplicateDetails';
+import { Duplicates } from '../domains/entities/duplicates/list/Duplicates';
+import { EntityTypes } from '../domains/entities/entityTypes';
 import Forms from '../domains/forms';
 import FormDetail from '../domains/forms/detail';
 import FormsStats from '../domains/forms/stats';
-import { OrgUnits } from '../domains/orgUnits';
-import { Links } from '../domains/links';
-import Runs from '../domains/links/Runs';
-import OrgUnitDetail from '../domains/orgUnits/details';
-import Completeness from '../domains/completeness';
 import Instances from '../domains/instances';
 import CompareSubmissions from '../domains/instances/compare';
+import { CompareInstanceLogs } from '../domains/instances/compare/components/CompareInstanceLogs';
 import InstanceDetail from '../domains/instances/details';
+import { Links } from '../domains/links';
+import Runs from '../domains/links/Runs';
 import Mappings from '../domains/mappings';
 import MappingDetails from '../domains/mappings/details';
-import { Users } from '../domains/users';
-import { UserRoles } from '../domains/userRoles';
 import { Modules } from '../domains/modules';
-import { Projects } from '../domains/projects';
-import DataSources from '../domains/dataSources';
-import { Details as DataSourceDetail } from '../domains/dataSources/details';
-import Tasks from '../domains/tasks';
-import Devices from '../domains/devices';
-import { CompletenessStats } from '../domains/completenessStats';
+import { OrgUnits } from '../domains/orgUnits';
+import OrgUnitDetail from '../domains/orgUnits/details';
 import Groups from '../domains/orgUnits/groups';
 import Types from '../domains/orgUnits/orgUnitTypes';
-import { Beneficiaries } from '../domains/entities';
-import { Details as BeneficiaryDetail } from '../domains/entities/details';
-import { EntityTypes } from '../domains/entities/entityTypes';
-import PageError from '../components/errors/PageError';
-import { baseUrls } from './urls';
+import { ReviewOrgUnitChanges } from '../domains/orgUnits/reviewChanges/ReviewOrgUnitChanges';
 import Pages from '../domains/pages';
+import { LotsPayments } from '../domains/payments/LotsPayments';
+import { PotentialPayments } from '../domains/payments/PotentialPayments';
 import { Planning } from '../domains/plannings';
-import { Teams } from '../domains/teams';
+import { Projects } from '../domains/projects';
+import { Registry } from '../domains/registry';
+import { SetupAccount } from '../domains/setup';
 import { Storages } from '../domains/storages';
+import { Details as StorageDetails } from '../domains/storages/details';
+import Tasks from '../domains/tasks';
+import { Teams } from '../domains/teams';
+import { UserRoles } from '../domains/userRoles';
+import { Users } from '../domains/users';
 import { Workflows } from '../domains/workflows';
 import { Details as WorkflowDetails } from '../domains/workflows/details';
-import { Details as StorageDetails } from '../domains/storages/details';
-import { Assignments } from '../domains/assignments';
-import { CompareInstanceLogs } from '../domains/instances/compare/components/CompareInstanceLogs';
-import { Registry } from '../domains/registry';
 import { SHOW_PAGES } from '../utils/featureFlags';
-import { Duplicates } from '../domains/entities/duplicates/list/Duplicates';
-import { DuplicateDetails } from '../domains/entities/duplicates/details/DuplicateDetails';
-import { ReviewOrgUnitChanges } from '../domains/orgUnits/reviewChanges/ReviewOrgUnitChanges';
-import { VisitDetails } from '../domains/entities/components/VisitDetails';
 import * as Permission from '../utils/permissions';
-import { SetupAccount } from '../domains/setup';
-import { PotentialPayments } from '../domains/payments/PotentialPayments';
-import { LotsPayments } from '../domains/payments/LotsPayments';
+import { baseUrls } from './urls';
 
 export type RoutePath = {
     baseUrl: string;
@@ -165,7 +165,7 @@ export const orgUnitChangeRequestPath = {
 export const registryPath = {
     baseUrl: baseUrls.registry,
     routerUrl: `${baseUrls.registry}/*`,
-    permissions: [Permission.REGISTRY],
+    permissions: [Permission.REGISTRY_READ, Permission.REGISTRY_WRITE],
     element: <Registry />,
 };
 

@@ -30,21 +30,19 @@ This endpoint is used to display the completeness stats in the dashboard. Comple
 ```
 """
 
-from typing import Optional, Any
-from typing import TypedDict, Mapping, List, Union
+from typing import Any, List, Mapping, Optional, TypedDict, Union
 
 import rest_framework.fields
 import rest_framework.renderers
 import rest_framework_csv.renderers
+from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.db import models
-from django.db.models import QuerySet, OrderBy, Q
+from django.db.models import OrderBy, Q, QuerySet
 from django.db.models.expressions import RawSQL
-from django.contrib.auth.models import User
 from django_cte import With
 from django_cte.raw import raw_cte_sql
-from rest_framework import serializers
-from rest_framework import viewsets, permissions
+from rest_framework import permissions, serializers, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
@@ -52,13 +50,14 @@ from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer
 from typing_extensions import Annotated
 
-from iaso.models import OrgUnit, Form, OrgUnitType, Instance, Group
-from .common import HasPermission
+from hat.menupermissions import models as permission
+from iaso.models import Form, Group, Instance, OrgUnit, OrgUnitType
+from iaso.utils import geojson_queryset
+
 from ..models.microplanning import Planning, Team
 from ..models.org_unit import OrgUnitQuerySet
 from ..periods import Period
-from iaso.utils import geojson_queryset
-from hat.menupermissions import models as permission
+from .common import HasPermission
 
 
 class OrgUnitTypeSerializer(ModelSerializer):
@@ -235,7 +234,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission(permission.COMPLETENESS_STATS, permission.REGISTRY),  # type: ignore
+        HasPermission(permission.COMPLETENESS_STATS, permission.REGISTRY_WRITE, permission.REGISTRY_READ),  # type: ignore
     ]  # type: ignore
 
     # @swagger_auto_schema(query_serializer=ParamSerializer())

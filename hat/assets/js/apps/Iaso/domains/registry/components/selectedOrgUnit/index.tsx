@@ -10,7 +10,10 @@ import {
     useGetOrgUnitInstances,
 } from '../../hooks/useGetInstances';
 
+import * as Permissions from '../../../../utils/permissions';
+import { useCurrentUser } from '../../../../utils/usersUtils';
 import { OrgUnit } from '../../../orgUnits/types/orgUnit';
+import { userHasPermission } from '../../../users/utils';
 import { HEIGHT } from '../../config';
 import { RegistryParams } from '../../types';
 import { EmptyInstances } from './EmptyInstances';
@@ -42,13 +45,17 @@ export const SelectedOrgUnit: FunctionComponent<Props> = ({
     isFetching: isFetchingOrgUnit,
 }) => {
     const classes: Record<string, string> = useStyles();
+    const currentUser = useCurrentUser();
     const currentInstanceId = useMemo(() => {
         return params.submissionId || orgUnit?.reference_instances?.[0]?.id;
     }, [params.submissionId, orgUnit]);
 
     const { data: currentInstance, isFetching: isFetchingCurrentInstance } =
         useGetInstance(currentInstanceId, false);
-    const { data: instances, isFetching } = useGetOrgUnitInstances(orgUnit?.id);
+    const { data: instances, isFetching } = useGetOrgUnitInstances(
+        orgUnit?.id,
+        !userHasPermission(Permissions.REGISTRY_WRITE, currentUser),
+    );
 
     if (!orgUnit) {
         return null;

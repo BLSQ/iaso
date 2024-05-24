@@ -3,11 +3,11 @@ import { LinkTo } from '../../../components/nav/LinkTo';
 import { baseUrls } from '../../../constants/urls';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { OrgUnit, ShortOrgUnit } from '../../orgUnits/types/orgUnit';
-import { userHasPermission } from '../../users/utils';
+import { userHasOneOfPermissions } from '../../users/utils';
 
 import MESSAGES from '../messages';
 
-import { REGISTRY } from '../../../utils/permissions';
+import { REGISTRY_READ, REGISTRY_WRITE } from '../../../utils/permissions';
 
 type Props = {
     orgUnit?: OrgUnit | ShortOrgUnit;
@@ -29,7 +29,9 @@ export const LinkToRegistry: FunctionComponent<Props> = ({
     color = 'inherit',
 }) => {
     const user = useCurrentUser();
-    const condition = userHasPermission(REGISTRY, user) && Boolean(orgUnit);
+    const condition =
+        userHasOneOfPermissions([REGISTRY_READ, REGISTRY_WRITE], user) &&
+        Boolean(orgUnit);
     const url = `/${baseUrls.registry}/orgUnitId/${orgUnit?.id}`;
     const text = orgUnit?.name;
 

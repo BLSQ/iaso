@@ -3,8 +3,8 @@ import { Box, FormControlLabel, Switch } from '@mui/material';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent, useState } from 'react';
 
-import { SxStyles } from '../../../types/general';
-import MESSAGES from '../messages';
+import { SxStyles } from '../../../../types/general';
+import MESSAGES from '../../messages';
 
 const styles: SxStyles = {
     root: {
@@ -79,7 +79,7 @@ const styles: SxStyles = {
 };
 export type Settings = {
     showTooltip: boolean;
-    useCluster: boolean;
+    clusterEnabled: boolean;
 };
 
 type Props = {
@@ -157,10 +157,10 @@ export const MapSettings: FunctionComponent<Props> = ({
                                     control={
                                         <Switch
                                             size="small"
-                                            checked={settings.useCluster}
+                                            checked={settings.clusterEnabled}
                                             onChange={() =>
                                                 handleChangeSettings(
-                                                    'useCluster',
+                                                    'clusterEnabled',
                                                 )
                                             }
                                             color="primary"

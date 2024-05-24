@@ -130,7 +130,6 @@ export const useStyles = makeStyles(theme => {
             justifyContent: 'center',
             alignItems: 'center',
             overflow: 'hidden',
-            textTransform: 'uppercase',
         },
         tableCellSpanTitle: {
             alignItems: 'center',
@@ -148,6 +147,7 @@ export const useStyles = makeStyles(theme => {
             alignItems: 'center',
             justifyContent: 'flex-start',
             fontSize: 9,
+            wordBreak: 'break-word',
         },
         popper: {
             zIndex: 500,

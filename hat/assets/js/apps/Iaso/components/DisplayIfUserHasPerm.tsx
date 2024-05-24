@@ -1,5 +1,8 @@
 import { FunctionComponent, ReactElement } from 'react';
-import { userHasOneOfPermissions } from '../domains/users/utils';
+import {
+    userHasAllPermissions,
+    userHasOneOfPermissions,
+} from '../domains/users/utils';
 import { useCurrentUser } from '../utils/usersUtils';
 
 type Props = {
@@ -10,10 +13,16 @@ type Props = {
 export const DisplayIfUserHasPerm: FunctionComponent<Props> = ({
     permissions,
     children,
+    strict = false,
 }) => {
     const currentUser = useCurrentUser();
-    if (userHasOneOfPermissions(permissions, currentUser) && children) {
+    if (strict) {
+        if (userHasAllPermissions(permissions, currentUser) && children) {
+            return children;
+        }
+    } else if (userHasOneOfPermissions(permissions, currentUser) && children) {
         return children;
     }
+
     return null;
 };

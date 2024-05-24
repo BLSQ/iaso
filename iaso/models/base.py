@@ -1362,8 +1362,8 @@ class Profile(models.Model):
             "email": self.user.email,
             "language": self.language,
             "user_id": self.user.id,
-            "phone_number": self.phone_number if len(self.phone_number) > 0 else None,
-            "country_code": self.phone_number.country_code if self.phone_number else None,
+            "phone_number": self.phone_number.as_e164 if self.phone_number else None,
+            "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
             "projects": [p.as_dict() for p in self.projects.all().order_by("name")],
         }
 

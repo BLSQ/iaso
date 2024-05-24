@@ -137,6 +137,22 @@ export const MESSAGES = defineMessages({
         id: 'iaso.forms.newCap',
         defaultMessage: 'New',
     },
+    orgUnitTypes: {
+        id: 'iaso.datasources.label.orgUnitTypes',
+        defaultMessage: 'Org Unit Types',
+    },
+    validationStatus: {
+        id: 'iaso.forms.validationStatus',
+        defaultMessage: 'Validation status',
+    },
+    from: {
+        id: 'iaso.label.from',
+        defaultMessage: 'From',
+    },
+    to: {
+        id: 'iaso.label.to',
+        defaultMessage: 'to',
+    },
 });
 
 export default MESSAGES;

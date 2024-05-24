@@ -319,6 +319,8 @@ class EntityViewSet(ModelViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
+        is_export = any([csv_format, xlsx_format])
+
         # TODO: investigate if request.user can be anonymous here
         entity_type_ids = request.query_params.get("entity_type_ids", None)
         limit = request.GET.get("limit", None)
@@ -360,7 +362,7 @@ class EntityViewSet(ModelViewSet):
             limit_int = int(limit)
             paginator = Paginator(entities, limit_int)
             entities = paginator.page(1).object_list
-        elif limit:
+        elif limit and not is_export:
             limit_int = int(limit)
             page_offset = int(page_offset)
             start_int = (page_offset - 1) * limit_int
@@ -389,7 +391,7 @@ class EntityViewSet(ModelViewSet):
                 program = file_content.get("program")
             duplicates = []
             # invokes many SQL queries and not needed for map display
-            if not as_location:
+            if not as_location and not is_export:
                 duplicates = get_duplicates(entity)
             result = {
                 "id": entity.id,
@@ -420,7 +422,7 @@ class EntityViewSet(ModelViewSet):
                 columns_list = [i for n, i in enumerate(columns_list) if i not in columns_list[n + 1 :]]
                 columns_list = [c for c in columns_list if len(c) > 2]
             result_list.append(result)
-        if xlsx_format or csv_format:
+        if is_export:
             columns = [
                 {"title": "ID", "width": 20},
                 {"title": "UUID", "width": 20},

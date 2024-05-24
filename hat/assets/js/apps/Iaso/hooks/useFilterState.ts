@@ -83,12 +83,8 @@ export const useFilterState = ({
         redirectToReplace,
     ]);
 
-    const handleChange = useCallback(
-        (key, value) => {
-            const newFilters = {
-                ...filters,
-                [key]: value !== null ? value : undefined,
-            };
+    const updateFilters = useCallback(
+        newFilters => {
             const initialFilterValue = removePaginationParams(params);
             if (!isEqual(newFilters, initialFilterValue)) {
                 setFiltersUpdated(true);
@@ -98,7 +94,18 @@ export const useFilterState = ({
             }
             setFilters(newFilters);
         },
-        [filters, params],
+        [params],
+    );
+
+    const handleChange = useCallback(
+        (key, value) => {
+            const newFilters = {
+                ...filters,
+                [key]: value !== null ? value : undefined,
+            };
+            updateFilters(newFilters);
+        },
+        [filters, updateFilters],
     );
 
     useEffect(() => {
@@ -112,9 +119,9 @@ export const useFilterState = ({
             handleSearch,
             filtersUpdated,
             setFiltersUpdated,
-            setFilters,
+            setFilters: updateFilters,
         };
-    }, [filters, handleChange, handleSearch, filtersUpdated]);
+    }, [filters, handleChange, handleSearch, filtersUpdated, updateFilters]);
 };
 
 type MultiTreeviewArgs = {

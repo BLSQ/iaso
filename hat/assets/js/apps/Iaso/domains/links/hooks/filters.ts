@@ -143,8 +143,6 @@ export const useSourceOptions = sources => {
 };
 
 export const useSourceVersionOptions = ({ sources, source }) => {
-    console.log('source', source, sources);
-
     const { formatMessage } = useSafeIntl();
 
     const currentSource = source

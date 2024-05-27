@@ -482,55 +482,6 @@ export const orgUnitFiltersWithPrefix = (
         ),
         paramsPrefix,
     );
-export const linksFiltersWithPrefix = (
-    paramsPrefix,
-    algorithmRuns = [],
-    formatMessage = () => null,
-    profiles = [],
-    algorithms = [],
-    sources = [],
-    isFetchingProfiles = false,
-) =>
-    filtersWithPrefix(
-        [
-            {
-                ...search(),
-                column: 1,
-            },
-            {
-                ...algoRun(algorithmRuns, formatMessage),
-                column: 1,
-            },
-            {
-                ...linkStatus(formatMessage),
-                column: 3,
-            },
-            {
-                ...validator(profiles),
-                loading: isFetchingProfiles,
-                column: 2,
-            },
-            {
-                ...algo(algorithms),
-                column: 2,
-            },
-            {
-                ...score(formatMessage),
-                column: 1,
-            },
-            {
-                ...source(
-                    sources || [],
-                    false,
-                    false,
-                    'origin',
-                    formatMessage(MESSAGES.sourceorigin),
-                ),
-                column: 3,
-            },
-        ],
-        paramsPrefix,
-    );
 
 export const onlyChildrenParams = (paramsPrefix, params, parentId) => {
     const onlyDirectChildren =

@@ -4,7 +4,7 @@ import {
     useSnackMutation,
     useSnackQueries,
 } from 'Iaso/libs/apiHooks.ts';
-import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api';
+import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api.ts';
 import { useQueryClient } from 'react-query';
 import MESSAGES from './messages';
 import { getOtChipColors, getChipColors } from '../../constants/chipColors';
@@ -41,10 +41,7 @@ export const useOrgUnitDetailData = (
         cacheTime: 1000 * 60 * 5,
     };
     const [
-        { data: algorithms = [], isFetching: isFetchingAlgorithm },
-        { data: algorithmRuns = [], isFetching: isFetchingAlgorithmRuns },
         { data: groups = [], isFetching: isFetchingGroups },
-        { data: profiles = [], isFetching: isFetchingProfiles },
         { data: orgUnitTypes = [], isFetching: isFetchingOrgUnitTypes },
         { data: links = [], isFetching: isFetchingLinks },
         {
@@ -55,39 +52,12 @@ export const useOrgUnitDetailData = (
         { data: parentOrgUnit },
     ] = useSnackQueries([
         {
-            queryKey: ['algorithms'],
-            queryFn: () => getRequest('/api/algorithms/'),
-            options: {
-                enabled: tab === 'links',
-                ...cacheOptions,
-            },
-        },
-        {
-            queryKey: ['algorithmRuns'],
-            queryFn: () => getRequest('/api/algorithmsruns/'),
-            snackErrorMsg: MESSAGES.fetchAlgorithmsError,
-            options: {
-                enabled: tab === 'links',
-                ...cacheOptions,
-            },
-        },
-        {
             queryKey: ['groups'],
             queryFn: () => getRequest(groupsUrl),
             snackErrorMsg: MESSAGES.fetchGroupsError,
             options: {
                 select: data => data.groups,
                 enabled: tab === 'children' || tab === 'infos',
-                ...cacheOptions,
-            },
-        },
-        {
-            queryKey: ['profiles'],
-            queryFn: () => getRequest('/api/profiles/'),
-            snackErrorMsg: MESSAGES.fetchProfilesError,
-            options: {
-                select: data => data.profiles,
-                enabled: tab === 'links',
                 ...cacheOptions,
             },
         },
@@ -165,15 +135,10 @@ export const useOrgUnitDetailData = (
         : isFetchingAssociatedDataSources;
 
     return {
-        algorithms,
-        algorithmRuns,
         groups,
-        profiles,
         orgUnitTypes,
         links,
         isFetchingDatas:
-            isFetchingAlgorithm ||
-            isFetchingAlgorithmRuns ||
             isFetchingGroups ||
             isFetchingSources ||
             isFetchingLinks ||
@@ -183,7 +148,6 @@ export const useOrgUnitDetailData = (
         isFetchingDetail,
         isFetchingOrgUnitTypes,
         isFetchingGroups,
-        isFetchingProfiles,
         parentOrgUnit,
     };
 };

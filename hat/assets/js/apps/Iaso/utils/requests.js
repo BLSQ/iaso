@@ -4,13 +4,11 @@ import {
     patchRequest,
     postRequest,
     putRequest,
-    restoreRequest,
-} from 'Iaso/libs/Api';
+} from 'Iaso/libs/Api.ts';
 import { useSnackQuery } from 'Iaso/libs/apiHooks.ts';
 import { enqueueSnackbar } from '../redux/snackBarsReducer';
 import { errorSnackBar, succesfullSnackBar } from '../constants/snackBars';
 import { dispatch as storeDispatch } from '../redux/store';
-import { FETCHING_ABORTED } from '../libs/constants';
 
 export const fetchSubOrgUnitsByType = (dispatch, params, orgUnitType) =>
     getRequest(`/api/orgunits/?${params}`)
@@ -150,19 +148,6 @@ export const fetchInstanceDetail = (dispatch, instanceId) =>
             console.error('Error while fetching instance detail:', error);
         });
 
-export const saveLink = (dispatch, link) =>
-    patchRequest(`/api/links/${link.id}/`, link)
-        .then(savedLink => {
-            dispatch(enqueueSnackbar(succesfullSnackBar()));
-            return savedLink;
-        })
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(errorSnackBar('saveLinkError', null, error)),
-            );
-            console.error('Error occured while saving link:', error);
-        });
-
 export const fetchAlgorithms = dispatch =>
     getRequest('/api/algorithms/')
         .then(algorithms => algorithms)
@@ -185,16 +170,6 @@ export const fetchLinkDetail = (dispatch, linkId) =>
                 ),
             );
             console.error('Error while fetching link detail:', error);
-        });
-
-export const fetchLinks = (dispatch, url = '/api/links/') =>
-    getRequest(url)
-        .then(links => links)
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(errorSnackBar('fetchLinksError', null, error)),
-            );
-            console.error('Error while fetching links:', error);
         });
 
 export const deleteAlgorithmRun = (dispatch, runId) =>

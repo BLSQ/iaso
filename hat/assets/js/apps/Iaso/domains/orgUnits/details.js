@@ -17,19 +17,14 @@ import Logs from '../../components/logs/LogsComponent';
 import TopBar from '../../components/nav/TopBarComponent';
 import SingleTable from '../../components/tables/SingleTable';
 import {
-    linksFiltersWithPrefix,
     onlyChildrenParams,
     orgUnitFiltersWithPrefix,
 } from '../../constants/filters';
-import { baseUrls } from '../../constants/urls.ts';
+import { baseUrls, LINKS_PREFIX, FORMS_PREFIX } from '../../constants/urls.ts';
 import {
     fetchAssociatedOrgUnits,
-    fetchLinks,
     fetchOrgUnitsList,
-    saveLink,
 } from '../../utils/requests';
-import LinksDetails from '../links/components/LinksDetailsComponent';
-import { linksTableColumns } from '../links/config';
 import { resetOrgUnits } from './actions';
 import { OrgUnitForm } from './components/OrgUnitForm.tsx';
 import { OrgUnitMap } from './components/orgUnitMap/OrgUnitMap/OrgUnitMap.tsx';
@@ -49,6 +44,8 @@ import {
 } from './utils';
 import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
 import { FormsTable } from '../forms/components/FormsTable.tsx';
+import { LinksTable } from '../links/components/LinksTable.tsx';
+import { LinksFilter } from './details/Links/LinksFilter.tsx';
 
 const baseUrl = baseUrls.orgUnitDetails;
 const useStyles = makeStyles(theme => ({
@@ -105,8 +102,6 @@ const tabs = [
     'comments',
 ];
 
-const FORMS_PREFIX = 'formsParams';
-
 const OrgUnitDetail = () => {
     const classes = useStyles();
     const params = useParamsObject(baseUrl);
@@ -139,10 +134,19 @@ const OrgUnitDetail = () => {
         return tableFormParams;
     }, [params]);
 
-    const isNewOrgunit = useMemo(
-        () => params.orgUnitId === '0',
-        [params.orgUnitId],
-    );
+    const linksParams = useMemo(() => {
+        const { orgUnitId, ...rest } = params;
+        const tableFormParams = { orgUnitId };
+        const formKeys = Object.keys(rest).filter(k =>
+            k.includes(LINKS_PREFIX),
+        );
+        formKeys.forEach(formKey => {
+            tableFormParams[formKey] = rest[formKey];
+        });
+        return tableFormParams;
+    }, [params]);
+
+    const isNewOrgunit = params.orgUnitId === '0';
 
     const {
         data: validationStatusOptions,
@@ -176,14 +180,6 @@ const OrgUnitDetail = () => {
         };
         redirectToReplace(baseUrl, newParams);
         queryClient.invalidateQueries('currentOrgUnit');
-    };
-
-    const validateLink = (link, handleFetch) => {
-        const newLink = {
-            ...link,
-            validated: !link.validated,
-        };
-        saveLink(dispatch, newLink).then(() => handleFetch());
     };
 
     const handleChangeTab = useCallback(
@@ -225,10 +221,7 @@ const OrgUnitDetail = () => {
     );
 
     const {
-        algorithms,
-        algorithmRuns,
         groups,
-        profiles,
         orgUnitTypes,
         links,
         sources,
@@ -237,7 +230,6 @@ const OrgUnitDetail = () => {
         isFetchingDetail,
         isFetchingOrgUnitTypes,
         isFetchingGroups,
-        isFetchingProfiles,
         parentOrgUnit,
     } = useOrgUnitDetailData(
         isNewOrgunit,
@@ -486,14 +478,19 @@ const OrgUnitDetail = () => {
                                 </div>
                             )}
                             {tab === 'forms' && (
-                                <div data-test="forms-tab">
+                                <Box
+                                    className={
+                                        classes.containerFullHeightNoTabPadded
+                                    }
+                                    data-test="forms-tab"
+                                >
                                     <FormsTable
                                         baseUrl={baseUrl}
                                         params={formParams}
                                         defaultPageSize={10}
                                         paramsPrefix={FORMS_PREFIX}
                                     />
-                                </div>
+                                </Box>
                             )}
                             <div
                                 data-test="children-tab"
@@ -529,56 +526,24 @@ const OrgUnitDetail = () => {
                                     columns={childrenColumns}
                                 />
                             </div>
-                            <div
-                                data-test="links-tab"
-                                className={
-                                    tab === 'links' ? '' : classes.hiddenOpacity
-                                }
-                            >
-                                <SingleTable
-                                    apiParams={{
-                                        orgUnitId: params.orgUnitId,
-                                    }}
-                                    propsToWatch={params.orgUnitId}
-                                    filters={linksFiltersWithPrefix(
-                                        'linksParams',
-                                        algorithmRuns,
-                                        formatMessage,
-                                        profiles,
-                                        algorithms,
-                                        sources,
-                                        isFetchingProfiles,
-                                    )}
-                                    params={params}
-                                    paramsPrefix="linksParams"
-                                    baseUrl={baseUrl}
-                                    endPointPath="links"
-                                    fetchItems={fetchLinks}
-                                    defaultSorted={[
-                                        { id: 'similarity_score', desc: false },
-                                    ]}
-                                    columns={handleFetch =>
-                                        linksTableColumns(formatMessage, link =>
-                                            validateLink(link, handleFetch),
-                                        )
+                            {tab === 'links' && (
+                                <Box
+                                    data-test="links-tab"
+                                    className={
+                                        classes.containerFullHeightNoTabPadded
                                     }
-                                    subComponent={(link, handleFetch) =>
-                                        link ? (
-                                            <LinksDetails
-                                                linkId={link.id}
-                                                validated={link.validated}
-                                                validateLink={() =>
-                                                    validateLink(
-                                                        link,
-                                                        handleFetch,
-                                                    )
-                                                }
-                                            />
-                                        ) : null
-                                    }
-                                    hideGpkg
-                                />
-                            </div>
+                                >
+                                    <LinksFilter
+                                        baseUrl={baseUrl}
+                                        params={linksParams}
+                                    />
+                                    <LinksTable
+                                        baseUrl={baseUrl}
+                                        params={linksParams}
+                                        paramsPrefix={LINKS_PREFIX}
+                                    />
+                                </Box>
+                            )}
                             {tab === 'comments' && (
                                 <div data-test="comments-tab">
                                     <Grid

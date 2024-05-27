@@ -1,6 +1,6 @@
 import { capitalize } from 'bluesquare-components';
 import { paginationPathParams } from '../routing/common';
-import { linksFiltersWithPrefix, orgUnitFiltersWithPrefix } from './filters.js';
+import { orgUnitFiltersWithPrefix } from './filters.js';
 
 export const paginationPathParamsWithPrefix = (prefix: string): string[] =>
     paginationPathParams.map(p => `${prefix}${capitalize(p, true)}`);
@@ -11,8 +11,17 @@ export const orgUnitsFiltersPathParamsWithPrefix = (
 ): string[] =>
     orgUnitFiltersWithPrefix(prefix, withChildren).map(f => f.urlKey);
 
-export const linksFiltersPathParamsWithPrefix = (prefix: string): string[] =>
-    linksFiltersWithPrefix(prefix).map(f => f.urlKey);
+const orgUnitDetailsLinkParams = [
+    'linksParamsSearch',
+    'linksParamsAlgorithmRunId',
+    'linksParamsValidated',
+    'linksParamsValidatorId',
+    'linksParamsAlgorithmId',
+    'linksParamsScore',
+    'linksParamsOrigin',
+];
+export const FORMS_PREFIX = 'formsParams';
+export const LINKS_PREFIX = 'linksParams';
 
 export const CHANGE_REQUEST = 'changeRequest';
 const ORG_UNITS = 'orgunits';
@@ -129,9 +138,9 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'instanceId',
             ...orgUnitsFiltersPathParamsWithPrefix('childrenParams', true),
             ...paginationPathParamsWithPrefix('childrenParams'),
-            ...linksFiltersPathParamsWithPrefix('linksParams'),
-            ...paginationPathParamsWithPrefix('linksParams'),
-            ...paginationPathParamsWithPrefix('formsParams'),
+            ...orgUnitDetailsLinkParams,
+            ...paginationPathParamsWithPrefix(LINKS_PREFIX),
+            ...paginationPathParamsWithPrefix(FORMS_PREFIX),
             ...paginationPathParamsWithPrefix('logsParams'),
         ],
     },
@@ -187,7 +196,8 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'score',
             ...paginationPathParams,
             'searchActive',
-            'validation_status',
+            // TODO confirm this param
+            // 'validation_status',
         ],
     },
     algos: {

@@ -40,3 +40,29 @@ export const makeQueryString = (params, tableDefaults) => {
 
     return new URLSearchParams(searchParams).toString();
 };
+
+export const decapitalize = (word: string): string => {
+    const split = word.split('');
+    if (split.length === 0) {
+        return word;
+    }
+    const [first, ...rest] = split;
+    return [first.toLocaleLowerCase(), ...rest].join('');
+};
+
+export const extractPrefixedParams = (
+    prefix: string,
+    params: Record<string, string>,
+): Record<string, string> => {
+    const newParams = { ...params };
+    Object.keys(params)
+        .filter(paramKey => paramKey.includes(prefix))
+        .forEach(prefixedKey => {
+            // eslint-disable-next-line no-unused-vars
+            const [_, upperCaseKey] = prefixedKey.split(prefix);
+            const formattedKey = decapitalize(upperCaseKey);
+            newParams[formattedKey] = newParams[prefixedKey];
+            delete newParams[prefixedKey];
+        });
+    return newParams;
+};

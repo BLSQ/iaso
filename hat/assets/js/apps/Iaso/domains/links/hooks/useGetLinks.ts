@@ -19,8 +19,7 @@ export const useGetLinks = ({
     params,
     onSuccess,
     enabled,
-}: Args): UseQueryResult => {
-    console.log('ENABLED', enabled);
+}: Args): UseQueryResult<any> => {
     const safeParams = useApiParams(params, tableDefaults);
     if (safeParams?.accountId) {
         delete safeParams.accountId;

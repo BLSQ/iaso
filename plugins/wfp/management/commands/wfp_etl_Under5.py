@@ -15,10 +15,10 @@ class Under5:
         weight_loss = 0
 
         weight_difference = 0
-        if initial_weight is not None and current_weight is not None:
+        if initial_weight is not None and current_weight is not None and current_weight != "":
             initial_weight = float(initial_weight)
             current_weight = float(current_weight)
-            weight_difference = round((current_weight - initial_weight), 4)
+            weight_difference = round(((current_weight * 1000) - (initial_weight * 1000)), 4)
 
             if weight_difference >= 0:
                 if duration > 0 and current_weight > 0:
@@ -27,7 +27,9 @@ class Under5:
                 weight_loss = abs(weight_difference)
         return {
             "initial_weight": float(initial_weight) if initial_weight is not None else initial_weight,
-            "discharge_weight": float(current_weight) if current_weight is not None else current_weight,
+            "discharge_weight": (
+                float(current_weight) if current_weight is not None and current_weight != "" else current_weight
+            ),
             "weight_difference": weight_difference,
             "weight_gain": weight_gain,
             "weight_loss": weight_loss,
@@ -66,11 +68,16 @@ class Under5:
 
                     form_id = visit.get("form__form_id")
                     current_record["org_unit_id"] = visit.get("org_unit_id", None)
-                    current_weight = current_record.get("weight_kgs", None)
+                    current_weight = None
+                    if current_record.get("weight_kgs", None) is not None:
+                        current_weight = current_record.get("weight_kgs", None)
+                    else:
+                        current_weight = current_record.get("previous_weight_kgs__decimal__", None)
                     current_date = visit.get("created_at", None)
 
                     if form_id == "Anthropometric visit child":
                         initial_weight = current_weight
+
                         instances[i]["initial_weight"] = initial_weight
                         visit_date = visit.get("visit_date", current_date)
                         initial_date = visit.get("_visit_date", visit_date)
@@ -80,7 +87,6 @@ class Under5:
                         current_record["start_date"] = initial_date.strftime("%Y-%m-%d")
 
                     weight = self.compute_gained_weight(initial_weight, current_weight, duration)
-
                     current_record["end_date"] = current_date.strftime("%Y-%m-%d")
                     current_record["weight_gain"] = weight["weight_gain"]
                     current_record["weight_loss"] = weight["weight_loss"]

@@ -44,7 +44,7 @@ export const INSTANCE_METAS_FIELDS: InstanceMetasField[] = [
     },
     {
         key: 'created_at',
-        active: false,
+        active: true,
         tableOrder: 5,
         type: 'info',
     },

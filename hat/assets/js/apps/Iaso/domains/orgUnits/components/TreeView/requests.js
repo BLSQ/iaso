@@ -6,10 +6,10 @@ import { dispatch } from '../../../../redux/store';
 
 export const getChildrenData = (id, validationStatus = 'all') => {
     return getRequest(
-        `/api/orgunits/treesearch/?&parent_id=${id}&validation_status=${validationStatus}&ignoreEmptyNames=true`,
+        `/api/orgunits/tree/?&parent_id=${id}&validation_status=${validationStatus}&ignoreEmptyNames=true`,
     )
         .then(response => {
-            return response.orgunits.map(orgUnit => {
+            return response.map(orgUnit => {
                 return {
                     ...orgUnit,
                     id: orgUnit.id.toString(),
@@ -32,18 +32,18 @@ export const getChildrenData = (id, validationStatus = 'all') => {
 const makeUrl = (id, type, validationStatus = 'all') => {
     if (id) {
         if (type === 'version')
-            return `/api/orgunits/treesearch/?&rootsForUser=true&version=${id}&validation_status=${validationStatus}&ignoreEmptyNames=true`;
+            return `/api/orgunits/tree/?&version=${id}&validation_status=${validationStatus}&ignoreEmptyNames=true`;
         if (type === 'source')
-            return `/api/orgunits/treesearch/?&rootsForUser=true&source=${id}&validation_status=${validationStatus}&ignoreEmptyNames=true`;
+            return `/api/orgunits/tree/?&source=${id}&validation_status=${validationStatus}&ignoreEmptyNames=true`;
     }
-    return `/api/orgunits/treesearch/?&rootsForUser=true&defaultVersion=true&validation_status=${validationStatus}&ignoreEmptyNames=true`;
+    return `/api/orgunits/tree/?&defaultVersion=true&validation_status=${validationStatus}&ignoreEmptyNames=true`;
 };
 
 // mapping the request result here i.o in the useRootData hook to keep the hook more generic
 export const getRootData = (id, type = 'source', validationStatus = 'all') => {
     return getRequest(makeUrl(id, type, validationStatus))
         .then(response => {
-            return response.orgunits.map(orgUnit => {
+            return response.map(orgUnit => {
                 return {
                     ...orgUnit,
                     id: orgUnit.id.toString(),
@@ -58,15 +58,15 @@ export const getRootData = (id, type = 'source', validationStatus = 'all') => {
         });
 };
 
-const endpoint = '/api/orgunits/';
+const endpoint = '/api/orgunits/tree/search';
 const search = (input1, validationStatus = 'all', input2, type) => {
     switch (type) {
         case 'source':
-            return `searches=[{"validation_status":"${validationStatus}","search":"${input1}","source":${input2}}]`;
+            return `search=${input1}&validation_status=${validationStatus}&source=${input2}`;
         case 'version':
-            return `searches=[{"validation_status":"${validationStatus}","search":"${input1}","version":${input2}}]`;
+            return `search=${input1}&validation_status=${validationStatus}&version=${input2}`;
         default:
-            return `searches=[{"validation_status":"${validationStatus}","search":"${input1}","defaultVersion":"true"}]`;
+            return `search=${input1}&validation_status=${validationStatus}&defaultVersion=true`;
     }
 };
 const sortingAndPaging = resultsCount =>
@@ -96,7 +96,7 @@ const makeSearchUrl = ({
             validationStatus,
         )}&${sortingAndPaging(count)}`;
     }
-    return `${endpoint}?${search(value, validationStatus)}&${sortingAndPaging(
+    return `${endpoint}/?${search(value, validationStatus)}&${sortingAndPaging(
         count,
     )}`;
 };
@@ -120,7 +120,7 @@ export const searchOrgUnits = ({
         validationStatus,
     });
     return getRequest(url)
-        .then(result => result.orgunits)
+        .then(result => result.results)
         .catch(error => {
             dispatch(
                 enqueueSnackbar(

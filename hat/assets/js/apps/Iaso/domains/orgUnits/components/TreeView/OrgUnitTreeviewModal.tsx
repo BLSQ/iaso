@@ -1,22 +1,23 @@
 import { Box, useTheme } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { IconButton, TreeViewWithSearch } from 'bluesquare-components';
-import { isEqual } from 'lodash';
 import {
-    array,
-    arrayOf,
-    bool,
-    func,
-    number,
-    object,
-    oneOfType,
-    string,
-} from 'prop-types';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+    IconButton,
+    IntlMessage,
+    TreeViewWithSearch,
+} from 'bluesquare-components';
+import { isEqual } from 'lodash';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
+} from 'react';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
+import { OrgUnit } from '../../types/orgUnit';
 import { OrgUnitLabel, getOrgUnitAncestors } from '../../utils';
 import { OrgUnitTreeviewPicker } from './OrgUnitTreeviewPicker';
-import { SettingsPopper } from './SettingsPopper.tsx';
+import { SettingsPopper } from './SettingsPopper';
 import { MESSAGES } from './messages';
 import { getChildrenData, getRootData, searchOrgUnits } from './requests';
 import {
@@ -29,25 +30,47 @@ import {
 
 const useStyles = makeStyles(orgUnitTreeviewStatusIconsStyle);
 
-const OrgUnitTreeviewModal = ({
+type Props = {
+    titleMessage: string | IntlMessage;
+    toggleOnLabelClick?: boolean;
+    // eslint-disable-next-line no-unused-vars
+    onConfirm: (selectedOrgUnits: any) => void;
+    multiselect?: boolean;
+    initialSelection?: OrgUnit | OrgUnit[];
+    source?: number | string;
+    version?: number | string;
+    resetTrigger?: boolean;
+    hardReset?: boolean;
+    disabled?: boolean;
+    required?: boolean;
+    showStatusIconInTree?: boolean;
+    showStatusIconInPicker?: boolean;
+    clearable?: boolean;
+    allowedTypes?: number[];
+    errors?: string[];
+    defaultOpen?: boolean;
+    useIcon?: boolean;
+};
+
+const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
     titleMessage,
-    toggleOnLabelClick,
-    onConfirm,
-    multiselect,
-    initialSelection,
-    source,
-    resetTrigger,
-    hardReset,
-    disabled,
-    version,
-    required,
-    showStatusIconInTree,
-    showStatusIconInPicker,
-    clearable,
-    allowedTypes,
-    errors,
-    defaultOpen,
-    useIcon,
+    toggleOnLabelClick = true,
+    onConfirm = () => null,
+    multiselect = false,
+    initialSelection = null,
+    source = null,
+    version = null,
+    resetTrigger = false,
+    hardReset = false,
+    disabled = false,
+    required = false,
+    showStatusIconInTree = true,
+    showStatusIconInPicker = true,
+    clearable = true,
+    allowedTypes = [],
+    errors = [],
+    defaultOpen = false,
+    useIcon = false,
 }) => {
     const theme = useTheme();
     const classes = useStyles();
@@ -180,6 +203,9 @@ const OrgUnitTreeviewModal = ({
             resetSelection();
         }
     }, [resetTrigger, hardReset, resetSelection]);
+
+    console.log('selectedOrgUnitParents', selectedOrgUnitParents);
+    console.log('initialSelection', initialSelection);
     return (
         <ConfirmCancelDialogComponent
             renderTrigger={({ openDialog }) =>
@@ -267,47 +293,6 @@ const OrgUnitTreeviewModal = ({
             </Box>
         </ConfirmCancelDialogComponent>
     );
-};
-
-OrgUnitTreeviewModal.propTypes = {
-    titleMessage: oneOfType([object, string]).isRequired,
-    toggleOnLabelClick: bool,
-    onConfirm: func,
-    multiselect: bool,
-    initialSelection: oneOfType([arrayOf(object), object]),
-    source: oneOfType([number, string]),
-    version: oneOfType([number, string]),
-    resetTrigger: bool,
-    hardReset: bool, // when true, it will clear the selectedOrgUnits on reset, emptying the TreeviewPIcker selection
-    disabled: bool,
-    required: bool,
-    showStatusIconInTree: bool,
-    showStatusIconInPicker: bool,
-    clearable: bool,
-    allowedTypes: array,
-    errors: arrayOf(string),
-    defaultOpen: bool,
-    useIcon: bool,
-};
-
-OrgUnitTreeviewModal.defaultProps = {
-    toggleOnLabelClick: true,
-    onConfirm: () => {},
-    multiselect: false,
-    initialSelection: null,
-    source: null,
-    version: null,
-    resetTrigger: false,
-    disabled: false,
-    required: false,
-    hardReset: false,
-    showStatusIconInTree: true,
-    showStatusIconInPicker: true,
-    clearable: true,
-    allowedTypes: [],
-    errors: [],
-    defaultOpen: false,
-    useIcon: false,
 };
 
 export { OrgUnitTreeviewModal };

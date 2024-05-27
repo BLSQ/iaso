@@ -1,15 +1,14 @@
 import django_filters
-from rest_framework.exceptions import ValidationError
-
 from django.conf import settings
+from django.contrib.gis.db.models import PointField
+from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import Q
+from django.db.models.functions import Cast
 from django.db.models.query import QuerySet
 from django.utils.translation import gettext_lazy as _
-from django.contrib.gis.geos import GEOSGeometry
-from django.db.models.functions import Cast
-from django.contrib.gis.db.models import PointField
+from rest_framework.exceptions import ValidationError
 
-from iaso.models import OrgUnitChangeRequest, OrgUnit
+from iaso.models import OrgUnit, OrgUnitChangeRequest
 
 
 class MobileOrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
@@ -32,6 +31,7 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
     users = django_filters.CharFilter(method="filter_users", label=_("Users IDs (comma-separated)"))
     user_roles = django_filters.CharFilter(method="filter_user_roles", label=_("User roles IDs (comma-separated)"))
     with_location = django_filters.CharFilter(method="filter_with_location", label=_("With or without location"))
+    status = django_filters.CharFilter(method="filter_status", label=_("Status (comma-separated)"))
 
     @staticmethod
     def parse_comma_separated_numeric_values(value: str, field_name: str) -> list:
@@ -51,7 +51,7 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
 
     class Meta:
         model = OrgUnitChangeRequest
-        fields = ["status"]
+        fields = []
 
     def filter_parent_id(self, queryset: QuerySet, _, value: str) -> QuerySet:
         try:
@@ -88,6 +88,12 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
             Q(created_by__iaso_profile__user_roles__id__in=users_roles_ids)
             | Q(updated_by__iaso_profile__user_roles__id__in=users_roles_ids)
         )
+
+    def filter_status(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
+        if value:
+            statuses = value.split(",")
+            queryset = queryset.filter(status__in=statuses)
+        return queryset
 
     def filter_with_location(self, queryset: QuerySet, name: str, value: str) -> QuerySet:
         """

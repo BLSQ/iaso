@@ -5,20 +5,18 @@ import { useLinksTableColumns } from '../config';
 import { useValidateLink } from '../hooks/useValidateLink';
 import { useGetLinks } from '../hooks/useGetLinks';
 import LinksDetails from './LinksDetailsComponent';
+import { usePrefixedParams } from '../../../routing/hooks/usePrefixedParams';
 
 type Props = {
     baseUrl: string;
     params: Record<string, any>;
-    orgUnitId?: string; // number as string
     defaultPageSize?: number;
     paramsPrefix?: string;
 };
 
-// TODO Add redirection to LinkDetails
 export const LinksTable: FunctionComponent<Props> = ({
     baseUrl,
     params,
-    orgUnitId,
     defaultPageSize = 10,
     paramsPrefix,
 }) => {
@@ -26,9 +24,13 @@ export const LinksTable: FunctionComponent<Props> = ({
     const onSuccess = () => {
         setExpanded({});
     };
-    const enabled = Boolean(params?.searchActive);
+    const apiParams = usePrefixedParams(paramsPrefix, params);
+
+    // The orgUnitId is passed only in orgUnit details, so it can be used to trigger the API call
+    const enabled =
+        Boolean(apiParams?.searchActive) || Boolean(apiParams?.orgUnitId);
     const { data, isLoading: loading } = useGetLinks({
-        params,
+        params: apiParams,
         onSuccess,
         enabled,
     });

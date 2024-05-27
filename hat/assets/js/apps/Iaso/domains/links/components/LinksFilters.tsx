@@ -21,7 +21,7 @@ type Props = {
     baseUrl: string;
 };
 
-const scoreOptions = [1, 2, 3, 4, 5].map(s => ({
+export const scoreOptions = [1, 2, 3, 4, 5].map(s => ({
     label: `${s}`,
     value: `${(s - 1) * 20},${s * 20}`,
 }));
@@ -34,7 +34,6 @@ export const LinksFilters: FunctionComponent<Props> = ({ baseUrl, params }) => {
             searchActive: 'searchActive',
             saveSearchInHistory: false,
         });
-    console.log('params', params);
     const { data: orgUnitTypes, isLoading: isLoadingOrgUnitTypes } =
         useGetOrgUnitTypesOptions();
     const { data: algos, isLoading: isLoadingAlgos } =

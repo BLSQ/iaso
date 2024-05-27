@@ -9,10 +9,10 @@ import { baseUrls } from '../../constants/urls';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { LinksFilters } from './components/LinksFilters';
 import { LinksTable } from './components/LinksTable';
-import MESSAGES from './messages';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import { tableDefaults } from './hooks/useGetLinks';
 import { makeQueryString } from '../../routing/utils';
+import MESSAGES from './messages';
 
 const baseUrl = baseUrls.links;
 const dwnldBaseUrl = '/api/links';
@@ -54,6 +54,7 @@ export const Links = () => {
                 displayBackButton={displayBackButton}
                 goBack={() => goBack()}
             />
+            {/* @ts-ignore */}
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Box mb={2}>
                     <LinksFilters params={params} baseUrl={baseUrl} />
@@ -70,57 +71,6 @@ export const Links = () => {
                 <Box className={classes.table}>
                     <LinksTable params={params} baseUrl={baseUrl} />
                 </Box>
-
-                {/* <SingleTable
-                    baseUrl={baseUrl}
-                    endPointPath="links"
-                    hideGpkg
-                    dataKey="links"
-                    apiParams={{
-                        ...apiParams,
-                    }}
-                    forceRefresh={forceRefresh}
-                    onForceRefreshDone={() => setForceRefresh(false)}
-                    searchActive={params.searchActive === 'true'}
-                    fetchItems={fetchLinks}
-                    defaultSorted={[{ id: 'similarity_score', desc: true }]}
-                    toggleActiveSearch
-                    columns={tableColumns}
-                    filters={linksFilters({
-                        formatMessage,
-                        algorithmRuns,
-                        orgUnitTypes,
-                        profiles,
-                        algorithms,
-                        sources,
-                        currentOrigin,
-                        currentDestination,
-                        fetchingRuns,
-                        fetchingOrgUnitTypes,
-                        fetchingProfiles,
-                        fetchingAlgorithms,
-                        fetchingSources,
-                    })}
-                    onDataLoaded={({ list, count, pages }) => {
-                        onDataLoaded(list, count, pages);
-                    }}
-                    extraProps={{
-                        expanded,
-                        onExpandedChange: newExpanded =>
-                            setExpanded(newExpanded),
-                    }}
-                    // This is just a redirection
-                    subComponent={link =>
-                        link ? (
-                            <LinksDetails
-                                linkId={link.id}
-                                validated={link.validated}
-                                validateLink={() => validateLink(link)}
-                            />
-                        ) : null
-                    }
-                    filtersColumnsCount={4}
-                /> */}
             </Box>
         </>
     );

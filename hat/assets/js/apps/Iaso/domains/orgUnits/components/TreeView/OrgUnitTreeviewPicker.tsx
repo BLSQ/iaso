@@ -1,24 +1,15 @@
-import React from 'react';
-import {
-    func,
-    any,
-    bool,
-    object,
-    oneOfType,
-    string,
-    arrayOf,
-} from 'prop-types';
-import classnames from 'classnames';
-import { Paper, InputLabel, Box } from '@mui/material';
+import { Box, InputLabel, Paper } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
     FormControl,
     IconButton,
-    useSafeIntl,
     TruncatedTreeview,
+    useSafeIntl,
 } from 'bluesquare-components';
-import { MESSAGES } from './messages';
+import classnames from 'classnames';
+import React from 'react';
 import { baseUrls } from '../../../../constants/urls';
+import { MESSAGES } from './messages';
 
 const styles = theme => ({
     placeholder: {
@@ -67,16 +58,34 @@ const styles = theme => ({
         color: theme.palette.error.main,
     },
 });
-const formatPlaceholder = (placeholder, formatMessage) => {
+
+type Props = {
+    onClick: () => void;
+    selectedItems: any; // This should be typed according to what selectedItems actually is
+    resetSelection?: () => void;
+    multiselect: boolean;
+    placeholder?: string | { id: string; defaultMessage: string };
+    required: boolean;
+    disabled: boolean;
+    label: () => void; // This should be typed according to what label actually is
+    clearable: boolean;
+    errors: string[];
+};
+
+const formatPlaceholder = (
+    placeholder: string | { id: string; defaultMessage: string },
+    formatMessage: (message: { id: string; defaultMessage: string }) => string,
+) => {
     if (!placeholder) return null;
     if (typeof placeholder === 'string') return placeholder;
     return formatMessage(placeholder);
 };
 
-const noOp = () => null;
+const noOp = () => {};
 
 const useStyles = makeStyles(styles);
-const OrgUnitTreeviewPicker = ({
+
+const OrgUnitTreeviewPicker: React.FC<Props> = ({
     onClick,
     selectedItems,
     resetSelection,
@@ -105,12 +114,13 @@ const OrgUnitTreeviewPicker = ({
         (multiselect
             ? intl.formatMessage(MESSAGES.selectMultiple)
             : intl.formatMessage(MESSAGES.selectSingle));
-    const makeTruncatedTrees = treesData => {
+    const makeTruncatedTrees = (treesData: any) => {
+        // Type should be adjusted to actual data type
         if (treesData.size === 0)
             return (
                 <div
                     role="button"
-                    tabIndex="0"
+                    tabIndex={0}
                     onClick={disabled ? noOp : onClick}
                     className={placeholderStyle}
                 >
@@ -118,7 +128,8 @@ const OrgUnitTreeviewPicker = ({
                 </div>
             );
         const treeviews = [];
-        treesData.forEach((value, key) => {
+        treesData.forEach((value: any, key: any) => {
+            // Types should be adjusted to actual data types
             const treeview = (
                 <TruncatedTreeview
                     onClick={disabled ? noOp : onClick}
@@ -126,7 +137,7 @@ const OrgUnitTreeviewPicker = ({
                     key={`TruncatedTree${key.toString()}`}
                     label={label}
                     disabled={disabled}
-                    redirect={id =>
+                    redirect={(id: string) =>
                         disabled
                             ? null
                             : window.open(
@@ -196,30 +207,6 @@ const OrgUnitTreeviewPicker = ({
             </FormControl>
         </Box>
     );
-};
-
-OrgUnitTreeviewPicker.propTypes = {
-    onClick: func.isRequired,
-    // map with other maps as values: {id:{id:name}}
-    selectedItems: any,
-    resetSelection: func,
-    multiselect: bool,
-    placeholder: oneOfType([object, string]),
-    required: bool,
-    disabled: bool,
-    label: func.isRequired,
-    clearable: bool,
-    errors: arrayOf(string),
-};
-OrgUnitTreeviewPicker.defaultProps = {
-    selectedItems: [],
-    resetSelection: null,
-    multiselect: false,
-    placeholder: null,
-    required: false,
-    disabled: false,
-    clearable: true,
-    errors: [],
 };
 
 export { OrgUnitTreeviewPicker };

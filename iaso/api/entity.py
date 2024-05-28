@@ -234,14 +234,10 @@ class EntityViewSet(ModelViewSet):
         queryset = Entity.objects.filter(account=self.request.user.iaso_profile.account)
 
         queryset = queryset.prefetch_related(
-            "attributes",
-            "attributes__created_by",
             "attributes__created_by__teams",
             "attributes__form",
-            "attributes__org_unit",
             "attributes__org_unit__org_unit_type",
             "attributes__org_unit__parent",
-            "attributes__org_unit__version",
             "attributes__org_unit__version__data_source",
             "entity_type",
         )

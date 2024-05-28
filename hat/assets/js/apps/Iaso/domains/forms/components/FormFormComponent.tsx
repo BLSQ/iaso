@@ -2,8 +2,11 @@
 import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { Box, Grid, Theme, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useSafeIntl, LinkWithLocation } from 'bluesquare-components';
-
+import {
+    useSafeIntl,
+    LinkWithLocation,
+    ExternalLink,
+} from 'bluesquare-components';
 import { FormatListBulleted, History } from '@mui/icons-material';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import InputComponent from '../../../components/forms/InputComponent';
@@ -63,10 +66,8 @@ const FormForm: FunctionComponent<FormFormProps> = ({
 }) => {
     const classes = useStyles();
     const [displayPeriods, setDisplayPeriods] = useState<boolean>();
-
     const { formatMessage } = useSafeIntl();
     const [showAdvancedSettings, setshowAdvancedSettings] = useState(false);
-
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
     const { data: allOrgUnitTypes, isFetching: isOuTypeLoading } =
@@ -393,13 +394,12 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                         </Grid>
                     </DisplayIfUserHasPerm>
                     <Grid item>
-                        <LinkWithLocation
-                            to={logsUrl}
-                            className={classes.linkWithIcon}
-                        >
-                            <History />
-                            {formatMessage(MESSAGES.formChangeLog)}
-                        </LinkWithLocation>
+                        <ExternalLink url={logsUrl}>
+                            <Typography className={classes.linkWithIcon}>
+                                <History />
+                                {formatMessage(MESSAGES.formChangeLog)}
+                            </Typography>
+                        </ExternalLink>
                     </Grid>
                 </Grid>
             )}

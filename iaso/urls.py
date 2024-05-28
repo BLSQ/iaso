@@ -45,7 +45,8 @@ from .api.enketo import (
     enketo_public_launch,
     enketo_public_create_url,
 )
-from .api.entity import EntityViewSet, EntityTypeViewSet
+from .api.entity import EntityViewSet
+from .api.entity_types import EntityTypeViewSet
 from .api.export_requests import ExportRequestsViewSet
 from .api.feature_flags import FeatureFlagViewSet
 from .api.form_attachments import FormAttachmentsViewSet

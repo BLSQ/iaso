@@ -7,7 +7,7 @@ from typing import Any, List, Union
 
 import xlsxwriter  # type: ignore
 from django.core.paginator import Paginator
-from django.db.models import Count, Exists, Max, OuterRef, Q
+from django.db.models import Exists, Max, OuterRef, Q
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
@@ -25,35 +25,9 @@ from iaso.api.common import (
     DeletionFilterBackend,
     HasPermission,
     ModelViewSet,
-    TimestampField,
 )
 from iaso.models import Entity, EntityType, Instance, OrgUnit
 from iaso.models.deduplication import ValidationStatus
-
-
-class EntityTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = EntityType
-        fields = [
-            "id",
-            "name",
-            "created_at",
-            "updated_at",
-            "reference_form",
-            "entities_count",
-            "account",
-            "fields_detail_info_view",
-            "fields_list_view",
-            "fields_duplicate_search",
-        ]
-
-    created_at = TimestampField(read_only=True)
-    updated_at = TimestampField(read_only=True)
-    entities_count = serializers.SerializerMethodField()
-
-    @staticmethod
-    def get_entities_count(obj: EntityType):
-        return Entity.objects.filter(entity_type=obj.id).count()
 
 
 class EntitySerializer(serializers.ModelSerializer):
@@ -99,89 +73,14 @@ class EntitySerializer(serializers.ModelSerializer):
         return submitter
 
     def get_duplicates(self, entity: Entity):
-        return get_duplicates(entity)
+        return _get_duplicates(entity)
 
     @staticmethod
     def get_entity_type_name(obj: Entity):
         return obj.entity_type.name if obj.entity_type else None
 
 
-class EntityTypeViewSet(ModelViewSet):
-    """Entity Type API
-    /api/entitytypes
-    /api/mobile/entitytypes
-    /api/mobile/entitytype [Deprecated] will be removed in the future
-    """
-
-    results_key = "types"
-    remove_results_key_if_paginated = True
-    filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
-
-    def get_serializer_class(self):
-        return EntityTypeSerializer
-
-    def get_queryset(self):
-        search = self.request.query_params.get("search", None)
-        queryset = EntityType.objects.filter(account=self.request.user.iaso_profile.account)
-        if search:
-            queryset = queryset.filter(name__icontains=search)
-        return queryset
-
-    def partial_update(self, request, pk=None):
-        """
-        PATCH /api/entitytypes/{id}/
-        Provides an API to edit an Entity Type
-        Needs iaso_entity_type_write permission
-        """
-
-        if not request.user.has_perm(permission.ENTITY_TYPE_WRITE):
-            return Response(status=status.HTTP_403_FORBIDDEN)
-
-        name = request.data.get("name", None)
-        if name is None:
-            raise serializers.ValidationError({"name": "This field is required"})
-        try:
-            entity_type = EntityType.objects.get(pk=pk)
-            entity_type.name = name
-            entity_type.fields_duplicate_search = request.data.get("fields_duplicate_search", None)
-            entity_type.fields_list_view = request.data.get("fields_list_view", None)
-            entity_type.fields_detail_info_view = request.data.get("fields_detail_info_view", None)
-            entity_type.save()
-            return Response(entity_type.as_dict())
-        except:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-    def create(self, request, pk=None):
-        """
-        POST /api/entitytypes/
-        Provides an API to create an Entity Type
-        Needs iaso_entity_type_write permission
-        """
-
-        if not request.user.has_perm(permission.ENTITY_TYPE_WRITE):
-            return Response(status=status.HTTP_403_FORBIDDEN)
-        entity_type_serializer = EntityTypeSerializer(data=request.data, context={"request": request})
-        entity_type_serializer.is_valid(raise_exception=True)
-        entity_type = entity_type_serializer.save()
-        return Response(entity_type.as_dict(), status=status.HTTP_201_CREATED)
-
-    def destroy(self, request, pk=None, *args, **kwargs):
-        """
-        DELETE /api/entitytypes/{id}/
-        Provides an API to delete the an entity type
-        Needs iaso_entity_type_write permission
-        """
-        if not request.user.has_perm(permission.ENTITY_TYPE_WRITE):
-            return Response(status=status.HTTP_403_FORBIDDEN)
-
-        obj = get_object_or_404(pk=pk)
-
-        obj.delete()
-
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-def get_duplicates(entity):
+def _get_duplicates(entity):
     results = []
     e1qs = entity.duplicates1.filter(validation_status=ValidationStatus.PENDING)
     e2qs = entity.duplicates2.filter(validation_status=ValidationStatus.PENDING)
@@ -394,7 +293,7 @@ class EntityViewSet(ModelViewSet):
             duplicates = []
             # invokes many SQL queries and not needed for map display
             if not as_location and not is_export:
-                duplicates = get_duplicates(entity)
+                duplicates = _get_duplicates(entity)
             result = {
                 "id": entity.id,
                 "uuid": entity.uuid,

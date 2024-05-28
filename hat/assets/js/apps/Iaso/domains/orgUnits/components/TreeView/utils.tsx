@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactElement } from 'react';
 import { OrgUnit } from '../../types/orgUnit';
 import { getOrgUnitAncestors } from '../../utils';
 import OrgUnitTooltip from '../OrgUnitTooltip';
@@ -26,10 +26,7 @@ export const formatInitialSelectedParents = (
     }
     return parents;
 };
-export const tooltip = (
-    orgUnit: OrgUnit,
-    icon: React.ReactElement,
-): React.ReactElement => (
+export const tooltip = (orgUnit: OrgUnit, icon: ReactElement): ReactElement => (
     <OrgUnitTooltip orgUnit={orgUnit} enterDelay={0} enterNextDelay={0}>
         {icon}
     </OrgUnitTooltip>

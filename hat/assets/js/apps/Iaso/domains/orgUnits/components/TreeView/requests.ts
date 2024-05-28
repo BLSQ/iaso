@@ -4,14 +4,24 @@ import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
 import { dispatch } from '../../../../redux/store';
-import { OrgUnit } from '../../types/orgUnit';
+import { OrgUnit, OrgUnitStatus } from '../../types/orgUnit';
+
+const getValidationStatus = (validationStatus: OrgUnitStatus[]): string => {
+    let validationStatusString = '';
+    validationStatus.forEach(status => {
+        validationStatusString += `&validation_status=${status}`;
+    });
+    return validationStatusString;
+};
 
 export const getChildrenData = (
     id: string,
-    validationStatus = 'all',
+    validationStatus: OrgUnitStatus[],
 ): Promise<OrgUnit> => {
     return getRequest(
-        `/api/orgunits/tree/?&parent_id=${id}&validation_status=${validationStatus}&ignoreEmptyNames=true`,
+        `/api/orgunits/tree/?&parent_id=${id}&ignoreEmptyNames=true${getValidationStatus(
+            validationStatus,
+        )}`,
     )
         .then(response => {
             return response.map((orgUnit: any) => {
@@ -37,21 +47,22 @@ export const getChildrenData = (
 const makeUrl = (
     id?: string | number,
     type?: string,
-    validationStatus = 'all',
+    validationStatus: OrgUnitStatus[] = ['VALID'],
 ) => {
+    const validationStatusString = getValidationStatus(validationStatus);
     if (id) {
         if (type === 'version')
-            return `/api/orgunits/tree/?&version=${id}&validation_status=${validationStatus}&ignoreEmptyNames=true`;
+            return `/api/orgunits/tree/?&version=${id}&ignoreEmptyNames=true${validationStatusString}`;
         if (type === 'source')
-            return `/api/orgunits/tree/?&source=${id}&validation_status=${validationStatus}&ignoreEmptyNames=true`;
+            return `/api/orgunits/tree/?&source=${id}&ignoreEmptyNames=true${validationStatusString}`;
     }
-    return `/api/orgunits/tree/?&defaultVersion=true&validation_status=${validationStatus}&ignoreEmptyNames=true`;
+    return `/api/orgunits/tree/?&defaultVersion=true&ignoreEmptyNames=true${validationStatusString}`;
 };
 
 export const getRootData = (
     id?: string | number,
     type = 'source',
-    validationStatus = 'all',
+    validationStatus: OrgUnitStatus[] = ['VALID'],
 ): Promise<OrgUnit[]> => {
     return getRequest(makeUrl(id, type, validationStatus))
         .then(response => {
@@ -73,17 +84,18 @@ export const getRootData = (
 const endpoint = '/api/orgunits/tree/search';
 const search = (
     input1: string,
-    validationStatus = 'all',
+    validationStatus: OrgUnitStatus[] = ['VALID'],
     input2?: string | number,
     type?: string,
 ) => {
+    const validationStatusString = getValidationStatus(validationStatus);
     switch (type) {
         case 'source':
-            return `search=${input1}&validation_status=${validationStatus}&source=${input2}`;
+            return `search=${input1}&source=${input2}${validationStatusString}`;
         case 'version':
-            return `search=${input1}&validation_status=${validationStatus}&version=${input2}`;
+            return `search=${input1}&version=${input2}${validationStatusString}`;
         default:
-            return `search=${input1}&validation_status=${validationStatus}&defaultVersion=true`;
+            return `search=${input1}&defaultVersion=true${validationStatusString}`;
     }
 };
 const sortingAndPaging = (resultsCount: number) =>
@@ -94,13 +106,13 @@ const makeSearchUrl = ({
     count,
     source,
     version,
-    validationStatus = 'all',
+    validationStatus = ['VALID'],
 }: {
     value: string;
     count: number;
     source?: string | number;
     version?: string | number;
-    validationStatus?: string;
+    validationStatus?: OrgUnitStatus[];
 }) => {
     if (source) {
         return `${endpoint}?${search(
@@ -128,13 +140,13 @@ export const searchOrgUnits = ({
     count,
     source,
     version,
-    validationStatus = 'all',
+    validationStatus = ['VALID'],
 }: {
     value: string;
     count: number;
     source?: string | number;
     version?: string | number;
-    validationStatus?: string;
+    validationStatus?: OrgUnitStatus[];
 }): Promise<OrgUnit[]> => {
     const url = makeSearchUrl({
         value,

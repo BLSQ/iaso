@@ -24,6 +24,7 @@ import { MESSAGES } from './messages';
 
 export type Settings = {
     displayTypes: boolean;
+    displayValid: boolean;
     displayRejected: boolean;
     displayNew: boolean;
 };
@@ -44,7 +45,12 @@ const styles: SxStyles = {
     },
 };
 
-const settingKeys: string[] = ['displayTypes', 'displayRejected', 'displayNew'];
+const settingKeys: string[] = [
+    'displayTypes',
+    'displayValid',
+    'displayRejected',
+    'displayNew',
+];
 
 type Props = {
     settings: Settings;

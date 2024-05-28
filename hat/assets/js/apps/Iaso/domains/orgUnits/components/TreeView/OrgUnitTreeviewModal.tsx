@@ -9,11 +9,12 @@ import React, {
     FunctionComponent,
     useCallback,
     useEffect,
+    useMemo,
     useRef,
     useState,
 } from 'react';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
-import { OrgUnit } from '../../types/orgUnit';
+import { OrgUnit, OrgUnitStatus } from '../../types/orgUnit';
 import { getOrgUnitAncestors } from '../../utils';
 import { OrgUnitLabel } from '../OrgUnitLabel';
 import { OrgUnitTreeviewPicker } from './OrgUnitTreeviewPicker';
@@ -72,7 +73,9 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
     const theme = useTheme();
     const [settings, setSettings] = useState({
         displayTypes: true,
-        displayRejected: false,
+        // those three need to be prefilled with source config
+        displayValid: false,
+        displayRejected: true,
         displayNew: false,
     });
 
@@ -144,11 +147,16 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
         [selectedOrgUnitsIdsCopy, selectedOrgUnitParentsCopy],
     );
 
-    const { displayTypes, displayRejected, displayNew } = settings;
+    const { displayTypes, displayValid, displayRejected, displayNew } =
+        settings;
 
-    const validationStatus = `VALID${displayRejected ? ',REJECTED' : ''}${
-        displayNew ? ',NEW' : ''
-    }`;
+    const validationStatus = useMemo(() => {
+        return [
+            ...(displayValid ? ['VALID'] : []),
+            ...(displayRejected ? ['REJECTED'] : []),
+            ...(displayNew ? ['NEW'] : []),
+        ] as OrgUnitStatus[];
+    }, [displayValid, displayRejected, displayNew]);
 
     const getRootDataWithSource = useCallback(async () => {
         if (version) return getRootData(version, 'version', validationStatus);

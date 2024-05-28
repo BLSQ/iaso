@@ -792,12 +792,16 @@ class EntityAPITestCase(APITestCase):
         entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1, account=self.star_wars)
 
         # Village 1 (district 1): instance + entity
-        instance = Instance.objects.create(org_unit=village_1, form=self.form_1, period="202002")
-        Entity.objects.create(entity_type=entity_type, attributes=instance, account=self.star_wars)
+        instance_1 = Instance.objects.create(org_unit=village_1, form=self.form_1, period="202002")
+        entity = Entity.objects.create(entity_type=entity_type, attributes=instance_1, account=self.star_wars)
+        instance_1.entity = entity
+        instance_1.save()
 
         # Village 2 (district 2): instance + entity
-        second_instance = Instance.objects.create(org_unit=village_2, form=self.form_1, period="202002")
-        Entity.objects.create(entity_type=entity_type, attributes=second_instance, account=self.star_wars)
+        instance_2 = Instance.objects.create(org_unit=village_2, form=self.form_1, period="202002")
+        entity_2 = Entity.objects.create(entity_type=entity_type, attributes=instance_2, account=self.star_wars)
+        instance_2.entity = entity_2
+        instance_2.save()
 
         response = self.client.get("/api/entities/", format="json")
 

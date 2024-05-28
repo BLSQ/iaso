@@ -21,7 +21,7 @@ import { merge } from 'lodash';
 
 import {
     BackdropClickModal,
-    IconButton as IconButtonComponent,
+    IconButton,
     LoadingSpinner,
     useSafeIntl,
 } from 'bluesquare-components';
@@ -191,7 +191,7 @@ const CreateEditDialog: FunctionComponent<Props> = ({
                             className={classes.historyLink}
                         >
                             <Box pr={4} alignItems="center">
-                                <IconButtonComponent
+                                <IconButton
                                     url={`/${baseUrls.campaignHistory}/campaignId/${selectedCampaign?.id}`}
                                     icon="history"
                                     tooltipMessage={MESSAGES.campaignHistory}

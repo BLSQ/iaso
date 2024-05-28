@@ -105,5 +105,5 @@ export const useNotificationsTableColumns = (
                 },
             },
         ];
-    }, [formatMessage]);
+    }, [formatMessage, notificationsMetaData]);
 };

@@ -10,7 +10,7 @@ import {
 } from '../../../../../test/utils/redux';
 import { mockRequest } from '../../../../../test/utils/requests';
 import ProtectedRoute from './ProtectedRoute';
-import { redirectTo as redirectToAction } from '../../../routing/actions';
+import { redirectTo as redirectToAction } from '../../../routing/actions.ts';
 import SidebarMenu from '../../app/components/SidebarMenuComponent';
 import * as Permission from '../../../utils/permissions.ts';
 

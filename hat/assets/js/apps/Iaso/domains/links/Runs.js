@@ -6,8 +6,6 @@ import { Button, Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import Autorenew from '@mui/icons-material/Autorenew';
 
-import PropTypes from 'prop-types';
-
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import {
     fetchAlgorithmRuns,
@@ -15,10 +13,8 @@ import {
     runAlgorithm,
 } from '../../utils/requests';
 
-import { redirectTo } from '../../routing/actions.ts';
 import TopBar from '../../components/nav/TopBarComponent';
-
-import { runsTableColumns } from './config';
+import { useRunsTableColumns } from './config';
 
 import SingleTable, {
     useSingleTableParams,
@@ -30,6 +26,7 @@ import { runsFilters } from '../../constants/filters';
 import { baseUrls } from '../../constants/urls';
 import { useRunsFiltersData } from './hooks';
 
+import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
 import MESSAGES from './messages';
 
 const baseUrl = baseUrls.algos;
@@ -38,10 +35,11 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-const Runs = ({ params }) => {
+const Runs = () => {
+    const params = useParamsObject(baseUrl);
     const classes = useStyles();
     const dispatch = useDispatch();
-    const intl = useSafeIntl();
+    const { formatMessage } = useSafeIntl();
 
     const algorithms = useSelector(state => state.links.algorithmsList);
     const profiles = useSelector(state => state.users.list);
@@ -60,15 +58,6 @@ const Runs = ({ params }) => {
         setFetchingAlgorithms,
     );
 
-    const onSelectRunLinks = runItem => {
-        dispatch(
-            redirectTo(baseUrls.links, {
-                algorithmRunId: runItem.id,
-                searchActive: true,
-            }),
-        );
-    };
-
     const onRefresh = () => {
         setForceRefresh(true);
     };
@@ -86,9 +75,7 @@ const Runs = ({ params }) => {
         setTimeout(() => onRefresh(), 500);
     };
 
-    const [tableColumns] = useState(
-        runsTableColumns(intl.formatMessage, onSelectRunLinks, deleteRuns),
-    );
+    const tableColumns = useRunsTableColumns(deleteRuns);
 
     let currentOrigin;
     if (params.origin && sources) {
@@ -103,7 +90,7 @@ const Runs = ({ params }) => {
     const apiParams = useSingleTableParams(params);
     return (
         <>
-            <TopBar title={intl.formatMessage(MESSAGES.runsTitle)} />
+            <TopBar title={formatMessage(MESSAGES.runsTitle)} />
             <SingleTable
                 baseUrl={baseUrl}
                 endPointPath="algorithmsruns"
@@ -120,7 +107,7 @@ const Runs = ({ params }) => {
                 toggleActiveSearch
                 columns={tableColumns}
                 filters={runsFilters({
-                    formatMessage: intl.formatMessage,
+                    formatMessage,
                     algorithms,
                     profiles,
                     sources,
@@ -152,10 +139,6 @@ const Runs = ({ params }) => {
             />
         </>
     );
-};
-
-Runs.propTypes = {
-    params: PropTypes.object.isRequired,
 };
 
 export default Runs;

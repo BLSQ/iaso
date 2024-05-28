@@ -1,5 +1,4 @@
 import React, { ReactElement, useMemo } from 'react';
-import { Link } from 'react-router';
 import { useSafeIntl, IconButton, Column } from 'bluesquare-components';
 import GetAppIcon from '@mui/icons-material/GetApp';
 
@@ -41,13 +40,12 @@ export const useGetColumns = (params, count): Column[] => {
                 Cell: (settings: any): ReactElement => {
                     return (
                         <>
-                            <Link href={settings.row.original.file} download>
-                                <IconButton
-                                    onClick={() => null}
-                                    tooltipMessage={MESSAGES.download}
-                                    overrideIcon={GetAppIcon}
-                                />
-                            </Link>
+                            <IconButton
+                                tooltipMessage={MESSAGES.download}
+                                overrideIcon={GetAppIcon}
+                                url={settings.row.original.file}
+                                download
+                            />
                             <DeleteDialog
                                 titleMessage={{
                                     ...MESSAGES.deleteAttachment,

@@ -51,25 +51,11 @@ import {
 import { PluginsContext } from '../utils';
 import { useGetBeneficiaryTypesDropdown } from '../domains/entities/hooks/requests';
 import { DropdownOptions } from '../types/utils';
-import { Plugins } from '../domains/app/types';
+import { MenuItem, MenuItems, Plugins } from '../domains/app/types';
 import { useGetOrgunitsExtraPath } from '../domains/home/hooks/useGetOrgunitsExtraPath';
 import { CHANGE_REQUEST } from './urls';
 
-type MenuItem = {
-    label: string;
-    permissions?: string[];
-    key?: string;
-    mapKey?: string;
-    // eslint-disable-next-line no-unused-vars
-    icon?: (props: Record<string, any>) => ReactNode;
-    subMenu?: MenuItems;
-    extraPath?: string;
-    url?: string;
-    // eslint-disable-next-line no-unused-vars
-    isActive?: (pathname: string) => boolean;
-    dev?: boolean;
-};
-type MenuItems = MenuItem[];
+
 
 // !! remove permission property if the menu has a subMenu !!
 const menuItems = (

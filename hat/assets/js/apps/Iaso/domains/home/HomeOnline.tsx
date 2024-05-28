@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useCallback, useContext } from 'react';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 import { Box, Container, Typography, IconButton, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -161,6 +161,9 @@ export const HomeOnline: FunctionComponent = () => {
                                     className={classes.logoButton}
                                     key={button.label}
                                     to={button.url}
+                                    // setting state to null in anticipation to breadcrumbs implementation
+                                    // It has no impact at the moment
+                                    state={null}
                                 >
                                     {button.Icon}
                                     <span>{button.label}</span>

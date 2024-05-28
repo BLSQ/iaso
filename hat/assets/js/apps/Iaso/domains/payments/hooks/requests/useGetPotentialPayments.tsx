@@ -20,7 +20,7 @@ const getPotentialPayments = (options: PotentialPaymentParams) => {
     } = options;
     const apiParams = {
         order: options.order || 'user__last_name',
-        limit: options.pageSize || 20,
+        limit: options.pageSize || 10,
         page,
         change_requests__created_at_after: formatDateString(
             change_requests__created_at_after,

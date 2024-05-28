@@ -19,9 +19,9 @@ import { withStyles } from '@mui/styles';
 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 
-import { injectIntl, commonStyles } from 'bluesquare-components';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { toggleSidebarMenu } from '../../../redux/sidebarMenuReducer';
 import { SIDEBAR_WIDTH } from '../../../constants/uiConstants.ts';
 
@@ -105,7 +105,6 @@ const SidebarMenu = ({
     isOpen,
     toggleSidebar,
     location,
-    intl,
     activeLocale,
 }) => {
     const onClick = url => {
@@ -115,7 +114,7 @@ const SidebarMenu = ({
         }
     };
     const currentUser = useCurrentUser();
-
+    const intl = useSafeIntl();
     const defaultSourceVersion = getDefaultSourceVersion(currentUser);
     const menuItems = useMenuItems();
     const theme = useTheme();
@@ -124,7 +123,7 @@ const SidebarMenu = ({
     return (
         <Drawer anchor="left" open={isOpen} onClose={toggleSidebar}>
             <div className={classes.toolbar}>
-                <Link className={classes.homeLink} to={baseUrls.home}>
+                <Link className={classes.homeLink} to={`/${baseUrls.home}`}>
                     <Logo />
                 </Link>
                 <IconButton
@@ -233,7 +232,6 @@ SidebarMenu.propTypes = {
     isOpen: PropTypes.bool.isRequired,
     toggleSidebar: PropTypes.func.isRequired,
     location: PropTypes.object.isRequired,
-    intl: PropTypes.object.isRequired,
     activeLocale: PropTypes.object.isRequired,
 };
 
@@ -247,5 +245,5 @@ const MapDispatchToProps = dispatch => ({
 });
 
 export default withStyles(styles)(
-    connect(MapStateToProps, MapDispatchToProps)(injectIntl(SidebarMenu)),
+    connect(MapStateToProps, MapDispatchToProps)(SidebarMenu),
 );

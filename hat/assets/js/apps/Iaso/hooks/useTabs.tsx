@@ -5,8 +5,7 @@ import {
     useMemo,
     useState,
 } from 'react';
-import { useDispatch } from 'react-redux';
-import { redirectToReplace } from '../routing/actions';
+import { useRedirectToReplace } from 'bluesquare-components';
 import { Optional } from '../types/utils';
 
 type UseTabsParams<T> = {
@@ -28,7 +27,7 @@ export const useTabs = <T,>({
     defaultTab,
     baseUrl,
 }: UseTabsParams<T>): UseTabsValue<T> => {
-    const dispatch = useDispatch();
+    const redirectToReplace = useRedirectToReplace();
     const [tab, setTab] = useState<T>(defaultTab);
 
     const handleChangeTab = useCallback(
@@ -37,10 +36,10 @@ export const useTabs = <T,>({
                 ...params,
                 tab: newTab,
             };
-            dispatch(redirectToReplace(baseUrl, newParams));
+            redirectToReplace(baseUrl, newParams);
             setTab(newTab);
         },
-        [params, dispatch, baseUrl],
+        [params, redirectToReplace, baseUrl],
     );
     return useMemo(
         () => ({ tab, setTab, handleChangeTab }),

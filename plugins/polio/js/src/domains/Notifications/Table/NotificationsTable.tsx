@@ -1,16 +1,13 @@
 import React, { FunctionComponent } from 'react';
-
 import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
-import { handleTableDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/utils/table';
-
 import {
     ApiNotificationsParams,
     NotificationsMetaData,
     NotificationsParams,
 } from '../types';
-import { NOTIFICATIONS_BASE_URL } from '../../../constants/routes';
 import { useGetNotifications } from '../hooks/api';
 import { useNotificationsTableColumns } from './useNotificationsTableColumns';
+import { baseUrls } from '../../../constants/urls';
 
 type Props = {
     params: NotificationsParams;
@@ -31,13 +28,12 @@ export const NotificationsTable: FunctionComponent<Props> = ({
     const columns = useNotificationsTableColumns(notificationsMetaData);
     return (
         <TableWithDeepLink
-            baseUrl={NOTIFICATIONS_BASE_URL}
+            baseUrl={baseUrls.notification}
             data={data?.results ?? []}
             pages={data?.pages ?? 1}
             columns={columns}
             count={data?.count ?? 0}
             params={params}
-            onTableParamsChange={handleTableDeepLink(NOTIFICATIONS_BASE_URL)}
             extraProps={{ loading: isFetching }}
             columnSelectorEnabled
             columnSelectorButtonType="button"

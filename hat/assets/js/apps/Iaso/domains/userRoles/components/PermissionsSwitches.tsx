@@ -1,23 +1,31 @@
 import React, { useCallback, useMemo } from 'react';
-import { Box, FormControlLabel, Switch, Tooltip, Grid } from '@mui/material';
+import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 // @ts-ignore
-import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
-
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import { useSafeIntl, LoadingSpinner, Table } from 'bluesquare-components';
 import MESSAGES from '../messages';
 import { useSnackQuery } from '../../../libs/apiHooks';
 import { getRequest } from '../../../libs/Api';
 import { Permission } from '../types/userRoles';
 import PERMISSIONS_MESSAGES from '../../users/permissionsMessages';
+import { useUserPermissionColumns } from '../config';
+import PERMISSIONS_GROUPS_MESSAGES from '../../users/permissionsGroupsMessages';
 
 const styles = theme => ({
     container: {
+        '& .MuiTableHead-root': {
+            position: 'sticky',
+            top: 0,
+            zIndex: 10,
+        },
+        '& .MuiTableContainer-root': {
+            maxHeight: '58vh',
+            overflow: 'auto',
+            border: `1px solid ${theme.palette.border.main}`,
+        },
         marginTop: theme.spacing(2),
-        padding: theme.spacing(1),
         maxHeight: '60vh',
         overflow: 'scroll',
-        border: `1px solid ${theme.palette.border.main}`,
     },
 });
 
@@ -29,6 +37,13 @@ type Props = {
     handleChange: (newValue: any) => void;
 };
 
+type Row = {
+    name?: string;
+    codename?: string;
+    group?: boolean;
+    id?: number;
+};
+
 export const PermissionsSwitches: React.FunctionComponent<Props> = ({
     userRolePermissions,
     handleChange,
@@ -36,109 +51,93 @@ export const PermissionsSwitches: React.FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const { data, isLoading } = useSnackQuery<{ permissions: Permission[] }>(
-        ['permissions'],
-        () => getRequest('/api/permissions/'),
+        ['grouped_permissions'],
+        () => getRequest('/api/permissions/grouped_permissions/'),
         MESSAGES.fetchPermissionsError,
     );
 
     const setPermissions = useCallback(
         (permission: Permission, isChecked: boolean) => {
-            const newUserPerms = [...userRolePermissions];
+            const newUserRolePerms = [...userRolePermissions];
             if (!isChecked) {
-                const permIndex = newUserPerms.findIndex(item => {
+                const permIndex = newUserRolePerms.findIndex(item => {
                     return item.codename === permission.codename;
                 });
-                newUserPerms.splice(permIndex, 1);
+                newUserRolePerms.splice(permIndex, 1);
             } else {
-                newUserPerms.push(permission);
+                newUserRolePerms.push({
+                    id: permission.id,
+                    codename: permission.codename,
+                    name: permission.name,
+                });
             }
-            handleChange(newUserPerms);
+            handleChange(newUserRolePerms);
         },
         [handleChange, userRolePermissions],
     );
 
-    const getPermissionLabel = permissionCodeName => {
-        return PERMISSIONS_MESSAGES[permissionCodeName]
-            ? formatMessage(PERMISSIONS_MESSAGES[permissionCodeName])
-            : permissionCodeName;
-    };
+    const groupPermissionLabel = useCallback(
+        groupName => {
+            return PERMISSIONS_GROUPS_MESSAGES[groupName]
+                ? formatMessage(PERMISSIONS_GROUPS_MESSAGES[groupName])
+                : groupName;
+        },
+        [formatMessage],
+    );
 
-    const getPermissionToolTip = permissionCodeName => {
-        let title;
-        const toolTipMessageObject =
-            PERMISSIONS_MESSAGES[`${permissionCodeName}_tooltip`];
-        if (toolTipMessageObject) {
-            title = formatMessage(toolTipMessageObject);
-        }
-        if (title) {
-            return (
-                <Tooltip
-                    title={title}
-                    disableInteractive={false}
-                    leaveDelay={500}
-                    placement="right-start"
-                    arrow
-                >
-                    <HelpOutlineIcon color="primary" />
-                </Tooltip>
-            );
-        }
-        return '';
-    };
-    const permissions = useMemo(
+    const permissions_groups = useMemo(
         () => data?.permissions ?? [],
         [data?.permissions],
+    );
+
+    const getPermissionLabel = useCallback(
+        permissionCodeName => {
+            return PERMISSIONS_MESSAGES[permissionCodeName]
+                ? formatMessage(PERMISSIONS_MESSAGES[permissionCodeName])
+                : permissionCodeName;
+        },
+        [formatMessage],
+    );
+
+    const permissions: Row[] = useMemo(() => {
+        const grouped_permissions: Row[] = [];
+        Object.keys(permissions_groups).forEach(group => {
+            let row: Row = {};
+            row.codename = groupPermissionLabel(group);
+            row.group = true;
+            grouped_permissions.push(row);
+            permissions_groups[group].forEach(permission => {
+                row = {};
+                row.id = permission.id;
+                row.codename = permission.codename;
+                row.name = getPermissionLabel(permission.codename);
+                grouped_permissions.push(row);
+            });
+        });
+        return grouped_permissions;
+    }, [getPermissionLabel, groupPermissionLabel, permissions_groups]);
+
+    const columns = useUserPermissionColumns(
+        setPermissions,
+        userRolePermissions,
     );
 
     return (
         <Box className={classes.container}>
             {isLoading && <LoadingSpinner />}
-
-            {permissions
-                .sort((a, b) =>
-                    getPermissionLabel(a.codename).localeCompare(
-                        getPermissionLabel(b.codename),
-                        undefined,
-                        {
-                            sensitivity: 'accent',
-                        },
-                    ),
-                )
-                .map(p => (
-                    <Grid container direction="row" spacing={2} key={p.id}>
-                        <Grid item xs={8}>
-                            <div>
-                                <FormControlLabel
-                                    control={
-                                        <Switch
-                                            className="permission-checkbox"
-                                            id={`permission-checkbox-${p.codename}`}
-                                            checked={Boolean(
-                                                userRolePermissions.find(
-                                                    up =>
-                                                        up.codename ===
-                                                        p.codename,
-                                                ),
-                                            )}
-                                            onChange={e =>
-                                                setPermissions(
-                                                    p,
-                                                    e.target.checked,
-                                                )
-                                            }
-                                            name={p.codename}
-                                            color="primary"
-                                        />
-                                    }
-                                    label={getPermissionLabel(p.codename)}
-                                />
-                            </div>
-                        </Grid>
-                        <Grid item xs={2}>
-                            {getPermissionToolTip(p.codename)}
-                        </Grid>
-                    </Grid>
-                ))}
+            {/* @ts-ignore */}
+            <Table
+                columns={columns}
+                data={permissions}
+                showPagination={false}
+                countOnTop={false}
+                marginTop={false}
+                marginBottom={false}
+                extraProps={{
+                    columns,
+                }}
+                elevation={0}
+            />
         </Box>
     );
 };

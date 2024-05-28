@@ -1,10 +1,18 @@
-import { Router } from '../../types/general';
-import { genUrl } from '../../routing/routing';
+import { useCallback } from 'react';
+import { useGenUrl } from '../../routing/routing';
 
-export const usetGetParentPageUrl = (router: Router) => {
-    return (parentOrgUnitId?: number | string): string =>
-        genUrl(router, {
-            parentId: parentOrgUnitId ? `${parentOrgUnitId}` : undefined,
-            page: null,
-        });
+// eslint-disable-next-line no-unused-vars
+type GetParentPageUrl = (parentOrgUnitId?: number | string) => string;
+
+export const useGetParentPageUrl = (): GetParentPageUrl => {
+    const genUrl = useGenUrl();
+    return useCallback(
+        (parentOrgUnitId?: number | string): string => {
+            return genUrl({
+                parentId: parentOrgUnitId ? `${parentOrgUnitId}` : undefined,
+                page: null,
+            });
+        },
+        [genUrl],
+    );
 };

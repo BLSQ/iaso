@@ -1,6 +1,6 @@
 import { Box, Divider, Grid, Paper } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import { commonStyles, useSafeIntl, useGoBack } from 'bluesquare-components';
 import classnames from 'classnames';
 import React, {
     FunctionComponent,
@@ -9,14 +9,12 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { useDispatch } from 'react-redux';
 import { isEqual } from 'lodash';
 import TopBar from '../../../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../../../constants/urls';
 import { useArrayState } from '../../../../hooks/useArrayState';
 import { useObjectState } from '../../../../hooks/useObjectState';
-import { redirectTo } from '../../../../routing/actions';
 import { useDuplicationDetailsColumns } from './hooks/useDuplicationDetailsColumns';
 import {
     useGetDuplicateDetails,
@@ -26,10 +24,9 @@ import MESSAGES from '../messages';
 import { DuplicateInfos } from './DuplicateInfos';
 import { useDuplicateInfos } from './hooks/useDuplicateInfos';
 import { DuplicateData, DuplicateEntityForTable } from '../types';
-import { useGoBack } from '../../../../routing/useGoBack';
-import { Router } from '../../../../types/general';
 import { DuplicateDetailsTableButtons } from './DuplicateDetailsTableButtons';
 import { SubmissionsForEntity } from './submissions/SubmissionsForEntity';
+import { useParamsObject } from '../../../../routing/hooks/useParamsObject';
 
 const updateCellColors =
     (selected: 'entity1' | 'entity2') =>
@@ -58,11 +55,6 @@ const resetCellColors = (
         entity2: { ...row.entity2, status: 'diff' },
         final: { ...row.final, status: 'dropped', value: '' },
     };
-};
-
-type Props = {
-    params: { accountId?: string; entities: string };
-    router: Router;
 };
 
 const useStyles = makeStyles(theme => {
@@ -101,18 +93,18 @@ const useStyles = makeStyles(theme => {
     };
 });
 
-export const DuplicateDetails: FunctionComponent<Props> = ({
-    router,
-    params,
-}) => {
+export const DuplicateDetails: FunctionComponent = () => {
+    const params = useParamsObject(baseUrls.entityDuplicateDetails) as {
+        accountId?: string;
+        entities: string;
+    };
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
     const [tableState, setTableState] = useArrayState([]);
     const [unfilteredTableState, setUnfilteredTableState] = useArrayState([]);
     const [query, setQuery] = useObjectState();
     const [onlyShowUnmatched, setOnlyShowUnmatched] = useState<boolean>(false);
     const classes: Record<string, string> = useStyles();
-    const goBack = useGoBack(router, baseUrls.entityDuplicates);
+    const goBack = useGoBack(baseUrls.entityDuplicates);
     const { data: duplicatesInfos } = useGetDuplicates({
         params: { entities: params.entities },
     }) as { data: { results: DuplicateData[] } };
@@ -122,7 +114,6 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
     const disableMerge = Boolean(
         tableState.find(row => row.final.status === 'dropped'),
     );
-
     const { data: dupDetailData, isFetching } = useGetDuplicateDetails({
         params,
     });
@@ -332,14 +323,6 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
                                 entities,
                                 getRowProps,
                             }}
-                            onTableParamsChange={p =>
-                                dispatch(
-                                    redirectTo(
-                                        baseUrls.entityDuplicateDetails,
-                                        p,
-                                    ),
-                                )
-                            }
                         />
                     </Paper>
                 </Box>

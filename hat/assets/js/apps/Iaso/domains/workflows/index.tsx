@@ -1,42 +1,26 @@
 import React, { FunctionComponent } from 'react';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import { useDispatch } from 'react-redux';
-
-import { useGoBack } from '../../routing/useGoBack';
-
+import { commonStyles, useSafeIntl, useGoBack } from 'bluesquare-components';
 import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { Filters } from './components/Filters';
 import { AddVersionModal } from './components/versions/Modal';
-
 import { useGetWorkflowVersions } from './hooks/requests/useGetWorkflowVersions';
 import { useGetType } from '../entities/entityTypes/hooks/requests/entitiyTypes';
 import { WorkflowsParams } from './types';
-
-import { redirectToReplace } from '../../routing/actions';
-
 import { baseUrls } from '../../constants/urls';
-
-import MESSAGES from './messages';
 import { useGetColumns, defaultSorted, baseUrl } from './config';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import MESSAGES from './messages';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-type Router = {
-    goBack: () => void;
-};
-type Props = {
-    params: WorkflowsParams;
-    router: Router;
-};
-
-export const Workflows: FunctionComponent<Props> = ({ params, router }) => {
-    const dispatch = useDispatch();
-    const goBack = useGoBack(router, baseUrls.entityTypes);
+export const Workflows: FunctionComponent = () => {
+    const params = useParamsObject(baseUrls.workflows) as WorkflowsParams;
+    const goBack = useGoBack(baseUrls.entityTypes);
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetWorkflowVersions(params);
@@ -60,6 +44,7 @@ export const Workflows: FunctionComponent<Props> = ({ params, router }) => {
                         }}
                     />
                 </Box>
+                {/* @ts-ignore */}
                 <TableWithDeepLink
                     baseUrl={baseUrl}
                     data={data?.workflow_versions ?? []}
@@ -68,9 +53,6 @@ export const Workflows: FunctionComponent<Props> = ({ params, router }) => {
                     columns={columns}
                     count={data?.count ?? 0}
                     params={params}
-                    onTableParamsChange={p =>
-                        dispatch(redirectToReplace(baseUrl, p))
-                    }
                     extraProps={{ loading: isFetching }}
                 />
             </Box>

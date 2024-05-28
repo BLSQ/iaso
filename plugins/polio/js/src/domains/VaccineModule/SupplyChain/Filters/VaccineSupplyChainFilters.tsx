@@ -1,8 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@mui/material';
 import { DatePicker, useSafeIntl } from 'bluesquare-components';
+import { baseUrls } from '../../../../constants/urls';
 import { FilterButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
-import { VACCINE_SUPPLY_CHAIN } from '../../../../constants/routes';
 import { useFilterState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import MESSAGES from '../messages';
@@ -18,7 +18,7 @@ export const VaccineSupplyChainFilters: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const { filters, handleSearch, handleChange, filtersUpdated } =
-        useFilterState({ baseUrl: VACCINE_SUPPLY_CHAIN, params });
+        useFilterState({ baseUrl: baseUrls.vaccineSupplyChain, params });
     const { data: countries, isFetching } = useGetCountriesOptions();
     const { data: groupedOrgUnits, isFetching: isFetchingGroupedOrgUnits } =
         useGetGroupDropdown({ blockOfCountries: 'True' });

@@ -13,14 +13,14 @@ class OrgUnitAPITestCase(APITestCase):
     def setUpTestData(cls):
         cls.account = account = m.Account.objects.create(name="Account")
         cls.yoda = cls.create_user_with_profile(
-            username="yoda", account=star_wars, permissions=["iaso_users", "iaso_user_roles"]
+            username="yoda", account=account, permissions=["iaso_users", "iaso_user_roles"]
         )
 
         cls.MODULES = [
             {"name": "Default", "codename": "DEFAULT"},
         ]
-        cls.star_wars.modules = [module["codename"] for module in cls.MODULES]
-        cls.star_wars.save()
+        cls.account.modules = [module["codename"] for module in cls.MODULES]
+        cls.account.save()
 
     def test_permission_list_without_auth(self):
         """GET /permissions/ without auth should result in a 401"""

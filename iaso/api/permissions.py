@@ -35,18 +35,29 @@ class PermissionsViewSet(viewsets.ViewSet):
 
     @action(methods=["GET"], detail=False)
     def grouped_permissions(self, request):
-        perms = self.queryset(request)
-        result = {}
-        for group in PERMISSIONS_PRESENTATION.keys():
-            permissions = perms.filter(codename__in=PERMISSIONS_PRESENTATION[group])
-            if permissions:
-                result[group] = []
-                for permission in permissions:
-                    result[group].append(
-                        {"id": permission.id, "name": _(permission.name), "codename": permission.codename}
-                    )
+        permissions_queryset = self.queryset(request)
+        grouped_permissions = self.get_grouped_permissions(permissions_queryset)
 
-        return Response({"permissions": result})
+        return Response({"permissions": grouped_permissions})
+
+    def get_grouped_permissions(self, permissions_queryset):
+        grouped_permissions = {}
+        for group_name, permission_codenames in PERMISSIONS_PRESENTATION.items():
+            group_permissions = self.get_permissions_for_group(permissions_queryset, permission_codenames)
+            if group_permissions:
+                grouped_permissions[group_name] = group_permissions
+
+        return grouped_permissions
+
+    def get_permissions_for_group(self, permissions_queryset, permission_codenames):
+        filtered_permissions = permissions_queryset.filter(codename__in=permission_codenames)
+        if not filtered_permissions:
+            return None
+
+        return [
+            {"id": permission.id, "name": _(permission.name), "codename": permission.codename}
+            for permission in filtered_permissions
+        ]
 
     def queryset(self, request):
         if request.user.has_perm(p.USERS_ADMIN) or request.user.has_perm(p.USERS_MANAGED):

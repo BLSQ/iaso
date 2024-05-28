@@ -8,7 +8,6 @@ from django.core.files import File
 from iaso import models as m
 from iaso.models import Entity, EntityType, FormVersion, Instance, Project
 from iaso.test import APITestCase
-from iaso.tests.api.workflows.base import var_dump
 
 
 class EntityAPITestCase(APITestCase):
@@ -762,3 +761,47 @@ class EntityAPITestCase(APITestCase):
 
         self.assertEqual(response_entity_instance[0]["id"], instance_app_id.uuid)
         self.assertEqual(response_entity_instance[0]["json"], instance_app_id.json)
+
+    def test_retrieve_entities_user_geo_restrictions(self):
+        version = self.star_wars.default_version
+        province_type = m.OrgUnitType.objects.create(name="Province", short_name="province", depth=1)
+        district_type = m.OrgUnitType.objects.create(name="District", short_name="district", depth=2)
+        village_type = m.OrgUnitType.objects.create(name="Village", short_name="village", depth=3)
+        province = m.OrgUnit.objects.create(name="Province", org_unit_type=province_type, version=version)
+        district_1 = m.OrgUnit.objects.create(
+            name="District 1", org_unit_type=district_type, version=version, parent=province
+        )
+        village_1 = m.OrgUnit.objects.create(
+            name="Village 1", org_unit_type=village_type, version=version, parent=district_1
+        )
+        district_2 = m.OrgUnit.objects.create(
+            name="District 2", org_unit_type=district_type, version=version, parent=province
+        )
+        village_2 = m.OrgUnit.objects.create(
+            name="Village 2", org_unit_type=village_type, version=version, parent=district_2
+        )
+
+        user_manager = self.create_user_with_profile(
+            username="userManager", account=self.star_wars, permissions=["iaso_entities"]
+        )
+        user_manager.iaso_profile.org_units.set([district_1])
+        user_manager.save()
+        user_manager.refresh_from_db()
+        self.client.force_authenticate(user_manager)
+
+        entity_type = EntityType.objects.create(name="Type 1", reference_form=self.form_1, account=self.star_wars)
+
+        # Village 1 (district 1): instance + entity
+        instance = Instance.objects.create(org_unit=village_1, form=self.form_1, period="202002")
+        Entity.objects.create(entity_type=entity_type, attributes=instance, account=self.star_wars)
+
+        # Village 2 (district 2): instance + entity
+        second_instance = Instance.objects.create(org_unit=village_2, form=self.form_1, period="202002")
+        Entity.objects.create(entity_type=entity_type, attributes=second_instance, account=self.star_wars)
+
+        response = self.client.get("/api/entities/", format="json")
+
+        self.assertEqual(response.status_code, 200)
+        json_result = response.json()["result"]
+        self.assertEqual(len(json_result), 1)
+        self.assertEqual(json_result[0]["org_unit"]["name"], village_1.name)

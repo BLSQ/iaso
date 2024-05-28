@@ -39,7 +39,7 @@ class OrgUnitAPITestCase(APITestCase):
         response = self.client.get("/api/permissions/")
         self.assertJSONResponse(response, 200)
         account = self.yoda.iaso_profile.account
-        account_modules = account.modules if account.modules else []
+        account_modules = account.modules
 
         # Get all permissions linked to the modules
         modules_permissions = account_module_permissions(account_modules)

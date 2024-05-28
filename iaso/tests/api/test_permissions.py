@@ -11,7 +11,7 @@ from iaso.utils.module_permissions import account_module_permissions
 class OrgUnitAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.star_wars = star_wars = m.Account.objects.create(name="Star Wars")
+        cls.account = account = m.Account.objects.create(name="Account")
         cls.yoda = cls.create_user_with_profile(
             username="yoda", account=star_wars, permissions=["iaso_users", "iaso_user_roles"]
         )

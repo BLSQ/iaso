@@ -130,7 +130,7 @@ class EntityViewSet(ModelViewSet):
         created_by_id = self.request.query_params.get("created_by_id", None)
         created_by_team_id = self.request.query_params.get("created_by_team_id", None)
 
-        queryset = Entity.objects.filter(account=self.request.user.iaso_profile.account)
+        queryset = Entity.objects.filter_for_user(self.request.user)
 
         queryset = queryset.prefetch_related(
             "attributes__created_by__teams",

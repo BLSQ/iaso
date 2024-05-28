@@ -232,6 +232,43 @@ class RoundQuerySet(models.QuerySet):
         return data
 
 
+def make_group_subactivity_scope():
+    return Group.objects.create(name="hidden subactivityScope")
+
+
+class SubActivityScope(models.Model):
+    "Scope (selection of orgunit) for a SubActivity and vaccines"
+
+    group = models.OneToOneField(
+        Group, on_delete=models.CASCADE, related_name="subactivityScope", default=make_group_subactivity_scope
+    )
+    subactivity = models.ForeignKey("SubActivity", on_delete=models.CASCADE, related_name="scopes")
+
+    vaccine = models.CharField(max_length=5, choices=VACCINES, blank=True)
+
+
+AGE_UNITS = [
+    ("m", "Months"),
+    ("y", "Years"),
+]
+
+
+class SubActivity(models.Model):
+    round = models.ForeignKey("Round", related_name="sub_activities", on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    age_unit = models.CharField(max_length=3, choices=AGE_UNITS, null=True, blank=True)
+    age_min = models.IntegerField(null=True, blank=True)
+    age_max = models.IntegerField(null=True, blank=True)
+    start_date = models.DateField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "subactivities"
+
+    def __str__(self):
+        return self.name
+
+
 class Round(models.Model):
     class Meta:
         ordering = ["number", "started_at"]

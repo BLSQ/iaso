@@ -1,6 +1,7 @@
 import { makeStyles } from '@mui/styles';
 import {
-    IconButton as IconButtonComponent,
+    IconButtonBuiltInIcon,
+    IconButton,
     IntlMessage,
     LinkWithLocation,
     textPlaceholder,
@@ -11,25 +12,7 @@ import React, { FunctionComponent } from 'react';
 
 import MESSAGES from './messages';
 
-export type IconVariant =
-    | 'delete'
-    | 'filter-list'
-    | 'call-merge'
-    | 'remove-red-eye'
-    | 'restore-from-trash'
-    | 'edit'
-    | 'history'
-    | 'map'
-    | 'xml'
-    | 'dhis'
-    | 'orgUnit'
-    | 'refresh'
-    | 'stop'
-    | 'xls'
-    | 'download'
-    | 'globe'
-    | 'clear'
-    | 'clearAll';
+export type IconVariant = IconButtonBuiltInIcon;
 
 type Props = {
     condition: boolean;
@@ -72,7 +55,7 @@ export const LinkTo: FunctionComponent<Props> = ({
     if (condition) {
         if (useIcon) {
             return (
-                <IconButtonComponent
+                <IconButton
                     icon={icon}
                     tooltipMessage={tooltipMessage}
                     iconSize={iconSize}

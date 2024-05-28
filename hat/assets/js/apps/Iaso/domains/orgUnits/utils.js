@@ -1,11 +1,11 @@
 import React from 'react';
 
-import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
+import { textPlaceholder } from 'bluesquare-components';
 
 import { orderOrgUnitsByDepth } from '../../utils/map/mapUtils.ts';
 
-import MESSAGES from './messages';
 import { useGetValidationStatus } from '../forms/hooks/useGetValidationStatus.ts';
+import MESSAGES from './messages';
 
 export const fetchLatestOrgUnitLevelId = levels => {
     if (levels) {
@@ -67,18 +67,6 @@ export const orgUnitLabelString = (
         }
     }
     return message;
-};
-
-// Not really a React component because it returns strings.
-// TODO refactor with strings as children of span> or <p>, or as hook
-export const OrgUnitLabel = ({ orgUnit, withType, withSource = false }) => {
-    const intl = useSafeIntl();
-    return orgUnitLabelString(
-        orgUnit,
-        withType,
-        intl.formatMessage,
-        withSource,
-    );
 };
 
 const mapOrgUnitBySearch = (orgUnits, searches) => {

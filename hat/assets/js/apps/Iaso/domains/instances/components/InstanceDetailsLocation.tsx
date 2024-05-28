@@ -5,13 +5,14 @@ import { MarkerMap } from '../../../components/maps/MarkerMapComponent';
 import OrgUnitDisplay from '../../orgUnits/components/OrgUnitDisplay';
 import { OrgUnitSourceRefDisplay } from '../../orgUnits/components/OrgUnitSourceRefDisplay';
 
-import { getOrgUnitsTree, OrgUnitLabel } from '../../orgUnits/utils';
+import { getOrgUnitsTree } from '../../orgUnits/utils';
 
-import InstanceDetailsField from './InstanceDetailsField';
 import { Instance } from '../types/instance';
+import InstanceDetailsField from './InstanceDetailsField';
 
-import MESSAGES from '../messages';
+import { OrgUnitLabel } from '../../orgUnits/components/OrgUnitLabel';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
+import MESSAGES from '../messages';
 
 type Props = {
     currentInstance: Instance;

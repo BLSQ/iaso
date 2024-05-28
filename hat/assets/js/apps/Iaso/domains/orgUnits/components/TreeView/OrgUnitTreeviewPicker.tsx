@@ -1,14 +1,10 @@
 import { Box, InputLabel, Paper } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import {
-    FormControl,
-    IconButton,
-    TruncatedTreeview,
-    useSafeIntl,
-} from 'bluesquare-components';
+import { FormControl, IconButton, useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
-import React from 'react';
-import { baseUrls } from '../../../../constants/urls';
+import React, { ReactNode, useCallback } from 'react';
+import { OrgUnit } from '../../types/orgUnit';
+import { TruncatedTrees } from './TruncatedTrees';
 import { MESSAGES } from './messages';
 
 const styles = theme => ({
@@ -19,12 +15,6 @@ const styles = theme => ({
         marginLeft: '14px',
         cursor: 'default',
         color: 'transparent',
-    },
-    treeviews: {
-        alignItems: 'center',
-        fontSize: '16px',
-        flex: '1',
-        marginLeft: '10px',
     },
     paper: {
         display: 'flex',
@@ -67,21 +57,21 @@ type Props = {
     placeholder?: string | { id: string; defaultMessage: string };
     required: boolean;
     disabled: boolean;
-    label: () => void; // This should be typed according to what label actually is
+    // eslint-disable-next-line no-unused-vars
+    label: (orgUnit: OrgUnit) => ReactNode;
     clearable: boolean;
     errors: string[];
 };
 
 const formatPlaceholder = (
-    placeholder: string | { id: string; defaultMessage: string },
+    // eslint-disable-next-line no-unused-vars
     formatMessage: (message: { id: string; defaultMessage: string }) => string,
+    placeholder?: string | { id: string; defaultMessage: string },
 ) => {
     if (!placeholder) return null;
     if (typeof placeholder === 'string') return placeholder;
     return formatMessage(placeholder);
 };
-
-const noOp = () => {};
 
 const useStyles = makeStyles(styles);
 
@@ -110,100 +100,80 @@ const OrgUnitTreeviewPicker: React.FC<Props> = ({
         : `${classes.placeholder} ${classes.pointer}`;
 
     const formattedPlaceholder =
-        formatPlaceholder(placeholder, intl.formatMessage) ??
+        formatPlaceholder(intl.formatMessage, placeholder) ??
         (multiselect
             ? intl.formatMessage(MESSAGES.selectMultiple)
             : intl.formatMessage(MESSAGES.selectSingle));
-    const makeTruncatedTrees = (treesData: any) => {
-        // Type should be adjusted to actual data type
-        if (treesData.size === 0)
-            return (
-                <div
-                    role="button"
-                    tabIndex={0}
-                    onClick={disabled ? noOp : onClick}
-                    className={placeholderStyle}
-                >
-                    {formattedPlaceholder}
-                </div>
-            );
-        const treeviews = [];
-        treesData.forEach((value: any, key: any) => {
-            // Types should be adjusted to actual data types
-            const treeview = (
-                <TruncatedTreeview
-                    onClick={disabled ? noOp : onClick}
-                    selectedItems={value}
-                    key={`TruncatedTree${key.toString()}`}
-                    label={label}
-                    disabled={disabled}
-                    redirect={(id: string) =>
-                        disabled
-                            ? null
-                            : window.open(
-                                  `/dashboard/${baseUrls.orgUnitDetails}/orgUnitId/${id}`,
-                                  '_blank',
-                              )
-                    }
-                />
-            );
-            treeviews.push(treeview);
-        });
-        return <div className={classes.treeviews}>{treeviews}</div>;
-    };
+
+    const handleOnClick = useCallback(() => {
+        if (!disabled) {
+            onClick();
+        }
+    }, [onClick, disabled]);
+
+    const handleResetSelection = useCallback(() => {
+        if (!disabled && resetSelection) {
+            resetSelection();
+        }
+    }, [resetSelection, disabled]);
+
     return (
         <Box mt={2} mb={2}>
             <FormControl errors={errors}>
-                <InputLabel
-                    shrink={selectedItems.size > 0}
-                    required={required}
-                    className={`${classnames(
-                        classes.inputLabel,
-                        selectedItems.size > 0 && classes.shrinkInputLabel,
-                        'input-label',
-                    )} ${errorLabelStyle}`}
-                >
-                    {formattedPlaceholder}
-                </InputLabel>
-                <Paper
-                    variant="outlined"
-                    elevation={0}
-                    className={`${classes.paper} ${enabledStyle} ${errorStyle}`}
-                >
-                    {makeTruncatedTrees(selectedItems)}
-                    {clearable && resetSelection && selectedItems.size > 0 && (
-                        <Box
-                            className={classnames(
-                                classes.clearButton,
-                                'clear-tree',
-                            )}
-                        >
-                            <IconButton
-                                icon="clear"
-                                size="small"
-                                tooltipMessage={MESSAGES.clear}
-                                onClick={
-                                    disabled
-                                        ? noOp
-                                        : () => {
-                                              resetSelection();
-                                          }
-                                }
-                            />
-                        </Box>
-                    )}
-                    <IconButton
-                        size="small"
-                        tooltipMessage={
-                            multiselect
-                                ? MESSAGES.selectMultiple
-                                : MESSAGES.selectSingle
-                        }
-                        icon="orgUnit"
-                        onClick={disabled ? noOp : onClick}
-                        disabled={disabled}
-                    />
-                </Paper>
+                {/* @ts-ignore: Unresolved issue with ReactNodeLike types, needs further investigation */}
+                <>
+                    <InputLabel
+                        key="input-label"
+                        shrink={selectedItems.size > 0}
+                        required={required}
+                        className={`${classnames(
+                            classes.inputLabel,
+                            selectedItems.size > 0 && classes.shrinkInputLabel,
+                            'input-label',
+                        )} ${errorLabelStyle}`}
+                    >
+                        {formattedPlaceholder}
+                    </InputLabel>
+                    <Paper
+                        variant="outlined"
+                        elevation={0}
+                        className={`${classes.paper} ${enabledStyle} ${errorStyle}`}
+                    >
+                        <TruncatedTrees
+                            treesData={selectedItems}
+                            disabled={disabled}
+                            label={label}
+                            placeholderStyle={placeholderStyle}
+                            formattedPlaceholder={formattedPlaceholder}
+                        />
+                        {clearable && resetSelection && selectedItems.size > 0 && (
+                            <Box
+                                className={classnames(
+                                    classes.clearButton,
+                                    'clear-tree',
+                                )}
+                            >
+                                <IconButton
+                                    icon="clear"
+                                    size="small"
+                                    tooltipMessage={MESSAGES.clear}
+                                    onClick={handleResetSelection}
+                                />
+                            </Box>
+                        )}
+                        <IconButton
+                            size="small"
+                            tooltipMessage={
+                                multiselect
+                                    ? MESSAGES.selectMultiple
+                                    : MESSAGES.selectSingle
+                            }
+                            icon="orgUnit"
+                            onClick={handleOnClick}
+                            disabled={disabled}
+                        />
+                    </Paper>
+                </>
             </FormControl>
         </Box>
     );

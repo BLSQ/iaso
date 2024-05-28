@@ -1,5 +1,4 @@
 import { Box, useTheme } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import {
     IconButton,
     IntlMessage,
@@ -15,20 +14,18 @@ import React, {
 } from 'react';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import { OrgUnit } from '../../types/orgUnit';
-import { OrgUnitLabel, getOrgUnitAncestors } from '../../utils';
+import { getOrgUnitAncestors } from '../../utils';
+import { OrgUnitLabel } from '../OrgUnitLabel';
 import { OrgUnitTreeviewPicker } from './OrgUnitTreeviewPicker';
 import { SettingsPopper } from './SettingsPopper';
+import { TreeViewLabel } from './TreeViewLabel';
 import { MESSAGES } from './messages';
 import { getChildrenData, getRootData, searchOrgUnits } from './requests';
 import {
     formatInitialSelectedIds,
     formatInitialSelectedParents,
-    makeTreeviewLabel,
-    orgUnitTreeviewStatusIconsStyle,
     tooltip,
 } from './utils';
-
-const useStyles = makeStyles(orgUnitTreeviewStatusIconsStyle);
 
 type Props = {
     titleMessage: string | IntlMessage;
@@ -55,11 +52,11 @@ type Props = {
 const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
     titleMessage,
     toggleOnLabelClick = true,
-    onConfirm = () => null,
+    onConfirm = () => undefined,
     multiselect = false,
-    initialSelection = null,
-    source = null,
-    version = null,
+    initialSelection = undefined,
+    source = undefined,
+    version = undefined,
     resetTrigger = false,
     hardReset = false,
     disabled = false,
@@ -73,7 +70,6 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
     useIcon = false,
 }) => {
     const theme = useTheme();
-    const classes = useStyles();
     const [settings, setSettings] = useState({
         displayTypes: true,
         displayRejected: false,
@@ -117,7 +113,15 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
 
     const onModalConfirm = useCallback(
         async closeDialog => {
-            onConfirm(multiselect ? selectedOrgUnits : selectedOrgUnits[0]);
+            let confirmValue;
+            if (multiselect) {
+                confirmValue = selectedOrgUnits;
+            } else if (selectedOrgUnits) {
+                confirmValue = Array.isArray(selectedOrgUnits)
+                    ? selectedOrgUnits[0]
+                    : selectedOrgUnits;
+            }
+            onConfirm(confirmValue);
             selectedOrgUnitsIdsCopy.current = selectedOrgUnitsIds;
             selectedOrgUnitParentsCopy.current = selectedOrgUnitParents;
             closeDialog();
@@ -170,7 +174,7 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
         if (multiselect) {
             onConfirm([]);
         } else {
-            onConfirm(null);
+            onConfirm(undefined);
         }
     }, [onConfirm, multiselect]);
 
@@ -203,10 +207,8 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
             resetSelection();
         }
     }, [resetTrigger, hardReset, resetSelection]);
-
-    console.log('selectedOrgUnitParents', selectedOrgUnitParents);
-    console.log('initialSelection', initialSelection);
     return (
+        // @ts-ignore
         <ConfirmCancelDialogComponent
             renderTrigger={({ openDialog }) =>
                 useIcon ? (
@@ -230,9 +232,12 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
                         placeholder={titleMessage}
                         required={required}
                         disabled={disabled}
-                        label={makeTreeviewLabel(
-                            classes,
-                            showStatusIconInPicker,
+                        label={(orgUnit: OrgUnit) => (
+                            <TreeViewLabel
+                                orgUnit={orgUnit}
+                                withStatusIcon={showStatusIconInPicker}
+                                withType={displayTypes}
+                            />
                         )}
                         clearable={clearable}
                         errors={errors}
@@ -263,10 +268,12 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
                         getChildrenData(id, validationStatus)
                     }
                     getRootData={getRootDataWithSource}
-                    label={makeTreeviewLabel(
-                        classes,
-                        showStatusIconInTree,
-                        displayTypes,
+                    label={(orgUnit: OrgUnit) => (
+                        <TreeViewLabel
+                            orgUnit={orgUnit}
+                            withStatusIcon={showStatusIconInTree}
+                            withType={displayTypes}
+                        />
                     )}
                     toggleOnLabelClick={toggleOnLabelClick}
                     onSelect={onOrgUnitSelect}

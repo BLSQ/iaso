@@ -1,22 +1,27 @@
+import { UseQueryResult } from 'react-query';
 import { errorSnackBar } from '../../../../constants/snackBars';
 import { getRequest } from '../../../../libs/Api';
-import { useSnackQuery } from '../../../../libs/apiHooks.ts';
+import { useSnackQuery } from '../../../../libs/apiHooks';
 import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
 import { dispatch } from '../../../../redux/store';
+import { OrgUnit } from '../../types/orgUnit';
 
-export const getChildrenData = (id, validationStatus = 'all') => {
+export const getChildrenData = (
+    id: string,
+    validationStatus = 'all',
+): Promise<OrgUnit> => {
     return getRequest(
         `/api/orgunits/tree/?&parent_id=${id}&validation_status=${validationStatus}&ignoreEmptyNames=true`,
     )
         .then(response => {
-            return response.map(orgUnit => {
+            return response.map((orgUnit: any) => {
                 return {
                     ...orgUnit,
                     id: orgUnit.id.toString(),
                 };
             });
         })
-        .catch(error => {
+        .catch((error: Error) => {
             dispatch(
                 enqueueSnackbar(
                     errorSnackBar('getChildrenDataError', null, error),
@@ -29,7 +34,11 @@ export const getChildrenData = (id, validationStatus = 'all') => {
         });
 };
 
-const makeUrl = (id, type, validationStatus = 'all') => {
+const makeUrl = (
+    id?: string | number,
+    type?: string,
+    validationStatus = 'all',
+) => {
     if (id) {
         if (type === 'version')
             return `/api/orgunits/tree/?&version=${id}&validation_status=${validationStatus}&ignoreEmptyNames=true`;
@@ -39,18 +48,21 @@ const makeUrl = (id, type, validationStatus = 'all') => {
     return `/api/orgunits/tree/?&defaultVersion=true&validation_status=${validationStatus}&ignoreEmptyNames=true`;
 };
 
-// mapping the request result here i.o in the useRootData hook to keep the hook more generic
-export const getRootData = (id, type = 'source', validationStatus = 'all') => {
+export const getRootData = (
+    id?: string | number,
+    type = 'source',
+    validationStatus = 'all',
+): Promise<OrgUnit[]> => {
     return getRequest(makeUrl(id, type, validationStatus))
         .then(response => {
-            return response.map(orgUnit => {
+            return response.map((orgUnit: any) => {
                 return {
                     ...orgUnit,
                     id: orgUnit.id.toString(),
                 };
             });
         })
-        .catch(error => {
+        .catch((error: Error) => {
             dispatch(
                 enqueueSnackbar(errorSnackBar('getRootDataError', null, error)),
             );
@@ -59,7 +71,12 @@ export const getRootData = (id, type = 'source', validationStatus = 'all') => {
 };
 
 const endpoint = '/api/orgunits/tree/search';
-const search = (input1, validationStatus = 'all', input2, type) => {
+const search = (
+    input1: string,
+    validationStatus = 'all',
+    input2?: string | number,
+    type?: string,
+) => {
     switch (type) {
         case 'source':
             return `search=${input1}&validation_status=${validationStatus}&source=${input2}`;
@@ -69,7 +86,7 @@ const search = (input1, validationStatus = 'all', input2, type) => {
             return `search=${input1}&validation_status=${validationStatus}&defaultVersion=true`;
     }
 };
-const sortingAndPaging = resultsCount =>
+const sortingAndPaging = (resultsCount: number) =>
     `order=name&page=1&limit=${resultsCount}&smallSearch=true`;
 
 const makeSearchUrl = ({
@@ -78,6 +95,12 @@ const makeSearchUrl = ({
     source,
     version,
     validationStatus = 'all',
+}: {
+    value: string;
+    count: number;
+    source?: string | number;
+    version?: string | number;
+    validationStatus?: string;
 }) => {
     if (source) {
         return `${endpoint}?${search(
@@ -93,7 +116,6 @@ const makeSearchUrl = ({
             validationStatus,
             version,
             'version',
-            validationStatus,
         )}&${sortingAndPaging(count)}`;
     }
     return `${endpoint}/?${search(value, validationStatus)}&${sortingAndPaging(
@@ -101,17 +123,19 @@ const makeSearchUrl = ({
     )}`;
 };
 
-/**
- * @param {string} searchValue
- * @param {number} resultsCount
- */
 export const searchOrgUnits = ({
     value,
     count,
     source,
     version,
     validationStatus = 'all',
-}) => {
+}: {
+    value: string;
+    count: number;
+    source?: string | number;
+    version?: string | number;
+    validationStatus?: string;
+}): Promise<OrgUnit[]> => {
     const url = makeSearchUrl({
         value,
         count,
@@ -120,8 +144,8 @@ export const searchOrgUnits = ({
         validationStatus,
     });
     return getRequest(url)
-        .then(result => result.results)
-        .catch(error => {
+        .then((result: any) => result.results)
+        .catch((error: Error) => {
             dispatch(
                 enqueueSnackbar(
                     errorSnackBar('searchOrgUnitsError', null, error),
@@ -131,7 +155,9 @@ export const searchOrgUnits = ({
         });
 };
 
-export const useGetOrgUnit = OrgUnitId =>
+export const useGetOrgUnit = (
+    OrgUnitId: string | undefined,
+): UseQueryResult<OrgUnit, Error> =>
     useSnackQuery(
         ['orgunits', OrgUnitId],
         async () => getRequest(`/api/orgunits/${OrgUnitId}/`),
@@ -141,7 +167,10 @@ export const useGetOrgUnit = OrgUnitId =>
         },
     );
 
-const getOrgUnits = (orgUnitsIds, validationStatus = 'all') => {
+const getOrgUnits = (
+    orgUnitsIds: string[] | string,
+    validationStatus = 'all',
+) => {
     const idsString = Array.isArray(orgUnitsIds)
         ? orgUnitsIds?.join(',')
         : orgUnitsIds;
@@ -149,21 +178,16 @@ const getOrgUnits = (orgUnitsIds, validationStatus = 'all') => {
     return getRequest(`/api/orgunits/?limit=10&searches=${searchParam}`);
 };
 
-/**
- * Use this hook with for the TreeviewModal in multiselect mode
- *
- */
-
 export const useGetMultipleOrgUnits = (
-    orgUnitsIds,
+    orgUnitsIds: string[] | string,
     validationStatus = 'all',
-) => {
+): UseQueryResult<OrgUnit[], Error> => {
     return useSnackQuery({
         queryKey: ['orgunits', orgUnitsIds, validationStatus],
         queryFn: () => getOrgUnits(orgUnitsIds, validationStatus),
         options: {
             enabled: Boolean(orgUnitsIds?.length),
-            select: data => {
+            select: (data: any) => {
                 if (!data) return {};
                 return data.orgunits;
             },

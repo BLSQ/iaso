@@ -74,10 +74,11 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
     const [settings, setSettings] = useState({
         displayTypes: true,
         // those three need to be prefilled with source config
-        displayValid: false,
-        displayRejected: true,
+        displayValid: true,
+        displayRejected: false,
         displayNew: false,
     });
+    console.log('source', source);
 
     const [selectedOrgUnits, setSelectedOrgUnits] = useState(initialSelection);
 
@@ -159,8 +160,9 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
     }, [displayValid, displayRejected, displayNew]);
 
     const getRootDataWithSource = useCallback(async () => {
-        if (version) return getRootData(version, 'version', validationStatus);
-        return getRootData(source, 'source', validationStatus);
+        const key = version ? 'version' : 'source';
+        const value = version || source;
+        return getRootData(value, key, validationStatus);
     }, [source, version, validationStatus]);
 
     const searchOrgUnitsWithSource = useCallback(

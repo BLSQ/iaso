@@ -7,98 +7,98 @@ import { dispatch } from '../../../../redux/store';
 import { OrgUnit, OrgUnitStatus } from '../../types/orgUnit';
 
 const getValidationStatus = (validationStatus: OrgUnitStatus[]): string => {
-    let validationStatusString = '';
-    validationStatus.forEach(status => {
-        validationStatusString += `&validation_status=${status}`;
-    });
-    return validationStatusString;
+    return validationStatus
+        .map(status => `&validation_status=${status}`)
+        .join('');
 };
 
-export const getChildrenData = (
+const baseApiUrl = '/api/orgunits/tree/';
+
+export const getChildrenData = async (
     id: string,
     validationStatus: OrgUnitStatus[],
-): Promise<OrgUnit> => {
-    return getRequest(
-        `/api/orgunits/tree/?&parent_id=${id}&ignoreEmptyNames=true${getValidationStatus(
-            validationStatus,
-        )}`,
-    )
-        .then(response => {
-            return response.map((orgUnit: any) => {
-                return {
-                    ...orgUnit,
-                    id: orgUnit.id.toString(),
-                };
-            });
-        })
-        .catch((error: Error) => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('getChildrenDataError', null, error),
-                ),
-            );
-            console.error(
-                'Error while fetching Treeview item children:',
-                error,
-            );
-        });
+): Promise<OrgUnit[]> => {
+    try {
+        const response = await getRequest(
+            `${baseApiUrl}?parent_id=${id}&ignoreEmptyNames=true${getValidationStatus(
+                validationStatus,
+            )}`,
+        );
+        return response.map((orgUnit: any) => ({
+            ...orgUnit,
+            id: orgUnit.id.toString(),
+        }));
+    } catch (error: unknown) {
+        dispatch(
+            enqueueSnackbar(errorSnackBar('getChildrenDataError', null, error)),
+        );
+        console.error('Error while fetching Treeview item children:', error);
+        throw error;
+    }
 };
 
 const makeUrl = (
     id?: string | number,
     type?: string,
     validationStatus: OrgUnitStatus[] = ['VALID'],
-) => {
+): string => {
     const validationStatusString = getValidationStatus(validationStatus);
-    if (id) {
-        if (type === 'version')
-            return `/api/orgunits/tree/?&version=${id}&ignoreEmptyNames=true${validationStatusString}`;
-        if (type === 'source')
-            return `/api/orgunits/tree/?&source=${id}&ignoreEmptyNames=true${validationStatusString}`;
+    let typePrefix;
+
+    switch (type) {
+        case 'version':
+            typePrefix = 'version';
+            break;
+        case 'source':
+            typePrefix = 'data_source_id';
+            break;
+        default:
+            break;
     }
-    return `/api/orgunits/tree/?&defaultVersion=true&ignoreEmptyNames=true${validationStatusString}`;
+
+    const idParam = id && typePrefix ? `&${typePrefix}=${id}` : '';
+    return `${baseApiUrl}?ignoreEmptyNames=true${idParam}${validationStatusString}`;
 };
 
-export const getRootData = (
+export const getRootData = async (
     id?: string | number,
     type = 'source',
     validationStatus: OrgUnitStatus[] = ['VALID'],
 ): Promise<OrgUnit[]> => {
-    return getRequest(makeUrl(id, type, validationStatus))
-        .then(response => {
-            return response.map((orgUnit: any) => {
-                return {
-                    ...orgUnit,
-                    id: orgUnit.id.toString(),
-                };
-            });
-        })
-        .catch((error: Error) => {
-            dispatch(
-                enqueueSnackbar(errorSnackBar('getRootDataError', null, error)),
-            );
-            console.error('Error while fetching Treeview items:', error);
-        });
+    try {
+        const response = await getRequest(makeUrl(id, type, validationStatus));
+        return response.map((orgUnit: any) => ({
+            ...orgUnit,
+            id: orgUnit.id.toString(),
+        }));
+    } catch (error: unknown) {
+        dispatch(
+            enqueueSnackbar(errorSnackBar('getRootDataError', null, error)),
+        );
+        console.error('Error while fetching Treeview items:', error);
+        throw error;
+    }
 };
 
-const endpoint = '/api/orgunits/tree/search';
+const endpoint = `${baseApiUrl}search`;
 const search = (
     input1: string,
     validationStatus: OrgUnitStatus[] = ['VALID'],
     input2?: string | number,
     type?: string,
-) => {
+): string => {
     const validationStatusString = getValidationStatus(validationStatus);
-    switch (type) {
-        case 'source':
-            return `search=${input1}&source=${input2}${validationStatusString}`;
-        case 'version':
-            return `search=${input1}&version=${input2}${validationStatusString}`;
-        default:
-            return `search=${input1}&defaultVersion=true${validationStatusString}`;
+    let typeParam = '';
+
+    if (type === 'version') {
+        typeParam = `&version=${input2}`;
+    } else if (type === 'source') {
+        typeParam = `&data_source_id=${input2}`;
     }
+
+    return `search=${input1}${typeParam}${validationStatusString}`;
 };
-const sortingAndPaging = (resultsCount: number) =>
+const sortingAndPaging = (resultsCount: number): string =>
     `order=name&page=1&limit=${resultsCount}&smallSearch=true`;
 
 const makeSearchUrl = ({
@@ -113,29 +113,23 @@ const makeSearchUrl = ({
     source?: string | number;
     version?: string | number;
     validationStatus?: OrgUnitStatus[];
-}) => {
+}): string => {
+    let searchType = '';
     if (source) {
-        return `${endpoint}?${search(
-            value,
-            validationStatus,
-            source,
-            'source',
-        )}&${sortingAndPaging(count)}`;
+        searchType = 'source';
+    } else if (version) {
+        searchType = 'version';
     }
-    if (version) {
-        return `${endpoint}?${search(
-            value,
-            validationStatus,
-            version,
-            'version',
-        )}&${sortingAndPaging(count)}`;
-    }
-    return `${endpoint}/?${search(value, validationStatus)}&${sortingAndPaging(
-        count,
-    )}`;
+    const searchId = source || version;
+    return `${endpoint}?${search(
+        value,
+        validationStatus,
+        searchId,
+        searchType,
+    )}&${sortingAndPaging(count)}`;
 };
 
-export const searchOrgUnits = ({
+export const searchOrgUnits = async ({
     value,
     count,
     source,
@@ -148,23 +142,23 @@ export const searchOrgUnits = ({
     version?: string | number;
     validationStatus?: OrgUnitStatus[];
 }): Promise<OrgUnit[]> => {
-    const url = makeSearchUrl({
-        value,
-        count,
-        source,
-        version,
-        validationStatus,
-    });
-    return getRequest(url)
-        .then((result: any) => result.results)
-        .catch((error: Error) => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('searchOrgUnitsError', null, error),
-                ),
-            );
-            console.error('Error while searching org units:', error);
+    try {
+        const url = makeSearchUrl({
+            value,
+            count,
+            source,
+            version,
+            validationStatus,
         });
+        const result = await getRequest(url);
+        return result.results;
+    } catch (error: unknown) {
+        dispatch(
+            enqueueSnackbar(errorSnackBar('searchOrgUnitsError', null, error)),
+        );
+        console.error('Error while searching org units:', error);
+        throw error;
+    }
 };
 
 export const useGetOrgUnit = (
@@ -172,19 +166,19 @@ export const useGetOrgUnit = (
 ): UseQueryResult<OrgUnit, Error> =>
     useSnackQuery(
         ['orgunits', OrgUnitId],
-        async () => getRequest(`/api/orgunits/${OrgUnitId}/`),
+        () => getRequest(`/api/orgunits/${OrgUnitId}/`),
         undefined,
         {
-            enabled: OrgUnitId !== undefined && OrgUnitId !== null,
+            enabled: !!OrgUnitId,
         },
     );
 
-const getOrgUnits = (
+const getOrgUnits = async (
     orgUnitsIds: string[] | string,
     validationStatus = 'all',
-) => {
+): Promise<OrgUnit[]> => {
     const idsString = Array.isArray(orgUnitsIds)
-        ? orgUnitsIds?.join(',')
+        ? orgUnitsIds.join(',')
         : orgUnitsIds;
     const searchParam = `[{"validation_status":"${validationStatus}","search": "ids:${idsString}" }]`;
     return getRequest(`/api/orgunits/?limit=10&searches=${searchParam}`);
@@ -199,10 +193,7 @@ export const useGetMultipleOrgUnits = (
         queryFn: () => getOrgUnits(orgUnitsIds, validationStatus),
         options: {
             enabled: Boolean(orgUnitsIds?.length),
-            select: (data: any) => {
-                if (!data) return {};
-                return data.orgunits;
-            },
+            select: (data: any) => (data ? data.orgunits : {}),
         },
     });
 };

@@ -87,7 +87,7 @@ class EntitySerializer(serializers.ModelSerializer):
 
     def get_org_unit(self, entity: Entity):
         if entity.attributes and entity.attributes.org_unit:
-            return entity.attributes.org_unit.as_location(with_parents=True)
+            return entity.attributes.org_unit.as_location(with_parents=False)
         return None
 
     def get_submitter(self, entity: Entity):
@@ -233,6 +233,15 @@ class EntityViewSet(ModelViewSet):
 
         queryset = Entity.objects.filter(account=self.request.user.iaso_profile.account)
 
+        queryset = queryset.prefetch_related(
+            "attributes__created_by__teams",
+            "attributes__form",
+            "attributes__org_unit__org_unit_type",
+            "attributes__org_unit__parent",
+            "attributes__org_unit__version__data_source",
+            "entity_type",
+        )
+
         if form_name:
             queryset = queryset.filter(attributes__form__name__icontains=form_name)
         if search:
@@ -315,6 +324,7 @@ class EntityViewSet(ModelViewSet):
         page_offset = request.GET.get("page", 1)
         orders = request.GET.get("order", "-created_at").split(",")
         order_columns = request.GET.get("order_columns", None)
+        as_location = request.GET.get("asLocation", None)
 
         queryset = queryset.order_by(*orders)
 
@@ -345,7 +355,11 @@ class EntityViewSet(ModelViewSet):
 
         entities = entities.order_by(*new_order_columns)
 
-        if limit:
+        if as_location:
+            limit_int = int(limit)
+            paginator = Paginator(entities, limit_int)
+            entities = paginator.page(1).object_list
+        elif limit:
             limit_int = int(limit)
             page_offset = int(page_offset)
             start_int = (page_offset - 1) * limit_int
@@ -364,7 +378,7 @@ class EntityViewSet(ModelViewSet):
             if attributes is not None and entity.attributes is not None:
                 file_content = entity.attributes.get_and_save_json_of_xml().get("file_content", None)
                 attributes_pk = attributes.pk
-                attributes_ou = entity.attributes.org_unit.as_location(with_parents=True) if entity.attributes.org_unit else None  # type: ignore
+                attributes_ou = entity.attributes.org_unit.as_location(with_parents=False) if entity.attributes.org_unit else None  # type: ignore
                 attributes_latitude = attributes.location.y if attributes.location else None  # type: ignore
                 attributes_longitude = attributes.location.x if attributes.location else None  # type: ignore
             name = None
@@ -372,6 +386,10 @@ class EntityViewSet(ModelViewSet):
             if file_content is not None:
                 name = file_content.get("name")
                 program = file_content.get("program")
+            duplicates = []
+            # invokes many SQL queries and not needed for map display
+            if not as_location:
+                duplicates = get_duplicates(entity)
             result = {
                 "id": entity.id,
                 "uuid": entity.uuid,
@@ -383,7 +401,7 @@ class EntityViewSet(ModelViewSet):
                 "last_saved_instance": entity.last_saved_instance,
                 "org_unit": attributes_ou,
                 "program": program,
-                "duplicates": get_duplicates(entity),
+                "duplicates": duplicates,
                 "latitude": attributes_latitude,
                 "longitude": attributes_longitude,
             }
@@ -454,7 +472,14 @@ class EntityViewSet(ModelViewSet):
             response["Content-Disposition"] = "attachment; filename=%s" % filename
             return response
 
-        if limit:
+        if as_location:
+            return Response(
+                {
+                    "limit": limit_int,
+                    "result": result_list,
+                }
+            )
+        elif limit:
             return Response(
                 {
                     "count": total_count,

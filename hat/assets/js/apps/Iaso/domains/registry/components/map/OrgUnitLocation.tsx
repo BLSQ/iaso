@@ -50,6 +50,7 @@ export const OrgUnitLocation: FunctionComponent<Props> = ({
                     {orgUnit.geo_json && (
                         <Pane name="orgunit-shape" style={{ zIndex: 400 }}>
                             <GeoJSON
+                                key={`orgunit-shape-${orgUnit.id}`}
                                 data={orgUnit.geo_json}
                                 onEachFeature={handleFeatureEvents(orgUnit)}
                                 style={() => ({

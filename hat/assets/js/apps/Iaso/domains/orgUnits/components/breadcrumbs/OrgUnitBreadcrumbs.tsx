@@ -23,8 +23,12 @@ export const getBreadcrumbs = ({
     if (!orgUnit.parent) {
         return list;
     }
-    list.push(orgUnit.parent);
-    return getBreadcrumbs({ orgUnit: orgUnit.parent, list, showOnlyParents });
+    list.push(orgUnit.parent as OrgUnit);
+    return getBreadcrumbs({
+        orgUnit: orgUnit.parent as OrgUnit,
+        list,
+        showOnlyParents,
+    });
 };
 
 type UseOrgUnitBreadCrumbsArgs = {
@@ -54,6 +58,7 @@ type Props = {
     showOnlyParents?: boolean;
     showRegistry?: boolean;
     color?: string;
+    params?: Record<string, string>;
 };
 
 export const OrgUnitBreadcrumbs: FunctionComponent<Props> = ({
@@ -62,6 +67,7 @@ export const OrgUnitBreadcrumbs: FunctionComponent<Props> = ({
     showOnlyParents,
     showRegistry = false,
     color = 'inherit',
+    params = {},
 }) => {
     const { link } = useStyles();
     const breadcrumbs = useOrgUnitBreadCrumbs({ orgUnit, showOnlyParents });
@@ -85,6 +91,7 @@ export const OrgUnitBreadcrumbs: FunctionComponent<Props> = ({
                         key={ou.id}
                         className={link}
                         replace
+                        params={params}
                     />
                 ) : (
                     <LinkToOrgUnit

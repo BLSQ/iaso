@@ -1,15 +1,18 @@
-import React, { FunctionComponent } from 'react';
 import { makeStyles } from '@mui/styles';
-import classNames from 'classnames';
 import {
-    IconButton as IconButtonComponent,
+    IconButtonBuiltInIcon,
+    IconButton,
     IntlMessage,
+    LinkWithLocation,
     textPlaceholder,
     useKeyPressListener,
-    LinkWithLocation,
 } from 'bluesquare-components';
+import classNames from 'classnames';
+import React, { FunctionComponent } from 'react';
 
 import MESSAGES from './messages';
+
+export type IconVariant = IconButtonBuiltInIcon;
 
 type Props = {
     condition: boolean;
@@ -23,6 +26,7 @@ type Props = {
     tooltipMessage?: IntlMessage;
     color?: string;
     target?: '_blank' | '_self' | '_parent' | '_top';
+    icon?: IconVariant;
 };
 
 const useStyles = makeStyles(() => ({
@@ -43,6 +47,7 @@ export const LinkTo: FunctionComponent<Props> = ({
     target = '_self',
     color,
     tooltipMessage = MESSAGES.see,
+    icon = 'remove-red-eye',
 }) => {
     const targetBlankEnabled = useKeyPressListener('Meta');
     const actualTarget = targetBlankEnabled ? '_blank' : target;
@@ -50,8 +55,8 @@ export const LinkTo: FunctionComponent<Props> = ({
     if (condition) {
         if (useIcon) {
             return (
-                <IconButtonComponent
-                    icon="remove-red-eye"
+                <IconButton
+                    icon={icon}
                     tooltipMessage={tooltipMessage}
                     iconSize={iconSize}
                     size={size}

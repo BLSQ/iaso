@@ -1,6 +1,6 @@
-import { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import { useLeafletContext } from '@react-leaflet/core';
 import L from 'leaflet';
+import { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import { defineMessages } from 'react-intl';
 
 import { useMap } from 'react-leaflet';
@@ -9,14 +9,13 @@ import { useSafeIntl } from 'bluesquare-components';
 
 import tiles from '../../../constants/mapTiles';
 
-import { Bounds } from '../../../utils/map/mapUtils';
-
 import './zoom-bar';
 
 type Props = {
-    bounds?: Bounds;
-    boundsOptions?: Record<string, any>;
+    bounds?: L.LatLngBounds;
+    boundsOptions?: L.FitBoundsOptions;
     fitOnLoad?: boolean;
+    triggerFitToBoundsId?: string;
 };
 
 type ZoomOptions = {
@@ -46,6 +45,7 @@ export const CustomZoomControl: FunctionComponent<Props> = ({
     bounds,
     boundsOptions = { padding: [10, 10], maxZoom: tiles.osm.maxZoom },
     fitOnLoad = false,
+    triggerFitToBoundsId,
 }) => {
     const map: any = useMap();
     const [mapFitted, setMapFitted] = useState<boolean>(false);
@@ -82,5 +82,13 @@ export const CustomZoomControl: FunctionComponent<Props> = ({
             container.removeControl(control);
         };
     });
+
+    useEffect(() => {
+        if (bounds.isValid()) {
+            map.fitBounds(bounds, boundsOptions);
+        }
+        // only trigger fitobounds when triggerFitToBoundsId changes
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [triggerFitToBoundsId]);
     return null;
 };

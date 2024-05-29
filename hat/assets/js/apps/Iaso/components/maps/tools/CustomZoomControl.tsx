@@ -84,7 +84,7 @@ export const CustomZoomControl: FunctionComponent<Props> = ({
     });
 
     useEffect(() => {
-        if (bounds.isValid()) {
+        if (bounds && bounds.isValid()) {
             map.fitBounds(bounds, boundsOptions);
         }
         // only trigger fitobounds when triggerFitToBoundsId changes

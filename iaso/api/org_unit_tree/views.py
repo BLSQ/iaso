@@ -47,15 +47,19 @@ class OrgUnitTreeViewSet(viewsets.ModelViewSet):
         validation_status = querystring.validated_data.get("validation_status", set())
 
         if user.is_anonymous:
-            if not data_source_id:
-                raise ValidationError({"data_source_id": ["A `data_source_id` must be provided for anonymous users."]})
-            qs = OrgUnit.objects.all()  # `qs` will be filtered by `data_source_id` in `OrgUnitTreeFilter`.
+            qs = OrgUnit.objects.all()
         elif user.is_superuser or force_full_tree:
             qs = OrgUnit.objects.filter(version__data_source__projects__account=user.iaso_profile.account)
             qs = qs.select_related("version__data_source")
             qs = qs.prefetch_related("version__data_source__projects__account")
         else:
             qs = OrgUnit.objects.filter_for_user(user)
+
+        if not data_source_id:
+            if user.is_anonymous:
+                raise ValidationError({"data_source_id": ["A `data_source_id` must be provided for anonymous users."]})
+            else:
+                qs = qs.filter(version_id=self.request.user.iaso_profile.account.default_version_id)
 
         can_view_full_tree = any([user.is_anonymous, user.is_superuser, force_full_tree])
         display_root_level = not parent_id

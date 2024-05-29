@@ -22,7 +22,10 @@ class OrgUnitTreeQuerystringSerializer(serializers.Serializer):
 
 class OrgUnitTreeViewSet(viewsets.ModelViewSet):
     """
-    Explore the OrgUnit tree level by level.
+    This viewset is a bit unusual because it serves two purposes:
+
+    1. explore the OrgUnit tree level by level (list view)
+    2. search the OrgUnit tree with the same parameters (search view)
     """
 
     filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
@@ -65,7 +68,7 @@ class OrgUnitTreeViewSet(viewsets.ModelViewSet):
 
         qs = qs.only("id", "name", "validation_status", "version", "org_unit_type", "parent")
         qs = qs.order_by("name")
-        qs = qs.select_related("org_unit_type")
+        qs = qs.select_related("org_unit_type", "parent__org_unit_type")
 
         if validation_status == {OrgUnit.VALIDATION_VALID}:
             exclude_filter = ~Q(orgunit__validation_status__in=[OrgUnit.VALIDATION_REJECTED, OrgUnit.VALIDATION_NEW])

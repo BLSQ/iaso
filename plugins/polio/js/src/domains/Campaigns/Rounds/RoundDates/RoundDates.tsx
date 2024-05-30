@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import { Box, Divider, Grid, Typography } from '@mui/material';
-import { useSafeIntl } from 'bluesquare-components';
+import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
 import { isEqual } from 'lodash';
 import moment from 'moment';
@@ -136,7 +136,7 @@ export const RoundDates: FunctionComponent<Props> = ({
                                                         ? moment(
                                                               currentStartDate,
                                                           ).format(dateFormat)
-                                                        : '--'
+                                                        : textPlaceholder
                                                 }`}
                                             </Typography>
                                         </Grid>

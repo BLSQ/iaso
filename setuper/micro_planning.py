@@ -110,7 +110,7 @@ def setup_users_teams_micro_planning(account_name, iaso_client):
             "page": 1,
             "withParents": "true",
             "order": "name",
-            "depth": 4,
+            "depth": 3,
         },
     )["orgUnits"]
 

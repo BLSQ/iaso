@@ -6,8 +6,8 @@ import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
 import { dispatch } from '../../../../redux/store';
 import { OrgUnit, OrgUnitStatus } from '../../types/orgUnit';
 
-const getValidationStatus = (validationStatus: OrgUnitStatus[]): string => {
-    return validationStatus
+const getValidationStatus = (statusSettings: OrgUnitStatus[]): string => {
+    return statusSettings
         .map(status => `&validation_status=${status}`)
         .join('');
 };
@@ -16,12 +16,12 @@ const baseApiUrl = '/api/orgunits/tree/';
 
 export const getChildrenData = async (
     id: string,
-    validationStatus: OrgUnitStatus[],
+    statusSettings: OrgUnitStatus[],
 ): Promise<OrgUnit[]> => {
     try {
         const response = await getRequest(
             `${baseApiUrl}?parent_id=${id}&ignoreEmptyNames=true${getValidationStatus(
-                validationStatus,
+                statusSettings,
             )}`,
         );
         return response.map((orgUnit: any) => ({
@@ -40,9 +40,9 @@ export const getChildrenData = async (
 const makeUrl = (
     id?: string | number,
     type?: string,
-    validationStatus: OrgUnitStatus[] = ['VALID'],
+    statusSettings: OrgUnitStatus[] = ['VALID'],
 ): string => {
-    const validationStatusString = getValidationStatus(validationStatus);
+    const validationStatusString = getValidationStatus(statusSettings);
     let typePrefix;
 
     switch (type) {
@@ -63,10 +63,10 @@ const makeUrl = (
 export const getRootData = async (
     id?: string | number,
     type = 'source',
-    validationStatus: OrgUnitStatus[] = ['VALID'],
+    statusSettings: OrgUnitStatus[] = ['VALID'],
 ): Promise<OrgUnit[]> => {
     try {
-        const response = await getRequest(makeUrl(id, type, validationStatus));
+        const response = await getRequest(makeUrl(id, type, statusSettings));
         return response.map((orgUnit: any) => ({
             ...orgUnit,
             id: orgUnit.id.toString(),
@@ -83,11 +83,11 @@ export const getRootData = async (
 const endpoint = `${baseApiUrl}search`;
 const search = (
     input1: string,
-    validationStatus: OrgUnitStatus[] = ['VALID'],
+    statusSettings: OrgUnitStatus[] = ['VALID'],
     input2?: string | number,
     type?: string,
 ): string => {
-    const validationStatusString = getValidationStatus(validationStatus);
+    const validationStatusString = getValidationStatus(statusSettings);
     let typeParam = '';
 
     if (type === 'version') {
@@ -106,13 +106,13 @@ const makeSearchUrl = ({
     count,
     source,
     version,
-    validationStatus = ['VALID'],
+    statusSettings = ['VALID'],
 }: {
     value: string;
     count: number;
     source?: string | number;
     version?: string | number;
-    validationStatus?: OrgUnitStatus[];
+    statusSettings?: OrgUnitStatus[];
 }): string => {
     let searchType = '';
     if (source) {
@@ -123,7 +123,7 @@ const makeSearchUrl = ({
     const searchId = source || version;
     return `${endpoint}?${search(
         value,
-        validationStatus,
+        statusSettings,
         searchId,
         searchType,
     )}&${sortingAndPaging(count)}`;
@@ -134,13 +134,13 @@ export const searchOrgUnits = async ({
     count,
     source,
     version,
-    validationStatus = ['VALID'],
+    statusSettings = ['VALID'],
 }: {
     value: string;
     count: number;
     source?: string | number;
     version?: string | number;
-    validationStatus?: OrgUnitStatus[];
+    statusSettings?: OrgUnitStatus[];
 }): Promise<OrgUnit[]> => {
     try {
         const url = makeSearchUrl({
@@ -148,7 +148,7 @@ export const searchOrgUnits = async ({
             count,
             source,
             version,
-            validationStatus,
+            statusSettings,
         });
         const result = await getRequest(url);
         return result.results;
@@ -175,22 +175,22 @@ export const useGetOrgUnit = (
 
 const getOrgUnits = async (
     orgUnitsIds: string[] | string,
-    validationStatus = 'all',
+    statusSettings = 'all',
 ): Promise<OrgUnit[]> => {
     const idsString = Array.isArray(orgUnitsIds)
         ? orgUnitsIds.join(',')
         : orgUnitsIds;
-    const searchParam = `[{"validation_status":"${validationStatus}","search": "ids:${idsString}" }]`;
+    const searchParam = `[{"validation_status":"${statusSettings}","search": "ids:${idsString}" }]`;
     return getRequest(`/api/orgunits/?limit=10&searches=${searchParam}`);
 };
 
 export const useGetMultipleOrgUnits = (
     orgUnitsIds: string[] | string,
-    validationStatus = 'all',
+    statusSettings = 'all',
 ): UseQueryResult<OrgUnit[], Error> => {
     return useSnackQuery({
-        queryKey: ['orgunits', orgUnitsIds, validationStatus],
-        queryFn: () => getOrgUnits(orgUnitsIds, validationStatus),
+        queryKey: ['orgunits', orgUnitsIds, statusSettings],
+        queryFn: () => getOrgUnits(orgUnitsIds, statusSettings),
         options: {
             enabled: Boolean(orgUnitsIds?.length),
             select: (data: any) => (data ? data.orgunits : {}),

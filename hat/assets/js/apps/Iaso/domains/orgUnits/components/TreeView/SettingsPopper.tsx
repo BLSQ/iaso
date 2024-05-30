@@ -20,13 +20,12 @@ import React, {
     useState,
 } from 'react';
 import { SxStyles } from '../../../../types/general';
+import { OrgUnitStatus } from '../../types/orgUnit';
 import { MESSAGES } from './messages';
 
 export type Settings = {
     displayTypes: boolean;
-    displayValid: boolean;
-    displayRejected: boolean;
-    displayNew: boolean;
+    statusSettings: OrgUnitStatus[];
 };
 
 const styles: SxStyles = {
@@ -44,12 +43,10 @@ const styles: SxStyles = {
         position: 'relative',
     },
 };
-
-const settingKeys: string[] = [
-    'displayTypes',
-    'displayValid',
-    'displayRejected',
-    'displayNew',
+const POSSIBLE_ORG_UNIT_STATUSES: OrgUnitStatus[] = [
+    'VALID',
+    'REJECTED',
+    'NEW',
 ];
 
 type Props = {
@@ -71,12 +68,31 @@ export const SettingsPopper: FunctionComponent<Props> = ({
         [anchorEl],
     );
 
-    const handleChangeSettings = useCallback(
-        (setting: string) => {
-            setSettings(prevSettings => ({
-                ...prevSettings,
-                [setting]: !prevSettings[setting],
-            }));
+    const handleChangeTypes = useCallback(() => {
+        setSettings(prevSettings => ({
+            ...prevSettings,
+            displayTypes: !prevSettings.displayTypes,
+        }));
+    }, [setSettings]);
+
+    const handleChangeVisibleStatus = useCallback(
+        (status: OrgUnitStatus) => {
+            setSettings(prevSettings => {
+                const currentStatuses = prevSettings.statusSettings;
+                const statusIndex = currentStatuses.indexOf(status);
+                if (statusIndex === -1) {
+                    // Status not in array, add it
+                    return {
+                        ...prevSettings,
+                        statusSettings: [...currentStatuses, status],
+                    };
+                }
+                // Status in array, remove it
+                return {
+                    ...prevSettings,
+                    statusSettings: currentStatuses.filter(s => s !== status),
+                };
+            });
         },
         [setSettings],
     );
@@ -107,20 +123,39 @@ export const SettingsPopper: FunctionComponent<Props> = ({
                     }}
                 >
                     <Paper sx={styles.paper} elevation={1}>
-                        {settingKeys.map(settingKey => (
-                            <Box key={settingKey} py={0.5}>
+                        <Box py={0.5}>
+                            <FormControlLabel
+                                control={
+                                    <Switch
+                                        size="small"
+                                        checked={settings.displayTypes}
+                                        onChange={handleChangeTypes}
+                                        color="primary"
+                                    />
+                                }
+                                label={formatMessage(MESSAGES.displayTypes)}
+                            />
+                        </Box>
+                        {POSSIBLE_ORG_UNIT_STATUSES.map(status => (
+                            <Box py={0.5} key={status}>
                                 <FormControlLabel
                                     control={
                                         <Switch
                                             size="small"
-                                            checked={settings[settingKey]}
+                                            checked={settings.statusSettings.includes(
+                                                status,
+                                            )}
                                             onChange={() =>
-                                                handleChangeSettings(settingKey)
+                                                handleChangeVisibleStatus(
+                                                    status,
+                                                )
                                             }
                                             color="primary"
                                         />
                                     }
-                                    label={formatMessage(MESSAGES[settingKey])}
+                                    label={formatMessage(
+                                        MESSAGES[`display${status}`],
+                                    )}
                                 />
                             </Box>
                         ))}

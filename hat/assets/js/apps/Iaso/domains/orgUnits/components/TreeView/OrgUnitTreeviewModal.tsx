@@ -9,19 +9,20 @@ import React, {
     FunctionComponent,
     useCallback,
     useEffect,
-    useMemo,
     useRef,
     useState,
 } from 'react';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
-import { OrgUnit, OrgUnitStatus } from '../../types/orgUnit';
+import { OrgUnit } from '../../types/orgUnit';
 import { getOrgUnitAncestors } from '../../utils';
 import { OrgUnitLabel } from '../OrgUnitLabel';
 import { OrgUnitTreeviewPicker } from './OrgUnitTreeviewPicker';
-import { SettingsPopper } from './SettingsPopper';
+import { Settings, SettingsPopper } from './SettingsPopper';
+import { SourceDescription } from './SourceDescription';
 import { TreeViewLabel } from './TreeViewLabel';
 import { MESSAGES } from './messages';
 import { getChildrenData, getRootData, searchOrgUnits } from './requests';
+import { DEFAULT_CONFIG, useSourceConfig } from './useSourceConfig';
 import {
     formatInitialSelectedIds,
     formatInitialSelectedParents,
@@ -71,15 +72,10 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
     useIcon = false,
 }) => {
     const theme = useTheme();
-    const [settings, setSettings] = useState({
+    const [settings, setSettings] = useState<Settings>({
         displayTypes: true,
-        // those three need to be prefilled with source config
-        displayValid: true,
-        displayRejected: false,
-        displayNew: false,
+        statusSettings: DEFAULT_CONFIG,
     });
-    console.log('source', source);
-
     const [selectedOrgUnits, setSelectedOrgUnits] = useState(initialSelection);
 
     const [selectedOrgUnitsIds, setSelectedOrgUnitsIds] = useState(
@@ -147,23 +143,16 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
         },
         [selectedOrgUnitsIdsCopy, selectedOrgUnitParentsCopy],
     );
-
-    const { displayTypes, displayValid, displayRejected, displayNew } =
-        settings;
-
-    const validationStatus = useMemo(() => {
-        return [
-            ...(displayValid ? ['VALID'] : []),
-            ...(displayRejected ? ['REJECTED'] : []),
-            ...(displayNew ? ['NEW'] : []),
-        ] as OrgUnitStatus[];
-    }, [displayValid, displayRejected, displayNew]);
-
+    const { displayTypes, statusSettings } = settings;
+    const { sourceSettings, isFetchingSource, sourceInfos } = useSourceConfig(
+        source,
+        version,
+    );
     const getRootDataWithSource = useCallback(async () => {
         const key = version ? 'version' : 'source';
         const value = version || source;
-        return getRootData(value, key, validationStatus);
-    }, [source, version, validationStatus]);
+        return getRootData(value, key, statusSettings);
+    }, [source, version, statusSettings]);
 
     const searchOrgUnitsWithSource = useCallback(
         async (value, count) => {
@@ -172,10 +161,10 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
                 count,
                 source,
                 version,
-                validationStatus,
+                statusSettings,
             });
         },
-        [source, version, validationStatus],
+        [source, version, statusSettings],
     );
 
     const resetSelection = useCallback(() => {
@@ -217,6 +206,18 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
             resetSelection();
         }
     }, [resetTrigger, hardReset, resetSelection]);
+
+    useEffect(() => {
+        if (sourceSettings && !isFetchingSource) {
+            setSettings({
+                ...settings,
+                statusSettings: sourceSettings,
+            });
+        }
+        // only update status settings if source settings are changed
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isFetchingSource, sourceSettings]);
+
     return (
         // @ts-ignore
         <ConfirmCancelDialogComponent
@@ -241,7 +242,7 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
                         multiselect={multiselect}
                         placeholder={titleMessage}
                         required={required}
-                        disabled={disabled}
+                        disabled={disabled || isFetchingSource}
                         label={(orgUnit: OrgUnit) => (
                             <TreeViewLabel
                                 orgUnit={orgUnit}
@@ -274,9 +275,7 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
             </Box>
             <Box mt={1}>
                 <TreeViewWithSearch
-                    getChildrenData={id =>
-                        getChildrenData(id, validationStatus)
-                    }
+                    getChildrenData={id => getChildrenData(id, statusSettings)}
                     getRootData={getRootDataWithSource}
                     label={(orgUnit: OrgUnit) => (
                         <TreeViewLabel
@@ -304,9 +303,20 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
                         if (allowedTypes.length === 0) return true;
                         return allowedTypes.includes(item.org_unit_type_id);
                     }}
-                    dependency={validationStatus}
-                    childrenDependency={validationStatus}
+                    dependency={statusSettings}
+                    childrenDependency={statusSettings}
                 />
+                <Box
+                    sx={{
+                        position: 'absolute',
+                        width: '60%',
+                        display: 'flex',
+                        bottom: theme.spacing(2),
+                        left: theme.spacing(3),
+                    }}
+                >
+                    <SourceDescription sourceInfos={sourceInfos} />
+                </Box>
             </Box>
         </ConfirmCancelDialogComponent>
     );

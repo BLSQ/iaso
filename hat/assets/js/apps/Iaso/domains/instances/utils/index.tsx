@@ -72,6 +72,7 @@ const KeyValueFields: FunctionComponent<KeyValueFieldsProps> = ({ entry }) => (
 type Field = {
     label?: string | Record<string, string>;
     name: string;
+    type: string;
 };
 type Locales = {
     fr: string[];
@@ -203,6 +204,7 @@ export const formatLabel = (field: Field): string => {
     if (!field.label.trim()) return field.name;
     if (field.label.includes(':')) return field.label.split(':')[0];
     if (field.label.includes('$')) return field.label.split('$')[0];
+    if (field.type === 'calculate') return 'Σ ' + field.label;
     return field.label;
 };
 

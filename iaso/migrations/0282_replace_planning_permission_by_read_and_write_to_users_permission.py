@@ -6,7 +6,7 @@ from django.db import migrations
 def link_iaso_planning_write_and_read_to_users(apps, schema_editor):
     permission = apps.get_model("auth", "Permission")
     user = apps.get_model("auth", "User")
-    old_planning_permission = permission.objects.get(codename="iaso_planning")
+    old_planning_permission = permission.objects.filter(codename="iaso_planning").first()
     users_linked_old_permission = user.objects.filter(user_permissions=old_planning_permission)
     new_planning_permissions = permission.objects.filter(codename__in=["iaso_planning_write", "iaso_planning_read"])
     for user in users_linked_old_permission:
@@ -19,7 +19,7 @@ def unlink_iaso_planning_write_and_read_to_users(apps, schema_editor):
     user = apps.get_model("auth", "User")
     old_planning_permissions = permission.objects.filter(codename__in=["iaso_planning_write", "iaso_planning_read"])
     users_linked_old_permissions = user.objects.filter(user_permissions__in=old_planning_permissions)
-    new_planning_permission = permission.objects.get(codename="iaso_planning")
+    new_planning_permission = permission.objects.filter(codename="iaso_planning").first()
     for user in users_linked_old_permissions:
         user.user_permissions.remove(*old_planning_permissions)
         user.user_permissions.add(new_planning_permission)

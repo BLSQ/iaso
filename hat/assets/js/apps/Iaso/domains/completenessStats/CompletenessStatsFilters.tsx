@@ -133,7 +133,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
 
     const handleParentChange = useCallback(
         orgUnit => {
-            const id = orgUnit ? [orgUnit.id] : undefined;
+            const id = orgUnit ? orgUnit.id : undefined;
             setInitialParentId(id);
             handleChange('parentId', id);
         },

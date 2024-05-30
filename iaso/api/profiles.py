@@ -255,6 +255,8 @@ class ProfilesViewSet(viewsets.ViewSet):
             ids=ids,
         )
 
+        queryset = queryset.prefetch_related("user")
+
         if request.GET.get("csv"):
             return self.list_export(queryset=queryset, file_format=FileFormatEnum.CSV)
         if request.GET.get("xlsx"):

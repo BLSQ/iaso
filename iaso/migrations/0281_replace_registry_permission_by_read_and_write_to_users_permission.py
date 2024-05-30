@@ -3,18 +3,18 @@
 from django.db import migrations
 
 
-def link_iaso_registry_writ_and_read_to_users(apps, schema_editor):
+def link_iaso_registry_write_and_read_to_users(apps, schema_editor):
     permission = apps.get_model("auth", "Permission")
     user = apps.get_model("auth", "User")
     old_registry_permission = permission.objects.get(codename="iaso_registry")
-    users_linked_old_permission = user.objects.filter(user_permissions=old_registry_permission.id)
+    users_linked_old_permission = user.objects.filter(user_permissions=old_registry_permission)
     new_registry_permissions = permission.objects.filter(codename__in=["iaso_registry_write", "iaso_registry_read"])
     for user in users_linked_old_permission:
         user.user_permissions.remove(old_registry_permission)
         user.user_permissions.add(*new_registry_permissions)
 
 
-def unlink_iaso_registry_writ_and_read_to_users(apps, schema_editor):
+def unlink_iaso_registry_write_and_read_to_users(apps, schema_editor):
     permission = apps.get_model("auth", "Permission")
     user = apps.get_model("auth", "User")
     old_registry_permissions = permission.objects.filter(codename__in=["iaso_registry_write", "iaso_registry_read"])
@@ -31,5 +31,5 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(link_iaso_registry_writ_and_read_to_users, unlink_iaso_registry_writ_and_read_to_users)
+        migrations.RunPython(link_iaso_registry_write_and_read_to_users, unlink_iaso_registry_write_and_read_to_users)
     ]

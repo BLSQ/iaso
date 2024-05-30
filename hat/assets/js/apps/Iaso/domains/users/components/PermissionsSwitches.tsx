@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Box, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
@@ -71,8 +71,8 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const { data, isLoading } = useSnackQuery<PermissionResult>({
-        queryKey: ['permissions'],
-        queryFn: () => getRequest('/api/permissions/'),
+        queryKey: ['grouped_permissions'],
+        queryFn: () => getRequest('/api/permissions/grouped_permissions/'),
         snackErrorMsg: MESSAGES.fetchPermissionsError,
         // Permission list is not displayed for superuser, no need to fetch it from server
         options: { enabled: !isSuperUser },
@@ -89,16 +89,26 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
         handleChange(newUserPerms);
     };
     const loggedInUser = useCurrentUser();
-    const allPermissions =
-        data?.permissions?.filter(permission =>
-            canAssignPermission(loggedInUser, permission),
-        ) ?? [];
+
+    const allPermissions = useMemo(() => {
+        const groups = data?.permissions ? Object.keys(data?.permissions) : [];
+        const permissions = {};
+        groups.forEach(group => {
+            permissions[group] =
+                data?.permissions[group]?.filter(permission =>
+                    canAssignPermission(loggedInUser, permission),
+                ) ?? [];
+        });
+        return permissions;
+    }, [data?.permissions, loggedInUser]);
+
     const userPermissions = currentUser.user_permissions.value;
     const { data: userRoles, isFetching } = useGetUserRolesDropDown();
     const permissionsData = useGetUserPermissions(
         allPermissions,
         userPermissions,
     );
+
     // This is a problem with the type definition of Column is bluesquare-components
     // @ts-ignore
     const columns: Column[] = useUserPermissionColumns({

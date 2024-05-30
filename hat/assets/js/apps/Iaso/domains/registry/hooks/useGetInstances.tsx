@@ -78,10 +78,12 @@ export const useGetInstances = (
 
 export const useGetOrgUnitInstances = (
     orgUnitId?: number,
+    onlyReference = false,
 ): UseQueryResult<Instance[], Error> => {
     const apiParams: Record<string, any> = {
         orgUnitId,
         showDeleted: false,
+        onlyReference,
     };
     const url = makeUrlWithParams('/api/instances/', apiParams);
     return useSnackQuery({

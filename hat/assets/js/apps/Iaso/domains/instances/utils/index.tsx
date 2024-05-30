@@ -1,53 +1,53 @@
 /* eslint-disable camelcase */
+import CallMade from '@mui/icons-material/CallMade';
+import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
+import { Tooltip } from '@mui/material';
+import {
+    Column,
+    LinkWithLocation,
+    RenderCell,
+    Setting,
+    getTableUrl,
+    truncateText,
+    useSafeIntl,
+} from 'bluesquare-components';
+import moment from 'moment';
 import React, {
     FunctionComponent,
     ReactElement,
-    useMemo,
     useCallback,
+    useMemo,
 } from 'react';
-import moment from 'moment';
-import { Tooltip } from '@mui/material';
-import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
-import CallMade from '@mui/icons-material/CallMade';
-import {
-    truncateText,
-    getTableUrl,
-    Column,
-    Setting,
-    RenderCell,
-    useSafeIntl,
-    LinkWithLocation,
-} from 'bluesquare-components';
 
 import instancesTableColumns from '../config';
 import MESSAGES from '../messages';
-import { VisibleColumn } from '../types/visibleColumns';
 import { Instance, ShortFile } from '../types/instance';
+import { VisibleColumn } from '../types/visibleColumns';
 
+import { getCookie } from '../../../utils/cookies';
 import {
-    apiDateTimeFormat,
     apiDateFormat,
+    apiDateTimeFormat,
     getFromDateString,
     getToDateString,
 } from '../../../utils/dates';
-import ActionTableColumnComponent from '../components/ActionTableColumnComponent';
 import { Form, PossibleField } from '../../forms/types/forms';
-import { getCookie } from '../../../utils/cookies';
+import ActionTableColumnComponent from '../components/ActionTableColumnComponent';
 
 import DeleteDialog from '../components/DeleteInstanceDialog';
 import ExportInstancesDialogComponent from '../components/ExportInstancesDialogComponent';
 
-import { fetchLatestOrgUnitLevelId } from '../../orgUnits/utils';
 import { baseUrls } from '../../../constants/urls';
+import { fetchLatestOrgUnitLevelId } from '../../orgUnits/utils';
 
 import { Selection } from '../../orgUnits/types/selection';
 
 import { userHasOneOfPermissions, userHasPermission } from '../../users/utils';
 
-import { useCurrentUser } from '../../../utils/usersUtils';
 import * as Permission from '../../../utils/permissions';
-import { INSTANCE_METAS_FIELDS } from '../constants';
+import { useCurrentUser } from '../../../utils/usersUtils';
 import { InstanceMetasField } from '../components/ColumnSelect';
+import { INSTANCE_METAS_FIELDS } from '../constants';
 
 const NO_VALUE = '/';
 // eslint-disable-next-line no-unused-vars
@@ -287,6 +287,7 @@ export const useInstancesColumns = (
             });
         tableColumns = tableColumns.concat(childrenArray);
         if (
+            userHasPermission(Permission.REGISTRY_WRITE, currentUser) &&
             userHasOneOfPermissions(
                 [Permission.SUBMISSIONS_UPDATE, Permission.SUBMISSIONS],
                 currentUser,

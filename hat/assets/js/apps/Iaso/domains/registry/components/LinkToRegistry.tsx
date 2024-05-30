@@ -1,13 +1,14 @@
+import { makeRedirectionUrl } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
 import { LinkTo } from '../../../components/nav/LinkTo';
 import { baseUrls } from '../../../constants/urls';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { OrgUnit, ShortOrgUnit } from '../../orgUnits/types/orgUnit';
-import { userHasPermission } from '../../users/utils';
+import { userHasOneOfPermissions } from '../../users/utils';
 
 import MESSAGES from '../messages';
 
-import { REGISTRY } from '../../../utils/permissions';
+import { REGISTRY_READ, REGISTRY_WRITE } from '../../../utils/permissions';
 
 type Props = {
     orgUnit?: OrgUnit | ShortOrgUnit;
@@ -17,6 +18,7 @@ type Props = {
     iconSize?: 'small' | 'medium' | 'large' | 'default' | 'inherit';
     size?: 'small' | 'medium' | 'large' | 'default' | 'inherit';
     color?: string;
+    params?: Record<string, string>;
 };
 
 export const LinkToRegistry: FunctionComponent<Props> = ({
@@ -27,10 +29,16 @@ export const LinkToRegistry: FunctionComponent<Props> = ({
     iconSize = 'medium',
     size = 'medium',
     color = 'inherit',
+    params = {},
 }) => {
     const user = useCurrentUser();
-    const condition = userHasPermission(REGISTRY, user) && Boolean(orgUnit);
-    const url = `/${baseUrls.registry}/orgUnitId/${orgUnit?.id}`;
+    const condition =
+        userHasOneOfPermissions([REGISTRY_READ, REGISTRY_WRITE], user) &&
+        Boolean(orgUnit);
+    const url = makeRedirectionUrl(baseUrls.registry, {
+        ...params,
+        orgUnitId: orgUnit?.id,
+    });
     const text = orgUnit?.name;
 
     return (

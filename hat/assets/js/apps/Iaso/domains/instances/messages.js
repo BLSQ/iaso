@@ -429,8 +429,8 @@ const MESSAGES = defineMessages({
         id: 'iaso.formversions.chronologicalPeriodError',
         defaultMessage: 'Start period should be before end period',
     },
-    restricted_submissions_by_orgunits: {
-        id: 'iaso.restricted_submissions_by_orgunits',
+    restricted_results_by_orgunits: {
+        id: 'iaso.restricted_results_by_orgunits',
         defaultMessage:
             'Your user can only see submissions for the following orgunits: ',
     },

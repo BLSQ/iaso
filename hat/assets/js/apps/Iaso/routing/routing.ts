@@ -54,7 +54,8 @@ export const useGenUrl = (): GenUrlFunction => {
     const currentBaseUrl =
         Object.values(allBaseUrls)
             .filter(url => pathname.includes(`${url}`))
-            .sort((a, b) => a.length - b.length)[0] ?? baseUrls.home;
+            .sort((a, b) => b.length - a.length)[0] ?? baseUrls.home;
+
     const currentParams = useParamsObject(currentBaseUrl ?? '');
     return useCallback(
         (

@@ -23,7 +23,7 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.paginator import Paginator
 from django.core.validators import MinLengthValidator
 from django.db import models
-from django.db.models import Count, FilteredRelation, Q
+from django.db.models import Count, Exists, FilteredRelation, OuterRef, Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -38,9 +38,9 @@ from iaso.utils import extract_form_version_id, flat_parse_xml_soup
 
 from .. import periods
 from ..utils.jsonlogic import jsonlogic_to_q
+from ..utils.models.common import get_creator_name
 from .device import Device, DeviceOwnership
 from .forms import Form, FormVersion
-from ..utils.models.common import get_creator_name
 
 logger = getLogger(__name__)
 
@@ -718,6 +718,7 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         sent_date_to=None,
         json_content=None,
         planning_ids=None,
+        only_reference=None,
     ):
         queryset = self
         if from_date:
@@ -741,8 +742,20 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
 
         if org_unit_type_id:
             queryset = queryset.filter(org_unit__org_unit_type__in=org_unit_type_id.split(","))
-        if org_unit_id:
-            queryset = queryset.filter(org_unit_id=org_unit_id)
+
+        if only_reference == "true":
+            if org_unit_id:
+                # Create a subquery for OrgUnitReferenceInstance that checks for matching org_unit_id and instance_id
+                subquery = OrgUnitReferenceInstance.objects.filter(org_unit_id=org_unit_id, instance_id=OuterRef("pk"))
+                queryset = queryset.annotate(has_reference=Exists(subquery)).filter(has_reference=True)
+            else:
+                # If no specific org_unit_id is provided, check for any OrgUnitReferenceInstance matching the instance_id
+                subquery = OrgUnitReferenceInstance.objects.filter(instance_id=OuterRef("pk"))
+                queryset = queryset.annotate(has_reference=Exists(subquery)).filter(has_reference=True)
+        else:
+            if org_unit_id:
+                # Filter by org unit id if only_reference is not true
+                queryset = queryset.filter(org_unit_id=org_unit_id)
 
         if org_unit_parent_id:
             # Local import to avoid loop
@@ -750,7 +763,6 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
 
             parent = OrgUnit.objects.get(id=org_unit_parent_id)
             queryset = queryset.filter(org_unit__path__descendants=parent.path)
-
         if with_location == "true":
             queryset = queryset.filter(location__isnull=False)
 
@@ -1352,7 +1364,6 @@ class Profile(models.Model):
             "user_id": self.user.id,
             "phone_number": self.phone_number.as_e164 if self.phone_number else None,
             "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
-            "projects": [p.as_dict() for p in self.projects.all().order_by("name")],
         }
 
     def has_a_team(self):

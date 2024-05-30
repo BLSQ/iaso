@@ -38,7 +38,8 @@ class HasOrgUnitPermission(permissions.BasePermission):
                 request.user.has_perm(permission.FORMS)
                 or request.user.has_perm(permission.ORG_UNITS)
                 or request.user.has_perm(permission.SUBMISSIONS)
-                or request.user.has_perm(permission.REGISTRY)
+                or request.user.has_perm(permission.REGISTRY_WRITE)
+                or request.user.has_perm(permission.REGISTRY_READ)
                 or request.user.has_perm(permission.POLIO)
             )
         ):
@@ -336,6 +337,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
     @action(methods=["GET"], detail=False)
     def treesearch(self, request, **kwargs):
+        """
+        TODO: delete this route when it's been replaced by `OrgUnitTreeViewSet`.
+        """
         queryset = self.get_queryset().order_by("name")
         params = request.GET
         parent_id = params.get("parent_id")

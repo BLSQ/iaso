@@ -26,7 +26,13 @@ export const VaccineArrivalReports: FunctionComponent<Props> = ({
             onClick={onClick}
         >
             {items.map((_, index) => {
-                return <VaccineArrivalReport index={index} vaccine={vaccine} key={index} />;
+                return (
+                    <VaccineArrivalReport
+                        index={index}
+                        vaccine={vaccine}
+                        key={index}
+                    />
+                );
             })}
         </MultiFormTab>
     );

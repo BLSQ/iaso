@@ -1,38 +1,17 @@
 from typing import Any
 from typing import Protocol
 
+from django import forms as django_forms
 from django.contrib.admin import widgets
 from django.contrib.gis import admin, forms
 from django.contrib.gis.db import models as geomodels
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.utils.html import format_html_join, format_html
 from django.utils.safestring import mark_safe
 from django_json_widget.widgets import JSONEditorWidget
 
 from iaso.models.json_config import Config  # type: ignore
-
-
-class IasoJSONEditorWidget(JSONEditorWidget):
-    class Media:
-        css = {"all": ("css/admin-json-widget.css",)}
-
-    def __init__(self, attrs=None, mode="code", options=None, width=None, height=None):
-        if height == None:
-            height = "400px"
-
-        default_options = {
-            "modes": ["text", "code"],
-            "mode": mode,
-            "search": True,
-        }
-        if options:
-            default_options.update(options)
-
-        super(IasoJSONEditorWidget, self).__init__(
-            attrs=attrs, mode=mode, options=default_options, width=width, height=height
-        )
-
-
 from .models import (
     Account,
     AccountFeatureFlag,
@@ -87,9 +66,56 @@ from .models import (
     Payment,
     PaymentLot,
 )
-from .models.microplanning import Team, Planning, Assignment
 from .models.data_store import JsonDataStore
+from .models.microplanning import Team, Planning, Assignment
 from .utils.gis import convert_2d_point_to_3d
+
+
+class IasoJSONEditorWidget(JSONEditorWidget):
+    class Media:
+        css = {"all": ("css/admin-json-widget.css",)}
+
+    def __init__(self, attrs=None, mode="code", options=None, width=None, height=None):
+        if height == None:
+            height = "400px"
+
+        default_options = {
+            "modes": ["text", "code"],
+            "mode": mode,
+            "search": True,
+        }
+        if options:
+            default_options.update(options)
+
+        super(IasoJSONEditorWidget, self).__init__(
+            attrs=attrs, mode=mode, options=default_options, width=width, height=height
+        )
+
+
+class ArrayFieldMultipleChoiceField(django_forms.MultipleChoiceField):
+    """
+    Display a multi-select field for ArrayField:
+
+    formfield_overrides = {
+        ArrayField: {
+            "form_class": ArrayFieldMultipleChoiceField,
+        }
+    }
+
+    formfield_overrides = {
+        ArrayField: {
+            "form_class": ArrayFieldMultipleChoiceField,
+            "widget": forms.CheckboxSelectMultiple,
+        }
+    }
+    """
+
+    def __init__(self, *args, **kwargs):
+        kwargs.pop("max_length", None)
+        base_field = kwargs.pop("base_field", None)
+        kwargs["choices"] = base_field.choices
+        kwargs["choices"].pop(0)
+        super().__init__(*args, **kwargs)
 
 
 class AdminAttributes(Protocol):
@@ -786,10 +812,19 @@ class PaymentLotAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
+@admin.register(DataSource)
+class DataSourceAdmin(admin.ModelAdmin):
+    formfield_overrides = {
+        ArrayField: {
+            "form_class": ArrayFieldMultipleChoiceField,
+            "widget": forms.CheckboxSelectMultiple,
+        }
+    }
+
+
 admin.site.register(Account)
 admin.site.register(AccountFeatureFlag)
 admin.site.register(Device)
-admin.site.register(DataSource)
 admin.site.register(DeviceOwnership)
 admin.site.register(MatchingAlgorithm)
 admin.site.register(ExternalCredentials)

@@ -2,9 +2,9 @@ import { UrlParams } from 'bluesquare-components';
 
 export type OrgUnitListTab = 'map' | 'list';
 
-export type RegistryDetailParams = UrlParams & {
+export type RegistryParams = UrlParams & {
     orgUnitId: string;
-    accountId: string;
+    orgUnitChildrenId?: string;
     formIds?: string;
     planningIds?: string;
     columns?: string;
@@ -16,8 +16,8 @@ export type RegistryDetailParams = UrlParams & {
     submissionId?: string;
     missingSubmissionVisible?: 'true';
     showTooltip?: 'true';
-    useCluster?: 'true';
-    isFullScreen?: 'true';
+    clusterEnabled?: 'true';
+    fullScreen?: 'true';
     missingSubmissionsPageSize?: string;
     missingSubmissionsOrder?: string;
     missingSubmissionsPage?: string;

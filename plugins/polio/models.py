@@ -358,26 +358,6 @@ class Round(models.Model):
         return len(self.campaign.get_districts_for_round(self))
 
 
-class CampaignQuerySet(models.QuerySet):
-    def filter_for_user(self, user: Union[User, AnonymousUser]):
-        qs = self
-        if user.is_authenticated:
-            # Authenticated users only get campaigns linked to their account
-            qs = qs.filter(account=user.iaso_profile.account)
-
-            # Restrict Campaign to the OrgUnit on the country he can access
-            if user.iaso_profile.org_units.count():
-                org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all()).defer(
-                    "geom", "simplified_geom"
-                )
-                qs = qs.filter(Q(country__in=org_units) | Q(initial_org_unit__in=org_units))
-        return qs
-
-
-# workaround for MyPy detection
-CampaignManager = models.Manager.from_queryset(CampaignQuerySet)
-
-
 class CampaignType(models.Model):
     POLIO = "Polio"
     MEASLES = "Measles"
@@ -401,11 +381,35 @@ class CampaignType(models.Model):
         super(CampaignType, self).save(*args, **kwargs)
 
 
+class CampaignQuerySet(models.QuerySet):
+    def filter_for_user(self, user: Union[User, AnonymousUser]):
+        qs = self
+        if user.is_authenticated:
+            # Authenticated users only get campaigns linked to their account
+            qs = qs.filter(account=user.iaso_profile.account)
+
+            # Restrict Campaign to the OrgUnit on the country he can access
+            if user.iaso_profile.org_units.count():
+                org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all()).defer(
+                    "geom", "simplified_geom"
+                )
+                qs = qs.filter(Q(country__in=org_units) | Q(initial_org_unit__in=org_units))
+        return qs
+
+
+class PolioCampaignManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().prefetch_related("campaign_types").filter(campaign_types__name=CampaignType.POLIO)
+
+
 class Campaign(SoftDeletableModel):
     class Meta:
         ordering = ["obr_name"]
 
-    objects = CampaignManager()
+    # Managers.
+    objects = models.Manager.from_queryset(CampaignQuerySet)()
+    polio_objects = PolioCampaignManager.from_queryset(CampaignQuerySet)()
+
     scopes: "django.db.models.manager.RelatedManager[CampaignScope]"
     rounds: "django.db.models.manager.RelatedManager[Round]"
     id = models.UUIDField(default=uuid4, primary_key=True, editable=False)

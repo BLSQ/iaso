@@ -6,12 +6,14 @@ export type Filters = {
     submitterId?: string;
     submitterTeamId?: string;
     entityTypeIds?: string;
+    locationLimit?: string;
 };
 
 export type Params = {
     pageSize: string;
     order: string;
     page: string;
+    tab: string;
     search?: string;
     location?: string;
     dateFrom?: string;
@@ -19,4 +21,5 @@ export type Params = {
     submitterId?: string;
     submitterTeamId?: string;
     entityTypeIds?: string;
+    locationLimit?: string;
 };

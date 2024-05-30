@@ -1,23 +1,14 @@
-import MenuBookIcon from '@mui/icons-material/MenuBook';
-import { makeStyles } from '@mui/styles';
-import {
-    IconButton as IconButtonComponent,
-    useKeyPressListener,
-} from 'bluesquare-components';
-import classNames from 'classnames';
+import { makeRedirectionUrl } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
-import { useDispatch } from 'react-redux';
-import { Link } from 'react-router';
-
+import { LinkTo } from '../../../components/nav/LinkTo';
 import { baseUrls } from '../../../constants/urls';
-import { redirectTo, redirectToReplace } from '../../../routing/actions';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { OrgUnit, ShortOrgUnit } from '../../orgUnits/types/orgUnit';
-import { userHasPermission } from '../../users/utils';
+import { userHasOneOfPermissions } from '../../users/utils';
 
 import MESSAGES from '../messages';
 
-import * as Permission from '../../../utils/permissions';
+import { REGISTRY_READ, REGISTRY_WRITE } from '../../../utils/permissions';
 
 type Props = {
     orgUnit?: OrgUnit | ShortOrgUnit;
@@ -26,13 +17,9 @@ type Props = {
     replace?: boolean;
     iconSize?: 'small' | 'medium' | 'large' | 'default' | 'inherit';
     size?: 'small' | 'medium' | 'large' | 'default' | 'inherit';
+    color?: string;
+    params?: Record<string, string>;
 };
-
-const useStyles = makeStyles(() => ({
-    link: {
-        cursor: 'pointer',
-    },
-}));
 
 export const LinkToRegistry: FunctionComponent<Props> = ({
     orgUnit,
@@ -41,43 +28,31 @@ export const LinkToRegistry: FunctionComponent<Props> = ({
     replace = false,
     iconSize = 'medium',
     size = 'medium',
+    color = 'inherit',
+    params = {},
 }) => {
     const user = useCurrentUser();
+    const condition =
+        userHasOneOfPermissions([REGISTRY_READ, REGISTRY_WRITE], user) &&
+        Boolean(orgUnit);
+    const url = makeRedirectionUrl(baseUrls.registry, {
+        ...params,
+        orgUnitId: orgUnit?.id,
+    });
+    const text = orgUnit?.name;
 
-    const targetBlankEnabled = useKeyPressListener('Meta');
-    const classes: Record<string, string> = useStyles();
-    const dispatch = useDispatch();
-    if (userHasPermission(Permission.REGISTRY, user) && orgUnit) {
-        const url = `/${baseUrls.registry}/orgUnitId/${orgUnit?.id}`;
-        const handleClick = () => {
-            if (targetBlankEnabled) {
-                window.open(`/dashboard${url}`, '_blank');
-            } else if (replace) {
-                dispatch(redirectToReplace(url));
-            } else {
-                dispatch(redirectTo(url));
-            }
-        };
-        if (useIcon) {
-            return (
-                <IconButtonComponent
-                    onClick={handleClick}
-                    overrideIcon={MenuBookIcon}
-                    tooltipMessage={MESSAGES.seeRegistry}
-                    iconSize={iconSize}
-                    size={size}
-                />
-            );
-        }
-        return (
-            <Link
-                className={classNames(className, classes.link)}
-                onClick={handleClick}
-            >
-                {orgUnit.name}
-            </Link>
-        );
-    }
-    if (useIcon) return null;
-    return <>{orgUnit ? orgUnit.name : '-'}</>;
+    return (
+        <LinkTo
+            condition={condition}
+            url={url}
+            useIcon={useIcon}
+            className={className}
+            replace={replace}
+            size={size}
+            iconSize={iconSize}
+            text={text}
+            tooltipMessage={MESSAGES.seeRegistry}
+            color={color}
+        />
+    );
 };

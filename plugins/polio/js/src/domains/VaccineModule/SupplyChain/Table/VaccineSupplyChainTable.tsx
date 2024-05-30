@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { UrlParams } from 'bluesquare-components';
-import { VACCINE_SUPPLY_CHAIN } from '../../../../constants/routes';
+import { baseUrls } from '../../../../constants/urls';
 import { TableWithDeepLink } from '../../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 import { useVaccineSupplyChainTableColumns } from './useVaccineSupplyChainTableColumns';
 import { useGetVrfList } from '../hooks/api/vrf';
@@ -13,14 +13,13 @@ export const VaccineSupplyChainTable: FunctionComponent<Props> = ({
     const { data: vrfList, isFetching } = useGetVrfList(params);
     const columns = useVaccineSupplyChainTableColumns();
     return (
-        // @ts-ignore
         <TableWithDeepLink
             data={vrfList?.results ?? []}
             count={vrfList?.count}
             pages={vrfList?.pages}
             params={params}
             columns={columns}
-            baseUrl={VACCINE_SUPPLY_CHAIN}
+            baseUrl={baseUrls.vaccineSupplyChain}
             columnSelectorEnabled
             columnSelectorButtonType="button"
             marginTop={false}

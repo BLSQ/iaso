@@ -1,10 +1,12 @@
 /* eslint-disable camelcase */
+import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { Box, Grid, Theme, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useSafeIntl } from 'bluesquare-components';
-import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router';
-
+import {
+    useSafeIntl,
+    LinkWithLocation,
+    ExternalLink,
+} from 'bluesquare-components';
 import { FormatListBulleted, History } from '@mui/icons-material';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import InputComponent from '../../../components/forms/InputComponent';
@@ -13,7 +15,6 @@ import {
     commaSeparatedIdsToArray,
     commaSeparatedIdsToStringArray,
 } from '../../../utils/forms';
-import { SUBMISSIONS, SUBMISSIONS_UPDATE } from '../../../utils/permissions';
 import { formatLabel } from '../../instances/utils';
 import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 import {
@@ -21,10 +22,11 @@ import {
     periodTypeOptionsWithNoPeriod,
 } from '../../periods/constants';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
-import { CR_MODE_NONE, changeRequestModeOptions } from '../constants';
 import MESSAGES from '../messages';
 import { FormDataType } from '../types/forms';
 import { FormLegendInput } from './FormLegendInput';
+import { CR_MODE_NONE, changeRequestModeOptions } from '../constants';
+import { SUBMISSIONS, SUBMISSIONS_UPDATE } from '../../../utils/permissions';
 
 const useStyles = makeStyles((theme: Theme) => ({
     radio: {
@@ -64,10 +66,8 @@ const FormForm: FunctionComponent<FormFormProps> = ({
 }) => {
     const classes = useStyles();
     const [displayPeriods, setDisplayPeriods] = useState<boolean>();
-
     const { formatMessage } = useSafeIntl();
     const [showAdvancedSettings, setshowAdvancedSettings] = useState(false);
-
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
     const { data: allOrgUnitTypes, isFetching: isOuTypeLoading } =
@@ -195,6 +195,7 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                                 <Grid item xs={6}>
                                     <InputComponent
                                         className={classes.radio}
+                                        dataTestId="single_per_period"
                                         keyValue="single_per_period"
                                         disabled={
                                             currentForm.period_type.value ===
@@ -383,20 +384,22 @@ const FormForm: FunctionComponent<FormFormProps> = ({
                         permissions={[SUBMISSIONS, SUBMISSIONS_UPDATE]}
                     >
                         <Grid item>
-                            <Link
+                            <LinkWithLocation
                                 className={classes.linkWithIcon}
-                                href={`/dashboard/forms/submissions/formIds/${currentForm.id.value}/tab/list`}
+                                to={`/${baseUrls.instances}/formIds/${currentForm.id.value}/tab/list`}
                             >
                                 <FormatListBulleted />
                                 {formatMessage(MESSAGES.records)}
-                            </Link>
+                            </LinkWithLocation>
                         </Grid>
                     </DisplayIfUserHasPerm>
                     <Grid item>
-                        <Link href={logsUrl} className={classes.linkWithIcon}>
-                            <History />
-                            {formatMessage(MESSAGES.formChangeLog)}
-                        </Link>
+                        <ExternalLink url={logsUrl}>
+                            <Typography className={classes.linkWithIcon}>
+                                <History />
+                                {formatMessage(MESSAGES.formChangeLog)}
+                            </Typography>
+                        </ExternalLink>
                     </Grid>
                 </Grid>
             )}

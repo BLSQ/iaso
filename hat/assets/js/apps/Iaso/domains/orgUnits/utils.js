@@ -1,10 +1,7 @@
 import React from 'react';
 
-import { textPlaceholder, useSafeIntl, createUrl } from 'bluesquare-components';
-import { getChipColors } from '../../constants/chipColors';
-import { baseUrls } from '../../constants/urls';
+import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 
-import { locationLimitMax } from './constants/orgUnitConstants';
 import { orderOrgUnitsByDepth } from '../../utils/map/mapUtils.ts';
 
 import MESSAGES from './messages';
@@ -72,6 +69,8 @@ export const orgUnitLabelString = (
     return message;
 };
 
+// Not really a React component because it returns strings.
+// TODO refactor with strings as children of span> or <p>, or as hook
 export const OrgUnitLabel = ({ orgUnit, withType, withSource = false }) => {
     const intl = useSafeIntl();
     return orgUnitLabelString(
@@ -247,19 +246,3 @@ export const compareGroupVersions = (a, b) => {
     }
     return comparison;
 };
-
-export const getOrgUnitsUrl = accountId =>
-    `${baseUrls.orgUnits}${createUrl(
-        {
-            accountId,
-            locationLimit: locationLimitMax,
-            order: 'id',
-            pageSize: 50,
-            page: 1,
-            searchTabIndex: 0,
-            searches: `[{"validation_status":"all", "color":"${getChipColors(
-                0,
-            ).replace('#', '')}"}]`,
-        },
-        '',
-    )}`;

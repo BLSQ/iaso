@@ -6,7 +6,12 @@ import {
     LqasImCampaign,
     LqasImDistrictData,
 } from '../../../constants/types';
-import {OK_COLOR, FAIL_COLOR, MODERATE_COLOR, POOR_COLOR} from '../../../styles/constants';
+import {
+    OK_COLOR,
+    FAIL_COLOR,
+    MODERATE_COLOR,
+    POOR_COLOR,
+} from '../../../styles/constants';
 import { makeLegendItem } from '../../../utils';
 import {
     accessArrayRound,
@@ -37,7 +42,14 @@ export const getLqasStatsForRound = (
     lqasData: Record<string, ConvertedLqasImData>,
     campaign: string | undefined,
     round: number,
-): ('1lqasOK' | '3lqasFail'| '3lqaspoor'| '3lqasmoderate' | '2lqasDisqualified' | null)[][] => {
+): (
+    | '1lqasOK'
+    | '3lqasFail'
+    | '3lqaspoor'
+    | '3lqasmoderate'
+    | '2lqasDisqualified'
+    | null
+)[][] => {
     if (!campaign || !lqasData[campaign]) return [[], [], [], []];
     const totalEvaluated = accessArrayRound(lqasData[campaign], round).map(
         district => ({
@@ -66,7 +78,7 @@ export const makeLqasMapLegendItems =
         value: string;
         color: any;
     }[] => {
-        const[passed, moderate, poor, failed] = getLqasStatsForRound(
+        const [passed, moderate, poor, failed] = getLqasStatsForRound(
             lqasData,
             campaign,
             round,
@@ -93,7 +105,12 @@ export const makeLqasMapLegendItems =
             color: POOR_COLOR,
         });
 
-        return [passedLegendItem, moderateLegendItem, poorLegendItem, failedLegendItem];
+        return [
+            passedLegendItem,
+            moderateLegendItem,
+            poorLegendItem,
+            failedLegendItem,
+        ];
     };
 
 export const getLqasStatsWithStatus = ({ data, campaign, round }) => {

@@ -1,3 +1,4 @@
+import React, { FunctionComponent, useCallback, useState } from 'react';
 import SearchIcon from '@mui/icons-material/Search';
 import { Pagination } from '@mui/lab';
 import { Box, Collapse, useMediaQuery, useTheme } from '@mui/material';
@@ -6,19 +7,14 @@ import {
     LoadingSpinner,
     useSafeIntl,
     useSkipEffectOnMount,
+    useRedirectToReplace,
 } from 'bluesquare-components';
-import React, { FunctionComponent, useCallback, useState } from 'react';
 
 // @ts-ignore
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-
 import { userHasPermission } from '../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
-import { handleTableDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/utils/table';
-import MESSAGES from '../../constants/messages';
-import { BUDGET } from '../../constants/routes';
-import { useStyles } from '../../styles/theme';
 import { BudgetButtons } from './BudgetButtons';
 import { BudgetFilters } from './BudgetFilters';
 import { BudgetCard } from './cards/BudgetCard';
@@ -29,10 +25,10 @@ import {
 } from './hooks/api/useGetBudget';
 import { useBudgetColumns } from './hooks/config';
 import { Budget } from './types';
-
-type Props = {
-    router: any;
-};
+import { useStyles } from '../../styles/theme';
+import MESSAGES from '../../constants/messages';
+import { baseUrls } from '../../constants/urls';
+import { useParamsObject } from '../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 
 const getCsvParams = (apiParams: Record<string, any>): string => {
     const {
@@ -60,12 +56,27 @@ const usePaginationStyles = makeStyles({
     alignRight: { textAlign: 'right' },
 });
 
-export const BudgetProcessList: FunctionComponent<Props> = ({ router }) => {
-    const { params } = router;
+type Params = {
+    search?: string;
+    current_state_key?: string;
+    roundStartFrom?: string;
+    roundStartTo?: string;
+    countries?: string;
+    org_unit_groups?: string;
+    order?: string;
+    pageSize?: string;
+    page?: string;
+};
+
+const baseUrl = baseUrls.budget;
+
+export const BudgetProcessList: FunctionComponent = () => {
+    const params = useParamsObject(baseUrl) as Params;
     const { formatMessage } = useSafeIntl();
     const paginationStyle = usePaginationStyles();
     const classes = useStyles();
     const [expand, setExpand] = useState<boolean>(false);
+    const redirectToReplace = useRedirectToReplace();
 
     const apiParams = useBudgetParams(params);
     const csvParams = getCsvParams(apiParams);
@@ -91,9 +102,9 @@ export const BudgetProcessList: FunctionComponent<Props> = ({ router }) => {
 
     const onCardPaginationChange = useCallback(
         (_value, newPage) => {
-            handleTableDeepLink(BUDGET)({ ...apiParams, page: newPage });
+            redirectToReplace(baseUrl, { ...apiParams, page: newPage });
         },
-        [apiParams],
+        [apiParams, redirectToReplace],
     );
     const { data: possibleStates } = useGetWorkflowStatesForDropdown();
 
@@ -126,10 +137,13 @@ export const BudgetProcessList: FunctionComponent<Props> = ({ router }) => {
                             buttonSize="small"
                             statesList={possibleStates}
                         />
-                        <BudgetButtons
-                            csvUrl={`/api/polio/budget/export_csv/?${csvParams}`}
-                            isUserPolioBudgetAdmin={isUserPolioBudgetAdmin}
-                        />
+                        <Box mb={2}>
+                            <BudgetButtons
+                                csvUrl={`/api/polio/budget/export_csv/?${csvParams}`}
+                                isUserPolioBudgetAdmin={isUserPolioBudgetAdmin}
+                                isMobileLayout
+                            />
+                        </Box>
                     </Collapse>
                 )}
 
@@ -150,7 +164,7 @@ export const BudgetProcessList: FunctionComponent<Props> = ({ router }) => {
                             pages={budgets?.pages}
                             params={apiParams}
                             columns={columns}
-                            baseUrl={BUDGET}
+                            baseUrl={baseUrl}
                             marginTop={false}
                             extraProps={{
                                 loading: isFetching,

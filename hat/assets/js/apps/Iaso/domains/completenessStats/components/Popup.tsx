@@ -1,9 +1,6 @@
 import React, { createRef, FunctionComponent, useCallback } from 'react';
-
 import { Popup } from 'react-leaflet';
-import { useDispatch } from 'react-redux';
 import classNames from 'classnames';
-
 import { makeStyles } from '@mui/styles';
 import {
     Card,
@@ -14,21 +11,20 @@ import {
     Table,
     TableBody,
 } from '@mui/material';
-
-import { useSafeIntl, mapPopupStyles } from 'bluesquare-components';
+import {
+    useSafeIntl,
+    mapPopupStyles,
+    useRedirectTo,
+} from 'bluesquare-components';
 import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
 import { baseUrls } from '../../../constants/urls';
-
 import MESSAGES from '../messages';
 import {
     CompletenessMapStats,
     CompletenessRouterParams,
     FormStat,
 } from '../types';
-
 import { PopupRow } from './PopUpRow';
-
-import { redirectTo } from '../../../routing/actions';
 
 const useStyles = makeStyles(theme => ({
     ...mapPopupStyles(theme),
@@ -71,7 +67,8 @@ export const PopupComponent: FunctionComponent<Props> = ({
     stats,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
+    const redirectTo = useRedirectTo();
+
     const classes: Record<string, string> = useStyles();
     const popup = createRef();
     const handleClick = useCallback(
@@ -80,9 +77,9 @@ export const PopupComponent: FunctionComponent<Props> = ({
                 ...params,
                 parentId: `${locationId}`,
             };
-            dispatch(redirectTo(baseUrl, tempParams));
+            redirectTo(baseUrl, tempParams);
         },
-        [dispatch, params],
+        [params, redirectTo],
     );
 
     const getPercent = useCallback((): string => {

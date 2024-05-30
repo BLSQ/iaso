@@ -7,27 +7,27 @@ import { FilterButton } from '../../../../../../hat/assets/js/apps/Iaso/componen
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useFilterState } from '../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 import MESSAGES from '../../constants/messages';
-import { BUDGET } from '../../constants/routes';
 import { DropdownOptions } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { useGetCountries } from '../../hooks/useGetCountries';
 import { useGetGroupDropdown } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
+import { baseUrls } from '../../constants/urls';
 
 type Props = {
-    params: UrlParams & {
-        showOnlyDeleted: boolean;
-        roundStartTo: string;
-        roundStartFrom: string;
-        countries: any;
-        org_unit_groups: any;
-        campaign: string;
+    params: Partial<UrlParams> & {
+        showOnlyDeleted?: boolean;
+        roundStartTo?: string;
+        roundStartFrom?: string;
+        country__id__in?: any;
+        orgUnitGroups?: any;
+        campaign?: string;
         // eslint-disable-next-line camelcase
-        current_state_key: string;
+        budget_current_state_key__in?: string;
     };
     statesList?: DropdownOptions<string>[];
-    buttonSize?: 'medium' | 'small' | 'large' | undefined;
+    buttonSize?: 'medium' | 'small' | 'large';
 };
 
-const baseUrl = BUDGET;
+const baseUrl = baseUrls.budget;
 export const BudgetFilters: FunctionComponent<Props> = ({
     params,
     buttonSize = 'medium',
@@ -43,7 +43,7 @@ export const BudgetFilters: FunctionComponent<Props> = ({
         useGetGroupDropdown({ blockOfCountries: 'True' });
     const countriesList = (data && data.orgUnits) || [];
     return (
-        <Box mb={4}>
+        <Box mb={isXSLayout ? 4 : 2}>
             <Grid container spacing={isXSLayout ? 0 : 2}>
                 <Grid item xs={12} sm={6} md={3}>
                     <InputComponent

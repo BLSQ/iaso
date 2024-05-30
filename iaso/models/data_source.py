@@ -1,3 +1,4 @@
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 
 
@@ -19,9 +20,29 @@ class DataSource(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     default_version = models.ForeignKey("SourceVersion", null=True, blank=True, on_delete=models.SET_NULL)
+    tree_config_status_fields = ArrayField(
+        models.CharField(max_length=30, blank=True, choices=[]),
+        default=list,
+        blank=True,
+        help_text="List of statuses used for display configuration of the OrgUnit tree.",
+    )
 
     def __str__(self):
         return "%s " % (self.name,)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Override `__init__` to avoid a circular import.
+        # This could be replaced by a callable in Django ≥ 5.
+        # https://docs.djangoproject.com/en/5.0/releases/5.0/#more-options-for-declaring-field-choices
+        from iaso.models import OrgUnit
+
+        self._meta.get_field("tree_config_status_fields").base_field.choices = OrgUnit.VALIDATION_STATUS_CHOICES
+
+    def clean(self, *args, **kwargs):
+        super().clean()
+        self.tree_config_status_fields = list(set(self.tree_config_status_fields))
 
     def as_dict(self):
         versions = SourceVersion.objects.filter(data_source_id=self.id)

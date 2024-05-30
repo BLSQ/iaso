@@ -358,9 +358,9 @@ const MESSAGES = defineMessages({
             'Closing this modal will not stop the document export. You can find all tasks and their progress on the tasks overview page.',
         id: 'iaso.users.exportMobileAppViewTasks',
     },
-    password: {
-        defaultMessage: 'password',
-        id: 'iaso.users.password',
+    phoneNumber: {
+        defaultMessage: 'Phone number',
+        id: 'iaso.users.phoneNumber',
     },
 });
 

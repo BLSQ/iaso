@@ -38,7 +38,7 @@ describe('Modules', () => {
             cy.visit(baseUrl);
 
             cy.wait('@getModules').then(() => {
-                cy.url().should('eq', `${baseUrl}/accountId/1`);
+                cy.url().should('eq', `${baseUrl}/accountId/1/`);
             });
         });
         it('should not be accessible if user does not have permission', () => {

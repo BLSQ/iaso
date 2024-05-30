@@ -5,6 +5,7 @@ import {
     textPlaceholder,
     useSafeIntl,
 } from 'bluesquare-components';
+import { baseUrls } from '../../../../constants/urls';
 import { NumberCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 import { useCurrentUser } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import {
@@ -13,7 +14,6 @@ import {
 } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import MESSAGES from '../messages';
 import DeleteDialog from '../../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
-import { VACCINE_SUPPLY_CHAIN_DETAILS } from '../../../../constants/routes';
 import { useDeleteVrf } from '../hooks/api/vrf';
 import { userHasPermission } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 import { POLIO_SUPPLY_CHAIN_WRITE } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
@@ -108,7 +108,7 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
                             <IconButton
                                 icon="edit"
                                 tooltipMessage={MESSAGES.edit}
-                                url={`${VACCINE_SUPPLY_CHAIN_DETAILS}/id/${settings.row.original.id}`}
+                                url={`/${baseUrls.vaccineSupplyChainDetails}/id/${settings.row.original.id}`}
                             />
                             <DeleteDialog
                                 titleMessage={MESSAGES.deleteVRF}

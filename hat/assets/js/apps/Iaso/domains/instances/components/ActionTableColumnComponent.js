@@ -42,6 +42,29 @@ const initialFormState = (
     };
 };
 
+const getUrlOrgUnit = data => {
+    const rowOriginal = data.row.original;
+    // each instance should have a formId
+    let initialUrl = `/${baseUrls.orgUnitDetails}/orgUnitId/${rowOriginal.org_unit.id}/formId/${rowOriginal.form_id}`;
+    // there are some instances which don't have a reference form Id
+    if (rowOriginal.is_reference_instance) {
+        initialUrl = `${initialUrl}/referenceFormId/${rowOriginal.form_id}`;
+    }
+    // each instance has an id
+    return `${initialUrl}/instanceId/${rowOriginal.id}`;
+};
+
+const getUrlInstance = data => {
+    const rowOriginal = data.row.original;
+    // each instance should have a formId
+    let initialUrl = `/${baseUrls.instanceDetail}/instanceId/${rowOriginal.id}`;
+    // there are some instances which don't have a reference form Id
+    if (rowOriginal.is_reference_instance) {
+        initialUrl = `${initialUrl}/referenceFormId/${rowOriginal.form_id}`;
+    }
+    return `${initialUrl}`;
+};
+
 const ActionTableColumnComponent = ({ settings }) => {
     const user = useCurrentUser();
     // eslint-disable-next-line no-unused-vars
@@ -60,29 +83,6 @@ const ActionTableColumnComponent = ({ settings }) => {
                 setFieldErrors(entry.errorKey, [entry.errorMessage]);
             });
         }
-    };
-
-    const getUrlOrgUnit = data => {
-        const rowOriginal = data.row.original;
-        // each instance should have a formId
-        let initialUrl = `${baseUrls.orgUnitDetails}/orgUnitId/${rowOriginal.org_unit.id}/formId/${rowOriginal.form_id}`;
-        // there are some instances which don't have a reference form Id
-        if (rowOriginal.is_reference_instance) {
-            initialUrl = `${initialUrl}/referenceFormId/${rowOriginal.form_id}`;
-        }
-        // each instance has an id
-        return `${initialUrl}/instanceId/${rowOriginal.id}`;
-    };
-
-    const getUrlInstance = data => {
-        const rowOriginal = data.row.original;
-        // each instance should have a formId
-        let initialUrl = `${baseUrls.instanceDetail}/instanceId/${settings.row.original.id}`;
-        // there are some instances which don't have a reference form Id
-        if (rowOriginal.is_reference_instance) {
-            initialUrl = `${initialUrl}/referenceFormId/${rowOriginal.form_id}`;
-        }
-        return `${initialUrl}`;
     };
 
     const linkOrgUnitToReferenceSubmission = (

@@ -1,21 +1,18 @@
 import React, { FunctionComponent } from 'react';
-
-import { Link } from 'react-router';
 import { userHasPermission } from '../../users/utils';
 import { baseUrls } from '../../../constants/urls';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import * as Permission from '../../../utils/permissions';
+import { LinkTo } from '../../../components/nav/LinkTo';
 
 type Props = {
     formId: string | number;
-    formName: unknown;
+    formName?: string;
 };
 
 export const LinkToForm: FunctionComponent<Props> = ({ formId, formName }) => {
     const user = useCurrentUser();
-    if (userHasPermission(Permission.FORMS, user)) {
-        const formUrl = `/${baseUrls.formDetail}/formId/${formId}`;
-        return <Link to={formUrl}>{formName}</Link>;
-    }
-    return <>{formName}</>;
+    const condition = userHasPermission(Permission.FORMS, user);
+    const url = `/${baseUrls.formDetail}/formId/${formId}`;
+    return <LinkTo condition={condition} url={url} text={formName} />;
 };

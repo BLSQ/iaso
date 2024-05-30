@@ -13,7 +13,7 @@ from rest_framework import status
 from iaso import models as m
 from iaso.test import APITestCase
 from plugins.polio.budget.models import BudgetProcess, BudgetStep, MailTemplate
-from plugins.polio.models import Campaign, Round
+from plugins.polio.models import Campaign, CampaignType, Round
 from plugins.polio.tests.utils.budget import get_mocked_workflow
 
 
@@ -48,12 +48,16 @@ class BudgetProcessViewSetTestCase(APITestCase):
             username="test", first_name="test", last_name="test", account=cls.account, permissions=["iaso_polio_budget"]
         )
 
+        # Campaign type.
+        cls.polio_type = CampaignType.objects.get(name=CampaignType.POLIO)
+
         # Campaign.
         cls.campaign = Campaign.objects.create(
             obr_name="test campaign",
             account=cls.user.iaso_profile.account,
             country=m.OrgUnit.objects.create(name="ANGOLA"),
         )
+        cls.campaign.campaign_types.set([cls.polio_type])
 
         # Budget Processes.
         cls.budget_process_1 = BudgetProcess.objects.create(created_by=cls.user)
@@ -789,6 +793,9 @@ class FilterBudgetProcessViewSetTestCase(APITestCase):
         cls.account = m.Account.objects.create(name="Account", default_version=cls.source_version)
         cls.user = cls.create_user_with_profile(username="user", account=cls.account, permissions=["iaso_polio_budget"])
 
+        # Campaign type.
+        cls.polio_type = CampaignType.objects.get(name=CampaignType.POLIO)
+
         # Campaign.
         cls.country = m.OrgUnit.objects.create(name="ANGOLA")
         cls.campaign = Campaign.objects.create(
@@ -796,6 +803,7 @@ class FilterBudgetProcessViewSetTestCase(APITestCase):
             account=cls.user.iaso_profile.account,
             country=cls.country,
         )
+        cls.campaign.campaign_types.set([cls.polio_type])
 
         # Budget Processes.
         cls.budget_process_1 = BudgetProcess.objects.create(created_by=cls.user)

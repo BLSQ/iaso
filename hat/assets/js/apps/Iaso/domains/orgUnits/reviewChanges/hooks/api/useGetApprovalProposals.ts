@@ -9,38 +9,39 @@ import {
 
 const apiUrl = '/api/orgunits/changes/';
 
-const getOrgUnitChangeProposals = (options: ApproveOrgUnitParams) => {
-    const apiParams = {
-        parent_id: options.parent_id,
-        groups: options.groups,
-        org_unit_type_id: options.org_unit_type_id,
-        status: options.status,
-        order: options.order || '-updated_at',
-        limit: options.pageSize || 10,
-        page: options.page,
-        created_at_after: options.created_at_after,
-        created_at_before: options.created_at_before,
-        forms: options.forms,
-        users: options.userIds,
-        user_roles: options.userRoles,
-        with_location: options.withLocation,
-    };
-
-    const url = makeUrlWithParams(apiUrl, apiParams);
-
+const getOrgUnitChangeProposals = (url: string) => {
     return getRequest(url) as Promise<OrgUnitChangeRequestsPaginated>;
 };
 
 export const useGetApprovalProposals = (
     params: ApproveOrgUnitParams,
 ): UseQueryResult<OrgUnitChangeRequestsPaginated, Error> => {
+    const apiParams = {
+        parent_id: params.parent_id,
+        groups: params.groups,
+        org_unit_type_id: params.org_unit_type_id,
+        status: params.status,
+        order: params.order || '-updated_at',
+        limit: params.pageSize || 10,
+        page: params.page,
+        created_at_after: params.created_at_after,
+        created_at_before: params.created_at_before,
+        forms: params.forms,
+        users: params.userIds,
+        user_roles: params.userRoles,
+        with_location: params.withLocation,
+    };
+
+    const url = makeUrlWithParams(apiUrl, apiParams);
     return useSnackQuery({
-        queryKey: ['getApprovalProposals', params],
-        queryFn: () => getOrgUnitChangeProposals(params),
+        queryKey: ['getApprovalProposals', url],
+        queryFn: () => getOrgUnitChangeProposals(url),
         options: {
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
             keepPreviousData: true,
+            retryOnMount: false, // If not set to false, the query will retry on mount which will cause an endless loop
+            retry: false, // Will not retry failing query. Has to be used with retryOnMount, to prevent endless loop
         },
     });
 };

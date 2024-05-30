@@ -2,7 +2,6 @@ import React, { FunctionComponent } from 'react';
 
 import { Grid, Tabs, Tab } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-// @ts-ignore
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import TopBar from '../../../components/nav/TopBarComponent';
 

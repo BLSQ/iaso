@@ -1,18 +1,18 @@
-import L from 'leaflet';
-import Color from 'color';
-import orderBy from 'lodash/orderBy';
-import isNumber from 'lodash/isNumber';
 import { Theme } from '@mui/material/styles';
+import Color from 'color';
+import L from 'leaflet';
 import { isEqual } from 'lodash';
+import isNumber from 'lodash/isNumber';
+import orderBy from 'lodash/orderBy';
 import { ScaleThreshold } from '../../components/LegendBuilder/types';
 
-import { OrgUnit } from '../../domains/orgUnits/types/orgUnit';
-import { OrgunitTypes } from '../../domains/orgUnits/types/orgunitTypes';
+import { CompletenessMapStats } from '../../domains/completenessStats/types';
 import {
     AssociatedOrgUnit,
     MappedOrgUnit,
 } from '../../domains/orgUnits/components/orgUnitMap/OrgUnitMap/types';
-import { CompletenessMapStats } from '../../domains/completenessStats/types';
+import { OrgUnit } from '../../domains/orgUnits/types/orgUnit';
+import { OrgunitTypes } from '../../domains/orgUnits/types/orgunitTypes';
 
 export const defaultCenter = [5, 20];
 export const defaultZoom = 4;
@@ -115,13 +115,16 @@ export const customMarker = L.divIcon(customMarkerOptions);
 
 export const circleColorMarkerOptions = (
     color: string,
-): Record<string, string | number> => ({
+    radius = 8,
+): Record<string, any> => ({
     className: 'marker-custom color circle-marker',
-    fillColor: color,
-    fillOpacity: 1,
-    weight: 2,
-    color: Color(color).darken(0.5),
-    radius: 8,
+    pathOptions: {
+        fillColor: color,
+        fillOpacity: 1,
+        weight: 2,
+        color: Color(color).darken(0.5),
+        radius,
+    },
 });
 
 // Takes the value of the .orgUnit field of each org unit and copy it in either shape or location field
@@ -249,3 +252,10 @@ export const getEffectiveThreshold = (
     threshold?: ScaleThreshold,
 ): ScaleThreshold =>
     !threshold || isEqual(threshold, {}) ? defaultScaleThreshold : threshold;
+
+export const hasLocation = (orgUnit: OrgUnit): boolean =>
+    orgUnit.has_geo_json ||
+    (orgUnit.latitude !== undefined &&
+        orgUnit.longitude !== undefined &&
+        orgUnit.latitude !== null &&
+        orgUnit.longitude !== null);

@@ -1,17 +1,12 @@
-import { Paper, Box } from '@mui/material';
-import { useDispatch } from 'react-redux';
 import React, { FunctionComponent, useCallback } from 'react';
-
+import { Paper, Box } from '@mui/material';
+import { useRedirectTo } from 'bluesquare-components';
 import { baseUrls } from '../../../constants/urls';
 import InputComponent from '../../../components/forms/InputComponent';
-
 import { DropdownOptions } from '../../../types/utils';
 import { AssignmentParams } from '../types/assigment';
-
-import MESSAGES from '../messages';
-
-import { redirectTo } from '../../../routing/actions';
 import { SxStyles } from '../../../types/general';
+import MESSAGES from '../messages';
 
 type Props = {
     params: AssignmentParams;
@@ -60,17 +55,16 @@ export const AssignmentsMapSelectors: FunctionComponent<Props> = ({
     orgunitTypes,
     isFetchingOrgUnitTypes,
 }) => {
-    const dispatch = useDispatch();
+    const redirectTo = useRedirectTo();
+
     const handleChange = useCallback(
         (_, newOrgUnitTypeId) => {
-            dispatch(
-                redirectTo(baseUrl, {
-                    ...params,
-                    parentOrgunitType: newOrgUnitTypeId,
-                }),
-            );
+            redirectTo(baseUrl, {
+                ...params,
+                parentOrgunitType: newOrgUnitTypeId,
+            });
         },
-        [dispatch, params],
+        [params, redirectTo],
     );
 
     return (

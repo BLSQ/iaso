@@ -3,7 +3,7 @@ import React from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { MarkerMap } from '../../../components/maps/MarkerMapComponent';
 import OrgUnitDisplay from '../../orgUnits/components/OrgUnitDisplay';
-import OrgUnitSourceRefDisplay from '../../orgUnits/components/OrgUnitSourceRefDisplay';
+import { OrgUnitSourceRefDisplay } from '../../orgUnits/components/OrgUnitSourceRefDisplay';
 
 import { getOrgUnitsTree, OrgUnitLabel } from '../../orgUnits/utils';
 

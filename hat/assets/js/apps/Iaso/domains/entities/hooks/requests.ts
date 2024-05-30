@@ -41,6 +41,7 @@ type Params = {
     submitterId?: string;
     submitterTeamId?: string;
     entityTypeIds?: string;
+    locationLimit?: string;
 };
 
 type ApiParams = {
@@ -54,6 +55,8 @@ type ApiParams = {
     created_by_team_id?: string;
     created_by_id?: string;
     entity_type_ids?: string;
+    asLocation?: boolean;
+    locationLimit?: string;
 };
 
 type GetAPiParams = {
@@ -62,7 +65,7 @@ type GetAPiParams = {
 };
 export const useGetBeneficiariesApiParams = (
     params: Params,
-    withPagination = true,
+    asLocation = false,
 ): GetAPiParams => {
     const apiParams: ApiParams = {
         order_columns: params.order || 'id',
@@ -77,10 +80,12 @@ export const useGetBeneficiariesApiParams = (
         created_by_id: params.submitterId,
         created_by_team_id: params.submitterTeamId,
         entity_type_ids: params.entityTypeIds,
+        limit: params.pageSize || '20',
+        page: params.page || '1',
     };
-    if (withPagination) {
-        apiParams.limit = params.pageSize || '20';
-        apiParams.page = params.page || '1';
+    if (asLocation) {
+        apiParams.asLocation = true;
+        apiParams.limit = params.locationLimit || '1000';
     }
     const url = makeUrlWithParams('/api/entities/', apiParams);
     return {
@@ -99,6 +104,8 @@ export const useGetBeneficiariesPaginated = (
         queryFn: () => getRequest(url),
         options: {
             staleTime: 60000,
+            cacheTime: 1000 * 60 * 5,
+            keepPreviousData: true,
         },
     });
 };
@@ -106,7 +113,7 @@ export const useGetBeneficiariesLocations = (
     params: Params,
     displayedLocation: DisplayedLocation,
 ): UseQueryResult<Array<Location>, Error> => {
-    const { url, apiParams } = useGetBeneficiariesApiParams(params, false);
+    const { url, apiParams } = useGetBeneficiariesApiParams(params, true);
     // @ts-ignore
     return useSnackQuery({
         queryKey: ['beneficiariesLocations', apiParams],
@@ -217,13 +224,16 @@ export const useGetSubmissions = (
         options: {
             retry: false,
             enabled: Boolean(entityId),
+            keepPreviousData: true,
+            cacheTime: 1000 * 60 * 5,
+            staleTime: 1000 * 60 * 5,
         },
     });
 };
 
 export const useGetUsersDropDown = (
     team?: Team,
-): UseQueryResult<DropdownOptions<number>, Error> => {
+): UseQueryResult<DropdownOptions<number>[], Error> => {
     return useSnackQuery(
         ['profiles', team],
         () => getRequest('/api/profiles/'),

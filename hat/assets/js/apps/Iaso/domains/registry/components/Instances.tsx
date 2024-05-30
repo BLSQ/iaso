@@ -1,42 +1,34 @@
 import { Box, Grid, Tab, Tabs } from '@mui/material';
+import { Column, useRedirectToReplace } from 'bluesquare-components';
 import React, {
     FunctionComponent,
     useCallback,
     useMemo,
     useState,
 } from 'react';
-import { useDispatch } from 'react-redux';
-
-import { Column } from 'bluesquare-components';
+import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
-import { ColumnSelect } from '../../instances/components/ColumnSelect';
-import { ActionCell } from './ActionCell';
-import { MissingInstanceDialog } from './MissingInstanceDialog';
-
-import { redirectToReplace } from '../../../routing/actions';
-
+import { baseUrls } from '../../../constants/urls';
+import * as Permissions from '../../../utils/permissions';
 import { Form } from '../../forms/types/forms';
+import { ColumnSelect } from '../../instances/components/ColumnSelect';
 import { OrgunitType } from '../../orgUnits/types/orgunitTypes';
-import { RegistryDetailParams } from '../types';
-import { OrgunitTypeRegistry } from '../types/orgunitTypes';
-
+import { INSTANCE_METAS_FIELDS, defaultSorted } from '../config';
+import { useGetEmptyInstanceOrgUnits } from '../hooks/useGetEmptyInstanceOrgUnits';
 import { useGetForms } from '../hooks/useGetForms';
 import { useGetInstanceApi, useGetInstances } from '../hooks/useGetInstances';
-
-import { baseUrls } from '../../../constants/urls';
-import * as Permission from '../../../utils/permissions';
-import { useCurrentUser } from '../../../utils/usersUtils';
-import { userHasPermission } from '../../users/utils';
-import { defaultSorted, INSTANCE_METAS_FIELDS } from '../config';
-import { useGetEmptyInstanceOrgUnits } from '../hooks/useGetEmptyInstanceOrgUnits';
 import MESSAGES from '../messages';
+import { RegistryParams } from '../types';
+import { OrgunitTypeRegistry } from '../types/orgunitTypes';
+import { ActionCell } from './ActionCell';
+import { MissingInstanceDialog } from './MissingInstanceDialog';
 
 type Props = {
     isLoading: boolean;
     subOrgUnitTypes: OrgunitTypeRegistry[];
-    params: RegistryDetailParams;
+    params: RegistryParams;
 };
 
 export const Instances: FunctionComponent<Props> = ({
@@ -44,8 +36,7 @@ export const Instances: FunctionComponent<Props> = ({
     subOrgUnitTypes,
     params,
 }) => {
-    const currentUser = useCurrentUser();
-    const dispatch = useDispatch();
+    const redirectToReplace = useRedirectToReplace();
     const [tableColumns, setTableColumns] = useState<Column[]>([]);
     const { formIds, tab } = params;
     const currentType: OrgunitTypeRegistry | undefined = useMemo(() => {
@@ -77,14 +68,12 @@ export const Instances: FunctionComponent<Props> = ({
 
     const handleFilterChange = useCallback(
         (key: string, value: number | string) => {
-            dispatch(
-                redirectToReplace(baseUrls.registry, {
-                    ...params,
-                    [key]: value,
-                }),
-            );
+            redirectToReplace(baseUrls.registry, {
+                ...params,
+                [key]: value,
+            });
         },
-        [dispatch, params],
+        [params, redirectToReplace],
     );
 
     const handleChangeTab = useCallback(
@@ -94,9 +83,9 @@ export const Instances: FunctionComponent<Props> = ({
                 tab: `${newType.id}`,
             };
             delete newParams.formIds;
-            dispatch(redirectToReplace(baseUrls.registry, newParams));
+            redirectToReplace(baseUrls.registry, newParams);
         },
-        [dispatch, params],
+        [params, redirectToReplace],
     );
 
     const currentForm: Form | undefined = useMemo(() => {
@@ -122,7 +111,6 @@ export const Instances: FunctionComponent<Props> = ({
                         <Grid container spacing={2}>
                             <Grid item xs={12} md={3}>
                                 <InputComponent
-                                    required
                                     keyValue="formIds"
                                     clearable={false}
                                     onChange={handleFilterChange}
@@ -163,20 +151,25 @@ export const Instances: FunctionComponent<Props> = ({
                                         )}
                                     />
                                 )}
-                                <Box
-                                    display="flex"
-                                    justifyContent="flex-end"
-                                    width="100%"
-                                    mt={2}
+                                <DisplayIfUserHasPerm
+                                    permissions={[Permissions.REGISTRY_WRITE]}
                                 >
-                                    <DownloadButtonsComponent
-                                        csvUrl={`${apiUrl}&csv=true`}
-                                        xlsxUrl={`${apiUrl}&xlsx=true`}
-                                        disabled={
-                                            isFetchingList || data?.count === 0
-                                        }
-                                    />
-                                </Box>
+                                    <Box
+                                        display="flex"
+                                        justifyContent="flex-end"
+                                        width="100%"
+                                        mt={2}
+                                    >
+                                        <DownloadButtonsComponent
+                                            csvUrl={`${apiUrl}&csv=true`}
+                                            xlsxUrl={`${apiUrl}&xlsx=true`}
+                                            disabled={
+                                                isFetchingList ||
+                                                data?.count === 0
+                                            }
+                                        />
+                                    </Box>
+                                </DisplayIfUserHasPerm>
                                 <Box
                                     display="flex"
                                     justifyContent="flex-end"
@@ -184,33 +177,39 @@ export const Instances: FunctionComponent<Props> = ({
                                     mt={2}
                                 >
                                     {orgUnitsWithoutCurrentForm &&
-                                        orgUnitsWithoutCurrentForm.count > 0 &&
-                                        userHasPermission(
-                                            Permission.SUBMISSIONS_UPDATE,
-                                            currentUser,
-                                        ) && (
-                                            <MissingInstanceDialog
-                                                isFetching={
-                                                    isFetchingOrgUnitsWithoutCurrentForm
-                                                }
-                                                formId={formIds}
-                                                missingOrgUnitsData={
-                                                    orgUnitsWithoutCurrentForm
-                                                }
-                                                params={params}
-                                                iconProps={{
-                                                    count: orgUnitsWithoutCurrentForm.count,
-                                                    params,
-                                                }}
-                                                defaultOpen={
-                                                    params.missingSubmissionVisible ===
-                                                    'true'
-                                                }
-                                            />
+                                        orgUnitsWithoutCurrentForm.count >
+                                            0 && (
+                                            <DisplayIfUserHasPerm
+                                                strict
+                                                permissions={[
+                                                    Permissions.REGISTRY_WRITE,
+                                                    Permissions.SUBMISSIONS_UPDATE,
+                                                ]}
+                                            >
+                                                <MissingInstanceDialog
+                                                    isFetching={
+                                                        isFetchingOrgUnitsWithoutCurrentForm
+                                                    }
+                                                    formId={formIds}
+                                                    missingOrgUnitsData={
+                                                        orgUnitsWithoutCurrentForm
+                                                    }
+                                                    params={params}
+                                                    iconProps={{
+                                                        count: orgUnitsWithoutCurrentForm.count,
+                                                        params,
+                                                    }}
+                                                    defaultOpen={
+                                                        params.missingSubmissionVisible ===
+                                                        'true'
+                                                    }
+                                                />
+                                            </DisplayIfUserHasPerm>
                                         )}
                                 </Box>
                             </Grid>
                         </Grid>
+                        {/* @ts-ignore */}
                         <TableWithDeepLink
                             marginTop={false}
                             baseUrl={baseUrls.registry}
@@ -220,12 +219,9 @@ export const Instances: FunctionComponent<Props> = ({
                             columns={tableColumns}
                             count={data?.count ?? 0}
                             params={params}
-                            onTableParamsChange={p =>
-                                dispatch(
-                                    redirectToReplace(baseUrls.registry, p),
-                                )
-                            }
-                            extraProps={{ loading: isFetchingList }}
+                            extraProps={{
+                                loading: isFetchingList,
+                            }}
                         />
                     </Box>
                 </>

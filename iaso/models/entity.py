@@ -181,6 +181,16 @@ class Entity(SoftDeletableModel):
     def __str__(self):
         return f"{self.name}"
 
+    def as_small_dict(self):
+        return {
+            "id": self.pk,
+            "uuid": self.uuid,
+            "name": self.name,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
+            "entity_type": self.entity_type and self.entity_type.name,
+        }
+
     def as_dict(self):
         instances = dict()
 

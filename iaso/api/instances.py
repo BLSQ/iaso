@@ -455,7 +455,7 @@ class InstancesViewSet(viewsets.ViewSet):
         self.check_object_permissions(request, instance)
         all_instance_locks = instance.instancelock_set.all()
 
-        response = instance.as_full_model()
+        response = instance.as_full_model(with_entity=True)
 
         # Logs(history) of all instance locks
         response["instance_locks"] = InstanceLockSerializer(all_instance_locks, many=True).data

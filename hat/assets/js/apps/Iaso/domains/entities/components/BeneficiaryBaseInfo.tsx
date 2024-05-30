@@ -42,6 +42,11 @@ export const BeneficiaryBaseInfo: FunctionComponent<Props> = ({
     const staticFields = useMemo(
         () => [
             {
+                label: formatMessage(MESSAGES.name),
+                value: beneficiary?.name ? `${beneficiary.name}` : '--',
+                key: 'name',
+            },
+            {
                 label: formatMessage(MESSAGES.nfcCards),
                 value: `${beneficiary?.attributes?.nfc_cards ?? 0}`,
                 key: 'nfcCards',
@@ -52,7 +57,12 @@ export const BeneficiaryBaseInfo: FunctionComponent<Props> = ({
                 key: 'uuid',
             },
         ],
-        [beneficiary?.attributes?.nfc_cards, beneficiary?.uuid, formatMessage],
+        [
+            beneficiary?.attributes?.nfc_cards,
+            beneficiary?.name,
+            beneficiary?.uuid,
+            formatMessage,
+        ],
     );
     return (
         <>

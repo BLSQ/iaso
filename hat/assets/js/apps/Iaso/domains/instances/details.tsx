@@ -10,7 +10,7 @@ import {
     LoadingSpinner,
     useSafeIntl,
     LinkWithLocation,
-    useGoBack
+    useGoBack,
 } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
 import TopBar from '../../components/nav/TopBarComponent';
@@ -31,6 +31,7 @@ import { useSnackQuery } from '../../libs/apiHooks';
 import SpeedDialInstance from './components/SpeedDialInstance';
 import { ClassNames } from '../../types/utils';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { BeneficiaryBaseInfo } from '../entities/components/BeneficiaryBaseInfo';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -127,6 +128,26 @@ const InstanceDetails: FunctionComponent = () => {
                                     )}
                                     <br />
                                 </Alert>
+                            )}
+                            {currentInstance && currentInstance.entity && (
+                                <WidgetPaper
+                                    className={classes.infoPaper}
+                                    title={formatMessage(
+                                        MESSAGES.beneficiaryInfo,
+                                    )}
+                                    IconButton={IconButton}
+                                    iconButtonProps={{
+                                        url: `/${baseUrls.entityDetails}/entityId/${currentInstance.entity.id}`,
+                                        icon: 'remove-red-eye',
+                                        tooltipMessage: MESSAGES.see,
+                                    }}
+                                >
+                                    <Box className={classes.infoPaperBox}>
+                                        <BeneficiaryBaseInfo
+                                            beneficiary={currentInstance.entity}
+                                        />
+                                    </Box>
+                                </WidgetPaper>
                             )}
                             <WidgetPaper
                                 title={formatMessage(MESSAGES.infos)}

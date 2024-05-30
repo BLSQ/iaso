@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import Alert from '@mui/lab/Alert';
@@ -35,6 +35,7 @@ import { useSnackQuery } from '../../libs/apiHooks';
 import SpeedDialInstance from './components/SpeedDialInstance';
 import { ClassNames } from '../../types/utils';
 import { redirectTo } from '../../routing/actions';
+import { BeneficiaryBaseInfo } from '../entities/components/BeneficiaryBaseInfo';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -150,6 +151,26 @@ const InstanceDetails: FunctionComponent<Props> = props => {
                                     )}
                                     <br />
                                 </Alert>
+                            )}
+                            {currentInstance && currentInstance.entity && (
+                                <WidgetPaper
+                                    className={classes.infoPaper}
+                                    title={formatMessage(
+                                        MESSAGES.beneficiaryInfo,
+                                    )}
+                                    IconButton={IconButtonComponent}
+                                    iconButtonProps={{
+                                        url: `/${baseUrls.entityDetails}/entityId/${currentInstance.entity.id}`,
+                                        icon: 'remove-red-eye',
+                                        tooltipMessage: MESSAGES.see,
+                                    }}
+                                >
+                                    <Box className={classes.infoPaperBox}>
+                                        <BeneficiaryBaseInfo
+                                            beneficiary={currentInstance.entity}
+                                        />
+                                    </Box>
+                                </WidgetPaper>
                             )}
                             <WidgetPaper
                                 title={formatMessage(MESSAGES.infos)}

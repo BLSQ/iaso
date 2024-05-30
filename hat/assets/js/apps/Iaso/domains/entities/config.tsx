@@ -26,6 +26,7 @@ import { ExtraColumn } from './types/fields';
 import getDisplayName from '../../utils/usersUtils';
 import { useGetFieldValue } from './hooks/useGetFieldValue';
 import { formatLabel } from '../instances/utils';
+import { LinkToInstance } from '../instances/components/LinkToInstance';
 
 export const baseUrl = baseUrls.entities;
 
@@ -235,11 +236,9 @@ export const useBeneficiariesDetailsColumns = (
                 Cell: (settings): ReactElement => (
                     // TODO: limit to user permissions
                     <section>
-                        <IconButtonComponent
-                            url={`/${baseUrls.entitySubmissionDetail}/instanceId/${settings.row.original.id}/entityId/${entityId}`}
-                            icon="remove-red-eye"
-                            tooltipMessage={MESSAGES.see}
-                            disabled={!entityId}
+                        <LinkToInstance
+                            instanceId={settings.row.original.id}
+                            useIcon
                         />
                     </section>
                 ),

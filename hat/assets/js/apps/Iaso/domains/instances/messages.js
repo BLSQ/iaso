@@ -603,6 +603,10 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Select one form to enable search using form submitted fields',
     },
+    beneficiaryInfo: {
+        defaultMessage: 'Beneficiary information',
+        id: 'iaso.entities.label.beneficiaryInfo',
+    },
 });
 
 export default MESSAGES;

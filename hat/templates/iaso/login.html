@@ -36,7 +36,7 @@
         {% csrf_token %}
         {{ form }}
         <input type="hidden" name="next" value="{{ next }}" />
-        <button id="submit" type="submit" class="button">{% trans 'Login' %}</button>
+        <button id="submit" type="submit" class="button">{% trans 'Login' %} (test)</button>
         <button id="display-password">
           {% include "./icons/eye.html" %}
           {% include "./icons/eye-slash.html" %}

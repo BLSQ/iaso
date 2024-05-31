@@ -48,8 +48,8 @@
         "safari >= 11"
     ],
     "dependencies": {
-        "@babel/plugin-proposal-optional-chaining": "^7.21.0",
-        "@babel/plugin-transform-nullish-coalescing-operator": "^7.22.11",
+        "@babel/plugin-transform-optional-chaining": "^7.24.6",
+        "@babel/plugin-transform-nullish-coalescing-operator": "^7.24.6",
         "@babel/runtime": "^7.12.1",
         "@date-io/moment": "1.x",
         "@emotion/react": "^11.11.1",

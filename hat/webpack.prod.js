@@ -14,10 +14,12 @@ module.exports = {
     target: ['web', 'es2015'],
     entry: {
         common: ['react', 'react-dom', 'react-intl', 'typescript'],
-        styles: './assets/css/index.scss',
         iaso: './assets/js/apps/Iaso/index',
     },
 
+    stats: {
+        children: true,
+    },
     output: {
         path: path.resolve(__dirname, './assets/webpack'),
         filename: '[name]-[chunkhash].js',
@@ -35,8 +37,10 @@ module.exports = {
             '../translations/fr.json',
         ),
         new BundleTracker({
-            path: __dirname,
-            filename: './assets/webpack/webpack-stats-prod.json',
+            filename: path.resolve(
+                __dirname,
+                './assets/webpack/webpack-stats-prod.json',
+            ),
         }),
         new MiniCssExtractPlugin({ filename: '[name]-[chunkhash].css' }),
         new webpack.DefinePlugin({
@@ -165,15 +169,6 @@ module.exports = {
                             ],
                         },
                     },
-                ],
-            },
-            // Extract Sass files
-            {
-                test: /\.scss$/,
-                use: [
-                    { loader: MiniCssExtractPlugin.loader },
-                    { loader: 'css-loader' },
-                    { loader: 'sass-loader' },
                 ],
             },
             {

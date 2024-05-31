@@ -13,11 +13,11 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 import base64
 import hashlib
 import html
+import importlib
 import os
 import re
 import sys
 import urllib.parse
-import importlib
 from datetime import timedelta
 from typing import Any, Dict
 from urllib.parse import urlparse
@@ -174,6 +174,7 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "storages",
+    "sass_processor",
 ]
 if ENABLE_CORS:
     INSTALLED_APPS += [
@@ -196,6 +197,12 @@ INSTALLED_APPS += [
     "drf_yasg",
     "django_json_widget",
     "phonenumber_field",
+]
+
+STATICFILES_FINDERS = [
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
+    "sass_processor.finders.CssFinder",
 ]
 
 if USE_CELERY:

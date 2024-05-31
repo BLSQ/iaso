@@ -10,7 +10,10 @@ import {
     useGetOrgUnitInstances,
 } from '../../hooks/useGetInstances';
 
+import * as Permissions from '../../../../utils/permissions';
+import { useCurrentUser } from '../../../../utils/usersUtils';
 import { OrgUnit } from '../../../orgUnits/types/orgUnit';
+import { userHasPermission } from '../../../users/utils';
 import { HEIGHT } from '../../config';
 import { RegistryParams } from '../../types';
 import { EmptyInstances } from './EmptyInstances';
@@ -42,22 +45,30 @@ export const SelectedOrgUnit: FunctionComponent<Props> = ({
     isFetching: isFetchingOrgUnit,
 }) => {
     const classes: Record<string, string> = useStyles();
+    const currentUser = useCurrentUser();
+
+    const { data: instances, isFetching } = useGetOrgUnitInstances(
+        orgUnit?.id,
+        !userHasPermission(Permissions.REGISTRY_WRITE, currentUser),
+    );
     const currentInstanceId = useMemo(() => {
-        return params.submissionId || orgUnit?.reference_instances?.[0]?.id;
-    }, [params.submissionId, orgUnit]);
+        return (
+            params.submissionId ||
+            orgUnit?.reference_instances?.[0]?.id ||
+            instances?.[0]?.id
+        );
+    }, [params.submissionId, orgUnit, instances]);
 
     const { data: currentInstance, isFetching: isFetchingCurrentInstance } =
         useGetInstance(currentInstanceId, false);
-    const { data: instances, isFetching } = useGetOrgUnitInstances(orgUnit?.id);
 
     if (!orgUnit) {
         return null;
     }
     return (
         <Box position="relative" width="100%" minHeight={HEIGHT}>
-            {(isFetchingCurrentInstance || isFetchingOrgUnit) && (
-                <LoadingSpinner absolute />
-            )}
+            {(isFetchingCurrentInstance || isFetchingOrgUnit) &&
+                params.fullScreen !== 'true' && <LoadingSpinner absolute />}
 
             <Paper className={classes.paper}>
                 <OrgUnitTitle orgUnit={orgUnit} params={params} />

@@ -38,12 +38,12 @@ import MESSAGES from '../messages';
 
 import { InputWithInfos } from '../../../components/InputWithInfos.tsx';
 import { AsyncSelect } from '../../../components/forms/AsyncSelect.tsx';
+import { UserOrgUnitRestriction } from '../../../components/UserOrgUnitRestriction.tsx';
 import { LocationLimit } from '../../../utils/map/LocationLimit';
 import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings.ts';
 import { getUsersDropDown } from '../hooks/requests/getUsersDropDown.tsx';
 import { useGetProfilesDropdown } from '../hooks/useGetProfilesDropdown.tsx';
 import { ColumnSelect } from './ColumnSelect.tsx';
-import { UserOrgUnitRestriction } from './UserOrgUnitRestriction.tsx';
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
     value: status,

@@ -1,14 +1,14 @@
 import datetime
 import json
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
 
-from django.shortcuts import get_object_or_404
 from django.http import QueryDict
+from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import ValidationError
 
-from iaso.models import Form
-from iaso.periods import Period, DayPeriod
 from iaso.api import query_params as query
+from iaso.models import Form
+from iaso.periods import DayPeriod, Period
 
 
 def parse_instance_filters(req: QueryDict) -> Dict[str, Any]:
@@ -44,6 +44,7 @@ def parse_instance_filters(req: QueryDict) -> Dict[str, Any]:
         "device_ownership_id": req.get(query.DEVICE_OWNERSHIP_ID, None),
         "org_unit_parent_id": req.get(query.ORG_UNIT_PARENT_ID, None),
         "org_unit_id": req.get(query.ORG_UNIT_ID, None),
+        "only_reference": req.get(query.ONLY_REFERENCE, None),
         "period_ids": periods,
         "periods_bound": periods_bound,
         "planning_ids": req.get(query.PLANNING_IDS, None),

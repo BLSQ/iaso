@@ -7,6 +7,8 @@ import React, { FunctionComponent } from 'react';
 import { baseUrls } from '../../../../constants/urls';
 import MESSAGES from '../../messages';
 
+import { DisplayIfUserHasPerm } from '../../../../components/DisplayIfUserHasPerm';
+import * as Permissions from '../../../../utils/permissions';
 import { OrgUnit } from '../../../orgUnits/types/orgUnit';
 import { RegistryParams } from '../../types';
 import { LinkToRegistry } from '../LinkToRegistry';
@@ -55,24 +57,30 @@ export const OrgUnitTitle: FunctionComponent<Props> = ({ orgUnit, params }) => {
                 className={classes.paperTitleButtonContainer}
             >
                 <Box className={classes.paperTitleButton}>
-                    {isRootOrgUnit && (
-                        <IconButton
-                            url={`/${baseUrls.orgUnitDetails}/orgUnitId/0/levels/${orgUnit.id}`}
-                            color="secondary"
-                            overrideIcon={AddIcon}
-                            tooltipMessage={MESSAGES.addOrgUnitChild}
-                            iconSize="small"
-                            size="small"
-                        />
-                    )}
-                    <IconButton
-                        url={`/${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}`}
-                        color="secondary"
-                        icon="edit"
-                        tooltipMessage={MESSAGES.editOrgUnit}
-                        iconSize="small"
-                        size="small"
-                    />
+                    <DisplayIfUserHasPerm
+                        permissions={[Permissions.REGISTRY_WRITE]}
+                    >
+                        <>
+                            {isRootOrgUnit && (
+                                <IconButton
+                                    url={`/${baseUrls.orgUnitDetails}/orgUnitId/0/levels/${orgUnit.id}`}
+                                    color="secondary"
+                                    overrideIcon={AddIcon}
+                                    tooltipMessage={MESSAGES.addOrgUnitChild}
+                                    iconSize="small"
+                                    size="small"
+                                />
+                            )}
+                            <IconButton
+                                url={`/${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}`}
+                                color="secondary"
+                                icon="edit"
+                                tooltipMessage={MESSAGES.editOrgUnit}
+                                iconSize="small"
+                                size="small"
+                            />
+                        </>
+                    </DisplayIfUserHasPerm>
                     {!isRootOrgUnit && (
                         <LinkToRegistry
                             orgUnit={orgUnit}

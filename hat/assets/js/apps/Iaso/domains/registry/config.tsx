@@ -44,7 +44,7 @@ export const INSTANCE_METAS_FIELDS: InstanceMetasField[] = [
     },
     {
         key: 'created_at',
-        active: false,
+        active: true,
         tableOrder: 5,
         type: 'info',
     },
@@ -96,7 +96,7 @@ export const useGetOrgUnitsListColumns = (): Column[] => {
         },
         {
             Header: (
-                <Box position="relative" top={4} left={5}>
+                <Box position="relative" top={4} left={0}>
                     <MapIcon fontSize="small" color="inherit" />
                 </Box>
             ),
@@ -120,6 +120,7 @@ export const useGetOrgUnitsListColumns = (): Column[] => {
                             useIcon
                             size="small"
                             iconSize="small"
+                            icon="edit"
                         />
                     </Box>
                     <LinkToRegistry

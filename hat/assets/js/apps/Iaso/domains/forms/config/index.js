@@ -17,6 +17,7 @@ import { createInstance } from '../../instances/actions';
 import * as Permission from '../../../utils/permissions.ts';
 import { BreakWordCell } from '../../../components/Cells/BreakWordCell.tsx';
 import { useCurrentUser } from '../../../utils/usersUtils.ts';
+import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm.tsx';
 
 export const baseUrl = baseUrls.forms;
 
@@ -223,10 +224,9 @@ export const useFormsTableColumns = ({
                             )}
                             {!showDeleted && (
                                 <>
-                                    {userHasPermission(
-                                        Permission.SUBMISSIONS,
-                                        user,
-                                    ) && (
+                                    <DisplayIfUserHasPerm
+                                        permissions={[Permission.SUBMISSIONS]}
+                                    >
                                         <IconButton
                                             url={`${urlToInstances}`}
                                             tooltipMessage={
@@ -234,11 +234,12 @@ export const useFormsTableColumns = ({
                                             }
                                             overrideIcon={FormatListBulleted}
                                         />
-                                    )}
-                                    {userHasPermission(
-                                        Permission.SUBMISSIONS,
-                                        user,
-                                    ) && (
+                                    </DisplayIfUserHasPerm>
+                                    <DisplayIfUserHasPerm
+                                        permissions={[
+                                            Permission.SUBMISSIONS_UPDATE,
+                                        ]}
+                                    >
                                         <CreateSubmissionModal
                                             titleMessage={
                                                 MESSAGES.instanceCreationDialogTitle
@@ -267,21 +268,15 @@ export const useFormsTableColumns = ({
                                                     .org_unit_type_ids
                                             }
                                         />
-                                    )}
-                                    {userHasPermission(
-                                        Permission.FORMS,
-                                        user,
-                                    ) && (
+                                    </DisplayIfUserHasPerm>
+                                    <DisplayIfUserHasPerm
+                                        permissions={[Permission.FORMS]}
+                                    >
                                         <IconButton
                                             url={`/${baseUrls.formDetail}/formId/${settings.row.original.id}`}
                                             icon="edit"
                                             tooltipMessage={MESSAGES.edit}
                                         />
-                                    )}
-                                    {userHasPermission(
-                                        Permission.FORMS,
-                                        user,
-                                    ) && (
                                         <IconButton
                                             // eslint-disable-next-line max-len
                                             url={`/${baseUrls.mappings}/formId/${settings.row.original.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}
@@ -290,11 +285,6 @@ export const useFormsTableColumns = ({
                                                 MESSAGES.dhis2Mappings
                                             }
                                         />
-                                    )}
-                                    {userHasPermission(
-                                        Permission.FORMS,
-                                        user,
-                                    ) && (
                                         <DeleteDialog
                                             titleMessage={
                                                 MESSAGES.deleteFormTitle
@@ -305,7 +295,7 @@ export const useFormsTableColumns = ({
                                                 ).then(closeDialog)
                                             }
                                         />
-                                    )}
+                                    </DisplayIfUserHasPerm>
                                 </>
                             )}
                         </section>

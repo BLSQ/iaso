@@ -4,6 +4,8 @@ import {
     setTableSelection,
 } from 'bluesquare-components';
 import { Selection } from '../domains/orgUnits/types/selection';
+import { useObjectState } from '../hooks/useObjectState';
+import { PaginationParams } from '../types/general';
 
 type UseTableSelection<T> = {
     selection: Selection<T>;
@@ -73,4 +75,30 @@ export const useTableSelection = <T>(count?: number): UseTableSelection<T> => {
             handleUnselectAll,
         };
     }, [handleSelectAll, handleTableSelection, handleUnselectAll, selection]);
+};
+
+const defaultInitialState: PaginationParams = {
+    order: '-updated_at',
+    page: '1',
+    pageSize: '10',
+};
+
+type TableState = {
+    params: PaginationParams;
+    // eslint-disable-next-line no-unused-vars
+    onTableParamsChange: (newParams: PaginationParams) => void;
+};
+export const useTableState = (initialState?: PaginationParams): TableState => {
+    const [tableState, setTableState] = useObjectState(
+        initialState ?? defaultInitialState,
+    );
+
+    const onTableParamsChange = useCallback(
+        (newParams: PaginationParams) => setTableState(newParams),
+        [setTableState],
+    );
+
+    return useMemo(() => {
+        return { params: tableState, onTableParamsChange };
+    }, [onTableParamsChange, tableState]);
 };

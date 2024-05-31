@@ -24,6 +24,6 @@ COPY package-lock.json .
 RUN npm install -g npm@10.5.2
 
 # Install project dependencies
-RUN npm ci --legacy-peer-deps
+RUN npm ci
 
 ENTRYPOINT ["./entrypoint.sh"]

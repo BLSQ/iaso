@@ -30,7 +30,7 @@ RUN rm -rf node_modules
 RUN npm cache clean --force
 RUN npm cache verify
 # ci install the exact version of package, compared to install which might a bump minor version
-RUN npm ci --legacy-peer-deps
+RUN npm ci
 
 COPY hat/ /opt/app/hat/
 COPY plugins/ /opt/app/plugins

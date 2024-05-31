@@ -103,7 +103,7 @@ const newBrowsersConfig = [
             {
                 loader: 'babel-loader',
                 options: {
-                    cacheDirectory: true,
+                    // cacheDirectory: true,
                     presets: [
                         ['@babel/preset-env', { targets: { node: '14' } }],
                         '@babel/preset-react',
@@ -175,12 +175,15 @@ module.exports = {
     // config for webpack-dev-server
     devServer: {
         historyApiFallback: true,
-        writeToDisk: true,
         headers: {
             'Access-Control-Allow-Origin': '*',
         },
         host: '0.0.0.0',
         port: 3000,
+
+        devMiddleware: {
+            writeToDisk: true,
+        },
     },
 
     plugins: [

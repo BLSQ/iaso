@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { Chip } from '@mui/material';
 import {
@@ -6,6 +6,7 @@ import {
     CheckCircleOutlineOutlined as CheckedIcon,
 } from '@mui/icons-material';
 import MESSAGES from './messages';
+import { useCurrentUser } from '../../utils/usersUtils.ts';
 
 /**
  * get the first defaultSource and defaultVersion of an user account
@@ -32,6 +33,14 @@ export const getDefaultSourceVersion = user => {
     }
     return sourceVersion;
 };
+
+export const useDefaultSourceVersion = () => {
+    const user = useCurrentUser();
+    return useMemo(() => {
+        return getDefaultSourceVersion(user);
+    }, [user]);
+};
+
 export const FIELDS_TO_EXPORT = {
     name: 'name',
     parent: 'parent',

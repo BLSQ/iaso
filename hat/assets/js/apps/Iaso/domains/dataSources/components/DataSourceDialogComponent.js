@@ -7,7 +7,7 @@ import { merge } from 'lodash';
 import { FormattedMessage } from 'react-intl';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
-import InputComponent from '../../../components/forms/InputComponent';
+import InputComponent from '../../../components/forms/InputComponent.tsx';
 import MESSAGES from '../messages';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { useFormState } from '../../../hooks/form';
@@ -109,7 +109,6 @@ const formIsValid = form => {
 export const DataSourceDialogComponent = ({
     defaultSourceVersion,
     initialData,
-    onSuccess,
     renderTrigger,
     sourceCredentials,
 }) => {
@@ -123,8 +122,6 @@ export const DataSourceDialogComponent = ({
 
     const onConfirm = async closeDialog => {
         await saveDataSource(form);
-        // Notify parents to refetch. Remove if porting parent to react-query
-        onSuccess();
         closeDialog();
     };
 
@@ -314,7 +311,6 @@ DataSourceDialogComponent.defaultProps = {
     sourceCredentials: {},
 };
 DataSourceDialogComponent.propTypes = {
-    onSuccess: PropTypes.func.isRequired,
     initialData: PropTypes.object,
     renderTrigger: PropTypes.func.isRequired,
     defaultSourceVersion: PropTypes.object,

@@ -22,6 +22,7 @@ const orgUnitDetailsLinkParams = [
 ];
 export const FORMS_PREFIX = 'formsParams';
 export const LINKS_PREFIX = 'linksParams';
+export const LOGS_PREFIX = 'logsParams';
 
 export const CHANGE_REQUEST = 'changeRequest';
 const ORG_UNITS = 'orgunits';
@@ -141,7 +142,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             ...orgUnitDetailsLinkParams,
             ...paginationPathParamsWithPrefix(LINKS_PREFIX),
             ...paginationPathParamsWithPrefix(FORMS_PREFIX),
-            ...paginationPathParamsWithPrefix('logsParams'),
+            ...paginationPathParamsWithPrefix(LOGS_PREFIX),
         ],
     },
     orgUnitsChangeRequest: {

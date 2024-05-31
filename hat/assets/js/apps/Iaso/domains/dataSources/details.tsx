@@ -15,7 +15,7 @@ import { Box, Grid, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
-import { useGetDataSource } from './hooks/useGetDataSources';
+import { useGetDataSource } from './hooks/useGetDataSource';
 import { DataSource } from './types/dataSources';
 import { DataSourceInfo } from './components/DataSourceInfo';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';

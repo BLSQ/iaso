@@ -14,7 +14,6 @@ type Props = {
     description: string | null;
     dataSourceId: number;
     sourceVersionNumber: number;
-    forceRefreshParent: () => void;
 };
 
 const renderTrigger = ({ openDialog }) => (
@@ -30,7 +29,6 @@ export const EditSourceVersion: FunctionComponent<Props> = ({
     description,
     sourceVersionNumber,
     dataSourceId,
-    forceRefreshParent,
 }) => {
     const { formatMessage } = useSafeIntl();
     const [updatedDescription, setUpdatedDescription] = useState<string | null>(
@@ -50,11 +48,9 @@ export const EditSourceVersion: FunctionComponent<Props> = ({
                 sourceVersionNumber,
             });
             closeDialog();
-            forceRefreshParent();
         },
         [
             dataSourceId,
-            forceRefreshParent,
             sourceVersionId,
             sourceVersionNumber,
             updateSourceVersion,

@@ -14,16 +14,12 @@ import MESSAGES from './messages';
 import { VersionsDialog } from './components/VersionsDialog';
 import { YesNoCell } from '../../components/Cells/YesNoCell';
 import { ExportToDHIS2Dialog } from './components/ExportToDHIS2Dialog';
-import { useCurrentUser } from '../../utils/usersUtils.ts';
-import { userHasPermission } from '../users/utils';
-import { baseUrls } from '../../constants/urls';
+import { baseUrls } from '../../constants/urls.ts';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell.tsx';
 import * as Permission from '../../utils/permissions.ts';
+import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm.tsx';
 
-export const useDataSourcesTableColumns = (
-    setForceRefresh,
-    defaultSourceVersion,
-) => {
+export const useDataSourcesTableColumns = defaultSourceVersion => {
     const { formatMessage } = useSafeIntl();
     return useMemo(
         () => [
@@ -63,7 +59,6 @@ export const useDataSourcesTableColumns = (
                 resizable: false,
                 sortable: false,
                 Cell: settings => {
-                    const currentUser = useCurrentUser();
                     return (
                         <section>
                             <IconButtonComponent
@@ -71,89 +66,72 @@ export const useDataSourcesTableColumns = (
                                 icon="remove-red-eye"
                                 tooltipMessage={MESSAGES.viewDataSource}
                             />
-                            {userHasPermission(
-                                Permission.SOURCE_WRITE,
-                                currentUser,
-                            ) && (
-                                <>
-                                    <DataSourceDialog
-                                        renderTrigger={({ openDialog }) => (
-                                            <IconButtonComponent
-                                                dataTestId={`datasource-dialog-button-${settings.row.original.id}`}
-                                                onClick={openDialog}
-                                                icon="edit"
-                                                tooltipMessage={MESSAGES.edit}
-                                            />
-                                        )}
-                                        initialData={{
-                                            ...settings.row.original,
-                                            projects:
-                                                settings.row.original.projects.flat(),
-                                        }}
-                                        defaultSourceVersion={
-                                            defaultSourceVersion
-                                        }
-                                        key={settings.row.original.updated_at}
-                                        onSuccess={() => setForceRefresh(true)}
-                                        sourceCredentials={
-                                            settings.row.original.credentials
-                                                ? settings.row.original
-                                                      .credentials
-                                                : {}
-                                        }
-                                    />
-                                    <VersionsDialog
-                                        renderTrigger={({ openDialog }) => (
-                                            <IconButtonComponent
-                                                dataTestId={`open-versions-dialog-button-${settings.row.original.id}`}
-                                                onClick={openDialog}
-                                                overrideIcon={
-                                                    FormatListNumberedIcon
-                                                }
-                                                tooltipMessage={
-                                                    MESSAGES.versions
-                                                }
-                                            />
-                                        )}
-                                        defaultSourceVersion={
-                                            defaultSourceVersion
-                                        }
-                                        source={settings.row.original}
-                                        forceRefreshParent={() =>
-                                            setForceRefresh(true)
-                                        }
-                                    />
-                                    <ExportToDHIS2Dialog
-                                        renderTrigger={({ openDialog }) => (
-                                            <IconButtonComponent
-                                                dataTestId={`export-dhis2-dialog-button-${settings.row.original.id}`}
-                                                onClick={openDialog}
-                                                overrideIcon={PublishIcon}
-                                                tooltipMessage={
-                                                    MESSAGES.compareAndExport
-                                                }
-                                            />
-                                        )}
-                                        dataSourceName={
-                                            settings.row.original.name
-                                        }
-                                        dataSourceId={settings.row.original.id}
-                                        versions={
-                                            settings.row.original.versions
-                                        }
-                                        defaultVersionId={
-                                            settings.row.original
-                                                ?.default_version?.id
-                                        }
-                                    />
-                                </>
-                            )}
+
+                            <DisplayIfUserHasPerm
+                                permissions={[Permission.SOURCE_WRITE]}
+                            >
+                                <DataSourceDialog
+                                    renderTrigger={({ openDialog }) => (
+                                        <IconButtonComponent
+                                            dataTestId={`datasource-dialog-button-${settings.row.original.id}`}
+                                            onClick={openDialog}
+                                            icon="edit"
+                                            tooltipMessage={MESSAGES.edit}
+                                        />
+                                    )}
+                                    initialData={{
+                                        ...settings.row.original,
+                                        projects:
+                                            settings.row.original.projects.flat(),
+                                    }}
+                                    defaultSourceVersion={defaultSourceVersion}
+                                    key={settings.row.original.updated_at}
+                                    sourceCredentials={
+                                        settings.row.original.credentials
+                                            ? settings.row.original.credentials
+                                            : {}
+                                    }
+                                />
+                                <VersionsDialog
+                                    renderTrigger={({ openDialog }) => (
+                                        <IconButtonComponent
+                                            dataTestId={`open-versions-dialog-button-${settings.row.original.id}`}
+                                            onClick={openDialog}
+                                            overrideIcon={
+                                                FormatListNumberedIcon
+                                            }
+                                            tooltipMessage={MESSAGES.versions}
+                                        />
+                                    )}
+                                    defaultSourceVersion={defaultSourceVersion}
+                                    source={settings.row.original}
+                                />
+                                <ExportToDHIS2Dialog
+                                    renderTrigger={({ openDialog }) => (
+                                        <IconButtonComponent
+                                            dataTestId={`export-dhis2-dialog-button-${settings.row.original.id}`}
+                                            onClick={openDialog}
+                                            overrideIcon={PublishIcon}
+                                            tooltipMessage={
+                                                MESSAGES.compareAndExport
+                                            }
+                                        />
+                                    )}
+                                    dataSourceName={settings.row.original.name}
+                                    dataSourceId={settings.row.original.id}
+                                    versions={settings.row.original.versions}
+                                    defaultVersionId={
+                                        settings.row.original?.default_version
+                                            ?.id
+                                    }
+                                />
+                            </DisplayIfUserHasPerm>
                         </section>
                     );
                 },
             },
         ],
-        [defaultSourceVersion, formatMessage, setForceRefresh],
+        [defaultSourceVersion, formatMessage],
     );
 };
 

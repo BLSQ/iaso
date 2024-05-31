@@ -69,6 +69,7 @@ const useStyles = makeStyles(theme => ({
 type Props = {
     periodType: string | Record<string, string>;
     title: string;
+    // eslint-disable-next-line no-unused-vars
     onChange: (_) => any;
     activePeriodString?: string;
     hasError?: boolean;

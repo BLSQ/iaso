@@ -134,10 +134,3 @@ django-ses==2.6.1
 gpxpy==1.4.0
 snaql==0.4.2
 tsp-solver2==0.4.1
-
-
-# Sass compiler.
-# ------------------------------------------------------------------------------
-libsass==0.23.0 # https://github.com/sass/libsass-python/releases/tag/0.23.0
-django-compressor==4.4  # https://django-compressor.readthedocs.io/en/stable/changelog.html#v4-4-2023-06-28
-django-sass-processor==1.4.1  # https://github.com/jrief/django-sass-processor/releases/tag/1.4.1

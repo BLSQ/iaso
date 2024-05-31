@@ -174,7 +174,6 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "storages",
-    "sass_processor",
 ]
 if ENABLE_CORS:
     INSTALLED_APPS += [
@@ -197,12 +196,6 @@ INSTALLED_APPS += [
     "drf_yasg",
     "django_json_widget",
     "phonenumber_field",
-]
-
-STATICFILES_FINDERS = [
-    "django.contrib.staticfiles.finders.FileSystemFinder",
-    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
-    "sass_processor.finders.CssFinder",
 ]
 
 if USE_CELERY:

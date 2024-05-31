@@ -2,6 +2,7 @@
 {% extends 'iaso/base.html' %}
 {% block head %}
   {% load render_bundle from webpack_loader %}
+  {% load static %}
   <style>
       :root {
           --primary-color: {{ THEME_PRIMARY_COLOR }};
@@ -9,6 +10,5 @@
           --primary-background-color: {{ THEME_PRIMARY_BACKGROUND_COLOR}};
       }
   </style>
-  {% load sass_tags %}
-  <link href="{% sass_src 'css/index.scss' %}" rel="stylesheet" type="text/css">
+  <link href="{% static 'css/index.css' %}" rel="stylesheet" type="text/css">
 {% endblock %}

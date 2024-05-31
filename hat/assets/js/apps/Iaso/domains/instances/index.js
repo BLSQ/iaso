@@ -32,13 +32,12 @@ import { baseUrls } from '../../constants/urls.ts';
 import snackMessages from '../../components/snackBars/messages';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink.tsx';
 import { useSnackQuery } from '../../libs/apiHooks.ts';
-import { useCurrentUser } from '../../utils/usersUtils.ts';
 import { useGetPossibleFields } from '../forms/hooks/useGetPossibleFields.ts';
-import { userHasPermission } from '../users/utils';
 import { PaginatedInstanceFiles } from './components/PaginatedInstancesFiles';
 import MESSAGES from './messages';
 import * as Permission from '../../utils/permissions.ts';
 import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
+import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm.tsx';
 
 const baseUrl = baseUrls.instances;
 
@@ -143,7 +142,6 @@ const Instances = () => {
         [redirectToReplace],
     );
     const isSingleFormSearch = params.formIds?.split(',').length === 1;
-    const currentUser = useCurrentUser();
     const filters = useGetFilters(params);
     const selectionActions = useSelectionActions(
         filters,
@@ -177,10 +175,9 @@ const Instances = () => {
                 {tab === 'list' && isSingleFormSearch && (
                     <Grid container spacing={0} alignItems="center">
                         <Grid xs={12} item className={classes.textAlignRight}>
-                            {userHasPermission(
-                                Permission.SUBMISSIONS_UPDATE,
-                                currentUser,
-                            ) && (
+                            <DisplayIfUserHasPerm
+                                permissions={[Permission.SUBMISSIONS_UPDATE]}
+                            >
                                 <Box
                                     display="flex"
                                     justifyContent="flex-end"
@@ -211,7 +208,7 @@ const Instances = () => {
                                         }
                                     />
                                 </Box>
-                            )}
+                            </DisplayIfUserHasPerm>
                         </Grid>
                     </Grid>
                 )}

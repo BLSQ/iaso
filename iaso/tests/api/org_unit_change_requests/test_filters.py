@@ -1,10 +1,10 @@
 import datetime
 
 from django.contrib.auth.models import Group
-
-from iaso.test import APITestCase
 from django.contrib.gis.geos import Point
+
 from iaso import models as m
+from iaso.test import APITestCase
 
 
 class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
@@ -228,3 +228,26 @@ class FilterOrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertEqual(len(response.data["results"]), 1)
         self.assertIn(change_request_without_location.id, [change["id"] for change in response.data["results"]])
+
+    def test_filter_by_multiple_statuses(self):
+        change_request_new = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit, new_name="New Request", status=m.OrgUnitChangeRequest.Statuses.NEW
+        )
+        change_request_rejected = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit, new_name="Rejected Request", status=m.OrgUnitChangeRequest.Statuses.REJECTED
+        )
+        change_request_approved = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit, new_name="Approved Request", status=m.OrgUnitChangeRequest.Statuses.APPROVED
+        )
+
+        # Authenticate the user with review permissions
+        self.client.force_authenticate(self.user_with_review_perm)
+
+        # Test filtering by multiple statuses
+        response = self.client.get("/api/orgunits/changes/?status=new,rejected")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response.data["results"]), 2)
+        result_statuses = {change["status"] for change in response.data["results"]}
+        self.assertIn(m.OrgUnitChangeRequest.Statuses.NEW, result_statuses)
+        self.assertIn(m.OrgUnitChangeRequest.Statuses.REJECTED, result_statuses)
+        self.assertNotIn(m.OrgUnitChangeRequest.Statuses.APPROVED, result_statuses)

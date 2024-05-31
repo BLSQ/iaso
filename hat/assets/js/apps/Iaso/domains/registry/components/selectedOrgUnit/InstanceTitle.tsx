@@ -62,9 +62,6 @@ export const InstanceTitle: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const redirectToReplace = useRedirectToReplace();
     const getEnketoUrl = useGetEnketoUrl(window.location.href, currentInstance);
-    const currentInstanceId = useMemo(() => {
-        return params.submissionId || orgUnit?.reference_instances?.[0]?.id;
-    }, [params.submissionId, orgUnit]);
 
     const instancesOptions = useMemo(() => {
         return (instances || []).map(instance => {
@@ -101,7 +98,7 @@ export const InstanceTitle: FunctionComponent<Props> = ({
                     disabled={isFetching}
                     keyValue="instance"
                     onChange={handleChange}
-                    value={isFetching ? undefined : currentInstanceId}
+                    value={isFetching ? undefined : currentInstance?.id}
                     label={MESSAGES.submission}
                     options={instancesOptions}
                     loading={isFetching}

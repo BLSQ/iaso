@@ -7,7 +7,7 @@ from typing import Any, List, Union
 
 import xlsxwriter  # type: ignore
 from django.core.paginator import Paginator
-from django.db.models import Count, Exists, Max, OuterRef, Q
+from django.db.models import Exists, Max, OuterRef, Q
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
@@ -25,35 +25,9 @@ from iaso.api.common import (
     DeletionFilterBackend,
     HasPermission,
     ModelViewSet,
-    TimestampField,
 )
-from iaso.models import Entity, EntityType, Instance
+from iaso.models import Entity, EntityType, Instance, OrgUnit
 from iaso.models.deduplication import ValidationStatus
-
-
-class EntityTypeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = EntityType
-        fields = [
-            "id",
-            "name",
-            "created_at",
-            "updated_at",
-            "reference_form",
-            "entities_count",
-            "account",
-            "fields_detail_info_view",
-            "fields_list_view",
-            "fields_duplicate_search",
-        ]
-
-    created_at = TimestampField(read_only=True)
-    updated_at = TimestampField(read_only=True)
-    entities_count = serializers.SerializerMethodField()
-
-    @staticmethod
-    def get_entities_count(obj: EntityType):
-        return Entity.objects.filter(entity_type=obj.id).count()
 
 
 class EntitySerializer(serializers.ModelSerializer):
@@ -87,7 +61,7 @@ class EntitySerializer(serializers.ModelSerializer):
 
     def get_org_unit(self, entity: Entity):
         if entity.attributes and entity.attributes.org_unit:
-            return entity.attributes.org_unit.as_location(with_parents=True)
+            return entity.attributes.org_unit.as_location(with_parents=False)
         return None
 
     def get_submitter(self, entity: Entity):
@@ -99,89 +73,14 @@ class EntitySerializer(serializers.ModelSerializer):
         return submitter
 
     def get_duplicates(self, entity: Entity):
-        return get_duplicates(entity)
+        return _get_duplicates(entity)
 
     @staticmethod
     def get_entity_type_name(obj: Entity):
         return obj.entity_type.name if obj.entity_type else None
 
 
-class EntityTypeViewSet(ModelViewSet):
-    """Entity Type API
-    /api/entitytypes
-    /api/mobile/entitytypes
-    /api/mobile/entitytype [Deprecated] will be removed in the future
-    """
-
-    results_key = "types"
-    remove_results_key_if_paginated = True
-    filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
-
-    def get_serializer_class(self):
-        return EntityTypeSerializer
-
-    def get_queryset(self):
-        search = self.request.query_params.get("search", None)
-        queryset = EntityType.objects.filter(account=self.request.user.iaso_profile.account)
-        if search:
-            queryset = queryset.filter(name__icontains=search)
-        return queryset
-
-    def partial_update(self, request, pk=None):
-        """
-        PATCH /api/entitytypes/{id}/
-        Provides an API to edit an Entity Type
-        Needs iaso_entity_type_write permission
-        """
-
-        if not request.user.has_perm(permission.ENTITY_TYPE_WRITE):
-            return Response(status=status.HTTP_403_FORBIDDEN)
-
-        name = request.data.get("name", None)
-        if name is None:
-            raise serializers.ValidationError({"name": "This field is required"})
-        try:
-            entity_type = EntityType.objects.get(pk=pk)
-            entity_type.name = name
-            entity_type.fields_duplicate_search = request.data.get("fields_duplicate_search", None)
-            entity_type.fields_list_view = request.data.get("fields_list_view", None)
-            entity_type.fields_detail_info_view = request.data.get("fields_detail_info_view", None)
-            entity_type.save()
-            return Response(entity_type.as_dict())
-        except:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-    def create(self, request, pk=None):
-        """
-        POST /api/entitytypes/
-        Provides an API to create an Entity Type
-        Needs iaso_entity_type_write permission
-        """
-
-        if not request.user.has_perm(permission.ENTITY_TYPE_WRITE):
-            return Response(status=status.HTTP_403_FORBIDDEN)
-        entity_type_serializer = EntityTypeSerializer(data=request.data, context={"request": request})
-        entity_type_serializer.is_valid(raise_exception=True)
-        entity_type = entity_type_serializer.save()
-        return Response(entity_type.as_dict(), status=status.HTTP_201_CREATED)
-
-    def destroy(self, request, pk=None, *args, **kwargs):
-        """
-        DELETE /api/entitytypes/{id}/
-        Provides an API to delete the an entity type
-        Needs iaso_entity_type_write permission
-        """
-        if not request.user.has_perm(permission.ENTITY_TYPE_WRITE):
-            return Response(status=status.HTTP_403_FORBIDDEN)
-
-        obj = get_object_or_404(pk=pk)
-
-        obj.delete()
-
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-def get_duplicates(entity):
+def _get_duplicates(entity):
     results = []
     e1qs = entity.duplicates1.filter(validation_status=ValidationStatus.PENDING)
     e2qs = entity.duplicates2.filter(validation_status=ValidationStatus.PENDING)
@@ -231,7 +130,16 @@ class EntityViewSet(ModelViewSet):
         created_by_id = self.request.query_params.get("created_by_id", None)
         created_by_team_id = self.request.query_params.get("created_by_team_id", None)
 
-        queryset = Entity.objects.filter(account=self.request.user.iaso_profile.account)
+        queryset = Entity.objects.filter_for_user(self.request.user)
+
+        queryset = queryset.prefetch_related(
+            "attributes__created_by__teams",
+            "attributes__form",
+            "attributes__org_unit__org_unit_type",
+            "attributes__org_unit__parent",
+            "attributes__org_unit__version__data_source",
+            "entity_type",
+        )
 
         if form_name:
             queryset = queryset.filter(attributes__form__name__icontains=form_name)
@@ -246,7 +154,8 @@ class EntityViewSet(ModelViewSet):
         if entity_type_ids:
             queryset = queryset.filter(entity_type_id__in=entity_type_ids.split(","))
         if org_unit_id:
-            queryset = queryset.filter(attributes__org_unit__id=org_unit_id)
+            parent = OrgUnit.objects.get(id=org_unit_id)
+            queryset = queryset.filter(attributes__org_unit__path__descendants=parent.path)
 
         if date_from or date_to:
             date_from_dt = datetime.datetime.strptime(date_from, "%Y-%m-%d") if date_from else datetime.datetime.min
@@ -309,12 +218,15 @@ class EntityViewSet(ModelViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
+        is_export = any([csv_format, xlsx_format])
+
         # TODO: investigate if request.user can be anonymous here
         entity_type_ids = request.query_params.get("entity_type_ids", None)
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
         orders = request.GET.get("order", "-created_at").split(",")
         order_columns = request.GET.get("order_columns", None)
+        as_location = request.GET.get("asLocation", None)
 
         queryset = queryset.order_by(*orders)
 
@@ -345,7 +257,11 @@ class EntityViewSet(ModelViewSet):
 
         entities = entities.order_by(*new_order_columns)
 
-        if limit:
+        if as_location:
+            limit_int = int(limit)
+            paginator = Paginator(entities, limit_int)
+            entities = paginator.page(1).object_list
+        elif limit and not is_export:
             limit_int = int(limit)
             page_offset = int(page_offset)
             start_int = (page_offset - 1) * limit_int
@@ -364,14 +280,16 @@ class EntityViewSet(ModelViewSet):
             if attributes is not None and entity.attributes is not None:
                 file_content = entity.attributes.get_and_save_json_of_xml().get("file_content", None)
                 attributes_pk = attributes.pk
-                attributes_ou = entity.attributes.org_unit.as_location(with_parents=True) if entity.attributes.org_unit else None  # type: ignore
+                attributes_ou = entity.attributes.org_unit.as_location(with_parents=False) if entity.attributes.org_unit else None  # type: ignore
                 attributes_latitude = attributes.location.y if attributes.location else None  # type: ignore
                 attributes_longitude = attributes.location.x if attributes.location else None  # type: ignore
             name = None
-            program = None
             if file_content is not None:
                 name = file_content.get("name")
-                program = file_content.get("program")
+            duplicates = []
+            # invokes many SQL queries and not needed for map display
+            if not as_location and not is_export:
+                duplicates = _get_duplicates(entity)
             result = {
                 "id": entity.id,
                 "uuid": entity.uuid,
@@ -382,8 +300,7 @@ class EntityViewSet(ModelViewSet):
                 "entity_type": entity.entity_type.name,
                 "last_saved_instance": entity.last_saved_instance,
                 "org_unit": attributes_ou,
-                "program": program,
-                "duplicates": get_duplicates(entity),
+                "duplicates": duplicates,
                 "latitude": attributes_latitude,
                 "longitude": attributes_longitude,
             }
@@ -401,7 +318,7 @@ class EntityViewSet(ModelViewSet):
                 columns_list = [i for n, i in enumerate(columns_list) if i not in columns_list[n + 1 :]]
                 columns_list = [c for c in columns_list if len(c) > 2]
             result_list.append(result)
-        if xlsx_format or csv_format:
+        if is_export:
             columns = [
                 {"title": "ID", "width": 20},
                 {"title": "UUID", "width": 20},
@@ -409,7 +326,6 @@ class EntityViewSet(ModelViewSet):
                 {"title": "Creation Date", "width": 20},
                 {"title": "HC", "width": 20},
                 {"title": "Last update", "width": 20},
-                {"title": "Program", "width": 20},
             ]
             for col in columns_list:
                 columns.append({"title": col["label"]})
@@ -433,7 +349,6 @@ class EntityViewSet(ModelViewSet):
                     created_at,
                     entity["org_unit"]["name"] if entity["org_unit"] else "",
                     last_saved_instance,
-                    entity["program"],
                 ]
                 for col in columns_list:
                     values.append(entity.get(col["name"]))
@@ -454,7 +369,14 @@ class EntityViewSet(ModelViewSet):
             response["Content-Disposition"] = "attachment; filename=%s" % filename
             return response
 
-        if limit:
+        if as_location:
+            return Response(
+                {
+                    "limit": limit_int,
+                    "result": result_list,
+                }
+            )
+        elif limit:
             return Response(
                 {
                     "count": total_count,

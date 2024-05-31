@@ -1364,7 +1364,6 @@ class Profile(models.Model):
             "user_id": self.user.id,
             "phone_number": self.phone_number.as_e164 if self.phone_number else None,
             "country_code": region_code_for_number(self.phone_number).lower() if self.phone_number else None,
-            "projects": [p.as_dict() for p in self.projects.all().order_by("name")],
         }
 
     def has_a_team(self):

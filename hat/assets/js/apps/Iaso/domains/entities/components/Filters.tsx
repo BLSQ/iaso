@@ -18,6 +18,7 @@ import {
 
 // @ts-ignore
 import DatesRange from 'Iaso/components/filters/DatesRange';
+import { LocationLimit } from 'Iaso/utils/map/LocationLimit';
 import InputComponent from '../../../components/forms/InputComponent';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 
@@ -41,6 +42,7 @@ import {
     SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,
     hasFeatureFlag,
 } from '../../../utils/featureFlags';
+import { UserOrgUnitRestriction } from 'Iaso/components/UserOrgUnitRestriction.tsx';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -65,6 +67,7 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
         submitterId: params.submitterId,
         submitterTeamId: params.submitterTeamId,
         entityTypeIds: params.entityTypeIds,
+        locationLimit: params.locationLimit,
     });
 
     useEffect(() => {
@@ -76,6 +79,7 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
             submitterId: params.submitterId,
             submitterTeamId: params.submitterTeamId,
             entityTypeIds: params.entityTypeIds,
+            locationLimit: params.locationLimit,
         });
     }, [params]);
     const [filtersUpdated, setFiltersUpdated] = useState(false);
@@ -131,6 +135,8 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
     const { url: apiUrl } = useGetBeneficiariesApiParams(params);
     return (
         <Box mb={1}>
+            <UserOrgUnitRestriction />
+
             <Grid container spacing={2}>
                 <Grid item xs={12} sm={6} md={3}>
                     <InputComponent
@@ -172,6 +178,15 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
                             initialSelection={initialOrgUnit}
                         />
                     </Box>
+                    {params.tab === 'map' && (
+                        <Box mt={2}>
+                            <LocationLimit
+                                keyValue="locationLimit"
+                                onChange={handleChange}
+                                value={filters.locationLimit}
+                            />
+                        </Box>
+                    )}
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
                     <DatesRange

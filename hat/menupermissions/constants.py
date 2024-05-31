@@ -3,7 +3,6 @@ MODULE_PERMISSIONS = {
         "iaso_forms",
         "iaso_update_submission",
         "iaso_submissions",
-        "iaso_completeness",
         "iaso_completeness_stats",
     ],
     "DEFAULT": [
@@ -47,19 +46,25 @@ MODULE_PERMISSIONS = {
     ],
     "REGISTRY": ["iaso_registry_write", "iaso_registry_read", "iaso_org_unit_change_request_review"],
     "PAYMENTS": ["iaso_payments"],
+    "COMPLETENESS_PER_PERIOD": ["iaso_completeness"],
 }
 
 MODULES = [
-    {"name": "Data collection - Forms", "codename": "DATA_COLLECTION_FORMS"},
-    {"name": "Default", "codename": "DEFAULT"},
-    {"name": "DHIS2 mapping", "codename": "DHIS2_MAPPING"},
-    {"name": "Embedded links", "codename": "EMBEDDED_LINKS"},
-    {"name": "Entities", "codename": "ENTITIES"},
-    {"name": "External storage", "codename": "EXTERNAL_STORAGE"},
-    {"name": "Planning", "codename": "PLANNING"},
-    {"name": "Polio project", "codename": "POLIO_PROJECT"},
-    {"name": "Registry", "codename": "REGISTRY"},
-    {"name": "Payments", "codename": "PAYMENTS"},
+    {
+        "name": "Data collection - Forms",
+        "codename": "DATA_COLLECTION_FORMS",
+        "fr_name": "Collecte de données - Formulaires",
+    },
+    {"name": "Default", "codename": "DEFAULT", "fr_name": "Par défaut"},
+    {"name": "DHIS2 mapping", "codename": "DHIS2_MAPPING", "fr_name": "Mappage DHIS2"},
+    {"name": "Embedded links", "codename": "EMBEDDED_LINKS", "fr_name": "Liens intégrés"},
+    {"name": "Entities", "codename": "ENTITIES", "fr_name": "Entités"},
+    {"name": "External storage", "codename": "EXTERNAL_STORAGE", "fr_name": "Stockage externe"},
+    {"name": "Planning", "codename": "PLANNING", "fr_name": "Planification"},
+    {"name": "Polio project", "codename": "POLIO_PROJECT", "fr_name": "Projet Polio"},
+    {"name": "Registry", "codename": "REGISTRY", "fr_name": "Registre"},
+    {"name": "Payments", "codename": "PAYMENTS", "fr_name": "Paiements"},
+    {"name": "Completeness per Period", "codename": "COMPLETENESS_PER_PERIOD", "fr_name": "Complétude par période"},
 ]
 
 FEATUREFLAGES_TO_EXCLUDE = {

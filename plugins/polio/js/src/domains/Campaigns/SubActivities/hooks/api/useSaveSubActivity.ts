@@ -15,10 +15,13 @@ const saveActivity = values => {
     return postRequest(apiUrl, body);
 };
 
-export const useSaveSubActivity = (): UseMutationResult => {
+export const useSaveSubActivity = (
+    onSuccess: () => void,
+): UseMutationResult => {
     return useSnackMutation({
         mutationFn: saveActivity,
         invalidateQueryKey: ['subActivities'],
-        // TODO add success and error messages
+        showSucessSnackBar: false,
+        options: { onSuccess },
     });
 };

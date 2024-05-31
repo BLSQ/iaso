@@ -1,7 +1,8 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 import {
     AddButton,
     ConfirmCancelModal,
+    LoadingSpinner,
     makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
@@ -38,10 +39,12 @@ export const CreateEditSubActivity: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const { values: campaign } = useFormikContext<CampaignFormValues>();
+    const onSuccess = useCallback(() => {
+        closeDialog();
+    }, [closeDialog]);
     const { mutateAsync: saveSubActivity, isLoading: isSaving } =
-        useSaveSubActivity();
+        useSaveSubActivity(onSuccess);
     const ageRangeOptions = useAgeRangeOptions();
-
     const validationSchema = useSubActivityValidation(round);
 
     const formik = useFormik<SubActivityFormValues>({
@@ -102,8 +105,8 @@ export const CreateEditSubActivity: FunctionComponent<Props> = ({
                     <Box mb={4}>
                         <Divider />
                     </Box>
+                    {(isSaving || formik.isSubmitting) && <LoadingSpinner />}
                     <Grid container spacing={2}>
-                        {/* {isSaving || (formik.isSubmitting && <LoadingSpinner />)} */}
                         <Grid item xs={6}>
                             <Field
                                 component={TextInput}

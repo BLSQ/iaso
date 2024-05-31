@@ -137,8 +137,11 @@ const CreateEditDialog: FunctionComponent<Props> = ({
     const CurrentForm = tabs[selectedTab].form;
 
     // default to tab 0 when opening
+    // This seems necessary regardless of state default value, the cause should be investigated
     useEffect(() => {
-        setSelectedTab(0);
+        setSelectedTab(value => {
+            return value || 0;
+        });
     }, [isOpen]);
 
     const isFormChanged = !isEqual(formik.values, formik.initialValues);

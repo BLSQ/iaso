@@ -9,6 +9,5 @@
           --primary-background-color: {{ THEME_PRIMARY_BACKGROUND_COLOR}};
       }
   </style>
-  {% load sass_tags %}
-  <link href="{% sass_src 'css/index.scss' %}" rel="stylesheet" type="text/css">
+  <link href="{% static 'css/index.css' %}" rel="stylesheet" type="text/css">
 {% endblock %}

@@ -14,7 +14,6 @@ module.exports = {
     target: ['web', 'es2015'],
     entry: {
         common: ['react', 'react-dom', 'react-intl', 'typescript'],
-        styles: './assets/css/index.scss',
         iaso: './assets/js/apps/Iaso/index',
     },
 
@@ -170,15 +169,6 @@ module.exports = {
                             ],
                         },
                     },
-                ],
-            },
-            // Extract Sass files
-            {
-                test: /\.scss$/,
-                use: [
-                    { loader: MiniCssExtractPlugin.loader },
-                    { loader: 'css-loader' },
-                    { loader: 'sass-loader' },
                 ],
             },
             {

@@ -13,7 +13,7 @@ import omit from 'lodash/omit';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { useDispatch } from 'react-redux';
-import Logs from '../../components/logs/LogsComponent';
+import {Logs} from './history/LogsComponent';
 import TopBar from '../../components/nav/TopBarComponent';
 import SingleTable from '../../components/tables/SingleTable';
 import {
@@ -471,6 +471,7 @@ const OrgUnitDetail = () => {
                             {tab === 'history' && (
                                 <div data-test="logs-tab">
                                     <Logs
+                                        baseUrl={baseUrl}
                                         params={params}
                                         logObjectId={currentOrgUnit.id}
                                         goToRevision={goToRevision}

@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import Color from 'color';
 import {
     IconButton as IconButtonComponent,
     Expander,
     useSafeIntl,
+    textPlaceholder,
 } from 'bluesquare-components';
-import { baseUrls } from '../../constants/urls';
+import { baseUrls } from '../../constants/urls.ts';
 import OrgUnitTooltip from './components/OrgUnitTooltip';
 import getDisplayName from '../../utils/usersUtils.ts';
 import MESSAGES from './messages';
@@ -132,31 +133,38 @@ export const useOrgUnitsTableColumns = searches => {
     return columns;
 };
 
-export const orgUnitsLogsColumns = formatMessage => [
-    {
-        Header: 'ID',
-        accessor: 'id',
-        width: 100,
-    },
-    {
-        Header: formatMessage(MESSAGES.date),
-        accessor: 'created_at',
-        Cell: DateTimeCellRfc,
-    },
-    {
-        Header: formatMessage(MESSAGES.user),
-        accessor: 'user__username',
-        Cell: settings =>
-            settings.row.original.user
-                ? getDisplayName(settings.row.original.user)
-                : null,
-    },
-    {
-        expander: true,
-        accessor: 'expander',
-        width: 65,
-        Expander,
-    },
-];
+export const useOrgUnitsLogsColumns = () => {
+    const { formatMessage } = useSafeIntl();
+    return useMemo(
+        () => [
+            {
+                Header: 'ID',
+                accessor: 'id',
+                width: 100,
+            },
+            {
+                Header: formatMessage(MESSAGES.date),
+                accessor: 'created_at',
+                Cell: DateTimeCellRfc,
+            },
+            {
+                Header: formatMessage(MESSAGES.user),
+                accessor: 'user__username',
+                Cell: settings =>
+                    settings.row.original.user
+                        ? getDisplayName(settings.row.original.user)
+                        : textPlaceholder,
+            },
+            {
+                Header: '', // This is to please the tS compiler
+                expander: true,
+                accessor: 'expander',
+                width: 65,
+                Expander,
+            },
+        ],
+        [formatMessage],
+    );
+};
 
 export const staleTime = 60000;

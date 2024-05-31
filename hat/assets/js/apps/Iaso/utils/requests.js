@@ -49,16 +49,6 @@ export const fetchOrgUnitsList = (dispatch, url) =>
             console.error('Error while fetching org unit list:', error);
         });
 
-export const fetchLogs = (dispatch, url) =>
-    getRequest(url)
-        .then(data => data)
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(errorSnackBar('fetchLogsError', null, error)),
-            );
-            console.error('Error while fetching logs list:', error);
-        });
-
 export const fetchAllDataSources = (dispatch, url) => {
     return getRequest(url)
         .then(data => {

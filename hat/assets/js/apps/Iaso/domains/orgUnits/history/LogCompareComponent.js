@@ -19,11 +19,11 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { isEqual } from 'lodash';
 
-import ConfirmDialog from '../dialogs/ConfirmDialogComponent';
+import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
 
 import ValueWithErrorBoundary from './ValueWithErrorBoundary';
 
-import MESSAGES from '../../domains/forms/messages';
+import MESSAGES from '../../forms/messages';
 import { MESSAGES as LOG_MESSAGES } from './messages';
 
 const useStyles = makeStyles(theme => ({
@@ -218,12 +218,13 @@ const LogCompareComponent = ({ log, compareLog, goToRevision, title }) => {
 LogCompareComponent.defaultProps = {
     compareLog: [],
     title: '',
+    goToRevision: () => {},
 };
 
 LogCompareComponent.propTypes = {
     log: PropTypes.array.isRequired,
     compareLog: PropTypes.array,
-    goToRevision: PropTypes.func.isRequired,
+    goToRevision: PropTypes.func,
     title: PropTypes.string.isRequired,
 };
 

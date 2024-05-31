@@ -4,11 +4,11 @@ import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import { makeStyles } from '@mui/styles';
 
-import { GeoJsonMap } from '../maps/GeoJsonMapComponent';
-import { MarkerMap } from '../maps/MarkerMapComponent';
-import { GeoJson } from '../maps/types';
-import { LinkToOrgUnit } from '../../domains/orgUnits/components/LinkToOrgUnit';
-import { useGetOrgUnitDetail } from '../../domains/orgUnits/hooks/requests/useGetOrgUnitDetail';
+import { GeoJsonMap } from '../../../components/maps/GeoJsonMapComponent';
+import { MarkerMap } from '../../../components/maps/MarkerMapComponent';
+import { GeoJson } from '../../../components/maps/types';
+import { LinkToOrgUnit } from '../components/LinkToOrgUnit';
+import { useGetOrgUnitDetail } from '../hooks/requests/useGetOrgUnitDetail';
 
 import MESSAGES from './messages';
 

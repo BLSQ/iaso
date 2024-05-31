@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Grid, Typography, Box } from '@mui/material';
@@ -42,23 +42,15 @@ const FormVersionsDialogComponent = ({
             xls_file: formVersion.xls_file,
         });
 
-    const [periodsErrors, setPeriodsErrors] = useState(
-        getPeriodsErrors(
-            formState.start_period.value,
-            formState.end_period.value,
-            periodType,
-        ),
-    );
-
-    useEffect(() => {
-        setPeriodsErrors(
+    const periodsErrors = useMemo(
+        () =>
             getPeriodsErrors(
                 formState.start_period.value,
                 formState.end_period.value,
                 periodType,
             ),
-        );
-    }, [formState.start_period.value, formState.end_period.value, periodType]);
+        [formState.end_period.value, formState.start_period.value, periodType],
+    );
 
     const onConfirm = useCallback(
         async closeDialog => {

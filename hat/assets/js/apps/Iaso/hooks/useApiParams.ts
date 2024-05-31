@@ -5,7 +5,7 @@ import { cleanupParams } from '../utils/requests';
 export type FormattedApiParams = ApiParams & Record<string, any>;
 
 export const useApiParams = (
-    params: Partial<UrlParams>,
+    params: Partial<UrlParams> & Record<string, any>,
     defaults?: { order?: string; limit?: number; page?: number },
 ): FormattedApiParams => {
     return useMemo(() => {

@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { Grid } from '@mui/material';
 import { Link } from 'react-router-dom';
-
 import { IconButton, useSafeIntl } from 'bluesquare-components';
 import FormatListBulleted from '@mui/icons-material/FormatListBulleted';
 import { useDispatch } from 'react-redux';
@@ -22,65 +21,67 @@ import { useRestoreForm } from '../hooks/useRestoreForm.tsx';
 
 export const baseUrl = baseUrls.forms;
 
-export const formVersionsTableColumns = (
-    formatMessage,
-    setForceRefresh,
-    formId,
-    periodType,
-) => [
-    {
-        Header: formatMessage(MESSAGES.version),
-        accessor: 'version_id',
-    },
-    {
-        Header: formatMessage(MESSAGES.startPeriod),
-        accessor: 'start_period',
-    },
-    {
-        Header: formatMessage(MESSAGES.endPeriod),
-        accessor: 'end_period',
-    },
-    {
-        Header: formatMessage(MESSAGES.actions),
-        accessor: 'actions',
-        sortable: false,
-        Cell: settings => {
-            return (
-                <section>
-                    {settings.row.original.xls_file && (
-                        <IconButton
-                            url={settings.row.original.xls_file}
-                            download
-                            icon="xls"
-                            tooltipMessage={MESSAGES.xls_form_file}
-                            reloadDocument
-                        />
-                    )}
-                    <FormVersionsDialog
-                        renderTrigger={({ openDialog }) => (
-                            <IconButton
-                                onClick={openDialog}
-                                icon="edit"
-                                tooltipMessage={MESSAGES.edit}
+export const useFormVersionsTableColumns = (formId, periodType) => {
+    const { formatMessage } = useSafeIntl();
+    return useMemo(
+        () => [
+            {
+                Header: formatMessage(MESSAGES.version),
+                accessor: 'version_id',
+            },
+            {
+                Header: formatMessage(MESSAGES.startPeriod),
+                accessor: 'start_period',
+            },
+            {
+                Header: formatMessage(MESSAGES.endPeriod),
+                accessor: 'end_period',
+            },
+            {
+                Header: formatMessage(MESSAGES.actions),
+                accessor: 'actions',
+                sortable: false,
+                Cell: settings => {
+                    return (
+                        <section>
+                            {settings.row.original.xls_file && (
+                                <IconButton
+                                    url={settings.row.original.xls_file}
+                                    download
+                                    icon="xls"
+                                    tooltipMessage={MESSAGES.xls_form_file}
+                                    reloadDocument
+                                />
+                            )}
+                            <FormVersionsDialog
+                                renderTrigger={({ openDialog }) => (
+                                    <IconButton
+                                        onClick={openDialog}
+                                        icon="edit"
+                                        tooltipMessage={MESSAGES.edit}
+                                    />
+                                )}
+                                // onConfirmed={() => setForceRefresh(true)}
+                                formVersion={settings.row.original}
+                                periodType={periodType}
+                                formId={formId}
+                                titleMessage={{
+                                    ...MESSAGES.updateFormVersion,
+                                    values: {
+                                        version_id:
+                                            settings.row.original.version_id,
+                                    },
+                                }}
+                                key={settings.row.original.updated_at}
                             />
-                        )}
-                        onConfirmed={() => setForceRefresh(true)}
-                        formVersion={settings.row.original}
-                        periodType={periodType}
-                        formId={formId}
-                        titleMessage={{
-                            ...MESSAGES.updateFormVersion,
-                            values: {
-                                version_id: settings.row.original.version_id,
-                            },
-                        }}
-                        key={settings.row.original.updated_at}
-                    />
-                </section>
-            );
-        },
-    },
-];
+                        </section>
+                    );
+                },
+            },
+        ],
+        [formId, formatMessage, periodType],
+    );
+};
 
 const getActionsColWidth = user => {
     const baseWidth = 50;

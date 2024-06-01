@@ -111,11 +111,15 @@ def setup_entities(account_name, iaso_client):
     # fetch orgunit ids
     limit = 20
     orgunits = iaso_client.get("/api/orgunits/", params={"limit": limit, "orgUnitTypeId": hf_out["id"]})["orgunits"]
-    org_unit_ids = [ou["id"] for ou in orgunits]
 
     print("-- Submitting %d submissions" % limit)
     count = 0
-    for org_unit_id in org_unit_ids:
+    for orgunit in orgunits:
+        org_unit_id = orgunit["id"]
+        longitude = (orgunit["longitude"],)
+        latitude = (orgunit["latitude"],)
+        altitude = (orgunit["altitude"],)
+
         child = fake_person()
 
         the_uuid = str(uuid.uuid4())
@@ -127,16 +131,16 @@ def setup_entities(account_name, iaso_client):
 
         instance_data = {
             "id": the_uuid,
-            "latitude": None,
             "created_at": current_datetime,
             "updated_at": current_datetime,
             "orgUnitId": org_unit_id,
             "formId": reg_form_id,
-            "longitude": None,
+            "longitude": longitude,
+            "latitude": latitude,
+            "altitude": altitude,
             "entityUuid": child_uuid,
             "entityTypeId": entity_type["id"],
             "accuracy": 0,
-            "altitude": 0,
             "imgUrl": "imgUrl",
             "file": local_path,
             "name": file_name,
@@ -188,16 +192,16 @@ def setup_entities(account_name, iaso_client):
                 json=[
                     {
                         "id": the_uuid,
-                        "latitude": None,
                         "created_at": created_at_to_datetime,
                         "updated_at": current_datetime,
                         "orgUnitId": org_unit_id,
                         "formId": follow_form_id,
                         "entityUuid": child_uuid,
                         "entityTypeId": entity_type["id"],
-                        "longitude": None,
+                        "longitude": longitude,
+                        "latitude": latitude,
+                        "altitude": altitude,
                         "accuracy": 0,
-                        "altitude": 0,
                         "imgUrl": "imgUrl",
                         "file": local_path,
                         "name": file_name,
@@ -225,7 +229,6 @@ def setup_entities(account_name, iaso_client):
                     )
                 },
             )
-
         count = count + 1
 
     print(iaso_client.get("/api/instances", params={"limit": 1})["count"], "instances created")

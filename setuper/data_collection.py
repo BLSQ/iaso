@@ -48,11 +48,9 @@ def setup_instances(account_name, iaso_client):
         orgunits = iaso_client.get("/api/orgunits/", params={"limit": limit, "orgUnitTypeId": org_unit_type_id})[
             "orgunits"
         ]
-        org_unit_ids = [ou["id"] for ou in orgunits]
-
         print("-- Submitting %d submissions" % limit)
         count = 0
-        for org_unit_id in org_unit_ids:
+        for orgunit in orgunits:
             the_uuid = str(uuid.uuid4())
             file_name = "example_%s.xml" % the_uuid
             local_path = "generated/%s" % file_name
@@ -61,14 +59,14 @@ def setup_instances(account_name, iaso_client):
             instance_body = [
                 {
                     "id": the_uuid,
-                    "latitude": None,
                     "created_at": current_datetime,
                     "updated_at": current_datetime,
-                    "orgUnitId": org_unit_id,
+                    "orgUnitId": orgunit["id"],
                     "formId": form_id,
-                    "longitude": None,
+                    "longitude": orgunit["longitude"],
+                    "latitude": orgunit["latitude"],
+                    "altitude": orgunit["altitude"],
                     "accuracy": 0,
-                    "altitude": 0,
                     "imgUrl": "imgUrl",
                     "file": local_path,
                     "name": file_name,

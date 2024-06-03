@@ -75,18 +75,6 @@ export const fetchAssociatedOrgUnits = (
         });
 };
 
-export const fetchSources = dispatch =>
-    getRequest('/api/datasources/')
-        .then(res => res.sources)
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('fetchSourcesError', null, error),
-                ),
-            );
-            console.error('Error while fetching source list:', error);
-        });
-
 export const fetchOrgUnitDetail = (dispatch, orgUnitId) =>
     getRequest(`/api/orgunits/${orgUnitId}/`)
         .then(orgUnit => orgUnit)
@@ -111,18 +99,6 @@ export const fetchInstanceDetail = (dispatch, instanceId) =>
             console.error('Error while fetching instance detail:', error);
         });
 
-export const fetchAlgorithms = dispatch =>
-    getRequest('/api/algorithms/')
-        .then(algorithms => algorithms)
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('fetchAlgorithmsError', null, error),
-                ),
-            );
-            console.error('Error while fetching algorithms list:', error);
-        });
-
 export const fetchLinkDetail = (dispatch, linkId) =>
     getRequest(`/api/links/${linkId}`)
         .then(linkDetail => linkDetail)
@@ -133,22 +109,6 @@ export const fetchLinkDetail = (dispatch, linkId) =>
                 ),
             );
             console.error('Error while fetching link detail:', error);
-        });
-
-export const deleteAlgorithmRun = (dispatch, runId) =>
-    deleteRequest(`/api/algorithmsruns/${runId}/`)
-        .then(res => res)
-        .catch(error => {
-            dispatch(enqueueSnackbar(errorSnackBar('deleteRun', null, error)));
-            console.error('Error while delteing algorithms run:', error);
-        });
-
-export const runAlgorithm = (dispatch, runItem) =>
-    putRequest('/api/algorithmsruns/0/', runItem)
-        .then(res => res)
-        .catch(error => {
-            dispatch(enqueueSnackbar(errorSnackBar('deleteRun', null, error)));
-            console.error('Error while deleting algorithms run:', error);
         });
 
 export const createForm = (dispatch, formData) =>
@@ -222,18 +182,6 @@ export const useGetComments = params => {
 
 export const sendComment = async comment =>
     postRequest('/api/comments/', comment);
-
-export const fetchAlgorithmRuns = (dispatch, url = '/api/algorithmsruns/') =>
-    getRequest(url)
-        .then(data => data)
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('fetchAlgorithmsError', null, error),
-                ),
-            );
-            console.error(`Error while fetching alogrithms:`, error);
-        });
 
 const dispatchSaveOrgUnit = dispatch => orgUnit =>
     patchRequest(`/api/orgunits/${orgUnit.id}/`, orgUnit)

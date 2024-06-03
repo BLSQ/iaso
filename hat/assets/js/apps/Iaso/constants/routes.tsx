@@ -21,7 +21,7 @@ import CompareSubmissions from '../domains/instances/compare';
 import { CompareInstanceLogs } from '../domains/instances/compare/components/CompareInstanceLogs';
 import InstanceDetail from '../domains/instances/details';
 import { Links } from '../domains/links';
-import Runs from '../domains/links/Runs';
+import { Runs } from '../domains/algorithmRuns/Runs';
 import Mappings from '../domains/mappings';
 import MappingDetails from '../domains/mappings/details';
 import { Modules } from '../domains/modules';

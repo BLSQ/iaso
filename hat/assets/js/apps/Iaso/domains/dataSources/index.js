@@ -1,5 +1,7 @@
 import React from 'react';
-import { AddButton, useSafeIntl } from 'bluesquare-components';
+import { AddButton, commonStyles, useSafeIntl } from 'bluesquare-components';
+import { Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import TopBar from '../../components/nav/TopBarComponent';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { useDefaultSourceVersion } from './utils';
@@ -16,9 +18,17 @@ import { useGetDataSources } from './useGetDataSources.ts';
 const baseUrl = baseUrls.sources;
 const defaultOrder = 'name';
 
+const useStyles = makeStyles(theme => {
+    return {
+        containerFullHeightNoTabPadded:
+            commonStyles(theme).containerFullHeightNoTabPadded,
+    };
+});
+
 const DataSources = () => {
     const params = useParamsObject(baseUrl);
     const { formatMessage } = useSafeIntl();
+    const classes = useStyles();
     const defaultSourceVersion = useDefaultSourceVersion();
     const columns = useDataSourcesTableColumns(defaultSourceVersion);
     const { data, isFetching: loading } = useGetDataSources(params);
@@ -30,30 +40,38 @@ const DataSources = () => {
                 displayBackButton={false}
             />
             <ErrorBoundary>
-                <DisplayIfUserHasPerm permissions={[SOURCE_WRITE]}>
-                    <DataSourceDialogComponent
-                        defaultSourceVersion={defaultSourceVersion}
-                        renderTrigger={({ openDialog }) => (
-                            <AddButton
-                                onClick={openDialog}
-                                dataTestId="create-datasource-button"
+                <Box className={classes.containerFullHeightNoTabPadded}>
+                    <DisplayIfUserHasPerm permissions={[SOURCE_WRITE]}>
+                        <Box
+                            display="inline-flex"
+                            justifyContent="flex-end"
+                            style={{ width: '100%' }}
+                        >
+                            <DataSourceDialogComponent
+                                defaultSourceVersion={defaultSourceVersion}
+                                renderTrigger={({ openDialog }) => (
+                                    <AddButton
+                                        onClick={openDialog}
+                                        dataTestId="create-datasource-button"
+                                    />
+                                )}
                             />
-                        )}
+                        </Box>
+                    </DisplayIfUserHasPerm>
+                    <TableWithDeepLink
+                        baseUrl={baseUrl}
+                        params={params}
+                        data={data?.sources ?? []}
+                        count={data?.count ?? 0}
+                        pages={data?.pages ?? 0}
+                        columns={columns}
+                        defaultSorted={[{ id: defaultOrder, desc: false }]}
+                        extraProps={{
+                            defaultPageSize: data?.limit ?? 20,
+                            loading,
+                        }}
                     />
-                </DisplayIfUserHasPerm>
-                <TableWithDeepLink
-                    baseUrl={baseUrl}
-                    params={params}
-                    data={data?.sources ?? []}
-                    count={data?.count ?? 0}
-                    pages={data?.pages ?? 0}
-                    columns={columns}
-                    defaultSorted={[{ id: defaultOrder, desc: false }]}
-                    extraProps={{
-                        defaultPageSize: data?.limit ?? 20,
-                        loading,
-                    }}
-                />
+                </Box>
             </ErrorBoundary>
         </>
     );

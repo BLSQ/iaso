@@ -1,5 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import { useQueryClient } from 'react-query';
+import { makeStyles } from '@mui/styles';
+import { commonStyles } from 'bluesquare-components';
+import { Box } from '@mui/material';
 import { useOrgUnitsLogsColumns } from '../config';
 import { LogsDetails } from './LogsDetails';
 import { LOGS_PREFIX } from '../../../constants/urls';
@@ -16,6 +19,13 @@ type Props = {
     defaultPageSize?: number;
 };
 
+const useStyles = makeStyles(theme => {
+    return {
+        containerFullHeightNoTabPadded:
+            commonStyles(theme).containerFullHeightNoTabPadded,
+    };
+});
+
 export const Logs: FunctionComponent<Props> = ({
     goToRevision,
     logObjectId,
@@ -23,6 +33,7 @@ export const Logs: FunctionComponent<Props> = ({
     params,
     defaultPageSize = 10,
 }) => {
+    const classes = useStyles();
     const queryClient = useQueryClient();
     const columns = useOrgUnitsLogsColumns();
     const tableParams = usePrefixedParams(LOGS_PREFIX, params);
@@ -32,33 +43,35 @@ export const Logs: FunctionComponent<Props> = ({
         params: tableParams,
     });
     return (
-        <TableWithDeepLink
-            baseUrl={baseUrl}
-            params={tableParams}
-            columns={columns}
-            paramsPrefix={LOGS_PREFIX}
-            data={data?.list ?? []}
-            count={data?.count ?? 0}
-            pages={data?.pages ?? 1}
-            extraProps={{
-                loading,
-                defaultPageSize: data?.limit ?? defaultPageSize,
-                SubComponent: log =>
-                    log ? (
-                        <LogsDetails
-                            logId={log.id}
-                            goToRevision={revision => {
-                                goToRevision(revision, () => {
-                                    queryClient.invalidateQueries([
-                                        'logs',
-                                        'iaso.orgunit',
-                                        logObjectId,
-                                    ]);
-                                });
-                            }}
-                        />
-                    ) : null,
-            }}
-        />
+        <Box className={classes.containerFullHeightNoTabPadded}>
+            <TableWithDeepLink
+                baseUrl={baseUrl}
+                params={tableParams}
+                columns={columns}
+                paramsPrefix={LOGS_PREFIX}
+                data={data?.list ?? []}
+                count={data?.count ?? 0}
+                pages={data?.pages ?? 1}
+                extraProps={{
+                    loading,
+                    defaultPageSize: data?.limit ?? defaultPageSize,
+                    SubComponent: log =>
+                        log ? (
+                            <LogsDetails
+                                logId={log.id}
+                                goToRevision={revision => {
+                                    goToRevision(revision, () => {
+                                        queryClient.invalidateQueries([
+                                            'logs',
+                                            'iaso.orgunit',
+                                            logObjectId,
+                                        ]);
+                                    });
+                                }}
+                            />
+                        ) : null,
+                }}
+            />
+        </Box>
     );
 };

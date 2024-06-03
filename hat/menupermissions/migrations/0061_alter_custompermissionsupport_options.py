@@ -34,7 +34,7 @@ class Migration(migrations.Migration):
                     ("iaso_submissions", "Soumissions"),
                     ("iaso_update_submission", "Editer soumissions"),
                     ("iaso_planning_write", "Editer le planning"),
-                    ("iaso_planning_read", "lire le planning"),
+                    ("iaso_planning_read", "Lire le planning"),
                     ("iaso_reports", "Reports"),
                     ("iaso_teams", "Equipes"),
                     ("iaso_assignments", "Attributions"),

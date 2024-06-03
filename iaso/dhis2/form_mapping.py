@@ -40,13 +40,23 @@ def copy_mappings_from_previous_version(form_version, previous_form_version):
         mapping_version.name = uuid.uuid4()
         mapping_version.form_version = form_version
 
-        # preserve all question mappings except the questions that don't exist in the newer version
         questions_by_name = form_version.questions_by_name()
 
         if "question_mappings" in mapping_version.json:
-            filtered_question_mappings = {
-                k: v for k, v in mapping_version.json["question_mappings"].items() if k in questions_by_name
-            }
+            filtered_question_mappings = {}
+            for k, v in mapping_version.json["question_mappings"].items():
+                if k in questions_by_name:
+                    # preserve all question mappings except the questions that don't exist in the newer version
+                    filtered_question_mappings[k] = v
+                elif "__" in k:
+                    # for multi select to boolean
+                    # preserve only question__choice_name that still exist in the newer version
+                    question_name = k.split("__")[0]
+                    question = questions_by_name.get(question_name)
+                    if question:
+                        choice_name = "".join(k.split("__")[1:])
+                        if choice_name in [x["name"] for x in question["children"]]:
+                            filtered_question_mappings[k] = v
 
             mapping_version.json["question_mappings"] = filtered_question_mappings
 

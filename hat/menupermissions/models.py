@@ -242,7 +242,7 @@ class CustomPermissionSupport(models.Model):
             (_SUBMISSIONS, _("Soumissions")),
             (_SUBMISSIONS_UPDATE, _("Editer soumissions")),
             (_PLANNING_WRITE, _("Editer le planning")),
-            (_PLANNING_READ, _("lire le planning")),
+            (_PLANNING_READ, _("Lire le planning")),
             (_REPORTS, _("Reports")),
             (_TEAMS, _("Equipes")),
             (_ASSIGNMENTS, _("Attributions")),

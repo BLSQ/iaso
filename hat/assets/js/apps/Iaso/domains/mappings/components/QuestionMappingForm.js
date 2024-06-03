@@ -178,7 +178,7 @@ const QuestionMappingForm = ({
     fieldOptions, // should be ordered so state is initalized with 1st element
     fieldTypeOptions, // should be ordered so state is initalized with 1st element
 }) => {
-    const questionMapping = mapping.question_mappings[question.name] || {};
+    const questionMapping = mapping.question_mappings[Descriptor.getKey(question)] || {};
     const [newQuestionMapping, setNewQuestionMapping] = React.useState();
     const [iasoField, setIasoField] = React.useState(fieldOptions[0]);
     const [fieldType, setFieldType] = React.useState(fieldTypeOptions[0]);

@@ -89,8 +89,8 @@ class MappingDetails extends Component {
         } = this.props;
 
         const onQuestionSelected = node => {
-            if (node && node.type === "select all that apply") {
-                return
+            if (node && node.type === 'select all that apply') {
+                return;
             }
             setCurrentQuestion(node);
             redirectToReplace(baseUrls.mappingDetail, {
@@ -108,15 +108,23 @@ class MappingDetails extends Component {
         };
 
         const onUnmapQuestionMapping = () => {
-            applyPartialUpdate(currentMappingVersion.id, currentQuestion.name, {
-                action: 'unmap',
-            });
+            applyPartialUpdate(
+                currentMappingVersion.id,
+                Descriptor.getKey(currentQuestion),
+                {
+                    action: 'unmap',
+                },
+            );
         };
 
         const onNeverMapQuestionMapping = () => {
-            applyPartialUpdate(currentMappingVersion.id, currentQuestion.name, {
-                type: 'neverMapped',
-            });
+            applyPartialUpdate(
+                currentMappingVersion.id,
+                Descriptor.getKey(currentQuestion),
+                {
+                    type: 'neverMapped',
+                },
+            );
         };
         const isDataElementMappable =
             currentMappingVersion &&

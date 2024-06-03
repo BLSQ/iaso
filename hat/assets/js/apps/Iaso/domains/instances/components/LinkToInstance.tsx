@@ -1,7 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { userHasOneOfPermissions } from '../../users/utils';
 import { baseUrls } from '../../../constants/urls';
-import * as Permission from '../../../utils/permissions';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import MESSAGES from '../../assignments/messages';
 import { SUBMISSIONS, SUBMISSIONS_UPDATE } from '../../../utils/permissions';
@@ -42,5 +41,4 @@ export const LinkToInstance: FunctionComponent<Props> = ({
             iconSize={iconSize}
         />
     );
-            color={color}
 };

@@ -171,9 +171,21 @@ const PERMISSIONS_MESSAGES = defineMessages({
         defaultMessage:
             'Manage teams: create or edit "team of users" or "teams of teams" (name, project, type, description, parent team)',
     },
-    iaso_planning: {
-        id: 'iaso.permissions.planning',
-        defaultMessage: 'Planning',
+    iaso_planning_write: {
+        id: 'iaso.permissions.planning_write',
+        defaultMessage: 'Planning - Write',
+    },
+    iaso_planning_write_tooltip: {
+        id: 'iaso.permissions.tooltip.planning_write',
+        defaultMessage: 'Edit and add planning',
+    },
+    iaso_planning_read: {
+        id: 'iaso.permissions.planning_read',
+        defaultMessage: 'Planning - Read',
+    },
+    iaso_planning_read_tooltip: {
+        id: 'iaso.permissions.tooltip.planning_read',
+        defaultMessage: 'See and read planning',
     },
     iaso_assignments: {
         id: 'iaso.permissions.assignments',

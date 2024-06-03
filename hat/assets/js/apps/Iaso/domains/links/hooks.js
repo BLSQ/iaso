@@ -12,43 +12,6 @@ import { setAlgorithms, setAlgorithmRuns } from './actions';
 
 import { useFetchOnMount } from '../../hooks/fetchOnMount';
 
-export const useLinksFiltersData = props => {
-    const {
-        dispatch,
-        setFetchingRuns,
-        setFetchingOrgUnitTypes,
-        setFetchingProfiles,
-        setFetchingAlgorithms,
-        setFetchingSource,
-    } = props;
-    useFetchOnMount([
-        {
-            fetch: fetchAlgorithms,
-            setFetching: setFetchingAlgorithms,
-            setData: setAlgorithms,
-        },
-        {
-            fetch: fetchOrgUnitsTypes,
-            setFetching: setFetchingOrgUnitTypes,
-            setData: setOrgUnitTypes,
-        },
-        {
-            fetch: () => dispatch(fetchUsersProfiles()),
-            setFetching: setFetchingProfiles,
-        },
-        {
-            fetch: fetchAlgorithmRuns,
-            setFetching: setFetchingRuns,
-            setData: setAlgorithmRuns,
-            args: ['/api/algorithmsruns/'],
-        },
-        {
-            fetch: fetchSources,
-            setFetching: setFetchingSource,
-            setData: setSources,
-        },
-    ]);
-};
 export const useRunsFiltersData = (
     dispatch,
     setFetchingProfiles,

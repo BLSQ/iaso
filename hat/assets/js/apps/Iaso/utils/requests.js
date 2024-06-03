@@ -99,18 +99,6 @@ export const fetchOrgUnitDetail = (dispatch, orgUnitId) =>
             console.error('Error while fetching org unit detail:', error);
         });
 
-export const fetchLogDetail = (dispatch, logId) =>
-    getRequest(`/api/logs/${logId}/`)
-        .then(logDetail => logDetail)
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('fetchLogDetailError', null, error),
-                ),
-            );
-            console.error('Error while fetching log detail:', error);
-        });
-
 export const fetchInstanceDetail = (dispatch, instanceId) =>
     getRequest(`/api/instances/${instanceId}`)
         .then(instance => instance)
@@ -200,35 +188,6 @@ export const updateFormVersion = formVersion =>
             );
         },
     );
-
-export const fetchFormVersions = (dispatch, formId) => {
-    const data = { form_id: formId };
-
-    return postRequest('/api/formversions/', data).catch(error => {
-        dispatch(
-            enqueueSnackbar(
-                errorSnackBar(
-                    // @ts-ignore
-                    isUpdate ? 'updateFormError' : 'createFormError',
-                    null,
-                    error,
-                ),
-            ),
-        );
-    });
-};
-
-export const fetchDevicesAsDict = (dispatch, url) =>
-    getRequest(url)
-        .then(data => data)
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('fetchDevicesError', null, error),
-                ),
-            );
-            console.error('Error while fetching devices list:', error);
-        });
 
 // TO-DO: replace all requests similar to this
 export const fetchList = (

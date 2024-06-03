@@ -1,10 +1,10 @@
 import { useMemo } from 'react';
-import { useSafeIntl } from 'bluesquare-components';
+import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from './messages';
-import { DateTimeCell } from '../../components/Cells/DateTimeCell.tsx';
+import { DateTimeCell } from '../../components/Cells/DateTimeCell';
 import { YesNoCell } from '../../components/Cells/YesNoCell';
 
-export const useDevicesTableColumns = () => {
+export const useDevicesTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(
         () => [
@@ -26,7 +26,7 @@ export const useDevicesTableColumns = () => {
                 Cell: settings =>
                     settings.value
                         ? `${settings.value.first_name} ${settings.value.last_name} ${settings.value.user_name}`
-                        : null,
+                        : textPlaceholder,
             },
             {
                 Header: formatMessage(MESSAGES.timeSynched),

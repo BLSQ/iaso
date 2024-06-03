@@ -1,14 +1,14 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import TopBar from '../../components/nav/TopBarComponent';
-import { baseUrls } from '../../constants/urls.ts';
+import { baseUrls } from '../../constants/urls';
 import { useDevicesTableColumns } from './config';
 import MESSAGES from './messages';
-import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink.tsx';
-import { tableDefaults, useGetDevices } from './hooks/api/useGetDevices.tsx';
-import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
+import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
+import { tableDefaults, useGetDevices } from './hooks/api/useGetDevices';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
 
 const baseUrl = baseUrls.devices;
 
@@ -19,8 +19,13 @@ const useStyles = makeStyles(theme => {
     };
 });
 
-const Devices = () => {
-    const params = useParamsObject(baseUrl);
+const Devices: FunctionComponent = () => {
+    const params = useParamsObject(baseUrl) as {
+        page?: string;
+        pageSize?: string;
+        order?: string;
+        accountId?: string;
+    };
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const columns = useDevicesTableColumns();

@@ -24,6 +24,7 @@ type FilterStateParams = {
     withPagination?: boolean;
     saveSearchInHistory?: boolean;
     searchActive?: string; // the key of the params used to activate search. If no such param exists, and the hook is used with a table, the table will load data onMount
+    searchAlwaysEnabled?: boolean; // to be used with searchActive when we want to allow users to launch a search with empty filters
 };
 
 const paginationParams = ['pageSize', 'page', 'order'];
@@ -44,6 +45,7 @@ export const useFilterState = ({
     searchActive,
     withPagination = true,
     saveSearchInHistory = true,
+    searchAlwaysEnabled = false,
 }: FilterStateParams): FilterState => {
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const redirectTo = useRedirectTo();
@@ -53,7 +55,7 @@ export const useFilterState = ({
     });
 
     const handleSearch = useCallback(() => {
-        if (filtersUpdated) {
+        if (filtersUpdated || searchAlwaysEnabled) {
             setFiltersUpdated(false);
             const tempParams = {
                 ...params,
@@ -73,6 +75,7 @@ export const useFilterState = ({
         }
     }, [
         filtersUpdated,
+        searchAlwaysEnabled,
         params,
         filters,
         withPagination,

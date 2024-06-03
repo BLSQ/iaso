@@ -44,3 +44,13 @@ export type Plugin = {
 export type Plugins = {
     plugins: Plugin[];
 };
+
+export type PaginatedResponse<T> = {
+    hasPrevious?: boolean;
+    hasNext?: boolean;
+    count?: number;
+    page?: number;
+    pages?: number;
+    limit?: number;
+    results?: T[];
+};

@@ -18,6 +18,7 @@ import { RoundsForm, roundFormFields } from '../Rounds/RoundsForm';
 import { ScopeForm, scopeFormFields } from '../Scope/ScopeForm';
 import { useIsPolioCampaign } from '../hooks/useIsPolioCampaignCheck';
 import { Tab } from './PolioDialogTabs';
+import { SubActivitiesForm } from '../SubActivities/SubActivitiesForm';
 
 export const usePolioDialogTabs = (
     formik: FormikProps<CampaignFormValues>,
@@ -41,12 +42,21 @@ export const usePolioDialogTabs = (
                 title: formatMessage(MESSAGES.rounds),
                 form: RoundsForm,
                 key: 'rounds',
-                diabled: !formik.values.initial_org_unit,
+                disabled: !formik.values.initial_org_unit,
                 hasTabError:
                     compareArraysValues(
                         roundFormFields(selectedCampaign?.rounds ?? []),
                         formik.errors,
                     ) || compareArraysValues(scopeFormFields, formik.errors),
+            },
+            {
+                title: formatMessage(MESSAGES.subActivities),
+                form: SubActivitiesForm,
+                key: 'subActivities',
+                disabled:
+                    !formik.values.initial_org_unit ||
+                    formik.values.rounds.length === 0,
+                hasTabError: false,
             },
             {
                 title: formatMessage(MESSAGES.scope),

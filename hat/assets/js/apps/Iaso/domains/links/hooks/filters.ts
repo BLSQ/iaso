@@ -113,26 +113,6 @@ export const useGetDataSources = (): UseQueryResult<any> => {
     });
 };
 
-export const useSourceDerivedValues = ({ sources, origin, destination }) => {
-    return useMemo(() => {
-        const sourceOptions = (sources ?? []).map(s => ({
-            label: s.name,
-            value: s.id,
-        }));
-        const currentOrigin = origin
-            ? sources?.find(s => s.id === parseInt(origin, 10))
-            : undefined;
-        const currentDestination = origin
-            ? sources?.find(s => s.id === parseInt(destination, 10))
-            : undefined;
-        return {
-            sourceOptions,
-            currentOrigin,
-            currentDestination,
-        };
-    }, [destination, origin, sources]);
-};
-
 export const useSourceOptions = sources => {
     return useMemo(() => {
         return (sources ?? []).map(s => ({

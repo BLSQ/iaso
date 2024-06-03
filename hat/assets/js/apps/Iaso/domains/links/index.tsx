@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { useSafeIntl, useGoBack, commonStyles } from 'bluesquare-components';
@@ -25,7 +25,7 @@ const useStyles = makeStyles(theme => ({
         },
     },
 }));
-export const Links = () => {
+export const Links: FunctionComponent = () => {
     const params = useParamsObject(baseUrl);
     const goBack = useGoBack(baseUrls.orgUnits);
     const location = useLocation();

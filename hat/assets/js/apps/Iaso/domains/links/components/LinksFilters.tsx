@@ -33,6 +33,7 @@ export const LinksFilters: FunctionComponent<Props> = ({ baseUrl, params }) => {
             params,
             searchActive: 'searchActive',
             saveSearchInHistory: false,
+            searchAlwaysEnabled: true,
         });
     const { data: orgUnitTypes, isLoading: isLoadingOrgUnitTypes } =
         useGetOrgUnitTypesOptions();
@@ -76,7 +77,7 @@ export const LinksFilters: FunctionComponent<Props> = ({ baseUrl, params }) => {
         },
         [filters, setFilters],
     );
-
+    const disabled = !filtersUpdated && filters.searchActive === 'true';
     return (
         <Grid container spacing={2}>
             <Grid item xs={12} sm={6} md={3}>
@@ -229,10 +230,7 @@ export const LinksFilters: FunctionComponent<Props> = ({ baseUrl, params }) => {
                 />
             </Grid>
             <Grid container item xs={12} justifyContent="flex-end">
-                <SearchButton
-                    onSearch={handleSearch}
-                    disabled={!filtersUpdated}
-                />
+                <SearchButton onSearch={handleSearch} disabled={disabled} />
             </Grid>
         </Grid>
     );

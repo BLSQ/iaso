@@ -106,15 +106,17 @@ export const CreateEditSubActivity: FunctionComponent<Props> = ({
                         <Divider />
                     </Box>
                     {(isSaving || formik.isSubmitting) && <LoadingSpinner />}
-                    <Grid container spacing={2}>
+                    <Grid container>
                         <Grid item xs={6}>
-                            <Field
-                                component={TextInput}
-                                name="name"
-                                label={formatMessage(MESSAGES.name)}
-                                shrinkLabel={false}
-                                required
-                            />
+                            <Box mr={2}>
+                                <Field
+                                    component={TextInput}
+                                    name="name"
+                                    label={formatMessage(MESSAGES.name)}
+                                    shrinkLabel={false}
+                                    required
+                                />
+                            </Box>
                         </Grid>
                         <Grid item xs={6}>
                             <Field
@@ -124,28 +126,34 @@ export const CreateEditSubActivity: FunctionComponent<Props> = ({
                                 required
                             />
                         </Grid>
-                        <Grid container item xs={6} spacing={2}>
+                        <Grid container item xs={6}>
                             <Grid item xs={6}>
-                                <Field
-                                    component={SingleSelect}
-                                    name="age_unit"
-                                    options={ageRangeOptions}
-                                    label={formatMessage(MESSAGES.ageUnit)}
-                                />
+                                <Box mr={2}>
+                                    <Field
+                                        component={SingleSelect}
+                                        name="age_unit"
+                                        options={ageRangeOptions}
+                                        label={formatMessage(MESSAGES.ageUnit)}
+                                    />
+                                </Box>
                             </Grid>
                             <Grid item xs={3}>
-                                <Field
-                                    component={NumberInput}
-                                    name="age_min"
-                                    label={formatMessage(MESSAGES.ageMin)}
-                                />
+                                <Box mr={2}>
+                                    <Field
+                                        component={NumberInput}
+                                        name="age_min"
+                                        label={formatMessage(MESSAGES.ageMin)}
+                                    />
+                                </Box>
                             </Grid>
                             <Grid item xs={3}>
-                                <Field
-                                    component={NumberInput}
-                                    name="age_max"
-                                    label={formatMessage(MESSAGES.ageMax)}
-                                />
+                                <Box mr={2}>
+                                    <Field
+                                        component={NumberInput}
+                                        name="age_max"
+                                        label={formatMessage(MESSAGES.ageMax)}
+                                    />
+                                </Box>
                             </Grid>
                         </Grid>
                         <Grid item xs={6}>

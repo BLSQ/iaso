@@ -11,7 +11,7 @@ const tableDefaults = {
 };
 
 export const useGetDataSources = (
-    params: Record<string, string>,
+    params: Record<string, string | undefined>,
 ): UseQueryResult<any> => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { accountId, ...tableParams } = params;

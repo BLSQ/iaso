@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 import { AddButton, commonStyles, useSafeIntl } from 'bluesquare-components';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -6,14 +6,14 @@ import TopBar from '../../components/nav/TopBarComponent';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { useDefaultSourceVersion } from './utils';
 import { DataSourceDialogComponent } from './components/DataSourceDialogComponent';
-import { baseUrls } from '../../constants/urls.ts';
+import { baseUrls } from '../../constants/urls';
 import { useDataSourcesTableColumns } from './config';
-import { SOURCE_WRITE } from '../../utils/permissions.ts';
+import { SOURCE_WRITE } from '../../utils/permissions';
 import MESSAGES from './messages';
-import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm.tsx';
-import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink.tsx';
-import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
-import { useGetDataSources } from './useGetDataSources.ts';
+import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
+import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { useGetDataSources } from './useGetDataSources';
 
 const baseUrl = baseUrls.sources;
 const defaultOrder = 'name';
@@ -25,8 +25,13 @@ const useStyles = makeStyles(theme => {
     };
 });
 
-const DataSources = () => {
-    const params = useParamsObject(baseUrl);
+const DataSources: FunctionComponent = () => {
+    const params = useParamsObject(baseUrl) as {
+        accountId?: string;
+        page?: string;
+        pageSize?: string;
+        order?: string;
+    };
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const defaultSourceVersion = useDefaultSourceVersion();
@@ -64,6 +69,8 @@ const DataSources = () => {
                         data={data?.sources ?? []}
                         count={data?.count ?? 0}
                         pages={data?.pages ?? 0}
+                        // The TS type should accept a function as accessor
+                        // @ts-ignore
                         columns={columns}
                         defaultSorted={[{ id: defaultOrder, desc: false }]}
                         extraProps={{

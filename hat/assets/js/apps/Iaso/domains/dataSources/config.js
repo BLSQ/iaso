@@ -2,10 +2,7 @@ import React, { useMemo } from 'react';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { Tooltip } from '@mui/material';
 
-import {
-    IconButton as IconButtonComponent,
-    useSafeIntl,
-} from 'bluesquare-components';
+import { IconButton, useSafeIntl } from 'bluesquare-components';
 // eslint-disable-next-line import/no-named-as-default-member,import/no-named-as-default
 import PublishIcon from '@mui/icons-material/Publish';
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
@@ -27,13 +24,22 @@ export const useDataSourcesTableColumns = defaultSourceVersion => {
                 Header: formatMessage(MESSAGES.defaultSource),
                 accessor: 'defaultSource',
                 sortable: false,
-                Cell: settings =>
-                    defaultSourceVersion?.source?.id ===
-                        settings.row.original.id && (
-                        <Tooltip title={formatMessage(MESSAGES.defaultSource)}>
-                            <CheckCircleIcon color="primary" />
-                        </Tooltip>
-                    ),
+                Cell: settings => {
+                    if (
+                        defaultSourceVersion?.source?.id ===
+                        settings.row.original.id
+                    ) {
+                        return (
+                            <Tooltip
+                                title={formatMessage(MESSAGES.defaultSource)}
+                            >
+                                <CheckCircleIcon color="primary" />
+                            </Tooltip>
+                        );
+                    }
+                    // null or empty string will make TS compiler complain
+                    return <span />;
+                },
             },
             {
                 Header: formatMessage(MESSAGES.defaultVersion),
@@ -61,7 +67,7 @@ export const useDataSourcesTableColumns = defaultSourceVersion => {
                 Cell: settings => {
                     return (
                         <section>
-                            <IconButtonComponent
+                            <IconButton
                                 url={`/${baseUrls.sourceDetails}/sourceId/${settings.row.original.id}`}
                                 icon="remove-red-eye"
                                 tooltipMessage={MESSAGES.viewDataSource}
@@ -72,7 +78,7 @@ export const useDataSourcesTableColumns = defaultSourceVersion => {
                             >
                                 <DataSourceDialog
                                     renderTrigger={({ openDialog }) => (
-                                        <IconButtonComponent
+                                        <IconButton
                                             dataTestId={`datasource-dialog-button-${settings.row.original.id}`}
                                             onClick={openDialog}
                                             icon="edit"
@@ -94,7 +100,7 @@ export const useDataSourcesTableColumns = defaultSourceVersion => {
                                 />
                                 <VersionsDialog
                                     renderTrigger={({ openDialog }) => (
-                                        <IconButtonComponent
+                                        <IconButton
                                             dataTestId={`open-versions-dialog-button-${settings.row.original.id}`}
                                             onClick={openDialog}
                                             overrideIcon={
@@ -108,7 +114,7 @@ export const useDataSourcesTableColumns = defaultSourceVersion => {
                                 />
                                 <ExportToDHIS2Dialog
                                     renderTrigger={({ openDialog }) => (
-                                        <IconButtonComponent
+                                        <IconButton
                                             dataTestId={`export-dhis2-dialog-button-${settings.row.original.id}`}
                                             onClick={openDialog}
                                             overrideIcon={PublishIcon}
@@ -143,12 +149,19 @@ export const useSourceVersionsTableColumns = source => {
                 Header: formatMessage(MESSAGES.defaultVersion),
                 accessor: 'id',
                 sortable: false,
-                Cell: settings =>
-                    source.default_version?.id === settings.value && (
-                        <Tooltip title={formatMessage(MESSAGES.defaultVersion)}>
-                            <CheckCircleIcon color="primary" />
-                        </Tooltip>
-                    ),
+                Cell: settings => {
+                    if (source.default_version?.id === settings.value) {
+                        return (
+                            <Tooltip
+                                title={formatMessage(MESSAGES.defaultVersion)}
+                            >
+                                <CheckCircleIcon color="primary" />
+                            </Tooltip>
+                        );
+                    }
+                    // null or empty string will make TS compiler complain
+                    return <span />;
+                },
             },
             {
                 Header: formatMessage({

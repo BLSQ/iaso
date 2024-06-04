@@ -31,3 +31,16 @@ export const useApiParams = (
         return formattedParams as FormattedApiParams;
     }, [defaults?.limit, defaults?.order, defaults?.page, params]);
 };
+
+export type TableDefaults = {
+    order: string;
+    limit: number;
+    page: number;
+};
+export const useQueryString = (
+    params: Record<string, string>,
+    tableDefaults: TableDefaults,
+): string => {
+    const apiParams = useApiParams(params, tableDefaults);
+    return new URLSearchParams(apiParams).toString();
+};

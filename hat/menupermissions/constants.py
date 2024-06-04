@@ -31,7 +31,7 @@ MODULE_PERMISSIONS = {
         "iaso_entity_type_write",
     ],
     "EXTERNAL_STORAGE": ["iaso_storages"],
-    "PLANNING": ["iaso_assignments", "iaso_planning"],
+    "PLANNING": ["iaso_assignments", "iaso_planning_write", "iaso_planning_read"],
     "POLIO_PROJECT": [
         "iaso_polio_config",
         "iaso_polio",
@@ -109,7 +109,7 @@ PERMISSIONS_PRESENTATION = {
     "payments": ["iaso_payments"],
     "dhis2_mapping": ["iaso_mappings"],
     "external_storage": ["iaso_storages"],
-    "planning": ["iaso_assignments", "iaso_planning"],
+    "planning": ["iaso_assignments", "iaso_planning_write", "iaso_planning_read"],
     "embedded_links": ["iaso_pages", "iaso_page_write"],
     "polio": [
         "iaso_polio_config",

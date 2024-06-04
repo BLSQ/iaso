@@ -570,7 +570,7 @@ class PlanningTestCase(APITestCase):
             team=self.team1,
         )
         user_with_perms = self.create_user_with_profile(
-            username="user_with_perms", account=self.account, permissions=["iaso_planning"]
+            username="user_with_perms", account=self.account, permissions=["iaso_planning_write"]
         )
         self.client.force_authenticate(user_with_perms)
         data = {
@@ -596,7 +596,7 @@ class PlanningTestCase(APITestCase):
 
     def test_create_api(self):
         user_with_perms = self.create_user_with_profile(
-            username="user_with_perms", account=self.account, permissions=["iaso_planning"]
+            username="user_with_perms", account=self.account, permissions=["iaso_planning_write"]
         )
         self.client.force_authenticate(user_with_perms)
         data = {
@@ -713,7 +713,7 @@ class AssignmentAPITestCase(APITestCase):
 
     def test_create(self):
         user_with_perms = self.create_user_with_profile(
-            username="user_with_perms", account=self.account, permissions=["iaso_planning"]
+            username="user_with_perms", account=self.account, permissions=["iaso_planning_write"]
         )
         self.client.force_authenticate(user_with_perms)
         data = {
@@ -734,7 +734,7 @@ class AssignmentAPITestCase(APITestCase):
 
     def test_bulk_create(self):
         user_with_perms = self.create_user_with_profile(
-            username="user_with_perms", account=self.account, permissions=["iaso_planning"]
+            username="user_with_perms", account=self.account, permissions=["iaso_planning_write"]
         )
         assignments = Assignment.objects.filter(planning=self.planning)
         self.assertEqual(assignments.count(), 1)
@@ -771,7 +771,7 @@ class AssignmentAPITestCase(APITestCase):
         other_account = Account.objects.create(name="other_account")
 
         user = self.create_user_with_profile(
-            username="user_with_perms", account=other_account, permissions=["iaso_planning"]
+            username="user_with_perms", account=other_account, permissions=["iaso_planning_write"]
         )
         self.client.force_authenticate(user)
         data = {
@@ -788,7 +788,7 @@ class AssignmentAPITestCase(APITestCase):
         """restore deleted assignment if we try to create a new assignment with a previously assigned OU"""
 
         user_with_perms = self.create_user_with_profile(
-            username="user_with_perms", account=self.account, permissions=["iaso_planning"]
+            username="user_with_perms", account=self.account, permissions=["iaso_planning_write"]
         )
         self.client.force_authenticate(user_with_perms)
         data = {

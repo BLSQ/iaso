@@ -29,13 +29,13 @@ import MenuItem from './MenuItemComponent';
 import { Logo } from './Logo.tsx';
 import LanguageSwitch from './LanguageSwitchComponent';
 
-import { useMenuItems, RDC_USER_MANUAL } from '../../../constants/menu.tsx';
+import { useMenuItems, DOC_URL } from '../../../constants/menu.tsx';
 
 import MESSAGES from './messages';
 
 import { getDefaultSourceVersion } from '../../dataSources/utils';
 import { useCurrentUser } from '../../../utils/usersUtils.ts';
-import { baseUrls } from '../../../constants/urls';
+import { baseUrls } from '../../../constants/urls.ts';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -87,26 +87,7 @@ const styles = theme => ({
     },
 });
 
-// not removing the function (or the locale argument) because we will want to link to localized version of the doc website
-// eslint-disable-next-line no-unused-vars
-
-const localizedManualUrl = (locale, account) => {
-    if (locale === 'fr' && account.name === 'RDC') {
-        return RDC_USER_MANUAL;
-    }
-
-    return account.user_manual_path
-        ? account.user_manual_path
-        : 'https://iaso.readthedocs.io/en/latest/pages/users/reference/user_guide/user_guide.html';
-};
-
-const SidebarMenu = ({
-    classes,
-    isOpen,
-    toggleSidebar,
-    location,
-    activeLocale,
-}) => {
+const SidebarMenu = ({ classes, isOpen, toggleSidebar, location }) => {
     const onClick = url => {
         toggleSidebar();
         if (url) {
@@ -201,10 +182,7 @@ const SidebarMenu = ({
                         className={`${classes.userName} ${classes.userManual}`}
                     >
                         <a
-                            href={localizedManualUrl(
-                                activeLocale.code,
-                                currentUser.account,
-                            )}
+                            href={DOC_URL}
                             target="_blank"
                             rel="noreferrer"
                             className={classes.link}
@@ -232,12 +210,10 @@ SidebarMenu.propTypes = {
     isOpen: PropTypes.bool.isRequired,
     toggleSidebar: PropTypes.func.isRequired,
     location: PropTypes.object.isRequired,
-    activeLocale: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({
     isOpen: state.sidebar.isOpen,
-    activeLocale: state.app.locale,
 });
 
 const MapDispatchToProps = dispatch => ({

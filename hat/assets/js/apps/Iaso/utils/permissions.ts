@@ -14,7 +14,8 @@ const ORG_UNIT_TYPES = 'iaso_org_unit_types';
 const ORG_UNITS = 'iaso_org_units';
 const PAGES = 'iaso_pages';
 const PAGE_WRITE = 'iaso_page_write';
-const PLANNINGS = 'iaso_planning';
+const PLANNING_READ = 'iaso_planning_read';
+const PLANNING_WRITE = 'iaso_planning_write';
 const POLIO = 'iaso_polio';
 const POLIO_CONFIG = 'iaso_polio_config';
 const POLIO_SUPPLY_CHAIN_READ = 'iaso_polio_vaccine_supply_chain_read';
@@ -59,7 +60,8 @@ export {
     PAGES,
     PAGE_WRITE,
     PAYMENTS,
-    PLANNINGS,
+    PLANNING_READ,
+    PLANNING_WRITE,
     POLIO,
     POLIO_CONFIG,
     POLIO_NOTIFICATIONS,

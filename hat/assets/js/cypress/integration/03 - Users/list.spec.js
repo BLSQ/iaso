@@ -314,7 +314,7 @@ describe('Users', () => {
                         order: 'user__username',
                         orgUnitTypes: '11',
                         page: '1',
-                        permissions: 'iaso_completeness,iaso_mappings',
+                        permissions: 'iaso_assignments,iaso_polio_budget',
                         projects: '1,2',
                         search: 'ZELDA',
                         teams: '25,26',

@@ -9,7 +9,9 @@ from rest_framework import serializers, status
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
+from traceback import format_exc
 
+from hat.api_import.models import APIImport
 from iaso.api.query_params import APP_ID
 from iaso.api.serializers import AppIdSerializer
 from iaso.models import Project
@@ -74,22 +76,31 @@ class MobileBulkUploadsViewSet(ViewSet):
                 ]
             )
 
-            upload_file_to_s3(
-                file_name=zip_file.temporary_file_path(),
-                object_name=object_name,
+            api_import = APIImport.objects.create(
+                user=user,
+                import_type="bulk",
+                json_body={"file": object_name},
             )
 
+            upload_file_to_s3(file_name=zip_file.temporary_file_path(), object_name=object_name)
+
             process_mobile_bulk_upload(
-                user_id=user.id,
+                api_import_id=api_import.id,
                 project_id=project.id,
-                zip_file_object_name=object_name,
                 user=current_user,
             )
 
             return Response(status=status.HTTP_204_NO_CONTENT)
         except ValueError as exc:
+            self._handle_exception(exc, api_import)
             logger.exception(f"ValueError: {str(exc)}")
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except ClientError as exc:
+            self._handle_exception(exc, api_import)
             logger.exception(f"Upload to S3 failed: {str(exc)}")
             return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def _handle_exception(exc, api_import):
+        api_import.has_problem = True
+        api_import.exception = format_exc()
+        api_import.save()

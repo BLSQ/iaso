@@ -37,6 +37,11 @@ class ProcessMobileBulkUploadTest(TestCase):
     def setUp(self):
         self.user = User.objects.first()
         self.project = m.Project.objects.first()
+        self.api_import = APIImport.objects.create(
+            user=self.user,
+            import_type="bulk",
+            json_body={"file": "one_test_with_image_zip"},
+        )
         self.task = m.Task.objects.create(
             name="process_mobile_bulk_upload",
             launcher=self.user,
@@ -58,15 +63,13 @@ class ProcessMobileBulkUploadTest(TestCase):
 
         mock_download_file.return_value = "/tmp/one_test_with_image.zip"
 
-        self.assertEquals(APIImport.objects.count(), 0)
         self.assertEquals(m.Entity.objects.count(), 0)
         self.assertEquals(m.Instance.objects.count(), 0)
         self.assertEquals(m.InstanceFile.objects.count(), 0)
 
         process_mobile_bulk_upload(
-            user_id=self.user.id,
+            api_import_id=self.api_import.id,
             project_id=self.project.id,
-            zip_file_object_name="one_test_with_image_zip",
             task=self.task,
             _immediate=True,
         )
@@ -77,10 +80,9 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.task.refresh_from_db()
         self.assertEquals(self.task.status, m.SUCCESS)
 
-        self.assertEquals(APIImport.objects.count(), 1)
-        api_import = APIImport.objects.first()
-        self.assertEquals(api_import.import_type, "bulk")
-        self.assertFalse(api_import.has_problem)
+        self.api_import.refresh_from_db()
+        self.assertEquals(self.api_import.import_type, "bulk")
+        self.assertFalse(self.api_import.has_problem)
 
         # Org unit was created
         ou = m.OrgUnit.objects.get(name="New Org Unit")
@@ -128,14 +130,12 @@ class ProcessMobileBulkUploadTest(TestCase):
             add_to_zip(zipf, ZIP_FIXTURE_DIR, CORRECT_FILES_FOR_ZIP + ["incorrect-folder"])
         mock_download_file.return_value = "/tmp/one_test_with_image.zip"
 
-        self.assertEquals(APIImport.objects.count(), 0)
         self.assertEquals(m.Entity.objects.count(), 0)
         self.assertEquals(m.Instance.objects.count(), 0)
 
         process_mobile_bulk_upload(
-            user_id=self.user.id,
+            api_import_id=self.api_import.id,
             project_id=self.project.id,
-            zip_file_object_name="one_test_with_image_zip",
             task=self.task,
             _immediate=True,
         )
@@ -146,10 +146,9 @@ class ProcessMobileBulkUploadTest(TestCase):
         self.task.refresh_from_db()
         self.assertEquals(self.task.status, m.ERRORED)
 
-        self.assertEquals(APIImport.objects.count(), 1)
-        api_import = APIImport.objects.first()
-        self.assertEquals(api_import.import_type, "bulk")
-        self.assertTrue(api_import.has_problem)
+        self.api_import.refresh_from_db()
+        self.assertEquals(self.api_import.import_type, "bulk")
+        self.assertTrue(self.api_import.has_problem)
 
         # Nothing was created
         self.assertFalse(m.OrgUnit.objects.filter(name="New Org Unit").exists())

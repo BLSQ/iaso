@@ -3,6 +3,7 @@ import { Column, useRedirectToReplace } from 'bluesquare-components';
 import React, {
     FunctionComponent,
     useCallback,
+    useEffect,
     useMemo,
     useState,
 } from 'react';
@@ -91,6 +92,25 @@ export const Instances: FunctionComponent<Props> = ({
     const currentForm: Form | undefined = useMemo(() => {
         return formsList?.find(f => `${f.value}` === formIds)?.original;
     }, [formIds, formsList]);
+
+    useEffect(() => {
+        if (
+            formsList?.length &&
+            formsList?.length >= 0 &&
+            !isFetchingForms &&
+            !formIds &&
+            currentType
+        ) {
+            const newParams = {
+                ...params,
+                formIds: formsList[0].value,
+            };
+            redirectToReplace(baseUrls.registry, newParams);
+        }
+        // only prselect a form if forms list contain an element and prams is empty
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [formsList, isFetchingForms, currentType]);
+
     return (
         <Box>
             {currentType && !isLoading && (

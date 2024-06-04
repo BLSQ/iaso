@@ -178,8 +178,8 @@ describe('Users', () => {
                 cy.testInputValue(`#user_roles`, '');
                 cy.testInputValue('#language', '');
                 cy.get('#user-dialog-tabs').find('button').eq(1).click();
-                cy.get('[data-test="permission-checkbox"]').each($el => {
-                    cy.wrap($el).find('input').to.not.be.checked;
+                cy.get('[data-test="permission-checkbox"] input').each($el => {
+                    expect($el).to.not.be.checked;
                 });
             });
         });
@@ -206,8 +206,8 @@ describe('Users', () => {
                 cy.get('.MuiDialogActions-root').find('button').first().click();
                 openDialogForUserIndex(1);
                 cy.get('#user-dialog-tabs').find('button').eq(1).click();
-                cy.get('[data-test="permission-checkbox"]').each($el => {
-                    cy.wrap($el).find('input').to.not.be.checked;
+                cy.get('[data-test="permission-checkbox"] input').each($el => {
+                    expect($el).to.not.be.checked;
                 });
                 cy.get('.MuiDialogActions-root').find('button').first().click();
                 openDialogForUserIndex(2);

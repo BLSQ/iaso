@@ -1,54 +1,32 @@
 import React, { FunctionComponent } from 'react';
-import {
-    // @ts-ignore
-    useSafeIntl,
-    // @ts-ignore
-    commonStyles,
-} from 'bluesquare-components';
-// @ts-ignore
+import { useSafeIntl, commonStyles, useGoBack } from 'bluesquare-components';
 import { Box, Divider, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useDispatch, useSelector } from 'react-redux';
 import TopBar from '../../components/nav/TopBarComponent';
 import { Infos } from './components/Infos';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
-
 import MESSAGES from './messages';
-
-import { redirectToReplace } from '../../routing/actions';
 import { baseUrls } from '../../constants/urls';
-
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { LogsFilters } from './components/LogsFilters';
-
 import { StorageDetailsParams } from './types/storages';
 import {
     useGetStorageLogs,
     useGetApiParams,
 } from './hooks/requests/useGetStorageLogs';
-
 import { useGetDetailsColumns } from './config';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
 
-type Props = {
-    params: StorageDetailsParams;
-    router: Router;
-};
-type State = {
-    routerCustom: RouterCustom;
-};
-type RouterCustom = {
-    prevPathname: string | undefined;
-};
-
-type Router = {
-    goBack: () => void;
-};
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-export const Details: FunctionComponent<Props> = ({ params, router }) => {
+export const Details: FunctionComponent = () => {
+    const params = useParamsObject(
+        baseUrls.storageDetail,
+    ) as StorageDetailsParams;
+    const goBack = useGoBack(baseUrls.storages);
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetStorageLogs(params);
     const { url: apiUrl } = useGetApiParams(params);
@@ -56,10 +34,6 @@ export const Details: FunctionComponent<Props> = ({ params, router }) => {
     const storageDetail = data?.results;
 
     const classes: Record<string, string> = useStyles();
-    const prevPathname: string | undefined = useSelector(
-        (state: State) => state.routerCustom.prevPathname,
-    );
-    const dispatch = useDispatch();
 
     const columns = useGetDetailsColumns();
 
@@ -71,13 +45,7 @@ export const Details: FunctionComponent<Props> = ({ params, router }) => {
                     storageDetail ? storageDetail.storage_id : ''
                 }`}
                 displayBackButton
-                goBack={() => {
-                    if (prevPathname) {
-                        router.goBack();
-                    } else {
-                        dispatch(redirectToReplace(baseUrls.storages, {}));
-                    }
-                }}
+                goBack={goBack}
             />
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>
                 <Grid container spacing={2}>
@@ -108,14 +76,6 @@ export const Details: FunctionComponent<Props> = ({ params, router }) => {
                                     columns={columns}
                                     count={data?.count}
                                     params={params}
-                                    onTableParamsChange={p =>
-                                        dispatch(
-                                            redirectToReplace(
-                                                baseUrls.storageDetail,
-                                                p,
-                                            ),
-                                        )
-                                    }
                                     extraProps={{ loading: isFetching }}
                                 />
                             </Box>

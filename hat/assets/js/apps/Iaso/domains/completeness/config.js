@@ -2,13 +2,12 @@ import React from 'react';
 import HourglassEmpty from '@mui/icons-material/HourglassEmpty';
 import ErrorOutline from '@mui/icons-material/ErrorOutline';
 import CheckCircleOutline from '@mui/icons-material/CheckCircleOutline';
-import { Link } from 'react-router';
 
 import {
-    IconButton as IconButtonComponent,
+    IconButton,
     formatThousand,
     textPlaceholder,
-    HeaderRowIcon,
+    HeaderRowIcon,LinkWithLocation
 } from 'bluesquare-components';
 import { baseUrls } from '../../constants/urls';
 
@@ -47,7 +46,7 @@ const getBaseColumns = formatMessage => [
 ];
 
 const getFormUrl = (form, status, period) => {
-    let url = baseUrls.instances;
+    let url = `/${baseUrls.instances}`;
     url += `/formIds/${form.id}`;
     // periodType must come before startPeriod or you get a 404
     url += `/periodType/${form.period_type.toUpperCase()}`;
@@ -111,7 +110,7 @@ export const getColumns = (
                             settings.row.original.months[month][status];
                         if (!value) return textPlaceholder;
                         return (
-                            <Link
+                            <LinkWithLocation
                                 className={`${classes.linkButton}
                                 ${value ? classes[status] : ''}`}
                                 to={getFormUrl(
@@ -121,7 +120,7 @@ export const getColumns = (
                                 )}
                             >
                                 {value || '-'}
-                            </Link>
+                            </LinkWithLocation>
                         );
                     },
                     Footer: info => {
@@ -153,7 +152,7 @@ export const getColumns = (
                 accessor: 'actions-1',
                 Cell: settings => {
                     return settings.row.original.generate_derived ? (
-                        <IconButtonComponent
+                        <IconButton
                             onClick={() =>
                                 onGenerateDerivedInstances(
                                     settings.row.original,

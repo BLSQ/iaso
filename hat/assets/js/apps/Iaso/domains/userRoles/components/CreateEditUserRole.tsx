@@ -93,6 +93,11 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
         dialogType === 'create'
             ? formatMessage(MESSAGES.createUserRole)
             : formatMessage(MESSAGES.editUserRole);
+
+    const handlePermissionsChange = newPermissions => {
+        setUserRolePermissoins(newPermissions);
+        setFieldValue('permissions', newPermissions);
+    };
     return (
         <FormikProvider value={formik}>
             <ConfirmCancelModal
@@ -125,8 +130,7 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
                 <PermissionsSwitches
                     userRolePermissions={userRolePermissions}
                     handleChange={newPermissions => {
-                        setUserRolePermissoins(newPermissions);
-                        setFieldValue('permissions', newPermissions);
+                        handlePermissionsChange(newPermissions);
                     }}
                 />
             </ConfirmCancelModal>

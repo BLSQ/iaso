@@ -1,39 +1,34 @@
-import React, { ReactElement, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import {
     IconButton as IconButtonComponent,
     useSafeIntl,
     Column,
 } from 'bluesquare-components';
 import { ArrowUpward, AccountTree } from '@mui/icons-material';
-import { Box, LinearProgress } from '@mui/material';
-import Typography from '@mui/material/Typography';
-import { Router } from 'react-router';
+
 import MESSAGES from '../messages';
-import { userHasPermission } from '../../users/utils';
+import { userHasOneOfPermissions } from '../../users/utils';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { baseUrls } from '../../../constants/urls';
 import {
     CompletenessApiResponse,
     CompletenessRouterParams,
     FormDesc,
-    FormStatRow,
 } from '../types';
 import * as Permission from '../../../utils/permissions';
-import { usetGetParentPageUrl } from '../utils';
+import { useGetParentPageUrl } from '../utils';
 import { DescendantsCell } from '../components/DescendantsCell';
 import { ItselfCell } from '../components/ItselfCell';
 
-
 export const useCompletenessStatsColumns = (
-    router: Router,
     params: CompletenessRouterParams,
     completenessStats?: CompletenessApiResponse,
 ): Column[] => {
     const currentUser = useCurrentUser();
 
-    const getParentPageUrl = usetGetParentPageUrl(router);
-    const hasSubmissionPermission = userHasPermission(
-        Permission.SUBMISSIONS,
+    const getParentPageUrl = useGetParentPageUrl();
+    const hasSubmissionPermission = userHasOneOfPermissions(
+        [Permission.SUBMISSIONS, Permission.SUBMISSIONS_UPDATE],
         currentUser,
     );
     const { formatMessage } = useSafeIntl();
@@ -46,11 +41,7 @@ export const useCompletenessStatsColumns = (
                 sortable: true,
                 align: 'left',
                 Cell: settings => {
-                    return (
-                        <>
-                            {settings.row.original.org_unit?.name ?? '--'}
-                        </>
-                    );
+                    return <>{settings.row.original.org_unit?.name ?? '--'}</>;
                 },
             },
             {
@@ -60,9 +51,7 @@ export const useCompletenessStatsColumns = (
                 sortable: true,
                 Cell: settings => {
                     return (
-                        <>
-                            {settings.row.original.org_unit_type?.name ?? '--'}
-                        </>
+                        <>{settings.row.original.org_unit_type?.name ?? '--'}</>
                     );
                 },
             },
@@ -72,9 +61,7 @@ export const useCompletenessStatsColumns = (
                 accessor: 'parent__org_unit__name',
                 sortable: true,
                 Cell: settings => (
-                    <>
-                        {settings.row.original.parent_org_unit?.name ?? '--'}
-                    </>
+                    <>{settings.row.original.parent_org_unit?.name ?? '--'}</>
                 ),
             },
             // {

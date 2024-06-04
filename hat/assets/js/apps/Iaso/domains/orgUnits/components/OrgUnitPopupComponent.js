@@ -1,37 +1,29 @@
 import React, { createRef } from 'react';
 import { useSelector } from 'react-redux';
-
 import PropTypes from 'prop-types';
 import { Popup } from 'react-leaflet';
-import { Link } from 'react-router';
-import { FormattedMessage } from 'react-intl';
 import classNames from 'classnames';
-
 import {
     Card,
     CardContent,
-    Button,
     Grid,
     Box,
     Typography,
     Divider,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-
 import moment from 'moment';
-
 import {
     textPlaceholder,
     useSafeIntl,
     LoadingSpinner,
     commonStyles,
     mapPopupStyles,
+    LinkButton,
 } from 'bluesquare-components';
 import PopupItemComponent from '../../../components/maps/popups/PopupItemComponent';
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
-
-import { baseUrls } from '../../../constants/urls';
-
+import { baseUrls } from '../../../constants/urls.ts';
 import MESSAGES from '../messages';
 
 const useStyles = makeStyles(theme => ({
@@ -175,20 +167,17 @@ const OrgUnitPopupComponent = ({
                                         confirm={() => confirmDialog()}
                                     />
                                 )}
-                                <Link
+                                <LinkButton
                                     target="_blank"
-                                    to={`${baseUrls.orgUnitDetails}/orgUnitId/${activeOrgUnit.id}/tab/infos`}
+                                    to={`/${baseUrls.orgUnitDetails}/orgUnitId/${activeOrgUnit.id}/tab/infos`}
                                     className={classes.linkButton}
+                                    buttonClassName={classes.marginLeft}
+                                    variant="outlined"
+                                    color="primary"
+                                    size="small"
                                 >
-                                    <Button
-                                        className={classes.marginLeft}
-                                        variant="outlined"
-                                        color="primary"
-                                        size="small"
-                                    >
-                                        <FormattedMessage {...MESSAGES.see} />
-                                    </Button>
-                                </Link>
+                                    {formatMessage(MESSAGES.see)}
+                                </LinkButton>
                             </Grid>
                         </Box>
                     </CardContent>

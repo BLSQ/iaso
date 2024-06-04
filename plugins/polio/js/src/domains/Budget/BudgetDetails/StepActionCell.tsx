@@ -1,7 +1,6 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { useMediaQuery, useTheme, Box } from '@mui/material';
 import moment from 'moment';
-
 import { Paginated } from 'bluesquare-components';
 import { Transition, BudgetStep, Params } from '../types';
 import { DeleteRestoreButton } from './DeleteRestoreButton';
@@ -87,9 +86,9 @@ export const StepActionCell: FunctionComponent<Props> = ({
 
     const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
 
-    const { previousStep, quickTransition, campaignId } = params;
+    const { previousStep, quickTransition, budgetProcessId } = params;
     const previousBudgetStep = useMemo(() => {
-        if (!quickTransition) return null;
+        if (!quickTransition || !previousStep) return null;
         return (budgetDetails?.results ?? []).find(
             step => step.id === parseInt(previousStep, 10),
         );
@@ -101,7 +100,7 @@ export const StepActionCell: FunctionComponent<Props> = ({
                 <Box display="inline-block" mr={1}>
                     <CreateBudgetStepIcon
                         isMobileLayout={isMobileLayout}
-                        campaignId={campaignId}
+                        budgetProcessId={budgetProcessId}
                         iconProps={{
                             label: repeatTransition.label,
                             color: repeatTransition.color,

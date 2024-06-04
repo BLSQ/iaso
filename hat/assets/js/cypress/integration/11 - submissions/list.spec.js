@@ -152,13 +152,6 @@ describe('Submissions', () => {
         goToPage();
         cy.intercept(
             'GET',
-            '/api/orgunits/treesearch/?&rootsForUser=true&defaultVersion=true&validation_status=all&ignoreEmptyNames=true',
-            {
-                fixture: 'orgunits/list.json',
-            },
-        ).as('getOrgunits');
-        cy.intercept(
-            'GET',
             '/api/forms/1/?fields=name,period_type,label_keys,id,org_unit_type_ids',
             {
                 fixture: 'forms/detail.json',

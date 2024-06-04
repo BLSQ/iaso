@@ -429,8 +429,8 @@ const MESSAGES = defineMessages({
         id: 'iaso.formversions.chronologicalPeriodError',
         defaultMessage: 'Start period should be before end period',
     },
-    restricted_submissions_by_orgunits: {
-        id: 'iaso.restricted_submissions_by_orgunits',
+    restricted_results_by_orgunits: {
+        id: 'iaso.restricted_results_by_orgunits',
         defaultMessage:
             'Your user can only see submissions for the following orgunits: ',
     },
@@ -597,6 +597,16 @@ const MESSAGES = defineMessages({
     formSubmissionLinkLabel: {
         id: 'iaso.label.formSubmissionLinkLabel',
         defaultMessage: 'Link to form submission',
+    },
+    filterParam: {
+        id: 'iaso.submissions.filterParam',
+        defaultMessage:
+            'Apply at least one filter in order to be able to download data',
+    },
+    searchSubmissionFormsParamsInfo: {
+        id: 'iaso.submissions.searchSubmissionFormsParamsInfo',
+        defaultMessage:
+            'Select one form to enable search using form submitted fields',
     },
 });
 

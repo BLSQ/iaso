@@ -171,9 +171,21 @@ const PERMISSIONS_MESSAGES = defineMessages({
         defaultMessage:
             'Manage teams: create or edit "team of users" or "teams of teams" (name, project, type, description, parent team)',
     },
-    iaso_planning: {
-        id: 'iaso.permissions.planning',
-        defaultMessage: 'Planning',
+    iaso_planning_write: {
+        id: 'iaso.permissions.planning_write',
+        defaultMessage: 'Planning - Write',
+    },
+    iaso_planning_write_tooltip: {
+        id: 'iaso.permissions.tooltip.planning_write',
+        defaultMessage: 'Edit and add planning',
+    },
+    iaso_planning_read: {
+        id: 'iaso.permissions.planning_read',
+        defaultMessage: 'Planning - Read',
+    },
+    iaso_planning_read_tooltip: {
+        id: 'iaso.permissions.tooltip.planning_read',
+        defaultMessage: 'See and read planning',
     },
     iaso_assignments: {
         id: 'iaso.permissions.assignments',
@@ -245,13 +257,23 @@ const PERMISSIONS_MESSAGES = defineMessages({
         defaultMessage:
             'View and edit the entity duplicates - e.g. decide to merge or not similar entities',
     },
-    iaso_registry: {
-        id: 'iaso.permissions.iaso_registry',
-        defaultMessage: 'Registry',
+    iaso_registry_write: {
+        id: 'iaso.permissions.iaso_registry_write',
+        defaultMessage: 'Registry - Write',
     },
-    iaso_registry_tooltip: {
-        id: 'iaso.permissions.tooltip.iaso_registry',
-        defaultMessage: 'Summary view of data collected per organisation unit',
+    iaso_registry_read: {
+        id: 'iaso.permissions.iaso_registry_read',
+        defaultMessage: 'Registry - Read',
+    },
+    iaso_registry_read_tooltip: {
+        id: 'iaso.permissions.tooltip.iaso_registry_read',
+        defaultMessage:
+            'Summary view of data collected per organisation unit -- Read',
+    },
+    iaso_registry_write_tooltip: {
+        id: 'iaso.permissions.tooltip.iaso_registry_write',
+        defaultMessage:
+            'Summary view of data collected per organisation unit -- Write',
     },
     iaso_org_unit_types: {
         id: 'iaso.permissions.iaso_org_unit_types',
@@ -495,10 +517,6 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.tooltip.iaso_org_unit_change_request_review',
         defaultMessage: 'Org unit change request review',
     },
-    iaso_polio_vaccine_stock_management_write: {
-        id: 'iaso.permissions.iaso_polio_vaccine_stock_management_write',
-        defaultMessage: 'Polio vaccine stock management - Write',
-    },
     iaso_polio_vaccine_stock_management_read: {
         id: 'iaso.permissions.iaso_polio_vaccine_stock_management_read',
         defaultMessage: 'Polio vaccine stock management - Read',
@@ -508,9 +526,21 @@ const PERMISSIONS_MESSAGES = defineMessages({
         defaultMessage:
             'See summary of vaccine stock management, by country and vaccine',
     },
+    iaso_polio_vaccine_stock_management_write: {
+        id: 'iaso.permissions.iaso_polio_vaccine_stock_management_write',
+        defaultMessage: 'Polio vaccine stock management - Write',
+    },
     iaso_polio_vaccine_stock_management_write_tooltip: {
         id: 'iaso.permissions.iaso_polio_vaccine_stock_management_write_tooltip',
         defaultMessage: 'Edit and add vaccine stock management data',
+    },
+    iaso_payments: {
+        id: 'iaso.permissions.iaso_payments',
+        defaultMessage: 'Payments page - Read & Write',
+    },
+    iaso_payments_tooltip: {
+        id: 'iaso.permissions.iaso_payments_tooltip',
+        defaultMessage: 'See and manage payments and payment lots',
     },
 });
 

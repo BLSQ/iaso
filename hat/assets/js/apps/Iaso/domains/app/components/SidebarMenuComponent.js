@@ -19,9 +19,9 @@ import { withStyles } from '@mui/styles';
 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PropTypes from 'prop-types';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 
-import { injectIntl, commonStyles } from 'bluesquare-components';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { toggleSidebarMenu } from '../../../redux/sidebarMenuReducer';
 import { SIDEBAR_WIDTH } from '../../../constants/uiConstants.ts';
 
@@ -29,13 +29,13 @@ import MenuItem from './MenuItemComponent';
 import { Logo } from './Logo.tsx';
 import LanguageSwitch from './LanguageSwitchComponent';
 
-import { useMenuItems, RDC_USER_MANUAL } from '../../../constants/menu.tsx';
+import { useMenuItems, DOC_URL } from '../../../constants/menu.tsx';
 
 import MESSAGES from './messages';
 
 import { getDefaultSourceVersion } from '../../dataSources/utils';
 import { useCurrentUser } from '../../../utils/usersUtils.ts';
-import { baseUrls } from '../../../constants/urls';
+import { baseUrls } from '../../../constants/urls.ts';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -87,27 +87,7 @@ const styles = theme => ({
     },
 });
 
-// not removing the function (or the locale argument) because we will want to link to localized version of the doc website
-// eslint-disable-next-line no-unused-vars
-
-const localizedManualUrl = (locale, account) => {
-    if (locale === 'fr' && account.name === 'RDC') {
-        return RDC_USER_MANUAL;
-    }
-
-    return account.user_manual_path
-        ? account.user_manual_path
-        : 'https://iaso.readthedocs.io/en/latest/pages/users/reference/user_guide/user_guide.html';
-};
-
-const SidebarMenu = ({
-    classes,
-    isOpen,
-    toggleSidebar,
-    location,
-    intl,
-    activeLocale,
-}) => {
+const SidebarMenu = ({ classes, isOpen, toggleSidebar, location }) => {
     const onClick = url => {
         toggleSidebar();
         if (url) {
@@ -115,7 +95,7 @@ const SidebarMenu = ({
         }
     };
     const currentUser = useCurrentUser();
-
+    const intl = useSafeIntl();
     const defaultSourceVersion = getDefaultSourceVersion(currentUser);
     const menuItems = useMenuItems();
     const theme = useTheme();
@@ -124,7 +104,7 @@ const SidebarMenu = ({
     return (
         <Drawer anchor="left" open={isOpen} onClose={toggleSidebar}>
             <div className={classes.toolbar}>
-                <Link className={classes.homeLink} to={baseUrls.home}>
+                <Link className={classes.homeLink} to={`/${baseUrls.home}`}>
                     <Logo />
                 </Link>
                 <IconButton
@@ -202,10 +182,7 @@ const SidebarMenu = ({
                         className={`${classes.userName} ${classes.userManual}`}
                     >
                         <a
-                            href={localizedManualUrl(
-                                activeLocale.code,
-                                currentUser.account,
-                            )}
+                            href={DOC_URL}
                             target="_blank"
                             rel="noreferrer"
                             className={classes.link}
@@ -233,13 +210,10 @@ SidebarMenu.propTypes = {
     isOpen: PropTypes.bool.isRequired,
     toggleSidebar: PropTypes.func.isRequired,
     location: PropTypes.object.isRequired,
-    intl: PropTypes.object.isRequired,
-    activeLocale: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({
     isOpen: state.sidebar.isOpen,
-    activeLocale: state.app.locale,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -247,5 +221,5 @@ const MapDispatchToProps = dispatch => ({
 });
 
 export default withStyles(styles)(
-    connect(MapStateToProps, MapDispatchToProps)(injectIntl(SidebarMenu)),
+    connect(MapStateToProps, MapDispatchToProps)(SidebarMenu),
 );

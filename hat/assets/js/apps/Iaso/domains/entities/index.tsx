@@ -1,17 +1,12 @@
 import React, { FunctionComponent, useState, useMemo } from 'react';
-import { useDispatch } from 'react-redux';
 import { Box, Tabs, Tab } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-
 import {
-    // @ts-ignore
     commonStyles,
-    // @ts-ignore
     LoadingSpinner,
-    // @ts-ignore
     useSafeIntl,
+    useRedirectTo,
 } from 'bluesquare-components';
-
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import TopBar from '../../components/nav/TopBarComponent';
 import { Filters } from './components/Filters';
@@ -20,15 +15,13 @@ import {
     useGetBeneficiariesPaginated,
     useGetBeneficiaryTypesDropdown,
 } from './hooks/requests';
-
 import { useColumns, baseUrl, defaultSorted } from './config';
 import MESSAGES from './messages';
-
-import { redirectTo } from '../../routing/actions';
 import { ListMap } from './components/ListMap';
-
 import { MENU_HEIGHT_WITH_TABS } from '../../constants/uiConstants';
 import { DisplayedLocation } from './types/locations';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { baseUrls } from '../../constants/urls';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -53,18 +46,16 @@ type Params = {
     search?: string;
     entityTypes?: string;
     entityTypeIds?: string;
+    locationLimit?: string;
 };
 
-type Props = {
-    params: Params;
-};
-
-export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
+export const Beneficiaries: FunctionComponent = () => {
+    const params = useParamsObject(baseUrls.entities) as Params;
     const classes: Record<string, string> = useStyles();
     const [displayedLocation, setDisplayedLocation] =
         useState<DisplayedLocation>('submissions');
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
+    const redirectTo = useRedirectTo();
 
     const { data, isFetching } = useGetBeneficiariesPaginated(params);
     const [tab, setTab] = useState(params.tab ?? 'list');
@@ -76,7 +67,7 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
             ...params,
             tab: newTab,
         };
-        dispatch(redirectTo(baseUrl, newParams));
+        redirectTo(baseUrl, newParams);
     };
     const entityTypeIds = useMemo(
         () => params.entityTypeIds?.split(',') || [],
@@ -156,6 +147,7 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                     </Box>
                     {tab === 'list' && (
                         <Box>
+                            {/* @ts-ignore */}
                             <TableWithDeepLink
                                 marginTop={false}
                                 data={result ?? []}
@@ -166,9 +158,6 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                                 baseUrl={baseUrl}
                                 params={params}
                                 extraProps={{ loading: isFetching }}
-                                onTableParamsChange={p =>
-                                    dispatch(redirectTo(baseUrl, p))
-                                }
                             />
                         </Box>
                     )}

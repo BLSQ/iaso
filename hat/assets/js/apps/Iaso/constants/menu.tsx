@@ -51,25 +51,9 @@ import {
 import { PluginsContext } from '../utils';
 import { useGetBeneficiaryTypesDropdown } from '../domains/entities/hooks/requests';
 import { DropdownOptions } from '../types/utils';
-import { Plugins } from '../domains/app/types';
+import { MenuItem, MenuItems, Plugins } from '../domains/app/types';
 import { useGetOrgunitsExtraPath } from '../domains/home/hooks/useGetOrgunitsExtraPath';
 import { CHANGE_REQUEST } from './urls';
-
-type MenuItem = {
-    label: string;
-    permissions?: string[];
-    key?: string;
-    mapKey?: string;
-    // eslint-disable-next-line no-unused-vars
-    icon?: (props: Record<string, any>) => ReactNode;
-    subMenu?: MenuItems;
-    extraPath?: string;
-    url?: string;
-    // eslint-disable-next-line no-unused-vars
-    isActive?: (pathname: string) => boolean;
-    dev?: boolean;
-};
-type MenuItems = MenuItem[];
 
 // !! remove permission property if the menu has a subMenu !!
 const menuItems = (
@@ -92,7 +76,7 @@ const menuItems = (
             isActive: pathname =>
                 pathname?.includes(`/entityTypeIds/${entityType.value}/`) &&
                 pathname?.includes(`entities/list/`),
-            extraPath: `/entityTypeIds/${entityType.value}/order/-last_saved_instance/pageSize/20/page/1`,
+            extraPath: `/entityTypeIds/${entityType.value}/locationLimit/1000/order/-last_saved_instance/pageSize/20/page/1`,
         }));
     }
     return [
@@ -405,5 +389,4 @@ export const useMenuItems = (): MenuItems => {
     }, [admin, basicItems, currentUser, pluginsMenu]);
     return items;
 };
-export const RDC_USER_MANUAL =
-    'https://docs.google.com/document/d/1eSJWotpTn4OtI1TV9OjJeF0hIa8W_1nUtpg9tmEgCkw/edit?usp=sharing';
+export const DOC_URL = 'https://docs.openiaso.com/en/latest/';

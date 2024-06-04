@@ -17,7 +17,7 @@ const getBudgetDetails = (params: any) => {
     const { accountId, pageSize, ...otherParams } = params;
     const urlParams = {
         ...otherParams,
-        limit: pageSize ?? 10,
+        limit: pageSize ?? '10',
     };
     const filteredParams = Object.entries(urlParams).filter(
         // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
@@ -31,12 +31,12 @@ const getBudgetDetails = (params: any) => {
 
 export type DetailsParams = {
     action?: any;
-    campaign_id: string;
+    budget_process_id: string;
     country?: string;
     deletion_status?: any;
     order?: string;
-    page?: number;
-    pageSize?: number;
+    page?: string;
+    pageSize?: string;
     show_hidden?: boolean;
     transition_key__in?: any;
 };

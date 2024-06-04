@@ -10,18 +10,14 @@ import React, {
 import { useFormik, FormikProvider } from 'formik';
 import { isEqual } from 'lodash';
 import {
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     ConfirmCancelModal,
-    // @ts-ignore
     FilesUpload,
-    // @ts-ignore
     makeFullModal,
+    useRedirectToReplace,
 } from 'bluesquare-components';
 import { Box, Chip, Divider, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useDispatch } from 'react-redux';
 import MESSAGES from '../../../constants/messages';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
@@ -36,13 +32,12 @@ import { BudgetStep, StepForm } from '../types';
 import { UserHasTeamWarning } from './UserHasTeamWarning';
 import { AddMultipleLinks } from '../MultipleLinks/AddMultipleLinks';
 import { useBudgetStepValidation } from '../hooks/validation';
-import { redirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
-import { BUDGET_DETAILS } from '../../../constants/routes';
 import { TextArea } from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/TextArea';
 import { useGetRecipientTeams } from '../hooks/api/useGetEmailRecipients';
+import { baseUrls } from '../../../constants/urls';
 
 type Props = {
-    campaignId: string;
+    budgetProcessId?: string;
     previousStep?: BudgetStep;
     transitionKey: string;
     transitionLabel: string;
@@ -60,7 +55,7 @@ const useStyles = makeStyles({
 });
 
 const CreateBudgetStep: FunctionComponent<Props> = ({
-    campaignId,
+    budgetProcessId,
     previousStep,
     closeDialog,
     isOpen,
@@ -72,11 +67,11 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
     recipients = [],
 }) => {
     const currentUser = useCurrentUser();
+    const redirectToReplace = useRedirectToReplace();
     const { data: userHasTeam } = useUserHasTeam(currentUser?.user_id);
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: saveBudgetStep } = useSaveBudgetStep();
     const classes = useStyles();
-    const dispatch = useDispatch();
     const quickTransition = params?.quickTransition;
     const onSuccess = useCallback(() => {
         const trimmedParams = { ...params };
@@ -86,8 +81,8 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
         if (params.previousStep) {
             delete trimmedParams.previousStep;
         }
-        dispatch(redirectToReplace(BUDGET_DETAILS, trimmedParams));
-    }, [dispatch, params]);
+        redirectToReplace(baseUrls.budgetDetails, trimmedParams);
+    }, [params, redirectToReplace]);
 
     const { data: recipientTeams } = useGetRecipientTeams(recipients);
 
@@ -130,7 +125,7 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
     const formik = useFormik<StepForm>({
         initialValues: {
             transition_key: transitionKey,
-            campaign: campaignId,
+            budget_process: budgetProcessId,
             comment: undefined,
             files: undefined,
             links: intialLinks,
@@ -234,14 +229,16 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
                 onClose={() => null}
             >
                 <>
-                    <TextArea
-                        value={values.comment}
-                        errors={getErrors('comment')}
-                        label={formatMessage(MESSAGES.notes)}
-                        onChange={onCommentChange}
-                        required={requiredFields.includes('comment')}
-                        debounceTime={0}
-                    />
+                    <Box mt={1}>
+                        <TextArea
+                            value={values.comment}
+                            errors={getErrors('comment')}
+                            label={formatMessage(MESSAGES.notes)}
+                            onChange={onCommentChange}
+                            required={requiredFields.includes('comment')}
+                            debounceTime={0}
+                        />
+                    </Box>
                     <InputComponent
                         type="number"
                         keyValue="amount"

@@ -5,25 +5,23 @@ import React, {
     useMemo,
     useEffect,
 } from 'react';
-import { useDispatch } from 'react-redux';
 
 import { Grid, Button, Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import SearchIcon from '@mui/icons-material/Search';
 
 import {
-    // @ts-ignore
     commonStyles,
-    // @ts-ignore
     useSafeIntl,
+    useRedirectTo,
 } from 'bluesquare-components';
 
 // @ts-ignore
 import DatesRange from 'Iaso/components/filters/DatesRange';
+import { LocationLimit } from 'Iaso/utils/map/LocationLimit';
 import InputComponent from '../../../components/forms/InputComponent';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 
-import { redirectTo } from '../../../routing/actions';
 import MESSAGES from '../messages';
 
 import { baseUrl } from '../config';
@@ -44,6 +42,7 @@ import {
     SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,
     hasFeatureFlag,
 } from '../../../utils/featureFlags';
+import { UserOrgUnitRestriction } from 'Iaso/components/UserOrgUnitRestriction.tsx';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -59,7 +58,7 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
     const currentUser = useCurrentUser();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
+    const redirectTo = useRedirectTo();
     const [filters, setFilters] = useState<FilterType>({
         search: params.search,
         location: params.location,
@@ -68,6 +67,7 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
         submitterId: params.submitterId,
         submitterTeamId: params.submitterTeamId,
         entityTypeIds: params.entityTypeIds,
+        locationLimit: params.locationLimit,
     });
 
     useEffect(() => {
@@ -79,6 +79,7 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
             submitterId: params.submitterId,
             submitterTeamId: params.submitterTeamId,
             entityTypeIds: params.entityTypeIds,
+            locationLimit: params.locationLimit,
         });
     }, [params]);
     const [filtersUpdated, setFiltersUpdated] = useState(false);
@@ -102,9 +103,9 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
         if (filtersUpdated) {
             setFiltersUpdated(false);
             const tempParams: Params = getParams(params, filters);
-            dispatch(redirectTo(baseUrl, tempParams));
+            redirectTo(baseUrl, tempParams);
         }
-    }, [filtersUpdated, getParams, params, filters, dispatch]);
+    }, [filtersUpdated, getParams, params, filters, redirectTo]);
 
     const handleChange = useCallback(
         (key, value) => {
@@ -134,6 +135,8 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
     const { url: apiUrl } = useGetBeneficiariesApiParams(params);
     return (
         <Box mb={1}>
+            <UserOrgUnitRestriction />
+
             <Grid container spacing={2}>
                 <Grid item xs={12} sm={6} md={3}>
                     <InputComponent
@@ -169,12 +172,21 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
                             onConfirm={orgUnit =>
                                 handleChange(
                                     'location',
-                                    orgUnit ? [orgUnit.id] : undefined,
+                                    orgUnit ? orgUnit.id : undefined,
                                 )
                             }
                             initialSelection={initialOrgUnit}
                         />
                     </Box>
+                    {params.tab === 'map' && (
+                        <Box mt={2}>
+                            <LocationLimit
+                                keyValue="locationLimit"
+                                onChange={handleChange}
+                                value={filters.locationLimit}
+                            />
+                        </Box>
+                    )}
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
                     <DatesRange

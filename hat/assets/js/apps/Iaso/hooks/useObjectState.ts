@@ -17,6 +17,7 @@ const recursiveCheck = (state, fields): Record<string, any> => {
             if (
                 typeof state[key] === typeof fields[key] ||
                 state[key] === undefined ||
+                state[key] === null || // We need to check null explicitly because typeof null === 'object'
                 // fields[key] should be allowed to be undefined otherwise we can never reset state values
                 fields[key] === undefined
             ) {
@@ -41,7 +42,7 @@ export const recursiveReducer = (state, fieldDict): Record<string, any> => {
     return recursiveCheck(state, fieldDict);
 };
 
-/** Use and modify an object (dictionnay) state in the same fashion as the class components of old:
+/** Use and modify an object (dictionnary) state in the same fashion as the class components of old:
  * Example:
  * const [state, setState] = useObjectState(initialState)
  * setState({name: "Bond"})

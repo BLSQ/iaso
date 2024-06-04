@@ -75,6 +75,13 @@ class SetupAccountSerializer(serializers.Serializer):
             modules=account_modules,
             analytics_script=validated_data.get("analytics_script", ""),
         )
+        account_feature_flags = [
+            "SHOW_HOME_ONLINE",
+            "SHOW_BENEFICIARY_TYPES_IN_LIST_MENU",
+            "SHOW_PAGES",
+            "SHOW_LINK_INSTANCE_REFERENCE",
+        ]
+        account.feature_flags.set(account_feature_flags)
 
         # Create a setup_account project with an app_id represented by the account name
         app_id = validated_data["account_name"].replace(" ", ".").replace("-", ".")
@@ -83,17 +90,13 @@ class SetupAccountSerializer(serializers.Serializer):
             name=validated_data["account_name"] + " project", account=account, app_id=app_id
         )
 
-        # Create an initial orgUnit type and link it to project
-        initial_orgunit_type = OrgUnitType.objects.create(name="Country", short_name="country", depth=1)
-        initial_orgunit_type.projects.set([initial_project])
-        initial_orgunit_type.save()
-
         # Link data source to projects and source version
         data_source.projects.set([initial_project])
         data_source.default_version = source_version
         data_source.save()
 
         Profile.objects.create(account=account, user=user)
+
         # Get all permissions linked to the modules
         modules_permissions = account_module_permissions(account_modules)
 

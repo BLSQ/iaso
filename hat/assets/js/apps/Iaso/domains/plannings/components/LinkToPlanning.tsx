@@ -1,11 +1,10 @@
 import React, { FunctionComponent } from 'react';
-
-import { Link } from 'react-router';
-import { userHasPermission } from '../../users/utils';
+import { userHasOneOfPermissions } from '../../users/utils';
 import { baseUrls } from '../../../constants/urls';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { Planning } from '../../assignments/types/planning';
-import * as Permission from '../../../utils/permissions';
+import { PLANNING_READ, PLANNING_WRITE } from '../../../utils/permissions';
+import { LinkTo } from '../../../components/nav/LinkTo';
 
 type Props = {
     planning: Planning;
@@ -13,10 +12,12 @@ type Props = {
 
 export const LinkToPlanning: FunctionComponent<Props> = ({ planning }) => {
     const user = useCurrentUser();
+    const condition = userHasOneOfPermissions(
+        [PLANNING_READ, PLANNING_WRITE],
+        user,
+    );
+    const url = `/${baseUrls.assignments}/planningId/${planning.id}/team/${planning.team}`;
+    const { name: text } = planning;
 
-    if (userHasPermission(Permission.PLANNINGS, user)) {
-        const planningUrl = `/${baseUrls.assignments}/planningId/${planning.id}/team/${planning.team}`;
-        return <Link to={planningUrl}>{planning.name}</Link>;
-    }
-    return <>{planning.name}</>;
+    return <LinkTo condition={condition} url={url} text={text} />;
 };

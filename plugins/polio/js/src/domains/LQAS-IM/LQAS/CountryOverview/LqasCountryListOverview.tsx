@@ -19,8 +19,8 @@ import {
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import MapIcon from '@mui/icons-material/Map';
-import { OK_COLOR, FAIL_COLOR } from '../../../../styles/constants';
-import { LQAS_PASS, LQAS_FAIL } from '../constants';
+import {OK_COLOR, FAIL_COLOR, MODERATE_COLOR, POOR_COLOR} from '../../../../styles/constants';
+import {LQAS_PASS, LQAS_FAIL, LQAS_MODERATE, LQAS_POOR} from '../constants';
 import { useStyles } from '../../../../styles/theme';
 import MESSAGES from '../../../../constants/messages';
 import { TablePlaceHolder } from '../../../Campaigns/Scope/Scopes/TablePlaceHolder';
@@ -60,6 +60,8 @@ const useTableStyle = makeStyles(theme => {
         },
         [LQAS_PASS]: { color: OK_COLOR },
         [LQAS_FAIL]: { color: FAIL_COLOR },
+        [LQAS_MODERATE]: { color: MODERATE_COLOR },
+        [LQAS_POOR]: { color: POOR_COLOR },
     };
 });
 

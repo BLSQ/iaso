@@ -1,18 +1,14 @@
-import React, { FunctionComponent } from 'react';
-import { Table } from 'bluesquare-components';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useDispatch } from 'react-redux';
-
-import { redirectToReplace } from '../../../routing/actions';
+import { Table, useRedirectToReplace } from 'bluesquare-components';
+import React, { FunctionComponent } from 'react';
 import { baseUrls } from '../../../constants/urls';
-
-import { RegistryDetailParams } from '../types';
 import { useGetOrgUnitsListColumns } from '../config';
 import { OrgUnitListChildren } from '../hooks/useGetOrgUnit';
+import { RegistryParams } from '../types';
 
 type Props = {
-    params: RegistryDetailParams;
+    params: RegistryParams;
     orgUnitChildren?: OrgUnitListChildren;
     isFetchingChildren: boolean;
 };
@@ -50,10 +46,9 @@ export const OrgUnitChildrenList: FunctionComponent<Props> = ({
     orgUnitChildren,
     isFetchingChildren,
 }) => {
-    const dispatch = useDispatch();
-
     const classes: Record<string, string> = useStyles();
     const columns = useGetOrgUnitsListColumns();
+    const redirectToReplace = useRedirectToReplace();
     return (
         <Box className={classes.root}>
             <Table
@@ -65,12 +60,12 @@ export const OrgUnitChildrenList: FunctionComponent<Props> = ({
                 paramsPrefix="orgUnitList"
                 columns={columns}
                 count={orgUnitChildren?.count || 0}
-                baseUrl={baseUrls.registryDetail}
+                baseUrl={baseUrls.registry}
                 params={params}
                 extraProps={{ loading: isFetchingChildren }}
                 elevation={0}
                 onTableParamsChange={p => {
-                    dispatch(redirectToReplace(baseUrls.registryDetail, p));
+                    redirectToReplace(baseUrls.registry, p);
                 }}
             />
         </Box>

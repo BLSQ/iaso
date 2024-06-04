@@ -1,39 +1,34 @@
 import React, { FunctionComponent, useCallback } from 'react';
-import { useDispatch } from 'react-redux';
 import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
     Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
 } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
-    useSafeIntl,
-    makeFullModal,
-    commonStyles,
-    Table,
     IconButton,
+    Table,
+    commonStyles,
+    makeFullModal,
+    useSafeIntl,
+    useRedirectToReplace,
 } from 'bluesquare-components';
 import EnketoIcon from '../../instances/components/EnketoIcon';
-
 import { useGetCreateInstance } from '../hooks/useGetCreateInstance';
-
 import { MissingInstanceButton } from './MissingInstanceButton';
-
-import { redirectToReplace } from '../../../routing/actions';
-import { RegistryDetailParams } from '../types';
 import { baseUrls } from '../../../constants/urls';
-import MESSAGES from '../messages';
 import { CompletenessApiResponse } from '../../completenessStats/types';
-
+import MESSAGES from '../messages';
+import { RegistryParams } from '../types';
 import { defaultSorted } from '../hooks/useGetEmptyInstanceOrgUnits';
 
 type Props = {
     missingOrgUnitsData: CompletenessApiResponse;
     isOpen: boolean;
     closeDialog: () => void;
-    params: RegistryDetailParams;
+    params: RegistryParams;
     formId?: string;
     isFetching: boolean;
 };
@@ -90,7 +85,7 @@ const MissingInstanceDialog: FunctionComponent<Props> = ({
     formId,
     isFetching,
 }) => {
-    const dispatch = useDispatch();
+    const redirectToReplace = useRedirectToReplace();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const handleClose = useCallback(() => {
@@ -98,10 +93,10 @@ const MissingInstanceDialog: FunctionComponent<Props> = ({
             ...params,
         };
         delete newParams.missingSubmissionVisible;
-        dispatch(redirectToReplace(baseUrls.registryDetail, newParams));
+        redirectToReplace(baseUrls.registry, newParams);
         closeDialog();
-    }, [closeDialog, dispatch, params]);
-    const creteInstance = useGetCreateInstance(window.location.href, formId);
+    }, [closeDialog, params, redirectToReplace]);
+    const createInstance = useGetCreateInstance(window.location.href, formId);
     return (
         <Dialog
             fullWidth
@@ -142,7 +137,7 @@ const MissingInstanceDialog: FunctionComponent<Props> = ({
                                 return (
                                     <IconButton
                                         onClick={() =>
-                                            creteInstance(
+                                            createInstance(
                                                 settings.row.original.org_unit
                                                     .id,
                                             )
@@ -162,7 +157,7 @@ const MissingInstanceDialog: FunctionComponent<Props> = ({
                     params={params}
                     elevation={0}
                     onTableParamsChange={p => {
-                        dispatch(redirectToReplace(baseUrls.registryDetail, p));
+                        redirectToReplace(baseUrls.registry, p);
                     }}
                 />
             </DialogContent>

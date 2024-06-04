@@ -112,19 +112,30 @@ class EntityQuerySet(models.QuerySet):
             ).exclude(file=""),
         )
 
-        self = self.filter(attributes__isnull=False).filter(instances__isnull=False)
+        self = self.filter(attributes_id__isnull=False)
 
         self = self.prefetch_related(p).prefetch_related("instances__form")
+
+        return self
+
+    def filter_for_user(self, user: typing.Optional[typing.Union[User, AnonymousUser]]):
+        if not user or not user.is_authenticated:
+            raise UserNotAuthError(f"User not Authentified")
+
+        profile = user.iaso_profile
+        self = self.filter(account=profile.account)
+
+        # we give all entities having an instance linked to the one of the org units allowed for the current user
+        if profile.org_units.exists():
+            orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
+            self = self.filter(instances__org_unit__in=orgunits)
 
         return self
 
     def filter_for_user_and_app_id(
         self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: typing.Optional[str]
     ):
-        if not user or not user.is_authenticated:
-            raise UserNotAuthError(f"User not Authentified")
-
-        self = self.filter(account=user.iaso_profile.account)
+        self = self.filter_for_user(user)
 
         if app_id is not None:
             try:
@@ -133,9 +144,7 @@ class EntityQuerySet(models.QuerySet):
                 if project.account is None:
                     raise ProjectNotFoundError(f"Project Account is None for app_id {app_id}")  # Should be a 401
 
-                self = self.filter(
-                    account=project.account, instances__project=project, attributes__project=project
-                ).distinct("id")
+                self = self.filter(account=project.account).distinct("id")
             except Project.DoesNotExist:
                 raise ProjectNotFoundError(f"Project Not Found for app_id {app_id}")
 

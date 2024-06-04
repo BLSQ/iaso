@@ -45,7 +45,8 @@ from .api.enketo import (
     enketo_public_launch,
     enketo_public_create_url,
 )
-from .api.entity import EntityViewSet, EntityTypeViewSet
+from .api.entity import EntityViewSet
+from .api.entity_types import EntityTypeViewSet
 from .api.export_requests import ExportRequestsViewSet
 from .api.feature_flags import FeatureFlagViewSet
 from .api.form_attachments import FormAttachmentsViewSet
@@ -68,6 +69,7 @@ from .api.mobile.reports import MobileReportsViewSet
 from .api.mobile.storage import MobileStoragePasswordViewSet
 from .api.org_unit_change_requests.views import OrgUnitChangeRequestViewSet
 from .api.org_unit_change_requests.views_mobile import MobileOrgUnitChangeRequestViewSet
+from .api.org_unit_tree.views import OrgUnitTreeViewSet
 from .api.org_unit_types import OrgUnitTypeViewSet
 from .api.org_unit_types.viewsets import OrgUnitTypeViewSetV2
 from .api.org_units import OrgUnitViewSet
@@ -101,6 +103,7 @@ URLList = List[URL]
 router = routers.DefaultRouter()
 router.register(r"orgunits/changes", OrgUnitChangeRequestViewSet, basename="orgunitschanges")
 router.register(r"mobile/orgunits/changes", MobileOrgUnitChangeRequestViewSet, basename="mobileorgunitschanges")
+router.register(r"orgunits/tree", OrgUnitTreeViewSet, basename="orgunitstree")
 router.register(r"orgunits", OrgUnitViewSet, basename="orgunits")
 router.register(r"orgunittypes", OrgUnitTypeViewSet, basename="orgunittypes")
 router.register(r"v2/orgunittypes", OrgUnitTypeViewSetV2, basename="orgunittypes")

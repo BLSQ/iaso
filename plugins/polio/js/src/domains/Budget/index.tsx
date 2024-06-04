@@ -1,36 +1,34 @@
-import React, { FunctionComponent, useState, useCallback } from 'react';
-import {
-    useSafeIntl,
-    useSkipEffectOnMount,
-    LoadingSpinner,
-} from 'bluesquare-components';
-import { Box, useMediaQuery, useTheme, Collapse, Grid } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import React, { FunctionComponent, useCallback, useState } from 'react';
 import SearchIcon from '@mui/icons-material/Search';
 import { Pagination } from '@mui/lab';
+import { Box, Collapse, useMediaQuery, useTheme } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import {
+    LoadingSpinner,
+    useSafeIntl,
+    useSkipEffectOnMount,
+    useRedirectToReplace,
+} from 'bluesquare-components';
 
 // @ts-ignore
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
-
+import { useCurrentUser } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { userHasPermission } from '../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import { BudgetButtons } from './BudgetButtons';
 import { BudgetFilters } from './BudgetFilters';
 import { BudgetCard } from './cards/BudgetCard';
-import { useBudgetColumns } from './hooks/config';
-import { CsvButton } from '../../../../../../hat/assets/js/apps/Iaso/components/Buttons/CsvButton';
 import {
     useBudgetParams,
     useGetBudgets,
     useGetWorkflowStatesForDropdown,
 } from './hooks/api/useGetBudget';
+import { useBudgetColumns } from './hooks/config';
 import { Budget } from './types';
-import { handleTableDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/utils/table';
 import { useStyles } from '../../styles/theme';
-import { BUDGET } from '../../constants/routes';
 import MESSAGES from '../../constants/messages';
-
-type Props = {
-    router: any;
-};
+import { baseUrls } from '../../constants/urls';
+import { useParamsObject } from '../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 
 const getCsvParams = (apiParams: Record<string, any>): string => {
     const {
@@ -58,18 +56,39 @@ const usePaginationStyles = makeStyles({
     alignRight: { textAlign: 'right' },
 });
 
-export const BudgetList: FunctionComponent<Props> = ({ router }) => {
-    const { params } = router;
+type Params = {
+    search?: string;
+    current_state_key?: string;
+    roundStartFrom?: string;
+    roundStartTo?: string;
+    countries?: string;
+    org_unit_groups?: string;
+    order?: string;
+    pageSize?: string;
+    page?: string;
+};
+
+const baseUrl = baseUrls.budget;
+
+export const BudgetProcessList: FunctionComponent = () => {
+    const params = useParamsObject(baseUrl) as Params;
     const { formatMessage } = useSafeIntl();
     const paginationStyle = usePaginationStyles();
     const classes = useStyles();
     const [expand, setExpand] = useState<boolean>(false);
+    const redirectToReplace = useRedirectToReplace();
 
     const apiParams = useBudgetParams(params);
     const csvParams = getCsvParams(apiParams);
 
+    const currentUser = useCurrentUser();
+    const isUserPolioBudgetAdmin = userHasPermission(
+        'iaso_polio_budget_admin',
+        currentUser,
+    );
+
     const { data: budgets, isFetching } = useGetBudgets(apiParams);
-    const columns = useBudgetColumns();
+    const columns = useBudgetColumns(isUserPolioBudgetAdmin);
     const theme = useTheme();
     const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -83,9 +102,9 @@ export const BudgetList: FunctionComponent<Props> = ({ router }) => {
 
     const onCardPaginationChange = useCallback(
         (_value, newPage) => {
-            handleTableDeepLink(BUDGET)({ ...apiParams, page: newPage });
+            redirectToReplace(baseUrl, { ...apiParams, page: newPage });
         },
-        [apiParams],
+        [apiParams, redirectToReplace],
     );
     const { data: possibleStates } = useGetWorkflowStatesForDropdown();
 
@@ -118,13 +137,13 @@ export const BudgetList: FunctionComponent<Props> = ({ router }) => {
                             buttonSize="small"
                             statesList={possibleStates}
                         />
-                        <Grid container justifyContent="flex-end">
-                            <Box mb={4}>
-                                <CsvButton
-                                    csvUrl={`/api/polio/budget/export_csv/?${csvParams}`}
-                                />
-                            </Box>
-                        </Grid>
+                        <Box mb={2}>
+                            <BudgetButtons
+                                csvUrl={`/api/polio/budget/export_csv/?${csvParams}`}
+                                isUserPolioBudgetAdmin={isUserPolioBudgetAdmin}
+                                isMobileLayout
+                            />
+                        </Box>
                     </Collapse>
                 )}
 
@@ -134,19 +153,18 @@ export const BudgetList: FunctionComponent<Props> = ({ router }) => {
                             params={params}
                             statesList={possibleStates}
                         />
-                        <Box mb={2} className={paginationStyle.alignRight}>
-                            <CsvButton
-                                csvUrl={`/api/polio/budget/export_csv/?${csvParams}`}
-                            />
-                        </Box>
-
+                        <BudgetButtons
+                            csvUrl={`/api/polio/budget/export_csv/?${csvParams}`}
+                            isUserPolioBudgetAdmin={isUserPolioBudgetAdmin}
+                        />
+                        {/* @ts-ignore */}
                         <TableWithDeepLink
                             data={budgets?.results ?? []}
                             count={budgets?.count}
                             pages={budgets?.pages}
                             params={apiParams}
                             columns={columns}
-                            baseUrl={BUDGET}
+                            baseUrl={baseUrl}
                             marginTop={false}
                             extraProps={{
                                 loading: isFetching,

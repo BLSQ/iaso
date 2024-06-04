@@ -2,32 +2,29 @@ import React, { FunctionComponent } from 'react';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { Box, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useDispatch } from 'react-redux';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { baseUrls } from '../../constants/urls';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { ModuleParams } from './types/modules';
-import { useGetModulesColumns } from './config';
+import { useModulesColumns } from './config';
 import { useGetModules } from './hooks/requests/useGetModules';
-import { redirectTo } from '../../routing/actions';
 import { ModulesFilters } from './components/ModulesFilters';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
-type Props = {
-    params: ModuleParams;
-};
+
 const baseUrl = baseUrls.modules;
-export const Modules: FunctionComponent<Props> = ({ params }) => {
-    const dispatch = useDispatch();
+export const Modules: FunctionComponent = () => {
+    const params = useParamsObject(baseUrl) as unknown as ModuleParams;
     const classes: Record<string, string> = useStyles();
 
     const { data, isFetching } = useGetModules(params);
     const { formatMessage } = useSafeIntl();
-    const columns = useGetModulesColumns();
+    const columns = useModulesColumns();
     return (
         <>
             <TopBar
@@ -43,8 +40,8 @@ export const Modules: FunctionComponent<Props> = ({ params }) => {
                         {formatMessage(MESSAGES.modulesInformation)}
                     </Grid>
                 </Grid>
-
                 <ModulesFilters params={params} />
+                {/* @ts-ignore */}
                 <TableWithDeepLink
                     marginTop={false}
                     data={data?.results ?? []}
@@ -55,7 +52,6 @@ export const Modules: FunctionComponent<Props> = ({ params }) => {
                     baseUrl={baseUrl}
                     params={params}
                     extraProps={{ loading: isFetching }}
-                    onTableParamsChange={p => dispatch(redirectTo(baseUrl, p))}
                     columnSelectorEnabled={false}
                 />
             </Box>

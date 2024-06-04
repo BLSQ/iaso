@@ -4,11 +4,13 @@ import { search, searchWithForbiddenChars } from '../../constants/search';
 import listFixture from '../../fixtures/profiles/list.json';
 import superUser from '../../fixtures/profiles/me/superuser.json';
 import { testSearchField } from '../../support/testSearchField';
+import orgUnits from '../../fixtures/orgunits/list.json';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 const baseUrl = `${siteBaseUrl}/dashboard/settings/users`;
 
 let interceptFlag = false;
+const orgUnitTreeIndexSearch = 2;
 const emptyFixture = 'profiles/empty.json';
 let table;
 let row;
@@ -41,6 +43,11 @@ const goToPage = (
     cy.intercept('GET', '/api/microplanning/teams/*', {
         fixture: 'teams/list.json',
     });
+    cy.intercept(
+        'GET',
+        `/api/orgunits/${orgUnits.orgunits[orgUnitTreeIndexSearch].id}`,
+        orgUnits.orgunits[orgUnitTreeIndexSearch],
+    );
     const options = {
         method: 'GET',
         pathname: '/api/profiles/',
@@ -275,13 +282,6 @@ describe('Users', () => {
             goToPage(superUser, {}, emptyFixture);
             cy.wait('@getUsers').then(() => {
                 interceptFlag = false;
-                cy.intercept(
-                    'GET',
-                    '/api/orgunits/treesearch/?&rootsForUser=true&defaultVersion=true&validation_status=all&ignoreEmptyNames=true',
-                    {
-                        fixture: 'orgunits/list.json',
-                    },
-                );
                 cy.intercept('GET', '/api/profiles/**/*', req => {
                     req.continue(res => {
                         interceptFlag = true;
@@ -294,7 +294,11 @@ describe('Users', () => {
                 cy.fillSingleSelect('#orgUnitTypes', 1);
                 cy.fillMultiSelect('#projectsIds', [0, 1], false);
                 cy.fillMultiSelect('#userRoles', [0, 1], false);
-                cy.fillTreeView('#ou-tree-input', 2, false);
+                cy.fillTreeView(
+                    '#ou-tree-input',
+                    orgUnitTreeIndexSearch,
+                    false,
+                );
                 cy.fillMultiSelect('#teamsIds', [0, 1], false);
 
                 cy.get('[data-test="search-button"]').click();

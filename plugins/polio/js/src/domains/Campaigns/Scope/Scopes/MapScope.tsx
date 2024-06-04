@@ -92,24 +92,26 @@ export const MapScope: FunctionComponent<Props> = ({
         },
         [values.org_unit?.id, scopes, theme],
     );
+    const filterOrgUnits = useCallback(
+        (orgUnits: OrgUnit[]) =>
+            orgUnits.filter(
+                orgUnit =>
+                    (orgUnit.has_geo_json ||
+                        (orgUnit.latitude && orgUnit.longitude)) &&
+                    (orgUnit.validation_status === 'VALID' ||
+                        // display REJECTED or NEW org unit if already present in a scope
+                        findScopeWithOrgUnit(scopes, orgUnit.id)),
+            ),
+        [scopes],
+    );
 
     const districts = useMemo(
-        () =>
-            districtShapes.filter(
-                ogrUnit =>
-                    ogrUnit.has_geo_json ||
-                    (ogrUnit.latitude && ogrUnit.longitude),
-            ),
-        [districtShapes],
+        () => filterOrgUnits(districtShapes),
+        [districtShapes, filterOrgUnits],
     );
     const regions = useMemo(
-        () =>
-            regionShapes.filter(
-                ogrUnit =>
-                    ogrUnit.has_geo_json ||
-                    (ogrUnit.latitude && ogrUnit.longitude),
-            ),
-        [regionShapes],
+        () => filterOrgUnits(regionShapes),
+        [regionShapes, filterOrgUnits],
     );
 
     return (

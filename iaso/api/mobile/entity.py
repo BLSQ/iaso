@@ -53,7 +53,15 @@ class LargeResultsSetPagination(PageNumberPagination):
 class MobileEntityAttributesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Instance
-        fields = ["id", "form_id", "form_version_id", "created_at", "updated_at", "org_unit_id", "json"]
+        fields = [
+            "id",
+            "form_id",
+            "form_version_id",
+            "created_at",
+            "updated_at",
+            "org_unit_id",
+            "json",
+        ]
 
     form_id = serializers.IntegerField(read_only=True, source="form.id")
     id = serializers.CharField(read_only=True, source="uuid")
@@ -175,12 +183,6 @@ class MobileEntityViewSet(ModelViewSet):
         queryset = get_queryset_for_user_and_app_id(user, app_id).filter(deleted_at__isnull=True)
 
         queryset = filter_for_mobile_entity(queryset, self.request)
-
-        # we give all entities having an instance linked to the one of the org units allowed for the current user
-        if queryset and user and user.is_authenticated:
-            orgunits = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
-            if orgunits and len(orgunits) > 0:
-                queryset = queryset.filter(instances__org_unit__in=orgunits)
 
         queryset = queryset.select_related("entity_type").prefetch_related(
             "instances__org_unit",

@@ -1,52 +1,43 @@
-import React, { useCallback, useState, useMemo } from 'react';
-import { Box, Grid } from '@mui/material';
+import { Box, Grid, Tooltip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useDispatch } from 'react-redux';
-
-import PropTypes from 'prop-types';
-
 import {
+    LoadingSpinner,
     commonStyles,
     selectionInitialState,
     setTableSelection,
     useSafeIntl,
-    LoadingSpinner,
+    useRedirectToReplace,
 } from 'bluesquare-components';
-
 import { useQueryClient } from 'react-query';
 import { createInstance } from './actions';
-import { redirectToReplace } from '../../routing/actions.ts';
 import {
     fetchFormDetailsForInstance,
     fetchInstancesAsDict,
     fetchInstancesAsSmallDict,
 } from './requests';
-
 import {
     getEndpointUrl,
-    getFilters,
-    getSelectionActions,
     getExportUrl,
+    useGetFilters,
+    useSelectionActions,
 } from './utils/index.tsx';
-
-import { InstancesTopBar as TopBar } from './components/TopBar.tsx';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent.tsx';
-import { InstancesMap } from './components/InstancesMap/InstancesMap.tsx';
-import InstancesFiltersComponent from './components/InstancesFiltersComponent';
 import { CreateReAssignDialog } from './components/CreateReAssignDialogComponent.tsx';
-
-import { baseUrls } from '../../constants/urls';
-
-import MESSAGES from './messages';
-import { useSnackQuery } from '../../libs/apiHooks.ts';
+import InstancesFiltersComponent from './components/InstancesFiltersComponent';
+import { InstancesMap } from './components/InstancesMap/InstancesMap.tsx';
+import { InstancesTopBar as TopBar } from './components/TopBar.tsx';
+import { baseUrls } from '../../constants/urls.ts';
 import snackMessages from '../../components/snackBars/messages';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink.tsx';
-import { PaginatedInstanceFiles } from './components/PaginatedInstancesFiles';
+import { useSnackQuery } from '../../libs/apiHooks.ts';
 import { useGetPossibleFields } from '../forms/hooks/useGetPossibleFields.ts';
-import { userHasPermission } from '../users/utils';
-import { useCurrentUser } from '../../utils/usersUtils.ts';
-
+import { PaginatedInstanceFiles } from './components/PaginatedInstancesFiles';
+import MESSAGES from './messages';
 import * as Permission from '../../utils/permissions.ts';
+import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
+import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm.tsx';
 
 const baseUrl = baseUrls.instances;
 
@@ -59,11 +50,13 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const Instances = ({ params }) => {
+const Instances = () => {
+    const params = useParamsObject(baseUrl);
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     const queryClient = useQueryClient();
+    const redirectToReplace = useRedirectToReplace();
 
     const [selection, setSelection] = useState(selectionInitialState);
     const [tableColumns, setTableColumns] = useState([]);
@@ -136,20 +129,26 @@ const Instances = ({ params }) => {
                 tab: newTab,
             };
             setTab(newTab);
-            dispatch(redirectToReplace(baseUrl, newParams));
+            redirectToReplace(baseUrl, newParams);
         },
-        [params, dispatch],
+        [params, redirectToReplace],
     );
 
     const onSearch = useCallback(
         newParams => {
             setSelection(selectionInitialState);
-            dispatch(redirectToReplace(baseUrl, newParams));
+            redirectToReplace(baseUrl, newParams);
         },
-        [dispatch],
+        [redirectToReplace],
     );
     const isSingleFormSearch = params.formIds?.split(',').length === 1;
-    const currentUser = useCurrentUser();
+    const filters = useGetFilters(params);
+    const selectionActions = useSelectionActions(
+        filters,
+        () => refetchInstances(),
+        params.showDeleted === 'true',
+        classes,
+    );
 
     return (
         <section className={classes.relativeContainer}>
@@ -176,10 +175,9 @@ const Instances = ({ params }) => {
                 {tab === 'list' && isSingleFormSearch && (
                     <Grid container spacing={0} alignItems="center">
                         <Grid xs={12} item className={classes.textAlignRight}>
-                            {userHasPermission(
-                                Permission.SUBMISSIONS_UPDATE,
-                                currentUser,
-                            ) && (
+                            <DisplayIfUserHasPerm
+                                permissions={[Permission.SUBMISSIONS_UPDATE]}
+                            >
                                 <Box
                                     display="flex"
                                     justifyContent="flex-end"
@@ -210,17 +208,28 @@ const Instances = ({ params }) => {
                                         }
                                     />
                                 </Box>
-                            )}
-
-                            <Box display="flex" justifyContent="flex-end">
-                                <DownloadButtonsComponent
-                                    csvUrl={getExportUrl(params, 'csv')}
-                                    xlsxUrl={getExportUrl(params, 'xlsx')}
-                                />
-                            </Box>
+                            </DisplayIfUserHasPerm>
                         </Grid>
                     </Grid>
                 )}
+                <Box display="flex" justifyContent="flex-end">
+                    <Tooltip
+                        title={
+                            isSingleFormSearch
+                                ? ''
+                                : formatMessage(MESSAGES.filterParam)
+                        }
+                        arrow
+                    >
+                        <Box>
+                            <DownloadButtonsComponent
+                                csvUrl={getExportUrl(params, 'csv')}
+                                xlsxUrl={getExportUrl(params, 'xlsx')}
+                                disabled={!isSingleFormSearch}
+                            />
+                        </Box>
+                    </Tooltip>
+                </Box>
                 {tab === 'list' && tableColumns.length > 0 && (
                     <TableWithDeepLink
                         data={data?.instances ?? []}
@@ -231,14 +240,7 @@ const Instances = ({ params }) => {
                         baseUrl={baseUrl}
                         multiSelect
                         defaultSorted={[{ id: 'updated_at', desc: true }]}
-                        selectionActions={getSelectionActions(
-                            formatMessage,
-                            getFilters(params),
-                            () => refetchInstances(),
-                            params.showDeleted === 'true',
-                            classes,
-                            currentUser,
-                        )}
+                        selectionActions={selectionActions}
                         selection={selection}
                         setTableSelection={(
                             selectionType,
@@ -277,10 +279,6 @@ const Instances = ({ params }) => {
             </Box>
         </section>
     );
-};
-
-Instances.propTypes = {
-    params: PropTypes.object.isRequired,
 };
 
 export default Instances;

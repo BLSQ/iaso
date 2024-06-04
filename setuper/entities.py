@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import uuid
 
 from fake import fake_person
@@ -11,7 +11,7 @@ def setup_entities(account_name, iaso_client):
     project_id = iaso_client.get("/api/projects/")["projects"][0]["id"]
     org_unit_types = iaso_client.get("/api/v2/orgunittypes/")["orgUnitTypes"]
 
-    hf_out = [out for out in org_unit_types if out["name"] == "Formation sanitaire"][0]
+    hf_out = [out for out in org_unit_types if out["name"] == "Health facility/Formation sanitaire - HF"][0]
 
     print("-- Setting up reference form")
 
@@ -180,6 +180,8 @@ def setup_entities(account_name, iaso_client):
 
             local_path = "generated/%s" % file_name
             current_datetime = int(datetime.now().timestamp())
+            created_at = datetime.now() - timedelta(days=4)
+            created_at_to_datetime = int(datetime.timestamp(created_at + timedelta(days=i)))
 
             iaso_client.post(
                 f"/api/instances/?app_id={account_name}",
@@ -187,7 +189,7 @@ def setup_entities(account_name, iaso_client):
                     {
                         "id": the_uuid,
                         "latitude": None,
-                        "created_at": current_datetime,
+                        "created_at": created_at_to_datetime,
                         "updated_at": current_datetime,
                         "orgUnitId": org_unit_id,
                         "formId": follow_form_id,

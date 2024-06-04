@@ -6,24 +6,25 @@ from copy import deepcopy
 from functools import reduce
 
 import django_cte
-from django.core.exceptions import ValidationError
-from django.contrib.auth.models import User, AnonymousUser
-from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
+from django.contrib.auth.models import AnonymousUser, User
+from django.contrib.gis.db.models.fields import MultiPolygonField, PointField
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.indexes import GinIndex, GistIndex
+from django.core.exceptions import ValidationError
 from django.db import models, transaction
-from django.db.models import QuerySet, Q
+from django.db.models import Q, QuerySet
 from django.db.models.expressions import RawSQL
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_ltree.fields import PathField  # type: ignore
 from django_ltree.models import TreeModel  # type: ignore
 
-from hat.audit.models import log_modification, ORG_UNIT_CHANGE_REQUEST
+from hat.audit.models import ORG_UNIT_CHANGE_REQUEST, log_modification
 from iaso.models.data_source import SourceVersion
-from .project import Project
+
 from ..utils.expressions import ArraySubquery
 from ..utils.models.common import get_creator_name
+from .project import Project
 
 try:  # for typing
     from .base import Account, Instance
@@ -63,7 +64,9 @@ def get_or_create_org_unit_type(name: str, depth: int, account: "Account", prefe
             return OrgUnitType.objects.filter(**out_defining_fields, projects__in=all_projects_from_account).first()  # type: ignore
         except OrgUnitType.DoesNotExist:
             # We have no similar OUT in the account, so let's create a new one
-            return OrgUnitType.objects.create(**out_defining_fields, short_name=name[:4])
+            splitted_name = name.split(" - ")
+            short_name = splitted_name[-1]
+            return OrgUnitType.objects.create(**out_defining_fields, short_name=short_name)
     except OrgUnitType.MultipleObjectsReturned:
         # We have multiple similar OUT for the preferred project, so let's pick the first
         return OrgUnitType.objects.filter(**out_defining_fields, projects=preferred_project).first()  # type: ignore
@@ -79,7 +82,14 @@ class OrgUnitTypeQuerySet(models.QuerySet):
         if user and user.is_anonymous and app_id is None:
             return self.none()
 
-        queryset = self.all()
+        queryset = self.prefetch_related(
+            "projects",
+            "projects__account",
+            "projects__feature_flags",
+            "allow_creating_sub_unit_types",
+            "reference_forms",
+            "sub_unit_types",
+        )
 
         if user and user.is_authenticated:
             queryset = queryset.filter(projects__account=user.iaso_profile.account)
@@ -145,7 +155,7 @@ class OrgUnitType(models.Model):
             res["sub_unit_types"] = sub_unit_types
         return res
 
-    def as_dict_for_completeness_stats(self):
+    def as_minimal_dict(self):
         return {
             "name": self.name,
             "id": self.id,
@@ -198,7 +208,7 @@ class OrgUnitQuerySet(django_cte.CTEQuerySet):
         if user and user.is_anonymous and app_id is None:
             return self.none()
 
-        queryset: OrgUnitQuerySet = self.defer("geom", "simplified_geom")
+        queryset: OrgUnitQuerySet = self.defer("geom")
 
         if user and user.is_authenticated:
             account = user.iaso_profile.account
@@ -500,14 +510,14 @@ class OrgUnit(TreeModel):
             "org_unit_type": self.org_unit_type.name,
         }
 
-    def as_dict_for_completeness_stats_with_parent(self):
+    def as_minimal_dict_with_parent(self):
         return {
             "name": self.name,
             "id": self.id,
-            "parent": self.parent.as_dict_for_completeness_stats() if self.parent else None,
+            "parent": self.parent.as_minimal_dict() if self.parent else None,
         }
 
-    def as_dict_for_completeness_stats(self):
+    def as_minimal_dict(self):
         return {
             "name": self.name,
             "id": self.id,
@@ -687,7 +697,7 @@ class OrgUnitChangeRequest(models.Model):
             self.old_closed_date = self.org_unit.closed_date
         super().save(*args, **kwargs)
         if is_new:
-            # Wait for the instance to have an ID to save old m2m relations.
+            # Wait for the instance to have an ID to save old m2m relations
             self.old_groups.set(self.org_unit.groups.all())
             self.old_reference_instances.set(self.org_unit.reference_instances.all())
 
@@ -712,10 +722,11 @@ class OrgUnitChangeRequest(models.Model):
         self.rejection_comment = rejection_comment
         self.save()
 
-    def approve(self, user: User, approved_fields: typing.List[str]) -> None:
+    def approve(self, user: User, approved_fields: typing.List[str], rejection_comment: str = "") -> None:
         self.__apply_changes(user, approved_fields)
         self.updated_by = user
         self.status = self.Statuses.APPROVED
+        self.rejection_comment = rejection_comment
         self.approved_fields = approved_fields
         self.save()
 

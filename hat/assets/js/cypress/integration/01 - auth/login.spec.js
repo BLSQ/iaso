@@ -28,7 +28,7 @@ describe('Log in page', () => {
         cy.intercept('GET', '/sockjs-node/**').as('Yabadabadoo');
     });
     it('going to root url should redirect to log in page', () => {
-        cy.url().should('eq', signInUrl);
+        cy.url().should('include', signInUrl); // using include to account for redirection with next=
     });
     it('click on forgot password should redirect to sign up page', () => {
         cy.get('.login-link a').click();
@@ -79,7 +79,7 @@ describe('Log in page', () => {
             selectLanguage('en');
         });
     });
-    describe.only('Happy flow', () => {
+    describe('Happy flow', () => {
         beforeEach(() => {
             cy.login();
             cy.visit(siteBaseUrl);

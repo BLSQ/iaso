@@ -11,7 +11,7 @@ import { makeImMapLegendItems, getLqasImMapLayer } from '../IM/utils.ts';
 import { makeLqasMapLegendItems } from '../LQAS/utils.ts';
 import { imDistrictColors } from './constants.ts';
 import { lqasDistrictColors } from '../LQAS/constants.ts';
-import { defaultShapeStyle } from '../../../utils/index';
+import { defaultShapeStyle } from '../../../utils/index.tsx';
 import MESSAGES from '../../../constants/messages';
 import { useGetGeoJson } from '../../Campaigns/Scope/hooks/useGetGeoJson.ts';
 import { ScopeAndDNFDisclaimer } from './ScopeAndDNFDisclaimer.tsx';

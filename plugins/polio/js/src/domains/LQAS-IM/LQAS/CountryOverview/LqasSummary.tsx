@@ -44,7 +44,11 @@ export const LqasSummary: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const summary = useMemo(() => {
-        const [passed, failed] = getLqasStatsForRound(data, campaign, round);
+        const [passed, moderate, poor, failed] = getLqasStatsForRound(
+            data,
+            campaign,
+            round,
+        );
         const ratePassed: string = scopeCount
             ? convertStatToPercent(passed.length, scopeCount)
             : '--';
@@ -54,7 +58,7 @@ export const LqasSummary: FunctionComponent<Props> = ({
                 : '';
 
         return {
-            failed: failed.length,
+            failed: failed.length + moderate.length + poor.length,
             passed: passed.length,
             ratePassed,
             caregiversRatio,

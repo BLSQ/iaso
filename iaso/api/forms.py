@@ -75,6 +75,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
             "label_keys",
             "reference_form_of_org_unit_types",
             "legend_threshold",
+            "change_request_mode",
         ]
         fields = [
             "id",
@@ -103,6 +104,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
             "has_attachments",
             "reference_form_of_org_unit_types",
             "legend_threshold",
+            "change_request_mode",
         ]
         read_only_fields = [
             "id",

@@ -1,52 +1,53 @@
 /* eslint-disable camelcase */
+import CallMade from '@mui/icons-material/CallMade';
+import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
+import { Tooltip } from '@mui/material';
+import {
+    Column,
+    LinkWithLocation,
+    RenderCell,
+    Setting,
+    getTableUrl,
+    truncateText,
+    useSafeIntl,
+} from 'bluesquare-components';
+import moment from 'moment';
 import React, {
     FunctionComponent,
     ReactElement,
-    useMemo,
     useCallback,
+    useMemo,
 } from 'react';
-import { Link } from 'react-router';
-import moment from 'moment';
-import { Tooltip } from '@mui/material';
-import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
-import CallMade from '@mui/icons-material/CallMade';
-import {
-    truncateText,
-    useSafeIntl,
-    getTableUrl,
-    Column,
-    Setting,
-    RenderCell,
-    IntlFormatMessage,
-} from 'bluesquare-components';
 
 import instancesTableColumns from '../config';
 import MESSAGES from '../messages';
-import { VisibleColumn } from '../types/visibleColumns';
 import { Instance, ShortFile } from '../types/instance';
+import { VisibleColumn } from '../types/visibleColumns';
 
+import { getCookie } from '../../../utils/cookies';
 import {
-    apiDateTimeFormat,
     apiDateFormat,
+    apiDateTimeFormat,
     getFromDateString,
     getToDateString,
 } from '../../../utils/dates';
+import { Form, PossibleField } from '../../forms/types/forms';
 import ActionTableColumnComponent from '../components/ActionTableColumnComponent';
-import { PossibleField } from '../../forms/types/forms';
-import { getCookie } from '../../../utils/cookies';
 
 import DeleteDialog from '../components/DeleteInstanceDialog';
 import ExportInstancesDialogComponent from '../components/ExportInstancesDialogComponent';
 
-import { fetchLatestOrgUnitLevelId } from '../../orgUnits/utils';
 import { baseUrls } from '../../../constants/urls';
+import { fetchLatestOrgUnitLevelId } from '../../orgUnits/utils';
 
 import { Selection } from '../../orgUnits/types/selection';
 
 import { userHasOneOfPermissions, userHasPermission } from '../../users/utils';
 
-import { User, useCurrentUser } from '../../../utils/usersUtils';
 import * as Permission from '../../../utils/permissions';
+import { useCurrentUser } from '../../../utils/usersUtils';
+import { InstanceMetasField } from '../components/ColumnSelect';
+import { INSTANCE_METAS_FIELDS } from '../constants';
 
 const NO_VALUE = '/';
 // eslint-disable-next-line no-unused-vars
@@ -230,85 +231,86 @@ const renderValue = (settings: Setting<Instance>, c: VisibleColumn) => {
     return <span>{formatValue(value)}</span>;
 };
 
-export const useGetInstancesColumns = (
+export const useInstancesColumns = (
     // eslint-disable-next-line no-unused-vars
     getActionCell: RenderCell = settings => (
         <ActionTableColumnComponent settings={settings} />
     ),
+    visibleColumns: VisibleColumn[],
+
     // eslint-disable-next-line no-unused-vars
-): ((visibleColumns: VisibleColumn[]) => Column[]) => {
+): Column[] => {
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
     const metasColumns = useMemo(
         () => [...instancesTableColumns(formatMessage)],
         [formatMessage],
     );
-    const getInstancesColumns = useCallback(
-        (visibleColumns: VisibleColumn[]) => {
-            let tableColumns: Column[] = [];
-            metasColumns.forEach(c => {
-                const metaColumn = visibleColumns.find(
-                    vc => vc.key === c.accessor,
-                );
-                if (
-                    (metaColumn && metaColumn.active) ||
-                    c.accessor === 'actions'
-                ) {
-                    tableColumns.push(c);
+    const InstancesColumns = useMemo(() => {
+        let tableColumns: Column[] = [];
+        metasColumns.forEach(c => {
+            const metaColumn = visibleColumns.find(vc => vc.key === c.accessor);
+            if ((metaColumn && metaColumn.active) || c.accessor === 'actions') {
+                tableColumns.push(c);
+            }
+        });
+
+        const childrenArray: Column[] = [];
+        visibleColumns
+            .filter(c => !c.meta)
+            .forEach(c => {
+                if (c.active) {
+                    childrenArray.push({
+                        class: 'small',
+                        sortable: false,
+                        accessor: c.key,
+                        Header: (
+                            <Tooltip
+                                title={formatMessage(
+                                    MESSAGES.instanceHeaderTooltip,
+                                    {
+                                        label: c.label,
+                                        key: c.key,
+                                    },
+                                )}
+                            >
+                                <span>
+                                    {c.label?.trim()
+                                        ? truncateText(c.label, 25)
+                                        : c.key}
+                                </span>
+                            </Tooltip>
+                        ),
+                        Cell: settings => renderValue(settings, c),
+                    });
                 }
             });
-
-            const childrenArray: Column[] = [];
-            visibleColumns
-                .filter(c => !c.meta)
-                .forEach(c => {
-                    if (c.active) {
-                        childrenArray.push({
-                            class: 'small',
-                            sortable: false,
-                            accessor: c.key,
-                            Header: (
-                                <Tooltip
-                                    title={formatMessage(
-                                        MESSAGES.instanceHeaderTooltip,
-                                        {
-                                            label: c.label,
-                                            key: c.key,
-                                        },
-                                    )}
-                                >
-                                    <span>
-                                        {c.label?.trim()
-                                            ? truncateText(c.label, 25)
-                                            : c.key}
-                                    </span>
-                                </Tooltip>
-                            ),
-                            Cell: settings => renderValue(settings, c),
-                        });
-                    }
-                });
-            tableColumns = tableColumns.concat(childrenArray);
-            if (
-                userHasOneOfPermissions(
-                    [Permission.SUBMISSIONS_UPDATE, Permission.SUBMISSIONS],
-                    currentUser,
-                )
-            ) {
-                tableColumns.push({
-                    Header: formatMessage(MESSAGES.actions),
-                    accessor: 'actions',
-                    resizable: false,
-                    sortable: false,
-                    width: 150,
-                    Cell: getActionCell,
-                });
-            }
-            return tableColumns;
-        },
-        [currentUser, formatMessage, getActionCell, metasColumns],
-    );
-    return getInstancesColumns;
+        tableColumns = tableColumns.concat(childrenArray);
+        if (
+            userHasPermission(Permission.REGISTRY_WRITE, currentUser) &&
+            userHasOneOfPermissions(
+                [Permission.SUBMISSIONS_UPDATE, Permission.SUBMISSIONS],
+                currentUser,
+            )
+        ) {
+            tableColumns.push({
+                Header: formatMessage(MESSAGES.actions),
+                accessor: 'actions',
+                resizable: false,
+                sortable: false,
+                width: 150,
+                Cell: getActionCell,
+            });
+        }
+        return tableColumns;
+    }, [
+        currentUser,
+        formatMessage,
+        getActionCell,
+        metasColumns,
+        visibleColumns,
+    ]);
+    return InstancesColumns;
 };
 
 type Props = {
@@ -376,6 +378,87 @@ export const useGetInstancesVisibleColumns = ({
     return getInstancesVisibleColumns;
 };
 
+const getDefaultCols = (
+    formIds: string[],
+    labelKeys: string[],
+    instanceMetasFields: InstanceMetasField[],
+    periodType?: string,
+): string => {
+    let newCols: string[] = instanceMetasFields
+        .filter(f => Boolean(f.tableOrder) && f.active)
+        .map(f => f.accessor || f.key);
+    if (formIds && formIds.length === 1) {
+        newCols = newCols.filter(c => c !== 'form__name');
+        if (periodType === null) {
+            newCols = newCols.filter(c => c !== 'period');
+        }
+    }
+    let newColsString = newCols.join(',');
+    if (labelKeys.length > 0) {
+        newColsString = `${newColsString},${labelKeys.join(',')}`;
+    }
+    return newColsString;
+};
+
+type UseInstanceVisibleColumnsArgs = {
+    formDetails: Form;
+    formIds: string[];
+    instanceMetasFields?: InstanceMetasField[];
+    labelKeys: string[];
+    columns?: string;
+    periodType?: string;
+    possibleFields?: PossibleField[];
+    order?: string;
+    defaultOrder: string;
+};
+export const useInstanceVisibleColumns = ({
+    formDetails,
+    formIds,
+    instanceMetasFields,
+    labelKeys,
+    columns,
+    periodType,
+    possibleFields,
+    order,
+    defaultOrder,
+}: UseInstanceVisibleColumnsArgs): VisibleColumn[] => {
+    const getVisibleColumns = useGetInstancesVisibleColumns({
+        order,
+        defaultOrder,
+    });
+    return useMemo(() => {
+        const newColsString: string =
+            columns ||
+            getDefaultCols(
+                formIds,
+                labelKeys,
+                instanceMetasFields || INSTANCE_METAS_FIELDS,
+                periodType,
+            );
+        let newCols: VisibleColumn[] = [];
+        // single form
+        if (formIds?.length === 1) {
+            // if detail loaded
+            if (formDetails) {
+                newCols = getVisibleColumns(newColsString, possibleFields);
+            }
+            // multi forms
+        } else {
+            newCols = getVisibleColumns(newColsString);
+        }
+        return newCols;
+    }, [
+        columns,
+        formDetails,
+        formIds,
+        getVisibleColumns,
+        instanceMetasFields,
+        labelKeys,
+        periodType,
+        possibleFields,
+    ]);
+};
+
 export const getInstancesFilesList = (instances?: Instance[]): ShortFile[] => {
     const filesList: ShortFile[] = [];
     instances?.forEach(i => {
@@ -404,82 +487,94 @@ type SelectionAction = {
     disabled: boolean;
 };
 
-export const getSelectionActions = (
-    formatMessage: IntlFormatMessage,
+export const useSelectionActions = (
     filters: Record<string, string>,
     setForceRefresh: () => void,
     isUnDeleteAction = false,
     classes: Record<string, string>,
-    currentUser: User,
 ): SelectionAction[] => {
+    const { formatMessage } = useSafeIntl();
+    const currentUser = useCurrentUser();
     const label = formatMessage(
         isUnDeleteAction ? MESSAGES.unDeleteInstance : MESSAGES.deleteInstance,
     );
 
-    const exportAction: SelectionAction = {
-        icon: newSelection => (
-            <ExportInstancesDialogComponent
-                // @ts-ignore need to refactor this component to TS
-                selection={newSelection}
-                getFilters={() => filters}
-                renderTrigger={openDialog => {
-                    const iconDisabled = newSelection.selectCount === 0;
-                    const iconProps = {
-                        className: iconDisabled ? classes.iconDisabled : null,
-                        onClick: !iconDisabled ? openDialog : () => null,
-                        disabled: iconDisabled,
-                    };
-                    // @ts-ignore
-                    return <CallMade {...iconProps} />;
-                }}
-            />
-        ),
-        label: formatMessage(MESSAGES.exportRequest),
-        disabled: false,
-    };
+    return useMemo(() => {
+        const exportAction: SelectionAction = {
+            icon: newSelection => (
+                <ExportInstancesDialogComponent
+                    // @ts-ignore need to refactor this component to TS
+                    selection={newSelection}
+                    getFilters={() => filters}
+                    renderTrigger={openDialog => {
+                        const iconDisabled = newSelection.selectCount === 0;
+                        const iconProps = {
+                            className: iconDisabled
+                                ? classes.iconDisabled
+                                : null,
+                            onClick: !iconDisabled ? openDialog : () => null,
+                            disabled: iconDisabled,
+                        };
+                        // @ts-ignore
+                        return <CallMade {...iconProps} />;
+                    }}
+                />
+            ),
+            label: formatMessage(MESSAGES.exportRequest),
+            disabled: false,
+        };
 
-    const deleteAction: SelectionAction = {
-        icon: (newSelection, resetSelection) => (
-            <DeleteDialog
-                selection={newSelection}
-                filters={filters}
-                setForceRefresh={setForceRefresh}
-                resetSelection={resetSelection}
-                isUnDeleteAction={isUnDeleteAction}
-            />
-        ),
+        const deleteAction: SelectionAction = {
+            icon: (newSelection, resetSelection) => (
+                <DeleteDialog
+                    selection={newSelection}
+                    filters={filters}
+                    setForceRefresh={setForceRefresh}
+                    resetSelection={resetSelection}
+                    isUnDeleteAction={isUnDeleteAction}
+                />
+            ),
+            label,
+            disabled: false,
+        };
+
+        const compareAction: SelectionAction = {
+            icon: newSelection => {
+                const isDisabled =
+                    newSelection.selectCount <= 1 || newSelection.selectAll;
+                if (isDisabled) {
+                    return <CompareArrowsIcon color="disabled" />;
+                }
+                const instancesIds = newSelection.selectedItems
+                    .map(s => s.id)
+                    .join(',');
+                return (
+                    <LinkWithLocation
+                        style={{ color: 'inherit', display: 'flex' }}
+                        to={`/${baseUrls.compareInstances}/instanceIds/${instancesIds}`}
+                    >
+                        <CompareArrowsIcon />
+                    </LinkWithLocation>
+                );
+            },
+            label: formatMessage(MESSAGES.compare),
+            disabled: false,
+        };
+
+        const actions: SelectionAction[] = [compareAction];
+        if (userHasPermission(Permission.SUBMISSIONS_UPDATE, currentUser)) {
+            actions.push(exportAction, deleteAction);
+        }
+        return actions;
+    }, [
+        classes.iconDisabled,
+        currentUser,
+        filters,
+        formatMessage,
+        isUnDeleteAction,
         label,
-        disabled: false,
-    };
-
-    const compareAction: SelectionAction = {
-        icon: newSelection => {
-            const isDisabled =
-                newSelection.selectCount <= 1 || newSelection.selectAll;
-            if (isDisabled) {
-                return <CompareArrowsIcon color="disabled" />;
-            }
-            const instancesIds = newSelection.selectedItems
-                .map(s => s.id)
-                .join(',');
-            return (
-                <Link
-                    style={{ color: 'inherit', display: 'flex' }}
-                    to={`${baseUrls.compareInstances}/instanceIds/${instancesIds}`}
-                >
-                    <CompareArrowsIcon />
-                </Link>
-            );
-        },
-        label: formatMessage(MESSAGES.compare),
-        disabled: false,
-    };
-
-    const actions: SelectionAction[] = [compareAction];
-    if (userHasPermission(Permission.SUBMISSIONS_UPDATE, currentUser)) {
-        actions.push(exportAction, deleteAction);
-    }
-    return actions;
+        setForceRefresh,
+    ]);
 };
 
 const asBackendStatus = status => {
@@ -527,6 +622,14 @@ export const getFilters = (
         }
     });
     return filters;
+};
+
+export const useGetFilters = (
+    params: Record<string, string>,
+): Record<string, string> => {
+    return useMemo(() => {
+        return getFilters(params);
+    }, [params]);
 };
 
 const defaultOrder = 'updated_at';

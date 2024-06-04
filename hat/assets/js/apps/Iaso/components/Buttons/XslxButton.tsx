@@ -1,5 +1,5 @@
 /* eslint-disable react/require-default-props */
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, ReactElement } from 'react';
 import { Button } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import ExcellSvg from '../svg/ExcellSvgComponent';
@@ -7,6 +7,8 @@ import ExcellSvg from '../svg/ExcellSvgComponent';
 type Props = {
     xlsxUrl: string;
     variant?: 'contained' | 'outlined' | 'text';
+    children?: ReactElement;
+    disabled?: boolean;
 };
 
 const styles = theme => ({
@@ -27,6 +29,8 @@ const useStyles = makeStyles(styles);
 
 export const XlsxButton: FunctionComponent<Props> = ({
     xlsxUrl,
+    children,
+    disabled = false,
     variant = 'contained',
 }) => {
     const classes = useStyles();
@@ -34,12 +38,13 @@ export const XlsxButton: FunctionComponent<Props> = ({
         <Button
             data-test="xlsx-export-button"
             variant={variant}
+            disabled={disabled}
             className={classes.button}
             color="primary"
             href={xlsxUrl}
         >
             <ExcellSvg className={classes.icon} />
-            XLSX
+            {children ?? 'XLSX'}
         </Button>
     );
 };

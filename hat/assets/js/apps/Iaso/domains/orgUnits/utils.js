@@ -1,14 +1,11 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 
-import { textPlaceholder, useSafeIntl, createUrl } from 'bluesquare-components';
-import { getChipColors } from '../../constants/chipColors';
-import { baseUrls } from '../../constants/urls';
+import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 
-import { locationLimitMax } from './constants/orgUnitConstants';
 import { orderOrgUnitsByDepth } from '../../utils/map/mapUtils.ts';
 
+import { useGetOrgUnitValidationStatus } from './hooks/utils/useGetOrgUnitValidationStatus.ts';
 import MESSAGES from './messages';
-import { useGetValidationStatus } from '../forms/hooks/useGetValidationStatus.ts';
 
 export const fetchLatestOrgUnitLevelId = levels => {
     if (levels) {
@@ -72,6 +69,8 @@ export const orgUnitLabelString = (
     return message;
 };
 
+// Not really a React component because it returns strings.
+// TODO refactor with strings as children of span> or <p>, or as hook
 export const OrgUnitLabel = ({ orgUnit, withType, withSource = false }) => {
     const intl = useSafeIntl();
     return orgUnitLabelString(
@@ -192,13 +191,18 @@ export const getOrgUnitAncestors = orgUnit => {
 };
 
 export const useGetStatusMessage = () => {
-    const { data: validationStatusOptions } = useGetValidationStatus();
-    if (!validationStatusOptions) return () => '';
-    const getStatusMessage = status =>
-        validationStatusOptions.find(option => option.value === status)?.label;
+    const { data: validationStatusOptions } = useGetOrgUnitValidationStatus();
+    const getStatusMessage = useCallback(
+        status => {
+            if (!validationStatusOptions) return '';
+            return validationStatusOptions.find(
+                option => option.value === status,
+            )?.label;
+        },
+        [validationStatusOptions],
+    );
     return getStatusMessage;
 };
-
 export const getOrgUnitGroups = orgUnit => (
     <span>
         {orgUnit.groups &&
@@ -247,19 +251,3 @@ export const compareGroupVersions = (a, b) => {
     }
     return comparison;
 };
-
-export const getOrgUnitsUrl = accountId =>
-    `${baseUrls.orgUnits}${createUrl(
-        {
-            accountId,
-            locationLimit: locationLimitMax,
-            order: 'id',
-            pageSize: 50,
-            page: 1,
-            searchTabIndex: 0,
-            searches: `[{"validation_status":"all", "color":"${getChipColors(
-                0,
-            ).replace('#', '')}"}]`,
-        },
-        '',
-    )}`;

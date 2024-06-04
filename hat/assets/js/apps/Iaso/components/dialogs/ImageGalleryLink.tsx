@@ -1,8 +1,7 @@
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, LinkWithLocation } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
-import { Link } from 'react-router';
 
 const useStyles = makeStyles(theme => ({
     link: {
@@ -28,7 +27,9 @@ export const ImageGalleryLink: FunctionComponent<Props> = ({
 
     return (
         <Box className={classes.link}>
-            <Link to={url}>{formatMessage(urlLabel)}</Link>
+            <LinkWithLocation to={url}>
+                {formatMessage(urlLabel)}
+            </LinkWithLocation>
         </Box>
     );
 };

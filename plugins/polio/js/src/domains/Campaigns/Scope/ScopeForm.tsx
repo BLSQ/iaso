@@ -77,44 +77,43 @@ export const ScopeForm: FunctionComponent = () => {
     }, [currentTab, rounds, scopePerRound, sortedRounds, values.scopes]);
 
     const filteredDistricts: FilteredDistricts[] | undefined = useMemo(() => {
-        if (districtShapes && regionShapes) {
-            let filtered: FilteredDistricts[] = districtShapes.map(district => {
+        if (!districtShapes || !regionShapes) return undefined;
+
+        const orgUnitIdToVaccine = new Map();
+        if (isPolio && scopes) {
+            scopes.forEach(scope => {
+                scope.group.org_units.forEach(ouId => {
+                    orgUnitIdToVaccine.set(ouId, scope.vaccine);
+                });
+            });
+        }
+        const filtered = districtShapes
+            .filter(district => {
+                const isInScope = scopes.some(sc =>
+                    sc.group.org_units.includes(district.id),
+                );
+                return (
+                    (district.validation_status === 'VALID' || isInScope) &&
+                    (!searchScope || isInScope) &&
+                    (!debouncedSearch ||
+                        district.name
+                            .toLowerCase()
+                            .includes(debouncedSearch.toLowerCase()))
+                );
+            })
+            .map(district => {
                 const scope = findScopeWithOrgUnit(scopes, district.id);
+                const vaccineName =
+                    orgUnitIdToVaccine.get(district.id) || undefined;
                 return {
                     ...cloneDeep(district),
                     region: findRegion(district, regionShapes),
                     scope,
-                    vaccineName: scope?.vaccine,
+                    vaccineName,
                 };
-            }) as FilteredDistricts[];
-            if (scopes && isPolio) {
-                filtered.forEach((d, index) => {
-                    scopes.forEach(scope => {
-                        scope.group.org_units.forEach(ouId => {
-                            if (d.id === ouId) {
-                                filtered[index].vaccineName = scope.vaccine;
-                            }
-                        });
-                    });
-                });
-            }
+            });
 
-            if (searchScope) {
-                filtered = filtered.filter(d =>
-                    scopes.some(scope => scope.group.org_units.includes(d.id)),
-                );
-            }
-
-            if (debouncedSearch !== '') {
-                filtered = filtered.filter(d =>
-                    d.name
-                        .toLowerCase()
-                        .includes(debouncedSearch.toLowerCase()),
-                );
-            }
-            return filtered;
-        }
-        return undefined;
+        return filtered;
     }, [
         districtShapes,
         regionShapes,

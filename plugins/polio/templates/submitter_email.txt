@@ -1,9 +1,9 @@
 {% block content %} {% block text %}
 Thank you for your submission.
-The NEW status of the POLIO campaign {{ campaign.obr_name }} has been updated to:{{ node.label }}
+The NEW status of the POLIO campaign {{ campaign.obr_name }} for {% for round in rounds%}Round {{ round.number }}{% if not forloop.last %}, {% endif %}{% endfor %} has been updated to: {{ node.label }}
 {% endblock %}
 
-For additional information, please, consult the campaign page : {{ budget_url|safe }}
+For additional information, please, consult the budget page: {{ budget_url|safe }}
 
 {% endblock content %}
 

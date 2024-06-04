@@ -1,16 +1,16 @@
 import { UseQueryResult } from 'react-query';
 
 import { Pagination } from 'bluesquare-components';
-import { useSnackQuery } from '../../../libs/apiHooks';
 import { getRequest } from '../../../libs/Api';
+import { useSnackQuery } from '../../../libs/apiHooks';
 
+import { makeUrlWithParams } from '../../../libs/utils';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { OrgunitTypes } from '../../orgUnits/types/orgunitTypes';
-import { makeUrlWithParams } from '../../../libs/utils';
-import { RegistryDetailParams } from '../types';
+import { RegistryParams } from '../types';
 
 export const useGetOrgUnit = (
-    orgUnitId: string,
+    orgUnitId?: string,
 ): UseQueryResult<OrgUnit, Error> => {
     const queryKey: any[] = ['orgUnit', orgUnitId];
     return useSnackQuery({
@@ -18,6 +18,10 @@ export const useGetOrgUnit = (
         queryFn: () => getRequest(`/api/orgunits/${orgUnitId}/`),
         options: {
             retry: false,
+            enabled: Boolean(orgUnitId),
+            keepPreviousData: true,
+            staleTime: 1000 * 60 * 15, // in MS
+            cacheTime: 1000 * 60 * 5,
         },
     });
 };
@@ -28,7 +32,7 @@ export type OrgUnitListChildren = Pagination & {
 
 export const useGetOrgUnitListChildren = (
     orgUnitParentId: string,
-    params: RegistryDetailParams,
+    params: RegistryParams,
     orgUnitTypes?: OrgunitTypes,
 ): UseQueryResult<OrgUnitListChildren, Error> => {
     let order = '-name';
@@ -62,6 +66,8 @@ export const useGetOrgUnitListChildren = (
         options: {
             keepPreviousData: true,
             enabled: Boolean(orgUnitParentId && orgUnitTypes),
+            staleTime: 1000 * 60 * 15, // in MS
+            cacheTime: 1000 * 60 * 5,
             select: data => {
                 if (!data) return undefined;
                 const orgunits: OrgUnit[] = data.orgunits.filter(
@@ -99,6 +105,8 @@ export const useGetOrgUnitsMapChildren = (
         queryKey: ['orgUnits', params],
         queryFn: () => getRequest(url),
         options: {
+            staleTime: 1000 * 60 * 15, // in MS
+            cacheTime: 1000 * 60 * 5,
             enabled: Boolean(orgUnitParentId && orgUnitTypes),
             select: (data: Result): OrgUnit[] => data?.orgUnits || [],
         },

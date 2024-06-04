@@ -1,6 +1,6 @@
 import React from 'react';
 
-import App from './index';
+import App from './index.tsx';
 import { renderWithStore } from '../../../../test/utils/redux';
 
 describe('App', () => {

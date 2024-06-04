@@ -36,6 +36,19 @@ export const userHasOneOfPermissions = (permissions = [], user) => {
     });
     return isAuthorised;
 };
+/**
+ * Check if user has all the specified permissions.
+ *
+ * @param {Array} permissions - Array of permissions to check.
+ * @param {Object} user - User object to check permissions against.
+ * @return {Boolean} - Returns true if user has all the permissions, otherwise false.
+ */
+export const userHasAllPermissions = (permissions, user) => {
+    if (!user || !Array.isArray(permissions) || permissions.length === 0) {
+        return false;
+    }
+    return permissions.every(permission => userHasPermission(permission, user));
+};
 
 /**
  * list all submenu permission

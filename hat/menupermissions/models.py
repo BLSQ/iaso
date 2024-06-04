@@ -16,6 +16,7 @@ If you don't follow these steps you will break the frontend!
 The frontend is getting the list of existing permission from the
 `/api/permissions/` endpoint
 """
+
 from django.conf import LazySettings
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -43,14 +44,16 @@ _ORG_UNITS_CHANGE_REQUEST_REVIEW = "iaso_org_unit_change_request_review"
 _PAGES = "iaso_pages"
 _PAGE_WRITE = "iaso_page_write"
 _PAYMENTS = "iaso_payments"
-_PLANNING = "iaso_planning"
+_PLANNING_WRITE = "iaso_planning_write"
+_PLANNING_READ = "iaso_planning_read"
 _POLIO = "iaso_polio"
 _POLIO_BUDGET = "iaso_polio_budget"
 _POLIO_BUDGET_ADMIN = "iaso_polio_budget_admin"
 _POLIO_CONFIG = "iaso_polio_config"
 _POLIO_NOTIFICATIONS = "iaso_polio_notifications"
 _PROJECTS = "iaso_projects"
-_REGISTRY = "iaso_registry"
+_REGISTRY_WRITE = "iaso_registry_write"
+_REGISTRY_READ = "iaso_registry_read"
 _REPORTS = "iaso_reports"
 _SOURCE_WRITE = "iaso_write_sources"
 _SOURCES = "iaso_sources"
@@ -127,7 +130,8 @@ ORG_UNITS_CHANGE_REQUEST_REVIEW = _PREFIX + _ORG_UNITS_CHANGE_REQUEST_REVIEW
 PAYMENTS = _PREFIX + _PAYMENTS
 PAGES = _PREFIX + _PAGES
 PAGE_WRITE = _PREFIX + _PAGE_WRITE
-PLANNING = _PREFIX + _PLANNING
+PLANNING_WRITE = _PREFIX + _PLANNING_WRITE
+PLANNING_READ = _PREFIX + _PLANNING_READ
 POLIO = _PREFIX + _POLIO
 POLIO_BUDGET = _PREFIX + _POLIO_BUDGET
 POLIO_BUDGET_ADMIN = _PREFIX + _POLIO_BUDGET_ADMIN
@@ -140,7 +144,8 @@ POLIO_VACCINE_STOCK_MANAGEMENT_WRITE = _PREFIX + _POLIO_VACCINE_STOCK_MANAGEMENT
 POLIO_VACCINE_SUPPLY_CHAIN_READ = _PREFIX + _POLIO_VACCINE_SUPPLY_CHAIN_READ
 POLIO_VACCINE_SUPPLY_CHAIN_WRITE = _PREFIX + _POLIO_VACCINE_SUPPLY_CHAIN_WRITE
 PROJECTS = _PREFIX + _PROJECTS
-REGISTRY = _PREFIX + _REGISTRY
+REGISTRY_WRITE = _PREFIX + _REGISTRY_WRITE
+REGISTRY_READ = _PREFIX + _REGISTRY_READ
 REPORTS = _PREFIX + _REPORTS
 SOURCE_WRITE = _PREFIX + _SOURCE_WRITE
 SOURCES = _PREFIX + _SOURCES
@@ -222,7 +227,8 @@ class CustomPermissionSupport(models.Model):
             (_MODULES, _("modules")),
             (_COMPLETENESS, _("Complétude des données")),
             (_ORG_UNITS, _("Unités d'organisations")),
-            (_REGISTRY, _("Registre")),
+            (_REGISTRY_WRITE, _("Editer le Registre")),
+            (_REGISTRY_READ, _("Lire le Registre")),
             (_LINKS, _("Correspondances sources")),
             (_USERS_ADMIN, _("Users")),
             (_USERS_MANAGED, _("Users managed")),
@@ -235,7 +241,8 @@ class CustomPermissionSupport(models.Model):
             (_POLIO_NOTIFICATIONS, _("Polio notifications")),
             (_SUBMISSIONS, _("Soumissions")),
             (_SUBMISSIONS_UPDATE, _("Editer soumissions")),
-            (_PLANNING, _("Planning")),
+            (_PLANNING_WRITE, _("Editer le planning")),
+            (_PLANNING_READ, _("Lire le planning")),
             (_REPORTS, _("Reports")),
             (_TEAMS, _("Equipes")),
             (_ASSIGNMENTS, _("Attributions")),

@@ -106,7 +106,7 @@ class OrgUnitSerializer(TimestampSerializerMixin, serializers.ModelSerializer):
         creator = None
         if org_unit.creator is not None:
             if org_unit.creator.first_name is not None and org_unit.creator.last_name is not None:
-                creator = f"{org_unit.creator.username} ( {org_unit.creator.first_name} {org_unit.creator.last_name} )"
+                creator = f"{org_unit.creator.username} ({org_unit.creator.first_name} {org_unit.creator.last_name})"
             else:
                 creator = org_unit.creator.username
         return creator

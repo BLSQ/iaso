@@ -1,5 +1,3 @@
-import React, { FunctionComponent, useMemo } from 'react';
-import { useSafeIntl } from 'bluesquare-components';
 import {
     Card,
     CardContent,
@@ -8,14 +6,16 @@ import {
     TableCell,
     TableRow,
 } from '@mui/material';
+import { useSafeIntl } from 'bluesquare-components';
+import React, { FunctionComponent, useMemo } from 'react';
 
+import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
+import { UserCell } from '../../../../components/Cells/UserCell';
 import MESSAGES from '../messages';
 import {
-    OrgUnitChangeRequestDetails,
     ChangeRequestValidationStatus,
+    OrgUnitChangeRequestDetails,
 } from '../types';
-import { UserCell } from '../../../../components/Cells/UserCell';
-import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
 
 type Props = {
     changeRequest?: OrgUnitChangeRequestDetails;
@@ -143,16 +143,16 @@ export const ReviewOrgUnitChangesInfos: FunctionComponent<Props> = ({
                             </TableCell>
                         </TableRow>
 
-                        {changeRequest.status === 'rejected' && (
-                            <TableRow>
-                                <TableCell sx={styles.label}>
-                                    {formatMessage(MESSAGES.comment)}:
-                                </TableCell>
-                                <TableCell sx={styles.value}>
-                                    {changeRequest.rejection_comment}
-                                </TableCell>
-                            </TableRow>
-                        )}
+                        <TableRow>
+                            <TableCell sx={styles.label}>
+                                {formatMessage(MESSAGES.comment)}:
+                            </TableCell>
+                            <TableCell sx={styles.value}>
+                                {changeRequest.rejection_comment !== ''
+                                    ? changeRequest.rejection_comment
+                                    : '--'}
+                            </TableCell>
+                        </TableRow>
                     </TableBody>
                 </Table>
             </CardContent>

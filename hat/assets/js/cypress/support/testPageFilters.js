@@ -12,14 +12,14 @@ export const testPageFilters = (
     buttonSelector = '[data-test="search-button"]',
 ) => {
     Object.keys(filters).forEach(keyName => {
-        const { value, type, selector } = filters[keyName];
+        const { value, type, selector, clear } = filters[keyName];
         switch (type) {
             case 'text': {
                 cy.get(selector).type('{selectall}').type(value);
                 break;
             }
             case 'multi': {
-                cy.fillMultiSelect(selector, value, false);
+                cy.fillMultiSelect(selector, value, clear ?? false);
                 break;
             }
             case 'tree': {

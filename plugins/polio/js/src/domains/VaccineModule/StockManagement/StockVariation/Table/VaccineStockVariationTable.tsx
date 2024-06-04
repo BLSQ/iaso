@@ -1,8 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import { Column, UrlParams } from 'bluesquare-components';
-import { STOCK_VARIATION } from '../../../../../constants/routes';
 import { SimpleTableWithDeepLink } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/tables/SimpleTableWithDeepLink';
 import { StockVariationTab } from '../../types';
+import { baseUrls } from '../../../../../constants/urls';
 
 type Props = {
     params: Partial<UrlParams>;
@@ -29,7 +29,7 @@ export const VaccineStockVariationTable: FunctionComponent<Props> = ({
             paramsPrefix={paramsPrefix}
             columns={columns}
             defaultSorted={defaultSorted}
-            baseUrl={STOCK_VARIATION}
+            baseUrl={baseUrls.stockVariation}
             marginTop={false}
             elevation={0}
             extraProps={{

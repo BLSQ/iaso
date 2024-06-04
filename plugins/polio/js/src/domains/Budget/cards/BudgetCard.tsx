@@ -11,15 +11,16 @@ import {
 import { makeStyles } from '@mui/styles';
 import {
     useSafeIntl,
-    IconButton as IconButtonComponent,
+    IconButton,
     IntlFormatMessage,
 } from 'bluesquare-components';
 import classnames from 'classnames';
-
-import { BUDGET_DETAILS } from '../../../constants/routes';
+import { baseUrls } from '../../../constants/urls';
+import { DisplayIfUserHasPerm } from '../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
 import MESSAGES from '../../../constants/messages';
 import { WARNING_COLOR } from '../../../styles/constants';
 import { Budget } from '../types';
+import { EditBudgetProcessModal } from '../BudgetProcess/EditBudgetProcessModal';
 
 type Props = {
     budget: Budget;
@@ -48,7 +49,7 @@ const useStyles = makeStyles(theme => ({
     country: { color: theme.palette.grey[700], marginTop: theme.spacing(0.5) },
 }));
 
-const baseUrl = BUDGET_DETAILS;
+const baseUrl = baseUrls.budgetDetails;
 export const BudgetCard: FunctionComponent<Props> = ({ budget }) => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
@@ -89,15 +90,24 @@ export const BudgetCard: FunctionComponent<Props> = ({ budget }) => {
                     xs={2}
                     direction="column"
                     justifyContent="center"
-                    alignItems="flex-start"
+                    alignItems="center"
                 >
                     <Divider orientation="vertical" />
 
-                    <IconButtonComponent
+                    <IconButton
                         icon="remove-red-eye"
                         tooltipMessage={MESSAGES.details}
-                        url={`${baseUrl}/campaignName/${budget.obr_name}/campaignId/${budget.id}`}
+                        url={`/${baseUrl}/campaignName/${budget.obr_name}/budgetProcessId/${budget.id}`}
                     />
+
+                    <DisplayIfUserHasPerm
+                        permissions={['iaso_polio_budget_admin']}
+                    >
+                        <EditBudgetProcessModal
+                            budgetProcess={budget}
+                            iconProps={{}}
+                        />
+                    </DisplayIfUserHasPerm>
                 </Grid>
             </Grid>
         </Card>

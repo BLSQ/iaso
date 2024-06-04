@@ -84,14 +84,6 @@ describe('Entities', () => {
         cy.intercept('GET', '/api/profiles', {
             fixture: 'profiles/list-not-paginated.json',
         }).as('getProfiles');
-
-        cy.intercept(
-            'GET',
-            '/api/orgunits/treesearch/?&rootsForUser=true&defaultVersion=true&validation_status=all&ignoreEmptyNames=true',
-            {
-                fixture: 'orgunits/list.json',
-            },
-        );
         cy.intercept('GET', '/api/orgunits/3', {
             fixture: 'orgunits/details.json',
         });

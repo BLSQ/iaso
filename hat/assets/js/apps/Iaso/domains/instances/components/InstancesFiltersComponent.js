@@ -1,5 +1,5 @@
-import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { Box, Button, Grid, Typography } from '@mui/material';
@@ -7,42 +7,43 @@ import { makeStyles } from '@mui/styles';
 
 import Search from '@mui/icons-material/Search';
 import {
-    commonStyles,
-    useSafeIntl,
     QueryBuilderInput,
-    useSkipEffectOnMount,
+    commonStyles,
     useHumanReadableJsonLogic,
+    useSafeIntl,
+    useSkipEffectOnMount,
 } from 'bluesquare-components';
-import InputComponent from '../../../components/forms/InputComponent.tsx';
 
-import { periodTypeOptions } from '../../periods/constants';
-import { isValidPeriod } from '../../periods/utils';
 import DatesRange from '../../../components/filters/DatesRange';
+import InputComponent from '../../../components/forms/InputComponent.tsx';
 import PeriodPicker from '../../periods/components/PeriodPicker.tsx';
+import { periodTypeOptions } from '../../periods/constants';
 import { Period } from '../../periods/models.ts';
+import { isValidPeriod } from '../../periods/utils';
 
-import { INSTANCE_STATUSES } from '../constants';
 import { setInstancesFilterUpdated } from '../actions';
+import { INSTANCE_STATUSES } from '../constants';
 
-import { useGetFormDescriptor } from '../../forms/fields/hooks/useGetFormDescriptor.ts';
-import { useGetForms, useInstancesFiltersData } from '../hooks';
 import { getInstancesFilterValues, useFormState } from '../../../hooks/form';
-import { useGetQueryBuildersFields } from '../../forms/fields/hooks/useGetQueryBuildersFields.ts';
+import { useGetFormDescriptor } from '../../forms/fields/hooks/useGetFormDescriptor.ts';
 import { useGetQueryBuilderListToReplace } from '../../forms/fields/hooks/useGetQueryBuilderListToReplace.ts';
+import { useGetQueryBuildersFields } from '../../forms/fields/hooks/useGetQueryBuildersFields.ts';
+import { useGetForms, useInstancesFiltersData } from '../hooks';
 import { parseJson } from '../utils/jsonLogicParse.ts';
 
-import MESSAGES from '../messages';
+import { Popper } from '../../forms/fields/components/Popper.tsx';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
-import { Popper } from '../../forms/fields/components/Popper.tsx';
+import MESSAGES from '../messages';
 
+import { InputWithInfos } from '../../../components/InputWithInfos.tsx';
+import { AsyncSelect } from '../../../components/forms/AsyncSelect.tsx';
+import { UserOrgUnitRestriction } from '../../../components/UserOrgUnitRestriction.tsx';
 import { LocationLimit } from '../../../utils/map/LocationLimit';
-import { UserOrgUnitRestriction } from './UserOrgUnitRestriction.tsx';
-import { ColumnSelect } from './ColumnSelect.tsx';
 import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings.ts';
 import { getUsersDropDown } from '../hooks/requests/getUsersDropDown.tsx';
-import { AsyncSelect } from '../../../components/forms/AsyncSelect.tsx';
 import { useGetProfilesDropdown } from '../hooks/useGetProfilesDropdown.tsx';
+import { ColumnSelect } from './ColumnSelect.tsx';
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
     value: status,
@@ -60,6 +61,7 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
+// TODO source full list of params elsewhere
 const filterDefault = params => ({
     ...params,
     mapResults: params.mapResults ? 3000 : params.mapResults,
@@ -273,20 +275,26 @@ const InstancesFiltersComponent = ({
                         onErrorChange={setTextSearchError}
                         blockForbiddenChars
                     />
-                    <InputComponent
-                        keyValue="formIds"
-                        clearable
-                        multi
-                        onChange={handleFormChange}
-                        value={formState.formIds.value || null}
-                        type="select"
-                        options={formsList.map(t => ({
-                            label: t.name,
-                            value: t.id,
-                        }))}
-                        label={MESSAGES.forms}
-                        loading={fetchingForms}
-                    />
+                    <InputWithInfos
+                        infos={formatMessage(
+                            MESSAGES.searchSubmissionFormsParamsInfo,
+                        )}
+                    >
+                        <InputComponent
+                            keyValue="formIds"
+                            clearable
+                            multi
+                            onChange={handleFormChange}
+                            value={formState.formIds.value || null}
+                            type="select"
+                            options={formsList.map(t => ({
+                                label: t.name,
+                                value: t.id,
+                            }))}
+                            label={MESSAGES.forms}
+                            loading={fetchingForms}
+                        />
+                    </InputWithInfos>
                     {formState.formIds.value?.split(',').length === 1 && (
                         <QueryBuilderInput
                             label={MESSAGES.queryBuilder}
@@ -358,7 +366,7 @@ const InstancesFiltersComponent = ({
                             onConfirm={orgUnit =>
                                 handleFormChange(
                                     'levels',
-                                    orgUnit ? [orgUnit.id] : undefined,
+                                    orgUnit ? orgUnit.id : undefined,
                                 )
                             }
                             initialSelection={initialOrgUnit}

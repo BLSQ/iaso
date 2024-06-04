@@ -6,12 +6,12 @@ import {
     commonStyles,
     LoadingSpinner,
     useSafeIntl,
+    useGoBack,
 } from 'bluesquare-components';
 import omit from 'lodash/omit';
-import PropTypes from 'prop-types';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import Logs from '../../components/logs/LogsComponent';
 import TopBar from '../../components/nav/TopBarComponent';
 import SingleTable from '../../components/tables/SingleTable';
@@ -20,7 +20,6 @@ import {
     onlyChildrenParams,
     orgUnitFiltersWithPrefix,
 } from '../../constants/filters';
-import { redirectTo, redirectToReplace } from '../../routing/actions.ts';
 import { baseUrls } from '../../constants/urls';
 import {
     deleteForm,
@@ -30,7 +29,7 @@ import {
     fetchOrgUnitsList,
     saveLink,
 } from '../../utils/requests';
-import formsTableColumns from '../forms/config';
+import { useFormsTableColumns } from '../forms/config';
 import LinksDetails from '../links/components/LinksDetailsComponent';
 import { linksTableColumns } from '../links/config';
 import { resetOrgUnits } from './actions';
@@ -49,9 +48,9 @@ import {
     getAliasesArrayFromString,
     getLinksSources,
     getOrgUnitsTree,
-    getOrgUnitsUrl,
 } from './utils';
-import { useCurrentUser } from '../../utils/usersUtils.ts';
+import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
+import { useRedirectToReplace } from 'bluesquare-components';
 
 const baseUrl = baseUrls.orgUnitDetails;
 const useStyles = makeStyles(theme => ({
@@ -108,17 +107,17 @@ const tabs = [
     'comments',
 ];
 
-const OrgUnitDetail = ({ params, router }) => {
+const OrgUnitDetail = () => {
     const classes = useStyles();
+    const params = useParamsObject(baseUrl);
+    const goBack = useGoBack(baseUrls.orgUnits);
     const dispatch = useDispatch();
     const { mutateAsync: saveOu, isLoading: savingOu } = useSaveOrgUnit();
     const queryClient = useQueryClient();
     const { formatMessage } = useSafeIntl();
     const refreshOrgUnitQueryCache = useRefreshOrgUnit();
     const childrenColumns = useOrgUnitsTableColumns(classes);
-    const prevPathname =
-        useSelector(state => state.routerCustom.prevPathname) || null;
-    const currentUser = useCurrentUser();
+    const redirectToReplace = useRedirectToReplace();
 
     const [currentOrgUnit, setCurrentOrgUnit] = useState(null);
     const [tab, setTab] = useState(params.tab ? params.tab : 'infos');
@@ -165,7 +164,7 @@ const OrgUnitDetail = ({ params, router }) => {
             ...params,
             levels: null,
         };
-        dispatch(redirectToReplace(baseUrl, newParams));
+        redirectToReplace(baseUrl, newParams);
         queryClient.invalidateQueries('currentOrgUnit');
     };
 
@@ -196,11 +195,11 @@ const OrgUnitDetail = ({ params, router }) => {
                     ...params,
                     tab: newTab,
                 };
-                dispatch(redirectToReplace(baseUrl, newParams));
+                redirectToReplace(baseUrl, newParams);
             }
             setTab(newTab);
         },
-        [params, dispatch],
+        [params, redirectToReplace],
     );
 
     const handleChangeShape = useCallback(
@@ -226,6 +225,11 @@ const OrgUnitDetail = ({ params, router }) => {
         },
         [currentOrgUnit],
     );
+
+    const formsTableColumns = useFormsTableColumns({
+        deleteForm: handleDeleteForm,
+        orgUnitId: params.orgUnitId,
+    });
 
     const {
         algorithms,
@@ -290,12 +294,10 @@ const OrgUnitDetail = ({ params, router }) => {
                     setOrgUnitLocationModified(false);
                     dispatch(resetOrgUnits());
                     if (isNewOrgunit) {
-                        dispatch(
-                            redirectToReplace(baseUrl, {
-                                ...params,
-                                orgUnitId: ou.id,
-                            }),
-                        );
+                        redirectToReplace(baseUrl, {
+                            ...params,
+                            orgUnitId: ou.id,
+                        });
                     }
                     refreshOrgUnitQueryCache(ou);
                     onSuccess(ou);
@@ -307,6 +309,7 @@ const OrgUnitDetail = ({ params, router }) => {
             dispatch,
             isNewOrgunit,
             params,
+            redirectToReplace,
             refreshOrgUnitQueryCache,
             saveOu,
         ],
@@ -336,11 +339,11 @@ const OrgUnitDetail = ({ params, router }) => {
                     levels,
                 };
                 if (params.levels !== levels.join(',') && levels.length > 0) {
-                    dispatch(redirectToReplace(baseUrl, newParams));
+                    redirectToReplace(baseUrl, newParams);
                 }
             }
         }
-    }, [originalOrgUnit, dispatch, isNewOrgunit, params]);
+    }, [originalOrgUnit, dispatch, isNewOrgunit, params, redirectToReplace]);
 
     // Set selected sources for current org unit
     useEffect(() => {
@@ -383,21 +386,7 @@ const OrgUnitDetail = ({ params, router }) => {
     ]);
     return (
         <section className={classes.root}>
-            <TopBar
-                title={title}
-                displayBackButton
-                goBack={() => {
-                    if (prevPathname) {
-                        setTimeout(() => {
-                            router.goBack();
-                        }, 300);
-                    } else {
-                        dispatch(
-                            redirectTo(getOrgUnitsUrl(params.accountId), {}),
-                        );
-                    }
-                }}
-            >
+            <TopBar title={title} displayBackButton goBack={goBack}>
                 {!isNewOrgunit && (
                     <Tabs
                         textColor="inherit"
@@ -516,13 +505,7 @@ const OrgUnitDetail = ({ params, router }) => {
                                         endPointPath="forms"
                                         propsToWatch={params.orgUnitId}
                                         fetchItems={fetchForms}
-                                        columns={formsTableColumns({
-                                            formatMessage,
-                                            user: currentUser,
-                                            deleteForm: handleDeleteForm,
-                                            orgUnitId: params.orgUnitId,
-                                            dispatch,
-                                        })}
+                                        columns={formsTableColumns}
                                         forceRefresh={forceSingleTableRefresh}
                                         onForceRefreshDone={() =>
                                             resetSingleTableForceRefresh()
@@ -637,11 +620,6 @@ const OrgUnitDetail = ({ params, router }) => {
             )}
         </section>
     );
-};
-
-OrgUnitDetail.propTypes = {
-    router: PropTypes.object.isRequired,
-    params: PropTypes.object.isRequired,
 };
 
 export default OrgUnitDetail;

@@ -67,6 +67,7 @@ class FormsSerializerTestCase(TestCase):
                 }
             ],
             "legend_threshold": self.form.legend_threshold,
+            "change_request_mode": self.form.change_request_mode,
         }
 
         with self.assertNumQueries(8):

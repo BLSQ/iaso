@@ -194,7 +194,8 @@ export const useGetStatusMessage = () => {
     const { data: validationStatusOptions } = useGetValidationStatus();
     if (!validationStatusOptions) return () => '';
     const getStatusMessage = status =>
-        validationStatusOptions.find(option => option.value === status)?.label;
+        validationStatusOptions.find(option => option.value === status)
+            ?.label ?? '';
     return getStatusMessage;
 };
 

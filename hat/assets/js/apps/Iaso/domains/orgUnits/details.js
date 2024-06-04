@@ -13,14 +13,14 @@ import omit from 'lodash/omit';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { useDispatch } from 'react-redux';
-import {Logs} from './history/LogsComponent';
+import { Logs } from './history/LogsComponent';
 import TopBar from '../../components/nav/TopBarComponent';
 import SingleTable from '../../components/tables/SingleTable';
 import {
     onlyChildrenParams,
     orgUnitFiltersWithPrefix,
 } from '../../constants/filters';
-import { baseUrls, LINKS_PREFIX, FORMS_PREFIX } from '../../constants/urls.ts';
+import { baseUrls, LINKS_PREFIX, FORMS_PREFIX, OU_CHILDREN_PREFIX } from '../../constants/urls.ts';
 import {
     fetchAssociatedOrgUnits,
     fetchOrgUnitsList,
@@ -46,6 +46,9 @@ import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
 import { FormsTable } from '../forms/components/FormsTable.tsx';
 import { LinksTable } from '../links/components/LinksTable.tsx';
 import { LinksFilter } from './details/Links/LinksFilter.tsx';
+import { OrgUnitChildrenFilters } from './details/Children/OrgUnitChildrenFilters';
+import { OrgUnitChildrenTable } from './details/Children/OrgUnitChildrenTable';
+import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 
 const baseUrl = baseUrls.orgUnitDetails;
 const useStyles = makeStyles(theme => ({
@@ -139,6 +142,17 @@ const OrgUnitDetail = () => {
         const tableFormParams = { orgUnitId };
         const formKeys = Object.keys(rest).filter(k =>
             k.includes(LINKS_PREFIX),
+        );
+        formKeys.forEach(formKey => {
+            tableFormParams[formKey] = rest[formKey];
+        });
+        return tableFormParams;
+    }, [params]);
+    const childrenParams = useMemo(() => {
+        const { orgUnitId, ...rest } = params;
+        const tableFormParams = { orgUnitId };
+        const formKeys = Object.keys(rest).filter(k =>
+            k.includes(OU_CHILDREN_PREFIX),
         );
         formKeys.forEach(formKey => {
             tableFormParams[formKey] = rest[formKey];
@@ -501,6 +515,10 @@ const OrgUnitDetail = () => {
                                         : classes.hiddenOpacity
                                 }
                             >
+                                <Box className={classes.containerFullHeightNoTabPadded}>
+                                <OrgUnitChildrenFilters baseUrl={baseUrl} params={childrenParams} groups={groups}/>
+                                <OrgUnitChildrenTable baseUrl={baseUrl} params={childrenParams} paramsPrefix={OU_CHILDREN_PREFIX}/>
+                       
                                 <SingleTable
                                     apiParams={{
                                         ...onlyChildrenParams(
@@ -526,6 +544,7 @@ const OrgUnitDetail = () => {
                                     fetchItems={fetchOrgUnitsList}
                                     columns={childrenColumns}
                                 />
+                                     </Box>
                             </div>
                             {tab === 'links' && (
                                 <Box

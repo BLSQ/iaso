@@ -27,14 +27,14 @@ export const useOrgUnitDetailData = (
             },
         );
     const groupsUrl = useMemo(() => {
-        const basUrl = '/api/groups/';
+        const baseUrl = '/api/groups/';
         if (isNewOrgunit) {
-            return `${basUrl}?&defaultVersion=true`;
+            return `${baseUrl}?&defaultVersion=true`;
         }
         if (originalOrgUnit?.source_id) {
-            return `${basUrl}?&dataSource=${originalOrgUnit.source_id}`;
+            return `${baseUrl}?&dataSource=${originalOrgUnit.source_id}`;
         }
-        return basUrl;
+        return baseUrl;
     }, [isNewOrgunit, originalOrgUnit?.source_id]);
     const cacheOptions = {
         staleTime: 1000 * 60 * 15, // in MS
@@ -52,7 +52,7 @@ export const useOrgUnitDetailData = (
         { data: parentOrgUnit },
     ] = useSnackQueries([
         {
-            queryKey: ['groups'],
+            queryKey: ['groups', groupsUrl],
             queryFn: () => getRequest(groupsUrl),
             snackErrorMsg: MESSAGES.fetchGroupsError,
             options: {

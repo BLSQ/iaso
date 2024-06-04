@@ -549,6 +549,18 @@ const MESSAGES = defineMessages({
             // eslint-disable-next-line max-len
             'Use prefix “refs:” for external org unit ID search. Use prefix “ids:” for internal org unit ID search. You can also search multiple IDs at once, separated by a comma or a space. E.g. “ids: 123456, 654321” or “refs: O6uvpzGd5pu, ImspTQPwCqd”',
     },
+    textSearch: {
+        id: 'iaso.forms.textSearch',
+        defaultMessage: 'Text search',
+    },
+    shape: {
+        id: 'iaso.forms.shape',
+        defaultMessage: 'Shape',
+    },
+    onlyDirectChildren: {
+        id: 'iaso.orgUnits.onlyDirectChildren',
+        defaultMessage: 'Only Direct children',
+    },
 });
 
 export default MESSAGES;

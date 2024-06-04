@@ -2392,6 +2392,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Go to campaign',
         id: 'iaso.polio.lqas.goToCampaign',
     },
+    subActivities: {
+        defaultMessage: 'Sub-activities',
+        id: 'iaso.polio.subActivities',
+    },
 });
 
 export default MESSAGES;

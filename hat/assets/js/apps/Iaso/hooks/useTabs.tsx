@@ -9,9 +9,9 @@ import { useRedirectToReplace } from 'bluesquare-components';
 import { Optional } from '../types/utils';
 
 type UseTabsParams<T> = {
-    params: Record<string, Optional<string>>;
+    params?: Record<string, Optional<string>>;
     defaultTab: T;
-    baseUrl: string;
+    baseUrl?: string;
 };
 
 // T should be a union type of the possible string values for the Tabs
@@ -32,11 +32,13 @@ export const useTabs = <T,>({
 
     const handleChangeTab = useCallback(
         (_event, newTab) => {
-            const newParams = {
-                ...params,
-                tab: newTab,
-            };
-            redirectToReplace(baseUrl, newParams);
+            if (baseUrl && params) {
+                const newParams = {
+                    ...params,
+                    tab: newTab,
+                };
+                redirectToReplace(baseUrl, newParams);
+            }
             setTab(newTab);
         },
         [params, redirectToReplace, baseUrl],

@@ -64,19 +64,21 @@ export const Runs: FunctionComponent = () => {
                         iconProps={{}}
                     />
                 </Box>
-                <TableWithDeepLink
-                    baseUrl={baseUrl}
-                    params={params}
-                    columns={tableColumns}
-                    defaultSorted={[{ id: 'ended_at', desc: true }]}
-                    data={data?.runs ?? []}
-                    count={data?.count ?? 0}
-                    pages={data?.pages ?? 0}
-                    extraProps={{
-                        defaultPageSize: data?.limit ?? tableDefaults.limit,
-                        loading,
-                    }}
-                />
+                {data?.runs && (
+                    <TableWithDeepLink
+                        baseUrl={baseUrl}
+                        params={params}
+                        columns={tableColumns}
+                        defaultSorted={[{ id: 'ended_at', desc: true }]}
+                        data={data?.runs ?? []}
+                        count={data?.count ?? 0}
+                        pages={data?.pages ?? 0}
+                        extraProps={{
+                            defaultPageSize: data?.limit ?? tableDefaults.limit,
+                            loading,
+                        }}
+                    />
+                )}
             </Box>
         </>
     );

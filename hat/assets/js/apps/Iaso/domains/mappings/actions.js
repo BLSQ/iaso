@@ -142,26 +142,6 @@ export const applyUpdate = (mappingVersionId, payload) => dispatch => {
         });
 };
 
-export const fetchMappingVersions = params => dispatch => {
-    dispatch(fetchingMappingVersions(true));
-
-    let url = `/api/mappingversions/?order=${params.order}&limit=${params.pageSize}&page=${params.page}`;
-
-    if (params.formId) {
-        url += `&form_id=${params.formId}`;
-    }
-
-    return getRequest(url)
-        .then(res => dispatch(setMappingVersions(res)))
-        .catch(err =>
-            dispatch(
-                enqueueSnackbar(errorSnackBar('fetchMappingsError', null, err)),
-            ),
-        )
-        .then(() => {
-            dispatch(fetchingMappingVersions(false));
-        });
-};
 
 export const createMappingRequest = params => dispatch => {
     dispatch(fetchingMappingVersions(true));

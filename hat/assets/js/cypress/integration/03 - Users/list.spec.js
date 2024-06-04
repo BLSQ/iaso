@@ -1,10 +1,10 @@
 /// <reference types="cypress" />
 
 import { search, searchWithForbiddenChars } from '../../constants/search';
+import orgUnits from '../../fixtures/orgunits/list.json';
 import listFixture from '../../fixtures/profiles/list.json';
 import superUser from '../../fixtures/profiles/me/superuser.json';
 import { testSearchField } from '../../support/testSearchField';
-import orgUnits from '../../fixtures/orgunits/list.json';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 const baseUrl = `${siteBaseUrl}/dashboard/settings/users`;
@@ -178,8 +178,8 @@ describe('Users', () => {
                 cy.testInputValue(`#user_roles`, '');
                 cy.testInputValue('#language', '');
                 cy.get('#user-dialog-tabs').find('button').eq(1).click();
-                cy.get('.permission-checkbox').each($el => {
-                    expect($el).to.not.be.checked;
+                cy.get('[data-test="permission-checkbox"]').each($el => {
+                    cy.wrap($el).find('input').to.not.be.checked;
                 });
             });
         });
@@ -206,8 +206,8 @@ describe('Users', () => {
                 cy.get('.MuiDialogActions-root').find('button').first().click();
                 openDialogForUserIndex(1);
                 cy.get('#user-dialog-tabs').find('button').eq(1).click();
-                cy.get('.permission-checkbox').each($el => {
-                    expect($el).to.not.be.checked;
+                cy.get('[data-test="permission-checkbox"]').each($el => {
+                    cy.wrap($el).find('input').to.not.be.checked;
                 });
                 cy.get('.MuiDialogActions-root').find('button').first().click();
                 openDialogForUserIndex(2);

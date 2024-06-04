@@ -19,16 +19,17 @@ import {
     applyUpdate as applyUpdateAction,
 } from './actions';
 
-import { redirectToReplace as redirectToReplaceAction } from '../../routing/actions';
+import { redirectToReplace as redirectToReplaceAction } from '../../routing/actions.ts';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import RecursiveTreeView from './components/RecursiveTreeView';
 import QuestionInfos from './components/QuestionInfos';
 import QuestionMappingForm from './components/QuestionMappingForm';
 import DerivedQuestionMappingForm from './components/DerivedQuestionMappingForm';
-import { baseUrls } from '../../constants/urls';
+import { baseUrls } from '../../constants/urls.ts';
 import GeneraMappingInfo from './components/GeneraMappingInfo';
 import Descriptor from './descriptor';
+import { withMappingDetailsParams } from '../../routing/legacy.tsx';
 import MESSAGES from './messages';
 
 const styles = theme => ({
@@ -292,5 +293,9 @@ const MapDispatchToProps = dispatch => ({
 });
 
 export default withStyles(styles)(
-    injectIntl(connect(MapStateToProps, MapDispatchToProps)(MappingDetails)),
+    injectIntl(
+        withMappingDetailsParams(
+            connect(MapStateToProps, MapDispatchToProps)(MappingDetails),
+        ),
+    ),
 );

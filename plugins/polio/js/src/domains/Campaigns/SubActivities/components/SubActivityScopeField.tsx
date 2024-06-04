@@ -46,9 +46,13 @@ export const SubActivityScopeField: FunctionComponent<Props> = ({
         if (!subActivityVaccines) {
             return undefined;
         }
-        return polioVaccines.filter(vaccine =>
+        const vaccines = polioVaccines.filter(vaccine =>
             subActivityVaccines.includes(vaccine.value),
         );
+        if (vaccines.length > 0) {
+            return vaccines;
+        }
+        return undefined;
     }, [round?.scopes]);
 
     useSkipEffectOnMount(() => {

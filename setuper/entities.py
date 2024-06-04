@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import uuid
 
 from fake import fake_person
-from submissions import submission2xml
+from submissions import submission2xml, org_unit_gps_point
 from random import randint
 
 
@@ -115,13 +115,7 @@ def setup_entities(account_name, iaso_client):
     print("-- Submitting %d submissions" % limit)
     count = 0
     for orgunit in orgunits:
-        org_unit_id = orgunit["id"]
-        longitude = orgunit["longitude"]
-        latitude = orgunit["latitude"]
-        altitude = orgunit["altitude"]
-
         child = fake_person()
-
         the_uuid = str(uuid.uuid4())
         child_uuid = str(uuid.uuid4())
         file_name = "example_%s.xml" % the_uuid
@@ -130,14 +124,11 @@ def setup_entities(account_name, iaso_client):
         current_datetime = int(datetime.now().timestamp())
 
         instance_data = {
+            **org_unit_gps_point(orgunit),
             "id": the_uuid,
             "created_at": current_datetime,
             "updated_at": current_datetime,
-            "orgUnitId": org_unit_id,
             "formId": reg_form_id,
-            "longitude": longitude,
-            "latitude": latitude,
-            "altitude": altitude,
             "entityUuid": child_uuid,
             "entityTypeId": entity_type["id"],
             "accuracy": 0,
@@ -191,16 +182,13 @@ def setup_entities(account_name, iaso_client):
                 f"/api/instances/?app_id={account_name}",
                 json=[
                     {
+                        **org_unit_gps_point(orgunit),
                         "id": the_uuid,
                         "created_at": created_at_to_datetime,
                         "updated_at": current_datetime,
-                        "orgUnitId": org_unit_id,
                         "formId": follow_form_id,
                         "entityUuid": child_uuid,
                         "entityTypeId": entity_type["id"],
-                        "longitude": longitude,
-                        "latitude": latitude,
-                        "altitude": altitude,
                         "accuracy": 0,
                         "imgUrl": "imgUrl",
                         "file": local_path,

@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timedelta
-from submissions import submission2xml
+from submissions import submission2xml, org_unit_gps_point
 import random
 
 
@@ -58,14 +58,11 @@ def setup_instances(account_name, iaso_client):
 
             instance_body = [
                 {
+                    **org_unit_gps_point(orgunit),
                     "id": the_uuid,
                     "created_at": current_datetime,
                     "updated_at": current_datetime,
-                    "orgUnitId": orgunit["id"],
                     "formId": form_id,
-                    "longitude": orgunit["longitude"],
-                    "latitude": orgunit["latitude"],
-                    "altitude": orgunit["altitude"],
                     "accuracy": 0,
                     "imgUrl": "imgUrl",
                     "file": local_path,

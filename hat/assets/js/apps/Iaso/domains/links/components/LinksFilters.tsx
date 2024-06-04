@@ -8,13 +8,13 @@ import {
     useGetAlgorithmRunsOptions,
     useGetAlgorithmsOptions,
     useGetDataSources,
-    useGetOrgUnitTypesOptions,
     useGetProfilesOptions,
     useSourceOptions,
     useSourceVersionOptions,
     useStatusOptions,
 } from '../hooks/filters';
 import MESSAGES from '../messages';
+import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions';
 
 type Props = {
     params: any;
@@ -36,7 +36,7 @@ export const LinksFilters: FunctionComponent<Props> = ({ baseUrl, params }) => {
             searchAlwaysEnabled: true,
         });
     const { data: orgUnitTypes, isLoading: isLoadingOrgUnitTypes } =
-        useGetOrgUnitTypesOptions();
+        useGetOrgUnitTypesDropdownOptions();
     const { data: algos, isLoading: isLoadingAlgos } =
         useGetAlgorithmsOptions();
     const { data: runs, isLoading: isLoadingRuns } =

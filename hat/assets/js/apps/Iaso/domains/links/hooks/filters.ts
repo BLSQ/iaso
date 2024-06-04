@@ -47,25 +47,6 @@ export const useGetAlgorithmRunsOptions = () => {
     });
 };
 
-export const useGetOrgUnitTypesOptions = (): UseQueryResult<
-    DropdownOptions<number>[]
-> => {
-    return useSnackQuery({
-        queryKey: ['orgUnitTypes'],
-        queryFn: () => getRequest('/api/v2/orgunittypes/'),
-        options: {
-            keepPreviousData: true,
-            cacheTime: 600000,
-            staleTime: 600000,
-            select: data =>
-                (data?.orgUnitTypes ?? []).map(orgUnitType => ({
-                    label: orgUnitType.name,
-                    value: orgUnitType.id,
-                })),
-        },
-    });
-};
-
 export const useStatusOptions = (): DropdownOptions<'true' | 'false'>[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {

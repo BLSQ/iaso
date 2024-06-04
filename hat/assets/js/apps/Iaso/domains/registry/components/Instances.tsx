@@ -20,6 +20,7 @@ import { INSTANCE_METAS_FIELDS, defaultSorted } from '../config';
 import { useGetEmptyInstanceOrgUnits } from '../hooks/useGetEmptyInstanceOrgUnits';
 import { useGetForms } from '../hooks/useGetForms';
 import { useGetInstanceApi, useGetInstances } from '../hooks/useGetInstances';
+import { useGetOrgUnitType } from '../hooks/useGetOrgUnitType';
 import MESSAGES from '../messages';
 import { RegistryParams } from '../types';
 import { OrgunitTypeRegistry } from '../types/orgunitTypes';
@@ -51,7 +52,8 @@ export const Instances: FunctionComponent<Props> = ({
         }
         return undefined;
     }, [subOrgUnitTypes, tab]);
-
+    const { data: orgunitTypeDetail, isFetching: isFetchingOrgunitTypeDetail } =
+        useGetOrgUnitType(currentType?.id);
     const { data: formsList, isFetching: isFetchingForms } = useGetForms({
         orgUnitTypeIds: currentType?.id,
     });
@@ -99,17 +101,21 @@ export const Instances: FunctionComponent<Props> = ({
             formsList?.length >= 0 &&
             !isFetchingForms &&
             !formIds &&
-            currentType
+            orgunitTypeDetail
         ) {
+            let selectedForm = formsList[0].value;
+            if (orgunitTypeDetail.reference_forms.length > 0) {
+                selectedForm = `${orgunitTypeDetail.reference_forms[0].id}`;
+            }
             const newParams = {
                 ...params,
-                formIds: formsList[0].value,
+                formIds: selectedForm,
             };
             redirectToReplace(baseUrls.registry, newParams);
         }
-        // only prselect a form if forms list contain an element and prams is empty
+        // only prselect a form if forms list contain an element and params is empty
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [formsList, isFetchingForms, currentType]);
+    }, [formsList, isFetchingForms, orgunitTypeDetail]);
 
     return (
         <Box>

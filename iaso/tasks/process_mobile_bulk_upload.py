@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 
 
 @task_decorator(task_name="process_mobile_bulk_upload")
-def process_mobile_bulk_upload(user_id, project_id, zip_file_object_name, task=None):
+def process_mobile_bulk_upload(api_import_id, project_id, task=None):
     start_date = datetime.now()
     start_time = time.time()
     the_task = task
@@ -45,14 +45,10 @@ def process_mobile_bulk_upload(user_id, project_id, zip_file_object_name, task=N
         progress_message=_("Starting"),
         end_value=100,
     )
-    user = User.objects.get(id=user_id)
+    api_import = APIImport.objects.get(id=api_import_id)
+    user = api_import.user
+    zip_file_object_name = api_import.json_body["file"]
     project = Project.objects.get(id=project_id)
-
-    api_import = APIImport.objects.create(
-        user=user,
-        import_type="bulk",
-        json_body={"file": zip_file_object_name},
-    )
 
     try:
         logger.info(f"Downloading {zip_file_object_name} from S3...")

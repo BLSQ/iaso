@@ -1,12 +1,12 @@
 /// <reference types="cypress" />
 
+import * as Permission from '../../../apps/Iaso/utils/permissions.ts';
+import { search, searchWithForbiddenChars } from '../../constants/search';
 import listFixture from '../../fixtures/forms/list.json';
 import superUser from '../../fixtures/profiles/me/superuser.json';
-import { search, searchWithForbiddenChars } from '../../constants/search';
 import { testSearchField } from '../../support/testSearchField';
-import { testTopBar } from '../../support/testTopBar';
 import { testTablerender } from '../../support/testTableRender';
-import * as Permission from '../../../apps/Iaso/utils/permissions.ts';
+import { testTopBar } from '../../support/testTopBar';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
@@ -188,7 +188,7 @@ describe('Forms', () => {
                     const actionCol = row.find('td').last();
                     actionCol.find('button').should('have.length', 3);
                 });
-                it('should display 2 buttons if user has iaso_submissions permission', () => {
+                it('should display 1 buttons if user has iaso_submissions permission', () => {
                     goToPage({
                         ...superUser,
                         permissions: [Permission.SUBMISSIONS],
@@ -197,7 +197,7 @@ describe('Forms', () => {
                     table = cy.get('table');
                     row = table.find('tbody').find('tr').eq(0);
                     const actionCol = row.find('td').last();
-                    actionCol.find('button').should('have.length', 2);
+                    actionCol.find('button').should('have.length', 1);
                 });
             });
         });

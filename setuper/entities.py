@@ -116,9 +116,9 @@ def setup_entities(account_name, iaso_client):
     count = 0
     for orgunit in orgunits:
         org_unit_id = orgunit["id"]
-        longitude = (orgunit["longitude"],)
-        latitude = (orgunit["latitude"],)
-        altitude = (orgunit["altitude"],)
+        longitude = orgunit["longitude"]
+        latitude = orgunit["latitude"]
+        altitude = orgunit["altitude"]
 
         child = fake_person()
 

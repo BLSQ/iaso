@@ -34,8 +34,11 @@ const goToPage = (
     cy.intercept('GET', '/api/projects/**', {
         fixture: 'projects/list.json',
     });
-    cy.intercept('GET', '/api/permissions', {
+    cy.intercept('GET', '/api/permissions/', {
         fixture: 'permissions/list.json',
+    });
+    cy.intercept('GET', '/api/permissions/grouped_permissions/', {
+        fixture: 'permissions/grouped.json',
     });
     cy.intercept('GET', '/api/v2/orgunittypes/**', {
         fixture: 'orgunittypes/list.json',
@@ -166,7 +169,7 @@ describe('Users', () => {
     });
 
     describe('User dialog', () => {
-        it('should display empty user infos', () => {
+        it.only('should display empty user infos', () => {
             goToPage();
             cy.wait('@getUsers').then(() => {
                 cy.get('[data-test="add-user-button"]').click();

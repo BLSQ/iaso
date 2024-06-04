@@ -169,7 +169,7 @@ describe('Users', () => {
     });
 
     describe('User dialog', () => {
-        it.only('should display empty user infos', () => {
+        it('should display empty user infos', () => {
             goToPage();
             cy.wait('@getUsers').then(() => {
                 cy.get('[data-test="add-user-button"]').click();

@@ -18,9 +18,8 @@ export default defineConfig({
             );
         },
         specPattern: [
-            // './/hat/assets/js/cypress/integration/**/*.js',
-            // './/plugins/**/cypress/integration/**/*.js',
-            './/hat/assets/js/cypress/integration/03 - Users/list.spec.js',
+            './/hat/assets/js/cypress/integration/**/*.js',
+            './/plugins/**/cypress/integration/**/*.js',
         ],
         supportFile: 'hat/assets/js/cypress/support/index.js',
         experimentalRunAllSpecs: true,

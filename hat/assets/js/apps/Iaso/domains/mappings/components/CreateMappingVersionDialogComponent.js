@@ -48,7 +48,6 @@ const CreateMappingVersionDialogComponent = () => {
             payload.program = dataset;
         }
 
-        debugger
         createMappingRequest.mutate(payload).then(() => {
             closeDialog();
         });

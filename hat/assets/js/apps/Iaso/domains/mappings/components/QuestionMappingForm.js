@@ -7,7 +7,6 @@ import { Button } from '@mui/material';
 import { isMapped, isNeverMapped } from '../question_mappings';
 import Dhis2SearchComponent from './Dhis2SearchComponent';
 import { DuplicateHint } from './DuplicateHint';
-import HesabuHint from './HesabuHint';
 import ObjectDumper from './ObjectDumper';
 import Descriptor from '../descriptor';
 import EventTrackerProgramForm from './EventTrackerProgramForm';
@@ -264,10 +263,7 @@ const QuestionMappingForm = ({
                         mapping={questionMapping}
                         mappingVersion={mappingVersion}
                     />
-                    <HesabuHint
-                        mapping={questionMapping}
-                        hesabuDescriptor={hesabuDescriptor}
-                    />
+                  
                     <br />
                     <Button
                         // className="button"
@@ -394,10 +390,6 @@ const QuestionMappingForm = ({
                     </h3>
                     <br />
                     <ObjectDumper object={newQuestionMapping} />
-                    <HesabuHint
-                        mapping={newQuestionMapping}
-                        hesabuDescriptor={hesabuDescriptor}
-                    />
                     <DuplicateHint
                         mapping={newQuestionMapping}
                         mappingVersion={mappingVersion}

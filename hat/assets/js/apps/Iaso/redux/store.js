@@ -15,10 +15,6 @@ import {
     instancesInitialState,
 } from '../domains/instances/reducer';
 import {
-    mappingReducer,
-    mappingsInitialState,
-} from '../domains/mappings/reducer';
-import {
     sidebarMenuReducer,
     sidebarMenuInitialState,
 } from './sidebarMenuReducer';
@@ -42,7 +38,6 @@ const store = createStore(
         routerCustom: routerInitialState,
         links: linksInitialState,
         users: usersInitialState,
-        mappings: mappingsInitialState,
     },
     {
         app: appReducer,
@@ -53,7 +48,6 @@ const store = createStore(
         routerCustom: routerReducer,
         links: linksReducer,
         users: usersReducer,
-        mappings: mappingReducer,
     },
     [
         // routerMiddleware(storeHistory),

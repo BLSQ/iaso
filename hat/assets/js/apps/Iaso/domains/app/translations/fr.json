@@ -759,7 +759,6 @@
     "iaso.mappings.label.fromSubmissionPeriod": "via la période de la soumission",
     "iaso.mappings.label.generalHint": "Cliquer sur l'arbre sur la gauche pour lier les questions aux data elements dhis2 ou vérifier les aggregations.",
     "iaso.mappings.label.generalTitle": "Informations générales",
-    "iaso.mappings.label.hesabuHint": "Indice Hesabu, cet élément est utilisé par",
     "iaso.mappings.label.instanceOrgUnit": "Unité d'org. de l'instance",
     "iaso.mappings.label.loading": "Chargement...",
     "iaso.mappings.label.mapping": "Correspondance: {name}, {id} - {type}",

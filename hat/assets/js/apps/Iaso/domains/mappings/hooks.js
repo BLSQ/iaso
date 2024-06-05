@@ -36,7 +36,7 @@ export const useCreateMappingMutation = params => {
     const redirectToReplace = useRedirectToReplace();
 
     return useSnackMutation({
-        mutationFn: (payload) => {
+        mutationFn: payload => {
             return postRequest('/api/mappingversions/', payload);
         },
         invalidateQueryKey: ['mappingversions'],
@@ -57,5 +57,49 @@ export const useDataSources = () => {
         queryFn: () => getRequest('/api/datasources/').then(r => r.sources),
         keepPreviousData: true,
         ...defaultTimes,
+    });
+};
+
+export const useGetMappingVersionDetail = mappingVersionId => {
+    return useSnackQuery({
+        queryKey: ['mappingversions', mappingVersionId],
+        queryFn: async () => {
+            const mappingVersion = await getRequest(
+                `/api/mappingversions/${mappingVersionId}.json?fields=:all`,
+            );
+            const formVersionId = mappingVersion.form_version.id;
+            const formVersion = await getRequest(
+                `/api/formversions/${formVersionId}.json?fields=:all`,
+            );
+            return { mappingVersion, formVersion };
+        },
+        ...defaultTimes,
+    });
+};
+
+export const useApplyUpdate = () => {
+    return useSnackMutation({
+        mutationFn: ({mappingVersionId, payload}) => {
+            return patchRequest(
+                `/api/mappingversions/${mappingVersionId}/`,
+                payload,
+            );
+        },
+        invalidateQueryKey: ['mappingversions'],
+        snackErrorMsg: MESSAGES.fetchMappingsError,
+    });
+};
+
+export const useApplyPartialUpdate = () => {
+    return useSnackMutation({
+        mutationFn: ({ mappingVersionId, questionName, mapping }) => {
+            return patchRequest(`/api/mappingversions/${mappingVersionId}/`, {
+                question_mappings: {
+                    [questionName]: mapping,
+                },
+            });
+        },
+        invalidateQueryKey: ['mappingversions'],
+        snackErrorMsg: MESSAGES.fetchMappingsError,
     });
 };

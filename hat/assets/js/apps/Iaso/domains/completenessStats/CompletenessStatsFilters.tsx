@@ -35,7 +35,7 @@ import { useGetTeamsDropdown } from '../teams/hooks/requests/useGetTeams';
 import { AsyncSelect } from '../../components/forms/AsyncSelect';
 import { getUsersDropDown } from '../instances/hooks/requests/getUsersDropDown';
 import { useGetProfilesDropdown } from '../instances/hooks/useGetProfilesDropdown';
-import { PLANNINGS } from '../../utils/permissions';
+import { PLANNING_READ, PLANNING_WRITE } from '../../utils/permissions';
 
 type Props = {
     params: UrlParams & any;
@@ -133,7 +133,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
 
     const handleParentChange = useCallback(
         orgUnit => {
-            const id = orgUnit ? [orgUnit.id] : undefined;
+            const id = orgUnit ? orgUnit.id : undefined;
             setInitialParentId(id);
             handleChange('parentId', id);
         },
@@ -200,7 +200,9 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         options={groups}
                         loading={isFetchingGroups}
                     />
-                    <DisplayIfUserHasPerm permissions={[PLANNINGS]}>
+                    <DisplayIfUserHasPerm
+                        permissions={[PLANNING_READ, PLANNING_WRITE]}
+                    >
                         <InputComponent
                             type="select"
                             onChange={handleChange}

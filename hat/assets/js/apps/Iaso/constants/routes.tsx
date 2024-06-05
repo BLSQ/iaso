@@ -314,14 +314,14 @@ export const planningPath = {
     baseUrl: baseUrls.planning,
     routerUrl: `${baseUrls.planning}/*`,
     // FIXME use planning permissions when they exist
-    permissions: [Permission.PLANNINGS],
+    permissions: [Permission.PLANNING_READ, Permission.PLANNING_WRITE],
     element: <Planning />,
 };
 export const assignmentsPath = {
     baseUrl: baseUrls.assignments,
     routerUrl: `${baseUrls.assignments}/*`,
     // FIXME use planning permissions when they exist
-    permissions: [Permission.PLANNINGS],
+    permissions: [Permission.PLANNING_READ, Permission.PLANNING_WRITE],
     element: <Assignments />,
 };
 export const teamsPath = {

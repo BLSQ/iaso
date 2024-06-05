@@ -55,8 +55,6 @@ import { MenuItem, MenuItems, Plugins } from '../domains/app/types';
 import { useGetOrgunitsExtraPath } from '../domains/home/hooks/useGetOrgunitsExtraPath';
 import { CHANGE_REQUEST } from './urls';
 
-
-
 // !! remove permission property if the menu has a subMenu !!
 const menuItems = (
     entityTypes: Array<DropdownOptions<number>>,
@@ -78,7 +76,7 @@ const menuItems = (
             isActive: pathname =>
                 pathname?.includes(`/entityTypeIds/${entityType.value}/`) &&
                 pathname?.includes(`entities/list/`),
-            extraPath: `/entityTypeIds/${entityType.value}/order/-last_saved_instance/pageSize/20/page/1`,
+            extraPath: `/entityTypeIds/${entityType.value}/locationLimit/1000/order/-last_saved_instance/pageSize/20/page/1`,
         }));
     }
     return [
@@ -391,5 +389,4 @@ export const useMenuItems = (): MenuItems => {
     }, [admin, basicItems, currentUser, pluginsMenu]);
     return items;
 };
-export const RDC_USER_MANUAL =
-    'https://docs.google.com/document/d/1eSJWotpTn4OtI1TV9OjJeF0hIa8W_1nUtpg9tmEgCkw/edit?usp=sharing';
+export const DOC_URL = 'https://docs.openiaso.com/en/latest/';

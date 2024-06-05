@@ -1,5 +1,10 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { useSafeIntl, commonStyles, IconButton } from 'bluesquare-components';
+import {
+    useSafeIntl,
+    commonStyles,
+    IconButton,
+    ExternalLinkIconButton,
+} from 'bluesquare-components';
 import { makeStyles } from '@mui/styles';
 import { Box } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
@@ -7,7 +12,6 @@ import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { useGetPages } from './hooks/useGetPages';
 import { useRemovePage } from './hooks/useRemovePage';
-import { userHasPermission } from '../users/utils';
 import DeleteConfirmDialog from './components/DeleteConfirmDialog';
 import CreateEditDialog from './components/CreateEditDialog';
 import PageActions from './components/PageActions';
@@ -15,10 +19,10 @@ import PageAction from './components/PageAction';
 import { PAGES_TYPES } from './constants';
 import { DateTimeCellRfc } from '../../components/Cells/DateTimeCell.tsx';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink.tsx';
-import { useCurrentUser } from '../../utils/usersUtils.ts';
 import * as Permission from '../../utils/permissions.ts';
 import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
-import { baseUrls } from '../../constants/urls';
+import { baseUrls } from '../../constants/urls.ts';
+import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm.tsx';
 
 const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_PAGE = 1;
@@ -99,8 +103,6 @@ const Pages = () => {
         });
     };
 
-    const currentUser = useCurrentUser();
-
     const columns = useMemo(
         () => [
             {
@@ -136,51 +138,42 @@ const Pages = () => {
                 Cell: settings => {
                     return (
                         <>
-                            {/* We use the <a> tag to avoid router's redirections
-                        i.e: adding /dashboard to the path and /accountId to the params
-                        */}
-                            <a href={`/pages/${settings.row.original.slug}`}>
+                            <ExternalLinkIconButton
+                                url={`/pages/${settings.row.original.slug}`}
+                                icon="remove-red-eye"
+                                tooltipMessage={{
+                                    ...MESSAGES.viewPage,
+                                    values: { linebreak: <br /> },
+                                }}
+                            />
+                            <DisplayIfUserHasPerm
+                                permissions={[Permission.PAGE_WRITE]}
+                            >
                                 <IconButton
-                                    icon="remove-red-eye"
-                                    tooltipMessage={{
-                                        ...MESSAGES.viewPage,
-                                        values: { linebreak: <br /> },
-                                    }}
-                                    onClick={() => null}
+                                    icon="edit"
+                                    tooltipMessage={MESSAGES.edit}
+                                    onClick={() =>
+                                        handleClickEditRow(
+                                            settings.row.original.slug,
+                                        )
+                                    }
                                 />
-                            </a>
-
-                            {userHasPermission(
-                                Permission.PAGE_WRITE,
-                                currentUser,
-                            ) && (
-                                <>
-                                    <IconButton
-                                        icon="edit"
-                                        tooltipMessage={MESSAGES.edit}
-                                        onClick={() =>
-                                            handleClickEditRow(
-                                                settings.row.original.slug,
-                                            )
-                                        }
-                                    />
-                                    <IconButton
-                                        icon="delete"
-                                        tooltipMessage={MESSAGES.delete}
-                                        onClick={() =>
-                                            handleClickDeleteRow(
-                                                settings.row.original.slug,
-                                            )
-                                        }
-                                    />
-                                </>
-                            )}
+                                <IconButton
+                                    icon="delete"
+                                    tooltipMessage={MESSAGES.delete}
+                                    onClick={() =>
+                                        handleClickDeleteRow(
+                                            settings.row.original.slug,
+                                        )
+                                    }
+                                />
+                            </DisplayIfUserHasPerm>
                         </>
                     );
                 },
             },
         ],
-        [currentUser, formatMessage, handleClickDeleteRow, handleClickEditRow],
+        [formatMessage, handleClickDeleteRow, handleClickEditRow],
     );
 
     return (

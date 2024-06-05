@@ -142,7 +142,7 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
                 </Button>
             )}
             <Drawer anchor="right" open={isOpen} onClose={toggleDrawer(false)}>
-                <div className={classes.root}>
+                <Box className={classes.root} sx={{ overflowY: 'auto' }}>
                     <div className={classes.toolbar}>
                         <Tooltip title={formatMessage(MESSAGES.close)}>
                             <IconButton onClick={toggleDrawer(false)}>
@@ -227,7 +227,7 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
                             ))}
                         </List>
                     </div>
-                </div>
+                </Box>
             </Drawer>
         </>
     );

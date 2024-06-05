@@ -69,6 +69,10 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Payments',
         id: 'iaso.modules.payments',
     },
+    completeness_per_period: {
+        defaultMessage: 'Completeness per Period',
+        id: 'iaso.modules.completeness_per_period',
+    },
     modulesInformation: {
         id: 'iaso.modules.modulesInformation',
         defaultMessage:

@@ -280,16 +280,16 @@ You can now start to develop additional features on Iaso!
 Alternatively or in addition to steps 7-8, you can import data from the DHIS2 demo server (play.dhis2.org).
 
 First find a running version from play.dhis2.org.
-Go to https://play.dhis2.org/2.37
-Then watch the redirection : ex : https://play.dhis2.org/2.37.7.1/dhis-web-commons/security/login.action 
-To find the current active version : 2.37.7.1
-That you will pass to the next docker-compose run
+Take the most recent as the other ones may return a 404.
+Follow the link, eg: https://play.im.dhis2.org/stable-2-40-3-1
+In this example the version is 2.40.3.1.
+Pass it to docker-compose run:
 
 In a new bash, run the command
 
 
 ``` bash
-docker-compose run --rm iaso manage seed_test_data --mode=seed --dhis2version=2.37.7.1
+docker-compose run --rm iaso manage seed_test_data --mode=seed --dhis2version=2.40.3.1
 ```
 
 The hierarchy of OrgUnit, group of OrgUnit, Forms, and their Submissions will be imported. Type of OrgUnit are not

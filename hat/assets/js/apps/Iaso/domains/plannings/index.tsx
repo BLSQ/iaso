@@ -14,6 +14,8 @@ import { CreateEditPlanning } from './CreateEditPlanning/CreateEditPlanning';
 import { useDeletePlanning } from './hooks/requests/useDeletePlanning';
 import { useSingleTableParams } from '../../components/tables/SingleTable';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
+import { PLANNING_WRITE } from '../../utils/permissions';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -38,9 +40,12 @@ export const Planning: FunctionComponent = () => {
 
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <PlanningFilters params={apiParams} />
-                <Grid container item justifyContent="flex-end">
-                    <CreateEditPlanning type="create" />
-                </Grid>
+                <DisplayIfUserHasPerm permissions={[PLANNING_WRITE]}>
+                    <Grid container item justifyContent="flex-end">
+                        <CreateEditPlanning type="create" />
+                    </Grid>
+                </DisplayIfUserHasPerm>
+
                 {/* @ts-ignore */}
                 <TableWithDeepLink
                     baseUrl={baseUrl}

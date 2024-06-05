@@ -78,6 +78,29 @@ def convert_to_geography(geom_type: str, coordinates: list):
     return geom
 
 
+def simplify_geom(geom: MultiPolygon) -> MultiPolygon:
+    """
+    Calculate the size of the bounding box and then a proportional tolerance.
+
+    The tolerance parameter seems to be expressed in degrees.
+    But who does really know how tolerance works and is able to use it in a predictable way?
+
+    Anyway, this has better results than a hardcoded tolerance of e.g. 0.002,
+    especially for large or small shapes.
+    """
+    (xmin, ymin, xmax, ymax) = geom.extent
+    height = abs(xmin - xmax)
+    width = abs(ymin - ymax)
+    _max = max(height, width)
+    tolerance = round(0.001 * _max, 10)
+    simplified_geom = geom.simplify(tolerance=tolerance)
+
+    if type(simplified_geom) == Polygon:
+        simplified_geom = MultiPolygon(simplified_geom)
+
+    return simplified_geom
+
+
 def create_or_update_group(group: Group, ref: str, name: str, version: SourceVersion):
     if not group:
         group = Group()
@@ -117,10 +140,7 @@ def create_or_update_orgunit(
             orgunit.location = geom
         else:
             orgunit.geom = geom
-            simplified_geom = geom.simplify(tolerance=0.002)
-            if type(simplified_geom) == Polygon:
-                simplified_geom = MultiPolygon(simplified_geom)
-            orgunit.simplified_geom = simplified_geom
+            orgunit.simplified_geom = simplify_geom(geom)
 
     orgunit.save(skip_calculate_path=True)
 

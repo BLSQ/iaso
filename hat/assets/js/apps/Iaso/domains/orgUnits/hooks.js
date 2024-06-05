@@ -6,7 +6,7 @@ import {
 } from 'Iaso/libs/apiHooks.ts';
 import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api.ts';
 import { useQueryClient } from 'react-query';
-import MESSAGES from './messages';
+import MESSAGES from './messages.ts';
 import { getOtChipColors, getChipColors } from '../../constants/chipColors';
 
 export const useOrgUnitDetailData = (

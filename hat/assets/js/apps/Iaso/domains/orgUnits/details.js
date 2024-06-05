@@ -13,14 +13,19 @@ import omit from 'lodash/omit';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { useDispatch } from 'react-redux';
-import { Logs } from './history/LogsComponent';
+import { Logs } from './history/LogsComponent.tsx';
 import TopBar from '../../components/nav/TopBarComponent';
 import SingleTable from '../../components/tables/SingleTable';
 import {
     onlyChildrenParams,
     orgUnitFiltersWithPrefix,
 } from '../../constants/filters';
-import { baseUrls, LINKS_PREFIX, FORMS_PREFIX, OU_CHILDREN_PREFIX } from '../../constants/urls.ts';
+import {
+    baseUrls,
+    LINKS_PREFIX,
+    FORMS_PREFIX,
+    OU_CHILDREN_PREFIX,
+} from '../../constants/urls.ts';
 import {
     fetchAssociatedOrgUnits,
     fetchOrgUnitsList,
@@ -29,14 +34,14 @@ import { resetOrgUnits } from './actions';
 import { OrgUnitForm } from './components/OrgUnitForm.tsx';
 import { OrgUnitMap } from './components/orgUnitMap/OrgUnitMap/OrgUnitMap.tsx';
 import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitsMapComments';
-import { useOrgUnitsTableColumns } from './config';
+import { useOrgUnitsTableColumns } from './config.tsx';
 import {
     useOrgUnitDetailData,
     useRefreshOrgUnit,
     useSaveOrgUnit,
 } from './hooks';
 import { useGetValidationStatus } from '../forms/hooks/useGetValidationStatus.ts';
-import MESSAGES from './messages';
+import MESSAGES from './messages.ts';
 import {
     getAliasesArrayFromString,
     getLinksSources,
@@ -46,9 +51,7 @@ import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
 import { FormsTable } from '../forms/components/FormsTable.tsx';
 import { LinksTable } from '../links/components/LinksTable.tsx';
 import { LinksFilter } from './details/Links/LinksFilter.tsx';
-import { OrgUnitChildrenFilters } from './details/Children/OrgUnitChildrenFilters';
-import { OrgUnitChildrenTable } from './details/Children/OrgUnitChildrenTable';
-import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
+import { OrgUnitChildren } from './details/Children/OrgUnitChildren.tsx';
 
 const baseUrl = baseUrls.orgUnitDetails;
 const useStyles = makeStyles(theme => ({
@@ -66,14 +69,6 @@ const useStyles = makeStyles(theme => ({
             strokeOpacity: 1,
             strokeWidth: 3,
         },
-    },
-    hiddenOpacity: {
-        position: 'absolute',
-        top: '0px',
-        left: '0px',
-        width: '100vw',
-        zIndex: '-100',
-        opacity: '0',
     },
     comments: {
         overflowY: 'auto',
@@ -437,11 +432,7 @@ const OrgUnitDetail = () => {
                     )}
                     {!isNewOrgunit && (
                         <>
-                            <div
-                                className={
-                                    tab === 'map' ? '' : classes.hiddenOpacity
-                                }
-                            >
+                            {tab === 'map' && (
                                 <Box className={classes.containerFullHeight}>
                                     {!isFetchingDetail && (
                                         <OrgUnitMap
@@ -480,7 +471,7 @@ const OrgUnitDetail = () => {
                                         />
                                     )}
                                 </Box>
-                            </div>
+                            )}
 
                             {tab === 'history' && (
                                 <div data-test="logs-tab">
@@ -507,45 +498,45 @@ const OrgUnitDetail = () => {
                                     />
                                 </Box>
                             )}
-                            <div
-                                data-test="children-tab"
-                                className={
-                                    tab === 'children'
-                                        ? ''
-                                        : classes.hiddenOpacity
-                                }
-                            >
-                                <Box className={classes.containerFullHeightNoTabPadded}>
-                                <OrgUnitChildrenFilters baseUrl={baseUrl} params={childrenParams} groups={groups}/>
-                                <OrgUnitChildrenTable baseUrl={baseUrl} params={childrenParams} paramsPrefix={OU_CHILDREN_PREFIX}/>
-                       
-                                <SingleTable
-                                    apiParams={{
-                                        ...onlyChildrenParams(
+                            {tab === 'children' && (
+                                <Box
+                                    data-test="children-tab"
+                                    className={
+                                        classes.containerFullHeightNoTabPadded
+                                    }
+                                >
+                                    <OrgUnitChildren
+                                        baseUrl={baseUrl}
+                                        params={childrenParams}
+                                        groups={groups}
+                                    />
+                                    <SingleTable
+                                        apiParams={{
+                                            ...onlyChildrenParams(
+                                                'childrenParams',
+                                                params,
+                                                params.orgUnitId,
+                                            ),
+                                        }}
+                                        propsToWatch={params.orgUnitId}
+                                        filters={orgUnitFiltersWithPrefix(
                                             'childrenParams',
-                                            params,
-                                            params.orgUnitId,
-                                        ),
-                                    }}
-                                    propsToWatch={params.orgUnitId}
-                                    filters={orgUnitFiltersWithPrefix(
-                                        'childrenParams',
-                                        true,
-                                        formatMessage,
-                                        groups,
-                                        orgUnitTypes,
-                                        validationStatusOptions,
-                                        isLoadingValidationStatusOptions,
-                                    )}
-                                    params={params}
-                                    paramsPrefix="childrenParams"
-                                    baseUrl={baseUrl}
-                                    endPointPath="orgunits"
-                                    fetchItems={fetchOrgUnitsList}
-                                    columns={childrenColumns}
-                                />
-                                     </Box>
-                            </div>
+                                            true,
+                                            formatMessage,
+                                            groups,
+                                            orgUnitTypes,
+                                            validationStatusOptions,
+                                            isLoadingValidationStatusOptions,
+                                        )}
+                                        params={params}
+                                        paramsPrefix="childrenParams"
+                                        baseUrl={baseUrl}
+                                        endPointPath="orgunits"
+                                        fetchItems={fetchOrgUnitsList}
+                                        columns={childrenColumns}
+                                    />
+                                </Box>
+                            )}
                             {tab === 'links' && (
                                 <Box
                                     data-test="links-tab"

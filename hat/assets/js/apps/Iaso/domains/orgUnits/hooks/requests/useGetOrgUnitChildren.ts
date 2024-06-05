@@ -1,6 +1,6 @@
+import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
-import { useOrgUnitChildrenQueryString } from '../../details/Children/useOrgUnitChildrenQueryString';
 
 const apiUrl = '/api/orgunits';
 export const tableDefaults = {
@@ -10,10 +10,11 @@ export const tableDefaults = {
     validation_status: 'all',
 };
 
-export const useGetOrgUnitChildren = params => {
-    const queryString = useOrgUnitChildrenQueryString(params);
+export const useGetOrgUnitChildren = (
+    queryString: string,
+): UseQueryResult<any> => {
     return useSnackQuery({
-        queryKey: ['orgUnit-children', params?.orgUnitId, queryString],
+        queryKey: ['orgUnit-children', queryString],
         queryFn: () => getRequest(`${apiUrl}/?${queryString}`),
         options: {
             keepPreviousData: true,

@@ -1,23 +1,23 @@
 import React, { FunctionComponent } from 'react';
 import { TableWithDeepLink } from '../../../../components/tables/TableWithDeepLink';
 import { useOrgUnitsTableColumns } from '../../config';
-import {
-    tableDefaults,
-    useGetOrgUnitChildren,
-} from '../../hooks/requests/useGetOrgUnitChildren';
+import { tableDefaults } from '../../hooks/requests/useGetOrgUnitChildren';
 
 type Props = {
     baseUrl: string;
     params: Record<string, string>;
     paramsPrefix: string;
+    data: any;
+    loading: boolean;
 };
 
 export const OrgUnitChildrenTable: FunctionComponent<Props> = ({
     baseUrl,
     params,
     paramsPrefix,
+    data,
+    loading,
 }) => {
-    const { data, isFetching: loading } = useGetOrgUnitChildren(params);
     const columns = useOrgUnitsTableColumns();
     return (
         <TableWithDeepLink

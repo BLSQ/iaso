@@ -11,15 +11,13 @@ import InputComponent from '../../../../components/forms/InputComponent';
 import { OU_CHILDREN_PREFIX } from '../../../../constants/urls';
 import MESSAGES from '../../messages';
 import { SearchButton } from '../../../../components/SearchButton';
-import DownloadButtonsComponent from '../../../../components/DownloadButtonsComponent';
-import { useOrgUnitChildrenQueryString } from './useOrgUnitChildrenQueryString';
 
 type Props = {
     params: any;
     baseUrl: string;
     groups?: GroupWithDataSource[];
 };
-const apiUrl = '/api/orgunits';
+
 export const OrgUnitChildrenFilters: FunctionComponent<Props> = ({
     params,
     baseUrl,
@@ -47,10 +45,6 @@ export const OrgUnitChildrenFilters: FunctionComponent<Props> = ({
     const { data: validationStatusOptions, isFetching: isLoadingStatuses } =
         useGetOrgUnitValidationStatus(true);
     const groupOptions = useGroupsOptions(groups);
-    const downloadQueryString = useOrgUnitChildrenQueryString(params);
-    const csvUrl = `${apiUrl}/?${downloadQueryString}&csv=true`;
-    const xlsxUrl = `${apiUrl}/?${downloadQueryString}&xlsx=true`;
-    const gpkgUrl = `${apiUrl}/?${downloadQueryString}&gpkg=true`;
 
     return (
         <Box>
@@ -138,14 +132,6 @@ export const OrgUnitChildrenFilters: FunctionComponent<Props> = ({
                             disabled={!filtersUpdated}
                         />
                     </Box>
-                </Grid>
-                <Grid container item xs={12} justifyContent="flex-end">
-                    <DownloadButtonsComponent
-                        csvUrl={csvUrl}
-                        xlsxUrl={xlsxUrl}
-                        gpkgUrl={gpkgUrl}
-                        disabled={false}
-                    />
                 </Grid>
             </Grid>
         </Box>

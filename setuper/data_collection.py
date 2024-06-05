@@ -159,8 +159,8 @@ def setup_instances(account_name, iaso_client):
             }
 
             # see hat/sync/views.py
-            image_number = (count % 3) + 1
-            with open(f"./data/fosa{image_number}.jpeg", "rb") as fp_image:
+            image = random.choice(["CS_communautaire.png", "burkina_cs.jpg", "CSPS.jpeg"])
+            with open(f"./data/{image}", "rb") as fp_image:
                 iaso_client.post(
                     "/sync/form_upload/",
                     files={

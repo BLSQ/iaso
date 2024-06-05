@@ -1,9 +1,7 @@
 import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api';
 import { enqueueSnackbar } from '../../redux/snackBarsReducer';
 import { errorSnackBar } from '../../constants/snackBars';
-import { redirectTo } from '../../routing/actions';
 import Descriptor from './descriptor';
-import { baseUrls } from '../../constants/urls';
 
 export const FETCHING_MAPPING_VERSIONS = 'FETCHING_MAPPING_VERSIONS';
 
@@ -143,36 +141,3 @@ export const applyUpdate = (mappingVersionId, payload) => dispatch => {
 };
 
 
-export const createMappingRequest = params => dispatch => {
-    dispatch(fetchingMappingVersions(true));
-    return postRequest('/api/mappingversions/', params)
-        .then(res => {
-            dispatch(
-                redirectTo(baseUrls.mappingDetail, {
-                    mappingVersionId: res.id,
-                }),
-            );
-            return res;
-        })
-        .catch(err => {
-            dispatch(
-                enqueueSnackbar(errorSnackBar('fetchMappingsError', null, err)),
-            );
-        })
-        .then(res => {
-            dispatch(fetchingMappingVersions(false));
-            return res;
-        });
-};
-
-export const fetchSources = () => dispatch =>
-    getRequest('/api/datasources/')
-        .then(res => dispatch(setMappingSources(res.sources)))
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('fetchSourcesError', null, error),
-                ),
-            );
-            console.error('Error while fetching source list:', error);
-        });

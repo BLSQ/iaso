@@ -21,7 +21,7 @@ class CompletenessViewSet(viewsets.ViewSet):
 
     def list(self, request):
         profile = request.user.iaso_profile
-        profile_org_units = OrgUnit.objects.filter(id__in=profile.org_units.all())
+        profile_org_units = OrgUnit.objects.filter_for_user(request.user)
 
         queryset = (
             Instance.objects.filter(project__account=profile.account)

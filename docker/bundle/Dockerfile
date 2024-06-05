@@ -2,22 +2,29 @@
 # Then transfert it in the filan django image
 ############ NPM Builder ######################################################################
 
-FROM node:14.17-bullseye-slim as npmbuilder
+FROM node:20.13.1-bullseye-slim as npmbuilder
 ENV PROJECT_ROOT /opt
 
 WORKDIR /opt/app
 
 RUN apt-get update && apt-get install -y \
-    python \
+    python3 \
+    python3-pip \
     git \
     build-essential \
     &&  apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Set Python 3 as the default python
+RUN ln -s /usr/bin/python3 /usr/bin/python
+
+# Set Node.js memory limit
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 
 COPY package.json .
 COPY package-lock.json .
 
 
-RUN npm install -g npm@8.5.5
+RUN npm install -g npm@10.5.2
 
 RUN rm -rf node_modules
 RUN npm cache clean --force

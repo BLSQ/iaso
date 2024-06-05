@@ -26,5 +26,5 @@ npm cache clean --force
 ```
 ###  Reinstall npm packages:
 ```
-npm ci --legacy-peer-deps
+npm ci
 ```

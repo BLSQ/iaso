@@ -34,7 +34,7 @@ jobs:
           npm --version
       - name: npm install and test
         run: |
-          npm ci --legacy-peer-deps
+          npm ci
           npm test
       - name: Check that no JS translation are missing
         run: |

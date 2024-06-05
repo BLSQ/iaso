@@ -80,7 +80,7 @@ jobs:
 
       - name: npm ci
         run: |
-          npm ci --legacy-peer-deps
+          npm ci
 
       - name: npm build
         run: |

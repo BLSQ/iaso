@@ -45,7 +45,7 @@ const ProtectedRoute = ({ routeConfig, allRoutes, component }) => {
                 allRoutes,
             );
             if (newBaseUrl) {
-                navigate(`./${newBaseUrl}`);
+                navigate(`/${newBaseUrl}`);
             }
         }
     }, [

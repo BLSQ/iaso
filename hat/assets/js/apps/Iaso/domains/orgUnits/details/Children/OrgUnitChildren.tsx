@@ -34,7 +34,7 @@ export const OrgUnitChildren: FunctionComponent<Props> = ({
                 params={params}
                 groups={groups}
             />
-            {data?.orgunits?.length && (
+            {Boolean(data?.orgunits?.length) && (
                 <Box
                     mt={2}
                     display="inline-flex"

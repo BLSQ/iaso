@@ -202,3 +202,17 @@ export const useRefreshOrgUnit = () => {
     const queryClient = useQueryClient();
     return data => queryClient.setQueryData(['forms', data.id], data);
 };
+
+export const useOrgUnitTabParams = (params, paramsPrefix) => {
+    return useMemo(() => {
+        const { orgUnitId, ...rest } = params;
+        const tabParams = { orgUnitId };
+        const formKeys = Object.keys(rest).filter(k =>
+            k.includes(paramsPrefix),
+        );
+        formKeys.forEach(formKey => {
+            tabParams[formKey] = rest[formKey];
+        });
+        return tabParams;
+    }, [params, paramsPrefix]);
+};

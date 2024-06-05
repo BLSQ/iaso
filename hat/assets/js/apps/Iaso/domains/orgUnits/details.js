@@ -15,32 +15,23 @@ import { useQueryClient } from 'react-query';
 import { useDispatch } from 'react-redux';
 import { Logs } from './history/LogsComponent.tsx';
 import TopBar from '../../components/nav/TopBarComponent';
-import SingleTable from '../../components/tables/SingleTable';
-import {
-    onlyChildrenParams,
-    orgUnitFiltersWithPrefix,
-} from '../../constants/filters';
 import {
     baseUrls,
     LINKS_PREFIX,
     FORMS_PREFIX,
     OU_CHILDREN_PREFIX,
 } from '../../constants/urls.ts';
-import {
-    fetchAssociatedOrgUnits,
-    fetchOrgUnitsList,
-} from '../../utils/requests';
+import { fetchAssociatedOrgUnits } from '../../utils/requests';
 import { resetOrgUnits } from './actions';
 import { OrgUnitForm } from './components/OrgUnitForm.tsx';
 import { OrgUnitMap } from './components/orgUnitMap/OrgUnitMap/OrgUnitMap.tsx';
 import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitsMapComments';
-import { useOrgUnitsTableColumns } from './config.tsx';
 import {
     useOrgUnitDetailData,
     useRefreshOrgUnit,
     useSaveOrgUnit,
+    useOrgUnitTabParams,
 } from './hooks';
-import { useGetValidationStatus } from '../forms/hooks/useGetValidationStatus.ts';
 import MESSAGES from './messages.ts';
 import {
     getAliasesArrayFromString,
@@ -109,7 +100,6 @@ const OrgUnitDetail = () => {
     const queryClient = useQueryClient();
     const { formatMessage } = useSafeIntl();
     const refreshOrgUnitQueryCache = useRefreshOrgUnit();
-    const childrenColumns = useOrgUnitsTableColumns(classes);
     const redirectToReplace = useRedirectToReplace();
 
     const [currentOrgUnit, setCurrentOrgUnit] = useState(null);
@@ -120,47 +110,12 @@ const OrgUnitDetail = () => {
     const [orgUnitLocationModified, setOrgUnitLocationModified] =
         useState(false);
 
-    const formParams = useMemo(() => {
-        const { orgUnitId, ...rest } = params;
-        const tableFormParams = { orgUnitId };
-        const formKeys = Object.keys(rest).filter(k =>
-            k.includes(FORMS_PREFIX),
-        );
-        formKeys.forEach(formKey => {
-            tableFormParams[formKey] = rest[formKey];
-        });
-        return tableFormParams;
-    }, [params]);
-
-    const linksParams = useMemo(() => {
-        const { orgUnitId, ...rest } = params;
-        const tableFormParams = { orgUnitId };
-        const formKeys = Object.keys(rest).filter(k =>
-            k.includes(LINKS_PREFIX),
-        );
-        formKeys.forEach(formKey => {
-            tableFormParams[formKey] = rest[formKey];
-        });
-        return tableFormParams;
-    }, [params]);
-    const childrenParams = useMemo(() => {
-        const { orgUnitId, ...rest } = params;
-        const tableFormParams = { orgUnitId };
-        const formKeys = Object.keys(rest).filter(k =>
-            k.includes(OU_CHILDREN_PREFIX),
-        );
-        formKeys.forEach(formKey => {
-            tableFormParams[formKey] = rest[formKey];
-        });
-        return tableFormParams;
-    }, [params]);
+    const formParams = useOrgUnitTabParams(params, FORMS_PREFIX);
+    const linksParams = useOrgUnitTabParams(params, LINKS_PREFIX);
+    const childrenParams = useOrgUnitTabParams(params, OU_CHILDREN_PREFIX);
 
     const isNewOrgunit = params.orgUnitId === '0';
 
-    const {
-        data: validationStatusOptions,
-        isLoading: isLoadingValidationStatusOptions,
-    } = useGetValidationStatus(true, tab === 'children');
     const title = useMemo(() => {
         if (isNewOrgunit) {
             return formatMessage(MESSAGES.newOrgUnit);
@@ -509,31 +464,6 @@ const OrgUnitDetail = () => {
                                         baseUrl={baseUrl}
                                         params={childrenParams}
                                         groups={groups}
-                                    />
-                                    <SingleTable
-                                        apiParams={{
-                                            ...onlyChildrenParams(
-                                                'childrenParams',
-                                                params,
-                                                params.orgUnitId,
-                                            ),
-                                        }}
-                                        propsToWatch={params.orgUnitId}
-                                        filters={orgUnitFiltersWithPrefix(
-                                            'childrenParams',
-                                            true,
-                                            formatMessage,
-                                            groups,
-                                            orgUnitTypes,
-                                            validationStatusOptions,
-                                            isLoadingValidationStatusOptions,
-                                        )}
-                                        params={params}
-                                        paramsPrefix="childrenParams"
-                                        baseUrl={baseUrl}
-                                        endPointPath="orgunits"
-                                        fetchItems={fetchOrgUnitsList}
-                                        columns={childrenColumns}
                                     />
                                 </Box>
                             )}

@@ -1,13 +1,7 @@
-import {
-    deleteRequest,
-    getRequest,
-    patchRequest,
-    postRequest,
-    putRequest,
-} from 'Iaso/libs/Api.ts';
+import { getRequest, postRequest, putRequest } from 'Iaso/libs/Api.ts';
 import { useSnackQuery } from 'Iaso/libs/apiHooks.ts';
 import { enqueueSnackbar } from '../redux/snackBarsReducer';
-import { errorSnackBar, succesfullSnackBar } from '../constants/snackBars';
+import { errorSnackBar } from '../constants/snackBars';
 import { dispatch as storeDispatch } from '../redux/store';
 
 export const fetchSubOrgUnitsByType = (dispatch, params, orgUnitType) =>
@@ -35,18 +29,6 @@ export const fetchOrgUnitsTypes = dispatch =>
                 ),
             );
             console.error('Error while fetching org unit types list:', error);
-        });
-
-export const fetchOrgUnitsList = (dispatch, url) =>
-    getRequest(url)
-        .then(data => data)
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('fetchOrgUnitsError', null, error),
-                ),
-            );
-            console.error('Error while fetching org unit list:', error);
         });
 
 export const fetchAssociatedOrgUnits = (
@@ -149,23 +131,6 @@ export const updateFormVersion = formVersion =>
         },
     );
 
-// TO-DO: replace all requests similar to this
-export const fetchList = (
-    dispatch,
-    url,
-    errorKeyMessage,
-    consoleError,
-    signal,
-) =>
-    getRequest(url, signal)
-        .then(data => data)
-        .catch(error => {
-            dispatch(
-                enqueueSnackbar(errorSnackBar(errorKeyMessage, null, error)),
-            );
-            console.error(`Error while fetching ${consoleError} list:`, error);
-        });
-
 export const useGetComments = params => {
     const { orgUnitId, offset, limit } = params;
     const url = offset
@@ -182,45 +147,6 @@ export const useGetComments = params => {
 
 export const sendComment = async comment =>
     postRequest('/api/comments/', comment);
-
-const dispatchSaveOrgUnit = dispatch => orgUnit =>
-    patchRequest(`/api/orgunits/${orgUnit.id}/`, orgUnit)
-        .then(savedOrgUnit => {
-            dispatch(enqueueSnackbar(succesfullSnackBar()));
-            return savedOrgUnit;
-        })
-        .catch(error => {
-            dispatch(enqueueSnackbar(errorSnackBar(null, null, error)));
-            console.error('Error while saving org unit detail:', error);
-        });
-
-export const saveOrgUnitWithDispatch = dispatchSaveOrgUnit(storeDispatch);
-
-const dispatchSaveInstance = dispatch => instance =>
-    patchRequest(`/api/instances/${instance.id}/`, instance)
-        .then(savedInstance => {
-            dispatch(enqueueSnackbar(succesfullSnackBar()));
-            return savedInstance;
-        })
-        .catch(error => {
-            dispatch(enqueueSnackbar(errorSnackBar(null, null, error)));
-            console.error('Error while saving instance:', error);
-        });
-
-export const saveInstanceWithDispatch = dispatchSaveInstance(storeDispatch);
-
-const lockInstance = dispatch => instance =>
-    postRequest(`/api/instances/${instance.id}/add_lock/`)
-        .then(savedInstance => {
-            dispatch(enqueueSnackbar(succesfullSnackBar()));
-            return savedInstance;
-        })
-        .catch(error => {
-            dispatch(enqueueSnackbar(errorSnackBar(null, null, error)));
-            console.error('Error while saving instance:', error);
-        });
-
-export const lockInstanceWithDispatch = lockInstance(storeDispatch);
 
 export const cleanupParams = params => {
     const copy = { ...params };

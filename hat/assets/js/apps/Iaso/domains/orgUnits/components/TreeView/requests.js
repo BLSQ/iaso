@@ -1,5 +1,5 @@
 import { errorSnackBar } from '../../../../constants/snackBars';
-import { getRequest } from '../../../../libs/Api';
+import { getRequest } from '../../../../libs/Api.ts';
 import { useSnackQuery } from '../../../../libs/apiHooks.ts';
 import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
 import { dispatch } from '../../../../redux/store';

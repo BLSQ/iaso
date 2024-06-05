@@ -4,7 +4,6 @@ import configureStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
 import { orgUnitsInitialState } from '../../apps/Iaso/domains/orgUnits/reducer';
 import { instancesInitialState } from '../../apps/Iaso/domains/instances/reducer';
-import { mappingsInitialState } from '../../apps/Iaso/domains/mappings/reducer';
 import { sidebarMenuInitialState } from '../../apps/Iaso/redux/sidebarMenuReducer';
 import { snackBarsInitialState } from '../../apps/Iaso/redux/snackBarsReducer';
 import { routerInitialState } from '../../apps/Iaso/redux/routerReducer';
@@ -28,7 +27,6 @@ const initialState = {
     routerCustom: routerInitialState,
     links: linksInitialState,
     users: usersInitialState,
-    mappings: mappingsInitialState,
     app: {
         locale: {
             code: 'en',

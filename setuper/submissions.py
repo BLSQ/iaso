@@ -17,7 +17,6 @@ def submission2xml(submission_dict, form_id, form_version_id, gen_uuid=False):
 
 def org_unit_gps_point(org_unit):
     return {
-        "orgUnitId": org_unit["id"],
         "longitude": org_unit["longitude"],
         "latitude": org_unit["latitude"],
         "altitude": org_unit["altitude"],

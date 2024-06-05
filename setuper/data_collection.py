@@ -62,6 +62,7 @@ def setup_instances(account_name, iaso_client):
                     "id": the_uuid,
                     "created_at": current_datetime,
                     "updated_at": current_datetime,
+                    "orgUnitId": orgunit["id"],
                     "formId": form_id,
                     "accuracy": 0,
                     "imgUrl": "imgUrl",

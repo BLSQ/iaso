@@ -119,7 +119,7 @@ def setup_entities(account_name, iaso_client):
         the_uuid = str(uuid.uuid4())
         child_uuid = str(uuid.uuid4())
         file_name = "example_%s.xml" % the_uuid
-
+        org_unit_id = orgunit["id"]
         local_path = "generated/%s" % file_name
         current_datetime = int(datetime.now().timestamp())
 
@@ -128,6 +128,7 @@ def setup_entities(account_name, iaso_client):
             "id": the_uuid,
             "created_at": current_datetime,
             "updated_at": current_datetime,
+            "orgUnitId": org_unit_id,
             "formId": reg_form_id,
             "entityUuid": child_uuid,
             "entityTypeId": entity_type["id"],
@@ -186,6 +187,7 @@ def setup_entities(account_name, iaso_client):
                         "id": the_uuid,
                         "created_at": created_at_to_datetime,
                         "updated_at": current_datetime,
+                        "orgUnitId": org_unit_id,
                         "formId": follow_form_id,
                         "entityUuid": child_uuid,
                         "entityTypeId": entity_type["id"],

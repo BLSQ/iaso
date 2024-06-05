@@ -55,6 +55,7 @@ def create_submission_with_picture(account_name, iaso_client):
                     "id": the_uuid,
                     "created_at": current_datetime,
                     "updated_at": current_datetime,
+                    "orgUnitId": org_unit_id,
                     "formId": form_id,
                     "accuracy": 0,
                     "imgUrl": "imgUrl",

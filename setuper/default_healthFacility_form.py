@@ -49,7 +49,6 @@ def setup_health_facility_level_default_form(account_name, iaso_client):
     ]
     print("-- Submitting %d submissions" % limit)
 
-    # for org_unit_id in org_unit_ids:
     for orgunit in orgunits:
         the_uuid = str(uuid.uuid4())
         file_name = "example_%s.xml" % the_uuid
@@ -62,6 +61,7 @@ def setup_health_facility_level_default_form(account_name, iaso_client):
                 "id": the_uuid,
                 "created_at": current_datetime,
                 "updated_at": current_datetime,
+                "orgUnitId": orgunit["id"],
                 "formId": sample_form_id,
                 "accuracy": 0,
                 "imgUrl": "imgUrl",

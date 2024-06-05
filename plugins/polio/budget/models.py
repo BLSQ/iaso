@@ -111,7 +111,7 @@ class BudgetProcess(SoftDeletableModel):
         blank=True,
     )
 
-    class Meta:
+    class Meta(SoftDeletableModel.Meta):
         verbose_name = "Budget Process"
         verbose_name_plural = "Budget Processes"
 
@@ -120,7 +120,7 @@ class BudgetProcess(SoftDeletableModel):
 
 
 class BudgetStep(SoftDeletableModel):
-    class Meta:
+    class Meta(SoftDeletableModel.Meta):
         ordering = ["-updated_at"]
 
     objects = BudgetManager()
@@ -174,7 +174,7 @@ class BudgetStepLink(SoftDeletableModel):
     alias = models.CharField(max_length=500)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    class Meta:
+    class Meta(SoftDeletableModel.Meta):
         verbose_name = "Budget Step Link"
         verbose_name_plural = "Budget Step Link"
 

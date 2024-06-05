@@ -946,6 +946,9 @@ class Instance(models.Model):
     # See public_create_url workflow in enketo/README.md. used to tell we should export immediately
     to_export = models.BooleanField(default=False)
 
+    class Meta:
+        indexes = [models.Index(fields=["updated_at"])]
+
     def __str__(self):
         return "%s %s" % (self.form, self.name)
 

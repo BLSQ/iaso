@@ -20,6 +20,7 @@ class OnlyDeletedSoftDeletableManager(models.Manager):
 class SoftDeletableModel(models.Model):
     class Meta:
         abstract = True
+        indexes = [models.Index(fields=["deleted_at"])]
 
     deleted_at = models.DateTimeField(default=None, blank=True, null=True)
 

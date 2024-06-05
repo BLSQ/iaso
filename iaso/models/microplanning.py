@@ -41,7 +41,7 @@ TeamManager = models.Manager.from_queryset(TeamQuerySet)
 class Team(SoftDeletableModel):
     objects = TeamManager()
 
-    class Meta:
+    class Meta(SoftDeletableModel.Meta):
         ordering = ("name",)
 
     name = models.CharField(max_length=100, null=False, blank=False)
@@ -122,7 +122,7 @@ class PlanningQuerySet(models.QuerySet):
 class Planning(SoftDeletableModel):
     objects = PlanningQuerySet.as_manager()
 
-    class Meta:
+    class Meta(SoftDeletableModel.Meta):
         ordering = ("name",)
 
     name = models.CharField(max_length=100, null=False, blank=False)
@@ -150,7 +150,7 @@ class AssignmentQuerySet(models.QuerySet):
 class Assignment(SoftDeletableModel):
     objects = AssignmentQuerySet.as_manager()
 
-    class Meta:
+    class Meta(SoftDeletableModel.Meta):
         unique_together = [["planning", "org_unit"]]
         ordering = ("planning", "created_at")
 

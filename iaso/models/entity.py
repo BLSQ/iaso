@@ -175,7 +175,7 @@ class Entity(SoftDeletableModel):
 
     objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(EntityQuerySet)()
 
-    class Meta:
+    class Meta(SoftDeletableModel.Meta):
         verbose_name_plural = "Entities"
 
     def __str__(self):

@@ -127,57 +127,6 @@ export const encodeUriParams = params => {
     return newParams;
 };
 
-export const getOrgUnitParents = orgUnit => {
-    if (!orgUnit.parent) return [];
-    return [orgUnit.parent, ...getOrgUnitParents(orgUnit.parent)];
-};
-
-export const getOrgUnitParentsString = orgUnit =>
-    getOrgUnitParents(orgUnit)
-        .map(ou => (ou.name !== '' ? ou.name : ou.org_unit_type_name))
-        .reverse()
-        .join(' > ');
-
-export const getOrgUnitParentsIds = orgUnit =>
-    getOrgUnitParents(orgUnit)
-        .map(ou => ou.id)
-        .reverse();
-
-const getOrgUnitsParentsUntilRoot = (orgUnit, parents = []) => {
-    let parentsList = [...parents];
-    parentsList.push(orgUnit);
-    if (orgUnit.parent) {
-        parentsList = getOrgUnitsParentsUntilRoot(orgUnit.parent, parentsList);
-    }
-    return parentsList;
-};
-
-export const getOrgUnitAncestorsIds = orgUnit => {
-    const result = getOrgUnitParentsIds(orgUnit);
-    // Adding id of the org unit in case it's a root
-    // and to be able to select it with the treeview
-    result.push(orgUnit.id);
-    return result;
-};
-
-export const getOrgUnitAncestors = orgUnit => {
-    const result = new Map(
-        getOrgUnitsParentsUntilRoot(orgUnit)
-            .map(parent => [
-                parent.id.toString(),
-                {
-                    // selecting the necessary fields, as there are many more than those returned by the API used in the treeview itself
-                    // this will allow to use the same label formatting function in the TruncatedTreeview and in the Treeview
-                    name: parent.name,
-                    id: parent.id.toString(),
-                    validation_status: parent.validation_status,
-                },
-            ])
-            .reverse(),
-    );
-    return result;
-};
-
 export const useGetStatusMessage = () => {
     const { data: validationStatusOptions } = useGetValidationStatus();
     if (!validationStatusOptions) return () => '';

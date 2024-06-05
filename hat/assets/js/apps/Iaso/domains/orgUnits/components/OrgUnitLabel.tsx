@@ -19,5 +19,5 @@ export const OrgUnitLabel: FunctionComponent<{
         withSource,
     );
 
-    return <Box>{label}</Box>;
+    return <Box component="span">{label}</Box>;
 };

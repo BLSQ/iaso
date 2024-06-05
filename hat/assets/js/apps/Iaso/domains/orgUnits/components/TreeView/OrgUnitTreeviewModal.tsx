@@ -14,7 +14,6 @@ import React, {
 } from 'react';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import { OrgUnit } from '../../types/orgUnit';
-import { getOrgUnitAncestors } from '../../utils';
 import { OrgUnitLabel } from '../OrgUnitLabel';
 import { OrgUnitTreeviewPicker } from './OrgUnitTreeviewPicker';
 import { Settings, SettingsPopper } from './SettingsPopper';
@@ -26,6 +25,7 @@ import { DEFAULT_CONFIG, useSourceConfig } from './useSourceConfig';
 import {
     formatInitialSelectedIds,
     formatInitialSelectedParents,
+    getOrgUnitAncestors,
     tooltip,
 } from './utils';
 
@@ -102,7 +102,6 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
         },
         [multiselect],
     );
-
     const onUpdate = (orgUnitIds, parentsData, orgUnits) => {
         setSelectedOrgUnitsIds(orgUnitIds);
         setSelectedOrgUnitParents(parentsData);

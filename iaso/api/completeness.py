@@ -21,7 +21,7 @@ class CompletenessViewSet(viewsets.ViewSet):
 
     def list(self, request):
         profile = request.user.iaso_profile
-        profile_org_units = OrgUnit.objects.filter(id__in=profile.org_units.all())
+        profile_org_units = OrgUnit.objects.filter_for_user(request.user)
 
         queryset = (
             Instance.objects.filter(project__account=profile.account)
@@ -31,7 +31,7 @@ class CompletenessViewSet(viewsets.ViewSet):
         )
 
         if profile_org_units:
-            queryset = queryset.filter(org_unit__path__descendants=ArraySubquery(profile_org_units.values("path")))
+            queryset = queryset.filter(org_unit__in=profile_org_units)
 
         counts = [to_completeness(count) for count in queryset.counts_by_status()]
         form_ids = [count["form"]["form_id"] for count in counts]

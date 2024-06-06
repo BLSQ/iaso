@@ -38,6 +38,14 @@ export const PolioDialogTab: FunctionComponent<Props> = ({
             handleChange(undefined, value);
         }
     }, [disabled, handleChange, value]);
+    const isScopeOrSubactivitiesTab =
+        title === formatMessage(MESSAGES.scope) ||
+        title === formatMessage(MESSAGES.subActivities);
+
+    const tooltipMessage =
+        title === formatMessage(MESSAGES.scope)
+            ? formatMessage(MESSAGES.scopeUnlockConditions)
+            : formatMessage(MESSAGES.subActivitiesUnlockConditions);
     return (
         <Tab
             label={title}
@@ -51,10 +59,8 @@ export const PolioDialogTab: FunctionComponent<Props> = ({
             disableRipple={disabled}
             iconPosition="end"
             icon={
-                (disabled && title === formatMessage(MESSAGES.scope) && (
-                    <Tooltip
-                        title={formatMessage(MESSAGES.scopeUnlockConditions)}
-                    >
+                (disabled && isScopeOrSubactivitiesTab && (
+                    <Tooltip title={tooltipMessage}>
                         <InfoIcon
                             fontSize="small"
                             className={classes.tabIcon}

@@ -425,9 +425,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         if "geo_json" in request.data:
             geo_json = request.data["geo_json"]
-            geometry = geo_json["features"][0]["geometry"]
-            if geo_json and geometry and geometry["coordinates"]:
-                multi_polygon = MultiPolygon(*[Polygon(*coord) for coord in geometry["coordinates"]])
+            geometry = geo_json["features"][0]["geometry"] if geo_json else None
+            coordinates = geometry["coordinates"] if geometry else None
+            if coordinates:
+                multi_polygon = MultiPolygon(*[Polygon(*coord) for coord in coordinates])
                 org_unit.simplified_geom = simplify_geom(multi_polygon)
             else:
                 org_unit.simplified_geom = None

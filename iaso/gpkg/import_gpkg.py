@@ -11,6 +11,7 @@ from django.db import transaction
 from hat.audit import models as audit_models
 from iaso.models import DataSource, Group, OrgUnit, OrgUnitType, Project, SourceVersion
 from iaso.models.org_unit import get_or_create_org_unit_type
+from iaso.utils.gis import simplify_geom
 
 try:  # only in 3.8
     from typing import TypedDict  # type: ignore
@@ -76,29 +77,6 @@ def convert_to_geography(geom_type: str, coordinates: list):
     if geom.empty:
         return None
     return geom
-
-
-def simplify_geom(geom: MultiPolygon) -> MultiPolygon:
-    """
-    Calculate the size of the bounding box and then a proportional tolerance.
-
-    The tolerance parameter seems to be expressed in degrees.
-    But who does really know how tolerance works and is able to use it in a predictable way?
-
-    Anyway, this has better results than a hardcoded tolerance of e.g. 0.002,
-    especially for large or small shapes.
-    """
-    (xmin, ymin, xmax, ymax) = geom.extent
-    height = abs(xmin - xmax)
-    width = abs(ymin - ymax)
-    _max = max(height, width)
-    tolerance = round(0.001 * _max, 10)
-    simplified_geom = geom.simplify(tolerance=tolerance)
-
-    if type(simplified_geom) == Polygon:
-        simplified_geom = MultiPolygon(simplified_geom)
-
-    return simplified_geom
 
 
 def create_or_update_group(group: Group, ref: str, name: str, version: SourceVersion):

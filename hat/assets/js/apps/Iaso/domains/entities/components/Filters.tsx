@@ -42,6 +42,7 @@ import {
     SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,
     hasFeatureFlag,
 } from '../../../utils/featureFlags';
+import { UserOrgUnitRestriction } from 'Iaso/components/UserOrgUnitRestriction.tsx';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -134,6 +135,8 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
     const { url: apiUrl } = useGetBeneficiariesApiParams(params);
     return (
         <Box mb={1}>
+            <UserOrgUnitRestriction />
+
             <Grid container spacing={2}>
                 <Grid item xs={12} sm={6} md={3}>
                     <InputComponent

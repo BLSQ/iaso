@@ -9,7 +9,7 @@ import { FieldInputProps } from 'formik';
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { MapLegend } from '../../../../../../../../hat/assets/js/apps/Iaso/components/maps/MapLegend';
 import MESSAGES from '../../../../constants/messages';
-import { polioVaccines } from '../../../../constants/virus';
+import { PolioVaccine, polioVaccines } from '../../../../constants/virus';
 import { MapComponent } from '../../MapComponent/MapComponent';
 
 import {
@@ -39,6 +39,7 @@ type Props = {
     // eslint-disable-next-line no-unused-vars
     setSelectedVaccine: (selected: Vaccine) => void;
     isPolio?: boolean;
+    availableVaccines?: PolioVaccine[];
 };
 
 const getBackgroundLayerStyle = () => {
@@ -58,6 +59,7 @@ export const MapScope: FunctionComponent<Props> = ({
     selectedVaccine,
     setSelectedVaccine,
     isPolio,
+    availableVaccines = polioVaccines,
 }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
@@ -79,7 +81,7 @@ export const MapScope: FunctionComponent<Props> = ({
             const scope = findScopeWithOrgUnit(scopes, shape.id);
 
             if (scope) {
-                const vaccine = polioVaccines.find(
+                const vaccine = availableVaccines.find(
                     v => v.value === scope.vaccine,
                 );
                 return {
@@ -90,7 +92,12 @@ export const MapScope: FunctionComponent<Props> = ({
             if (values.org_unit?.id === shape.id) return initialDistrict;
             return unselectedPathOptions;
         },
-        [values.org_unit?.id, scopes, theme],
+        [
+            scopes,
+            values.org_unit?.id,
+            availableVaccines,
+            theme.palette.primary.main,
+        ],
     );
     const filterOrgUnits = useCallback(
         (orgUnits: OrgUnit[]) =>
@@ -136,7 +143,7 @@ export const MapScope: FunctionComponent<Props> = ({
                     content={
                         <FormControl id="vaccine">
                             <List>
-                                {polioVaccines.map(vaccine => (
+                                {availableVaccines.map(vaccine => (
                                     <ListItem
                                         key={vaccine.value}
                                         button

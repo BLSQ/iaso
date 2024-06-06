@@ -155,6 +155,24 @@ class ProjectsAPITestCase(APITestCase):
         response = self.client.delete(f"/api/projects/{self.project_1.id}/", format="json")
         self.assertJSONResponse(response, 405)
 
+    def test_qr_code_unauthenticated(self):
+        """GET /projects/<project_id>/qr_code/: return the proper QR code"""
+        response = self.client.get(f"/api/projects/{self.project_1.id}/qr_code/")
+        self.assertEqual(401, response.status_code)
+
+    def test_qr_code(self):
+        """GET /projects/<project_id>/qr_code/: return the proper QR code"""
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(f"/api/projects/{self.project_1.id}/qr_code/")
+        self.assertEqual(200, response.status_code)
+        self.assertEqual("image/png", response["Content-Type"])
+
+    def test_qr_code_not_found(self):
+        """GET /projects/<project_id>/qr_code/: return 404"""
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(f"/api/projects/WRONG/qr_code/")
+        self.assertEqual(404, response.status_code)
+
     def assertValidProjectListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):
         self.assertValidListData(
             list_data=list_data, expected_length=expected_length, results_key="projects", paginated=paginated

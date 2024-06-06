@@ -2,6 +2,7 @@ from rest_framework import routers
 
 from plugins.polio.api.campaigns.campaign_groups import CampaignGroupViewSet
 from plugins.polio.api.campaigns.campaigns import CampaignViewSet
+from plugins.polio.api.campaigns.subactivities import SubActivityViewSet
 from plugins.polio.api.campaigns.orgunits_per_campaigns import OrgUnitsPerCampaignViewset
 from iaso.api.config import ConfigViewSet
 from plugins.polio.api.country_user_groups import CountryUsersGroupViewSet
@@ -45,6 +46,7 @@ from plugins.polio.tasks.api.refresh_lqas_data import RefreshLQASDataViewset
 router = routers.SimpleRouter()
 router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
+router.register(r"polio/campaigns_subactivities", SubActivityViewSet, basename="campaigns_subactivities")
 router.register(r"polio/budget", BudgetProcessViewSet, basename="BudgetProcess")
 router.register(r"polio/budgetsteps", BudgetStepViewSet, basename="BudgetStep")
 router.register(r"polio/workflow", WorkflowViewSet, basename="BudgetWorkflow")

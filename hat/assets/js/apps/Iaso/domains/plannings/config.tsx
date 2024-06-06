@@ -9,6 +9,8 @@ import { CreateEditPlanning } from './CreateEditPlanning/CreateEditPlanning';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import { PlanningApi } from './hooks/requests/useGetPlannings';
 import MESSAGES from './messages';
+import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
+import { PLANNING_WRITE } from '../../utils/permissions';
 
 const getAssignmentUrl = (planning: PlanningApi): string => {
     return `/${baseUrls.assignments}/planningId/${planning.id}/team/${planning.team}`;
@@ -71,55 +73,79 @@ export const usePlanningColumns = (
                                 tooltipMessage={MESSAGES.viewPlanning}
                                 size="small"
                             />
-                            <CreateEditPlanning
-                                type="edit"
-                                id={settings.row.original.id}
-                                name={settings.row.original?.name}
-                                selectedTeam={settings.row.original?.team}
-                                selectedOrgUnit={
-                                    settings.row.original?.org_unit
-                                }
-                                startDate={settings.row.original?.started_at}
-                                endDate={settings.row.original?.ended_at}
-                                forms={settings.row.original?.forms ?? []}
-                                publishingStatus={settings.row.original?.status}
-                                project={settings.row.original?.project}
-                                description={settings.row.original?.description}
-                            />
-                            <CreateEditPlanning
-                                type="copy"
-                                name={settings.row.original?.name}
-                                selectedTeam={settings.row.original?.team}
-                                selectedOrgUnit={
-                                    settings.row.original?.org_unit
-                                }
-                                startDate={settings.row.original?.started_at}
-                                endDate={settings.row.original?.ended_at}
-                                forms={settings.row.original?.forms ?? []}
-                                publishingStatus={settings.row.original?.status}
-                                project={settings.row.original?.project}
-                                description={settings.row.original?.description}
-                            />
-                            <DeleteDialog
-                                titleMessage={{
-                                    ...MESSAGES.deletePlanning,
-                                    values: {
-                                        planningName:
-                                            settings.row.original.name,
-                                    },
-                                }}
-                                message={{
-                                    ...MESSAGES.deleteWarning,
-                                    values: {
-                                        name: settings.row.original.name,
-                                    },
-                                }}
-                                disabled={false}
-                                onConfirm={() =>
-                                    deletePlanning(settings.row.original.id)
-                                }
-                                keyName="delete-planning"
-                            />
+                            <DisplayIfUserHasPerm
+                                permissions={[PLANNING_WRITE]}
+                            >
+                                <CreateEditPlanning
+                                    type="edit"
+                                    id={settings.row.original.id}
+                                    name={settings.row.original?.name}
+                                    selectedTeam={settings.row.original?.team}
+                                    selectedOrgUnit={
+                                        settings.row.original?.org_unit
+                                    }
+                                    startDate={
+                                        settings.row.original?.started_at
+                                    }
+                                    endDate={settings.row.original?.ended_at}
+                                    forms={settings.row.original?.forms ?? []}
+                                    publishingStatus={
+                                        settings.row.original?.status
+                                    }
+                                    project={settings.row.original?.project}
+                                    description={
+                                        settings.row.original?.description
+                                    }
+                                />
+                            </DisplayIfUserHasPerm>
+                            <DisplayIfUserHasPerm
+                                permissions={[PLANNING_WRITE]}
+                            >
+                                <CreateEditPlanning
+                                    type="copy"
+                                    name={settings.row.original?.name}
+                                    selectedTeam={settings.row.original?.team}
+                                    selectedOrgUnit={
+                                        settings.row.original?.org_unit
+                                    }
+                                    startDate={
+                                        settings.row.original?.started_at
+                                    }
+                                    endDate={settings.row.original?.ended_at}
+                                    forms={settings.row.original?.forms ?? []}
+                                    publishingStatus={
+                                        settings.row.original?.status
+                                    }
+                                    project={settings.row.original?.project}
+                                    description={
+                                        settings.row.original?.description
+                                    }
+                                />
+                            </DisplayIfUserHasPerm>
+                            <DisplayIfUserHasPerm
+                                permissions={[PLANNING_WRITE]}
+                            >
+                                <DeleteDialog
+                                    titleMessage={{
+                                        ...MESSAGES.deletePlanning,
+                                        values: {
+                                            planningName:
+                                                settings.row.original.name,
+                                        },
+                                    }}
+                                    message={{
+                                        ...MESSAGES.deleteWarning,
+                                        values: {
+                                            name: settings.row.original.name,
+                                        },
+                                    }}
+                                    disabled={false}
+                                    onConfirm={() =>
+                                        deletePlanning(settings.row.original.id)
+                                    }
+                                    keyName="delete-planning"
+                                />
+                            </DisplayIfUserHasPerm>
                         </section>
                     );
                 },

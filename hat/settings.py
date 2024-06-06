@@ -13,11 +13,11 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 import base64
 import hashlib
 import html
+import importlib
 import os
 import re
 import sys
 import urllib.parse
-import importlib
 from datetime import timedelta
 from typing import Any, Dict
 from urllib.parse import urlparse

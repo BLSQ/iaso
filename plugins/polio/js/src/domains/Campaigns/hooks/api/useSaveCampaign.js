@@ -22,6 +22,6 @@ export const useSaveCampaign = () => {
                   )
                 : postRequest('/api/polio/campaigns/', hackedBody);
         },
-        invalidateQueryKey: ['campaign'],
+        invalidateQueryKey: ['campaigns'],
     });
 };

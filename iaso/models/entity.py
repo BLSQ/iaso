@@ -118,13 +118,24 @@ class EntityQuerySet(models.QuerySet):
 
         return self
 
-    def filter_for_user_and_app_id(
-        self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: typing.Optional[str]
-    ):
+    def filter_for_user(self, user: typing.Optional[typing.Union[User, AnonymousUser]]):
         if not user or not user.is_authenticated:
             raise UserNotAuthError(f"User not Authentified")
 
-        self = self.filter(account=user.iaso_profile.account)
+        profile = user.iaso_profile
+        self = self.filter(account=profile.account)
+
+        # we give all entities having an instance linked to the one of the org units allowed for the current user
+        if profile.org_units.exists():
+            orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
+            self = self.filter(instances__org_unit__in=orgunits)
+
+        return self
+
+    def filter_for_user_and_app_id(
+        self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: typing.Optional[str]
+    ):
+        self = self.filter_for_user(user)
 
         if app_id is not None:
             try:

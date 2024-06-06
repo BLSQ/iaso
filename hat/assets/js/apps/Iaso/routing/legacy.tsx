@@ -6,11 +6,20 @@ import { baseUrls } from '../constants/urls';
 
 // Temporary fix to enable use of react-router 6 with DHIS2 Mapping component.
 /** @deprecated */
-const withParams = Component => {
+export const withParams = Component => {
     return function WrappedComponent(props) {
         const params = useParamsObject(baseUrls.mappings);
         return <Component params={params} {...props} />;
     };
 };
 // wrapped ParamsHOC to avoid rule of hooks error
-export default withParams;
+
+// Temporary fix to enable use of react-router 6 with DHIS2 Mapping component.
+/** @deprecated */
+export const withMappingDetailsParams = Component => {
+    return function WrappedComponent(props) {
+        const params = useParamsObject(baseUrls.mappingDetail);
+        return <Component params={params} {...props} />;
+    };
+};
+// wrapped ParamsHOC to avoid rule of hooks error

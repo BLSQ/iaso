@@ -1,10 +1,10 @@
 /// <reference types="cypress" />
 
 import { search, searchWithForbiddenChars } from '../../constants/search';
+import orgUnits from '../../fixtures/orgunits/list.json';
 import listFixture from '../../fixtures/profiles/list.json';
 import superUser from '../../fixtures/profiles/me/superuser.json';
 import { testSearchField } from '../../support/testSearchField';
-import orgUnits from '../../fixtures/orgunits/list.json';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 const baseUrl = `${siteBaseUrl}/dashboard/settings/users`;
@@ -36,6 +36,9 @@ const goToPage = (
     });
     cy.intercept('GET', '/api/permissions', {
         fixture: 'permissions/list.json',
+    });
+    cy.intercept('GET', '/api/permissions/grouped_permissions', {
+        fixture: 'permissions/grouped.json',
     });
     cy.intercept('GET', '/api/v2/orgunittypes/**', {
         fixture: 'orgunittypes/list.json',
@@ -178,7 +181,7 @@ describe('Users', () => {
                 cy.testInputValue(`#user_roles`, '');
                 cy.testInputValue('#language', '');
                 cy.get('#user-dialog-tabs').find('button').eq(1).click();
-                cy.get('.permission-checkbox').each($el => {
+                cy.get('[data-test="permission-checkbox"] input').each($el => {
                     expect($el).to.not.be.checked;
                 });
             });
@@ -206,7 +209,7 @@ describe('Users', () => {
                 cy.get('.MuiDialogActions-root').find('button').first().click();
                 openDialogForUserIndex(1);
                 cy.get('#user-dialog-tabs').find('button').eq(1).click();
-                cy.get('.permission-checkbox').each($el => {
+                cy.get('[data-test="permission-checkbox"] input').each($el => {
                     expect($el).to.not.be.checked;
                 });
                 cy.get('.MuiDialogActions-root').find('button').first().click();
@@ -311,7 +314,7 @@ describe('Users', () => {
                         order: 'user__username',
                         orgUnitTypes: '11',
                         page: '1',
-                        permissions: 'iaso_completeness,iaso_mappings',
+                        permissions: 'iaso_assignments,iaso_polio_budget',
                         projects: '1,2',
                         search: 'ZELDA',
                         teams: '25,26',

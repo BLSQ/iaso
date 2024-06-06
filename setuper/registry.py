@@ -61,11 +61,8 @@ def setup_registry(account_name, iaso_client):
     org_unit_ids = [ou["id"] for ou in orgunits]
 
     print("-- Submitting %d submissions" % limit)
-    count = 0
     for org_unit_id in org_unit_ids:
-        child = fake_person()
         the_uuid = str(uuid.uuid4())
-        child_uuid = str(uuid.uuid4())
         file_name = "example_%s.xml" % the_uuid
 
         local_path = "generated/%s" % file_name

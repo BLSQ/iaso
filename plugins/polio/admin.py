@@ -25,6 +25,8 @@ from .models import (
     Round,
     RoundDateHistoryEntry,
     SpreadSheetImport,
+    SubActivity,
+    SubActivityScope,
     URLCache,
     VaccineArrivalReport,
     VaccineAuthorization,
@@ -287,6 +289,39 @@ class BudgetStepAdminInline(admin.TabularInline):
 class BudgetProcessAdmin(admin.ModelAdmin):
     raw_id_fields = ("created_by",)
     inlines = [RoundAdminInline, BudgetStepAdminInline]
+
+
+class SubActivityScopeInline(admin.StackedInline):
+    model = SubActivityScope
+    extra = 0
+    show_change_link = True
+    fields = ("id", "group", "vaccine")
+    raw_id_fields = ("group",)
+
+
+@admin.register(SubActivity)
+class SubActivityAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "start_date",
+        "end_date",
+    )
+    fields = ("name", "start_date", "end_date", "round")
+    raw_id_fields = ("round",)
+    inlines = [SubActivityScopeInline]
+
+    def save_related(self, request, form, formsets, change):
+        for formset in formsets:
+            if not formset.is_valid():
+                print(f"Formset errors: {formset.errors}")
+            else:
+                if formset.extra_forms:
+                    for fo in formset.extra_forms:
+                        if fo.is_valid():
+                            fo.save()
+                        else:
+                            print(f"Form errors: {fo.errors}")
+                formset.save()
 
 
 admin.site.register(RoundDateHistoryEntry)

@@ -132,11 +132,7 @@ class EntityQuerySet(models.QuerySet):
 
         return self
 
-    def filter_for_user_and_app_id(
-        self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: typing.Optional[str]
-    ):
-        self = self.filter_for_user(user)
-
+    def filter_for_app_id(self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: typing.Optional[str]):
         if app_id is not None:
             try:
                 project = Project.objects.get_for_user_and_app_id(user, app_id)
@@ -149,6 +145,11 @@ class EntityQuerySet(models.QuerySet):
                 raise ProjectNotFoundError(f"Project Not Found for app_id {app_id}")
 
         return self
+
+    def filter_for_user_and_app_id(
+        self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: typing.Optional[str]
+    ):
+        return self.filter_for_user(user).filter_for_app_id(user, app_id)
 
 
 class Entity(SoftDeletableModel):

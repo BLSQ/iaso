@@ -37,10 +37,10 @@ const oldBrowsersConfig = [
                                     ie: '11',
                                 },
                                 include: [
-                                    '@babel/plugin-proposal-optional-chaining',
-                                    '@babel/plugin-proposal-nullish-coalescing-operator',
-                                    '@babel/plugin-proposal-numeric-separator',
-                                    '@babel/plugin-proposal-logical-assignment-operators',
+                                    '@babel/plugin-transform-optional-chaining',
+                                    '@babel/plugin-transform-nullish-coalescing-operator',
+                                    '@babel/plugin-transform-numeric-separator',
+                                    '@babel/plugin-transform-logical-assignment-operators',
                                     '@babel/plugin-transform-destructuring',
                                 ],
                             },
@@ -79,10 +79,10 @@ const oldBrowsersConfig = [
                                     ie: '11',
                                 },
                                 include: [
-                                    '@babel/plugin-proposal-optional-chaining',
-                                    '@babel/plugin-proposal-nullish-coalescing-operator',
-                                    '@babel/plugin-proposal-numeric-separator',
-                                    '@babel/plugin-proposal-logical-assignment-operators',
+                                    '@babel/plugin-transform-optional-chaining',
+                                    '@babel/plugin-transform-nullish-coalescing-operator',
+                                    '@babel/plugin-transform-numeric-separator',
+                                    '@babel/plugin-transform-logical-assignment-operators',
                                     '@babel/plugin-transform-destructuring',
                                 ],
                             },
@@ -103,7 +103,7 @@ const newBrowsersConfig = [
             {
                 loader: 'babel-loader',
                 options: {
-                    cacheDirectory: true,
+                    // cacheDirectory: true,
                     presets: [
                         ['@babel/preset-env', { targets: { node: '14' } }],
                         '@babel/preset-react',
@@ -157,7 +157,7 @@ module.exports = {
             'typescript',
             'video.js',
         ],
-        styles: ['./assets/css/index.scss'],
+        // styles: ['./assets/css/index.scss'],
         iaso: {
             dependOn: 'common',
             import: './assets/js/apps/Iaso/index',
@@ -175,12 +175,15 @@ module.exports = {
     // config for webpack-dev-server
     devServer: {
         historyApiFallback: true,
-        writeToDisk: true,
         headers: {
             'Access-Control-Allow-Origin': '*',
         },
         host: '0.0.0.0',
         port: 3000,
+
+        devMiddleware: {
+            writeToDisk: true,
+        },
     },
 
     plugins: [
@@ -194,8 +197,7 @@ module.exports = {
         ),
         new webpack.NoEmitOnErrorsPlugin(), // don't reload if there is an error
         new BundleTracker({
-            path: WEBPACK_PATH,
-            filename: 'webpack-stats.json',
+            filename: `${WEBPACK_PATH}/webpack-stats.json`,
         }),
         new webpack.DefinePlugin({
             __LOCALE: JSON.stringify(LOCALE),
@@ -221,15 +223,6 @@ module.exports = {
             {
                 test: /\.css$/,
                 use: [{ loader: 'style-loader' }, { loader: 'css-loader' }],
-            },
-            // Extract Sass files
-            {
-                test: /\.scss$/,
-                use: [
-                    { loader: 'style-loader' },
-                    { loader: 'css-loader' },
-                    { loader: 'sass-loader' },
-                ],
             },
             // font files
             {

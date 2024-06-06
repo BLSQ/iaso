@@ -171,13 +171,11 @@ class FormVersionsViewSet(ModelViewSet):
         orders = self.request.query_params.get("order", "full_name").split(",")
         mapped_filter = self.request.query_params.get("mapped", "")
 
-        if self.request.user.is_anonymous:
-            app_id = self.request.query_params.get(APP_ID)
-            if app_id is not None:
-                queryset = FormVersion.objects.filter(form__projects__app_id=app_id)
-            else:
-                queryset = FormVersion.objects.none()
-
+        app_id = self.request.query_params.get(APP_ID)
+        if app_id is not None:
+            queryset = FormVersion.objects.filter(form__projects__app_id=app_id)
+        elif self.request.user.is_anonymous:
+            queryset = FormVersion.objects.none()
         else:
             profile = self.request.user.iaso_profile
             queryset = FormVersion.objects.filter(form__projects__account=profile.account)

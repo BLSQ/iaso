@@ -2,6 +2,7 @@ import { Box, useTheme } from '@mui/material';
 import {
     IconButton,
     IntlMessage,
+    LoadingSpinner,
     TreeViewWithSearch,
 } from 'bluesquare-components';
 import { isEqual } from 'lodash';
@@ -13,6 +14,7 @@ import React, {
     useState,
 } from 'react';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
+import { useFetchOrgUnits } from '../../../registry/hooks/useGetOrgUnit';
 import { OrgUnit } from '../../types/orgUnit';
 import { OrgUnitLabel } from '../OrgUnitLabel';
 import { OrgUnitTreeviewPicker } from './OrgUnitTreeviewPicker';
@@ -72,6 +74,7 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
     useIcon = false,
 }) => {
     const theme = useTheme();
+    const { fetchOrgUnit, isFetching: isFetchingOrgUnit } = useFetchOrgUnits();
     const [settings, setSettings] = useState<Settings>({
         displayTypes: true,
         statusSettings: DEFAULT_CONFIG,
@@ -272,50 +275,56 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
             >
                 <SettingsPopper setSettings={setSettings} settings={settings} />
             </Box>
-            <Box mt={1}>
-                <TreeViewWithSearch
-                    getChildrenData={id => getChildrenData(id, statusSettings)}
-                    getRootData={getRootDataWithSource}
-                    label={(orgUnit: OrgUnit) => (
-                        <TreeViewLabel
-                            orgUnit={orgUnit}
-                            withStatusIcon={showStatusIconInTree}
-                            withType={displayTypes}
-                        />
-                    )}
-                    toggleOnLabelClick={toggleOnLabelClick}
-                    onSelect={onOrgUnitSelect}
-                    request={searchOrgUnitsWithSource}
-                    makeDropDownText={orgUnit => (
-                        <OrgUnitLabel orgUnit={orgUnit} />
-                    )}
-                    toolTip={tooltip}
-                    parseNodeIds={getOrgUnitAncestors}
-                    multiselect={multiselect}
-                    queryOptions={{ keepPreviousData: true }}
-                    childrenQueryOptions={{ keepPreviousData: true }}
-                    preselected={selectedOrgUnitsIds}
-                    preexpanded={selectedOrgUnitParents}
-                    selectedData={selectedOrgUnits}
-                    onUpdate={onUpdate}
-                    allowSelection={item => {
-                        if (allowedTypes.length === 0) return true;
-                        return allowedTypes.includes(item.org_unit_type_id);
-                    }}
-                    dependency={statusSettings}
-                    childrenDependency={statusSettings}
-                />
-                <Box
-                    sx={{
-                        position: 'absolute',
-                        width: '60%',
-                        display: 'flex',
-                        bottom: theme.spacing(2),
-                        left: theme.spacing(3),
-                    }}
-                >
-                    <SourceDescription sourceInfos={sourceInfos} />
+            <Box position="relative">
+                {isFetchingOrgUnit && <LoadingSpinner absolute />}
+                <Box mt={1}>
+                    <TreeViewWithSearch
+                        getChildrenData={id =>
+                            getChildrenData(id, statusSettings)
+                        }
+                        getRootData={getRootDataWithSource}
+                        label={(orgUnit: OrgUnit) => (
+                            <TreeViewLabel
+                                orgUnit={orgUnit}
+                                withStatusIcon={showStatusIconInTree}
+                                withType={displayTypes}
+                            />
+                        )}
+                        toggleOnLabelClick={toggleOnLabelClick}
+                        onSelect={onOrgUnitSelect}
+                        request={searchOrgUnitsWithSource}
+                        makeDropDownText={orgUnit => (
+                            <OrgUnitLabel orgUnit={orgUnit} />
+                        )}
+                        toolTip={tooltip}
+                        parseNodeIds={getOrgUnitAncestors}
+                        multiselect={multiselect}
+                        queryOptions={{ keepPreviousData: true }}
+                        childrenQueryOptions={{ keepPreviousData: true }}
+                        preselected={selectedOrgUnitsIds}
+                        preexpanded={selectedOrgUnitParents}
+                        selectedData={selectedOrgUnits}
+                        onUpdate={onUpdate}
+                        allowSelection={item => {
+                            if (allowedTypes.length === 0) return true;
+                            return allowedTypes.includes(item.org_unit_type_id);
+                        }}
+                        dependency={statusSettings}
+                        childrenDependency={statusSettings}
+                        fetchDetails={fetchOrgUnit}
+                    />
                 </Box>
+            </Box>
+            <Box
+                sx={{
+                    position: 'absolute',
+                    width: '60%',
+                    display: 'flex',
+                    bottom: theme.spacing(2),
+                    left: theme.spacing(3),
+                }}
+            >
+                <SourceDescription sourceInfos={sourceInfos} />
             </Box>
         </ConfirmCancelDialogComponent>
     );

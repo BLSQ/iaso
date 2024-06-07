@@ -1,6 +1,5 @@
 /* eslint-disable camelcase */
 import { Field, useFormikContext } from 'formik';
-import cloneDeep from 'lodash/cloneDeep';
 import React, { FunctionComponent, useMemo, useState } from 'react';
 import { useDebounce } from 'use-debounce';
 // @ts-ignore
@@ -14,7 +13,7 @@ import MESSAGES from '../../../constants/messages';
 import { useStyles } from '../../../styles/theme';
 
 import { ScopeField } from './ScopeField';
-import { findRegion, findScopeWithOrgUnit } from './Scopes/utils';
+import { useFilteredDistricts } from './Scopes/utils';
 import { useGetGeoJson } from './hooks/useGetGeoJson';
 import { useGetParentOrgUnit } from './hooks/useGetParentOrgUnit';
 
@@ -76,52 +75,15 @@ export const ScopeForm: FunctionComponent = () => {
         return [];
     }, [currentTab, rounds, scopePerRound, sortedRounds, values.scopes]);
 
-    const filteredDistricts: FilteredDistricts[] | undefined = useMemo(() => {
-        if (!districtShapes || !regionShapes) return undefined;
-
-        const orgUnitIdToVaccine = new Map();
-        if (isPolio && scopes) {
-            scopes.forEach(scope => {
-                scope.group.org_units.forEach(ouId => {
-                    orgUnitIdToVaccine.set(ouId, scope.vaccine);
-                });
-            });
-        }
-        const filtered = districtShapes
-            .filter(district => {
-                const isInScope = scopes.some(sc =>
-                    sc.group.org_units.includes(district.id),
-                );
-                return (
-                    (district.validation_status === 'VALID' || isInScope) &&
-                    (!searchScope || isInScope) &&
-                    (!debouncedSearch ||
-                        district.name
-                            .toLowerCase()
-                            .includes(debouncedSearch.toLowerCase()))
-                );
-            })
-            .map(district => {
-                const scope = findScopeWithOrgUnit(scopes, district.id);
-                const vaccineName =
-                    orgUnitIdToVaccine.get(district.id) || undefined;
-                return {
-                    ...cloneDeep(district),
-                    region: findRegion(district, regionShapes),
-                    scope,
-                    vaccineName,
-                };
-            });
-
-        return filtered;
-    }, [
-        districtShapes,
-        regionShapes,
-        scopes,
-        debouncedSearch,
-        searchScope,
-        isPolio,
-    ]);
+    const filteredDistricts: FilteredDistricts[] | undefined =
+        useFilteredDistricts({
+            isPolio,
+            scopes,
+            districtShapes,
+            regionShapes,
+            search: debouncedSearch,
+            searchScope,
+        });
 
     useSkipEffectOnMount(() => {
         setPage(0);
@@ -168,6 +130,7 @@ export const ScopeForm: FunctionComponent = () => {
                         setSearch={setSearch}
                         page={page}
                         setPage={setPage}
+                        campaign={values}
                     />
                 )}
                 {scopePerRound &&
@@ -196,6 +159,7 @@ export const ScopeForm: FunctionComponent = () => {
                                 setSearch={setSearch}
                                 page={page}
                                 setPage={setPage}
+                                campaign={values}
                             />
                         </TabPanel>
                     ))}

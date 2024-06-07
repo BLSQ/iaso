@@ -4,6 +4,8 @@ import { ScopeSearch } from './Scopes/ScopeSearch';
 import { ScopeInput } from './ScopeInput';
 import { FilteredDistricts } from './Scopes/types';
 import { OrgUnit } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
+import { CampaignFormValues } from '../../../constants/types';
+import { PolioVaccine } from '../../../constants/virus';
 
 type Props = {
     name: string;
@@ -21,6 +23,9 @@ type Props = {
     page: number;
     // eslint-disable-next-line no-unused-vars
     setPage: (page: number) => void;
+    campaign: CampaignFormValues; // See ScopeField props for explanation
+    availableVaccines?: PolioVaccine[];
+    searchInputWithMargin?: boolean;
 };
 
 export const ScopeField: FunctionComponent<Props> = ({
@@ -36,6 +41,9 @@ export const ScopeField: FunctionComponent<Props> = ({
     setSearch,
     page,
     setPage,
+    campaign,
+    availableVaccines,
+    searchInputWithMargin = true,
 }) => (
     <Field
         name={name}
@@ -50,5 +58,8 @@ export const ScopeField: FunctionComponent<Props> = ({
         searchComponent={<ScopeSearch search={search} setSearch={setSearch} />}
         page={page}
         setPage={setPage}
+        campaign={campaign}
+        availableVaccines={availableVaccines}
+        searchInputWithMargin={searchInputWithMargin}
     />
 );

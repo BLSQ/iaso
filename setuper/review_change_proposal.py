@@ -1,4 +1,5 @@
 import random
+from submissions import org_unit_gps_point
 
 
 def instance_details_by_id(instanceId, iaso_client):
@@ -24,7 +25,7 @@ def setup_review_change_proposal(account_name, iaso_client):
     ]
     org_unit_group_ids = [org_unit_group["id"] for org_unit_group in org_unit_groups]
     for org_unit in orgunits:
-        location = [None, {"latitude": org_unit["latitude"], "longitude": org_unit["longitude"], "altitude": 0.0}]
+        location = [None, {**org_unit_gps_point(org_unit)}]
         new_location = random.choice(location)
         groups = random.sample(org_unit_group_ids, random.randint(0, len(org_unit_group_ids)))
         name_extension = random.choice(["", "1"])

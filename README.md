@@ -280,16 +280,16 @@ You can now start to develop additional features on Iaso!
 Alternatively or in addition to steps 7-8, you can import data from the DHIS2 demo server (play.dhis2.org).
 
 First find a running version from play.dhis2.org.
-Go to https://play.dhis2.org/2.37
-Then watch the redirection : ex : https://play.dhis2.org/2.37.7.1/dhis-web-commons/security/login.action 
-To find the current active version : 2.37.7.1
-That you will pass to the next docker-compose run
+Take the most recent as the other ones may return a 404.
+Follow the link, eg: https://play.im.dhis2.org/stable-2-40-3-1
+In this example the version is 2.40.3.1.
+Pass it to docker-compose run:
 
 In a new bash, run the command
 
 
 ``` bash
-docker-compose run --rm iaso manage seed_test_data --mode=seed --dhis2version=2.37.7.1
+docker-compose run --rm iaso manage seed_test_data --mode=seed --dhis2version=2.40.3.1
 ```
 
 The hierarchy of OrgUnit, group of OrgUnit, Forms, and their Submissions will be imported. Type of OrgUnit are not
@@ -322,17 +322,18 @@ pattern to run a command is
 
 The following are some examples:
 
-* Run tests                    `docker-compose exec iaso ./manage.py test`
-* Check type hints             `docker-compose exec iaso mypy .`
-* Create a shell inside the container    `docker-compose run iaso bash`
-* Run a shell command          `docker-compose run iaso eval curl http://google.com`
-* Run Django manage.py         `docker-compose exec iaso ./manage.py help`
-* Launch a python shell        `docker-compose exec iaso ./manage.py shell`
-* Launch a postgresql shell    `docker-compose exec iaso ./manage.py dbshell`
+* Run tests                          `docker-compose exec iaso ./manage.py test`
+* Check type hints                   `docker-compose exec iaso mypy .`
+* Create a shell inside the container`docker-compose run iaso bash`
+* Run a shell command                `docker-compose run iaso eval curl http://google.com`
+* Run Django manage.py               `docker-compose exec iaso ./manage.py help`
+* Launch a python shell              `docker-compose exec iaso ./manage.py shell`
+* Launch a postgresql shell          `docker-compose exec iaso ./manage.py dbshell`
 * Create pending ORM migration files `docker-compose exec iaso ./manage.py makemigrations`
-* Apply pending ORM migrations `docker-compose exec iaso ./manage.py migrate`
-* Show ORM migrations          `docker-compose exec iaso ./manage.py showmigrations`
-* To run a background worker   `docker-compose run iaso manage tasks_worker`  (see  section Background tasks & Worker)
+* Apply pending ORM migrations       `docker-compose exec iaso ./manage.py migrate`
+* Show ORM migrations                `docker-compose exec iaso ./manage.py showmigrations`
+* Complie SCSS files for templates   `docker-compose exec iaso ./manage.py compilescss`
+* To run a background worker         `docker-compose run iaso manage tasks_worker`  (see  section Background tasks & Worker)
 
 Containers and services
 -----------------------
@@ -750,6 +751,17 @@ docker-compose build
 # start-up containers
 docker-compose up
 ```
+
+SASS & SCSS
+------------
+Scss files are only used to generate the style of the DJango Templates.
+It is not longer part of the webpack app.
+While editing scss files you have to compile it manually with the command:
+
+`docker-compose exec iaso ./manage.py compilescss`
+
+If you don't compile it, changes will not be reflected while deploying as we only use css file in production.
+
 
 Jupyter Notebook
 ----------------

@@ -21,7 +21,7 @@ const PermissionSwitch: React.FunctionComponent<Props> = ({
     if (!settings.row.original.group) {
         return (
             <Switch
-                className="permission-checkbox"
+                data-test="permission-checkbox"
                 id={`permission-checkbox-${settings.row.original[codeName]}`}
                 checked={Boolean(
                     permissions.find(up => {

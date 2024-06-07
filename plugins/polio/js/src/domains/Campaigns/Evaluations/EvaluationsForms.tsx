@@ -8,7 +8,7 @@ import React, { FunctionComponent, useState } from 'react';
 import MESSAGES from '../../../constants/messages';
 
 import { Campaign, Round } from '../../../constants/types';
-import { EvaluationForm } from '../Rounds/EvaluationForm';
+import { EvaluationForm } from './EvaluationForm';
 
 export const scopeFormFields = ['separate_scopes_per_round', 'scopes'];
 

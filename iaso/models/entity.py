@@ -190,7 +190,7 @@ class Entity(SoftDeletableModel):
             "updated_at": self.updated_at,
             "entity_type": self.entity_type_id,
             "entity_type_name": self.entity_type and self.entity_type.name,
-            "attributes": self.attributes.as_dict(),
+            "attributes": self.attributes and self.attributes.as_dict(),
         }
 
     def as_dict(self):

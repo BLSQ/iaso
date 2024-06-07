@@ -2,7 +2,7 @@
 import { Table, TableBody } from '@mui/material';
 import React, { FunctionComponent, useMemo } from 'react';
 // @ts-ignore
-import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
 import { useGetPossibleFields } from '../../forms/hooks/useGetPossibleFields';
 import { useGetFields } from '../hooks/useGetFields';
@@ -58,25 +58,22 @@ export const BeneficiaryBaseInfo: FunctionComponent<Props> = ({
         <>
             <Table size="small">
                 <TableBody>
-                    {isFetchingForm && <LoadingSpinner fixed={false} />}
-                    {!isFetchingForm && beneficiary && (
-                        <>
-                            {dynamicFields.map(field => (
-                                <PaperTableRow
-                                    label={field.label}
-                                    value={field.value}
-                                    key={field.key}
-                                />
-                            ))}
-                            {staticFields.map(field => (
-                                <PaperTableRow
-                                    label={field.label}
-                                    value={field.value}
-                                    key={field.key}
-                                />
-                            ))}
-                        </>
-                    )}
+                    {!isFetchingForm &&
+                        beneficiary &&
+                        dynamicFields.map(field => (
+                            <PaperTableRow
+                                label={field.label}
+                                value={field.value}
+                                key={field.key}
+                            />
+                        ))}
+                    {staticFields.map(field => (
+                        <PaperTableRow
+                            label={field.label}
+                            value={field.value}
+                            key={field.key}
+                        />
+                    ))}
                 </TableBody>
             </Table>
         </>

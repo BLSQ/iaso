@@ -17,7 +17,7 @@ import MESSAGES from '../messages';
 import { makeUrlWithParams } from '../../../libs/utils';
 
 import { Beneficiary } from '../types/beneficiary';
-import { Instance, PaginatedInstances } from '../../instances/types/instance';
+import { PaginatedInstances } from '../../instances/types/instance';
 import { DropdownOptions } from '../../../types/utils';
 import getDisplayName, { Profile } from '../../../utils/usersUtils';
 import { DropdownTeamsOptions, Team } from '../../teams/types/team';

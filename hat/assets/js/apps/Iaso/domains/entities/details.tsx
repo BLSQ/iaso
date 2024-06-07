@@ -74,7 +74,6 @@ export const Details: FunctionComponent = () => {
                             title={formatMessage(MESSAGES.beneficiaryInfo)}
                         >
                             <Box className={classes.infoPaperBox}>
-                                {!beneficiary && <LoadingSpinner absolute />}
                                 <BeneficiaryBaseInfo
                                     beneficiary={beneficiary}
                                 />

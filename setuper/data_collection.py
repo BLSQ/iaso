@@ -4,13 +4,15 @@ from submissions import submission2xml, org_unit_gps_point
 import random
 
 
-def setup_instances(account_name, iaso_client):
+def setup_instances(account_name, iaso_client, project_ids=None):
     print("-- Setting up a form")
     project_id = iaso_client.get("/api/projects/")["projects"][0]["id"]
     org_unit_types = iaso_client.get("/api/v2/orgunittypes/")["orgUnitTypes"]
     org_unit_type_ids = [
         out["id"] for out in org_unit_types if out["name"] != "Health facility/Formation sanitaire - HF"
     ]
+
+    print("PROJECT ID ", project_id)
 
     # create a form
     data = {

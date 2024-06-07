@@ -8,7 +8,7 @@ from registry import setup_registry
 from default_healthFacility_form import setup_health_facility_level_default_form
 from review_change_proposal import setup_review_change_proposal
 from create_submission_with_picture import create_submission_with_picture
-from additional_projects import create_projects
+from additional_projects import create_projects, projects_mapper
 from constants import DEFAULT_ACCOUNT_NAME
 import string
 import random
@@ -92,7 +92,10 @@ if __name__ == "__main__":
                 username=default_account_name,
                 password=default_account_name,
             )
+
+        setup_orgunits(default_account_name, iaso_client)
         create_projects(default_account_name, iaso_client=iaso_client)
+        setup_instances(default_account_name, iaso_client=iaso_client)
     print("-----------------------------------------------")
     print("Account created:", account_name)
     print("Login at %s with\n\tlogin: %s \n\tpassword: %s" % (SERVER, account_name, account_name))

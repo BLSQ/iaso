@@ -4,16 +4,19 @@ def projects_mapper(account_name):
             "name": "Planning",
             "app_id": f"{account_name}.planning",
             "feature_flags": ["REQUIRE_AUTHENTICATION", "TAKE_GPS_ON_FORM", "", "FORMS_AUTO_UPLOAD", "PLANNING"],
+            "linked_forms": ["Equipment/Pop/Social mob./Microplans"],
         },
         {
             "name": "Georegistry/Géoregistre",
             "app_id": f"{account_name}.georegistry",
             "feature_flags": ["REQUIRE_AUTHENTICATION", "TAKE_GPS_ON_FORM"],
+            "linked_forms": ["Equipment/Pop/Social mob./Microplans"],
         },
         {
             "name": "Children vaccination/Vaccination des enfants",
             "app_id": f"{account_name}.children",
             "feature_flags": ["REQUIRE_AUTHENTICATION", "ENTITY"],
+            "linked_forms": ["Child - Registration", "Child - Follow up"],
         },
     ]
     return projects
@@ -34,11 +37,12 @@ def feature_flags_mapper(project, iaso_client):
 
 
 def create_projects(account_name, iaso_client):
-    print("-- Creating 3 additional projects")
+    print(f"-- Creating 3 additional projects for account :{account_name}")
     projects = projects_mapper(account_name)
     existing_projects = iaso_client.get("/api/projects/")["projects"]
 
     for project in projects:
+        project["linked_forms"] = None
         project["feature_flags"] = feature_flags_mapper(project, iaso_client)
         check_project = [
             current_project for current_project in existing_projects if current_project["app_id"] == project["app_id"]
@@ -48,3 +52,10 @@ def create_projects(account_name, iaso_client):
             iaso_client.put(f"/api/apps/current/?app_id={project['app_id']}", json=project)
         else:
             iaso_client.post("/api/apps/", json=project)
+
+
+def setup_instances(account_name, iaso_client):
+    projects = iaso_client.get("/api/projects/")["projects"]
+    projects_mapper = projects_mapper(account_name)
+
+    # for project in projects:

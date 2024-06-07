@@ -69,7 +69,6 @@ const save = (body: CampaignFormValues) => {
 
     return saveCampaign()
         .then(campaign => {
-            // TODO check roundId exists
             return saveSubActivity(subactivity)
                 .then(res => {
                     if (res) {

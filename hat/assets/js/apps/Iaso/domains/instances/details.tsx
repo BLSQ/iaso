@@ -130,24 +130,10 @@ const InstanceDetails: FunctionComponent = () => {
                                 </Alert>
                             )}
                             {currentInstance && currentInstance.entity && (
-                                <WidgetPaper
-                                    className={classes.infoPaper}
-                                    title={formatMessage(
-                                        MESSAGES.beneficiaryInfo,
-                                    )}
-                                    IconButton={IconButton}
-                                    iconButtonProps={{
-                                        url: `/${baseUrls.entityDetails}/entityId/${currentInstance.entity.id}`,
-                                        icon: 'remove-red-eye',
-                                        tooltipMessage: MESSAGES.see,
-                                    }}
-                                >
-                                    <Box className={classes.infoPaperBox}>
-                                        <BeneficiaryBaseInfo
-                                            beneficiary={currentInstance.entity}
-                                        />
-                                    </Box>
-                                </WidgetPaper>
+                                <BeneficiaryBaseInfo
+                                    beneficiary={currentInstance.entity}
+                                    withLinkToBeneficiary={true}
+                                />
                             )}
                             <WidgetPaper
                                 title={formatMessage(MESSAGES.infos)}

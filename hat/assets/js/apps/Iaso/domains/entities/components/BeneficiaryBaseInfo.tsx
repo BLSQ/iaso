@@ -1,24 +1,36 @@
 /* eslint-disable react/require-default-props */
-import { Table, TableBody } from '@mui/material';
+import { Box, Skeleton, Table, TableBody } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import React, { FunctionComponent, useMemo } from 'react';
 // @ts-ignore
-import { useSafeIntl } from 'bluesquare-components';
+import { commonStyles, IconButton, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
 import { useGetPossibleFields } from '../../forms/hooks/useGetPossibleFields';
 import { useGetFields } from '../hooks/useGetFields';
 import { useGetBeneficiaryTypesDropdown } from '../hooks/requests';
 
+import { baseUrls } from '../../../constants/urls';
 import { Beneficiary } from '../types/beneficiary';
 import { Field } from '../types/fields';
 import { PaperTableRow } from '../../../components/tables/PaperTableRow';
+import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
+
+const useStyles = makeStyles(theme => ({
+    ...commonStyles(theme),
+    infoPaper: { width: '100%', position: 'relative' },
+    infoPaperBox: { minHeight: '100px' },
+}));
 
 type Props = {
     beneficiary?: Beneficiary;
+    withLinkToBeneficiary?: boolean;
 };
 export const BeneficiaryBaseInfo: FunctionComponent<Props> = ({
     beneficiary,
+    withLinkToBeneficiary = false,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const classes: Record<string, string> = useStyles();
 
     const { data: types } = useGetBeneficiaryTypesDropdown();
     const { possibleFields, isFetchingForm } = useGetPossibleFields(
@@ -54,28 +66,64 @@ export const BeneficiaryBaseInfo: FunctionComponent<Props> = ({
         ],
         [beneficiary?.attributes?.nfc_cards, beneficiary?.uuid, formatMessage],
     );
-    return (
-        <>
-            <Table size="small">
-                <TableBody>
-                    {!isFetchingForm &&
-                        beneficiary &&
-                        dynamicFields.map(field => (
+
+    if (isFetchingForm || !beneficiary) {
+        return (
+            <Skeleton
+                sx={{ marginBottom: '32px' }}
+                variant="rectangular"
+                width="100%"
+                height="30vh"
+            />
+        );
+    } else {
+        const widgetContents = (
+            <Box className={classes.infoPaperBox}>
+                <Table size="small">
+                    <TableBody>
+                        {dynamicFields.map(field => (
                             <PaperTableRow
                                 label={field.label}
                                 value={field.value}
                                 key={field.key}
                             />
                         ))}
-                    {staticFields.map(field => (
-                        <PaperTableRow
-                            label={field.label}
-                            value={field.value}
-                            key={field.key}
-                        />
-                    ))}
-                </TableBody>
-            </Table>
-        </>
-    );
+                        {staticFields.map(field => (
+                            <PaperTableRow
+                                label={field.label}
+                                value={field.value}
+                                key={field.key}
+                            />
+                        ))}
+                    </TableBody>
+                </Table>
+            </Box>
+        );
+
+        if (withLinkToBeneficiary) {
+            return (
+                <WidgetPaper
+                    className={classes.infoPaper}
+                    title={formatMessage(MESSAGES.beneficiaryInfo)}
+                    IconButton={IconButton}
+                    iconButtonProps={{
+                        url: `/${baseUrls.entityDetails}/entityId/${beneficiary.id}`,
+                        icon: 'remove-red-eye',
+                        tooltipMessage: MESSAGES.see,
+                    }}
+                >
+                    {widgetContents}
+                </WidgetPaper>
+            );
+        } else {
+            return (
+                <WidgetPaper
+                    className={classes.infoPaper}
+                    title={formatMessage(MESSAGES.beneficiaryInfo)}
+                >
+                    {widgetContents}
+                </WidgetPaper>
+            );
+        }
+    }
 };

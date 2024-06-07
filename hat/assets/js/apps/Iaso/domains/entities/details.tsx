@@ -2,7 +2,6 @@ import React, { FunctionComponent, useMemo } from 'react';
 import {
     useSafeIntl,
     commonStyles,
-    LoadingSpinner,
     useGoBack,
     LinkButton,
 } from 'bluesquare-components';
@@ -25,8 +24,6 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     titleRow: { fontWeight: 'bold' },
     fullWidth: { width: '100%' },
-    infoPaper: { width: '100%', position: 'relative' },
-    infoPaperBox: { minHeight: '100px' },
 }));
 
 export const Details: FunctionComponent = () => {
@@ -69,16 +66,7 @@ export const Details: FunctionComponent = () => {
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>
                 <Grid container spacing={2}>
                     <Grid container item xs={4}>
-                        <WidgetPaper
-                            className={classes.infoPaper}
-                            title={formatMessage(MESSAGES.beneficiaryInfo)}
-                        >
-                            <Box className={classes.infoPaperBox}>
-                                <BeneficiaryBaseInfo
-                                    beneficiary={beneficiary}
-                                />
-                            </Box>
-                        </WidgetPaper>
+                        <BeneficiaryBaseInfo beneficiary={beneficiary} />
                     </Grid>
                     {duplicates.length > 0 && (
                         <Grid container item xs={8} justifyContent="flex-end">

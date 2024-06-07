@@ -68,10 +68,10 @@ class Under5:
 
                     form_id = visit.get("form__form_id")
                     current_record["org_unit_id"] = visit.get("org_unit_id", None)
-                    current_weight = None
+
                     if current_record.get("weight_kgs", None) is not None:
                         current_weight = current_record.get("weight_kgs", None)
-                    else:
+                    elif current_record.get("previous_weight_kgs__decimal__", None) is not None:
                         current_weight = current_record.get("previous_weight_kgs__decimal__", None)
                     current_date = visit.get("created_at", None)
 

@@ -1190,7 +1190,7 @@
     "iaso.storages.usb": "USB",
     "iaso.storages.writeProfile": "Write profile",
     "iaso.storages.writeRecord": "Write record",
-    "iaso.submissions.filterParam": "Apply at least one filter in order to be able to download data",
+    "iaso.submissions.filterParam": "Apply a filter on the “form” tab to be able to download the data",
     "iaso.submissions.searchSubmissionFormsParamsInfo": "Select one form to enable search using form submitted fields",
     "iaso.table.label.close": "Close",
     "iaso.table.label.resetSearch": "Empty search",

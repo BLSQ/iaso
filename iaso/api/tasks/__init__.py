@@ -81,7 +81,7 @@ class TaskSourceViewSet(ModelViewSet):
     def get_queryset(self):
         profile = self.request.user.iaso_profile
         order = self.request.query_params.get("order", "created_at").split(",")
-        return Task.objects.filter(account=profile.account).order_by(*order)
+        return Task.objects.select_related("launcher").filter(account=profile.account).order_by(*order)
 
     @action(detail=True, methods=["get"], url_path="presigned-url")
     def generate_presigned_url(self, request, pk=None):

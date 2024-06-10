@@ -117,11 +117,12 @@ describe('forms tab', () => {
 
         testPagination({
             baseUrl,
-            apiPath: '/api/forms/**',
+            apiPath: '/api/forms/',
             query: {
                 orgUnitId: `${orgUnit.id}`,
                 limit: '10',
                 order: 'name',
+                page: '1',
             },
             apiKey: 'forms',
             withSearch: false,

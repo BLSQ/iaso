@@ -35,6 +35,7 @@ export const FormsTable: FunctionComponent<Props> = ({
             ? { ...tableDefaults, ...tableDefaultsProp }
             : tableDefaults,
     );
+    const defaultLimit = tableDefaultsProp?.limit ?? tableDefaults.limit;
     return (
         <TableWithDeepLink
             baseUrl={baseUrl}
@@ -47,7 +48,7 @@ export const FormsTable: FunctionComponent<Props> = ({
             pages={forms?.pages}
             extraProps={{
                 loading: isLoadingForms,
-                defaultPageSize: forms?.limit ?? tableDefaults.limit,
+                defaultPageSize: forms?.limit ?? defaultLimit,
                 ...apiParams, // need to force render when these change to avoid desync between params and url
             }}
         />

@@ -17,16 +17,16 @@ import zipfile
 
 
 from beanstalk_worker import task_decorator
-from django.contrib.auth.models import User
 from django.core.files import File
 from django.db import transaction
 from django.utils.translation import gettext as _
 from traceback import format_exc
 
 from hat.api_import.models import APIImport
+from hat.sync.views import create_instance_file, process_instance_file
 from iaso.api.instances import import_data as import_instances
 from iaso.api.mobile.org_units import import_data as import_org_units
-from iaso.models import Project, Instance, InstanceFile
+from iaso.models import Project, Instance
 from iaso.utils.s3_client import download_file
 
 INSTANCES_JSON = "instances.json"
@@ -101,17 +101,7 @@ def process_instance_xml(directory, zip_ref, user):
     instance = Instance.objects.get(uuid=directory.name)
     logger.info(f"Processing instance {instance.uuid}")
     with zip_ref.open(os.path.join(directory.name, instance.file_name), "r") as f:
-        instance.file = File(f)
-        instance.created_by = user
-        instance.last_modified_by = user
-        instance.save()
-        instance.get_and_save_json_of_xml()
-        try:
-            instance.convert_location_from_field()
-            instance.convert_device()
-            instance.convert_correlation()
-        except ValueError as error:
-            logger.exception(error)
+        instance = process_instance_file(instance, File(f), user)
 
     return instance
 
@@ -122,11 +112,7 @@ def process_instance_files(directory, instance):
         if instance_file.name != instance.file_name:
             with instance_file.open("rb") as f:
                 logger.info(f"\tProcessing attachment {instance_file.name}")
-                fi = InstanceFile()
-                fi.file = File(f)
-                fi.instance_id = instance.id
-                fi.name = instance_file.name
-                fi.save()
+                fi = create_instance_file(instance, instance_file.name, File(f))
                 instance_files.append(fi)
 
     return instance_files

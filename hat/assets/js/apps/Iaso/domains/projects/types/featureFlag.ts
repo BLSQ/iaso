@@ -1,5 +1,5 @@
 export type FeatureFlag = {
-    id: number;
+    id: number | string;
     code: string;
     description: string;
     name: string;

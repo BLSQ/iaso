@@ -42,7 +42,9 @@ export const columns = (
         accessor: 'feature_flags',
         sortable: false,
         Cell: settings =>
-            settings.value.map(fF => fF.name).join(', ') || textPlaceholder,
+            settings.value
+                .map(fF => formatMessage(MESSAGES[fF.code.toLowerCase()]))
+                .join(', ') || textPlaceholder,
     },
     {
         Header: formatMessage(MESSAGES.actions),

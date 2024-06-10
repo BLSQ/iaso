@@ -3,14 +3,20 @@ import {
     useSafeIntl,
     commonStyles,
     useGoBack,
+    LoadingSpinner,
     LinkButton,
 } from 'bluesquare-components';
-import { Box, Divider, Grid } from '@mui/material';
+import { Box, Divider, Grid, Skeleton } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { baseUrls } from '../../constants/urls';
-import { useGetBeneficiary, useGetSubmissions } from './hooks/requests';
+import { useGetPossibleFields } from '../forms/hooks/useGetPossibleFields';
+import {
+    useGetBeneficiary,
+    useGetBeneficiaryTypesDropdown,
+    useGetSubmissions,
+} from './hooks/requests';
 import { Beneficiary } from './types/beneficiary';
 import { useBeneficiariesDetailsColumns } from './config';
 import { CsvButton } from '../../components/Buttons/CsvButton';
@@ -35,11 +41,10 @@ export const Details: FunctionComponent = () => {
 
     const {
         data: beneficiary,
-        isLoading: isLoadingBeneficiary,
     }: {
         data?: Beneficiary;
-        isLoading: boolean;
     } = useGetBeneficiary(entityId as string);
+
     const columns = useBeneficiariesDetailsColumns(beneficiary?.id ?? null, []);
 
     const { data, isLoading: isLoadingSubmissions } = useGetSubmissions(
@@ -96,39 +101,47 @@ export const Details: FunctionComponent = () => {
                     </Grid> */}
                 </Grid>
                 <Box mt={2}>
-                    <WidgetPaper
-                        className={classes.fullWidth}
-                        title={formatMessage(MESSAGES.submissions)}
-                    >
-                        <TableWithDeepLink
-                            marginTop={false}
-                            countOnTop={false}
-                            elevation={0}
-                            baseUrl={baseUrls.entityDetails}
-                            data={data?.instances ?? []}
-                            pages={data?.pages}
-                            defaultSorted={[{ id: 'id', desc: false }]}
-                            columns={columns}
-                            count={data?.count}
-                            params={params}
-                            extraProps={{
-                                loading:
-                                    isLoadingBeneficiary ||
-                                    isLoadingSubmissions,
-                            }}
+                    {isLoadingSubmissions && (
+                        <Skeleton
+                            sx={{ marginBottom: theme => theme.spacing(2) }}
+                            variant="rectangular"
+                            width="100%"
+                            height="30vh"
                         />
-                        <Divider />
-                        <Box display="flex" py={2}>
-                            <Box mr={1} ml={2}>
-                                <CsvButton
-                                    csvUrl={`/api/entities/?csv=true&id=${entityId}`}
+                    )}
+                    {!isLoadingSubmissions && (
+                        <WidgetPaper
+                            className={classes.fullWidth}
+                            title={formatMessage(MESSAGES.submissions)}
+                        >
+                            <TableWithDeepLink
+                                marginTop={false}
+                                countOnTop={false}
+                                elevation={0}
+                                baseUrl={baseUrls.entityDetails}
+                                data={data?.instances ?? []}
+                                pages={data?.pages}
+                                defaultSorted={[{ id: 'id', desc: false }]}
+                                columns={columns}
+                                count={data?.count}
+                                params={params}
+                                extraProps={{
+                                    loading: isLoadingSubmissions,
+                                }}
+                            />
+                            <Divider />
+                            <Box display="flex" py={2}>
+                                <Box mr={1} ml={2}>
+                                    <CsvButton
+                                        csvUrl={`/api/entities/?csv=true&id=${entityId}`}
+                                    />
+                                </Box>
+                                <XlsxButton
+                                    xlsxUrl={`/api/entities/?xlsx=true&id=${entityId}`}
                                 />
                             </Box>
-                            <XlsxButton
-                                xlsxUrl={`/api/entities/?xlsx=true&id=${entityId}`}
-                            />
-                        </Box>
-                    </WidgetPaper>
+                        </WidgetPaper>
+                    )}
                 </Box>
             </Box>
         </>

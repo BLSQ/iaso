@@ -250,6 +250,7 @@ FormVersionsDialogComponent.defaultProps = {
     formVersion: emptyVersion(),
     periodType: '',
     formId: 0,
+    onConfirmed: () => null,
 };
 
 FormVersionsDialogComponent.propTypes = {
@@ -258,6 +259,6 @@ FormVersionsDialogComponent.propTypes = {
     formId: PropTypes.number,
     titleMessage: PropTypes.object.isRequired,
     renderTrigger: PropTypes.func.isRequired,
-    onConfirmed: PropTypes.func.isRequired,
+    onConfirmed: PropTypes.func,
 };
 export default FormVersionsDialogComponent;

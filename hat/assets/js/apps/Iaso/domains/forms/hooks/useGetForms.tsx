@@ -24,8 +24,11 @@ type FormResponse = {
     page: number;
     pages: number;
 };
-export const useGetForms = (params): UseQueryResult<FormResponse, Error> => {
-    const safeParams = useApiParams(params, tableDefaults);
+export const useGetForms = (
+    params,
+    defaults = tableDefaults,
+): UseQueryResult<FormResponse, Error> => {
+    const safeParams = useApiParams(params, defaults);
     if (safeParams?.accountId) {
         delete safeParams.accountId;
     }
@@ -36,6 +39,7 @@ export const useGetForms = (params): UseQueryResult<FormResponse, Error> => {
             staleTime: 60000,
             cacheTime: 60000,
             keepPreviousData: true,
+            // enabled: false,
         },
     });
 };

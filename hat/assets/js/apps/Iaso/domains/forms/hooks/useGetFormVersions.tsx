@@ -4,7 +4,7 @@ import { useSnackQuery } from '../../../libs/apiHooks';
 
 const defaultTableParams = {
     page: 1,
-    pageSize: 10,
+    limit: 20,
     order: '-version_id',
 };
 

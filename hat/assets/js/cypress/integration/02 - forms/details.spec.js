@@ -43,11 +43,14 @@ describe('Forms details', () => {
         cy.intercept('GET', '/api/v2/orgunittypes/**', orgUnitTypes).as(
             'orgUnitTypes',
         );
-        cy.intercept('GET', '/api/projects/**', projects).as('projects');
+        // FIXME: this call returns 500
+        cy.intercept({ method: 'GET', url: '/api/projects/**' }, projects).as(
+            'projects',
+        );
         // TODO parametrise form_id
         cy.intercept(
             'GET',
-            '/api/formversions/?&limit=20&order=-version_id&form_id=1',
+            '/api/formversions/?form_id=1&order=-version_id&limit=20&page=1',
             formVersionsPageOne,
         ).as('getFormVersions');
         cy.intercept(

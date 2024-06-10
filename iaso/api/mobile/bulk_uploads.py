@@ -92,15 +92,14 @@ class MobileBulkUploadsViewSet(ViewSet):
 
             return Response(status=status.HTTP_204_NO_CONTENT)
         except ValueError as exc:
-            self._handle_exception(exc, api_import)
+            api_import.has_problem = True
+            api_import.exception = format_exc()
+            api_import.save()
             logger.exception(f"ValueError: {str(exc)}")
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        except ClientError as exc:
-            self._handle_exception(exc, api_import)
-            logger.exception(f"Upload to S3 failed: {str(exc)}")
+        except Exception as exc:
+            api_import.has_problem = True
+            api_import.exception = format_exc()
+            api_import.save()
+            logger.exception(f"Exception: {str(exc)}")
             return Response(serializer.errors, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-    def _handle_exception(exc, api_import):
-        api_import.has_problem = True
-        api_import.exception = format_exc()
-        api_import.save()

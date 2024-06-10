@@ -86,7 +86,6 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
                 stats["new_instance_files"] = len(new_instance_files) + duplicated_count
 
     except Exception as e:
-        logger.error("Exception! Rolling back import: " + str(e))
         api_import.has_problem = True
         api_import.exception = format_exc()
         api_import.save()

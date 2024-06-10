@@ -122,6 +122,7 @@ export const OrgUnitChildrenFilters: FunctionComponent<Props> = ({
                         onChange={handleChange}
                         options={validationStatusOptions}
                         loading={isLoadingStatuses}
+                        clearable={false}
                         label={MESSAGES.validationStatus}
                     />
                 </Grid>

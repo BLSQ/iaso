@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import { Box } from '@mui/material';
 import { OrgUnitChildrenFilters } from './OrgUnitChildrenFilters';
 import { OU_CHILDREN_PREFIX } from '../../../../constants/urls';
@@ -21,8 +21,16 @@ export const OrgUnitChildren: FunctionComponent<Props> = ({
     baseUrl,
     groups,
 }) => {
+    // Add deafult value "all" for validation status
+    const paramsWithDefaultValue = useMemo(() => {
+        const copy = { ...params };
+        if (params[`${OU_CHILDREN_PREFIX}Validation_status`] === undefined) {
+            copy[`${OU_CHILDREN_PREFIX}Validation_status`] = 'all';
+        }
+        return copy;
+    }, [params]);
     // Generate the queryString here so it can be used for the download urls
-    const queryString = useOrgUnitChildrenQueryString(params);
+    const queryString = useOrgUnitChildrenQueryString(paramsWithDefaultValue);
     const { data, isFetching: loading } = useGetOrgUnitChildren(queryString);
     const csvUrl = `${apiUrl}/?${queryString}&csv=true`;
     const xlsxUrl = `${apiUrl}/?${queryString}&xlsx=true`;
@@ -31,7 +39,7 @@ export const OrgUnitChildren: FunctionComponent<Props> = ({
         <>
             <OrgUnitChildrenFilters
                 baseUrl={baseUrl}
-                params={params}
+                params={paramsWithDefaultValue}
                 groups={groups}
             />
             {Boolean(data?.orgunits?.length) && (
@@ -51,7 +59,7 @@ export const OrgUnitChildren: FunctionComponent<Props> = ({
             )}
             <OrgUnitChildrenTable
                 baseUrl={baseUrl}
-                params={params}
+                params={paramsWithDefaultValue}
                 paramsPrefix={OU_CHILDREN_PREFIX}
                 data={data}
                 loading={loading}

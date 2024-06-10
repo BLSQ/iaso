@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import uuid
 
 from fake import fake_person
-from submissions import submission2xml
+from submissions import submission2xml, org_unit_gps_point
 from random import randint
 
 
@@ -111,32 +111,28 @@ def setup_entities(account_name, iaso_client):
     # fetch orgunit ids
     limit = 20
     orgunits = iaso_client.get("/api/orgunits/", params={"limit": limit, "orgUnitTypeId": hf_out["id"]})["orgunits"]
-    org_unit_ids = [ou["id"] for ou in orgunits]
 
     print("-- Submitting %d submissions" % limit)
     count = 0
-    for org_unit_id in org_unit_ids:
+    for orgunit in orgunits:
         child = fake_person()
-
         the_uuid = str(uuid.uuid4())
         child_uuid = str(uuid.uuid4())
         file_name = "example_%s.xml" % the_uuid
-
+        org_unit_id = orgunit["id"]
         local_path = "generated/%s" % file_name
         current_datetime = int(datetime.now().timestamp())
 
         instance_data = {
+            **org_unit_gps_point(orgunit),
             "id": the_uuid,
-            "latitude": None,
             "created_at": current_datetime,
             "updated_at": current_datetime,
             "orgUnitId": org_unit_id,
             "formId": reg_form_id,
-            "longitude": None,
             "entityUuid": child_uuid,
             "entityTypeId": entity_type["id"],
             "accuracy": 0,
-            "altitude": 0,
             "imgUrl": "imgUrl",
             "file": local_path,
             "name": file_name,
@@ -187,17 +183,15 @@ def setup_entities(account_name, iaso_client):
                 f"/api/instances/?app_id={account_name}",
                 json=[
                     {
+                        **org_unit_gps_point(orgunit),
                         "id": the_uuid,
-                        "latitude": None,
                         "created_at": created_at_to_datetime,
                         "updated_at": current_datetime,
                         "orgUnitId": org_unit_id,
                         "formId": follow_form_id,
                         "entityUuid": child_uuid,
                         "entityTypeId": entity_type["id"],
-                        "longitude": None,
                         "accuracy": 0,
-                        "altitude": 0,
                         "imgUrl": "imgUrl",
                         "file": local_path,
                         "name": file_name,
@@ -225,7 +219,6 @@ def setup_entities(account_name, iaso_client):
                     )
                 },
             )
-
         count = count + 1
 
     print(iaso_client.get("/api/instances", params={"limit": 1})["count"], "instances created")

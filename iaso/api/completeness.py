@@ -1,3 +1,5 @@
+from iaso.models.org_unit import OrgUnit
+from iaso.utils.expressions import ArraySubquery
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 
@@ -19,12 +21,18 @@ class CompletenessViewSet(viewsets.ViewSet):
 
     def list(self, request):
         profile = request.user.iaso_profile
+        profile_org_units = OrgUnit.objects.filter_for_user(request.user)
+
         queryset = (
             Instance.objects.filter(project__account=profile.account)
             .exclude(deleted=True)
             .exclude(file="")
             .with_status()
         )
+
+        if profile_org_units:
+            queryset = queryset.filter(org_unit__in=profile_org_units)
+
         counts = [to_completeness(count) for count in queryset.counts_by_status()]
         form_ids = [count["form"]["form_id"] for count in counts]
 

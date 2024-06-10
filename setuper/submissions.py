@@ -13,3 +13,11 @@ def submission2xml(submission_dict, form_id, form_version_id, gen_uuid=False):
     xml = f'<?xml version=\'1.0\' ?><{root} id="{form_id}" version="{form_version_id}" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">{inner_xml}</{root}>'
 
     return xml
+
+
+def org_unit_gps_point(org_unit):
+    return {
+        "longitude": org_unit["longitude"],
+        "latitude": org_unit["latitude"],
+        "altitude": org_unit["altitude"],
+    }

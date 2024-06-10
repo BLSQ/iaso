@@ -1,17 +1,20 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent } from 'react';
 import { Column } from 'bluesquare-components';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
 import { useLinksTableColumns } from '../config';
 import { useValidateLink } from '../hooks/useValidateLink';
-import { useGetLinks } from '../hooks/useGetLinks';
 import LinksDetails from './LinksDetailsComponent';
-import { usePrefixedParams } from '../../../routing/hooks/usePrefixedParams';
 
 type Props = {
     baseUrl: string;
     params: Record<string, any>;
     defaultPageSize?: number;
     paramsPrefix?: string;
+    data?: any;
+    loading: boolean;
+    expanded?: Record<string, any>;
+    // eslint-disable-next-line no-unused-vars
+    setExpanded: (value: React.SetStateAction<Record<any, any>>) => void;
 };
 
 export const LinksTable: FunctionComponent<Props> = ({
@@ -19,26 +22,14 @@ export const LinksTable: FunctionComponent<Props> = ({
     params,
     defaultPageSize = 10,
     paramsPrefix,
+    data,
+    loading,
+    expanded,
+    setExpanded,
 }) => {
-    const [expanded, setExpanded] = useState({});
-    const onSuccess = () => {
-        setExpanded({});
-    };
-    const apiParams = usePrefixedParams(paramsPrefix, params);
-
-    // The orgUnitId is passed only in orgUnit details, so it can be used to trigger the API call
-    const enabled =
-        Boolean(apiParams?.searchActive) || Boolean(apiParams?.orgUnitId);
-    const { data, isLoading: loading } = useGetLinks({
-        params: apiParams,
-        onSuccess,
-        enabled,
-    });
     const { mutateAsync: validateLink } = useValidateLink();
     const columns = useLinksTableColumns(validateLink) as Column[];
-    if (!enabled) {
-        return null;
-    }
+
     return (
         <TableWithDeepLink
             baseUrl={baseUrl}

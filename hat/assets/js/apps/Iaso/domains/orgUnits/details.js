@@ -40,9 +40,8 @@ import {
 } from './utils';
 import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
 import { FormsTable } from '../forms/components/FormsTable.tsx';
-import { LinksTable } from '../links/components/LinksTable.tsx';
-import { LinksFilter } from './details/Links/LinksFilter.tsx';
 import { OrgUnitChildren } from './details/Children/OrgUnitChildren.tsx';
+import { OrgUnitLinks } from './details/Links/OrgUnitLinks.tsx';
 
 const baseUrl = baseUrls.orgUnitDetails;
 const useStyles = makeStyles(theme => ({
@@ -474,11 +473,7 @@ const OrgUnitDetail = () => {
                                         classes.containerFullHeightNoTabPadded
                                     }
                                 >
-                                    <LinksFilter
-                                        baseUrl={baseUrl}
-                                        params={linksParams}
-                                    />
-                                    <LinksTable
+                                    <OrgUnitLinks
                                         baseUrl={baseUrl}
                                         params={linksParams}
                                         paramsPrefix={LINKS_PREFIX}

@@ -1,11 +1,6 @@
 import React, { ReactElement } from 'react';
-import {
-    IconButton as IconButtonComponent,
-    textPlaceholder,
-    IntlMessage,
-    Column,
-} from 'bluesquare-components';
-import { ProjectsDialog } from './components/ProjectsDialog';
+import { textPlaceholder, IntlMessage, Column } from 'bluesquare-components';
+import { EditProjectDialog } from './components/CreateEditProjectDialog';
 
 import { baseUrls } from '../../constants/urls';
 
@@ -51,18 +46,11 @@ export const columns = (
         sortable: false,
         Cell: (settings): ReactElement => (
             <section>
-                <ProjectsDialog
-                    renderTrigger={({ openDialog }) => (
-                        <IconButtonComponent
-                            onClick={openDialog}
-                            icon="edit"
-                            tooltipMessage={MESSAGES.edit}
-                        />
-                    )}
+                <EditProjectDialog
                     initialData={settings.row.original}
-                    titleMessage={MESSAGES.updateProject}
-                    key={settings.row.original.updated_at}
                     saveProject={saveProject}
+                    dialogType="edit"
+                    iconProps={{}}
                 />
             </section>
         ),

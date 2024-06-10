@@ -449,6 +449,11 @@ const OrgUnitDetail = () => {
                                         params={formParams}
                                         defaultPageSize={10}
                                         paramsPrefix={FORMS_PREFIX}
+                                        tableDefaults={{
+                                            order: 'name',
+                                            limit: 10,
+                                            page: 1,
+                                        }}
                                     />
                                 </Box>
                             )}

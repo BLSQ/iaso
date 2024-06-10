@@ -10,6 +10,21 @@ const defaultTableParams = {
 };
 const apiUrl = '/api/logs';
 
+const formatParams = (params, defaultParams) => {
+    const { order, pageSize, page } = params;
+    const tableParams = { ...defaultParams };
+    if (order) {
+        tableParams.order = params.order;
+    }
+    if (pageSize) {
+        tableParams.limit = pageSize;
+    }
+    if (page) {
+        tableParams.page = page;
+    }
+    return tableParams;
+};
+
 type Args = {
     objectId: number;
     contentType: string;
@@ -20,10 +35,8 @@ export const useGetLogs = ({
     contentType,
     params,
 }: Args): UseQueryResult<any> => {
-    const apiParams = useApiParams(
-        { objectId, contentType },
-        params ?? defaultTableParams,
-    );
+    const tableParams = formatParams(params, defaultTableParams);
+    const apiParams = useApiParams({ objectId, contentType }, tableParams);
     const queryString = new URLSearchParams(apiParams).toString();
     return useSnackQuery({
         queryKey: ['logs', contentType, objectId, queryString],

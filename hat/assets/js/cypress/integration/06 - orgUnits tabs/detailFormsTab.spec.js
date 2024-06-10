@@ -2,7 +2,6 @@
 
 import moment from 'moment';
 import formsList from '../../fixtures/forms/list.json';
-import page2 from '../../fixtures/forms/list-page2.json';
 import orgUnit from '../../fixtures/orgunits/details.json';
 import { testPermission } from '../../support/testPermission';
 import { testPagination } from '../../support/testPagination';
@@ -11,13 +10,6 @@ import { testTablerender } from '../../support/testTableRender';
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
 const baseUrl = `${siteBaseUrl}/dashboard/orgunits/detail/orgUnitId/${orgUnit.id}/tab/forms`;
-
-const interceptList = [
-    'profiles',
-    'algorithms',
-    'algorithmsruns',
-    'orgunittypes',
-];
 
 const testRowContent = (index, form = formsList.forms[index]) => {
     const formCreatedAt = moment
@@ -62,81 +54,28 @@ const goToPage = () => {
     cy.intercept('GET', '/api/profiles/me/**', {
         fixture: 'profiles/me/superuser.json',
     });
-    interceptList.forEach(i => {
-        cy.intercept('GET', `/api/${i}/`, {
-            fixture: `${i}/list.json`,
-        });
-    });
-    cy.intercept('GET', `/api/groups/?&dataSource=${orgUnit.source_id}`, {
-        fixture: `groups/list.json`,
-    });
-    cy.intercept(
-        'GET',
-        ` /api/forms/?&orgUnitId=${orgUnit.id}&limit=10&order=name`,
-        {
-            fixture: `forms/list.json`,
-        },
-    );
 
     cy.intercept(
         'GET',
-        `/api/logs/?&objectId=${orgUnit.id}&contentType=iaso.orgunit&limit=10&order=-created_at`,
+        ` /api/forms/?orgUnitId=${orgUnit.id}&order=name&limit=10&page=1`,
         {
-            fixture: `logs/list-linked-paginated.json`,
+            fixture: `forms/list.json`,
         },
-    );
-    cy.intercept('GET', `/api/datasources/?linkedTo=${orgUnit.id}`, {
-        fixture: `datasources/details-ou.json`,
-    });
-    cy.intercept(
-        'GET',
-        `/api/comments/?object_pk=${orgUnit.id}&content_type=iaso-orgunit&limit=4`,
-        {
-            fixture: `comments/list.json`,
-        },
-    );
+    ).as('getForms');
+
     cy.intercept('GET', `/api/orgunits/${orgUnit.id}`, {
         fixture: 'orgunits/details.json',
     }).as('getOuDetail');
-    cy.intercept(
-        'GET',
-        `/api/orgunits/?&parent_id=${orgUnit.id}&limit=10&order=name&validation_status=all`,
-        {
-            fixture: 'orgunits/details-children-paginated.json',
-        },
-    );
+
     cy.intercept('GET', `/api/links/?orgUnitId=${orgUnit.id}`, {
         fixture: 'links/list-linked.json',
     });
-    cy.intercept(
-        'GET',
-        `/api/links/?&orgUnitId=${orgUnit.id}&limit=10&order=similarity_score`,
-        {
-            fixture: 'links/list-linked-paginated.json',
-        },
-    );
+
     cy.intercept('GET', `/api/instances/?order=id&orgUnitId=${orgUnit.id}`, {
         instances: [],
     });
     cy.intercept('GET', '/sockjs-node/**');
-    cy.intercept(
-        'GET',
-        `/api/orgunits/?&orgUnitParentId=${orgUnit.id}&orgUnitTypeId=${orgUnit.org_unit_type.sub_unit_types[0].id}&withShapes=true&validation_status=all`,
-        {
-            orgUnits: [
-                {
-                    id: 11,
-                    name: 'Org Unit Type 2',
-                    short_name: 'Org Unit Type 2',
-                },
-            ],
-        },
-    );
-    cy.intercept(
-        'GET',
-        `forms/?&orgUnitId=${orgUnit.id}&limit=10&page=2&order=name`,
-        page2,
-    );
+
     cy.visit(baseUrl);
 };
 
@@ -149,7 +88,7 @@ describe('forms tab', () => {
 
     describe('Table', () => {
         it('should render correct infos', () => {
-            cy.wait('@getOuDetail').then(() => {
+            cy.wait(['@getOuDetail', '@getForms']).then(() => {
                 cy.get('[data-test="forms-tab"]').find('table').as('table');
                 cy.get('@table').should('have.length', 1);
                 cy.get('@table').find('tbody').find('tr').as('rows');
@@ -169,7 +108,7 @@ describe('forms tab', () => {
             baseUrl,
             rows: formsList.forms.length,
             columns: 10,
-            apiPath: `forms/?&orgUnitId=${orgUnit.id}&limit=10&order=name`,
+            apiPath: `forms/?orgUnitId=${orgUnit.id}&order=name&limit=10&page=1`,
             apiKey: `forms`,
             withVisit: false,
             selector: '[data-test="forms-tab"] table',

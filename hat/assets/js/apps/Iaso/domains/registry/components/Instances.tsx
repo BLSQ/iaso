@@ -52,8 +52,7 @@ export const Instances: FunctionComponent<Props> = ({
         }
         return undefined;
     }, [subOrgUnitTypes, tab]);
-    const { data: orgunitTypeDetail, isFetching: isFetchingOrgunitTypeDetail } =
-        useGetOrgUnitType(currentType?.id);
+    const { data: orgunitTypeDetail } = useGetOrgUnitType(currentType?.id);
     const { data: formsList, isFetching: isFetchingForms } = useGetForms({
         orgUnitTypeIds: currentType?.id,
     });

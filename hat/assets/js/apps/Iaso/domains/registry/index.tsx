@@ -8,6 +8,7 @@ import { orderBy } from 'lodash';
 import React, {
     FunctionComponent,
     useCallback,
+    useEffect,
     useMemo,
     useState,
 } from 'react';
@@ -110,10 +111,6 @@ export const Registry: FunctionComponent = () => {
                     ...params,
                     orgUnitId: `${newOrgUnit.id}`,
                 };
-                delete newParams.orgUnitChildrenId;
-                delete newParams.submissionId;
-
-                setSelectedChildrenId(undefined);
                 redirectTo(`/${baseUrls.registry}`, newParams);
             }
         },
@@ -138,6 +135,22 @@ export const Registry: FunctionComponent = () => {
         [params, redirectToReplace],
     );
     const isFullScreen = params.fullScreen === 'true';
+
+    useEffect(() => {
+        if (orgUnitId && (params.orgUnitChildrenId || params.submissionId)) {
+            const newParams = {
+                ...params,
+            };
+            delete newParams.orgUnitChildrenId;
+            delete newParams.submissionId;
+            delete newParams.formIds;
+
+            setSelectedChildrenId(undefined);
+            redirectTo(`/${baseUrls.registry}`, newParams);
+        }
+        // Only remove selected children or submission if org unit change
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [orgUnitId]);
     return (
         <>
             <TopBar

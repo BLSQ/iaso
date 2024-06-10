@@ -36,7 +36,6 @@ export const makeQueryString = (params, tableDefaults) => {
         searchParams.limit = params.pageSize;
     }
     delete searchParams.pageSize;
-    searchParams.all = true;
 
     return new URLSearchParams(searchParams).toString();
 };

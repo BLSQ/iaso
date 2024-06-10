@@ -1,33 +1,14 @@
 from typing import Union
 
-from django.db.models import Count
 from rest_framework import serializers
 
 from iaso.api.common import DynamicFieldsModelSerializer
 from iaso.models import OrgUnit
 
 
-class OrgUnitSearchParentSerializer(serializers.ModelSerializer):
-    org_unit_type_name = serializers.SerializerMethodField()
-
-    class Meta:
-        model = OrgUnit
-        fields = [
-            "id",
-            "name",
-            "parent",
-            "org_unit_type_id",
-            "org_unit_type_name",
-        ]
-
-    def get_org_unit_type_name(self, org_unit: OrgUnit) -> Union[str, None]:
-        return org_unit.org_unit_type.short_name if org_unit.org_unit_type else None
-
-
-class OrgUnitTreeSerializer(DynamicFieldsModelSerializer, serializers.ModelSerializer):
+class OrgUnitTreeSerializer(serializers.ModelSerializer):
     has_children = serializers.SerializerMethodField()
     org_unit_type_short_name = serializers.SerializerMethodField()
-    parent = OrgUnitSearchParentSerializer()
 
     @classmethod
     def get_has_children(cls, org_unit: OrgUnit) -> bool:
@@ -39,15 +20,6 @@ class OrgUnitTreeSerializer(DynamicFieldsModelSerializer, serializers.ModelSeria
     class Meta:
         model = OrgUnit
         fields = [
-            "id",
-            "name",
-            "validation_status",
-            "has_children",
-            "org_unit_type_id",
-            "org_unit_type_short_name",
-            "parent",  # Only required when searching (use `&fields=:all`).
-        ]
-        default_fields = [
             "id",
             "name",
             "validation_status",

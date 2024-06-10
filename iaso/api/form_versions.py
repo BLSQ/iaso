@@ -8,12 +8,12 @@ from django.db.models.functions import Concat
 from rest_framework import serializers, parsers, exceptions
 from rest_framework.fields import Field
 
-from iaso.models import Form, FormVersion
+from iaso.models import Form, FormVersion, FeatureFlag, Project
 from iaso.odk import parsing
 from iaso.api.query_params import APP_ID
-from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer, HasPermission
+from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer
 from .forms import HasFormPermission
-from hat.menupermissions import models as permission
+from .serializers import AppIdSerializer
 
 
 # noinspection PyMethodMayBeStatic
@@ -143,7 +143,7 @@ class HasFormVersionPermission(HasFormPermission):
             return False
 
         ok_forms = Form.objects_include_deleted.filter_for_user_and_app_id(
-            request.user, request.query_params.get("app_id")
+            request.user, request.query_params.get(APP_ID)
         )
 
         return ok_forms.filter(id=obj.form_id).exists()
@@ -152,7 +152,8 @@ class HasFormVersionPermission(HasFormPermission):
 class FormVersionsViewSet(ModelViewSet):
     f"""Form versions API
 
-    This API is restricted to authenticated users having the "{permission.FORMS}" or "{permission.SUBMISSIONS}" permissions.
+    This API is open to anonymous users only if `{FeatureFlag.REQUIRE_AUTHENTICATION}` is not set and an `{APP_ID}` 
+    parameter is given.
 
     GET /api/formversions/
     GET /api/formversions/<id>
@@ -171,11 +172,17 @@ class FormVersionsViewSet(ModelViewSet):
         orders = self.request.query_params.get("order", "full_name").split(",")
         mapped_filter = self.request.query_params.get("mapped", "")
 
-        app_id = self.request.query_params.get(APP_ID)
+        app_id = AppIdSerializer(data=self.request.query_params).get_app_id(raise_exception=False)
         if app_id is not None:
+            try:
+                Project.objects.get_for_user_and_app_id(user=self.request.user, app_id=app_id)
+            except Project.DoesNotExist:
+                if self.request.user.is_anonymous:
+                    raise exceptions.NotAuthenticated
+                raise exceptions.NotFound(f"Project not found for {app_id}")
             queryset = FormVersion.objects.filter(form__projects__app_id=app_id)
         elif self.request.user.is_anonymous:
-            queryset = FormVersion.objects.none()
+            raise exceptions.NotAuthenticated
         else:
             profile = self.request.user.iaso_profile
             queryset = FormVersion.objects.filter(form__projects__account=profile.account)

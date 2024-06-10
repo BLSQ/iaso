@@ -43,6 +43,7 @@
         },
         "plugins": ["@typescript-eslint"],
         "rules": {
+          "react/function-component-definition": "off",
           "@typescript-eslint/no-explicit-any": 0,
           "no-use-before-define": 0,
           "no-tabs": "off",

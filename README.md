@@ -322,17 +322,18 @@ pattern to run a command is
 
 The following are some examples:
 
-* Run tests                    `docker-compose exec iaso ./manage.py test`
-* Check type hints             `docker-compose exec iaso mypy .`
-* Create a shell inside the container    `docker-compose run iaso bash`
-* Run a shell command          `docker-compose run iaso eval curl http://google.com`
-* Run Django manage.py         `docker-compose exec iaso ./manage.py help`
-* Launch a python shell        `docker-compose exec iaso ./manage.py shell`
-* Launch a postgresql shell    `docker-compose exec iaso ./manage.py dbshell`
+* Run tests                          `docker-compose exec iaso ./manage.py test`
+* Check type hints                   `docker-compose exec iaso mypy .`
+* Create a shell inside the container`docker-compose run iaso bash`
+* Run a shell command                `docker-compose run iaso eval curl http://google.com`
+* Run Django manage.py               `docker-compose exec iaso ./manage.py help`
+* Launch a python shell              `docker-compose exec iaso ./manage.py shell`
+* Launch a postgresql shell          `docker-compose exec iaso ./manage.py dbshell`
 * Create pending ORM migration files `docker-compose exec iaso ./manage.py makemigrations`
-* Apply pending ORM migrations `docker-compose exec iaso ./manage.py migrate`
-* Show ORM migrations          `docker-compose exec iaso ./manage.py showmigrations`
-* To run a background worker   `docker-compose run iaso manage tasks_worker`  (see  section Background tasks & Worker)
+* Apply pending ORM migrations       `docker-compose exec iaso ./manage.py migrate`
+* Show ORM migrations                `docker-compose exec iaso ./manage.py showmigrations`
+* Complie SCSS files for templates   `docker-compose exec iaso ./manage.py compilescss`
+* To run a background worker         `docker-compose run iaso manage tasks_worker`  (see  section Background tasks & Worker)
 
 Containers and services
 -----------------------
@@ -750,6 +751,17 @@ docker-compose build
 # start-up containers
 docker-compose up
 ```
+
+SASS & SCSS
+------------
+Scss files are only used to generate the style of the DJango Templates.
+It is not longer part of the webpack app.
+While editing scss files you have to compile it manually with the command:
+
+`docker-compose exec iaso ./manage.py compilescss`
+
+If you don't compile it, changes will not be reflected while deploying as we only use css file in production.
+
 
 Jupyter Notebook
 ----------------

@@ -287,7 +287,7 @@ export const useInstancesColumns = (
             });
         tableColumns = tableColumns.concat(childrenArray);
         if (
-            userHasPermission(Permission.REGISTRY_WRITE, currentUser) &&
+            userHasPermission(Permission.REGISTRY_WRITE, currentUser) ||
             userHasOneOfPermissions(
                 [Permission.SUBMISSIONS_UPDATE, Permission.SUBMISSIONS],
                 currentUser,

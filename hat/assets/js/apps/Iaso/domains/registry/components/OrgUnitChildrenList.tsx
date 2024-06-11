@@ -1,8 +1,9 @@
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { Table, useRedirectToReplace } from 'bluesquare-components';
-import React, { FunctionComponent } from 'react';
+import React, { Dispatch, FunctionComponent, SetStateAction } from 'react';
 import { baseUrls } from '../../../constants/urls';
+import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { useGetOrgUnitsListColumns } from '../config';
 import { OrgUnitListChildren } from '../hooks/useGetOrgUnit';
 import { RegistryParams } from '../types';
@@ -11,6 +12,7 @@ type Props = {
     params: RegistryParams;
     orgUnitChildren?: OrgUnitListChildren;
     isFetchingChildren: boolean;
+    setSelectedChildren: Dispatch<SetStateAction<OrgUnit | undefined>>;
 };
 export const defaultSorted = [{ id: 'name', desc: true }];
 const useStyles = makeStyles(theme => ({
@@ -45,9 +47,10 @@ export const OrgUnitChildrenList: FunctionComponent<Props> = ({
     params,
     orgUnitChildren,
     isFetchingChildren,
+    setSelectedChildren,
 }) => {
     const classes: Record<string, string> = useStyles();
-    const columns = useGetOrgUnitsListColumns();
+    const columns = useGetOrgUnitsListColumns(setSelectedChildren);
     const redirectToReplace = useRedirectToReplace();
     return (
         <Box className={classes.root}>

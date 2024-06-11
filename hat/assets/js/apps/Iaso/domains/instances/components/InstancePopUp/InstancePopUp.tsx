@@ -19,6 +19,8 @@ import InstanceDetailsField from '../InstanceDetailsField';
 
 import MESSAGES from '../../messages';
 import { Instance } from '../../types/instance';
+import { baseUrls } from '../../../../constants/urls';
+import { getOrgUnitsTree } from '../../../orgUnits/utils';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -56,7 +58,7 @@ export const InstancePopup: FunctionComponent<Props> = ({
     const confirmDialog = useCallback(() => {
         replaceLocation(currentInstance);
         map.closePopup(popup.current);
-    }, [currentInstance, replaceLocation]);
+    }, [currentInstance, map, replaceLocation]);
 
     const hasHero = (currentInstance?.files?.length ?? 0) > 0;
 

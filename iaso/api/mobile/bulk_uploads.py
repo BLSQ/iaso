@@ -92,9 +92,6 @@ class MobileBulkUploadsViewSet(ViewSet):
 
             return Response(status=status.HTTP_204_NO_CONTENT)
         except ValueError as exc:
-            api_import.has_problem = True
-            api_import.exception = format_exc()
-            api_import.save()
             logger.exception(f"ValueError: {str(exc)}")
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         except Exception as exc:

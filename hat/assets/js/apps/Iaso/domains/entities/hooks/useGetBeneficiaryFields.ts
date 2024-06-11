@@ -1,14 +1,16 @@
 import { useMemo } from 'react';
-
-import { Field } from '../types/fields';
-import { PossibleField } from '../../forms/types/forms';
+import { useSafeIntl } from 'bluesquare-components';
 
 import { useGetPossibleFields } from '../../forms/hooks/useGetPossibleFields';
+import { Beneficiary } from '../types/beneficiary';
+import { Field } from '../types/fields';
+import MESSAGES from '../messages';
 import { useGetFields } from './useGetFields';
 import { useGetBeneficiaryTypesDropdown } from './requests';
 
-export const useGetBeneficiaryFields = beneficiary => {
-    console.log('useGetBeneficiary', beneficiary);
+export const useGetBeneficiaryFields = (beneficiary: Beneficiary) => {
+    const { formatMessage } = useSafeIntl();
+
     const { data: beneficiaryTypes } = useGetBeneficiaryTypesDropdown();
     const { possibleFields } = useGetPossibleFields(
         beneficiary?.attributes?.form_id,
@@ -24,14 +26,31 @@ export const useGetBeneficiaryFields = beneficiary => {
         }
         return fields;
     }, [beneficiaryTypes, beneficiary]);
+
     const dynamicFields: Field[] = useGetFields(
         detailFields,
         beneficiary,
         possibleFields,
     );
 
-    const isLoading =
-        !beneficiary || detailFields.length !== dynamicFields.length;
+    const staticFields = useMemo(
+        () => [
+            {
+                label: formatMessage(MESSAGES.nfcCards),
+                value: `${beneficiary?.attributes?.nfc_cards ?? 0}`,
+                key: 'nfcCards',
+            },
+            {
+                label: formatMessage(MESSAGES.uuid),
+                value: beneficiary?.uuid ? `${beneficiary.uuid}` : '--',
+                key: 'uuid',
+            },
+        ],
+        [beneficiary?.attributes?.nfc_cards, beneficiary?.uuid, formatMessage],
+    );
 
-    return { isLoading, dynamicFields };
+    return {
+        isLoading: !beneficiary || detailFields.length !== dynamicFields.length,
+        fields: dynamicFields.concat(staticFields),
+    };
 };

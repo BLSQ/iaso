@@ -13,13 +13,11 @@ const useStyles = makeStyles(theme => ({
 }));
 
 type Props = {
-    dynamicFields: Field[];
-    staticFields: Field[];
+    fields: Field[];
 };
 
 export const BeneficiaryBaseInfoContents: FunctionComponent<Props> = ({
-    dynamicFields,
-    staticFields,
+    fields,
 }) => {
     const classes: Record<string, string> = useStyles();
 
@@ -27,14 +25,7 @@ export const BeneficiaryBaseInfoContents: FunctionComponent<Props> = ({
         <Box className={classes.infoPaperBox}>
             <Table size="small">
                 <TableBody>
-                    {dynamicFields.map(field => (
-                        <PaperTableRow
-                            label={field.label}
-                            value={field.value}
-                            key={field.key}
-                        />
-                    ))}
-                    {staticFields.map(field => (
+                    {fields.map(field => (
                         <PaperTableRow
                             label={field.label}
                             value={field.value}

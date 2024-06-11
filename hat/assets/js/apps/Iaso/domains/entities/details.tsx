@@ -6,17 +6,13 @@ import {
     LoadingSpinner,
     LinkButton,
 } from 'bluesquare-components';
-import { Box, Divider, Grid, Skeleton } from '@mui/material';
+import { Box, Divider, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { baseUrls } from '../../constants/urls';
-import { useGetPossibleFields } from '../forms/hooks/useGetPossibleFields';
-import {
-    useGetBeneficiary,
-    useGetBeneficiaryTypesDropdown,
-    useGetSubmissions,
-} from './hooks/requests';
+import { useGetBeneficiary, useGetSubmissions } from './hooks/requests';
+import { useGetBeneficiaryFields } from './hooks/useGetBeneficiaryFields';
 import { Beneficiary } from './types/beneficiary';
 import { useBeneficiariesDetailsColumns } from './config';
 import { CsvButton } from '../../components/Buttons/CsvButton';
@@ -44,6 +40,8 @@ export const Details: FunctionComponent = () => {
     }: {
         data?: Beneficiary;
     } = useGetBeneficiary(entityId as string);
+    const { isLoading: isLoadingBeneficiaryFields, fields: beneficiaryFields } =
+        useGetBeneficiaryFields(beneficiary);
 
     const columns = useBeneficiariesDetailsColumns(beneficiary?.id ?? null, []);
 
@@ -61,6 +59,9 @@ export const Details: FunctionComponent = () => {
             ? `/${baseUrls.entityDuplicateDetails}/entities/${entityId},${duplicates[0]}/`
             : `/${baseUrls.entityDuplicates}/order/id/pageSize/50/page/1/entity_id/${entityId}/`;
 
+    const isLoading =
+        !beneficiary || isLoadingBeneficiaryFields || isLoadingSubmissions;
+
     return (
         <>
             <TopBar
@@ -68,22 +69,32 @@ export const Details: FunctionComponent = () => {
                 displayBackButton
                 goBack={goBack}
             />
-            <Box className={`${classes.containerFullHeightNoTabPadded}`}>
-                <Grid container spacing={2}>
-                    <Grid container item xs={4}>
-                        <BeneficiaryBaseInfo beneficiary={beneficiary} />
-                    </Grid>
-                    {duplicates.length > 0 && (
-                        <Grid container item xs={8} justifyContent="flex-end">
-                            <Box>
-                                <LinkButton to={duplicateUrl}>
-                                    {formatMessage(MESSAGES.seeDuplicates)}
-                                </LinkButton>
-                            </Box>
+            {isLoading && <LoadingSpinner />}
+            {!isLoading && (
+                <Box className={`${classes.containerFullHeightNoTabPadded}`}>
+                    <Grid container spacing={2}>
+                        <Grid container item xs={4}>
+                            <BeneficiaryBaseInfo
+                                beneficiary={beneficiary}
+                                fields={beneficiaryFields}
+                            />
                         </Grid>
-                    )}
-                    {/* TODO uncomment when edition is possible */}
-                    {/* <Grid container item xs={1}>
+                        {duplicates.length > 0 && (
+                            <Grid
+                                container
+                                item
+                                xs={8}
+                                justifyContent="flex-end"
+                            >
+                                <Box>
+                                    <LinkButton to={duplicateUrl}>
+                                        {formatMessage(MESSAGES.seeDuplicates)}
+                                    </LinkButton>
+                                </Box>
+                            </Grid>
+                        )}
+                        {/* TODO uncomment when edition is possible */}
+                        {/* <Grid container item xs={1}>
                         <Box ml={2}>
                             <EditIcon
                                 onClick={() => {
@@ -99,17 +110,8 @@ export const Details: FunctionComponent = () => {
                             />
                         </Box>
                     </Grid> */}
-                </Grid>
-                <Box mt={2}>
-                    {isLoadingSubmissions && (
-                        <Skeleton
-                            sx={{ marginBottom: theme => theme.spacing(2) }}
-                            variant="rectangular"
-                            width="100%"
-                            height="30vh"
-                        />
-                    )}
-                    {!isLoadingSubmissions && (
+                    </Grid>
+                    <Box mt={2}>
                         <WidgetPaper
                             className={classes.fullWidth}
                             title={formatMessage(MESSAGES.submissions)}
@@ -141,9 +143,9 @@ export const Details: FunctionComponent = () => {
                                 />
                             </Box>
                         </WidgetPaper>
-                    )}
+                    </Box>
                 </Box>
-            </Box>
+            )}
         </>
     );
 };

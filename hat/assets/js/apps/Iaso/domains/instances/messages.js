@@ -601,7 +601,7 @@ const MESSAGES = defineMessages({
     filterParam: {
         id: 'iaso.submissions.filterParam',
         defaultMessage:
-            'Apply a filter on the “form” tab to be able to download the data',
+           'Select a form to enable data download',
     },
     searchSubmissionFormsParamsInfo: {
         id: 'iaso.submissions.searchSubmissionFormsParamsInfo',

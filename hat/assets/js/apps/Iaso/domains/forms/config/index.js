@@ -235,40 +235,44 @@ export const useFormsTableColumns = ({ orgUnitId, showDeleted }) => {
                                             overrideIcon={FormatListBulleted}
                                         />
                                     </DisplayIfUserHasPerm>
-                                    <DisplayIfUserHasPerm
-                                        permissions={[
-                                            Permission.SUBMISSIONS_UPDATE,
-                                        ]}
-                                    >
-                                        <CreateSubmissionModal
-                                            titleMessage={
-                                                MESSAGES.instanceCreationDialogTitle
-                                            }
-                                            confirmMessage={MESSAGES.ok}
-                                            cancelMessage={MESSAGES.cancel}
-                                            formType={{
-                                                id: settings.row.original.id,
-                                                periodType:
+
+                                    {!orgUnitId && (
+                                        <DisplayIfUserHasPerm
+                                            permissions={[
+                                                Permission.SUBMISSIONS_UPDATE,
+                                            ]}
+                                        >
+                                            <CreateSubmissionModal
+                                                titleMessage={
+                                                    MESSAGES.instanceCreationDialogTitle
+                                                }
+                                                confirmMessage={MESSAGES.ok}
+                                                cancelMessage={MESSAGES.cancel}
+                                                formType={{
+                                                    id: settings.row.original
+                                                        .id,
+                                                    periodType:
+                                                        settings.row.original
+                                                            .period_type,
+                                                }}
+                                                onCreateOrReAssign={(
+                                                    currentForm,
+                                                    payload,
+                                                ) =>
+                                                    dispatch(
+                                                        createInstance(
+                                                            currentForm,
+                                                            payload,
+                                                        ),
+                                                    )
+                                                }
+                                                orgUnitTypes={
                                                     settings.row.original
-                                                        .period_type,
-                                            }}
-                                            onCreateOrReAssign={(
-                                                currentForm,
-                                                payload,
-                                            ) =>
-                                                dispatch(
-                                                    createInstance(
-                                                        currentForm,
-                                                        payload,
-                                                    ),
-                                                )
-                                            }
-                                            orgUnitTypes={
-                                                settings.row.original
-                                                    .org_unit_type_ids
-                                            }
-                                        />
-                                    </DisplayIfUserHasPerm>
+                                                        .org_unit_type_ids
+                                                }
+                                            />
+                                        </DisplayIfUserHasPerm>
+                                    )}
                                     <DisplayIfUserHasPerm
                                         permissions={[Permission.FORMS]}
                                     >

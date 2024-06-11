@@ -96,16 +96,16 @@ export const Instances: FunctionComponent<Props> = ({
 
     useEffect(() => {
         if (
-            formsList?.length &&
-            formsList?.length >= 0 &&
+            formsList &&
+            (formsList?.length ?? 0) >= 0 &&
             !isFetchingForms &&
             !formIds &&
             orgunitTypeDetail
         ) {
-            let selectedForm = formsList[0].value;
-            if (orgunitTypeDetail.reference_forms.length > 0) {
-                selectedForm = `${orgunitTypeDetail.reference_forms[0].id}`;
-            }
+            const selectedForm =
+                orgunitTypeDetail.reference_forms.length > 0
+                    ? `${orgunitTypeDetail.reference_forms[0].id}`
+                    : formsList[0].value;
             const newParams = {
                 ...params,
                 formIds: selectedForm,

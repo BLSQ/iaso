@@ -4,7 +4,7 @@ import { Table, useRedirectToReplace } from 'bluesquare-components';
 import React, { Dispatch, FunctionComponent, SetStateAction } from 'react';
 import { baseUrls } from '../../../constants/urls';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
-import { useGetOrgUnitsListColumns } from '../config';
+import { HEIGHT, useGetOrgUnitsListColumns } from '../config';
 import { OrgUnitListChildren } from '../hooks/useGetOrgUnit';
 import { RegistryParams } from '../types';
 
@@ -19,7 +19,7 @@ const useStyles = makeStyles(theme => ({
     root: {
         position: 'relative',
         '& .MuiTableContainer-root': {
-            maxHeight: 444, // to fit with map height
+            maxHeight: `calc(${HEIGHT} - 120px)`, // to fit with map height
             overflow: 'auto',
             // @ts-ignore
             borderTop: `1px solid ${theme.palette.ligthGray.border}`,

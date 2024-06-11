@@ -8,6 +8,7 @@ import { commonStyles, IconButton, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
 import { useGetPossibleFields } from '../../forms/hooks/useGetPossibleFields';
 import { useGetFields } from '../hooks/useGetFields';
+import { useGetBeneficiaryFields } from '../hooks/useGetBeneficiaryFields';
 import { useGetBeneficiaryTypesDropdown } from '../hooks/requests';
 import { baseUrls } from '../../../constants/urls';
 import { Beneficiary } from '../types/beneficiary';
@@ -33,26 +34,8 @@ export const BeneficiaryBaseInfo: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
 
-    const { data: beneficiaryTypes } = useGetBeneficiaryTypesDropdown();
-    const { possibleFields } = useGetPossibleFields(
-        beneficiary?.attributes?.form_id,
-    );
+    const { isLoading, dynamicFields } = useGetBeneficiaryFields(beneficiary);
 
-    const detailFields = useMemo(() => {
-        let fields = [];
-        if (beneficiaryTypes && beneficiary) {
-            const fullType = beneficiaryTypes.find(
-                type => type.value === beneficiary.entity_type,
-            );
-            fields = fullType?.original?.fields_detail_info_view || [];
-        }
-        return fields;
-    }, [beneficiaryTypes, beneficiary]);
-    const dynamicFields: Field[] = useGetFields(
-        detailFields,
-        beneficiary,
-        possibleFields,
-    );
     const staticFields = useMemo(
         () => [
             {
@@ -68,9 +51,6 @@ export const BeneficiaryBaseInfo: FunctionComponent<Props> = ({
         ],
         [beneficiary?.attributes?.nfc_cards, beneficiary?.uuid, formatMessage],
     );
-
-    const isLoading =
-        !beneficiary || detailFields.length !== dynamicFields.length;
 
     if (isLoading) {
         return (

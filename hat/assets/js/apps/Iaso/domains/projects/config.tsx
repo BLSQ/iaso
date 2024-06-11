@@ -43,7 +43,11 @@ export const columns = (
         sortable: false,
         Cell: settings =>
             settings.value
-                .map(fF => formatMessage(MESSAGES[fF.code.toLowerCase()]))
+                .map(fF =>
+                    MESSAGES[fF.code.toLowerCase()]
+                        ? formatMessage(MESSAGES[fF.code.toLowerCase()])
+                        : fF.name || fF.id,
+                )
                 .join(', ') || textPlaceholder,
     },
     {

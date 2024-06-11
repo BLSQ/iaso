@@ -164,9 +164,9 @@ const ProjectsDialog: FunctionComponent<Props> = ({
     const translatedFeatureFlag = useCallback(
         featureFlag => {
             const translated = featureFlag;
-            translated.name = formatMessage(
-                MESSAGES[featureFlag.code.toLowerCase()],
-            );
+            translated.name = MESSAGES[featureFlag.code.toLowerCase()]
+                ? formatMessage(MESSAGES[featureFlag.code.toLowerCase()])
+                : featureFlag.name || featureFlag.id;
             return translated;
         },
         [formatMessage],
@@ -262,9 +262,9 @@ const ProjectsDialog: FunctionComponent<Props> = ({
                             setFieldValue('feature_flags', value)
                         }
                         currentProject={project}
-                        featureFlags={featureFlags?.map(featureFlag => {
-                            return translatedFeatureFlag(featureFlag);
-                        })}
+                        featureFlags={featureFlags?.map(featureFlag =>
+                            translatedFeatureFlag(featureFlag),
+                        )}
                         isFetchingFeatureFlag={isFetchingFeatureFlags}
                     />
                 )}

@@ -64,7 +64,7 @@ const MESSAGES = defineMessages({
     },
     require_authentication: {
         id: 'iaso.projets.featureflag.require_authentication',
-        defaultMessage: 'Authentification',
+        defaultMessage: 'Authentication',
     },
     require_authentication_tooltip: {
         id: 'iaso.projets.featureflag.tooltip.require_authentication',

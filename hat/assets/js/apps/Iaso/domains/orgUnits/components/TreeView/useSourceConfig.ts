@@ -68,7 +68,6 @@ export const useSourceConfig = (
                 versionId: defaultVersion?.id,
             };
         }
-
         return {
             sourceSettings,
             isFetchingSource,

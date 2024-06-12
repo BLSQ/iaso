@@ -43,21 +43,16 @@ const makeUrl = (
     statusSettings: OrgUnitStatus[] = ['VALID'],
 ): string => {
     const validationStatusString = getValidationStatus(statusSettings);
-    let typePrefix;
-
+    const defaultUrl = `${baseApiUrl}?ignoreEmptyNames=true${validationStatusString}`;
+    if(!id) return defaultUrl;
     switch (type) {
         case 'version':
-            typePrefix = 'version';
-            break;
+            return `${defaultUrl}&version=${id};
         case 'source':
-            typePrefix = 'data_source_id';
-            break;
+            return `${defaultUrl}&data_source_id=${id};
         default:
-            break;
+            return  defaultUrl;
     }
-
-    const idParam = id && typePrefix ? `&${typePrefix}=${id}` : '';
-    return `${baseApiUrl}?ignoreEmptyNames=true${idParam}${validationStatusString}`;
 };
 
 export const getRootData = async (

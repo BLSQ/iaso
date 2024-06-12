@@ -4,6 +4,7 @@ import {
     IntlMessage,
     LoadingSpinner,
     TreeViewWithSearch,
+    useSafeIntl,
 } from 'bluesquare-components';
 import { isEqual } from 'lodash';
 import React, {
@@ -16,7 +17,7 @@ import React, {
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import { useFetchOrgUnits } from '../../../registry/hooks/useGetOrgUnit';
 import { OrgUnit } from '../../types/orgUnit';
-import { OrgUnitLabel } from '../OrgUnitLabel';
+import { orgUnitLabelString } from '../../utils';
 import { OrgUnitTreeviewPicker } from './OrgUnitTreeviewPicker';
 import { Settings, SettingsPopper } from './SettingsPopper';
 import { SourceDescription } from './SourceDescription';
@@ -74,6 +75,8 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
     useIcon = false,
 }) => {
     const theme = useTheme();
+
+    const { formatMessage } = useSafeIntl();
     const { fetchOrgUnit, isFetching: isFetchingOrgUnit } = useFetchOrgUnits();
     const [settings, setSettings] = useState<Settings>({
         displayTypes: true,
@@ -211,13 +214,11 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
 
     useEffect(() => {
         if (sourceSettings && !isFetchingSource) {
-            setSettings({
-                ...settings,
+            setSettings(value => ({
+                ...value,
                 statusSettings: sourceSettings,
-            });
+            }));
         }
-        // only update status settings if source settings are changed
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isFetchingSource, sourceSettings]);
 
     return (
@@ -245,6 +246,7 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
                         placeholder={titleMessage}
                         required={required}
                         disabled={disabled || isFetchingSource}
+                        // eslint-disable-next-line react/no-unstable-nested-components
                         label={(orgUnit: OrgUnit) => (
                             <TreeViewLabel
                                 orgUnit={orgUnit}
@@ -283,6 +285,7 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
                             getChildrenData(id, statusSettings)
                         }
                         getRootData={getRootDataWithSource}
+                        // eslint-disable-next-line react/no-unstable-nested-components
                         label={(orgUnit: OrgUnit) => (
                             <TreeViewLabel
                                 orgUnit={orgUnit}
@@ -293,9 +296,9 @@ const OrgUnitTreeviewModal: FunctionComponent<Props> = ({
                         toggleOnLabelClick={toggleOnLabelClick}
                         onSelect={onOrgUnitSelect}
                         request={searchOrgUnitsWithSource}
-                        makeDropDownText={orgUnit => (
-                            <OrgUnitLabel orgUnit={orgUnit} />
-                        )}
+                        makeDropDownText={orgUnit =>
+                            orgUnitLabelString(orgUnit, false, formatMessage)
+                        }
                         toolTip={tooltip}
                         parseNodeIds={getOrgUnitAncestors}
                         multiselect={multiselect}

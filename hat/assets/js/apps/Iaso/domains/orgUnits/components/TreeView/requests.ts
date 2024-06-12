@@ -44,14 +44,14 @@ const makeUrl = (
 ): string => {
     const validationStatusString = getValidationStatus(statusSettings);
     const defaultUrl = `${baseApiUrl}?ignoreEmptyNames=true${validationStatusString}`;
-    if(!id) return defaultUrl;
+    if (!id) return defaultUrl;
     switch (type) {
         case 'version':
-            return `${defaultUrl}&version=${id};
+            return `${defaultUrl}&version=${id}`;
         case 'source':
-            return `${defaultUrl}&data_source_id=${id};
+            return `${defaultUrl}&data_source_id=${id}`;
         default:
-            return  defaultUrl;
+            return defaultUrl;
     }
 };
 
@@ -78,19 +78,23 @@ export const getRootData = async (
 const endpoint = `${baseApiUrl}search`;
 const search = (
     input1: string,
-    statusSettings: OrgUnitStatus[] = ['VALID'],
     input2?: string | number,
     type?: string,
+    statusSettings: OrgUnitStatus[] = ['VALID'],
 ): string => {
     const validationStatusString = getValidationStatus(statusSettings);
-    let typeParam = '';
-
-    if (type === 'version') {
-        typeParam = `&version=${input2}`;
-    } else if (type === 'source') {
-        typeParam = `&data_source_id=${input2}`;
+    let typeParam;
+    switch (type) {
+        case 'version':
+            typeParam = `&version=${input2}`;
+            break;
+        case 'source':
+            typeParam = `&data_source_id=${input2}`;
+            break;
+        default:
+            typeParam = '';
+            break;
     }
-
     return `search=${input1}${typeParam}${validationStatusString}`;
 };
 const sortingAndPaging = (resultsCount: number): string =>
@@ -118,9 +122,9 @@ const makeSearchUrl = ({
     const searchId = source || version;
     return `${endpoint}?${search(
         value,
-        statusSettings,
         searchId,
         searchType,
+        statusSettings,
     )}&${sortingAndPaging(count)}`;
 };
 
@@ -152,7 +156,7 @@ export const searchOrgUnits = async ({
             enqueueSnackbar(errorSnackBar('searchOrgUnitsError', null, error)),
         );
         console.error('Error while searching org units:', error);
-        throw error;
+        return Promise.reject(error);
     }
 };
 

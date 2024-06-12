@@ -6,9 +6,9 @@ import MESSAGES from '../messages';
 import { getOrgUnitGroups, useGetStatusMessage } from '../utils';
 
 import OrgUnitsSmallInfosRow from './OrgUnitsSmallInfosRow';
-import { getOrgUnitParentsString } from './TreeView/utils';
+import { getOrgUnitParentsString } from './TreeView/utils.tsx';
 
-function OrgUnitsSmallInfos({ orgUnit }) {
+const OrgUnitsSmallInfos = ({ orgUnit }) => {
     const { formatMessage } = useSafeIntl();
     const getStatusMessage = useGetStatusMessage();
     return (
@@ -56,7 +56,7 @@ function OrgUnitsSmallInfos({ orgUnit }) {
             )}
         </>
     );
-}
+};
 
 OrgUnitsSmallInfos.propTypes = {
     orgUnit: PropTypes.object.isRequired,

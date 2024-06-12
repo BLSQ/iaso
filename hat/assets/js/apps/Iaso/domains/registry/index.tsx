@@ -137,21 +137,6 @@ export const Registry: FunctionComponent = () => {
     });
 
     useEffect(() => {
-        if (orgUnitId && (orgUnitChildrenId || submissionId || formIds)) {
-            const newParams = {
-                ...params,
-            };
-            newParams.orgUnitChildrenId = undefined;
-            newParams.submissionId = undefined;
-            newParams.formIds = undefined;
-            setSelectedChildrenId(undefined);
-            redirectToReplace(`/${baseUrl}`, newParams);
-        }
-        // Only remove selected children or submission if org unit change
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [orgUnitId]);
-
-    useEffect(() => {
         if (
             formsList &&
             (formsList?.length ?? 0) >= 0 &&
@@ -172,6 +157,10 @@ export const Registry: FunctionComponent = () => {
         // Only preselect a form if forms list contain an element and params is empty
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [formsList, isFetchingForms, orgunitTypeDetail]);
+
+    useEffect(() => {
+        setSelectedChildrenId(undefined);
+    }, [orgUnitId]);
 
     const handleOrgUnitChange = useCallback(
         (newOrgUnit: OrgUnit) => {
@@ -242,7 +231,7 @@ export const Registry: FunctionComponent = () => {
                                     orgUnit={orgUnit}
                                     showRegistry
                                     showOnlyParents={false}
-                                    params={params}
+                                    params={{ orgUnitId }}
                                 />
                             )}
                         </Box>

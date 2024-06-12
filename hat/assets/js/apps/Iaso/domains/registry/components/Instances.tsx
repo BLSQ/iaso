@@ -3,6 +3,7 @@ import { Column, useRedirectToReplace } from 'bluesquare-components';
 import React, {
     FunctionComponent,
     useCallback,
+    useEffect,
     useMemo,
     useState,
 } from 'react';
@@ -17,8 +18,9 @@ import { ColumnSelect } from '../../instances/components/ColumnSelect';
 import { OrgunitType } from '../../orgUnits/types/orgunitTypes';
 import { INSTANCE_METAS_FIELDS, defaultSorted } from '../config';
 import { useGetEmptyInstanceOrgUnits } from '../hooks/useGetEmptyInstanceOrgUnits';
-import { DropdownOptions } from '../hooks/useGetForms';
+import { useGetForms } from '../hooks/useGetForms';
 import { useGetInstanceApi, useGetInstances } from '../hooks/useGetInstances';
+import { useGetOrgUnitType } from '../hooks/useGetOrgUnitType';
 import MESSAGES from '../messages';
 import { RegistryParams } from '../types';
 import { OrgunitTypeRegistry } from '../types/orgunitTypes';
@@ -29,22 +31,28 @@ type Props = {
     isLoading: boolean;
     subOrgUnitTypes: OrgunitTypeRegistry[];
     params: RegistryParams;
-    currentType?: OrgunitTypeRegistry;
-    formsList?: DropdownOptions<string>[];
-    isFetchingForms: boolean;
 };
 
+const baseUrl = baseUrls.registry;
 export const Instances: FunctionComponent<Props> = ({
     isLoading,
     subOrgUnitTypes,
     params,
-    currentType,
-    formsList,
-    isFetchingForms,
 }) => {
     const redirectToReplace = useRedirectToReplace();
     const [tableColumns, setTableColumns] = useState<Column[]>([]);
-    const { formIds } = params;
+    const { formIds, tab } = params;
+    const currentType: OrgunitTypeRegistry | undefined = useMemo(() => {
+        if (subOrgUnitTypes.length > 0) {
+            if (tab) {
+                const existingType: OrgunitTypeRegistry | undefined =
+                    subOrgUnitTypes.find(subType => `${subType.id}` === tab);
+                return existingType || subOrgUnitTypes[0];
+            }
+            return subOrgUnitTypes[0];
+        }
+        return undefined;
+    }, [subOrgUnitTypes, tab]);
 
     const { url: apiUrl } = useGetInstanceApi(params, currentType?.id, 'VALID');
     const { data, isFetching: isFetchingList } = useGetInstances(
@@ -79,10 +87,34 @@ export const Instances: FunctionComponent<Props> = ({
         [params, redirectToReplace],
     );
 
+    const { data: orgunitTypeDetail } = useGetOrgUnitType(currentType?.id);
+    const { data: formsList, isFetching: isFetchingForms } = useGetForms({
+        orgUnitTypeIds: currentType?.id,
+    });
     const currentForm: Form | undefined = useMemo(() => {
         return formsList?.find(f => `${f.value}` === formIds)?.original;
     }, [formIds, formsList]);
-
+    useEffect(() => {
+        if (
+            formsList &&
+            (formsList?.length ?? 0) >= 0 &&
+            !isFetchingForms &&
+            !formIds &&
+            orgunitTypeDetail
+        ) {
+            const selectedForm =
+                orgunitTypeDetail.reference_forms.length > 0
+                    ? `${orgunitTypeDetail.reference_forms[0].id}`
+                    : formsList[0].value;
+            const newParams = {
+                ...params,
+                formIds: selectedForm,
+            };
+            redirectToReplace(`/${baseUrl}`, newParams);
+        }
+        // Only preselect a form if forms list contain an element and params is empty
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [formsList, isFetchingForms, orgunitTypeDetail, redirectToReplace]);
     return (
         <Box>
             {currentType && !isLoading && (

@@ -24,13 +24,11 @@ import { Instances } from './components/Instances';
 import { OrgUnitPaper } from './components/OrgUnitPaper';
 import { Placeholder } from './components/Placeholder';
 import { SelectedOrgUnit } from './components/selectedOrgUnit';
-import { useGetForms } from './hooks/useGetForms';
 import {
     useGetOrgUnit,
     useGetOrgUnitListChildren,
     useGetOrgUnitsMapChildren,
 } from './hooks/useGetOrgUnit';
-import { useGetOrgUnitType } from './hooks/useGetOrgUnitType';
 import MESSAGES from './messages';
 import { RegistryParams } from './types';
 import { OrgunitTypeRegistry } from './types/orgunitTypes';
@@ -72,14 +70,7 @@ const styles: SxStyles = {
 const baseUrl = baseUrls.registry;
 export const Registry: FunctionComponent = () => {
     const params = useParamsObject(baseUrl) as RegistryParams;
-    const {
-        orgUnitId,
-        orgUnitChildrenId,
-        formIds,
-        tab,
-        fullScreen,
-        submissionId,
-    } = params;
+    const { orgUnitId, orgUnitChildrenId, fullScreen } = params;
     const isFullScreen = fullScreen === 'true';
     const [selectedChildrenId, setSelectedChildrenId] = useState<
         string | undefined
@@ -119,45 +110,6 @@ export const Registry: FunctionComponent = () => {
         return orderBy(options, [f => f.depth], ['asc']);
     }, [orgUnit, orgUnitMapChildren]);
 
-    const currentType: OrgunitTypeRegistry | undefined = useMemo(() => {
-        if (subOrgUnitTypes.length > 0) {
-            if (tab) {
-                const existingType: OrgunitTypeRegistry | undefined =
-                    subOrgUnitTypes.find(subType => `${subType.id}` === tab);
-                return existingType || subOrgUnitTypes[0];
-            }
-            return subOrgUnitTypes[0];
-        }
-        return undefined;
-    }, [subOrgUnitTypes, tab]);
-
-    const { data: orgunitTypeDetail } = useGetOrgUnitType(currentType?.id);
-    const { data: formsList, isFetching: isFetchingForms } = useGetForms({
-        orgUnitTypeIds: currentType?.id,
-    });
-
-    useEffect(() => {
-        if (
-            formsList &&
-            (formsList?.length ?? 0) >= 0 &&
-            !isFetchingForms &&
-            !formIds &&
-            orgunitTypeDetail
-        ) {
-            const selectedForm =
-                orgunitTypeDetail.reference_forms.length > 0
-                    ? `${orgunitTypeDetail.reference_forms[0].id}`
-                    : formsList[0].value;
-            const newParams = {
-                ...params,
-                formIds: selectedForm,
-            };
-            redirectToReplace(`/${baseUrl}`, newParams);
-        }
-        // Only preselect a form if forms list contain an element and params is empty
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [formsList, isFetchingForms, orgunitTypeDetail]);
-
     useEffect(() => {
         setSelectedChildrenId(undefined);
     }, [orgUnitId]);
@@ -165,14 +117,12 @@ export const Registry: FunctionComponent = () => {
     const handleOrgUnitChange = useCallback(
         (newOrgUnit: OrgUnit) => {
             if (newOrgUnit) {
-                const newParams = {
-                    ...params,
+                redirectTo(`/${baseUrl}`, {
                     orgUnitId: `${newOrgUnit.id}`,
-                };
-                redirectTo(`/${baseUrl}`, newParams);
+                });
             }
         },
-        [params, redirectTo],
+        [redirectTo],
     );
 
     const handleChildrenChange = useCallback(
@@ -287,9 +237,6 @@ export const Registry: FunctionComponent = () => {
                     isLoading={isFetching}
                     subOrgUnitTypes={subOrgUnitTypes}
                     params={params}
-                    currentType={currentType}
-                    formsList={formsList}
-                    isFetchingForms={isFetchingForms}
                 />
                 {!orgUnitId && <Placeholder />}
             </Box>

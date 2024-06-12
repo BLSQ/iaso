@@ -24,11 +24,13 @@ import { Instances } from './components/Instances';
 import { OrgUnitPaper } from './components/OrgUnitPaper';
 import { Placeholder } from './components/Placeholder';
 import { SelectedOrgUnit } from './components/selectedOrgUnit';
+import { useGetForms } from './hooks/useGetForms';
 import {
     useGetOrgUnit,
     useGetOrgUnitListChildren,
     useGetOrgUnitsMapChildren,
 } from './hooks/useGetOrgUnit';
+import { useGetOrgUnitType } from './hooks/useGetOrgUnitType';
 import MESSAGES from './messages';
 import { RegistryParams } from './types';
 import { OrgunitTypeRegistry } from './types/orgunitTypes';
@@ -68,14 +70,17 @@ const styles: SxStyles = {
 };
 export const Registry: FunctionComponent = () => {
     const params = useParamsObject(baseUrls.registry) as RegistryParams;
-    const redirectTo = useRedirectTo();
-    const redirectToReplace = useRedirectToReplace();
-    const { orgUnitId, orgUnitChildrenId } = params;
-    const { formatMessage } = useSafeIntl();
-    const { data: orgUnit, isFetching } = useGetOrgUnit(orgUnitId);
+    const { orgUnitId, orgUnitChildrenId, formIds, tab, fullScreen } = params;
+    const isFullScreen = fullScreen === 'true';
     const [selectedChildrenId, setSelectedChildrenId] = useState<
         string | undefined
     >(orgUnitChildrenId);
+
+    const redirectTo = useRedirectTo();
+    const redirectToReplace = useRedirectToReplace();
+    const { formatMessage } = useSafeIntl();
+
+    const { data: orgUnit, isFetching } = useGetOrgUnit(orgUnitId);
     const { data: selectedChildren, isFetching: isFetchingSelectedChildren } =
         useGetOrgUnit(selectedChildrenId);
     const { data: orgUnitListChildren, isFetching: isFetchingListChildren } =
@@ -89,6 +94,7 @@ export const Registry: FunctionComponent = () => {
             orgUnitId,
             orgUnit?.org_unit_type?.sub_unit_types,
         );
+
     const subOrgUnitTypes: OrgunitTypeRegistry[] = useMemo(() => {
         if (!orgUnitMapChildren) {
             return [];
@@ -103,6 +109,23 @@ export const Registry: FunctionComponent = () => {
             })) || [];
         return orderBy(options, [f => f.depth], ['asc']);
     }, [orgUnit, orgUnitMapChildren]);
+
+    const currentType: OrgunitTypeRegistry | undefined = useMemo(() => {
+        if (subOrgUnitTypes.length > 0) {
+            if (tab) {
+                const existingType: OrgunitTypeRegistry | undefined =
+                    subOrgUnitTypes.find(subType => `${subType.id}` === tab);
+                return existingType || subOrgUnitTypes[0];
+            }
+            return subOrgUnitTypes[0];
+        }
+        return undefined;
+    }, [subOrgUnitTypes, tab]);
+
+    const { data: orgunitTypeDetail } = useGetOrgUnitType(currentType?.id);
+    const { data: formsList, isFetching: isFetchingForms } = useGetForms({
+        orgUnitTypeIds: currentType?.id,
+    });
 
     const handleOrgUnitChange = useCallback(
         (newOrgUnit: OrgUnit) => {
@@ -127,30 +150,54 @@ export const Registry: FunctionComponent = () => {
                 newParams.orgUnitChildrenId = `${newChildren.id}`;
             } else {
                 setSelectedChildrenId(undefined);
-                delete newParams.orgUnitChildrenId;
+                newParams.orgUnitChildrenId = undefined;
             }
-            delete newParams.submissionId;
+            newParams.submissionId = undefined;
             redirectToReplace(`/${baseUrls.registry}`, newParams);
         },
         [params, redirectToReplace],
     );
-    const isFullScreen = params.fullScreen === 'true';
 
     useEffect(() => {
-        if (orgUnitId && (params.orgUnitChildrenId || params.submissionId)) {
+        if (
+            orgUnitId &&
+            (params.orgUnitChildrenId || params.submissionId || params.formIds)
+        ) {
             const newParams = {
                 ...params,
             };
-            delete newParams.orgUnitChildrenId;
-            delete newParams.submissionId;
-            delete newParams.formIds;
-
+            newParams.orgUnitChildrenId = undefined;
+            newParams.submissionId = undefined;
+            newParams.formIds = undefined;
             setSelectedChildrenId(undefined);
             redirectTo(`/${baseUrls.registry}`, newParams);
         }
         // Only remove selected children or submission if org unit change
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [orgUnitId]);
+
+    useEffect(() => {
+        if (
+            formsList &&
+            (formsList?.length ?? 0) >= 0 &&
+            !isFetchingForms &&
+            !formIds &&
+            orgunitTypeDetail
+        ) {
+            const selectedForm =
+                orgunitTypeDetail.reference_forms.length > 0
+                    ? `${orgunitTypeDetail.reference_forms[0].id}`
+                    : formsList[0].value;
+            const newParams = {
+                ...params,
+                formIds: selectedForm,
+            };
+            redirectToReplace(baseUrls.registry, newParams);
+        }
+        // only preselect a form if forms list contain an element and params is empty
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [formsList, isFetchingForms, orgunitTypeDetail]);
+
     return (
         <>
             <TopBar
@@ -246,6 +293,9 @@ export const Registry: FunctionComponent = () => {
                     isLoading={isFetching}
                     subOrgUnitTypes={subOrgUnitTypes}
                     params={params}
+                    currentType={currentType}
+                    formsList={formsList}
+                    isFetchingForms={isFetchingForms}
                 />
                 {!orgUnitId && <Placeholder />}
             </Box>

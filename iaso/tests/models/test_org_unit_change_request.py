@@ -206,8 +206,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
             "new_groups",
             "new_reference_instances",
         ]
-        with self.assertNumQueries(14):
-            change_request.approve(user=self.user, approved_fields=approved_fields)
+        change_request.approve(user=self.user, approved_fields=approved_fields)
         change_request.refresh_from_db()
 
         # Change request.

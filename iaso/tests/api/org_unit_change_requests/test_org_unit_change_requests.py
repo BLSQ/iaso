@@ -32,6 +32,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
             closed_date=cls.DT.date(),
         )
 
+        # Create a bunch of related objects. This is useful to detect N+1.
         group_1 = m.Group.objects.create(name="Group 1", source_version=version)
         group_2 = m.Group.objects.create(name="Group 2", source_version=version)
         group_3 = m.Group.objects.create(name="Group 3", source_version=version)
@@ -39,10 +40,13 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
 
         form_1 = m.Form.objects.create(name="Form 1")
         form_2 = m.Form.objects.create(name="Form 2")
+        form_3 = m.Form.objects.create(name="Form 3")
         instance_1 = m.Instance.objects.create(form=form_1, org_unit=org_unit)
         instance_2 = m.Instance.objects.create(form=form_2, org_unit=org_unit)
+        instance_3 = m.Instance.objects.create(form=form_3, org_unit=org_unit)
         m.OrgUnitReferenceInstance.objects.create(org_unit=org_unit, form=form_1, instance=instance_1)
         m.OrgUnitReferenceInstance.objects.create(org_unit=org_unit, form=form_2, instance=instance_2)
+        m.OrgUnitReferenceInstance.objects.create(org_unit=org_unit, form=form_3, instance=instance_3)
 
         account = m.Account.objects.create(name="Account", default_version=version)
         project = m.Project.objects.create(name="Project", account=account, app_id="foo.bar.baz")
@@ -324,27 +328,10 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
 
     def test_export_to_csv(self):
         """
-        It tests the csv export for the org change requests list
+        It tests the CSV export for the org change requests list.
         """
-        group_1 = m.Group.objects.create(
-            name="Group 1", source_ref="qRsdUL2Oa4d", source_version=self.version, block_of_countries=False
-        )
-        group_2 = m.Group.objects.create(
-            name="Group 2", source_ref="KOSuvYwass8", source_version=self.version, block_of_countries=False
-        )
-        self.org_unit.groups.set([group_1, group_2])
-        org_unit_parent = m.OrgUnit.objects.create(name="parent")
-        self.org_unit.parent = org_unit_parent
-        self.org_unit.save()
-        self.org_unit.refresh_from_db()
-
         m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
         change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Bar")
-
-        change_request.created_by = self.user
-        change_request.updated_by = self.user
-        change_request.save()
-        change_request.refresh_from_db()
 
         self.client.force_authenticate(self.user)
 
@@ -355,18 +342,20 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
             "attachment; filename=review-change-proposals--" + datetime.datetime.now().strftime("%Y-%m-%d") + ".csv",
         )
 
-        response_string = "\n".join(s.decode("U8") for s in response).replace("\r\n\n", "\r\n")
+        response_csv = response.getvalue().decode("utf-8")
+        response_string = "".join(s for s in response_csv)
         reader = csv.reader(io.StringIO(response_string), delimiter=",")
-        data = list(reader)
-        self.assertEqual(len(data), 4)
 
-        data_headers = data[1]
+        data = list(reader)
+        self.assertEqual(len(data), 3)
+
+        data_headers = data[0]
         self.assertEqual(
             data_headers,
             self.org_unit_change_request_csv_columns,
         )
 
-        first_data_row = data[2]
+        first_data_row = data[1]
         expected_row_data = [
             str(change_request.id),
             change_request.org_unit.name,

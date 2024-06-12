@@ -526,8 +526,7 @@ class ProfilesViewSet(viewsets.ViewSet):
     def send_email_invitation(self, profile, email_subject, email_message, email_html_message):
         current_site = get_current_site(self.request)
         site_name = current_site.name
-        domain = current_site.domain
-        from_email = settings.DEFAULT_FROM_EMAIL
+        domain = settings.DNS_DOMAIN
         token_generator = PasswordResetTokenGenerator()
         token = token_generator.make_token(profile.user)
 
@@ -544,7 +543,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             account_name=profile.account.name,
         )
 
-        email_subject_text = email_subject.format(dns_domain=f"{site_name}")
+        email_subject_text = email_subject.format(site_name=f"{site_name}")
         html_email_template = Template(email_html_message)
         html_email_context = Context(
             {
@@ -562,7 +561,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         send_mail(
             email_subject_text,
             email_message_text,
-            from_email,
+            settings.DEFAULT_FROM_EMAIL,
             [profile.user.email],
             html_message=rendered_html_email,
         )
@@ -744,5 +743,5 @@ Cordialement,<br>
 L'équipe {{site_name}}.</p>
     """
 
-    EMAIL_SUBJECT_FR = "Configurer un mot de passe pour votre nouveau compte sur {dns_domain}"
-    EMAIL_SUBJECT_EN = "Set up a password for your new account on {dns_domain}"
+    EMAIL_SUBJECT_FR = "Configurer un mot de passe pour votre nouveau compte sur {site_name}"
+    EMAIL_SUBJECT_EN = "Set up a password for your new account on {site_name}"

@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 from django.conf import settings
 from django.contrib.auth.models import Group, Permission
-from django.contrib.sites.models import Site
 from django.core import mail
 from django.test import override_settings
 from django.utils.translation import gettext as _
@@ -514,9 +513,6 @@ class ProfileAPITestCase(APITestCase):
 
     @override_settings(DEFAULT_FROM_EMAIL="sender@test.com", DNS_DOMAIN="iaso-test.bluesquare.org")
     def test_create_profile_with_send_email(self):
-        site = Site.objects.first()
-        site.name = "Iaso Dev"
-        site.save()
         self.client.force_authenticate(self.jim)
         data = {
             "user_name": "userTest",
@@ -532,10 +528,11 @@ class ProfileAPITestCase(APITestCase):
 
         self.assertEqual(len(mail.outbox), 1)
         email = mail.outbox[0]
-        self.assertEqual(email.subject, f"Set up a password for your new account on {site.name}")
+        self.assertEqual(email.subject, "Set up a password for your new account on iaso-test.bluesquare.org")
         self.assertEqual(email.from_email, "sender@test.com")
         self.assertEqual(email.to, ["test@test.com"])
         self.assertIn(f"http://iaso-test.bluesquare.org", email.body)
+        self.assertIn(f"The iaso-test.bluesquare.org Team.", email.body)
 
     def test_create_profile_with_no_password_and_not_send_email(self):
         self.client.force_authenticate(self.jim)

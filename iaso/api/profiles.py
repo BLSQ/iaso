@@ -4,7 +4,6 @@ from django.conf import settings
 from django.contrib.auth import models, update_session_auth_hash
 from django.contrib.auth.models import Permission, User
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
@@ -14,7 +13,6 @@ from django.shortcuts import get_object_or_404
 from django.template import Context, Template
 from django.urls import reverse
 from django.utils.encoding import force_bytes
-from django.utils.html import strip_tags
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
 from phonenumber_field.phonenumber import PhoneNumber
@@ -524,8 +522,6 @@ class ProfilesViewSet(viewsets.ViewSet):
             profile.projects.add(item)
 
     def send_email_invitation(self, profile, email_subject, email_message, email_html_message):
-        current_site = get_current_site(self.request)
-        site_name = current_site.name
         domain = settings.DNS_DOMAIN
         token_generator = PasswordResetTokenGenerator()
         token = token_generator.make_token(profile.user)
@@ -539,11 +535,10 @@ class ProfilesViewSet(viewsets.ViewSet):
             url=f"{protocol}://{domain}{create_password_path}",
             protocol=protocol,
             domain=domain,
-            site_name=site_name,
             account_name=profile.account.name,
         )
 
-        email_subject_text = email_subject.format(site_name=f"{site_name}")
+        email_subject_text = email_subject.format(domain=f"{domain}")
         html_email_template = Template(email_html_message)
         html_email_context = Context(
             {
@@ -552,7 +547,6 @@ class ProfilesViewSet(viewsets.ViewSet):
                 "account_name": profile.account.name,
                 "userName": profile.user.username,
                 "url": f"{protocol}://{domain}{create_password_path}",
-                "site_name": site_name,
             }
         )
 
@@ -685,7 +679,7 @@ window instead.
 If you did not request an account on {account_name}, you can ignore this e-mail - no password will be created.
 
 Sincerely,
-The {site_name} Team.
+The {domain} Team.
     """
 
     CREATE_PASSWORD_HTML_MESSAGE_EN = """<p>Hello,<br><br>
@@ -704,7 +698,7 @@ window instead.<br><br>
 If you did not request an account on {{account_name}}, you can ignore this e-mail - no password will be created.<br><br>
 
 Sincerely,<br>
-The {{site_name}} Team.</p>
+The {{domain}} Team.</p>
     """
 
     CREATE_PASSWORD_MESSAGE_FR = """Bonjour, 
@@ -722,7 +716,7 @@ Si le lien ne fonctionne pas, merci de copier et coller l'URL dans une nouvelle 
 Si vous n'avez pas demandé de compte sur {account_name}, vous pouvez ignorer cet e-mail - aucun mot de passe ne sera créé.
 
 Cordialement,
-L'équipe {site_name}.
+L'équipe {domain}.
     """
 
     CREATE_PASSWORD_HTML_MESSAGE_FR = """<p>Bonjour,<br><br>
@@ -740,8 +734,8 @@ Si le lien ne fonctionne pas, merci de copier et coller l'URL dans une nouvelle 
 Si vous n'avez pas demandé de compte sur {{account_name}}, vous pouvez ignorer cet e-mail - aucun mot de passe ne sera créé.<br><br>
 
 Cordialement,<br>
-L'équipe {{site_name}}.</p>
+L'équipe {{domain}}.</p>
     """
 
-    EMAIL_SUBJECT_FR = "Configurer un mot de passe pour votre nouveau compte sur {site_name}"
-    EMAIL_SUBJECT_EN = "Set up a password for your new account on {site_name}"
+    EMAIL_SUBJECT_FR = "Configurer un mot de passe pour votre nouveau compte sur {domain}"
+    EMAIL_SUBJECT_EN = "Set up a password for your new account on {domain}"

@@ -10,7 +10,7 @@ import {
     LoadingSpinner,
     useSafeIntl,
     LinkWithLocation,
-    useGoBack
+    useGoBack,
 } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
 import TopBar from '../../components/nav/TopBarComponent';
@@ -31,6 +31,8 @@ import { useSnackQuery } from '../../libs/apiHooks';
 import SpeedDialInstance from './components/SpeedDialInstance';
 import { ClassNames } from '../../types/utils';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { BeneficiaryBaseInfo } from '../entities/components/BeneficiaryBaseInfo';
+import { useGetBeneficiaryFields } from '../entities/hooks/useGetBeneficiaryFields';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -79,8 +81,14 @@ const InstanceDetails: FunctionComponent = () => {
         instanceId: string;
     };
     const { instanceId } = params;
-    const { data: currentInstance, isLoading: fetching } =
+    const { data: currentInstance, isLoading: isLoadingInstance } =
         useGetInstance(instanceId);
+    const { isLoading: isLoadingBeneficiaryFields, fields: beneficiaryFields } =
+        useGetBeneficiaryFields(currentInstance && currentInstance.entity);
+
+    const isLoading =
+        isLoadingInstance ||
+        (currentInstance.entity && isLoadingBeneficiaryFields);
 
     // not showing history link in submission detail if there is only one version/log
     // in the future. add this info directly in the instance api to not make another call;
@@ -100,8 +108,8 @@ const InstanceDetails: FunctionComponent = () => {
                 displayBackButton
                 goBack={() => goBack()}
             />
-            {fetching && <LoadingSpinner />}
-            {currentInstance && (
+            {isLoading && <LoadingSpinner />}
+            {currentInstance && !isLoading && (
                 <Box className={classes.containerFullHeightNoTabPadded}>
                     {currentInstance.can_user_modify && showDial && (
                         <SpeedDialInstance
@@ -127,6 +135,13 @@ const InstanceDetails: FunctionComponent = () => {
                                     )}
                                     <br />
                                 </Alert>
+                            )}
+                            {currentInstance && currentInstance.entity && (
+                                <BeneficiaryBaseInfo
+                                    beneficiary={currentInstance.entity}
+                                    fields={beneficiaryFields}
+                                    withLinkToBeneficiary={true}
+                                />
                             )}
                             <WidgetPaper
                                 title={formatMessage(MESSAGES.infos)}

@@ -100,7 +100,8 @@ export const Instances: FunctionComponent<Props> = ({
             (formsList?.length ?? 0) >= 0 &&
             !isFetchingForms &&
             !formIds &&
-            orgunitTypeDetail
+            orgunitTypeDetail &&
+            !isLoading
         ) {
             const selectedForm =
                 orgunitTypeDetail.reference_forms.length > 0

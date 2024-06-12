@@ -88,8 +88,8 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
         app_id_serializer = AppIdSerializer(data=self.request.query_params)
         app_id_serializer.is_valid()
         app_id = app_id_serializer.validated_data.get("app_id")
-        org_units = OrgUnit.objects.filter_for_user_and_app_id(self.request.user, app_id)
-        if org_unit_to_change not in org_units:
+        org_units_for_user = OrgUnit.objects.filter_for_user_and_app_id(self.request.user, app_id)
+        if not org_units_for_user.filter(id=org_unit_to_change.pk).exists():
             raise PermissionDenied("The user is trying to create a change request for an unauthorized OrgUnit.")
 
     def perform_create(self, serializer):

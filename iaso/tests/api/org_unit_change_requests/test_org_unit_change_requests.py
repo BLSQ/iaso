@@ -175,7 +175,8 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
             "new_name": "I want this new name",
             "new_org_unit_type_id": self.org_unit_type.pk,
         }
-        response = self.client.post("/api/orgunits/changes/", data=data, format="json")
+        with self.assertNumQueries(11):
+            response = self.client.post("/api/orgunits/changes/", data=data, format="json")
         self.assertEqual(response.status_code, 201)
         change_request = m.OrgUnitChangeRequest.objects.get(new_name=data["new_name"])
         self.assertEqual(change_request.new_name, data["new_name"])

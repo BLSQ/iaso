@@ -32,6 +32,18 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
             closed_date=cls.DT.date(),
         )
 
+        group_1 = m.Group.objects.create(name="Group 1", source_version=version)
+        group_2 = m.Group.objects.create(name="Group 2", source_version=version)
+        group_3 = m.Group.objects.create(name="Group 3", source_version=version)
+        org_unit.groups.add(group_1, group_2, group_3)
+
+        form_1 = m.Form.objects.create(name="Form 1")
+        form_2 = m.Form.objects.create(name="Form 2")
+        instance_1 = m.Instance.objects.create(form=form_1, org_unit=org_unit)
+        instance_2 = m.Instance.objects.create(form=form_2, org_unit=org_unit)
+        m.OrgUnitReferenceInstance.objects.create(org_unit=org_unit, form=form_1, instance=instance_1)
+        m.OrgUnitReferenceInstance.objects.create(org_unit=org_unit, form=form_2, instance=instance_2)
+
         account = m.Account.objects.create(name="Account", default_version=version)
         project = m.Project.objects.create(name="Project", account=account, app_id="foo.bar.baz")
         user = cls.create_user_with_profile(username="user", account=account)
@@ -180,7 +192,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
             "org_unit_id": self.org_unit.id,
             "new_name": "Bar",
         }
-        with self.assertNumQueries(10):
+        with self.assertNumQueries(12):
             response = self.client.post("/api/orgunits/changes/?app_id=foo.bar.baz", data=data, format="json")
         self.assertEqual(response.status_code, 201)
         change_request = m.OrgUnitChangeRequest.objects.get(uuid=data["uuid"])

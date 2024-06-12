@@ -68,9 +68,18 @@ const styles: SxStyles = {
             'inset 0px 2px 4px -1px rgba(0,0,0,0.2),inset 0px 4px 5px 0px rgba(0,0,0,0.14),inset 0px 1px 10px 0px rgba(0,0,0,0.12)',
     },
 };
+
+const baseUrl = baseUrls.registry;
 export const Registry: FunctionComponent = () => {
-    const params = useParamsObject(baseUrls.registry) as RegistryParams;
-    const { orgUnitId, orgUnitChildrenId, formIds, tab, fullScreen } = params;
+    const params = useParamsObject(baseUrl) as RegistryParams;
+    const {
+        orgUnitId,
+        orgUnitChildrenId,
+        formIds,
+        tab,
+        fullScreen,
+        submissionId,
+    } = params;
     const isFullScreen = fullScreen === 'true';
     const [selectedChildrenId, setSelectedChildrenId] = useState<
         string | undefined
@@ -127,42 +136,8 @@ export const Registry: FunctionComponent = () => {
         orgUnitTypeIds: currentType?.id,
     });
 
-    const handleOrgUnitChange = useCallback(
-        (newOrgUnit: OrgUnit) => {
-            if (newOrgUnit) {
-                const newParams = {
-                    ...params,
-                    orgUnitId: `${newOrgUnit.id}`,
-                };
-                redirectTo(`/${baseUrls.registry}`, newParams);
-            }
-        },
-        [params, redirectTo],
-    );
-
-    const handleChildrenChange = useCallback(
-        (newChildren: OrgUnit) => {
-            const newParams = {
-                ...params,
-            };
-            if (newChildren) {
-                setSelectedChildrenId(`${newChildren.id}`);
-                newParams.orgUnitChildrenId = `${newChildren.id}`;
-            } else {
-                setSelectedChildrenId(undefined);
-                newParams.orgUnitChildrenId = undefined;
-            }
-            newParams.submissionId = undefined;
-            redirectToReplace(`/${baseUrls.registry}`, newParams);
-        },
-        [params, redirectToReplace],
-    );
-
     useEffect(() => {
-        if (
-            orgUnitId &&
-            (params.orgUnitChildrenId || params.submissionId || params.formIds)
-        ) {
+        if (orgUnitId && (orgUnitChildrenId || submissionId || formIds)) {
             const newParams = {
                 ...params,
             };
@@ -170,7 +145,7 @@ export const Registry: FunctionComponent = () => {
             newParams.submissionId = undefined;
             newParams.formIds = undefined;
             setSelectedChildrenId(undefined);
-            redirectTo(`/${baseUrls.registry}`, newParams);
+            redirectToReplace(`/${baseUrl}`, newParams);
         }
         // Only remove selected children or submission if org unit change
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -192,12 +167,42 @@ export const Registry: FunctionComponent = () => {
                 ...params,
                 formIds: selectedForm,
             };
-            redirectToReplace(baseUrls.registry, newParams);
+            redirectToReplace(`/${baseUrl}`, newParams);
         }
-        // only preselect a form if forms list contain an element and params is empty
+        // Only preselect a form if forms list contain an element and params is empty
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [formsList, isFetchingForms, orgunitTypeDetail]);
 
+    const handleOrgUnitChange = useCallback(
+        (newOrgUnit: OrgUnit) => {
+            if (newOrgUnit) {
+                const newParams = {
+                    ...params,
+                    orgUnitId: `${newOrgUnit.id}`,
+                };
+                redirectTo(`/${baseUrl}`, newParams);
+            }
+        },
+        [params, redirectTo],
+    );
+
+    const handleChildrenChange = useCallback(
+        (newChildren: OrgUnit) => {
+            const newParams = {
+                ...params,
+            };
+            if (newChildren) {
+                setSelectedChildrenId(`${newChildren.id}`);
+                newParams.orgUnitChildrenId = `${newChildren.id}`;
+            } else {
+                setSelectedChildrenId(undefined);
+                newParams.orgUnitChildrenId = undefined;
+            }
+            newParams.submissionId = undefined;
+            redirectToReplace(`/${baseUrl}`, newParams);
+        },
+        [params, redirectToReplace],
+    );
     return (
         <>
             <TopBar

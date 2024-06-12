@@ -1,25 +1,15 @@
 /* eslint-disable camelcase */
 import React, { ReactElement, useCallback, useMemo } from 'react';
 import DeleteIcon from '@mui/icons-material/Delete';
-import UpdateIcon from '@mui/icons-material/Update';
 import EditLocationIcon from '@mui/icons-material/EditLocation';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 import LinkIcon from '@mui/icons-material/Link';
 import LinkOffIcon from '@mui/icons-material/LinkOff';
 import LockIcon from '@mui/icons-material/Lock';
-
-import {
-    // @ts-ignore
-    ExportButton,
-    // @ts-ignore
-    makeFullModal,
-    // @ts-ignore
-    useSafeIntl,
-} from 'bluesquare-components';
+import { ExportButton, useSafeIntl } from 'bluesquare-components';
 import { DialogContentText } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import EnketoIcon from '../components/EnketoIcon';
-import { CreateReAssignDialogComponent } from '../components/CreateReAssignDialogComponent';
 import ExportInstancesDialogComponent from '../components/ExportInstancesDialogComponent';
 import MESSAGES from '../messages';
 import { Instance } from '../types/instance';
@@ -29,6 +19,7 @@ import { usePostLockInstance } from '../hooks';
 import { FormDef, useLinkOrgUnitToReferenceSubmission } from './speeddials';
 import { Nullable } from '../../../types/utils';
 import { reAssignInstance } from '../actions';
+import { ReAssignDialog } from '../components/CreateReAssignDialogComponent';
 
 export type SpeedDialAction = {
     id: string;
@@ -40,10 +31,6 @@ export const useBaseActions = (
     currentInstance: Instance,
     formDef?: FormDef,
 ): SpeedDialAction[] => {
-    const CreateReAssignDialog = useMemo(
-        () => makeFullModal(CreateReAssignDialogComponent, UpdateIcon),
-        [],
-    );
     const dispatch = useDispatch();
     const onReAssignInstance = useCallback(
         (...props) => {
@@ -79,7 +66,7 @@ export const useBaseActions = (
             {
                 id: 'instanceReAssignAction',
                 icon: (
-                    <CreateReAssignDialog
+                    <ReAssignDialog
                         titleMessage={MESSAGES.reAssignInstance}
                         confirmMessage={MESSAGES.reAssignInstanceAction}
                         currentInstance={currentInstance}
@@ -91,7 +78,7 @@ export const useBaseActions = (
                 disabled: currentInstance && currentInstance.deleted,
             },
         ];
-    }, [currentInstance, formDef, reAssignInstance]);
+    }, [currentInstance, formDef, onReAssignInstance]);
 };
 
 export const useEditLocationWithGpsAction = (
@@ -112,10 +99,11 @@ export const useEditLocationWithGpsAction = (
             currentInstance.org_unit,
         ],
     );
-    const { mutateAsync: saveOrgUnit } = useSaveOrgUnit(() => {
-        // @ts-ignore
-        window.location.reload(false);
-    }, ['orgUnits']);
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    const { mutateAsync: saveOrgUnit } = useSaveOrgUnit(() => {}, [
+        'orgUnits',
+        'instance',
+    ]);
     return useMemo(
         () => ({
             id: 'editLocationWithInstanceGps',

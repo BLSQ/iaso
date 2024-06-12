@@ -1,11 +1,11 @@
 import React, { FunctionComponent, useState } from 'react';
-// @ts-ignore
 import {
     ConfirmCancelModal,
     useSafeIntl,
     AddButton,
     makeFullModal,
 } from 'bluesquare-components';
+import UpdateIcon from '@mui/icons-material/Update';
 import { Period } from '../../periods/models';
 import { isValidPeriod } from '../../periods/utils';
 import MESSAGES from '../messages';
@@ -129,26 +129,24 @@ export const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
                     errors={fieldValue.period.errors}
                 />
             )}
-            <>
-                <OrgUnitTreeviewModal
-                    required
-                    clearable={false}
-                    titleMessage={MESSAGES.selectedOrgUnit}
-                    toggleOnLabelClick={false}
-                    onConfirm={orgUnit => {
-                        setFieldValue({
-                            ...fieldValue,
-                            orgUnit: {
-                                ...fieldValue.orgUnit,
-                                value: orgUnit,
-                            },
-                        });
-                    }}
-                    multiselect={false}
-                    initialSelection={fieldValue.orgUnit.value}
-                    allowedTypes={orgUnitTypes}
-                />
-            </>
+            <OrgUnitTreeviewModal
+                required
+                clearable={false}
+                titleMessage={MESSAGES.selectedOrgUnit}
+                toggleOnLabelClick={false}
+                onConfirm={orgUnit => {
+                    setFieldValue({
+                        ...fieldValue,
+                        orgUnit: {
+                            ...fieldValue.orgUnit,
+                            value: orgUnit,
+                        },
+                    });
+                }}
+                multiselect={false}
+                initialSelection={fieldValue.orgUnit.value}
+                allowedTypes={orgUnitTypes}
+            />
         </ConfirmCancelModal>
     );
 };
@@ -156,6 +154,11 @@ export const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
 const CreateReAssignDialog = makeFullModal(
     CreateReAssignDialogComponent,
     AddButton,
+);
+
+export const ReAssignDialog = makeFullModal(
+    CreateReAssignDialogComponent,
+    UpdateIcon,
 );
 
 export { CreateReAssignDialog };

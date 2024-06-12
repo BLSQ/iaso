@@ -235,40 +235,45 @@ export const useFormsTableColumns = ({
                                             overrideIcon={FormatListBulleted}
                                         />
                                     </DisplayIfUserHasPerm>
-                                    <DisplayIfUserHasPerm
-                                        permissions={[
-                                            Permission.SUBMISSIONS_UPDATE,
-                                        ]}
-                                    >
-                                        <CreateSubmissionModal
-                                            titleMessage={
-                                                MESSAGES.instanceCreationDialogTitle
-                                            }
-                                            confirmMessage={MESSAGES.ok}
-                                            cancelMessage={MESSAGES.cancel}
-                                            formType={{
-                                                id: settings.row.original.id,
-                                                periodType:
+                                    {/* If orgUnitId is not undefined, it means the btable is used in the org units details page,
+                                    which, in turn, means we shouldn't show the button to create a submission */}
+                                    {!orgUnitId && (
+                                        <DisplayIfUserHasPerm
+                                            permissions={[
+                                                Permission.SUBMISSIONS_UPDATE,
+                                            ]}
+                                        >
+                                            <CreateSubmissionModal
+                                                titleMessage={
+                                                    MESSAGES.instanceCreationDialogTitle
+                                                }
+                                                confirmMessage={MESSAGES.ok}
+                                                cancelMessage={MESSAGES.cancel}
+                                                formType={{
+                                                    id: settings.row.original
+                                                        .id,
+                                                    periodType:
+                                                        settings.row.original
+                                                            .period_type,
+                                                }}
+                                                onCreateOrReAssign={(
+                                                    currentForm,
+                                                    payload,
+                                                ) =>
+                                                    dispatch(
+                                                        createInstance(
+                                                            currentForm,
+                                                            payload,
+                                                        ),
+                                                    )
+                                                }
+                                                orgUnitTypes={
                                                     settings.row.original
-                                                        .period_type,
-                                            }}
-                                            onCreateOrReAssign={(
-                                                currentForm,
-                                                payload,
-                                            ) =>
-                                                dispatch(
-                                                    createInstance(
-                                                        currentForm,
-                                                        payload,
-                                                    ),
-                                                )
-                                            }
-                                            orgUnitTypes={
-                                                settings.row.original
-                                                    .org_unit_type_ids
-                                            }
-                                        />
-                                    </DisplayIfUserHasPerm>
+                                                        .org_unit_type_ids
+                                                }
+                                            />
+                                        </DisplayIfUserHasPerm>
+                                    )}
                                     <DisplayIfUserHasPerm
                                         permissions={[Permission.FORMS]}
                                     >

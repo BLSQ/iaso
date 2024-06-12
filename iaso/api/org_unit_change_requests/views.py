@@ -75,10 +75,11 @@ class OrgUnitChangeRequestViewSet(viewsets.ModelViewSet):
             "old_org_unit_type",
         ).prefetch_related(
             "org_unit__groups",
+            "org_unit__reference_instances__form",
             "new_groups",
             "old_groups",
-            "new_reference_instances",
-            "old_reference_instances",
+            "new_reference_instances__form",
+            "old_reference_instances__form",
         )
         return org_units_change_requests.filter(org_unit__in=org_units)
 

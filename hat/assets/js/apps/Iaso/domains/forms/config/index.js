@@ -238,69 +238,78 @@ export const useFormsTableColumns = ({
                                     {/* If orgUnitId is not undefined, it means the btable is used in the org units details page,
                                     which, in turn, means we shouldn't show the button to create a submission */}
                                     {!orgUnitId && (
-                                        <DisplayIfUserHasPerm
-                                            permissions={[
-                                                Permission.SUBMISSIONS_UPDATE,
-                                            ]}
-                                        >
-                                            <CreateSubmissionModal
-                                                titleMessage={
-                                                    MESSAGES.instanceCreationDialogTitle
-                                                }
-                                                confirmMessage={MESSAGES.ok}
-                                                cancelMessage={MESSAGES.cancel}
-                                                formType={{
-                                                    id: settings.row.original
-                                                        .id,
-                                                    periodType:
+                                        <>
+                                            <DisplayIfUserHasPerm
+                                                permissions={[
+                                                    Permission.SUBMISSIONS_UPDATE,
+                                                ]}
+                                            >
+                                                <CreateSubmissionModal
+                                                    titleMessage={
+                                                        MESSAGES.instanceCreationDialogTitle
+                                                    }
+                                                    confirmMessage={MESSAGES.ok}
+                                                    cancelMessage={
+                                                        MESSAGES.cancel
+                                                    }
+                                                    formType={{
+                                                        id: settings.row
+                                                            .original.id,
+                                                        periodType:
+                                                            settings.row
+                                                                .original
+                                                                .period_type,
+                                                    }}
+                                                    onCreateOrReAssign={(
+                                                        currentForm,
+                                                        payload,
+                                                    ) =>
+                                                        dispatch(
+                                                            createInstance(
+                                                                currentForm,
+                                                                payload,
+                                                            ),
+                                                        )
+                                                    }
+                                                    orgUnitTypes={
                                                         settings.row.original
-                                                            .period_type,
-                                                }}
-                                                onCreateOrReAssign={(
-                                                    currentForm,
-                                                    payload,
-                                                ) =>
-                                                    dispatch(
-                                                        createInstance(
-                                                            currentForm,
-                                                            payload,
-                                                        ),
-                                                    )
-                                                }
-                                                orgUnitTypes={
-                                                    settings.row.original
-                                                        .org_unit_type_ids
-                                                }
-                                            />
-                                        </DisplayIfUserHasPerm>
+                                                            .org_unit_type_ids
+                                                    }
+                                                />
+                                            </DisplayIfUserHasPerm>
+
+                                            <DisplayIfUserHasPerm
+                                                permissions={[Permission.FORMS]}
+                                            >
+                                                <IconButton
+                                                    url={`/${baseUrls.formDetail}/formId/${settings.row.original.id}`}
+                                                    icon="edit"
+                                                    tooltipMessage={
+                                                        MESSAGES.edit
+                                                    }
+                                                />
+                                                <IconButton
+                                                    // eslint-disable-next-line max-len
+                                                    url={`/${baseUrls.mappings}/formId/${settings.row.original.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}
+                                                    icon="dhis"
+                                                    tooltipMessage={
+                                                        MESSAGES.dhis2Mappings
+                                                    }
+                                                />
+                                                <DeleteDialog
+                                                    titleMessage={
+                                                        MESSAGES.deleteFormTitle
+                                                    }
+                                                    onConfirm={closeDialog =>
+                                                        deleteForm(
+                                                            settings.row
+                                                                .original.id,
+                                                        ).then(closeDialog)
+                                                    }
+                                                />
+                                            </DisplayIfUserHasPerm>
+                                        </>
                                     )}
-                                    <DisplayIfUserHasPerm
-                                        permissions={[Permission.FORMS]}
-                                    >
-                                        <IconButton
-                                            url={`/${baseUrls.formDetail}/formId/${settings.row.original.id}`}
-                                            icon="edit"
-                                            tooltipMessage={MESSAGES.edit}
-                                        />
-                                        <IconButton
-                                            // eslint-disable-next-line max-len
-                                            url={`/${baseUrls.mappings}/formId/${settings.row.original.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}
-                                            icon="dhis"
-                                            tooltipMessage={
-                                                MESSAGES.dhis2Mappings
-                                            }
-                                        />
-                                        <DeleteDialog
-                                            titleMessage={
-                                                MESSAGES.deleteFormTitle
-                                            }
-                                            onConfirm={closeDialog =>
-                                                deleteForm(
-                                                    settings.row.original.id,
-                                                ).then(closeDialog)
-                                            }
-                                        />
-                                    </DisplayIfUserHasPerm>
                                 </>
                             )}
                         </section>

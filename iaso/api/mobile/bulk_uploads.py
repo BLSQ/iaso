@@ -1,15 +1,15 @@
 import datetime
 import logging
+from traceback import format_exc
 
-from botocore.exceptions import ClientError
 from django.core.files.uploadhandler import TemporaryFileUploadHandler
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, status
 from rest_framework.generics import get_object_or_404
+from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
-from traceback import format_exc
 
 from hat.api_import.models import APIImport
 from iaso.api.query_params import APP_ID
@@ -31,6 +31,8 @@ class ZipFileSerializer(serializers.Serializer):
 
 
 class MobileBulkUploadsViewSet(ViewSet):
+    parser_classes = [MultiPartParser]
+
     app_id_param = openapi.Parameter(
         name=APP_ID,
         in_=openapi.IN_QUERY,

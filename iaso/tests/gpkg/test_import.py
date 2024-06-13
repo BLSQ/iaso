@@ -42,7 +42,8 @@ class GPKGImport(TestCase):
         self.assertEqual(root.location, None)
         self.assertEqual(root.geom.geom_type, "MultiPolygon")
 
-        self.assertEqual(len(root.geom.coords[0][0]), 3999)
+        self.assertEqual(root.geom.num_coords, 3999)
+        self.assertEqual(root.simplified_geom.num_coords, 586)
 
         c = root.orgunit_set.first()
         self.assertEqual(c.name, "AS Tongo Gadima")
@@ -52,8 +53,8 @@ class GPKGImport(TestCase):
         self.assertEqual(str(c.path), f"{root.pk}.{c.pk}")
         self.assertEqual(c.location, None)
         self.assertEqual(c.geom.geom_type, "MultiPolygon")
-        self.assertEqual(len(c.geom.coords[0][0]), 2108)
-
+        self.assertEqual(c.geom.num_coords, 2108)
+        self.assertEqual(c.simplified_geom.num_coords, 592)
         self.assertEqual(c.groups.all().count(), 0)
 
         c2 = c.orgunit_set.first()
@@ -62,6 +63,7 @@ class GPKGImport(TestCase):
         self.assertEqual(c2.parent, c)
         self.assertEqual(str(c2.path), f"{root.pk}.{c.pk}.{c2.pk}")
         self.assertEqual(c2.geom, None)
+        self.assertEqual(c2.simplified_geom, None)
         self.assertEqual(c2.location, Point(13.9993, 5.1795, 0.0, srid=4326))
         self.assertQuerySetEqual(
             c2.groups.all().order_by("source_ref"),

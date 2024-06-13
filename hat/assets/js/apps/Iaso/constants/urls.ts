@@ -318,10 +318,6 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         url: 'entities/details',
         params: ['accountId', 'entityId', ...paginationPathParams],
     },
-    entitySubmissionDetail: {
-        url: 'entities/submission',
-        params: ['accountId', 'instanceId', 'entityId'],
-    },
     entityTypes: {
         url: 'entities/types',
         params: ['accountId', 'search', ...paginationPathParams],
@@ -521,7 +517,6 @@ type IasoBaseUrls = {
     orgUnitTypes: string;
     entities: string;
     entityDetails: string;
-    entitySubmissionDetail: string;
     entityTypes: string;
     entityDuplicates: string;
     entityDuplicateDetails: string;

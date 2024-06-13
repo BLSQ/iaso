@@ -147,6 +147,7 @@
   ],
 
     "rules": {
+      "react/function-component-definition": "off",
       "no-tabs": "off",
       "no-console":["error",{"allow":["warn","error"]}],
       "prettier/prettier": "warn",

@@ -33,6 +33,7 @@ type Props = {
     params: RegistryParams;
 };
 
+const baseUrl = baseUrls.registry;
 export const Instances: FunctionComponent<Props> = ({
     isLoading,
     subOrgUnitTypes,
@@ -52,11 +53,6 @@ export const Instances: FunctionComponent<Props> = ({
         }
         return undefined;
     }, [subOrgUnitTypes, tab]);
-    const { data: orgunitTypeDetail, isFetching: isFetchingOrgunitTypeDetail } =
-        useGetOrgUnitType(currentType?.id);
-    const { data: formsList, isFetching: isFetchingForms } = useGetForms({
-        orgUnitTypeIds: currentType?.id,
-    });
 
     const { url: apiUrl } = useGetInstanceApi(params, currentType?.id, 'VALID');
     const { data, isFetching: isFetchingList } = useGetInstances(
@@ -91,17 +87,21 @@ export const Instances: FunctionComponent<Props> = ({
         [params, redirectToReplace],
     );
 
+    const { data: orgunitTypeDetail } = useGetOrgUnitType(currentType?.id);
+    const { data: formsList, isFetching: isFetchingForms } = useGetForms({
+        orgUnitTypeIds: currentType?.id,
+    });
     const currentForm: Form | undefined = useMemo(() => {
         return formsList?.find(f => `${f.value}` === formIds)?.original;
     }, [formIds, formsList]);
-
     useEffect(() => {
         if (
             formsList &&
             (formsList?.length ?? 0) >= 0 &&
             !isFetchingForms &&
             !formIds &&
-            orgunitTypeDetail
+            orgunitTypeDetail &&
+            !isLoading
         ) {
             const selectedForm =
                 orgunitTypeDetail.reference_forms.length > 0
@@ -111,12 +111,11 @@ export const Instances: FunctionComponent<Props> = ({
                 ...params,
                 formIds: selectedForm,
             };
-            redirectToReplace(baseUrls.registry, newParams);
+            redirectToReplace(`/${baseUrl}`, newParams);
         }
-        // only prselect a form if forms list contain an element and params is empty
+        // Only preselect a form if forms list contain an element and params is empty
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [formsList, isFetchingForms, orgunitTypeDetail]);
-
+    }, [formsList, isFetchingForms, orgunitTypeDetail, redirectToReplace]);
     return (
         <Box>
             {currentType && !isLoading && (
@@ -172,6 +171,7 @@ export const Instances: FunctionComponent<Props> = ({
                                         instanceMetasFields={
                                             INSTANCE_METAS_FIELDS
                                         }
+                                        // eslint-disable-next-line react/no-unstable-nested-components
                                         getActionCell={settings => (
                                             <ActionCell settings={settings} />
                                         )}

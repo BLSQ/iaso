@@ -284,6 +284,10 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
             "new_closed_date",
             "new_reference_instances",
         ]
+        extra_kwargs = {
+            "new_groups": {"write_only": True},
+            "new_reference_instances": {"write_only": True},
+        }
 
     def validate_new_reference_instances(self, new_reference_instances):
         seen = []

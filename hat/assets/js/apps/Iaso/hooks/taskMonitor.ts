@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react';
-import { UseMutationResult, UseQueryResult, useQueryClient } from 'react-query';
+import { UseMutationResult, UseQueryResult } from 'react-query';
 import { getRequest, postRequest } from '../libs/Api';
 import { useSnackMutation, useSnackQuery } from '../libs/apiHooks';
 
@@ -59,7 +58,7 @@ export const useTaskMonitor = ({
                     ? interval
                     : false;
             },
-            enabled: enabled,
+            enabled,
         },
     });
 };

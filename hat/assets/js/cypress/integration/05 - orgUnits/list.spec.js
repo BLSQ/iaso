@@ -16,6 +16,9 @@ const goToPage = () => {
     cy.intercept('GET', '/api/groups/**', {
         fixture: 'groups/list.json',
     });
+    cy.intercept('GET', '/api/datasources/**', {
+        fixture: `datasources/details-ou.json`,
+    });
     cy.intercept('GET', '/sockjs-node/**');
     cy.visit(baseUrl);
 };

@@ -12,6 +12,7 @@ import {
     useSafeIntl,
     LoadingSpinner,
     useSkipEffectOnMount,
+    makeRedirectionUrl,
 } from 'bluesquare-components';
 import { useQueryClient } from 'react-query';
 
@@ -49,7 +50,6 @@ import {
 import { useBulkSaveOrgUnits } from './hooks/requests/useBulkSaveOrgUnits';
 import { useGetApiParams } from './hooks/useGetApiParams';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
-import { makeRedirectionUrl } from 'bluesquare-components';
 // HOOKS
 
 const useStyles = makeStyles(theme => ({
@@ -70,14 +70,6 @@ const useStyles = makeStyles(theme => ({
     tabs: {
         ...commonStyles(theme).tabs,
         padding: 0,
-    },
-    hiddenOpacity: {
-        position: 'absolute',
-        top: '0px',
-        left: '0px',
-        zIndex: '-100',
-        opacity: '0',
-        width: '100%',
     },
 }));
 
@@ -299,11 +291,7 @@ export const OrgUnits: FunctionComponent = () => {
                                 />
                             )}
 
-                            <div
-                                className={
-                                    tab === 'map' ? '' : classes.hiddenOpacity
-                                }
-                            >
+                            {tab === 'map' && (
                                 <div className={classes.containerMarginNeg}>
                                     <OrgUnitsMap
                                         getSearchColor={getSearchColor}
@@ -315,7 +303,7 @@ export const OrgUnits: FunctionComponent = () => {
                                         }
                                     />
                                 </div>
-                            </div>
+                            )}
                         </>
                     )}
                 </Box>

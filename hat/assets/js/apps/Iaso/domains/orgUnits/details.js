@@ -1,3 +1,4 @@
+/* eslint-disable react/function-component-definition */
 /* eslint-disable camelcase */
 import { Box, Grid, Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -7,6 +8,7 @@ import {
     LoadingSpinner,
     useSafeIntl,
     useGoBack,
+    useRedirectToReplace,
 } from 'bluesquare-components';
 import omit from 'lodash/omit';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
@@ -50,7 +52,6 @@ import {
     getOrgUnitsTree,
 } from './utils';
 import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
-import { useRedirectToReplace } from 'bluesquare-components';
 
 const baseUrl = baseUrls.orgUnitDetails;
 const useStyles = makeStyles(theme => ({
@@ -438,11 +439,7 @@ const OrgUnitDetail = () => {
                     )}
                     {!isNewOrgunit && (
                         <>
-                            <div
-                                className={
-                                    tab === 'map' ? '' : classes.hiddenOpacity
-                                }
-                            >
+                            {tab === 'map' && (
                                 <Box className={classes.containerFullHeight}>
                                     {!isFetchingDetail && (
                                         <OrgUnitMap
@@ -481,7 +478,7 @@ const OrgUnitDetail = () => {
                                         />
                                     )}
                                 </Box>
-                            </div>
+                            )}
 
                             {tab === 'history' && (
                                 <div data-test="logs-tab">

@@ -84,15 +84,13 @@ class ReadOnlyFormsVersionAPITestCase(APITestCase):
         cls.form_no_need_auth = create_add_form("Form no_need_auth", cls.blue_council, cls.blue_project_no_need_auth)
 
     def test_form_versions_list_without_auth(self):
-        """GET /mobile/formversions/: without auth should return no versions"""
+        """GET /mobile/formversions/: without auth should return 401"""
 
         response = self.client.get(BASE_URL)
-        self.assertJSONResponse(response, 200)
-        response_data = response.json()
-        assert response_data["form_versions"] == []
+        self.assertJSONResponse(response, 401)
 
     def test_form_versions_list_without_auth_with_appid(self):
-        """GET /mobile/formversions/: without auth but with app_id should return the version of the form which allow access without auth"""
+        """GET /mobile/formversions/: without auth"""
 
         response = self.client.get(f"{BASE_URL}?app_id={self.blue_project_no_need_auth.app_id}")
         self.assertJSONResponse(response, 200)
@@ -152,8 +150,8 @@ class ReadOnlyFormsVersionAPITestCase(APITestCase):
         )
 
         # Should fail in both cases as the project needs authentication and the user is not authenticated
-        self.assertJSONResponse(response_3, 404)
-        self.assertJSONResponse(response_4, 403)
+        self.assertJSONResponse(response_3, 401)
+        self.assertJSONResponse(response_4, 401)
 
     def test_form_no_need_auth(self):
         self.client.force_authenticate(self.blue_with_perms)
@@ -169,7 +167,7 @@ class ReadOnlyFormsVersionAPITestCase(APITestCase):
         response_1 = self.client.get(
             f"{BASE_URL}{self.form_no_need_auth.latest_version.id}/"
         )  # should fail without app id
-        self.assertJSONResponse(response_1, 404)
+        self.assertJSONResponse(response_1, 401)
 
         response_2 = self.client.get(
             f"{BASE_URL}{self.form_no_need_auth.latest_version.id}/?app_id={self.blue_project_no_need_auth.app_id}"

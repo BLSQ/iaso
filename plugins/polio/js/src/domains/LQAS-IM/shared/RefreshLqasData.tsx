@@ -67,9 +67,9 @@ export const RefreshLqasData: FunctionComponent<Props> = ({
     const launchRefresh = useCallback(() => {
         if (countryId) {
             createRefreshTask({
-                config: { country_id: countryId },
+                config: { country_id: parseInt(countryId, 10) },
                 slug: LQAS_CONFIG_SLUG,
-                id_field: { country_id: countryId },
+                id_field: { country_id: parseInt(countryId, 10) },
             });
         }
     }, [countryId, createRefreshTask]);
@@ -84,53 +84,45 @@ export const RefreshLqasData: FunctionComponent<Props> = ({
     }, [lastTaskStatus, latestManualRefresh?.status, queryClient]);
 
     const disableButton = Boolean(latestManualRefresh?.status === 'RUNNING'); // TODO make enum with statuses
+    if (!countryId) return null;
     return (
         <>
-            {countryId && (
-                <>
-                    <Box display="flex" justifyContent="flex-end" width="100%">
-                        <Button
-                            size="small"
-                            variant="contained"
-                            color="primary"
-                            onClick={launchRefresh}
-                            disabled={disableButton}
-                        >
-                            <Box mr={1} pt={1}>
-                                <RefreshIcon fontSize="small" />
-                            </Box>
-                            {formatMessage(MESSAGES.refreshLqasData)}
-                            {disableButton && (
-                                <LoadingSpinner
-                                    size={16}
-                                    absolute
-                                    fixed={false}
-                                    transparent
-                                />
-                            )}
-                        </Button>
+            <Box display="flex" justifyContent="flex-end" width="100%">
+                <Button
+                    size="small"
+                    variant="contained"
+                    color="primary"
+                    onClick={launchRefresh}
+                    disabled={disableButton}
+                >
+                    <Box mr={1} pt={1}>
+                        <RefreshIcon fontSize="small" />
                     </Box>
-                    <Box
-                        display="flex"
-                        justifyContent="flex-end"
-                        width="100%"
-                        mt={2}
-                    >
-                        {`${formatMessage(
-                            MESSAGES.latestManualRefresh,
-                        )}: ${lastUpdate}`}
-                    </Box>
-                    <Box
-                        display="flex"
-                        justifyContent="flex-end"
-                        width="100%"
-                        mt={1}
-                        mb={1}
-                    >
-                        {`${formatMessage(MESSAGES.status)}: ${updateStatus}`}
-                    </Box>
-                </>
-            )}
+                    {formatMessage(MESSAGES.refreshLqasData)}
+                    {disableButton && (
+                        <LoadingSpinner
+                            size={16}
+                            absolute
+                            fixed={false}
+                            transparent
+                        />
+                    )}
+                </Button>
+            </Box>
+            <Box display="flex" justifyContent="flex-end" width="100%" mt={2}>
+                {`${formatMessage(
+                    MESSAGES.latestManualRefresh,
+                )}: ${lastUpdate}`}
+            </Box>
+            <Box
+                display="flex"
+                justifyContent="flex-end"
+                width="100%"
+                mt={1}
+                mb={1}
+            >
+                {`${formatMessage(MESSAGES.status)}: ${updateStatus}`}
+            </Box>
         </>
     );
 };

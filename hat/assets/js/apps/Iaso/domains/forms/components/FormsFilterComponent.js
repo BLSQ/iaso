@@ -1,3 +1,4 @@
+/* eslint-disable react/function-component-definition */
 import React, { useMemo } from 'react';
 
 import PropTypes from 'prop-types';
@@ -42,7 +43,6 @@ export const FormsFilterComponent = ({
                     } else {
                         newForms[exisitingFormIndex].instances.push(i);
                     }
-                    uniqueFormIds.delete(i.form_id);
                 }
             });
         }

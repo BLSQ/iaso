@@ -13,6 +13,7 @@ type Props = {
     orgUnitChildren?: OrgUnitListChildren;
     isFetchingChildren: boolean;
     setSelectedChildren: Dispatch<SetStateAction<OrgUnit | undefined>>;
+    selectedChildrenId: string | undefined;
 };
 export const defaultSorted = [{ id: 'name', desc: true }];
 const useStyles = makeStyles(theme => ({
@@ -48,9 +49,13 @@ export const OrgUnitChildrenList: FunctionComponent<Props> = ({
     orgUnitChildren,
     isFetchingChildren,
     setSelectedChildren,
+    selectedChildrenId,
 }) => {
     const classes: Record<string, string> = useStyles();
-    const columns = useGetOrgUnitsListColumns(setSelectedChildren);
+    const columns = useGetOrgUnitsListColumns(
+        setSelectedChildren,
+        selectedChildrenId,
+    );
     const redirectToReplace = useRedirectToReplace();
     return (
         <Box className={classes.root}>
@@ -65,7 +70,7 @@ export const OrgUnitChildrenList: FunctionComponent<Props> = ({
                 count={orgUnitChildren?.count || 0}
                 baseUrl={baseUrls.registry}
                 params={params}
-                extraProps={{ loading: isFetchingChildren }}
+                extraProps={{ loading: isFetchingChildren, selectedChildrenId }}
                 elevation={0}
                 onTableParamsChange={p => {
                     redirectToReplace(baseUrls.registry, p);

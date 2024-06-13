@@ -74,6 +74,10 @@ const useStyles = makeStyles(theme => ({
             borderBottomLeftRadius: 0,
             borderBottomRightRadius: 0,
         },
+        // Temporary fix to avoid loading spinner to have a zindex of 10 000 and passing over the org unit tree
+        '& > div:not(.map)': {
+            zIndex: 1000,
+        },
     },
     fullScreen: {
         position: 'fixed',
@@ -188,74 +192,75 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
         >
             {isFetchingChildren && <LoadingSpinner absolute />}
             <MapLegend options={legendOptions} setOptions={setLegendOptions} />
-
-            <MapContainer
-                doubleClickZoom={false}
-                maxZoom={currentTile.maxZoom}
-                style={{
-                    minHeight: mapHeight,
-                    height: '100%',
-                }}
-                center={[1, 20]}
-                zoom={3}
-                scrollWheelZoom={false}
-                zoomControl={false}
-                contextmenu
-                bounds={bounds}
-                boundsOptions={boundsOptions}
-                trackResize
-                key={`${params.orgUnitId}-${params.fullScreen}`}
-            >
-                <MapSettings
-                    settings={settings}
-                    handleChangeSettings={handleChangeSettings}
-                />
-                <MapToggleFullscreen
-                    isMapFullScreen={isMapFullScreen}
-                    setIsMapFullScreen={handleToggleFullScreen}
-                />
-                <CustomZoomControl
+            <Box className="map">
+                <MapContainer
+                    doubleClickZoom={false}
+                    maxZoom={currentTile.maxZoom}
+                    style={{
+                        minHeight: mapHeight,
+                        height: '100%',
+                    }}
+                    center={[1, 20]}
+                    zoom={3}
+                    scrollWheelZoom={false}
+                    zoomControl={false}
+                    contextmenu
                     bounds={bounds}
                     boundsOptions={boundsOptions}
-                    fitOnLoad
-                    triggerFitToBoundsId={`${params.orgUnitId}-${isFetchingOrgUnit}-${params.fullScreen}`}
-                />
-                <ScaleControl imperial={false} />
-                <CustomTileLayer
-                    currentTile={currentTile}
-                    setCurrentTile={setCurrentTile}
-                />
-                <OrgUnitLocation
-                    showTooltip={showTooltip}
-                    orgUnit={orgUnit}
-                    isOrgUnitActive={isOrgUnitActive}
-                    selectedChildrenId={selectedChildrenId}
-                    handleSingleClick={handleSingleClick}
-                    handleFeatureEvents={handleFeatureEvents}
-                />
-                {subOrgUnitTypes.map((subType, index) => (
-                    <Box key={subType.id}>
-                        <OrgUnitChildrenShapes
-                            activeChildren={activeChildren}
-                            showTooltip={showTooltip}
-                            index={index}
-                            subType={subType}
-                            handleFeatureEvents={handleFeatureEvents}
-                            selectedChildrenId={selectedChildrenId}
-                        />
-                        <OrgUnitChildrenLocations
-                            activeChildren={activeChildren}
-                            showTooltip={showTooltip}
-                            clusterEnabled={clusterEnabled}
-                            index={index}
-                            subType={subType}
-                            handleSingleClick={handleSingleClick}
-                            handleDoubleClick={handleDoubleClick}
-                            selectedChildrenId={selectedChildrenId}
-                        />
-                    </Box>
-                ))}
-            </MapContainer>
+                    trackResize
+                    key={`${params.orgUnitId}-${params.fullScreen}`}
+                >
+                    <MapSettings
+                        settings={settings}
+                        handleChangeSettings={handleChangeSettings}
+                    />
+                    <MapToggleFullscreen
+                        isMapFullScreen={isMapFullScreen}
+                        setIsMapFullScreen={handleToggleFullScreen}
+                    />
+                    <CustomZoomControl
+                        bounds={bounds}
+                        boundsOptions={boundsOptions}
+                        fitOnLoad
+                        triggerFitToBoundsId={`${params.orgUnitId}-${isFetchingOrgUnit}-${params.fullScreen}`}
+                    />
+                    <ScaleControl imperial={false} />
+                    <CustomTileLayer
+                        currentTile={currentTile}
+                        setCurrentTile={setCurrentTile}
+                    />
+                    <OrgUnitLocation
+                        showTooltip={showTooltip}
+                        orgUnit={orgUnit}
+                        isOrgUnitActive={isOrgUnitActive}
+                        selectedChildrenId={selectedChildrenId}
+                        handleSingleClick={handleSingleClick}
+                        handleFeatureEvents={handleFeatureEvents}
+                    />
+                    {subOrgUnitTypes.map((subType, index) => (
+                        <Box key={subType.id}>
+                            <OrgUnitChildrenShapes
+                                activeChildren={activeChildren}
+                                showTooltip={showTooltip}
+                                index={index}
+                                subType={subType}
+                                handleFeatureEvents={handleFeatureEvents}
+                                selectedChildrenId={selectedChildrenId}
+                            />
+                            <OrgUnitChildrenLocations
+                                activeChildren={activeChildren}
+                                showTooltip={showTooltip}
+                                clusterEnabled={clusterEnabled}
+                                index={index}
+                                subType={subType}
+                                handleSingleClick={handleSingleClick}
+                                handleDoubleClick={handleDoubleClick}
+                                selectedChildrenId={selectedChildrenId}
+                            />
+                        </Box>
+                    ))}
+                </MapContainer>
+            </Box>
         </Box>
     );
 };

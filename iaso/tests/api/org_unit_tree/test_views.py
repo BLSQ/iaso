@@ -170,7 +170,7 @@ class OrgUnitTreeViewsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         with self.assertNumQueries(3):
-            response = self.client.get("/api/orgunits/tree/search/?search=b&fields=:all")
+            response = self.client.get("/api/orgunits/tree/search/?search=b")
             self.assertJSONResponse(response, 200)
             self.assertEqual(3, len(response.data["results"]))
             self.assertEqual(response.data["results"][0]["name"], "Banwa")

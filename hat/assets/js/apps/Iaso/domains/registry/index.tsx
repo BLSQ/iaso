@@ -3,12 +3,12 @@ import {
     useRedirectTo,
     useRedirectToReplace,
     useSafeIntl,
+    useSkipEffectOnMount,
 } from 'bluesquare-components';
 import { orderBy } from 'lodash';
 import React, {
     FunctionComponent,
     useCallback,
-    useEffect,
     useMemo,
     useState,
 } from 'react';
@@ -75,7 +75,6 @@ export const Registry: FunctionComponent = () => {
     const [selectedChildrenId, setSelectedChildrenId] = useState<
         string | undefined
     >(orgUnitChildrenId);
-
     const redirectTo = useRedirectTo();
     const redirectToReplace = useRedirectToReplace();
     const { formatMessage } = useSafeIntl();
@@ -110,7 +109,7 @@ export const Registry: FunctionComponent = () => {
         return orderBy(options, [f => f.depth], ['asc']);
     }, [orgUnit, orgUnitMapChildren]);
 
-    useEffect(() => {
+    useSkipEffectOnMount(() => {
         setSelectedChildrenId(undefined);
     }, [orgUnitId]);
 

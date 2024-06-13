@@ -142,6 +142,7 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
                         orgUnitChildren={orgUnitListChildren}
                         isFetchingChildren={isFetchingListChildren}
                         setSelectedChildren={setSelectedChildren}
+                        selectedChildrenId={selectedChildrenId}
                     />
                 </Box>
             </Box>

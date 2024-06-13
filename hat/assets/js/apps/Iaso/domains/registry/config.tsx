@@ -82,6 +82,7 @@ export const INSTANCE_METAS_FIELDS: InstanceMetasField[] = [
 
 export const useGetOrgUnitsListColumns = (
     setSelectedChildren: Dispatch<SetStateAction<OrgUnit | undefined>>,
+    selectedChildrenId: string | undefined,
 ): Column[] => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
@@ -97,6 +98,11 @@ export const useGetOrgUnitsListColumns = (
                     sx={{
                         cursor: 'pointer',
                         color: 'primary.main',
+                        fontWeight:
+                            `${settings.row.original.id}` ===
+                            `${selectedChildrenId}`
+                                ? 'bold'
+                                : 'normal',
                         '&:hover': {
                             textDecoration: 'underline',
                         },
@@ -105,6 +111,7 @@ export const useGetOrgUnitsListColumns = (
                         setSelectedChildren(settings.row.original as OrgUnit)
                     }
                 >
+                    {selectedChildrenId}-{settings.row.original.id}-
                     {settings.value}
                 </Box>
             ),

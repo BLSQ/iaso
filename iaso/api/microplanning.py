@@ -321,7 +321,7 @@ class PublishingStatusFilterBackend(filters.BaseFilterBackend):
 
 class PlanningViewSet(AuditMixin, ModelViewSet):
     remove_results_key_if_paginated = True
-    permission_classes = [ReadOnlyOrHasPermission(permission.PLANNING)]  # type: ignore
+    permission_classes = [ReadOnlyOrHasPermission(permission.PLANNING_WRITE)]  # type: ignore
     serializer_class = PlanningSerializer
     queryset = Planning.objects.all()
     filter_backends = [
@@ -466,7 +466,7 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
     sense outside of it's planning."""
 
     remove_results_key_if_paginated = True
-    permission_classes = [IsAuthenticated, ReadOnlyOrHasPermission(permission.PLANNING)]  # type: ignore
+    permission_classes = [IsAuthenticated, ReadOnlyOrHasPermission(permission.PLANNING_WRITE)]  # type: ignore
     serializer_class = AssignmentSerializer
     queryset = Assignment.objects.all()
     filter_backends = [

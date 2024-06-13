@@ -32,7 +32,7 @@ const polioViruses = [
     },
 ];
 
-type PolioVaccine = {
+export type PolioVaccine = {
     value: Vaccine;
     label: string;
     color: string;

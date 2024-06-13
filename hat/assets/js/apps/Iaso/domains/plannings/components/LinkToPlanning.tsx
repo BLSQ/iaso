@@ -1,9 +1,9 @@
 import React, { FunctionComponent } from 'react';
-import { userHasPermission } from '../../users/utils';
+import { userHasOneOfPermissions } from '../../users/utils';
 import { baseUrls } from '../../../constants/urls';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { Planning } from '../../assignments/types/planning';
-import { PLANNINGS } from '../../../utils/permissions';
+import { PLANNING_READ, PLANNING_WRITE } from '../../../utils/permissions';
 import { LinkTo } from '../../../components/nav/LinkTo';
 
 type Props = {
@@ -12,7 +12,10 @@ type Props = {
 
 export const LinkToPlanning: FunctionComponent<Props> = ({ planning }) => {
     const user = useCurrentUser();
-    const condition = userHasPermission(PLANNINGS, user);
+    const condition = userHasOneOfPermissions(
+        [PLANNING_READ, PLANNING_WRITE],
+        user,
+    );
     const url = `/${baseUrls.assignments}/planningId/${planning.id}/team/${planning.team}`;
     const { name: text } = planning;
 

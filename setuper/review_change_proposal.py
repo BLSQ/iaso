@@ -1,4 +1,5 @@
 import random
+from submissions import org_unit_gps_point
 
 
 def instance_details_by_id(instanceId, iaso_client):
@@ -24,7 +25,7 @@ def setup_review_change_proposal(account_name, iaso_client):
     ]
     org_unit_group_ids = [org_unit_group["id"] for org_unit_group in org_unit_groups]
     for org_unit in orgunits:
-        location = [None, {"latitude": org_unit["latitude"], "longitude": org_unit["longitude"], "altitude": 0.0}]
+        location = [None, {**org_unit_gps_point(org_unit)}]
         new_location = random.choice(location)
         groups = random.sample(org_unit_group_ids, random.randint(0, len(org_unit_group_ids)))
         name_extension = random.choice(["", "1"])
@@ -50,6 +51,7 @@ def setup_review_change_proposal(account_name, iaso_client):
             "status": status,
         }
         validation = None
+        proposal_review = None
         if len(groups) > 0:
             data["new_groups"] = groups
             approved_fields.append("new_groups")
@@ -64,11 +66,12 @@ def setup_review_change_proposal(account_name, iaso_client):
         if len(new_reference_instances) > 0:
             data["new_reference_instances"] = new_reference_instances
             approved_fields.append("new_reference_instances")
-        proposal_review = iaso_client.post("/api/orgunits/changes/", json=data)
-        if status == "approved" or status == "rejected":
-            validation = {
-                "approved_fields": approved_fields,
-                "status": status,
-                "rejection_comment": status,
-            }
-            iaso_client.patch(f"/api/orgunits/changes/{proposal_review['id']}/", json=validation)
+        if len(approved_fields) > 0:
+            proposal_review = iaso_client.post("/api/orgunits/changes/", json=data)
+            if status == "approved" or status == "rejected":
+                validation = {
+                    "approved_fields": approved_fields,
+                    "status": status,
+                    "rejection_comment": status,
+                }
+                iaso_client.patch(f"/api/orgunits/changes/{proposal_review['id']}/", json=validation)

@@ -1,4 +1,5 @@
 require('dotenv').config();
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 const path = require('path');
 const webpack = require('webpack');
@@ -167,7 +168,7 @@ module.exports = {
     output: {
         path: WEBPACK_PATH,
         filename: '[name].js',
-        sourceMapFilename: '[name].js.map',
+        sourceMapFilename: '[name].[contenthash].js.map',
         publicPath: `${WEBPACK_URL}/static/`, // Tell django to use this URL to load packages and not use STATIC_URL + bundle_name
     },
     devtool: 'source-map',
@@ -187,6 +188,7 @@ module.exports = {
     },
 
     plugins: [
+        new CleanWebpackPlugin(),
         new webpack.NormalModuleReplacementPlugin(
             /^__intl\/messages\/en$/,
             '../translations/en.json',

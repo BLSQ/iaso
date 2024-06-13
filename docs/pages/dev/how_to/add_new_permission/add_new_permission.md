@@ -13,6 +13,7 @@
 - Add the permission to a module from `MODULE_PERMISSIONS`
 - If no existing module fits, create one (see exiting modules for inspiration)
 - If a new module is created, add it to `MODULES` (in the same file)
+- If it's a new module run migration to add it in modules options for the account
 
 ## 3. Include the permission in the corresponding group
 - Go to `/hat/menupermissions/constants.py`

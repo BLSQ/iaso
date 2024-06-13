@@ -72,12 +72,17 @@ class ModulesViewSet(ModelViewSet):
             permissions = MODULE_PERMISSIONS[module["codename"]]
             name = module["name"]
             codename = module["codename"]
-            queryset.append({"name": name, "codename": codename, "permissions": permissions})
+            fr_name = module["fr_name"]
+            queryset.append({"name": name, "codename": codename, "permissions": permissions, "fr_name": fr_name})
         search = self.request.GET.get("search", None)
         orders = self.request.GET.get("order", "name").split(",")
 
         if search:
-            queryset = [module for module in queryset if search.lower() in module["name"].lower()]
+            queryset = [
+                module
+                for module in queryset
+                if search.lower() in module["name"].lower() or search.lower() in module["fr_name"].lower()
+            ]
         if orders:
             order_key = ("").join(orders)
             if "-" in order_key:

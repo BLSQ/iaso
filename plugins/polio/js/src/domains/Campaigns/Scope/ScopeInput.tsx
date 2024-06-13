@@ -21,6 +21,7 @@ import { OrgUnit } from '../../../../../../../hat/assets/js/apps/Iaso/domains/or
 import { CampaignFormValues, Scope, Vaccine } from '../../../constants/types';
 import { useIsPolioCampaign } from '../hooks/useIsPolioCampaignCheck';
 import { FilteredDistricts } from './Scopes/types';
+import { PolioVaccine } from '../../../constants/virus';
 
 type ExtraProps = {
     filteredDistricts: FilteredDistricts[];
@@ -35,13 +36,15 @@ type ExtraProps = {
     page: number;
     // eslint-disable-next-line no-unused-vars
     setPage: (page: number) => void;
+    campaign: CampaignFormValues; // Passing the campaign i.o getting it from formik context so we can re-use the component for subactivities
+    availableVaccines?: PolioVaccine[];
+    searchInputWithMargin?: boolean; // needed to remove the margin on the serach component without breaking existing scope form
 };
 
 type Props = FieldProps<Scope[], CampaignFormValues> & ExtraProps;
 
 export const ScopeInput: FunctionComponent<Props> = ({
     field,
-    form: { values },
     filteredDistricts,
     searchScope,
     onChangeSearchScope,
@@ -52,10 +55,13 @@ export const ScopeInput: FunctionComponent<Props> = ({
     searchComponent,
     page,
     setPage,
+    campaign,
+    availableVaccines,
+    searchInputWithMargin = true,
 }) => {
     const [selectRegion, setSelectRegion] = useState(false);
     const [selectedVaccine, setSelectedVaccine] = useState<Vaccine>('nOPV2');
-    const isPolio = useIsPolioCampaign(values);
+    const isPolio = useIsPolioCampaign(campaign);
     const [, , helpers] = useField(field.name);
     const { formatMessage } = useSafeIntl();
     const { value: scopes = [] } = field;
@@ -193,7 +199,7 @@ export const ScopeInput: FunctionComponent<Props> = ({
         <Box width="100%" overflow="hidden">
             <Grid container spacing={2}>
                 <Grid xs={5} item>
-                    <Box mb={2} mt={2}>
+                    <Box mb={2} mt={searchInputWithMargin ? 2 : 0}>
                         {searchComponent}
                         <InputComponent
                             keyValue="searchScope"
@@ -224,13 +230,14 @@ export const ScopeInput: FunctionComponent<Props> = ({
                     {isFetching && <LoadingSpinner />}
                     <MapScope
                         field={field}
-                        values={values}
+                        values={campaign}
                         regionShapes={regionShapes || []}
                         districtShapes={districtShapes || []}
                         onSelectOrgUnit={onSelectOrgUnit}
                         selectedVaccine={selectedVaccine}
                         setSelectedVaccine={setSelectedVaccine}
                         isPolio={isPolio}
+                        availableVaccines={availableVaccines}
                     />
                     <FormGroup>
                         <FormControlLabel

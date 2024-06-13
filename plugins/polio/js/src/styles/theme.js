@@ -49,7 +49,6 @@ export const useStyles = makeStyles(() => ({
         borderBottom: '1px solid rgba(0, 0, 0, 0.1)',
     },
     mainModal: {
-        position: 'relative',
         '& .MuiPaper-root.MuiDialog-paper.MuiDialog-paperScrollBody': {
             maxWidth: '80%',
         },

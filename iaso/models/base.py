@@ -1159,7 +1159,7 @@ class Instance(models.Model):
             "correlation_id": self.correlation_id,
         }
 
-    def as_full_model(self):
+    def as_full_model(self, with_entity=False):
         file_content = self.get_and_save_json_of_xml()
         form_version = self.get_form_version()
 
@@ -1167,7 +1167,7 @@ class Instance(models.Model):
         if self.last_modified_by is not None:
             last_modified_by = self.last_modified_by.username
 
-        return {
+        result = {
             "uuid": self.uuid,
             "last_modified_by": last_modified_by,
             "modification": True,
@@ -1229,6 +1229,11 @@ class Instance(models.Model):
                 else None
             ),
         }
+
+        if with_entity and self.entity_id:
+            result["entity"] = self.entity.as_small_dict()
+
+        return result
 
     def as_small_dict(self):
         return {

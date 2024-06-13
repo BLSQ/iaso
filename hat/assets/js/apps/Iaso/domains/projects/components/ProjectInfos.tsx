@@ -10,6 +10,7 @@ type Form = {
 };
 
 type ProjectForm = {
+    id?: Form;
     app_id: Form;
     name: Form;
 };
@@ -43,6 +44,16 @@ const ProjectInfos: FunctionComponent<Props> = ({
             label={MESSAGES.appId}
             required
         />
+        {currentProject.id?.value && (
+            <div style={{ textAlign: 'center' }}>
+                <img
+                    width={200}
+                    height={200}
+                    alt="QRCode"
+                    src={`/api/projects/${currentProject.id?.value}/qr_code/`}
+                />
+            </div>
+        )}
     </>
 );
 

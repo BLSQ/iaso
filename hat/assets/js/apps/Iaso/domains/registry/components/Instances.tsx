@@ -3,6 +3,7 @@ import { Column, useRedirectToReplace } from 'bluesquare-components';
 import React, {
     FunctionComponent,
     useCallback,
+    useEffect,
     useMemo,
     useState,
 } from 'react';
@@ -19,6 +20,7 @@ import { INSTANCE_METAS_FIELDS, defaultSorted } from '../config';
 import { useGetEmptyInstanceOrgUnits } from '../hooks/useGetEmptyInstanceOrgUnits';
 import { useGetForms } from '../hooks/useGetForms';
 import { useGetInstanceApi, useGetInstances } from '../hooks/useGetInstances';
+import { useGetOrgUnitType } from '../hooks/useGetOrgUnitType';
 import MESSAGES from '../messages';
 import { RegistryParams } from '../types';
 import { OrgunitTypeRegistry } from '../types/orgunitTypes';
@@ -50,7 +52,8 @@ export const Instances: FunctionComponent<Props> = ({
         }
         return undefined;
     }, [subOrgUnitTypes, tab]);
-
+    const { data: orgunitTypeDetail, isFetching: isFetchingOrgunitTypeDetail } =
+        useGetOrgUnitType(currentType?.id);
     const { data: formsList, isFetching: isFetchingForms } = useGetForms({
         orgUnitTypeIds: currentType?.id,
     });
@@ -91,6 +94,29 @@ export const Instances: FunctionComponent<Props> = ({
     const currentForm: Form | undefined = useMemo(() => {
         return formsList?.find(f => `${f.value}` === formIds)?.original;
     }, [formIds, formsList]);
+
+    useEffect(() => {
+        if (
+            formsList &&
+            (formsList?.length ?? 0) >= 0 &&
+            !isFetchingForms &&
+            !formIds &&
+            orgunitTypeDetail
+        ) {
+            const selectedForm =
+                orgunitTypeDetail.reference_forms.length > 0
+                    ? `${orgunitTypeDetail.reference_forms[0].id}`
+                    : formsList[0].value;
+            const newParams = {
+                ...params,
+                formIds: selectedForm,
+            };
+            redirectToReplace(baseUrls.registry, newParams);
+        }
+        // only prselect a form if forms list contain an element and params is empty
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [formsList, isFetchingForms, orgunitTypeDetail]);
+
     return (
         <Box>
             {currentType && !isLoading && (

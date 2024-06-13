@@ -48,8 +48,8 @@
         "safari >= 11"
     ],
     "dependencies": {
-        "@babel/plugin-transform-optional-chaining": "^7.24.6",
         "@babel/plugin-transform-nullish-coalescing-operator": "^7.24.6",
+        "@babel/plugin-transform-optional-chaining": "^7.24.6",
         "@babel/runtime": "^7.12.1",
         "@date-io/moment": "1.x",
         "@emotion/react": "^11.11.1",
@@ -69,7 +69,7 @@
         "abortcontroller-polyfill": "^1.7.5",
         "array-flat-polyfill": "^1.0.1",
         "babel-plugin-formatjs": "^10.3.4",
-        "bluesquare-components": "github:BLSQ/bluesquare-components#dependencies-upgrade-2",
+        "bluesquare-components": "github:BLSQ/bluesquare-components#IA-2850_react-router_update_dev",
         "classnames": "^2.2.6",
         "color": "^3.1.2",
         "dom-to-pdf": "^0.3.1",
@@ -126,6 +126,7 @@
         "babel-polyfill": "^6.26.0",
         "canvas": "^2.11.2",
         "chai": "^4.2.0",
+        "clean-webpack-plugin": "^4.0.0",
         "css-loader": "^7.1.2",
         "cypress": "^13.10.0",
         "dotenv": "^10.0.0",

@@ -141,7 +141,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         else:
             queryset = build_org_units_queryset(queryset, request.GET, profile)
 
-        queryset = queryset.order_by(*order).distinct(*order)
+        queryset = queryset.order_by(*order)
 
         if not is_export:
             if limit and not as_location:

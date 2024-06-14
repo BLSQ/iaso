@@ -4,7 +4,11 @@ from django.db import models
 
 from django.db.models import CASCADE
 
-IMPORT_TYPE = (("orgUnit", "Org Unit"), ("instance", "Form instance"))
+IMPORT_TYPE = (
+    ("orgUnit", "Org Unit"),
+    ("instance", "Form instance"),
+    ("bulk", "Bulk Org Units and Instances"),
+)
 
 
 class APIImport(models.Model):

@@ -16,7 +16,6 @@ from iaso.models import OrgUnit
 class OrgUnitTreeQuerystringSerializer(serializers.Serializer):
     force_full_tree = serializers.BooleanField(required=False)
     parent_id = serializers.IntegerField(required=False)
-    data_source_id = serializers.IntegerField(required=False)
     validation_status = serializers.MultipleChoiceField(choices=OrgUnit.VALIDATION_STATUS_CHOICES)
 
 
@@ -37,13 +36,16 @@ class OrgUnitTreeViewSet(viewsets.ModelViewSet):
     serializer_class = OrgUnitTreeSerializer
 
     def get_queryset(self):
+        """
+        The filtering logic is splitted between `get_queryset()` and `OrgUnitTreeFilter`.
+        I wish it was simpler but the filtering logic is quite complex.
+        """
         user = self.request.user
 
         querystring = OrgUnitTreeQuerystringSerializer(data=self.request.query_params)
         querystring.is_valid(raise_exception=True)
         force_full_tree = querystring.validated_data.get("force_full_tree")
         parent_id = querystring.validated_data.get("parent_id")
-        data_source_id = querystring.validated_data.get("data_source_id")
         validation_status = querystring.validated_data.get("validation_status", set())
 
         if user.is_anonymous:
@@ -54,12 +56,6 @@ class OrgUnitTreeViewSet(viewsets.ModelViewSet):
             qs = qs.prefetch_related("version__data_source__projects__account")
         else:
             qs = OrgUnit.objects.filter_for_user(user)
-
-        if not data_source_id:
-            if user.is_anonymous:
-                raise ValidationError({"data_source_id": ["A `data_source_id` must be provided for anonymous users."]})
-            else:
-                qs = qs.filter(version_id=self.request.user.iaso_profile.account.default_version_id)
 
         can_view_full_tree = any([user.is_anonymous, user.is_superuser, force_full_tree])
         display_root_level = not parent_id
@@ -95,8 +91,8 @@ class OrgUnitTreeViewSet(viewsets.ModelViewSet):
         ```
         """
         org_units = self.get_queryset()
+        filtered_org_units = self.filter_queryset(org_units)
         paginator = OrgUnitTreePagination()
-        filtered_org_units = self.filterset_class(request.query_params, org_units).qs
         paginated_org_units = paginator.paginate_queryset(filtered_org_units, request)
         serializer = OrgUnitTreeSerializer(paginated_org_units, many=True, context={"request": request})
         return paginator.get_paginated_response(serializer.data)

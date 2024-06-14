@@ -18,6 +18,7 @@ from iaso.models import (
     GroupSet,
     Task,
 )
+from iaso.utils.gis import simplify_geom
 
 try:  # only in 3.8
     from typing import TypedDict  # type: ignore
@@ -186,7 +187,8 @@ def map_coordinates(row, org_unit):
         except Exception as bad_polygon:
             logger.debug("Failed at importing geo", feature_type, coordinates, bad_polygon, row)
 
-        org_unit.simplified_geom = org_unit.geom
+        if org_unit.geom:
+            org_unit.simplified_geom = simplify_geom(org_unit.geom)
 
 
 def map_geometry(row: DhisOrgunit, org_unit: OrgUnit):
@@ -205,10 +207,10 @@ def map_geometry(row: DhisOrgunit, org_unit: OrgUnit):
                 org_unit.location = Point(coordinates[0], coordinates[1], 0)
             elif feature_type == "Polygon" and coordinates:
                 org_unit.geom = MultiPolygon(Polygon(*coordinates))
-                org_unit.simplified_geom = org_unit.geom
+                org_unit.simplified_geom = simplify_geom(org_unit.geom)
             elif feature_type == "MultiPolygon" and coordinates:
                 org_unit.geom = MultiPolygon([Polygon(*p) for p in coordinates])
-                org_unit.simplified_geom = org_unit.geom
+                org_unit.simplified_geom = simplify_geom(org_unit.geom)
             else:
                 logger.warning("Unsupported feature tye")
 

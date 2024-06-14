@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from submissions import submission2xml
+from submissions import submission2xml, org_unit_gps_point
 import random
 
 
@@ -47,11 +47,9 @@ def setup_health_facility_level_default_form(account_name, iaso_client):
     orgunits = iaso_client.get("/api/orgunits/", params={"limit": limit, "orgUnitTypeId": health_facility_type["id"]})[
         "orgunits"
     ]
-    org_unit_ids = [ou["id"] for ou in orgunits]
-
     print("-- Submitting %d submissions" % limit)
 
-    for org_unit_id in org_unit_ids:
+    for orgunit in orgunits:
         the_uuid = str(uuid.uuid4())
         file_name = "example_%s.xml" % the_uuid
         local_path = "generated/%s" % file_name
@@ -59,15 +57,13 @@ def setup_health_facility_level_default_form(account_name, iaso_client):
 
         instance_body = [
             {
+                **org_unit_gps_point(orgunit),
                 "id": the_uuid,
-                "latitude": None,
                 "created_at": current_datetime,
                 "updated_at": current_datetime,
-                "orgUnitId": org_unit_id,
+                "orgUnitId": orgunit["id"],
                 "formId": sample_form_id,
-                "longitude": None,
                 "accuracy": 0,
-                "altitude": 0,
                 "imgUrl": "imgUrl",
                 "file": local_path,
                 "name": file_name,

@@ -11,6 +11,7 @@ services:
       - ./manage.py:/opt/app/manage.py
       - ./hat:/opt/app/hat
       - ./iaso:/opt/app/iaso
+      - ./setuper:/opt/app/setuper
       - ./beanstalk_worker:/opt/app/beanstalk_worker
       - ./django_sql_dashboard_export:/opt/app/django_sql_dashboard_export
       - ./media:/opt/app/media
@@ -39,16 +40,16 @@ services:
       RDS_DB_NAME:
       THEME_PRIMARY_COLOR:
       THEME_SECONDARY_COLOR:
-      THEME_PRIMARY_BACKGROUND_COLOR:
-      #OpenHexa API token
-      OPENHEXA_TOKEN:
-      #OpenHexa API url
-      OPENHEXA_URL:
-      #OpenHexa pipeline ID
-      LQAS_PIPELINE:
-      #Optional: the version of the pipeline to run
-      LQAS_PIPELINE_VERSION:
-      # "prod", "staging" or "custom". Use "custom" for local testing
+      THEME_PRIMARY_BACKGROUND_COLOR: #OpenHexa API token
+
+      OPENHEXA_TOKEN: #OpenHexa API url
+
+      OPENHEXA_URL: #OpenHexa pipeline ID
+
+      LQAS_PIPELINE: #Optional: the version of the pipeline to run
+
+      LQAS_PIPELINE_VERSION: # "prod", "staging" or "custom". Use "custom" for local testing
+
       OH_PIPELINE_TARGET:
 
       FAVICON_PATH:
@@ -77,8 +78,7 @@ services:
       WFP_AUTH_ACCOUNT:
       WFP_EMAIL_RECIPIENTS_NEW_ACCOUNT:
       DISABLE_PASSWORD_LOGINS:
-      SERVER_URL:
-    # Limit logging in dev to not overflow terminal
+      SERVER_URL: # Limit logging in dev to not overflow terminal
     logging: &iaso_logging
       driver: "json-file"
       options:
@@ -86,8 +86,7 @@ services:
     command: start_dev
 
   db:
-    image:
-      iaso/postgis
+    image: iaso/postgis
     # Workaround until there is a stable Postgis image for Apple Silicon
     build: docker/db
     logging: *iaso_logging

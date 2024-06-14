@@ -77,9 +77,6 @@ export const PreparednessConfig = ({ roundNumber, campaignName }) => {
             },
         );
     };
-    console.log('isLoading', isLoading);
-    console.log('isGeneratingSpreadsheet', isGeneratingSpreadsheet);
-    console.log('previewing', previewMutation.isLoading);
 
     const generateSpreadsheet = () => {
         generateSpreadsheetMutation(roundNumber);

@@ -8,7 +8,7 @@ const MESSAGES = defineMessages({
     noPermissions: {
         id: 'iaso.errors.noPermissions',
         defaultMessage:
-            'No permissions have been assigned to your user, an administrator should grant you some soon, please contact someone if this is not the case',
+            'Your user account currently has no permissions. Contact an administrator.',
     },
     noPermissionsTitle: {
         id: 'iaso.errors.noPermissionsTitle',

@@ -9,7 +9,7 @@ import {
     Typography,
 } from '@mui/material';
 import { Field, useFormikContext } from 'formik';
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
@@ -40,11 +40,20 @@ export const PreparednessConfig = ({ roundNumber, campaignName }) => {
     const isLockedForEdition = roundStartDate
         ? moment().isAfter(moment(roundStartDate, 'YYYY-MM-DD', 'day'))
         : false;
+    const key = `rounds[${roundIndex}].preparedness_spreadsheet_url`;
+    const lastKey = `rounds[${roundIndex}].last_preparedness`;
+
+    const onGenerateSheetSuccess = useCallback(
+        data => {
+            setFieldValue(key, data.url);
+        },
+        [key, setFieldValue],
+    );
     const {
-        mutate: generateSpreadsheetMutation,
+        mutateAsync: generateSpreadsheetMutation,
         isLoading: isGeneratingSpreadsheet,
         error: generationError,
-    } = useGeneratePreparednessSheet(values.id, roundNumber);
+    } = useGeneratePreparednessSheet(values.id, onGenerateSheetSuccess);
     const {
         preparedness_spreadsheet_url,
         last_preparedness: preparednessForm,
@@ -55,9 +64,6 @@ export const PreparednessConfig = ({ roundNumber, campaignName }) => {
     );
 
     const preparednessData = preparednessForm ?? lastPreparedness;
-
-    const key = `rounds[${roundIndex}].preparedness_spreadsheet_url`;
-    const lastKey = `rounds[${roundIndex}].last_preparedness`;
 
     const previewMutation = useFetchPreparedness();
 
@@ -71,13 +77,12 @@ export const PreparednessConfig = ({ roundNumber, campaignName }) => {
             },
         );
     };
+    console.log('isLoading', isLoading);
+    console.log('isGeneratingSpreadsheet', isGeneratingSpreadsheet);
+    console.log('previewing', previewMutation.isLoading);
 
     const generateSpreadsheet = () => {
-        generateSpreadsheetMutation(roundNumber, {
-            onSuccess: data => {
-                setFieldValue(key, data.url);
-            },
-        });
+        generateSpreadsheetMutation(roundNumber);
     };
 
     const message = isLockedForEdition

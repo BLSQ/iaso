@@ -226,12 +226,9 @@ def build_org_units_queryset(queryset, params, profile):
     queryset = queryset.select_related("org_unit_type")
 
     queryset = queryset.prefetch_related("groups")
-    queryset = queryset.prefetch_related("parent")
-    queryset = queryset.prefetch_related("parent__parent")
-    queryset = queryset.prefetch_related("parent__parent__parent")
     queryset = queryset.prefetch_related("parent__parent__parent__parent")
 
-    return queryset.distinct("id")
+    return queryset
 
 
 def annotate_query(queryset, count_instances, count_per_form, forms):

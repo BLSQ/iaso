@@ -9,7 +9,7 @@ import MESSAGES from '../messages';
 import { FeatureFlag } from '../types/featureFlag';
 
 export type Form = {
-    value: Array<string>;
+    value: Array<string | number>;
     errors: Array<string>;
 };
 

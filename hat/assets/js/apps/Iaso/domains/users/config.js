@@ -51,6 +51,15 @@ export const usersTableColumns = ({
             ),
     },
     {
+        Header: formatMessage(MESSAGES.userRoles),
+        id: 'user_roles',
+        accessor: 'user_roles_permissions',
+        sortable: false,
+        Cell: settings =>
+            settings.value.map(user_role => user_role.name).join(', ') ||
+            textPlaceholder,
+    },
+    {
         Header: formatMessage(MESSAGES.actions),
         accessor: 'actions',
         resizable: false,

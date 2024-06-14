@@ -141,6 +141,8 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
                         params={params}
                         orgUnitChildren={orgUnitListChildren}
                         isFetchingChildren={isFetchingListChildren}
+                        setSelectedChildren={setSelectedChildren}
+                        selectedChildrenId={selectedChildrenId}
                     />
                 </Box>
             </Box>

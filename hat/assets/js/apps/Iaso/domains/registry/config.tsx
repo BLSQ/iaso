@@ -1,7 +1,7 @@
 import MapIcon from '@mui/icons-material/Map';
 import { Box } from '@mui/material';
 import { Column, IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
-import React, { ReactElement } from 'react';
+import React, { Dispatch, ReactElement, SetStateAction } from 'react';
 
 import { InstanceMetasField } from '../instances/components/ColumnSelect';
 import { Instance } from '../instances/types/instance';
@@ -10,6 +10,7 @@ import { LinkToRegistry } from './components/LinkToRegistry';
 
 import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
 import { OrgUnitLocationIcon } from '../orgUnits/components/OrgUnitLocationIcon';
+import { OrgUnit } from '../orgUnits/types/orgUnit';
 import MESSAGES from './messages';
 
 export const defaultSorted = [{ id: 'org_unit__name', desc: false }];
@@ -79,7 +80,10 @@ export const INSTANCE_METAS_FIELDS: InstanceMetasField[] = [
     },
 ];
 
-export const useGetOrgUnitsListColumns = (): Column[] => {
+export const useGetOrgUnitsListColumns = (
+    setSelectedChildren: Dispatch<SetStateAction<OrgUnit | undefined>>,
+    selectedChildrenId: string | undefined,
+): Column[] => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     const columns: Column[] = [
@@ -88,6 +92,29 @@ export const useGetOrgUnitsListColumns = (): Column[] => {
             id: 'name',
             accessor: 'name',
             align: 'left',
+
+            Cell: settings => (
+                <Box
+                    sx={{
+                        cursor: 'pointer',
+                        color: 'primary.main',
+                        fontWeight:
+                            `${settings.row.original.id}` ===
+                            `${selectedChildrenId}`
+                                ? 'bold'
+                                : 'normal',
+                        '&:hover': {
+                            textDecoration: 'underline',
+                        },
+                    }}
+                    onClick={() =>
+                        setSelectedChildren(settings.row.original as OrgUnit)
+                    }
+                >
+                    {selectedChildrenId}-{settings.row.original.id}-
+                    {settings.value}
+                </Box>
+            ),
         },
         {
             Header: formatMessage(MESSAGES.type),

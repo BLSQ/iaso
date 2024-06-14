@@ -27,7 +27,6 @@ const OrgUnitDisplay = ({
     }
     return (
         <LinkWithLocation
-            target="_blank"
             className={classes.link}
             to={`/${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}`}
         >

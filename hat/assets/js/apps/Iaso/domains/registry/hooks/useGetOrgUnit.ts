@@ -57,7 +57,7 @@ export const useGetOrgUnit = (
         options: {
             retry: false,
             enabled: Boolean(orgUnitId),
-            keepPreviousData: true,
+            keepPreviousData: Boolean(orgUnitId),
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
         },

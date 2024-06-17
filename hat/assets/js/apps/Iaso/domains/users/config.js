@@ -1,20 +1,20 @@
-import React, { useMemo } from 'react';
-import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import {
-    HighlightOffOutlined as NotCheckedIcon,
     CheckCircleOutlineOutlined as CheckedIcon,
+    HighlightOffOutlined as NotCheckedIcon,
 } from '@mui/icons-material';
+import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
+import React, { useMemo } from 'react';
 
-import { EditUsersDialog } from './components/UsersDialog.tsx';
-import { ExportMobileAppSetupDialog } from './components/ExportMobileAppSetupDialog.tsx';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
+import { ExportMobileAppSetupDialog } from './components/ExportMobileAppSetupDialog.tsx';
+import { EditUsersDialog } from './components/UsersDialog.tsx';
 import MESSAGES from './messages';
 import { userHasPermission } from './utils';
 
 import * as Permission from '../../utils/permissions.ts';
+import PermissionSwitch from './components/PermissionSwitch.tsx';
 import PermissionTooltip from './components/PermissionTooltip.tsx';
 import PERMISSIONS_GROUPS_MESSAGES from './permissionsGroupsMessages.ts';
-import PermissionSwitch from './components/PermissionSwitch.tsx';
 
 export const usersTableColumns = ({
     formatMessage,
@@ -56,7 +56,7 @@ export const usersTableColumns = ({
         accessor: 'user_roles_permissions',
         sortable: false,
         Cell: settings =>
-            settings.value.map(user_role => user_role.name).join(', ') ||
+            settings.value?.map(user_role => user_role.name).join(', ') ||
             textPlaceholder,
     },
     {

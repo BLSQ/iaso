@@ -11,10 +11,7 @@ from create_submission_with_picture import create_submission_with_picture
 from additional_projects import create_projects, link_new_projects_to_main_data_source
 import string
 import random
-import logging
 
-
-logger = logging.getLogger(__name__)
 
 iaso_admin_client = IasoClient(server_url=SERVER)
 iaso_admin_client.authenticate_with_username_and_password(

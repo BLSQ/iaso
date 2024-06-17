@@ -59,7 +59,7 @@
                         },
                         {
                             "id": 3,
-                            "name": "GPS à chaque formulaire",
+                            "name": "GPS on each form",
                             "code": "TAKE_GPS_ON_FORM",
                             "description": "",
                             "created_at": 1590486429.44506,
@@ -175,7 +175,7 @@
                         },
                         {
                             "id": 3,
-                            "name": "GPS à chaque formulaire",
+                            "name": "GPS on each form",
                             "code": "TAKE_GPS_ON_FORM",
                             "description": "",
                             "created_at": 1590486429.44506,

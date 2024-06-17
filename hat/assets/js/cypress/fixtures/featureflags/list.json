@@ -3,7 +3,7 @@
         {
             "id": 4,
             "code": "REQUIRE_AUTHENTICATION",
-            "name": "Authentification",
+            "name": "Authentication",
             "description": "Require authentication to download & refresh data ( org. units, forms, etc ) in the mobile app",
             "created_at": 1592928849.711209,
             "updated_at": 1608655349.945807
@@ -11,7 +11,7 @@
         {
             "id": 3,
             "code": "TAKE_GPS_ON_FORM",
-            "name": "GPS à chaque formulaire",
+            "name": "GPS on each form",
             "description": "",
             "created_at": 1590486429.44506,
             "updated_at": 1608655380.590146
@@ -19,7 +19,7 @@
         {
             "id": 6,
             "code": "TRANSPORT_TRACKING",
-            "name": "GPS des trajets",
+            "name": "GPS of journeys",
             "description": "",
             "created_at": 1608567067.773703,
             "updated_at": 1608655312.832828

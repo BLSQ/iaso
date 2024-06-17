@@ -46,7 +46,7 @@ const InstanceDetailsLocksHistory: FunctionComponent<{
         >
             {isLoading && <LoadingSpinner fixed={false} />}
             {currentInstance.instance_locks.length === 0 && (
-                <Grid xs={5} container item justifyContent="center">
+                <Grid xs={5} container item>
                     <Typography
                         variant="body2"
                         color="inherit"

@@ -3,6 +3,7 @@ import {
     useRedirectTo,
     useRedirectToReplace,
     useSafeIntl,
+    useSkipEffectOnMount,
 } from 'bluesquare-components';
 import { orderBy } from 'lodash';
 import React, {
@@ -65,16 +66,20 @@ const styles: SxStyles = {
             'inset 0px 2px 4px -1px rgba(0,0,0,0.2),inset 0px 4px 5px 0px rgba(0,0,0,0.14),inset 0px 1px 10px 0px rgba(0,0,0,0.12)',
     },
 };
+
+const baseUrl = baseUrls.registry;
 export const Registry: FunctionComponent = () => {
-    const params = useParamsObject(baseUrls.registry) as RegistryParams;
-    const redirectTo = useRedirectTo();
-    const redirectToReplace = useRedirectToReplace();
-    const { orgUnitId, orgUnitChildrenId } = params;
-    const { formatMessage } = useSafeIntl();
-    const { data: orgUnit, isFetching } = useGetOrgUnit(orgUnitId);
+    const params = useParamsObject(baseUrl) as RegistryParams;
+    const { orgUnitId, orgUnitChildrenId, fullScreen } = params;
+    const isFullScreen = fullScreen === 'true';
     const [selectedChildrenId, setSelectedChildrenId] = useState<
         string | undefined
     >(orgUnitChildrenId);
+    const redirectTo = useRedirectTo();
+    const redirectToReplace = useRedirectToReplace();
+    const { formatMessage } = useSafeIntl();
+
+    const { data: orgUnit, isFetching } = useGetOrgUnit(orgUnitId);
     const { data: selectedChildren, isFetching: isFetchingSelectedChildren } =
         useGetOrgUnit(selectedChildrenId);
     const { data: orgUnitListChildren, isFetching: isFetchingListChildren } =
@@ -88,6 +93,7 @@ export const Registry: FunctionComponent = () => {
             orgUnitId,
             orgUnit?.org_unit_type?.sub_unit_types,
         );
+
     const subOrgUnitTypes: OrgunitTypeRegistry[] = useMemo(() => {
         if (!orgUnitMapChildren) {
             return [];
@@ -103,21 +109,19 @@ export const Registry: FunctionComponent = () => {
         return orderBy(options, [f => f.depth], ['asc']);
     }, [orgUnit, orgUnitMapChildren]);
 
+    useSkipEffectOnMount(() => {
+        setSelectedChildrenId(undefined);
+    }, [orgUnitId]);
+
     const handleOrgUnitChange = useCallback(
         (newOrgUnit: OrgUnit) => {
             if (newOrgUnit) {
-                const newParams = {
-                    ...params,
+                redirectTo(`/${baseUrl}`, {
                     orgUnitId: `${newOrgUnit.id}`,
-                };
-                delete newParams.orgUnitChildrenId;
-                delete newParams.submissionId;
-
-                setSelectedChildrenId(undefined);
-                redirectTo(`/${baseUrls.registry}`, newParams);
+                });
             }
         },
-        [params, redirectTo],
+        [redirectTo],
     );
 
     const handleChildrenChange = useCallback(
@@ -130,14 +134,13 @@ export const Registry: FunctionComponent = () => {
                 newParams.orgUnitChildrenId = `${newChildren.id}`;
             } else {
                 setSelectedChildrenId(undefined);
-                delete newParams.orgUnitChildrenId;
+                newParams.orgUnitChildrenId = undefined;
             }
-            delete newParams.submissionId;
-            redirectToReplace(`/${baseUrls.registry}`, newParams);
+            newParams.submissionId = undefined;
+            redirectToReplace(`/${baseUrl}`, newParams);
         },
         [params, redirectToReplace],
     );
-    const isFullScreen = params.fullScreen === 'true';
     return (
         <>
             <TopBar
@@ -177,7 +180,7 @@ export const Registry: FunctionComponent = () => {
                                     orgUnit={orgUnit}
                                     showRegistry
                                     showOnlyParents={false}
-                                    params={params}
+                                    params={{ orgUnitId }}
                                 />
                             )}
                         </Box>

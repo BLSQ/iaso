@@ -2,6 +2,7 @@
 import { Pagination } from 'bluesquare-components';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { User } from '../../../utils/usersUtils';
+import { Beneficiary } from '../../entities/types/beneficiary';
 
 type Lock = {
     id: number;
@@ -45,6 +46,7 @@ export type Instance = {
     is_locked: boolean;
     is_instance_of_reference_form: boolean;
     is_reference_instance: boolean;
+    entity: Beneficiary;
 };
 
 export type InstanceLogDetail = {

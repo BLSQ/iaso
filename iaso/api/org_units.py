@@ -25,6 +25,7 @@ from iaso.api.serializers import OrgUnitSearchSerializer, OrgUnitSmallSearchSeri
 from iaso.gpkg import org_units_to_gpkg_bytes
 from iaso.models import DataSource, Form, Group, Instance, OrgUnit, OrgUnitType, Project, SourceVersion
 from iaso.utils import geojson_queryset
+from iaso.utils.gis import simplify_geom
 
 from ..utils.models.common import get_creator_name, get_org_unit_parents_ref
 
@@ -424,16 +425,15 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         if "geo_json" in request.data:
             geo_json = request.data["geo_json"]
-            if geo_json and geo_json["features"][0]["geometry"] and geo_json["features"][0]["geometry"]["coordinates"]:
-                org_unit.simplified_geom = MultiPolygon(
-                    *[Polygon(*coord) for coord in geo_json["features"][0]["geometry"]["coordinates"]]
-                )
+            geometry = geo_json["features"][0]["geometry"] if geo_json else None
+            coordinates = geometry["coordinates"] if geometry else None
+            if coordinates:
+                multi_polygon = MultiPolygon(*[Polygon(*coord) for coord in coordinates])
+                org_unit.simplified_geom = simplify_geom(multi_polygon)
             else:
                 org_unit.simplified_geom = None
         elif "simplified_geom" in request.data:
             org_unit.simplified_geom = request.data["simplified_geom"]
-        if "geo_json" in request.data or "simplified_geom" in request.data:
-            org_unit.geom = org_unit.simplified_geom
 
         if "catchment" in request.data:
             catchment = request.data["catchment"]
@@ -638,9 +638,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
         geom = request.data.get("geom")
         if geom:
             try:
-                g = GEOSGeometry(json.dumps(geom))
-                org_unit.geom = g
-                org_unit.simplified_geom = g  # maybe think of a standard simplification here?
+                org_unit.geom = GEOSGeometry(json.dumps(geom))
+                org_unit.simplified_geom = simplify_geom(org_unit.geom)
             except Exception:
                 errors.append({"errorKey": "geom", "errorMessage": _("Can't parse geom")})
 

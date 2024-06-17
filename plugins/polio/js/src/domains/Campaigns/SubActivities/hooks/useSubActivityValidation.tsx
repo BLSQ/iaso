@@ -2,14 +2,14 @@ import * as yup from 'yup';
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import { useMemo } from 'react';
-import { Round } from '../../../../constants/types';
 import { dateFormat } from '../../../Calendar/campaignCalendar/constants';
 import MESSAGES from '../messages';
 
 yup.addMethod(
     yup.date,
     'validateStartDate',
-    function validateStartDate(formatMessage, round) {
+    // Add round to args and uncomment code to enable restriction based on round dates
+    function validateStartDate(formatMessage) {
         return this.test('validateStartDate', '', (value, context) => {
             const { path, createError, parent } = context;
             const newStartDate = moment(value);
@@ -18,22 +18,24 @@ yup.addMethod(
 
             let errorMessage;
 
-            if (endDate?.isSameOrBefore(newStartDate)) {
+            if (endDate?.isBefore(newStartDate)) {
                 errorMessage = formatMessage(MESSAGES.startDateAfterEndDate);
-            } else {
-                const roundStartDate = moment(round?.started_at, dateFormat);
-                const roundEndDate = moment(round?.ended_at, dateFormat);
-                if (roundStartDate?.isAfter(newStartDate)) {
-                    errorMessage = formatMessage(
-                        MESSAGES.startDateBeforeRoundDate,
-                    );
-                }
-                if (roundEndDate?.isSameOrBefore(newStartDate)) {
-                    errorMessage = formatMessage(
-                        MESSAGES.startDateAfterRoundEnd,
-                    );
-                }
             }
+            // Uncomment to allow restriction of dates based on round dates
+            // else {
+            //     const roundStartDate = moment(round?.started_at, dateFormat);
+            //     const roundEndDate = moment(round?.ended_at, dateFormat);
+            //     if (roundStartDate?.isAfter(newStartDate)) {
+            //         errorMessage = formatMessage(
+            //             MESSAGES.startDateBeforeRoundDate,
+            //         );
+            //     }
+            //     if (roundEndDate?.isSameOrBefore(newStartDate)) {
+            //         errorMessage = formatMessage(
+            //             MESSAGES.startDateAfterRoundEnd,
+            //         );
+            //     }
+            // }
             if (errorMessage) {
                 return createError({
                     path,
@@ -48,7 +50,8 @@ yup.addMethod(
 yup.addMethod(
     yup.date,
     'validateEndDate',
-    function validateEndDate(formatMessage, round) {
+    // Add round to args and uncomment code to enable restriction based on round dates
+    function validateEndDate(formatMessage) {
         return this.test('validateEndDate', '', (value, context) => {
             const { path, createError, parent } = context;
             const newEndDate = moment(value);
@@ -56,22 +59,24 @@ yup.addMethod(
                 parent.start_date && moment(parent.start_date, dateFormat);
             let errorMessage;
 
-            if (startDate?.isSameOrAfter(newEndDate)) {
+            if (startDate?.isAfter(newEndDate)) {
                 errorMessage = formatMessage(MESSAGES.endDateBeforeStartDate);
-            } else {
-                const roundStartDate = moment(round?.started_at, dateFormat);
-                const roundEndDate = moment(round?.ended_at, dateFormat);
-                if (roundEndDate?.isBefore(newEndDate)) {
-                    errorMessage = formatMessage(
-                        MESSAGES.endDateAfterRoundDate,
-                    );
-                }
-                if (roundStartDate.isSameOrAfter(newEndDate)) {
-                    errorMessage = formatMessage(
-                        MESSAGES.endDateBeforeRoundStart,
-                    );
-                }
             }
+            // Uncomment to restrict dates based on round dates
+            // else {
+            //     const roundStartDate = moment(round?.started_at, dateFormat);
+            //     const roundEndDate = moment(round?.ended_at, dateFormat);
+            //     if (roundEndDate?.isBefore(newEndDate)) {
+            //         errorMessage = formatMessage(
+            //             MESSAGES.endDateAfterRoundDate,
+            //         );
+            //     }
+            //     if (roundStartDate.isSameOrAfter(newEndDate)) {
+            //         errorMessage = formatMessage(
+            //             MESSAGES.endDateBeforeRoundStart,
+            //         );
+            //     }
+            // }
 
             if (errorMessage) {
                 return createError({
@@ -84,9 +89,7 @@ yup.addMethod(
     },
 );
 
-export const useSubActivityValidation = (
-    round?: Round,
-): yup.ObjectSchema<any> => {
+export const useSubActivityValidation = (): yup.ObjectSchema<any> => {
     const { formatMessage } = useSafeIntl();
     return useMemo(
         () =>
@@ -102,7 +105,7 @@ export const useSubActivityValidation = (
                     // start should be before end
                     // start should not be before round start
                     // @ts-ignore
-                    .validateStartDate(formatMessage, round)
+                    .validateStartDate(formatMessage)
                     .required(formatMessage(MESSAGES.fieldRequired)),
                 end_date: yup
                     .date()
@@ -111,12 +114,12 @@ export const useSubActivityValidation = (
                     // end should be after start
                     // end should not be after round end
                     // @ts-ignore
-                    .validateEndDate(formatMessage, round)
+                    .validateEndDate(formatMessage)
                     .required(formatMessage(MESSAGES.fieldRequired)),
                 age_unit: yup.string().nullable(),
                 age_min: yup.number().nullable(),
                 age_max: yup.number().nullable(),
             }),
-        [formatMessage, round],
+        [formatMessage],
     );
 };

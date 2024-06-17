@@ -1,3 +1,5 @@
+import { OrgUnitStatus } from '../../orgUnits/types/orgUnit';
+
 /* eslint-disable camelcase */
 export type Project = {
     name: string;
@@ -15,9 +17,14 @@ export type Version = {
     created_at: string;
     updated_at: string;
     org_units_count: number;
+    data_source_name: string;
+    data_source: number;
+    tree_config_status_fields: OrgUnitStatus[];
+    is_default: boolean;
 };
 
 export type DataSource = {
+    id: number;
     name: string;
     read_only: boolean;
     description: string;
@@ -26,4 +33,5 @@ export type DataSource = {
     projects: Project[];
     default_version: Version;
     credentials: Credentials;
+    tree_config_status_fields: OrgUnitStatus[];
 };

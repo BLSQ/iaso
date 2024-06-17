@@ -6,7 +6,7 @@ from iaso.api.common import DynamicFieldsModelSerializer
 from iaso.models import OrgUnit
 
 
-class OrgUnitTreeSerializer(DynamicFieldsModelSerializer, serializers.ModelSerializer):
+class OrgUnitTreeSerializer(serializers.ModelSerializer):
     has_children = serializers.SerializerMethodField()
     org_unit_type_short_name = serializers.SerializerMethodField()
 
@@ -20,14 +20,6 @@ class OrgUnitTreeSerializer(DynamicFieldsModelSerializer, serializers.ModelSeria
     class Meta:
         model = OrgUnit
         fields = [
-            "id",
-            "name",
-            "validation_status",
-            "has_children",
-            "org_unit_type_id",
-            "org_unit_type_short_name",
-        ]
-        default_fields = [
             "id",
             "name",
             "validation_status",

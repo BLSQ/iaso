@@ -1,11 +1,11 @@
+import { Pagination, UrlParams } from 'bluesquare-components';
 import { ReactNode } from 'react';
-import { UrlParams, Pagination } from 'bluesquare-components';
-import { Shape } from './shapes';
+import { GeoJson } from '../../../components/maps/types';
 import { Nullable } from '../../../types/utils';
 import { Instance } from '../../instances/types/instance';
 import { OrgunitType } from './orgunitTypes';
-import { GeoJson } from '../../../components/maps/types';
 import { DataSource } from './dataSources';
+import { Shape } from './shapes';
 
 /* eslint-disable camelcase */
 export type ShortOrgUnit = {
@@ -97,6 +97,7 @@ export type OrgUnit = {
     version: number;
     groups: Group[];
     org_unit_type: OrgunitType;
+    org_unit_type_short_name?: string;
     search_index?: number;
     reference_instance_id: Nullable<number>;
     reference_instances: Instance[];

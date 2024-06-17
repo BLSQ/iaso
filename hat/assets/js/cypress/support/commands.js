@@ -94,17 +94,13 @@ Cypress.Commands.add(
  * @param {number} newOuIndex - index of the new selected ou
  */
 Cypress.Commands.add('fillTreeView', (id, newOuIndex, clear = true) => {
-    cy.intercept(
-        'GET',
-        '/api/orgunits/tree/?ignoreEmptyNames=true&validation_status=VALID',
-        orgUnits,
-    ).as('getTreeview');
+    cy.intercept('GET', '/api/orgunits/tree/**/*', orgUnits).as('getTreeview');
     cy.get(id).as('tree');
     if (clear) {
         cy.get('@tree').find('.clear-tree button').as('clearButton');
         cy.get('@clearButton').click();
     }
-    cy.get('@tree').find('.MuiButtonBase-root').as('openButton');
+    cy.get('@tree').find('.open-tree button').as('openButton');
     cy.get('@openButton').click();
     cy.wait('@getTreeview').then(() => {
         cy.get('.MuiTreeView-root .MuiTreeItem-root').eq(newOuIndex).click();

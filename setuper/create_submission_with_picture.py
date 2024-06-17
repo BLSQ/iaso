@@ -77,6 +77,7 @@ def create_submission_with_picture(account_name, iaso_client):
                     "statut_fosa": random.choice(
                         ["public", "prive_confessionel", "prive_laic", "militaire", "ong", "autre"]
                     ),
+                    "coordonnees_gps_fosa": f"{orgunit['latitude']} {orgunit['longitude']}",
                 },
                 "equipment_group": {
                     "HFR_CS_16": random.choice(["yes", "no"]),

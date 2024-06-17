@@ -175,7 +175,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     temp_org_unit = unit.as_dict()
                     temp_org_unit["geo_json"] = None
                     if temp_org_unit["has_geo_json"] == True:
-                        shape_queryset = self.get_queryset().filter(id=temp_org_unit["id"])
+                        shape_queryset = queryset.filter(id=temp_org_unit["id"])
                         temp_org_unit["geo_json"] = geojson_queryset(shape_queryset, geometry_field="simplified_geom")
                     org_units.append(temp_org_unit)
                 return Response({"orgUnits": org_units})
@@ -189,7 +189,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     temp_org_unit = unit.as_location(with_parents=request.GET.get("withParents", None))
                     temp_org_unit["geo_json"] = None
                     if temp_org_unit["has_geo_json"] == True:
-                        shape_queryset = self.get_queryset().filter(id=temp_org_unit["id"])
+                        shape_queryset = queryset.filter(id=temp_org_unit["id"])
                         temp_org_unit["geo_json"] = geojson_queryset(shape_queryset, geometry_field="simplified_geom")
                     org_units.append(temp_org_unit)
                 return Response(org_units)

@@ -1,1 +1,0 @@
-DEFAULT_ACCOUNT_NAME = "jzzkhsh"

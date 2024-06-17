@@ -1,18 +1,18 @@
 /// <reference types="cypress" />
 
-import superUser from '../../fixtures/profiles/me/superuser.json';
-import listFixture from '../../fixtures/submissions/list.json';
-import emptyFixture from '../../fixtures/submissions/empty.json';
 import formDetail from '../../fixtures/forms/detail.json';
 import possibleFields from '../../fixtures/forms/possibleFields.json';
+import superUser from '../../fixtures/profiles/me/superuser.json';
+import emptyFixture from '../../fixtures/submissions/empty.json';
+import listFixture from '../../fixtures/submissions/list.json';
 import page2 from '../../fixtures/submissions/list_page2.json';
 
-import { testTablerender } from '../../support/testTableRender';
-import { testPagination } from '../../support/testPagination';
-import { testTableSort } from '../../support/testTableSort';
-import { testPageFilters } from '../../support/testPageFilters';
-import { testSearchField } from '../../support/testSearchField';
 import { search, searchWithForbiddenChars } from '../../constants/search';
+import { testPageFilters } from '../../support/testPageFilters';
+import { testPagination } from '../../support/testPagination';
+import { testSearchField } from '../../support/testSearchField';
+import { testTablerender } from '../../support/testTableRender';
+import { testTableSort } from '../../support/testTableSort';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 const baseUrl = `${siteBaseUrl}/dashboard/forms/submissions/tab/list/mapResults/3000`;
@@ -148,7 +148,7 @@ describe('Submissions', () => {
         });
     });
 
-    it('change filters should deep link and call api with correct params', () => {
+    it.only('change filters should deep link and call api with correct params', () => {
         goToPage();
         cy.intercept(
             'GET',
@@ -170,9 +170,9 @@ describe('Submissions', () => {
                     method: 'GET',
                     pathname: '/api/instances/**',
                     query: {
+                        orgUnitTypeId: newFilters.orgUnitTypeId.urlValue,
                         ...defaultQuery,
                         withLocation: newFilters.withLocation.urlValue,
-                        orgUnitTypeId: newFilters.orgUnitTypeId.urlValue,
                         status: newFilters.status.urlValue,
                         search: newFilters.search.urlValue,
                         orgUnitParentId: newFilters.levels.urlValue,

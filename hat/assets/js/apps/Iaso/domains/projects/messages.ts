@@ -123,7 +123,7 @@ const MESSAGES = defineMessages({
     mobile_entity_warn_when_found: {
         id: 'iaso.projets.featureflag.mobile_entity_warn_when_found',
         defaultMessage:
-            'Mobile: display a message when an entity is found on the duplicate search',
+            'Mobile: Display a message when an entity is found on the duplicate search',
     },
     mobile_entity_warn_when_found_tooltip: {
         id: 'iaso.projets.featureflag.tooltip.mobile_entity_warn_when_found',
@@ -192,7 +192,7 @@ const MESSAGES = defineMessages({
     },
     show_detail_map_on_mobile: {
         id: 'iaso.projets.featureflag.show_detail_map_on_mobile',
-        defaultMessage: 'Mobile: Show Map of org unit',
+        defaultMessage: 'Mobile: Show map of org unit',
     },
     show_detail_map_on_mobile_tooltip: {
         id: 'iaso.projets.featureflag.tooltip.show_detail_map_on_mobile',

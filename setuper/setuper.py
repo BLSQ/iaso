@@ -10,15 +10,22 @@ from review_change_proposal import setup_review_change_proposal
 from create_submission_with_picture import create_submission_with_picture
 import string
 import random
+import argparse
+import logging
 
-iaso_admin_client = IasoClient(server_url=SERVER)
-iaso_admin_client.authenticate_with_username_and_password(
-    username=ADMIN_USER_NAME,
-    password=ADMIN_PASSWORD,
-)
+logger = logging.getLogger(__name__)
 
 
-def setup_account(account_name):
+def admin_login(server_url, username, password):
+    iaso_admin_client = IasoClient(server_url=server_url)
+    iaso_admin_client.authenticate_with_username_and_password(
+        username=username,
+        password=password,
+    )
+    return iaso_admin_client
+
+
+def setup_account(account_name, server_url, username, password):
     data = {
         "account_name": account_name,
         "user_username": account_name,
@@ -27,7 +34,7 @@ def setup_account(account_name):
         "password": account_name,
         "modules": ["DEFAULT", "REGISTRY", "PLANNING", "ENTITIES", "DATA_COLLECTION_FORMS"],
     }
-
+    iaso_admin_client = admin_login(server_url, username, password)
     iaso_admin_client.post("/api/setupaccount/", json=data)
 
     # make sure we use that connection afterwards so we are connected as the account admin and not the ADMIN_USER_NAME
@@ -50,10 +57,10 @@ seed_registry = True
 seed_review_change_proposal = True
 
 
-if __name__ == "__main__":
+def create_account(server_url, username, password):
     account_name = "".join(random.choices(string.ascii_lowercase, k=7))
-    print("Creating account:", account_name)
-    iaso_client = setup_account(account_name)
+    logger.info("Creating account:", account_name)
+    iaso_client = setup_account(account_name, server_url, username, password)
     setup_orgunits(iaso_client=iaso_client)
 
     if seed_default_health_facility_form:
@@ -73,7 +80,21 @@ if __name__ == "__main__":
     if seed_review_change_proposal:
         setup_review_change_proposal(account_name, iaso_client=iaso_client)
 
-    print("-----------------------------------------------")
-    print("Account created:", account_name)
-    print("Login at %s with\n\tlogin: %s \n\tpassword: %s" % (SERVER, account_name, account_name))
-    print("-----------------------------------------------")
+    logger.info("-----------------------------------------------")
+    logger.info("Account created:", account_name)
+    logger.info("Login at %s with\n\tlogin: %s \n\tpassword: %s" % (SERVER, account_name, account_name))
+    logger.info("-----------------------------------------------")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Provide credentials for the setuper")
+    parser.add_argument("-u", "--username", type=str, help="User name")
+    parser.add_argument("-p", "--password", type=str, help="Password")
+    parser.add_argument("-s", "--server_url", type=str, help="Server URL")
+
+    args = parser.parse_args()
+    server_url = args.server_url if args.server_url else SERVER
+    username = args.username if args.username else ADMIN_USER_NAME
+    password = args.password if args.password else ADMIN_PASSWORD
+
+    create_account(server_url, username, password)

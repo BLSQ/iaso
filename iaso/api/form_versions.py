@@ -152,7 +152,7 @@ class HasFormVersionPermission(HasFormPermission):
 class FormVersionsViewSet(ModelViewSet):
     f"""Form versions API
 
-    This API is open to anonymous users only if `{FeatureFlag.REQUIRE_AUTHENTICATION}` is not set and an `{APP_ID}` 
+    This API is open to anonymous users only if `{FeatureFlag.REQUIRE_AUTHENTICATION}` is not set and an `{APP_ID}`
     parameter is given.
 
     GET /api/formversions/

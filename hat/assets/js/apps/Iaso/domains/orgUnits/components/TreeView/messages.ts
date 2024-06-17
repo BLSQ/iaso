@@ -29,13 +29,25 @@ const MESSAGES = defineMessages({
         id: 'blsq.treeview.displayTypes',
         defaultMessage: 'Show organisation unit types',
     },
-    displayRejected: {
+    displayVALID: {
+        id: 'blsq.treeview.displayValid',
+        defaultMessage: 'Show valid organisation unit types',
+    },
+    displayREJECTED: {
         id: 'blsq.treeview.displayRejected',
         defaultMessage: 'Show rejected organisation unit',
     },
-    displayNew: {
+    displayNEW: {
         id: 'blsq.treeview.displayNew',
         defaultMessage: 'Show new organisation unit types',
+    },
+    source: {
+        defaultMessage: 'Source',
+        id: 'iaso.forms.source',
+    },
+    version: {
+        defaultMessage: 'Version',
+        id: 'iaso.label.version',
     },
 });
 

@@ -1,12 +1,12 @@
-import React, { FunctionComponent } from 'react';
 import { makeStyles } from '@mui/styles';
+import React, { FunctionComponent } from 'react';
 // ts complaints about the import of moment for some reason
 // @ts-ignore
 import moment from 'moment';
 // @ts-ignore
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import { GeoJsonMap } from '../../../components/maps/GeoJsonMapComponent';
-import { getOrgUnitParentsString } from '../../orgUnits/utils';
+import { getOrgUnitParentsString } from '../../orgUnits/components/TreeView/utils';
 import { MESSAGES } from '../messages';
 
 const useStyles = makeStyles(theme => ({

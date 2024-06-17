@@ -22,6 +22,23 @@ class OrgUnitTreeFilter(django_filters.rest_framework.FilterSet):
         model = OrgUnit
         fields = ["version"]
 
+    @property
+    def qs(self):
+        queryset = super().qs
+
+        user = getattr(self.request, "user", None)
+
+        data_source_id = self.form.cleaned_data.get("data_source_id")
+        version = self.form.cleaned_data.get("version")
+
+        if not data_source_id and user.is_anonymous:
+            raise ValidationError({"data_source_id": ["A `data_source_id` must be provided for anonymous users."]})
+
+        if not (data_source_id or version):
+            queryset = queryset.filter(version_id=user.iaso_profile.account.default_version_id)
+
+        return queryset
+
     def filter_empty_names(self, queryset: QuerySet, _, use_empty_names: bool) -> QuerySet:
         return queryset.exclude(name="") if use_empty_names else queryset
 
@@ -30,6 +47,9 @@ class OrgUnitTreeFilter(django_filters.rest_framework.FilterSet):
             source = DataSource.objects.get(id=data_source_id)
         except OrgUnit.DoesNotExist:
             raise ValidationError({"data_source_id": [f"DataSource with id {data_source_id} does not exist."]})
-        if source.default_version:
+
+        version = self.form.cleaned_data.get("version")
+        if source.default_version and not version:
             return queryset.filter(version=source.default_version)
+
         return queryset.filter(version__data_source_id=data_source_id)

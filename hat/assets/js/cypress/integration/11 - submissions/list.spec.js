@@ -148,7 +148,7 @@ describe('Submissions', () => {
         });
     });
 
-    it.only('change filters should deep link and call api with correct params', () => {
+    it('change filters should deep link and call api with correct params', () => {
         goToPage();
         cy.intercept(
             'GET',

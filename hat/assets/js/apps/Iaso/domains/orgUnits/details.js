@@ -68,6 +68,14 @@ const useStyles = makeStyles(theme => ({
         backgroundColor: 'white',
         paddingTop: '10px',
     },
+    hiddenOpacity: {
+        position: 'absolute',
+        top: '0px',
+        left: '0px',
+        width: '100vw',
+        zIndex: '-100',
+        opacity: '0',
+    },
 }));
 
 const initialOrgUnit = {
@@ -194,6 +202,7 @@ const OrgUnitDetail = () => {
         isFetchingOrgUnitTypes,
         isFetchingGroups,
         parentOrgUnit,
+        isFetchingSources,
     } = useOrgUnitDetailData(
         isNewOrgunit,
         params.orgUnitId,
@@ -386,7 +395,11 @@ const OrgUnitDetail = () => {
                     )}
                     {!isNewOrgunit && (
                         <>
-                            {tab === 'map' && (
+                            <div
+                                className={
+                                    tab === 'map' ? '' : classes.hiddenOpacity
+                                }
+                            >
                                 <Box className={classes.containerFullHeight}>
                                     {!isFetchingDetail && (
                                         <OrgUnitMap
@@ -425,7 +438,7 @@ const OrgUnitDetail = () => {
                                         />
                                     )}
                                 </Box>
-                            )}
+                            </div>
 
                             {tab === 'history' && (
                                 <div data-test="logs-tab">
@@ -482,6 +495,8 @@ const OrgUnitDetail = () => {
                                         baseUrl={baseUrl}
                                         params={linksParams}
                                         paramsPrefix={LINKS_PREFIX}
+                                        sources={sources}
+                                        isLoadingSources={isFetchingSources}
                                     />
                                 </Box>
                             )}

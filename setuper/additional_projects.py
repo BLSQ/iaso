@@ -72,14 +72,14 @@ def link_created_projects_to_main_data_source(account_name, iaso_client, project
 def create_projects(account_name, iaso_client):
     print(f"-- Creating 3 additional projects for account :{account_name}")
     projects = projects_mapper(account_name)
-    created_or_updated_projects = []
+    created_projects = []
     for project in projects:
         project["linked_forms"] = None
         project["feature_flags"] = feature_flags_mapper(project, iaso_client)
-        created_projects = iaso_client.post("/api/apps/", json=project)
-        created_or_updated_projects.append(created_projects)
+        new_project = iaso_client.post("/api/apps/", json=project)
+        created_projects.append(new_project)
 
-    project_ids = get_project_ids(created_or_updated_projects, iaso_client)
+    project_ids = get_project_ids(created_projects, iaso_client)
     update_org_unit_types_with_new_projects(iaso_client, project_ids)
     link_created_projects_to_main_data_source(account_name, iaso_client, project_ids)
 

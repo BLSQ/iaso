@@ -42,7 +42,13 @@ export const columns = (
         accessor: 'feature_flags',
         sortable: false,
         Cell: settings =>
-            settings.value.map(fF => fF.name).join(', ') || textPlaceholder,
+            settings.value
+                .map(fF =>
+                    MESSAGES[fF.code.toLowerCase()]
+                        ? formatMessage(MESSAGES[fF.code.toLowerCase()])
+                        : fF.name || fF.id,
+                )
+                .join(', ') || textPlaceholder,
     },
     {
         Header: formatMessage(MESSAGES.actions),

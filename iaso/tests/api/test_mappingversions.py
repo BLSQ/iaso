@@ -51,7 +51,7 @@ class FormsVersionAPITestCase(APITestCase):
             name="Death Start survey", form_id="sample2", period_type="MONTH", single_per_period=False
         )
         cls.form_2.org_unit_types.add(cls.sith_council)
-        cls.form_1.save()
+        cls.form_2.save()
         form_2_file_mock = mock.MagicMock(spec=File)
         form_2_file_mock.name = "test.xml"
         cls.form_2.form_versions.create(file=form_2_file_mock, version_id="2020022401")

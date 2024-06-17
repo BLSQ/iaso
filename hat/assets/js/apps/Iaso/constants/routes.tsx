@@ -8,7 +8,6 @@ import DataSources from '../domains/dataSources';
 import { Details as DataSourceDetail } from '../domains/dataSources/details';
 import Devices from '../domains/devices';
 import { Beneficiaries } from '../domains/entities';
-import { VisitDetails } from '../domains/entities/components/VisitDetails';
 import { Details as BeneficiaryDetail } from '../domains/entities/details';
 import { DuplicateDetails } from '../domains/entities/duplicates/details/DuplicateDetails';
 import { Duplicates } from '../domains/entities/duplicates/list/Duplicates';
@@ -279,13 +278,6 @@ export const entityDetailsPath = {
     element: <BeneficiaryDetail />,
 };
 
-export const entitySubmissionDetailPath = {
-    baseUrl: baseUrls.entitySubmissionDetail,
-    routerUrl: `${baseUrls.entitySubmissionDetail}/*`,
-    permissions: [Permission.ENTITIES],
-    element: <VisitDetails />,
-};
-
 export const entityTypesPath = {
     baseUrl: baseUrls.entityTypes,
     routerUrl: `${baseUrls.entityTypes}/*`,
@@ -431,7 +423,6 @@ export const routeConfigs: (RoutePath | AnonymousRoutePath)[] = [
     assignmentsPath,
     entitiesPath,
     entityDetailsPath,
-    entitySubmissionDetailPath,
     entityDuplicatesPath,
     entityDuplicatesDetailsPath,
     storagesPath,

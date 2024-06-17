@@ -51,6 +51,7 @@ def setup_review_change_proposal(account_name, iaso_client):
             "status": status,
         }
         validation = None
+        proposal_review = None
         if len(groups) > 0:
             data["new_groups"] = groups
             approved_fields.append("new_groups")
@@ -65,11 +66,12 @@ def setup_review_change_proposal(account_name, iaso_client):
         if len(new_reference_instances) > 0:
             data["new_reference_instances"] = new_reference_instances
             approved_fields.append("new_reference_instances")
-        proposal_review = iaso_client.post("/api/orgunits/changes/", json=data)
-        if status == "approved" or status == "rejected":
-            validation = {
-                "approved_fields": approved_fields,
-                "status": status,
-                "rejection_comment": status,
-            }
-            iaso_client.patch(f"/api/orgunits/changes/{proposal_review['id']}/", json=validation)
+        if len(approved_fields) > 0:
+            proposal_review = iaso_client.post("/api/orgunits/changes/", json=data)
+            if status == "approved" or status == "rejected":
+                validation = {
+                    "approved_fields": approved_fields,
+                    "status": status,
+                    "rejection_comment": status,
+                }
+                iaso_client.patch(f"/api/orgunits/changes/{proposal_review['id']}/", json=validation)

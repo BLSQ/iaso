@@ -57,7 +57,7 @@ if __name__ == "__main__":
     account_name = "".join(random.choices(string.ascii_lowercase, k=7))
     print("Creating account:", account_name)
     iaso_client = setup_account(account_name)
-    setup_orgunits(account_name, iaso_client=iaso_client)
+    setup_orgunits(iaso_client=iaso_client)
 
     if seed_default_health_facility_form:
         setup_health_facility_level_default_form(account_name, iaso_client=iaso_client)

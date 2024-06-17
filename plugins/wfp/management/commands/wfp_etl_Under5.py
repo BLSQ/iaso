@@ -19,9 +19,10 @@ class Under5:
             initial_weight = float(initial_weight)
             current_weight = float(current_weight)
             weight_difference = round(((current_weight * 1000) - (initial_weight * 1000)), 4)
-
             if weight_difference >= 0:
-                if duration > 0 and current_weight > 0:
+                if duration == 0:
+                    weight_gain = 0
+                elif duration > 0 and current_weight > 0 and initial_weight > 0:
                     weight_gain = round((weight_difference / (initial_weight * float(duration))), 4)
             elif weight_difference < 0:
                 weight_loss = abs(weight_difference)
@@ -68,10 +69,10 @@ class Under5:
 
                     form_id = visit.get("form__form_id")
                     current_record["org_unit_id"] = visit.get("org_unit_id", None)
-                    current_weight = None
+
                     if current_record.get("weight_kgs", None) is not None:
                         current_weight = current_record.get("weight_kgs", None)
-                    else:
+                    elif current_record.get("previous_weight_kgs__decimal__", None) is not None:
                         current_weight = current_record.get("previous_weight_kgs__decimal__", None)
                     current_date = visit.get("created_at", None)
 
@@ -85,7 +86,6 @@ class Under5:
                     if initial_date is not None:
                         duration = (current_date - initial_date).days
                         current_record["start_date"] = initial_date.strftime("%Y-%m-%d")
-
                     weight = self.compute_gained_weight(initial_weight, current_weight, duration)
                     current_record["end_date"] = current_date.strftime("%Y-%m-%d")
                     current_record["weight_gain"] = weight["weight_gain"]

@@ -11,6 +11,7 @@ from django.db import transaction
 from hat.audit import models as audit_models
 from iaso.models import DataSource, Group, OrgUnit, OrgUnitType, Project, SourceVersion
 from iaso.models.org_unit import get_or_create_org_unit_type
+from iaso.utils.gis import simplify_geom
 
 try:  # only in 3.8
     from typing import TypedDict  # type: ignore
@@ -117,10 +118,7 @@ def create_or_update_orgunit(
             orgunit.location = geom
         else:
             orgunit.geom = geom
-            simplified_geom = geom.simplify(tolerance=0.002)
-            if type(simplified_geom) == Polygon:
-                simplified_geom = MultiPolygon(simplified_geom)
-            orgunit.simplified_geom = simplified_geom
+            orgunit.simplified_geom = simplify_geom(geom)
 
     orgunit.save(skip_calculate_path=True)
 

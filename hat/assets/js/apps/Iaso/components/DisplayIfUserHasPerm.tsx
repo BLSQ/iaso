@@ -8,6 +8,7 @@ import { useCurrentUser } from '../utils/usersUtils';
 type Props = {
     permissions: string[];
     children: false | ReactElement;
+    strict?: boolean;
 };
 
 export const DisplayIfUserHasPerm: FunctionComponent<Props> = ({

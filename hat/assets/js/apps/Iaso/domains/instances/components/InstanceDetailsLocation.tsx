@@ -39,7 +39,7 @@ const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
         orgUnit.altitude !== null && orgUnit.altitude !== 0;
     const hasAltitudeFromForm =
         !altitude || (altitude !== null && altitude !== 0);
-    const hasAccuracy = accuracy;
+    const hasAccuracy = Boolean(accuracy);
 
     return (
         <>
@@ -82,22 +82,24 @@ const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
                     }
                 />
             )}
-            {orgUnit && hasCoordinatesFromOrgUnit && !hasCoordinatesFromForm && (
-                <>
-                    <InstanceDetailsField
-                        label={formatMessage(MESSAGES.latitude)}
-                        value={`${
-                            currentInstance.org_unit.latitude
-                        } ${formatMessage(MESSAGES.fromOrgUnit)}`}
-                    />
-                    <InstanceDetailsField
-                        label={formatMessage(MESSAGES.longitude)}
-                        value={`${
-                            currentInstance.org_unit.longitude
-                        } ${formatMessage(MESSAGES.fromOrgUnit)}`}
-                    />
-                </>
-            )}
+            {orgUnit &&
+                hasCoordinatesFromOrgUnit &&
+                !hasCoordinatesFromForm && (
+                    <>
+                        <InstanceDetailsField
+                            label={formatMessage(MESSAGES.latitude)}
+                            value={`${
+                                currentInstance.org_unit.latitude
+                            } ${formatMessage(MESSAGES.fromOrgUnit)}`}
+                        />
+                        <InstanceDetailsField
+                            label={formatMessage(MESSAGES.longitude)}
+                            value={`${
+                                currentInstance.org_unit.longitude
+                            } ${formatMessage(MESSAGES.fromOrgUnit)}`}
+                        />
+                    </>
+                )}
             {hasCoordinatesFromForm && (
                 <>
                     <InstanceDetailsField

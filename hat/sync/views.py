@@ -27,6 +27,32 @@ def detect_user_request(request):
         return None
 
 
+def process_instance_file(instance, file, user):
+    instance.file = file
+    instance.created_by = user
+    instance.last_modified_by = user
+    instance.save()
+
+    instance.get_and_save_json_of_xml()
+    try:
+        instance.convert_location_from_field()
+        instance.convert_device()
+        instance.convert_correlation()
+    except ValueError as error:
+        logger.exception(error)
+
+    return instance
+
+
+def create_instance_file(instance, file_name, file):
+    fi = InstanceFile()
+    fi.file = file
+    fi.instance_id = instance.id
+    fi.name = file_name
+    fi.save()
+    return fi
+
+
 @csrf_exempt
 @api_view(http_method_names=["POST"])
 @authentication_classes([])
@@ -41,30 +67,16 @@ def form_upload(request: HttpRequest) -> HttpResponse:
     else:
         i = Instance(file_name=main_file.name)
 
-    i.file = request.FILES["xml_submission_file"]
     user = request.user if not request.user.is_anonymous else detect_user_request(request)
-    i.created_by = user
-    i.last_modified_by = user
-    i.save()
 
     try:
-        i.get_and_save_json_of_xml()
-        try:
-            i.convert_location_from_field()
-            i.convert_device()
-            i.convert_correlation()
-        except ValueError as error:
-            print(error)
+        i = process_instance_file(i, request.FILES["xml_submission_file"], user)
     except:
         pass
 
     for file_name in request.FILES:
         if file_name != "xml_submission_file":
-            fi = InstanceFile()
-            fi.file = request.FILES[file_name]
-            fi.instance_id = i.id
-            fi.name = file_name
-            fi.save()
+            create_instance_file(i, file_name, request.FILES[file_name])
 
     if i.project and i.project.has_feature(FeatureFlag.INSTANT_EXPORT):
         i.export()

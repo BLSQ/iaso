@@ -1,14 +1,14 @@
 from django.http import HttpResponse
-from rest_framework import serializers, permissions
+from rest_framework import permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from iaso.models import DataSource
-from iaso.models import SourceVersion
-from .common import ModelViewSet, CONTENT_TYPE_CSV, HasPermission
+from hat.menupermissions import models as permission
+from iaso.models import DataSource, SourceVersion
+
+from .common import CONTENT_TYPE_CSV, HasPermission, ModelViewSet
 from .source_versions_serializers import DiffSerializer, ExportSerializer
 from .tasks import TaskSerializer
-from hat.menupermissions import models as permission
 
 
 class SourceVersionSerializer(serializers.ModelSerializer):
@@ -29,6 +29,10 @@ class SourceVersionSerializer(serializers.ModelSerializer):
     def get_is_default(self, source_version: SourceVersion) -> bool:
         return source_version.data_source.default_version == source_version
 
+    tree_config_status_fields = serializers.ListField(
+        child=serializers.CharField(), source="data_source.tree_config_status_fields", read_only=True
+    )
+
     class Meta:
         model = SourceVersion
         fields = [
@@ -41,6 +45,7 @@ class SourceVersionSerializer(serializers.ModelSerializer):
             "data_source_name",
             "is_default",
             "org_units_count",
+            "tree_config_status_fields",
         ]
 
     def validate_data_source(self, value):

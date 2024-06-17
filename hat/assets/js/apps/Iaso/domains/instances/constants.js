@@ -1,14 +1,14 @@
 import React from 'react';
 
-import { FormattedMessage } from 'react-intl';
 import { displayDateFromTimestamp } from 'bluesquare-components';
+import { FormattedMessage } from 'react-intl';
+import getDisplayName from '../../utils/usersUtils.ts';
+import { LinkToForm } from '../forms/components/LinkToForm.tsx';
+import { OrgUnitLabel } from '../orgUnits/components/OrgUnitLabel.tsx';
 import OrgUnitTooltip from '../orgUnits/components/OrgUnitTooltip';
 import { usePrettyPeriod } from '../periods/utils';
-import { OrgUnitLabel } from '../orgUnits/utils';
-import MESSAGES from './messages';
-import { LinkToForm } from '../forms/components/LinkToForm.tsx';
 import { LinkToPlanning } from '../plannings/components/LinkToPlanning.tsx';
-import getDisplayName from '../../utils/usersUtils.ts';
+import MESSAGES from './messages';
 
 export const INSTANCE_STATUS_READY = 'READY';
 export const INSTANCE_STATUS_ERROR = 'ERROR';

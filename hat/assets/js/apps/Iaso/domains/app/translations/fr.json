@@ -9,6 +9,7 @@
     "blsq.treeview.displayNew": "Afficher les nouvelles unités d'org.",
     "blsq.treeview.displayRejected": "Afficher les unités d'org. rejétées",
     "blsq.treeview.displayTypes": "Afficher les types d'unités d'org.",
+    "blsq.treeview.displayValid": "Afficher les unités d'org. validées",
     "blsq.treeview.error": "Veuillez sélectionner une unité d'org.",
     "blsq.treeview.label.selectMultiple": "Sélectionner des unité(s) d'organisation",
     "blsq.treeview.label.selectSingle": "Sélectionner une unités d'organisation",

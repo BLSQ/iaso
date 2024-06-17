@@ -9,6 +9,7 @@
     "blsq.treeview.displayNew": "Show new organisation unit",
     "blsq.treeview.displayRejected": "Show rejected organisation unit",
     "blsq.treeview.displayTypes": "Show organisation unit types",
+    "blsq.treeview.displayValid": "Show valid organisation unit",
     "blsq.treeview.error": "Please select an org unit",
     "blsq.treeview.label.selectMultiple": "Select org unit(s)",
     "blsq.treeview.label.selectSingle": "Select an org unit",

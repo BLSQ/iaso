@@ -214,7 +214,7 @@
     "iaso.error.label.planningAndTeams": "Planning et équipes doivent faire partie du même projet",
     "iaso.error.label.startDateAfterEndDate": "La date de début ne peut être après la date de fin",
     "iaso.errors.label": "Une erreur est survenue.",
-    "iaso.errors.noPermissions": "Votre compte utilisateur ne dispose actuellement d'aucune permission. Un administrateur a été informé de la situation et devrait bientôt vous attribuer les droits nécessaires. Merci de prendre contact avec eux si vous ne recevez pas de confirmation sous peu.",
+    "iaso.errors.noPermissions": "Aucune permission n'est associée à cet utilisateur. Veuillez contacter un administrateur pour demander la(les) permission(s). Merci!",
     "iaso.errors.noPermissionsTitle": "En attente de permissions d'accès",
     "iaso.errors.notAuthenticated": "Vous n'êtes pas connecté",
     "iaso.errors.notFound": "Page introuvable !",

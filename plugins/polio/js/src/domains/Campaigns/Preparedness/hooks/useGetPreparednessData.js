@@ -31,13 +31,16 @@ export const useFetchPreparedness = () => {
     return useSnackMutation(refreshPreparedness, null);
 };
 
-export const useGeneratePreparednessSheet = campaign_id => {
-    return useSnackMutation(roundNumber =>
-        postRequest(
-            `/api/polio/campaigns/${campaign_id}/create_preparedness_sheet/`,
-            {
-                round_number: roundNumber,
-            },
-        ),
-    );
+export const useGeneratePreparednessSheet = (campaign_id, onSuccess) => {
+    return useSnackMutation({
+        mutationFn: roundNumber =>
+            postRequest(
+                `/api/polio/campaigns/${campaign_id}/create_preparedness_sheet/`,
+                {
+                    round_number: roundNumber,
+                },
+            ),
+        showSucessSnackBar: false,
+        options: { onSuccess },
+    });
 };

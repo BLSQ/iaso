@@ -25,7 +25,7 @@ export const useSourceConfig = (
 ): Config => {
     const currentUser: User = useCurrentUser();
     const { data: source, isFetching: isFetchingSource } = useGetDataSource(
-        sourceId ? `${sourceId}` : undefined,
+        sourceId && versionId === undefined ? `${sourceId}` : undefined,
     );
     const { data: version, isFetching: isFetchingVersion } =
         useGetDataSourceVersion(versionId ? `${versionId}` : undefined);
@@ -36,26 +36,30 @@ export const useSourceConfig = (
 
         let sourceSettings = DEFAULT_CONFIG;
         let sourceInfos: SourceInfos | undefined;
-        if (sourceId && source && !isFetchingSource) {
-            if (source?.tree_config_status_fields?.length > 0) {
-                sourceSettings = source.tree_config_status_fields;
+        if (versionId) {
+            if (version && !isFetchingVersion) {
+                if (version?.tree_config_status_fields?.length > 0) {
+                    sourceSettings = version.tree_config_status_fields;
+                }
+                sourceInfos = {
+                    sourceName: version.data_source_name,
+                    sourceId: version.data_source,
+                    versionNumber: version.number,
+                    versionId: version.id,
+                };
             }
-            sourceInfos = {
-                sourceName: source.name,
-                sourceId: source.id,
-                versionNumber: source.default_version?.number,
-                versionId: source.default_version?.id,
-            };
-        } else if (versionId && version && !isFetchingVersion) {
-            if (version?.tree_config_status_fields?.length > 0) {
-                sourceSettings = version.tree_config_status_fields;
+        } else if (sourceId) {
+            if (source && !isFetchingSource) {
+                if (source?.tree_config_status_fields?.length > 0) {
+                    sourceSettings = source.tree_config_status_fields;
+                }
+                sourceInfos = {
+                    sourceName: source.name,
+                    sourceId: source.id,
+                    versionNumber: source.default_version?.number,
+                    versionId: source.default_version?.id,
+                };
             }
-            sourceInfos = {
-                sourceName: version.data_source_name,
-                sourceId: version.data_source,
-                versionNumber: version.number,
-                versionId: version.id,
-            };
         } else if (!sourceId && !versionId && defaultUserConfig) {
             if (defaultUserConfig?.length > 0) {
                 sourceSettings = defaultUserConfig;

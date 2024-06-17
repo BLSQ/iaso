@@ -11,6 +11,7 @@ from create_submission_with_picture import create_submission_with_picture
 from additional_projects import create_projects, link_new_projects_to_main_data_source
 import string
 import random
+import argparse
 
 
 iaso_admin_client = IasoClient(server_url=SERVER)
@@ -51,7 +52,9 @@ seed_registry = True
 
 seed_review_change_proposal = True
 
-seed_additionnal_projects = True
+parser = argparse.ArgumentParser()
+parser.add_argument("--additionnal_projects", action="store_true")
+args = parser.parse_args()
 
 if __name__ == "__main__":
     account_name = "".join(random.choices(string.ascii_lowercase, k=7))
@@ -73,7 +76,7 @@ if __name__ == "__main__":
     if seed_entities:
         setup_entities(account_name, iaso_client=iaso_client)
 
-    if seed_additionnal_projects:
+    if args.additionnal_projects:
         create_projects(account_name, iaso_client=iaso_client)
         link_new_projects_to_main_data_source(account_name, iaso_client=iaso_client)
 

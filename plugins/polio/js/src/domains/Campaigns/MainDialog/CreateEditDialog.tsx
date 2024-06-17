@@ -37,6 +37,7 @@ import { useValidateCampaign } from '../hooks/useValidateCampaign';
 import { PolioDialogTabs } from './PolioDialogTabs';
 import { usePolioDialogTabs } from './usePolioDialogTabs';
 import { baseUrls } from '../../../constants/urls';
+import { CampaignFormValues } from '../../../constants/types';
 
 type Props = {
     isOpen: boolean;
@@ -87,7 +88,8 @@ const CreateEditDialog: FunctionComponent<Props> = ({
         [saveCampaign, selectedCampaignId],
     );
 
-    const initialValues = {
+    const initialValues: CampaignFormValues = {
+        subactivity: undefined, // we save subactivities one by one, so no array here
         rounds: [],
         scopes: [],
         group: {
@@ -103,9 +105,9 @@ const CreateEditDialog: FunctionComponent<Props> = ({
         budget_current_state_key: '-',
         detection_status: 'PENDING',
         risk_assessment_status: 'TO_SUBMIT',
-        non_field_errors: undefined,
         separate_scopes_per_round: false,
         org_unit: undefined,
+        non_field_errors: undefined, // TODO find out whether we still use this formik state value or not
     };
     // Merge inplace default values with the one we get from the campaign.
     merge(initialValues, {

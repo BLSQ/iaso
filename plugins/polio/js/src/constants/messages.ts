@@ -2396,6 +2396,28 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Sub-activities',
         id: 'iaso.polio.subActivities',
     },
+    // TODO delete this translation
+    subActivitiesUnlockConditions: {
+        defaultMessage:
+            'Select initial region and encode dates for at least one round to unlock sub-activities tab',
+        id: 'iaso.polio.subActivitiesUnlockConditions',
+    },
+    campaignSaveError: {
+        defaultMessage: 'Campaign not saved',
+        id: 'iaso.polio.campaignSaveError',
+    },
+    campaignSaved: {
+        defaultMessage: 'Campaign saved',
+        id: 'iaso.polio.campaignSaved',
+    },
+    subActivitySaved: {
+        defaultMessage: 'Sub-activity saved',
+        id: 'iaso.polio.subActivitySaved',
+    },
+    subActivitySaveError: {
+        defaultMessage: 'Sub-activity not saved',
+        id: 'iaso.polio.subActivitySaveError',
+    },
 });
 
 export default MESSAGES;

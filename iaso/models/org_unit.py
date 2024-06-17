@@ -689,17 +689,17 @@ class OrgUnitChangeRequest(models.Model):
         is_new = self.pk is None
         if is_new:
             # Save old values.
-            self.old_parent = self.org_unit.parent
+            self.old_parent_id = self.org_unit.parent_id
             self.old_name = self.org_unit.name
-            self.old_org_unit_type = self.org_unit.org_unit_type
+            self.old_org_unit_type_id = self.org_unit.org_unit_type_id
             self.old_location = self.org_unit.location
             self.old_opening_date = self.org_unit.opening_date
             self.old_closed_date = self.org_unit.closed_date
         super().save(*args, **kwargs)
         if is_new:
             # Wait for the instance to have an ID to save old m2m relations
-            self.old_groups.set(self.org_unit.groups.all())
-            self.old_reference_instances.set(self.org_unit.reference_instances.all())
+            self.old_groups.add(*self.org_unit.groups.all())
+            self.old_reference_instances.add(*self.org_unit.reference_instances.all())
 
     def clean(self, *args, **kwargs):
         super().clean()
@@ -737,16 +737,15 @@ class OrgUnitChangeRequest(models.Model):
             if field_name == "new_location_accuracy":
                 continue
             elif field_name == "new_groups":
-                self.org_unit.groups.set(self.new_groups.all())
+                self.org_unit.groups.clear()
+                self.org_unit.groups.add(*self.new_groups.all())
             elif field_name == "new_reference_instances":
-                # Delete old ones.
                 self.org_unit.reference_instances.clear()
-                for instance in self.new_reference_instances.all():
-                    OrgUnitReferenceInstance.objects.create(
-                        org_unit=self.org_unit,
-                        form=instance.form,
-                        instance=instance,
-                    )
+                new_reference_instances = [
+                    OrgUnitReferenceInstance(org_unit_id=self.org_unit.pk, form_id=instance.form_id, instance=instance)
+                    for instance in self.new_reference_instances.all()
+                ]
+                OrgUnitReferenceInstance.objects.bulk_create(new_reference_instances)
             # Handle non m2m fields.
             else:
                 new_value = getattr(self, field_name)

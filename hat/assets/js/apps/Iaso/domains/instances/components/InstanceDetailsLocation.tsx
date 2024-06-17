@@ -5,13 +5,14 @@ import { MarkerMap } from '../../../components/maps/MarkerMapComponent';
 import OrgUnitDisplay from '../../orgUnits/components/OrgUnitDisplay';
 import { OrgUnitSourceRefDisplay } from '../../orgUnits/components/OrgUnitSourceRefDisplay';
 
-import { getOrgUnitsTree, OrgUnitLabel } from '../../orgUnits/utils';
+import { getOrgUnitsTree } from '../../orgUnits/utils';
 
-import InstanceDetailsField from './InstanceDetailsField';
 import { Instance } from '../types/instance';
+import InstanceDetailsField from './InstanceDetailsField';
 
-import MESSAGES from '../messages';
+import { OrgUnitLabel } from '../../orgUnits/components/OrgUnitLabel';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
+import MESSAGES from '../messages';
 
 type Props = {
     currentInstance: Instance;
@@ -39,7 +40,7 @@ const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
         orgUnit.altitude !== null && orgUnit.altitude !== 0;
     const hasAltitudeFromForm =
         !altitude || (altitude !== null && altitude !== 0);
-    const hasAccuracy = accuracy;
+    const hasAccuracy = Boolean(accuracy);
 
     return (
         <>
@@ -82,22 +83,24 @@ const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
                     }
                 />
             )}
-            {orgUnit && hasCoordinatesFromOrgUnit && !hasCoordinatesFromForm && (
-                <>
-                    <InstanceDetailsField
-                        label={formatMessage(MESSAGES.latitude)}
-                        value={`${
-                            currentInstance.org_unit.latitude
-                        } ${formatMessage(MESSAGES.fromOrgUnit)}`}
-                    />
-                    <InstanceDetailsField
-                        label={formatMessage(MESSAGES.longitude)}
-                        value={`${
-                            currentInstance.org_unit.longitude
-                        } ${formatMessage(MESSAGES.fromOrgUnit)}`}
-                    />
-                </>
-            )}
+            {orgUnit &&
+                hasCoordinatesFromOrgUnit &&
+                !hasCoordinatesFromForm && (
+                    <>
+                        <InstanceDetailsField
+                            label={formatMessage(MESSAGES.latitude)}
+                            value={`${
+                                currentInstance.org_unit.latitude
+                            } ${formatMessage(MESSAGES.fromOrgUnit)}`}
+                        />
+                        <InstanceDetailsField
+                            label={formatMessage(MESSAGES.longitude)}
+                            value={`${
+                                currentInstance.org_unit.longitude
+                            } ${formatMessage(MESSAGES.fromOrgUnit)}`}
+                        />
+                    </>
+                )}
             {hasCoordinatesFromForm && (
                 <>
                     <InstanceDetailsField

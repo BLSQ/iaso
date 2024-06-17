@@ -11,9 +11,9 @@ Prerequisites
 Before you can run Cypress, you must have a version of Node.js and npm that matches the current Dockerfile:
 
 - Install [nvm](https://github.com/nvm-sh/nvm) locally
-- `nvm install 14.17`
-- `nvm use 14`
-- `npm install -g npm@8.5`
+- `nvm install 20.13.1`
+- `nvm use 20.13.1`
+- `npm install -g npm@10.5.2`
 
 Setup
 -----

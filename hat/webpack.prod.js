@@ -14,10 +14,12 @@ module.exports = {
     target: ['web', 'es2015'],
     entry: {
         common: ['react', 'react-dom', 'react-intl', 'typescript'],
-        styles: './assets/css/index.scss',
         iaso: './assets/js/apps/Iaso/index',
     },
 
+    stats: {
+        children: true,
+    },
     output: {
         path: path.resolve(__dirname, './assets/webpack'),
         filename: '[name]-[chunkhash].js',
@@ -35,8 +37,10 @@ module.exports = {
             '../translations/fr.json',
         ),
         new BundleTracker({
-            path: __dirname,
-            filename: './assets/webpack/webpack-stats-prod.json',
+            filename: path.resolve(
+                __dirname,
+                './assets/webpack/webpack-stats-prod.json',
+            ),
         }),
         new MiniCssExtractPlugin({ filename: '[name]-[chunkhash].css' }),
         new webpack.DefinePlugin({
@@ -95,10 +99,10 @@ module.exports = {
                                             ie: '11',
                                         },
                                         include: [
-                                            '@babel/plugin-proposal-optional-chaining',
-                                            '@babel/plugin-proposal-nullish-coalescing-operator',
-                                            '@babel/plugin-proposal-numeric-separator',
-                                            '@babel/plugin-proposal-logical-assignment-operators',
+                                            '@babel/plugin-transform-optional-chaining',
+                                            '@babel/plugin-transform-nullish-coalescing-operator',
+                                            '@babel/plugin-transform-numeric-separator',
+                                            '@babel/plugin-transform-logical-assignment-operators',
                                             '@babel/plugin-transform-destructuring',
                                         ],
                                     },
@@ -138,10 +142,10 @@ module.exports = {
                                             ie: '11',
                                         },
                                         include: [
-                                            '@babel/plugin-proposal-optional-chaining',
-                                            '@babel/plugin-proposal-nullish-coalescing-operator',
-                                            '@babel/plugin-proposal-numeric-separator',
-                                            '@babel/plugin-proposal-logical-assignment-operators',
+                                            '@babel/plugin-transform-optional-chaining',
+                                            '@babel/plugin-transform-nullish-coalescing-operator',
+                                            '@babel/plugin-transform-numeric-separator',
+                                            '@babel/plugin-transform-logical-assignment-operators',
                                             '@babel/plugin-transform-destructuring',
                                         ],
                                     },
@@ -165,15 +169,6 @@ module.exports = {
                             ],
                         },
                     },
-                ],
-            },
-            // Extract Sass files
-            {
-                test: /\.scss$/,
-                use: [
-                    { loader: MiniCssExtractPlugin.loader },
-                    { loader: 'css-loader' },
-                    { loader: 'sass-loader' },
                 ],
             },
             {

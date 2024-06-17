@@ -1,24 +1,24 @@
-import React, { useMemo } from 'react';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { Tooltip } from '@mui/material';
+import React, { useMemo } from 'react';
 
 import {
     IconButton as IconButtonComponent,
     useSafeIntl,
 } from 'bluesquare-components';
 // eslint-disable-next-line import/no-named-as-default-member,import/no-named-as-default
-import PublishIcon from '@mui/icons-material/Publish';
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
-import { DataSourceDialogComponent as DataSourceDialog } from './components/DataSourceDialogComponent';
-import MESSAGES from './messages';
-import { VersionsDialog } from './components/VersionsDialog';
+import PublishIcon from '@mui/icons-material/Publish';
+import { DateTimeCell } from '../../components/Cells/DateTimeCell.tsx';
 import { YesNoCell } from '../../components/Cells/YesNoCell';
-import { ExportToDHIS2Dialog } from './components/ExportToDHIS2Dialog';
+import { baseUrls } from '../../constants/urls';
+import * as Permission from '../../utils/permissions.ts';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
 import { userHasPermission } from '../users/utils';
-import { baseUrls } from '../../constants/urls';
-import { DateTimeCell } from '../../components/Cells/DateTimeCell.tsx';
-import * as Permission from '../../utils/permissions.ts';
+import { DataSourceDialogComponent as DataSourceDialog } from './components/DataSourceDialogComponent';
+import { ExportToDHIS2Dialog } from './components/ExportToDHIS2Dialog';
+import { VersionsDialog } from './components/VersionsDialog';
+import MESSAGES from './messages';
 
 export const useDataSourcesTableColumns = (
     setForceRefresh,
@@ -166,7 +166,7 @@ export const useSourceVersionsTableColumns = source => {
                 accessor: 'id',
                 sortable: false,
                 Cell: settings =>
-                    source.default_version?.id === settings.value && (
+                    source?.default_version?.id === settings.value && (
                         <Tooltip title={formatMessage(MESSAGES.defaultVersion)}>
                             <CheckCircleIcon color="primary" />
                         </Tooltip>

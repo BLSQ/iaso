@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
 import { useSelector } from 'react-redux';
+import { OrgUnitStatus } from '../domains/orgUnits/types/orgUnit';
 import { Project } from '../domains/projects/types/project';
 
 export type Profile = {
@@ -31,6 +32,7 @@ export type DataSource = {
         updated_at: number;
         org_units_count: number;
     }[];
+    tree_config_status_fields: OrgUnitStatus[];
 };
 
 export type DefaultVersion = {

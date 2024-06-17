@@ -1,4 +1,5 @@
 require('dotenv').config();
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 const path = require('path');
 const webpack = require('webpack');
@@ -37,10 +38,10 @@ const oldBrowsersConfig = [
                                     ie: '11',
                                 },
                                 include: [
-                                    '@babel/plugin-proposal-optional-chaining',
-                                    '@babel/plugin-proposal-nullish-coalescing-operator',
-                                    '@babel/plugin-proposal-numeric-separator',
-                                    '@babel/plugin-proposal-logical-assignment-operators',
+                                    '@babel/plugin-transform-optional-chaining',
+                                    '@babel/plugin-transform-nullish-coalescing-operator',
+                                    '@babel/plugin-transform-numeric-separator',
+                                    '@babel/plugin-transform-logical-assignment-operators',
                                     '@babel/plugin-transform-destructuring',
                                 ],
                             },
@@ -79,10 +80,10 @@ const oldBrowsersConfig = [
                                     ie: '11',
                                 },
                                 include: [
-                                    '@babel/plugin-proposal-optional-chaining',
-                                    '@babel/plugin-proposal-nullish-coalescing-operator',
-                                    '@babel/plugin-proposal-numeric-separator',
-                                    '@babel/plugin-proposal-logical-assignment-operators',
+                                    '@babel/plugin-transform-optional-chaining',
+                                    '@babel/plugin-transform-nullish-coalescing-operator',
+                                    '@babel/plugin-transform-numeric-separator',
+                                    '@babel/plugin-transform-logical-assignment-operators',
                                     '@babel/plugin-transform-destructuring',
                                 ],
                             },
@@ -103,7 +104,7 @@ const newBrowsersConfig = [
             {
                 loader: 'babel-loader',
                 options: {
-                    cacheDirectory: true,
+                    // cacheDirectory: true,
                     presets: [
                         ['@babel/preset-env', { targets: { node: '14' } }],
                         '@babel/preset-react',
@@ -157,7 +158,7 @@ module.exports = {
             'typescript',
             'video.js',
         ],
-        styles: ['./assets/css/index.scss'],
+        // styles: ['./assets/css/index.scss'],
         iaso: {
             dependOn: 'common',
             import: './assets/js/apps/Iaso/index',
@@ -167,7 +168,7 @@ module.exports = {
     output: {
         path: WEBPACK_PATH,
         filename: '[name].js',
-        sourceMapFilename: '[name].js.map',
+        sourceMapFilename: '[name].[contenthash].js.map',
         publicPath: `${WEBPACK_URL}/static/`, // Tell django to use this URL to load packages and not use STATIC_URL + bundle_name
     },
     devtool: 'source-map',
@@ -175,15 +176,19 @@ module.exports = {
     // config for webpack-dev-server
     devServer: {
         historyApiFallback: true,
-        writeToDisk: true,
         headers: {
             'Access-Control-Allow-Origin': '*',
         },
         host: '0.0.0.0',
         port: 3000,
+
+        devMiddleware: {
+            writeToDisk: true,
+        },
     },
 
     plugins: [
+        new CleanWebpackPlugin(),
         new webpack.NormalModuleReplacementPlugin(
             /^__intl\/messages\/en$/,
             '../translations/en.json',
@@ -194,16 +199,15 @@ module.exports = {
         ),
         new webpack.NoEmitOnErrorsPlugin(), // don't reload if there is an error
         new BundleTracker({
-            path: WEBPACK_PATH,
-            filename: 'webpack-stats.json',
+            filename: `${WEBPACK_PATH}/webpack-stats.json`,
         }),
         new webpack.DefinePlugin({
             __LOCALE: JSON.stringify(LOCALE),
         }),
         // XLSX
         new webpack.IgnorePlugin({ resourceRegExp: /cptable/ }),
-        new webpack.WatchIgnorePlugin({
-            paths: [/\.d\.ts$/],
+        new webpack.IgnorePlugin({
+            resourceRegExp: /^perf_hooks$/,
         }),
     ],
 
@@ -221,15 +225,6 @@ module.exports = {
             {
                 test: /\.css$/,
                 use: [{ loader: 'style-loader' }, { loader: 'css-loader' }],
-            },
-            // Extract Sass files
-            {
-                test: /\.scss$/,
-                use: [
-                    { loader: 'style-loader' },
-                    { loader: 'css-loader' },
-                    { loader: 'sass-loader' },
-                ],
             },
             // font files
             {
@@ -324,4 +319,13 @@ module.exports = {
 
         extensions: ['.js', '.tsx', '.ts'],
     },
+    stats: {
+        errorDetails: true,
+    },
+    ignoreWarnings: [
+        {
+            module: /typescript/,
+            message: /the request of a dependency is an expression/,
+        },
+    ],
 };

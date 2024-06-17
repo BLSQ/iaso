@@ -90,8 +90,7 @@ export const CreateEditSubActivity: FunctionComponent<Props> = ({
         formik.isValid &&
         (!isEqual(formik.touched, {}) || isScopeChanged) &&
         !formik.isSubmitting &&
-        isValuesChanged &&
-        isScopeChanged;
+        isValuesChanged;
 
     return (
         <FormikProvider value={formik}>

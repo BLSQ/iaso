@@ -213,7 +213,7 @@
     "iaso.error.label.planningAndTeams": "Planning and teams must be in the same project",
     "iaso.error.label.startDateAfterEndDate": "Start date can't after end date",
     "iaso.errors.label": "An error occurred",
-    "iaso.errors.noPermissions": "Your user account currently has no permissions. An administrator has been notified of the situation and should soon assign you the necessary rights. Please get in touch with them if you do not receive a confirmation shortly.",
+    "iaso.errors.noPermissions": "There is no permission associated to this user. Please contact an administrator to request permission(s). Thank you!",
     "iaso.errors.noPermissionsTitle": "Awaiting Access Permissions",
     "iaso.errors.notAuthenticated": "You are not logged in",
     "iaso.errors.notFound": "Page not found",

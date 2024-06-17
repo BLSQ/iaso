@@ -4,7 +4,6 @@ import { useFilterState } from '../../../../hooks/useFilterState';
 import {
     useGetAlgorithmRunsOptions,
     useGetAlgorithmsOptions,
-    useGetDataSources,
     useGetProfilesOptions,
     useSourceOptions,
     useStatusOptions,
@@ -14,13 +13,21 @@ import FullStarsSvg from '../../../../components/stars/FullStarsSvgComponent';
 import { scoreOptions } from '../../../links/components/LinksFilters';
 import { SearchButton } from '../../../../components/SearchButton';
 import MESSAGES from '../../../links/messages';
+import { DropdownOptions } from '../../../../types/utils';
 
 type Props = {
     params: any;
     baseUrl: string;
+    sources: DropdownOptions<number>[];
+    isLoadingSources: boolean;
 };
 
-export const LinksFilter: FunctionComponent<Props> = ({ params, baseUrl }) => {
+export const LinksFilter: FunctionComponent<Props> = ({
+    params,
+    baseUrl,
+    sources,
+    isLoadingSources,
+}) => {
     const { filters, handleChange, handleSearch, filtersUpdated } =
         useFilterState({ baseUrl, params, saveSearchInHistory: false });
 
@@ -31,7 +38,7 @@ export const LinksFilter: FunctionComponent<Props> = ({ params, baseUrl }) => {
     const statuses = useStatusOptions();
     const { data: validators, isLoading: isLoadingValidators } =
         useGetProfilesOptions();
-    const { data: sources, isLoading: isLoadingSources } = useGetDataSources();
+    // const { data: sources, isLoading: isLoadingSources } = useGetDataSources();
     const sourceOptions = useSourceOptions(sources);
 
     return (

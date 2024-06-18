@@ -9,11 +9,11 @@ import { getFirstAllowedUrl, userHasOneOfPermissions } from '../utils';
 
 import PageError from '../../../components/errors/PageError';
 import PageNoPerms from '../../../components/errors/PageNoPerms.tsx';
+import { useParamsObject } from '../../../routing/hooks/useParamsObject.tsx';
 import { hasFeatureFlag } from '../../../utils/featureFlags';
 import { useCurrentUser } from '../../../utils/usersUtils.ts';
 import { switchLocale } from '../../app/actions';
 import { WrongAccountModal } from './WrongAccountModal.tsx';
-import { useParamsObject } from '../../../routing/hooks/useParamsObject.tsx';
 
 const ProtectedRoute = ({ routeConfig, allRoutes, component }) => {
     const { featureFlag, permissions, isRootUrl, baseUrl } = routeConfig;

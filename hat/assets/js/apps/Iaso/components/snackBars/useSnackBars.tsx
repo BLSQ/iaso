@@ -1,6 +1,6 @@
-import React, { useEffect, useCallback, useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
 import { useSnackbar } from 'notistack';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { useSafeIntl } from 'bluesquare-components';
 import { removeSnackbar } from '../../redux/snackBarsReducer';
@@ -24,7 +24,7 @@ type Notification = {
     };
 };
 
-const translateMessage = (notification, formatMessage) => {
+export const translateMessage = (notification, formatMessage) => {
     if (notification.messageObject) {
         if (typeof notification.messageObject === 'string') {
             return notification.messageObject;
@@ -118,6 +118,7 @@ export const useSnackBars = (): void => {
         notifications.forEach(notification => {
             if (!displayed.find(s => s.key === notification.key)) {
                 displaySnackBars(notification);
+                console.log('notification', notification);
                 if (!notification.options.persist) {
                     dispatch(removeSnackbar(notification.key));
                 }

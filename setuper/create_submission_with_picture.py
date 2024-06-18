@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from submissions import submission2xml, org_unit_gps_point
+from submissions import submission2xml, org_unit_gps_point, submission_org_unit_gps_point
 import random
 
 
@@ -77,7 +77,7 @@ def create_submission_with_picture(account_name, iaso_client):
                     "statut_fosa": random.choice(
                         ["public", "prive_confessionel", "prive_laic", "militaire", "ong", "autre"]
                     ),
-                    "coordonnees_gps_fosa": f"{orgunit['latitude']} {orgunit['longitude']}",
+                    "coordonnees_gps_fosa": submission_org_unit_gps_point(orgunit),
                 },
                 "equipment_group": {
                     "HFR_CS_16": random.choice(["yes", "no"]),

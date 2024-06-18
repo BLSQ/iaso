@@ -21,3 +21,7 @@ def org_unit_gps_point(org_unit):
         "latitude": org_unit["latitude"],
         "altitude": org_unit["altitude"],
     }
+
+
+def submission_org_unit_gps_point(org_unit):
+    return f"{org_unit['latitude']} {org_unit['longitude']} {org_unit['altitude']}"

@@ -1,9 +1,8 @@
 import { UseQueryResult } from 'react-query';
+import { dispatcher } from '../../../../components/snackBars/EventDispatcher';
 import { errorSnackBar } from '../../../../constants/snackBars';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
-import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
-import { dispatch } from '../../../../redux/store';
 import { OrgUnit, OrgUnitStatus } from '../../types/orgUnit';
 
 const getValidationStatus = (statusSettings: OrgUnitStatus[]): string => {
@@ -29,8 +28,9 @@ export const getChildrenData = async (
             id: orgUnit.id.toString(),
         }));
     } catch (error: unknown) {
-        dispatch(
-            enqueueSnackbar(errorSnackBar('getChildrenDataError', null, error)),
+        dispatcher.dispatch(
+            'snackbar',
+            errorSnackBar('getChildrenDataError', null, error),
         );
         console.error('Error while fetching Treeview item children:', error);
         throw error;
@@ -67,8 +67,9 @@ export const getRootData = async (
             id: orgUnit.id.toString(),
         }));
     } catch (error: unknown) {
-        dispatch(
-            enqueueSnackbar(errorSnackBar('getRootDataError', null, error)),
+        dispatcher.dispatch(
+            'snackbar',
+            errorSnackBar('getRootDataError', null, error),
         );
         console.error('Error while fetching Treeview items:', error);
         throw error;
@@ -152,8 +153,9 @@ export const searchOrgUnits = async ({
         const result = await getRequest(url);
         return result.results;
     } catch (error: unknown) {
-        dispatch(
-            enqueueSnackbar(errorSnackBar('searchOrgUnitsError', null, error)),
+        dispatcher.dispatch(
+            'snackbar',
+            errorSnackBar('searchOrgUnitsError', null, error),
         );
         console.error('Error while searching org units:', error);
         return Promise.reject(error);

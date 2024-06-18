@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
 import { Dispatch } from 'redux';
+import { dispatcher } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/snackBars/EventDispatcher';
 import {
     deleteRequest,
     patchRequest,
@@ -10,10 +11,9 @@ import {
     errorSnackBar,
     succesfullSnackBar,
 } from '../../../../../../../../../hat/assets/js/apps/Iaso/constants/snackBars';
-import { enqueueSnackbar } from '../../../../../../../../../hat/assets/js/apps/Iaso/redux/snackBarsReducer';
-import MESSAGES from '../../messages';
 import { Optional } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { PREALERT, VAR, VRF, apiUrl } from '../../constants';
+import MESSAGES from '../../messages';
 import {
     ParsedSettledPromise,
     SupplyChainFormData,
@@ -166,51 +166,49 @@ export const handlePromiseErrors = ({
     const failedPromises = data.filter(item => item.status === 'rejected');
     if (failedPromises.length === 0) {
         const messageKey = `${key}ApiSuccess`;
-        dispatch(
-            enqueueSnackbar(succesfullSnackBar(key, MESSAGES[messageKey])),
+        dispatcher.dispatch(
+            'snackbar',
+            succesfullSnackBar(key, MESSAGES[messageKey]),
         );
     } else {
         const failedEndpoints = failedPromises.map(item => item.value.message);
         if (failedEndpoints.find(msg => msg.includes('add'))) {
             const messageKey = `${key}CreateError`;
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar(
-                        key,
-                        MESSAGES[messageKey],
-                        failedPromises.find(item =>
-                            item.value.message.includes('add'),
-                        )?.value,
-                    ),
+            dispatcher.dispatch(
+                'snackbar',
+                errorSnackBar(
+                    key,
+                    MESSAGES[messageKey],
+                    failedPromises.find(item =>
+                        item.value.message.includes('add'),
+                    )?.value,
                 ),
             );
         }
         if (failedEndpoints.find(msg => msg.includes('update'))) {
             const messageKey = `${key}UpdateError`;
 
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar(
-                        key,
-                        MESSAGES[messageKey],
-                        failedPromises.find(item =>
-                            item.value.message.includes('update'),
-                        )?.value,
-                    ),
+            dispatcher.dispatch(
+                'snackbar',
+                errorSnackBar(
+                    key,
+                    MESSAGES[messageKey],
+                    failedPromises.find(item =>
+                        item.value.message.includes('update'),
+                    )?.value,
                 ),
             );
         }
         if (failedEndpoints.find(msg => msg.includes('delete'))) {
             const messageKey = `${key}DeleteError`;
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar(
-                        key,
-                        MESSAGES[messageKey],
-                        failedPromises.find(item =>
-                            item.value.message.includes('delete'),
-                        )?.value,
-                    ),
+            dispatcher.dispatch(
+                'snackbar',
+                errorSnackBar(
+                    key,
+                    MESSAGES[messageKey],
+                    failedPromises.find(item =>
+                        item.value.message.includes('delete'),
+                    )?.value,
                 ),
             );
         }

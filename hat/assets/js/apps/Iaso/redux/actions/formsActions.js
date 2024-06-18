@@ -1,11 +1,11 @@
 import {
+    deleteRequest,
     getRequest,
     patchRequest,
     postRequest,
     putRequest,
-    deleteRequest,
 } from 'Iaso/libs/Api';
-import { enqueueSnackbar } from '../snackBarsReducer';
+import { dispatcher } from '../../components/snackBars/EventDispatcher.ts';
 import { errorSnackBar, succesfullSnackBar } from '../../constants/snackBars';
 
 /**
@@ -51,8 +51,9 @@ export const fetchAction = (
             );
         })
         .catch(err =>
-            dispatch(
-                enqueueSnackbar(errorSnackBar(errorKeyMessage, null, err)),
+            dispatcher.dispatch(
+                'snackbar',
+                errorSnackBar(errorKeyMessage, null, err),
             ),
         )
         .then(() => {
@@ -87,8 +88,9 @@ export const retrieveAction = (
     return getRequest(url)
         .then(res => dispatch(setAction(res)))
         .catch(err =>
-            dispatch(
-                enqueueSnackbar(errorSnackBar(errorKeyMessage, null, err)),
+            dispatcher.dispatch(
+                'snackbar',
+                errorSnackBar(errorKeyMessage, null, err),
             ),
         )
         .then(() => {
@@ -123,7 +125,10 @@ export const updateAction = (
     }
     return putRequest(`/api/${apiPath}/${item.id}/`, item)
         .then(res => {
-            dispatch(enqueueSnackbar(succesfullSnackBar(successKeyMessage)));
+            dispatcher.dispatch(
+                'snackbar',
+                succesfullSnackBar(successKeyMessage),
+            );
             return res;
         })
         .catch(err => {
@@ -131,8 +136,9 @@ export const updateAction = (
                 !ignoredErrorCodes ||
                 (ignoredErrorCodes && !ignoredErrorCodes.includes(err.status))
             ) {
-                dispatch(
-                    enqueueSnackbar(errorSnackBar(errorKeyMessage, null, err)),
+                dispatcher.dispatch(
+                    'snackbar',
+                    errorSnackBar(errorKeyMessage, null, err),
                 );
             }
             throw err;
@@ -159,7 +165,10 @@ export const saveAction = (
     }
     return patchRequest(`/api/${apiPath}/${item.id}/`, item)
         .then(res => {
-            dispatch(enqueueSnackbar(succesfullSnackBar(successKeyMessage)));
+            dispatcher.dispatch(
+                'snackbar',
+                succesfullSnackBar(successKeyMessage),
+            );
             return res;
         })
         .then(res => {
@@ -174,8 +183,9 @@ export const saveAction = (
                 !ignoredErrorCodes ||
                 (ignoredErrorCodes && !ignoredErrorCodes.includes(err.status))
             ) {
-                dispatch(
-                    enqueueSnackbar(errorSnackBar(errorKeyMessage, null, err)),
+                dispatcher.dispatch(
+                    'snackbar',
+                    errorSnackBar(errorKeyMessage, null, err),
                 );
             }
             throw err;
@@ -211,7 +221,10 @@ export const createAction = (
     }
     return postRequest(`/api/${apiPath}/`, item)
         .then(res => {
-            dispatch(enqueueSnackbar(succesfullSnackBar(successKeyMessage)));
+            dispatcher.dispatch(
+                'snackbar',
+                succesfullSnackBar(successKeyMessage),
+            );
             return res;
         })
         .catch(err => {
@@ -219,8 +232,9 @@ export const createAction = (
                 !ignoredErrorCodes ||
                 (ignoredErrorCodes && !ignoredErrorCodes.includes(err.status))
             ) {
-                dispatch(
-                    enqueueSnackbar(errorSnackBar(errorKeyMessage, null, err)),
+                dispatcher.dispatch(
+                    'snackbar',
+                    errorSnackBar(errorKeyMessage, null, err),
                 );
             }
             throw err;
@@ -260,7 +274,10 @@ export const deleteAction = (
     }
     return deleteRequest(`/api/${apiPath}/${item.id}/`)
         .then(res => {
-            dispatch(enqueueSnackbar(succesfullSnackBar(successKeyMessage)));
+            dispatcher.dispatch(
+                'snackbar',
+                succesfullSnackBar(successKeyMessage),
+            );
             fetchAction(
                 dispatch,
                 apiPath,
@@ -273,8 +290,9 @@ export const deleteAction = (
             return res;
         })
         .catch(err => {
-            dispatch(
-                enqueueSnackbar(errorSnackBar(errorKeyMessage, null, err)),
+            dispatcher.dispatch(
+                'snackbar',
+                errorSnackBar(errorKeyMessage, null, err),
             );
             if (setIsLoading !== null) {
                 dispatch(setIsLoading(false));

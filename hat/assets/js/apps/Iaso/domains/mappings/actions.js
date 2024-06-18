@@ -1,9 +1,9 @@
-import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api';
-import { enqueueSnackbar } from '../../redux/snackBarsReducer';
+import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api.ts';
+import { dispatcher } from '../../components/snackBars/EventDispatcher.ts';
 import { errorSnackBar } from '../../constants/snackBars';
-import { redirectTo } from '../../routing/actions';
+import { baseUrls } from '../../constants/urls.ts';
+import { redirectTo } from '../../routing/actions.ts';
 import Descriptor from './descriptor';
-import { baseUrls } from '../../constants/urls';
 
 export const FETCHING_MAPPING_VERSIONS = 'FETCHING_MAPPING_VERSIONS';
 
@@ -90,10 +90,9 @@ export const fetchMappingVersionDetail =
                 return dispatch(setCurrentMappingVersion(detail));
             })
             .catch(err =>
-                dispatch(
-                    enqueueSnackbar(
-                        errorSnackBar('fetchMappingsError', null, err),
-                    ),
+                dispatcher.dispatch(
+                    'snackbar',
+                    errorSnackBar('fetchMappingsError', null, err),
                 ),
             )
             .then(() => {
@@ -115,10 +114,9 @@ export const applyPartialUpdate =
                 ),
             )
             .catch(err =>
-                dispatch(
-                    enqueueSnackbar(
-                        errorSnackBar('fetchMappingsError', null, err),
-                    ),
+                dispatcher.dispatch(
+                    'snackbar',
+                    errorSnackBar('fetchMappingsError', null, err),
                 ),
             )
             .then(() => {
@@ -129,12 +127,11 @@ export const applyPartialUpdate =
 export const applyUpdate = (mappingVersionId, payload) => dispatch => {
     dispatch(fetchingMappingVersions(true));
     return patchRequest(`/api/mappingversions/${mappingVersionId}/`, payload)
-        .then(() =>
-            dispatch(fetchMappingVersionDetail(mappingVersionId)),
-        )
+        .then(() => dispatch(fetchMappingVersionDetail(mappingVersionId)))
         .catch(err =>
-            dispatch(
-                enqueueSnackbar(errorSnackBar('fetchMappingsError', null, err)),
+            dispatcher.dispatch(
+                'snackbar',
+                errorSnackBar('fetchMappingsError', null, err),
             ),
         )
         .then(() => {
@@ -154,8 +151,9 @@ export const fetchMappingVersions = params => dispatch => {
     return getRequest(url)
         .then(res => dispatch(setMappingVersions(res)))
         .catch(err =>
-            dispatch(
-                enqueueSnackbar(errorSnackBar('fetchMappingsError', null, err)),
+            dispatcher.dispatch(
+                'snackbar',
+                errorSnackBar('fetchMappingsError', null, err),
             ),
         )
         .then(() => {
@@ -175,8 +173,9 @@ export const createMappingRequest = params => dispatch => {
             return res;
         })
         .catch(err => {
-            dispatch(
-                enqueueSnackbar(errorSnackBar('fetchMappingsError', null, err)),
+            dispatcher.dispatch(
+                'snackbar',
+                errorSnackBar('fetchMappingsError', null, err),
             );
         })
         .then(res => {
@@ -189,10 +188,9 @@ export const fetchSources = () => dispatch =>
     getRequest('/api/datasources/')
         .then(res => dispatch(setMappingSources(res.sources)))
         .catch(error => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('fetchSourcesError', null, error),
-                ),
+            dispatcher.dispatch(
+                'snackbar',
+                errorSnackBar('fetchSourcesError', null, error),
             );
             console.error('Error while fetching source list:', error);
         });

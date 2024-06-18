@@ -1,10 +1,8 @@
+import { closeSnackbar } from 'notistack';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
+import { dispatcher } from '../../../../components/snackBars/EventDispatcher';
 import { warningSnackBar } from '../../../../constants/snackBars';
-import {
-    closeFixedSnackbar,
-    enqueueSnackbar,
-} from '../../../../redux/snackBarsReducer';
 import { getLatLngBounds } from '../../../../utils/map/mapUtils';
 
 const snackbarKey = 'noInstancesOnMap';
@@ -26,13 +24,13 @@ export const useShowWarning = ({
         !fetching && instances.length === 0 && !bounds && !isWarningDisplayed;
     useEffect(() => {
         if (shouldShowWarning) {
-            dispatch(enqueueSnackbar(warningSnackBar(snackbarKey)));
+            dispatcher.dispatch('snackbar', warningSnackBar(snackbarKey));
         } else if (bounds && isWarningDisplayed) {
-            dispatch(closeFixedSnackbar(snackbarKey));
+            closeSnackbar(snackbarKey);
         }
         return () => {
             if (isWarningDisplayed) {
-                dispatch(closeFixedSnackbar(snackbarKey));
+                closeSnackbar(snackbarKey);
             }
         };
     }, [bounds, dispatch, isWarningDisplayed, shouldShowWarning]);

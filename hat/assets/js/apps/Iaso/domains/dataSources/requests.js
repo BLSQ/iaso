@@ -1,15 +1,14 @@
 /* eslint-disable no-else-return */
+import { getRequest, iasoFetch, postRequest, putRequest } from 'Iaso/libs/Api';
+import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks.ts';
 import React from 'react';
 import { useMutation } from 'react-query';
 import { useDispatch, useSelector } from 'react-redux';
-import { getRequest, iasoFetch, postRequest, putRequest } from 'Iaso/libs/Api';
-import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks.ts';
-import { dispatch as storeDispatch } from '../../redux/store';
-import { enqueueSnackbar } from '../../redux/snackBarsReducer';
-import { errorSnackBar } from '../../constants/snackBars';
+import { dispatcher } from '../../components/snackBars/EventDispatcher';
 import snackBarMessages from '../../components/snackBars/messages';
-import { fetchCurrentUser } from '../users/actions';
+import { errorSnackBar } from '../../constants/snackBars';
 import { getValues } from '../../hooks/form';
+import { fetchCurrentUser } from '../users/actions';
 import MESSAGES from './messages';
 
 /**
@@ -141,13 +140,12 @@ export const csvPreview = async data => {
     return iasoFetch(url, requestSettings)
         .then(result => result.text())
         .catch(error => {
-            storeDispatch(
-                enqueueSnackbar(
-                    errorSnackBar(
-                        'iaso.snackBar.generateCSVError',
-                        snackBarMessages.generateCSVError,
-                        error,
-                    ),
+            dispatcher.dispatch(
+                'snackbar',
+                errorSnackBar(
+                    'iaso.snackBar.generateCSVError',
+                    snackBarMessages.generateCSVError,
+                    error,
                 ),
             );
             console.error(`Error while fetching CSV:`, error);

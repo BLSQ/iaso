@@ -1,10 +1,10 @@
 import {
     getRequest,
+    patchRequest,
     postRequest,
     putRequest,
-    patchRequest,
-} from 'Iaso/libs/Api';
-import { enqueueSnackbar } from '../../redux/snackBarsReducer';
+} from 'Iaso/libs/Api.ts';
+import { dispatcher } from '../../components/snackBars/EventDispatcher.ts';
 import { errorSnackBar, succesfullSnackBar } from '../../constants/snackBars';
 
 export const SET_INSTANCES_FETCHING = 'SET_INSTANCES_FETCHING';
@@ -34,8 +34,9 @@ export const fetchEditUrl = (currentInstance, location) => dispatch => {
             window.location.href = resp.edit_url;
         })
         .catch(err => {
-            dispatch(
-                enqueueSnackbar(errorSnackBar('fetchEnketoError', null, err)),
+            dispatcher.dispatch(
+                'snackbar',
+                errorSnackBar('fetchEnketoError', null, err),
             );
         })
         .then(() => {
@@ -51,8 +52,9 @@ export const fetchInstanceDetail = instanceId => dispatch => {
             return res;
         })
         .catch(err =>
-            dispatch(
-                enqueueSnackbar(errorSnackBar('fetchInstanceError', null, err)),
+            dispatcher.dispatch(
+                'snackbar',
+                errorSnackBar('fetchInstanceError', null, err),
             ),
         )
         .then(res => {
@@ -70,10 +72,9 @@ export const reAssignInstance = (currentInstance, payload) => dispatch => {
             dispatch(fetchInstanceDetail(currentInstance.id));
         })
         .catch(err =>
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('assignInstanceError', null, err),
-                ),
+            dispatcher.dispatch(
+                'snackbar',
+                errorSnackBar('assignInstanceError', null, err),
             ),
         )
         .then(() => {
@@ -102,7 +103,7 @@ export const createInstance = (currentForm, payload) => dispatch => {
             window.location = createRequest.edit_url;
         },
         err => {
-            dispatch(enqueueSnackbar(errorSnackBar(null, 'Enketo', err)));
+            dispatcher.dispatch('snackbar', errorSnackBar(null, 'Enketo', err));
             dispatch(setInstancesFetching(false));
         },
     );
@@ -125,17 +126,17 @@ export const createExportRequest = (filterParams, selection) => dispatch => {
         .then(exportRequest => {
             putRequest(`/api/exportrequests/${exportRequest.id}/`);
             // fire and forget to run the export
-            return dispatch(
-                enqueueSnackbar(
-                    succesfullSnackBar('createExportRequestSuccess'),
-                ),
+
+            dispatcher.dispatch(
+                'snackbar',
+                succesfullSnackBar('createExportRequestSuccess'),
             );
         })
         .catch(err => {
             const key = err.details
                 ? `createExportRequestError${err.details.code}`
                 : 'createExportRequestError';
-            return dispatch(enqueueSnackbar(errorSnackBar(key, null, err)));
+            dispatcher.dispatch('snackbar', errorSnackBar(key, null, err));
         })
         .then(() => dispatch(setInstancesFetching(false)));
 };
@@ -151,24 +152,18 @@ export const bulkDelete =
             ...filters,
         })
             .then(res => {
-                dispatch(
-                    enqueueSnackbar(
-                        succesfullSnackBar('saveMultiEditOrgUnitsSuccesfull'),
-                    ),
+                dispatcher.dispatch(
+                    'snackbar',
+                    succesfullSnackBar('saveMultiEditOrgUnitsSuccesfull'),
                 );
                 successFn();
                 dispatch(setInstancesFetching(false));
                 return res;
             })
             .catch(error => {
-                dispatch(
-                    enqueueSnackbar(
-                        errorSnackBar(
-                            'saveMultiEditOrgUnitsError',
-                            null,
-                            error,
-                        ),
-                    ),
+                dispatcher.dispatch(
+                    'snackbar',
+                    errorSnackBar('saveMultiEditOrgUnitsError', null, error),
                 );
                 dispatch(setInstancesFetching(false));
             });

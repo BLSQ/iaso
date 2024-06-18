@@ -21,10 +21,10 @@ import React, {
 import { useQueryClient } from 'react-query';
 import { useDispatch } from 'react-redux';
 import TopBar from '../../components/nav/TopBarComponent';
+import { dispatcher } from '../../components/snackBars/EventDispatcher';
 import { succesfullSnackBar } from '../../constants/snackBars';
 import { baseUrls } from '../../constants/urls';
 import { useFormState } from '../../hooks/form.js';
-import { enqueueSnackbar } from '../../redux/snackBarsReducer';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { isFieldValid, isFormValid } from '../../utils/forms';
 import { createForm, updateForm } from '../../utils/requests';
@@ -156,7 +156,7 @@ const FormDetail: FunctionComponent = () => {
         let savedFormData;
         try {
             savedFormData = await saveForm;
-            dispatch(enqueueSnackbar(succesfullSnackBar()));
+            dispatcher.dispatch('snackbar', succesfullSnackBar());
             if (!isUpdate) {
                 redirectToReplace(baseUrls.formDetail, {
                     formId: savedFormData.id,

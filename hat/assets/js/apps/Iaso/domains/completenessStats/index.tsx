@@ -1,3 +1,12 @@
+import { Box, Grid, Paper, Tab, Tabs, useTheme } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import {
+    commonStyles,
+    useRedirectTo,
+    useSafeIntl,
+} from 'bluesquare-components';
+import Color from 'color';
+import { closeSnackbar } from 'notistack';
 import React, {
     FunctionComponent,
     useCallback,
@@ -6,36 +15,25 @@ import React, {
     useState,
 } from 'react';
 import { useDispatch } from 'react-redux';
-import {
-    useSafeIntl,
-    commonStyles,
-    useRedirectTo,
-} from 'bluesquare-components';
-import { Box, Grid, useTheme, Tabs, Tab, Paper } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import Color from 'color';
+import { CsvButton } from '../../components/Buttons/CsvButton';
+import TopBar from '../../components/nav/TopBarComponent';
+import { dispatcher } from '../../components/snackBars/EventDispatcher';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
-import { baseUrls } from '../../constants/urls';
 import { warningSnackBar } from '../../constants/snackBars';
-import {
-    closeFixedSnackbar,
-    enqueueSnackbar,
-} from '../../redux/snackBarsReducer';
+import { MENU_HEIGHT_WITHOUT_TABS } from '../../constants/uiConstants';
+import { baseUrls } from '../../constants/urls';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { CompletenessStatsFilters } from './CompletenessStatsFilters';
+import { Map } from './components/Map';
+import { useGetCompletnessMapStats } from './hooks/api/useGetCompletnessMapStats';
 import {
     buildQueryString,
     useGetCompletenessStats,
 } from './hooks/api/useGetCompletnessStats';
-import { useGetCompletnessMapStats } from './hooks/api/useGetCompletnessMapStats';
-import { useCompletenessStatsColumns } from './hooks/useCompletenessStatsColumns';
-import TopBar from '../../components/nav/TopBarComponent';
-import MESSAGES from './messages';
-import { MENU_HEIGHT_WITHOUT_TABS } from '../../constants/uiConstants';
-import { CompletenessStatsFilters } from './CompletenessStatsFilters';
-import { CsvButton } from '../../components/Buttons/CsvButton';
-import { CompletenessRouterParams } from './types';
-import { Map } from './components/Map';
 import { useGetFormsOptions } from './hooks/api/useGetFormsOptions';
-import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { useCompletenessStatsColumns } from './hooks/useCompletenessStatsColumns';
+import MESSAGES from './messages';
+import { CompletenessRouterParams } from './types';
 
 const baseUrl = baseUrls.completenessStats;
 const useStyles = makeStyles(theme => ({
@@ -83,15 +81,13 @@ export const CompletenessStats: FunctionComponent = () => {
 
     useEffect(() => {
         if (displayWarning) {
-            dispatch(enqueueSnackbar(warningSnackBar(snackbarKey)));
+            dispatcher.dispatch('snackbar', warningSnackBar(snackbarKey));
+        } else {
+            closeSnackbar(snackbarKey);
         }
-        // TODO restore this feature. Commented code causes an infinite loop
-        // else {
-        //     dispatch(closeFixedSnackbar(snackbarKey));
-        // }
         return () => {
             if (displayWarning) {
-                dispatch(closeFixedSnackbar(snackbarKey));
+                closeSnackbar(snackbarKey);
             }
         };
     }, [dispatch, displayWarning]);

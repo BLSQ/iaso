@@ -133,7 +133,7 @@ const MESSAGES = defineMessages({
     check_position_for_forms: {
         id: 'iaso.projets.featureflag.check_position_for_forms',
         defaultMessage:
-            'Mobile: enforce users are within reach of the org unit before starting the form',
+            'Mobile: Enforce users are within reach of the org unit before starting the form',
     },
     check_position_for_forms_tooltip: {
         id: 'iaso.projets.featureflag.tooltip.check_position_for_forms',
@@ -152,7 +152,7 @@ const MESSAGES = defineMessages({
     limit_ou_download_to_roots: {
         id: 'iaso.projets.featureflag.limit_ou_download_to_roots',
         defaultMessage:
-            'Mobile: limit download of org unit to what the user has access to',
+            'Mobile: Limit download of org unit to what the user has access to',
     },
     limit_ou_download_to_roots_tooltip: {
         id: 'iaso.projets.featureflag.tooltip.limit_ou_download_to_roots',
@@ -210,7 +210,7 @@ const MESSAGES = defineMessages({
     },
     mobile_entity_no_creation: {
         id: 'iaso.projets.featureflag.mobile_entity_no_creation',
-        defaultMessage: 'Mobile: user cannot create a entity',
+        defaultMessage: 'Mobile: User cannot create a entity',
     },
     mobile_entity_no_creation_tooltip: {
         id: 'iaso.projets.featureflag.tooltip.mobile_entity_no_creation',
@@ -280,7 +280,7 @@ const MESSAGES = defineMessages({
     forms_auto_upload_tooltip: {
         id: 'iaso.projets.featureflag.tooltip.forms_auto_upload',
         defaultMessage:
-            'Finalized orms are automatically synchronized provided the user has connectivity',
+            'Finalized forms are automatically synchronized provided the user has connectivity',
     },
     write_on_nfc_cards: {
         id: 'iaso.projets.featureflag.write_on_nfc_cards',

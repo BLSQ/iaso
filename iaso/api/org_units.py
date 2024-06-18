@@ -184,10 +184,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 paginator = Paginator(queryset, limit)
                 page = paginator.page(1)
                 org_units = []
-                geo_json = geojson_queryset(
-                    queryset.filter(id__in=page.object_list.values_list("id", flat=True)),
-                    geometry_field="simplified_geom",
-                )
+
+                org_units_ids = (item.id for item in page.object_list)
+                org_units_for_geojson = OrgUnit.objects.filter(id__in=org_units_ids).only("id", "simplified_geom")
+                geo_json = geojson_queryset(org_units_for_geojson, geometry_field="simplified_geom")
+
                 for unit in page.object_list:
                     temp_org_unit = unit.as_location(with_parents=request.GET.get("withParents", None))
                     unit_geo_json = next((item for item in geo_json["features"] if item["id"] == unit.id), None)
@@ -201,6 +202,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                         else None
                     )
                     org_units.append(temp_org_unit)
+
                 return Response(org_units)
             else:
                 queryset = queryset.select_related("org_unit_type")

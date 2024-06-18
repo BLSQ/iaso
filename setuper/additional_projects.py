@@ -22,20 +22,6 @@ def projects_mapper(account_name):
     return projects
 
 
-def feature_flags_mapper(project, iaso_client):
-    existing_feature_flags = iaso_client.get("/api/featureflags/")
-    feature_flags = []
-    for feature_flag_code in project["feature_flags"]:
-        project_feature_flag = [
-            feature_flag
-            for feature_flag in existing_feature_flags["featureflags"]
-            if feature_flag["code"] == feature_flag_code
-        ]
-        if len(project_feature_flag) > 0:
-            feature_flags.append(project_feature_flag[0])
-    return feature_flags
-
-
 def get_project_ids(created_or_updated_projects, iaso_client):
     existing_projects = iaso_client.get("/api/projects/")["projects"]
     project_ids = []
@@ -73,9 +59,11 @@ def create_projects(account_name, iaso_client):
     print(f"-- Creating 3 additional projects for account: {account_name}")
     projects = projects_mapper(account_name)
     created_projects = []
+    flags = iaso_client.get("/api/featureflags/")
+
     for project in projects:
         project["linked_forms"] = None
-        project["feature_flags"] = feature_flags_mapper(project, iaso_client)
+        project["feature_flags"] = [flag for flag in flags["featureflags"] if flag["code"] in project["feature_flags"]]
         new_project = iaso_client.post("/api/apps/", json=project)
         created_projects.append(new_project)
 

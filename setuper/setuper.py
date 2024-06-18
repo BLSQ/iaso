@@ -1,4 +1,3 @@
-from credentials import *
 from iaso_api_client import IasoClient
 from micro_planning import setup_users_teams_micro_planning
 from data_collection import setup_instances
@@ -14,6 +13,11 @@ import argparse
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+def test_notebook():
+    logger.info("Hello world")
+    print("Hello world")
 
 
 def admin_login(server_url, username, password):
@@ -38,7 +42,7 @@ def setup_account(account_name, server_url, username, password):
     iaso_admin_client.post("/api/setupaccount/", json=data)
 
     # make sure we use that connection afterwards so we are connected as the account admin and not the ADMIN_USER_NAME
-    iaso_client = IasoClient(server_url=SERVER)
+    iaso_client = IasoClient(server_url)
     iaso_client.authenticate_with_username_and_password(
         username=account_name,
         password=account_name,
@@ -80,10 +84,11 @@ def create_account(server_url, username, password):
     if seed_review_change_proposal:
         setup_review_change_proposal(account_name, iaso_client=iaso_client)
 
-    logger.info("-----------------------------------------------")
-    logger.info("Account created:", account_name)
-    logger.info("Login at %s with\n\tlogin: %s \n\tpassword: %s" % (SERVER, account_name, account_name))
-    logger.info("-----------------------------------------------")
+    print("-----------------------------------------------")
+    print("Account created:", account_name)
+    print("Login at %s with\n\tlogin: %s \n\tpassword: %s" % (server_url, account_name, account_name))
+    print("-----------------------------------------------")
+    return account_name
 
 
 if __name__ == "__main__":
@@ -96,5 +101,12 @@ if __name__ == "__main__":
     server_url = args.server_url if args.server_url else SERVER
     username = args.username if args.username else ADMIN_USER_NAME
     password = args.password if args.password else ADMIN_PASSWORD
+
+    if server_url is None or username is None or password is None:
+        from .credentials import *
+
+        server_url = SERVER
+        username = ADMIN_USER_NAME
+        password = ADMIN_PASSWORD
 
     create_account(server_url, username, password)

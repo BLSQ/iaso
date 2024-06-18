@@ -3,7 +3,7 @@ def projects_mapper(account_name):
         {
             "name": "Planning",
             "app_id": f"{account_name}.planning",
-            "feature_flags": ["REQUIRE_AUTHENTICATION", "TAKE_GPS_ON_FORM", "", "FORMS_AUTO_UPLOAD", "PLANNING"],
+            "feature_flags": ["REQUIRE_AUTHENTICATION", "TAKE_GPS_ON_FORM", "FORMS_AUTO_UPLOAD", "PLANNING"],
             "linked_forms": ["Equipment/Pop/Social mob./Microplans"],
         },
         {
@@ -70,7 +70,7 @@ def link_created_projects_to_main_data_source(account_name, iaso_client, project
 
 
 def create_projects(account_name, iaso_client):
-    print(f"-- Creating 3 additional projects for account :{account_name}")
+    print(f"-- Creating 3 additional projects for account: {account_name}")
     projects = projects_mapper(account_name)
     created_projects = []
     for project in projects:

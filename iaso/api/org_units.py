@@ -184,13 +184,22 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 paginator = Paginator(queryset, limit)
                 page = paginator.page(1)
                 org_units = []
-
+                geo_json = geojson_queryset(
+                    queryset.filter(id__in=page.object_list.values_list("id", flat=True)),
+                    geometry_field="simplified_geom",
+                )
                 for unit in page.object_list:
                     temp_org_unit = unit.as_location(with_parents=request.GET.get("withParents", None))
-                    temp_org_unit["geo_json"] = None
-                    if temp_org_unit["has_geo_json"] == True:
-                        shape_queryset = queryset.filter(id=temp_org_unit["id"])
-                        temp_org_unit["geo_json"] = geojson_queryset(shape_queryset, geometry_field="simplified_geom")
+                    unit_geo_json = next((item for item in geo_json["features"] if item["id"] == unit.id), None)
+                    temp_org_unit["geo_json"] = (
+                        {
+                            "type": "FeatureCollection",
+                            "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+                            "features": [unit_geo_json],
+                        }
+                        if unit_geo_json
+                        else None
+                    )
                     org_units.append(temp_org_unit)
                 return Response(org_units)
             else:

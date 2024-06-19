@@ -550,11 +550,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
             results.append(
                 {
                     "date": report.destruction_report_date,
-                    "action": (
-                        f"{report.action} ({report.lot_numbers})"
-                        if len(report.action) > 0
-                        else f"Destruction report {report.action}"
-                    ),
+                    "action": (f"{report.action}" if len(report.action) > 0 else f"Destruction report"),
                     "vials_in": None,
                     "doses_in": None,
                     "vials_out": report.unusable_vials_destroyed or 0,
@@ -573,7 +569,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
                 results.append(
                     {
                         "date": report.date_of_incident_report,
-                        "action": report.get_stock_correction_display(),
+                        "action": report.get_stock_correction_display(),  # for every field FOO that has choices set, the object will have a get_FOO_display() method
                         "vials_in": report.unusable_vials or 0,
                         "doses_in": (report.unusable_vials or 0) * calc.get_doses_per_vial(),
                         "vials_out": None,

@@ -761,7 +761,6 @@
     "iaso.mappings.label.fromSubmissionPeriod": "from submission's period",
     "iaso.mappings.label.generalHint": "Click in the tree on the left to map questions to dhis2 data elements or verify their aggregations.",
     "iaso.mappings.label.generalTitle": "General Informations",
-    "iaso.mappings.label.hesabuHint": "Hesabu hint, this element is used by",
     "iaso.mappings.label.instanceOrgUnit": "Instance orgunit",
     "iaso.mappings.label.loading": "Loading",
     "iaso.mappings.label.mapping": "Mapping: {name}, {id} - {type}",

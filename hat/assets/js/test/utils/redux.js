@@ -5,6 +5,10 @@ import thunk from 'redux-thunk';
 import { instancesInitialState } from '../../apps/Iaso/domains/instances/reducer';
 import { mappingsInitialState } from '../../apps/Iaso/domains/mappings/reducer';
 import { orgUnitsInitialState } from '../../apps/Iaso/domains/orgUnits/reducer';
+import { sidebarMenuInitialState } from '../../apps/Iaso/redux/sidebarMenuReducer';
+import { snackBarsInitialState } from '../../apps/Iaso/redux/snackBarsReducer';
+import { routerInitialState } from '../../apps/Iaso/redux/routerReducer';
+import { linksInitialState } from '../../apps/Iaso/domains/links/reducer';
 import { usersInitialState } from '../../apps/Iaso/domains/users/reducer';
 import { routerInitialState } from '../../apps/Iaso/redux/routerReducer';
 import { sidebarMenuInitialState } from '../../apps/Iaso/redux/sidebarMenuReducer';
@@ -24,7 +28,6 @@ const initialState = {
     instances: instancesInitialState,
     routerCustom: routerInitialState,
     users: usersInitialState,
-    mappings: mappingsInitialState,
     app: {
         locale: {
             code: 'en',

@@ -2,8 +2,7 @@ class Descriptor {
     static hasChildren(node) {
         return (
             Array.isArray(node.children) &&
-            node.type !== 'select one' &&
-            node.type !== 'select multiple'
+            node.type !== 'select one' 
         );
     }
 
@@ -20,7 +19,8 @@ class Descriptor {
         return (
             node.type === 'survey' ||
             node.type === 'group' ||
-            node.type === 'repeat'
+            node.type === 'repeat' || 
+            node.type === 'select all that apply'
         );
     }
 
@@ -54,7 +54,7 @@ class Descriptor {
             }
         }
         const mappedQuestions = questions.filter(
-            q => mappingVersion.question_mappings[q.name],
+            q => mappingVersion.question_mappings[this.getKey(q)],
         );
         return [mappedQuestions.length, questions.length];
     }
@@ -82,28 +82,38 @@ class Descriptor {
         );
     }
 
-    static recursiveIndex(node, acc, path) {
-        if (!acc[this.getNodeName(node)]) {
-            acc[this.getNodeName(node)] = node;
+    static recursiveIndex(node, acc, path, parent) {
+        if (!acc[this.getNodeName(node, parent)]) {
+            acc[this.getNodeName(node, parent)] = node;
         } else {
             acc[`${this.getNodeName(node)}1`] = node;
         }
         if (this.hasChildren(node)) {
             node.children.forEach(child => {
                 const val = child;
-                val.parentName = this.getNodeName(node);
+                val.parentName = this.getNodeName(node, parent);
                 const newPath = [...path, child];
                 val.path = newPath.map(n => n.name);
-                this.recursiveIndex(child, acc, newPath);
+                this.recursiveIndex(child, acc, newPath, node);
             });
         }
     }
 
-    static getNodeName(node) {
+    static getKey(node) {
+        return node.uuid || node.name || ""
+    }
+
+    static getNodeName(node, parent) {
         let result = node.name;
         if (node.type === 'group' && node.name === 'begin') {
             result = node.label;
         }
+
+        if (parent && parent.type == "select all that apply") {
+            result = parent.name+"__"+node.name
+            node.uuid = result
+        }
+
         return result;
     }
 
@@ -113,7 +123,7 @@ class Descriptor {
         if (descriptor?.children) {
             descriptorCopy.path = ['survey'];
             descriptorCopy.children.forEach(child =>
-                this.recursiveIndex(child, acc, [descriptorCopy, child]),
+                this.recursiveIndex(child, acc, [descriptorCopy, child], descriptorCopy),
             );
         }
         return acc;

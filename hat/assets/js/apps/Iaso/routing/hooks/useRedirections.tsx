@@ -6,6 +6,7 @@ import { baseUrls } from '../../constants/urls';
 import { useHomeOfflineComponent } from '../../domains/app/hooks/useRoutes';
 import { defaultSorted as storageDefaultSort } from '../../domains/storages/config';
 import { defaultSorted as workflowDefaultSort } from '../../domains/workflows/config/index';
+import { SHOW_HOME_ONLINE, hasFeatureFlag } from '../../utils/featureFlags';
 import { useCurrentUser } from '../../utils/usersUtils';
 import { Redirect } from '../Redirect';
 import { getOrgUnitsUrl } from '../utils';
@@ -128,45 +129,58 @@ type UseRedirectionsArgs = {
     isFetchingCurrentUser: boolean;
     homeUrl?: string;
     pluginRedirections: any[];
+    userHomePage?: string;
 };
 // eslint-disable-next-line no-unused-vars
 type RedirectionsMethod = (args: UseRedirectionsArgs) => ReactElement[];
 
+type Redirection = {
+    path: string;
+    to?: string;
+    element?: ReactElement;
+};
+
+const defaultHomeUrl = `/${baseUrls.forms}`;
+
 export const useRedirections: RedirectionsMethod = ({
     hasNoAccount,
     isFetchingCurrentUser,
-    homeUrl = `/${baseUrls.forms}`,
     pluginRedirections,
+    userHomePage,
 }) => {
-    let redirections;
+    let redirections: Redirection[] = [];
     const currentUser = useCurrentUser();
     const homeOfflineComponent = useHomeOfflineComponent();
-    if (isFetchingCurrentUser) {
-        redirections = [];
-    } else if (hasNoAccount) {
-        redirections = setupRedirections;
-    } else if (!homeOfflineComponent && !currentUser) {
-        redirections = [
-            {
-                path: '/home',
-                to: '/login',
-            },
-        ];
-    } else {
-        redirections = [
-            {
-                path: '/',
-                to: homeUrl,
-            },
-            {
-                path: '/home',
-                to: homeUrl,
-            },
-            ...baseRedirections,
-            ...pluginRedirections,
-        ];
+
+    const canShowHome = hasFeatureFlag(currentUser, SHOW_HOME_ONLINE);
+
+    if (!isFetchingCurrentUser) {
+        if (hasNoAccount) {
+            redirections = setupRedirections;
+        } else if (!homeOfflineComponent && !currentUser) {
+            redirections = [
+                {
+                    path: '/home',
+                    to: '/login',
+                },
+            ];
+        } else {
+            redirections = [...baseRedirections, ...pluginRedirections];
+            if (!canShowHome || userHomePage) {
+                redirections = [
+                    {
+                        path: '/',
+                        to: userHomePage || defaultHomeUrl,
+                    },
+                    {
+                        path: '/home',
+                        to: userHomePage || defaultHomeUrl,
+                    },
+                    ...redirections,
+                ];
+            }
+        }
     }
-    redirections = [];
     return redirections.map(redirection => {
         if (redirection.element) {
             return (

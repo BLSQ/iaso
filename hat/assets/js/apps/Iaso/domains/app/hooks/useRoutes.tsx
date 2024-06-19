@@ -185,8 +185,8 @@ export const useRoutes = (userHomePage?: string): Result => {
     const redirections = useRedirections({
         hasNoAccount,
         isFetchingCurrentUser,
-        homeUrl: userHomePage,
         pluginRedirections,
+        userHomePage,
     });
 
     // routes should only change if currentUser has changed

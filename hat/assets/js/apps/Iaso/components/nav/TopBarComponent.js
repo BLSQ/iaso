@@ -1,20 +1,19 @@
-import React, { useCallback, useContext } from 'react';
-import { useDispatch } from 'react-redux';
-import { IconButton, Grid, useMediaQuery, useTheme, Box } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { Box, Grid, IconButton, useMediaQuery, useTheme } from '@mui/material';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import { makeStyles } from '@mui/styles';
+import React, { useContext } from 'react';
 
-import MenuIcon from '@mui/icons-material/Menu';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import MenuIcon from '@mui/icons-material/Menu';
 
 import PropTypes from 'prop-types';
 
-import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
 import { ThemeConfigContext } from '../../domains/app/contexts/ThemeConfigContext.tsx';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
 
+import { useSidebar } from '../../domains/app/contexts/SideBarContext.tsx';
 import { CurrentUserInfos } from './CurrentUser/index.tsx';
 import { LogoutButton } from './LogoutButton.tsx';
 
@@ -53,100 +52,85 @@ function TopBar(props) {
     React.useEffect(() => {
         document.title = `${APP_TITLE} ${title ? `| ${title}` : ''}`;
     }, [title, APP_TITLE]);
-    const dispatch = useDispatch();
-    const toggleSidebar = useCallback(
-        () => dispatch(toggleSidebarMenu()),
-        [dispatch],
-    );
+    const { toggleSidebar } = useSidebar();
 
     const currentUser = useCurrentUser();
     const theme = useTheme();
     const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
 
     return (
-        <>
-            <AppBar
-                position="relative"
-                color="primary"
-                id="top-bar"
-                sx={{ zIndex: 10 }}
-            >
-                <Toolbar className={classes.root}>
+        <AppBar
+            position="relative"
+            color="primary"
+            id="top-bar"
+            sx={{ zIndex: 10 }}
+        >
+            <Toolbar className={classes.root}>
+                <Grid
+                    container
+                    justifyContent="space-between"
+                    alignItems="center"
+                    direction="row"
+                >
                     <Grid
                         container
-                        justifyContent="space-between"
-                        alignItems="center"
+                        item
                         direction="row"
+                        xs={9}
+                        alignItems="center"
                     >
-                        <Grid
-                            container
-                            item
-                            direction="row"
-                            xs={9}
-                            alignItems="center"
-                        >
-                            {!displayBackButton && displayMenuButton && (
-                                <IconButton
-                                    className={classes.menuButton}
-                                    color="inherit"
-                                    aria-label="Menu"
-                                    onClick={toggleSidebar}
-                                    id="menu-button"
-                                >
-                                    <MenuIcon />
-                                </IconButton>
-                            )}
-                            {displayBackButton && (
-                                <IconButton
-                                    className={classes.menuButton}
-                                    color="inherit"
-                                    aria-label="Back"
-                                    onClick={goBack}
-                                    id="top-bar-back-button"
-                                >
-                                    <ArrowBackIcon />
-                                </IconButton>
-                            )}
-                            <Typography
-                                variant="h6"
+                        {!displayBackButton && displayMenuButton && (
+                            <IconButton
+                                className={classes.menuButton}
                                 color="inherit"
-                                id="top-bar-title"
+                                aria-label="Menu"
+                                onClick={toggleSidebar}
+                                id="menu-button"
                             >
-                                {title}
-                            </Typography>
-                        </Grid>
-                        {currentUser && !isMobileLayout && (
-                            <Grid
-                                container
-                                item
-                                xs={3}
+                                <MenuIcon />
+                            </IconButton>
+                        )}
+                        {displayBackButton && (
+                            <IconButton
+                                className={classes.menuButton}
+                                color="inherit"
+                                aria-label="Back"
+                                onClick={goBack}
+                                id="top-bar-back-button"
+                            >
+                                <ArrowBackIcon />
+                            </IconButton>
+                        )}
+                        <Typography
+                            variant="h6"
+                            color="inherit"
+                            id="top-bar-title"
+                        >
+                            {title}
+                        </Typography>
+                    </Grid>
+                    {currentUser && !isMobileLayout && (
+                        <Grid container item xs={3} justifyContent="flex-end">
+                            <Box
+                                display="flex"
+                                alignItems="center"
                                 justifyContent="flex-end"
                             >
-                                <Box
-                                    display="flex"
-                                    alignItems="center"
-                                    justifyContent="flex-end"
-                                >
-                                    <CurrentUserInfos
-                                        currentUser={currentUser}
-                                        version={window.IASO_VERSION}
-                                    />
-                                </Box>
+                                <CurrentUserInfos
+                                    currentUser={currentUser}
+                                    version={window.IASO_VERSION}
+                                />
+                            </Box>
 
-                                <Box
-                                    display="flex"
-                                    justifyContent="center"
-                                    pl={2}
-                                >
-                                    <LogoutButton />
-                                </Box>
-                            </Grid>
-                        )}
-                    </Grid>
-                </Toolbar>
-                {children}
-            </AppBar>
-        </>
+                            <Box display="flex" justifyContent="center" pl={2}>
+                                <LogoutButton />
+                            </Box>
+                        </Grid>
+                    )}
+                </Grid>
+            </Toolbar>
+            {children}
+        </AppBar>
     );
 }
 

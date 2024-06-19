@@ -13,7 +13,6 @@ import { dispatcher } from '../../components/snackBars/EventDispatcher.ts';
 import snackBarMessages from '../../components/snackBars/messages';
 import { errorSnackBar } from '../../constants/snackBars';
 import { getValues } from '../../hooks/form';
-import { fetchCurrentUser } from '../users/actions';
 import MESSAGES from './messages';
 
 /**
@@ -222,7 +221,7 @@ export const useSaveDataSource = setFieldErrors => {
                 currentUser.account.id,
                 form.default_version_id.value,
             ]);
-            dispatch(fetchCurrentUser());
+            queryClient.invalidateQueries('currentUser');
         }
         setIsSaving(false);
     };

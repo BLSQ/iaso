@@ -11,11 +11,10 @@ import {
 import React, { FunctionComponent, useCallback, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { MutateFunction } from 'react-query';
+import { MutateFunction, useQueryClient } from 'react-query';
 
 import { EditIconButton } from '../../../components/Buttons/EditIconButton';
 import { Profile, useCurrentUser } from '../../../utils/usersUtils';
-import { fetchCurrentUser } from '../actions';
 import MESSAGES from '../messages';
 import { InitialUserData } from '../types';
 import PermissionsSwitches from './PermissionsSwitches';
@@ -66,6 +65,8 @@ const UserDialogComponent: FunctionComponent<Props> = ({
 }) => {
     const connectedUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
+
+    const queryClient = useQueryClient();
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
 
@@ -80,7 +81,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
         saveProfile(currentUser, {
             onSuccess: () => {
                 if (currentUser.id === connectedUser.id) {
-                    dispatch(fetchCurrentUser());
+                    queryClient.invalidateQueries('currentUser');
                 }
                 closeDialog();
             },

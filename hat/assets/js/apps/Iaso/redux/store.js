@@ -5,7 +5,6 @@ import thunk from 'redux-thunk';
 
 import createStore from './createStore';
 
-import { localeMiddleware } from '../domains/app/middleware';
 import {
     instancesInitialState,
     instancesReducer,
@@ -30,7 +29,6 @@ const store = createStore(
     [
         // routerMiddleware(storeHistory),
         thunk,
-        localeMiddleware,
     ],
 );
 

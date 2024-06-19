@@ -1,8 +1,9 @@
 /* eslint-disable camelcase */
 import { LangOptions } from 'bluesquare-components';
-import { useSelector } from 'react-redux';
+import { useQueryClient } from 'react-query';
 import { OrgUnitStatus } from '../domains/orgUnits/types/orgUnit';
 import { Project } from '../domains/projects/types/project';
+import { getCookie } from './cookies';
 
 export type Profile = {
     id: string;
@@ -93,21 +94,18 @@ export const getDisplayName = (
 
 export default getDisplayName;
 
-type Users = {
-    current: User;
-};
-type State = {
-    users: Users;
-};
-
-// Replace with react query when we can
 export const useCurrentUser = (): User => {
-    const currentUser = useSelector((state: State) => state.users.current);
-    return currentUser;
+    const queryClient = useQueryClient();
+    const currentUser = queryClient.getQueryData<User>('currentUser');
+    return currentUser as User;
 };
 export const useCurrentLocale = (): LangOptions => {
     const currentUser: User = useCurrentUser();
-    return currentUser?.language || 'en';
+    return (
+        currentUser?.language ||
+        (getCookie('django_language') as LangOptions) ||
+        'en'
+    );
 };
 export const useIsLoggedIn = (): boolean => {
     const currentUser: User = useCurrentUser();

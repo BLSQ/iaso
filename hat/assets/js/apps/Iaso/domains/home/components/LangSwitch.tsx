@@ -4,7 +4,6 @@ import classNames from 'classnames';
 import React, { FunctionComponent, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { useCurrentLocale, useHasNoAccount } from '../../../utils/usersUtils';
-import { switchLocale } from '../../app/actions';
 import { APP_LOCALES } from '../../app/constants';
 import { saveCurrentUserProFile } from '../../users/actions';
 
@@ -29,7 +28,8 @@ export const LangSwitch: FunctionComponent = () => {
     const handleClick = useCallback(
         localeCode => {
             if (hasNoAccount) {
-                dispatch(switchLocale(localeCode));
+                console.log('hasNoAccount', localeCode);
+                // dispatch(switchLocale(localeCode));
             } else {
                 dispatch(
                     saveCurrentUserProFile({

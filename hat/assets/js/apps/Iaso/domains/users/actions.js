@@ -1,4 +1,4 @@
-import { retrieveAction, saveAction } from '../../redux/actions/formsActions';
+import { saveAction } from '../../redux/actions/formsActions';
 
 export const SET_CURRENT_USER = 'SET_CURRENT_USER';
 
@@ -8,14 +8,6 @@ export const setCurrentUser = payload => ({
 });
 
 const apiKey = 'profiles';
-export const fetchCurrentUser = () => dispatch =>
-    retrieveAction(
-        dispatch,
-        `${apiKey}`,
-        'me',
-        setCurrentUser,
-        'fetchCurrentUser',
-    );
 
 export const saveCurrentUserProFile = profile => dispatch =>
     saveAction(

@@ -16,8 +16,3 @@ export const setOrgUnitTypes = orgUnitTypes => ({
     type: SET_ORG_UNIT_TYPES,
     payload: orgUnitTypes,
 });
-
-export const setSources = sources => ({
-    type: SET_SOURCES,
-    payload: sources,
-});

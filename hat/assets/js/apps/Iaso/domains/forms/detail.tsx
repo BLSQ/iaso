@@ -96,14 +96,15 @@ const formatFormData = value => {
 };
 
 const FormDetail: FunctionComponent = () => {
-    const params = useParamsObject(baseUrls.formDetail) as FormParams;
+    const params = useParamsObject(
+        baseUrls.formDetail,
+    ) as unknown as FormParams;
     const goBack = useGoBack(baseUrls.forms);
     const queryClient = useQueryClient();
     const { data: form, isLoading: isFormLoading } = useGetForm(params.formId);
     const [isLoading, setIsLoading] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
     const [tab, setTab] = useState(params.tab || 'versions');
-    const [forceRefreshVersions, setForceRefreshVersions] = useState(false);
     const dispatch = useDispatch();
     const redirectToReplace = useRedirectToReplace();
     const { formatMessage } = useSafeIntl();
@@ -161,13 +162,16 @@ const FormDetail: FunctionComponent = () => {
                 redirectToReplace(baseUrls.formDetail, {
                     formId: savedFormData.id,
                 });
-                setForceRefreshVersions(true);
             } else {
                 queryClient.resetQueries([
                     'formDetailsForInstance',
                     `${savedFormData.id}`,
                 ]);
                 queryClient.resetQueries(['forms']);
+                queryClient.invalidateQueries([
+                    'formVersions',
+                    parseInt(params.formId, 10),
+                ]);
             }
         } catch (error) {
             if (error.status === 400) {
@@ -291,9 +295,8 @@ const FormDetail: FunctionComponent = () => {
                 {tab === 'versions' && (
                     <FormVersions
                         periodType={currentForm.period_type.value || undefined}
-                        forceRefresh={forceRefreshVersions}
-                        setForceRefresh={setForceRefreshVersions}
                         formId={parseInt(params.formId, 10)}
+                        params={params}
                     />
                 )}
                 {tab === 'attachments' && <FormAttachments params={params} />}

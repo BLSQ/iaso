@@ -34,6 +34,22 @@ const useStyles = makeStyles(() => ({
         cursor: 'pointer',
     },
 }));
+/**
+ *
+ * @description: A convenience component to conditionally display a link, usually by checking for permissions. Can easily be wrapped to create links to specific pages. See `LinkToOrgUnit`.
+ *
+ * @prop condition: boolean. The condition under which the link will be displayed and active. Usually a check on one or several permissions
+ * @prop url: The destination url. Should start with a '/' as we use absolute paths
+ * @prop text: Text to be displayed
+ * @prop useIcon: Set to `true` to display an IconButton i.o. text
+ * @prop replace: Set to `true` to replace current location in router history with destination when followingthe link. Defaults to `false`
+ * @prop target: set to `"_blank"` to always open link in a new tab. Defaults to `"_self"`. Pressing ctrl/cmd + click will always open the link in a new tab
+ * @prop tooltipMessage: an `IntlMessage` to be displayed by the IconButton tooltip. Doesn't have any effect if `useIcon` is false
+ * @prop color: override default color
+ * @prop size: Button size of the IconButton. Requires `useIcon` to be `true`
+ * @prop iconSize: size of the Icon of the IconButton. Requires `useIcon` to be `true`
+ * @prop className: a className for styling
+ */
 
 export const LinkTo: FunctionComponent<Props> = ({
     condition,

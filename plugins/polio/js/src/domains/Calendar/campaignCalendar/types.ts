@@ -53,6 +53,7 @@ export type ShapeForCalendarMap = {
 };
 
 export type CalendarParams = {
+    accountId?: string; // unused but automatically added to the url
     roundStartFrom?: string;
     roundStartTo?: string;
     showOnlyDeleted?: string;

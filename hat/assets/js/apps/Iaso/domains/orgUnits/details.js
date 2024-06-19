@@ -7,50 +7,41 @@ import {
     LoadingSpinner,
     useSafeIntl,
     useGoBack,
+    useRedirectToReplace,
 } from 'bluesquare-components';
 import omit from 'lodash/omit';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { useDispatch } from 'react-redux';
-import Logs from '../../components/logs/LogsComponent';
+import { Logs } from './history/LogsComponent.tsx';
 import TopBar from '../../components/nav/TopBarComponent';
-import SingleTable from '../../components/tables/SingleTable';
 import {
-    linksFiltersWithPrefix,
-    onlyChildrenParams,
-    orgUnitFiltersWithPrefix,
-} from '../../constants/filters';
-import { baseUrls } from '../../constants/urls';
-import {
-    deleteForm,
-    fetchAssociatedOrgUnits,
-    fetchForms,
-    fetchLinks,
-    fetchOrgUnitsList,
-    saveLink,
-} from '../../utils/requests';
-import { useFormsTableColumns } from '../forms/config';
-import LinksDetails from '../links/components/LinksDetailsComponent';
-import { linksTableColumns } from '../links/config';
+    baseUrls,
+    LINKS_PREFIX,
+    FORMS_PREFIX,
+    OU_CHILDREN_PREFIX,
+} from '../../constants/urls.ts';
+import { fetchAssociatedOrgUnits } from '../../utils/requests';
 import { resetOrgUnits } from './actions';
 import { OrgUnitForm } from './components/OrgUnitForm.tsx';
 import { OrgUnitMap } from './components/orgUnitMap/OrgUnitMap/OrgUnitMap.tsx';
 import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitsMapComments';
-import { useOrgUnitsTableColumns } from './config';
 import {
     useOrgUnitDetailData,
     useRefreshOrgUnit,
     useSaveOrgUnit,
+    useOrgUnitTabParams,
 } from './hooks';
-import { useGetValidationStatus } from '../forms/hooks/useGetValidationStatus.ts';
-import MESSAGES from './messages';
+import MESSAGES from './messages.ts';
 import {
     getAliasesArrayFromString,
     getLinksSources,
     getOrgUnitsTree,
 } from './utils';
 import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
-import { useRedirectToReplace } from 'bluesquare-components';
+import { FormsTable } from '../forms/components/FormsTable.tsx';
+import { OrgUnitChildren } from './details/Children/OrgUnitChildren.tsx';
+import { OrgUnitLinks } from './details/Links/OrgUnitLinks.tsx';
 
 const baseUrl = baseUrls.orgUnitDetails;
 const useStyles = makeStyles(theme => ({
@@ -69,14 +60,6 @@ const useStyles = makeStyles(theme => ({
             strokeWidth: 3,
         },
     },
-    hiddenOpacity: {
-        position: 'absolute',
-        top: '0px',
-        left: '0px',
-        width: '100vw',
-        zIndex: '-100',
-        opacity: '0',
-    },
     comments: {
         overflowY: 'auto',
         height: '65vh',
@@ -84,6 +67,14 @@ const useStyles = makeStyles(theme => ({
     commentsWrapper: {
         backgroundColor: 'white',
         paddingTop: '10px',
+    },
+    hiddenOpacity: {
+        position: 'absolute',
+        top: '0px',
+        left: '0px',
+        width: '100vw',
+        zIndex: '-100',
+        opacity: '0',
     },
 }));
 
@@ -116,7 +107,6 @@ const OrgUnitDetail = () => {
     const queryClient = useQueryClient();
     const { formatMessage } = useSafeIntl();
     const refreshOrgUnitQueryCache = useRefreshOrgUnit();
-    const childrenColumns = useOrgUnitsTableColumns(classes);
     const redirectToReplace = useRedirectToReplace();
 
     const [currentOrgUnit, setCurrentOrgUnit] = useState(null);
@@ -126,18 +116,13 @@ const OrgUnitDetail = () => {
         useState(undefined);
     const [orgUnitLocationModified, setOrgUnitLocationModified] =
         useState(false);
-    const [forceSingleTableRefresh, setForceSingleTableRefresh] =
-        useState(false);
 
-    const isNewOrgunit = useMemo(
-        () => params.orgUnitId === '0',
-        [params.orgUnitId],
-    );
+    const formParams = useOrgUnitTabParams(params, FORMS_PREFIX);
+    const linksParams = useOrgUnitTabParams(params, LINKS_PREFIX);
+    const childrenParams = useOrgUnitTabParams(params, OU_CHILDREN_PREFIX);
 
-    const {
-        data: validationStatusOptions,
-        isLoading: isLoadingValidationStatusOptions,
-    } = useGetValidationStatus(true, tab === 'children');
+    const isNewOrgunit = params.orgUnitId === '0';
+
     const title = useMemo(() => {
         if (isNewOrgunit) {
             return formatMessage(MESSAGES.newOrgUnit);
@@ -166,26 +151,6 @@ const OrgUnitDetail = () => {
         };
         redirectToReplace(baseUrl, newParams);
         queryClient.invalidateQueries('currentOrgUnit');
-    };
-
-    const handleDeleteForm = useCallback(
-        async formId => {
-            await deleteForm(dispatch, formId);
-            setForceSingleTableRefresh(true);
-        },
-        [dispatch],
-    );
-
-    const resetSingleTableForceRefresh = () => {
-        setForceSingleTableRefresh(false);
-    };
-
-    const validateLink = (link, handleFetch) => {
-        const newLink = {
-            ...link,
-            validated: !link.validated,
-        };
-        saveLink(dispatch, newLink).then(() => handleFetch());
     };
 
     const handleChangeTab = useCallback(
@@ -226,16 +191,8 @@ const OrgUnitDetail = () => {
         [currentOrgUnit],
     );
 
-    const formsTableColumns = useFormsTableColumns({
-        deleteForm: handleDeleteForm,
-        orgUnitId: params.orgUnitId,
-    });
-
     const {
-        algorithms,
-        algorithmRuns,
         groups,
-        profiles,
         orgUnitTypes,
         links,
         sources,
@@ -244,8 +201,8 @@ const OrgUnitDetail = () => {
         isFetchingDetail,
         isFetchingOrgUnitTypes,
         isFetchingGroups,
-        isFetchingProfiles,
         parentOrgUnit,
+        isFetchingSources,
     } = useOrgUnitDetailData(
         isNewOrgunit,
         params.orgUnitId,
@@ -486,6 +443,7 @@ const OrgUnitDetail = () => {
                             {tab === 'history' && (
                                 <div data-test="logs-tab">
                                     <Logs
+                                        baseUrl={baseUrl}
                                         params={params}
                                         logObjectId={currentOrgUnit.id}
                                         goToRevision={goToRevision}
@@ -493,110 +451,55 @@ const OrgUnitDetail = () => {
                                 </div>
                             )}
                             {tab === 'forms' && (
-                                <div data-test="forms-tab">
-                                    <SingleTable
-                                        paramsPrefix="formsParams"
-                                        apiParams={{
-                                            orgUnitId: currentOrgUnit.id,
-                                        }}
-                                        hideGpkg
-                                        exportButtons={false}
+                                <Box
+                                    className={
+                                        classes.containerFullHeightNoTabPadded
+                                    }
+                                    data-test="forms-tab"
+                                >
+                                    <FormsTable
                                         baseUrl={baseUrl}
-                                        endPointPath="forms"
-                                        propsToWatch={params.orgUnitId}
-                                        fetchItems={fetchForms}
-                                        columns={formsTableColumns}
-                                        forceRefresh={forceSingleTableRefresh}
-                                        onForceRefreshDone={() =>
-                                            resetSingleTableForceRefresh()
-                                        }
+                                        params={formParams}
+                                        defaultPageSize={10}
+                                        paramsPrefix={FORMS_PREFIX}
+                                        tableDefaults={{
+                                            order: 'name',
+                                            limit: 10,
+                                            page: 1,
+                                        }}
                                     />
-                                </div>
+                                </Box>
                             )}
-                            <div
-                                data-test="children-tab"
-                                className={
-                                    tab === 'children'
-                                        ? ''
-                                        : classes.hiddenOpacity
-                                }
-                            >
-                                <SingleTable
-                                    apiParams={{
-                                        ...onlyChildrenParams(
-                                            'childrenParams',
-                                            params,
-                                            params.orgUnitId,
-                                        ),
-                                    }}
-                                    propsToWatch={params.orgUnitId}
-                                    filters={orgUnitFiltersWithPrefix(
-                                        'childrenParams',
-                                        true,
-                                        formatMessage,
-                                        groups,
-                                        orgUnitTypes,
-                                        validationStatusOptions,
-                                        isLoadingValidationStatusOptions,
-                                    )}
-                                    params={params}
-                                    paramsPrefix="childrenParams"
-                                    baseUrl={baseUrl}
-                                    endPointPath="orgunits"
-                                    fetchItems={fetchOrgUnitsList}
-                                    columns={childrenColumns}
-                                />
-                            </div>
-                            <div
-                                data-test="links-tab"
-                                className={
-                                    tab === 'links' ? '' : classes.hiddenOpacity
-                                }
-                            >
-                                <SingleTable
-                                    apiParams={{
-                                        orgUnitId: params.orgUnitId,
-                                    }}
-                                    propsToWatch={params.orgUnitId}
-                                    filters={linksFiltersWithPrefix(
-                                        'linksParams',
-                                        algorithmRuns,
-                                        formatMessage,
-                                        profiles,
-                                        algorithms,
-                                        sources,
-                                        isFetchingProfiles,
-                                    )}
-                                    params={params}
-                                    paramsPrefix="linksParams"
-                                    baseUrl={baseUrl}
-                                    endPointPath="links"
-                                    fetchItems={fetchLinks}
-                                    defaultSorted={[
-                                        { id: 'similarity_score', desc: false },
-                                    ]}
-                                    columns={handleFetch =>
-                                        linksTableColumns(formatMessage, link =>
-                                            validateLink(link, handleFetch),
-                                        )
+                            {tab === 'children' && (
+                                <Box
+                                    data-test="children-tab"
+                                    className={
+                                        classes.containerFullHeightNoTabPadded
                                     }
-                                    subComponent={(link, handleFetch) =>
-                                        link ? (
-                                            <LinksDetails
-                                                linkId={link.id}
-                                                validated={link.validated}
-                                                validateLink={() =>
-                                                    validateLink(
-                                                        link,
-                                                        handleFetch,
-                                                    )
-                                                }
-                                            />
-                                        ) : null
+                                >
+                                    <OrgUnitChildren
+                                        baseUrl={baseUrl}
+                                        params={childrenParams}
+                                        groups={groups}
+                                    />
+                                </Box>
+                            )}
+                            {tab === 'links' && (
+                                <Box
+                                    data-test="links-tab"
+                                    className={
+                                        classes.containerFullHeightNoTabPadded
                                     }
-                                    hideGpkg
-                                />
-                            </div>
+                                >
+                                    <OrgUnitLinks
+                                        baseUrl={baseUrl}
+                                        params={linksParams}
+                                        paramsPrefix={LINKS_PREFIX}
+                                        sources={sources}
+                                        isLoadingSources={isFetchingSources}
+                                    />
+                                </Box>
+                            )}
                             {tab === 'comments' && (
                                 <div data-test="comments-tab">
                                     <Grid

@@ -5,7 +5,7 @@ import { cleanupParams } from '../utils/requests';
 export type FormattedApiParams = ApiParams & Record<string, any>;
 
 export const useApiParams = (
-    params: Partial<UrlParams>,
+    params: Partial<UrlParams> & Record<string, any>,
     defaults?: { order?: string; limit?: number; page?: number },
 ): FormattedApiParams => {
     return useMemo(() => {
@@ -30,4 +30,17 @@ export const useApiParams = (
         }
         return formattedParams as FormattedApiParams;
     }, [defaults?.limit, defaults?.order, defaults?.page, params]);
+};
+
+export type TableDefaults = {
+    order: string;
+    limit: number;
+    page: number;
+};
+export const useQueryString = (
+    params: Record<string, string>,
+    tableDefaults: TableDefaults,
+): string => {
+    const apiParams = useApiParams(params, tableDefaults);
+    return new URLSearchParams(apiParams).toString();
 };

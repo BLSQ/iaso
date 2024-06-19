@@ -1,8 +1,13 @@
 /* eslint-disable no-else-return */
 import React from 'react';
-import { useMutation } from 'react-query';
+import { useMutation, useQueryClient } from 'react-query';
 import { useDispatch, useSelector } from 'react-redux';
-import { getRequest, iasoFetch, postRequest, putRequest } from 'Iaso/libs/Api';
+import {
+    getRequest,
+    iasoFetch,
+    postRequest,
+    putRequest,
+} from 'Iaso/libs/Api.ts';
 import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks.ts';
 import { dispatch as storeDispatch } from '../../redux/store';
 import { enqueueSnackbar } from '../../redux/snackBarsReducer';
@@ -170,6 +175,7 @@ export const useSaveDataSource = setFieldErrors => {
     const [isSaving, setIsSaving] = React.useState(false);
     const currentUser = useSelector(state => state.users.current);
     const dispatch = useDispatch();
+    const queryClient = useQueryClient();
 
     const { mutateAsync: saveMutation } = useSnackMutation(
         campaignData =>
@@ -199,6 +205,7 @@ export const useSaveDataSource = setFieldErrors => {
             } else {
                 await createMutation(campaignData);
             }
+            queryClient.invalidateQueries('sources');
         } catch (error) {
             // Update error on forms
             if (error.status === 400) {
@@ -329,7 +336,7 @@ export const useCreateSourceVersion = () => {
         mutationFn: saveSourceVersion,
         snackErrorMsg: MESSAGES.newEmptyVersionError,
         snackSuccessMessage: MESSAGES.newEmptyVersionSavedSuccess,
-        invalidateQueryKey: 'dataSourceVersions',
+        invalidateQueryKey: ['dataSourceVersions', 'sources'],
     });
 };
 
@@ -358,6 +365,6 @@ export const usePutSourceVersion = () => {
             }),
         undefined,
         undefined,
-        [['dataSourceVersions'], ['dataSources']],
+        [['dataSourceVersions'], ['dataSources'], ['sources']],
     );
 };

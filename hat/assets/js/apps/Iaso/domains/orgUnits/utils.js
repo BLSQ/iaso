@@ -1,11 +1,8 @@
 import React, { useCallback } from 'react';
-
 import { textPlaceholder } from 'bluesquare-components';
-
 import { orderOrgUnitsByDepth } from '../../utils/map/mapUtils.ts';
-
 import { useGetOrgUnitValidationStatus } from './hooks/utils/useGetOrgUnitValidationStatus.ts';
-import MESSAGES from './messages';
+import MESSAGES from './messages.ts';
 
 export const fetchLatestOrgUnitLevelId = levels => {
     if (levels) {
@@ -132,9 +129,10 @@ export const useGetStatusMessage = () => {
     const getStatusMessage = useCallback(
         status => {
             if (!validationStatusOptions) return '';
-            return validationStatusOptions.find(
-                option => option.value === status,
-            )?.label;
+            return (
+                validationStatusOptions.find(option => option.value === status)
+                    ?.label ?? ''
+            );
         },
         [validationStatusOptions],
     );

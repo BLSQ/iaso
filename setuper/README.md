@@ -68,3 +68,12 @@ Once the script has run, you can log in to your server using the account name as
 1. Run the setuper
 
         python3 setuper.py
+
+2. If you want to create additional projects like:
+      - Planning
+      - Georegistry/Géoregistre
+      - Children vaccination/Vaccination des enfants
+
+    You will need to add param `--additionnal_projects`:
+
+        python3 setuper.py --additionnal_projects

@@ -74,9 +74,11 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const [countries, setCountries] = useState(params.countries);
     const [orgUnitGroups, setOrgUnitGroups] = useState(params.orgUnitGroups);
-    const [campaignType, setCampaignType] = useState(params.campaignType);
+    const [campaignType, setCampaignType] = useState(
+        isEmbedded ? params.campaignType ?? 'polio' : params.campaignType,
+    );
     const [campaignCategory, setCampaignCategory] = useState(
-        params.campaignCategory,
+        isEmbedded ? params.campaignCategory ?? 'all' : params.campaignCategory,
     );
     const [campaignGroups, setCampaignGroups] = useState(params.campaignGroups);
     const [search, setSearch] = useState(params.search);

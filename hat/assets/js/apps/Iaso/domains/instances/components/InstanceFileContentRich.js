@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 
 import { textPlaceholder } from 'bluesquare-components';
-import { useCurrentLocale } from '../../../utils/usersUtils';
+import { useLocale } from '../../app/contexts/LocaleContext';
 
 const useStyle = makeStyles(theme => ({
     tableCellHead: {
@@ -269,7 +269,8 @@ FormGroup.propTypes = {
 
 function FormField({ descriptor, data, showQuestionKey }) {
     const classes = useStyle();
-    const activeLocale = useCurrentLocale();
+    const { locale: activeLocale } = useLocale();
+
     return (
         <TableRow>
             <TableCell className={classes.tableCell}>
@@ -301,7 +302,7 @@ FormField.propTypes = {
 
 function FormCalculatedField({ descriptor, data, showQuestionKey }) {
     const classes = useStyle();
-    const activeLocale = useCurrentLocale();
+    const { locale: activeLocale } = useLocale();
 
     return (
         <TableRow>
@@ -337,7 +338,7 @@ FormCalculatedField.propTypes = {
 
 function FormMetaField({ descriptor, data, showQuestionKey }) {
     const classes = useStyle();
-    const activeLocale = useCurrentLocale();
+    const { locale: activeLocale } = useLocale();
 
     return (
         <TableRow>
@@ -394,7 +395,7 @@ FormNoteField.propTypes = {
 
 function Label({ descriptor, value, tooltip, showQuestionKey }) {
     const classes = useStyle();
-    const activeLocale = useCurrentLocale();
+    const { locale: activeLocale } = useLocale();
 
     let label = descriptor.name;
     let showNameHint = false;

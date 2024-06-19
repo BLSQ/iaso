@@ -1,16 +1,14 @@
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import React, { useMemo } from 'react';
 import { DateCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
-import getDisplayName, {
-    useCurrentLocale,
-} from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { useLocale } from '../../../../../../../../../hat/assets/js/apps/Iaso/domains/app/contexts/LocaleContext';
+import getDisplayName from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import MESSAGES from '../../../../../constants/messages';
 
 const NAMEFIELD = 'name_';
 
 export const useGetRoundDatesHistoryColumns = (): Column[] => {
-    // @ts-ignore
-    const activeLocale = useCurrentLocale();
+    const { locale: activeLocale } = useLocale();
     const reasonName = `${NAMEFIELD}${activeLocale}`;
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {

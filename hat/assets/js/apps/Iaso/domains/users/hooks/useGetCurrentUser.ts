@@ -2,7 +2,7 @@ import { LangOptions } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';
-import { setLocale } from '../../../utils/dates';
+import { useLocale } from '../../app/contexts/LocaleContext';
 import { Profile } from '../../teams/types/profile';
 
 export const useGetCurrentUser = (
@@ -10,6 +10,7 @@ export const useGetCurrentUser = (
     showError = true,
 ): UseQueryResult<Profile, Error> => {
     const queryKey: any[] = ['currentUser'];
+    const { setLocale, locale } = useLocale();
     return useSnackQuery({
         queryKey,
         queryFn: () => getRequest('/api/profiles/me/'),
@@ -19,7 +20,7 @@ export const useGetCurrentUser = (
                 console.warn('User not connected');
             },
             onSuccess: result => {
-                if (result.language) {
+                if (result.language && result.language !== locale) {
                     setLocale(result.language as LangOptions);
                 }
             },

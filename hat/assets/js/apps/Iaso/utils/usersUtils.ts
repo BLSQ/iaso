@@ -1,6 +1,5 @@
 /* eslint-disable camelcase */
 import { LangOptions } from 'bluesquare-components';
-import moment from 'moment';
 import { useQueryClient } from 'react-query';
 import { OrgUnitStatus } from '../domains/orgUnits/types/orgUnit';
 import { Project } from '../domains/projects/types/project';
@@ -99,9 +98,7 @@ export const useCurrentUser = (): User => {
     const currentUser = queryClient.getQueryData<User>('currentUser');
     return currentUser as User;
 };
-export const useCurrentLocale = (): LangOptions => {
-    return moment.locale() as LangOptions;
-};
+
 export const useIsLoggedIn = (): boolean => {
     const currentUser: User = useCurrentUser();
     return Boolean(currentUser);

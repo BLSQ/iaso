@@ -1,10 +1,10 @@
 import { useSafeIntl } from 'bluesquare-components';
 import { useMemo } from 'react';
 import { THOUSAND, THOUSAND_GROUP_STYLES } from '../domains/app/constants';
-import { useCurrentLocale } from '../utils/usersUtils';
+import { useLocale } from '../domains/app/contexts/LocaleContext';
 
 export const useThousandGroupStyle = (): 'thousand' | 'lakh' | 'wan' => {
-    const activeLocale = useCurrentLocale();
+    const { locale: activeLocale } = useLocale();
     return THOUSAND_GROUP_STYLES[activeLocale] ?? THOUSAND;
 };
 

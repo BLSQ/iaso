@@ -16,13 +16,13 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import React, { ReactNode, useMemo, useState } from 'react';
+import { useLocale } from '../../domains/app/contexts/LocaleContext';
 import MESSAGES from '../../domains/forms/messages';
 import {
     useNumberSeparatorsFromLocale,
     useThousandGroupStyle,
 } from '../../hooks/useNumberSeparatorsFromLocale';
 import { DropdownOptions } from '../../types/utils';
-import { useCurrentLocale } from '../../utils/usersUtils';
 
 type Option = DropdownOptions<string | number>;
 
@@ -173,7 +173,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
 }) => {
     const [displayPassword, setDisplayPassword] = useState(false);
     const { formatMessage } = useSafeIntl();
-    const activeLocale = useCurrentLocale();
+    const { locale } = useLocale();
     const localizedNumberOptions =
         useLocalizedNumberInputOptions(numberInputOptions);
     const toggleDisplayPassword = () => {
@@ -331,7 +331,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
                             onChange(keyValue, newValue, countryData)
                         }
                         value={value}
-                        lang={activeLocale}
+                        lang={locale as LangOptions}
                         required={required}
                         disabled={disabled}
                         // eslint-disable-next-line react/jsx-props-no-spreading

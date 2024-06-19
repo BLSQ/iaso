@@ -10,7 +10,7 @@ import fr from '__intl/messages/fr'; // eslint-disable-line
 import enLibrary from 'bluesquare-components/dist/locale/en.json';
 import frLibrary from 'bluesquare-components/dist/locale/fr.json';
 import { PluginsContext } from '../../../utils/index.ts';
-import { useCurrentLocale } from '../../../utils/usersUtils.ts';
+import { useLocale } from '../contexts/LocaleContext.tsx';
 
 const extractTranslations = (plugins, key) => {
     return plugins
@@ -25,18 +25,18 @@ export default function LocalizedAppComponent({ children }) {
         fr: { ...fr, ...frLibrary, ...frPlugins },
         en: { ...en, ...enLibrary, ...enPlugins },
     };
-    const activeLocale = useCurrentLocale();
+    const { locale } = useLocale();
     const onError = msg => console.warn(msg);
     return (
         <IntlProvider
             onError={onError}
-            key={activeLocale}
-            locale={activeLocale}
-            messages={messages[activeLocale]}
+            key={locale}
+            locale={locale}
+            messages={messages[locale]}
         >
             <LocalizationProvider
                 dateAdapter={AdapterMoment}
-                adapterLocale={activeLocale}
+                adapterLocale={locale}
             >
                 {children}
             </LocalizationProvider>

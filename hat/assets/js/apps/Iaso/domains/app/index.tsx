@@ -4,6 +4,7 @@ import React, { FunctionComponent, ReactElement } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { useSnackBars } from '../../components/snackBars/useSnackBars';
 import LocalizedAppComponent from './components/LocalizedAppComponent';
+import { LocaleProvider } from './contexts/LocaleContext';
 import { useRoutes } from './hooks/useRoutes';
 // import { router } from '../../routing/router';
 
@@ -28,18 +29,20 @@ const App: FunctionComponent<Props> = ({ userHomePage }) => {
         <>
             {isLoadingRoutes && <LoadingSpinner />}
             {!isLoadingRoutes && (
-                <LocalizedAppComponent>
-                    <SnackbarProvider
-                        maxSnack={3}
-                        autoHideDuration={4000}
-                        anchorOrigin={{
-                            vertical: 'bottom',
-                            horizontal: 'center',
-                        }}
-                    >
-                        <Routes routes={routes} />
-                    </SnackbarProvider>
-                </LocalizedAppComponent>
+                <LocaleProvider>
+                    <LocalizedAppComponent>
+                        <SnackbarProvider
+                            maxSnack={3}
+                            autoHideDuration={4000}
+                            anchorOrigin={{
+                                vertical: 'bottom',
+                                horizontal: 'center',
+                            }}
+                        >
+                            <Routes routes={routes} />
+                        </SnackbarProvider>
+                    </LocalizedAppComponent>
+                </LocaleProvider>
             )}
         </>
     );

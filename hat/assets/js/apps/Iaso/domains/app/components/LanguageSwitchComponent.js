@@ -4,9 +4,9 @@ import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
 import React from 'react';
 
-import { useCurrentLocale } from '../../../utils/usersUtils.ts';
 import { useSaveCurrentUser } from '../../users/hooks/useSaveCurrentUser.ts';
 import { APP_LOCALES } from '../constants';
+import { useLocale } from '../contexts/LocaleContext.tsx';
 
 const useStyles = makeStyles(theme => ({
     currentLocale: {
@@ -21,7 +21,7 @@ const useStyles = makeStyles(theme => ({
 export default function LanguageSwitchComponent() {
     const classes = useStyles();
     const [anchorEl, setAnchorEl] = React.useState(null);
-    const activeLocaleCode = useCurrentLocale();
+    const { locale: activeLocaleCode } = useLocale();
     const activeLocale = APP_LOCALES.find(
         locale => locale.code === activeLocaleCode,
     );
@@ -32,7 +32,9 @@ export default function LanguageSwitchComponent() {
         setAnchorEl(event.currentTarget);
     };
 
+    const { setLocale } = useLocale();
     const handleLocaleSwitch = localeCode => {
+        setLocale(localeCode);
         saveCurrentUser({
             language: localeCode,
         });

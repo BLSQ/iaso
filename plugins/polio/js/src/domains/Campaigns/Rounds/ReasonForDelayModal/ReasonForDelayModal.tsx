@@ -6,7 +6,7 @@ import {
 } from 'bluesquare-components';
 import { Field, useFormikContext } from 'formik';
 import React, { FunctionComponent } from 'react';
-import { useCurrentLocale } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { useLocale } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/app/contexts/LocaleContext';
 import { DateInput } from '../../../../components/Inputs/DateInput';
 import { SingleSelect } from '../../../../components/Inputs/SingleSelect';
 import MESSAGES from '../../../../constants/messages';
@@ -27,7 +27,7 @@ const ReasonForDelayModal: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const { handleSubmit, resetForm } = useFormikContext();
-    const activeLocale = useCurrentLocale();
+    const { locale: activeLocale } = useLocale();
     const { data: reasonsForDelayOptions } =
         useReasonsDelayOptions(activeLocale);
     return (

@@ -1,6 +1,16 @@
+import moment from 'moment';
 import { formatValue } from '.';
-import { setLocale } from '../../../utils/dates.ts';
+import { longDateFormats } from '../../../utils/dates';
 
+const setLocale = code => {
+    moment.locale(code);
+    moment.updateLocale(code, {
+        longDateFormat: longDateFormats[code],
+        week: {
+            dow: 1,
+        },
+    });
+};
 describe('formatValue', () => {
     before(() => {
         setLocale('en');

@@ -2,10 +2,9 @@ import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import classNames from 'classnames';
 import React, { FunctionComponent, useCallback } from 'react';
-import { useQueryClient } from 'react-query';
-import { setLocale } from '../../../utils/dates';
-import { useCurrentLocale, useHasNoAccount } from '../../../utils/usersUtils';
+import { useHasNoAccount } from '../../../utils/usersUtils';
 import { APP_LOCALES } from '../../app/constants';
+import { useLocale } from '../../app/contexts/LocaleContext';
 import { useSaveCurrentUser } from '../../users/hooks/useSaveCurrentUser';
 
 const useStyles = makeStyles(theme => ({
@@ -24,21 +23,18 @@ export const LangSwitch: FunctionComponent = () => {
     const classes: Record<string, string> = useStyles();
     const { mutate: saveCurrentUser } = useSaveCurrentUser(false);
     const hasNoAccount = useHasNoAccount();
-    const activeLocale = useCurrentLocale();
-    const queryClient = useQueryClient();
+    const { locale: activeLocale } = useLocale();
+    const { setLocale } = useLocale();
     const handleClick = useCallback(
         localeCode => {
-            if (hasNoAccount) {
-                setLocale(localeCode);
-                // forcing refresh of the app while changing the locale
-                queryClient.invalidateQueries('currentUser');
-            } else {
+            setLocale(localeCode);
+            if (!hasNoAccount) {
                 saveCurrentUser({
                     language: localeCode,
                 });
             }
         },
-        [hasNoAccount, saveCurrentUser, queryClient],
+        [hasNoAccount, setLocale, saveCurrentUser],
     );
     return (
         <>

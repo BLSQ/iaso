@@ -1,20 +1,24 @@
-import moment from 'moment';
 import { textPlaceholder } from 'bluesquare-components';
-import {
-    convertValueIfDate,
-    DateTimeCell,
-    DateTimeCellRfc,
-    DateCell,
-} from './DateTimeCell.tsx';
+import moment from 'moment';
 import {
     apiDateFormats,
     getLocaleDateFormat,
     longDateFormats,
+    setLocale,
 } from '../../utils/dates.ts';
+import {
+    DateCell,
+    DateTimeCell,
+    DateTimeCellRfc,
+    convertValueIfDate,
+} from './DateTimeCell.tsx';
 
 const locales = Object.keys(longDateFormats);
 
 describe('DateTimeCell', () => {
+    beforeEach(() => {
+        setLocale('en');
+    });
     it('should return the placeholder if value is null', () => {
         const cellInfo = { value: null };
         expect(DateTimeCell(cellInfo)).to.equal(textPlaceholder);
@@ -31,6 +35,9 @@ describe('DateTimeCell', () => {
 });
 
 describe('DateTimeCellRfc', () => {
+    beforeEach(() => {
+        setLocale('en');
+    });
     locales.forEach(locale => {
         moment.locale(locale);
         it('should return the placeholder if value is null', () => {
@@ -48,6 +55,9 @@ describe('DateTimeCellRfc', () => {
 });
 
 describe('DateCell', () => {
+    beforeEach(() => {
+        setLocale('en');
+    });
     locales.forEach(locale => {
         moment.locale(locale);
         it('should return the placeholder if value is null', () => {
@@ -65,6 +75,9 @@ describe('DateCell', () => {
 });
 
 describe('convertValueIfDate', () => {
+    beforeEach(() => {
+        setLocale('en');
+    });
     it('should return the value if it does not match any apiDateFormat', () => {
         const nonDateFormatValues = [
             'This is not a date format',

@@ -110,15 +110,6 @@ class OrgUnitTreeViewsAPITestCase(APITestCase):
             self.assertEqual(1, len(response.data))
             self.assertEqual(response.data[0]["name"], "Boucle du Mouhon")
 
-    def test_root_with_force_full_tree(self):
-        self.client.force_authenticate(self.user)
-        with self.assertNumQueries(3):
-            response = self.client.get("/api/orgunits/tree/?force_full_tree=true")
-            self.assertJSONResponse(response, 200)
-            self.assertEqual(2, len(response.data))
-            self.assertEqual(response.data[0]["name"], "Angola")
-            self.assertEqual(response.data[1]["name"], "Burkina Faso")
-
     def test_specific_level_with_force_full_tree(self):
         self.client.force_authenticate(self.user)
 

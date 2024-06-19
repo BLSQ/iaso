@@ -21,7 +21,7 @@ const useStyles = makeStyles(theme => ({
 export default function LanguageSwitchComponent() {
     const classes = useStyles();
     const [anchorEl, setAnchorEl] = React.useState(null);
-    const { locale: activeLocaleCode } = useLocale();
+    const { locale: activeLocaleCode, setLocale } = useLocale();
     const activeLocale = APP_LOCALES.find(
         locale => locale.code === activeLocaleCode,
     );
@@ -32,7 +32,6 @@ export default function LanguageSwitchComponent() {
         setAnchorEl(event.currentTarget);
     };
 
-    const { setLocale } = useLocale();
     const handleLocaleSwitch = localeCode => {
         setLocale(localeCode);
         saveCurrentUser({

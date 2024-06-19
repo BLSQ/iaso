@@ -9,6 +9,9 @@ import { Provider } from 'react-redux';
 import './libs/polyfills';
 
 import { GlobalStyles } from '@mui/material';
+import { SnackbarProvider } from 'notistack';
+import LocalizedAppComponent from './domains/app/components/LocalizedAppComponent';
+import { LocaleProvider } from './domains/app/contexts/LocaleContext';
 import { SidebarProvider } from './domains/app/contexts/SideBarContext';
 import {
     ThemeConfig,
@@ -58,11 +61,25 @@ const iasoApp = (element, enabledPluginsName, themeConfig, userHomePage) => {
                         <GlobalStyles styles={getGlobalOverrides(theme)} />
                         <SidebarProvider>
                             <Provider store={store}>
-                                <App
-                                    userHomePage={
-                                        pluginHomePage || userHomePage
-                                    }
-                                />
+                                <LocaleProvider>
+                                    <LocalizedAppComponent>
+                                        <SnackbarProvider
+                                            maxSnack={3}
+                                            autoHideDuration={4000}
+                                            anchorOrigin={{
+                                                vertical: 'bottom',
+                                                horizontal: 'center',
+                                            }}
+                                        >
+                                            <App
+                                                userHomePage={
+                                                    pluginHomePage ||
+                                                    userHomePage
+                                                }
+                                            />
+                                        </SnackbarProvider>
+                                    </LocalizedAppComponent>
+                                </LocaleProvider>
                             </Provider>
                         </SidebarProvider>
                     </ThemeProvider>

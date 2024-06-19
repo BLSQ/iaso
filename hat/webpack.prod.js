@@ -227,6 +227,15 @@ module.exports = {
                     },
                 ],
             },
+            // Extract Sass files
+            {
+                test: /\.scss$/,
+                use: [
+                    { loader: MiniCssExtractPlugin.loader },
+                    { loader: 'css-loader' },
+                    { loader: 'sass-loader' },
+                ],
+            },
             {
                 test: /\.css$/,
                 use: [

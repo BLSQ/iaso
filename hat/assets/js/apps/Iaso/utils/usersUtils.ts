@@ -109,6 +109,10 @@ export const useCurrentLocale = (): LangOptions => {
     const currentUser: User = useCurrentUser();
     return currentUser?.language || 'en';
 };
+export const useIsLoggedIn = (): boolean => {
+    const currentUser: User = useCurrentUser();
+    return Boolean(currentUser);
+};
 
 export const useHasNoAccount = (): boolean => {
     const currentUser = useCurrentUser();

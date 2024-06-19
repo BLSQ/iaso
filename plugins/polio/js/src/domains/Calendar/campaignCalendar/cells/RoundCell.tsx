@@ -10,18 +10,13 @@ import React, {
 import { Box, TableCell } from '@mui/material';
 
 import { isEqual } from 'lodash';
-import { useSelector } from 'react-redux';
+import { useIsLoggedIn } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { polioVaccines } from '../../../../constants/virus';
 import { PolioCreateEditDialog as CreateEditDialog } from '../../../Campaigns/MainDialog/CreateEditDialog';
 import { useStyles } from '../Styles';
 import { RoundPopperContext } from '../contexts/RoundPopperContext';
 import { RoundPopper } from '../popper/RoundPopper';
-import {
-    CalendarRound,
-    MappedCampaign,
-    PeriodType,
-    ReduxState,
-} from '../types';
+import { CalendarRound, MappedCampaign, PeriodType } from '../types';
 
 type Props = {
     colSpan: number;
@@ -66,9 +61,8 @@ export const RoundCell: FunctionComponent<Props> = ({
 
     const defaultCellStyles = [classes.tableCell, classes.tableCellBordered];
     const open = self && isEqual(self, anchorEl);
-    const isLogged = useSelector((state: ReduxState) =>
-        Boolean(state.users.current),
-    );
+
+    const isLogged = useIsLoggedIn();
     const vaccinesList = useMemo(() => {
         const list = campaign.separateScopesPerRound
             ? round.vaccine_names?.split(',') ?? []

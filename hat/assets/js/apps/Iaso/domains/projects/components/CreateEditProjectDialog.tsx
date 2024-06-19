@@ -25,9 +25,6 @@ import { useGetFeatureFlags } from '../hooks/requests';
 import { FeatureFlag } from '../types/featureFlag';
 import { EditIconButton } from '../../../components/Buttons/EditIconButton';
 
-// type RenderTriggerProps = {
-//     openDialog: () => void;
-// };
 type Tab = 'infos' | 'feature_flags';
 
 type Props = {
@@ -58,6 +55,11 @@ const useStyles = makeStyles(theme => ({
         left: -5000,
         zIndex: -10,
         opacity: 0,
+    },
+    '@global': {
+        '.MuiAutocomplete-listbox': {
+            maxHeight: '250px !important',
+        },
     },
 }));
 
@@ -225,7 +227,12 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
                 setTab('infos');
                 closeDialog();
             }}
-            maxWidth="xs"
+            maxWidth={
+                tab === 'feature_flags' &&
+                project.feature_flags.value.length > 0
+                    ? 'lg'
+                    : 'xs'
+            }
             cancelMessage={MESSAGES.cancel}
             confirmMessage={MESSAGES.save}
             open={isOpen}

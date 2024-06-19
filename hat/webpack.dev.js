@@ -226,6 +226,15 @@ module.exports = {
                 test: /\.css$/,
                 use: [{ loader: 'style-loader' }, { loader: 'css-loader' }],
             },
+            // Extract Sass files
+            {
+                test: /\.scss$/,
+                use: [
+                    { loader: 'style-loader' },
+                    { loader: 'css-loader' },
+                    { loader: 'sass-loader' },
+                ],
+            },
             // font files
             {
                 test: /\.woff(\?v=\d+\.\d+\.\d+)?$/,

@@ -1,18 +1,9 @@
-import {
-    deleteRequest,
-    getRequest,
-    patchRequest,
-    postRequest,
-    putRequest,
-    restoreRequest,
-} from 'Iaso/libs/Api.ts';
+import { getRequest, postRequest, putRequest } from 'Iaso/libs/Api.ts';
 import { useSnackQuery } from 'Iaso/libs/apiHooks.ts';
 import { dispatcher } from '../components/snackBars/EventDispatcher.ts';
-import { errorSnackBar, succesfullSnackBar } from '../constants/snackBars';
-import { FETCHING_ABORTED } from '../libs/constants.ts';
-import { dispatch as storeDispatch } from '../redux/store';
+import { errorSnackBar } from '../constants/snackBars';
 
-export const fetchSubOrgUnitsByType = (dispatch, params, orgUnitType) =>
+export const fetchSubOrgUnitsByType = (params, orgUnitType) =>
     getRequest(`/api/orgunits/?${params}`)
         .then(res => ({
             ...orgUnitType,
@@ -26,7 +17,7 @@ export const fetchSubOrgUnitsByType = (dispatch, params, orgUnitType) =>
             console.error('Error while fetching org unit list:', error);
         });
 
-export const fetchOrgUnitsTypes = dispatch =>
+export const fetchOrgUnitsTypes = () =>
     getRequest('/api/v2/orgunittypes/')
         .then(res => res.orgUnitTypes)
         .catch(error => {
@@ -37,44 +28,7 @@ export const fetchOrgUnitsTypes = dispatch =>
             console.error('Error while fetching org unit types list:', error);
         });
 
-export const fetchOrgUnitsList = (dispatch, url) =>
-    getRequest(url)
-        .then(data => data)
-        .catch(error => {
-            dispatcher.dispatch(
-                'snackbar',
-                errorSnackBar('fetchOrgUnitsError', null, error),
-            );
-            console.error('Error while fetching org unit list:', error);
-        });
-
-export const fetchLogs = (dispatch, url) =>
-    getRequest(url)
-        .then(data => data)
-        .catch(error => {
-            dispatcher.dispatch(
-                'snackbar',
-                errorSnackBar('fetchLogsError', null, error),
-            );
-            console.error('Error while fetching logs list:', error);
-        });
-
-export const fetchAllDataSources = (dispatch, url) => {
-    return getRequest(url)
-        .then(data => {
-            return data;
-        })
-        .catch(error => {
-            dispatcher.dispatch(
-                'snackbar',
-                errorSnackBar('fetchDataSourcesError', null, error),
-            );
-            console.error('Error while fetching data sources list:', error);
-        });
-};
-
 export const fetchAssociatedOrgUnits = (
-    dispatch,
     source,
     orgUnit,
     fitToBounds = () => null,
@@ -98,33 +52,7 @@ export const fetchAssociatedOrgUnits = (
         });
 };
 
-export const fetchSources = dispatch =>
-    getRequest('/api/datasources/')
-        .then(res => res.sources)
-        .catch(error => {
-            dispatcher.dispatch(
-                'snackbar',
-                errorSnackBar('fetchSourcesError', null, error),
-            );
-            console.error('Error while fetching source list:', error);
-        });
-
-export const fetchForms = (dispatch, url = '/api/forms', signal) =>
-    getRequest(url, signal)
-        .then(async forms => {
-            // return null if fetching aborted, so subsequent 'then()' can be returned early (see SingleTable)
-            if (forms?.message === FETCHING_ABORTED) return null;
-            return forms;
-        })
-        .catch(error => {
-            dispatcher.dispatch(
-                'snackbar',
-                errorSnackBar('fetchFormsError', null, error),
-            );
-            console.error('Error while fetching forms list:', error);
-        });
-
-export const fetchOrgUnitDetail = (dispatch, orgUnitId) =>
+export const fetchOrgUnitDetail = orgUnitId =>
     getRequest(`/api/orgunits/${orgUnitId}/`)
         .then(orgUnit => orgUnit)
         .catch(error => {
@@ -135,18 +63,7 @@ export const fetchOrgUnitDetail = (dispatch, orgUnitId) =>
             console.error('Error while fetching org unit detail:', error);
         });
 
-export const fetchLogDetail = (dispatch, logId) =>
-    getRequest(`/api/logs/${logId}/`)
-        .then(logDetail => logDetail)
-        .catch(error => {
-            dispatcher.dispatch(
-                'snackbar',
-                errorSnackBar('fetchLogDetailError', null, error),
-            );
-            console.error('Error while fetching log detail:', error);
-        });
-
-export const fetchInstanceDetail = (dispatch, instanceId) =>
+export const fetchInstanceDetail = instanceId =>
     getRequest(`/api/instances/${instanceId}`)
         .then(instance => instance)
         .catch(error => {
@@ -157,32 +74,7 @@ export const fetchInstanceDetail = (dispatch, instanceId) =>
             console.error('Error while fetching instance detail:', error);
         });
 
-export const saveLink = (dispatch, link) =>
-    patchRequest(`/api/links/${link.id}/`, link)
-        .then(savedLink => {
-            dispatcher.dispatch('snackbar', succesfullSnackBar());
-            return savedLink;
-        })
-        .catch(error => {
-            dispatcher.dispatch(
-                'snackbar',
-                errorSnackBar('saveLinkError', null, error),
-            );
-            console.error('Error occured while saving link:', error);
-        });
-
-export const fetchAlgorithms = dispatch =>
-    getRequest('/api/algorithms/')
-        .then(algorithms => algorithms)
-        .catch(error => {
-            dispatcher.dispatch(
-                'snackbar',
-                errorSnackBar('fetchAlgorithmsError', null, error),
-            );
-            console.error('Error while fetching algorithms list:', error);
-        });
-
-export const fetchLinkDetail = (dispatch, linkId) =>
+export const fetchLinkDetail = linkId =>
     getRequest(`/api/links/${linkId}`)
         .then(linkDetail => linkDetail)
         .catch(error => {
@@ -193,40 +85,7 @@ export const fetchLinkDetail = (dispatch, linkId) =>
             console.error('Error while fetching link detail:', error);
         });
 
-export const fetchLinks = (dispatch, url = '/api/links/') =>
-    getRequest(url)
-        .then(links => links)
-        .catch(error => {
-            dispatcher.dispatch(
-                'snackbar',
-                errorSnackBar('fetchLinksError', null, error),
-            );
-            console.error('Error while fetching links:', error);
-        });
-
-export const deleteAlgorithmRun = (dispatch, runId) =>
-    deleteRequest(`/api/algorithmsruns/${runId}/`)
-        .then(res => res)
-        .catch(error => {
-            dispatcher.dispatch(
-                'snackbar',
-                errorSnackBar('deleteRun', null, error),
-            );
-            console.error('Error while delteing algorithms run:', error);
-        });
-
-export const runAlgorithm = (dispatch, runItem) =>
-    putRequest('/api/algorithmsruns/0/', runItem)
-        .then(res => res)
-        .catch(error => {
-            dispatcher.dispatch(
-                'snackbar',
-                errorSnackBar('deleteRun', null, error),
-            );
-            console.error('Error while deleting algorithms run:', error);
-        });
-
-export const createForm = (dispatch, formData) =>
+export const createForm = formData =>
     postRequest('/api/forms/', formData).catch(error => {
         dispatcher.dispatch(
             'snackbar',
@@ -234,27 +93,11 @@ export const createForm = (dispatch, formData) =>
         );
     });
 
-export const updateForm = (dispatch, formId, formData) =>
+export const updateForm = (formId, formData) =>
     putRequest(`/api/forms/${formId}/`, formData).catch(error => {
         dispatcher.dispatch(
             'snackbar',
             errorSnackBar('updateFormError', null, error),
-        );
-    });
-
-export const deleteForm = (dispatch, formId) =>
-    deleteRequest(`/api/forms/${formId}/`).catch(error => {
-        dispatcher.dispatch(
-            'snackbar',
-            errorSnackBar('deleteFormError', null, error),
-        );
-    });
-
-export const restoreForm = (dispatch, formId) =>
-    restoreRequest(`/api/forms/${formId}/?only_deleted=1`).catch(error => {
-        dispatcher.dispatch(
-            'snackbar',
-            errorSnackBar('archiveFormError', null, error),
         );
     });
 
@@ -280,51 +123,6 @@ export const updateFormVersion = formVersion =>
         },
     );
 
-export const fetchFormVersions = (dispatch, formId) => {
-    const data = { form_id: formId };
-
-    return postRequest('/api/formversions/', data).catch(error => {
-        dispatcher.dispatch(
-            'snackbar',
-            errorSnackBar(
-                // @ts-ignore
-                isUpdate ? 'updateFormError' : 'createFormError',
-                null,
-                error,
-            ),
-        );
-    });
-};
-
-export const fetchDevicesAsDict = (dispatch, url) =>
-    getRequest(url)
-        .then(data => data)
-        .catch(error => {
-            dispatcher.dispatch(
-                'snackbar',
-                errorSnackBar('fetchDevicesError', null, error),
-            );
-            console.error('Error while fetching devices list:', error);
-        });
-
-// TO-DO: replace all requests similar to this
-export const fetchList = (
-    dispatch,
-    url,
-    errorKeyMessage,
-    consoleError,
-    signal,
-) =>
-    getRequest(url, signal)
-        .then(data => data)
-        .catch(error => {
-            dispatcher.dispatch(
-                'snackbar',
-                errorSnackBar(errorKeyMessage, null, error),
-            );
-            console.error(`Error while fetching ${consoleError} list:`, error);
-        });
-
 export const useGetComments = params => {
     const { orgUnitId, offset, limit } = params;
     const url = offset
@@ -341,56 +139,6 @@ export const useGetComments = params => {
 
 export const sendComment = async comment =>
     postRequest('/api/comments/', comment);
-
-export const fetchAlgorithmRuns = (dispatch, url = '/api/algorithmsruns/') =>
-    getRequest(url)
-        .then(data => data)
-        .catch(error => {
-            dispatcher.dispatch(
-                'snackbar',
-                errorSnackBar('fetchAlgorithmsError', null, error),
-            );
-            console.error(`Error while fetching alogrithms:`, error);
-        });
-
-const dispatchSaveOrgUnit = dispatch => orgUnit =>
-    patchRequest(`/api/orgunits/${orgUnit.id}/`, orgUnit)
-        .then(savedOrgUnit => {
-            dispatcher.dispatch('snackbar', succesfullSnackBar());
-            return savedOrgUnit;
-        })
-        .catch(error => {
-            dispatcher.dispatch('snackbar', errorSnackBar(null, null, error));
-            console.error('Error while saving org unit detail:', error);
-        });
-
-export const saveOrgUnitWithDispatch = dispatchSaveOrgUnit(storeDispatch);
-
-const dispatchSaveInstance = dispatch => instance =>
-    patchRequest(`/api/instances/${instance.id}/`, instance)
-        .then(savedInstance => {
-            dispatcher.dispatch('snackbar', succesfullSnackBar());
-            return savedInstance;
-        })
-        .catch(error => {
-            dispatcher.dispatch('snackbar', errorSnackBar(null, null, error));
-            console.error('Error while saving instance:', error);
-        });
-
-export const saveInstanceWithDispatch = dispatchSaveInstance(storeDispatch);
-
-const lockInstance = dispatch => instance =>
-    postRequest(`/api/instances/${instance.id}/add_lock/`)
-        .then(savedInstance => {
-            dispatcher.dispatch('snackbar', succesfullSnackBar());
-            return savedInstance;
-        })
-        .catch(error => {
-            dispatcher.dispatch('snackbar', errorSnackBar(null, null, error));
-            console.error('Error while saving instance:', error);
-        });
-
-export const lockInstanceWithDispatch = lockInstance(storeDispatch);
 
 export const cleanupParams = params => {
     const copy = { ...params };

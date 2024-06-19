@@ -11,7 +11,6 @@ import {
     instancesInitialState,
     instancesReducer,
 } from '../domains/instances/reducer';
-import { linksInitialState, linksReducer } from '../domains/links/reducer';
 import {
     mappingReducer,
     mappingsInitialState,
@@ -38,7 +37,6 @@ const store = createStore(
         orgUnits: orgUnitsInitialState,
         instances: instancesInitialState,
         routerCustom: routerInitialState,
-        links: linksInitialState,
         users: usersInitialState,
         mappings: mappingsInitialState,
     },
@@ -48,7 +46,6 @@ const store = createStore(
         orgUnits: orgUnitsReducer,
         instances: instancesReducer,
         routerCustom: routerReducer,
-        links: linksReducer,
         users: usersReducer,
         mappings: mappingReducer,
     },
@@ -66,6 +63,7 @@ const { dispatch } = store;
 
 export {
     // history,
-    dispatch, store
+    dispatch,
+    store
 };
 

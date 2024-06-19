@@ -69,6 +69,7 @@ const useStyles = makeStyles(theme => ({
 type Props = {
     periodType: string | Record<string, string>;
     title: string;
+    // eslint-disable-next-line no-unused-vars
     onChange: (_) => any;
     activePeriodString?: string;
     hasError?: boolean;
@@ -95,15 +96,11 @@ const PeriodPicker: FunctionComponent<Props> = ({
                 ? Period.parse(activePeriodString)[1]
                 : null,
         );
-    const [currentPeriodType, setCurrentPeriodType] = useState(periodType);
     const currentUser = useCurrentUser();
 
     useEffect(() => {
-        if (currentPeriodType !== periodType) {
-            setCurrentPeriod(null);
-        }
-        setCurrentPeriodType(periodType);
-    }, [periodType, currentPeriodType]);
+        setCurrentPeriod(null);
+    }, [periodType]);
 
     const handleChange = (
         changedKeyName: 'month' | 'year' | 'quarter' | 'semester',
@@ -156,15 +153,15 @@ const PeriodPicker: FunctionComponent<Props> = ({
         <Box
             id={keyName}
             mt={2}
-            p={currentPeriodType === PERIOD_TYPE_DAY ? 0 : 1}
+            p={periodType === PERIOD_TYPE_DAY ? 0 : 1}
             mb={2}
-            border={currentPeriodType === PERIOD_TYPE_DAY ? 0 : 1}
+            border={periodType === PERIOD_TYPE_DAY ? 0 : 1}
             className={
                 /* @ts-ignore */
                 displayError ? classes.inputBorderError : classes.inputBorder
             }
         >
-            {currentPeriodType === PERIOD_TYPE_DAY && (
+            {periodType === PERIOD_TYPE_DAY && (
                 <DatePicker
                     label={title}
                     clearMessage={MESSAGES.clear}
@@ -175,7 +172,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
                 />
             )}
 
-            {currentPeriodType !== PERIOD_TYPE_DAY && (
+            {periodType !== PERIOD_TYPE_DAY && (
                 <>
                     {/* @ts-ignore */}
                     <FormLabel component="legend" className={classes.title}>
@@ -183,14 +180,10 @@ const PeriodPicker: FunctionComponent<Props> = ({
                     </FormLabel>
 
                     <Grid container spacing={2}>
-                        {currentPeriodType !== PERIOD_TYPE_PLACEHOLDER && (
+                        {periodType !== PERIOD_TYPE_PLACEHOLDER && (
                             <Grid
                                 item
-                                sm={
-                                    currentPeriodType === PERIOD_TYPE_YEAR
-                                        ? 12
-                                        : 6
-                                }
+                                sm={periodType === PERIOD_TYPE_YEAR ? 12 : 6}
                             >
                                 <InputComponent
                                     keyValue="year"
@@ -206,7 +199,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
                                 />
                             </Grid>
                         )}
-                        {currentPeriodType === PERIOD_TYPE_PLACEHOLDER && (
+                        {periodType === PERIOD_TYPE_PLACEHOLDER && (
                             <Grid item>
                                 <Typography className={classes.legend}>
                                     {message}
@@ -214,11 +207,11 @@ const PeriodPicker: FunctionComponent<Props> = ({
                             </Grid>
                         )}
 
-                        {(currentPeriodType === PERIOD_TYPE_MONTH ||
-                            currentPeriodType === PERIOD_TYPE_QUARTER ||
-                            currentPeriodType === PERIOD_TYPE_SIX_MONTH) && (
+                        {(periodType === PERIOD_TYPE_MONTH ||
+                            periodType === PERIOD_TYPE_QUARTER ||
+                            periodType === PERIOD_TYPE_SIX_MONTH) && (
                             <Grid item sm={6}>
-                                {currentPeriodType === PERIOD_TYPE_MONTH && (
+                                {periodType === PERIOD_TYPE_MONTH && (
                                     <InputComponent
                                         keyValue="month"
                                         disabled={
@@ -241,7 +234,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
                                         label={MESSAGES.month}
                                     />
                                 )}
-                                {currentPeriodType === PERIOD_TYPE_QUARTER && (
+                                {periodType === PERIOD_TYPE_QUARTER && (
                                     <InputComponent
                                         keyValue="quarter"
                                         onChange={handleChange}
@@ -269,8 +262,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
                                     />
                                 )}
 
-                                {currentPeriodType ===
-                                    PERIOD_TYPE_SIX_MONTH && (
+                                {periodType === PERIOD_TYPE_SIX_MONTH && (
                                     <InputComponent
                                         keyValue="semester"
                                         onChange={handleChange}

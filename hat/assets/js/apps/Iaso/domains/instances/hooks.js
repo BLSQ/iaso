@@ -1,8 +1,8 @@
+import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api.ts';
 import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks.ts';
-import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api';
 import { fetchOrgUnitsTypes } from '../../utils/requests';
-import MESSAGES from './messages';
 import { setOrgUnitTypes } from '../orgUnits/actions';
+import MESSAGES from './messages';
 
 import { useFetchOnMount } from '../../hooks/fetchOnMount';
 

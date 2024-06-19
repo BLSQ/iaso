@@ -1,6 +1,6 @@
 import { Box, Grid, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
@@ -40,23 +40,15 @@ const FormVersionsDialogComponent = ({
             xls_file: formVersion.xls_file,
         });
 
-    const [periodsErrors, setPeriodsErrors] = useState(
-        getPeriodsErrors(
-            formState.start_period.value,
-            formState.end_period.value,
-            periodType,
-        ),
-    );
-
-    useEffect(() => {
-        setPeriodsErrors(
+    const periodsErrors = useMemo(
+        () =>
             getPeriodsErrors(
                 formState.start_period.value,
                 formState.end_period.value,
                 periodType,
             ),
-        );
-    }, [formState.start_period.value, formState.end_period.value, periodType]);
+        [formState.end_period.value, formState.start_period.value, periodType],
+    );
 
     const onConfirm = useCallback(
         async closeDialog => {
@@ -255,6 +247,7 @@ FormVersionsDialogComponent.defaultProps = {
     formVersion: emptyVersion(),
     periodType: '',
     formId: 0,
+    onConfirmed: () => null,
 };
 
 FormVersionsDialogComponent.propTypes = {
@@ -263,6 +256,6 @@ FormVersionsDialogComponent.propTypes = {
     formId: PropTypes.number,
     titleMessage: PropTypes.object.isRequired,
     renderTrigger: PropTypes.func.isRequired,
-    onConfirmed: PropTypes.func.isRequired,
+    onConfirmed: PropTypes.func,
 };
 export default FormVersionsDialogComponent;

@@ -19,7 +19,6 @@ import React, {
     useState,
 } from 'react';
 import { useQueryClient } from 'react-query';
-import { useDispatch } from 'react-redux';
 import TopBar from '../../components/nav/TopBarComponent';
 import { dispatcher } from '../../components/snackBars/EventDispatcher';
 import { succesfullSnackBar } from '../../constants/snackBars';
@@ -29,7 +28,6 @@ import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { isFieldValid, isFormValid } from '../../utils/forms';
 import { createForm, updateForm } from '../../utils/requests';
 import { NO_PERIOD } from '../periods/constants';
-import { FormAttachments } from './components/FormAttachments';
 import FormForm from './components/FormFormComponent';
 import FormVersions from './components/FormVersionsComponent';
 import { requiredFields } from './config/index';
@@ -96,15 +94,15 @@ const formatFormData = value => {
 };
 
 const FormDetail: FunctionComponent = () => {
-    const params = useParamsObject(baseUrls.formDetail) as FormParams;
+    const params = useParamsObject(
+        baseUrls.formDetail,
+    ) as unknown as FormParams;
     const goBack = useGoBack(baseUrls.forms);
     const queryClient = useQueryClient();
     const { data: form, isLoading: isFormLoading } = useGetForm(params.formId);
     const [isLoading, setIsLoading] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
     const [tab, setTab] = useState(params.tab || 'versions');
-    const [forceRefreshVersions, setForceRefreshVersions] = useState(false);
-    const dispatch = useDispatch();
     const redirectToReplace = useRedirectToReplace();
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
@@ -143,14 +141,14 @@ const FormDetail: FunctionComponent = () => {
                 omit(currentForm, ['form_id', 'possible_fields']),
                 v => v.value,
             );
-            saveForm = createForm(dispatch, formData);
+            saveForm = createForm(formData);
         } else {
             isUpdate = true;
             formData = mapValues(
                 omit(currentForm, ['possible_fields']),
                 v => v.value,
             );
-            saveForm = updateForm(dispatch, currentForm.id.value, formData);
+            saveForm = updateForm(currentForm.id.value, formData);
         }
         setIsLoading(true);
         let savedFormData;
@@ -161,13 +159,16 @@ const FormDetail: FunctionComponent = () => {
                 redirectToReplace(baseUrls.formDetail, {
                     formId: savedFormData.id,
                 });
-                setForceRefreshVersions(true);
             } else {
                 queryClient.resetQueries([
                     'formDetailsForInstance',
                     `${savedFormData.id}`,
                 ]);
                 queryClient.resetQueries(['forms']);
+                queryClient.invalidateQueries([
+                    'formVersions',
+                    parseInt(params.formId, 10),
+                ]);
             }
         } catch (error) {
             if (error.status === 400) {
@@ -297,13 +298,9 @@ const FormDetail: FunctionComponent = () => {
                                 periodType={
                                     currentForm.period_type.value || undefined
                                 }
-                                forceRefresh={forceRefreshVersions}
-                                setForceRefresh={setForceRefreshVersions}
                                 formId={parseInt(params.formId, 10)}
+                                params={params}
                             />
-                        )}
-                        {tab === 'attachments' && (
-                            <FormAttachments params={params} />
                         )}
                     </>
                 )}

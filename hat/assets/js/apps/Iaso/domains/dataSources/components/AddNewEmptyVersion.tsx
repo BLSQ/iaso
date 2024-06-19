@@ -10,13 +10,11 @@ type Props = {
     // eslint-disable-next-line no-unused-vars
     renderTrigger: ({ openDialog }: { openDialog: any }) => ReactNode;
     sourceId: number;
-    forceRefreshParent: () => void;
 };
 
 export const AddNewEmptyVersion: FunctionComponent<Props> = ({
     renderTrigger,
     sourceId,
-    forceRefreshParent,
 }) => {
     // eslint-disable-next-line no-unused-vars
     const [description, setDescription] = useState<string>('');
@@ -35,7 +33,6 @@ export const AddNewEmptyVersion: FunctionComponent<Props> = ({
         await createSourceVersion(body);
         closeDialogCallBack();
         reset();
-        forceRefreshParent();
     };
 
     const onConfirm = async (closeDialog: () => void) => {

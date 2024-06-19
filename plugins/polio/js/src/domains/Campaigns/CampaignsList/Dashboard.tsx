@@ -3,7 +3,6 @@ import { Box } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent, useMemo } from 'react';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
-import { useSingleTableParams } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/SingleTable';
 import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 import MESSAGES from '../../../constants/messages';
 import { useStyles } from '../../../styles/theme';
@@ -20,6 +19,7 @@ import { DashboardButtons } from './DashboardButtons';
 import { useCampaignsTableColumns } from './useCampaignsTableColumns';
 import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import { baseUrls } from '../../../constants/urls';
+import { useActiveParams } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useActiveParams';
 
 const baseUrl = baseUrls.campaigns;
 
@@ -27,7 +27,7 @@ export const Dashboard: FunctionComponent = () => {
     const params = useParamsObject(baseUrl);
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
-    const paramsToUse = useSingleTableParams(params);
+    const paramsToUse = useActiveParams(params);
     const apiParams: GetCampaignOptions = useCampaignParams(paramsToUse);
 
     const { data: rawCampaigns, isFetching } = useGetCampaigns(

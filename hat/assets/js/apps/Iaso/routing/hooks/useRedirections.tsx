@@ -1,14 +1,14 @@
 import { getSort } from 'bluesquare-components';
-import { Route } from 'react-router-dom';
 import React, { ReactElement } from 'react';
-import { baseUrls } from '../../constants/urls';
+import { Route } from 'react-router-dom';
 import Page404 from '../../components/errors/Page404';
+import { baseUrls } from '../../constants/urls';
+import { useHomeOfflineComponent } from '../../domains/app/hooks/useRoutes';
 import { defaultSorted as storageDefaultSort } from '../../domains/storages/config';
 import { defaultSorted as workflowDefaultSort } from '../../domains/workflows/config/index';
-import { useHomeOfflineComponent } from '../../domains/app/hooks/useRoutes';
 import { useCurrentUser } from '../../utils/usersUtils';
-import { getOrgUnitsUrl } from '../utils';
 import { Redirect } from '../Redirect';
+import { getOrgUnitsUrl } from '../utils';
 
 const getPaginationParams = (order = 'id', pageSize = 20) =>
     `/order/${order}/pageSize/${pageSize}/page/1`;
@@ -141,13 +141,11 @@ export const useRedirections: RedirectionsMethod = ({
     let redirections;
     const currentUser = useCurrentUser();
     const homeOfflineComponent = useHomeOfflineComponent();
-    if (hasNoAccount) {
+    if (isFetchingCurrentUser) {
+        redirections = [];
+    } else if (hasNoAccount) {
         redirections = setupRedirections;
-    } else if (
-        !homeOfflineComponent &&
-        !isFetchingCurrentUser &&
-        !currentUser
-    ) {
+    } else if (!homeOfflineComponent && !currentUser) {
         redirections = [
             {
                 path: '/home',
@@ -168,6 +166,7 @@ export const useRedirections: RedirectionsMethod = ({
             ...pluginRedirections,
         ];
     }
+    redirections = [];
     return redirections.map(redirection => {
         if (redirection.element) {
             return (

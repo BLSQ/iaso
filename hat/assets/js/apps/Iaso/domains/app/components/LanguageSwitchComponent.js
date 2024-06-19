@@ -3,10 +3,9 @@ import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
 import { makeStyles } from '@mui/styles';
 import React from 'react';
-import { useDispatch } from 'react-redux';
 
 import { useCurrentLocale } from '../../../utils/usersUtils.ts';
-import { saveCurrentUserProFile } from '../../users/actions';
+import { useSaveCurrentUser } from '../../users/hooks/useSaveCurrentUser.ts';
 import { APP_LOCALES } from '../constants';
 
 const useStyles = makeStyles(theme => ({
@@ -26,18 +25,17 @@ export default function LanguageSwitchComponent() {
     const activeLocale = APP_LOCALES.find(
         locale => locale.code === activeLocaleCode,
     );
-    const dispatch = useDispatch();
+
+    const { mutate: saveCurrentUser } = useSaveCurrentUser(false);
 
     const handleClickListItem = event => {
         setAnchorEl(event.currentTarget);
     };
 
     const handleLocaleSwitch = localeCode => {
-        dispatch(
-            saveCurrentUserProFile({
-                language: localeCode,
-            }),
-        );
+        saveCurrentUser({
+            language: localeCode,
+        });
         setAnchorEl(null);
     };
 

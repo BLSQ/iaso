@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types';
 import React, { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
 
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import SidebarMenu from '../../app/components/SidebarMenuComponent';
@@ -21,7 +20,6 @@ const ProtectedRoute = ({ routeConfig, allRoutes, component }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const currentUser = useCurrentUser();
-    const dispatch = useDispatch();
 
     // TODO test wrong account feature
     const isWrongAccount = Boolean(

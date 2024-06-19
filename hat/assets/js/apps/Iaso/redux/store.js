@@ -13,18 +13,15 @@ import {
     orgUnitsInitialState,
     orgUnitsReducer,
 } from '../domains/orgUnits/reducer';
-import { usersInitialState, usersReducer } from '../domains/users/reducer';
 
 const store = createStore(
     {
         orgUnits: orgUnitsInitialState,
         instances: instancesInitialState,
-        users: usersInitialState,
     },
     {
         orgUnits: orgUnitsReducer,
         instances: instancesReducer,
-        users: usersReducer,
     },
     [
         // routerMiddleware(storeHistory),

@@ -70,7 +70,6 @@ const iasoApp = (element, enabledPluginsName, themeConfig, userHomePage) => {
                                         }}
                                     >
                                         <App
-                                            // history={history}
                                             userHomePage={
                                                 pluginHomePage || userHomePage
                                             }

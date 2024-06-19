@@ -2,10 +2,9 @@ import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import classNames from 'classnames';
 import React, { FunctionComponent, useCallback } from 'react';
-import { useDispatch } from 'react-redux';
 import { useCurrentLocale, useHasNoAccount } from '../../../utils/usersUtils';
 import { APP_LOCALES } from '../../app/constants';
-import { saveCurrentUserProFile } from '../../users/actions';
+import { useSaveCurrentUser } from '../../users/hooks/useSaveCurrentUser';
 
 const useStyles = makeStyles(theme => ({
     languageSwitch: {
@@ -20,9 +19,8 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export const LangSwitch: FunctionComponent = () => {
-    const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
-
+    const { mutate: saveCurrentUser } = useSaveCurrentUser(false);
     const hasNoAccount = useHasNoAccount();
     const activeLocale = useCurrentLocale();
     const handleClick = useCallback(
@@ -31,14 +29,12 @@ export const LangSwitch: FunctionComponent = () => {
                 console.log('hasNoAccount', localeCode);
                 // dispatch(switchLocale(localeCode));
             } else {
-                dispatch(
-                    saveCurrentUserProFile({
-                        language: localeCode,
-                    }),
-                );
+                saveCurrentUser({
+                    language: localeCode,
+                });
             }
         },
-        [dispatch, hasNoAccount],
+        [hasNoAccount, saveCurrentUser],
     );
     return (
         <>

@@ -1,9 +1,9 @@
 /* eslint-disable camelcase */
 import { LangOptions } from 'bluesquare-components';
+import moment from 'moment';
 import { useQueryClient } from 'react-query';
 import { OrgUnitStatus } from '../domains/orgUnits/types/orgUnit';
 import { Project } from '../domains/projects/types/project';
-import { getCookie } from './cookies';
 
 export type Profile = {
     id: string;
@@ -100,12 +100,7 @@ export const useCurrentUser = (): User => {
     return currentUser as User;
 };
 export const useCurrentLocale = (): LangOptions => {
-    const currentUser: User = useCurrentUser();
-    return (
-        currentUser?.language ||
-        (getCookie('django_language') as LangOptions) ||
-        'en'
-    );
+    return moment.locale() as LangOptions;
 };
 export const useIsLoggedIn = (): boolean => {
     const currentUser: User = useCurrentUser();

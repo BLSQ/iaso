@@ -181,6 +181,7 @@ export const useRoutes = (userHomePage?: string): Result => {
     const { isFetching: isFetchingCurrentUser } = useGetCurrentUser(
         !currentRoute?.allowAnonymous ||
             currentRoute?.baseUrl === baseUrls.home,
+        false,
     );
     const redirections = useRedirections({
         hasNoAccount,

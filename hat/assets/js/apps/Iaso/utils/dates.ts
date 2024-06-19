@@ -1,3 +1,4 @@
+import { LangOptions } from 'bluesquare-components';
 import moment from 'moment';
 
 // this is the date format used in url params
@@ -102,7 +103,7 @@ export const longDateFormats = {
  * Configure the local for time displayed to the user.
  * @param {"en"|"fr"} code - Language code string
  */
-export const setLocale = (code: 'en' | 'fr') => {
+export const setLocale = (code: LangOptions) => {
     moment.locale(code);
     moment.updateLocale(code, {
         longDateFormat: longDateFormats[code],

@@ -35,6 +35,7 @@ type Props = {
     disableDates?: boolean;
     disableOnlyDeleted?: boolean;
     isCalendar?: boolean;
+    isEmbedded?: boolean;
 };
 
 const campaignCategoryOptions = (
@@ -49,14 +50,25 @@ const campaignCategoryOptions = (
     ];
 };
 
+const getRedirectUrl = (isCalendar: boolean, isEmbedded: boolean): string => {
+    if (isCalendar && isEmbedded) {
+        return baseUrls.embeddedCalendar;
+    }
+    if (isCalendar) {
+        return baseUrls.calendar;
+    }
+    return baseUrls.campaigns;
+};
+
 export const CampaignsFilters: FunctionComponent<Props> = ({
     params,
     disableDates = false,
     disableOnlyDeleted = false,
     isCalendar = false,
+    isEmbedded = false,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const redirectUrl = isCalendar ? baseUrls.calendar : baseUrls.campaigns;
+    const redirectUrl = getRedirectUrl(isCalendar, isEmbedded);
     const redirectToReplace = useRedirectToReplace();
 
     const [filtersUpdated, setFiltersUpdated] = useState(false);
@@ -168,35 +180,117 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
     }, []);
 
     return (
-        <>
-            <Grid container spacing={2}>
-                <Grid item xs={12} md={3}>
+        <Grid container spacing={2}>
+            <Grid item xs={12} md={3}>
+                <InputComponent
+                    keyValue="search"
+                    onChange={(key, value) => {
+                        setSearch(value);
+                    }}
+                    value={search}
+                    type="search"
+                    label={MESSAGES.search}
+                    onEnterPressed={handleSearch}
+                    blockForbiddenChars
+                    onErrorChange={setTextSearchError}
+                />
+                <InputComponent
+                    loading={isFetchingGroupedOrgUnits}
+                    keyValue="orgUnitGroups"
+                    multi
+                    clearable
+                    onChange={(key, value) => {
+                        setOrgUnitGroups(value);
+                    }}
+                    value={orgUnitGroups}
+                    type="select"
+                    options={groupedOrgUnits}
+                    label={MESSAGES.countryBlock}
+                />
+                {!isCalendar && (
                     <InputComponent
-                        keyValue="search"
-                        onChange={(key, value) => {
-                            setSearch(value);
+                        loading={isFetchingGroupedGroups}
+                        keyValue="campaignGroups"
+                        clearable
+                        multi
+                        onChange={(_key, value) => {
+                            setCampaignGroups(value);
                         }}
-                        value={search}
-                        type="search"
-                        label={MESSAGES.search}
-                        onEnterPressed={handleSearch}
-                        blockForbiddenChars
-                        onErrorChange={setTextSearchError}
+                        value={campaignGroups}
+                        type="select"
+                        options={groupedCampaignsOptions}
+                        label={MESSAGES.groupedCampaigns}
                     />
+                )}
+            </Grid>
+            <Grid item xs={12} md={3}>
+                <InputComponent
+                    loading={isFetchingCountries}
+                    keyValue="campaignCategory"
+                    clearable
+                    onChange={(_key, value) => {
+                        setCampaignCategory(value);
+                    }}
+                    value={campaignCategory}
+                    type="select"
+                    options={campaignCategoryOptions(formatMessage)}
+                    label={MESSAGES.campaignCategory}
+                />
+                <InputComponent
+                    loading={isFetchingTypes}
+                    keyValue="campaignType"
+                    clearable
+                    onChange={(_key, value) => {
+                        setCampaignType(value);
+                    }}
+                    multi
+                    value={campaignType}
+                    type="select"
+                    options={types}
+                    label={MESSAGES.campaignType}
+                />
+                {!isCalendar && (
                     <InputComponent
-                        loading={isFetchingGroupedOrgUnits}
-                        keyValue="orgUnitGroups"
+                        loading={isFetchingCountries}
+                        keyValue="countries"
                         multi
                         clearable
                         onChange={(key, value) => {
-                            setOrgUnitGroups(value);
+                            setCountries(value);
                         }}
-                        value={orgUnitGroups}
+                        value={countries}
                         type="select"
-                        options={groupedOrgUnits}
-                        label={MESSAGES.countryBlock}
+                        options={countriesList.map(c => ({
+                            label: c.name,
+                            value: c.id,
+                        }))}
+                        label={MESSAGES.country}
                     />
-                    {!isCalendar && (
+                )}
+            </Grid>
+            <Grid item xs={12} md={3}>
+                {!disableDates && (
+                    <DatesRange
+                        xs={12}
+                        sm={12}
+                        md={12}
+                        lg={12}
+                        onChangeDate={(key, value) => {
+                            if (key === 'dateFrom') {
+                                setRoundStartFrom(value);
+                            }
+                            if (key === 'dateTo') {
+                                setRoundStartTo(value);
+                            }
+                        }}
+                        labelFrom={MESSAGES.RoundStartFrom}
+                        labelTo={MESSAGES.RoundStartTo}
+                        dateFrom={roundStartFrom || undefined}
+                        dateTo={roundStartTo || undefined}
+                    />
+                )}
+                {isCalendar && (
+                    <>
                         <InputComponent
                             loading={isFetchingGroupedGroups}
                             keyValue="campaignGroups"
@@ -210,35 +304,6 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                             options={groupedCampaignsOptions}
                             label={MESSAGES.groupedCampaigns}
                         />
-                    )}
-                </Grid>
-                <Grid item xs={12} md={3}>
-                    <InputComponent
-                        loading={isFetchingCountries}
-                        keyValue="campaignCategory"
-                        clearable
-                        onChange={(_key, value) => {
-                            setCampaignCategory(value);
-                        }}
-                        value={campaignCategory}
-                        type="select"
-                        options={campaignCategoryOptions(formatMessage)}
-                        label={MESSAGES.campaignCategory}
-                    />
-                    <InputComponent
-                        loading={isFetchingTypes}
-                        keyValue="campaignType"
-                        clearable
-                        onChange={(_key, value) => {
-                            setCampaignType(value);
-                        }}
-                        multi
-                        value={campaignType}
-                        type="select"
-                        options={types}
-                        label={MESSAGES.campaignType}
-                    />
-                    {!isCalendar && (
                         <InputComponent
                             loading={isFetchingCountries}
                             keyValue="countries"
@@ -255,96 +320,41 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                             }))}
                             label={MESSAGES.country}
                         />
-                    )}
-                </Grid>
-                <Grid item xs={12} md={3}>
-                    {!disableDates && (
-                        <DatesRange
-                            xs={12}
-                            sm={12}
-                            md={12}
-                            lg={12}
-                            onChangeDate={(key, value) => {
-                                if (key === 'dateFrom') {
-                                    setRoundStartFrom(value);
-                                }
-                                if (key === 'dateTo') {
-                                    setRoundStartTo(value);
-                                }
-                            }}
-                            labelFrom={MESSAGES.RoundStartFrom}
-                            labelTo={MESSAGES.RoundStartTo}
-                            dateFrom={roundStartFrom || undefined}
-                            dateTo={roundStartTo || undefined}
-                        />
-                    )}
-                    {isCalendar && (
-                        <>
-                            <InputComponent
-                                loading={isFetchingGroupedGroups}
-                                keyValue="campaignGroups"
-                                clearable
-                                multi
-                                onChange={(_key, value) => {
-                                    setCampaignGroups(value);
-                                }}
-                                value={campaignGroups}
-                                type="select"
-                                options={groupedCampaignsOptions}
-                                label={MESSAGES.groupedCampaigns}
-                            />
-                            <InputComponent
-                                loading={isFetchingCountries}
-                                keyValue="countries"
-                                multi
-                                clearable
-                                onChange={(key, value) => {
-                                    setCountries(value);
-                                }}
-                                value={countries}
-                                type="select"
-                                options={countriesList.map(c => ({
-                                    label: c.name,
-                                    value: c.id,
-                                }))}
-                                label={MESSAGES.country}
-                            />
-                        </>
-                    )}
-                    {!disableOnlyDeleted && (
-                        <InputComponent
-                            keyValue="showOnlyDeleted"
-                            onChange={(key, value) => {
-                                setShowOnlyDeleted(value);
-                            }}
-                            value={showOnlyDeleted}
-                            type="checkbox"
-                            label={MESSAGES.showOnlyDeleted}
-                        />
-                    )}
-                </Grid>
-                <Grid
-                    container
-                    item
-                    xs={12}
-                    md={!disableDates || isCalendar ? 3 : 6}
-                    justifyContent="flex-end"
-                >
-                    <Box mt={isLargeLayout ? 2 : 0}>
-                        <Button
-                            disabled={textSearchError || !filtersUpdated}
-                            variant="contained"
-                            color="primary"
-                            onClick={() => handleSearch()}
-                        >
-                            <Box mr={1} top={3} position="relative">
-                                <FiltersIcon />
-                            </Box>
-                            <FormattedMessage {...MESSAGES.filter} />
-                        </Button>
-                    </Box>
-                </Grid>
+                    </>
+                )}
+                {!disableOnlyDeleted && (
+                    <InputComponent
+                        keyValue="showOnlyDeleted"
+                        onChange={(key, value) => {
+                            setShowOnlyDeleted(value);
+                        }}
+                        value={showOnlyDeleted}
+                        type="checkbox"
+                        label={MESSAGES.showOnlyDeleted}
+                    />
+                )}
             </Grid>
-        </>
+            <Grid
+                container
+                item
+                xs={12}
+                md={!disableDates || isCalendar ? 3 : 6}
+                justifyContent="flex-end"
+            >
+                <Box mt={isLargeLayout ? 2 : 0}>
+                    <Button
+                        disabled={textSearchError || !filtersUpdated}
+                        variant="contained"
+                        color="primary"
+                        onClick={() => handleSearch()}
+                    >
+                        <Box mr={1} top={3} position="relative">
+                            <FiltersIcon />
+                        </Box>
+                        <FormattedMessage {...MESSAGES.filter} />
+                    </Button>
+                </Box>
+            </Grid>
+        </Grid>
     );
 };

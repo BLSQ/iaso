@@ -1,6 +1,6 @@
 # Debugging the Backend
 
-## DjangoDjango Debug Toolbar
+## Django Debug Toolbar
 
 You can activate the [Django Debug Toolbar](https://django-debug-toolbar.readthedocs.io/).
 

@@ -19,8 +19,9 @@ export const useGetCurrentUser = (
                 console.warn('User not connected');
             },
             onSuccess: result => {
-                console.log('result', result);
-                setLocale(result.language as LangOptions);
+                if (result.language) {
+                    setLocale(result.language as LangOptions);
+                }
             },
             retry: false,
             enabled,

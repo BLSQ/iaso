@@ -2,6 +2,8 @@ import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import classNames from 'classnames';
 import React, { FunctionComponent, useCallback } from 'react';
+import { useQueryClient } from 'react-query';
+import { setLocale } from '../../../utils/dates';
 import { useCurrentLocale, useHasNoAccount } from '../../../utils/usersUtils';
 import { APP_LOCALES } from '../../app/constants';
 import { useSaveCurrentUser } from '../../users/hooks/useSaveCurrentUser';
@@ -23,18 +25,20 @@ export const LangSwitch: FunctionComponent = () => {
     const { mutate: saveCurrentUser } = useSaveCurrentUser(false);
     const hasNoAccount = useHasNoAccount();
     const activeLocale = useCurrentLocale();
+    const queryClient = useQueryClient();
     const handleClick = useCallback(
         localeCode => {
             if (hasNoAccount) {
-                console.log('hasNoAccount', localeCode);
-                // dispatch(switchLocale(localeCode));
+                setLocale(localeCode);
+                // forcing refresh of the app while changing the locale
+                queryClient.invalidateQueries('currentUser');
             } else {
                 saveCurrentUser({
                     language: localeCode,
                 });
             }
         },
-        [hasNoAccount, saveCurrentUser],
+        [hasNoAccount, saveCurrentUser, queryClient],
     );
     return (
         <>

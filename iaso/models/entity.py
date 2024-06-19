@@ -120,7 +120,7 @@ class EntityQuerySet(models.QuerySet):
 
     def filter_for_user(self, user: typing.Optional[typing.Union[User, AnonymousUser]]):
         if not user or not user.is_authenticated:
-            raise UserNotAuthError(f"User not Authentified")
+            raise UserNotAuthError(f"User not Authenticated")
 
         profile = user.iaso_profile
         self = self.filter(account=profile.account)
@@ -133,18 +133,18 @@ class EntityQuerySet(models.QuerySet):
         return self
 
     def filter_for_app_id(self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: typing.Optional[str]):
-        if app_id is not None:
-            try:
-                project = Project.objects.get_for_user_and_app_id(user, app_id)
+        if not user or not user.is_authenticated:
+            raise UserNotAuthError(f"User not Authenticated")
 
-                if project.account is None:
-                    raise ProjectNotFoundError(f"Project Account is None for app_id {app_id}")  # Should be a 401
+        try:
+            project = Project.objects.get_for_user_and_app_id(user, app_id)
 
-                self = self.filter(account=project.account).distinct("id")
-            except Project.DoesNotExist:
-                raise ProjectNotFoundError(f"Project Not Found for app_id {app_id}")
+            if project.account is None:
+                raise ProjectNotFoundError(f"Project Account is None for app_id {app_id}")  # Should be a 401
 
-        return self
+            return self.filter(account=project.account).distinct("id")
+        except Project.DoesNotExist:
+            raise ProjectNotFoundError(f"Project Not Found for app_id {app_id}")
 
     def filter_for_user_and_app_id(
         self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: typing.Optional[str]

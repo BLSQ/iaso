@@ -17,7 +17,6 @@ import {
 import { SingleSelect } from '../../../../../components/Inputs/SingleSelect';
 import MESSAGES from '../../messages';
 import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
-import { useSaveSubActivity } from '../../hooks/api/useSaveSubActivity';
 import { useAgeRangeOptions } from '../../hooks/useAgeRangeOptions';
 import { CampaignFormValues, Round } from '../../../../../constants/types';
 import { SubActivityScopeField } from '../SubActivityScopeField';
@@ -38,20 +37,20 @@ export const CreateEditSubActivity: FunctionComponent<Props> = ({
     round,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const { values: campaign } = useFormikContext<CampaignFormValues>();
-    const onSuccess = useCallback(() => {
-        closeDialog();
-    }, [closeDialog]);
-    const { mutateAsync: saveSubActivity, isLoading: isSaving } =
-        useSaveSubActivity(onSuccess);
+    const {
+        values: campaign,
+        setFieldValue: setCampaignFieldValue,
+        handleSubmit: saveCampaign,
+    } = useFormikContext<CampaignFormValues>();
+
     const ageRangeOptions = useAgeRangeOptions();
-    const validationSchema = useSubActivityValidation(round);
+    const validationSchema = useSubActivityValidation();
 
     const formik = useFormik<SubActivityFormValues>({
         initialValues: {
+            id: subActivity?.id,
             round_number: round?.number,
             campaign: campaign.obr_name,
-            id: subActivity?.id,
             name: subActivity?.name,
             start_date: subActivity?.start_date,
             end_date: subActivity?.end_date,
@@ -61,16 +60,29 @@ export const CreateEditSubActivity: FunctionComponent<Props> = ({
             scopes: subActivity?.scopes ?? [],
         },
         validationSchema,
-        onSubmit: values => saveSubActivity(values),
+        // eslint-disable-next-line @typescript-eslint/no-empty-function
+        onSubmit: () => {},
     });
+    const { values } = formik;
     const titleMessage = subActivity?.id
-        ? MESSAGES.editSubActivity
-        : MESSAGES.createSubActivity;
+        ? `${formatMessage(MESSAGES.editSubActivity)} - ${
+              campaign.obr_name
+          } - Round ${round?.number}`
+        : `${formatMessage(MESSAGES.createSubActivity)} - ${
+              campaign.obr_name
+          } - Round ${round?.number}`;
+
+    const onConfirm = useCallback(() => {
+        setCampaignFieldValue('subactivity', values);
+        saveCampaign();
+        closeDialog();
+    }, [closeDialog, saveCampaign, setCampaignFieldValue, values]);
 
     const isScopeChanged = !isEqual(
         formik.initialValues.scopes.map(scope => scope.group.org_units).flat(),
         formik.values.scopes.map(scope => scope.group.org_units).flat(),
     );
+
     // isEqual won't catch changes in scopes because of deep nesting, so we check it on its own
     const isValuesChanged =
         !isEqual(formik.initialValues, formik.values) || isScopeChanged;
@@ -78,9 +90,7 @@ export const CreateEditSubActivity: FunctionComponent<Props> = ({
         formik.isValid &&
         (!isEqual(formik.touched, {}) || isScopeChanged) &&
         !formik.isSubmitting &&
-        isValuesChanged &&
-        !isSaving;
-    isScopeChanged;
+        isValuesChanged;
 
     return (
         <FormikProvider value={formik}>
@@ -91,7 +101,7 @@ export const CreateEditSubActivity: FunctionComponent<Props> = ({
                 closeDialog={closeDialog}
                 open={isOpen}
                 titleMessage={titleMessage}
-                onConfirm={formik.handleSubmit}
+                onConfirm={onConfirm}
                 onCancel={() => {
                     closeDialog();
                 }}
@@ -102,10 +112,10 @@ export const CreateEditSubActivity: FunctionComponent<Props> = ({
                 closeOnConfirm={false}
             >
                 <Box minWidth="70vw">
-                    <Box mb={4}>
+                    <Box mb={4} mt={2}>
                         <Divider />
                     </Box>
-                    {(isSaving || formik.isSubmitting) && <LoadingSpinner />}
+                    {formik.isSubmitting && <LoadingSpinner />}
                     <Grid container>
                         <Grid item xs={6}>
                             <Box mr={2}>

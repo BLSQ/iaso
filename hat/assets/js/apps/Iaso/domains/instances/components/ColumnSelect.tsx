@@ -1,21 +1,21 @@
-import React, {
-    useEffect,
-    FunctionComponent,
-    useMemo,
-    ReactNode,
-    ReactElement,
-} from 'react';
 import {
-    useSafeIntl,
     Column,
     useRedirectToReplace,
+    useSafeIntl,
 } from 'bluesquare-components';
-import { useInstancesColumns, useInstanceVisibleColumns } from '../utils';
-import { useGetPossibleFields } from '../../forms/hooks/useGetPossibleFields';
+import React, {
+    FunctionComponent,
+    ReactElement,
+    ReactNode,
+    useEffect,
+    useMemo,
+} from 'react';
 import { ColumnsSelectDrawer } from '../../../components/tables/ColumnSelectDrawer';
+import { useGetPossibleFields } from '../../forms/hooks/useGetPossibleFields';
 import { Form } from '../../forms/types/forms';
 import MESSAGES from '../messages';
 import { Instance } from '../types/instance';
+import { useInstanceVisibleColumns, useInstancesColumns } from '../utils';
 
 type Params = {
     order?: string;
@@ -102,7 +102,12 @@ export const ColumnSelect: FunctionComponent<Props> = ({
 
     useEffect(() => {
         if (
-            JSON.stringify(instancesColumns) !== JSON.stringify(tableColumns) &&
+            JSON.stringify(
+                instancesColumns.map(c => ({ accessor: c.accessor, id: c.id })),
+            ) !==
+                JSON.stringify(
+                    tableColumns.map(c => ({ accessor: c.accessor, id: c.id })),
+                ) &&
             instancesColumns.length > 1
         ) {
             setTableColumns(instancesColumns);

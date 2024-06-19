@@ -22,6 +22,7 @@ export const useGetDataSource = (
             staleTime: 60000,
             cacheTime: 1000 * 60 * 5,
             keepPreviousData: true,
+            enabled: !!sourceId,
         },
     });
 };

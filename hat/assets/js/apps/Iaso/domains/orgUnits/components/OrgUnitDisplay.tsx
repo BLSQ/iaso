@@ -1,8 +1,9 @@
-import React, { ReactElement } from 'react';
 import { makeStyles } from '@mui/styles';
-import { textPlaceholder, LinkWithLocation } from 'bluesquare-components';
-import { OrgUnitLabel } from '../utils';
+import { LinkWithLocation, textPlaceholder } from 'bluesquare-components';
+import React, { ReactElement } from 'react';
 import { baseUrls } from '../../../constants/urls';
+import { OrgUnit } from '../types/orgUnit';
+import { OrgUnitLabel } from './OrgUnitLabel';
 
 const useStyles = makeStyles(() => ({
     link: {
@@ -11,7 +12,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 type Props = {
-    orgUnit?: Record<string, any>;
+    orgUnit?: OrgUnit;
     withType?: boolean;
 };
 
@@ -29,7 +30,7 @@ const OrgUnitDisplay = ({
             className={classes.link}
             to={`/${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}`}
         >
-            {OrgUnitLabel({ orgUnit, withType })}
+            <OrgUnitLabel orgUnit={orgUnit} withType={withType} />
         </LinkWithLocation>
     );
 };

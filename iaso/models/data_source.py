@@ -54,6 +54,7 @@ class DataSource(models.Model):
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "versions": [v.as_dict_without_data_source() for v in versions],
+            "tree_config_status_fields": self.tree_config_status_fields,
         }
 
     def as_list(self):

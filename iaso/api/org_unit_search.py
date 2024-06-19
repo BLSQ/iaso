@@ -102,7 +102,7 @@ def build_org_units_queryset(queryset, params, profile):
         queryset = queryset.filter(instance__created_at__lte=date_to)
 
     if date_from is not None and date_to is not None:
-        queryset = queryset.filter(instance__created_at__range=[date_from, date_to])
+        queryset = queryset.filter(instance__created_at__range=[date_from, date_to]).distinct("id")
 
     if has_instances is not None:
         if has_instances == "true":
@@ -226,12 +226,9 @@ def build_org_units_queryset(queryset, params, profile):
     queryset = queryset.select_related("org_unit_type")
 
     queryset = queryset.prefetch_related("groups")
-    queryset = queryset.prefetch_related("parent")
-    queryset = queryset.prefetch_related("parent__parent")
-    queryset = queryset.prefetch_related("parent__parent__parent")
     queryset = queryset.prefetch_related("parent__parent__parent__parent")
 
-    return queryset.distinct()
+    return queryset
 
 
 def annotate_query(queryset, count_instances, count_per_form, forms):

@@ -139,10 +139,12 @@ type Redirection = {
     to?: string;
     element?: ReactElement;
 };
+
+const defaultHomeUrl = `/${baseUrls.forms}`;
+
 export const useRedirections: RedirectionsMethod = ({
     hasNoAccount,
     isFetchingCurrentUser,
-    homeUrl = `/${baseUrls.forms}`,
     pluginRedirections,
     userHomePage,
 }) => {
@@ -168,11 +170,11 @@ export const useRedirections: RedirectionsMethod = ({
                 redirections = [
                     {
                         path: '/',
-                        to: homeUrl,
+                        to: userHomePage || defaultHomeUrl,
                     },
                     {
                         path: '/home',
-                        to: homeUrl,
+                        to: userHomePage || defaultHomeUrl,
                     },
                     ...redirections,
                 ];

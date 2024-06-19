@@ -1,4 +1,5 @@
 /* eslint-disable camelcase */
+import { LangOptions } from 'bluesquare-components';
 import { useSelector } from 'react-redux';
 import { OrgUnitStatus } from '../domains/orgUnits/types/orgUnit';
 import { Project } from '../domains/projects/types/project';
@@ -72,7 +73,7 @@ export type User = {
         id: string;
     }[];
     projects?: Project[];
-    language?: string;
+    language?: LangOptions;
     user_id: number;
     dhis2_id?: string;
 };
@@ -101,9 +102,12 @@ type State = {
 
 // Replace with react query when we can
 export const useCurrentUser = (): User => {
-    // noinspection UnnecessaryLocalVariableJS
     const currentUser = useSelector((state: State) => state.users.current);
     return currentUser;
+};
+export const useCurrentLocale = (): LangOptions => {
+    const currentUser: User = useCurrentUser();
+    return currentUser?.language || 'en';
 };
 
 export const useHasNoAccount = (): boolean => {

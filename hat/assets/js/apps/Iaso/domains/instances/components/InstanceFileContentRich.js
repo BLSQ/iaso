@@ -5,9 +5,9 @@ import { makeStyles } from '@mui/styles';
 import isPlainObject from 'lodash/isPlainObject';
 import PropTypes from 'prop-types';
 import React from 'react';
-import { useSelector } from 'react-redux';
 
 import { textPlaceholder } from 'bluesquare-components';
+import { useCurrentLocale } from '../../../utils/usersUtils';
 
 const useStyle = makeStyles(theme => ({
     tableCellHead: {
@@ -269,7 +269,7 @@ FormGroup.propTypes = {
 
 function FormField({ descriptor, data, showQuestionKey }) {
     const classes = useStyle();
-    const activeLocale = useSelector(state => state.app.locale.code);
+    const activeLocale = useCurrentLocale();
     return (
         <TableRow>
             <TableCell className={classes.tableCell}>
@@ -301,7 +301,7 @@ FormField.propTypes = {
 
 function FormCalculatedField({ descriptor, data, showQuestionKey }) {
     const classes = useStyle();
-    const activeLocale = useSelector(state => state.app.locale.code);
+    const activeLocale = useCurrentLocale();
 
     return (
         <TableRow>
@@ -337,7 +337,7 @@ FormCalculatedField.propTypes = {
 
 function FormMetaField({ descriptor, data, showQuestionKey }) {
     const classes = useStyle();
-    const activeLocale = useSelector(state => state.app.locale.code);
+    const activeLocale = useCurrentLocale();
 
     return (
         <TableRow>
@@ -394,7 +394,7 @@ FormNoteField.propTypes = {
 
 function Label({ descriptor, value, tooltip, showQuestionKey }) {
     const classes = useStyle();
-    const activeLocale = useSelector(state => state.app.locale.code);
+    const activeLocale = useCurrentLocale();
 
     let label = descriptor.name;
     let showNameHint = false;

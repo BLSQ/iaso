@@ -6,7 +6,6 @@ import thunk from 'redux-thunk';
 import createStore from './createStore';
 
 import { localeMiddleware } from '../domains/app/middleware';
-import appReducer from '../domains/app/reducer';
 import {
     instancesInitialState,
     instancesReducer,
@@ -41,7 +40,6 @@ const store = createStore(
         mappings: mappingsInitialState,
     },
     {
-        app: appReducer,
         sidebar: sidebarMenuReducer,
         orgUnits: orgUnitsReducer,
         instances: instancesReducer,

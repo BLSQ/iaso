@@ -1,12 +1,13 @@
-import React from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { makeStyles } from '@mui/styles';
-import Typography from '@mui/material/Typography';
-import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import Typography from '@mui/material/Typography';
+import { makeStyles } from '@mui/styles';
+import React from 'react';
+import { useDispatch } from 'react-redux';
 
-import { APP_LOCALES } from '../constants';
+import { useCurrentLocale } from '../../../utils/usersUtils.ts';
 import { saveCurrentUserProFile } from '../../users/actions';
+import { APP_LOCALES } from '../constants';
 
 const useStyles = makeStyles(theme => ({
     currentLocale: {
@@ -21,7 +22,10 @@ const useStyles = makeStyles(theme => ({
 export default function LanguageSwitchComponent() {
     const classes = useStyles();
     const [anchorEl, setAnchorEl] = React.useState(null);
-    const activeLocale = useSelector(state => state.app.locale);
+    const activeLocaleCode = useCurrentLocale();
+    const activeLocale = APP_LOCALES.find(
+        locale => locale.code === activeLocaleCode,
+    );
     const dispatch = useDispatch();
 
     const handleClickListItem = event => {
@@ -61,7 +65,7 @@ export default function LanguageSwitchComponent() {
                 {APP_LOCALES.map(appLocale => (
                     <MenuItem
                         key={appLocale.code}
-                        selected={appLocale.code === activeLocale.code}
+                        selected={appLocale.code === activeLocale}
                         onClick={() => handleLocaleSwitch(appLocale.code)}
                     >
                         {appLocale.label}

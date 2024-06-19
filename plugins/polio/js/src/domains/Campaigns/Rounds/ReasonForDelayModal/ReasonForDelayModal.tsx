@@ -1,17 +1,17 @@
-import React, { FunctionComponent } from 'react';
+import { Box, Divider } from '@mui/material';
 import {
-    useSafeIntl,
     ConfirmCancelModal,
     makeFullModal,
+    useSafeIntl,
 } from 'bluesquare-components';
-import { Box, Divider } from '@mui/material';
 import { Field, useFormikContext } from 'formik';
-import { useSelector } from 'react-redux';
-import MESSAGES from '../../../../constants/messages';
-import { useReasonsDelayOptions } from './hooks/reasons';
-import { ReasonsForDelayButton } from './ReasonsForDelayButton';
+import React, { FunctionComponent } from 'react';
+import { useCurrentLocale } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { DateInput } from '../../../../components/Inputs/DateInput';
 import { SingleSelect } from '../../../../components/Inputs/SingleSelect';
+import MESSAGES from '../../../../constants/messages';
+import { ReasonsForDelayButton } from './ReasonsForDelayButton';
+import { useReasonsDelayOptions } from './hooks/reasons';
 
 type Props = {
     isOpen: boolean;
@@ -27,10 +27,9 @@ const ReasonForDelayModal: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const { handleSubmit, resetForm } = useFormikContext();
-    // @ts-ignore
-    const activeLocale = useSelector(state => state.app.locale);
-    const { code: locale } = activeLocale;
-    const { data: reasonsForDelayOptions } = useReasonsDelayOptions(locale);
+    const activeLocale = useCurrentLocale();
+    const { data: reasonsForDelayOptions } =
+        useReasonsDelayOptions(activeLocale);
     return (
         <ConfirmCancelModal
             id="reasonForDelay-Modal"

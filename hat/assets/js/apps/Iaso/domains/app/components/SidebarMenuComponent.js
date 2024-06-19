@@ -1,41 +1,41 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React from 'react';
-import { connect } from 'react-redux';
-import { FormattedMessage } from 'react-intl';
 import ExitIcon from '@mui/icons-material/ExitToApp';
 import {
     Box,
     Button,
-    IconButton,
-    Drawer,
-    List,
     Divider,
-    Typography,
+    Drawer,
+    IconButton,
+    List,
     Tooltip,
+    Typography,
     useMediaQuery,
     useTheme,
 } from '@mui/material';
 import { withStyles } from '@mui/styles';
+import React from 'react';
+import { FormattedMessage } from 'react-intl';
+import { connect } from 'react-redux';
 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import { toggleSidebarMenu } from '../../../redux/sidebarMenuReducer';
 import { SIDEBAR_WIDTH } from '../../../constants/uiConstants.ts';
+import { toggleSidebarMenu } from '../../../redux/sidebarMenuReducer';
 
-import MenuItem from './MenuItemComponent';
-import { Logo } from './Logo.tsx';
 import LanguageSwitch from './LanguageSwitchComponent';
+import { Logo } from './Logo.tsx';
+import MenuItem from './MenuItemComponent';
 
-import { useMenuItems, DOC_URL } from '../../../constants/menu.tsx';
+import { DOC_URL, useMenuItems } from '../../../constants/menu.tsx';
 
 import MESSAGES from './messages';
 
-import { getDefaultSourceVersion } from '../../dataSources/utils';
-import { useCurrentUser } from '../../../utils/usersUtils.ts';
 import { baseUrls } from '../../../constants/urls.ts';
+import { useCurrentUser } from '../../../utils/usersUtils.ts';
+import { getDefaultSourceVersion } from '../../dataSources/utils';
 
 const styles = theme => ({
     ...commonStyles(theme),

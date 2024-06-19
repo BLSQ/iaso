@@ -1,11 +1,11 @@
-import React, { FunctionComponent, useCallback } from 'react';
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useDispatch, useSelector } from 'react-redux';
 import classNames from 'classnames';
+import React, { FunctionComponent, useCallback } from 'react';
+import { useDispatch } from 'react-redux';
+import { useCurrentLocale, useHasNoAccount } from '../../../utils/usersUtils';
 import { switchLocale } from '../../app/actions';
 import { APP_LOCALES } from '../../app/constants';
-import { useHasNoAccount } from '../../../utils/usersUtils';
 import { saveCurrentUserProFile } from '../../users/actions';
 
 const useStyles = makeStyles(theme => ({
@@ -25,9 +25,7 @@ export const LangSwitch: FunctionComponent = () => {
     const classes: Record<string, string> = useStyles();
 
     const hasNoAccount = useHasNoAccount();
-    const activeLocale = useSelector(
-        (state: { app: { locale: { code: string } } }) => state.app.locale,
-    );
+    const activeLocale = useCurrentLocale();
     const handleClick = useCallback(
         localeCode => {
             if (hasNoAccount) {
@@ -49,7 +47,7 @@ export const LangSwitch: FunctionComponent = () => {
                     <Box
                         className={classNames(
                             classes.languageSwitch,
-                            locale.code === activeLocale.code &&
+                            locale.code === activeLocale &&
                                 classes.languageSwitchActive,
                         )}
                         onClick={() => handleClick(locale.code)}

@@ -131,13 +131,13 @@ const FormDetail: FunctionComponent = () => {
         }
         return requiredFields;
     }, [currentForm.period_type.value]);
-
+    const isNew = params.formId === '0';
     const onConfirm = async () => {
         let isUpdate;
         let saveForm;
         let formData;
 
-        if (params.formId === '0') {
+        if (isNew) {
             isUpdate = false;
             formData = mapValues(
                 omit(currentForm, ['form_id', 'possible_fields']),
@@ -270,33 +270,43 @@ const FormDetail: FunctionComponent = () => {
                         {formatMessage(MESSAGES.save)}
                     </Button>
                 </Box>
-                <Box>
-                    <Tabs
-                        value={tab}
-                        classes={{
-                            root: classes.tabs,
-                        }}
-                        onChange={(_, newtab) => handleChangeTab(newtab)}
-                    >
-                        <Tab
-                            value="versions"
-                            label={formatMessage(MESSAGES.versions)}
-                        />
-                        <Tab
-                            value="attachments"
-                            label={formatMessage(MESSAGES.attachments)}
-                        />
-                    </Tabs>
-                </Box>
-                {tab === 'versions' && (
-                    <FormVersions
-                        periodType={currentForm.period_type.value || undefined}
-                        forceRefresh={forceRefreshVersions}
-                        setForceRefresh={setForceRefreshVersions}
-                        formId={parseInt(params.formId, 10)}
-                    />
+                {!isNew && (
+                    <>
+                        <Box>
+                            <Tabs
+                                value={tab}
+                                classes={{
+                                    root: classes.tabs,
+                                }}
+                                onChange={(_, newtab) =>
+                                    handleChangeTab(newtab)
+                                }
+                            >
+                                <Tab
+                                    value="versions"
+                                    label={formatMessage(MESSAGES.versions)}
+                                />
+                                <Tab
+                                    value="attachments"
+                                    label={formatMessage(MESSAGES.attachments)}
+                                />
+                            </Tabs>
+                        </Box>
+                        {tab === 'versions' && (
+                            <FormVersions
+                                periodType={
+                                    currentForm.period_type.value || undefined
+                                }
+                                forceRefresh={forceRefreshVersions}
+                                setForceRefresh={setForceRefreshVersions}
+                                formId={parseInt(params.formId, 10)}
+                            />
+                        )}
+                        {tab === 'attachments' && (
+                            <FormAttachments params={params} />
+                        )}
+                    </>
                 )}
-                {tab === 'attachments' && <FormAttachments params={params} />}
             </Box>
         </>
     );

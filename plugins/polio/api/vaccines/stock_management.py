@@ -546,6 +546,19 @@ class VaccineStockManagementViewSet(ModelViewSet):
                     }
                 )
 
+            if movement.usable_vials_used > 0:
+                results.append(
+                    {
+                        "date": movement.report_date,
+                        "action": "Form A - Vials Used",
+                        "vials_out": None,
+                        "doses_out": None,
+                        "vials_in": movement.usable_vials_used or 0,
+                        "doses_in": (movement.usable_vials_used or 0) * calc.get_doses_per_vial(),
+                        "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
+                    }
+                )
+
         for report in destruction_reports:
             results.append(
                 {

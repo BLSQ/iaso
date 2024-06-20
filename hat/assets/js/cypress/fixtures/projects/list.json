@@ -11,7 +11,7 @@
             "feature_flags": [{
                     "id": 5,
                     "code": "FORMS_AUTO_UPLOAD",
-                    "name": "Upload auto des f. finalisés",
+                    "name": "Auto upload of f. finalized",
                     "description": "Uploader les formulaires dès qu'une connexion internet se présente. Upload immédiat des formulaires \"finalisés\"",
                     "created_at": 1593012611.488891,
                     "updated_at": 1608655329.956441

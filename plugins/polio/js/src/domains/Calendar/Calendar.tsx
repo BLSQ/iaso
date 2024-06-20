@@ -62,7 +62,6 @@ export const Calendar: FunctionComponent = () => {
     const isEmbedded = location.pathname.includes(embeddedCalendarUrl);
     const currentUrl = isEmbedded ? embeddedCalendarUrl : baseUrl;
     const params = useParamsObject(currentUrl) as CalendarParams;
-
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const currentUser = useCurrentUser();
@@ -191,6 +190,7 @@ export const Calendar: FunctionComponent = () => {
                                     disableDates
                                     disableOnlyDeleted
                                     isCalendar
+                                    isEmbedded={isEmbedded}
                                     params={params}
                                 />
                             </Box>

@@ -11,22 +11,20 @@ import { useGetStorages } from './hooks/requests/useGetStorages';
 import { useGetStorageApiParams } from './hooks/requests/requests';
 import MESSAGES from './messages';
 import { useGetColumns, defaultSorted, baseUrl } from './config';
-import { useSingleTableParams } from '../../components/tables/SingleTable';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { baseUrls } from '../../constants/urls';
+import { useActiveParams } from '../../routing/hooks/useActiveParams';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
 export const Storages: FunctionComponent = () => {
-    const params = useParamsObject(
-        baseUrls.storages,
-    ) as unknown as StorageParams;
+    const params = useParamsObject(baseUrls.storages);
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
 
-    const apiParams = useSingleTableParams(params);
+    const apiParams = useActiveParams(params) as unknown as StorageParams;
     const { data, isFetching } = useGetStorages(apiParams);
     const { url: apiUrl } = useGetStorageApiParams(apiParams);
     const columns = useGetColumns(apiParams);

@@ -24,7 +24,6 @@ import {
 } from './sidebarMenuReducer';
 import { snackBarsInitialState, snackBarsReducer } from './snackBarsReducer';
 import { routerInitialState, routerReducer } from './routerReducer';
-import { linksInitialState, linksReducer } from '../domains/links/reducer';
 import { usersReducer, usersInitialState } from '../domains/users/reducer';
 import { localeMiddleware } from '../domains/app/middleware';
 
@@ -40,7 +39,6 @@ const store = createStore(
         instances: instancesInitialState,
         snackBar: snackBarsInitialState,
         routerCustom: routerInitialState,
-        links: linksInitialState,
         users: usersInitialState,
         mappings: mappingsInitialState,
     },
@@ -51,7 +49,6 @@ const store = createStore(
         instances: instancesReducer,
         snackBar: snackBarsReducer,
         routerCustom: routerReducer,
-        links: linksReducer,
         users: usersReducer,
         mappings: mappingReducer,
     },

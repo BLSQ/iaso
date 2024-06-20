@@ -4,9 +4,9 @@ import {
     useSnackMutation,
     useSnackQueries,
 } from 'Iaso/libs/apiHooks.ts';
-import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api';
+import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api.ts';
 import { useQueryClient } from 'react-query';
-import MESSAGES from './messages';
+import MESSAGES from './messages.ts';
 import { getOtChipColors, getChipColors } from '../../constants/chipColors';
 
 export const useOrgUnitDetailData = (
@@ -27,24 +27,21 @@ export const useOrgUnitDetailData = (
             },
         );
     const groupsUrl = useMemo(() => {
-        const basUrl = '/api/groups/';
+        const baseUrl = '/api/groups/';
         if (isNewOrgunit) {
-            return `${basUrl}?&defaultVersion=true`;
+            return `${baseUrl}?&defaultVersion=true`;
         }
         if (originalOrgUnit?.source_id) {
-            return `${basUrl}?&dataSource=${originalOrgUnit.source_id}`;
+            return `${baseUrl}?&dataSource=${originalOrgUnit.source_id}`;
         }
-        return basUrl;
+        return baseUrl;
     }, [isNewOrgunit, originalOrgUnit?.source_id]);
     const cacheOptions = {
         staleTime: 1000 * 60 * 15, // in MS
         cacheTime: 1000 * 60 * 5,
     };
     const [
-        { data: algorithms = [], isFetching: isFetchingAlgorithm },
-        { data: algorithmRuns = [], isFetching: isFetchingAlgorithmRuns },
         { data: groups = [], isFetching: isFetchingGroups },
-        { data: profiles = [], isFetching: isFetchingProfiles },
         { data: orgUnitTypes = [], isFetching: isFetchingOrgUnitTypes },
         { data: links = [], isFetching: isFetchingLinks },
         {
@@ -55,39 +52,12 @@ export const useOrgUnitDetailData = (
         { data: parentOrgUnit },
     ] = useSnackQueries([
         {
-            queryKey: ['algorithms'],
-            queryFn: () => getRequest('/api/algorithms/'),
-            options: {
-                enabled: tab === 'links',
-                ...cacheOptions,
-            },
-        },
-        {
-            queryKey: ['algorithmRuns'],
-            queryFn: () => getRequest('/api/algorithmsruns/'),
-            snackErrorMsg: MESSAGES.fetchAlgorithmsError,
-            options: {
-                enabled: tab === 'links',
-                ...cacheOptions,
-            },
-        },
-        {
-            queryKey: ['groups'],
+            queryKey: ['groups', groupsUrl],
             queryFn: () => getRequest(groupsUrl),
             snackErrorMsg: MESSAGES.fetchGroupsError,
             options: {
                 select: data => data.groups,
                 enabled: tab === 'children' || tab === 'infos',
-                ...cacheOptions,
-            },
-        },
-        {
-            queryKey: ['profiles'],
-            queryFn: () => getRequest('/api/profiles/'),
-            snackErrorMsg: MESSAGES.fetchProfilesError,
-            options: {
-                select: data => data.profiles,
-                enabled: tab === 'links',
                 ...cacheOptions,
             },
         },
@@ -165,15 +135,10 @@ export const useOrgUnitDetailData = (
         : isFetchingAssociatedDataSources;
 
     return {
-        algorithms,
-        algorithmRuns,
         groups,
-        profiles,
         orgUnitTypes,
         links,
         isFetchingDatas:
-            isFetchingAlgorithm ||
-            isFetchingAlgorithmRuns ||
             isFetchingGroups ||
             isFetchingSources ||
             isFetchingLinks ||
@@ -183,7 +148,7 @@ export const useOrgUnitDetailData = (
         isFetchingDetail,
         isFetchingOrgUnitTypes,
         isFetchingGroups,
-        isFetchingProfiles,
+        isFetchingSources,
         parentOrgUnit,
     };
 };
@@ -237,4 +202,18 @@ export const useGetGroups = ({ dataSourceId, sourceVersionId }) => {
 export const useRefreshOrgUnit = () => {
     const queryClient = useQueryClient();
     return data => queryClient.setQueryData(['forms', data.id], data);
+};
+
+export const useOrgUnitTabParams = (params, paramsPrefix) => {
+    return useMemo(() => {
+        const { orgUnitId, ...rest } = params;
+        const tabParams = { orgUnitId };
+        const formKeys = Object.keys(rest).filter(k =>
+            k.includes(paramsPrefix),
+        );
+        formKeys.forEach(formKey => {
+            tabParams[formKey] = rest[formKey];
+        });
+        return tabParams;
+    }, [params, paramsPrefix]);
 };

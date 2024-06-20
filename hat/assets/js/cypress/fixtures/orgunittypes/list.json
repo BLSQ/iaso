@@ -61,7 +61,7 @@
                         },
                         {
                             "id": 3,
-                            "name": "GPS à chaque formulaire",
+                            "name": "GPS on each form",
                             "code": "TAKE_GPS_ON_FORM",
                             "description": "",
                             "created_at": 1590486429.44506,
@@ -94,7 +94,7 @@
                         },
                         {
                             "id": 3,
-                            "name": "GPS à chaque formulaire",
+                            "name": "GPS on each form",
                             "code": "TAKE_GPS_ON_FORM",
                             "description": "",
                             "created_at": 1590486429.44506,
@@ -119,7 +119,7 @@
                         },
                         {
                             "id": 6,
-                            "name": "GPS des trajets",
+                            "name": "GPS of journeys",
                             "code": "TRANSPORT_TRACKING",
                             "description": "",
                             "created_at": 1608567067.773703,
@@ -143,7 +143,7 @@
                         },
                         {
                             "id": 3,
-                            "name": "GPS à chaque formulaire",
+                            "name": "GPS on each form",
                             "code": "TAKE_GPS_ON_FORM",
                             "description": "",
                             "created_at": 1590486429.44506,

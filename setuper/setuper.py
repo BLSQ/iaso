@@ -7,6 +7,7 @@ from registry import setup_registry
 from default_healthFacility_form import setup_health_facility_level_default_form
 from review_change_proposal import setup_review_change_proposal
 from create_submission_with_picture import create_submission_with_picture
+from additional_projects import create_projects, link_new_projects_to_main_data_source
 import string
 import random
 import argparse
@@ -52,6 +53,9 @@ seed_registry = True
 
 seed_review_change_proposal = True
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--additionnal_projects", action="store_true")
+args = parser.parse_args()
 
 def create_account(server_url, username, password):
     account_name = "".join(random.choices(string.ascii_lowercase, k=7))
@@ -72,6 +76,10 @@ def create_account(server_url, username, password):
 
     if seed_entities:
         setup_entities(account_name, iaso_client=iaso_client)
+
+    if args.additionnal_projects:
+        create_projects(account_name, iaso_client=iaso_client)
+        link_new_projects_to_main_data_source(account_name, iaso_client=iaso_client)
 
     if seed_review_change_proposal:
         setup_review_change_proposal(account_name, iaso_client=iaso_client)

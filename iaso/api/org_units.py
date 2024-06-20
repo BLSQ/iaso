@@ -94,7 +94,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
          These parameter can totally conflict and the result is undocumented
         """
-        queryset = self.get_queryset().select_related("parent__org_unit_type")
+        queryset = self.get_queryset().defer("geom").select_related("parent__org_unit_type")
         forms = Form.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
@@ -175,7 +175,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     temp_org_unit = unit.as_dict()
                     temp_org_unit["geo_json"] = None
                     if temp_org_unit["has_geo_json"] == True:
-                        shape_queryset = self.get_queryset().filter(id=temp_org_unit["id"])
+                        shape_queryset = queryset.filter(id=temp_org_unit["id"])
                         temp_org_unit["geo_json"] = geojson_queryset(shape_queryset, geometry_field="simplified_geom")
                     org_units.append(temp_org_unit)
                 return Response({"orgUnits": org_units})
@@ -185,13 +185,24 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 page = paginator.page(1)
                 org_units = []
 
+                org_units_ids = (item.id for item in page.object_list)
+                org_units_for_geojson = OrgUnit.objects.filter(id__in=org_units_ids).only("id", "simplified_geom")
+                geo_json = geojson_queryset(org_units_for_geojson, geometry_field="simplified_geom")
+
                 for unit in page.object_list:
                     temp_org_unit = unit.as_location(with_parents=request.GET.get("withParents", None))
-                    temp_org_unit["geo_json"] = None
-                    if temp_org_unit["has_geo_json"] == True:
-                        shape_queryset = self.get_queryset().filter(id=temp_org_unit["id"])
-                        temp_org_unit["geo_json"] = geojson_queryset(shape_queryset, geometry_field="simplified_geom")
+                    unit_geo_json = next((item for item in geo_json["features"] if item["id"] == unit.id), None)
+                    temp_org_unit["geo_json"] = (
+                        {
+                            "type": "FeatureCollection",
+                            "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+                            "features": [unit_geo_json],
+                        }
+                        if unit_geo_json
+                        else None
+                    )
                     org_units.append(temp_org_unit)
+
                 return Response(org_units)
             else:
                 queryset = queryset.select_related("org_unit_type")

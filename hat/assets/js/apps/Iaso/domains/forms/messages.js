@@ -654,6 +654,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.form.label.changeRequestMode',
         defaultMessage: 'Change request mode',
     },
+    formDeleted: {
+        id: 'iaso.form.formDeleted',
+        defaultMessage: 'Form deleted',
+    },
+    formRestored: {
+        id: 'iaso.form.formRestored',
+        defaultMessage: 'Form restored',
+    },
 });
 
 export default MESSAGES;

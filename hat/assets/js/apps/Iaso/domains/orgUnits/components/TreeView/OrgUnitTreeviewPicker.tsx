@@ -146,32 +146,37 @@ const OrgUnitTreeviewPicker: React.FC<Props> = ({
                             placeholderStyle={placeholderStyle}
                             formattedPlaceholder={formattedPlaceholder}
                         />
-                        {clearable && resetSelection && selectedItems.size > 0 && (
-                            <Box
-                                className={classnames(
-                                    classes.clearButton,
-                                    'clear-tree',
-                                )}
-                            >
-                                <IconButton
-                                    icon="clear"
-                                    size="small"
-                                    tooltipMessage={MESSAGES.clear}
-                                    onClick={handleResetSelection}
-                                />
-                            </Box>
-                        )}
-                        <IconButton
-                            size="small"
-                            tooltipMessage={
-                                multiselect
-                                    ? MESSAGES.selectMultiple
-                                    : MESSAGES.selectSingle
-                            }
-                            icon="orgUnit"
-                            onClick={handleOnClick}
-                            disabled={disabled}
-                        />
+                        {clearable &&
+                            resetSelection &&
+                            selectedItems.size > 0 && (
+                                <Box
+                                    className={classnames(
+                                        classes.clearButton,
+                                        'clear-tree',
+                                    )}
+                                >
+                                    <IconButton
+                                        icon="clear"
+                                        size="small"
+                                        tooltipMessage={MESSAGES.clear}
+                                        onClick={handleResetSelection}
+                                    />
+                                </Box>
+                            )}
+
+                        <Box className="open-tree">
+                            <IconButton
+                                size="small"
+                                tooltipMessage={
+                                    multiselect
+                                        ? MESSAGES.selectMultiple
+                                        : MESSAGES.selectSingle
+                                }
+                                icon="orgUnit"
+                                onClick={handleOnClick}
+                                disabled={disabled}
+                            />
+                        </Box>
                     </Paper>
                 </>
             </FormControl>

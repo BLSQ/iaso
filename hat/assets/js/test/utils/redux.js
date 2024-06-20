@@ -8,7 +8,6 @@ import { mappingsInitialState } from '../../apps/Iaso/domains/mappings/reducer';
 import { sidebarMenuInitialState } from '../../apps/Iaso/redux/sidebarMenuReducer';
 import { snackBarsInitialState } from '../../apps/Iaso/redux/snackBarsReducer';
 import { routerInitialState } from '../../apps/Iaso/redux/routerReducer';
-import { linksInitialState } from '../../apps/Iaso/domains/links/reducer';
 import { usersInitialState } from '../../apps/Iaso/domains/users/reducer';
 
 import { renderWithIntl } from './intl';
@@ -26,7 +25,6 @@ const initialState = {
     instances: instancesInitialState,
     snackBar: snackBarsInitialState,
     routerCustom: routerInitialState,
-    links: linksInitialState,
     users: usersInitialState,
     mappings: mappingsInitialState,
     app: {

@@ -12,7 +12,6 @@ const siteBaseUrl = Cypress.env('siteBaseUrl');
 
 const baseUrl = `${siteBaseUrl}/dashboard/forms/list`;
 
-let interceptFlag = false;
 let table;
 let row;
 const goToPage = (
@@ -21,13 +20,10 @@ const goToPage = (
     fixture = 'forms/list.json',
 ) => {
     cy.login();
-    interceptFlag = false;
     cy.intercept('GET', '/sockjs-node/**');
     cy.intercept('GET', '/api/profiles/me/**', fakeUser);
-    // TODO remove times: 2 cf hat/assets/js/apps/Iaso/components/tables/SingleTable.js l 80
     cy.intercept('GET', '/api/forms/**', {
         fixture,
-        times: 2,
     }).as('getForms');
 
     cy.intercept('GET', '/api/v2/orgunittypes/**', {
@@ -130,7 +126,7 @@ describe('Forms', () => {
                 cy.get('[data-test="search-button"]').click();
                 cy.url().should(
                     'eq',
-                    `${siteBaseUrl}/dashboard/forms/list/accountId/1/page/1/search/${search}`,
+                    `${siteBaseUrl}/dashboard/forms/list/accountId/1/search/${search}`,
                 );
             });
         });
@@ -213,14 +209,18 @@ describe('Forms', () => {
                         .should('be.visible');
                 });
             });
-            it("should not be visible if we don't have results", () => {
+            it("should be disabled if we don't have results", () => {
                 goToPage(superUser, null, 'forms/empty.json');
                 cy.wait('@getForms').then(() => {
                     cy.get('[data-test="csv-export-button"]').should(
-                        'not.exist',
+                        'have.attr',
+                        'aria-disabled',
+                        'true',
                     );
                     cy.get('[data-test="xlsx-export-button"]').should(
-                        'not.exist',
+                        'have.attr',
+                        'aria-disabled',
+                        'true',
                     );
                 });
             });
@@ -241,8 +241,8 @@ describe('Forms', () => {
                     times: 2,
                     query: {
                         order: 'instance_updated_at',
-                        all: 'true',
                         limit: '50',
+                        page: '1',
                     },
                 },
                 req => {
@@ -258,19 +258,6 @@ describe('Forms', () => {
         it('should be called with search params', () => {
             goToPage(superUser, null, 'forms/list.json');
             cy.wait('@getForms').then(() => {
-                interceptFlag = false;
-                cy.intercept(
-                    'GET',
-                    // Stubbing the exact url to avoid bugs with intercepts on the same base url
-                    '/api/forms/?&order=instance_updated_at&page=1&search=ZELDA&showDeleted=true&orgUnitTypeIds=47,11&projectsIds=1,2&all=true&limit=50',
-                    req => {
-                        req.continue(res => {
-                            interceptFlag = true;
-                            res.send({ fixture: 'forms/list.json' });
-                        });
-                    },
-                ).as('getFormSearch');
-
                 cy.get('#search-search').type(search);
                 cy.fillMultiSelect('#orgUnitTypeIds', [0, 1], false);
                 cy.fillMultiSelect('#projectsIds', [0, 1], false);
@@ -278,11 +265,9 @@ describe('Forms', () => {
 
                 cy.get('[data-test="search-button"]').click();
 
-                cy.wait('@getFormSearch').then(xhr => {
-                    cy.wrap(interceptFlag).should('eq', true);
+                cy.wait('@getForms').then(xhr => {
                     cy.log('query', xhr.request.query);
                     cy.wrap(xhr.request.query).should('deep.equal', {
-                        all: 'true',
                         limit: '50',
                         order: 'instance_updated_at',
                         orgUnitTypeIds: '47,11',

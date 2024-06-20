@@ -28,12 +28,13 @@ export const CalendarMap: FunctionComponent<Props> = ({
         isLoadingShapes,
         roundsDict,
     } = useShapes(selection, campaigns, loadingCampaigns);
-
+    console.log('campaignsShapes', campaignsShapes);
     const { mergedShapes, isLoadingMergedShapes } = useMergedShapes({
         campaigns,
         roundsDict,
         selection,
     });
+    console.log('mergedShapes', mergedShapes);
 
     return (
         <Box position="relative">

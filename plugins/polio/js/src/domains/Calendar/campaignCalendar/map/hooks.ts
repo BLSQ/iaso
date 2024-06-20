@@ -113,7 +113,6 @@ export const useMergedShapes = ({
 
     const addShapeColor = useCallback(
         shape => {
-            console.log('shape', shape);
             return { ...shape, color: campaignColors[shape.properties.id] };
         },
         [campaignColors],

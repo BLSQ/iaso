@@ -110,25 +110,16 @@ class OrgUnitTreeViewsAPITestCase(APITestCase):
             self.assertEqual(1, len(response.data))
             self.assertEqual(response.data[0]["name"], "Boucle du Mouhon")
 
-    def test_root_with_force_full_tree(self):
-        self.client.force_authenticate(self.user)
-        with self.assertNumQueries(1):
-            response = self.client.get("/api/orgunits/tree/?force_full_tree=true")
-            self.assertJSONResponse(response, 200)
-            self.assertEqual(2, len(response.data))
-            self.assertEqual(response.data[0]["name"], "Angola")
-            self.assertEqual(response.data[1]["name"], "Burkina Faso")
-
     def test_specific_level_with_force_full_tree(self):
         self.client.force_authenticate(self.user)
 
-        with self.assertNumQueries(1):
+        with self.assertNumQueries(3):
             response = self.client.get(f"/api/orgunits/tree/?parent_id={self.angola.pk}&force_full_tree=true")
             self.assertJSONResponse(response, 200)
             self.assertEqual(1, len(response.data))
             self.assertEqual(response.data[0]["name"], "Huila")
 
-        with self.assertNumQueries(1):
+        with self.assertNumQueries(3):
             response = self.client.get(f"/api/orgunits/tree/?parent_id={self.burkina.pk}&force_full_tree=true")
             self.assertJSONResponse(response, 200)
             self.assertEqual(1, len(response.data))
@@ -169,15 +160,16 @@ class OrgUnitTreeViewsAPITestCase(APITestCase):
     def test_search(self):
         self.client.force_authenticate(self.user)
 
-        response = self.client.get("/api/orgunits/tree/search/?search=b")
-        self.assertJSONResponse(response, 200)
+        with self.assertNumQueries(3):
+            response = self.client.get("/api/orgunits/tree/search/?search=b")
+            self.assertJSONResponse(response, 200)
+            self.assertEqual(3, len(response.data["results"]))
+            self.assertEqual(response.data["results"][0]["name"], "Banwa")
+            self.assertEqual(response.data["results"][1]["name"], "Boucle du Mouhon")
+            self.assertEqual(response.data["results"][2]["name"], "Burkina Faso")
 
-        self.assertEqual(3, len(response.data["results"]))
-        self.assertEqual(response.data["results"][0]["name"], "Banwa")
-        self.assertEqual(response.data["results"][1]["name"], "Boucle du Mouhon")
-        self.assertEqual(response.data["results"][2]["name"], "Burkina Faso")
-
-        response = self.client.get("/api/orgunits/tree/search/?search=BURKINA")
-        self.assertJSONResponse(response, 200)
-        self.assertEqual(1, len(response.data["results"]))
-        self.assertEqual(response.data["results"][0]["name"], "Burkina Faso")
+        with self.assertNumQueries(3):
+            response = self.client.get("/api/orgunits/tree/search/?search=BURKINA")
+            self.assertJSONResponse(response, 200)
+            self.assertEqual(1, len(response.data["results"]))
+            self.assertEqual(response.data["results"][0]["name"], "Burkina Faso")

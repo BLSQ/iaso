@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from submissions import submission2xml, org_unit_gps_point
+from submissions import submission2xml, org_unit_gps_point, submission_org_unit_gps_point
 import random
 
 
@@ -27,7 +27,7 @@ def setup_health_facility_level_default_form(account_name, iaso_client):
         "periods_before_allowed": 0,
         "periods_after_allowed": 0,
         "device_field": "deviceid",
-        "location_field": "gps",
+        "location_field": "coordonnees_gps_fosa",
         "label_keys": [],
     }
     sample_form_id = iaso_client.post("/api/forms/", json=sample_data)["id"]
@@ -90,6 +90,7 @@ def setup_health_facility_level_default_form(account_name, iaso_client):
                                 "statut_fosa": random.choice(
                                     ["public", "prive_confessionel", "prive_laic", "militaire", "ong", "autre"]
                                 ),
+                                "coordonnees_gps_fosa": submission_org_unit_gps_point(orgunit),
                             },
                             "equipment_group": {
                                 "HFR_CS_16": random.choice(["yes", "no"]),

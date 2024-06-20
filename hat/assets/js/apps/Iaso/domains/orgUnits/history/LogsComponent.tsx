@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 import { useQueryClient } from 'react-query';
 import { makeStyles } from '@mui/styles';
 import { commonStyles } from 'bluesquare-components';
@@ -42,6 +42,18 @@ export const Logs: FunctionComponent<Props> = ({
         contentType: 'iaso.orgunit',
         params: tableParams,
     });
+    const handleRevision = useCallback(
+        revision => {
+            goToRevision(revision, () => {
+                queryClient.invalidateQueries([
+                    'logs',
+                    'iaso.orgunit',
+                    logObjectId,
+                ]);
+            });
+        },
+        [goToRevision, logObjectId, queryClient],
+    );
     return (
         <Box className={classes.containerFullHeightNoTabPadded}>
             <TableWithDeepLink
@@ -59,15 +71,7 @@ export const Logs: FunctionComponent<Props> = ({
                         log ? (
                             <LogsDetails
                                 logId={log.id}
-                                goToRevision={revision => {
-                                    goToRevision(revision, () => {
-                                        queryClient.invalidateQueries([
-                                            'logs',
-                                            'iaso.orgunit',
-                                            logObjectId,
-                                        ]);
-                                    });
-                                }}
+                                goToRevision={handleRevision}
                             />
                         ) : null,
                 }}

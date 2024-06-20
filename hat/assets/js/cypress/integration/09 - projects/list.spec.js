@@ -1,12 +1,12 @@
 /// <reference types="cypress" />
 
-import listFixture from '../../fixtures/projects/list.json';
 import listfeatureFlags from '../../fixtures/featureflags/list.json';
 import superUser from '../../fixtures/profiles/me/superuser.json';
+import listFixture from '../../fixtures/projects/list.json';
 import page2 from '../../fixtures/projects/list_page2.json';
 
-import { testTablerender } from '../../support/testTableRender';
 import { testPagination } from '../../support/testPagination';
+import { testTablerender } from '../../support/testTableRender';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 let interceptFlagProjects = false;

@@ -148,6 +148,7 @@ export const useOrgUnitDetailData = (
         isFetchingDetail,
         isFetchingOrgUnitTypes,
         isFetchingGroups,
+        isFetchingSources,
         parentOrgUnit,
     };
 };

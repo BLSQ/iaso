@@ -39,7 +39,6 @@ export const useGetForms = (
             staleTime: 60000,
             cacheTime: 60000,
             keepPreviousData: true,
-            // enabled: false,
         },
     });
 };

@@ -3,7 +3,7 @@ import { Grid, Paper, Box, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import { useStyles } from '../Styles';
 
-import MESSAGES from '../../../../constants/messages.js';
+import MESSAGES from '../../../../constants/messages';
 import { polioVaccines } from '../../../../constants/virus';
 
 type Vaccine = typeof polioVaccines[number];

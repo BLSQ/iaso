@@ -7,7 +7,6 @@ import { Button } from '@mui/material';
 import { isMapped, isNeverMapped } from '../question_mappings';
 import Dhis2SearchComponent from './Dhis2SearchComponent';
 import { DuplicateHint } from './DuplicateHint';
-import HesabuHint from './HesabuHint';
 import ObjectDumper from './ObjectDumper';
 import Descriptor from '../descriptor';
 import EventTrackerProgramForm from './EventTrackerProgramForm';
@@ -178,7 +177,7 @@ const QuestionMappingForm = ({
     fieldOptions, // should be ordered so state is initalized with 1st element
     fieldTypeOptions, // should be ordered so state is initalized with 1st element
 }) => {
-    const questionMapping = mapping.question_mappings[question.name] || {};
+    const questionMapping = mapping.question_mappings[Descriptor.getKey(question)] || {};
     const [newQuestionMapping, setNewQuestionMapping] = React.useState();
     const [iasoField, setIasoField] = React.useState(fieldOptions[0]);
     const [fieldType, setFieldType] = React.useState(fieldTypeOptions[0]);
@@ -264,10 +263,7 @@ const QuestionMappingForm = ({
                         mapping={questionMapping}
                         mappingVersion={mappingVersion}
                     />
-                    <HesabuHint
-                        mapping={questionMapping}
-                        hesabuDescriptor={hesabuDescriptor}
-                    />
+                  
                     <br />
                     <Button
                         // className="button"
@@ -394,10 +390,6 @@ const QuestionMappingForm = ({
                     </h3>
                     <br />
                     <ObjectDumper object={newQuestionMapping} />
-                    <HesabuHint
-                        mapping={newQuestionMapping}
-                        hesabuDescriptor={hesabuDescriptor}
-                    />
                     <DuplicateHint
                         mapping={newQuestionMapping}
                         mappingVersion={mappingVersion}

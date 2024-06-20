@@ -7,6 +7,8 @@ logger = logging.getLogger(__name__)
 from django.core.files.uploadedfile import UploadedFile
 from django.test import TestCase
 from django.contrib.gis.geos import Point
+from unittest import mock
+
 from iaso.models import (
     User,
     Instance,
@@ -54,8 +56,21 @@ def build_form_mapping():
                 },
             },
             "question3": {"type": MappingVersion.QUESTION_MAPPING_NEVER_MAPPED},
+            "question4__1": {"id": "DE_DHIS2_ID_bool4_1", "valueType": "BOOLEAN"},
+            "question4__2": {"id": "DE_DHIS2_ID_bool4_2", "valueType": "BOOLEAN"},
         },
     }
+
+
+def build_export_status():
+    export_status = mock.MagicMock(spec=ExportStatus)
+    expected_return = {
+        "question4": {"type": "select all that apply", "children": [{"name": "1"}, {"name": "2"}]},
+    }
+
+    export_status.mapping_version.form_version.questions_by_name.return_value = expected_return
+
+    return export_status
 
 
 def dump_attributes(obj):
@@ -161,7 +176,9 @@ class DataValueExporterTests(TestCase):
             self.assertIsNotNone(exception)
 
     def test_event_mapping_works(self):
-        event, errors = EventHandler().map_to_values(self.build_instance(self.form), build_form_mapping())
+        event, errors = EventHandler().map_to_values(
+            self.build_instance(self.form), build_form_mapping(), export_status=build_export_status()
+        )
 
         self.assertEqual(
             {
@@ -181,7 +198,9 @@ class DataValueExporterTests(TestCase):
         instance.json = {"question1": None}
         instance.save()
 
-        event, errors = EventHandler().map_to_values(instance, build_form_mapping())
+        event, errors = EventHandler().map_to_values(
+            instance, build_form_mapping(), export_status=build_export_status()
+        )
         self.assertEqual(
             {
                 "dataValues": [{"dataElement": "DE_DHIS2_ID", "value": None}],
@@ -200,7 +219,9 @@ class DataValueExporterTests(TestCase):
         instance.json = {"question2": "1 2"}
         instance.save()
 
-        event, errors = EventHandler().map_to_values(instance, build_form_mapping())
+        event, errors = EventHandler().map_to_values(
+            instance, build_form_mapping(), export_status=build_export_status()
+        )
 
         self.assertEqual(
             event,
@@ -214,6 +235,51 @@ class DataValueExporterTests(TestCase):
                     {"dataElement": "DE_DHIS2_ID_BOOL1", "value": True},
                     {"dataElement": "DE_DHIS2_ID_BOOL2", "value": True},
                     {"dataElement": "DE_DHIS2_ID_BOOL3", "value": False},
+                ],
+                "coordinate": {"latitude": 7.3, "longitude": 1.5},
+            },
+        )
+
+    def _do_test_event_maps_multi_select_new(self, answer_value, expected_event):
+        instance = self.build_instance(self.form)
+        instance.json = {"question4": answer_value}
+        instance.save()
+
+        event, errors = EventHandler().map_to_values(
+            instance, build_form_mapping(), export_status=build_export_status()
+        )
+
+        self.assertEqual(event, expected_event)
+
+    def test_event_maps_multi_select_new_1(self):
+        self._do_test_event_maps_multi_select_new(
+            "1",
+            {
+                "program": "PROGRAM_DHIS2_ID",
+                "event": "EVENT_DHIS2_UID",
+                "orgUnit": "OU_DHIS2_ID",
+                "eventDate": "2018-02-16",
+                "status": "COMPLETED",
+                "dataValues": [
+                    {"dataElement": "DE_DHIS2_ID_bool4_1", "value": True},
+                    {"dataElement": "DE_DHIS2_ID_bool4_2", "value": False},
+                ],
+                "coordinate": {"latitude": 7.3, "longitude": 1.5},
+            },
+        )
+
+    def test_event_maps_multi_select_new_1_2(self):
+        self._do_test_event_maps_multi_select_new(
+            "1 2",
+            {
+                "program": "PROGRAM_DHIS2_ID",
+                "event": "EVENT_DHIS2_UID",
+                "orgUnit": "OU_DHIS2_ID",
+                "eventDate": "2018-02-16",
+                "status": "COMPLETED",
+                "dataValues": [
+                    {"dataElement": "DE_DHIS2_ID_bool4_1", "value": True},
+                    {"dataElement": "DE_DHIS2_ID_bool4_2", "value": True},
                 ],
                 "coordinate": {"latitude": 7.3, "longitude": 1.5},
             },

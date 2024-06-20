@@ -1,4 +1,3 @@
-/* eslint-disable react/function-component-definition */
 /* eslint-disable camelcase */
 import { Box, Grid, Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
@@ -68,6 +67,14 @@ const useStyles = makeStyles(theme => ({
     commentsWrapper: {
         backgroundColor: 'white',
         paddingTop: '10px',
+    },
+    hiddenOpacity: {
+        position: 'absolute',
+        top: '0px',
+        left: '0px',
+        width: '100vw',
+        zIndex: '-100',
+        opacity: '0',
     },
 }));
 
@@ -191,6 +198,7 @@ const OrgUnitDetail = () => {
         isFetchingOrgUnitTypes,
         isFetchingGroups,
         parentOrgUnit,
+        isFetchingSources,
     } = useOrgUnitDetailData(
         isNewOrgunit,
         params.orgUnitId,
@@ -384,7 +392,13 @@ const OrgUnitDetail = () => {
                     )}
                     {!isNewOrgunit && (
                         <>
-                            {params.tab === 'map' && (
+                            <div
+                                className={
+                                    params.tab === 'map'
+                                        ? ''
+                                        : classes.hiddenOpacity
+                                }
+                            >
                                 <Box className={classes.containerFullHeight}>
                                     {!isFetchingDetail && (
                                         <OrgUnitMap
@@ -423,7 +437,7 @@ const OrgUnitDetail = () => {
                                         />
                                     )}
                                 </Box>
-                            )}
+                            </div>
 
                             {params.tab === 'history' && (
                                 <div data-test="logs-tab">
@@ -480,6 +494,8 @@ const OrgUnitDetail = () => {
                                         baseUrl={baseUrl}
                                         params={linksParams}
                                         paramsPrefix={LINKS_PREFIX}
+                                        sources={sources}
+                                        isLoadingSources={isFetchingSources}
                                     />
                                 </Box>
                             )}

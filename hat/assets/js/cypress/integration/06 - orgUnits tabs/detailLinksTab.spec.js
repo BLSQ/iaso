@@ -158,9 +158,6 @@ const goToPage = () => {
         fixture: 'algorithmsruns/list.json',
     }).as('algorithmsRuns');
 
-    cy.intercept('GET', `/api/datasources/`, {
-        fixture: `datasources/details-ou.json`,
-    }).as('datasourcesList');
     cy.intercept('GET', `/api/datasources/?linkedTo=${orgUnit.id}`, {
         fixture: `datasources/details-ou.json`,
     }).as('datasources');

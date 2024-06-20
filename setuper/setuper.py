@@ -8,8 +8,11 @@ from registry import setup_registry
 from default_healthFacility_form import setup_health_facility_level_default_form
 from review_change_proposal import setup_review_change_proposal
 from create_submission_with_picture import create_submission_with_picture
+from additional_projects import create_projects, link_new_projects_to_main_data_source
 import string
 import random
+import argparse
+
 
 iaso_admin_client = IasoClient(server_url=SERVER)
 iaso_admin_client.authenticate_with_username_and_password(
@@ -49,12 +52,15 @@ seed_registry = True
 
 seed_review_change_proposal = True
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--additionnal_projects", action="store_true")
+args = parser.parse_args()
 
 if __name__ == "__main__":
     account_name = "".join(random.choices(string.ascii_lowercase, k=7))
     print("Creating account:", account_name)
     iaso_client = setup_account(account_name)
-    setup_orgunits(account_name, iaso_client=iaso_client)
+    setup_orgunits(iaso_client=iaso_client)
 
     if seed_default_health_facility_form:
         setup_health_facility_level_default_form(account_name, iaso_client=iaso_client)
@@ -69,6 +75,10 @@ if __name__ == "__main__":
 
     if seed_entities:
         setup_entities(account_name, iaso_client=iaso_client)
+
+    if args.additionnal_projects:
+        create_projects(account_name, iaso_client=iaso_client)
+        link_new_projects_to_main_data_source(account_name, iaso_client=iaso_client)
 
     if seed_review_change_proposal:
         setup_review_change_proposal(account_name, iaso_client=iaso_client)

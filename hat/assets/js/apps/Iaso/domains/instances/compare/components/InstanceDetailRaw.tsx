@@ -81,7 +81,7 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
                         <IconButtonComponent
                             size="small"
                             iconSize="small"
-                            url={`/${baseUrls.instances}/instanceId/${data?.id}`}
+                            url={`/${baseUrls.instanceDetail}/instanceId/${data?.id}`}
                             icon="remove-red-eye"
                             tooltipMessage={MESSAGES.viewSubmissionDetails}
                         />

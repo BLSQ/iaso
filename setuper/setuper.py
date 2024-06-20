@@ -53,7 +53,7 @@ def setup_account(account_name, server_url, username, password):
     return iaso_client
 
 
-def create_account(server_url, username, password):
+def create_account(server_url, username, password, additional_projects):
     account_name = "".join(random.choices(string.ascii_lowercase, k=7))
     print("Creating account:", account_name)
     iaso_client = setup_account(account_name, server_url, username, password)
@@ -73,7 +73,7 @@ def create_account(server_url, username, password):
     if seed_entities:
         setup_entities(account_name, iaso_client=iaso_client)
 
-    if args.additionnal_projects:
+    if additional_projects:
         create_projects(account_name, iaso_client=iaso_client)
         link_new_projects_to_main_data_source(account_name, iaso_client=iaso_client)
 
@@ -92,12 +92,13 @@ if __name__ == "__main__":
     parser.add_argument("-u", "--username", type=str, help="User name")
     parser.add_argument("-p", "--password", type=str, help="Password")
     parser.add_argument("-s", "--server_url", type=str, help="Server URL")
-    parser.add_argument("--additionnal_projects", action="store_true")
+    parser.add_argument("-p", "--additional_projects", action="store_true")
 
     args = parser.parse_args()
     server_url = args.server_url
     username = args.username
     password = args.password
+    additional_projects = args.additional_projects
 
     if server_url is None or username is None or password is None:
         from credentials import *
@@ -106,4 +107,4 @@ if __name__ == "__main__":
         username = ADMIN_USER_NAME
         password = ADMIN_PASSWORD
 
-    create_account(server_url, username, password)
+    create_account(server_url, username, password, additional_projects)

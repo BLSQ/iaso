@@ -105,10 +105,11 @@ if __name__ == "__main__":
         from credentials import *
 
         server_url = SERVER if server_url is None else server_url
-        username = ADMIN_USER_NAME if username is None else username
         password = ADMIN_PASSWORD if (username is None and password is None) else password
+        username = ADMIN_USER_NAME if username is None else username
 
     if not server_url or not username or not password:
+        print(server_url, username, password)
         sys.exit(f"ERROR: Values for server url, user name and password are all required")
 
     create_account(server_url, username, password, additional_projects)

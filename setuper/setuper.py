@@ -12,6 +12,16 @@ import string
 import random
 import argparse
 
+seed_default_health_facility_form = True
+
+seed_instances = True
+
+seed_entities = True
+
+seed_registry = True
+
+seed_review_change_proposal = True
+
 
 def admin_login(server_url, username, password):
     iaso_admin_client = IasoClient(server_url=server_url)
@@ -41,21 +51,6 @@ def setup_account(account_name, server_url, username, password):
         password=account_name,
     )
     return iaso_client
-
-
-seed_default_health_facility_form = True
-
-seed_instances = True
-
-seed_entities = True
-
-seed_registry = True
-
-seed_review_change_proposal = True
-
-parser = argparse.ArgumentParser()
-parser.add_argument("--additionnal_projects", action="store_true")
-args = parser.parse_args()
 
 
 def create_account(server_url, username, password):
@@ -97,6 +92,7 @@ if __name__ == "__main__":
     parser.add_argument("-u", "--username", type=str, help="User name")
     parser.add_argument("-p", "--password", type=str, help="Password")
     parser.add_argument("-s", "--server_url", type=str, help="Server URL")
+    parser.add_argument("--additionnal_projects", action="store_true")
 
     args = parser.parse_args()
     server_url = args.server_url

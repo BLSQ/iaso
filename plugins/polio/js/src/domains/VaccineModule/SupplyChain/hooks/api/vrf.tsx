@@ -5,7 +5,7 @@ import {
 } from 'bluesquare-components';
 import { useMemo } from 'react';
 import { UseMutationResult, UseQueryResult } from 'react-query';
-import { dispatcher } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/snackBars/EventDispatcher';
+import { openSnackBar } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/snackBars/EventDispatcher';
 import {
     errorSnackBar,
     succesfullSnackBar,
@@ -209,19 +209,13 @@ export const handleVrfPromiseErrors = (
     const vrf = data[0];
     const isSuccessful = vrf.status === 'fulfilled';
     if (isSuccessful) {
-        dispatcher.dispatch(
-            'snackbar',
-            succesfullSnackBar(undefined, MESSAGES.vrfApiSuccess),
-        );
+        openSnackBar(succesfullSnackBar(undefined, MESSAGES.vrfApiSuccess));
     } else {
         const details = Array.isArray(vrf.value)
             ? // there's only one element in the array
               vrf.value[0].reason.details
             : vrf.value;
-        dispatcher.dispatch(
-            'snackbar',
-            errorSnackBar(undefined, MESSAGES.vrfApiError, details),
-        );
+        openSnackBar(errorSnackBar(undefined, MESSAGES.vrfApiError, details));
     }
 };
 

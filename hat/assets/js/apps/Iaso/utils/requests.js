@@ -1,6 +1,6 @@
 import { getRequest, postRequest, putRequest } from 'Iaso/libs/Api.ts';
 import { useSnackQuery } from 'Iaso/libs/apiHooks.ts';
-import { dispatcher } from '../components/snackBars/EventDispatcher.ts';
+import { openSnackBar } from '../components/snackBars/EventDispatcher.ts';
 import { errorSnackBar } from '../constants/snackBars';
 
 export const fetchSubOrgUnitsByType = (params, orgUnitType) =>
@@ -10,10 +10,7 @@ export const fetchSubOrgUnitsByType = (params, orgUnitType) =>
             orgUnits: res.orgUnits,
         }))
         .catch(error => {
-            dispatcher.dispatch(
-                'snackbar',
-                errorSnackBar('fetchOrgUnitsError', null, error),
-            );
+            openSnackBar(errorSnackBar('fetchOrgUnitsError', null, error));
             console.error('Error while fetching org unit list:', error);
         });
 
@@ -21,10 +18,7 @@ export const fetchOrgUnitsTypes = () =>
     getRequest('/api/v2/orgunittypes/')
         .then(res => res.orgUnitTypes)
         .catch(error => {
-            dispatcher.dispatch(
-                'snackbar',
-                errorSnackBar('fetchOrgUnitTypesError', null, error),
-            );
+            openSnackBar(errorSnackBar('fetchOrgUnitTypesError', null, error));
             console.error('Error while fetching org unit types list:', error);
         });
 
@@ -44,10 +38,7 @@ export const fetchAssociatedOrgUnits = (
             };
         })
         .catch(error => {
-            dispatcher.dispatch(
-                'snackbar',
-                errorSnackBar('fetchOrgUnitsError', null, error),
-            );
+            openSnackBar(errorSnackBar('fetchOrgUnitsError', null, error));
             console.error('Error while fetching org unit list:', error);
         });
 };
@@ -56,10 +47,7 @@ export const fetchOrgUnitDetail = orgUnitId =>
     getRequest(`/api/orgunits/${orgUnitId}/`)
         .then(orgUnit => orgUnit)
         .catch(error => {
-            dispatcher.dispatch(
-                'snackbar',
-                errorSnackBar('fetchOrgUnitError', null, error),
-            );
+            openSnackBar(errorSnackBar('fetchOrgUnitError', null, error));
             console.error('Error while fetching org unit detail:', error);
         });
 
@@ -67,10 +55,7 @@ export const fetchInstanceDetail = instanceId =>
     getRequest(`/api/instances/${instanceId}`)
         .then(instance => instance)
         .catch(error => {
-            dispatcher.dispatch(
-                'snackbar',
-                errorSnackBar('fetchInstanceError', null, error),
-            );
+            openSnackBar(errorSnackBar('fetchInstanceError', null, error));
             console.error('Error while fetching instance detail:', error);
         });
 
@@ -78,27 +63,18 @@ export const fetchLinkDetail = linkId =>
     getRequest(`/api/links/${linkId}`)
         .then(linkDetail => linkDetail)
         .catch(error => {
-            dispatcher.dispatch(
-                'snackbar',
-                errorSnackBar('fetchLinkDetailError', null, error),
-            );
+            openSnackBar(errorSnackBar('fetchLinkDetailError', null, error));
             console.error('Error while fetching link detail:', error);
         });
 
 export const createForm = formData =>
     postRequest('/api/forms/', formData).catch(error => {
-        dispatcher.dispatch(
-            'snackbar',
-            errorSnackBar('createFormError', null, error),
-        );
+        openSnackBar(errorSnackBar('createFormError', null, error));
     });
 
 export const updateForm = (formId, formData) =>
     putRequest(`/api/forms/${formId}/`, formData).catch(error => {
-        dispatcher.dispatch(
-            'snackbar',
-            errorSnackBar('updateFormError', null, error),
-        );
+        openSnackBar(errorSnackBar('updateFormError', null, error));
     });
 
 export const createFormVersion = formVersionData => {
@@ -106,20 +82,14 @@ export const createFormVersion = formVersionData => {
     const fileData = { xls_file: formVersionData.xls_file };
 
     return postRequest('/api/formversions/', data, fileData).catch(error => {
-        dispatcher.dispatch(
-            'snackbar',
-            errorSnackBar('createFormVersionError', null, error),
-        );
+        openSnackBar(errorSnackBar('createFormVersionError', null, error));
     });
 };
 
 export const updateFormVersion = formVersion =>
     putRequest(`/api/formversions/${formVersion.id}/`, formVersion).catch(
         error => {
-            dispatcher.dispatch(
-                'snackbar',
-                errorSnackBar('updateFormVersionError', null, error),
-            );
+            openSnackBar(errorSnackBar('updateFormVersionError', null, error));
         },
     );
 

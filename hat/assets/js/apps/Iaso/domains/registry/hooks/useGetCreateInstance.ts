@@ -1,4 +1,4 @@
-import { dispatcher } from '../../../components/snackBars/EventDispatcher';
+import { openSnackBar } from '../../../components/snackBars/EventDispatcher';
 import { errorSnackBar } from '../../../constants/snackBars';
 import { postRequest } from '../../../libs/Api';
 
@@ -23,10 +23,7 @@ export const useGetCreateInstance = (
                     window.location.href = res.edit_url;
                 })
                 .catch(err => {
-                    dispatcher.dispatch(
-                        'snackbar',
-                        errorSnackBar('fetchEnketoError', null, err),
-                    );
+                    openSnackBar(errorSnackBar('fetchEnketoError', null, err));
                 });
         }
     };

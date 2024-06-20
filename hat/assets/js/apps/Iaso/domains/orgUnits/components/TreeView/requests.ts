@@ -1,5 +1,5 @@
 import { UseQueryResult } from 'react-query';
-import { dispatcher } from '../../../../components/snackBars/EventDispatcher';
+import { openSnackBar } from '../../../../components/snackBars/EventDispatcher';
 import { errorSnackBar } from '../../../../constants/snackBars';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
@@ -28,10 +28,7 @@ export const getChildrenData = async (
             id: orgUnit.id.toString(),
         }));
     } catch (error: unknown) {
-        dispatcher.dispatch(
-            'snackbar',
-            errorSnackBar('getChildrenDataError', null, error),
-        );
+        openSnackBar(errorSnackBar('getChildrenDataError', null, error));
         console.error('Error while fetching Treeview item children:', error);
         throw error;
     }
@@ -67,10 +64,7 @@ export const getRootData = async (
             id: orgUnit.id.toString(),
         }));
     } catch (error: unknown) {
-        dispatcher.dispatch(
-            'snackbar',
-            errorSnackBar('getRootDataError', null, error),
-        );
+        openSnackBar(errorSnackBar('getRootDataError', null, error));
         console.error('Error while fetching Treeview items:', error);
         throw error;
     }
@@ -153,10 +147,7 @@ export const searchOrgUnits = async ({
         const result = await getRequest(url);
         return result.results;
     } catch (error: unknown) {
-        dispatcher.dispatch(
-            'snackbar',
-            errorSnackBar('searchOrgUnitsError', null, error),
-        );
+        openSnackBar(errorSnackBar('searchOrgUnitsError', null, error));
         console.error('Error while searching org units:', error);
         return Promise.reject(error);
     }

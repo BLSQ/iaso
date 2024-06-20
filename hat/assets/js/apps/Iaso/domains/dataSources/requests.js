@@ -8,7 +8,8 @@ import {
 import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks.ts';
 import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
-import { dispatcher } from '../../components/snackBars/EventDispatcher.ts';
+import { openSnackBar } from '../../components/snackBars/EventDispatcher.ts';
+import { useDispatch, useSelector } from 'react-redux';
 import snackBarMessages from '../../components/snackBars/messages';
 import { errorSnackBar } from '../../constants/snackBars';
 import { getValues } from '../../hooks/form';
@@ -144,8 +145,7 @@ export const csvPreview = async data => {
     return iasoFetch(url, requestSettings)
         .then(result => result.text())
         .catch(error => {
-            dispatcher.dispatch(
-                'snackbar',
+            openSnackBar(
                 errorSnackBar(
                     'iaso.snackBar.generateCSVError',
                     snackBarMessages.generateCSVError,

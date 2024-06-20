@@ -29,3 +29,6 @@ class EventDispatcher {
 }
 
 export const dispatcher = new EventDispatcher();
+
+export const openSnackBar = (data: any) =>
+    dispatcher.dispatch('snackbar', data);

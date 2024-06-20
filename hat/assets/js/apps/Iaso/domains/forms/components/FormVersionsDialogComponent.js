@@ -12,7 +12,6 @@ import { createFormVersion, updateFormVersion } from '../../../utils/requests';
 import { errorTypes, getPeriodsErrors } from '../../periods/utils';
 import MESSAGES from '../messages';
 
-import { dispatcher } from '../../../components/snackBars/EventDispatcher.ts';
 import { succesfullSnackBar } from '../../../constants/snackBars';
 
 const emptyVersion = (id = null) => ({
@@ -79,7 +78,7 @@ const FormVersionsDialogComponent = ({
                     setIsLoading(false);
                     setFormState(emptyVersion(formVersion.id));
                     onConfirmed();
-                    dispatcher.dispatch('snackbar', succesfullSnackBar());
+                    openSnackBar(succesfullSnackBar());
                 } catch (error) {
                     setIsLoading(false);
                     if (error.status === 400) {

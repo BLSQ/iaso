@@ -20,7 +20,7 @@ import React, {
 } from 'react';
 import { useQueryClient } from 'react-query';
 import TopBar from '../../components/nav/TopBarComponent';
-import { dispatcher } from '../../components/snackBars/EventDispatcher';
+import { openSnackBar } from '../../components/snackBars/EventDispatcher';
 import { succesfullSnackBar } from '../../constants/snackBars';
 import { baseUrls } from '../../constants/urls';
 import { useFormState } from '../../hooks/form.js';
@@ -154,7 +154,7 @@ const FormDetail: FunctionComponent = () => {
         let savedFormData;
         try {
             savedFormData = await saveForm;
-            dispatcher.dispatch('snackbar', succesfullSnackBar());
+            openSnackBar(succesfullSnackBar());
             if (!isUpdate) {
                 redirectToReplace(baseUrls.formDetail, {
                     formId: savedFormData.id,

@@ -1,6 +1,5 @@
 /* eslint-disable camelcase */
-import { Dispatch } from 'redux';
-import { dispatcher } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/snackBars/EventDispatcher';
+import { openSnackBar } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/snackBars/EventDispatcher';
 import {
     deleteRequest,
     patchRequest,
@@ -154,28 +153,22 @@ export const parsePromiseResults = (
 
 type HandlePromiseErrorsArgs = {
     data: ParsedSettledPromise<any>[];
-    dispatch: Dispatch;
     key: 'pre_alerts' | 'arrival_reports';
 };
 
 export const handlePromiseErrors = ({
     data,
-    dispatch,
     key,
 }: HandlePromiseErrorsArgs): void => {
     const failedPromises = data.filter(item => item.status === 'rejected');
     if (failedPromises.length === 0) {
         const messageKey = `${key}ApiSuccess`;
-        dispatcher.dispatch(
-            'snackbar',
-            succesfullSnackBar(key, MESSAGES[messageKey]),
-        );
+        openSnackBar(succesfullSnackBar(key, MESSAGES[messageKey]));
     } else {
         const failedEndpoints = failedPromises.map(item => item.value.message);
         if (failedEndpoints.find(msg => msg.includes('add'))) {
             const messageKey = `${key}CreateError`;
-            dispatcher.dispatch(
-                'snackbar',
+            openSnackBar(
                 errorSnackBar(
                     key,
                     MESSAGES[messageKey],
@@ -188,8 +181,7 @@ export const handlePromiseErrors = ({
         if (failedEndpoints.find(msg => msg.includes('update'))) {
             const messageKey = `${key}UpdateError`;
 
-            dispatcher.dispatch(
-                'snackbar',
+            openSnackBar(
                 errorSnackBar(
                     key,
                     MESSAGES[messageKey],
@@ -201,8 +193,7 @@ export const handlePromiseErrors = ({
         }
         if (failedEndpoints.find(msg => msg.includes('delete'))) {
             const messageKey = `${key}DeleteError`;
-            dispatcher.dispatch(
-                'snackbar',
+            openSnackBar(
                 errorSnackBar(
                     key,
                     MESSAGES[messageKey],

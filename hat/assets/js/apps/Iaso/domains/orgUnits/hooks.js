@@ -206,8 +206,8 @@ export const useRefreshOrgUnit = () => {
 
 export const useOrgUnitTabParams = (params, paramsPrefix) => {
     return useMemo(() => {
-        const { orgUnitId, ...rest } = params;
-        const tabParams = { orgUnitId };
+        const { orgUnitId, tab, ...rest } = params;
+        const tabParams = { orgUnitId, tab };
         const formKeys = Object.keys(rest).filter(k =>
             k.includes(paramsPrefix),
         );

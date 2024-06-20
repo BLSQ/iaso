@@ -1,7 +1,4 @@
 import React from 'react';
-import { bindActionCreators } from 'redux';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import Grid from '@mui/material/Grid';
@@ -13,11 +10,8 @@ import InputComponent from '../../../components/forms/InputComponent.tsx';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import IasoSearchComponent from './IasoSearchComponent';
 import Dhis2Search from './Dhis2SearchComponent';
-import {
-    createMappingRequest as createMappingRequestAction,
-    fetchSources as fetchSourcesAction,
-} from '../actions';
 import MESSAGES from '../messages';
+import { useDataSources, useCreateMappingMutation } from '../hooks.js';
 
 const mappingTypeOptions = [
     {
@@ -34,20 +28,14 @@ const mappingTypeOptions = [
     },
 ];
 
-const CreateMappingVersionDialogComponent = ({
-    createMappingRequest,
-    fetchSources,
-    mappingSources,
-}) => {
+const CreateMappingVersionDialogComponent = () => {
+    const createMappingRequest = useCreateMappingMutation();
+    const dataSourcesRequest = useDataSources();
     const { formatMessage } = useSafeIntl();
     const [mappingType, setMappingType] = React.useState('AGGREGATE');
     const [source, setSource] = React.useState(0);
     const [formVersion, setFormVersion] = React.useState(0);
     const [dataset, setDataset] = React.useState(0);
-
-    React.useEffect(() => {
-        fetchSources();
-    }, []);
 
     const onConfirm = closeDialog => {
         const payload = {
@@ -60,7 +48,7 @@ const CreateMappingVersionDialogComponent = ({
             payload.program = dataset;
         }
 
-        createMappingRequest(payload).then(() => {
+        createMappingRequest.mutate(payload).then(() => {
             closeDialog();
         });
     };
@@ -92,7 +80,7 @@ const CreateMappingVersionDialogComponent = ({
                     options={mappingTypeOptions}
                     label={MESSAGES.mappingType}
                 />
-                {mappingSources && (
+                {dataSourcesRequest.data && (
                     <Grid>
                         <TextField
                             style={{ marginTop: '30px' }}
@@ -104,7 +92,7 @@ const CreateMappingVersionDialogComponent = ({
                                 setSource(event.target.value);
                             }}
                         >
-                            {mappingSources.map(s => (
+                            {dataSourcesRequest.data.map(s => (
                                 <MenuItem key={s.id} value={s.id}>
                                     {s.name}
                                 </MenuItem>
@@ -170,30 +158,4 @@ const CreateMappingVersionDialogComponent = ({
     );
 };
 
-CreateMappingVersionDialogComponent.propTypes = {
-    createMappingRequest: PropTypes.func.isRequired,
-    fetchSources: PropTypes.func.isRequired,
-    mappingSources: PropTypes.array,
-};
-CreateMappingVersionDialogComponent.defaultProps = {
-    mappingSources: [],
-};
-const MapStateToProps = state => ({
-    mappingSources: state.mappings.mappingSources,
-});
-
-const MapDispatchToProps = dispatch => ({
-    dispatch,
-    ...bindActionCreators(
-        {
-            createMappingRequest: createMappingRequestAction,
-            fetchSources: fetchSourcesAction,
-        },
-        dispatch,
-    ),
-});
-
-export default connect(
-    MapStateToProps,
-    MapDispatchToProps,
-)(CreateMappingVersionDialogComponent);
+export default CreateMappingVersionDialogComponent;

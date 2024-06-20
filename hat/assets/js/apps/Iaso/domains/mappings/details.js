@@ -1,25 +1,6 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
-
+import React, { useState } from 'react';
+import { makeStyles } from '@mui/styles';
 import { Grid, Box } from '@mui/material';
-import { withStyles } from '@mui/styles';
-import PropTypes from 'prop-types';
-
-import {
-    commonStyles,
-    injectIntl,
-    LoadingSpinner,
-} from 'bluesquare-components';
-import {
-    setCurrentMappingVersion as setCurrentMappingVersionAction,
-    fetchMappingVersionDetail as fetchMappingVersionDetailAction,
-    setCurrentQuestion as setCurrentQuestionAction,
-    applyPartialUpdate as applyPartialUpdateAction,
-    applyUpdate as applyUpdateAction,
-} from './actions';
-
-import { redirectToReplace as redirectToReplaceAction } from '../../routing/actions.ts';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import RecursiveTreeView from './components/RecursiveTreeView';
@@ -29,10 +10,25 @@ import DerivedQuestionMappingForm from './components/DerivedQuestionMappingForm'
 import { baseUrls } from '../../constants/urls.ts';
 import GeneraMappingInfo from './components/GeneraMappingInfo';
 import Descriptor from './descriptor';
-import { withMappingDetailsParams } from '../../routing/legacy.tsx';
 import MESSAGES from './messages';
 
-const styles = theme => ({
+import {
+    commonStyles,
+    LoadingSpinner,
+    useRedirectToReplace,
+    useSafeIntl,
+    useGoBack,
+} from 'bluesquare-components';
+import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import {
+    useApplyPartialUpdate,
+    useApplyUpdate,
+    useGetMappingVersionDetail,
+} from './hooks';
+
+const baseUrl = baseUrls.mappingDetail;
+
+const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     icon: {
         width: 30,
@@ -40,7 +36,7 @@ const styles = theme => ({
         display: 'block',
         cursor: 'pointer',
     },
-});
+}));
 
 const iasoFieldOptions = formatMessage => [
     { value: undefined, label: formatMessage(MESSAGES.useValueFromForm) },
@@ -58,233 +54,182 @@ const fieldTypeOptions = formatMessage => [
     },
 ];
 
-class MappingDetails extends Component {
-    constructor(props) {
-        super(props);
-        props.setCurrentMappingVersion(null);
+const MappingDetails = props => {
+    const redirectToReplace = useRedirectToReplace();
+    const classes = useStyles();
+    const { formatMessage } = useSafeIntl();
+    const params = useParamsObject(baseUrl);
+    const currentMappingVersionQuery = useGetMappingVersionDetail(
+        params.mappingVersionId,
+    );
+
+    const currentMappingVersion =
+        currentMappingVersionQuery?.data?.mappingVersion;
+
+    const currentFormVersion = currentMappingVersionQuery?.data?.formVersion;
+
+    const fetching = currentMappingVersionQuery.isFetching;
+
+    const indexedQuestions = currentFormVersion
+        ? Descriptor.indexQuestions(currentFormVersion.descriptor)
+        : {};
+
+    const [currentQuestion, setCurrentQuestion] = useState(
+        indexedQuestions[params.questionName],
+    );
+
+    if (
+        currentFormVersion &&
+        params.questionName &&
+        currentQuestion == undefined
+    ) {
+        setCurrentQuestion(indexedQuestions[params.questionName]);
+    }
+    const backParams = {};
+    if (currentFormVersion?.form_id) {
+        backParams['formId'] = currentFormVersion.form_id;
     }
 
-    componentDidMount() {
-        const {
-            params: { mappingVersionId, questionName },
-            fetchMappingVersionDetail,
-        } = this.props;
-        fetchMappingVersionDetail(mappingVersionId, questionName);
-    }
+    const goBack = useGoBack(baseUrls.mappings);
 
-    render() {
-        const {
-            classes,
-            fetching,
-            currentMappingVersion,
-            currentFormVersion,
-            currentQuestion,
-            hesabuDescriptor,
-            setCurrentQuestion,
-            applyPartialUpdate,
-            applyUpdate,
-            router,
-            prevPathname,
-            redirectToReplace,
-            intl,
-        } = this.props;
+    const applyUpdate = useApplyUpdate();
+    const applyPartialUpdate = useApplyPartialUpdate();
 
-        const onQuestionSelected = node => {
-            setCurrentQuestion(node);
-            redirectToReplace(baseUrls.mappingDetail, {
-                mappingVersionId: currentMappingVersion.id,
-                questionName: node.name,
-            });
-        };
+    const onQuestionSelected = node => {
+        if (node && node.type === 'select all that apply') {
+            return;
+        }
+        setCurrentQuestion(node);
+        redirectToReplace(baseUrls.mappingDetail, {
+            mappingVersionId: currentMappingVersion.id,
+            questionName: Descriptor.getKey(node),
+        });
+    };
 
-        const onConfirmedQuestionMapping = questionMapping => {
-            applyPartialUpdate(
-                currentMappingVersion.id,
-                currentQuestion.name,
-                questionMapping,
-            );
-        };
+    const onConfirmedQuestionMapping = questionMapping => {
+        applyPartialUpdate.mutate({
+            mappingVersionId: currentMappingVersion.id,
+            questionName: Descriptor.getKey(currentQuestion),
+            mapping: questionMapping,
+        });
+    };
 
-        const onUnmapQuestionMapping = () => {
-            applyPartialUpdate(currentMappingVersion.id, currentQuestion.name, {
+    const onUnmapQuestionMapping = () => {
+        applyPartialUpdate.mutate({
+            mappingVersionId: currentMappingVersion.id,
+            questionName: Descriptor.getKey(currentQuestion),
+            mapping: {
                 action: 'unmap',
-            });
-        };
+            },
+        });
+    };
 
-        const onNeverMapQuestionMapping = () => {
-            applyPartialUpdate(currentMappingVersion.id, currentQuestion.name, {
+    const onNeverMapQuestionMapping = () => {
+        applyPartialUpdate.mutate({
+            mappingVersionId: currentMappingVersion.id,
+            questionName: Descriptor.getKey(currentQuestion),
+            mapping: {
                 type: 'neverMapped',
-            });
-        };
-        const isDataElementMappable =
-            currentMappingVersion &&
-            currentMappingVersion.mapping.mapping_type !== 'DERIVED';
-        const indexedQuestions =
-            currentFormVersion &&
-            Descriptor.indexQuestions(currentFormVersion.descriptor);
+            },
+        });
+    };
+    const isDataElementMappable =
+        currentMappingVersion &&
+        currentMappingVersion.mapping.mapping_type !== 'DERIVED';
 
-        return (
-            <section className={classes.relativeContainer}>
-                <TopBar
-                    title={
-                        currentMappingVersion
-                            ? intl.formatMessage(MESSAGES.mapping, {
-                                  name: currentMappingVersion.form_version.form
-                                      .name,
-                                  id: currentMappingVersion.form_version
-                                      .version_id,
-                                  type: currentMappingVersion.mapping
-                                      .mapping_type,
-                              })
-                            : intl.formatMessage(MESSAGES.loading)
-                    }
-                    displayBackButton
-                    goBack={() => {
-                        if (prevPathname || !currentMappingVersion) {
-                            router.goBack();
-                        } else {
-                            redirectToReplace(baseUrls.mappingsPath, {});
-                        }
-                    }}
-                />
-                {fetching && <LoadingSpinner />}
+    return (
+        <section className={classes.relativeContainer}>
+            <TopBar
+                title={
+                    currentMappingVersion
+                        ? formatMessage(MESSAGES.mapping, {
+                              name: currentMappingVersion.form_version.form
+                                  .name,
+                              id: currentMappingVersion.form_version.version_id,
+                              type: currentMappingVersion.mapping.mapping_type,
+                          })
+                        : formatMessage(MESSAGES.loading)
+                }
+                displayBackButton
+                goBack={() => {
+                    goBack(backParams);
+                }}
+            />
+            {fetching && <LoadingSpinner />}
 
-                {currentMappingVersion && (
-                    <Box className={classes.containerFullHeightNoTabPadded}>
-                        <Grid container spacing={4}>
-                            {currentFormVersion && currentMappingVersion && (
-                                <Grid item xs={4} md={3}>
-                                    <RecursiveTreeView
-                                        formVersion={currentFormVersion}
-                                        mappingVersion={currentMappingVersion}
-                                        // TODO confirm this prop can safely be deleted
-                                        // currentQuestion={currentQuestion}
-                                        onQuestionSelected={onQuestionSelected}
+            {currentMappingVersion && (
+                <Box className={classes.containerFullHeightNoTabPadded}>
+                    <Grid container spacing={4}>
+                        {currentFormVersion && currentMappingVersion && (
+                            <Grid item xs={4} md={3}>
+                                <RecursiveTreeView
+                                    formVersion={currentFormVersion}
+                                    mappingVersion={currentMappingVersion}
+                                    // TODO confirm this prop can safely be deleted
+                                    // currentQuestion={currentQuestion}
+                                    onQuestionSelected={onQuestionSelected}
+                                />
+                            </Grid>
+                        )}
+                        <Grid item xs={8} md={9}>
+                            {currentQuestion == null &&
+                                currentMappingVersion && (
+                                    <GeneraMappingInfo
+                                        applyUpdate={applyUpdate}
+                                        currentMappingVersion={
+                                            currentMappingVersion
+                                        }
                                     />
-                                </Grid>
-                            )}
-                            <Grid item xs={8} md={9}>
-                                {currentQuestion == null &&
-                                    currentMappingVersion && (
-                                        <GeneraMappingInfo
-                                            applyUpdate={applyUpdate}
-                                            currentMappingVersion={
+                                )}
+                            {currentQuestion && (
+                                <>
+                                    <QuestionInfos question={currentQuestion} />
+                                    <br />
+                                    {isDataElementMappable && (
+                                        <QuestionMappingForm
+                                            key={currentQuestion.name}
+                                            mapping={currentMappingVersion}
+                                            question={currentQuestion}
+                                            mappingVersion={
+                                                currentMappingVersion
+                                            }
+                                            indexedQuestions={indexedQuestions}
+                                            onConfirmedQuestionMapping={
+                                                onConfirmedQuestionMapping
+                                            }
+                                            onUnmapQuestionMapping={
+                                                onUnmapQuestionMapping
+                                            }
+                                            onNeverMapQuestionMapping={
+                                                onNeverMapQuestionMapping
+                                            }
+                                            fieldOptions={iasoFieldOptions(
+                                                formatMessage,
+                                            )}
+                                            fieldTypeOptions={fieldTypeOptions(
+                                                formatMessage,
+                                            )}
+                                        />
+                                    )}
+                                    {!isDataElementMappable && (
+                                        <DerivedQuestionMappingForm
+                                            key={currentQuestion.name}
+                                            // TODO confirm this can be safely removed
+                                            // mapping={currentMappingVersion}
+                                            question={currentQuestion}
+                                            mappingVersion={
                                                 currentMappingVersion
                                             }
                                         />
                                     )}
-                                {currentQuestion && (
-                                    <>
-                                        <QuestionInfos
-                                            question={currentQuestion}
-                                        />
-                                        <br />
-                                        {isDataElementMappable && (
-                                            <QuestionMappingForm
-                                                key={currentQuestion.name}
-                                                mapping={currentMappingVersion}
-                                                question={currentQuestion}
-                                                mappingVersion={
-                                                    currentMappingVersion
-                                                }
-                                                indexedQuestions={
-                                                    indexedQuestions
-                                                }
-                                                onConfirmedQuestionMapping={
-                                                    onConfirmedQuestionMapping
-                                                }
-                                                onUnmapQuestionMapping={
-                                                    onUnmapQuestionMapping
-                                                }
-                                                onNeverMapQuestionMapping={
-                                                    onNeverMapQuestionMapping
-                                                }
-                                                hesabuDescriptor={
-                                                    hesabuDescriptor
-                                                }
-                                                fieldOptions={iasoFieldOptions(
-                                                    intl.formatMessage,
-                                                )}
-                                                fieldTypeOptions={fieldTypeOptions(
-                                                    intl.formatMessage,
-                                                )}
-                                            />
-                                        )}
-                                        {!isDataElementMappable && (
-                                            <DerivedQuestionMappingForm
-                                                key={currentQuestion.name}
-                                                // TODO confirm this can be safely removed
-                                                // mapping={currentMappingVersion}
-                                                question={currentQuestion}
-                                                mappingVersion={
-                                                    currentMappingVersion
-                                                }
-                                            />
-                                        )}
-                                    </>
-                                )}
-                            </Grid>
+                                </>
+                            )}
                         </Grid>
-                    </Box>
-                )}
-            </section>
-        );
-    }
-}
-MappingDetails.defaultProps = {
-    prevPathname: null,
-    currentQuestion: null,
-    currentMappingVersion: null,
-    currentFormVersion: null,
-    hesabuDescriptor: null,
+                    </Grid>
+                </Box>
+            )}
+        </section>
+    );
 };
 
-MappingDetails.propTypes = {
-    classes: PropTypes.object.isRequired,
-    params: PropTypes.object.isRequired,
-    fetching: PropTypes.bool.isRequired,
-    router: PropTypes.object.isRequired,
-    redirectToReplace: PropTypes.func.isRequired,
-    prevPathname: PropTypes.any,
-    currentMappingVersion: PropTypes.object,
-    currentFormVersion: PropTypes.object,
-    fetchMappingVersionDetail: PropTypes.func.isRequired,
-    setCurrentMappingVersion: PropTypes.func.isRequired,
-    applyPartialUpdate: PropTypes.func.isRequired,
-    applyUpdate: PropTypes.func.isRequired,
-    setCurrentQuestion: PropTypes.func.isRequired,
-    currentQuestion: PropTypes.object,
-    hesabuDescriptor: PropTypes.any,
-    intl: PropTypes.object.isRequired,
-};
-
-const MapStateToProps = state => ({
-    fetching: state.mappings.fetching,
-    currentMappingVersion: state.mappings.current,
-    currentFormVersion: state.mappings.currentFormVersion,
-    currentQuestion: state.mappings.currentQuestion,
-    hesabuDescriptor: state.mappings.hesabuDescriptor,
-    prevPathname: state.routerCustom.prevPathname,
-});
-
-const MapDispatchToProps = dispatch => ({
-    ...bindActionCreators(
-        {
-            fetchMappingVersionDetail: fetchMappingVersionDetailAction,
-            redirectToReplace: redirectToReplaceAction,
-            setCurrentMappingVersion: setCurrentMappingVersionAction,
-            setCurrentQuestion: setCurrentQuestionAction,
-            applyPartialUpdate: applyPartialUpdateAction,
-            applyUpdate: applyUpdateAction,
-        },
-        dispatch,
-    ),
-});
-
-export default withStyles(styles)(
-    injectIntl(
-        withMappingDetailsParams(
-            connect(MapStateToProps, MapDispatchToProps)(MappingDetails),
-        ),
-    ),
-);
+export default MappingDetails;

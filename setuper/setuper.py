@@ -10,15 +10,6 @@ from create_submission_with_picture import create_submission_with_picture
 import string
 import random
 import argparse
-import logging
-
-logger = logging.getLogger(__name__)
-
-
-def test_notebook():
-    logger.info("Hello world")
-    print("Hello world")
-
 
 def admin_login(server_url, username, password):
     iaso_admin_client = IasoClient(server_url=server_url)
@@ -27,7 +18,6 @@ def admin_login(server_url, username, password):
         password=password,
     )
     return iaso_admin_client
-
 
 def setup_account(account_name, server_url, username, password):
     data = {
@@ -49,7 +39,6 @@ def setup_account(account_name, server_url, username, password):
     )
     return iaso_client
 
-
 seed_default_health_facility_form = True
 
 seed_instances = True
@@ -60,10 +49,9 @@ seed_registry = True
 
 seed_review_change_proposal = True
 
-
 def create_account(server_url, username, password):
     account_name = "".join(random.choices(string.ascii_lowercase, k=7))
-    logger.info("Creating account:", account_name)
+    print("Creating account:", account_name)
     iaso_client = setup_account(account_name, server_url, username, password)
     setup_orgunits(iaso_client=iaso_client)
 
@@ -98,12 +86,12 @@ if __name__ == "__main__":
     parser.add_argument("-s", "--server_url", type=str, help="Server URL")
 
     args = parser.parse_args()
-    server_url = args.server_url if args.server_url else SERVER
-    username = args.username if args.username else ADMIN_USER_NAME
-    password = args.password if args.password else ADMIN_PASSWORD
+    server_url = args.server_url
+    username = args.username
+    password = args.password
 
     if server_url is None or username is None or password is None:
-        from .credentials import *
+        from credentials import *
 
         server_url = SERVER
         username = ADMIN_USER_NAME

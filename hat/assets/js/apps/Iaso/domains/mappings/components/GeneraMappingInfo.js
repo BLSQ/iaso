@@ -76,7 +76,10 @@ const GeneraMappingInfo = ({ currentMappingVersion, applyUpdate }) => {
             evenDateOptions[0].value,
     );
 
-    const fieldValues = useMemo(() => toGeneralFields(currentMappingVersion), [currentMappingVersion]);
+    const fieldValues = useMemo(
+        () => toGeneralFields(currentMappingVersion),
+        [currentMappingVersion],
+    );
     return (
         <div>
             <Alert severity="info">{formatMessage(MESSAGES.generalHint)}</Alert>
@@ -125,8 +128,11 @@ const GeneraMappingInfo = ({ currentMappingVersion, applyUpdate }) => {
                 variant="contained"
                 color="primary"
                 onClick={() => {
-                    applyUpdate(currentMappingVersion.id, {
-                        event_date_source: eventDateSource,
+                    applyUpdate.mutate({
+                        mappingVersionId: currentMappingVersion.id,
+                        payload: {
+                            event_date_source: eventDateSource,
+                        },
                     });
                 }}
             >

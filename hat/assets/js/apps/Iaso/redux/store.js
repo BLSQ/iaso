@@ -15,10 +15,6 @@ import {
     instancesInitialState,
 } from '../domains/instances/reducer';
 import {
-    mappingReducer,
-    mappingsInitialState,
-} from '../domains/mappings/reducer';
-import {
     sidebarMenuReducer,
     sidebarMenuInitialState,
 } from './sidebarMenuReducer';
@@ -40,7 +36,6 @@ const store = createStore(
         snackBar: snackBarsInitialState,
         routerCustom: routerInitialState,
         users: usersInitialState,
-        mappings: mappingsInitialState,
     },
     {
         app: appReducer,
@@ -50,7 +45,6 @@ const store = createStore(
         snackBar: snackBarsReducer,
         routerCustom: routerReducer,
         users: usersReducer,
-        mappings: mappingReducer,
     },
     [
         // routerMiddleware(storeHistory),

@@ -10,11 +10,7 @@ const ObjectDumper = ({ object }) => {
     return (
         <div style={{ paddingLeft: '20px' }}>
             {Object.keys(object)
-                .filter(field =>
-                    object && object.type === 'repeat'
-                        ? field !== 'children'
-                        : true,
-                )
+                .filter(field => field !== 'children')
                 .map(field => (
                     <span key={field}>
                         <Typography variant="body1">

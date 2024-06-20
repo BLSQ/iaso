@@ -57,6 +57,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--additionnal_projects", action="store_true")
 args = parser.parse_args()
 
+
 def create_account(server_url, username, password):
     account_name = "".join(random.choices(string.ascii_lowercase, k=7))
     print("Creating account:", account_name)

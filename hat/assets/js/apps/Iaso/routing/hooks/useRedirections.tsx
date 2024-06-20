@@ -35,6 +35,14 @@ const baseRedirections = [
         to: getOrgUnitsUrl(),
     },
     {
+        path: `/${baseUrls.orgUnitDetails}/orgUnitId/:orgUnitId`,
+        to: `/${baseUrls.orgUnitDetails}/orgUnitId/:orgUnitId/tab/infos`,
+    },
+    {
+        path: `/${baseUrls.orgUnitDetails}/accountId/:accountId/orgUnitId/:orgUnitId`,
+        to: `/${baseUrls.orgUnitDetails}/accountId/:accountId/orgUnitId/:orgUnitId/tab/infos`,
+    },
+    {
         path: `/${baseUrls.mappings}`,
         to: `/${baseUrls.mappings}${getPaginationParams(
             'form_version__form__name,form_version__version_id,mapping__mapping_type',

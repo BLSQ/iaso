@@ -110,7 +110,6 @@ const OrgUnitDetail = () => {
     const redirectToReplace = useRedirectToReplace();
 
     const [currentOrgUnit, setCurrentOrgUnit] = useState(null);
-    const [tab, setTab] = useState(params.tab ? params.tab : 'infos');
     const [sourcesSelected, setSourcesSelected] = useState(undefined);
     const [loadingSelectedSources, setLoadingSelectedSources] =
         useState(undefined);
@@ -154,15 +153,12 @@ const OrgUnitDetail = () => {
     };
 
     const handleChangeTab = useCallback(
-        (newTab, redirect = true) => {
-            if (redirect) {
-                const newParams = {
-                    ...params,
-                    tab: newTab,
-                };
-                redirectToReplace(baseUrl, newParams);
-            }
-            setTab(newTab);
+        newTab => {
+            const newParams = {
+                ...params,
+                tab: newTab,
+            };
+            redirectToReplace(baseUrl, newParams);
         },
         [params, redirectToReplace],
     );
@@ -208,7 +204,7 @@ const OrgUnitDetail = () => {
         params.orgUnitId,
         setCurrentOrgUnit,
         params.levels,
-        tab,
+        params.tab,
     );
 
     const goToRevision = useCallback(
@@ -340,6 +336,7 @@ const OrgUnitDetail = () => {
         isNewOrgunit,
         sourcesSelected,
     ]);
+
     return (
         <section className={classes.root}>
             <TopBar title={title} displayBackButton goBack={goBack}>
@@ -347,7 +344,7 @@ const OrgUnitDetail = () => {
                     <Tabs
                         textColor="inherit"
                         indicatorColor="secondary"
-                        value={tab}
+                        value={params.tab}
                         classes={{
                             root: classes.tabs,
                             indicator: classes.indicator,
@@ -366,12 +363,12 @@ const OrgUnitDetail = () => {
             </TopBar>
 
             {(isFetchingDetail || isFetchingDatas || savingOu) &&
-                (tab === 'infos' || tab === 'map' || tab === 'comments') && (
-                    <LoadingSpinner />
-                )}
+                (params.tab === 'infos' ||
+                    params.tab === 'map' ||
+                    params.tab === 'comments') && <LoadingSpinner />}
             {currentOrgUnit && (
                 <section>
-                    {tab === 'infos' && (
+                    {params.tab === 'infos' && (
                         <Box
                             className={
                                 isNewOrgunit
@@ -396,7 +393,9 @@ const OrgUnitDetail = () => {
                         <>
                             <div
                                 className={
-                                    tab === 'map' ? '' : classes.hiddenOpacity
+                                    params.tab === 'map'
+                                        ? ''
+                                        : classes.hiddenOpacity
                                 }
                             >
                                 <Box className={classes.containerFullHeight}>
@@ -439,7 +438,7 @@ const OrgUnitDetail = () => {
                                 </Box>
                             </div>
 
-                            {tab === 'history' && (
+                            {params.tab === 'history' && (
                                 <div data-test="logs-tab">
                                     <Logs
                                         baseUrl={baseUrl}
@@ -449,7 +448,7 @@ const OrgUnitDetail = () => {
                                     />
                                 </div>
                             )}
-                            {tab === 'forms' && (
+                            {params.tab === 'forms' && (
                                 <Box
                                     className={
                                         classes.containerFullHeightNoTabPadded
@@ -469,7 +468,7 @@ const OrgUnitDetail = () => {
                                     />
                                 </Box>
                             )}
-                            {tab === 'children' && (
+                            {params.tab === 'children' && (
                                 <Box
                                     data-test="children-tab"
                                     className={
@@ -483,7 +482,7 @@ const OrgUnitDetail = () => {
                                     />
                                 </Box>
                             )}
-                            {tab === 'links' && (
+                            {params.tab === 'links' && (
                                 <Box
                                     data-test="links-tab"
                                     className={
@@ -499,7 +498,7 @@ const OrgUnitDetail = () => {
                                     />
                                 </Box>
                             )}
-                            {tab === 'comments' && (
+                            {params.tab === 'comments' && (
                                 <div data-test="comments-tab">
                                     <Grid
                                         container

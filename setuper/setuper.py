@@ -11,6 +11,7 @@ import string
 import random
 import argparse
 
+
 def admin_login(server_url, username, password):
     iaso_admin_client = IasoClient(server_url=server_url)
     iaso_admin_client.authenticate_with_username_and_password(
@@ -18,6 +19,7 @@ def admin_login(server_url, username, password):
         password=password,
     )
     return iaso_admin_client
+
 
 def setup_account(account_name, server_url, username, password):
     data = {
@@ -39,6 +41,7 @@ def setup_account(account_name, server_url, username, password):
     )
     return iaso_client
 
+
 seed_default_health_facility_form = True
 
 seed_instances = True
@@ -48,6 +51,7 @@ seed_entities = True
 seed_registry = True
 
 seed_review_change_proposal = True
+
 
 def create_account(server_url, username, password):
     account_name = "".join(random.choices(string.ascii_lowercase, k=7))

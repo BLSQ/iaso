@@ -3,7 +3,6 @@ import { postRequest, putRequest } from 'Iaso/libs/Api.ts';
 // @ts-ignore
 import { commaSeparatedIdsToStringArray } from 'Iaso/utils/forms';
 import { UseMutationResult, useMutation, useQueryClient } from 'react-query';
-import { dispatcher } from '../../../../../../../../hat/assets/js/apps/Iaso/components/snackBars/EventDispatcher';
 import {
     errorSnackBar,
     succesfullSnackBar,
@@ -20,11 +19,11 @@ const formatStringtoArray = value => {
 const subActivityUrl = '/api/polio/campaigns_subactivities/';
 
 const dispatchSuccess = message => {
-    dispatcher.dispatch('snackbar', succesfullSnackBar(undefined, message));
+    openSnackBar(succesfullSnackBar(undefined, message));
 };
 
 const dispatchError = (message, error) => {
-    dispatcher.dispatch('snackbar', errorSnackBar(undefined, message, error));
+    openSnackBar(errorSnackBar(undefined, message, error));
 };
 
 const saveSubActivity = values => {

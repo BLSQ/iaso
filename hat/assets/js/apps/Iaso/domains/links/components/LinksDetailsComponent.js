@@ -157,12 +157,8 @@ const MapStateToProps = state => ({
     load: state.load,
 });
 
-const MapDispatchToProps = dispatch => ({
-    dispatch,
-});
-
 const LinksDetailsWithIntl = injectIntl(LinksDetails);
 
 export default withStyles(styles)(
-    connect(MapStateToProps, MapDispatchToProps)(LinksDetailsWithIntl),
+    connect(MapStateToProps)(LinksDetailsWithIntl),
 );

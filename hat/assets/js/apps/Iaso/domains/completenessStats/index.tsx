@@ -17,7 +17,7 @@ import React, {
 import { useDispatch } from 'react-redux';
 import { CsvButton } from '../../components/Buttons/CsvButton';
 import TopBar from '../../components/nav/TopBarComponent';
-import { dispatcher } from '../../components/snackBars/EventDispatcher';
+import { openSnackBar } from '../../components/snackBars/EventDispatcher';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { warningSnackBar } from '../../constants/snackBars';
 import { MENU_HEIGHT_WITHOUT_TABS } from '../../constants/uiConstants';
@@ -81,7 +81,7 @@ export const CompletenessStats: FunctionComponent = () => {
 
     useEffect(() => {
         if (displayWarning) {
-            dispatcher.dispatch('snackbar', warningSnackBar(snackbarKey));
+            openSnackBar(warningSnackBar(snackbarKey));
         } else {
             closeSnackbar(snackbarKey);
         }

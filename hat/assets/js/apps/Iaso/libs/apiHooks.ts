@@ -15,7 +15,7 @@ import {
     useQuery,
     useQueryClient,
 } from 'react-query';
-import { dispatcher } from '../components/snackBars/EventDispatcher';
+import { openSnackBar } from '../components/snackBars/EventDispatcher';
 import { errorSnackBar, succesfullSnackBar } from '../constants/snackBars';
 
 const MESSAGES = defineMessages({
@@ -135,10 +135,7 @@ const useBaseSnackMutation = <
                         errorMsg = formatMessage(MESSAGES.permissionError);
                     }
                 }
-                dispatcher.dispatch(
-                    'snackbar',
-                    errorSnackBar(undefined, errorMsg, error),
-                );
+                openSnackBar(errorSnackBar(undefined, errorMsg, error));
             }
             if (options.onError) {
                 return options.onError(error, variables, context);
@@ -147,10 +144,7 @@ const useBaseSnackMutation = <
         },
         onSuccess: (data, variables, context) => {
             if (snackSuccessMessage && showSucessSnackBar) {
-                dispatcher.dispatch(
-                    'snackbar',
-                    successSnackBar(snackSuccessMessage, data),
-                );
+                openSnackBar(successSnackBar(snackSuccessMessage, data));
             }
             if (invalidateQueryKey) {
                 if (isArray(invalidateQueryKey)) {
@@ -290,10 +284,7 @@ const useBaseSnackQuery = <
         ...options,
         onError: error => {
             if (dispatchOnError) {
-                dispatcher.dispatch(
-                    'snackbar',
-                    errorSnackBar(undefined, snackErrorMsg, error),
-                );
+                openSnackBar(errorSnackBar(undefined, snackErrorMsg, error));
             }
             if (options.onError) {
                 options.onError(error);
@@ -383,8 +374,7 @@ export const useSnackQueries = <QueryFnData>(
             ...options,
             onError: error => {
                 if (dispatchOnError) {
-                    dispatcher.dispatch(
-                        'snackbar',
+                    openSnackBar(
                         errorSnackBar(undefined, snackErrorMsg, error),
                     );
                 }

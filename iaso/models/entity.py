@@ -57,6 +57,9 @@ class EntityType(models.Model):
     fields_duplicate_search = ArrayField(
         models.CharField(max_length=255, blank=True, db_collation="case_insensitive"), size=100, null=True, blank=True
     )
+    prevent_add_if_duplicate_found = models.BooleanField(
+        default=False,
+    )
 
     class Meta:
         unique_together = ["name", "account"]

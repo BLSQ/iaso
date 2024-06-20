@@ -1,12 +1,12 @@
-import React, { useState, useMemo, FunctionComponent } from 'react';
 import { Box } from '@mui/material';
-import { MapContainer, TileLayer } from 'react-leaflet';
-import { useMergedShapes, useShapes } from './hooks';
-import { makeSelections } from './utils';
 import 'leaflet/dist/leaflet.css';
+import React, { FunctionComponent, useMemo, useState } from 'react';
+import { MapContainer, TileLayer } from 'react-leaflet';
 import { MappedCampaign } from '../types';
 import { CalendarMapContainer } from './CalendarMapContainer';
 import { defaultViewport } from './constants';
+import { useMergedShapes, useShapes } from './hooks';
+import { makeSelections } from './utils';
 
 type Props = {
     isPdf?: boolean;

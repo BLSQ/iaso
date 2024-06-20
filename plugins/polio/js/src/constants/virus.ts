@@ -1,3 +1,6 @@
+import { useTheme } from '@mui/styles';
+import { useSafeIntl } from 'bluesquare-components';
+import MESSAGES from './messages';
 import { Vaccine } from './types';
 
 const polioViruses = [
@@ -33,7 +36,7 @@ const polioViruses = [
 ];
 
 export type PolioVaccine = {
-    value: Vaccine;
+    value: Vaccine | 'other';
     label: string;
     color: string;
 };
@@ -55,4 +58,31 @@ const polioVaccines: PolioVaccine[] = [
     },
 ];
 
-export { polioVaccines, polioViruses };
+const useMapLegend = (): PolioVaccine[] => {
+    const theme = useTheme();
+    const { formatMessage } = useSafeIntl();
+    return [
+        {
+            value: 'nOPV2',
+            label: 'nOPV2',
+            color: '#00b0f0',
+        },
+        {
+            value: 'mOPV2',
+            label: 'mOPV2',
+            color: '#66ff66',
+        },
+        {
+            value: 'bOPV',
+            label: 'bOPV',
+            color: '#ffff00',
+        },
+        {
+            value: 'other',
+            label: formatMessage(MESSAGES.other),
+            color: theme.palette.secondary.main,
+        },
+    ];
+};
+
+export { polioVaccines, polioViruses, useMapLegend };

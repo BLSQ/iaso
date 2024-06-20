@@ -1,10 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 // @ts-ignore
 import moment, { Moment } from 'moment';
-import { useQueries, Query as RQQuery } from 'react-query';
+import { Query as RQQuery, useQueries } from 'react-query';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
+import MESSAGES from '../../../../constants/messages';
+import { MergedShapes } from '../../../../constants/types';
 import { useGetMergedCampaignShapes } from '../../hooks/useGetMergedCampaignShapes';
+import {
+    MappedCampaign,
+    MergedShapeWithColor,
+    Query,
+    ShapeForCalendarMap,
+} from '../types';
 import {
     findFirstAndLastRounds,
     findLatestRounds,
@@ -12,14 +20,6 @@ import {
     makeQueriesForCampaigns,
     makeRoundDict,
 } from './utils';
-import MESSAGES from '../../../../constants/messages';
-import {
-    MappedCampaign,
-    MergedShapeWithColor,
-    Query,
-    ShapeForCalendarMap,
-} from '../types';
-import { MergedShapes } from '../../../../constants/types';
 
 type RoundSelection = {
     campaigns: MappedCampaign[];
@@ -113,6 +113,7 @@ export const useMergedShapes = ({
 
     const addShapeColor = useCallback(
         shape => {
+            console.log('shape', shape);
             return { ...shape, color: campaignColors[shape.properties.id] };
         },
         [campaignColors],

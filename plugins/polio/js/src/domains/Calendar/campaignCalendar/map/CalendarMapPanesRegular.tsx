@@ -17,6 +17,7 @@ export const CalendarMapPanesRegular: FunctionComponent<Props> = ({
         <>
             {campaignsShapes.map(campaignShape => {
                 const { id, name, country, color } = campaignShape.campaign;
+                console.log(' campaignShape.campaign', campaignShape.campaign);
                 const paneName = `campaign-${id}-vaccine-${
                     campaignShape.vaccine
                 }${

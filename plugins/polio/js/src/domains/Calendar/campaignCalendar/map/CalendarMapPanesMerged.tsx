@@ -2,10 +2,10 @@
 import React, { FunctionComponent } from 'react';
 import { GeoJSON, Pane } from 'react-leaflet';
 
-import { CalendarMapTooltip } from './CalendarMapTooltip';
-import { getGeoJsonStyle } from './utils';
 import { polioVaccines } from '../../../../constants/virus';
 import { MergedShapeWithColor } from '../types';
+import { CalendarMapTooltip } from './CalendarMapTooltip';
+import { getGeoJsonStyle } from './utils';
 
 type Props = {
     mergedShapes: MergedShapeWithColor[];

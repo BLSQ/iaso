@@ -1,14 +1,8 @@
 /* eslint-disable camelcase */
-import { Box, FormControl, List, ListItem } from '@mui/material';
+import { Box } from '@mui/material';
 import { useTheme } from '@mui/styles';
-import {
-    // @ts-ignore
-    useSafeIntl,
-} from 'bluesquare-components';
 import { FieldInputProps } from 'formik';
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
-import { MapLegend } from '../../../../../../../../hat/assets/js/apps/Iaso/components/maps/MapLegend';
-import MESSAGES from '../../../../constants/messages';
 import { PolioVaccine, polioVaccines } from '../../../../constants/virus';
 import { MapComponent } from '../../MapComponent/MapComponent';
 
@@ -17,7 +11,6 @@ import {
     selectedPathOptions,
     unselectedPathOptions,
 } from '../../../../styles/constants';
-import { useStyles } from '../../../../styles/theme';
 
 import { OrgUnit } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
 import {
@@ -25,6 +18,7 @@ import {
     Scope,
     Vaccine,
 } from '../../../../constants/types';
+import { ScopeMapLegend } from './ScopeMapLegend';
 import { Shape } from './types';
 import { findScopeWithOrgUnit } from './utils';
 
@@ -61,20 +55,8 @@ export const MapScope: FunctionComponent<Props> = ({
     isPolio,
     availableVaccines = polioVaccines,
 }) => {
-    const classes: Record<string, string> = useStyles();
-    const { formatMessage } = useSafeIntl();
     const theme = useTheme();
     const { value: scopes = [] } = field;
-    const vaccineCount = useMemo(
-        () =>
-            Object.fromEntries(
-                scopes.map(scope => [
-                    scope.vaccine,
-                    scope.group?.org_units?.length ?? 0,
-                ]),
-            ),
-        [scopes],
-    );
 
     const getShapeStyle = useCallback(
         shape => {
@@ -86,7 +68,7 @@ export const MapScope: FunctionComponent<Props> = ({
                 );
                 return {
                     ...selectedPathOptions,
-                    color: vaccine?.color || theme.palette.primary.main,
+                    color: vaccine?.color || theme.palette.secondary.main,
                 };
             }
             if (values.org_unit?.id === shape.id) return initialDistrict;
@@ -96,7 +78,7 @@ export const MapScope: FunctionComponent<Props> = ({
             scopes,
             values.org_unit?.id,
             availableVaccines,
-            theme.palette.primary.main,
+            theme.palette.secondary.main,
         ],
     );
     const filterOrgUnits = useCallback(
@@ -137,59 +119,11 @@ export const MapScope: FunctionComponent<Props> = ({
                 height={540}
             />
             {isPolio && (
-                <MapLegend
-                    titleMessage={MESSAGES.vaccine}
-                    width={175}
-                    content={
-                        <FormControl id="vaccine">
-                            <List>
-                                {availableVaccines.map(vaccine => (
-                                    <ListItem
-                                        key={vaccine.value}
-                                        button
-                                        className={classes.vaccinesList}
-                                        onClick={() =>
-                                            setSelectedVaccine(vaccine.value)
-                                        }
-                                    >
-                                        <Box className={classes.vaccinesSelect}>
-                                            <span
-                                                style={{
-                                                    backgroundColor:
-                                                        vaccine.color,
-                                                }}
-                                                className={classes.roundColor}
-                                            >
-                                                {selectedVaccine ===
-                                                    vaccine.value && (
-                                                    <span
-                                                        className={
-                                                            classes.roundColorInner
-                                                        }
-                                                    />
-                                                )}
-                                            </span>
-                                            <span
-                                                className={classes.vaccineName}
-                                            >
-                                                {vaccine.value}
-                                            </span>
-
-                                            <span>
-                                                {`: ${
-                                                    vaccineCount[
-                                                        vaccine.value
-                                                    ] ?? 0
-                                                } ${formatMessage(
-                                                    MESSAGES.districts,
-                                                )}`}
-                                            </span>
-                                        </Box>
-                                    </ListItem>
-                                ))}
-                            </List>
-                        </FormControl>
-                    }
+                <ScopeMapLegend
+                    field={field}
+                    selectedVaccine={selectedVaccine}
+                    setSelectedVaccine={setSelectedVaccine}
+                    availableVaccines={availableVaccines}
                 />
             )}
         </Box>

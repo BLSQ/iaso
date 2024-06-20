@@ -3,7 +3,6 @@ import { Provider } from 'react-redux';
 import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 import { instancesInitialState } from '../../apps/Iaso/domains/instances/reducer';
-import { mappingsInitialState } from '../../apps/Iaso/domains/mappings/reducer';
 import { orgUnitsInitialState } from '../../apps/Iaso/domains/orgUnits/reducer';
 import { usersInitialState } from '../../apps/Iaso/domains/users/reducer';
 import { routerInitialState } from '../../apps/Iaso/redux/routerReducer';
@@ -24,7 +23,6 @@ const initialState = {
     instances: instancesInitialState,
     routerCustom: routerInitialState,
     users: usersInitialState,
-    mappings: mappingsInitialState,
     app: {
         locale: {
             code: 'en',

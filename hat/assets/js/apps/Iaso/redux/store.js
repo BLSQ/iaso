@@ -12,10 +12,6 @@ import {
     instancesReducer,
 } from '../domains/instances/reducer';
 import {
-    mappingReducer,
-    mappingsInitialState,
-} from '../domains/mappings/reducer';
-import {
     orgUnitsInitialState,
     orgUnitsReducer,
 } from '../domains/orgUnits/reducer';
@@ -38,7 +34,6 @@ const store = createStore(
         instances: instancesInitialState,
         routerCustom: routerInitialState,
         users: usersInitialState,
-        mappings: mappingsInitialState,
     },
     {
         app: appReducer,
@@ -47,7 +42,6 @@ const store = createStore(
         instances: instancesReducer,
         routerCustom: routerReducer,
         users: usersReducer,
-        mappings: mappingReducer,
     },
     [
         // routerMiddleware(storeHistory),

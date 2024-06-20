@@ -1,13 +1,13 @@
-import React, { FunctionComponent } from 'react';
 import { Box } from '@mui/material';
+import React, { FunctionComponent } from 'react';
 
-import { useGetAttachments } from '../hooks/useGetAttachments';
 import { useGetColumns } from '../config/attachments';
+import { useGetAttachments } from '../hooks/useGetAttachments';
 
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../../constants/urls';
-import { FormParams } from '../types/forms';
 import { useUploadAttachment } from '../hooks/useUploadAttachment';
+import { FormParams } from '../types/forms';
 import { AttachmentModal } from './AttachmentModal';
 
 export const defaultSorted = [{ id: 'updated_at', desc: false }];

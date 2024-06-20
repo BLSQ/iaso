@@ -1,36 +1,40 @@
 /* eslint-disable camelcase */
 import { Box, Grid, Tab, Tabs } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import { alpha } from '@mui/material/styles';
+import { makeStyles } from '@mui/styles';
 import {
-    commonStyles,
     LoadingSpinner,
-    useSafeIntl,
+    commonStyles,
     useGoBack,
     useRedirectToReplace,
+    useSafeIntl,
 } from 'bluesquare-components';
 import omit from 'lodash/omit';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { useDispatch } from 'react-redux';
-import { Logs } from './history/LogsComponent.tsx';
 import TopBar from '../../components/nav/TopBarComponent';
 import {
-    baseUrls,
-    LINKS_PREFIX,
     FORMS_PREFIX,
+    LINKS_PREFIX,
     OU_CHILDREN_PREFIX,
+    baseUrls,
 } from '../../constants/urls.ts';
+import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
 import { fetchAssociatedOrgUnits } from '../../utils/requests';
+import { FormsTable } from '../forms/components/FormsTable.tsx';
 import { resetOrgUnits } from './actions';
 import { OrgUnitForm } from './components/OrgUnitForm.tsx';
 import { OrgUnitMap } from './components/orgUnitMap/OrgUnitMap/OrgUnitMap.tsx';
 import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitsMapComments';
+import { OrgUnitChildren } from './details/Children/OrgUnitChildren.tsx';
+import { OrgUnitLinks } from './details/Links/OrgUnitLinks.tsx';
+import { Logs } from './history/LogsComponent.tsx';
 import {
     useOrgUnitDetailData,
+    useOrgUnitTabParams,
     useRefreshOrgUnit,
     useSaveOrgUnit,
-    useOrgUnitTabParams,
 } from './hooks';
 import MESSAGES from './messages.ts';
 import {
@@ -38,10 +42,6 @@ import {
     getLinksSources,
     getOrgUnitsTree,
 } from './utils';
-import { useParamsObject } from '../../routing/hooks/useParamsObject.tsx';
-import { FormsTable } from '../forms/components/FormsTable.tsx';
-import { OrgUnitChildren } from './details/Children/OrgUnitChildren.tsx';
-import { OrgUnitLinks } from './details/Links/OrgUnitLinks.tsx';
 
 const baseUrl = baseUrls.orgUnitDetails;
 const useStyles = makeStyles(theme => ({
@@ -316,7 +316,6 @@ const OrgUnitDetail = () => {
                 // eslint-disable-next-line no-await-in-loop
                 const fetch = async () => {
                     const ous = await fetchAssociatedOrgUnits(
-                        dispatch,
                         ss,
                         originalOrgUnit,
                     );

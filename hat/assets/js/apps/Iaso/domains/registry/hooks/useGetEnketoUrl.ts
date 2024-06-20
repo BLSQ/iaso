@@ -1,9 +1,8 @@
-import { useDispatch } from 'react-redux';
 import { getRequest } from '../../../libs/Api';
 
-import { Instance } from '../../instances/types/instance';
-import { enqueueSnackbar } from '../../../redux/snackBarsReducer';
+import { openSnackBar } from '../../../components/snackBars/EventDispatcher';
 import { errorSnackBar } from '../../../constants/snackBars';
+import { Instance } from '../../instances/types/instance';
 
 type Result = {
     // eslint-disable-next-line camelcase
@@ -14,7 +13,6 @@ export const useGetEnketoUrl = (
     returnUrl: string,
     instance?: Instance,
 ): (() => void) => {
-    const dispatch = useDispatch();
     const getEnketoUrl = () => {
         if (instance) {
             getRequest(
@@ -24,11 +22,7 @@ export const useGetEnketoUrl = (
                     window.location.href = res.edit_url;
                 })
                 .catch(err => {
-                    dispatch(
-                        enqueueSnackbar(
-                            errorSnackBar('fetchEnketoError', null, err),
-                        ),
-                    );
+                    openSnackBar(errorSnackBar('fetchEnketoError', null, err));
                 });
         }
     };

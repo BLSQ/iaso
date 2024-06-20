@@ -11,6 +11,7 @@ from additional_projects import create_projects, link_new_projects_to_main_data_
 import string
 import random
 import argparse
+import sys
 
 seed_default_health_facility_form = True
 
@@ -92,7 +93,7 @@ if __name__ == "__main__":
     parser.add_argument("-u", "--username", type=str, help="User name")
     parser.add_argument("-p", "--password", type=str, help="Password")
     parser.add_argument("-s", "--server_url", type=str, help="Server URL")
-    parser.add_argument("-p", "--additional_projects", action="store_true")
+    parser.add_argument("-a", "--additional_projects", action="store_true")
 
     args = parser.parse_args()
     server_url = args.server_url
@@ -103,8 +104,11 @@ if __name__ == "__main__":
     if server_url is None or username is None or password is None:
         from credentials import *
 
-        server_url = SERVER
-        username = ADMIN_USER_NAME
-        password = ADMIN_PASSWORD
+        server_url = SERVER if server_url is None else server_url
+        username = ADMIN_USER_NAME if username is None else username
+        password = ADMIN_PASSWORD if (username is None and password is None) else password
+
+    if not server_url or not username or not password:
+        sys.exit(f"ERROR: Values for server url, user name and password are all required")
 
     create_account(server_url, username, password, additional_projects)

@@ -12,6 +12,7 @@ import { createFormVersion, updateFormVersion } from '../../../utils/requests';
 import { errorTypes, getPeriodsErrors } from '../../periods/utils';
 import MESSAGES from '../messages';
 
+import { openSnackBar } from '../../../components/snackBars/EventDispatcher';
 import { succesfullSnackBar } from '../../../constants/snackBars';
 
 const emptyVersion = (id = null) => ({

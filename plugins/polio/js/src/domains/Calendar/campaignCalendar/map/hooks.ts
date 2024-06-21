@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 // @ts-ignore
 import moment, { Moment } from 'moment';
 import { Query as RQQuery, useQueries } from 'react-query';
@@ -9,7 +9,7 @@ import { MergedShapes } from '../../../../constants/types';
 import { useGetMergedCampaignShapes } from '../../hooks/useGetMergedCampaignShapes';
 import {
     MappedCampaign,
-    MergedShapeWithColor,
+    MergedShapeWithCacheDate,
     Query,
     ShapeForCalendarMap,
 } from '../types';
@@ -77,7 +77,7 @@ type UseMergedShapesArgs = {
 };
 
 type UseMergedShapesResult = {
-    mergedShapes: MergedShapeWithColor[];
+    mergedShapes: MergedShapeWithCacheDate[];
     isLoadingMergedShapes: boolean;
 };
 
@@ -98,26 +98,12 @@ export const useMergedShapes = ({
         return findFirstAndLastRounds(campaigns);
     }, [campaigns]);
 
-    const campaignColors = useMemo(() => {
-        const color = {};
-        campaigns.forEach(campaign => {
-            color[campaign.id] = campaign.color;
-        });
-        return color;
-    }, [campaigns]);
-
     const campaignIds = useMemo(
         () => campaigns.map(campaign => campaign.id),
         [campaigns],
     );
 
-    const addShapeColor = useCallback(
-        shape => {
-            return { ...shape, color: campaignColors[shape.properties.id] };
-        },
-        [campaignColors],
-    );
-    const mergedShapesToDisplay: MergedShapeWithColor[] = useMemo(() => {
+    const mergedShapesToDisplay: MergedShapeWithCacheDate[] = useMemo(() => {
         const shapesForSelectedCampaign = (mergedShapes?.features ?? [])
             .filter(shape => campaignIds.includes(shape.properties.id))
             .map(shape => {
@@ -127,38 +113,33 @@ export const useMergedShapes = ({
                 };
             });
         if (selection === 'all') {
-            return shapesForSelectedCampaign?.map(addShapeColor);
+            return shapesForSelectedCampaign;
         }
 
         if (selection === 'latest') {
-            return shapesForSelectedCampaign
-                ?.filter(shape => {
-                    return (
-                        `${shape.properties.round_number}` ===
-                            roundsDict[shape.properties.id] ||
-                        !shape.properties.round_number
-                    );
-                })
-                .map(addShapeColor);
+            return shapesForSelectedCampaign?.filter(shape => {
+                return (
+                    `${shape.properties.round_number}` ===
+                        roundsDict[shape.properties.id] ||
+                    !shape.properties.round_number
+                );
+            });
         }
-        return shapesForSelectedCampaign
-            ?.filter(shape => {
-                if (shape.properties.round_number) {
-                    return `${shape.properties.round_number}` === selection;
-                }
-                if (firstAndLastRounds[shape.properties.id]) {
-                    return (
-                        firstAndLastRounds[shape.properties.id].firstRound <=
-                            parseInt(selection, 10) &&
-                        parseInt(selection, 10) <=
-                            firstAndLastRounds[shape.properties.id].lastRound
-                    );
-                }
-                return false;
-            })
-            .map(addShapeColor);
+        return shapesForSelectedCampaign?.filter(shape => {
+            if (shape.properties.round_number) {
+                return `${shape.properties.round_number}` === selection;
+            }
+            if (firstAndLastRounds[shape.properties.id]) {
+                return (
+                    firstAndLastRounds[shape.properties.id].firstRound <=
+                        parseInt(selection, 10) &&
+                    parseInt(selection, 10) <=
+                        firstAndLastRounds[shape.properties.id].lastRound
+                );
+            }
+            return false;
+        });
     }, [
-        addShapeColor,
         campaignIds,
         firstAndLastRounds,
         mergedShapes?.cache_creation_date,

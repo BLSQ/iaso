@@ -58,9 +58,14 @@ const polioVaccines: PolioVaccine[] = [
     },
 ];
 
-const useMapLegend = (): PolioVaccine[] => {
+export const useOtherVaccineColor = (): string => {
     const theme = useTheme();
+    return theme.palette.secondary.main;
+};
+
+const useMapLegend = (): PolioVaccine[] => {
     const { formatMessage } = useSafeIntl();
+    const otherVaccineColor = useOtherVaccineColor();
     return [
         {
             value: 'nOPV2',
@@ -80,7 +85,7 @@ const useMapLegend = (): PolioVaccine[] => {
         {
             value: 'other',
             label: formatMessage(MESSAGES.other),
-            color: theme.palette.secondary.main,
+            color: otherVaccineColor,
         },
     ];
 };

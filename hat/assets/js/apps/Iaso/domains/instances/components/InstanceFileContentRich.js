@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableRow, Tooltip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import isPlainObject from 'lodash/isPlainObject';
 import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 
 import { textPlaceholder } from 'bluesquare-components';
@@ -124,6 +124,7 @@ export default function InstanceFileContentRich({
     formDescriptor,
     showQuestionKey,
     showNote,
+    files,
 }) {
     return (
         <Table>
@@ -137,6 +138,7 @@ export default function InstanceFileContentRich({
                             data={instanceData}
                             showQuestionKey={showQuestionKey}
                             showNote={showNote}
+                            files={files}
                         />
                     ))}
             </TableBody>
@@ -147,6 +149,7 @@ export default function InstanceFileContentRich({
 InstanceFileContentRich.defaultProps = {
     showQuestionKey: true,
     showNote: true,
+    files: [],
 };
 
 InstanceFileContentRich.propTypes = {
@@ -154,9 +157,63 @@ InstanceFileContentRich.propTypes = {
     formDescriptor: PropTypes.object.isRequired,
     showQuestionKey: PropTypes.bool,
     showNote: PropTypes.bool,
+    files: PropTypes.arrayOf(PropTypes.string),
 };
 
-function FormChild({ descriptor, data, showQuestionKey, showNote }) {
+const PhotoField = ({ descriptor, data, showQuestionKey, files }) => {
+    const classes = useStyle();
+
+    const value = data[descriptor.name];
+    const fileUrl = useMemo(() => {
+        if (value && files.length > 0) {
+            const slugifiedValue = value.replace(/\s/g, '_'); // Replace spaces with underscores
+            return files.find(f => f.includes(slugifiedValue));
+        }
+        return null;
+    }, [value, files]);
+    return (
+        <TableRow>
+            <TableCell className={classes.tableCell}>
+                <Label
+                    descriptor={descriptor}
+                    showQuestionKey={showQuestionKey}
+                />
+            </TableCell>
+            <TableCell
+                className={classes.tableCell}
+                align="right"
+                title={getRawValue(descriptor, data)}
+            >
+                {value && fileUrl && (
+                    <img
+                        src={fileUrl}
+                        alt={descriptor.name}
+                        style={{
+                            objectFit: 'contain',
+                            maxWidth: '35vw',
+                            maxHeight: '35vh',
+                        }}
+                    />
+                )}
+                {(!value || !fileUrl) && textPlaceholder}
+            </TableCell>
+        </TableRow>
+    );
+};
+
+PhotoField.defaultProps = {
+    showQuestionKey: true,
+    files: [],
+};
+
+PhotoField.propTypes = {
+    descriptor: PropTypes.object.isRequired,
+    data: PropTypes.object.isRequired,
+    showQuestionKey: PropTypes.bool,
+    files: PropTypes.arrayOf(PropTypes.string),
+};
+
+function FormChild({ descriptor, data, showQuestionKey, showNote, files }) {
     switch (descriptor.type) {
         case 'repeat':
             return data[descriptor.name] ? (
@@ -177,6 +234,7 @@ function FormChild({ descriptor, data, showQuestionKey, showNote }) {
                     descriptor={descriptor}
                     data={data}
                     showQuestionKey={showQuestionKey}
+                    files={files}
                 />
             );
         case 'deviceid':
@@ -197,6 +255,15 @@ function FormChild({ descriptor, data, showQuestionKey, showNote }) {
                     showQuestionKey={showQuestionKey}
                 />
             ) : null;
+        case 'photo':
+            return (
+                <PhotoField
+                    descriptor={descriptor}
+                    data={data}
+                    showQuestionKey={showQuestionKey}
+                    files={files}
+                />
+            );
         case 'calculate':
             return (
                 <FormCalculatedField
@@ -219,6 +286,7 @@ function FormChild({ descriptor, data, showQuestionKey, showNote }) {
 FormChild.defaultProps = {
     showQuestionKey: true,
     showNote: true,
+    files: [],
 };
 
 FormChild.propTypes = {
@@ -226,9 +294,10 @@ FormChild.propTypes = {
     data: PropTypes.object.isRequired,
     showQuestionKey: PropTypes.bool,
     showNote: PropTypes.bool,
+    files: PropTypes.arrayOf(PropTypes.string),
 };
 
-function FormGroup({ descriptor, data, showQuestionKey }) {
+function FormGroup({ descriptor, data, showQuestionKey, files }) {
     const classes = useStyle();
 
     return (
@@ -251,6 +320,7 @@ function FormGroup({ descriptor, data, showQuestionKey }) {
                     descriptor={childDescriptor}
                     data={data}
                     showQuestionKey={showQuestionKey}
+                    files={files}
                 />
             ))}
         </>
@@ -259,12 +329,14 @@ function FormGroup({ descriptor, data, showQuestionKey }) {
 
 FormGroup.defaultProps = {
     showQuestionKey: true,
+    files: [],
 };
 
 FormGroup.propTypes = {
     descriptor: PropTypes.object.isRequired,
     data: PropTypes.object.isRequired,
     showQuestionKey: PropTypes.bool,
+    files: PropTypes.arrayOf(PropTypes.string),
 };
 
 function FormField({ descriptor, data, showQuestionKey }) {

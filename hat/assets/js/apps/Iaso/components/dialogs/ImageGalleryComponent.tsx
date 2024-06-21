@@ -1,8 +1,8 @@
 import React, { FunctionComponent } from 'react';
 
+import Close from '@mui/icons-material/Close';
 import ArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
 import ArrowRight from '@mui/icons-material/KeyboardArrowRight';
-import Close from '@mui/icons-material/Close';
 
 import {
     Box,
@@ -104,54 +104,52 @@ const ImageGallery: FunctionComponent<Props> = ({
     const currentImgSrc = currentImg.path;
 
     return (
-        <>
-            <Dialog
-                classes={{
-                    paper: styles.paper as any,
-                }}
-                open
-                onClose={(event, reason) => {
-                    if (reason === 'backdropClick') {
-                        closeLightbox();
-                    }
-                }}
-                maxWidth="xl"
-            >
-                <DialogContent sx={styles.content}>
-                    {currentIndex > 0 && (
-                        <IconButton
-                            color="primary"
-                            sx={styles.prevButton}
-                            onClick={() => setCurrentIndex(currentIndex - 1)}
-                        >
-                            <ArrowLeft sx={styles.navIcon} />
-                        </IconButton>
-                    )}
-                    {currentIndex + 1 < imageList.length && (
-                        <IconButton
-                            color="primary"
-                            sx={styles.nextButton}
-                            onClick={() => setCurrentIndex(currentIndex + 1)}
-                        >
-                            <ArrowRight sx={styles.navIcon} />
-                        </IconButton>
-                    )}
+        <Dialog
+            classes={{
+                paper: styles.paper as any,
+            }}
+            open
+            onClose={(event, reason) => {
+                if (reason === 'backdropClick') {
+                    closeLightbox();
+                }
+            }}
+            maxWidth="xl"
+        >
+            <DialogContent sx={styles.content}>
+                {currentIndex > 0 && (
                     <IconButton
                         color="primary"
-                        sx={styles.closeButton}
-                        onClick={() => closeLightbox()}
+                        sx={styles.prevButton}
+                        onClick={() => setCurrentIndex(currentIndex - 1)}
                     >
-                        <Close sx={styles.closeIcon} />
+                        <ArrowLeft sx={styles.navIcon} />
                     </IconButton>
-                    <ImageGalleryLink url={url} urlLabel={urlLabel} />
-                    <Box sx={styles.infos}>{getExtraInfos(currentImg)}</Box>
-                    <Typography color="primary" variant="h6" sx={styles.count}>
-                        {`${currentIndex + 1} / ${imageList.length}`}
-                    </Typography>
-                    <img style={styles.image} alt="" src={currentImgSrc} />
-                </DialogContent>
-            </Dialog>
-        </>
+                )}
+                {currentIndex + 1 < imageList.length && (
+                    <IconButton
+                        color="primary"
+                        sx={styles.nextButton}
+                        onClick={() => setCurrentIndex(currentIndex + 1)}
+                    >
+                        <ArrowRight sx={styles.navIcon} />
+                    </IconButton>
+                )}
+                <IconButton
+                    color="primary"
+                    sx={styles.closeButton}
+                    onClick={() => closeLightbox()}
+                >
+                    <Close sx={styles.closeIcon} />
+                </IconButton>
+                <ImageGalleryLink url={url} urlLabel={urlLabel} />
+                <Box sx={styles.infos}>{getExtraInfos(currentImg)}</Box>
+                <Typography color="primary" variant="h6" sx={styles.count}>
+                    {`${currentIndex + 1} / ${imageList.length}`}
+                </Typography>
+                <img style={styles.image} alt="" src={currentImgSrc} />
+            </DialogContent>
+        </Dialog>
     );
 };
 

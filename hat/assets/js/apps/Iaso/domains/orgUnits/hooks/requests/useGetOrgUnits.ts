@@ -40,10 +40,10 @@ export const useGetOrgUnits = ({
     callback = () => null,
 }: Props): UseQueryResult<Result, Error> => {
     const onSuccess = () => callback();
-    const queryString = new URLSearchParams(params);
+    const queryString = new URLSearchParams(params).toString();
     return useSnackQuery({
-        queryKey: ['orgunits'],
-        queryFn: () => getRequest(`/api/orgunits/?${queryString.toString()}`),
+        queryKey: ['orgunits', queryString],
+        queryFn: () => getRequest(`/api/orgunits/?${queryString}`),
         options: {
             enabled: false,
             staleTime: Infinity,

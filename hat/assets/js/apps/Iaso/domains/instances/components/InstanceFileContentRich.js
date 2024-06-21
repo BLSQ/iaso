@@ -4,10 +4,11 @@ import { Table, TableBody, TableCell, TableRow, Tooltip } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import isPlainObject from 'lodash/isPlainObject';
 import PropTypes from 'prop-types';
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 import { textPlaceholder } from 'bluesquare-components';
+import ImageGallery from '../../../components/dialogs/ImageGalleryComponent';
 
 const useStyle = makeStyles(theme => ({
     tableCellHead: {
@@ -162,6 +163,7 @@ InstanceFileContentRich.propTypes = {
 
 const PhotoField = ({ descriptor, data, showQuestionKey, files }) => {
     const classes = useStyle();
+    const [open, setOpen] = useState(false);
 
     const value = data[descriptor.name];
     const fileUrl = useMemo(() => {
@@ -185,15 +187,26 @@ const PhotoField = ({ descriptor, data, showQuestionKey, files }) => {
                 title={getRawValue(descriptor, data)}
             >
                 {value && fileUrl && (
-                    <img
-                        src={fileUrl}
-                        alt={descriptor.name}
-                        style={{
-                            objectFit: 'contain',
-                            maxWidth: '35vw',
-                            maxHeight: '35vh',
-                        }}
-                    />
+                    <>
+                        <img
+                            src={fileUrl}
+                            alt={descriptor.name}
+                            style={{
+                                objectFit: 'contain',
+                                maxWidth: '35vw',
+                                maxHeight: '35vh',
+                                cursor: 'pointer',
+                            }}
+                            onClick={() => setOpen(true)}
+                        />
+                        {open && (
+                            <ImageGallery
+                                closeLightbox={() => setOpen(false)}
+                                imageList={[{ path: fileUrl }]}
+                                currentIndex={0}
+                            />
+                        )}
+                    </>
                 )}
                 {(!value || !fileUrl) && textPlaceholder}
             </TableCell>

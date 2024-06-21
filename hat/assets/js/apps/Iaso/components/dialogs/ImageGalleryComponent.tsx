@@ -55,6 +55,10 @@ const styles = {
         top: theme => theme.spacing(2),
         right: theme => theme.spacing(2),
         cursor: 'pointer',
+        backgroundColor: theme => theme.palette.secondary.main,
+        '&:hover': {
+            backgroundColor: theme => theme.palette.secondary.dark,
+        },
     },
     navIcon: {
         fontSize: '50px',
@@ -83,7 +87,7 @@ type Props = {
     imageList: ShortFile[];
     currentIndex: number;
     // eslint-disable-next-line no-unused-vars
-    setCurrentIndex: (index: number) => void;
+    setCurrentIndex?: (index: number) => void;
     url: string | null;
     urlLabel: { id: string; defaultMessage: string } | undefined;
     // eslint-disable-next-line no-unused-vars
@@ -94,7 +98,7 @@ const ImageGallery: FunctionComponent<Props> = ({
     closeLightbox,
     imageList,
     currentIndex,
-    setCurrentIndex,
+    setCurrentIndex = () => null,
     url,
     urlLabel,
     getExtraInfos = () => null,
@@ -144,9 +148,11 @@ const ImageGallery: FunctionComponent<Props> = ({
                 </IconButton>
                 <ImageGalleryLink url={url} urlLabel={urlLabel} />
                 <Box sx={styles.infos}>{getExtraInfos(currentImg)}</Box>
-                <Typography color="primary" variant="h6" sx={styles.count}>
-                    {`${currentIndex + 1} / ${imageList.length}`}
-                </Typography>
+                {currentIndex + 1 > 1 && (
+                    <Typography color="primary" variant="h6" sx={styles.count}>
+                        {`${currentIndex + 1} / ${imageList.length}`}
+                    </Typography>
+                )}
                 <img style={styles.image} alt="" src={currentImgSrc} />
             </DialogContent>
         </Dialog>

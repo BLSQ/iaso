@@ -6,7 +6,7 @@ cat > hat/__version__.py << EOF
 # Generated at deploy
 VERSION="$(git describe --tags)--$BRANCH_NAME"
 DEPLOYED_ON="$(date --rfc-3339=seconds)"
-DEPLOYED_BY="$(git log --format='%an' -n 1 "$BUILD_SOURCEVERSION")"
+DEPLOYED_BY="$DEPLOYED_BY"
 EOF
 
 cat hat/__version__.py

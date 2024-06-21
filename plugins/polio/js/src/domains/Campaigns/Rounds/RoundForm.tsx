@@ -73,7 +73,6 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
                     <Field
                         label={formatMessage(MESSAGES.ageMin)}
                         name={`rounds[${roundIndex}].age_min`}
-                        min={0}
                         component={NumberInput}
                         fullWidth
                     />

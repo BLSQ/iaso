@@ -228,6 +228,8 @@ const useRoundShape = () => {
             .required(formatMessage(MESSAGES.fieldRequired))
             .isValidRoundEndDate(formatMessage),
         age_type: yup.string().oneOf(AGE_TYPES).nullable(),
+        age_min: yup.number().nullable().min(0),
+        age_max: yup.number().nullable().min(0),
         mop_up_started_at: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))

@@ -111,6 +111,11 @@ class DelayReasons(models.TextChoices):
     )
 
 
+class AgeChoices(models.TextChoices):
+    YEARS = "YEARS", _("years")
+    MONTHS = "MONTHS", _("months")
+
+
 def make_group_round_scope():
     return Group.objects.create(name="hidden roundScope")
 
@@ -284,6 +289,10 @@ class Round(models.Model):
     # With the current situation/UI, all rounds must have an end date. However, there might be legacy campaigns/rounds
     # floating around in production, and therefore consumer code must assume that this field might be NULL
     ended_at = models.DateField(null=True, blank=True)
+
+    age_min = models.IntegerField(null=True, blank=True)
+    age_max = models.IntegerField(null=True, blank=True)
+    age_type = models.TextField(null=True, blank=True, choices=AgeChoices.choices)
 
     mop_up_started_at = models.DateField(null=True, blank=True)
     mop_up_ended_at = models.DateField(null=True, blank=True)

@@ -2,6 +2,7 @@
 import React, { FunctionComponent, useCallback } from 'react';
 import { GeoJSON, Pane } from 'react-leaflet';
 
+import { GeoJson } from '../../../../constants/types';
 import {
     polioVaccines,
     useOtherVaccineColor,
@@ -38,7 +39,7 @@ export const CalendarMapPanesMerged: FunctionComponent<Props> = ({
                 return (
                     <GeoJSON
                         key={`${mergedShape.properties.id}-${mergedShape.properties.round_number}-${mergedShape.properties.vaccine}-${mergedShape.cache}`}
-                        data={mergedShape}
+                        data={mergedShape as unknown as GeoJson}
                         style={() => getGeoJsonStyle(color, color, zoom)}
                     >
                         <CalendarMapTooltip

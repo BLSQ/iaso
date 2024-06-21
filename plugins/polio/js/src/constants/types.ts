@@ -400,12 +400,19 @@ export type MergedShapes = {
 };
 
 export type GeoJson = {
-    type: string;
+    type: 'FeatureCollection'; // Adjusted to match the specific string literal expected by React-Leaflet
     features: {
         id: number;
-        type: string;
+        type: 'Feature'; // This should also be a specific string literal
         geometry: {
-            type: string;
+            type:
+                | 'Point'
+                | 'MultiPoint'
+                | 'LineString'
+                | 'MultiLineString'
+                | 'Polygon'
+                | 'MultiPolygon'
+                | 'GeometryCollection'; // Specify the correct geometry type
             coordinates: Array<Array<[number, number]>>;
         };
         properties: Record<string, unknown>;

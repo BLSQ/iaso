@@ -8,11 +8,11 @@ import { CampaignFormValues } from '../../../constants/types';
 import { RoundDates } from './RoundDates/RoundDates';
 import { SingleSelect } from '../../../components/Inputs/SingleSelect';
 
-type Props = { roundNumber: number };
+export const MONTHS = 'MONTHS';
+export const YEARS = 'YEARS';
+export const AGE_TYPES = [MONTHS, YEARS];
 
-const MONTHS = 'MONTHS';
-const YEARS = 'YEARS';
-const AGE_TYPES = [MONTHS, YEARS];
+type Props = { roundNumber: number };
 
 const useAgeTypeOptions = () => {
     const { formatMessage } = useSafeIntl();

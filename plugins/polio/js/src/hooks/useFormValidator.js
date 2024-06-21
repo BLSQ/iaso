@@ -2,8 +2,9 @@
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import * as yup from 'yup';
-import MESSAGES from '../constants/messages';
+import MESSAGES from '../constants/messages.ts';
 import { dateFormat } from '../domains/Calendar/campaignCalendar/constants.ts';
+import { AGE_TYPES } from '../domains/Campaigns/Rounds/RoundForm.tsx';
 
 const getRounds = context => {
     return context?.from[context.from.length - 1]?.value?.rounds || [];
@@ -226,6 +227,7 @@ const useRoundShape = () => {
             .nullable()
             .required(formatMessage(MESSAGES.fieldRequired))
             .isValidRoundEndDate(formatMessage),
+        age_type: yup.string().oneOf(AGE_TYPES).nullable(),
         mop_up_started_at: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))

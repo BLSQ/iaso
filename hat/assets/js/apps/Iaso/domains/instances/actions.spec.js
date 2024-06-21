@@ -1,19 +1,11 @@
 import {
     SET_CURRENT_INSTANCE,
     SET_INSTANCES_FILTER_UDPATED,
-    setInstancesFilterUpdated,
     setCurrentInstance,
-    // fetchEditUrl,
-    // fetchInstanceDetail,
-    // softDeleteInstance,
-    // reAssignInstance,
-    // createInstance,
-    // createExportRequest,
-    // bulkDelete,
+    setInstancesFilterUpdated,
 } from './actions';
 
 // const Api = require('iaso/libs/Api');
-// const snackBarsReducer = require('../../redux/snackBarsReducer');
 // const snackBars = require('../../constants/snackBars');
 
 // const formsActions = require('../../../redux/actions/formsActions');

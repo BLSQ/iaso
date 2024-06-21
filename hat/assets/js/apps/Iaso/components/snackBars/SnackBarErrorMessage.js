@@ -3,10 +3,9 @@ import { makeStyles } from '@mui/styles';
 import React from 'react';
 
 import PropTypes from 'prop-types';
-import { useDispatch } from 'react-redux';
 
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import { closeFixedSnackbar } from '../../redux/snackBarsReducer';
+import { useSnackbar } from 'notistack';
 import MESSAGES from './messages';
 
 const useStyles = makeStyles(theme => ({
@@ -30,7 +29,7 @@ const useStyles = makeStyles(theme => ({
 const SnackBarErrorMessage = ({ errorLog, id }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
+    const { closeSnackbar } = useSnackbar();
     if (!errorLog || errorLog === '') return null;
 
     let errorMessage;
@@ -51,7 +50,8 @@ const SnackBarErrorMessage = ({ errorLog, id }) => {
         navigator.clipboard.writeText(errorMessage);
         e.target.focus();
     };
-    const handleClose = () => dispatch(closeFixedSnackbar(id));
+
+    const handleClose = () => closeSnackbar(id);
     return (
         <>
             <Tooltip

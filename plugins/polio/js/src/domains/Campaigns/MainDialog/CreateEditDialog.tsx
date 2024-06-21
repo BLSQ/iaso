@@ -1,11 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import isEqual from 'lodash/isEqual';
-import React, {
-    FunctionComponent,
-    useCallback,
-    useEffect,
-    useState,
-} from 'react';
+import React, { FunctionComponent, useCallback, useState } from 'react';
 
 import {
     Box,
@@ -28,6 +23,8 @@ import {
 import { useQueryClient } from 'react-query';
 import { Form } from '../../../components/Form';
 import MESSAGES from '../../../constants/messages';
+import { CampaignFormValues } from '../../../constants/types';
+import { baseUrls } from '../../../constants/urls';
 import { useStyles } from '../../../styles/theme';
 import { convertEmptyStringToNull } from '../../../utils/convertEmptyStringToNull';
 import { useGetCampaignLogs } from '../campaignHistory/hooks/useGetCampaignHistory';
@@ -36,8 +33,6 @@ import { useSaveCampaign } from '../hooks/api/useSaveCampaign';
 import { useValidateCampaign } from '../hooks/useValidateCampaign';
 import { PolioDialogTabs } from './PolioDialogTabs';
 import { usePolioDialogTabs } from './usePolioDialogTabs';
-import { baseUrls } from '../../../constants/urls';
-import { CampaignFormValues } from '../../../constants/types';
 
 type Props = {
     isOpen: boolean;
@@ -68,25 +63,6 @@ const CreateEditDialog: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const validate = useValidateCampaign();
-
-    const handleSubmit = useCallback(
-        (values, helpers) => {
-            saveCampaign(convertEmptyStringToNull(values), {
-                onSuccess: result => {
-                    setIsUpdated(true);
-                    if (!selectedCampaignId) {
-                        setSelectedCampaignId(result.id);
-                    }
-                },
-                onError: error => {
-                    if (error.details) {
-                        helpers.setErrors(error.details);
-                    }
-                },
-            });
-        },
-        [saveCampaign, selectedCampaignId],
-    );
 
     const initialValues: CampaignFormValues = {
         subactivity: undefined, // we save subactivities one by one, so no array here
@@ -125,11 +101,34 @@ const CreateEditDialog: FunctionComponent<Props> = ({
             handleSubmit(values, helpers);
         },
     });
+    const handleSubmit = useCallback(
+        (values, helpers) => {
+            saveCampaign(convertEmptyStringToNull(values), {
+                onSuccess: result => {
+                    setIsUpdated(true);
+                    queryClient.setQueryData(
+                        ['campaign', selectedCampaignId],
+                        values,
+                    );
+                    if (!selectedCampaignId) {
+                        setSelectedCampaignId(result.id);
+                    }
+                },
+                onError: error => {
+                    if (error.details) {
+                        helpers.setErrors(error.details);
+                    }
+                },
+            });
+        },
+        [saveCampaign, queryClient, selectedCampaignId],
+    );
     const { touched } = formik;
     const handleClose = () => {
         formik.resetForm();
         if (isUpdated) {
             queryClient.invalidateQueries('campaigns');
+            queryClient.invalidateQueries('subActivities');
         }
         onClose();
     };
@@ -137,14 +136,6 @@ const CreateEditDialog: FunctionComponent<Props> = ({
     const [selectedTab, setSelectedTab] = useState(0);
 
     const CurrentForm = tabs[selectedTab].form;
-
-    // default to tab 0 when opening
-    // This seems necessary regardless of state default value, the cause should be investigated
-    useEffect(() => {
-        setSelectedTab(value => {
-            return value || 0;
-        });
-    }, [isOpen]);
 
     const isFormChanged = !isEqual(formik.values, formik.initialValues);
     const saveDisabled =

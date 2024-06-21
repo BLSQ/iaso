@@ -1,14 +1,14 @@
-import React, { FunctionComponent } from 'react';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {
+    Accordion,
+    AccordionDetails,
+    AccordionSummary,
+    Box,
     Grid,
     Typography,
-    Accordion,
-    AccordionSummary,
-    AccordionDetails,
-    Box,
 } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import React, { FunctionComponent } from 'react';
 import { useStyles } from '../Styles';
 
 import MESSAGES from '../../../../constants/messages';
@@ -48,6 +48,7 @@ export const CampaignsLegend: FunctionComponent<Props> = ({ campaigns }) => {
                                     className={classes.roundColor}
                                     style={{
                                         borderColor: c.color,
+                                        margin: '2px',
                                     }}
                                 />
                             </Grid>

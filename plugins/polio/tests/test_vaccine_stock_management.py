@@ -24,6 +24,7 @@ class VaccineStockManagementAPITestCase(APITestCase):
         cls.org_unit_type_country.projects.set([cls.project])
         cls.org_unit_type_country.save()
         cls.data_source = m.DataSource.objects.create(name="Default source")
+        cls.data_source.projects.set([cls.project])
         cls.source_version_1 = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
 
         cls.anon = AnonymousUser()
@@ -229,14 +230,14 @@ class VaccineStockManagementAPITestCase(APITestCase):
             self.fail(msg=str(ex))
 
         # Check that the response contains the expected number of unusable vials entries
-        self.assertEqual(len(data["results"]), 3)
+        self.assertEqual(len(data["results"]), 4)
 
         self.assertEqual(data["results"][0]["vials_in"], 5)
         self.assertEqual(data["results"][0]["doses_in"], 100)
         self.assertEqual(data["results"][0]["type"], "outgoing_stock_movement")
-        self.assertEqual(data["results"][1]["vials_out"], 3)
-        self.assertEqual(data["results"][1]["doses_out"], 60)
-        self.assertEqual(data["results"][1]["type"], "destruction_report")
+        self.assertEqual(data["results"][1]["vials_in"], 10)
+        self.assertEqual(data["results"][1]["doses_in"], 200)
+        self.assertEqual(data["results"][1]["type"], "outgoing_stock_movement")
 
     def test_summary_endpoint(self):
         # Authenticate as a user with read/write permissions

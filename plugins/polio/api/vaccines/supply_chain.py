@@ -570,8 +570,15 @@ class VaccineRequestFormViewSet(ModelViewSet):
     model = VaccineRequestForm
 
     def get_queryset(self):
+        accessible_org_units = OrgUnit.objects.filter_for_user_and_app_id(
+            self.request.user, self.request.query_params.get("app_id")
+        )
+        accessible_org_units_ids = accessible_org_units.values_list("id", flat=True)
         return (
-            VaccineRequestForm.objects.filter(campaign__account=self.request.user.iaso_profile.account)
+            VaccineRequestForm.objects.filter(
+                campaign__account=self.request.user.iaso_profile.account,
+                campaign__country__id__in=accessible_org_units_ids,
+            )
             .prefetch_related("vaccineprealert_set", "vaccinearrivalreport_set", "rounds")
             .distinct()
             .order_by("id")

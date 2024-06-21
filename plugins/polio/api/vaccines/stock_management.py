@@ -611,8 +611,16 @@ class VaccineStockManagementViewSet(ModelViewSet):
         related destruction reports, incident reports, and outgoing stock movements.
         It is ordered by the VaccineStock ID.
         """
+
+        accessible_org_units = OrgUnit.objects.filter_for_user_and_app_id(
+            self.request.user, self.request.query_params.get("app_id")
+        )
+        accessible_org_units_ids = accessible_org_units.values_list("id", flat=True)
+
         return (
-            VaccineStock.objects.filter(account=self.request.user.iaso_profile.account)
+            VaccineStock.objects.filter(
+                account=self.request.user.iaso_profile.account, country__id__in=accessible_org_units_ids
+            )
             .prefetch_related("destructionreport_set", "incidentreport_set", "outgoingstockmovement_set")
             .distinct()
             .order_by("id")

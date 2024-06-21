@@ -1,14 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
 import { Box, Typography } from '@mui/material';
+import React, { useEffect, useState } from 'react';
 
 import PropTypes from 'prop-types';
 
-import { Select, useSafeIntl, renderTags } from 'bluesquare-components';
+import { Select, renderTags, useSafeIntl } from 'bluesquare-components';
 
 import { fetchSubOrgUnitsByType } from '../../../utils/requests';
 
-import MESSAGES from '../../orgUnits/messages';
+import MESSAGES from '../../orgUnits/messages.ts';
 
 const getSubOrgunits = (orgUnit, orgUnitTypes, orgUnitTypesList = []) => {
     if (orgUnit?.sub_unit_types.length > 0) {
@@ -46,7 +45,6 @@ const OrgUnitTypeFilterComponent = props => {
         orgUnitTypes,
         currentOrgUnit,
     } = props;
-    const dispatch = useDispatch();
     const [orgUnitTypesList, setOrgUnitTypesList] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -57,7 +55,6 @@ const OrgUnitTypeFilterComponent = props => {
             if (!ot.orgUnits) {
                 promisesArray.push(
                     fetchSubOrgUnitsByType(
-                        dispatch,
                         `&orgUnitParentId=${currentOrgUnit.id}&orgUnitTypeId=${ot.id}&withShapes=true&validation_status=all`,
                         ot,
                     ),

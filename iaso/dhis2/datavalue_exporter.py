@@ -273,7 +273,25 @@ class EventHandler(BaseHandler):
             )
             self.logger.error(str(event_errors))
 
+        questions_by_name = export_status.mapping_version.form_version.questions_by_name()
+
         for question_key in instance.json.keys():
+            if question_key in questions_by_name and questions_by_name[question_key]["type"] == "select all that apply":
+                question = questions_by_name[question_key]
+                for choice in question["children"]:
+                    choice_key = question_key + "__" + choice["name"]
+                    if choice_key in question_mappings:
+                        choice_mapping = question_mappings[choice_key]
+                        if choice_mapping:
+                            raw_value = instance.json[question_key]
+                            raw_values = raw_value.split(" ")
+                            boolval = "1" if (choice["name"] in raw_values) else "0"
+                            data_value = {
+                                "dataElement": choice_mapping["id"],
+                                "value": format_value(choice_mapping, boolval, self.orgunit_resolver),
+                            }
+                            event["dataValues"].append(data_value)
+
             if question_key in question_mappings:
                 try:
                     data_element = question_mappings[question_key]

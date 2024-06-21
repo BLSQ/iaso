@@ -106,7 +106,7 @@ export const Instances: FunctionComponent<Props> = ({
             const selectedForm =
                 orgunitTypeDetail.reference_forms.length > 0
                     ? `${orgunitTypeDetail.reference_forms[0].id}`
-                    : formsList[0].value;
+                    : formsList[0]?.value;
             const newParams = {
                 ...params,
                 formIds: selectedForm,

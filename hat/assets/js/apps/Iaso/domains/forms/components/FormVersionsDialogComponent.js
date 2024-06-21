@@ -1,19 +1,17 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { Box, Grid, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
-import { Grid, Typography, Box } from '@mui/material';
+import React, { useCallback, useMemo, useState } from 'react';
 
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import FileInputComponent from '../../../components/forms/FileInputComponent';
 import PeriodPicker from '../../periods/components/PeriodPicker.tsx';
 
-import MESSAGES from '../messages';
-import { createFormVersion, updateFormVersion } from '../../../utils/requests';
 import { useFormState } from '../../../hooks/form';
+import { createFormVersion, updateFormVersion } from '../../../utils/requests';
 import { errorTypes, getPeriodsErrors } from '../../periods/utils';
+import MESSAGES from '../messages';
 
-import { enqueueSnackbar } from '../../../redux/snackBarsReducer';
 import { succesfullSnackBar } from '../../../constants/snackBars';
 
 const emptyVersion = (id = null) => ({
@@ -31,7 +29,6 @@ const FormVersionsDialogComponent = ({
     periodType,
     ...dialogProps
 }) => {
-    const dispatch = useDispatch();
     const intl = useSafeIntl();
     const [isLoading, setIsLoading] = useState(false);
     const [formState, setFieldValue, setFieldErrors, setFormState] =
@@ -81,7 +78,7 @@ const FormVersionsDialogComponent = ({
                     setIsLoading(false);
                     setFormState(emptyVersion(formVersion.id));
                     onConfirmed();
-                    dispatch(enqueueSnackbar(succesfullSnackBar()));
+                    openSnackBar(succesfullSnackBar());
                 } catch (error) {
                     setIsLoading(false);
                     if (error.status === 400) {
@@ -93,7 +90,6 @@ const FormVersionsDialogComponent = ({
             }
         },
         [
-            dispatch,
             setFieldErrors,
             formState,
             formId,

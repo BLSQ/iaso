@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useEffect, useState } from 'react';
 
-import PropTypes from 'prop-types';
 import { Box, Typography } from '@mui/material';
+import PropTypes from 'prop-types';
 
-import { Select, useSafeIntl, renderTags } from 'bluesquare-components';
+import { Select, renderTags, useSafeIntl } from 'bluesquare-components';
 
 import { fetchAssociatedOrgUnits } from '../../../utils/requests';
 
@@ -20,7 +19,6 @@ const SourcesFilterComponent = ({
     loadingSelectedSources,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
     const [isLoading, setIsLoading] = useState(loadingSelectedSources);
     useEffect(() => {
         setIsLoading(loadingSelectedSources);
@@ -41,7 +39,6 @@ const SourcesFilterComponent = ({
                 if (!ss.orgUnits) {
                     // eslint-disable-next-line no-await-in-loop
                     const detail = await fetchAssociatedOrgUnits(
-                        dispatch,
                         ss,
                         currentOrgUnit,
                     );

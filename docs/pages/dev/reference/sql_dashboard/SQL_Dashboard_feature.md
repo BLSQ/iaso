@@ -1,9 +1,9 @@
-For super user accross account there is a way to run raw read only SQL queries at the `/explore/` page : [https://iaso.bluesquare.org/explore/](https://iaso.bluesquare.org/explore/)
+For super user across account there is a way to run raw read only SQL queries at the `/explore/` page : [https://iaso.bluesquare.org/explore/](https://iaso.bluesquare.org/explore/)
 e.g [SELECT name FROM iaso_orgunittype](https://iaso.bluesquare.org/explore/?sql=select+name+from+iaso_orgunittype%3AMRkVISqY7UEDGEyyUtdg1A7sxl2eaHNOtgr6fqbkLj4)
 
 This is useful to check the database state and query data accross different client account. You can also save query and share them with others.
 
-This feature is imlemented via the excelent Django SQL Dashboard, their documentation has more complete information: 
+This feature is implemented via the excellent Django SQL Dashboard, their documentation has more complete information: 
 https://django-sql-dashboard.datasette.io/en/stable/index.html
 
 
@@ -104,7 +104,7 @@ from (select TO_CHAR(gen_date.generate_series, 'YYYY/MM') as line_label,
 # Searching in Org Units, Org Unit Types
 Here are some examples of queries to find Org Units, their types, reference forms and everything linked to the hierarchy of a specific Org Unit.
 
-As we are using Postgre's [ltree extension](https://www.postgresql.org/docs/9.6/ltree.html) and [django-ltree](https://github.com/mariocesar/django-ltree) to modelize this hierarchy, specific SQL operators are available to search in a performant way and queries can be cumbersome.
+As we are using Postgre's [ltree extension](https://www.postgresql.org/docs/9.6/ltree.html) and [django-ltree](https://github.com/mariocesar/django-ltree) to model this hierarchy, specific SQL operators are available to search in a performant way and queries can be cumbersome.
 
 Let's say you have a OrgUnit with ID : **XXXXXX**
 
@@ -217,7 +217,7 @@ GRANT readonlyrole to YOUR_USER
 
 Set the environment variable `DB_READONLY_USERNAME` and `DB_READONLY_PASSWORD`.
 
-Some migration will give read acess to the certain tables to the `readonlyrole`, should you give acess to more table use the command
+Some migration will give read acess to the certain tables to the `readonlyrole`, should you give access to more table use the command
 
 ```sql
 GRANT SELECT ON TABLE   

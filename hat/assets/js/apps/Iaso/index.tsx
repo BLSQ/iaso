@@ -1,25 +1,25 @@
+import CssBaseline from '@mui/material/CssBaseline';
+import { ThemeProvider } from '@mui/material/styles';
+import { theme } from 'bluesquare-components';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Provider } from 'react-redux';
-import { ThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import { theme } from 'bluesquare-components';
 import { QueryClient, QueryClientProvider } from 'react-query';
+import { Provider } from 'react-redux';
 
 import './libs/polyfills';
 
 import { GlobalStyles } from '@mui/material';
 import { SnackbarProvider } from 'notistack';
-import App from './domains/app/index';
-import { store } from './redux/store.js';
-import { getPlugins, PluginsContext } from './utils';
-import { getOverriddenTheme, getGlobalOverrides } from './styles';
+import LocalizedAppComponent from './domains/app/components/LocalizedAppComponent.js';
 import {
     ThemeConfig,
     ThemeConfigContext,
 } from './domains/app/contexts/ThemeConfigContext';
-import LocalizedAppComponent from './domains/app/components/LocalizedAppComponent.js';
+import App from './domains/app/index';
 import { Plugin } from './domains/app/types';
+import { store } from './redux/store.js';
+import { getGlobalOverrides, getOverriddenTheme } from './styles';
+import { getPlugins, PluginsContext } from './utils';
 
 const queryClient = new QueryClient({
     defaultOptions: {

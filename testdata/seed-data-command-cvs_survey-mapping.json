@@ -10,6 +10,16 @@
       "displayName": "Weight in kg",
       "categoryOptionCombo": "HllvX50cXC0",
       "categoryOptionComboName": "default"
+    },
+    "visit_reason__pregnant": {
+      "id": "SWfdB5lX0fk",
+      "code": "DE_423442",
+      "name": "Pregnant",
+      "valueType": "BOOLEAN",
+      "domainType": "TRACKER",
+      "displayName": "Pregnant",
+      "categoryOptionCombo": "HllvX50cXC0",
+      "categoryOptionComboName": "default"
     }
   }
 }

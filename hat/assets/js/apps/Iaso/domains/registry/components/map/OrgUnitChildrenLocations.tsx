@@ -14,7 +14,7 @@ import MarkersListComponent from '../../../../components/maps/markers/MarkersLis
 import { MapToolTip } from './MapTooltip';
 import { selectedOrgUnitColor } from './OrgUnitChildrenMap';
 
-const MARKER_RADIUS = 12;
+const MARKER_RADIUS = 8;
 
 type Props = {
     selectedChildrenId: string | undefined;

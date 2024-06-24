@@ -15,6 +15,9 @@ from .models import (
     Campaign,
     CampaignType,
     CampaignGroup,
+    Chronogram,
+    ChronogramTask,
+    ChronogramTemplate,
     CountryUsersGroup,
     DestructionReport,
     IncidentReport,
@@ -322,6 +325,88 @@ class SubActivityAdmin(admin.ModelAdmin):
                         else:
                             print(f"Form errors: {fo.errors}")
                 formset.save()
+
+
+class ChronogramTaskAdminInline(admin.StackedInline):
+    model = ChronogramTask
+    extra = 0
+    raw_id_fields = ("user_in_charge", "created_by", "updated_by")
+    readonly_fields = (
+        "created_at",
+        "created_by",
+        "deleted_at",
+        "is_delayed",
+        "round_start_date",
+        "start_date",
+        "updated_at",
+        "updated_by",
+    )
+
+    def get_queryset(self, request):
+        return (
+            super()
+            .get_queryset(request)
+            .valid()
+            .select_related("chronogram__round", "user_in_charge", "created_by", "updated_by")
+        )
+
+
+@admin.register(Chronogram)
+class ChronogramAdmin(admin.ModelAdmin):
+    date_hierarchy = "created_at"
+    list_display = ("pk", "created_at", "obr_name")
+    list_display_links = ("pk", "created_at")
+    inlines = [ChronogramTaskAdminInline]
+    raw_id_fields = ("round", "created_by", "updated_by")
+    readonly_fields = (
+        "created_at",
+        "created_by",
+        "deleted_at",
+        "updated_at",
+        "updated_by",
+    )
+    search_fields = ("pk", "round__campaign__obr_name")
+
+    @admin.display(empty_value="")
+    def obr_name(self, obj):
+        return obj.round.campaign.obr_name
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).valid().select_related("round__campaign", "created_by", "updated_by")
+
+    def save_model(self, request, obj, form, change):
+        if not obj.pk:
+            obj.created_by = request.user
+        else:
+            obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(ChronogramTemplate)
+class ChronogramTemplateAdmin(admin.ModelAdmin):
+    date_hierarchy = "created_at"
+    list_display = ("pk", "start_offset_in_days", "description", "created_at")
+    list_display_links = ("pk", "start_offset_in_days", "description")
+    list_filter = ("account__name",)
+    raw_id_fields = ("account", "created_by", "updated_by")
+    readonly_fields = (
+        "created_at",
+        "created_by",
+        "deleted_at",
+        "updated_at",
+        "updated_by",
+    )
+    search_fields = ("pk", "account__name")
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).valid().select_related("account", "created_by", "updated_by")
+
+    def save_model(self, request, obj, form, change):
+        if not obj.pk:
+            obj.created_by = request.user
+        else:
+            obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
 
 
 admin.site.register(RoundDateHistoryEntry)

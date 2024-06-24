@@ -73,7 +73,7 @@ export const columns = (
 export const useFeatureFlagColumns = (
     // eslint-disable-next-line no-unused-vars
     setFeatureFlag: (featureFlag: FeatureFlag, isChecked: boolean) => void,
-    featureFlagsValue: (string | number)[],
+    featureFlagsValues: (string | number)[],
 ): Array<Column> => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
@@ -129,7 +129,7 @@ export const useFeatureFlagColumns = (
                             data-test="featureFlag-checkbox"
                             id={`featureFlag-checkbox-${settings.row.original.code}`}
                             checked={Boolean(
-                                featureFlagsValue.includes(
+                                featureFlagsValues.includes(
                                     settings.row.original.id,
                                 ),
                             )}
@@ -146,5 +146,5 @@ export const useFeatureFlagColumns = (
                 },
             },
         ];
-    }, [featureFlagsValue, formatMessage, setFeatureFlag]);
+    }, [featureFlagsValues, formatMessage, setFeatureFlag]);
 };

@@ -133,3 +133,6 @@ if apps.is_installed("django_sql_dashboard"):
 urlpatterns.append(path("dashboard/", include("hat.dashboard.urls")))
 
 urlpatterns += static(settings.MEDIA_URL_PREFIX, document_root=settings.MEDIA_ROOT)
+
+if settings.DEBUG and "debug_toolbar" in settings.INSTALLED_APPS:
+    urlpatterns = [path("__debug__/", include("debug_toolbar.urls"))] + urlpatterns

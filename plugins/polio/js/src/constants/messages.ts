@@ -2418,6 +2418,34 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Sub-activity not saved',
         id: 'iaso.polio.subActivitySaveError',
     },
+    ageMax: {
+        defaultMessage: 'Age max',
+        id: 'iaso.polio.label.ageMax',
+    },
+    ageMin: {
+        defaultMessage: 'Age min',
+        id: 'iaso.polio.label.ageMin',
+    },
+    ageUnit: {
+        defaultMessage: 'Enter age in',
+        id: 'iaso.polio.label.ageUnit',
+    },
+    YEARS: {
+        defaultMessage: 'Years',
+        id: 'iaso.polio.label.YEARS',
+    },
+    MONTHS: {
+        defaultMessage: 'Months',
+        id: 'iaso.polio.label.MONTHS',
+    },
+    ageMinGreaterOrEqualToAgeMin: {
+        defaultMessage: 'Age min should be smaller than age max',
+        id: 'iaso.polio.label.ageMinGreaterOrEqualToAgeMin',
+    },
+    ageMaxSmallerOrEqualToAgeMin: {
+        defaultMessage: 'Age max should be greater than age min',
+        id: 'iaso.polio.label.ageMaxSmallerOrEqualToAgeMin',
+    },
     other: {
         defaultMessage: 'Other',
         id: 'iaso.label.other',

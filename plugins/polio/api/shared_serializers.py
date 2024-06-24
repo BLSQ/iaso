@@ -8,7 +8,7 @@ from rest_framework.fields import Field
 
 from iaso.api.common import UserSerializer
 from iaso.models import Group
-from plugins.polio.models import RoundDateHistoryEntry, ReasonForDelay
+from plugins.polio.models import RoundDateHistoryEntry
 from plugins.polio.preparedness.spreadsheet_manager import *
 
 logger = getLogger(__name__)

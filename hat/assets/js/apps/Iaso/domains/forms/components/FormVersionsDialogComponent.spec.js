@@ -9,6 +9,7 @@ import FormVersionsDialog from './FormVersionsDialogComponent';
 import PeriodPicker from '../../periods/components/PeriodPicker.tsx';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { renderWithStore } from '../../../../../test/utils/redux';
+import { withQueryClientProvider } from '../../../../../test/utils';
 import formVersionFixture from '../fixtures/formVersions.json';
 import { PERIOD_TYPE_DAY } from '../../periods/constants';
 import MESSAGES from '../messages';
@@ -36,26 +37,28 @@ const awaitUseEffect = async wrapper => {
 const getConnectedWrapper = () =>
     mount(
         renderWithStore(
-            <LocalizationProvider
-                dateAdapter={AdapterMoment}
-                adapterLocale="en"
-            >
-                <FormVersionsDialog
-                    formId={formId}
-                    formVersion={fakeFormVersion}
-                    titleMessage={MESSAGES.createFormVersion}
-                    renderTrigger={({ openDialog }) => (
-                        <IconButtonComponent
-                            id="open-dialog"
-                            onClick={openDialog}
-                            icon="edit"
-                            tooltipMessage={MESSAGES.createFormVersion}
-                        />
-                    )}
-                    onConfirmed={() => null}
-                    periodType={PERIOD_TYPE_DAY}
-                />
-            </LocalizationProvider>,
+            withQueryClientProvider(
+                <LocalizationProvider
+                    dateAdapter={AdapterMoment}
+                    adapterLocale="en"
+                >
+                    <FormVersionsDialog
+                        formId={formId}
+                        formVersion={fakeFormVersion}
+                        titleMessage={MESSAGES.createFormVersion}
+                        renderTrigger={({ openDialog }) => (
+                            <IconButtonComponent
+                                id="open-dialog"
+                                onClick={openDialog}
+                                icon="edit"
+                                tooltipMessage={MESSAGES.createFormVersion}
+                            />
+                        )}
+                        onConfirmed={() => null}
+                        periodType={PERIOD_TYPE_DAY}
+                    />
+                </LocalizationProvider>,
+            ),
             {
                 forms: {
                     current: undefined,
@@ -69,20 +72,22 @@ describe('FormVersionsDialog connected component', () => {
         before(() => {
             connectedWrapper = mount(
                 renderWithStore(
-                    <FormVersionsDialog
-                        formId={formId}
-                        titleMessage={MESSAGES.createFormVersion}
-                        onConfirmed={() => null}
-                        periodType={PERIOD_TYPE_DAY}
-                        renderTrigger={({ openDialog }) => (
-                            <IconButtonComponent
-                                id="open-dialog"
-                                onClick={openDialog}
-                                icon="edit"
-                                tooltipMessage={MESSAGES.createFormVersion}
-                            />
-                        )}
-                    />,
+                    withQueryClientProvider(
+                        <FormVersionsDialog
+                            formId={formId}
+                            titleMessage={MESSAGES.createFormVersion}
+                            onConfirmed={() => null}
+                            periodType={PERIOD_TYPE_DAY}
+                            renderTrigger={({ openDialog }) => (
+                                <IconButtonComponent
+                                    id="open-dialog"
+                                    onClick={openDialog}
+                                    icon="edit"
+                                    tooltipMessage={MESSAGES.createFormVersion}
+                                />
+                            )}
+                        />,
+                    ),
                     {
                         forms: {
                             current: undefined,

@@ -1,18 +1,16 @@
 import { Box, Grid, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
 import React, { useCallback, useMemo, useState } from 'react';
-
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
+import { useQueryClient } from 'react-query';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import FileInputComponent from '../../../components/forms/FileInputComponent';
 import PeriodPicker from '../../periods/components/PeriodPicker.tsx';
-
 import { useFormState } from '../../../hooks/form';
 import { createFormVersion, updateFormVersion } from '../../../utils/requests';
 import { errorTypes, getPeriodsErrors } from '../../periods/utils';
 import MESSAGES from '../messages';
-
-import { openSnackBar } from '../../../components/snackBars/EventDispatcher';
+import { openSnackBar } from '../../../components/snackBars/EventDispatcher.ts';
 import { succesfullSnackBar } from '../../../constants/snackBars';
 
 const emptyVersion = (id = null) => ({
@@ -31,6 +29,7 @@ const FormVersionsDialogComponent = ({
     ...dialogProps
 }) => {
     const intl = useSafeIntl();
+    const queryClient = useQueryClient();
     const [isLoading, setIsLoading] = useState(false);
     const [formState, setFieldValue, setFieldErrors, setFormState] =
         useFormState({
@@ -80,6 +79,7 @@ const FormVersionsDialogComponent = ({
                     setFormState(emptyVersion(formVersion.id));
                     onConfirmed();
                     openSnackBar(succesfullSnackBar());
+                    queryClient.invalidateQueries(['formVersions', formId]);
                 } catch (error) {
                     setIsLoading(false);
                     if (error.status === 400) {
@@ -91,13 +91,16 @@ const FormVersionsDialogComponent = ({
             }
         },
         [
-            setFieldErrors,
-            formState,
-            formId,
-            formVersion.id,
-            onConfirmed,
-            setFormState,
             isLoading,
+            formId,
+            formState.start_period.value,
+            formState.end_period.value,
+            formState.xls_file.value,
+            formVersion.id,
+            setFormState,
+            onConfirmed,
+            queryClient,
+            setFieldErrors,
         ],
     );
 

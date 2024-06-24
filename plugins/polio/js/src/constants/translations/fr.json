@@ -460,6 +460,8 @@
     "iaso.polio.label.no": "Non",
     "iaso.polio.label.noBudgetSubmitted": "Aucun budget soumis",
     "iaso.polio.label.noDataFound": "Aucunes données trouvées",
+    "iaso.polio.label.ageMinGreaterOrEqualToAgeMin": "L'âge minimum doit être plus petit que l'âge maximum",
+    "iaso.polio.label.ageMaxSmallerOrEqualToAgeMin": "L'âge maximum doit être plus grand que l'âge minimum",
     "iaso.polio.label.noFile": "Aucun fichier trouvé",
     "iaso.polio.label.non_compliance": "Non-conformité",
     "iaso.polio.label.noRoundFound": "Aucun round trouvé",

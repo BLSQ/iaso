@@ -210,6 +210,57 @@ yup.addMethod(
     },
 );
 
+yup.addMethod(
+    yup.number,
+    'isValidAgeMin',
+    function isValidAgeMin(formatMessage) {
+        return this.test('isValidAgeMin', '', (value, context) => {
+            const { path, createError, parent } = context;
+            const ageMax = parent.age_max;
+
+            let errorMessage;
+
+            if (ageMax <= value) {
+                errorMessage = formatMessage(
+                    MESSAGES.ageMinGreaterOrEqualToAgeMin,
+                );
+            }
+            if (errorMessage) {
+                return createError({
+                    path,
+                    message: errorMessage,
+                });
+            }
+            return true;
+        });
+    },
+);
+yup.addMethod(
+    yup.number,
+    'isValidAgeMax',
+    function isValidAgeMax(formatMessage) {
+        return this.test('isValidAgeMax', '', (value, context) => {
+            const { path, createError, parent } = context;
+            const ageMin = parent.age_min;
+
+            let errorMessage;
+
+            if (ageMin >= value) {
+                errorMessage = formatMessage(
+                    MESSAGES.ageMaxSmallerOrEqualToAgeMin,
+                );
+            }
+            if (errorMessage) {
+                return createError({
+                    path,
+                    message: errorMessage,
+                });
+            }
+            return true;
+        });
+    },
+);
+
 const useRoundShape = () => {
     const { formatMessage } = useSafeIntl();
 
@@ -233,12 +284,14 @@ const useRoundShape = () => {
             .integer(formatMessage(MESSAGES.positiveInteger))
             .min(0, formatMessage(MESSAGES.positiveInteger))
             .typeError(formatMessage(MESSAGES.positiveInteger))
+            .isValidAgeMin(formatMessage)
             .nullable(),
         age_max: yup
             .number()
             .integer(formatMessage(MESSAGES.positiveInteger))
             .min(1, formatMessage(MESSAGES.positiveInteger))
             .typeError(formatMessage(MESSAGES.positiveInteger))
+            .isValidAgeMax(formatMessage)
             .nullable(),
         mop_up_started_at: yup
             .date()

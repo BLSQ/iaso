@@ -2438,6 +2438,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Months',
         id: 'iaso.polio.label.MONTHS',
     },
+    ageMinGreaterOrEqualToAgeMin: {
+        defaultMessage: 'Age min should be smaller than age max',
+        id: 'iaso.polio.label.ageMinGreaterOrEqualToAgeMin',
+    },
+    ageMaxSmallerOrEqualToAgeMin: {
+        defaultMessage: 'Age max should be greater than age min',
+        id: 'iaso.polio.label.ageMaxSmallerOrEqualToAgeMin',
+    },
 });
 
 export default MESSAGES;

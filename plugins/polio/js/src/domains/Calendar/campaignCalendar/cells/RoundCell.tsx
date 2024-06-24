@@ -12,11 +12,12 @@ import { Box, TableCell } from '@mui/material';
 import { isEqual } from 'lodash';
 import { useSelector } from 'react-redux';
 import {
+    OTHER_VACCINE_COLOR,
     polioVaccines,
-    useOtherVaccineColor,
 } from '../../../../constants/virus';
 import { PolioCreateEditDialog as CreateEditDialog } from '../../../Campaigns/MainDialog/CreateEditDialog';
 import { useStyles, vaccineOpacity } from '../Styles';
+import { DEFAULT_CELL_COLOR } from '../constants';
 import { RoundPopperContext } from '../contexts/RoundPopperContext';
 import { hasScope } from '../map/utils';
 import { RoundPopper } from '../popper/RoundPopper';
@@ -45,15 +46,14 @@ export const RoundCell: FunctionComponent<Props> = ({
 
     const { anchorEl, setAnchorEl } = useContext(RoundPopperContext);
     const [self, setSelf] = useState<HTMLElement | null>(null);
-    const otherVaccineColor = useOtherVaccineColor();
     const getCellColor = (vaccine: string) => {
         if (!hasScope(campaign)) {
-            return '#bcbcbc';
+            return DEFAULT_CELL_COLOR;
         }
         const vaccineColor = polioVaccines.find(
             polioVaccine => polioVaccine.value === vaccine,
         )?.color;
-        return vaccineColor || otherVaccineColor;
+        return vaccineColor || OTHER_VACCINE_COLOR;
     };
     const handleClick = useCallback(
         (event: React.MouseEvent<HTMLElement>) => {

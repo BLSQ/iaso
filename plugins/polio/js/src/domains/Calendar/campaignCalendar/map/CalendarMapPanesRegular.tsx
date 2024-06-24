@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { GeoJSON, Pane } from 'react-leaflet';
-import { useOtherVaccineColor } from '../../../../constants/virus';
+import { OTHER_VACCINE_COLOR } from '../../../../constants/virus';
 import { ShapeForCalendarMap } from '../types';
 import { CalendarMapTooltip } from './CalendarMapTooltip';
 import { getGeoJsonStyle } from './utils';
@@ -14,7 +14,6 @@ export const CalendarMapPanesRegular: FunctionComponent<Props> = ({
     campaignsShapes,
     zoom,
 }) => {
-    const otherVaccineColor = useOtherVaccineColor();
     return (
         <>
             {campaignsShapes.map(campaignShape => {
@@ -34,7 +33,7 @@ export const CalendarMapPanesRegular: FunctionComponent<Props> = ({
                                     getGeoJsonStyle(
                                         campaignShape.vaccine
                                             ? campaignShape.color
-                                            : otherVaccineColor,
+                                            : OTHER_VACCINE_COLOR,
                                         color || campaignShape.color,
                                         zoom,
                                     )

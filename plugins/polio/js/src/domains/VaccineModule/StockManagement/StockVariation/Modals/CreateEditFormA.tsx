@@ -45,7 +45,7 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
             report_date: formA?.report_date,
             form_a_reception_date: formA?.form_a_reception_date,
             usable_vials_used: formA?.usable_vials_used,
-            unusable_vials: formA?.unusable_vials,
+            // unusable_vials: formA?.unusable_vials,
             missing_vials: formA?.missing_vials,
             vaccine_stock: vaccineStockId,
         },
@@ -111,8 +111,8 @@ export const CreateEditFormA: FunctionComponent<Props> = ({
                 </Box>
                 <Box mb={2}>
                     <Field
-                        label={formatMessage(MESSAGES.forma_unusable_vials)}
-                        name="unusable_vials"
+                        label={formatMessage(MESSAGES.forma_vials_used)}
+                        name="usable_vials_used"
                         component={NumberInput}
                         required
                     />

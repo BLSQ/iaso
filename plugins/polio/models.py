@@ -389,7 +389,7 @@ class CampaignQuerySet(models.QuerySet):
             qs = qs.filter(account=user.iaso_profile.account)
 
             # Restrict Campaign to the OrgUnit on the country he can access
-            if user.iaso_profile.org_units.count():
+            if user.iaso_profile.org_units.count() and not user.is_superuser:
                 org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all()).defer(
                     "geom", "simplified_geom"
                 )
@@ -1205,8 +1205,7 @@ class OutgoingStockMovement(models.Model):
     )  # Country can be deduced from the campaign
     report_date = models.DateField()
     form_a_reception_date = models.DateField()
-    usable_vials_used = models.PositiveIntegerField(default=0)
-    unusable_vials = models.PositiveIntegerField()
+    usable_vials_used = models.PositiveIntegerField()
     lot_numbers = ArrayField(models.CharField(max_length=200, blank=True), default=list)
     missing_vials = models.PositiveIntegerField()
 

@@ -227,12 +227,7 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
                 setTab('infos');
                 closeDialog();
             }}
-            maxWidth={
-                tab === 'feature_flags' &&
-                project.feature_flags.value.length > 0
-                    ? 'lg'
-                    : 'xs'
-            }
+            maxWidth="sm"
             cancelMessage={MESSAGES.cancel}
             confirmMessage={MESSAGES.save}
             open={isOpen}
@@ -275,7 +270,7 @@ export const CreateEditProjectDialog: FunctionComponent<Props> = ({
                         setFieldValue={(_key, value) =>
                             setFieldValue('feature_flags', value)
                         }
-                        currentProject={project}
+                        projectFeatureFlagsValues={project.feature_flags.value}
                         featureFlags={featureFlags?.map(featureFlag =>
                             translatedFeatureFlag(featureFlag),
                         )}

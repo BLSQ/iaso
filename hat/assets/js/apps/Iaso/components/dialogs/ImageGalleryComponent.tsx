@@ -1,8 +1,8 @@
 import React, { FunctionComponent } from 'react';
 
+import Close from '@mui/icons-material/Close';
 import ArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
 import ArrowRight from '@mui/icons-material/KeyboardArrowRight';
-import Close from '@mui/icons-material/Close';
 
 import {
     Box,
@@ -55,6 +55,10 @@ const styles = {
         top: theme => theme.spacing(2),
         right: theme => theme.spacing(2),
         cursor: 'pointer',
+        backgroundColor: theme => theme.palette.secondary.main,
+        '&:hover': {
+            backgroundColor: theme => theme.palette.secondary.dark,
+        },
     },
     navIcon: {
         fontSize: '50px',
@@ -83,7 +87,7 @@ type Props = {
     imageList: ShortFile[];
     currentIndex: number;
     // eslint-disable-next-line no-unused-vars
-    setCurrentIndex: (index: number) => void;
+    setCurrentIndex?: (index: number) => void;
     url: string | null;
     urlLabel: { id: string; defaultMessage: string } | undefined;
     // eslint-disable-next-line no-unused-vars
@@ -94,7 +98,7 @@ const ImageGallery: FunctionComponent<Props> = ({
     closeLightbox,
     imageList,
     currentIndex,
-    setCurrentIndex,
+    setCurrentIndex = () => null,
     url,
     urlLabel,
     getExtraInfos = () => null,
@@ -104,54 +108,54 @@ const ImageGallery: FunctionComponent<Props> = ({
     const currentImgSrc = currentImg.path;
 
     return (
-        <>
-            <Dialog
-                classes={{
-                    paper: styles.paper as any,
-                }}
-                open
-                onClose={(event, reason) => {
-                    if (reason === 'backdropClick') {
-                        closeLightbox();
-                    }
-                }}
-                maxWidth="xl"
-            >
-                <DialogContent sx={styles.content}>
-                    {currentIndex > 0 && (
-                        <IconButton
-                            color="primary"
-                            sx={styles.prevButton}
-                            onClick={() => setCurrentIndex(currentIndex - 1)}
-                        >
-                            <ArrowLeft sx={styles.navIcon} />
-                        </IconButton>
-                    )}
-                    {currentIndex + 1 < imageList.length && (
-                        <IconButton
-                            color="primary"
-                            sx={styles.nextButton}
-                            onClick={() => setCurrentIndex(currentIndex + 1)}
-                        >
-                            <ArrowRight sx={styles.navIcon} />
-                        </IconButton>
-                    )}
+        <Dialog
+            classes={{
+                paper: styles.paper as any,
+            }}
+            open
+            onClose={(event, reason) => {
+                if (reason === 'backdropClick') {
+                    closeLightbox();
+                }
+            }}
+            maxWidth="xl"
+        >
+            <DialogContent sx={styles.content}>
+                {currentIndex > 0 && (
                     <IconButton
                         color="primary"
-                        sx={styles.closeButton}
-                        onClick={() => closeLightbox()}
+                        sx={styles.prevButton}
+                        onClick={() => setCurrentIndex(currentIndex - 1)}
                     >
-                        <Close sx={styles.closeIcon} />
+                        <ArrowLeft sx={styles.navIcon} />
                     </IconButton>
-                    <ImageGalleryLink url={url} urlLabel={urlLabel} />
-                    <Box sx={styles.infos}>{getExtraInfos(currentImg)}</Box>
+                )}
+                {currentIndex + 1 < imageList.length && (
+                    <IconButton
+                        color="primary"
+                        sx={styles.nextButton}
+                        onClick={() => setCurrentIndex(currentIndex + 1)}
+                    >
+                        <ArrowRight sx={styles.navIcon} />
+                    </IconButton>
+                )}
+                <IconButton
+                    color="primary"
+                    sx={styles.closeButton}
+                    onClick={() => closeLightbox()}
+                >
+                    <Close sx={styles.closeIcon} />
+                </IconButton>
+                <ImageGalleryLink url={url} urlLabel={urlLabel} />
+                <Box sx={styles.infos}>{getExtraInfos(currentImg)}</Box>
+                {currentIndex + 1 > 1 && (
                     <Typography color="primary" variant="h6" sx={styles.count}>
                         {`${currentIndex + 1} / ${imageList.length}`}
                     </Typography>
-                    <img style={styles.image} alt="" src={currentImgSrc} />
-                </DialogContent>
-            </Dialog>
-        </>
+                )}
+                <img style={styles.image} alt="" src={currentImgSrc} />
+            </DialogContent>
+        </Dialog>
     );
 };
 

@@ -11,10 +11,15 @@ import { Box, TableCell } from '@mui/material';
 
 import { isEqual } from 'lodash';
 import { useSelector } from 'react-redux';
-import { polioVaccines } from '../../../../constants/virus';
+import {
+    OTHER_VACCINE_COLOR,
+    polioVaccines,
+} from '../../../../constants/virus';
 import { PolioCreateEditDialog as CreateEditDialog } from '../../../Campaigns/MainDialog/CreateEditDialog';
-import { useStyles } from '../Styles';
+import { useStyles, vaccineOpacity } from '../Styles';
+import { DEFAULT_CELL_COLOR } from '../constants';
 import { RoundPopperContext } from '../contexts/RoundPopperContext';
+import { hasScope } from '../map/utils';
 import { RoundPopper } from '../popper/RoundPopper';
 import {
     CalendarRound,
@@ -30,10 +35,6 @@ type Props = {
     periodType: PeriodType;
 };
 
-const getVaccineColor = (vaccine: string) =>
-    polioVaccines.find(polioVaccine => polioVaccine.value === vaccine)?.color ||
-    '#bcbcbc';
-
 export const RoundCell: FunctionComponent<Props> = ({
     colSpan,
     campaign,
@@ -45,7 +46,15 @@ export const RoundCell: FunctionComponent<Props> = ({
 
     const { anchorEl, setAnchorEl } = useContext(RoundPopperContext);
     const [self, setSelf] = useState<HTMLElement | null>(null);
-
+    const getCellColor = (vaccine: string) => {
+        if (!hasScope(campaign)) {
+            return DEFAULT_CELL_COLOR;
+        }
+        const vaccineColor = polioVaccines.find(
+            polioVaccine => polioVaccine.value === vaccine,
+        )?.color;
+        return vaccineColor || OTHER_VACCINE_COLOR;
+    };
     const handleClick = useCallback(
         (event: React.MouseEvent<HTMLElement>) => {
             if (!self) {
@@ -79,7 +88,6 @@ export const RoundCell: FunctionComponent<Props> = ({
         campaign.separateScopesPerRound,
         round.vaccine_names,
     ]);
-
     return (
         <TableCell
             className={classnames(defaultCellStyles, classes.round)}
@@ -95,7 +103,8 @@ export const RoundCell: FunctionComponent<Props> = ({
                     <span
                         key={`${campaign.id}-${round.number}-${vaccine}`}
                         style={{
-                            backgroundColor: getVaccineColor(vaccine),
+                            backgroundColor: getCellColor(vaccine),
+                            opacity: vaccineOpacity,
                             display: 'block',
                             height: `${100 / vaccinesList.length}%`,
                         }}

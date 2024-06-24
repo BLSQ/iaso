@@ -2,16 +2,24 @@
 import React, { FunctionComponent } from 'react';
 import { GeoJSON, Pane } from 'react-leaflet';
 
+import { GeoJson } from '../../../../constants/types';
+import {
+    OTHER_VACCINE_COLOR,
+    polioVaccines,
+} from '../../../../constants/virus';
+import { MergedShapeWithCacheDate } from '../types';
 import { CalendarMapTooltip } from './CalendarMapTooltip';
 import { getGeoJsonStyle } from './utils';
-import { polioVaccines } from '../../../../constants/virus';
-import { MergedShapeWithColor } from '../types';
 
 type Props = {
-    mergedShapes: MergedShapeWithColor[];
+    mergedShapes: MergedShapeWithCacheDate[];
     zoom: number;
 };
 
+const getColor = (vaccine: string | undefined) => {
+    const vaccineColor = polioVaccines.find(v => v.value === vaccine)?.color;
+    return vaccineColor || OTHER_VACCINE_COLOR;
+};
 export const CalendarMapPanesMerged: FunctionComponent<Props> = ({
     mergedShapes,
     zoom,
@@ -19,21 +27,12 @@ export const CalendarMapPanesMerged: FunctionComponent<Props> = ({
     return (
         <Pane name="merged-shapes" key="merged-shapes">
             {mergedShapes?.map(mergedShape => {
+                const color = getColor(mergedShape.properties.vaccine);
                 return (
                     <GeoJSON
                         key={`${mergedShape.properties.id}-${mergedShape.properties.round_number}-${mergedShape.properties.vaccine}-${mergedShape.cache}`}
-                        data={mergedShape}
-                        style={() =>
-                            getGeoJsonStyle(
-                                polioVaccines.find(
-                                    v =>
-                                        v.value ===
-                                        mergedShape.properties.vaccine,
-                                )?.color || mergedShape.color,
-                                mergedShape.color,
-                                zoom,
-                            )
-                        }
+                        data={mergedShape as unknown as GeoJson}
+                        style={() => getGeoJsonStyle(color, color, zoom)}
                     >
                         <CalendarMapTooltip
                             type="merged"

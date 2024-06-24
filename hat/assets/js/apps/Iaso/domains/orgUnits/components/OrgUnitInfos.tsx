@@ -1,3 +1,4 @@
+/* eslint-disable react/function-component-definition */
 /* eslint-disable camelcase */
 import React, { FunctionComponent } from 'react';
 
@@ -85,7 +86,8 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
     const isNewOrgunit = params.orgUnitId === '0';
     const isSaveDisabled =
         orgUnitState.name.value === '' ||
-        orgUnitState.org_unit_type_id.value === null;
+        orgUnitState.org_unit_type_id.value === null ||
+        !orgUnitModified;
 
     const {
         data: validationStatusOptions,

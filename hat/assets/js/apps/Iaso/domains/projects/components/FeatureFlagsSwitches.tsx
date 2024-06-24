@@ -41,25 +41,18 @@ export const FeatureFlagsSwitches: React.FunctionComponent<Props> = ({
     const classes = useStyles();
     const setFeatureFlag = useCallback(
         (featureFlag: FeatureFlag, isChecked: boolean) => {
-            const newFeatureFlags = [...featureFlags];
+            const newFeatureFlags = [...featureFlagsValues];
             if (!isChecked) {
                 const permIndex = newFeatureFlags.findIndex(item => {
-                    return item.code === featureFlag.code;
+                    return item === featureFlag.id;
                 });
                 newFeatureFlags.splice(permIndex, 1);
             } else {
-                newFeatureFlags.push({
-                    id: featureFlag.id,
-                    code: featureFlag.code,
-                    name: featureFlag.name,
-                    created_at: featureFlag.created_at,
-                    updated_at: featureFlag.updated_at,
-                    description: featureFlag.description,
-                });
+                newFeatureFlags.push(featureFlag.id);
             }
             handleChange(newFeatureFlags);
         },
-        [featureFlags, handleChange],
+        [featureFlagsValues, handleChange],
     );
 
     const columns = useFeatureFlagColumns(setFeatureFlag, featureFlagsValues);

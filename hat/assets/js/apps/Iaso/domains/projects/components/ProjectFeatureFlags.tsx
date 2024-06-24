@@ -29,7 +29,6 @@ const ProjectFeatureFlags: FunctionComponent<Props> = ({
 
     const handleFeatureFlagChange = newFeatureFlags => {
         setFeatureFlagsValues(newFeatureFlags);
-        console.log(newFeatureFlags);
         setFieldValue('feature_flags', newFeatureFlags);
     };
 

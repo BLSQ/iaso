@@ -78,7 +78,7 @@ export const useGetInstances = (
 
 export const useGetOrgUnitInstances = (
     orgUnitId?: number,
-    onlyReference = false,
+    onlyReference = true,
 ): UseQueryResult<Instance[], Error> => {
     const apiParams: Record<string, any> = {
         orgUnitId,

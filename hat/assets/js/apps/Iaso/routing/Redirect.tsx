@@ -15,6 +15,8 @@ export const Redirect: FunctionComponent<Props> = ({ to, path }) => {
     const params = useParams();
     const { state } = useLocation();
     let destination = to;
+    console.log('Redirect path', path);
+    console.log('Redirect destination', destination);
     const keysToConvert = Object.keys(path?.conversions ?? {});
     Object.entries(params).forEach(([key, value]) => {
         if (keysToConvert.includes(key)) {

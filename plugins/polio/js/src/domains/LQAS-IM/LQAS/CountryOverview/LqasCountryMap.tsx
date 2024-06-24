@@ -60,53 +60,47 @@ export const LqasCountryMap: FunctionComponent<Props> = ({
     const title = formatMessage(MESSAGES.lqasResults);
 
     return (
-        <>
-            <Box position="relative">
-                <MapLegendContainer>
-                    <MapLegend
-                        title={title}
-                        legendItems={legendItems}
-                        width="lg"
-                    />
-                </MapLegendContainer>
-                {/* Showing spinner on isFetching alone would make the map seem like it's loading before the user has chosen a country and campaign */}
-                {(isFetching || isFetchingGeoJson || isFetchingRegions) && (
-                    <LoadingSpinner fixed={false} absolute />
-                )}
-                <MapComponent
-                    key={countryId}
-                    name={`LQASIMMap${round}-${type}-${countryId}`}
-                    backgroundLayer={regionShapes}
-                    mainLayer={mainLayer}
-                    onSelectShape={() => null}
-                    getMainLayerStyle={getMainLayerStyles}
-                    getBackgroundLayerStyle={getBackgroundLayerStyle}
-                    tooltipLabels={{
-                        main: 'District',
-                        background: 'Region',
-                    }}
-                    makePopup={makePopup(data, round, selectedCampaign)}
-                    fitBoundsToBackground
-                    fitToBounds
-                    height={600}
+        <Box position="relative">
+            <MapLegendContainer>
+                <MapLegend title={title} legendItems={legendItems} width="lg" />
+            </MapLegendContainer>
+            {/* Showing spinner on isFetching alone would make the map seem like it's loading before the user has chosen a country and campaign */}
+            {(isFetching || isFetchingGeoJson || isFetchingRegions) && (
+                <LoadingSpinner fixed={false} absolute />
+            )}
+            <MapComponent
+                key={countryId}
+                name={`LQASIMMap${round}-${type}-${countryId}`}
+                backgroundLayer={regionShapes}
+                mainLayer={mainLayer}
+                onSelectShape={() => null}
+                getMainLayerStyle={getMainLayerStyles}
+                getBackgroundLayerStyle={getBackgroundLayerStyle}
+                tooltipLabels={{
+                    main: 'District',
+                    background: 'Region',
+                }}
+                makePopup={makePopup(data, round, selectedCampaign)}
+                fitBoundsToBackground
+                fitToBounds
+                height={600}
+            />
+            {selectedCampaign && (
+                <ScopeAndDNFDisclaimer
+                    campaign={selectedCampaign}
+                    data={
+                        disclaimerData as Record<
+                            string,
+                            {
+                                hasScope: boolean;
+                                districtsNotFound: string[];
+                            }
+                        >
+                    }
+                    campaigns={campaigns}
+                    round={round}
                 />
-                {selectedCampaign && (
-                    <ScopeAndDNFDisclaimer
-                        campaign={selectedCampaign}
-                        data={
-                            disclaimerData as Record<
-                                string,
-                                {
-                                    hasScope: boolean;
-                                    districtsNotFound: string[];
-                                }
-                            >
-                        }
-                        campaigns={campaigns}
-                        round={round}
-                    />
-                )}
-            </Box>
-        </>
+            )}
+        </Box>
     );
 };

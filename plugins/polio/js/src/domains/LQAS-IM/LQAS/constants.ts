@@ -1,6 +1,7 @@
 import {
     FAIL_COLOR,
     MODERATE_COLOR,
+    NO_DATA_COLOR,
     OK_COLOR,
     POOR_COLOR,
     WARNING_COLOR,
@@ -9,9 +10,11 @@ import { IN_SCOPE } from '../shared/constants';
 
 export const LQAS_PASS = '1lqasOK';
 export const LQAS_DISQUALIFIED = '2lqasDisqualified';
-export const LQAS_FAIL = '3lqasFail';
+export const LQAS_FAIL = '3lqasFail'; // shown as "Very poor" in the UI
 export const LQAS_MODERATE = '3lqasmoderate';
 export const LQAS_POOR = '3lqaspoor';
+export const LQAS_OVERSAMPLED = '3lqasoversampled';
+export const LQAS_UNDERSAMPLED = '3lqasundersampled';
 export const LQAS_COUNTRY_URL = '/api/polio/lqasmap/country/lqas_';
 
 export const lqasDistrictColors = {
@@ -55,10 +58,24 @@ export const lqasDistrictColors = {
         opacity: '1',
         zIndex: 999,
     },
+    [LQAS_UNDERSAMPLED]: {
+        color: '#5e5e5e',
+        opacity: '1',
+        fillColor: NO_DATA_COLOR,
+        weight: '2',
+        zIndex: 1,
+    },
+    [LQAS_OVERSAMPLED]: {
+        color: '#5e5e5e',
+        opacity: '1',
+        fillColor: 'transparent',
+        weight: '2',
+        zIndex: 1,
+    },
     [IN_SCOPE]: {
         color: '#5e5e5e',
         opacity: '1',
-        fillColor: 'grey',
+        fillColor: NO_DATA_COLOR,
         weight: '2',
         zIndex: 1,
     },

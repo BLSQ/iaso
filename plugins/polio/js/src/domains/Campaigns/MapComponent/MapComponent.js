@@ -1,6 +1,13 @@
 /* eslint-disable camelcase */
 import React, { useMemo } from 'react';
-import { TileLayer, MapContainer, GeoJSON, Tooltip, Pane } from 'react-leaflet';
+import {
+    TileLayer,
+    MapContainer,
+    GeoJSON,
+    Tooltip,
+    Pane,
+    SVGOverlay,
+} from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { geoJSON } from 'leaflet';
 import {
@@ -90,12 +97,51 @@ export const MapComponent = ({
                     ))}
             </Pane>
             <Pane name={`MainLayer-${name}`}>
+                <svg>
+                    <defs>
+                        {/* <linearGradient id="Gradient1">
+                            <stop stopColor="red" offset="0%" />
+                            <stop stopColor="green" offset="50%" />
+                            <stop stopColor="blue" offset="100%" />
+                        </linearGradient> */}
+                        <pattern
+                            id="diagonalHatch"
+                            width="10"
+                            height="10"
+                            patternTransform="rotate(45 0 0)"
+                            patternUnits="userSpaceOnUse"
+                        >
+                            <rect
+                                x="0"
+                                y="0"
+                                width="10"
+                                height="10"
+                                style={{ fill: 'black' }}
+                            />
+                            <line
+                                x1="0"
+                                y1="0"
+                                x2="0"
+                                y2="10"
+                                style={{
+                                    stroke: 'red',
+                                    strokeWidth: 10,
+                                }}
+                            />
+                        </pattern>
+                    </defs>
+                </svg>
                 {mainLayer?.length > 0 &&
-                    mainLayer.map(shape => (
+                    mainLayer.map((shape, index) => (
                         <GeoJSON
                             key={shape.id}
                             data={shape.geo_json}
-                            style={() => getMainLayerStyle(shape)}
+                            // style={() => getMainLayerStyle(shape)}
+                            style={
+                                index % 2 > 0
+                                    ? { fillColor: 'url(#diagonalHatch)' }
+                                    : () => getMainLayerStyle(shape)
+                            }
                             eventHandlers={{
                                 click: () => onSelectShape(shape),
                             }}
@@ -120,6 +166,13 @@ export const MapComponent = ({
                         </GeoJSON>
                     ))}
             </Pane>
+            {/* <Pane>
+                {mainLayer.map(shape => (
+                    <SVGOverlay key={`${shape.id}b`} data={shape.geo_json}>
+                        TEst
+                    </SVGOverlay>
+                ))}
+            </Pane> */}
         </MapContainer>
     );
 };

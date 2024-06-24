@@ -48,6 +48,15 @@ export type LqasImDistrictData = {
     district?: number;
     total_sites_visited: number;
     region_name?: string;
+    status:
+        | '1lqasOK'
+        | '3lqasFail'
+        | '3lqaspoor'
+        | '3lqasmoderate'
+        | '2lqasDisqualified'
+        | '3lqasundersampled'
+        | '3lqasoversampled'
+        | 'inScope';
 };
 
 export type LqasImDistrictDataWithNameAndRegion = LqasImDistrictData & {

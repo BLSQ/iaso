@@ -2418,6 +2418,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Sub-activity not saved',
         id: 'iaso.polio.subActivitySaveError',
     },
+    other: {
+        defaultMessage: 'Other',
+        id: 'iaso.label.other',
+    },
 });
 
 export default MESSAGES;

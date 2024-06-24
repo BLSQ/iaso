@@ -1,8 +1,8 @@
 /* eslint-disable react/require-default-props */
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { FunctionComponent } from 'react';
-import { FormattedMessage } from 'react-intl';
 import { Tooltip } from 'react-leaflet';
+import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../../../constants/messages';
 
 type Props = {
@@ -24,39 +24,40 @@ export const CalendarMapTooltip: FunctionComponent<Props> = ({
     vaccine,
     vaccines,
 }) => {
+    const { formatMessage } = useSafeIntl();
     return (
         <>
             {/* @ts-ignore TODO: fix this type problem */}
             <Tooltip pane="popupPane">
                 <div>
-                    <FormattedMessage {...MESSAGES.campaign} />
+                    {formatMessage(MESSAGES.campaign)}
                     {`: ${campaign}`}
                 </div>
                 <div>
-                    <FormattedMessage {...MESSAGES.country} />
+                    {formatMessage(MESSAGES.country)}
                     {`: ${country}`}
                 </div>
                 {type === 'regular' && (
                     <>
                         <div>
-                            <FormattedMessage {...MESSAGES.region} />
+                            {formatMessage(MESSAGES.region)}
                             {`: ${region}`}
                         </div>
                         <div>
-                            <FormattedMessage {...MESSAGES.district} />
+                            {formatMessage(MESSAGES.district)}
                             {`: ${district}`}
                         </div>
                     </>
                 )}
                 {vaccines ? (
                     <div>
-                        <FormattedMessage {...MESSAGES.vaccines} />
+                        {formatMessage(MESSAGES.vaccines)}
                         {`: ${vaccines}`}
                     </div>
                 ) : (
                     <div>
-                        <FormattedMessage {...MESSAGES.vaccine} />
-                        {`: ${vaccine}`}
+                        {formatMessage(MESSAGES.vaccine)}
+                        {`: ${vaccine || formatMessage(MESSAGES.other)}`}
                     </div>
                 )}
             </Tooltip>

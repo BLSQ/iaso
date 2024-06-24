@@ -3,6 +3,7 @@ import { postRequest, putRequest } from 'Iaso/libs/Api.ts';
 // @ts-ignore
 import { commaSeparatedIdsToStringArray } from 'Iaso/utils/forms';
 import { UseMutationResult, useMutation, useQueryClient } from 'react-query';
+import { openSnackBar } from '../../../../../../../../hat/assets/js/apps/Iaso/components/snackBars/EventDispatcher';
 import {
     errorSnackBar,
     succesfullSnackBar,

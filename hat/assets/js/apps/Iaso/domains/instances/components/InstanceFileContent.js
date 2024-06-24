@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import InstanceFileContentRich from './InstanceFileContentRich';
+import React, { Component } from 'react';
 import InstanceFileContentBasic from './InstanceFileContentBasic';
+import InstanceFileContentRich from './InstanceFileContentRich';
 
 /**
  * Wrapper component for instance file content
@@ -25,7 +25,6 @@ export default class InstanceFileContent extends Component {
     render() {
         const { instance, showQuestionKey, showNote, logId } = this.props;
         const hasDescriptor = instance?.form_descriptor;
-
         return !this.state.hasError && hasDescriptor ? (
             <InstanceFileContentRich
                 logId={logId}
@@ -33,6 +32,7 @@ export default class InstanceFileContent extends Component {
                 formDescriptor={instance?.form_descriptor}
                 showQuestionKey={showQuestionKey}
                 showNote={showNote}
+                files={instance?.files}
             />
         ) : (
             <InstanceFileContentBasic fileContent={instance?.file_content} />

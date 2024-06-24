@@ -1,18 +1,18 @@
 import {
-    pink,
-    purple,
-    indigo,
+    amber,
     blue,
+    blueGrey,
+    brown,
     cyan,
-    teal,
+    deepOrange,
+    grey,
+    indigo,
     lightGreen,
     lime,
+    pink,
+    purple,
+    teal,
     yellow,
-    amber,
-    deepOrange,
-    brown,
-    grey,
-    blueGrey,
 } from '@mui/material/colors';
 
 const colors = [

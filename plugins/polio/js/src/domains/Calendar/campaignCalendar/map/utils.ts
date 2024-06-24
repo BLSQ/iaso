@@ -1,15 +1,15 @@
-import moment, { Moment } from 'moment';
 import { cloneDeep } from 'lodash';
-import { vaccineOpacity } from '../Styles';
-import { boundariesZoomLimit } from './constants';
-import { polioVaccines } from '../../../../constants/virus';
-import { appId } from '../../../../constants/app';
+import moment, { Moment } from 'moment';
 import { getRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
-import { CalendarRound, MappedCampaign, Query } from '../types';
 import {
     DropdownOptions,
     Nullable,
 } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { appId } from '../../../../constants/app';
+import { polioVaccines } from '../../../../constants/virus';
+import { vaccineOpacity } from '../Styles';
+import { CalendarRound, MappedCampaign, Query } from '../types';
+import { boundariesZoomLimit } from './constants';
 
 export const getGeoJsonStyle = (
     fillColor: string,
@@ -212,4 +212,10 @@ export const findFirstAndLastRounds = (
         result[campaign.id] = { firstRound, lastRound };
     });
     return result;
+};
+export const hasScope = (campaign: MappedCampaign): boolean => {
+    return (
+        campaign.scopes.length > 0 ||
+        campaign.rounds.some(round => round.scopes.length > 0)
+    );
 };

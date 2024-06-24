@@ -77,12 +77,7 @@ class VaccineStockCalculator:
         else:
             ir_sum = 0
 
-        if self.stock_movements.exists():
-            sm_sum = sum(movement.unusable_vials or 0 for movement in self.stock_movements)
-        else:
-            sm_sum = 0
-
-        return ir_sum + sm_sum
+        return ir_sum
 
     def get_vials_destroyed(self):
         if not self.destruction_reports.exists():
@@ -230,7 +225,6 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
             "report_date",
             "form_a_reception_date",
             "usable_vials_used",
-            "unusable_vials",
             "lot_numbers",
             "missing_vials",
         ]
@@ -533,19 +527,6 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
         # Add unusable vials from OutgoingStockMovements/FORMA
         for movement in outgoing_movements:
-            if movement.unusable_vials > 0:
-                results.append(
-                    {
-                        "date": movement.report_date,
-                        "action": "Form A - Unusable vials",
-                        "vials_in": movement.unusable_vials or 0,
-                        "doses_in": (movement.unusable_vials or 0) * calc.get_doses_per_vial(),
-                        "vials_out": None,
-                        "doses_out": None,
-                        "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
-                    }
-                )
-
             if movement.usable_vials_used > 0:
                 results.append(
                     {

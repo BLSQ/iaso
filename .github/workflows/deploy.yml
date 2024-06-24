@@ -94,7 +94,6 @@ jobs:
         env:
           VERSION_NAME: ${{ steps.version.outputs.VERSION_NAME }}
           CI: false
-          DEPLOYED_BY: ${{ github.actor }} 
 
       - name: deploy to beanstalk
         run: python scripts/eb_deploy.py ${{ steps.config.outputs.ENVIRONMENT }}

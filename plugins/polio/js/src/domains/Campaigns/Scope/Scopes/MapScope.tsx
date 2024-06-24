@@ -1,9 +1,12 @@
 /* eslint-disable camelcase */
 import { Box } from '@mui/material';
-import { useTheme } from '@mui/styles';
 import { FieldInputProps } from 'formik';
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
-import { PolioVaccine, polioVaccines } from '../../../../constants/virus';
+import {
+    OTHER_VACCINE_COLOR,
+    PolioVaccine,
+    polioVaccines,
+} from '../../../../constants/virus';
 import { MapComponent } from '../../MapComponent/MapComponent';
 
 import {
@@ -55,7 +58,6 @@ export const MapScope: FunctionComponent<Props> = ({
     isPolio,
     availableVaccines = polioVaccines,
 }) => {
-    const theme = useTheme();
     const { value: scopes = [] } = field;
 
     const getShapeStyle = useCallback(
@@ -68,18 +70,13 @@ export const MapScope: FunctionComponent<Props> = ({
                 );
                 return {
                     ...selectedPathOptions,
-                    color: vaccine?.color || theme.palette.secondary.main,
+                    color: vaccine?.color || OTHER_VACCINE_COLOR,
                 };
             }
             if (values.org_unit?.id === shape.id) return initialDistrict;
             return unselectedPathOptions;
         },
-        [
-            scopes,
-            values.org_unit?.id,
-            availableVaccines,
-            theme.palette.secondary.main,
-        ],
+        [scopes, values.org_unit?.id, availableVaccines],
     );
     const filterOrgUnits = useCallback(
         (orgUnits: OrgUnit[]) =>

@@ -1,11 +1,11 @@
 /* eslint-disable camelcase */
-import React, { FunctionComponent, useCallback } from 'react';
+import React, { FunctionComponent } from 'react';
 import { GeoJSON, Pane } from 'react-leaflet';
 
 import { GeoJson } from '../../../../constants/types';
 import {
+    OTHER_VACCINE_COLOR,
     polioVaccines,
-    useOtherVaccineColor,
 } from '../../../../constants/virus';
 import { MergedShapeWithCacheDate } from '../types';
 import { CalendarMapTooltip } from './CalendarMapTooltip';
@@ -16,22 +16,14 @@ type Props = {
     zoom: number;
 };
 
+const getColor = (vaccine: string | undefined) => {
+    const vaccineColor = polioVaccines.find(v => v.value === vaccine)?.color;
+    return vaccineColor || OTHER_VACCINE_COLOR;
+};
 export const CalendarMapPanesMerged: FunctionComponent<Props> = ({
     mergedShapes,
     zoom,
 }) => {
-    const otherVaccineColor = useOtherVaccineColor();
-
-    const getColor = useCallback(
-        (vaccine: string | undefined) => {
-            const vaccineColor = polioVaccines.find(
-                v => v.value === vaccine,
-            )?.color;
-            return vaccineColor || otherVaccineColor;
-        },
-        [otherVaccineColor],
-    );
-
     return (
         <Pane name="merged-shapes" key="merged-shapes">
             {mergedShapes?.map(mergedShape => {

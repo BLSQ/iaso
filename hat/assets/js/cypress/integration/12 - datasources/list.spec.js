@@ -14,7 +14,7 @@ import orgUnitTypes from '../../fixtures/orgunittypes/dummy-list.json';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
-const baseUrl = `${siteBaseUrl}/dashboard/orgunits/sources/list/pageSize/10/page/1`;
+const baseUrl = `${siteBaseUrl}/dashboard/orgunits/sources/list`;
 
 const dataSourceSeeds = Array(11)
     .fill()
@@ -70,12 +70,12 @@ describe('Data sources', () => {
         );
         cy.intercept(
             'GET',
-            '/api/datasources/?&limit=10&page=1&order=name',
+            '/api/datasources/?order=name&limit=20&page=1',
             sourcesPage1,
         ).as('page1');
         cy.intercept(
             'GET',
-            '/api/datasources/?&limit=10&page=2&order=name',
+            '/api/datasources/?order=name&limit=20&page=2',
             sourcesPage2,
         ).as('page2');
         cy.intercept('GET', '/api/profiles/me/**', superUser);
@@ -89,6 +89,8 @@ describe('Data sources', () => {
             rows: 10,
             columns: 6,
             apiKey: 'datasources',
+            apiPath: 'datasources/?order=name&limit=20&page=1',
+            responseKey: 'sources',
         });
         describe('"Create" button', () => {
             beforeEach(() => {

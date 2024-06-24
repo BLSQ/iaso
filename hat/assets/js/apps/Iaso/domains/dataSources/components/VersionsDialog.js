@@ -1,35 +1,23 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { useState, useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import {
-    Button,
-    DialogActions,
-    Grid,
-    Tooltip,
-    Typography,
-} from '@mui/material';
+import { Button, DialogActions, Grid, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import Public from '@mui/icons-material/Public';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import AddBox from '@mui/icons-material/AddBoxOutlined';
 import { FormattedMessage } from 'react-intl';
 import {
     commonStyles,
     DHIS2Svg,
-    IconButton as IconButtonComponent,
     Table,
     useSafeIntl,
 } from 'bluesquare-components';
-// import 'react-table';
-import { CopySourceVersion } from './CopySourceVersion/CopySourceVersion.tsx';
-
 import DialogComponent from '../../../components/dialogs/DialogComponent';
 import MESSAGES from '../messages';
 import { AddTask } from './AddTaskComponent';
 import { ImportGeoPkgDialog } from './ImportGeoPkgDialog';
 import { AddNewEmptyVersion } from './AddNewEmptyVersion.tsx';
-import { DateTimeCell } from '../../../components/Cells/DateTimeCell.tsx';
-import { EditSourceVersion } from './EditSourceVersion.tsx';
+
 import {
     getSortedSourceVersions,
     handleSort,
@@ -37,6 +25,7 @@ import {
     getTableParams,
     getTablePages,
 } from '../utils';
+import { useVersionsDialogTableColumns } from '../hooks/useVersionsDialogTableColumns.tsx';
 
 const useStyles = makeStyles(theme => ({
     spanStyle: {
@@ -45,130 +34,7 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-const tableColumns = (source, forceRefreshParent) => [
-    {
-        Header: <FormattedMessage {...MESSAGES.defaultVersion} />,
-        accessor: 'id',
-        sortable: false,
-        Cell: settings =>
-            source.default_version?.id === settings.value && (
-                <Tooltip
-                    title={<FormattedMessage {...MESSAGES.defaultVersion} />}
-                >
-                    <CheckCircleIcon color="primary" />
-                </Tooltip>
-            ),
-    },
-    {
-        Header: (
-            <FormattedMessage
-                id="iaso.versionsDialog.label.number"
-                defaultMessage="Number"
-            />
-        ),
-        sortable: true,
-        accessor: 'number',
-    },
-    {
-        Header: (
-            <FormattedMessage
-                id="iaso.versionsDialog.label.createdAt"
-                defaultMessage="Created"
-            />
-        ),
-        accessor: 'created_at',
-        sortable: false,
-        Cell: DateTimeCell,
-    },
-    {
-        Header: (
-            <FormattedMessage
-                id="iaso.versionsDialog.label.updatedAt"
-                defaultMessage="Updated"
-            />
-        ),
-        accessor: 'updated_at',
-        sortable: false,
-        Cell: DateTimeCell,
-    },
-    {
-        Header: (
-            <FormattedMessage
-                id="iaso.label.orgUnit"
-                defaultMessage="Org units"
-            />
-        ),
-        accessor: 'org_units_count',
-    },
-    {
-        Header: (
-            <FormattedMessage
-                id="iaso.versionsDialog.label.description"
-                defaultMessage="Description"
-            />
-        ),
-        accessor: 'description',
-        sortable: false,
-    },
-    {
-        Header: (
-            <FormattedMessage
-                id="iaso.label.actions"
-                defaultMessage="Action(s)"
-            />
-        ),
-        accessor: 'actions',
-        sortable: false,
-        width: 200,
-        Cell: settings => {
-            return source.read_only ? (
-                <FormattedMessage id="Read Only" />
-            ) : (
-                <>
-                    <EditSourceVersion
-                        sourceVersionId={settings.row.original.id}
-                        description={settings.row.original.description}
-                        sourceVersionNumber={settings.row.original.number}
-                        dataSourceId={source.id}
-                        forceRefreshParent={forceRefreshParent}
-                    />
-                    <AddTask
-                        renderTrigger={({ openDialog }) => (
-                            <IconButtonComponent
-                                onClick={openDialog}
-                                icon="dhis"
-                                tooltipMessage={MESSAGES.updateFromDhis2}
-                            />
-                        )}
-                        sourceId={source.id}
-                        sourceVersionNumber={settings.row.original.number}
-                        sourceCredentials={source.credentials ?? {}}
-                    />
-                    <ImportGeoPkgDialog
-                        renderTrigger={({ openDialog }) => (
-                            <IconButtonComponent
-                                onClick={openDialog}
-                                icon="globe"
-                                tooltipMessage={MESSAGES.gpkgTooltip}
-                            />
-                        )}
-                        sourceId={source.id}
-                        sourceName={source.name}
-                        versionNumber={settings.row.original.number}
-                        projects={source.projects.flat()}
-                    />
-                    <CopySourceVersion
-                        dataSourceId={source.id}
-                        dataSourceVersionNumber={settings.row.original.number}
-                        dataSourceName={source.name}
-                    />
-                </>
-            );
-        },
-    },
-];
-
-const VersionsDialog = ({ renderTrigger, source, forceRefreshParent }) => {
+const VersionsDialog = ({ renderTrigger, source }) => {
     const { spanStyle, ...classes } = useStyles();
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -179,6 +45,8 @@ const VersionsDialog = ({ renderTrigger, source, forceRefreshParent }) => {
         [source?.versions],
     );
     const { formatMessage } = useSafeIntl();
+
+    const columns = useVersionsDialogTableColumns(source);
 
     const formatDataForTable = useCallback(
         (tableData, sortFunc) =>
@@ -241,17 +109,14 @@ const VersionsDialog = ({ renderTrigger, source, forceRefreshParent }) => {
             renderActions={({ closeDialog }) => (
                 <DialogActions className={classes.action}>
                     <Button onClick={closeDialog} color="primary">
-                        <FormattedMessage
-                            id="iaso.label.close"
-                            defaultMessage="Close"
-                        />
+                        {formatMessage(MESSAGES.close)}
                     </Button>
                 </DialogActions>
             )}
         >
             <Table
                 data={sortedData}
-                columns={tableColumns(source, forceRefreshParent)}
+                columns={columns}
                 params={params}
                 page={page}
                 pages={pages}
@@ -313,7 +178,6 @@ const VersionsDialog = ({ renderTrigger, source, forceRefreshParent }) => {
                         </Button>
                     )}
                     sourceId={source.id}
-                    forceRefreshParent={forceRefreshParent}
                 />
             </Grid>
         </DialogComponent>
@@ -329,7 +193,6 @@ VersionsDialog.propTypes = {
         credentials: PropTypes.object,
         projects: PropTypes.array.isRequired,
     }).isRequired,
-    forceRefreshParent: PropTypes.func.isRequired,
 };
 VersionsDialog.defaultProps = {};
 

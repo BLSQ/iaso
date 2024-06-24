@@ -1,24 +1,24 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { ElementType, useContext, useMemo, ReactElement } from 'react';
-import { Route, Routes } from 'react-router';
 import { last } from 'lodash';
+import React, { ElementType, ReactElement, useContext, useMemo } from 'react';
+import { Route, Routes } from 'react-router';
 
 import {
     routeConfigs as appRoutes,
-    setupAccountPath,
     page404,
+    setupAccountPath,
 } from '../../../constants/routes';
 
-import ProtectedRoute from '../../users/components/ProtectedRoute';
 import { baseUrls } from '../../../constants/urls';
-import { HomeOnline } from '../../home/HomeOnline';
-import { PluginsContext } from '../../../utils';
-import { Plugins } from '../types';
-import { useCurrentUser, useHasNoAccount } from '../../../utils/usersUtils';
 import { useRedirections } from '../../../routing/hooks/useRedirections';
-import { useGetAndStoreCurrentUser } from '../../home/hooks/useGetAndStoreCurrentUser';
-import { SHOW_HOME_ONLINE, hasFeatureFlag } from '../../../utils/featureFlags';
 import { RouteCustom } from '../../../routing/types';
+import { PluginsContext } from '../../../utils';
+import { SHOW_HOME_ONLINE, hasFeatureFlag } from '../../../utils/featureFlags';
+import { useCurrentUser, useHasNoAccount } from '../../../utils/usersUtils';
+import { HomeOnline } from '../../home/HomeOnline';
+import { useGetAndStoreCurrentUser } from '../../home/hooks/useGetAndStoreCurrentUser';
+import ProtectedRoute from '../../users/components/ProtectedRoute';
+import { Plugins } from '../types';
 
 type Result = {
     routes: ReactElement | null;
@@ -186,8 +186,8 @@ export const useRoutes = (userHomePage?: string): Result => {
     const redirections = useRedirections({
         hasNoAccount,
         isFetchingCurrentUser,
-        homeUrl: userHomePage,
         pluginRedirections,
+        userHomePage,
     });
 
     // routes should only change if currentUser has changed

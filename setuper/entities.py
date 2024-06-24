@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import uuid
 
 from fake import fake_person
-from submissions import submission2xml, org_unit_gps_point
+from submissions import submission2xml, org_unit_gps_point, submission_org_unit_gps_point
 from random import randint
 
 
@@ -27,7 +27,7 @@ def setup_entities(account_name, iaso_client):
         "periods_before_allowed": 0,
         "periods_after_allowed": 0,
         "device_field": "deviceid",
-        "location_field": "",
+        "location_field": "coordonnees_gps_fosa",
         "label_keys": [],
     }
 
@@ -54,7 +54,7 @@ def setup_entities(account_name, iaso_client):
         "periods_before_allowed": 0,
         "periods_after_allowed": 0,
         "device_field": "deviceid",
-        "location_field": "",
+        "location_field": "coordonnees_gps_fosa",
         "label_keys": [],
     }
 
@@ -158,6 +158,7 @@ def setup_entities(account_name, iaso_client):
                                     "caretaker_rs": "brother",
                                     "hc": "hc_E",
                                 },
+                                "coordonnees_gps_fosa": submission_org_unit_gps_point(orgunit),
                             },
                             "meta": {"instanceID": "uuid:" + the_uuid},
                         },
@@ -210,6 +211,7 @@ def setup_entities(account_name, iaso_client):
                                 "visit": {
                                     "oedema": 1,
                                     "need_followup": 0,
+                                    "coordonnees_gps_fosa": submission_org_unit_gps_point(orgunit),
                                 },
                                 "meta": {"instanceID": "uuid:" + the_uuid},
                             },

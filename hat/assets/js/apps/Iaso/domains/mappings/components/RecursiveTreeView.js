@@ -31,6 +31,7 @@ const RecursiveTreeView = props => {
 
     const onNodeSelected = (event, value) => {
         const val = indexedQuestions[value];
+        console.log('node selected ', value, val);
         if (val && val.type !== 'group') {
             onQuestionSelected(val);
         }
@@ -42,7 +43,8 @@ const RecursiveTreeView = props => {
             node,
             isTopNode,
         );
-        const questionMapping = mappingVersion.question_mappings[node.name];
+        const questionMapping =
+            mappingVersion.question_mappings[Descriptor.getKey(node)];
         const mapped = isMapped(questionMapping);
         const neverMapped = isNeverMapped(questionMapping);
 
@@ -55,15 +57,17 @@ const RecursiveTreeView = props => {
         if (mapped || allChidrenMapped) {
             className = classes.mapped;
         }
+        let label = _.truncate(Descriptor.getHumanLabel(node));
+        if (Descriptor.hasChildren(node)) {
+            label = label +' (' + coverage.join(' / ') + ')';
+        } else if (node.type) {
+            label = label +' (' + node.type + ')';
+        }
         return (
             <TreeItem
-                key={node.name}
-                nodeId={node.name}
-                label={`${_.truncate(Descriptor.getHumanLabel(node))} (${
-                    Descriptor.hasChildren(node)
-                        ? ` ${coverage.join(' / ')}`
-                        : node.type
-                })`}
+                key={Descriptor.getKey(node)}
+                nodeId={Descriptor.getKey(node)}
+                label={label}
                 title={Descriptor.getHumanLabel(node)}
                 className={className}
             >

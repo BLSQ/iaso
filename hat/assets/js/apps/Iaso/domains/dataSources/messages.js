@@ -384,6 +384,30 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.closingDate',
         defaultMessage: 'Closing date',
     },
+    number: {
+        id: 'iaso.versionsDialog.label.number',
+        defaultMessage: 'Number',
+    },
+    createdAt: {
+        id: 'iaso.versionsDialog.label.createdAt',
+        defaultMessage: 'Created',
+    },
+    updatedAt: {
+        id: 'iaso.versionsDialog.label.updatedAt',
+        defaultMessage: 'Updated',
+    },
+    description: {
+        id: 'iaso.versionsDialog.label.description',
+        defaultMessage: 'Description',
+    },
+    orgUnits: {
+        id: 'iaso.label.orgUnit',
+        defaultMessage: 'Org units',
+    },
+    readOnly: {
+        id: 'iaso.dataSources.dataSourceReadOnly',
+        defaultMessage: 'Read Only',
+    },
 });
 
 export default MESSAGES;

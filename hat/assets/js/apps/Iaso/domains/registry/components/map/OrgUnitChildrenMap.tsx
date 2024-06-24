@@ -63,6 +63,7 @@ const boundsOptions = {
 };
 const tabsHeight = '50px';
 const mapHeight = `calc(${HEIGHT} - ${tabsHeight})`;
+const mapHeightFullScreen = `calc(92vh - ${tabsHeight})`;
 const useStyles = makeStyles(theme => ({
     mapContainer: {
         ...commonStyles(theme).mapContainer,
@@ -74,10 +75,6 @@ const useStyles = makeStyles(theme => ({
             borderBottomLeftRadius: 0,
             borderBottomRightRadius: 0,
         },
-        // Temporary fix to avoid loading spinner to have a zindex of 10 000 and passing over the org unit tree
-        '& > div:not(.map)': {
-            zIndex: 1000,
-        },
     },
     fullScreen: {
         position: 'fixed',
@@ -85,7 +82,7 @@ const useStyles = makeStyles(theme => ({
         left: '0',
         width: '100vw',
         height: 'calc(100vh - 127px)',
-        zIndex: 40,
+        zIndex: 1300,
     },
 }));
 
@@ -197,7 +194,9 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                     doubleClickZoom={false}
                     maxZoom={currentTile.maxZoom}
                     style={{
-                        minHeight: mapHeight,
+                        minHeight: isMapFullScreen
+                            ? mapHeightFullScreen
+                            : mapHeight,
                         height: '100%',
                     }}
                     center={[1, 20]}

@@ -1,18 +1,39 @@
 import { capitalize } from 'bluesquare-components';
 import { paginationPathParams } from '../routing/common';
-import { linksFiltersWithPrefix, orgUnitFiltersWithPrefix } from './filters.js';
 
 export const paginationPathParamsWithPrefix = (prefix: string): string[] =>
     paginationPathParams.map(p => `${prefix}${capitalize(p, true)}`);
 
-export const orgUnitsFiltersPathParamsWithPrefix = (
-    prefix: string,
-    withChildren: boolean,
-): string[] =>
-    orgUnitFiltersWithPrefix(prefix, withChildren).map(f => f.urlKey);
+export const FORMS_PREFIX = 'formsParams';
+export const LINKS_PREFIX = 'linksParams';
+export const LOGS_PREFIX = 'logsParams';
+export const OU_CHILDREN_PREFIX = 'childrenParams';
 
-export const linksFiltersPathParamsWithPrefix = (prefix: string): string[] =>
-    linksFiltersWithPrefix(prefix).map(f => f.urlKey);
+const orgUnitDetailsLinkParams = [
+    `${LINKS_PREFIX}Search`,
+    `${LINKS_PREFIX}AlgorithmRunId`,
+    `${LINKS_PREFIX}Validated`,
+    `${LINKS_PREFIX}ValidatorId`,
+    `${LINKS_PREFIX}AlgorithmId`,
+    `${LINKS_PREFIX}Score`,
+    `${LINKS_PREFIX}Origin`,
+    ...paginationPathParamsWithPrefix(LINKS_PREFIX),
+];
+
+const orgUnitDetailsChildrenParams = [
+    `${OU_CHILDREN_PREFIX}Search`,
+    `${OU_CHILDREN_PREFIX}OnlyDirectChildren`,
+    `${OU_CHILDREN_PREFIX}Validation_status`,
+    `${OU_CHILDREN_PREFIX}HasInstances`,
+    `${OU_CHILDREN_PREFIX}WithShape`,
+    `${OU_CHILDREN_PREFIX}WithLocation`,
+    `${OU_CHILDREN_PREFIX}Group`,
+    `${OU_CHILDREN_PREFIX}OrgUnitTypeId`,
+    ...paginationPathParamsWithPrefix(OU_CHILDREN_PREFIX),
+];
+
+const orgUnitDetailsLogsParams = paginationPathParamsWithPrefix(LOGS_PREFIX);
+const orgUnitDetailsFormsParams = paginationPathParamsWithPrefix(FORMS_PREFIX);
 
 export const CHANGE_REQUEST = 'changeRequest';
 const ORG_UNITS = 'orgunits';
@@ -31,13 +52,12 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
         url: 'forms/list',
         params: [
             'accountId',
-            ...paginationPathParams,
             'search',
-            'searchActive',
             'showDeleted',
             'planning',
             'orgUnitTypeIds',
             'projectsIds',
+            ...paginationPathParams,
         ],
     },
     formDetail: {
@@ -122,25 +142,22 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'accountId',
             'orgUnitId',
             'levels',
-            ...paginationPathParams,
             'logsOrder',
             'tab',
             'formId',
             'referenceFormId',
             'instanceId',
-            ...orgUnitsFiltersPathParamsWithPrefix('childrenParams', true),
-            ...paginationPathParamsWithPrefix('childrenParams'),
-            ...linksFiltersPathParamsWithPrefix('linksParams'),
-            ...paginationPathParamsWithPrefix('linksParams'),
-            ...paginationPathParamsWithPrefix('formsParams'),
-            ...paginationPathParamsWithPrefix('logsParams'),
+            ...paginationPathParams,
+            ...orgUnitDetailsChildrenParams,
+            ...orgUnitDetailsLinkParams,
+            ...orgUnitDetailsFormsParams,
+            ...orgUnitDetailsLogsParams,
         ],
     },
     orgUnitsChangeRequest: {
         url: ORG_UNITS_CHANGE_REQUEST,
         params: [
             'accountId',
-            ...paginationPathParams,
             'parent_id',
             'groups',
             'org_unit_type_id',
@@ -151,6 +168,7 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'userIds',
             'userRoles',
             'withLocation',
+            ...paginationPathParams,
         ],
     },
     registry: {
@@ -190,7 +208,8 @@ export const baseRouteConfigs: Record<string, RouteConfig> = {
             'score',
             ...paginationPathParams,
             'searchActive',
-            'validation_status',
+            // TODO confirm this param
+            // 'validation_status',
         ],
     },
     algos: {

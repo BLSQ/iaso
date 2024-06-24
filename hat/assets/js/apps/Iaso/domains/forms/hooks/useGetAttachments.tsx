@@ -1,10 +1,10 @@
 /* eslint-disable camelcase */
-import { UseQueryResult } from 'react-query';
 import { Pagination } from 'bluesquare-components';
-import { useSnackQuery } from '../../../libs/apiHooks';
+import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../libs/Api';
-import { FormAttachment, FormParams } from '../types/forms';
+import { useSnackQuery } from '../../../libs/apiHooks';
 import { makeUrlWithParams } from '../../../libs/utils';
+import { FormAttachment, FormParams } from '../types/forms';
 
 export interface FormAttachmentsApiResult extends Pagination {
     results: FormAttachment[];

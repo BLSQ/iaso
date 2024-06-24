@@ -3,14 +3,13 @@ import { postRequest, putRequest } from 'Iaso/libs/Api.ts';
 // @ts-ignore
 import { commaSeparatedIdsToStringArray } from 'Iaso/utils/forms';
 import { UseMutationResult, useMutation, useQueryClient } from 'react-query';
-import { CampaignFormValues } from '../../../../constants/types';
-import { dispatch } from '../../../../../../../../hat/assets/js/apps/Iaso/redux/store';
-import { enqueueSnackbar } from '../../../../../../../../hat/assets/js/apps/Iaso/redux/snackBarsReducer';
+import { openSnackBar } from '../../../../../../../../hat/assets/js/apps/Iaso/components/snackBars/EventDispatcher';
 import {
     errorSnackBar,
     succesfullSnackBar,
 } from '../../../../../../../../hat/assets/js/apps/Iaso/constants/snackBars';
 import MESSAGES from '../../../../constants/messages';
+import { CampaignFormValues } from '../../../../constants/types';
 
 // we need this check because the select box returns the list in string format, but the api retirns an actual array
 const formatStringtoArray = value => {
@@ -21,11 +20,11 @@ const formatStringtoArray = value => {
 const subActivityUrl = '/api/polio/campaigns_subactivities/';
 
 const dispatchSuccess = message => {
-    dispatch(enqueueSnackbar(succesfullSnackBar(undefined, message)));
+    openSnackBar(succesfullSnackBar(undefined, message));
 };
 
 const dispatchError = (message, error) => {
-    dispatch(enqueueSnackbar(errorSnackBar(undefined, message, error)));
+    openSnackBar(errorSnackBar(undefined, message, error));
 };
 
 const saveSubActivity = values => {
@@ -92,7 +91,6 @@ export const useSaveCampaign = (): UseMutationResult<any, any, any> => {
     const queryClient = useQueryClient();
     return useMutation('save-campaigns', save, {
         onSuccess: () => {
-            queryClient.invalidateQueries(['campaigns']);
             queryClient.invalidateQueries(['subActivities']);
         },
     });

@@ -1,5 +1,4 @@
 import React, {
-    ReactNode,
     FunctionComponent,
     useState,
     useEffect,
@@ -9,8 +8,12 @@ import React, {
 import get from 'lodash/get';
 import { Tabs, Tab } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { useSafeIntl, IntlMessage } from 'bluesquare-components';
-import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
+import {
+    useSafeIntl,
+    ConfirmCancelModal,
+    makeFullModal,
+    AddButton,
+} from 'bluesquare-components';
 
 import { ProjectInfos } from './ProjectInfos';
 import { Form, ProjectFeatureFlags } from './ProjectFeatureFlags';
@@ -20,19 +23,17 @@ import { Project } from '../types/project';
 import MESSAGES from '../messages';
 import { useGetFeatureFlags } from '../hooks/requests';
 import { FeatureFlag } from '../types/featureFlag';
+import { EditIconButton } from '../../../components/Buttons/EditIconButton';
 
-type RenderTriggerProps = {
-    openDialog: () => void;
-};
 type Tab = 'infos' | 'feature_flags';
 
 type Props = {
-    titleMessage: IntlMessage;
-    // eslint-disable-next-line no-unused-vars
-    renderTrigger: ({ openDialog }: RenderTriggerProps) => ReactNode;
     initialData?: Project | null;
     // eslint-disable-next-line no-unused-vars
     saveProject: (s: Project) => Promise<any>;
+    closeDialog: () => void;
+    isOpen: boolean;
+    dialogType: string;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -73,9 +74,10 @@ export const containsForbiddenCharacter = (value: string): boolean => {
     return false;
 };
 
-const ProjectsDialog: FunctionComponent<Props> = ({
-    titleMessage,
-    renderTrigger,
+export const CreateEditProjectDialog: FunctionComponent<Props> = ({
+    dialogType = 'create',
+    closeDialog,
+    isOpen,
     initialData = {
         name: null,
         app_id: null,
@@ -111,11 +113,6 @@ const ProjectsDialog: FunctionComponent<Props> = ({
     const [project, setProject] = useState(emptyProject);
     const [tab, setTab] = useState<Tab>('infos');
     const appIdError = formatMessage(MESSAGES.appIdError);
-
-    const onClosed = () => {
-        setProject(initialProject(null));
-        setTab('infos');
-    };
 
     const setFieldValue = useCallback(
         (fieldName, fieldValue) => {
@@ -172,7 +169,7 @@ const ProjectsDialog: FunctionComponent<Props> = ({
         [formatMessage],
     );
 
-    const onConfirm = closeDialog => {
+    const onConfirm = () => {
         const currentProject: Project = {
             id: initialData?.app_id,
             feature_flags: (featureFlags ?? []).filter(fF =>
@@ -184,7 +181,6 @@ const ProjectsDialog: FunctionComponent<Props> = ({
         };
         saveProject(currentProject)
             .then(() => {
-                closeDialog();
                 setTab('infos');
                 setProject(initialProject(null));
             })
@@ -211,21 +207,29 @@ const ProjectsDialog: FunctionComponent<Props> = ({
             !isFetchingFeatureFlags,
         [project, isFetchingFeatureFlags],
     );
+    const titleMessage =
+        dialogType === 'create'
+            ? formatMessage(MESSAGES.create)
+            : formatMessage(MESSAGES.updateProject);
 
     return (
-        // @ts-ignore
-        <ConfirmCancelDialogComponent
+        <ConfirmCancelModal
             allowConfirm={allowConfirm}
             titleMessage={titleMessage}
-            onConfirm={closeDialog => onConfirm(closeDialog)}
+            onConfirm={onConfirm}
+            onCancel={() => {
+                setProject(initialProject(null));
+                setTab('infos');
+                closeDialog();
+            }}
+            maxWidth="sm"
             cancelMessage={MESSAGES.cancel}
             confirmMessage={MESSAGES.save}
-            onClosed={() => onClosed()}
-            renderTrigger={renderTrigger}
-            maxWidth="xs"
-            dialogProps={{
-                classNames: classes.dialog,
-            }}
+            open={isOpen}
+            closeDialog={closeDialog}
+            dataTestId="project-dialog"
+            id="project-dialog"
+            onClose={() => null}
         >
             <div className={classes.root} id="project-dialog">
                 <Tabs
@@ -261,7 +265,7 @@ const ProjectsDialog: FunctionComponent<Props> = ({
                         setFieldValue={(_key, value) =>
                             setFieldValue('feature_flags', value)
                         }
-                        currentProject={project}
+                        projectFeatureFlagsValues={project.feature_flags.value}
                         featureFlags={featureFlags?.map(featureFlag =>
                             translatedFeatureFlag(featureFlag),
                         )}
@@ -269,12 +273,24 @@ const ProjectsDialog: FunctionComponent<Props> = ({
                     />
                 )}
             </div>
-        </ConfirmCancelDialogComponent>
+        </ConfirmCancelModal>
     );
 };
 
-ProjectsDialog.defaultProps = {
+CreateEditProjectDialog.defaultProps = {
     initialData: null,
 };
 
-export { ProjectsDialog };
+const createProjectModalWithButton = makeFullModal(
+    CreateEditProjectDialog,
+    AddButton,
+);
+const editProjectModalWithIcon = makeFullModal(
+    CreateEditProjectDialog,
+    EditIconButton,
+);
+
+export {
+    createProjectModalWithButton as CreateProjectDialog,
+    editProjectModalWithIcon as EditProjectDialog,
+};

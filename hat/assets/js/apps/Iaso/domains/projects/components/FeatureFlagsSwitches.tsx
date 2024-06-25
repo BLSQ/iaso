@@ -25,7 +25,7 @@ const styles = theme => ({
 
 type Props = {
     featureFlags: FeatureFlag[];
-    featureFlagsValues: (string | number)[];
+    projectFeatureFlagsValues: (string | number)[];
     // eslint-disable-next-line no-unused-vars
     handleChange: (newValue: any) => void;
     isLoading;
@@ -34,14 +34,14 @@ type Props = {
 const useStyles = makeStyles(styles);
 export const FeatureFlagsSwitches: React.FunctionComponent<Props> = ({
     featureFlags,
-    featureFlagsValues,
+    projectFeatureFlagsValues,
     handleChange,
     isLoading,
 }) => {
     const classes = useStyles();
     const setFeatureFlag = useCallback(
         (featureFlag: FeatureFlag, isChecked: boolean) => {
-            const newFeatureFlags = [...featureFlagsValues];
+            const newFeatureFlags = [...projectFeatureFlagsValues];
             if (!isChecked) {
                 const permIndex = newFeatureFlags.findIndex(item => {
                     return item === featureFlag.id;
@@ -52,10 +52,13 @@ export const FeatureFlagsSwitches: React.FunctionComponent<Props> = ({
             }
             handleChange(newFeatureFlags);
         },
-        [featureFlagsValues, handleChange],
+        [projectFeatureFlagsValues, handleChange],
     );
 
-    const columns = useFeatureFlagColumns(setFeatureFlag, featureFlagsValues);
+    const columns = useFeatureFlagColumns(
+        setFeatureFlag,
+        projectFeatureFlagsValues,
+    );
 
     return (
         <Box className={classes.container}>

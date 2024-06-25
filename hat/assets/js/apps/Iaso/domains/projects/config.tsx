@@ -127,7 +127,7 @@ export const useFeatureFlagColumns = (
                     return (
                         <Switch
                             data-test="featureFlag-checkbox"
-                            id={`featureFlag-checkbox-${settings.row.original.code}`}
+                            id={`featureFlag-checkbox-${settings.row.original.id}`}
                             checked={Boolean(
                                 featureFlagsValues.includes(
                                     settings.row.original.id,
@@ -139,7 +139,7 @@ export const useFeatureFlagColumns = (
                                     e.target.checked,
                                 );
                             }}
-                            name={settings.row.original.code}
+                            name={settings.row.original.id}
                             color="primary"
                         />
                     );

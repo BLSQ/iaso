@@ -35,7 +35,7 @@ const ProjectFeatureFlags: FunctionComponent<Props> = ({
     return (
         <FeatureFlagsSwitches
             featureFlags={featureFlags}
-            featureFlagsValues={featureFlagsValues}
+            projectFeatureFlagsValues={featureFlagsValues}
             handleChange={handleFeatureFlagChange}
             isLoading={isFetchingFeatureFlag}
         />

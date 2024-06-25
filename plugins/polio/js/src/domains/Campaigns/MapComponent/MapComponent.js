@@ -1,13 +1,6 @@
 /* eslint-disable camelcase */
 import React, { useMemo } from 'react';
-import {
-    TileLayer,
-    MapContainer,
-    GeoJSON,
-    Tooltip,
-    Pane,
-    SVGOverlay,
-} from 'react-leaflet';
+import { TileLayer, MapContainer, GeoJSON, Tooltip, Pane } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { geoJSON } from 'leaflet';
 import {
@@ -18,9 +11,11 @@ import {
     string,
     number,
     bool,
+    array,
 } from 'prop-types';
 
 import { CustomZoomControl } from '../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomZoomControl.tsx';
+import { PaneWithPattern } from '../../../../../../../hat/assets/js/apps/Iaso/components/maps/PaneWithPattern/PaneWithPattern.tsx';
 
 const findBackgroundShape = (shape, backgroundShapes) => {
     return backgroundShapes.filter(
@@ -43,6 +38,8 @@ export const MapComponent = ({
     fitToBounds,
     makePopup,
     fitBoundsToBackground,
+    shapePatterns,
+    shapePatternIds,
 }) => {
     // When there is no data, bounds is undefined, so default center and zoom is used,
     // when the data get there, bounds change and the effect focus on it via the deps
@@ -96,52 +93,46 @@ export const MapComponent = ({
                         />
                     ))}
             </Pane>
-            <Pane name={`MainLayer-${name}`}>
-                <svg>
+            <PaneWithPattern
+                name={`MainLayer-${name}`}
+                patterns={shapePatterns}
+                patternIds={shapePatternIds}
+            >
+                {/* <svg>
                     <defs>
-                        {/* <linearGradient id="Gradient1">
-                            <stop stopColor="red" offset="0%" />
-                            <stop stopColor="green" offset="50%" />
-                            <stop stopColor="blue" offset="100%" />
-                        </linearGradient> */}
                         <pattern
                             id="diagonalHatch"
-                            width="10"
-                            height="10"
+                            width="20"
+                            height="20"
                             patternTransform="rotate(45 0 0)"
                             patternUnits="userSpaceOnUse"
                         >
                             <rect
                                 x="0"
                                 y="0"
-                                width="10"
-                                height="10"
+                                width="20"
+                                height="20"
                                 style={{ fill: 'black' }}
                             />
                             <line
                                 x1="0"
                                 y1="0"
                                 x2="0"
-                                y2="10"
+                                y2="20"
                                 style={{
                                     stroke: 'red',
-                                    strokeWidth: 10,
+                                    strokeWidth: 20,
                                 }}
                             />
                         </pattern>
                     </defs>
-                </svg>
+                </svg> */}
                 {mainLayer?.length > 0 &&
-                    mainLayer.map((shape, index) => (
+                    mainLayer.map(shape => (
                         <GeoJSON
                             key={shape.id}
                             data={shape.geo_json}
-                            // style={() => getMainLayerStyle(shape)}
-                            style={
-                                index % 2 > 0
-                                    ? { fillColor: 'url(#diagonalHatch)' }
-                                    : () => getMainLayerStyle(shape)
-                            }
+                            style={() => getMainLayerStyle(shape)}
                             eventHandlers={{
                                 click: () => onSelectShape(shape),
                             }}
@@ -165,7 +156,7 @@ export const MapComponent = ({
                             </Tooltip>
                         </GeoJSON>
                     ))}
-            </Pane>
+            </PaneWithPattern>
             {/* <Pane>
                 {mainLayer.map(shape => (
                     <SVGOverlay key={`${shape.id}b`} data={shape.geo_json}>
@@ -189,6 +180,8 @@ MapComponent.propTypes = {
     fitToBounds: bool,
     makePopup: func,
     fitBoundsToBackground: bool,
+    shapePatterns: array,
+    shapePatternIds: array,
 };
 
 MapComponent.defaultProps = {
@@ -202,4 +195,6 @@ MapComponent.defaultProps = {
     tooltipLabels: { main: 'District', background: 'Region' },
     makePopup: () => null,
     fitBoundsToBackground: false,
+    shapePatterns: [],
+    shapePatternIds: [],
 };

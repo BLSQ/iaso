@@ -13,9 +13,11 @@ export const LQAS_DISQUALIFIED = '2lqasDisqualified';
 export const LQAS_FAIL = '3lqasFail'; // shown as "Very poor" in the UI
 export const LQAS_MODERATE = '3lqasmoderate';
 export const LQAS_POOR = '3lqaspoor';
+export const LQAS_VERY_POOR = '3lqasverypoor';
 export const LQAS_OVERSAMPLED = '3lqasoversampled';
 export const LQAS_UNDERSAMPLED = '3lqasundersampled';
 export const LQAS_COUNTRY_URL = '/api/polio/lqasmap/country/lqas_';
+export const HASHED_MAP_PATTERN = 'greyStripes';
 
 export const lqasDistrictColors = {
     [LQAS_PASS]: {
@@ -42,6 +44,14 @@ export const lqasDistrictColors = {
         opacity: '1',
         zIndex: 999,
     },
+    [LQAS_VERY_POOR]: {
+        color: '#5e5e5e',
+        fillColor: FAIL_COLOR,
+        fillOpacity: 0.8,
+        weight: '2',
+        opacity: '1',
+        zIndex: 999,
+    },
     [LQAS_MODERATE]: {
         color: '#5e5e5e',
         fillColor: MODERATE_COLOR,
@@ -61,14 +71,14 @@ export const lqasDistrictColors = {
     [LQAS_UNDERSAMPLED]: {
         color: '#5e5e5e',
         opacity: '1',
-        fillColor: NO_DATA_COLOR,
+        fillColor: `url(#${HASHED_MAP_PATTERN})`,
         weight: '2',
         zIndex: 1,
     },
     [LQAS_OVERSAMPLED]: {
         color: '#5e5e5e',
         opacity: '1',
-        fillColor: 'transparent',
+        fillColor: `url(#${HASHED_MAP_PATTERN})`,
         weight: '2',
         zIndex: 1,
     },

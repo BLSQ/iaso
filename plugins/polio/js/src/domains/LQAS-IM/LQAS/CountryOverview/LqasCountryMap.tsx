@@ -1,12 +1,13 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { Box } from '@mui/material';
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
+import { GreyHashedPattern } from '../../../../../../../../hat/assets/js/apps/Iaso/components/maps/HashedPatterns/GreyHashedPattern';
 import { defaultShapeStyle } from '../../../../utils/index';
 import { LQASIMType } from '../../shared/types/types';
 import { ScopeAndDNFDisclaimer } from '../../shared/ScopeAndDNFDisclaimer';
 import MESSAGES from '../../../../constants/messages';
 import { makeLqasMapLegendItems } from '../utils';
-import { lqasDistrictColors } from '../constants';
+import { HASHED_MAP_PATTERN, lqasDistrictColors } from '../constants';
 import { makePopup } from '../../shared/LqasImPopUp';
 import { MapLegendContainer } from '../../../Campaigns/MapComponent/MapLegendContainer';
 import { MapLegend } from '../../../Campaigns/MapComponent/MapLegend';
@@ -84,6 +85,8 @@ export const LqasCountryMap: FunctionComponent<Props> = ({
                 fitBoundsToBackground
                 fitToBounds
                 height={600}
+                shapePatternIds={[HASHED_MAP_PATTERN]}
+                shapePatterns={[GreyHashedPattern]}
             />
             {selectedCampaign && (
                 <ScopeAndDNFDisclaimer

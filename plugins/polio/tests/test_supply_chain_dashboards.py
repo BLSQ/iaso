@@ -124,7 +124,6 @@ class SupplyChainDashboardsAPITestCase(APITestCase):
             report_date=date.today(),
             form_a_reception_date=date.today(),
             usable_vials_used=100,
-            unusable_vials=100,
             missing_vials=10,
         )
 

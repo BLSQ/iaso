@@ -3,7 +3,7 @@ import { makeStyles } from '@mui/styles';
 
 export const cellHeight = 50;
 const smallCellHeight = 20;
-export const vaccineOpacity = 0.6;
+export const vaccineOpacity = 0.7;
 export const useStyles = makeStyles(theme => {
     return {
         tableContainer: {

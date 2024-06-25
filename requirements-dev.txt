@@ -15,12 +15,13 @@ types-jwt==0.1.3  # https://pypi.org/project/types-jwt/
 
 # Development tools.
 # ------------------------------------------------------------------------------
+django-debug-toolbar==4.4.2  # https://github.com/jazzband/django-debug-toolbar/tags
 django-sslserver==0.22  # https://pypi.org/project/django-sslserver/
 
 # Quality and performance.
 # ------------------------------------------------------------------------------
 black==23.12.1  # https://github.com/ambv/black/tags
-django-querycount==0.8.3 # https://github.com/bradmontgomery/django-querycount
+django-querycount==0.8.3  # https://github.com/bradmontgomery/django-querycount
 flake8-mypy==17.8.0  # https://pypi.org/project/flake8-mypy/
 flake8==6.1.0  # https://github.com/PyCQA/flake8/tags
 pre-commit==3.6.0  # https://github.com/pre-commit/pre-commit/tags
@@ -42,7 +43,7 @@ types-mock==4.0.15  # https://pypi.org/project/types-mock/
 
 # Trypelim plugin.
 # ------------------------------------------------------------------------------
-vcrpy==4.1.1 # https://github.com/kevin1024/vcrpy
+vcrpy==4.1.1  # https://github.com/kevin1024/vcrpy
 
 # Sass compiler.
 # ------------------------------------------------------------------------------

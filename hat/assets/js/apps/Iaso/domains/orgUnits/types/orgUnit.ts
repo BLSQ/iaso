@@ -42,10 +42,10 @@ export type OrgunitInititialState = {
     id: number;
     name: string;
     org_unit_type_id?: string;
-    groups?: Array<(unknown & { id: number }) | number>;
+    groups: Array<(unknown & { id: number }) | number>;
     sub_source?: string;
     validation_status?: string;
-    aliases?: string;
+    aliases: string[];
     source_id?: number;
     parent?: OrgUnit;
     source_ref?: string;
@@ -84,7 +84,7 @@ export type OrgUnit = {
     creator: Record<string, any>;
     created_at: number;
     updated_at: number;
-    aliases?: string;
+    aliases?: string[];
     latitude?: number;
     longitude?: number;
     altitude?: number;

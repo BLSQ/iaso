@@ -1,3 +1,5 @@
+import { useSafeIntl } from 'bluesquare-components';
+import MESSAGES from './messages';
 import { Vaccine } from './types';
 
 const polioViruses = [
@@ -33,7 +35,7 @@ const polioViruses = [
 ];
 
 export type PolioVaccine = {
-    value: Vaccine;
+    value: Vaccine | 'other';
     label: string;
     color: string;
 };
@@ -55,4 +57,18 @@ const polioVaccines: PolioVaccine[] = [
     },
 ];
 
-export { polioVaccines, polioViruses };
+export const OTHER_VACCINE_COLOR = '#ea8418';
+
+const useMapLegend = (): PolioVaccine[] => {
+    const { formatMessage } = useSafeIntl();
+    return [
+        ...polioVaccines,
+        {
+            value: 'other',
+            label: formatMessage(MESSAGES.other),
+            color: OTHER_VACCINE_COLOR,
+        },
+    ];
+};
+
+export { polioVaccines, polioViruses, useMapLegend };

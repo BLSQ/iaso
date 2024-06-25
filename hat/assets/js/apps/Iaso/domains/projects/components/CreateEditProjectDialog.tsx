@@ -56,11 +56,6 @@ const useStyles = makeStyles(theme => ({
         zIndex: -10,
         opacity: 0,
     },
-    '@global': {
-        '.MuiAutocomplete-listbox': {
-            maxHeight: '250px !important',
-        },
-    },
 }));
 
 const emptyProject = {

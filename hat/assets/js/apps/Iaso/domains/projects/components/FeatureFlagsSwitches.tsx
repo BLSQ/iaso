@@ -19,7 +19,6 @@ const styles = theme => ({
         },
         marginTop: theme.spacing(2),
         maxHeight: '60vh',
-        overflow: 'scroll',
     },
 });
 

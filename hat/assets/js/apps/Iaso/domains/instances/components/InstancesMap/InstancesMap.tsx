@@ -1,33 +1,33 @@
+import { Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import { commonStyles } from 'bluesquare-components';
 import React, {
     FunctionComponent,
     useCallback,
     useMemo,
     useState,
 } from 'react';
-import { commonStyles } from 'bluesquare-components';
-import { useDispatch, useSelector } from 'react-redux';
 import { MapContainer, ScaleControl } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
-import { Box } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import { useDispatch, useSelector } from 'react-redux';
 
 import {
-    getLatLngBounds,
     clusterCustomMarker,
     defaultCenter,
     defaultZoom,
+    getLatLngBounds,
 } from '../../../../utils/map/mapUtils';
 
 import MarkersListComponent from '../../../../components/maps/markers/MarkersListComponent';
-import { useShowWarning } from './useShowWarning';
-import { setCurrentInstance } from '../../actions';
-import { fetchInstanceDetail } from '../../../../utils/requests';
-import { Instance } from '../../types/instance';
-import { InstancePopup } from '../InstancePopUp/InstancePopUp';
-import { Tile } from '../../../../components/maps/tools/TilesSwitchControl';
 import { CustomTileLayer } from '../../../../components/maps/tools/CustomTileLayer';
 import { CustomZoomControl } from '../../../../components/maps/tools/CustomZoomControl';
 import { MapToggleCluster } from '../../../../components/maps/tools/MapToggleCluster';
+import { Tile } from '../../../../components/maps/tools/TilesSwitchControl';
+import { fetchInstanceDetail } from '../../../../utils/requests';
+import { setCurrentInstance } from '../../actions';
+import { Instance } from '../../types/instance';
+import { InstancePopup } from '../InstancePopUp/InstancePopUp';
+import { useShowWarning } from './useShowWarning';
 
 import tiles from '../../../../constants/mapTiles';
 
@@ -72,11 +72,11 @@ export const InstancesMap: FunctionComponent<Props> = ({
     const fetchAndDispatchDetail = useCallback(
         instance => {
             dispatchInstance(null);
-            fetchInstanceDetail(dispatch, instance.id).then((i: Instance) =>
+            fetchInstanceDetail(instance.id).then((i: Instance) =>
                 dispatchInstance(i),
             );
         },
-        [dispatch, dispatchInstance],
+        [dispatchInstance],
     );
     useShowWarning({ instances, notifications, fetching });
 

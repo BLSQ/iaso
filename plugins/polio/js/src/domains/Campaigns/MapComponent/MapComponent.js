@@ -98,35 +98,6 @@ export const MapComponent = ({
                 patterns={shapePatterns}
                 patternIds={shapePatternIds}
             >
-                {/* <svg>
-                    <defs>
-                        <pattern
-                            id="diagonalHatch"
-                            width="20"
-                            height="20"
-                            patternTransform="rotate(45 0 0)"
-                            patternUnits="userSpaceOnUse"
-                        >
-                            <rect
-                                x="0"
-                                y="0"
-                                width="20"
-                                height="20"
-                                style={{ fill: 'black' }}
-                            />
-                            <line
-                                x1="0"
-                                y1="0"
-                                x2="0"
-                                y2="20"
-                                style={{
-                                    stroke: 'red',
-                                    strokeWidth: 20,
-                                }}
-                            />
-                        </pattern>
-                    </defs>
-                </svg> */}
                 {mainLayer?.length > 0 &&
                     mainLayer.map(shape => (
                         <GeoJSON
@@ -157,13 +128,6 @@ export const MapComponent = ({
                         </GeoJSON>
                     ))}
             </PaneWithPattern>
-            {/* <Pane>
-                {mainLayer.map(shape => (
-                    <SVGOverlay key={`${shape.id}b`} data={shape.geo_json}>
-                        TEst
-                    </SVGOverlay>
-                ))}
-            </Pane> */}
         </MapContainer>
     );
 };

@@ -50,7 +50,7 @@ export type LqasImDistrictData = {
     region_name?: string;
     status:
         | '1lqasOK'
-        | '3lqasFail'
+        | '3lqasverypoor'
         | '3lqaspoor'
         | '3lqasmoderate'
         | '2lqasDisqualified'

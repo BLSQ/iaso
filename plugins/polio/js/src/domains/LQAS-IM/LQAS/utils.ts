@@ -20,12 +20,12 @@ import {
     convertStatToPercent,
 } from '../shared/LqasIm';
 import {
-    LQAS_FAIL,
     LQAS_PASS,
     LQAS_POOR,
     LQAS_MODERATE,
     LQAS_OVERSAMPLED,
     LQAS_UNDERSAMPLED,
+    LQAS_VERY_POOR,
 } from './constants';
 import { IN_SCOPE } from '../shared/constants';
 
@@ -45,12 +45,12 @@ export const getLqasStatsForRound = (
     round: number,
 ): (
     | '1lqasOK'
-    | '3lqasFail'
     | '3lqaspoor'
     | '3lqasmoderate'
     | '2lqasDisqualified'
     | '3lqasundersampled'
     | '3lqasoversampled'
+    | '3lqasverypoor'
     | 'inScope'
     | null
 )[][] => {
@@ -65,7 +65,7 @@ export const getLqasStatsForRound = (
         return district.status;
     });
     const passed = allStatuses.filter(status => status === LQAS_PASS);
-    const failed = allStatuses.filter(status => status === LQAS_FAIL);
+    const failed = allStatuses.filter(status => status === LQAS_VERY_POOR);
     const moderate = allStatuses.filter(status => status === LQAS_MODERATE);
     const poor = allStatuses.filter(status => status === LQAS_POOR);
     const oversampled = allStatuses.filter(
@@ -89,23 +89,11 @@ export const makeLqasMapLegendItems =
         value: string;
         color: any;
     }[] => {
-        const [
-            passed,
-            moderate,
-            poor,
-            failed,
-            oversampled,
-            undersampled,
-            inScope,
-        ] = getLqasStatsForRound(lqasData, campaign, round);
-        console.log('oversampled', oversampled);
-        console.log('undersampled', undersampled);
-        console.log('inScope', inScope);
+        const [passed, moderate, poor, failed, oversampled, undersampled] =
+            getLqasStatsForRound(lqasData, campaign, round);
         const noValidDataCount =
-            oversampled && undersampled && inScope
-                ? (oversampled?.length ?? 0) +
-                  (undersampled.length ?? 0) +
-                  (inScope.length ?? 0)
+            oversampled && undersampled
+                ? (oversampled?.length ?? 0) + (undersampled.length ?? 0)
                 : '';
         const passedLegendItem = makeLegendItem({
             label: formatMessage(MESSAGES.passing),

@@ -10,7 +10,7 @@ import { IN_SCOPE } from '../shared/constants';
 
 export const LQAS_PASS = '1lqasOK';
 export const LQAS_DISQUALIFIED = '2lqasDisqualified';
-export const LQAS_FAIL = '3lqasFail'; // shown as "Very poor" in the UI
+export const LQAS_FAIL = '3lqasFail'; // shown as "Very poor" in the UI, still used in Afro map
 export const LQAS_MODERATE = '3lqasmoderate';
 export const LQAS_POOR = '3lqaspoor';
 export const LQAS_VERY_POOR = '3lqasverypoor';

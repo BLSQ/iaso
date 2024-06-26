@@ -100,6 +100,8 @@ const SidebarMenu = ({ classes, isOpen, toggleSidebar, location }) => {
     const menuItems = useMenuItems();
     const theme = useTheme();
     const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
+    const userGuideUrl = currentUser.account?.user_manual_path || DOC_URL;
+    console.log('user guide', userGuideUrl);
 
     return (
         <Drawer anchor="left" open={isOpen} onClose={toggleSidebar}>
@@ -182,7 +184,7 @@ const SidebarMenu = ({ classes, isOpen, toggleSidebar, location }) => {
                         className={`${classes.userName} ${classes.userManual}`}
                     >
                         <a
-                            href={DOC_URL}
+                            href={userGuideUrl}
                             target="_blank"
                             rel="noreferrer"
                             className={classes.link}
@@ -210,10 +212,12 @@ SidebarMenu.propTypes = {
     isOpen: PropTypes.bool.isRequired,
     toggleSidebar: PropTypes.func.isRequired,
     location: PropTypes.object.isRequired,
+    activeLocale: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({
     isOpen: state.sidebar.isOpen,
+    activeLocale: state.app.locale,
 });
 
 const MapDispatchToProps = dispatch => ({

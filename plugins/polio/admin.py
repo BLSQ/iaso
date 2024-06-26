@@ -17,7 +17,7 @@ from .models import (
     CampaignGroup,
     Chronogram,
     ChronogramTask,
-    ChronogramTemplate,
+    ChronogramTemplateTask,
     CountryUsersGroup,
     DestructionReport,
     IncidentReport,
@@ -337,7 +337,7 @@ class ChronogramTaskAdminInline(admin.StackedInline):
         "deleted_at",
         "is_delayed",
         "round_start_date",
-        "start_date",
+        "deadline_date",
         "updated_at",
         "updated_by",
     )
@@ -354,8 +354,8 @@ class ChronogramTaskAdminInline(admin.StackedInline):
 @admin.register(Chronogram)
 class ChronogramAdmin(admin.ModelAdmin):
     date_hierarchy = "created_at"
-    list_display = ("pk", "created_at", "obr_name")
-    list_display_links = ("pk", "created_at")
+    list_display = ("pk", "obr_name", "created_at")
+    list_display_links = ("pk", "obr_name")
     inlines = [ChronogramTaskAdminInline]
     raw_id_fields = ("round", "created_by", "updated_by")
     readonly_fields = (
@@ -382,8 +382,8 @@ class ChronogramAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
 
 
-@admin.register(ChronogramTemplate)
-class ChronogramTemplateAdmin(admin.ModelAdmin):
+@admin.register(ChronogramTemplateTask)
+class ChronogramTemplateTaskAdmin(admin.ModelAdmin):
     date_hierarchy = "created_at"
     list_display = ("pk", "start_offset_in_days", "description", "created_at")
     list_display_links = ("pk", "start_offset_in_days", "description")

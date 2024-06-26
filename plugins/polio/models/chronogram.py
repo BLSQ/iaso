@@ -65,7 +65,6 @@ class ChronogramTask(SoftDeletableModel):
     period = models.CharField(max_length=15, choices=Period.choices, default=Period.BEFORE)
     description = models.TextField(max_length=300)
     start_offset_in_days = models.IntegerField(default=0)
-    deadline_date = models.DateField(db_index=True, null=True)
     status = models.CharField(max_length=15, choices=Status.choices, default=Status.PENDING)
     user_in_charge = models.ForeignKey(
         User, null=True, blank=True, on_delete=models.SET_NULL, related_name="chronogram_tasks"
@@ -93,14 +92,12 @@ class ChronogramTask(SoftDeletableModel):
         return self.chronogram.round.started_at
 
     @property
-    def start_date(self) -> datetime.date:
+    def deadline_date(self) -> datetime.date:
         return (self.round_start_date + datetime.timedelta(days=self.start_offset_in_days)).date()
 
     @property
     def is_delayed(self) -> bool:
-        if self.deadline_date:
-            return datetime.date.today() > self.deadline_date and self.status != self.Status.DONE
-        return False
+        return datetime.date.today() > self.deadline_date and self.status != self.Status.DONE
 
 
 class ChronogramTemplateQuerySet(models.QuerySet):
@@ -108,11 +105,11 @@ class ChronogramTemplateQuerySet(models.QuerySet):
         return self.filter(deleted_at__isnull=True)  # Hide soft deleted items.
 
 
-class ChronogramTemplateManager(models.Manager):
+class ChronogramTemplateTaskManager(models.Manager):
     def create_chronogram(self, round: Round, account: Account, created_by: User) -> Chronogram:
-        chronogram_templates = self.model.objects.filter(account=account)
+        chronogram_template_tasks = self.model.objects.filter(account=account)
 
-        if not chronogram_templates.exists():
+        if not chronogram_template_tasks.exists():
             raise ValueError(f"No chronogram template for account #{account.id}")
 
         chronogram = Chronogram.objects.create(round=round, created_by=created_by)
@@ -125,14 +122,14 @@ class ChronogramTemplateManager(models.Manager):
                 period=template.period,
                 start_offset_in_days=template.start_offset_in_days,
             )
-            for template in chronogram_templates
+            for template in chronogram_template_tasks
         ]
         ChronogramTask.objects.bulk_create(tasks)
 
         return chronogram
 
 
-class ChronogramTemplate(SoftDeletableModel):
+class ChronogramTemplateTask(SoftDeletableModel):
     """
     Template tasks used by default to create a chronogram.
     """
@@ -150,10 +147,10 @@ class ChronogramTemplate(SoftDeletableModel):
         User, null=True, blank=True, on_delete=models.SET_NULL, related_name="updated_chronogram_templates"
     )
 
-    objects = ChronogramTemplateManager.from_queryset(ChronogramTemplateQuerySet)()
+    objects = ChronogramTemplateTaskManager.from_queryset(ChronogramTemplateQuerySet)()
 
     class Meta:
-        verbose_name = _("Chronogram Template")
+        verbose_name = _("Chronogram Template Task")
 
     def __str__(self) -> str:
         return f"{self.id} - {self.account.name}"

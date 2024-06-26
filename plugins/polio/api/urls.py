@@ -5,6 +5,7 @@ from plugins.polio.api.campaigns.campaigns import CampaignViewSet
 from plugins.polio.api.campaigns.subactivities import SubActivityViewSet
 from plugins.polio.api.campaigns.orgunits_per_campaigns import OrgUnitsPerCampaignViewset
 from iaso.api.config import ConfigViewSet
+from plugins.polio.api.chronogram.views import ChronogramViewSet, ChronogramTaskViewSet, ChronogramTemplateTaskViewSet
 from plugins.polio.api.country_user_groups import CountryUsersGroupViewSet
 from plugins.polio.api.dashboards.forma import FormAStocksViewSet
 from plugins.polio.api.dashboards.forma import FormAStocksViewSetV2
@@ -47,6 +48,11 @@ router = routers.SimpleRouter()
 router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
 router.register(r"polio/campaigns_subactivities", SubActivityViewSet, basename="campaigns_subactivities")
+router.register(r"polio/chronograms/tasks", ChronogramTaskViewSet, basename="chronograms_tasks")
+router.register(
+    r"polio/chronograms/template_tasks", ChronogramTemplateTaskViewSet, basename="chronograms_template_tasks"
+)
+router.register(r"polio/chronograms", ChronogramViewSet, basename="chronograms")
 router.register(r"polio/budget", BudgetProcessViewSet, basename="BudgetProcess")
 router.register(r"polio/budgetsteps", BudgetStepViewSet, basename="BudgetStep")
 router.register(r"polio/workflow", WorkflowViewSet, basename="BudgetWorkflow")

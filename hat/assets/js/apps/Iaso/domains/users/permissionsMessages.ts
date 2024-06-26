@@ -306,6 +306,15 @@ const PERMISSIONS_MESSAGES = defineMessages({
         defaultMessage:
             'Manage multiple geo data sources: create or edit sources (name, description, project(s), default version, DHIS2 links)',
     },
+    iaso_mobile_app_offline_setup: {
+        id: 'iaso.permissions.mobile_app_offline_setup',
+        defaultMessage: 'Download offline setup for mobile app',
+    },
+    iaso_mobile_app_offline_setup_tooltip: {
+        id: 'iaso.permissions.mobile_app_offline_setup_tooltip',
+        defaultMessage:
+            'Allow the download of a zip archive to set up the mobile application without internet for a specific user.',
+    },
     iaso_polio_vaccine_authorizations_admin: {
         id: 'iaso.permissions.polio_vaccine_authorizations_admin',
         defaultMessage: 'Polio Vaccine Authorizations: Admin',

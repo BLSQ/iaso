@@ -929,6 +929,8 @@
     "iaso.permissions.iaso_write_sources": "Sources de données géo - Lecture et écriture",
     "iaso.permissions.links": "Liens entre sources de données géo",
     "iaso.permissions.mappings": "Liens avec DHIS2",
+    "iaso.permissions.mobile_app_offline_setup": "Télécharger l'installation hors ligne de l'application mobile",
+    "iaso.permissions.mobile_app_offline_setup_tooltip": "Permettre le téléchargement d'une archive zip pour configurer l'application mobile sans internet pour un utilisateur spécifique.",
     "iaso.permissions.modules": "Modules",
     "iaso.permissions.orgUnits": "Gestion des unités d’organisation",
     "iaso.permissions.pages": "Gestion des liens intégrés web - lecture seule",

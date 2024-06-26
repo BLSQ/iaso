@@ -16,6 +16,7 @@ If you don't follow these steps you will break the frontend!
 The frontend is getting the list of existing permission from the
 `/api/permissions/` endpoint
 """
+
 from django.conf import LazySettings
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
@@ -35,6 +36,7 @@ _ENTITIES_DUPLICATE_WRITE = "iaso_entity_duplicates_write"
 _FORMS = "iaso_forms"
 _LINKS = "iaso_links"
 _MAPPINGS = "iaso_mappings"
+_MOBILE_APP_OFFLINE_SETUP = "iaso_mobile_app_offline_setup"
 _MODULES = "iaso_modules"
 _ORG_UNITS = "iaso_org_units"
 _ORG_UNITS_TYPES = "iaso_org_unit_types"
@@ -121,6 +123,7 @@ ENTITIES_DUPLICATE_WRITE = _PREFIX + _ENTITIES_DUPLICATE_WRITE
 FORMS = _PREFIX + _FORMS
 LINKS = _PREFIX + _LINKS
 MAPPINGS = _PREFIX + _MAPPINGS
+MOBILE_APP_OFFLINE_SETUP = _PREFIX + _MOBILE_APP_OFFLINE_SETUP
 MODULES = _PREFIX + _MODULES
 ORG_UNITS = _PREFIX + _ORG_UNITS
 ORG_UNITS_TYPES = _PREFIX + _ORG_UNITS_TYPES
@@ -261,6 +264,7 @@ class CustomPermissionSupport(models.Model):
             (_SOURCE_WRITE, _("Write data source")),
             (_PAGE_WRITE, _("Write page")),
             (_PAYMENTS, _("Payments page")),
+            (_MOBILE_APP_OFFLINE_SETUP, ("Mobile app offline setup")),
             (_POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY, _("Polio Vaccine Authorizations Read Only")),
             (_POLIO_VACCINE_AUTHORIZATIONS_ADMIN, _("Polio Vaccine Authorizations Admin")),
             (_POLIO_VACCINE_SUPPLY_CHAIN_READ, _("Polio Vaccine Supply Chain Read")),

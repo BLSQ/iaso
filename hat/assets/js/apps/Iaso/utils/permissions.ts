@@ -9,6 +9,7 @@ const ENTITIES_DUPLICATE_WRITE = 'iaso_entity_duplicates_write';
 const FORMS = 'iaso_forms';
 const LINKS = 'iaso_links';
 const MAPPINGS = 'iaso_mappings';
+const MOBILE_APP_OFFLINE_SETUP = 'iaso_mobile_app_offline_setup';
 const ORG_UNIT_GROUPS = 'iaso_org_unit_groups';
 const ORG_UNIT_TYPES = 'iaso_org_unit_types';
 const ORG_UNITS = 'iaso_org_units';
@@ -50,6 +51,7 @@ export {
     FORMS,
     LINKS,
     MAPPINGS,
+    MOBILE_APP_OFFLINE_SETUP,
     ORG_UNITS_CHANGE_REQUEST_REVIEW,
     ORG_UNIT_GROUPS,
     ORG_UNIT_TYPES,

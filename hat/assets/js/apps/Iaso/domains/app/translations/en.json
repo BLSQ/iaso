@@ -929,6 +929,8 @@
     "iaso.permissions.iaso_write_sources": "Geo data sources - Read and Write",
     "iaso.permissions.links": "Geo data sources matching",
     "iaso.permissions.mappings": "DHIS2 mappings",
+    "iaso.permissions.mobile_app_offline_setup": "Download offline setup for mobile app",
+    "iaso.permissions.mobile_app_offline_setup_tooltip": "Allow the download of a zip archive to set up the mobile application without internet for a specific user.",
     "iaso.permissions.modules": "Modules",
     "iaso.permissions.orgUnits": "Organisation units management",
     "iaso.permissions.pages": "Web embedded links management - Read only",

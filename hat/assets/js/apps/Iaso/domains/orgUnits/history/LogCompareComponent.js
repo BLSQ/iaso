@@ -62,7 +62,13 @@ const getArrayfields = objectItem =>
  * with pk, fields and models. In effect at the moment there is only ever one.
  */
 
-const LogCompareComponent = ({ log, compareLog, goToRevision, title }) => {
+const LogCompareComponent = ({
+    log,
+    compareLog,
+    goToRevision,
+    title,
+    isNewValue = false,
+}) => {
     const [showAllFields, setShowAllFields] = React.useState(false);
     const classes = useStyles();
     const differenceArray = [];
@@ -191,24 +197,26 @@ const LogCompareComponent = ({ log, compareLog, goToRevision, title }) => {
                             confirm={() => goToRevision(l)}
                         />
                     </Grid>
-                    <Grid xs={6} item>
-                        <ConfirmDialog
-                            btnMessage={formatMessage(
-                                LOG_MESSAGES.goToRevisionChanges,
-                            )}
-                            question={formatMessage(
-                                LOG_MESSAGES.goToRevisionQuestion,
-                            )}
-                            message={formatMessage(
-                                LOG_MESSAGES.goToRevisionTextChanges,
-                            )}
-                            confirm={() =>
-                                goToRevision({
-                                    fields: differenceArray[i],
-                                })
-                            }
-                        />
-                    </Grid>
+                    {isNewValue && (
+                        <Grid xs={6} item>
+                            <ConfirmDialog
+                                btnMessage={formatMessage(
+                                    LOG_MESSAGES.goToRevisionChanges,
+                                )}
+                                question={formatMessage(
+                                    LOG_MESSAGES.goToRevisionQuestion,
+                                )}
+                                message={formatMessage(
+                                    LOG_MESSAGES.goToRevisionTextChanges,
+                                )}
+                                confirm={() =>
+                                    goToRevision({
+                                        fields: differenceArray[i],
+                                    })
+                                }
+                            />
+                        </Grid>
+                    )}
                 </Grid>
             </Paper>
         );
@@ -219,6 +227,7 @@ LogCompareComponent.defaultProps = {
     compareLog: [],
     title: '',
     goToRevision: () => {},
+    isNewValue: false,
 };
 
 LogCompareComponent.propTypes = {
@@ -226,6 +235,7 @@ LogCompareComponent.propTypes = {
     compareLog: PropTypes.array,
     goToRevision: PropTypes.func,
     title: PropTypes.string.isRequired,
+    isNewValue: PropTypes.bool,
 };
 
 export default LogCompareComponent;

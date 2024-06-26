@@ -42,6 +42,7 @@ import {
     getLinksSources,
     getOrgUnitsTree,
 } from './utils';
+import { wktToGeoJSON } from '../../components/logs/LogValue';
 
 const baseUrl = baseUrls.orgUnitDetails;
 const useStyles = makeStyles(theme => ({
@@ -209,15 +210,35 @@ const OrgUnitDetail = () => {
 
     const goToRevision = useCallback(
         (orgUnitRevision, onSuccess) => {
+            const {
+                location,
+                aliases: revisionAliases,
+                ...revision
+            } = orgUnitRevision.fields;
+
+            const coordinates = location
+                ? wktToGeoJSON(location)?.coordinates ?? []
+                : [];
+            const [longitude, latitude] = coordinates;
+            const aliases = revisionAliases
+                ? getAliasesArrayFromString(orgUnitRevision.fields.aliases)
+                : currentOrgUnit.aliases;
             const mappedRevision = {
                 ...currentOrgUnit,
-                ...orgUnitRevision.fields,
-                geo_json: null,
-                aliases: orgUnitRevision.fields.aliases
-                    ? getAliasesArrayFromString(orgUnitRevision.fields.aliases)
-                    : currentOrgUnit.aliases,
+                ...revision,
+                location,
+                geo_json: null, // this line to prevent overwriting the geo_json with a simplified shape/ Disables restoring a previous version of a single shape
+                aliases,
                 id: currentOrgUnit.id,
             };
+            // This block to avoid sending undefined to the API
+            if (latitude) {
+                mappedRevision.latitude = latitude;
+            }
+            if (longitude) {
+                mappedRevision.longitude = longitude;
+            }
+            // end
             // Retrieve only the group ids as it's what the API expect
             const group_ids = mappedRevision.groups.map(g => g.id);
             mappedRevision.groups = group_ids;

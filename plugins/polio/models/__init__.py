@@ -1,2 +1,2 @@
 from .base import *
-from .chronogram import Chronogram, ChronogramTask, ChronogramTemplate
+from .chronogram import Chronogram, ChronogramTask, ChronogramTemplateTask

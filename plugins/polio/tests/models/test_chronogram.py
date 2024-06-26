@@ -6,7 +6,7 @@ from iaso import models as m
 from iaso.test import TestCase
 
 from plugins.polio.models import Campaign, Round, Chronogram, ChronogramTask
-from plugins.polio.models.chronogram import Period, ChronogramTemplate
+from plugins.polio.models.chronogram import Period, ChronogramTemplateTask
 
 
 DT = datetime.datetime(2024, 6, 24, 14, 0, 0, 0, tzinfo=datetime.timezone.utc)
@@ -81,7 +81,6 @@ class ChronogramTaskTestCase(TestCase):
             chronogram=cls.chronogram,
             description="Assurer la commande des marqueurs",
             start_offset_in_days=-20,
-            deadline_date=DT.date() - datetime.timedelta(days=10),
             user_in_charge=cls.user,
             comment="Comment 1",
         )
@@ -90,7 +89,6 @@ class ChronogramTaskTestCase(TestCase):
             chronogram=cls.chronogram,
             description="Supervision journalière des activités logistiques",
             start_offset_in_days=0,
-            deadline_date=DT.date(),
             user_in_charge=cls.user,
             comment="Comment 2",
         )
@@ -99,7 +97,6 @@ class ChronogramTaskTestCase(TestCase):
             chronogram=cls.chronogram,
             description="Partager le rapport de destruction des déchets",
             start_offset_in_days=14,
-            deadline_date=DT.date() + datetime.timedelta(days=30),
             user_in_charge=cls.user,
             comment="Comment 2",
         )
@@ -109,15 +106,10 @@ class ChronogramTaskTestCase(TestCase):
         self.assertEqual(str(self.chronogram_task_2), f"{self.chronogram_task_2.id} - PENDING")
         self.assertEqual(str(self.chronogram_task_3), f"{self.chronogram_task_3.id} - PENDING")
 
-    def test_round_start_date(self):
-        self.assertEqual(self.chronogram_task_1.round_start_date, self.chronogram.round.started_at)
-        self.assertEqual(self.chronogram_task_2.round_start_date, self.chronogram.round.started_at)
-        self.assertEqual(self.chronogram_task_3.round_start_date, self.chronogram.round.started_at)
-
-    def test_start_date(self):
-        self.assertEqual(self.chronogram_task_1.start_date, datetime.date(2024, 6, 4))
-        self.assertEqual(self.chronogram_task_2.start_date, datetime.date(2024, 6, 24))
-        self.assertEqual(self.chronogram_task_3.start_date, datetime.date(2024, 7, 8))
+    def test_deadline_date(self):
+        self.assertEqual(self.chronogram_task_1.deadline_date, datetime.date(2024, 6, 4))
+        self.assertEqual(self.chronogram_task_2.deadline_date, datetime.date(2024, 6, 24))
+        self.assertEqual(self.chronogram_task_3.deadline_date, datetime.date(2024, 7, 8))
 
     def test_is_delayed(self):
         self.assertTrue(self.chronogram_task_1.is_delayed)
@@ -126,9 +118,9 @@ class ChronogramTaskTestCase(TestCase):
 
 
 @time_machine.travel(DT, tick=False)
-class ChronogramTemplateTestCase(TestCase):
+class ChronogramTemplateTaskTestCase(TestCase):
     """
-    Test ChronogramTemplate model.
+    Test ChronogramTemplateTask model.
     """
 
     @classmethod
@@ -153,19 +145,19 @@ class ChronogramTemplateTestCase(TestCase):
         cls.round = Round.objects.create(number=1, campaign=cls.campaign, started_at=DT)
 
         # Chronogram templates.
-        cls.chronogram_template_1 = ChronogramTemplate.objects.create(
+        cls.chronogram_template_1 = ChronogramTemplateTask.objects.create(
             account=cls.account,
             period=Period.BEFORE,
             description="Identifier les solutions pour palier aux gaps",
             start_offset_in_days=-20,
         )
-        cls.chronogram_template_2 = ChronogramTemplate.objects.create(
+        cls.chronogram_template_2 = ChronogramTemplateTask.objects.create(
             account=cls.account,
             period=Period.DURING,
             description="Analyse quotidienne des tableaux de bord et rétro information",
             start_offset_in_days=0,
         )
-        cls.chronogram_template_3 = ChronogramTemplate.objects.create(
+        cls.chronogram_template_3 = ChronogramTemplateTask.objects.create(
             account=cls.account,
             period=Period.AFTER,
             description="Elaboration de l'inventaire physique des vaccins à tous les niveaux",
@@ -179,7 +171,7 @@ class ChronogramTemplateTestCase(TestCase):
 
     def test_create_chronogram(self):
         with self.assertNumQueries(4):
-            chronogram = ChronogramTemplate.objects.create_chronogram(
+            chronogram = ChronogramTemplateTask.objects.create_chronogram(
                 round=self.round, account=self.account, created_by=self.user
             )
 

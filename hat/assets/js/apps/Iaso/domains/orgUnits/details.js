@@ -42,7 +42,7 @@ import {
     getLinksSources,
     getOrgUnitsTree,
 } from './utils';
-import { wktToGeoJSON } from '../../components/logs/LogValue';
+import { wktToGeoJSON } from './history/LogValue.tsx';
 
 const baseUrl = baseUrls.orgUnitDetails;
 const useStyles = makeStyles(theme => ({

@@ -92,7 +92,10 @@ export const usersTableColumns = ({
                             }
                         />
                     )}
-                {currentUser.is_superuser && (
+                {userHasPermission(
+                    Permission.MOBILE_APP_OFFLINE_SETUP,
+                    currentUser,
+                ) && (
                     <ExportMobileAppSetupDialog
                         selectedUser={settings.row.original}
                         titleMessage={MESSAGES.exportMobileAppTitle}

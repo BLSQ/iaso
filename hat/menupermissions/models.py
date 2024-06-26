@@ -37,6 +37,7 @@ _FORMS = "iaso_forms"
 _FORMS_STATS = "iaso_forms_stats"
 _LINKS = "iaso_links"
 _MAPPINGS = "iaso_mappings"
+_MOBILE_APP_OFFLINE_SETUP = "iaso_mobile_app_offline_setup"
 _MODULES = "iaso_modules"
 _ORG_UNITS = "iaso_org_units"
 _ORG_UNITS_READ = "iaso_org_units_read"
@@ -129,6 +130,7 @@ FORMS = _PREFIX + _FORMS
 FORMS_STATS = _PREFIX + _FORMS_STATS
 LINKS = _PREFIX + _LINKS
 MAPPINGS = _PREFIX + _MAPPINGS
+MOBILE_APP_OFFLINE_SETUP = _PREFIX + _MOBILE_APP_OFFLINE_SETUP
 MODULES = _PREFIX + _MODULES
 ORG_UNITS = _PREFIX + _ORG_UNITS
 ORG_UNITS_READ = _PREFIX + _ORG_UNITS_READ
@@ -273,6 +275,7 @@ class CustomPermissionSupport(models.Model):
             (_SOURCE_WRITE, _("Write data source")),
             (_PAGE_WRITE, _("Write page")),
             (_PAYMENTS, _("Payments page")),
+            (_MOBILE_APP_OFFLINE_SETUP, ("Mobile app offline setup")),
             # Polio
             (_POLIO, _("Polio")),
             (_POLIO_CONFIG, _("Polio config")),

@@ -3,8 +3,8 @@ import { ReactNode } from 'react';
 import { GeoJson } from '../../../components/maps/types';
 import { Nullable } from '../../../types/utils';
 import { Instance } from '../../instances/types/instance';
-import { OrgunitType } from './orgunitTypes';
 import { DataSource } from './dataSources';
+import { OrgunitType } from './orgunitTypes';
 import { Shape } from './shapes';
 
 /* eslint-disable camelcase */
@@ -47,7 +47,7 @@ export type OrgunitInititialState = {
     validation_status?: string;
     aliases: string[];
     source_id?: number;
-    parent?: OrgUnit;
+    parent?: ParentOrgUnit;
     source_ref?: string;
     reference_instance_id?: Nullable<number>;
     opening_date?: Date;

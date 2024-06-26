@@ -7,8 +7,8 @@ import { Box, Button, Grid } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import {
-    useSafeIntl,
     FormControl as FormControlComponent,
+    useSafeIntl,
 } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
@@ -17,12 +17,13 @@ import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
 
 import { OrgUnitCreationDetails } from './OrgUnitCreationDetails';
 
-import { OrgUnitState, Group, OrgUnit } from '../types/orgUnit';
-import { OrgunitType } from '../types/orgunitTypes';
-import { Instance } from '../../instances/types/instance';
-import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
-import { OrgUnitMultiReferenceInstances } from './OrgUnitMultiReferenceInstances';
 import DatesRange from '../../../components/filters/DatesRange';
+import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
+import { Instance } from '../../instances/types/instance';
+import { Group, OrgUnit, OrgUnitState } from '../types/orgUnit';
+import { OrgunitType } from '../types/orgunitTypes';
+import { OrgUnitMultiReferenceInstances } from './OrgUnitMultiReferenceInstances';
+import { useGetOrgUnit } from './TreeView/requests';
 
 const useStyles = makeStyles(theme => ({
     speedDialTop: {
@@ -32,17 +33,6 @@ const useStyles = makeStyles(theme => ({
         marginLeft: `${theme.spacing(2)} !important`,
     },
 }));
-
-const getParentOrgUnit = (orgUnit: OrgUnit): Partial<OrgUnit> =>
-    orgUnit?.parent && {
-        id: orgUnit.parent.id,
-        name: orgUnit.parent.name,
-        source: orgUnit.parent.source,
-        source_id: orgUnit.parent.source_id,
-        parent: orgUnit.parent.parent,
-        parent_name: orgUnit.parent.parent_name,
-        validation_status: orgUnit.parent.validation_status,
-    };
 
 type Props = {
     orgUnitState: OrgUnitState;
@@ -93,7 +83,11 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
         data: validationStatusOptions,
         isLoading: isLoadingValidationStatusOptions,
     } = useGetValidationStatus();
-
+    const { data: parentOrgunit } = useGetOrgUnit(
+        orgUnitState.parent.value
+            ? `${orgUnitState.parent.value.id}`
+            : undefined,
+    );
     return (
         <Grid container spacing={2}>
             <Grid item xs={12} md={4}>
@@ -189,7 +183,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                             }
                         }}
                         source={orgUnit.source_id}
-                        initialSelection={getParentOrgUnit(orgUnit)}
+                        initialSelection={parentOrgunit}
                         resetTrigger={resetTrigger}
                     />
                 </FormControlComponent>

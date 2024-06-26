@@ -173,8 +173,13 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
     """
 
     def __init__(self, *args, **kwargs):
+        # Avoid a `KeyError: 'context'` error for nested serializers.
+        request = kwargs.get("context", {}).get("request")
+        if not request:
+            return super().__init__(*args, **kwargs)
+
         # Don't pass the 'fields' arg up to the superclass
-        requested_fields = kwargs["context"]["request"].query_params.get("fields", kwargs.pop("fields", ":default"))
+        requested_fields = request.query_params.get("fields", kwargs.pop("fields", ":default"))
         if requested_fields == ":all":
             fields = self.Meta.fields
         elif requested_fields == ":default":

@@ -9,46 +9,13 @@ from plugins.polio.models import Campaign, Round, Chronogram, ChronogramTask
 from plugins.polio.models.chronogram import Period, ChronogramTemplateTask
 
 
-DT = datetime.datetime(2024, 6, 24, 14, 0, 0, 0, tzinfo=datetime.timezone.utc)
+TODAY = datetime.datetime(2024, 6, 24, 14, 0, 0, 0, tzinfo=datetime.timezone.utc)
 
 
-@time_machine.travel(DT, tick=False)
-class ChronogramTestCase(TestCase):
-    """
-    Test Chronogram model.
-    """
-
-    @classmethod
-    def setUpTestData(cls):
-        # User.
-        cls.data_source = m.DataSource.objects.create(name="Data Source")
-        cls.source_version = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
-        cls.account = m.Account.objects.create(name="Account", default_version=cls.source_version)
-        cls.user = cls.create_user_with_profile(
-            email="john@polio.org",
-            username="test",
-            first_name="John",
-            last_name="Doe",
-            account=cls.account,
-            permissions=["iaso_polio_budget"],
-        )
-
-        # Campaign.
-        cls.campaign = Campaign.objects.create(obr_name="Campaign OBR name", account=cls.account)
-
-        # Rounds.
-        cls.round_1 = Round.objects.create(number=1, campaign=cls.campaign)
-        cls.round_2 = Round.objects.create(number=2, campaign=cls.campaign)
-
-    def test_model_str(self):
-        chronogram = Chronogram(round=self.round_1, created_by=self.user)
-        self.assertEqual(str(chronogram), f"{chronogram.id} - Campaign OBR name - Round 1")
-
-
-@time_machine.travel(DT, tick=False)
+@time_machine.travel(TODAY, tick=False)
 class ChronogramTaskTestCase(TestCase):
     """
-    Test ChronogramTask model.
+    Test Chronogram and ChronogramTask models.
     """
 
     @classmethod
@@ -70,7 +37,8 @@ class ChronogramTaskTestCase(TestCase):
         cls.campaign = Campaign.objects.create(obr_name="Campaign OBR name", account=cls.account)
 
         # Round.
-        cls.round = Round.objects.create(number=1, campaign=cls.campaign, started_at=DT)
+        round_start = (TODAY - datetime.timedelta(days=10)).date()
+        cls.round = Round.objects.create(number=1, campaign=cls.campaign, started_at=round_start)
 
         # Chronogram.
         cls.chronogram = Chronogram.objects.create(round=cls.round, created_by=cls.user)
@@ -101,23 +69,55 @@ class ChronogramTaskTestCase(TestCase):
             comment="Comment 2",
         )
 
-    def test_model_str(self):
+    def test_chronogram_str(self):
+        self.assertEqual(str(self.chronogram), f"{self.chronogram.id} - Campaign OBR name - Round 1")
+
+    def test_chronogram_task_str(self):
         self.assertEqual(str(self.chronogram_task_1), f"{self.chronogram_task_1.id} - PENDING")
         self.assertEqual(str(self.chronogram_task_2), f"{self.chronogram_task_2.id} - PENDING")
         self.assertEqual(str(self.chronogram_task_3), f"{self.chronogram_task_3.id} - PENDING")
 
-    def test_deadline_date(self):
-        self.assertEqual(self.chronogram_task_1.deadline_date, datetime.date(2024, 6, 4))
-        self.assertEqual(self.chronogram_task_2.deadline_date, datetime.date(2024, 6, 24))
-        self.assertEqual(self.chronogram_task_3.deadline_date, datetime.date(2024, 7, 8))
+    def test_chronogram_task_deadline_date_and_delay(self):
+        self.assertEqual(TODAY.strftime("%d-%m-%Y"), "24-06-2024")
 
-    def test_is_delayed(self):
-        self.assertTrue(self.chronogram_task_1.is_delayed)
-        self.assertFalse(self.chronogram_task_2.is_delayed)
-        self.assertFalse(self.chronogram_task_3.is_delayed)
+        self.assertEqual(self.round.started_at.strftime("%d-%m-%Y"), "14-06-2024")
+
+        self.assertEqual(self.chronogram_task_1.deadline_date.strftime("%d-%m-%Y"), "25-05-2024")
+        # Should've been finished 30 days ago.
+        self.assertEqual(self.chronogram_task_1.delay_in_days, -30)
+
+        self.assertEqual(self.chronogram_task_2.deadline_date.strftime("%d-%m-%Y"), "14-06-2024")
+        # Should've been finished 10 days ago.
+        self.assertEqual(self.chronogram_task_2.delay_in_days, -10)
+
+        self.assertEqual(self.chronogram_task_3.deadline_date.strftime("%d-%m-%Y"), "28-06-2024")
+        # Still 4 days to go.
+        self.assertEqual(self.chronogram_task_3.delay_in_days, 4)
+
+    def test_chronogram_is_on_time(self):
+        self.assertFalse(self.chronogram.is_on_time)
+
+        self.chronogram_task_1.start_offset_in_days = 10
+        self.chronogram_task_1.save()
+        self.chronogram_task_2.start_offset_in_days = 20
+        self.chronogram_task_2.save()
+        self.chronogram_task_3.start_offset_in_days = 20
+        self.chronogram_task_3.save()
+        self.assertTrue(self.chronogram.is_on_time)
+
+    def test_chronogram_num_task_delayed(self):
+        self.assertEqual(self.chronogram.num_task_delayed, 2)
+
+        self.chronogram_task_1.start_offset_in_days = 10
+        self.chronogram_task_1.save()
+        self.chronogram_task_2.start_offset_in_days = 20
+        self.chronogram_task_2.save()
+        self.chronogram_task_3.start_offset_in_days = 20
+        self.chronogram_task_3.save()
+        self.assertEqual(self.chronogram.num_task_delayed, 0)
 
 
-@time_machine.travel(DT, tick=False)
+@time_machine.travel(TODAY, tick=False)
 class ChronogramTemplateTaskTestCase(TestCase):
     """
     Test ChronogramTemplateTask model.
@@ -142,7 +142,7 @@ class ChronogramTemplateTaskTestCase(TestCase):
         cls.campaign = Campaign.objects.create(obr_name="Campaign OBR name", account=cls.account)
 
         # Round.
-        cls.round = Round.objects.create(number=1, campaign=cls.campaign, started_at=DT)
+        cls.round = Round.objects.create(number=1, campaign=cls.campaign, started_at=TODAY)
 
         # Chronogram templates.
         cls.chronogram_template_1 = ChronogramTemplateTask.objects.create(

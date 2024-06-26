@@ -101,7 +101,6 @@ const SidebarMenu = ({ classes, isOpen, toggleSidebar, location }) => {
     const theme = useTheme();
     const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
     const userGuideUrl = currentUser.account?.user_manual_path || DOC_URL;
-    console.log('user guide', userGuideUrl);
 
     return (
         <Drawer anchor="left" open={isOpen} onClose={toggleSidebar}>

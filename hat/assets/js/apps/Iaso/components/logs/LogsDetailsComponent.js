@@ -75,26 +75,32 @@ class LogsDetails extends Component {
                 )}
                 {log && (
                     <>
-                        {log.past_value.length > 0 && log.new_value.length > 0 && (
-                            <Grid container spacing={2}>
-                                <Grid item xs={6}>
-                                    <LogCompareComponent
-                                        title={formatMessage(MESSAGES.before)}
-                                        log={log.past_value}
-                                        compareLog={log.new_value}
-                                        goToRevision={goToRevision}
-                                    />
+                        {log.past_value.length > 0 &&
+                            log.new_value.length > 0 && (
+                                <Grid container spacing={2}>
+                                    <Grid item xs={6}>
+                                        <LogCompareComponent
+                                            title={formatMessage(
+                                                MESSAGES.before,
+                                            )}
+                                            log={log.past_value}
+                                            compareLog={log.new_value}
+                                            goToRevision={goToRevision}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={6}>
+                                        <LogCompareComponent
+                                            title={formatMessage(
+                                                MESSAGES.after,
+                                            )}
+                                            log={log.new_value}
+                                            compareLog={log.past_value}
+                                            goToRevision={goToRevision}
+                                            isNewValue
+                                        />
+                                    </Grid>
                                 </Grid>
-                                <Grid item xs={6}>
-                                    <LogCompareComponent
-                                        title={formatMessage(MESSAGES.after)}
-                                        log={log.new_value}
-                                        compareLog={log.past_value}
-                                        goToRevision={goToRevision}
-                                    />
-                                </Grid>
-                            </Grid>
-                        )}
+                            )}
                         {log.past_value.length > 0 &&
                             log.new_value.length === 0 && (
                                 <Grid container spacing={2}>

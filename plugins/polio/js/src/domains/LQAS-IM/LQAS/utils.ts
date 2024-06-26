@@ -12,6 +12,7 @@ import {
     MODERATE_COLOR,
     POOR_COLOR,
     NO_DATA_COLOR,
+    NO_DATA_COLOR_2,
 } from '../../../styles/constants';
 import { makeLegendItem } from '../../../utils';
 import {
@@ -87,7 +88,8 @@ export const makeLqasMapLegendItems =
     ): {
         label: string;
         value: string;
-        color: any;
+        color?: string;
+        background?: string;
     }[] => {
         const [passed, moderate, poor, failed, oversampled, undersampled] =
             getLqasStatsForRound(lqasData, campaign, round);
@@ -118,7 +120,7 @@ export const makeLqasMapLegendItems =
         const noValidDataLegendItem = makeLegendItem({
             label: formatMessage(MESSAGES.noValidData),
             value: `${noValidDataCount}`,
-            color: NO_DATA_COLOR,
+            background: `repeating-linear-gradient(-45deg,${NO_DATA_COLOR},${NO_DATA_COLOR} 5px,${NO_DATA_COLOR_2} 5px,${NO_DATA_COLOR_2} 10px)`,
         });
 
         return [

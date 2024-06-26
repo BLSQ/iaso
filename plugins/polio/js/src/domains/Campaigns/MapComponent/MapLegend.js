@@ -2,7 +2,7 @@ import React from 'react';
 import { Grid, Paper, Box, Typography } from '@mui/material';
 import { array, oneOf, string } from 'prop-types';
 import { useStyles } from './styles';
-import { convertWidth } from '../../../utils';
+import { convertWidth } from '../../../utils/index.tsx';
 
 // TODO pass font size as props
 export const MapLegend = ({ title, legendItems, width }) => {
@@ -32,6 +32,7 @@ export const MapLegend = ({ title, legendItems, width }) => {
                                 <span
                                     className={classes.roundColor}
                                     style={{
+                                        backgroundImage: legendItem.background,
                                         backgroundColor: legendItem.color,
                                     }}
                                 />

@@ -122,3 +122,99 @@ class ChronogramTaskViewSetTestCase(APITestCase):
 
         self.chronogram_task.refresh_from_db()
         self.assertEqual(self.chronogram_task.deleted_at, TODAY)  # Soft deleted.
+
+
+@time_machine.travel(TODAY, tick=False)
+class ChronogramTemplateTaskViewSetTestCase(APITestCase):
+    """
+    Test ChronogramTemplateTask.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.data_source = m.DataSource.objects.create(name="Data Source")
+        cls.source_version = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
+        cls.account = m.Account.objects.create(name="Account", default_version=cls.source_version)
+        cls.user = cls.create_user_with_profile(
+            email="john@polio.org",
+            username="test",
+            first_name="John",
+            last_name="Doe",
+            account=cls.account,
+            permissions=[iaso_permission._POLIO_CHRONOGRAM],
+        )
+
+        cls.chronogram_template_task = ChronogramTemplateTask.objects.create(
+            account=cls.account,
+            period=Period.BEFORE,
+            description="Assurer la commande des marqueurs",
+            start_offset_in_days=0,
+            created_by=cls.user,
+        )
+
+    def test_get_without_auth(self):
+        response = self.client.get(f"/api/polio/chronograms/template_tasks/{self.chronogram_template_task.pk}/")
+        self.assertJSONResponse(response, 401)
+
+    def test_get_without_perm(self):
+        self.user.user_permissions.clear()
+        self.client.force_authenticate(self.user)
+        response = self.client.get(f"/api/polio/chronograms/template_tasks/{self.chronogram_template_task.pk}/")
+        self.assertJSONResponse(response, 403)
+
+    def test_get_ok(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get(f"/api/polio/chronograms/template_tasks/{self.chronogram_template_task.pk}/")
+        self.assertJSONResponse(response, 200)
+
+    def test_create_ok(self):
+        self.client.force_authenticate(self.user)
+        data = {
+            "account": self.account.pk,
+            "period": Period.DURING,
+            "description": "Template description",
+            "start_offset_in_days": 5,
+        }
+        response = self.client.post("/api/polio/chronograms/template_tasks/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        chronogram_template_task = ChronogramTemplateTask.objects.get(pk=response.data["id"])
+        self.assertEqual(chronogram_template_task.account, self.account)
+        self.assertEqual(chronogram_template_task.period, "DURING")
+        self.assertEqual(chronogram_template_task.description, "Template description")
+        self.assertEqual(chronogram_template_task.start_offset_in_days, 5)
+        self.assertEqual(chronogram_template_task.created_by, self.user)
+        self.assertEqual(chronogram_template_task.created_at, TODAY)
+        self.assertEqual(chronogram_template_task.updated_by, None)
+        self.assertEqual(chronogram_template_task.deleted_at, None)
+
+    def test_update_ok(self):
+        self.client.force_authenticate(self.user)
+        data = {
+            "period": Period.AFTER,
+            "description": "New template description",
+            "start_offset_in_days": 10,
+        }
+
+        response = self.client.patch(
+            f"/api/polio/chronograms/template_tasks/{self.chronogram_template_task.pk}/", data=data, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        self.chronogram_template_task.refresh_from_db()
+        self.assertEqual(self.chronogram_template_task.account, self.account)
+        self.assertEqual(self.chronogram_template_task.period, "AFTER")
+        self.assertEqual(self.chronogram_template_task.description, "New template description")
+        self.assertEqual(self.chronogram_template_task.start_offset_in_days, 10)
+        self.assertEqual(self.chronogram_template_task.created_by, self.user)
+        self.assertEqual(self.chronogram_template_task.created_at, TODAY)
+        self.assertEqual(self.chronogram_template_task.updated_by, self.user)
+        self.assertEqual(self.chronogram_template_task.deleted_at, None)
+
+    def test_soft_delete_ok(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.delete(f"/api/polio/chronograms/template_tasks/{self.chronogram_template_task.pk}/")
+        self.assertEqual(response.status_code, 204)
+
+        self.chronogram_template_task.refresh_from_db()
+        self.assertEqual(self.chronogram_template_task.deleted_at, TODAY)  # Soft deleted.

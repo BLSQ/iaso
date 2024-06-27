@@ -1,8 +1,10 @@
+/* eslint-disable react/function-component-definition */
 import React, {
     useState,
     useCallback,
     useEffect,
     FunctionComponent,
+    useMemo,
 } from 'react';
 import classnames from 'classnames';
 import mapValues from 'lodash/mapValues';
@@ -11,7 +13,7 @@ import { makeStyles } from '@mui/styles';
 
 import { commonStyles } from 'bluesquare-components';
 import { isEqual } from 'lodash';
-import { useFormState } from '../../../hooks/form';
+import { getValues, useFormState } from '../../../hooks/form';
 import { OrgUnitInfos } from './OrgUnitInfos';
 import { OrgUnit, Group, OrgunitInititialState } from '../types/orgUnit';
 import { OrgunitType } from '../types/orgunitTypes';
@@ -25,7 +27,7 @@ const initialFormState = (orgUnit: OrgUnit): OrgunitInititialState => ({
     groups: orgUnit.groups?.map(g => g.id) ?? [],
     sub_source: orgUnit.sub_source,
     validation_status: orgUnit.validation_status,
-    aliases: orgUnit.aliases,
+    aliases: orgUnit.aliases ?? ([] as string[]),
     source_id: orgUnit.source_id,
     parent: orgUnit.parent,
     source_ref: orgUnit.source_ref,
@@ -67,8 +69,17 @@ export const OrgUnitForm: FunctionComponent<Props> = ({
     isFetchingGroups,
 }) => {
     const classes: Record<string, string> = useStyles();
+    // Making initialState accessible so we can check if the form values have changed and disable save button accordingly
+    const initialState = useMemo(() => initialFormState(orgUnit), [orgUnit]);
+
     const [formState, setFieldValue, setFieldErrors, setFormState] =
-        useFormState(initialFormState(orgUnit));
+        useFormState(initialState);
+
+    // FormState values as dict. Used to enable comparison with initialState
+    const currentStateValues: OrgunitInititialState = useMemo(
+        () => getValues(formState) as OrgunitInititialState,
+        [formState],
+    );
     const [orgUnitModified, setOrgUnitModified] = useState(false);
     const handleSave = () => {
         const newOrgUnit = mapValues(formState, v =>
@@ -93,10 +104,19 @@ export const OrgUnitForm: FunctionComponent<Props> = ({
 
     const handleChangeField = useCallback(
         (key, value) => {
-            setOrgUnitModified(true);
+            const modifiedState: OrgunitInititialState = {
+                ...currentStateValues,
+                [key]: value,
+            };
+            const invalidAliases = modifiedState.aliases.includes('');
+            if (isEqual(modifiedState, initialState) || invalidAliases) {
+                setOrgUnitModified(false);
+            } else {
+                setOrgUnitModified(true);
+            }
             setFieldValue(key, value);
         },
-        [setFieldValue],
+        [setFieldValue, initialState, currentStateValues],
     );
 
     // TODO change component in blsq-comp library to avoid separate handler
@@ -106,12 +126,23 @@ export const OrgUnitForm: FunctionComponent<Props> = ({
             const orgUnitAliases = orgUnit.aliases ?? [];
             const newAlias = value[value.length - 1];
             const actualAliases = value.filter(alias => alias !== '');
+            const modifiedState = { ...currentStateValues, [key]: value };
             if (newAlias !== '' && !isEqual(actualAliases, orgUnitAliases)) {
+                setOrgUnitModified(true);
+            } else if (
+                isEqual(modifiedState, initialState) ||
+                newAlias === ''
+            ) {
+                setOrgUnitModified(false);
+            } else if (
+                value.length === 0 &&
+                !isEqual(modifiedState, initialState)
+            ) {
                 setOrgUnitModified(true);
             }
             setFieldValue(key, value);
         },
-        [orgUnit.aliases, setFieldValue],
+        [orgUnit.aliases, setFieldValue, initialState, currentStateValues],
     );
 
     const handleChangeInfo = useCallback(

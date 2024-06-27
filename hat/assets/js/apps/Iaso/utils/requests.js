@@ -1,38 +1,28 @@
 import { getRequest, postRequest, putRequest } from 'Iaso/libs/Api.ts';
 import { useSnackQuery } from 'Iaso/libs/apiHooks.ts';
-import { enqueueSnackbar } from '../redux/snackBarsReducer';
+import { openSnackBar } from '../components/snackBars/EventDispatcher.ts';
 import { errorSnackBar } from '../constants/snackBars';
-import { dispatch as storeDispatch } from '../redux/store';
 
-export const fetchSubOrgUnitsByType = (dispatch, params, orgUnitType) =>
+export const fetchSubOrgUnitsByType = (params, orgUnitType) =>
     getRequest(`/api/orgunits/?${params}`)
         .then(res => ({
             ...orgUnitType,
             orgUnits: res.orgUnits,
         }))
         .catch(error => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('fetchOrgUnitsError', null, error),
-                ),
-            );
+            openSnackBar(errorSnackBar('fetchOrgUnitsError', null, error));
             console.error('Error while fetching org unit list:', error);
         });
 
-export const fetchOrgUnitsTypes = dispatch =>
+export const fetchOrgUnitsTypes = () =>
     getRequest('/api/v2/orgunittypes/')
         .then(res => res.orgUnitTypes)
         .catch(error => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('fetchOrgUnitTypesError', null, error),
-                ),
-            );
+            openSnackBar(errorSnackBar('fetchOrgUnitTypesError', null, error));
             console.error('Error while fetching org unit types list:', error);
         });
 
 export const fetchAssociatedOrgUnits = (
-    dispatch,
     source,
     orgUnit,
     fitToBounds = () => null,
@@ -48,63 +38,43 @@ export const fetchAssociatedOrgUnits = (
             };
         })
         .catch(error => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('fetchOrgUnitsError', null, error),
-                ),
-            );
+            openSnackBar(errorSnackBar('fetchOrgUnitsError', null, error));
             console.error('Error while fetching org unit list:', error);
         });
 };
 
-export const fetchOrgUnitDetail = (dispatch, orgUnitId) =>
+export const fetchOrgUnitDetail = orgUnitId =>
     getRequest(`/api/orgunits/${orgUnitId}/`)
         .then(orgUnit => orgUnit)
         .catch(error => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('fetchOrgUnitError', null, error),
-                ),
-            );
+            openSnackBar(errorSnackBar('fetchOrgUnitError', null, error));
             console.error('Error while fetching org unit detail:', error);
         });
 
-export const fetchInstanceDetail = (dispatch, instanceId) =>
+export const fetchInstanceDetail = instanceId =>
     getRequest(`/api/instances/${instanceId}`)
         .then(instance => instance)
         .catch(error => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('fetchInstanceError', null, error),
-                ),
-            );
+            openSnackBar(errorSnackBar('fetchInstanceError', null, error));
             console.error('Error while fetching instance detail:', error);
         });
 
-export const fetchLinkDetail = (dispatch, linkId) =>
+export const fetchLinkDetail = linkId =>
     getRequest(`/api/links/${linkId}`)
         .then(linkDetail => linkDetail)
         .catch(error => {
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('fetchLinkDetailError', null, error),
-                ),
-            );
+            openSnackBar(errorSnackBar('fetchLinkDetailError', null, error));
             console.error('Error while fetching link detail:', error);
         });
 
-export const createForm = (dispatch, formData) =>
+export const createForm = formData =>
     postRequest('/api/forms/', formData).catch(error => {
-        dispatch(
-            enqueueSnackbar(errorSnackBar('createFormError', null, error)),
-        );
+        openSnackBar(errorSnackBar('createFormError', null, error));
     });
 
-export const updateForm = (dispatch, formId, formData) =>
+export const updateForm = (formId, formData) =>
     putRequest(`/api/forms/${formId}/`, formData).catch(error => {
-        dispatch(
-            enqueueSnackbar(errorSnackBar('updateFormError', null, error)),
-        );
+        openSnackBar(errorSnackBar('updateFormError', null, error));
     });
 
 export const createFormVersion = formVersionData => {
@@ -112,22 +82,14 @@ export const createFormVersion = formVersionData => {
     const fileData = { xls_file: formVersionData.xls_file };
 
     return postRequest('/api/formversions/', data, fileData).catch(error => {
-        storeDispatch(
-            enqueueSnackbar(
-                errorSnackBar('createFormVersionError', null, error),
-            ),
-        );
+        openSnackBar(errorSnackBar('createFormVersionError', null, error));
     });
 };
 
 export const updateFormVersion = formVersion =>
     putRequest(`/api/formversions/${formVersion.id}/`, formVersion).catch(
         error => {
-            storeDispatch(
-                enqueueSnackbar(
-                    errorSnackBar('updateFormVersionError', null, error),
-                ),
-            );
+            openSnackBar(errorSnackBar('updateFormVersionError', null, error));
         },
     );
 

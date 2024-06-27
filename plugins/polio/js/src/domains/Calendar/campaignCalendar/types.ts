@@ -13,8 +13,6 @@ export type Query = {
 
 export type MergedShapeWithCacheDate = MergedShape & { cache: number };
 
-export type MergedShapeWithColor = MergedShapeWithCacheDate & { color: string };
-
 export type CalendarRound = {
     end?: Moment;
     number: number;

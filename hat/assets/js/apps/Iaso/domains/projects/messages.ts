@@ -296,6 +296,10 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'Tab enabling to propose changes to org units and their reference form(s)',
     },
+    project_featureFlags: {
+        defaultMessage: 'Project feature flags',
+        id: 'iaso.label.project.featureFlags',
+    },
 });
 
 export default MESSAGES;

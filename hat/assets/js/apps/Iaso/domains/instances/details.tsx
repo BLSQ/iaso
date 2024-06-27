@@ -1,38 +1,38 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, { FunctionComponent, useState } from 'react';
 import Alert from '@mui/lab/Alert';
 import { Box, Grid, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import React, { FunctionComponent, useState } from 'react';
 
 import {
-    commonStyles,
     IconButton,
-    LoadingSpinner,
-    useSafeIntl,
     LinkWithLocation,
+    LoadingSpinner,
+    commonStyles,
     useGoBack,
+    useSafeIntl,
 } from 'bluesquare-components';
 import { UseQueryResult } from 'react-query';
 import TopBar from '../../components/nav/TopBarComponent';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 
-import InstanceDetailsInfos from './components/InstanceDetailsInfos';
-import InstanceDetailsLocation from './components/InstanceDetailsLocation';
-import InstanceDetailsExportRequests from './components/InstanceDetailsExportRequests';
-import InstanceDetailsLocksHistory from './components/InstanceDetailsLocksHistory';
-import InstancesFilesList from './components/InstancesFilesListComponent';
-import InstanceFileContent from './components/InstanceFileContent';
-import { getInstancesFilesList } from './utils';
-import { getRequest } from '../../libs/Api';
-import MESSAGES from './messages';
 import { baseUrls } from '../../constants/urls';
-import { useGetInstance } from './compare/hooks/useGetInstance';
+import { getRequest } from '../../libs/Api';
 import { useSnackQuery } from '../../libs/apiHooks';
-import SpeedDialInstance from './components/SpeedDialInstance';
-import { ClassNames } from '../../types/utils';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { ClassNames } from '../../types/utils';
 import { BeneficiaryBaseInfo } from '../entities/components/BeneficiaryBaseInfo';
 import { useGetBeneficiaryFields } from '../entities/hooks/useGetBeneficiaryFields';
+import { useGetInstance } from './compare/hooks/useGetInstance';
+import InstanceDetailsExportRequests from './components/InstanceDetailsExportRequests';
+import InstanceDetailsInfos from './components/InstanceDetailsInfos';
+import InstanceDetailsLocation from './components/InstanceDetailsLocation';
+import InstanceDetailsLocksHistory from './components/InstanceDetailsLocksHistory';
+import InstanceFileContent from './components/InstanceFileContent';
+import InstancesFilesList from './components/InstancesFilesListComponent';
+import SpeedDialInstance from './components/SpeedDialInstance';
+import MESSAGES from './messages';
+import { getInstancesFilesList } from './utils';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -88,7 +88,7 @@ const InstanceDetails: FunctionComponent = () => {
 
     const isLoading =
         isLoadingInstance ||
-        (currentInstance.entity && isLoadingBeneficiaryFields);
+        (currentInstance?.entity && isLoadingBeneficiaryFields);
 
     // not showing history link in submission detail if there is only one version/log
     // in the future. add this info directly in the instance api to not make another call;
@@ -140,7 +140,7 @@ const InstanceDetails: FunctionComponent = () => {
                                 <BeneficiaryBaseInfo
                                     beneficiary={currentInstance.entity}
                                     fields={beneficiaryFields}
-                                    withLinkToBeneficiary={true}
+                                    withLinkToBeneficiary
                                 />
                             )}
                             <WidgetPaper

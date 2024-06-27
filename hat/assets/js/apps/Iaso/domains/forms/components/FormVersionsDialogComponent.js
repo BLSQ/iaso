@@ -1,19 +1,16 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import { Box, Grid, Typography } from '@mui/material';
 import PropTypes from 'prop-types';
-import { Grid, Typography, Box } from '@mui/material';
-
+import React, { useCallback, useMemo, useState } from 'react';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
+import { useQueryClient } from 'react-query';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import FileInputComponent from '../../../components/forms/FileInputComponent';
 import PeriodPicker from '../../periods/components/PeriodPicker.tsx';
-
-import MESSAGES from '../messages';
-import { createFormVersion, updateFormVersion } from '../../../utils/requests';
 import { useFormState } from '../../../hooks/form';
+import { createFormVersion, updateFormVersion } from '../../../utils/requests';
 import { errorTypes, getPeriodsErrors } from '../../periods/utils';
-
-import { enqueueSnackbar } from '../../../redux/snackBarsReducer';
+import MESSAGES from '../messages';
+import { openSnackBar } from '../../../components/snackBars/EventDispatcher.ts';
 import { succesfullSnackBar } from '../../../constants/snackBars';
 
 const emptyVersion = (id = null) => ({
@@ -31,8 +28,8 @@ const FormVersionsDialogComponent = ({
     periodType,
     ...dialogProps
 }) => {
-    const dispatch = useDispatch();
     const intl = useSafeIntl();
+    const queryClient = useQueryClient();
     const [isLoading, setIsLoading] = useState(false);
     const [formState, setFieldValue, setFieldErrors, setFormState] =
         useFormState({
@@ -81,7 +78,8 @@ const FormVersionsDialogComponent = ({
                     setIsLoading(false);
                     setFormState(emptyVersion(formVersion.id));
                     onConfirmed();
-                    dispatch(enqueueSnackbar(succesfullSnackBar()));
+                    openSnackBar(succesfullSnackBar());
+                    queryClient.invalidateQueries(['formVersions', formId]);
                 } catch (error) {
                     setIsLoading(false);
                     if (error.status === 400) {
@@ -93,14 +91,16 @@ const FormVersionsDialogComponent = ({
             }
         },
         [
-            dispatch,
-            setFieldErrors,
-            formState,
-            formId,
-            formVersion.id,
-            onConfirmed,
-            setFormState,
             isLoading,
+            formId,
+            formState.start_period.value,
+            formState.end_period.value,
+            formState.xls_file.value,
+            formVersion.id,
+            setFormState,
+            onConfirmed,
+            queryClient,
+            setFieldErrors,
         ],
     );
 

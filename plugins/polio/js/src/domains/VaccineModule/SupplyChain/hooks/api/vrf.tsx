@@ -1,52 +1,51 @@
-import { useMemo } from 'react';
-import { Dispatch } from 'redux';
-import { UseMutationResult, UseQueryResult } from 'react-query';
 import {
     UrlParams,
-    textPlaceholder,
     renderTagsWithTooltip,
+    textPlaceholder,
 } from 'bluesquare-components';
+import { useMemo } from 'react';
+import { UseMutationResult, UseQueryResult } from 'react-query';
+import { openSnackBar } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/snackBars/EventDispatcher';
+import {
+    errorSnackBar,
+    succesfullSnackBar,
+} from '../../../../../../../../../hat/assets/js/apps/Iaso/constants/snackBars';
+import {
+    FormattedApiParams,
+    useApiParams,
+} from '../../../../../../../../../hat/assets/js/apps/Iaso/hooks/useApiParams';
+import { useUrlParams } from '../../../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
 import {
     deleteRequest,
     getRequest,
     patchRequest,
     postRequest,
 } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
-import { useUrlParams } from '../../../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
-import {
-    FormattedApiParams,
-    useApiParams,
-} from '../../../../../../../../../hat/assets/js/apps/Iaso/hooks/useApiParams';
-import { useGetCountries } from '../../../../../hooks/useGetCountries';
 import {
     useSnackMutation,
     useSnackQuery,
 } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
-import {
-    errorSnackBar,
-    succesfullSnackBar,
-} from '../../../../../../../../../hat/assets/js/apps/Iaso/constants/snackBars';
-import MESSAGES from '../../messages';
-import {
-    CAMPAIGNS_ENDPOINT,
-    CampaignCategory,
-    useGetCampaigns,
-} from '../../../../Campaigns/hooks/api/useGetCampaigns';
-import { Campaign, Round } from '../../../../../constants/types';
-import { enqueueSnackbar } from '../../../../../../../../../hat/assets/js/apps/Iaso/redux/snackBarsReducer';
-import { apiUrl, defaultVaccineOptions } from '../../constants';
-import {
-    CampaignDropdowns,
-    ParsedSettledPromise,
-    VRF,
-    VRFFormData,
-} from '../../types';
 import {
     DropdownOptions,
     DropdownOptionsWithOriginal,
     Optional,
 } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { dateApiToDateRangePicker } from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/dates';
+import { Campaign, Round } from '../../../../../constants/types';
+import { useGetCountries } from '../../../../../hooks/useGetCountries';
+import {
+    CAMPAIGNS_ENDPOINT,
+    CampaignCategory,
+    useGetCampaigns,
+} from '../../../../Campaigns/hooks/api/useGetCampaigns';
+import { apiUrl, defaultVaccineOptions } from '../../constants';
+import MESSAGES from '../../messages';
+import {
+    CampaignDropdowns,
+    ParsedSettledPromise,
+    VRF,
+    VRFFormData,
+} from '../../types';
 
 const defaults = {
     order: 'country',
@@ -206,26 +205,17 @@ export const saveVrf = (
 
 export const handleVrfPromiseErrors = (
     data: ParsedSettledPromise<VRF>[],
-    dispatch: Dispatch,
 ): void => {
     const vrf = data[0];
     const isSuccessful = vrf.status === 'fulfilled';
     if (isSuccessful) {
-        dispatch(
-            enqueueSnackbar(
-                succesfullSnackBar(undefined, MESSAGES.vrfApiSuccess),
-            ),
-        );
+        openSnackBar(succesfullSnackBar(undefined, MESSAGES.vrfApiSuccess));
     } else {
         const details = Array.isArray(vrf.value)
             ? // there's only one element in the array
               vrf.value[0].reason.details
             : vrf.value;
-        dispatch(
-            enqueueSnackbar(
-                errorSnackBar(undefined, MESSAGES.vrfApiError, details),
-            ),
-        );
+        openSnackBar(errorSnackBar(undefined, MESSAGES.vrfApiError, details));
     }
 };
 

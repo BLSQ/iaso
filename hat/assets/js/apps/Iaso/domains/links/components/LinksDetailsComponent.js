@@ -1,25 +1,25 @@
-import React, { Component, Fragment } from 'react';
-import { connect } from 'react-redux';
-import { FormattedMessage } from 'react-intl';
 import CheckBox from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlank from '@mui/icons-material/CheckBoxOutlineBlank';
 import { grey } from '@mui/material/colors';
+import React, { Component } from 'react';
+import { FormattedMessage } from 'react-intl';
+import { connect } from 'react-redux';
 
-import { Container, Grid, Divider, Button } from '@mui/material';
+import { Button, Container, Divider, Grid } from '@mui/material';
 import { withStyles } from '@mui/styles';
 
 import PropTypes from 'prop-types';
 
 import {
-    injectIntl,
-    commonStyles,
     LoadingSpinner,
+    commonStyles,
+    injectIntl,
 } from 'bluesquare-components';
-import { LinksCompare } from './LinksCompareComponent';
+import { LinksCompare } from './LinksCompareComponent.tsx';
 
 import { fetchLinkDetail } from '../../../utils/requests';
 
-import MESSAGES from '../messages';
+import MESSAGES from '../messages.ts';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -46,11 +46,11 @@ class LinksDetails extends Component {
     }
 
     fetchDetail() {
-        const { dispatch, linkId } = this.props;
+        const { linkId } = this.props;
         this.setState({
             loading: true,
         });
-        fetchLinkDetail(dispatch, linkId)
+        fetchLinkDetail(linkId)
             .then(linkDetail => {
                 this.setState({
                     link: linkDetail,
@@ -157,12 +157,8 @@ const MapStateToProps = state => ({
     load: state.load,
 });
 
-const MapDispatchToProps = dispatch => ({
-    dispatch,
-});
-
 const LinksDetailsWithIntl = injectIntl(LinksDetails);
 
 export default withStyles(styles)(
-    connect(MapStateToProps, MapDispatchToProps)(LinksDetailsWithIntl),
+    connect(MapStateToProps)(LinksDetailsWithIntl),
 );

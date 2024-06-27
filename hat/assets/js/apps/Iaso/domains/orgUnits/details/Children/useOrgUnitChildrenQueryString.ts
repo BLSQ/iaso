@@ -11,6 +11,7 @@ export const useOrgUnitChildrenQueryString = params => {
     } else {
         tempParams.parent_id = orgUnitId;
     }
+    delete tempParams.tab;
 
     const apiParams = useApiParams(tempParams, tableDefaults);
     return new URLSearchParams(apiParams).toString();

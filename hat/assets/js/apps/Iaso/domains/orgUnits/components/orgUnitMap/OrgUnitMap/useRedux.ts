@@ -1,11 +1,11 @@
 import { useCallback } from 'react';
 import { useDispatch } from 'react-redux';
-import { setCurrentSubOrgUnit as setCurrentSubOrgUnitAction } from '../../../actions';
-import { setCurrentInstance as setCurrentInstanceAction } from '../../../../instances/actions';
 import {
-    fetchOrgUnitDetail,
     fetchInstanceDetail as fetchInstanceDetailRequest,
+    fetchOrgUnitDetail,
 } from '../../../../../utils/requests';
+import { setCurrentInstance as setCurrentInstanceAction } from '../../../../instances/actions';
+import { setCurrentSubOrgUnit as setCurrentSubOrgUnitAction } from '../../../actions';
 
 export const useRedux = () => {
     const dispatch = useDispatch();
@@ -22,21 +22,21 @@ export const useRedux = () => {
     const fetchSubOrgUnitDetail = useCallback(
         orgUnit => {
             setCurrentSubOrgUnit(null);
-            fetchOrgUnitDetail(dispatch, orgUnit.id).then(subOrgUnit =>
+            fetchOrgUnitDetail(orgUnit.id).then(subOrgUnit =>
                 setCurrentSubOrgUnit(subOrgUnit),
             );
         },
-        [dispatch, setCurrentSubOrgUnit],
+        [setCurrentSubOrgUnit],
     );
 
     const fetchInstanceDetail = useCallback(
         instance => {
             setCurrentInstance(null);
-            fetchInstanceDetailRequest(dispatch, instance.id).then(i =>
+            fetchInstanceDetailRequest(instance.id).then(i =>
                 setCurrentInstance(i),
             );
         },
-        [dispatch, setCurrentInstance],
+        [setCurrentInstance],
     );
 
     return {

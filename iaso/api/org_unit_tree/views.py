@@ -57,16 +57,15 @@ class OrgUnitTreeViewSet(viewsets.ModelViewSet):
         else:
             qs = OrgUnit.objects.filter_for_user(user)
 
-        can_view_full_tree = any([user.is_anonymous, user.is_superuser, force_full_tree])
         display_root_level = not parent_id
 
         if display_root_level and self.action == "list":
-            if can_view_full_tree:
+            force_full_tree = force_full_tree or user.is_superuser
+            if not force_full_tree and user.is_authenticated and user.iaso_profile.org_units.exists():
+                # Root level of the tree for this user (the user may be restricted to a subpart of the tree).
+                qs = qs.filter(id__in=user.iaso_profile.org_units.all())
+            else:
                 qs = qs.filter(parent__isnull=True)
-            elif user.is_authenticated:
-                if user.iaso_profile.org_units.exists():
-                    # Root level of the tree for this user (the user may be restricted to a subpart of the tree).
-                    qs = qs.filter(id__in=user.iaso_profile.org_units.all())
 
         qs = qs.only("id", "name", "validation_status", "version", "org_unit_type", "parent")
         qs = qs.order_by("name")

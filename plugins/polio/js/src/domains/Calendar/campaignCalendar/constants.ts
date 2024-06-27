@@ -6,6 +6,8 @@ const dateFormat = apiDateFormat;
 const colSpanTitle = 1;
 const defaultOrder = 'first_round_started_at';
 
+export const DEFAULT_CELL_COLOR = '#bcbcbc';
+
 const colsCounts = {
     quarter: 13,
     semester: 26,

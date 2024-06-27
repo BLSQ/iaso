@@ -187,7 +187,9 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                 isMapFullScreen && classes.fullScreen,
             )}
         >
-            {isFetchingChildren && <LoadingSpinner absolute />}
+            {(isFetchingChildren || isFetchingOrgUnit) && (
+                <LoadingSpinner absolute />
+            )}
             <MapLegend options={legendOptions} setOptions={setLegendOptions} />
             <Box className="map">
                 <MapContainer

@@ -67,11 +67,64 @@ class OrgUnitTreeViewsAPITestCase(APITestCase):
         cls.data_source.projects.set([cls.project])
         cls.user.iaso_profile.org_units.set([cls.burkina])  # Restrict access to a subset of org units for user.
 
-    def test_root_for_anonymous(self):
+        cls.user_without_org_unit_for_profile = cls.create_user_with_profile(username="user2", account=cls.account)
+
+    def test_root_level_for_anonymous_user(self):
+        """
+        Anonymous users view the default tree root (`data_source_id` is mandatory for anonymous users).
+        """
         with self.assertNumQueries(2):
-            # Select `DataSource`.
-            # Select `OrgUnit`s.
             response = self.client.get(f"/api/orgunits/tree/?data_source_id={self.data_source.pk}")
+            self.assertJSONResponse(response, 200)
+            self.assertEqual(2, len(response.data))
+            self.assertEqual(response.data[0]["name"], "Angola")
+            self.assertEqual(response.data[1]["name"], "Burkina Faso")
+
+    def test_root_level_for_authenticated_user_with_org_unit_for_profile(self):
+        """
+        Authenticated users with org units linked to their profile view a custom tree root.
+        """
+        self.client.force_authenticate(self.user)
+        with self.assertNumQueries(3):
+            response = self.client.get("/api/orgunits/tree/")
+            self.assertJSONResponse(response, 200)
+            self.assertEqual(1, len(response.data))
+            self.assertEqual(response.data[0]["name"], "Burkina Faso")
+
+    def test_root_level_force_full_tree_for_authenticated_user_with_org_unit_for_profile(self):
+        """
+        `force_full_tree` gives access to the default tree root, even to authenticated users
+        with org units linked to their profile.
+        """
+        self.client.force_authenticate(self.user)
+        with self.assertNumQueries(3):
+            response = self.client.get("/api/orgunits/tree/?force_full_tree=true")
+            self.assertJSONResponse(response, 200)
+            self.assertEqual(2, len(response.data))
+            self.assertEqual(response.data[0]["name"], "Angola")
+            self.assertEqual(response.data[1]["name"], "Burkina Faso")
+
+    def test_root_level_for_authenticated_user_without_org_unit_for_profile(self):
+        """
+        Authenticated users without org units linked to their profile view the default tree root.
+        """
+        self.client.force_authenticate(self.user_without_org_unit_for_profile)
+        with self.assertNumQueries(3):
+            response = self.client.get("/api/orgunits/tree/")
+            self.assertJSONResponse(response, 200)
+            self.assertEqual(2, len(response.data))
+            self.assertEqual(response.data[0]["name"], "Angola")
+            self.assertEqual(response.data[1]["name"], "Burkina Faso")
+
+    def test_root_level_for_superuser(self):
+        """
+        Superusers view the default tree root.
+        """
+        self.user_without_org_unit_for_profile.is_superuser = True
+        self.user_without_org_unit_for_profile.save()
+        self.client.force_authenticate(self.user_without_org_unit_for_profile)
+        with self.assertNumQueries(3):
+            response = self.client.get("/api/orgunits/tree/")
             self.assertJSONResponse(response, 200)
             self.assertEqual(2, len(response.data))
             self.assertEqual(response.data[0]["name"], "Angola")
@@ -88,14 +141,6 @@ class OrgUnitTreeViewsAPITestCase(APITestCase):
             self.assertEqual(1, len(response.data))
             self.assertEqual(response.data[0]["name"], "Huila")
 
-    def test_root_for_authenticated_user(self):
-        self.client.force_authenticate(self.user)
-        with self.assertNumQueries(3):
-            response = self.client.get("/api/orgunits/tree/")
-            self.assertJSONResponse(response, 200)
-            self.assertEqual(1, len(response.data))
-            self.assertEqual(response.data[0]["name"], "Burkina Faso")
-
     def test_specific_level_for_authenticated_user(self):
         self.client.force_authenticate(self.user)
 
@@ -110,25 +155,16 @@ class OrgUnitTreeViewsAPITestCase(APITestCase):
             self.assertEqual(1, len(response.data))
             self.assertEqual(response.data[0]["name"], "Boucle du Mouhon")
 
-    def test_root_with_force_full_tree(self):
-        self.client.force_authenticate(self.user)
-        with self.assertNumQueries(1):
-            response = self.client.get("/api/orgunits/tree/?force_full_tree=true")
-            self.assertJSONResponse(response, 200)
-            self.assertEqual(2, len(response.data))
-            self.assertEqual(response.data[0]["name"], "Angola")
-            self.assertEqual(response.data[1]["name"], "Burkina Faso")
-
     def test_specific_level_with_force_full_tree(self):
         self.client.force_authenticate(self.user)
 
-        with self.assertNumQueries(1):
+        with self.assertNumQueries(3):
             response = self.client.get(f"/api/orgunits/tree/?parent_id={self.angola.pk}&force_full_tree=true")
             self.assertJSONResponse(response, 200)
             self.assertEqual(1, len(response.data))
             self.assertEqual(response.data[0]["name"], "Huila")
 
-        with self.assertNumQueries(1):
+        with self.assertNumQueries(3):
             response = self.client.get(f"/api/orgunits/tree/?parent_id={self.burkina.pk}&force_full_tree=true")
             self.assertJSONResponse(response, 200)
             self.assertEqual(1, len(response.data))
@@ -169,15 +205,16 @@ class OrgUnitTreeViewsAPITestCase(APITestCase):
     def test_search(self):
         self.client.force_authenticate(self.user)
 
-        response = self.client.get("/api/orgunits/tree/search/?search=b")
-        self.assertJSONResponse(response, 200)
+        with self.assertNumQueries(3):
+            response = self.client.get("/api/orgunits/tree/search/?search=b")
+            self.assertJSONResponse(response, 200)
+            self.assertEqual(3, len(response.data["results"]))
+            self.assertEqual(response.data["results"][0]["name"], "Banwa")
+            self.assertEqual(response.data["results"][1]["name"], "Boucle du Mouhon")
+            self.assertEqual(response.data["results"][2]["name"], "Burkina Faso")
 
-        self.assertEqual(3, len(response.data["results"]))
-        self.assertEqual(response.data["results"][0]["name"], "Banwa")
-        self.assertEqual(response.data["results"][1]["name"], "Boucle du Mouhon")
-        self.assertEqual(response.data["results"][2]["name"], "Burkina Faso")
-
-        response = self.client.get("/api/orgunits/tree/search/?search=BURKINA")
-        self.assertJSONResponse(response, 200)
-        self.assertEqual(1, len(response.data["results"]))
-        self.assertEqual(response.data["results"][0]["name"], "Burkina Faso")
+        with self.assertNumQueries(3):
+            response = self.client.get("/api/orgunits/tree/search/?search=BURKINA")
+            self.assertJSONResponse(response, 200)
+            self.assertEqual(1, len(response.data["results"]))
+            self.assertEqual(response.data["results"][0]["name"], "Burkina Faso")

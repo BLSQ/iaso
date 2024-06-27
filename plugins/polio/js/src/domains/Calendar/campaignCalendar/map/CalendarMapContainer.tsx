@@ -1,32 +1,32 @@
+import { Box } from '@mui/material';
+import { LoadingSpinner } from 'bluesquare-components';
 import React, {
-    FunctionComponent,
     Dispatch,
+    FunctionComponent,
     SetStateAction,
     useState,
 } from 'react';
 import { useMapEvent } from 'react-leaflet';
-import { LoadingSpinner } from 'bluesquare-components';
-import { Box } from '@mui/material';
 
-import { useStyles } from '../Styles';
 import 'leaflet/dist/leaflet.css';
-import { CalendarMapPanesRegular } from './CalendarMapPanesRegular';
-import { CalendarMapPanesMerged } from './CalendarMapPanesMerged';
-import { CampaignsLegend } from './CampaignsLegend';
+import { useStyles } from '../Styles';
 import {
     MappedCampaign,
-    MergedShapeWithColor,
+    MergedShapeWithCacheDate,
     ShapeForCalendarMap,
 } from '../types';
-import { boundariesZoomLimit } from './constants';
+import { CalendarMapPanesMerged } from './CalendarMapPanesMerged';
+import { CalendarMapPanesRegular } from './CalendarMapPanesRegular';
+import { CampaignsLegend } from './CampaignsLegend';
 import { VaccinesLegend } from './VaccinesLegend';
+import { boundariesZoomLimit } from './constants';
 
-import { MapRoundSelector } from './MapRoundSelector';
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { MapRoundSelector } from './MapRoundSelector';
 
 type Props = {
     campaignsShapes: ShapeForCalendarMap[];
-    mergedShapes: MergedShapeWithColor[];
+    mergedShapes: MergedShapeWithCacheDate[];
     loadingCampaigns: boolean;
     isLoadingMergedShapes: boolean;
     isLoadingShapes: boolean;

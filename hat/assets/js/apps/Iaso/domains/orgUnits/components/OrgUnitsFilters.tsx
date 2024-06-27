@@ -34,6 +34,7 @@ import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProj
 import { useGetOrgUnitTypes } from '../hooks/requests/useGetOrgUnitTypes';
 import MESSAGES from '../messages';
 import { Search } from '../types/search';
+import { useInstancesOptions } from '../hooks/utils/useInstancesOptions';
 
 type Props = {
     searches: [Search];
@@ -112,6 +113,8 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     });
     const { data: orgUnitTypes, isFetching: isFetchingOrgUnitTypes } =
         useGetOrgUnitTypes(projectId);
+
+    const instancesOptions = useInstancesOptions();
 
     const {
         data: validationStatusOptions,
@@ -438,20 +441,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                         onChange={handleChange}
                         value={filters?.hasInstances}
                         label={MESSAGES.hasInstances}
-                        options={[
-                            {
-                                label: formatMessage(MESSAGES.with),
-                                value: 'true',
-                            },
-                            {
-                                label: formatMessage(MESSAGES.without),
-                                value: 'false',
-                            },
-                            {
-                                label: formatMessage(MESSAGES.duplicates),
-                                value: 'duplicates',
-                            },
-                        ]}
+                        options={instancesOptions}
                     />
                 </Box>
                 {(filters?.hasInstances === 'true' ||

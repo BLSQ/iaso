@@ -1,8 +1,4 @@
-import {
-    fetchAction,
-    saveAction,
-    retrieveAction,
-} from '../../redux/actions/formsActions';
+import { saveAction, retrieveAction } from '../../redux/actions/formsActions';
 
 export const SET_USERS_PROFILES = 'SET_USERS_PROFILES';
 export const SET_CURRENT_USER = 'SET_CURRENT_USER';
@@ -35,17 +31,6 @@ export const fetchCurrentUser = () => dispatch =>
         'me',
         setCurrentUser,
         'fetchCurrentUser',
-    );
-
-export const fetchUsersProfiles = params => dispatch =>
-    fetchAction(
-        dispatch,
-        apiKey,
-        setUsersProfiles,
-        'fetchProfilesError',
-        apiKey,
-        params,
-        setIsFetching,
     );
 
 export const saveCurrentUserProFile = profile => dispatch =>

@@ -77,12 +77,7 @@ class VaccineStockCalculator:
         else:
             ir_sum = 0
 
-        if self.stock_movements.exists():
-            sm_sum = sum(movement.unusable_vials or 0 for movement in self.stock_movements)
-        else:
-            sm_sum = 0
-
-        return ir_sum + sm_sum
+        return ir_sum
 
     def get_vials_destroyed(self):
         if not self.destruction_reports.exists():
@@ -230,7 +225,6 @@ class OutgoingStockMovementSerializer(serializers.ModelSerializer):
             "report_date",
             "form_a_reception_date",
             "usable_vials_used",
-            "unusable_vials",
             "lot_numbers",
             "missing_vials",
         ]
@@ -456,6 +450,8 @@ class VaccineStockManagementViewSet(ModelViewSet):
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.RETURN
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.STEALING
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT
+                or report.stock_correction == IncidentReport.StockCorrectionChoices.UNREADABLE_LABEL
+                or report.stock_correction == IncidentReport.StockCorrectionChoices.BROKEN
             ):
                 results.append(
                     {
@@ -533,15 +529,15 @@ class VaccineStockManagementViewSet(ModelViewSet):
 
         # Add unusable vials from OutgoingStockMovements/FORMA
         for movement in outgoing_movements:
-            if movement.unusable_vials > 0:
+            if movement.usable_vials_used > 0:
                 results.append(
                     {
                         "date": movement.report_date,
-                        "action": "Form A - Unusable vials",
-                        "vials_in": movement.unusable_vials or 0,
-                        "doses_in": (movement.unusable_vials or 0) * calc.get_doses_per_vial(),
+                        "action": "Form A - Vials Used",
                         "vials_out": None,
                         "doses_out": None,
+                        "vials_in": movement.usable_vials_used or 0,
+                        "doses_in": (movement.usable_vials_used or 0) * calc.get_doses_per_vial(),
                         "type": MovementTypeEnum.OUTGOING_STOCK_MOVEMENT.value,
                     }
                 )
@@ -550,11 +546,7 @@ class VaccineStockManagementViewSet(ModelViewSet):
             results.append(
                 {
                     "date": report.destruction_report_date,
-                    "action": (
-                        f"{report.action} ({report.lot_numbers})"
-                        if len(report.action) > 0
-                        else f"Destruction report {report.action}"
-                    ),
+                    "action": (f"{report.action}" if len(report.action) > 0 else f"Destruction report"),
                     "vials_in": None,
                     "doses_in": None,
                     "vials_out": report.unusable_vials_destroyed or 0,
@@ -569,11 +561,12 @@ class VaccineStockManagementViewSet(ModelViewSet):
                 report.stock_correction == IncidentReport.StockCorrectionChoices.PHYSICAL_INVENTORY
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.VACCINE_EXPIRED
                 or report.stock_correction == IncidentReport.StockCorrectionChoices.VVM_REACHED_DISCARD_POINT
+                or report.stock_correction == IncidentReport.StockCorrectionChoices.UNREADABLE_LABEL
             ):
                 results.append(
                     {
                         "date": report.date_of_incident_report,
-                        "action": report.get_stock_correction_display(),
+                        "action": report.get_stock_correction_display(),  # for every field FOO that has choices set, the object will have a get_FOO_display() method
                         "vials_in": report.unusable_vials or 0,
                         "doses_in": (report.unusable_vials or 0) * calc.get_doses_per_vial(),
                         "vials_out": None,
@@ -602,8 +595,16 @@ class VaccineStockManagementViewSet(ModelViewSet):
         related destruction reports, incident reports, and outgoing stock movements.
         It is ordered by the VaccineStock ID.
         """
+
+        accessible_org_units = OrgUnit.objects.filter_for_user_and_app_id(
+            self.request.user, self.request.query_params.get("app_id")
+        )
+        accessible_org_units_ids = accessible_org_units.values_list("id", flat=True)
+
         return (
-            VaccineStock.objects.filter(account=self.request.user.iaso_profile.account)
+            VaccineStock.objects.filter(
+                account=self.request.user.iaso_profile.account, country__id__in=accessible_org_units_ids
+            )
             .prefetch_related("destructionreport_set", "incidentreport_set", "outgoingstockmovement_set")
             .distinct()
             .order_by("id")

@@ -1,22 +1,22 @@
 /* eslint-disable react/no-array-index-key */
-import { Box, Button, AppBar } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import Add from '@mui/icons-material/Add';
+import { AppBar, Box, Button } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
-    commonStyles,
-    useSafeIntl,
     DynamicTabs,
-    useSkipEffectOnMount,
     IntlFormatMessage,
+    commonStyles,
     useRedirectTo,
+    useSafeIntl,
+    useSkipEffectOnMount,
 } from 'bluesquare-components';
+import classnames from 'classnames';
 import React, {
     FunctionComponent,
-    useState,
     useCallback,
     useMemo,
+    useState,
 } from 'react';
-import classnames from 'classnames';
 
 import { isEqual } from 'lodash';
 import { useCurrentUser } from '../../../utils/usersUtils';
@@ -26,11 +26,11 @@ import { OrgUnitFilters as Filters } from './OrgUnitsFilters';
 
 import { OrgUnitParams } from '../types/orgUnit';
 
-import { baseUrls } from '../../../constants/urls';
 import { getChipColors } from '../../../constants/chipColors';
+import { baseUrls } from '../../../constants/urls';
 
-import { Search } from '../types/search';
 import { Count } from '../hooks/requests/useGetOrgUnits';
+import { Search } from '../types/search';
 
 import { decodeSearch } from '../utils';
 
@@ -59,8 +59,7 @@ const useStyles = makeStyles(theme => ({
     },
     tabsContainer: {
         backgroundColor: `${theme.palette.primary.main} !important`,
-        // to be over topbar shadow
-        zIndex: '1101 fixed !important',
+        zIndex: '900 !important',
         position: 'fixed',
         top: '64px !important',
     },

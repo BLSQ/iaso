@@ -1,42 +1,40 @@
-import React, {
-    useCallback,
-    useEffect,
-    useState,
-    useMemo,
-    FunctionComponent,
-} from 'react';
-import { useQueryClient } from 'react-query';
-import { useDispatch } from 'react-redux';
-import { Box, Button, Tabs, Tab } from '@mui/material';
+import { Box, Button, Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import {
+    CommonStyles,
+    LoadingSpinner,
+    commonStyles,
+    useGoBack,
+    useRedirectToReplace,
+    useSafeIntl,
+} from 'bluesquare-components';
+import isEqual from 'lodash/isEqual';
 import mapValues from 'lodash/mapValues';
 import omit from 'lodash/omit';
-import isEqual from 'lodash/isEqual';
-import {
-    commonStyles,
-    LoadingSpinner,
-    useSafeIntl,
-    CommonStyles,
-    useRedirectToReplace,
-    useGoBack,
-} from 'bluesquare-components';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+} from 'react';
+import { useQueryClient } from 'react-query';
 import TopBar from '../../components/nav/TopBarComponent';
-import MESSAGES from './messages.js';
-import { useFormState } from '../../hooks/form.js';
-import { baseUrls } from '../../constants/urls';
-import { createForm, updateForm } from '../../utils/requests';
-import FormVersions from './components/FormVersionsComponent';
-import FormForm from './components/FormFormComponent';
-import { enqueueSnackbar } from '../../redux/snackBarsReducer';
+import { openSnackBar } from '../../components/snackBars/EventDispatcher';
 import { succesfullSnackBar } from '../../constants/snackBars';
-import { useGetForm } from './requests';
-import { requiredFields } from './config/index';
-import { isFieldValid, isFormValid } from '../../utils/forms';
-import { FormAttachments } from './components/FormAttachments';
-import { FormParams } from './types/forms';
-import { NO_PERIOD } from '../periods/constants';
+import { baseUrls } from '../../constants/urls';
+import { useFormState } from '../../hooks/form.js';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
+import { isFieldValid, isFormValid } from '../../utils/forms';
+import { createForm, updateForm } from '../../utils/requests';
+import { NO_PERIOD } from '../periods/constants';
+import FormForm from './components/FormFormComponent';
+import FormVersions from './components/FormVersionsComponent';
+import { requiredFields } from './config/index';
 import { CR_MODE_NONE } from './constants';
+import MESSAGES from './messages';
+import { useGetForm } from './requests';
+import { FormParams } from './types/forms';
 
 const useStyles = makeStyles(theme => ({
     ...(commonStyles(theme) as unknown as CommonStyles),
@@ -96,15 +94,15 @@ const formatFormData = value => {
 };
 
 const FormDetail: FunctionComponent = () => {
-    const params = useParamsObject(baseUrls.formDetail) as FormParams;
+    const params = useParamsObject(
+        baseUrls.formDetail,
+    ) as unknown as FormParams;
     const goBack = useGoBack(baseUrls.forms);
     const queryClient = useQueryClient();
     const { data: form, isLoading: isFormLoading } = useGetForm(params.formId);
     const [isLoading, setIsLoading] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
     const [tab, setTab] = useState(params.tab || 'versions');
-    const [forceRefreshVersions, setForceRefreshVersions] = useState(false);
-    const dispatch = useDispatch();
     const redirectToReplace = useRedirectToReplace();
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
@@ -131,43 +129,46 @@ const FormDetail: FunctionComponent = () => {
         }
         return requiredFields;
     }, [currentForm.period_type.value]);
-
+    const isNew = params.formId === '0';
     const onConfirm = async () => {
         let isUpdate;
         let saveForm;
         let formData;
 
-        if (params.formId === '0') {
+        if (isNew) {
             isUpdate = false;
             formData = mapValues(
                 omit(currentForm, ['form_id', 'possible_fields']),
                 v => v.value,
             );
-            saveForm = createForm(dispatch, formData);
+            saveForm = createForm(formData);
         } else {
             isUpdate = true;
             formData = mapValues(
                 omit(currentForm, ['possible_fields']),
                 v => v.value,
             );
-            saveForm = updateForm(dispatch, currentForm.id.value, formData);
+            saveForm = updateForm(currentForm.id.value, formData);
         }
         setIsLoading(true);
         let savedFormData;
         try {
             savedFormData = await saveForm;
-            dispatch(enqueueSnackbar(succesfullSnackBar()));
+            openSnackBar(succesfullSnackBar());
             if (!isUpdate) {
                 redirectToReplace(baseUrls.formDetail, {
                     formId: savedFormData.id,
                 });
-                setForceRefreshVersions(true);
             } else {
                 queryClient.resetQueries([
                     'formDetailsForInstance',
                     `${savedFormData.id}`,
                 ]);
                 queryClient.resetQueries(['forms']);
+                queryClient.invalidateQueries([
+                    'formVersions',
+                    parseInt(params.formId, 10),
+                ]);
             }
         } catch (error) {
             if (error.status === 400) {
@@ -270,33 +271,39 @@ const FormDetail: FunctionComponent = () => {
                         {formatMessage(MESSAGES.save)}
                     </Button>
                 </Box>
-                <Box>
-                    <Tabs
-                        value={tab}
-                        classes={{
-                            root: classes.tabs,
-                        }}
-                        onChange={(_, newtab) => handleChangeTab(newtab)}
-                    >
-                        <Tab
-                            value="versions"
-                            label={formatMessage(MESSAGES.versions)}
-                        />
-                        <Tab
-                            value="attachments"
-                            label={formatMessage(MESSAGES.attachments)}
-                        />
-                    </Tabs>
-                </Box>
-                {tab === 'versions' && (
-                    <FormVersions
-                        periodType={currentForm.period_type.value || undefined}
-                        forceRefresh={forceRefreshVersions}
-                        setForceRefresh={setForceRefreshVersions}
-                        formId={parseInt(params.formId, 10)}
-                    />
+                {!isNew && (
+                    <>
+                        <Box>
+                            <Tabs
+                                value={tab}
+                                classes={{
+                                    root: classes.tabs,
+                                }}
+                                onChange={(_, newtab) =>
+                                    handleChangeTab(newtab)
+                                }
+                            >
+                                <Tab
+                                    value="versions"
+                                    label={formatMessage(MESSAGES.versions)}
+                                />
+                                <Tab
+                                    value="attachments"
+                                    label={formatMessage(MESSAGES.attachments)}
+                                />
+                            </Tabs>
+                        </Box>
+                        {tab === 'versions' && (
+                            <FormVersions
+                                periodType={
+                                    currentForm.period_type.value || undefined
+                                }
+                                formId={parseInt(params.formId, 10)}
+                                params={params}
+                            />
+                        )}
+                    </>
                 )}
-                {tab === 'attachments' && <FormAttachments params={params} />}
             </Box>
         </>
     );

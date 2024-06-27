@@ -1,6 +1,7 @@
-import { UseQueryResult } from 'react-query';
+import { UseQueryResult, useQueryClient } from 'react-query';
 
 import { Pagination } from 'bluesquare-components';
+import { useCallback, useState } from 'react';
 import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';
 
@@ -8,6 +9,43 @@ import { makeUrlWithParams } from '../../../libs/utils';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { OrgunitTypes } from '../../orgUnits/types/orgunitTypes';
 import { RegistryParams } from '../types';
+
+type FetchOrgUnitsListResult = {
+    isFetching: boolean;
+    // eslint-disable-next-line no-unused-vars
+    fetchOrgUnit: (orgUnit: OrgUnit) => Promise<OrgUnit | Error>;
+};
+
+export const useFetchOrgUnits = (): FetchOrgUnitsListResult => {
+    const queryClient = useQueryClient();
+    const [isFetching, setIsFetching] = useState(false);
+
+    const fetchOrgUnit = useCallback(
+        async (orgUnit: OrgUnit): Promise<OrgUnit | Error> => {
+            setIsFetching(true);
+            try {
+                const result = await queryClient.fetchQuery<OrgUnit>(
+                    ['orgUnit', orgUnit.id],
+                    () => getRequest(`/api/orgunits/${orgUnit.id}/`),
+                    {
+                        staleTime: 1000 * 60 * 5, // Example: 5 minutes stale time
+                    },
+                );
+                setIsFetching(false);
+                return result;
+            } catch (error) {
+                setIsFetching(false);
+                console.error('Error fetching org unit:', error);
+                return new Error(
+                    `Failed to fetch org unit with ID ${orgUnit.id}: ${error.message}`,
+                );
+            }
+        },
+        [queryClient],
+    );
+
+    return { fetchOrgUnit, isFetching };
+};
 
 export const useGetOrgUnit = (
     orgUnitId?: string,

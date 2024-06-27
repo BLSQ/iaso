@@ -1,8 +1,7 @@
-import React, { FunctionComponent, useMemo, useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { useFormikContext } from 'formik';
 import { useDebounce } from 'use-debounce';
 import { useSkipEffectOnMount } from 'bluesquare-components';
-import { polioVaccines } from '../../../../constants/virus';
 import { ScopeField } from '../../Scope/ScopeField';
 import { CampaignFormValues, Round } from '../../../../constants/types';
 import { useIsPolioCampaign } from '../../hooks/useIsPolioCampaignCheck';
@@ -41,15 +40,20 @@ export const SubActivityScopeField: FunctionComponent<Props> = ({
             searchScope,
         });
 
-    const availableVaccines = useMemo(() => {
-        const subActivityVaccines = round?.scopes?.map(scope => scope.vaccine);
-        if (!subActivityVaccines) {
-            return undefined;
-        }
-        return polioVaccines.filter(vaccine =>
-            subActivityVaccines.includes(vaccine.value),
-        );
-    }, [round?.scopes]);
+    // Uncomment to enable restriction of available vaccines based on round vaccines
+    // const availableVaccines = useMemo(() => {
+    //     const subActivityVaccines = round?.scopes?.map(scope => scope.vaccine);
+    //     if (!subActivityVaccines) {
+    //         return undefined;
+    //     }
+    //     const vaccines = polioVaccines.filter(vaccine =>
+    //         subActivityVaccines.includes(vaccine.value),
+    //     );
+    //     if (vaccines.length > 0) {
+    //         return vaccines;
+    //     }
+    //     return undefined;
+    // }, [round?.scopes]);
 
     useSkipEffectOnMount(() => {
         setPage(0);
@@ -70,7 +74,7 @@ export const SubActivityScopeField: FunctionComponent<Props> = ({
             isFetchingRegions={isFetchingRegions}
             filteredDistricts={filteredDistricts}
             campaign={campaign}
-            availableVaccines={availableVaccines}
+            // availableVaccines={availableVaccines}
             searchInputWithMargin={false}
         />
     );

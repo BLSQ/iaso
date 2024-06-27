@@ -13,8 +13,6 @@ export type Query = {
 
 export type MergedShapeWithCacheDate = MergedShape & { cache: number };
 
-export type MergedShapeWithColor = MergedShapeWithCacheDate & { color: string };
-
 export type CalendarRound = {
     end?: Moment;
     number: number;
@@ -53,6 +51,7 @@ export type ShapeForCalendarMap = {
 };
 
 export type CalendarParams = {
+    accountId?: string; // unused but automatically added to the url
     roundStartFrom?: string;
     roundStartTo?: string;
     showOnlyDeleted?: string;

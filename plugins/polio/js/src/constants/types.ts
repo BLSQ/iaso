@@ -5,6 +5,7 @@ import {
 } from '../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { Profile } from '../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { ReasonForDelay } from '../domains/Campaigns/Rounds/ReasonForDelayModal/hooks/reasons';
+import { SubActivityFormValues } from '../domains/Campaigns/SubActivities/types';
 
 /* eslint-disable camelcase */
 export type FormatForNFMArgs<T> = {
@@ -399,12 +400,19 @@ export type MergedShapes = {
 };
 
 export type GeoJson = {
-    type: string;
+    type: 'FeatureCollection'; // Adjusted to match the specific string literal expected by React-Leaflet
     features: {
         id: number;
-        type: string;
+        type: 'Feature'; // This should also be a specific string literal
         geometry: {
-            type: string;
+            type:
+                | 'Point'
+                | 'MultiPoint'
+                | 'LineString'
+                | 'MultiLineString'
+                | 'Polygon'
+                | 'MultiPolygon'
+                | 'GeometryCollection'; // Specify the correct geometry type
             coordinates: Array<Array<[number, number]>>;
         };
         properties: Record<string, unknown>;
@@ -470,6 +478,7 @@ export type CampaignListItem = {
 };
 
 export type DefaultCampaignValues = {
+    id?: string; // uuid
     initial_org_unit?: number;
     top_level_org_unit_id?: number;
     campaign_types: number[];
@@ -482,8 +491,16 @@ export type DefaultCampaignValues = {
     scopes: Scope[];
     org_unit?: Shape;
     separate_scopes_per_round: boolean;
+    group?: { name: string; org_units: number[] };
+    enable_send_weekly_email: boolean;
+    has_data_in_budget_tool: boolean;
+    budget_current_state_key: string;
+    detection_status: string;
+    risk_assessment_status: string;
+    non_field_errors?: any;
 };
 export type PolioCampaignValues = DefaultCampaignValues & {
+    subactivity?: SubActivityFormValues; // The subactivity is not part of the campaign API payload, but saved in formik and posted through the subactivities API
     virus?: string;
     vaccines?: string;
     epid?: string;

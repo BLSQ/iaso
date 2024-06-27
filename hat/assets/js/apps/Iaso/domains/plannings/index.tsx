@@ -12,10 +12,10 @@ import { useGetPlannings } from './hooks/requests/useGetPlannings';
 import { usePlanningColumns } from './config';
 import { CreateEditPlanning } from './CreateEditPlanning/CreateEditPlanning';
 import { useDeletePlanning } from './hooks/requests/useDeletePlanning';
-import { useSingleTableParams } from '../../components/tables/SingleTable';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
 import { PLANNING_WRITE } from '../../utils/permissions';
+import { useActiveParams } from '../../routing/hooks/useActiveParams';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -23,8 +23,8 @@ const useStyles = makeStyles(theme => ({
 
 const baseUrl = baseUrls.planning;
 export const Planning: FunctionComponent = () => {
-    const params = useParamsObject(baseUrl) as PlanningParams;
-    const apiParams = useSingleTableParams(params);
+    const params = useParamsObject(baseUrl);
+    const apiParams = useActiveParams(params) as PlanningParams;
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetPlannings(apiParams);

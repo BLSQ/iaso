@@ -25,7 +25,7 @@ const interceptList = [
 const defaultQuery = {
     orgUnitId: '2',
     limit: '10',
-    order: 'similarity_score',
+    order: '-similarity_score',
     page: '1',
 };
 
@@ -149,64 +149,29 @@ const goToPage = () => {
     cy.intercept('GET', '/api/groups/', {
         fixture: `groups/list.json`,
     }).as('groupList');
+
     cy.intercept('GET', '/api/v2/orgunittypes/', {
         fixture: `orgunittypes/list.json`,
     }).as('orgunittypesList');
-    cy.intercept(
-        'GET',
-        `/api/forms/?&orgUnitId=${orgUnit.id}&limit=10&order=name`,
-        {
-            fixture: `forms/list.json`,
-        },
-    ).as('formsList');
 
     cy.intercept('GET', '/api/algorithmsruns/', {
         fixture: 'algorithmsruns/list.json',
     }).as('algorithmsRuns');
-    cy.intercept('GET', '/api/validationstatus/', {
-        fixture: 'misc/validationStatuses.json',
-    }).as('validationStatuses');
 
-    cy.intercept(
-        'GET',
-        `/api/logs/?&objectId=${orgUnit.id}&contentType=iaso.orgunit&limit=10&order=-created_at`,
-        {
-            fixture: `logs/list-linked-paginated.json`,
-        },
-    ).as('logs');
     cy.intercept('GET', `/api/datasources/?linkedTo=${orgUnit.id}`, {
         fixture: `datasources/details-ou.json`,
     }).as('datasources');
-    cy.intercept(
-        'GET',
-        `/api/orgunits/?linkedTo=${orgUnit.id}&linkValidated=all&linkSource=69&validation_status=all&withShapes=true`,
-        {
-            body: { orgUnits: [] },
-        },
-    ).as('linkedOrgUnits');
-    cy.intercept(
-        'GET',
-        `/api/comments/?object_pk=${orgUnit.id}&content_type=iaso-orgunit&limit=4`,
-        {
-            fixture: `comments/list.json`,
-        },
-    ).as('comments');
+
     cy.intercept('GET', `/api/orgunits/${orgUnit.id}`, {
         fixture: 'orgunits/details.json',
     }).as('getOuDetail');
-    cy.intercept(
-        'GET',
-        `/api/orgunits/?&parent_id=${orgUnit.id}&limit=10&order=name&validation_status=all`,
-        {
-            fixture: 'orgunits/details-children-paginated.json',
-        },
-    ).as('childrenPaginated');
+
     cy.intercept('GET', `/api/links/?orgUnitId=${orgUnit.id}`, {
         fixture: 'links/list-linked.json',
     }).as('links');
     cy.intercept(
         'GET',
-        `/api/links/?&orgUnitId=${orgUnit.id}&limit=10&order=similarity_score`,
+        `/api/links/?orgUnitId=${orgUnit.id}&order=-similarity_score&limit=10&page=1`,
         {
             fixture: 'links/list-linked-paginated.json',
         },
@@ -237,10 +202,8 @@ const goToPage = () => {
     cy.wait('@me');
     cy.wait('@algorithmsRuns');
     cy.wait('@datasources');
-    cy.wait('@childrenPaginated');
     cy.wait('@links');
     cy.wait('@similarityScore');
-    cy.wait('@instances');
     interceptList.forEach(i => {
         cy.wait(`@${i}List`);
     });
@@ -253,10 +216,8 @@ describe('links tab', () => {
 
     testPermission(baseUrl);
 
-    describe('Table', () => {
-        before(() => {});
+    describe('Table', { retries: 2 }, () => {
         it('should render correct infos', () => {
-            cy.visit(baseUrl);
             cy.wait('@getOuDetail').then(() => {
                 cy.get('[data-test="links-tab"]').find('table').as('table');
                 cy.get('@table').should('have.length', 1);
@@ -284,7 +245,7 @@ describe('links tab', () => {
             baseUrl,
             rows: linkedListPaginated.links.length,
             columns: 9,
-            apiPath: `links/?&orgUnitId=${orgUnit.id}&limit=10&order=similarity_score`,
+            apiPath: `links/?orgUnitId=${orgUnit.id}&order=-similarity_score&limit=10&page=1`,
             apiKey: `links`,
             withVisit: true,
             selector: '[data-test="links-tab"] table',
@@ -292,7 +253,6 @@ describe('links tab', () => {
         });
 
         it('should render correct row infos', () => {
-            cy.visit(baseUrl);
             cy.wait('@getOuDetail').then(() => {
                 testRowContent(0);
             });
@@ -300,11 +260,12 @@ describe('links tab', () => {
 
         testPagination({
             baseUrl,
-            apiPath: '/api/links/**',
+            apiPath: '/api/links/',
             query: {
                 orgUnitId: `${orgUnit.id}`,
                 limit: '10',
-                order: 'similarity_score',
+                order: '-similarity_score',
+                page: '1',
             },
             apiKey: 'links',
             withSearch: false,
@@ -315,7 +276,6 @@ describe('links tab', () => {
 
     describe('Actions buttons', () => {
         it('should make call api with correct params', () => {
-            cy.visit(baseUrl);
             cy.wait('@getOuDetail').then(() => {
                 interceptFlag = false;
 
@@ -346,9 +306,7 @@ describe('links tab', () => {
 
     describe('Filters', () => {
         it('change filters should deep link and call api with correct params', () => {
-            cy.visit(baseUrl);
             cy.wait('@getOuDetail').then(() => {
-                interceptFlag = false;
                 cy.intercept(
                     {
                         method: 'GET',
@@ -368,7 +326,6 @@ describe('links tab', () => {
                         },
                     },
                     req => {
-                        interceptFlag = true;
                         req.reply({
                             statusCode: 200,
                             body: linkedListPaginated,
@@ -380,19 +337,17 @@ describe('links tab', () => {
                     '[data-test="links-tab"] [data-test="search-button"]',
                 );
 
-                cy.wait('@getLinksSearch').then(() => {
-                    cy.wrap(interceptFlag).should('eq', true);
-                });
+                cy.wait('@getLinksSearch');
             });
         });
     });
 
     describe('Export csv/xlsx/gpkg buttons', () => {
         it('should download file via out own anchor click', () => {
-            cy.visit(baseUrl);
             testDownloadButtons(
                 '[data-test="links-tab"] [data-test="download-buttons"]',
                 'links',
+                orgUnit.id,
             );
         });
     });

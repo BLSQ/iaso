@@ -1,15 +1,12 @@
 import React from 'react';
-import thunk from 'redux-thunk';
-import configureStore from 'redux-mock-store';
 import { Provider } from 'react-redux';
-import { orgUnitsInitialState } from '../../apps/Iaso/domains/orgUnits/reducer';
+import configureStore from 'redux-mock-store';
+import thunk from 'redux-thunk';
 import { instancesInitialState } from '../../apps/Iaso/domains/instances/reducer';
-import { mappingsInitialState } from '../../apps/Iaso/domains/mappings/reducer';
-import { sidebarMenuInitialState } from '../../apps/Iaso/redux/sidebarMenuReducer';
-import { snackBarsInitialState } from '../../apps/Iaso/redux/snackBarsReducer';
-import { routerInitialState } from '../../apps/Iaso/redux/routerReducer';
-import { linksInitialState } from '../../apps/Iaso/domains/links/reducer';
+import { orgUnitsInitialState } from '../../apps/Iaso/domains/orgUnits/reducer';
 import { usersInitialState } from '../../apps/Iaso/domains/users/reducer';
+import { routerInitialState } from '../../apps/Iaso/redux/routerReducer';
+import { sidebarMenuInitialState } from '../../apps/Iaso/redux/sidebarMenuReducer';
 
 import { renderWithIntl } from './intl';
 
@@ -24,11 +21,8 @@ const initialState = {
     sidebar: sidebarMenuInitialState,
     orgUnits: orgUnitsInitialState,
     instances: instancesInitialState,
-    snackBar: snackBarsInitialState,
     routerCustom: routerInitialState,
-    links: linksInitialState,
     users: usersInitialState,
-    mappings: mappingsInitialState,
     app: {
         locale: {
             code: 'en',

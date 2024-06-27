@@ -1,4 +1,4 @@
-import { UseQueryResult, UseMutationResult } from 'react-query';
+import { UseQueryResult, UseMutationResult, useQueryClient } from 'react-query';
 import { UrlParams, ApiParams } from 'bluesquare-components';
 import { getRequest, postRequest, putRequest } from '../../../libs/Api';
 import { useSnackQuery, useSnackMutation } from '../../../libs/apiHooks';
@@ -19,10 +19,15 @@ export const useGetProjectsDropdownOptions = (): UseQueryResult<
     DropdownOptions<string>[],
     Error
 > => {
+    const queryClient = useQueryClient();
     const queryKey: any[] = ['projects-dropdown'];
     return useSnackQuery(queryKey, () => getProjects(), undefined, {
         staleTime: 1000 * 60 * 15, // in MS
         cacheTime: 1000 * 60 * 5,
+        retry: false,
+        onError: () => {
+            queryClient.setQueryData('projects-dropdown', { projects: [] });
+        },
         select: data => {
             if (!data) return [];
             return data.projects.map(project => {

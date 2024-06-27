@@ -206,8 +206,8 @@ module.exports = {
         }),
         // XLSX
         new webpack.IgnorePlugin({ resourceRegExp: /cptable/ }),
-        new webpack.WatchIgnorePlugin({
-            paths: [/\.d\.ts$/],
+        new webpack.IgnorePlugin({
+            resourceRegExp: /^perf_hooks$/,
         }),
     ],
 
@@ -319,4 +319,13 @@ module.exports = {
 
         extensions: ['.js', '.tsx', '.ts'],
     },
+    stats: {
+        errorDetails: true,
+    },
+    ignoreWarnings: [
+        {
+            module: /typescript/,
+            message: /the request of a dependency is an expression/,
+        },
+    ],
 };

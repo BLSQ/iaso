@@ -1,22 +1,21 @@
+import { IntlMessage, useSafeIntl } from 'bluesquare-components';
+import { isArray } from 'lodash';
 import { useRef } from 'react';
-import { useDispatch } from 'react-redux';
+import { defineMessages } from 'react-intl';
 import {
     MutationFunction,
+    QueryFunction,
     QueryKey,
-    useMutation,
     UseMutationOptions,
     UseMutationResult,
+    UseQueryOptions,
+    UseQueryResult,
+    useMutation,
     useQueries,
     useQuery,
     useQueryClient,
-    UseQueryOptions,
-    UseQueryResult,
-    QueryFunction,
 } from 'react-query';
-import { defineMessages } from 'react-intl';
-import { IntlMessage, useSafeIntl } from 'bluesquare-components';
-import { isArray } from 'lodash';
-import { enqueueSnackbar } from '../redux/snackBarsReducer';
+import { openSnackBar } from '../components/snackBars/EventDispatcher';
 import { errorSnackBar, succesfullSnackBar } from '../constants/snackBars';
 
 const MESSAGES = defineMessages({
@@ -119,7 +118,6 @@ const useBaseSnackMutation = <
         };
     } = msg => succesfullSnackBar(undefined, msg),
 ): UseMutationResult<Data, Error, Variables, Context> => {
-    const dispatch = useDispatch();
     const queryClient = useQueryClient();
     const { formatMessage } = useSafeIntl();
     const newOptions: Omit<
@@ -137,9 +135,7 @@ const useBaseSnackMutation = <
                         errorMsg = formatMessage(MESSAGES.permissionError);
                     }
                 }
-                dispatch(
-                    enqueueSnackbar(errorSnackBar(undefined, errorMsg, error)),
-                );
+                openSnackBar(errorSnackBar(undefined, errorMsg, error));
             }
             if (options.onError) {
                 return options.onError(error, variables, context);
@@ -148,9 +144,7 @@ const useBaseSnackMutation = <
         },
         onSuccess: (data, variables, context) => {
             if (snackSuccessMessage && showSucessSnackBar) {
-                dispatch(
-                    enqueueSnackbar(successSnackBar(snackSuccessMessage, data)),
-                );
+                openSnackBar(successSnackBar(snackSuccessMessage, data));
             }
             if (invalidateQueryKey) {
                 if (isArray(invalidateQueryKey)) {
@@ -286,16 +280,11 @@ const useBaseSnackQuery = <
     // Give the option to not dispatch onError, to avoid multiple snackbars when re-using the query with the same query key
     dispatchOnError = true,
 ): UseQueryResult<Data, Error> => {
-    const dispatch = useDispatch();
     const newOptions = {
         ...options,
         onError: error => {
             if (dispatchOnError) {
-                dispatch(
-                    enqueueSnackbar(
-                        errorSnackBar(undefined, snackErrorMsg, error),
-                    ),
-                );
+                openSnackBar(errorSnackBar(undefined, snackErrorMsg, error));
             }
             if (options.onError) {
                 options.onError(error);
@@ -375,7 +364,6 @@ export const useSnackQueries = <QueryFnData>(
         dispatchOnError?: boolean;
     }[],
 ): Array<UseQueryResult<unknown, unknown>> => {
-    const dispatch = useDispatch();
     const newQueries = queries.map(query => {
         const {
             options,
@@ -386,10 +374,8 @@ export const useSnackQueries = <QueryFnData>(
             ...options,
             onError: error => {
                 if (dispatchOnError) {
-                    dispatch(
-                        enqueueSnackbar(
-                            errorSnackBar(undefined, snackErrorMsg, error),
-                        ),
+                    openSnackBar(
+                        errorSnackBar(undefined, snackErrorMsg, error),
                     );
                 }
                 if (options.onError) {

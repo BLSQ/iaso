@@ -16,13 +16,15 @@ from iaso.models import OrgUnit
 class OrgUnitTreeQuerystringSerializer(serializers.Serializer):
     force_full_tree = serializers.BooleanField(required=False)
     parent_id = serializers.IntegerField(required=False)
-    data_source_id = serializers.IntegerField(required=False)
     validation_status = serializers.MultipleChoiceField(choices=OrgUnit.VALIDATION_STATUS_CHOICES)
 
 
 class OrgUnitTreeViewSet(viewsets.ModelViewSet):
     """
-    Explore the OrgUnit tree level by level.
+    This viewset is a bit unusual because it serves two purposes:
+
+    1. explore the OrgUnit tree level by level (list view)
+    2. search the OrgUnit tree with the same parameters (search view)
     """
 
     filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
@@ -34,38 +36,40 @@ class OrgUnitTreeViewSet(viewsets.ModelViewSet):
     serializer_class = OrgUnitTreeSerializer
 
     def get_queryset(self):
+        """
+        The filtering logic is splitted between `get_queryset()` and `OrgUnitTreeFilter`.
+        I wish it was simpler but the filtering logic is quite complex.
+        """
         user = self.request.user
 
         querystring = OrgUnitTreeQuerystringSerializer(data=self.request.query_params)
         querystring.is_valid(raise_exception=True)
         force_full_tree = querystring.validated_data.get("force_full_tree")
         parent_id = querystring.validated_data.get("parent_id")
-        data_source_id = querystring.validated_data.get("data_source_id")
         validation_status = querystring.validated_data.get("validation_status", set())
 
         if user.is_anonymous:
-            if not data_source_id:
-                raise ValidationError({"data_source_id": ["A `data_source_id` must be provided for anonymous users."]})
-            qs = OrgUnit.objects.all()  # `qs` will be filtered by `data_source_id` in `OrgUnitTreeFilter`.
+            qs = OrgUnit.objects.all()
         elif user.is_superuser or force_full_tree:
-            qs = OrgUnit.objects.filter(version=user.iaso_profile.account.default_version)
+            qs = OrgUnit.objects.filter(version__data_source__projects__account=user.iaso_profile.account)
+            qs = qs.select_related("version__data_source")
+            qs = qs.prefetch_related("version__data_source__projects__account")
         else:
             qs = OrgUnit.objects.filter_for_user(user)
 
-        can_view_full_tree = any([user.is_anonymous, user.is_superuser, force_full_tree])
         display_root_level = not parent_id
 
         if display_root_level and self.action == "list":
-            if can_view_full_tree:
+            force_full_tree = force_full_tree or user.is_superuser
+            if not force_full_tree and user.is_authenticated and user.iaso_profile.org_units.exists():
+                # Root level of the tree for this user (the user may be restricted to a subpart of the tree).
+                qs = qs.filter(id__in=user.iaso_profile.org_units.all())
+            else:
                 qs = qs.filter(parent__isnull=True)
-            elif user.is_authenticated:
-                if user.iaso_profile.org_units.exists():
-                    # Root level of the tree for this user (the user may be restricted to a subpart of the tree).
-                    qs = qs.filter(id__in=user.iaso_profile.org_units.all())
 
         qs = qs.only("id", "name", "validation_status", "version", "org_unit_type", "parent")
         qs = qs.order_by("name")
-        qs = qs.select_related("org_unit_type")
+        qs = qs.select_related("org_unit_type", "parent__org_unit_type")
 
         if validation_status == {OrgUnit.VALIDATION_VALID}:
             exclude_filter = ~Q(orgunit__validation_status__in=[OrgUnit.VALIDATION_REJECTED, OrgUnit.VALIDATION_NEW])
@@ -86,8 +90,8 @@ class OrgUnitTreeViewSet(viewsets.ModelViewSet):
         ```
         """
         org_units = self.get_queryset()
+        filtered_org_units = self.filter_queryset(org_units)
         paginator = OrgUnitTreePagination()
-        filtered_org_units = self.filterset_class(request.query_params, org_units).qs
         paginated_org_units = paginator.paginate_queryset(filtered_org_units, request)
         serializer = OrgUnitTreeSerializer(paginated_org_units, many=True, context={"request": request})
         return paginator.get_paginated_response(serializer.data)

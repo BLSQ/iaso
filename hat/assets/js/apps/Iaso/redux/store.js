@@ -5,28 +5,22 @@ import thunk from 'redux-thunk';
 
 import createStore from './createStore';
 
+import { localeMiddleware } from '../domains/app/middleware';
 import appReducer from '../domains/app/reducer';
 import {
-    orgUnitsReducer,
-    orgUnitsInitialState,
-} from '../domains/orgUnits/reducer';
-import {
-    instancesReducer,
     instancesInitialState,
+    instancesReducer,
 } from '../domains/instances/reducer';
 import {
-    mappingReducer,
-    mappingsInitialState,
-} from '../domains/mappings/reducer';
-import {
-    sidebarMenuReducer,
-    sidebarMenuInitialState,
-} from './sidebarMenuReducer';
-import { snackBarsInitialState, snackBarsReducer } from './snackBarsReducer';
+    orgUnitsInitialState,
+    orgUnitsReducer,
+} from '../domains/orgUnits/reducer';
+import { usersInitialState, usersReducer } from '../domains/users/reducer';
 import { routerInitialState, routerReducer } from './routerReducer';
-import { linksInitialState, linksReducer } from '../domains/links/reducer';
-import { usersReducer, usersInitialState } from '../domains/users/reducer';
-import { localeMiddleware } from '../domains/app/middleware';
+import {
+    sidebarMenuInitialState,
+    sidebarMenuReducer,
+} from './sidebarMenuReducer';
 
 // eslint-disable-next-line react-hooks/rules-of-hooks
 // let storeHistory = useRouterHistory(createHistory)({
@@ -38,22 +32,16 @@ const store = createStore(
         sidebar: sidebarMenuInitialState,
         orgUnits: orgUnitsInitialState,
         instances: instancesInitialState,
-        snackBar: snackBarsInitialState,
         routerCustom: routerInitialState,
-        links: linksInitialState,
         users: usersInitialState,
-        mappings: mappingsInitialState,
     },
     {
         app: appReducer,
         sidebar: sidebarMenuReducer,
         orgUnits: orgUnitsReducer,
         instances: instancesReducer,
-        snackBar: snackBarsReducer,
         routerCustom: routerReducer,
-        links: linksReducer,
         users: usersReducer,
-        mappings: mappingReducer,
     },
     [
         // routerMiddleware(storeHistory),
@@ -68,7 +56,8 @@ const store = createStore(
 const { dispatch } = store;
 
 export {
-    store,
     // history,
     dispatch,
+    store
 };
+

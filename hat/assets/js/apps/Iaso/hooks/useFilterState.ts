@@ -1,10 +1,11 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { useRedirectTo, useRedirectToReplace } from 'bluesquare-components';
+import { isEqual } from 'lodash';
 import {
     useGetMultipleOrgUnits,
     useGetOrgUnit,
 } from '../domains/orgUnits/components/TreeView/requests';
 import { OrgUnit } from '../domains/orgUnits/types/orgUnit';
-import { useRedirectTo, useRedirectToReplace } from 'bluesquare-components';
 
 export type FilterState = {
     filters: Record<string, any>;
@@ -22,6 +23,8 @@ type FilterStateParams = {
     params: Record<string, unknown>;
     withPagination?: boolean;
     saveSearchInHistory?: boolean;
+    searchActive?: string; // the key of the params used to activate search. If no such param exists, and the hook is used with a table, the table will load data onMount
+    searchAlwaysEnabled?: boolean; // to be used with searchActive when we want to allow users to launch a search with empty filters
 };
 
 const paginationParams = ['pageSize', 'page', 'order'];
@@ -39,8 +42,10 @@ const removePaginationParams = params => {
 export const useFilterState = ({
     baseUrl,
     params,
+    searchActive,
     withPagination = true,
     saveSearchInHistory = true,
+    searchAlwaysEnabled = false,
 }: FilterStateParams): FilterState => {
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const redirectTo = useRedirectTo();
@@ -50,7 +55,7 @@ export const useFilterState = ({
     });
 
     const handleSearch = useCallback(() => {
-        if (filtersUpdated) {
+        if (filtersUpdated || searchAlwaysEnabled) {
             setFiltersUpdated(false);
             const tempParams = {
                 ...params,
@@ -58,6 +63,9 @@ export const useFilterState = ({
             };
             if (withPagination) {
                 tempParams.page = '1';
+            }
+            if (searchActive && Object.keys(params).includes(searchActive)) {
+                tempParams[searchActive] = 'true';
             }
             if (saveSearchInHistory) {
                 redirectTo(baseUrl, tempParams);
@@ -67,24 +75,40 @@ export const useFilterState = ({
         }
     }, [
         filtersUpdated,
+        searchAlwaysEnabled,
         params,
         filters,
         withPagination,
+        searchActive,
         saveSearchInHistory,
         redirectTo,
         baseUrl,
         redirectToReplace,
     ]);
 
+    const updateFilters = useCallback(
+        newFilters => {
+            const initialFilterValue = removePaginationParams(params);
+            if (!isEqual(newFilters, initialFilterValue)) {
+                setFiltersUpdated(true);
+            }
+            if (isEqual(newFilters, initialFilterValue)) {
+                setFiltersUpdated(false);
+            }
+            setFilters(newFilters);
+        },
+        [params],
+    );
+
     const handleChange = useCallback(
         (key, value) => {
-            setFiltersUpdated(true);
-            setFilters({
+            const newFilters = {
                 ...filters,
-                [key]: value,
-            });
+                [key]: value !== null ? value : undefined,
+            };
+            updateFilters(newFilters);
         },
-        [filters],
+        [filters, updateFilters],
     );
 
     useEffect(() => {
@@ -98,9 +122,9 @@ export const useFilterState = ({
             handleSearch,
             filtersUpdated,
             setFiltersUpdated,
-            setFilters,
+            setFilters: updateFilters,
         };
-    }, [filters, handleChange, handleSearch, filtersUpdated]);
+    }, [filters, handleChange, handleSearch, filtersUpdated, updateFilters]);
 };
 
 type MultiTreeviewArgs = {

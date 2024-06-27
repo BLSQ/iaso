@@ -1,5 +1,5 @@
+import orgUnits from '../fixtures/orgunits/list-tree.json';
 import { getCoordinates } from './utils';
-import orgUnits from '../fixtures/orgunits/list.json';
 
 // ***********************************************
 // This example commands.js shows you how to
@@ -94,19 +94,18 @@ Cypress.Commands.add(
  * @param {number} newOuIndex - index of the new selected ou
  */
 Cypress.Commands.add('fillTreeView', (id, newOuIndex, clear = true) => {
-    cy.intercept(
-        'GET',
-        '/api/orgunits/treesearch/?&rootsForUser=true&defaultVersion=true&validation_status=VALID&ignoreEmptyNames=true',
-        orgUnits,
-    ).as('getTreeview');
+    cy.intercept('GET', '/api/orgunits/tree/**/*', orgUnits).as('getTreeview');
     cy.get(id).as('tree');
     if (clear) {
         cy.get('@tree').find('.clear-tree button').as('clearButton');
         cy.get('@clearButton').click();
     }
-    cy.get('@tree').click();
-    cy.get('.MuiTreeView-root .MuiTreeItem-root').eq(newOuIndex).click();
-    cy.get('.MuiDialog-container button').last().click();
+    cy.get('@tree').find('.open-tree button').as('openButton');
+    cy.get('@openButton').click();
+    cy.wait('@getTreeview').then(() => {
+        cy.get('.MuiTreeView-root .MuiTreeItem-root').eq(newOuIndex).click();
+        cy.get('.MuiDialog-container button').last().click();
+    });
 });
 
 /**

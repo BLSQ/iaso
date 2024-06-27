@@ -1,10 +1,11 @@
+import { Pagination, UrlParams } from 'bluesquare-components';
 import { ReactNode } from 'react';
-import { UrlParams, Pagination } from 'bluesquare-components';
-import { Shape } from './shapes';
+import { GeoJson } from '../../../components/maps/types';
 import { Nullable } from '../../../types/utils';
 import { Instance } from '../../instances/types/instance';
 import { OrgunitType } from './orgunitTypes';
-import { GeoJson } from '../../../components/maps/types';
+import { DataSource } from './dataSources';
+import { Shape } from './shapes';
 
 /* eslint-disable camelcase */
 export type ShortOrgUnit = {
@@ -21,14 +22,30 @@ export type Group = {
     source_version: number;
 };
 
+export type GroupWithDataSource = {
+    created_at: number;
+    updated_at: number;
+    id: number;
+    name: string;
+    source_ref: Nullable<string>;
+    source_version: {
+        id: number;
+        number: number;
+        data_source: Partial<DataSource>;
+    };
+
+    block_of_countries: boolean;
+    org_unit_count: number;
+};
+
 export type OrgunitInititialState = {
     id: number;
     name: string;
     org_unit_type_id?: string;
-    groups?: Array<(unknown & { id: number }) | number>;
+    groups: Array<(unknown & { id: number }) | number>;
     sub_source?: string;
     validation_status?: string;
-    aliases?: string;
+    aliases: string[];
     source_id?: number;
     parent?: OrgUnit;
     source_ref?: string;
@@ -67,7 +84,7 @@ export type OrgUnit = {
     creator: Record<string, any>;
     created_at: number;
     updated_at: number;
-    aliases?: string;
+    aliases?: string[];
     latitude?: number;
     longitude?: number;
     altitude?: number;
@@ -80,6 +97,7 @@ export type OrgUnit = {
     version: number;
     groups: Group[];
     org_unit_type: OrgunitType;
+    org_unit_type_short_name?: string;
     search_index?: number;
     reference_instance_id: Nullable<number>;
     reference_instances: Instance[];

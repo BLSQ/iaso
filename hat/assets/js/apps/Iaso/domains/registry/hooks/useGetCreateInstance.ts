@@ -1,8 +1,6 @@
-import { useDispatch } from 'react-redux';
-
-import { postRequest } from '../../../libs/Api';
-import { enqueueSnackbar } from '../../../redux/snackBarsReducer';
+import { openSnackBar } from '../../../components/snackBars/EventDispatcher';
 import { errorSnackBar } from '../../../constants/snackBars';
+import { postRequest } from '../../../libs/Api';
 
 type Result = {
     // eslint-disable-next-line camelcase
@@ -14,7 +12,6 @@ export const useGetCreateInstance = (
     formId?: string,
     // eslint-disable-next-line no-unused-vars
 ): ((orgUnitId: number) => void) => {
-    const dispatch = useDispatch();
     const createInstance = (orgUnitId: number) => {
         if (formId) {
             postRequest('/api/enketo/create/', {
@@ -26,11 +23,7 @@ export const useGetCreateInstance = (
                     window.location.href = res.edit_url;
                 })
                 .catch(err => {
-                    dispatch(
-                        enqueueSnackbar(
-                            errorSnackBar('fetchEnketoError', null, err),
-                        ),
-                    );
+                    openSnackBar(errorSnackBar('fetchEnketoError', null, err));
                 });
         }
     };

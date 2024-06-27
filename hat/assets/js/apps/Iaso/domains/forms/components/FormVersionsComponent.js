@@ -5,25 +5,14 @@ import {
     useSafeIntl,
     AddButton as AddButtonComponent,
 } from 'bluesquare-components';
-import { fetchList } from '../../../utils/requests';
-
-import SingleTable from '../../../components/tables/SingleTable';
 import FormVersionsDialog from './FormVersionsDialogComponent';
-
 import { baseUrls } from '../../../constants/urls.ts';
-
-import { formVersionsTableColumns } from '../config';
 import MESSAGES from '../messages';
 import { PERIOD_TYPE_DAY } from '../../periods/constants';
+import { FormVersionsTable } from './FormVersionsTable.tsx';
 
 const baseUrl = baseUrls.formDetail;
-const defaultOrder = 'version_id';
-const FormVersionsComponent = ({
-    forceRefresh,
-    setForceRefresh,
-    periodType,
-    formId,
-}) => {
+const FormVersionsComponent = ({ periodType, formId, params }) => {
     const { formatMessage } = useSafeIntl();
     if (!formId) return null;
     const templateUrl = `${
@@ -57,34 +46,13 @@ const FormVersionsComponent = ({
                             dataTestId="open-dialog-button"
                         />
                     )}
-                    onConfirmed={() => setForceRefresh(true)}
                 />
             </Box>
-            <SingleTable
-                isFullHeight={false}
+            <FormVersionsTable
                 baseUrl={baseUrl}
-                endPointPath="formversions"
-                exportButtons={false}
-                dataKey="form_versions"
-                defaultPageSize={20}
-                fetchItems={(d, url, signal) =>
-                    fetchList(
-                        d,
-                        `${url}&form_id=${formId}`,
-                        'fetchFormVersionsError',
-                        'form versions',
-                        signal,
-                    )
-                }
-                defaultSorted={[{ id: defaultOrder, desc: true }]}
-                columns={formVersionsTableColumns(
-                    formatMessage,
-                    setForceRefresh,
-                    formId,
-                    periodType,
-                )}
-                forceRefresh={forceRefresh}
-                onForceRefreshDone={() => setForceRefresh(false)}
+                params={params}
+                formId={formId}
+                periodType={periodType}
             />
         </Box>
     );
@@ -92,16 +60,13 @@ const FormVersionsComponent = ({
 
 FormVersionsComponent.defaultProps = {
     periodType: PERIOD_TYPE_DAY,
-    setForceRefresh: () => null,
-    forceRefresh: false,
     formId: null,
 };
 
 FormVersionsComponent.propTypes = {
     periodType: PropTypes.string,
-    forceRefresh: PropTypes.bool,
-    setForceRefresh: PropTypes.func,
     formId: PropTypes.number,
+    params: PropTypes.object.isRequired,
 };
 
 export default FormVersionsComponent;

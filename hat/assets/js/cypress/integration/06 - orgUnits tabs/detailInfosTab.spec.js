@@ -124,6 +124,9 @@ const mockCalls = (isSaved = false) => {
             fixture: `logs/list-linked-paginated.json`,
         },
     ).as('logs');
+    cy.intercept('GET', `/api/datasources/33/`, {
+        fixture: `datasources/details.json`,
+    });
     cy.intercept('GET', `/api/datasources/?linkedTo=${orgUnit.id}`, {
         fixture: `datasources/details-ou.json`,
     }).as('sources');

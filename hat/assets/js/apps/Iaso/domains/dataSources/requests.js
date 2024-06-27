@@ -1,15 +1,19 @@
 /* eslint-disable no-else-return */
-import React from 'react';
-import { useMutation } from 'react-query';
-import { useDispatch, useSelector } from 'react-redux';
-import { getRequest, iasoFetch, postRequest, putRequest } from 'Iaso/libs/Api';
+import {
+    getRequest,
+    iasoFetch,
+    postRequest,
+    putRequest,
+} from 'Iaso/libs/Api.ts';
 import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks.ts';
-import { dispatch as storeDispatch } from '../../redux/store';
-import { enqueueSnackbar } from '../../redux/snackBarsReducer';
-import { errorSnackBar } from '../../constants/snackBars';
+import React from 'react';
+import { useMutation, useQueryClient } from 'react-query';
+import { useDispatch, useSelector } from 'react-redux';
+import { openSnackBar } from '../../components/snackBars/EventDispatcher.ts';
 import snackBarMessages from '../../components/snackBars/messages';
-import { fetchCurrentUser } from '../users/actions';
+import { errorSnackBar } from '../../constants/snackBars';
 import { getValues } from '../../hooks/form';
+import { fetchCurrentUser } from '../users/actions';
 import MESSAGES from './messages';
 
 /**
@@ -141,13 +145,11 @@ export const csvPreview = async data => {
     return iasoFetch(url, requestSettings)
         .then(result => result.text())
         .catch(error => {
-            storeDispatch(
-                enqueueSnackbar(
-                    errorSnackBar(
-                        'iaso.snackBar.generateCSVError',
-                        snackBarMessages.generateCSVError,
-                        error,
-                    ),
+            openSnackBar(
+                errorSnackBar(
+                    'iaso.snackBar.generateCSVError',
+                    snackBarMessages.generateCSVError,
+                    error,
                 ),
             );
             console.error(`Error while fetching CSV:`, error);
@@ -170,6 +172,7 @@ export const useSaveDataSource = setFieldErrors => {
     const [isSaving, setIsSaving] = React.useState(false);
     const currentUser = useSelector(state => state.users.current);
     const dispatch = useDispatch();
+    const queryClient = useQueryClient();
 
     const { mutateAsync: saveMutation } = useSnackMutation(
         campaignData =>
@@ -199,6 +202,7 @@ export const useSaveDataSource = setFieldErrors => {
             } else {
                 await createMutation(campaignData);
             }
+            queryClient.invalidateQueries('sources');
         } catch (error) {
             // Update error on forms
             if (error.status === 400) {
@@ -329,7 +333,7 @@ export const useCreateSourceVersion = () => {
         mutationFn: saveSourceVersion,
         snackErrorMsg: MESSAGES.newEmptyVersionError,
         snackSuccessMessage: MESSAGES.newEmptyVersionSavedSuccess,
-        invalidateQueryKey: 'dataSourceVersions',
+        invalidateQueryKey: ['dataSourceVersions', 'sources'],
     });
 };
 
@@ -358,6 +362,6 @@ export const usePutSourceVersion = () => {
             }),
         undefined,
         undefined,
-        [['dataSourceVersions'], ['dataSources']],
+        [['dataSourceVersions'], ['dataSources'], ['sources']],
     );
 };

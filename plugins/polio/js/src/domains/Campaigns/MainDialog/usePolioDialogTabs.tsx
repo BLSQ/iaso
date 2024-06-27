@@ -50,15 +50,6 @@ export const usePolioDialogTabs = (
                     ) || compareArraysValues(scopeFormFields, formik.errors),
             },
             {
-                title: formatMessage(MESSAGES.subActivities),
-                form: SubActivitiesForm,
-                key: 'subActivities',
-                disabled:
-                    !formik.values.initial_org_unit ||
-                    formik.values.rounds.length === 0,
-                hasTabError: false,
-            },
-            {
                 title: formatMessage(MESSAGES.scope),
                 form: ScopeForm,
                 disabled:
@@ -69,6 +60,15 @@ export const usePolioDialogTabs = (
                     formik.errors,
                 ),
                 key: 'scope',
+            },
+            {
+                title: formatMessage(MESSAGES.subActivities),
+                form: SubActivitiesForm,
+                key: 'subActivities',
+                disabled:
+                    !formik.values.initial_org_unit ||
+                    formik.values.rounds.length === 0,
+                hasTabError: false,
             },
         ];
         const polioTabs = [

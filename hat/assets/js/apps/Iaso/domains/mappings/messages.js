@@ -164,10 +164,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.mappings.label.proposedNewMapping',
         defaultMessage: 'Proposed new mapping',
     },
-    hesabuHint: {
-        id: 'iaso.mappings.label.hesabuHint',
-        defaultMessage: 'Hesabu hint, this element is used by',
-    },
     options: {
         id: 'iaso.mappings.label.options',
         defaultMessage: 'Options :',

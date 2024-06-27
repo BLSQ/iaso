@@ -6,12 +6,11 @@ import {
     Table,
     LoadingSpinner,
     useSafeIntl,
-    AddButton,
     UrlParams,
     useRedirectTo,
 } from 'bluesquare-components';
 import TopBar from '../../components/nav/TopBarComponent';
-import { ProjectsDialog } from './components/ProjectsDialog';
+import { CreateProjectDialog } from './components/CreateEditProjectDialog';
 import { useGetProjectsPaginated, useSave } from './hooks/requests';
 import { columns, baseUrl } from './config';
 import MESSAGES from './messages';
@@ -50,15 +49,10 @@ export const Projects: FunctionComponent = () => {
                     alignItems="center"
                     className={classes.marginTop}
                 >
-                    <ProjectsDialog
-                        titleMessage={MESSAGES.create}
-                        renderTrigger={({ openDialog }) => (
-                            <AddButton
-                                dataTestId="add-project-button"
-                                onClick={openDialog}
-                            />
-                        )}
+                    <CreateProjectDialog
                         saveProject={saveProject}
+                        dialogType="create"
+                        iconProps={{}}
                     />
                 </Grid>
                 {/* @ts-ignore */}

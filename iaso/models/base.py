@@ -494,6 +494,9 @@ class Mapping(models.Model):
     def is_event_tracker(self):
         return self.mapping_type == EVENT_TRACKER
 
+    def is_simple_event(self):
+        return self.mapping_type == EVENT
+
     def as_dict(self):
         return {
             "id": self.id,

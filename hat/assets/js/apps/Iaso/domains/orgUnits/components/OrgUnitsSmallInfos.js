@@ -1,15 +1,12 @@
-import React from 'react';
 import PropTypes from 'prop-types';
+import React from 'react';
 
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
-import {
-    getOrgUnitParentsString,
-    useGetStatusMessage,
-    getOrgUnitGroups,
-} from '../utils';
+import { getOrgUnitGroups, useGetStatusMessage } from '../utils';
 
 import OrgUnitsSmallInfosRow from './OrgUnitsSmallInfosRow';
+import { getOrgUnitParentsString } from './TreeView/utils.tsx';
 
 const OrgUnitsSmallInfos = ({ orgUnit }) => {
     const { formatMessage } = useSafeIntl();

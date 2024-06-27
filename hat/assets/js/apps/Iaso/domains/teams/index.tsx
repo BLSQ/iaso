@@ -11,9 +11,9 @@ import { useGetTeams } from './hooks/requests/useGetTeams';
 import { useDeleteTeam } from './hooks/requests/useDeleteTeam';
 import { baseUrls } from '../../constants/urls';
 import { teamColumns } from './config';
-import { useSingleTableParams } from '../../components/tables/SingleTable';
 import { useParamsObject } from '../../routing/hooks/useParamsObject';
 import MESSAGES from './messages';
+import { useActiveParams } from '../../routing/hooks/useActiveParams';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -21,8 +21,8 @@ const useStyles = makeStyles(theme => ({
 
 const baseUrl = baseUrls.teams;
 export const Teams: FunctionComponent = () => {
-    const params = useParamsObject(baseUrl) as unknown as TeamParams;
-    const apiParams = useSingleTableParams(params);
+    const params = useParamsObject(baseUrl);
+    const apiParams = useActiveParams(params) as unknown as TeamParams;
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetTeams(apiParams);

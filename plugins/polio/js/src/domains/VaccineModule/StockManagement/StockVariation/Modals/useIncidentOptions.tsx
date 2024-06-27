@@ -9,6 +9,8 @@ export const LOSSES = 'losses';
 export const RETURN_TO_SUPPLIER = 'return';
 export const STEALING = 'stealing';
 export const PHYSICAL_INVENTORY = 'physical_inventory';
+export const BROKEN = 'broken';
+export const UNREADABLE_LABEL = 'unreadable_label';
 
 // from backend model.
 // class StockCorrectionChoices(models.TextChoices):
@@ -25,6 +27,8 @@ type IncidentType =
     | 'losses'
     | 'stealing'
     | 'physical_inventory'
+    | 'broken'
+    | 'unreadable_label'
     | 'RETURN_TO_SUPPLIER';
 
 export const useIncidentOptions = (): DropdownOptions<IncidentType>[] => {
@@ -55,6 +59,15 @@ export const useIncidentOptions = (): DropdownOptions<IncidentType>[] => {
                 label: formatMessage(MESSAGES[PHYSICAL_INVENTORY]),
                 value: PHYSICAL_INVENTORY,
             },
+            {
+                label: formatMessage(MESSAGES[BROKEN]),
+                value: BROKEN,
+            },
+            {
+                label: formatMessage(MESSAGES[UNREADABLE_LABEL]),
+                value: UNREADABLE_LABEL,
+            },
+
         ].sort(
             (
                 option1: DropdownOptions<IncidentType>,

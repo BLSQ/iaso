@@ -14,8 +14,6 @@ export const useGetUserRolesDropDown = (): UseQueryResult<
         queryFn: () => getRequest('/api/userroles/'),
         snackErrorMsg: MESSAGES.userRolesDropDownError,
         options: {
-            staleTime: 1000 * 60 * 15, // in MS
-            cacheTime: 1000 * 60 * 5,
             select: data => {
                 return (
                     data?.results?.map((userRole: UserRole) => {

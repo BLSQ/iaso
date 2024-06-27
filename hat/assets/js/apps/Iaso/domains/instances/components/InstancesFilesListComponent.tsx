@@ -1,13 +1,12 @@
-import React, { useState, FunctionComponent, useMemo } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { FunctionComponent, useMemo, useState } from 'react';
 
-import { Tabs, Tab, Box } from '@mui/material';
+import { Box, Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 
 import { useSafeIntl } from 'bluesquare-components';
 import ImageGallery from '../../../components/dialogs/ImageGalleryComponent';
-import LazyImagesList from '../../../components/files/LazyImagesListComponent';
 import DocumentsList from '../../../components/files/DocumentsListComponent';
+import LazyImagesList from '../../../components/files/LazyImagesListComponent';
 import VideosList from '../../../components/files/VideosListComponent';
 import InstancePopover from './InstancePopoverComponent';
 
@@ -64,7 +63,6 @@ const InstancesFilesList: FunctionComponent<Props> = ({
 }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [viewerIsOpen, setViewerIsOpen] = useState<boolean>(false);
     const sortedFiles: SortedFiles = useMemo(
@@ -84,11 +82,9 @@ const InstancesFilesList: FunctionComponent<Props> = ({
             if (fetchDetails || fetchingFile) {
                 setCurrentInstance(undefined);
                 if (file) {
-                    fetchInstanceDetail(dispatch, file.itemId).then(
-                        newInstanceDetail => {
-                            setCurrentInstance(newInstanceDetail);
-                        },
-                    );
+                    fetchInstanceDetail(file.itemId).then(newInstanceDetail => {
+                        setCurrentInstance(newInstanceDetail);
+                    });
                 }
             }
         }

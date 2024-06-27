@@ -5,7 +5,7 @@ import {
 } from '../../../constants/types';
 import { useGetCampaignTypes } from './api/useGetCampaignTypes';
 
-const isPolioCampaign = (
+export const isPolioCampaign = (
     campaign: CampaignFormValues | undefined,
     campaignTypes?: CampaignTypesDropdown[],
 ): boolean => {

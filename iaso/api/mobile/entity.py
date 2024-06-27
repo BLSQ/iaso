@@ -32,15 +32,22 @@ def filter_for_mobile_entity(queryset, request):
     return queryset
 
 
-def get_queryset_for_user_and_app_id(user, app_id):
+def get_queryset_for_app_id(user, app_id):
     try:
-        queryset = Entity.objects.filter_for_user_and_app_id(user, app_id)
+        return Entity.objects.filter_for_app_id(user, app_id)
     except ProjectNotFoundError as e:
         raise NotFound(e.message)
     except UserNotAuthError as e:
         raise AuthenticationFailed(e.message)
 
-    return queryset
+
+def get_queryset_for_user_and_app_id(user, app_id):
+    try:
+        return Entity.objects.filter_for_user_and_app_id(user, app_id)
+    except ProjectNotFoundError as e:
+        raise NotFound(e.message)
+    except UserNotAuthError as e:
+        raise AuthenticationFailed(e.message)
 
 
 class LargeResultsSetPagination(PageNumberPagination):

@@ -60,7 +60,8 @@ class OrgUnitTreeViewSet(viewsets.ModelViewSet):
         display_root_level = not parent_id
 
         if display_root_level and self.action == "list":
-            if user.is_authenticated and user.iaso_profile.org_units.exists():
+            force_full_tree = force_full_tree or user.is_superuser
+            if not force_full_tree and user.is_authenticated and user.iaso_profile.org_units.exists():
                 # Root level of the tree for this user (the user may be restricted to a subpart of the tree).
                 qs = qs.filter(id__in=user.iaso_profile.org_units.all())
             else:

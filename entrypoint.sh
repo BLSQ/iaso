@@ -19,7 +19,13 @@ show_help() {
 }
 
 export PYTHONPATH="/opt/app:$PYTHONPATH"
-export DJANGO_SETTINGS_MODULE=hat.settings
+
+if [ -e hat/local_settings.py ]
+then
+    export DJANGO_SETTINGS_MODULE=hat.local_settings
+else
+    export DJANGO_SETTINGS_MODULE=hat.settings
+fi
 
 case "$1" in
   "start")

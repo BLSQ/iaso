@@ -49,13 +49,24 @@ export const useFormATableColumns = (
                 sortable: true,
                 Cell: DateCell,
             },
+            // {
+            //     Header: formatMessage(MESSAGES.forma_unusable_vials),
+            //     accessor: 'unusable_vials',
+            //     id: 'unusable_vials',
+            //     sortable: true,
+            //     Cell: settings => (
+            //         <NumberCell value={settings.row.original.unusable_vials} />
+            //     ),
+            // },
             {
-                Header: formatMessage(MESSAGES.forma_unusable_vials),
-                accessor: 'unusable_vials',
-                id: 'unusable_vials',
+                Header: formatMessage(MESSAGES.forma_vials_used),
+                accessor: 'usable_vials_used',
+                id: 'usable_vials_used',
                 sortable: true,
                 Cell: settings => (
-                    <NumberCell value={settings.row.original.unusable_vials} />
+                    <NumberCell
+                        value={settings.row.original.usable_vials_used}
+                    />
                 ),
             },
             {

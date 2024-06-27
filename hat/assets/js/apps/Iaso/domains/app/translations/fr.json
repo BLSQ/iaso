@@ -619,6 +619,7 @@
     "iaso.label.planningList": "Liste des plannings",
     "iaso.label.polio": "Polio",
     "iaso.label.project": "Projet",
+    "iaso.label.project.featureFlags": "Options du projet",
     "iaso.label.projects": "Projets",
     "iaso.label.published": "Publié",
     "iaso.label.publishingStatus": "Statut de publication",

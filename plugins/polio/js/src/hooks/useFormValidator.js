@@ -2,8 +2,9 @@
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
 import * as yup from 'yup';
-import MESSAGES from '../constants/messages';
+import MESSAGES from '../constants/messages.ts';
 import { dateFormat } from '../domains/Calendar/campaignCalendar/constants.ts';
+import { AGE_TYPES } from '../domains/Campaigns/Rounds/RoundForm.tsx';
 
 const getRounds = context => {
     return context?.from[context.from.length - 1]?.value?.rounds || [];
@@ -209,6 +210,57 @@ yup.addMethod(
     },
 );
 
+yup.addMethod(
+    yup.number,
+    'isValidAgeMin',
+    function isValidAgeMin(formatMessage) {
+        return this.test('isValidAgeMin', '', (value, context) => {
+            const { path, createError, parent } = context;
+            const ageMax = parent.age_max;
+
+            let errorMessage;
+
+            if (ageMax <= value) {
+                errorMessage = formatMessage(
+                    MESSAGES.ageMinGreaterOrEqualToAgeMin,
+                );
+            }
+            if (errorMessage) {
+                return createError({
+                    path,
+                    message: errorMessage,
+                });
+            }
+            return true;
+        });
+    },
+);
+yup.addMethod(
+    yup.number,
+    'isValidAgeMax',
+    function isValidAgeMax(formatMessage) {
+        return this.test('isValidAgeMax', '', (value, context) => {
+            const { path, createError, parent } = context;
+            const ageMin = parent.age_min;
+
+            let errorMessage;
+
+            if (ageMin >= value) {
+                errorMessage = formatMessage(
+                    MESSAGES.ageMaxSmallerOrEqualToAgeMin,
+                );
+            }
+            if (errorMessage) {
+                return createError({
+                    path,
+                    message: errorMessage,
+                });
+            }
+            return true;
+        });
+    },
+);
+
 const useRoundShape = () => {
     const { formatMessage } = useSafeIntl();
 
@@ -226,6 +278,21 @@ const useRoundShape = () => {
             .nullable()
             .required(formatMessage(MESSAGES.fieldRequired))
             .isValidRoundEndDate(formatMessage),
+        age_type: yup.string().oneOf(AGE_TYPES).nullable(),
+        age_min: yup
+            .number()
+            .integer(formatMessage(MESSAGES.positiveInteger))
+            .min(0, formatMessage(MESSAGES.positiveInteger))
+            .typeError(formatMessage(MESSAGES.positiveInteger))
+            .isValidAgeMin(formatMessage)
+            .nullable(),
+        age_max: yup
+            .number()
+            .integer(formatMessage(MESSAGES.positiveInteger))
+            .min(1, formatMessage(MESSAGES.positiveInteger))
+            .typeError(formatMessage(MESSAGES.positiveInteger))
+            .isValidAgeMax(formatMessage)
+            .nullable(),
         mop_up_started_at: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))

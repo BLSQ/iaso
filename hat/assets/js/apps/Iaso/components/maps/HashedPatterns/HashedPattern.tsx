@@ -7,7 +7,15 @@ type Props = {
     strokeWidth?: number;
     angle?: number;
 };
-
+/**
+ *
+ * @param id - a CSS id (without the `#`)
+ * @param strokeColor - stripe color. defaults to black
+ * @param fillColor - background color, effectively a second stroke color. Defaults to white
+ * @param strokeWidth - number. Defaults to 20
+ * @param angle - the angle of the stripes. Defaults to 45
+ * @returns
+ */
 export const HashedPattern: FunctionComponent<Props> = ({
     id,
     fillColor = 'white',

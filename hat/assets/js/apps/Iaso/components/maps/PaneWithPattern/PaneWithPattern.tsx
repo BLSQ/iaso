@@ -8,6 +8,19 @@ type Props = {
     children: ReactElement;
 };
 
+/**
+ *
+ * @param name - Unique name that will be passed down to the underlying `Pane`component
+ * @param patterns - patterns to be used as shape background. Requires matching `patternIds`.See `GreyHashedPattern` for an example of acceptable pattern component
+ * @param patternIds - array of ids to be passed to the `patterns`. Both arrays should be of matching length or the patterns won't be rendered.
+ *
+ *
+ * A wrapper for react-leaflet `Pane` component. If passed `patterns` and `patternId` it will enabled using these patterns
+ * as background for shapes passed e.g to a child `GeoJson` component. Passing patterns and patternIDs separately enables storing the ids in constants
+ * and using a style function to conditionally use patterns as background
+ *
+ * @returns
+ */
 export const PaneWithPattern: FunctionComponent<Props> = ({
     name,
     patterns = [],

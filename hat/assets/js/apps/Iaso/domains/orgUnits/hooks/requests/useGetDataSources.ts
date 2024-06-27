@@ -4,9 +4,9 @@ import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 
-import { DropdownOptions } from '../../../../types/utils';
+import { DropdownOptionsWithOriginal } from '../../../../types/utils';
 
-import { DataSourcesApi } from '../../types/dataSources';
+import { DataSource, DataSourcesApi } from '../../types/dataSources';
 
 import { staleTime } from '../../config';
 
@@ -15,7 +15,7 @@ const getDataSources = (): Promise<DataSourcesApi> => {
 };
 
 export const useGetDataSources = (): UseQueryResult<
-    DropdownOptions<string>[],
+    DropdownOptionsWithOriginal<DataSource>[],
     Error
 > => {
     const queryKey: any[] = ['sources'];

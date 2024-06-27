@@ -107,6 +107,7 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
             page: 1,
             searches,
         };
+        console.log('searches', searches);
         onSearch(tempParams);
     }, [params, locationLimit, searches, onSearch]);
 

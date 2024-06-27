@@ -1,5 +1,10 @@
 from rest_framework import routers
 
+# TOFIX: Still haven't understood the exact problem but this should be
+# the first import to avoid some 'BudgetProcess' errors in tests:
+# `AttributeError: 'str' object has no attribute '_meta'`
+from plugins.polio.budget.api import BudgetProcessViewSet, BudgetStepViewSet, WorkflowViewSet
+
 from plugins.polio.api.campaigns.campaign_groups import CampaignGroupViewSet
 from plugins.polio.api.campaigns.campaigns import CampaignViewSet
 from plugins.polio.api.campaigns.subactivities import SubActivityViewSet
@@ -30,7 +35,6 @@ from plugins.polio.api.rounds.reasons_for_delay import ReasonForDelayViewSet
 from plugins.polio.api.rounds.round import RoundViewSet
 from plugins.polio.api.rounds.round_date_history import RoundDateHistoryEntryViewset
 from plugins.polio.api.vaccines.vaccine_authorization import VaccineAuthorizationViewSet
-from plugins.polio.budget.api import BudgetProcessViewSet, BudgetStepViewSet, WorkflowViewSet
 from plugins.polio.tasks.api.create_refresh_preparedness_data import RefreshPreparednessLaucherViewSet
 from plugins.polio.api.vaccines.supply_chain import (
     VaccineRequestFormViewSet,

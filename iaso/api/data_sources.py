@@ -3,16 +3,18 @@ import logging
 
 import dhis2
 import requests
-from rest_framework import serializers, permissions
+from django.db.models import Count
+from rest_framework import permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
-from iaso.models import DataSource, OrgUnit, SourceVersion, ExternalCredentials
-from .common import ModelViewSet
-from ..tasks.dhis2_ou_importer import get_api
 from hat.menupermissions import models as permission
+from iaso.models import DataSource, ExternalCredentials, OrgUnit, SourceVersion
+
 from ..dhis2.url_helper import clean_url
+from ..tasks.dhis2_ou_importer import get_api
+from .common import ModelViewSet
 
 
 class DataSourceSerializer(serializers.ModelSerializer):
@@ -244,12 +246,18 @@ class DataSourceViewSet(ModelViewSet):
         linked_to = self.kwargs.get("linkedTo", None)
         profile = self.request.user.iaso_profile
         order = self.request.GET.get("order", "name").split(",")
+        filter_empty_versions = self.request.GET.get("filter_empty_versions", "false").lower() == "true"
+
         sources = (
             DataSource.objects.select_related("default_version", "credentials")
             .prefetch_related("projects", "versions")
             .filter(projects__account=profile.account)
             .distinct()
         )
+
+        if filter_empty_versions:
+            sources = sources.annotate(version_count=Count("versions")).filter(version_count__gt=0)
+
         if linked_to:
             org_unit = OrgUnit.objects.get(pk=linked_to)
             useful_sources = org_unit.source_set.values_list("algorithm_run__version_2__data_source_id", flat=True)

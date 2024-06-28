@@ -7,6 +7,7 @@ type Version = {
     created_at: number;
     updated_at: number;
     org_units_count: number;
+    is_default?: boolean;
 };
 
 type Project = {

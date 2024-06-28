@@ -1236,6 +1236,8 @@ class IncidentReport(models.Model):
         RETURN = "return", _("Return")
         STEALING = "stealing", _("Stealing")
         PHYSICAL_INVENTORY = "physical_inventory", _("Physical Inventory")
+        BROKEN = "broken", _("Broken")
+        UNREADABLE_LABEL = "unreadable_label", _("Unreadable label")
 
     vaccine_stock = models.ForeignKey(VaccineStock, on_delete=models.CASCADE)
 

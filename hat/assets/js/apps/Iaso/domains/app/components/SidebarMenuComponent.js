@@ -100,6 +100,7 @@ const SidebarMenu = ({ classes, location }) => {
     const menuItems = useMenuItems();
     const theme = useTheme();
     const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
+    const userGuideUrl = currentUser.account?.user_manual_path || DOC_URL;
 
     return (
         <Drawer anchor="left" open={isOpen} onClose={toggleSidebar}>
@@ -182,7 +183,7 @@ const SidebarMenu = ({ classes, location }) => {
                         className={`${classes.userName} ${classes.userManual}`}
                     >
                         <a
-                            href={DOC_URL}
+                            href={userGuideUrl}
                             target="_blank"
                             rel="noreferrer"
                             className={classes.link}
@@ -208,6 +209,7 @@ const SidebarMenu = ({ classes, location }) => {
 SidebarMenu.propTypes = {
     classes: PropTypes.object.isRequired,
     location: PropTypes.object.isRequired,
+    activeLocale: PropTypes.object.isRequired,
 };
 
 export default withStyles(styles)(SidebarMenu);

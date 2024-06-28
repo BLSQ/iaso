@@ -269,6 +269,7 @@ function FormChild({ descriptor, data, showQuestionKey, showNote, files }) {
                 />
             ) : null;
         case 'photo':
+        case 'image':
             return (
                 <PhotoField
                     descriptor={descriptor}

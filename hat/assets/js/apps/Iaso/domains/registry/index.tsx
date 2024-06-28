@@ -115,7 +115,7 @@ export const Registry: FunctionComponent = () => {
 
     const handleOrgUnitChange = useCallback(
         (newOrgUnit: OrgUnit) => {
-            if (newOrgUnit) {
+            if (newOrgUnit?.id) {
                 redirectTo(`/${baseUrl}`, {
                     orgUnitId: `${newOrgUnit.id}`,
                 });
@@ -129,12 +129,15 @@ export const Registry: FunctionComponent = () => {
             const newParams = {
                 ...params,
             };
-            if (newChildren) {
+            // Need to check the id because clicking on the marker will somehow still pass
+            // an object with the coordinates
+            if (newChildren?.id) {
                 setSelectedChildrenId(`${newChildren.id}`);
                 newParams.orgUnitChildrenId = `${newChildren.id}`;
             } else {
                 setSelectedChildrenId(undefined);
-                newParams.orgUnitChildrenId = undefined;
+                // newParams.orgUnitChildrenId = undefined;
+                delete newParams.orgUnitChildrenId;
             }
             newParams.submissionId = undefined;
             redirectToReplace(`/${baseUrl}`, newParams);

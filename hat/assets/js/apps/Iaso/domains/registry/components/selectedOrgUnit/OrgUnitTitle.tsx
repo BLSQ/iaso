@@ -1,13 +1,13 @@
 import AddIcon from '@mui/icons-material/Add';
 import { Box, Grid, Typography } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import { IconButton, commonStyles } from 'bluesquare-components';
+import { IconButton } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
 
 import { baseUrls } from '../../../../constants/urls';
 import MESSAGES from '../../messages';
 
 import { DisplayIfUserHasPerm } from '../../../../components/DisplayIfUserHasPerm';
+import { SxStyles } from '../../../../types/general';
 import * as Permissions from '../../../../utils/permissions';
 import { OrgUnit } from '../../../orgUnits/types/orgUnit';
 import { RegistryParams } from '../../types';
@@ -18,45 +18,45 @@ type Props = {
     params: RegistryParams;
 };
 
-const useStyles = makeStyles(theme => ({
-    ...commonStyles(theme),
-    paperTitle: {
-        padding: theme.spacing(2),
+const styles: SxStyles = {
+    titleContainer: {
+        height: '55px',
+        overflow: 'hidden',
         display: 'flex',
+        alignItems: 'center',
+    },
+    title: {
+        fontSize: '20px',
+        lineHeight: '24px',
+        marginLeft: theme => theme.spacing(2),
     },
     paperTitleButtonContainer: {
         position: 'relative',
     },
     paperTitleButton: {
         position: 'absolute',
-        right: -theme.spacing(1),
-        top: -theme.spacing(1),
+        right: theme => theme.spacing(1),
+        top: theme => theme.spacing(1),
     },
-}));
+};
 
 export const OrgUnitTitle: FunctionComponent<Props> = ({ orgUnit, params }) => {
-    const classes: Record<string, string> = useStyles();
-
     const isRootOrgUnit = params.orgUnitId === `${orgUnit?.id}`;
     return (
-        <Grid container className={classes.paperTitle}>
-            <Grid xs={8} item>
-                <Typography
-                    color="primary"
-                    variant="h6"
-                    className={classes.title}
-                >
+        <Grid container spacing={0}>
+            <Grid xs={9} item sx={styles.titleContainer}>
+                <Typography color="primary" variant="h6" sx={styles.title}>
                     {orgUnit.name} ({orgUnit.org_unit_type_name})
                 </Typography>
             </Grid>
             <Grid
-                xs={4}
+                xs={3}
                 item
                 container
                 justifyContent="flex-end"
-                className={classes.paperTitleButtonContainer}
+                sx={styles.paperTitleButtonContainer}
             >
-                <Box className={classes.paperTitleButton}>
+                <Box sx={styles.paperTitleButton}>
                     <DisplayIfUserHasPerm
                         permissions={[Permissions.REGISTRY_WRITE]}
                     >

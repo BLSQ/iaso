@@ -15,7 +15,7 @@ export const MESSAGES = defineMessages({
     },
     goToRevision: {
         id: 'iaso.logs.goToRevision',
-        defaultMessage: 'Keep all',
+        defaultMessage: 'Restore all fields',
     },
     goToRevisionQuestion: {
         id: 'iaso.logs.goToRevisionQuestion',
@@ -27,7 +27,7 @@ export const MESSAGES = defineMessages({
     },
     goToRevisionChanges: {
         id: 'iaso.logs.goToRevisionChanges',
-        defaultMessage: 'Keep only changes',
+        defaultMessage: 'Restore only fields updated by this version',
     },
     goToRevisionTextChanges: {
         id: 'iaso.logs.goToRevisionTextChanges',

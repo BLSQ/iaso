@@ -79,7 +79,7 @@ SENTRY_URL = os.environ.get("SENTRY_URL", "")
 USE_CELERY = os.environ.get("USE_CELERY", "")
 
 # It is possible to deactivate password login for the API, the website and the admin using this environment variable
-DISABLE_PASSWORD_LOGINS = os.environ.get("DISABLE_PASSWORD_LOGINS", "").lower() == "true"
+DISABLE_PASSWORD_LOGINS = False  # os.environ.get("DISABLE_PASSWORD_LOGINS", "").lower() == "true"
 
 # env variables allowing to configure the cache used by Iaso. By default, it's using a table in Postgres
 # to setup Redis, use django_redis.cache.RedisCache as CACHE_BACKEND and something like "redis://127.0.0.1:6379" as CACHE_LOCATION
@@ -286,7 +286,7 @@ DATABASES = {
         "PORT": DB_PORT,
     },
 }
-
+WFP_AUTH_CLIENT_ID = os.environ.get("WFP_AUTH_CLIENT_ID", False)
 """
 Enable the SQL  dashboard Feature
 see docs/SQL Dashboard feature.md
@@ -308,6 +308,20 @@ elif os.environ.get("DB_READONLY_USERNAME"):
         "NAME": DB_NAME,
         "USER": os.environ.get("DB_READONLY_USERNAME"),
         "PASSWORD": os.environ.get("DB_READONLY_PASSWORD", None),
+        "HOST": DB_HOST,
+        "PORT": DB_PORT,
+        "OPTIONS": {"options": "-c default_transaction_read_only=on -c statement_timeout=10000"},  # type: ignore
+    }
+    INSTALLED_APPS.append("django_sql_dashboard")
+    INSTALLED_APPS.append("django_sql_dashboard_export")
+    # https://django-sql-dashboard.datasette.io/en/stable/setup.html#additional-settings
+    DASHBOARD_ENABLE_FULL_EXPORT = True  # allow csv export on /explore
+elif WFP_AUTH_CLIENT_ID:
+    DATABASES["dashboard"] = {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": DB_NAME,
+        "USER": DB_USERNAME,
+        "PASSWORD": DB_PASSWORD,
         "HOST": DB_HOST,
         "PORT": DB_PORT,
         "OPTIONS": {"options": "-c default_transaction_read_only=on -c statement_timeout=10000"},  # type: ignore
@@ -601,7 +615,7 @@ CODE_CHALLENGE = generate_pkce()
 
 SOCIALACCOUNT_PROVIDERS = {}
 
-WFP_AUTH_CLIENT_ID = os.environ.get("WFP_AUTH_CLIENT_ID", False)
+
 ACTIVATE_SOCIAL_ACCOUNT = WFP_AUTH_CLIENT_ID is not False  # for now, only WFP uses social_accounts
 if WFP_AUTH_CLIENT_ID:
     # Activate WFP login

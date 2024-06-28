@@ -197,7 +197,7 @@ class ChronogramTemplateTaskTestCase(TestCase):
         self.assertEqual(str(self.chronogram_template_3), f"{self.chronogram_template_3.id} - Account")
 
     def test_create_chronogram(self):
-        with self.assertNumQueries(4):
+        with self.assertNumQueries(3):
             chronogram = ChronogramTemplateTask.objects.create_chronogram(round=self.round, created_by=self.user)
 
         self.assertEqual(chronogram.round, self.round)

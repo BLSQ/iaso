@@ -116,6 +116,29 @@ class ChronogramTaskTestCase(TestCase):
         self.chronogram_task_3.save()
         self.assertEqual(self.chronogram.num_task_delayed, 0)
 
+    def test_percentage_of_completion(self):
+        for i in range(3):
+            ChronogramTask.objects.create(
+                period=Period.BEFORE,
+                status=ChronogramTask.Status.DONE,
+                chronogram=self.chronogram,
+                start_offset_in_days=i,
+                user_in_charge=self.user,
+            )
+        ChronogramTask.objects.create(
+            period=Period.DURING,
+            status=ChronogramTask.Status.DONE,
+            chronogram=self.chronogram,
+            start_offset_in_days=0,
+            user_in_charge=self.user,
+        )
+
+        with self.assertNumQueries(1):
+            percentage_of_completion = self.chronogram.percentage_of_completion
+            self.assertEqual(percentage_of_completion[Period.BEFORE], 75)
+            self.assertEqual(percentage_of_completion[Period.DURING], 50)
+            self.assertEqual(percentage_of_completion[Period.AFTER], 0)
+
 
 @time_machine.travel(TODAY, tick=False)
 class ChronogramTemplateTaskTestCase(TestCase):

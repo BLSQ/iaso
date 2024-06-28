@@ -66,6 +66,7 @@ class ChronogramSerializer(DynamicFieldsModelSerializer, serializers.ModelSerial
     round_number = serializers.CharField(source="round.number")
     round_start_date = serializers.CharField(source="round.started_at")
     is_on_time = serializers.BooleanField(read_only=True)
+    percentage_of_completion = serializers.DictField(read_only=True)
     num_task_delayed = serializers.IntegerField(read_only=True)
     tasks = ChronogramTaskSerializer(many=True, read_only=True)
     created_by = UserNestedSerializer(read_only=True)
@@ -80,6 +81,7 @@ class ChronogramSerializer(DynamicFieldsModelSerializer, serializers.ModelSerial
             "round_start_date",
             "is_on_time",
             "num_task_delayed",
+            "percentage_of_completion",
             "tasks",
             "created_at",
             "created_by",
@@ -93,6 +95,7 @@ class ChronogramSerializer(DynamicFieldsModelSerializer, serializers.ModelSerial
             "round_start_date",
             "is_on_time",
             "num_task_delayed",
+            "percentage_of_completion",
         ]
         extra_kwargs = {
             "created_at": {"read_only": True},

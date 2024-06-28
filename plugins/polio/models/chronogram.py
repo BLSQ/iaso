@@ -53,6 +53,25 @@ class Chronogram(SoftDeletableModel):
     def is_on_time(self) -> bool:
         return self.num_task_delayed == 0
 
+    @property
+    def percentage_of_completion(self) -> dict:
+        tasks = self.tasks.all()
+
+        tasks_before = [t for t in tasks if t.period == Period.BEFORE]
+        tasks_before_done = [t for t in tasks_before if t.status == self.tasks.model.Status.DONE]
+
+        tasks_during = [t for t in tasks if t.period == Period.DURING]
+        tasks_during_done = [t for t in tasks_during if t.status == self.tasks.model.Status.DONE]
+
+        tasks_after = [t for t in tasks if t.period == Period.AFTER]
+        tasks_after_done = [t for t in tasks_after if t.status == self.tasks.model.Status.DONE]
+
+        return {
+            Period.BEFORE.value: int(len(tasks_before_done) / len(tasks_before) * 100) if tasks_before else 0,
+            Period.DURING.value: int(len(tasks_during_done) / len(tasks_during) * 100) if tasks_during else 0,
+            Period.AFTER.value: int(len(tasks_after_done) / len(tasks_after) * 100) if tasks_after else 0,
+        }
+
 
 class ChronogramTaskQuerySet(models.QuerySet):
     def valid(self):

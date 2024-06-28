@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
 
-from plugins.polio.models import Chronogram, ChronogramTask, ChronogramTemplateTask
+from plugins.polio.models import Chronogram, ChronogramTask, ChronogramTemplateTask, Round, Campaign
 from iaso.api.common import DynamicFieldsModelSerializer
 
 
@@ -134,3 +134,18 @@ class ChronogramTemplateTaskSerializer(DynamicFieldsModelSerializer, serializers
         representation["created_by"] = UserNestedSerializer(instance.created_by, read_only=True).data
         representation["updated_by"] = UserNestedSerializer(instance.updated_by, read_only=True).data
         return representation
+
+
+class ChronogramCreateSerializer(serializers.Serializer):
+    round = serializers.PrimaryKeyRelatedField(queryset=Round.objects.all())
+
+    def validate_round(self, round: Round) -> Round:
+        user = self.context["request"].user
+        user_rounds = Campaign.polio_objects.filter_for_user(user).values_list("rounds", flat=True)
+        if round.pk not in user_rounds:
+            raise serializers.ValidationError("Unauthorized round for this user.")
+        return round
+
+    def save(self, **kwargs) -> Chronogram:
+        round = self.validated_data["round"]
+        return ChronogramTemplateTask.objects.create_chronogram(round=round, created_by=kwargs["created_by"])

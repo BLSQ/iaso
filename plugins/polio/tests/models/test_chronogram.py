@@ -5,7 +5,7 @@ import time_machine
 from iaso import models as m
 from iaso.test import TestCase
 
-from plugins.polio.models import Campaign, Round, Chronogram, ChronogramTask
+from plugins.polio.models import Campaign, Round, Chronogram, ChronogramTask, CampaignType
 from plugins.polio.models.chronogram import Period, ChronogramTemplateTask
 
 
@@ -35,6 +35,8 @@ class ChronogramTaskTestCase(TestCase):
 
         # Campaign.
         cls.campaign = Campaign.objects.create(obr_name="Campaign OBR name", account=cls.account)
+        cls.polio_type = CampaignType.objects.get(name=CampaignType.POLIO)
+        cls.campaign.campaign_types.add(cls.polio_type)
 
         # Round.
         round_start = (TODAY - datetime.timedelta(days=10)).date()
@@ -163,6 +165,8 @@ class ChronogramTemplateTaskTestCase(TestCase):
 
         # Campaign.
         cls.campaign = Campaign.objects.create(obr_name="Campaign OBR name", account=cls.account)
+        cls.polio_type = CampaignType.objects.get(name=CampaignType.POLIO)
+        cls.campaign.campaign_types.add(cls.polio_type)
 
         # Round.
         cls.round = Round.objects.create(number=1, campaign=cls.campaign, started_at=TODAY)
@@ -194,9 +198,7 @@ class ChronogramTemplateTaskTestCase(TestCase):
 
     def test_create_chronogram(self):
         with self.assertNumQueries(4):
-            chronogram = ChronogramTemplateTask.objects.create_chronogram(
-                round=self.round, account=self.account, created_by=self.user
-            )
+            chronogram = ChronogramTemplateTask.objects.create_chronogram(round=self.round, created_by=self.user)
 
         self.assertEqual(chronogram.round, self.round)
         self.assertEqual(chronogram.created_by, self.user)

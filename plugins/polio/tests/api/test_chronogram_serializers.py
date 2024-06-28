@@ -1,12 +1,17 @@
 import datetime
 
 import time_machine
+from rest_framework.test import APIRequestFactory
 
 from iaso import models as m
 from iaso.test import TestCase
 
-from plugins.polio.api.chronogram.serializers import ChronogramTaskSerializer, ChronogramTemplateTaskSerializer
-from plugins.polio.models import Campaign, Round, Chronogram, ChronogramTask
+from plugins.polio.api.chronogram.serializers import (
+    ChronogramTaskSerializer,
+    ChronogramTemplateTaskSerializer,
+    ChronogramCreateSerializer,
+)
+from plugins.polio.models import Campaign, Round, Chronogram, ChronogramTask, CampaignType
 from plugins.polio.models.chronogram import Period, ChronogramTemplateTask
 
 
@@ -33,6 +38,9 @@ class ChronogramTaskSerializerTestCase(TestCase):
         )
 
         cls.campaign = Campaign.objects.create(obr_name="Campaign OBR name", account=cls.account)
+        cls.polio_type = CampaignType.objects.get(name=CampaignType.POLIO)
+        cls.campaign.campaign_types.add(cls.polio_type)
+
         cls.round = Round.objects.create(number=1, campaign=cls.campaign, started_at=TODAY.date())
         cls.chronogram = Chronogram.objects.create(round=cls.round, created_by=cls.user)
         cls.chronogram_task = ChronogramTask.objects.create(
@@ -163,3 +171,82 @@ class ChronogramTemplateTaskSerializerTestCase(TestCase):
         self.assertEqual(chronogram_template_task.start_offset_in_days, 10)
         self.assertEqual(chronogram_template_task.created_by, self.user)
         self.assertEqual(chronogram_template_task.created_at, TODAY)
+
+
+@time_machine.travel(TODAY, tick=False)
+class ChronogramCreateSerializerTestCase(TestCase):
+    """
+    Test ChronogramCreateSerializer.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        # User.
+        cls.data_source = m.DataSource.objects.create(name="Data Source")
+        cls.source_version = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
+        cls.account = m.Account.objects.create(name="Account", default_version=cls.source_version)
+        cls.user = cls.create_user_with_profile(
+            email="john@polio.org",
+            username="test",
+            first_name="John",
+            last_name="Doe",
+            account=cls.account,
+            permissions=["iaso_polio_budget"],
+        )
+
+        # Campaign.
+        cls.campaign = Campaign.objects.create(obr_name="Campaign OBR name", account=cls.account)
+        cls.polio_type = CampaignType.objects.get(name=CampaignType.POLIO)
+        cls.campaign.campaign_types.add(cls.polio_type)
+
+        # Round.
+        cls.round = Round.objects.create(number=1, campaign=cls.campaign, started_at=TODAY)
+
+        # Chronogram templates.
+        cls.chronogram_template_1 = ChronogramTemplateTask.objects.create(
+            account=cls.account,
+            period=Period.BEFORE,
+            description="Identifier les solutions pour palier aux gaps",
+            start_offset_in_days=-20,
+        )
+        cls.chronogram_template_2 = ChronogramTemplateTask.objects.create(
+            account=cls.account,
+            period=Period.DURING,
+            description="Analyse quotidienne des tableaux de bord et rétro information",
+            start_offset_in_days=0,
+        )
+        cls.chronogram_template_3 = ChronogramTemplateTask.objects.create(
+            account=cls.account,
+            period=Period.AFTER,
+            description="Elaboration de l'inventaire physique des vaccins à tous les niveaux",
+            start_offset_in_days=20,
+        )
+
+    def test_deserialize(self):
+        request = APIRequestFactory().get("/")
+        request.user = self.user
+
+        data = {
+            "round": self.round.pk,
+        }
+        serializer = ChronogramCreateSerializer(data=data, context={"request": request})
+        self.assertTrue(serializer.is_valid())
+
+        chronogram = serializer.save(created_by=self.user)
+        self.assertEqual(chronogram.round, self.round)
+        self.assertEqual(chronogram.created_by, self.user)
+        self.assertEqual(chronogram.created_at, TODAY)
+        self.assertEqual(3, chronogram.tasks.count())
+
+    def test_validate_round(self):
+        request = APIRequestFactory().get("/")
+        request.user = self.user
+
+        round = Round.objects.create(number=666)
+
+        data = {
+            "round": round.id,
+        }
+        serializer = ChronogramCreateSerializer(data=data, context={"request": request})
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("Unauthorized round for this user.", serializer.errors["round"][0])

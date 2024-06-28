@@ -213,6 +213,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.vvm_reached_discard_point',
         defaultMessage: 'VM reached discard point',
     },
+    broken: {
+        id: 'iaso.polio.label.broken',
+        defaultMessage: 'Broken',
+    },
+    unreadable_label: {
+        id: 'iaso.polio.label.unreadable_label',
+        defaultMessage: 'Unreadable Label',
+    },
     stockCorrection: {
         id: 'iaso.polio.label.stockCorrection',
         defaultMessage: 'Stock correction',

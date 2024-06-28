@@ -1,8 +1,8 @@
 import React, { FunctionComponent } from 'react';
 
+import ArrowLeft from '@mui/icons-material/ArrowCircleLeftRounded';
+import ArrowRight from '@mui/icons-material/ArrowCircleRightRounded';
 import Close from '@mui/icons-material/Close';
-import ArrowLeft from '@mui/icons-material/KeyboardArrowLeft';
-import ArrowRight from '@mui/icons-material/KeyboardArrowRight';
 
 import {
     Box,
@@ -14,6 +14,20 @@ import {
 import { ShortFile } from '../../domains/instances/types/instance';
 import { ImageGalleryLink } from './ImageGalleryLink';
 
+const whiteBg = {
+    '&:before': {
+        zIndex: -1,
+        content: '""',
+        position: 'absolute',
+        top: '18px',
+        left: '18px',
+        width: '30px',
+        height: '30px',
+        borderRadius: '100%',
+        backgroundColor: 'white',
+    },
+};
+
 const styles = {
     paper: {
         boxShadow: 'none',
@@ -22,7 +36,7 @@ const styles = {
         width: '80%',
     },
     content: {
-        padding: '2vh !important',
+        padding: theme => theme.spacing(5, 2, 5, 2),
         borderRadius: 0,
         height: '90vh',
         overflow: 'hidden',
@@ -31,8 +45,8 @@ const styles = {
         justifyContent: 'center',
     },
     image: {
-        width: '110%',
-        height: '95%',
+        width: 'auto',
+        height: '100%',
         objectFit: 'contain' as const, // Explicitly cast the string to the 'contain' literal type
         maxWidth: '80vw',
     },
@@ -42,6 +56,7 @@ const styles = {
         left: theme => theme.spacing(2),
         cursor: 'pointer',
         marginTop: '-35px',
+        ...whiteBg,
     },
     nextButton: {
         position: 'fixed',
@@ -49,6 +64,7 @@ const styles = {
         right: theme => theme.spacing(2),
         cursor: 'pointer',
         marginTop: '-35px',
+        ...whiteBg,
     },
     closeButton: {
         position: 'fixed',
@@ -62,22 +78,25 @@ const styles = {
     },
     navIcon: {
         fontSize: '50px',
-        color: 'white',
+        color: theme => theme.palette.secondary.main,
+        '&:hover': {
+            color: theme => theme.palette.secondary.dark,
+        },
     },
     closeIcon: {
         fontSize: '30px',
         color: 'white',
     },
     count: {
-        color: 'white',
         position: 'fixed',
         bottom: theme => theme.spacing(2),
         right: theme => theme.spacing(2),
+        color: 'white',
     },
     infos: {
         color: 'white',
         position: 'absolute',
-        top: theme => theme.spacing(1),
+        top: theme => theme.spacing(0.5),
         right: theme => theme.spacing(1),
     },
 };
@@ -123,7 +142,6 @@ const ImageGallery: FunctionComponent<Props> = ({
             <DialogContent sx={styles.content}>
                 {currentIndex > 0 && (
                     <IconButton
-                        color="primary"
                         sx={styles.prevButton}
                         onClick={() => setCurrentIndex(currentIndex - 1)}
                     >
@@ -132,7 +150,6 @@ const ImageGallery: FunctionComponent<Props> = ({
                 )}
                 {currentIndex + 1 < imageList.length && (
                     <IconButton
-                        color="primary"
                         sx={styles.nextButton}
                         onClick={() => setCurrentIndex(currentIndex + 1)}
                     >
@@ -149,7 +166,7 @@ const ImageGallery: FunctionComponent<Props> = ({
                 <ImageGalleryLink url={url} urlLabel={urlLabel} />
                 <Box sx={styles.infos}>{getExtraInfos(currentImg)}</Box>
                 {currentIndex + 1 > 1 && (
-                    <Typography color="primary" variant="h6" sx={styles.count}>
+                    <Typography variant="h6" sx={styles.count}>
                         {`${currentIndex + 1} / ${imageList.length}`}
                     </Typography>
                 )}

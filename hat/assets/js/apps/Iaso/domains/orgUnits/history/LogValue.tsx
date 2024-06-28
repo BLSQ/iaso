@@ -17,7 +17,7 @@ type Props = {
     value?: string | number;
 };
 
-const wktToGeoJSON = (value: string | number): GeoJson | undefined => {
+export const wktToGeoJSON = (value: string | number): GeoJson | undefined => {
     return terraformer(value.toString().replace('SRID=4326;', ''));
 };
 

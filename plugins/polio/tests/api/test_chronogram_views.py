@@ -240,7 +240,9 @@ class ChronogramViewSetTestCase(APITestCase):
             permissions=[iaso_permission._POLIO_CHRONOGRAM],
         )
 
-        cls.campaign = Campaign.objects.create(obr_name="Campaign OBR name", account=cls.account)
+        cls.campaign = Campaign.objects.create(
+            obr_name="Campaign OBR name", account=cls.account, country=m.OrgUnit.objects.create(name="Cameroon")
+        )
         cls.polio_type = CampaignType.objects.get(name=CampaignType.POLIO)
         cls.campaign.campaign_types.add(cls.polio_type)
 
@@ -329,3 +331,26 @@ class ChronogramViewSetTestCase(APITestCase):
         self.client.force_authenticate(self.user)
         response = self.client.delete(f"/api/polio/chronograms/{self.chronogram.pk}/", format="json")
         self.assertEqual(response.status_code, 405)
+
+    def test_available_rounds_for_create(self):
+        self.client.force_login(self.user)
+
+        response = self.client.get("/api/polio/chronograms/available_rounds_for_create/")
+        response_data = self.assertJSONResponse(response, 200)
+
+        expected_data = {
+            "countries": [{"value": self.campaign.country.id, "label": "Cameroon"}],
+            "campaigns": [
+                {"value": str(self.campaign.id), "label": "Campaign OBR name", "country_id": self.campaign.country.id}
+            ],
+            "rounds": [
+                # Only round 1 should be available.
+                {
+                    "value": self.round_1.id,
+                    "label": 1,
+                    "campaign_id": str(self.campaign.id),
+                    "target_population": None,
+                },
+            ],
+        }
+        self.assertEqual(response_data, expected_data)

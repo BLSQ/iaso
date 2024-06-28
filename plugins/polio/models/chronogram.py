@@ -139,11 +139,12 @@ class ChronogramTemplateQuerySet(models.QuerySet):
 
 
 class ChronogramTemplateTaskManager(models.Manager):
-    def create_chronogram(self, round: Round, account: Account, created_by: User) -> Chronogram:
-        chronogram_template_tasks = self.model.objects.filter(account=account)
+    def create_chronogram(self, round: Round, created_by: User) -> Chronogram:
+        account_id = created_by.iaso_profile.account_id
+        chronogram_template_tasks = self.model.objects.filter(account_id=account_id)
 
         if not chronogram_template_tasks.exists():
-            raise ValueError(f"No chronogram template for account #{account.id}")
+            raise ValueError(f"No chronogram template for account #{account_id}")
 
         chronogram = Chronogram.objects.create(round=round, created_by=created_by)
 

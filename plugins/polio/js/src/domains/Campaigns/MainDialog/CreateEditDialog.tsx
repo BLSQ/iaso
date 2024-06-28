@@ -101,6 +101,8 @@ const CreateEditDialog: FunctionComponent<Props> = ({
             handleSubmit(values, helpers);
         },
     });
+    console.log('errors', formik.values.obr_name, formik.errors);
+    console.log('values', formik.values.rounds);
     const handleSubmit = useCallback(
         (values, helpers) => {
             saveCampaign(convertEmptyStringToNull(values), {

@@ -44,6 +44,9 @@ class ChronogramViewSet(viewsets.ModelViewSet):
         )
 
     def create(self, request, *args, **kwargs):
+        """
+        Create a `Chronogram` and populate it with `ChronogramTemplateTask` objects (if any).
+        """
         serializer = ChronogramCreateSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         serializer.save(created_by=self.request.user)

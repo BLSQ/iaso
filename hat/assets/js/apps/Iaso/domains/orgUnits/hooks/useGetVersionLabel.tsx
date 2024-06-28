@@ -1,8 +1,15 @@
 import { useSafeIntl } from 'bluesquare-components';
 import { useCallback } from 'react';
 import { DropdownOptionsWithOriginal } from '../../../types/utils';
+import { Version } from '../../dataSources/types/dataSources';
 import MESSAGES from '../messages';
 import { DataSource } from '../types/dataSources';
+
+export const getVersionLabel = (version: Version, defaultMessage: string) => {
+    return `${version.number}${
+        version.description ? ` - ${version.description}` : ''
+    }${version.is_default ? ` (${defaultMessage})` : ''}`;
+};
 
 export const useGetVersionLabel = (
     dataSources?: DropdownOptionsWithOriginal<DataSource>[],
@@ -22,9 +29,10 @@ export const useGetVersionLabel = (
                     const isDefault =
                         dataSource.original.default_version?.id ===
                         versionIdNumber;
-                    return `${version.number}${
-                        version.description ? ` - ${version.description}` : ''
-                    }${isDefault ? ` (${formatMessage(MESSAGES.default)})` : ''}`;
+                    return getVersionLabel(
+                        { ...version, is_default: isDefault },
+                        formatMessage(MESSAGES.default),
+                    );
                 }
             }
             return '';

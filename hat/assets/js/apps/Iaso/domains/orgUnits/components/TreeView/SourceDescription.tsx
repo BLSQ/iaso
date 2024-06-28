@@ -23,8 +23,8 @@ export const SourceDescription: FunctionComponent<Props> = ({
                 {sourceInfos?.sourceName || textPlaceholder}
                 {' - '}
                 {formatMessage(MESSAGES.version)}:{' '}
-                {sourceInfos?.versionNumber !== undefined
-                    ? sourceInfos.versionNumber
+                {sourceInfos?.versionLabel !== undefined
+                    ? sourceInfos.versionLabel
                     : textPlaceholder}
             </Typography>
         </Box>

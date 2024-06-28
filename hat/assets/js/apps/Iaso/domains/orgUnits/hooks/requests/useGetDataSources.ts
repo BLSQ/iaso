@@ -10,19 +10,22 @@ import { DataSource, DataSourcesApi } from '../../types/dataSources';
 
 import { staleTime } from '../../config';
 
-const getDataSources = (): Promise<DataSourcesApi> => {
-    return getRequest('/api/datasources/');
+const getDataSources = (
+    filterEmptyVersions = false,
+): Promise<DataSourcesApi> => {
+    return getRequest(
+        `/api/datasources/?filter_empty_versions=${filterEmptyVersions}`,
+    );
 };
 
-export const useGetDataSources = (): UseQueryResult<
-    DropdownOptionsWithOriginal<DataSource>[],
-    Error
-> => {
+export const useGetDataSources = (
+    filterEmptyVersions = false,
+): UseQueryResult<DropdownOptionsWithOriginal<DataSource>[], Error> => {
     const queryKey: any[] = ['sources'];
     // @ts-ignore
     return useSnackQuery({
         queryKey,
-        queryFn: () => getDataSources(),
+        queryFn: () => getDataSources(filterEmptyVersions),
         options: {
             staleTime,
             select: data => {

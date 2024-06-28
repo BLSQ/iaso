@@ -33,6 +33,7 @@ import { InputWithInfos } from '../../../components/InputWithInfos';
 import { DropdownOptionsWithOriginal } from '../../../types/utils';
 import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
 import { useGetOrgUnitTypes } from '../hooks/requests/useGetOrgUnitTypes';
+import { useGetVersionLabel } from '../hooks/useGetVersionLabel';
 import { useInstancesOptions } from '../hooks/utils/useInstancesOptions';
 import MESSAGES from '../messages';
 import { DataSource } from '../types/dataSources';
@@ -110,7 +111,9 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     }, [currentSearch?.levels]);
 
     const { data: dataSources, isFetching: isFetchingDataSources } =
-        useGetDataSources();
+        useGetDataSources(true);
+
+    const getVersionLabel = useGetVersionLabel(dataSources);
     const { data: projects, isFetching: isFetchingProjects } =
         useGetProjectsDropDown();
     const { data: groups, isFetching: isFetchingGroups } = useGetGroups({
@@ -213,7 +216,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Set the version to the dataSources default version when changing source
+    // Set the version to the dataSources default version when changing source, or the first version if no default is set
     useEffect(() => {
         if (dataSourceId) {
             const dataSource = dataSources?.find(
@@ -226,7 +229,10 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                 )
             ) {
                 const selectedVersion =
-                    dataSource?.original?.default_version?.id;
+                    dataSource.original?.default_version?.id ||
+                    dataSource.original?.versions[
+                        dataSource.original.versions.length - 1
+                    ]?.id;
                 setSourceVersionId(selectedVersion);
             }
         }
@@ -244,11 +250,11 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                 .filter(src => src.original?.id === dataSourceId)[0]
                 ?.original?.versions.sort((a, b) => a.number - b.number)
                 .map(version => ({
-                    label: version.number.toString(),
+                    label: getVersionLabel(version.id),
                     value: version.id.toString(),
                 })) ?? []
         );
-    }, [dataSourceId, dataSources]);
+    }, [dataSourceId, dataSources, getVersionLabel]);
 
     return (
         <Grid container spacing={2}>

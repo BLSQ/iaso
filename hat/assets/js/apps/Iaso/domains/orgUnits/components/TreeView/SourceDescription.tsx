@@ -24,7 +24,7 @@ export const SourceDescription: FunctionComponent<Props> = ({
                 {' - '}
                 {formatMessage(MESSAGES.version)}:{' '}
                 {sourceInfos?.versionNumber !== undefined
-                    ? sourceInfos?.versionNumber
+                    ? sourceInfos.versionNumber
                     : textPlaceholder}
             </Typography>
         </Box>

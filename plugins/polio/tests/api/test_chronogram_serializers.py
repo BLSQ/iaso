@@ -238,15 +238,24 @@ class ChronogramCreateSerializerTestCase(TestCase):
         self.assertEqual(chronogram.created_at, TODAY)
         self.assertEqual(3, chronogram.tasks.count())
 
-    def test_validate_round(self):
+    def test_validate_round_unauthorized(self):
         request = APIRequestFactory().get("/")
         request.user = self.user
-
         round = Round.objects.create(number=666)
-
         data = {
             "round": round.id,
         }
         serializer = ChronogramCreateSerializer(data=data, context={"request": request})
         self.assertFalse(serializer.is_valid())
         self.assertIn("Unauthorized round for this user.", serializer.errors["round"][0])
+
+    def test_validate_round_already_has_a_chronogram(self):
+        request = APIRequestFactory().get("/")
+        request.user = self.user
+        Chronogram.objects.create(round=self.round, created_by=self.user)
+        data = {
+            "round": self.round.id,
+        }
+        serializer = ChronogramCreateSerializer(data=data, context={"request": request})
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("A chronogram with this round already exists.", serializer.errors["round"][0])

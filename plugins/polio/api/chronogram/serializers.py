@@ -140,10 +140,14 @@ class ChronogramCreateSerializer(serializers.Serializer):
     round = serializers.PrimaryKeyRelatedField(queryset=Round.objects.all())
 
     def validate_round(self, round: Round) -> Round:
+        if Chronogram.objects.filter(round=round).exists():
+            raise serializers.ValidationError("A chronogram with this round already exists.")
+
         user = self.context["request"].user
         user_rounds = Campaign.polio_objects.filter_for_user(user).values_list("rounds", flat=True)
         if round.pk not in user_rounds:
             raise serializers.ValidationError("Unauthorized round for this user.")
+
         return round
 
     def save(self, **kwargs) -> Chronogram:

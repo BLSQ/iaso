@@ -225,7 +225,10 @@ export const useFormsTableColumns = ({ orgUnitId, showDeleted }) => {
                             {!showDeleted && (
                                 <>
                                     <DisplayIfUserHasPerm
-                                        permissions={[Permission.SUBMISSIONS]}
+                                        permissions={[
+                                            Permission.SUBMISSIONS,
+                                            Permission.SUBMISSIONS_UPDATE,
+                                        ]}
                                     >
                                         <IconButton
                                             url={`${urlToInstances}`}

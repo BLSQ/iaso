@@ -32,7 +32,6 @@ import MESSAGES from '../../../messages';
 
 import 'leaflet-draw/dist/leaflet.draw.css';
 import { useGetBounds } from './useGetBounds';
-import { userHasPermission } from '../../../../users/utils';
 import { useCurrentUser } from '../../../../../utils/usersUtils';
 import { useFormState } from '../../../../../hooks/form';
 import { getAncestorWithGeojson, initialState } from './utils';
@@ -49,6 +48,7 @@ import { Tile } from '../../../../../components/maps/tools/TilesSwitchControl';
 import tiles from '../../../../../constants/mapTiles';
 import { CustomZoomControl } from '../../../../../components/maps/tools/CustomZoomControl';
 import * as Permission from '../../../../../utils/permissions';
+import { DisplayIfUserHasPerm } from '../../../../../components/DisplayIfUserHasPerm';
 
 export const zoom = 5;
 export const padding = [75, 75];
@@ -422,16 +422,18 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                                 setStateField('orgUnitTypesSelected', outypes);
                             }}
                         />
-                        {userHasPermission(
-                            Permission.SUBMISSIONS,
-                            currentUser,
-                        ) && (
+                        <DisplayIfUserHasPerm
+                            permissions={[
+                                Permission.SUBMISSIONS,
+                                Permission.SUBMISSIONS_UPDATE,
+                            ]}
+                        >
                             <FormsFilterComponent
                                 currentOrgUnit={currentOrgUnit}
                                 formsSelected={state.formsSelected.value}
                                 setFormsSelected={handleFormFilter}
                             />
-                        )}
+                        </DisplayIfUserHasPerm>
                     </>
                 }
                 editOptionComponent={

@@ -218,3 +218,114 @@ class ChronogramTemplateTaskViewSetTestCase(APITestCase):
 
         self.chronogram_template_task.refresh_from_db()
         self.assertEqual(self.chronogram_template_task.deleted_at, TODAY)  # Soft deleted.
+
+
+@time_machine.travel(TODAY, tick=False)
+class ChronogramViewSetTestCase(APITestCase):
+    """
+    Test ChronogramViewSet.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.data_source = m.DataSource.objects.create(name="Data Source")
+        cls.source_version = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
+        cls.account = m.Account.objects.create(name="Account", default_version=cls.source_version)
+        cls.user = cls.create_user_with_profile(
+            email="john@polio.org",
+            username="test",
+            first_name="John",
+            last_name="Doe",
+            account=cls.account,
+            permissions=[iaso_permission._POLIO_CHRONOGRAM],
+        )
+
+        cls.campaign = Campaign.objects.create(obr_name="Campaign OBR name", account=cls.account)
+        cls.polio_type = CampaignType.objects.get(name=CampaignType.POLIO)
+        cls.campaign.campaign_types.add(cls.polio_type)
+
+        cls.round_1 = Round.objects.create(number=1, campaign=cls.campaign, started_at=TODAY.date())
+        cls.round_2 = Round.objects.create(number=2, campaign=cls.campaign, started_at=TODAY.date())
+
+        cls.chronogram = Chronogram.objects.create(round=cls.round_2, created_by=cls.user)
+        ChronogramTask.objects.create(
+            period=Period.BEFORE,
+            chronogram=cls.chronogram,
+            description="Foo",
+            start_offset_in_days=0,
+            user_in_charge=cls.user,
+        )
+        ChronogramTask.objects.create(
+            period=Period.DURING,
+            chronogram=cls.chronogram,
+            description="Bar",
+            start_offset_in_days=0,
+            user_in_charge=cls.user,
+        )
+        ChronogramTask.objects.create(
+            period=Period.AFTER,
+            chronogram=cls.chronogram,
+            description="Bar",
+            start_offset_in_days=0,
+            user_in_charge=cls.user,
+        )
+
+    def test_get_without_auth(self):
+        response = self.client.get(f"/api/polio/chronograms/{self.chronogram.pk}/")
+        self.assertJSONResponse(response, 401)
+
+    def test_get_without_perm(self):
+        self.user.user_permissions.clear()
+        self.client.force_authenticate(self.user)
+        response = self.client.get(f"/api/polio/chronograms/{self.chronogram.pk}/")
+        self.assertJSONResponse(response, 403)
+
+    def test_get_ok(self):
+        self.client.force_authenticate(self.user)
+
+        with self.assertNumQueries(7):
+            response = self.client.get(f"/api/polio/chronograms/{self.chronogram.pk}/")
+            self.assertJSONResponse(response, 200)
+            self.assertEqual(
+                response.data,
+                {
+                    "id": self.chronogram.pk,
+                    "campaign_obr_name": "Campaign OBR name",
+                    "round_number": "2",
+                    "round_start_date": "2024-06-27",
+                    "is_on_time": True,
+                    "num_task_delayed": 0,
+                    "percentage_of_completion": {"BEFORE": 0, "DURING": 0, "AFTER": 0},
+                },
+            )
+
+    def test_get_all_fields_ok(self):
+        self.client.force_authenticate(self.user)
+
+        with self.assertNumQueries(7):
+            response = self.client.get(f"/api/polio/chronograms/{self.chronogram.pk}/?fields=:all")
+            self.assertJSONResponse(response, 200)
+            self.assertEqual(len(response.data["tasks"]), 3)
+
+    def test_create_ok(self):
+        self.client.force_authenticate(self.user)
+        data = {
+            "round": self.round_1.pk,
+        }
+        response = self.client.post("/api/polio/chronograms/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        chronogram = Chronogram.objects.get(round=self.round_1)
+        self.assertEqual(chronogram.created_by, self.user)
+        self.assertEqual(chronogram.created_at, TODAY)
+        self.assertEqual(chronogram.tasks.count(), 0)
+
+    def test_update_should_be_forbidden(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.put(f"/api/polio/chronograms/{self.chronogram.pk}/", data={}, format="json")
+        self.assertEqual(response.status_code, 405)
+
+    def test_delete_should_be_forbidden(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.delete(f"/api/polio/chronograms/{self.chronogram.pk}/", format="json")
+        self.assertEqual(response.status_code, 405)

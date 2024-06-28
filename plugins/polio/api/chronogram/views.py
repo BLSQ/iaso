@@ -2,8 +2,9 @@ import django_filters
 
 from django.db.models import QuerySet
 
-from rest_framework import filters
+from rest_framework import filters, status
 from rest_framework import viewsets
+from rest_framework.response import Response
 
 from iaso.api.common import Paginator
 
@@ -13,6 +14,7 @@ from plugins.polio.api.chronogram.serializers import (
     ChronogramSerializer,
     ChronogramTaskSerializer,
     ChronogramTemplateTaskSerializer,
+    ChronogramCreateSerializer,
 )
 from plugins.polio.models import Campaign, Chronogram, ChronogramTask, ChronogramTemplateTask
 
@@ -24,7 +26,7 @@ class ChronogramPagination(Paginator):
 class ChronogramViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
     filterset_class = ChronogramFilter
-    http_method_names = ["get", "options", "head", "trace"]
+    http_method_names = ["get", "options", "head", "post", "trace"]
     pagination_class = ChronogramPagination
     permission_classes = [HasChronogramPermission]
     serializer_class = ChronogramSerializer
@@ -39,6 +41,13 @@ class ChronogramViewSet(viewsets.ModelViewSet):
             .prefetch_related("tasks__user_in_charge", "tasks__created_by", "tasks__updated_by")
             .order_by("created_at")
         )
+
+    def create(self, request, *args, **kwargs):
+        serializer = ChronogramCreateSerializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save(created_by=self.request.user)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 class ChronogramTaskViewSet(viewsets.ModelViewSet):

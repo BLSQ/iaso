@@ -49,6 +49,7 @@ _PLANNING_READ = "iaso_planning_read"
 _POLIO = "iaso_polio"
 _POLIO_BUDGET = "iaso_polio_budget"
 _POLIO_BUDGET_ADMIN = "iaso_polio_budget_admin"
+_POLIO_CHRONOGRAM = "iaso_polio_chronogram"
 _POLIO_CONFIG = "iaso_polio_config"
 _POLIO_NOTIFICATIONS = "iaso_polio_notifications"
 _PROJECTS = "iaso_projects"
@@ -135,6 +136,7 @@ PLANNING_READ = _PREFIX + _PLANNING_READ
 POLIO = _PREFIX + _POLIO
 POLIO_BUDGET = _PREFIX + _POLIO_BUDGET
 POLIO_BUDGET_ADMIN = _PREFIX + _POLIO_BUDGET_ADMIN
+POLIO_CHRONOGRAM = _PREFIX + _POLIO_CHRONOGRAM
 POLIO_CONFIG = _PREFIX + _POLIO_CONFIG
 POLIO_NOTIFICATIONS = _PREFIX + _POLIO_NOTIFICATIONS
 POLIO_VACCINE_AUTHORIZATIONS_ADMIN = _PREFIX + _POLIO_VACCINE_AUTHORIZATIONS_ADMIN
@@ -238,6 +240,7 @@ class CustomPermissionSupport(models.Model):
             (_DATA_TASKS, _("Tâches")),
             (_POLIO, _("Polio")),
             (_POLIO_CONFIG, _("Polio config")),
+            (_POLIO_CHRONOGRAM, _("Polio chronogram")),
             (_POLIO_NOTIFICATIONS, _("Polio notifications")),
             (_SUBMISSIONS, _("Soumissions")),
             (_SUBMISSIONS_UPDATE, _("Editer soumissions")),

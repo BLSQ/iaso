@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.utils.functional import cached_property
 from django.utils.translation import gettext as _
+from django.utils import timezone
 
 from iaso.models import Account
 from iaso.utils.models.soft_deletable import SoftDeletableModel
@@ -43,6 +44,33 @@ class Chronogram(SoftDeletableModel):
 
     def __str__(self) -> str:
         return f"{self.id} - {self.round.campaign.obr_name} - Round {self.round.number}"
+
+    @property
+    def num_task_delayed(self) -> int:
+        return len([t for t in self.tasks.all() if t.delay_in_days < 0])
+
+    @property
+    def is_on_time(self) -> bool:
+        return self.num_task_delayed == 0
+
+    @property
+    def percentage_of_completion(self) -> dict:
+        tasks = self.tasks.all()
+
+        tasks_before = [t for t in tasks if t.period == Period.BEFORE]
+        tasks_before_done = [t for t in tasks_before if t.status == self.tasks.model.Status.DONE]
+
+        tasks_during = [t for t in tasks if t.period == Period.DURING]
+        tasks_during_done = [t for t in tasks_during if t.status == self.tasks.model.Status.DONE]
+
+        tasks_after = [t for t in tasks if t.period == Period.AFTER]
+        tasks_after_done = [t for t in tasks_after if t.status == self.tasks.model.Status.DONE]
+
+        return {
+            Period.BEFORE.value: int(len(tasks_before_done) / len(tasks_before) * 100) if tasks_before else 0,
+            Period.DURING.value: int(len(tasks_during_done) / len(tasks_during) * 100) if tasks_during else 0,
+            Period.AFTER.value: int(len(tasks_after_done) / len(tasks_after) * 100) if tasks_after else 0,
+        }
 
 
 class ChronogramTaskQuerySet(models.QuerySet):
@@ -93,11 +121,16 @@ class ChronogramTask(SoftDeletableModel):
 
     @property
     def deadline_date(self) -> datetime.date:
-        return (self.round_start_date + datetime.timedelta(days=self.start_offset_in_days)).date()
+        return self.round_start_date + datetime.timedelta(days=self.start_offset_in_days)
 
     @property
-    def is_delayed(self) -> bool:
-        return datetime.date.today() > self.deadline_date and self.status != self.Status.DONE
+    def delay_in_days(self) -> int:
+        """
+        A negative delay in days means that the task is delayed.
+        """
+        if self.status != self.Status.DONE:
+            return (self.deadline_date - timezone.now().date()).days
+        return 0
 
 
 class ChronogramTemplateQuerySet(models.QuerySet):
@@ -106,12 +139,7 @@ class ChronogramTemplateQuerySet(models.QuerySet):
 
 
 class ChronogramTemplateTaskManager(models.Manager):
-    def create_chronogram(self, round: Round, account: Account, created_by: User) -> Chronogram:
-        chronogram_template_tasks = self.model.objects.filter(account=account)
-
-        if not chronogram_template_tasks.exists():
-            raise ValueError(f"No chronogram template for account #{account.id}")
-
+    def create_chronogram(self, round: Round, created_by: User) -> Chronogram:
         chronogram = Chronogram.objects.create(round=round, created_by=created_by)
 
         tasks = [
@@ -122,9 +150,10 @@ class ChronogramTemplateTaskManager(models.Manager):
                 period=template.period,
                 start_offset_in_days=template.start_offset_in_days,
             )
-            for template in chronogram_template_tasks
+            for template in self.model.objects.filter(account_id=created_by.iaso_profile.account_id)
         ]
-        ChronogramTask.objects.bulk_create(tasks)
+        if tasks:
+            ChronogramTask.objects.bulk_create(tasks)
 
         return chronogram
 

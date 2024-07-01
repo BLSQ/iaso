@@ -32,7 +32,7 @@
 
 ## 6. Add translations in the front-end
 
-- Add a translation for the permission, and its tooltip in `permissionMessages.ts`. The tooltip key should have the format: `<permission name>_tooltip` to enable the component to recognize an d tranbslate it.
+- Add a translation for the permission, and its tooltip in `permissionMessages.ts`. The tooltip key should have the format: `<permission name>_tooltip` to enable the component to recognize and translate it.
 - Add corresponding translations in `en.json` and `fr.json`
 
 ## 7. Add translation for new module (if applicable)

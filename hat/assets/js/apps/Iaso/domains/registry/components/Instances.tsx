@@ -80,8 +80,8 @@ export const Instances: FunctionComponent<Props> = ({
             const newParams = {
                 ...params,
                 tab: `${newType.id}`,
+                formIds: undefined,
             };
-            delete newParams.formIds;
             redirectToReplace(baseUrls.registry, newParams);
         },
         [params, redirectToReplace],
@@ -96,8 +96,7 @@ export const Instances: FunctionComponent<Props> = ({
     }, [formIds, formsList]);
     useEffect(() => {
         if (
-            formsList &&
-            (formsList?.length ?? 0) >= 0 &&
+            (formsList?.length ?? 0) > 0 &&
             !isFetchingForms &&
             !formIds &&
             orgunitTypeDetail &&
@@ -106,7 +105,8 @@ export const Instances: FunctionComponent<Props> = ({
             const selectedForm =
                 orgunitTypeDetail.reference_forms.length > 0
                     ? `${orgunitTypeDetail.reference_forms[0].id}`
-                    : formsList[0]?.value;
+                    : // @ts-ignore formsList cannot be undefined since we check it in the condition
+                      formsList[0]?.value;
             const newParams = {
                 ...params,
                 formIds: selectedForm,

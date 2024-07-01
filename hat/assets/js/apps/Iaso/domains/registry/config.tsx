@@ -111,7 +111,6 @@ export const useGetOrgUnitsListColumns = (
                         setSelectedChildren(settings.row.original as OrgUnit)
                     }
                 >
-                    {selectedChildrenId}-{settings.row.original.id}-
                     {settings.value}
                 </Box>
             ),

@@ -3,7 +3,6 @@ import React, { FunctionComponent } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { useSnackBars } from '../../components/snackBars/useSnackBars';
 import { useRoutes } from './hooks/useRoutes';
-// import { router } from '../../routing/router';
 
 type Props = {
     userHomePage?: string;
@@ -14,7 +13,6 @@ const App: FunctionComponent<Props> = ({ userHomePage }) => {
         userHomePage && userHomePage !== '' ? userHomePage : undefined,
     );
     useSnackBars();
-
     return (
         <>
             {isLoadingRoutes && <LoadingSpinner />}

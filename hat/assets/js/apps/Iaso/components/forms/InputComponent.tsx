@@ -16,7 +16,7 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import React, { ReactNode, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useLocale } from '../../domains/app/contexts/LocaleContext';
 import MESSAGES from '../../domains/forms/messages';
 import {
     useNumberSeparatorsFromLocale,
@@ -173,9 +173,7 @@ const InputComponent: React.FC<InputComponentProps> = ({
 }) => {
     const [displayPassword, setDisplayPassword] = useState(false);
     const { formatMessage } = useSafeIntl();
-    // @ts-ignore
-    const activeLocale = useSelector(state => state.app.locale);
-
+    const { locale } = useLocale();
     const localizedNumberOptions =
         useLocalizedNumberInputOptions(numberInputOptions);
     const toggleDisplayPassword = () => {
@@ -333,9 +331,10 @@ const InputComponent: React.FC<InputComponentProps> = ({
                             onChange(keyValue, newValue, countryData)
                         }
                         value={value}
-                        lang={activeLocale.code}
+                        lang={locale as LangOptions}
                         required={required}
                         disabled={disabled}
+                        // eslint-disable-next-line react/jsx-props-no-spreading
                         {...phoneInputOptions}
                     />
                 );

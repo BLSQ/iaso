@@ -1,17 +1,15 @@
-import React, { useMemo } from 'react';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
-import { useSelector } from 'react-redux';
+import React, { useMemo } from 'react';
 import { DateCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
+import { useLocale } from '../../../../../../../../../hat/assets/js/apps/Iaso/domains/app/contexts/LocaleContext';
 import getDisplayName from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import MESSAGES from '../../../../../constants/messages';
 
 const NAMEFIELD = 'name_';
 
 export const useGetRoundDatesHistoryColumns = (): Column[] => {
-    // @ts-ignore
-    const activeLocale = useSelector(state => state.app.locale);
-    const { code: locale } = activeLocale;
-    const reasonName = `${NAMEFIELD}${locale}`;
+    const { locale: activeLocale } = useLocale();
+    const reasonName = `${NAMEFIELD}${activeLocale}`;
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
         return [

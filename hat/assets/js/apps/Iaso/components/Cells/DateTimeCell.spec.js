@@ -4,7 +4,6 @@ import {
     apiDateFormats,
     getLocaleDateFormat,
     longDateFormats,
-    setLocale,
 } from '../../utils/dates.ts';
 import {
     DateCell,
@@ -14,6 +13,15 @@ import {
 } from './DateTimeCell.tsx';
 
 const locales = Object.keys(longDateFormats);
+const setLocale = code => {
+    moment.locale(code);
+    moment.updateLocale(code, {
+        longDateFormat: longDateFormats[code],
+        week: {
+            dow: 1,
+        },
+    });
+};
 
 describe('DateTimeCell', () => {
     beforeEach(() => {

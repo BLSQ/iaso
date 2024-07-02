@@ -170,6 +170,13 @@ const goToPage = () => {
             fixture: 'orgunits/details-children-paginated.json',
         },
     ).as('getChildrenPage1');
+    cy.intercept(
+        'GET',
+        `/api/orgunits/?&orgUnitParentId=${orgUnit.id}&orgUnitTypeId=11&withShapes=true&validation_status=all`,
+        {
+            fixture: 'orgunits/empty.json',
+        },
+    );
     cy.intercept('GET', `/api/links/?orgUnitId=${orgUnit.id}`, {
         fixture: 'links/list-linked.json',
     });

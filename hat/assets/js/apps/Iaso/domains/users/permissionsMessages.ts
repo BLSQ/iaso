@@ -542,6 +542,14 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.iaso_payments_tooltip',
         defaultMessage: 'See and manage payments and payment lots',
     },
+    iaso_forms_stats: {
+        id: 'iaso.permissions.iaso_forms_stats',
+        defaultMessage: 'Form statistics',
+    },
+    iaso_forms_stats_tooltip: {
+        id: 'iaso.permissions.iaso_forms_stats_tooltip',
+        defaultMessage: 'See statistics of number forms submissions',
+    },
 });
 
 export default PERMISSIONS_MESSAGES;

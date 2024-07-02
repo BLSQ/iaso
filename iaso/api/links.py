@@ -103,9 +103,7 @@ class LinkViewSet(viewsets.ViewSet):
             queryset = queryset.filter(source__version__number=origin_version)
 
         if validator_id:
-            print("validatorId A", validator_id)
-            validator_id=int(validator_id)
-            print("validatorId B", validator_id)
+            validator_id = int(validator_id)
             queryset = queryset.filter(validator=validator_id)
 
         if algorithm_id:

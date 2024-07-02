@@ -54,7 +54,7 @@ export const LinksTableWithDownloads: FunctionComponent<Props> = ({
         ? Boolean(data?.links?.length)
         : Boolean(params.searchActive);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { searchActive, ...dnldParams } = apiParams;
+    const { searchActive, tab, ...dnldParams } = apiParams;
     const csvUrl = `${dwnldBaseUrl}/?${makeQueryString(
         dnldParams,
         tableDefaults,

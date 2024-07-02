@@ -187,7 +187,7 @@ class ReasonForDelay(SoftDeletableModel):
     updated_at = models.DateTimeField(auto_now=True)
     account = models.ForeignKey(Account, models.CASCADE, related_name="reasons_for_delay")
 
-    class Meta:
+    class Meta(SoftDeletableModel.Meta):
         # This will prevent sharing reasons across accounts, but it can be annoying if 2 accounts need INITIAL_DATA
         unique_together = ["key_name", "account"]
 
@@ -412,7 +412,7 @@ class PolioCampaignManager(models.Manager):
 
 
 class Campaign(SoftDeletableModel):
-    class Meta:
+    class Meta(SoftDeletableModel.Meta):
         ordering = ["obr_name"]
 
     # Managers.

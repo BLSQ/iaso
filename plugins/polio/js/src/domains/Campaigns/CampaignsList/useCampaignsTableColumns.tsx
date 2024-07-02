@@ -24,6 +24,7 @@ export const useCampaignsTableColumns = ({
     params,
 }: Args): Column[] => {
     const { formatMessage } = useSafeIntl();
+
     // type Column need to be updated so accessor can also be FunctionComponent
     // @ts-ignore
     return useMemo(() => {
@@ -78,6 +79,28 @@ export const useCampaignsTableColumns = ({
                     value: CampaignListItem['campaign_types'];
                 }): string =>
                     value.map(campaignType => campaignType.name).join(', '),
+            },
+            {
+                Header: formatMessage(MESSAGES.campaignCategory),
+                accessor: 'campaign_category',
+                sortable: false,
+                Cell: ({
+                    row: { original },
+                }: {
+                    row: { original: CampaignListItem };
+                }): string => {
+                    let campaignCategory;
+                    if (original.is_test) {
+                        campaignCategory = original.is_preventive
+                            ? `${formatMessage(MESSAGES.testCampaign)} - ${formatMessage(MESSAGES.preventiveShort)}`
+                            : formatMessage(MESSAGES.testCampaign);
+                    } else {
+                        campaignCategory = original.is_preventive
+                            ? formatMessage(MESSAGES.preventiveShort)
+                            : formatMessage(MESSAGES.regular);
+                    }
+                    return campaignCategory;
+                },
             },
             {
                 Header: formatMessage(MESSAGES.status),

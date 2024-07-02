@@ -2446,6 +2446,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Age max should be greater than age min',
         id: 'iaso.polio.label.ageMaxSmallerOrEqualToAgeMin',
     },
+    pleaseSelectAgeType: {
+        defaultMessage: 'Please select an age unit',
+        id: 'iaso.polio.label.pleaseSelectAgeType',
+    },
     other: {
         defaultMessage: 'Other',
         id: 'iaso.label.other',

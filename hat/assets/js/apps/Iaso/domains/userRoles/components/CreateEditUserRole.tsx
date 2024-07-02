@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import { useFormik, FormikProvider } from 'formik';
 import {
     AddButton,
@@ -21,6 +21,7 @@ import InputComponent from '../../../components/forms/InputComponent';
 import { PermissionsSwitches } from './PermissionsSwitches';
 import { Permission } from '../types/userRoles';
 import { EditIconButton } from '../../../components/Buttons/EditIconButton';
+import UserRoleDialogInfoComponent from './UserRoleDialogInfoComponent';
 
 type ModalMode = 'create' | 'edit';
 type Props = Partial<SaveUserRoleQuery> & {
@@ -40,6 +41,8 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
 }) => {
     const [userRolePermissions, setUserRolePermissoins] =
         useState<Permission[]>(permissions);
+    const [infoOpen, setInfoOpen] = useState<boolean>(false);
+    const [open, setOpen] = useState<boolean>(isOpen);
     const { formatMessage } = useSafeIntl();
     const { mutateAsync: saveUserRole } = useSaveUserRole(dialogType);
     const {
@@ -49,7 +52,7 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
     } = useApiErrorValidation<Partial<SaveUserRoleQuery>, any>({
         mutationFn: saveUserRole,
         onSuccess: () => {
-            closeDialog();
+            dialogType !== 'create' ? closeDialog() : setOpen(false);
         },
     });
     const schema = useUserRoleValidation(apiErrors, payload);
@@ -98,43 +101,60 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
         setUserRolePermissoins(newPermissions);
         setFieldValue('permissions', newPermissions);
     };
+
+    useEffect(() => {
+        if (!open) {
+            setInfoOpen(true);
+        }
+    }, [closeDialog, open]);
     return (
-        <FormikProvider value={formik}>
-            <ConfirmCancelModal
-                allowConfirm={isValid && !isEqual(values, initialValues)}
-                titleMessage={titleMessage}
-                onConfirm={() => {
-                    handleSubmit();
-                }}
-                onCancel={() => {
-                    resetForm();
-                }}
-                maxWidth="sm"
-                cancelMessage={MESSAGES.cancel}
-                confirmMessage={MESSAGES.save}
-                open={isOpen}
-                closeDialog={closeDialog}
-                id={id ?? ''}
-                dataTestId="Test-modal"
-                onClose={() => null}
-            >
-                <InputComponent
-                    keyValue="name"
-                    onChange={onChange}
-                    value={values.name}
-                    errors={getErrors('name')}
-                    type="text"
-                    label={MESSAGES.name}
-                    required
+        <>
+            {dialogType === 'create' && (
+                <UserRoleDialogInfoComponent
+                    infoOpen={infoOpen}
+                    setInfoOpen={setInfoOpen}
+                    closeDialog={closeDialog}
                 />
-                <PermissionsSwitches
-                    userRolePermissions={userRolePermissions}
-                    handleChange={newPermissions => {
-                        handlePermissionsChange(newPermissions);
+            )}
+
+            <FormikProvider value={formik}>
+                <ConfirmCancelModal
+                    allowConfirm={isValid && !isEqual(values, initialValues)}
+                    titleMessage={titleMessage}
+                    onConfirm={() => {
+                        handleSubmit();
                     }}
-                />
-            </ConfirmCancelModal>
-        </FormikProvider>
+                    onCancel={() => {
+                        resetForm();
+                    }}
+                    maxWidth="sm"
+                    cancelMessage={MESSAGES.cancel}
+                    confirmMessage={MESSAGES.save}
+                    open={open}
+                    closeDialog={closeDialog}
+                    id={id ?? ''}
+                    dataTestId="Test-modal"
+                    onClose={() => null}
+                    closeOnConfirm={false}
+                >
+                    <InputComponent
+                        keyValue="name"
+                        onChange={onChange}
+                        value={values.name}
+                        errors={getErrors('name')}
+                        type="text"
+                        label={MESSAGES.name}
+                        required
+                    />
+                    <PermissionsSwitches
+                        userRolePermissions={userRolePermissions}
+                        handleChange={newPermissions => {
+                            handlePermissionsChange(newPermissions);
+                        }}
+                    />
+                </ConfirmCancelModal>
+            </FormikProvider>
+        </>
     );
 };
 

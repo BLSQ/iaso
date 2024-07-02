@@ -52,33 +52,36 @@ export const LogsDetails: FunctionComponent<Props> = ({
                                     log={log.new_value}
                                     compareLog={log.past_value}
                                     goToRevision={goToRevision}
+                                    isNewValue
                                 />
                             </Grid>
                         </Grid>
                     )}
-                    {log.past_value.length > 0 && log.new_value.length === 0 && (
-                        <Grid container spacing={2}>
-                            <Grid item xs={6}>
-                                <h4 className="margin-bottom">
-                                    {formatMessage(MESSAGES.deleted)}
-                                </h4>
-                                <LogCompareComponent log={log.past_value} />
+                    {log.past_value.length > 0 &&
+                        log.new_value.length === 0 && (
+                            <Grid container spacing={2}>
+                                <Grid item xs={6}>
+                                    <h4 className="margin-bottom">
+                                        {formatMessage(MESSAGES.deleted)}
+                                    </h4>
+                                    <LogCompareComponent log={log.past_value} />
+                                </Grid>
                             </Grid>
-                        </Grid>
-                    )}
-                    {log.past_value.length === 0 && log.new_value.length > 0 && (
-                        <Grid container spacing={2}>
-                            <Grid item xs={6}>
-                                <h4 className="margin-bottom">
-                                    {formatMessage(MESSAGES.created)}
-                                </h4>
-                                <LogCompareComponent
-                                    log={log.new_value}
-                                    goToRevision={goToRevision}
-                                />
+                        )}
+                    {log.past_value.length === 0 &&
+                        log.new_value.length > 0 && (
+                            <Grid container spacing={2}>
+                                <Grid item xs={6}>
+                                    <h4 className="margin-bottom">
+                                        {formatMessage(MESSAGES.created)}
+                                    </h4>
+                                    <LogCompareComponent
+                                        log={log.new_value}
+                                        goToRevision={goToRevision}
+                                    />
+                                </Grid>
                             </Grid>
-                        </Grid>
-                    )}
+                        )}
                 </>
             )}
         </Container>

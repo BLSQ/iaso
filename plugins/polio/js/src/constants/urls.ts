@@ -37,6 +37,7 @@ export const STOCK_MANAGEMENT = `${VACCINE_MODULE}/stockmanagement`;
 export const STOCK_MANAGEMENT_DETAILS = `${STOCK_MANAGEMENT}/details`;
 export const STOCK_VARIATION = `${STOCK_MANAGEMENT}/variation`;
 export const NOTIFICATIONS_BASE_URL = 'polio/notifications';
+export const CHRONOGRAM_BASE_URL = 'polio/chronogram';
 
 export const campaignParams = [
     'countries',
@@ -232,6 +233,10 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
             'date_of_onset_before',
         ],
     },
+    chronogram: {
+        url: CHRONOGRAM_BASE_URL,
+        params: [...paginationPathParams],
+    },
 };
 
 export type PolioBaseUrls = {
@@ -257,6 +262,7 @@ export type PolioBaseUrls = {
     reasonsForDelayConfig: string;
     embeddedCalendar: string;
     notification: string;
+    chronogram: string;
 };
 export const baseUrls = extractUrls(polioRouteConfigs) as PolioBaseUrls;
 export const baseParams = extractParams(polioRouteConfigs);

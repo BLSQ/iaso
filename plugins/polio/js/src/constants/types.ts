@@ -475,6 +475,8 @@ export type CampaignListItem = {
     general_status: string;
     grouped_campaigns: number[];
     campaign_types: CampaignType[];
+    is_test: boolean;
+    is_preventive: boolean;
 };
 
 export type DefaultCampaignValues = {

@@ -13,6 +13,7 @@ import DataSourceIcon from '@mui/icons-material/ListAltTwoTone';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import MenuBookIcon from '@mui/icons-material/MenuBook';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
+import PendingActionsIcon from '@mui/icons-material/PendingActions';
 import PhotoSizeSelectActualIcon from '@mui/icons-material/PhotoSizeSelectActual';
 import PublicIcon from '@mui/icons-material/Public';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -37,6 +38,7 @@ import {
     notificationPath,
     countryConfigPath,
     reasonsForDelayConfigPath,
+    chronogramPath,
 } from './routes';
 
 export const menu: MenuItem[] = [
@@ -148,6 +150,12 @@ export const menu: MenuItem[] = [
                 key: 'notifications',
                 permissions: notificationPath.permissions,
                 icon: props => <NotificationsActiveIcon {...props} />,
+            },
+            {
+                label: MESSAGES.chronogram,
+                key: 'chronogram',
+                permissions: chronogramPath.permissions,
+                icon: props => <PendingActionsIcon {...props} />,
             },
             {
                 label: MESSAGES.configuration,

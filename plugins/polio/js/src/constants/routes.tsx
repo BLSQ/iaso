@@ -28,12 +28,14 @@ import {
     STOCK_MANAGEMENT_READ,
     SUPPLYCHAIN_READ,
     SUPPLYCHAIN_WRITE,
+    CHRONOGRAM,
 } from './permissions';
 import {
     AnonymousRoutePath,
     RoutePath,
 } from '../../../../../hat/assets/js/apps/Iaso/constants/routes';
 import { Notifications } from '../domains/Notifications';
+import { Chronogram } from '../domains/Chronogram';
 
 // We store the path in a variable so we can import it and use its permissions
 export const campaignsPath: RoutePath = {
@@ -191,6 +193,13 @@ export const reasonsForDelayConfigPath: RoutePath = {
     permissions: [POLIO_ADMIN],
 };
 
+export const chronogramPath: RoutePath = {
+    baseUrl: baseUrls.chronogram,
+    routerUrl: `${baseUrls.chronogram}/*`,
+    element: <Chronogram />,
+    permissions: [CHRONOGRAM],
+};
+
 export const routes: (RoutePath | AnonymousRoutePath)[] = [
     campaignsPath,
     campaignHistoryPath,
@@ -214,4 +223,5 @@ export const routes: (RoutePath | AnonymousRoutePath)[] = [
     notificationPath,
     countryConfigPath,
     reasonsForDelayConfigPath,
+    chronogramPath,
 ];

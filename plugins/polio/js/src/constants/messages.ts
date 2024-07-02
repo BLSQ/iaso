@@ -2450,6 +2450,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Other',
         id: 'iaso.label.other',
     },
+    chronogram: {
+        id: 'iaso.polio.label.chronogram',
+        defaultMessage: 'Chronogram',
+    },
 });
 
 export default MESSAGES;

@@ -21,9 +21,8 @@ import { HorizontalDivider } from '../../../components/HorizontalDivider.tsx';
 import { LqasImVerticalChart } from '../shared/LqasImVerticalChart.tsx';
 import { MapContainer } from '../shared/MapContainer.tsx';
 import { useImData } from './hooks/useImData.ts';
-import MESSAGES from '../../../constants/messages';
+import MESSAGES from '../../../constants/messages.ts';
 import { BadRoundNumbers } from '../shared/BadRoundNumber.tsx';
-import { makeDropdownOptions } from '../shared/LqasIm.tsx';
 import { commaSeparatedIdsToArray } from '../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
 import { defaultRounds, paperElevation } from '../shared/constants.ts';
 import { baseUrls } from '../../../constants/urls.ts';
@@ -72,8 +71,20 @@ export const ImStats = () => {
     } = useImData(campaign, country, imType, selectedRounds);
 
     const dropDownOptions = useMemo(() => {
-        return makeDropdownOptions(imData.stats, campaign, selectedRounds);
-    }, [imData, campaign, selectedRounds]);
+        return campaigns
+            ?.filter(c => c.obr_name === campaign)[0]
+            ?.rounds.sort((a, b) => a.number - b.number)
+            .map(r => {
+                return {
+                    label: `Round ${r.number}`,
+                    value: r.number,
+                };
+            });
+    }, [campaign, campaigns]);
+
+    // const dropDownOptions = useMemo(() => {
+    //     return makeDropdownOptions(imData.stats, campaign, selectedRounds);
+    // }, [imData, campaign, selectedRounds]);
 
     const onRoundChange = useCallback(
         index => value => {

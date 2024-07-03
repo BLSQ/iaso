@@ -28,7 +28,7 @@ export const useLqasData = ({
     // TODO move out of this hook
     const { data: campaigns = [], isFetching: campaignsFetching } =
         useGetCampaigns({
-            countries: [country],
+            countries: country,
             enabled: Boolean(country),
         });
 

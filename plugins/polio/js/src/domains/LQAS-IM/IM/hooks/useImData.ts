@@ -21,7 +21,7 @@ export const useImData = (
     const convertedData = useConvertedLqasImData(imData);
     const { data: campaigns = [], isFetching: campaignsFetching } =
         useGetCampaigns({
-            countries: [country],
+            countries: country,
             enabled: Boolean(country),
         });
     const debugData = useDebugData(imData, campaign);

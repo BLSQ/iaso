@@ -15,7 +15,6 @@ import { sumChildrenCheckedLqas } from '../LQAS/utils';
 import MESSAGES from '../../../constants/messages';
 import { imNfmKeys, imRfaKeys } from './constants';
 import { sumChildrenCheckedIm } from '../IM/utils';
-import { DropdownOptions } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { lqasNfmKeys, lqasRfaKeys } from '../LQAS/constants';
 
 const accessFullRoundData = (
@@ -341,19 +340,4 @@ export const verticalChartTooltipFormatter = (
 ): [string, string] => {
     // eslint-disable-next-line react/prop-types
     return [`${Math.round(value)}%`, props.payload.originalKey];
-};
-
-export const makeDropdownOptions = (
-    data: Record<string, LqasImCampaign>,
-    campaign: string,
-): DropdownOptions<number>[] => {
-    if (!campaign || !data?.[campaign]) return [];
-    return data?.[campaign]?.rounds
-        .sort((a, b) => a.number - b.number)
-        .map(round => {
-            return {
-                label: `Round ${round.number}`,
-                value: round.number,
-            };
-        });
 };

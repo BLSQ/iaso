@@ -1,7 +1,10 @@
 import { LqasIMtype } from '../../../constants/types';
 import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../../styles/constants';
 
-export const IM_POC_URL = '/api/polio/imstats/';
+export const IM_COUNTRY_URL = '/api/polio/lqasimmap/country/';
+export const IM_OHH_SLUG = 'im_ohh';
+export const IM_HH_SLUG = 'im_hh';
+export const IM_GLOBAL_SLUG = 'im_hh_ohh';
 // Including number in the name so it can be used with parseInt for Table sorting.
 // FIXME there should be a cleaner way to do this
 export const IM_PASS = '1imOK';

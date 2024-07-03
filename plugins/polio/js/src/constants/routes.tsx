@@ -35,7 +35,7 @@ import {
     RoutePath,
 } from '../../../../../hat/assets/js/apps/Iaso/constants/routes';
 import { Notifications } from '../domains/Notifications';
-import { Chronogram } from '../domains/Chronogram';
+import { Chronogram } from '../domains/Chronogram/Chronogram';
 import { ChronogramTemplateTask } from '../domains/Chronogram/ChronogramTemplateTask';
 
 // We store the path in a variable so we can import it and use its permissions

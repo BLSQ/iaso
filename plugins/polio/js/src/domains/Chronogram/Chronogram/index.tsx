@@ -3,16 +3,17 @@ import { Box } from '@mui/material';
 
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 
-import TopBar from '../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
-import { baseUrls } from '../../constants/urls';
-import { useParamsObject } from '../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
+import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
+import { baseUrls } from '../../../constants/urls';
+import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 
 import MESSAGES from './messages';
 import { ChronogramFilters } from './Filters/ChronogramFilters';
-import { ChronogramParams, ChronogramTaskMetaData } from './types';
+import { ChronogramParams } from './types';
 import { ChronogramTable } from './Table/ChronogramTable';
-import { useOptionChronogramTask } from './api/useOptionChronogramTask';
-import { useStyles } from '../../styles/theme';
+import { ChronogramTaskMetaData } from '../types';
+import { useOptionChronogramTask } from '../api/useOptionChronogramTask';
+import { useStyles } from '../../../styles/theme';
 
 export const Chronogram: FunctionComponent = () => {
     const params = useParamsObject(baseUrls.chronogram) as ChronogramParams;

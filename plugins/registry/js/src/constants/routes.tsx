@@ -4,9 +4,9 @@ import {
     RoutePath,
 } from '../../../../../hat/assets/js/apps/Iaso/constants/routes';
 import { Home } from '../domains/home';
+import { Registry } from '../domains/registry';
 import { baseUrls } from './urls';
 
-// We store the path in a variable so we can import it and use its permissions
 export const homePath: AnonymousRoutePath = {
     baseUrl: baseUrls.home,
     routerUrl: `${baseUrls.home}/*`,
@@ -16,4 +16,16 @@ export const homePath: AnonymousRoutePath = {
     useDashboard: false,
 };
 
-export const routes: (RoutePath | AnonymousRoutePath)[] = [homePath];
+export const registryPath: AnonymousRoutePath = {
+    baseUrl: baseUrls.registry,
+    routerUrl: `${baseUrls.registry}/*`,
+    element: <Registry />,
+    isRootUrl: true,
+    allowAnonymous: true,
+    useDashboard: false,
+};
+
+export const routes: (RoutePath | AnonymousRoutePath)[] = [
+    homePath,
+    registryPath,
+];

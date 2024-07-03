@@ -1,2 +1,7 @@
 
-{}
+{
+    "register.home.title": "Carte sanitaire du <b>Niger</b>",
+    "register.home.texte1": "Le développement de cette carte sanitaire avec l’appui de PASS ENABEL, s’inscrit dans le cadre du partage des informations sanitaires aux différents utilisateurs.",
+    "register.home.texte2": "Le Ministre de la Santé Publique, de la Population et des Affaires Sociales vous souhaite la bienvenue sur la carte sanitaire digitale, interactive et dynamique.",
+    "register.home.cta": "Explorer les données"
+}

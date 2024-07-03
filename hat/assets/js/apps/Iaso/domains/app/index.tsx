@@ -1,6 +1,6 @@
 import { LoadingSpinner } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { useSnackBars } from '../../components/snackBars/useSnackBars';
 import { useRoutes } from './hooks/useRoutes';
 
@@ -9,7 +9,7 @@ type Props = {
 };
 
 const App: FunctionComponent<Props> = ({ userHomePage }) => {
-    const { routes, isLoadingRoutes } = useRoutes(
+    const { nonDashboardRoutes, routes, isLoadingRoutes } = useRoutes(
         userHomePage && userHomePage !== '' ? userHomePage : undefined,
     );
     useSnackBars();
@@ -17,7 +17,12 @@ const App: FunctionComponent<Props> = ({ userHomePage }) => {
         <>
             {isLoadingRoutes && <LoadingSpinner />}
             {!isLoadingRoutes && (
-                <BrowserRouter basename="/dashboard">{routes}</BrowserRouter>
+                <BrowserRouter>
+                    <Routes>
+                        <Route path="/dashboard/*" element={routes} />
+                        <Route path="/*" element={nonDashboardRoutes} />
+                    </Routes>
+                </BrowserRouter>
             )}
         </>
     );

@@ -2,7 +2,7 @@ import React from 'react';
 import { Grid, Paper, Box, Typography } from '@mui/material';
 import { array, oneOf, string } from 'prop-types';
 import { useStyles } from './styles';
-import { convertWidth } from '../../../utils';
+import { convertWidth } from '../../../utils/index.tsx';
 
 // TODO pass font size as props
 export const MapLegend = ({ title, legendItems, width }) => {
@@ -17,36 +17,41 @@ export const MapLegend = ({ title, legendItems, width }) => {
                     {title}
                 </Typography>
                 {legendItems.map((legendItem, i) => (
-                    <Grid
-                        container
-                        spacing={1}
-                        key={`${title}${i}${legendItem.value}`}
-                    >
+                    <Box py={1}>
                         <Grid
-                            item
-                            sm={width === 'xs' || width === 'sm' ? 6 : 3}
                             container
-                            justifyContent="flex-start"
+                            spacing={1}
+                            key={`${title}${i}${legendItem.value}`}
                         >
-                            <span
-                                className={classes.roundColor}
-                                style={{ backgroundColor: legendItem.color }}
-                            />
+                            <Grid
+                                item
+                                sm={width === 'xs' || width === 'sm' ? 6 : 3}
+                                container
+                                justifyContent="flex-start"
+                            >
+                                <span
+                                    className={classes.roundColor}
+                                    style={{
+                                        backgroundImage: legendItem.background,
+                                        backgroundColor: legendItem.color,
+                                    }}
+                                />
+                            </Grid>
+                            <Grid
+                                item
+                                sm={width === 'xs' || width === 'sm' ? 6 : 9}
+                                container
+                                justifyContent="flex-end"
+                                alignItems="center"
+                            >
+                                {/* <Typography variant="subtitle2"> */}
+                                <div style={{ fontSize: '14px' }}>
+                                    {legendItem.label}
+                                </div>
+                                {/* </Typography> */}
+                            </Grid>
                         </Grid>
-                        <Grid
-                            item
-                            sm={width === 'xs' || width === 'sm' ? 6 : 9}
-                            container
-                            justifyContent="flex-end"
-                            alignItems="center"
-                        >
-                            {/* <Typography variant="subtitle2"> */}
-                            <div style={{ fontSize: '14px' }}>
-                                {legendItem.label}
-                            </div>
-                            {/* </Typography> */}
-                        </Grid>
-                    </Grid>
+                    </Box>
                 ))}
             </Box>
         </Paper>

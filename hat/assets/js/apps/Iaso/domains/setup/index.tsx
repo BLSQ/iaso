@@ -1,27 +1,27 @@
-import React, { FunctionComponent, useState } from 'react';
-import { Paper, Typography, Box, Button } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-import ContactSupportIcon from '@mui/icons-material/ContactSupport';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import ContactSupportIcon from '@mui/icons-material/ContactSupport';
 import ExitIcon from '@mui/icons-material/ExitToApp';
+import { Box, Button, Paper, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import React, { FunctionComponent, useState } from 'react';
 
 import { useSafeIntl } from 'bluesquare-components';
 import { useFormik } from 'formik';
 import { isEqual } from 'lodash';
-import getDisplayName, { useCurrentUser } from '../../utils/usersUtils';
-import TopBar from '../../components/nav/TopBarComponent';
 import InputComponent from '../../components/forms/InputComponent';
-import { MESSAGES } from './messages';
-import { useAccountValidation } from './validation';
+import TopBar from '../../components/nav/TopBarComponent';
 import {
     useApiErrorValidation,
     useTranslatedErrors,
 } from '../../libs/validation';
-import { useSaveAccount } from './hooks/useSaveAccount';
-import { useGetModulesDropDown } from './hooks/useGetModulesDropDown';
-import { SaveAccountQuery } from './types/account';
 import { commaSeparatedIdsToStringArray } from '../../utils/forms';
+import getDisplayName, { useCurrentUser } from '../../utils/usersUtils';
 import { LangSwitch } from '../home/components/LangSwitch';
+import { useGetModulesDropDown } from './hooks/useGetModulesDropDown';
+import { useSaveAccount } from './hooks/useSaveAccount';
+import { MESSAGES } from './messages';
+import { SaveAccountQuery } from './types/account';
+import { useAccountValidation } from './validation';
 
 const useStyles = makeStyles(theme => ({
     paper: {

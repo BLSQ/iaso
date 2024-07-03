@@ -282,10 +282,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.fetchFormVersionsError',
         defaultMessage: 'An error occurred while fetching form versions',
     },
-    fetchCurrentUser: {
-        defaultMessage: 'An error occurred while fetching current user',
-        id: 'iaso.snackBar.fetchCurrentUser',
-    },
     fetchLogsError: {
         id: 'iaso.snackBar.fetchLogsError',
         defaultMessage: 'An error occurred while fetching logs',

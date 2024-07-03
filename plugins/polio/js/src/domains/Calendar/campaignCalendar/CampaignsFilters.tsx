@@ -1,4 +1,9 @@
 /* eslint-disable react/jsx-props-no-spreading */
+import FiltersIcon from '@mui/icons-material/FilterList';
+import { Box, Button, Grid, useMediaQuery, useTheme } from '@mui/material';
+import {
+    useRedirectToReplace
+} from 'bluesquare-components';
 import React, {
     FunctionComponent,
     useCallback,
@@ -7,13 +12,6 @@ import React, {
     useState,
 } from 'react';
 import { FormattedMessage } from 'react-intl';
-import FiltersIcon from '@mui/icons-material/FilterList';
-import { Box, Button, Grid, useMediaQuery, useTheme } from '@mui/material';
-import {
-    IntlFormatMessage,
-    useSafeIntl,
-    useRedirectToReplace,
-} from 'bluesquare-components';
 import DatesRange from '../../../../../../../hat/assets/js/apps/Iaso/components/filters/DatesRange';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useGetGroupDropdown } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
@@ -26,9 +24,10 @@ import {
     dateRangePickerToDateApi,
 } from '../../../../../../../hat/assets/js/apps/Iaso/utils/dates';
 import { appId } from '../../../constants/app';
-import { useGetCampaignTypes } from '../../Campaigns/hooks/api/useGetCampaignTypes';
-import { CalendarParams } from './types';
 import { baseUrls } from '../../../constants/urls';
+import { useGetCampaignTypes } from '../../Campaigns/hooks/api/useGetCampaignTypes';
+import { useCampaignCategoryOptions } from '../../Campaigns/hooks/useCampaignCategoryOptions';
+import { CalendarParams } from './types';
 
 type Props = {
     params: CalendarParams;
@@ -36,18 +35,6 @@ type Props = {
     disableOnlyDeleted?: boolean;
     isCalendar?: boolean;
     isEmbedded?: boolean;
-};
-
-const campaignCategoryOptions = (
-    // eslint-disable-next-line no-unused-vars
-    formatMessage: IntlFormatMessage,
-) => {
-    return [
-        { label: formatMessage(MESSAGES.all), value: 'all' },
-        { label: formatMessage(MESSAGES.preventiveShort), value: 'preventive' },
-        { label: formatMessage(MESSAGES.regular), value: 'regular' },
-        { label: formatMessage(MESSAGES.testCampaign), value: 'test' },
-    ];
 };
 
 const getRedirectUrl = (isCalendar: boolean, isEmbedded: boolean): string => {
@@ -67,7 +54,6 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
     isCalendar = false,
     isEmbedded = false,
 }) => {
-    const { formatMessage } = useSafeIntl();
     const redirectUrl = getRedirectUrl(isCalendar, isEmbedded);
     const redirectToReplace = useRedirectToReplace();
 
@@ -162,6 +148,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
     const theme = useTheme();
     const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
     const [textSearchError, setTextSearchError] = useState(false);
+    const campaignCategoryOptions = useCampaignCategoryOptions();
 
     useEffect(() => {
         setFiltersUpdated(true);
@@ -235,7 +222,7 @@ export const CampaignsFilters: FunctionComponent<Props> = ({
                     }}
                     value={campaignCategory}
                     type="select"
-                    options={campaignCategoryOptions(formatMessage)}
+                    options={campaignCategoryOptions}
                     label={MESSAGES.campaignCategory}
                 />
                 <InputComponent

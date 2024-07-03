@@ -1,28 +1,27 @@
 /* eslint-disable camelcase */
-import React, { useState, FunctionComponent, useCallback } from 'react';
-import { useDispatch } from 'react-redux';
-import { Tabs, Tab } from '@mui/material';
+import { Tab, Tabs } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import {
-    IntlMessage,
-    useSafeIntl,
-    makeFullModal,
-    ConfirmCancelModal,
     AddButton,
+    ConfirmCancelModal,
+    IntlMessage,
+    makeFullModal,
+    useSafeIntl,
 } from 'bluesquare-components';
+import React, { FunctionComponent, useCallback, useState } from 'react';
+import { useDispatch } from 'react-redux';
 
-import { MutateFunction } from 'react-query';
+import { MutateFunction, useQueryClient } from 'react-query';
 
-import UsersInfos from './UsersInfos';
-import { fetchCurrentUser } from '../actions';
-import MESSAGES from '../messages';
-import UsersLocations from './UsersLocations';
-import PermissionsSwitches from './PermissionsSwitches';
-import { Profile, useCurrentUser } from '../../../utils/usersUtils';
-import { useInitialUser } from './useInitialUser';
-import { InitialUserData } from '../types';
-import { WarningModal } from './WarningModal/WarningModal';
 import { EditIconButton } from '../../../components/Buttons/EditIconButton';
+import { Profile, useCurrentUser } from '../../../utils/usersUtils';
+import MESSAGES from '../messages';
+import { InitialUserData } from '../types';
+import PermissionsSwitches from './PermissionsSwitches';
+import UsersInfos from './UsersInfos';
+import UsersLocations from './UsersLocations';
+import { WarningModal } from './WarningModal/WarningModal';
+import { useInitialUser } from './useInitialUser';
 
 const useStyles = makeStyles(theme => ({
     tabs: {
@@ -66,6 +65,8 @@ const UserDialogComponent: FunctionComponent<Props> = ({
 }) => {
     const connectedUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
+
+    const queryClient = useQueryClient();
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
 
@@ -80,7 +81,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
         saveProfile(currentUser, {
             onSuccess: () => {
                 if (currentUser.id === connectedUser.id) {
-                    dispatch(fetchCurrentUser());
+                    queryClient.invalidateQueries('currentUser');
                 }
                 closeDialog();
             },

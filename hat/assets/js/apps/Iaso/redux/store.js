@@ -5,8 +5,6 @@ import thunk from 'redux-thunk';
 
 import createStore from './createStore';
 
-import { localeMiddleware } from '../domains/app/middleware';
-import appReducer from '../domains/app/reducer';
 import {
     instancesInitialState,
     instancesReducer,
@@ -15,49 +13,22 @@ import {
     orgUnitsInitialState,
     orgUnitsReducer,
 } from '../domains/orgUnits/reducer';
-import { usersInitialState, usersReducer } from '../domains/users/reducer';
-import { routerInitialState, routerReducer } from './routerReducer';
-import {
-    sidebarMenuInitialState,
-    sidebarMenuReducer,
-} from './sidebarMenuReducer';
 
-// eslint-disable-next-line react-hooks/rules-of-hooks
-// let storeHistory = useRouterHistory(createHistory)({
-//     basename: '/dashboard',
-// });
-// TODO: to check, this initial state argument is probably useless
 const store = createStore(
     {
-        sidebar: sidebarMenuInitialState,
         orgUnits: orgUnitsInitialState,
         instances: instancesInitialState,
-        routerCustom: routerInitialState,
-        users: usersInitialState,
     },
     {
-        app: appReducer,
-        sidebar: sidebarMenuReducer,
         orgUnits: orgUnitsReducer,
         instances: instancesReducer,
-        routerCustom: routerReducer,
-        users: usersReducer,
     },
     [
         // routerMiddleware(storeHistory),
         thunk,
-        localeMiddleware,
     ],
 );
 
-// storeHistory = syncHistoryWithStore(storeHistory, store);
-
-// const history = storeHistory;
 const { dispatch } = store;
 
-export {
-    // history,
-    dispatch,
-    store
-};
-
+export { dispatch, store };

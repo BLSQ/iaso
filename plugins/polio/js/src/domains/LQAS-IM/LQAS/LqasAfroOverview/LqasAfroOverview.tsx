@@ -12,7 +12,7 @@ import { useParamsObject } from '../../../../../../../../hat/assets/js/apps/Iaso
 
 const baseUrl = baseUrls.lqasAfro;
 export const LqasAfroOverview: FunctionComponent = () => {
-    const params = useParamsObject(baseUrl) as AfroMapParams;
+    const params = useParamsObject(baseUrl) as unknown as AfroMapParams;
     const redirectToReplace = useRedirectToReplace();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();

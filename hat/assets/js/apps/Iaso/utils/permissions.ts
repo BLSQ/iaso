@@ -7,6 +7,7 @@ const ENTITY_TYPE_WRITE = 'iaso_entity_type_write';
 const ENTITIES_DUPLICATE_READ = 'iaso_entity_duplicates_read';
 const ENTITIES_DUPLICATE_WRITE = 'iaso_entity_duplicates_write';
 const FORMS = 'iaso_forms';
+const FORMS_STATS = 'iaso_forms_stats';
 const LINKS = 'iaso_links';
 const MAPPINGS = 'iaso_mappings';
 const ORG_UNIT_GROUPS = 'iaso_org_unit_groups';
@@ -50,6 +51,7 @@ export {
     ENTITIES_DUPLICATE_WRITE,
     ENTITY_TYPE_WRITE,
     FORMS,
+    FORMS_STATS,
     LINKS,
     MAPPINGS,
     MODULES,

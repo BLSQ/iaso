@@ -10,7 +10,9 @@ import './libs/polyfills';
 
 import { GlobalStyles } from '@mui/material';
 import { SnackbarProvider } from 'notistack';
-import LocalizedAppComponent from './domains/app/components/LocalizedAppComponent.js';
+import LocalizedAppComponent from './domains/app/components/LocalizedAppComponent';
+import { LocaleProvider } from './domains/app/contexts/LocaleContext';
+import { SidebarProvider } from './domains/app/contexts/SideBarContext';
 import {
     ThemeConfig,
     ThemeConfigContext,
@@ -19,7 +21,7 @@ import App from './domains/app/index';
 import { Plugin } from './domains/app/types';
 import { store } from './redux/store.js';
 import { getGlobalOverrides, getOverriddenTheme } from './styles';
-import { getPlugins, PluginsContext } from './utils';
+import { PluginsContext, getPlugins } from './utils';
 
 const queryClient = new QueryClient({
     defaultOptions: {
@@ -57,25 +59,29 @@ const iasoApp = (element, enabledPluginsName, themeConfig, userHomePage) => {
                     >
                         <CssBaseline />
                         <GlobalStyles styles={getGlobalOverrides(theme)} />
-                        <Provider store={store}>
-                            <LocalizedAppComponent>
-                                <SnackbarProvider
-                                    maxSnack={3}
-                                    autoHideDuration={4000}
-                                    anchorOrigin={{
-                                        vertical: 'bottom',
-                                        horizontal: 'center',
-                                    }}
-                                >
-                                    <App
-                                        // history={history}
-                                        userHomePage={
-                                            pluginHomePage || userHomePage
-                                        }
-                                    />
-                                </SnackbarProvider>
-                            </LocalizedAppComponent>
-                        </Provider>
+                        <SidebarProvider>
+                            <Provider store={store}>
+                                <LocaleProvider>
+                                    <LocalizedAppComponent>
+                                        <SnackbarProvider
+                                            maxSnack={3}
+                                            autoHideDuration={4000}
+                                            anchorOrigin={{
+                                                vertical: 'bottom',
+                                                horizontal: 'center',
+                                            }}
+                                        >
+                                            <App
+                                                userHomePage={
+                                                    pluginHomePage ||
+                                                    userHomePage
+                                                }
+                                            />
+                                        </SnackbarProvider>
+                                    </LocalizedAppComponent>
+                                </LocaleProvider>
+                            </Provider>
+                        </SidebarProvider>
                     </ThemeProvider>
                 </ThemeConfigContext.Provider>
             </PluginsContext.Provider>

@@ -42,33 +42,31 @@ export const LqasAfroMap: FunctionComponent<Props> = ({ params, side }) => {
         [params.displayedShapesLeft, params.displayedShapesRight, side],
     );
     return (
-        <>
-            <MapContainer
-                style={{
-                    height: '65vh',
-                }}
-                // @ts-ignore
-                center={defaultCenter}
-                zoom={defaultZoom}
-                zoomControl={false}
-                scrollWheelZoom={false}
-                whenCreated={mapInstance => {
-                    setBounds(mapInstance.getBounds());
-                }}
-            >
-                <LqasAfroMapLegend displayedShape={displayedShape} />
-                <CustomTileLayer
-                    currentTile={currentTile}
-                    setCurrentTile={setCurrentTile}
+        <MapContainer
+            style={{
+                height: '65vh',
+            }}
+            // @ts-ignore
+            center={defaultCenter}
+            zoom={defaultZoom}
+            zoomControl={false}
+            scrollWheelZoom={false}
+            whenCreated={mapInstance => {
+                setBounds(mapInstance.getBounds());
+            }}
+        >
+            <LqasAfroMapLegend displayedShape={displayedShape} />
+            <CustomTileLayer
+                currentTile={currentTile}
+                setCurrentTile={setCurrentTile}
+            />
+            {bounds && (
+                <CustomZoomControl
+                    boundsOptions={{ maxZoom: TILES.osm.maxZoom }}
+                    bounds={bounds}
                 />
-                {bounds && (
-                    <CustomZoomControl
-                        boundsOptions={{ maxZoom: TILES.osm.maxZoom }}
-                        bounds={bounds}
-                    />
-                )}
-                <LqasAfroMapPanesContainer params={params} side={side} />
-            </MapContainer>
-        </>
+            )}
+            <LqasAfroMapPanesContainer params={params} side={side} />
+        </MapContainer>
     );
 };

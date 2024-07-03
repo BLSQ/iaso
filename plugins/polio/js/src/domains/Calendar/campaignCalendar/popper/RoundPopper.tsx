@@ -4,11 +4,11 @@ import CloseIcon from '@mui/icons-material/Close';
 import { Box, Button, Grid, IconButton, Paper, Popper } from '@mui/material';
 import { getTableUrl, useSafeIntl } from 'bluesquare-components';
 
-import { useSelector } from 'react-redux';
 import { CsvButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/CsvButton';
 import { SxStyles } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
+import { useIsLoggedIn } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import MESSAGES from '../../../../constants/messages';
-import { CalendarRound, MappedCampaign, ReduxState } from '../types';
+import { CalendarRound, MappedCampaign } from '../types';
 
 const groupsForCampaignRound = (campaign, round) => {
     if (!campaign.separate_scopes_per_round) {
@@ -61,9 +61,7 @@ export const RoundPopper: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage, formatNumber } = useSafeIntl();
     // We don't want to show the edit button if there is no connected user
-    const isLogged = useSelector((state: ReduxState) =>
-        Boolean(state.users.current),
-    );
+    const isLogged = useIsLoggedIn();
     const id = open ? `campaign-popover-${campaign.id}-${round.id}` : undefined;
     const groupIds = groupsForCampaignRound(campaign, round).join(',');
     const urlParams = {

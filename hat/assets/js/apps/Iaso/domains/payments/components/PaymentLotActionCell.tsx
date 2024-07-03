@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import SendIcon from '@mui/icons-material/Send';
-import { IconButton } from 'bluesquare-components';
+import { ExternalLinkIconButton, IconButton } from 'bluesquare-components';
 import React, { ReactElement, useCallback } from 'react';
 import { PaymentLot } from '../types';
 
@@ -44,14 +44,10 @@ export const PaymentLotActionCell = ({
                 iconProps={{ disabled: disableButtons }}
                 paymentLot={paymentLot}
             />
-            <IconButton
+            <ExternalLinkIconButton
                 tooltipMessage={MESSAGES.download_payments}
                 overrideIcon={FileDownloadIcon}
                 url={`/api/payments/lots/${paymentLot.id}/?xlsx=true`}
-                download
-                reloadDocument // Pass this prop to prevent the router to prepend '/dashboar' to the url
-                iconSize="small"
-                disabled={disableButtons}
             />
         </>
     );

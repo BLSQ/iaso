@@ -13,7 +13,8 @@ type Data = {
 type LegendItem = {
     label: string;
     value: string;
-    color: string;
+    color?: string;
+    background?: string;
 };
 
 export const findDataForShape = ({
@@ -137,11 +138,13 @@ export const makeLegendItem = ({
     label,
     value,
     color,
+    background,
 }: LegendItem): LegendItem => {
     return {
         label: `${label}: ${value}`,
         value: `${label}: ${value}`,
         color,
+        background,
     };
 };
 

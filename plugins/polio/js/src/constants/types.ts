@@ -48,6 +48,15 @@ export type LqasImDistrictData = {
     district?: number;
     total_sites_visited: number;
     region_name?: string;
+    status:
+        | '1lqasOK'
+        | '3lqasverypoor'
+        | '3lqaspoor'
+        | '3lqasmoderate'
+        | '2lqasDisqualified'
+        | '3lqasundersampled'
+        | '3lqasoversampled'
+        | 'inScope';
 };
 
 export type LqasImDistrictDataWithNameAndRegion = LqasImDistrictData & {
@@ -475,6 +484,8 @@ export type CampaignListItem = {
     general_status: string;
     grouped_campaigns: number[];
     campaign_types: CampaignType[];
+    is_test: boolean;
+    is_preventive: boolean;
 };
 
 export type DefaultCampaignValues = {

@@ -94,7 +94,7 @@ export const formDetailPath = {
 export const formsStatsPath = {
     baseUrl: baseUrls.formsStats,
     routerUrl: `${baseUrls.formsStats}/*`,
-    permissions: [Permission.FORMS],
+    permissions: [Permission.FORMS_STATS],
     element: <FormsStats />,
 };
 

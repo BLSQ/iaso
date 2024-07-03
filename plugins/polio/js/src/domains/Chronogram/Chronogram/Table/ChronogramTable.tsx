@@ -1,9 +1,10 @@
 import React, { FunctionComponent } from 'react';
 
-import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
+import { TableWithDeepLink } from '../../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 
-import { ChronogramTaskMetaData, ChronogramParams } from '../types';
-import { baseUrls } from '../../../constants/urls';
+import { ChronogramParams } from '../types';
+import { ChronogramTaskMetaData } from '../../types';
+import { baseUrls } from '../../../../constants/urls';
 import { useChronogramTableColumns } from './useChronogramTableColumns';
 import { useGetChronogram } from '../api/useGetChronogram';
 

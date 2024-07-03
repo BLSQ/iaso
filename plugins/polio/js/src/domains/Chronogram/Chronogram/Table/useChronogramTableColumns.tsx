@@ -2,8 +2,8 @@ import { useMemo } from 'react';
 import { Column, useSafeIntl } from 'bluesquare-components';
 
 import MESSAGES from '../messages';
-import { ChronogramTaskMetaData } from '../types';
-import { DateCell } from '../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
+import { ChronogramTaskMetaData } from '../../types';
+import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 
 export const useChronogramTableColumns = (
     chronogramTaskMetaData: ChronogramTaskMetaData,

@@ -1,10 +1,10 @@
 import { UseBaseQueryResult } from 'react-query';
 
-import { useSnackQuery } from '../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
-import { getRequest } from '../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
+import { useSnackQuery } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import { getRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 
 import { ChronogramApiResponse, ChronogramParams } from '../types';
-import { apiBaseUrl } from '../constants';
+import { apiBaseUrl } from '../../constants';
 
 const getChronogram = async (
     params: Partial<ChronogramParams>,

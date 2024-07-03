@@ -15,7 +15,7 @@ const MESSAGES = defineMessages({
     },
     labelDescription: {
         id: 'iaso.polio.iaso.polio.chronogram.template_task.label.description',
-        defaultMessage: 'Description',
+        defaultMessage: 'Activity',
     },
     labelStartOffsetInDays: {
         id: 'iaso.polio.iaso.polio.chronogram.template_task.label.label_start_offset_in_days',

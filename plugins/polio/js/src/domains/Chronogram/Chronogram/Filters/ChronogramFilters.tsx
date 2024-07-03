@@ -2,15 +2,17 @@ import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@mui/material';
 
 import { useSafeIntl } from 'bluesquare-components';
+import { LinkWithLocation } from 'bluesquare-components';
 
-import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-import { FilterButton } from '../../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
-import { useFilterState } from '../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
+import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
+import { FilterButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
+import { useFilterState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 
 import MESSAGES from '../messages';
 import { ChronogramParams } from '../types';
-import { baseUrls } from '../../../constants/urls';
-import { useGetCountries } from '../../../hooks/useGetCountries';
+import { baseUrls } from '../../../../constants/urls';
+import { useGetCountries } from '../../../../hooks/useGetCountries';
+import { Link } from 'react-router-dom';
 
 type Props = {
     params: ChronogramParams;
@@ -87,6 +89,11 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
                         onFilter={handleSearch}
                     />
                 </Box>
+            </Grid>
+            <Grid container item justifyContent="flex-end" mt={4}>
+                <LinkWithLocation to={`/${baseUrls.chronogramTemplateTask}`}>
+                    {formatMessage(MESSAGES.linkToChronogramTemplateTask)}
+                </LinkWithLocation>
             </Grid>
         </>
     );

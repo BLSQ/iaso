@@ -14,44 +14,48 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Chronogram',
     },
     labelId: {
-        id: 'iaso.polio.label.id',
+        id: 'iaso.polio.chronogram.label.id',
         defaultMessage: 'ID',
     },
     labelCampaignObrName: {
-        id: 'iaso.polio.label.campaign_obr_name',
+        id: 'iaso.polio.chronogram.label.campaign_obr_name',
         defaultMessage: 'Campaign',
     },
     labelIsOnTime: {
-        id: 'iaso.polio.label.is_on_time',
+        id: 'iaso.polio.chronogram.label.is_on_time',
         defaultMessage: 'On time',
     },
     labelRoundNumber: {
-        id: 'iaso.polio.label.round_number',
+        id: 'iaso.polio.chronogram.label.round_number',
         defaultMessage: 'Round',
     },
     labelRoundStartDate: {
-        id: 'iaso.polio.label.round_start_date',
+        id: 'iaso.polio.chronogram.label.round_start_date',
         defaultMessage: 'Date',
     },
     labelPercentageOfCompletion: {
-        id: 'iaso.polio.label.percentage_of_completion',
+        id: 'iaso.polio.chronogram.label.percentage_of_completion',
         defaultMessage: 'Percentage of Completion Before/During/After',
     },
     labelNumTaskDelayed: {
-        id: 'iaso.polio.label.num_task_delayed',
+        id: 'iaso.polio.chronogram.label.num_task_delayed',
         defaultMessage: 'Task delayed',
     },
     filterLabelCountry: {
-        id: 'iaso.polio.filter.label.country',
+        id: 'iaso.polio.chronogram.filter.label.country',
         defaultMessage: 'Country',
     },
     filterLabelSearch: {
-        id: 'iaso.polio.filter.label.search',
+        id: 'iaso.polio.chronogram.filter.label.search',
         defaultMessage: 'Search',
     },
     filterLabelOnTime: {
-        id: 'iaso.polio.filter.label.on_time',
+        id: 'iaso.polio.chronogram.filter.label.on_time',
         defaultMessage: 'On time',
+    },
+    linkToChronogramTemplateTask: {
+        id: 'iaso.polio.chronogram.link_to_chronogram_template_task',
+        defaultMessage: 'Edit Default Tasks',
     },
 });
 

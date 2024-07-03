@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { Box } from '@mui/material';
 
-import { useSafeIntl } from 'bluesquare-components';
+import { useGoBack, useSafeIntl } from 'bluesquare-components';
 
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
@@ -27,12 +27,14 @@ export const ChronogramTemplateTask: FunctionComponent = () => {
 
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
+    const goBack = useGoBack(baseUrls.chronogram);
 
     return (
         <>
             <TopBar
                 title={formatMessage(MESSAGES.chronogramTemplateTaskTitle)}
                 displayBackButton={true}
+                goBack={() => goBack()}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <ChronogramTemplateTaskTable params={paramsNew} />

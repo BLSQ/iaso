@@ -5,7 +5,7 @@ import {
     extractUrls,
 } from '../../../../../hat/assets/js/apps/Iaso/constants/urls';
 
-export const HOME_BASE_URL = 'public_registry/registry';
+export const HOME_BASE_URL = 'registry/home';
 
 export const RouteConfigs: Record<string, RouteConfig> = {
     home: {

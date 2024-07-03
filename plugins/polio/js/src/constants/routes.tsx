@@ -36,6 +36,7 @@ import {
 } from '../../../../../hat/assets/js/apps/Iaso/constants/routes';
 import { Notifications } from '../domains/Notifications';
 import { Chronogram } from '../domains/Chronogram';
+import { ChronogramTemplateTask } from '../domains/Chronogram/ChronogramTemplateTask';
 
 // We store the path in a variable so we can import it and use its permissions
 export const campaignsPath: RoutePath = {
@@ -200,6 +201,13 @@ export const chronogramPath: RoutePath = {
     permissions: [CHRONOGRAM],
 };
 
+export const chronogramTemplateTaskPath: RoutePath = {
+    baseUrl: baseUrls.chronogramTemplateTask,
+    routerUrl: `${baseUrls.chronogramTemplateTask}/*`,
+    element: <ChronogramTemplateTask />,
+    permissions: [CHRONOGRAM],
+};
+
 export const routes: (RoutePath | AnonymousRoutePath)[] = [
     campaignsPath,
     campaignHistoryPath,
@@ -224,4 +232,5 @@ export const routes: (RoutePath | AnonymousRoutePath)[] = [
     countryConfigPath,
     reasonsForDelayConfigPath,
     chronogramPath,
+    chronogramTemplateTaskPath,
 ];

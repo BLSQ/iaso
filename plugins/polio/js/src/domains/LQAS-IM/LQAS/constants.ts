@@ -16,7 +16,7 @@ export const LQAS_POOR = '3lqaspoor';
 export const LQAS_VERY_POOR = '3lqasverypoor';
 export const LQAS_OVERSAMPLED = '3lqasoversampled';
 export const LQAS_UNDERSAMPLED = '3lqasundersampled';
-export const LQAS_COUNTRY_URL = '/api/polio/lqasmap/country/lqas_';
+export const LQAS_COUNTRY_URL = '/api/polio/lqasimmap/country/lqas_';
 export const HASHED_MAP_PATTERN = 'greyStripes';
 
 export const lqasDistrictColors = {

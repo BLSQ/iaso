@@ -1,17 +1,16 @@
-import React, { FunctionComponent, useCallback, useContext } from 'react';
-import { Link } from 'react-router-dom';
-import { Box, Container, Typography, IconButton, Grid } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import MenuIcon from '@mui/icons-material/Menu';
-import { useDispatch } from 'react-redux';
+import { Box, Container, Grid, IconButton, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import React, { FunctionComponent, useContext } from 'react';
+import { Link } from 'react-router-dom';
+import { LogoutButton } from '../../components/nav/LogoutButton';
 import iasoBg from '../../images/iaso-bg.jpg';
 import { LogoSvg } from '../app/components/LogoSvg';
+import SidebarMenuComponent from '../app/components/SidebarMenuComponent';
+import { useSidebar } from '../app/contexts/SideBarContext';
 import { ThemeConfigContext } from '../app/contexts/ThemeConfigContext';
 import { LangSwitch } from './components/LangSwitch';
-import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
-import SidebarMenuComponent from '../app/components/SidebarMenuComponent';
 import { useHomeButtons } from './hooks/useHomeButtons';
-import { LogoutButton } from '../../components/nav/LogoutButton';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -96,11 +95,7 @@ export const HomeOnline: FunctionComponent = () => {
     const { LOGO_PATH, APP_TITLE } = useContext(ThemeConfigContext);
     // @ts-ignore
     const staticUrl = window.STATIC_URL ?? '/static/';
-    const dispatch = useDispatch();
-    const toggleSidebar = useCallback(
-        () => dispatch(toggleSidebarMenu()),
-        [dispatch],
-    );
+    const { toggleSidebar } = useSidebar();
     const homeButtons = useHomeButtons();
     return (
         <Box className={classes.root}>

@@ -1,12 +1,13 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { Box } from '@mui/material';
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
+import { GreyHashedPattern } from '../../../../../../../../hat/assets/js/apps/Iaso/components/maps/HashedPatterns/GreyHashedPattern';
 import { defaultShapeStyle } from '../../../../utils/index';
 import { LQASIMType } from '../../shared/types/types';
 import { ScopeAndDNFDisclaimer } from '../../shared/ScopeAndDNFDisclaimer';
 import MESSAGES from '../../../../constants/messages';
 import { makeLqasMapLegendItems } from '../utils';
-import { lqasDistrictColors } from '../constants';
+import { HASHED_MAP_PATTERN, lqasDistrictColors } from '../constants';
 import { makePopup } from '../../shared/LqasImPopUp';
 import { MapLegendContainer } from '../../../Campaigns/MapComponent/MapLegendContainer';
 import { MapLegend } from '../../../Campaigns/MapComponent/MapLegend';
@@ -60,53 +61,49 @@ export const LqasCountryMap: FunctionComponent<Props> = ({
     const title = formatMessage(MESSAGES.lqasResults);
 
     return (
-        <>
-            <Box position="relative">
-                <MapLegendContainer>
-                    <MapLegend
-                        title={title}
-                        legendItems={legendItems}
-                        width="lg"
-                    />
-                </MapLegendContainer>
-                {/* Showing spinner on isFetching alone would make the map seem like it's loading before the user has chosen a country and campaign */}
-                {(isFetching || isFetchingGeoJson || isFetchingRegions) && (
-                    <LoadingSpinner fixed={false} absolute />
-                )}
-                <MapComponent
-                    key={countryId}
-                    name={`LQASIMMap${round}-${type}-${countryId}`}
-                    backgroundLayer={regionShapes}
-                    mainLayer={mainLayer}
-                    onSelectShape={() => null}
-                    getMainLayerStyle={getMainLayerStyles}
-                    getBackgroundLayerStyle={getBackgroundLayerStyle}
-                    tooltipLabels={{
-                        main: 'District',
-                        background: 'Region',
-                    }}
-                    makePopup={makePopup(data, round, selectedCampaign)}
-                    fitBoundsToBackground
-                    fitToBounds
-                    height={600}
+        <Box position="relative">
+            <MapLegendContainer>
+                <MapLegend title={title} legendItems={legendItems} width="lg" />
+            </MapLegendContainer>
+            {/* Showing spinner on isFetching alone would make the map seem like it's loading before the user has chosen a country and campaign */}
+            {(isFetching || isFetchingGeoJson || isFetchingRegions) && (
+                <LoadingSpinner fixed={false} absolute />
+            )}
+            <MapComponent
+                key={countryId}
+                name={`LQASIMMap${round}-${type}-${countryId}`}
+                backgroundLayer={regionShapes}
+                mainLayer={mainLayer}
+                onSelectShape={() => null}
+                getMainLayerStyle={getMainLayerStyles}
+                getBackgroundLayerStyle={getBackgroundLayerStyle}
+                tooltipLabels={{
+                    main: 'District',
+                    background: 'Region',
+                }}
+                makePopup={makePopup(data, round, selectedCampaign)}
+                fitBoundsToBackground
+                fitToBounds
+                height={600}
+                shapePatternIds={[HASHED_MAP_PATTERN]}
+                shapePatterns={[GreyHashedPattern]}
+            />
+            {selectedCampaign && (
+                <ScopeAndDNFDisclaimer
+                    campaign={selectedCampaign}
+                    data={
+                        disclaimerData as Record<
+                            string,
+                            {
+                                hasScope: boolean;
+                                districtsNotFound: string[];
+                            }
+                        >
+                    }
+                    campaigns={campaigns}
+                    round={round}
                 />
-                {selectedCampaign && (
-                    <ScopeAndDNFDisclaimer
-                        campaign={selectedCampaign}
-                        data={
-                            disclaimerData as Record<
-                                string,
-                                {
-                                    hasScope: boolean;
-                                    districtsNotFound: string[];
-                                }
-                            >
-                        }
-                        campaigns={campaigns}
-                        round={round}
-                    />
-                )}
-            </Box>
-        </>
+            )}
+        </Box>
     );
 };

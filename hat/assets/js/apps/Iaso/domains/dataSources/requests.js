@@ -8,12 +8,11 @@ import {
 import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks.ts';
 import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
-import { useDispatch, useSelector } from 'react-redux';
 import { openSnackBar } from '../../components/snackBars/EventDispatcher.ts';
 import snackBarMessages from '../../components/snackBars/messages';
 import { errorSnackBar } from '../../constants/snackBars';
 import { getValues } from '../../hooks/form';
-import { fetchCurrentUser } from '../users/actions';
+import { useCurrentUser } from '../../utils/usersUtils.ts';
 import MESSAGES from './messages';
 
 /**
@@ -170,8 +169,7 @@ export const updateDefaultDataSource = ([accountId, defaultVersionId]) =>
  */
 export const useSaveDataSource = setFieldErrors => {
     const [isSaving, setIsSaving] = React.useState(false);
-    const currentUser = useSelector(state => state.users.current);
-    const dispatch = useDispatch();
+    const currentUser = useCurrentUser();
     const queryClient = useQueryClient();
 
     const { mutateAsync: saveMutation } = useSnackMutation(
@@ -221,7 +219,7 @@ export const useSaveDataSource = setFieldErrors => {
                 currentUser.account.id,
                 form.default_version_id.value,
             ]);
-            dispatch(fetchCurrentUser());
+            queryClient.invalidateQueries('currentUser');
         }
         setIsSaving(false);
     };

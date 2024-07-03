@@ -6,7 +6,7 @@ import { DateInput, NumberInput } from '../../../components/Inputs';
 import MESSAGES from '../../../constants/messages';
 import { CampaignFormValues } from '../../../constants/types';
 import { RoundDates } from './RoundDates/RoundDates';
-import { SingleSelect } from '../../../components/Inputs/SingleSelect';
+import { DependentSingleSelect } from '../../../components/Inputs/DependentSingleSelect';
 
 export const MONTHS = 'MONTHS';
 export const YEARS = 'YEARS';
@@ -64,9 +64,13 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
                     <Field
                         label={formatMessage(MESSAGES.ageUnit)}
                         name={`rounds[${roundIndex}].age_type`}
-                        component={SingleSelect}
+                        component={DependentSingleSelect}
                         fullWidth
                         options={ageTypeOptions}
+                        dependsOn={[
+                            `rounds[${roundIndex}].age_min`,
+                            `rounds[${roundIndex}].age_max`,
+                        ]}
                     />
                 </Box>
                 <Box mb={2}>

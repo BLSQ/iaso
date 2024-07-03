@@ -16,8 +16,8 @@ import { PluginsContext } from '../../../utils';
 import { SHOW_HOME_ONLINE, hasFeatureFlag } from '../../../utils/featureFlags';
 import { useCurrentUser, useHasNoAccount } from '../../../utils/usersUtils';
 import { HomeOnline } from '../../home/HomeOnline';
-import { useGetAndStoreCurrentUser } from '../../home/hooks/useGetAndStoreCurrentUser';
 import ProtectedRoute from '../../users/components/ProtectedRoute';
+import { useGetCurrentUser } from '../../users/hooks/useGetCurrentUser';
 import { Plugins } from '../types';
 
 type Result = {
@@ -175,13 +175,13 @@ export const useRoutes = (userHomePage?: string): Result => {
     const hasNoAccount = useHasNoAccount();
     const { pluginRoutes, pluginRedirections } = usePluginsRouteConfigs();
     const routesConfigs = useGetRoutesConfigs({ userHomePage, pluginRoutes });
-
     const protectedRoutes = useGetProtectedRoutes(routesConfigs, hasNoAccount);
     const currentRoute = useCurrentRoute(routesConfigs);
 
-    const { isFetching: isFetchingCurrentUser } = useGetAndStoreCurrentUser(
+    const { isFetching: isFetchingCurrentUser } = useGetCurrentUser(
         !currentRoute?.allowAnonymous ||
             currentRoute?.baseUrl === baseUrls.home,
+        false,
     );
     const redirections = useRedirections({
         hasNoAccount,

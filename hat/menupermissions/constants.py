@@ -1,6 +1,7 @@
 MODULE_PERMISSIONS = {
     "DATA_COLLECTION_FORMS": [
         "iaso_forms",
+        "iaso_forms_stats",
         "iaso_update_submission",
         "iaso_submissions",
         "iaso_completeness_stats",
@@ -83,6 +84,7 @@ FEATUREFLAGES_TO_EXCLUDE = {
 PERMISSIONS_PRESENTATION = {
     "forms": [
         "iaso_forms",
+        "iaso_forms_stats",
         "iaso_update_submission",
         "iaso_submissions",
         "iaso_completeness",

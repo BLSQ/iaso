@@ -34,6 +34,7 @@ _ENTITY_TYPE_WRITE = "iaso_entity_type_write"
 _ENTITIES_DUPLICATE_READ = "iaso_entity_duplicates_read"
 _ENTITIES_DUPLICATE_WRITE = "iaso_entity_duplicates_write"
 _FORMS = "iaso_forms"
+_FORMS_STATS = "iaso_forms_stats"
 _LINKS = "iaso_links"
 _MAPPINGS = "iaso_mappings"
 _MODULES = "iaso_modules"
@@ -46,11 +47,6 @@ _PAGE_WRITE = "iaso_page_write"
 _PAYMENTS = "iaso_payments"
 _PLANNING_WRITE = "iaso_planning_write"
 _PLANNING_READ = "iaso_planning_read"
-_POLIO = "iaso_polio"
-_POLIO_BUDGET = "iaso_polio_budget"
-_POLIO_BUDGET_ADMIN = "iaso_polio_budget_admin"
-_POLIO_CONFIG = "iaso_polio_config"
-_POLIO_NOTIFICATIONS = "iaso_polio_notifications"
 _PROJECTS = "iaso_projects"
 _REGISTRY_WRITE = "iaso_registry_write"
 _REGISTRY_READ = "iaso_registry_read"
@@ -65,6 +61,13 @@ _USERS_ADMIN = "iaso_users"
 _USERS_MANAGED = "iaso_users_managed"
 _USERS_ROLES = "iaso_user_roles"
 _WORKFLOW = "iaso_workflows"
+
+# Polio
+_POLIO = "iaso_polio"
+_POLIO_BUDGET = "iaso_polio_budget"
+_POLIO_BUDGET_ADMIN = "iaso_polio_budget_admin"
+_POLIO_CONFIG = "iaso_polio_config"
+_POLIO_NOTIFICATIONS = "iaso_polio_notifications"
 _POLIO_VACCINE_AUTHORIZATIONS_ADMIN = "iaso_polio_vaccine_authorizations_admin"
 _POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY = "iaso_polio_vaccine_authorizations_read_only"
 _POLIO_VACCINE_SUPPLY_CHAIN_READ = "iaso_polio_vaccine_supply_chain_read"
@@ -120,6 +123,7 @@ ENTITY_TYPE_WRITE = _PREFIX + _ENTITY_TYPE_WRITE
 ENTITIES_DUPLICATE_READ = _PREFIX + _ENTITIES_DUPLICATE_READ
 ENTITIES_DUPLICATE_WRITE = _PREFIX + _ENTITIES_DUPLICATE_WRITE
 FORMS = _PREFIX + _FORMS
+FORMS_STATS = _PREFIX + _FORMS_STATS
 LINKS = _PREFIX + _LINKS
 MAPPINGS = _PREFIX + _MAPPINGS
 MODULES = _PREFIX + _MODULES
@@ -223,6 +227,7 @@ class CustomPermissionSupport(models.Model):
 
         permissions = (
             (_FORMS, _("Formulaires")),
+            (_FORMS_STATS, _("Statistiques pour les formulaires")),
             (_MAPPINGS, _("Correspondances avec DHIS2")),
             (_MODULES, _("modules")),
             (_COMPLETENESS, _("Complétude des données")),
@@ -236,9 +241,6 @@ class CustomPermissionSupport(models.Model):
             (_PROJECTS, _("Projets")),
             (_SOURCES, _("Sources")),
             (_DATA_TASKS, _("Tâches")),
-            (_POLIO, _("Polio")),
-            (_POLIO_CONFIG, _("Polio config")),
-            (_POLIO_NOTIFICATIONS, _("Polio notifications")),
             (_SUBMISSIONS, _("Soumissions")),
             (_SUBMISSIONS_UPDATE, _("Editer soumissions")),
             (_PLANNING_WRITE, _("Editer le planning")),
@@ -264,6 +266,10 @@ class CustomPermissionSupport(models.Model):
             (_SOURCE_WRITE, _("Write data source")),
             (_PAGE_WRITE, _("Write page")),
             (_PAYMENTS, _("Payments page")),
+            # Polio
+            (_POLIO, _("Polio")),
+            (_POLIO_CONFIG, _("Polio config")),
+            (_POLIO_NOTIFICATIONS, _("Polio notifications")),
             (_POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY, _("Polio Vaccine Authorizations Read Only")),
             (_POLIO_VACCINE_AUTHORIZATIONS_ADMIN, _("Polio Vaccine Authorizations Admin")),
             (_POLIO_VACCINE_SUPPLY_CHAIN_READ, _("Polio Vaccine Supply Chain Read")),

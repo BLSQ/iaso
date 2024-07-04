@@ -1,8 +1,12 @@
-import { useMemo } from 'react';
+import React, { useMemo } from 'react';
+import { Box } from '@mui/material';
+
 import { Column, useSafeIntl } from 'bluesquare-components';
 
-import MESSAGES from '../messages';
 import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
+
+import MESSAGES from '../messages';
+import { DeleteChronogramTask } from '../Modals/ChronogramTaskDeleteModal';
 
 export const useChronogramDetailsTableColumn = (): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -58,6 +62,20 @@ export const useChronogramDetailsTableColumn = (): Column[] => {
                 id: 'comment',
                 accessor: 'comment',
                 sortable: false,
+            },
+            {
+                Header: formatMessage(MESSAGES.actions),
+                sortable: false,
+                Cell: settings => {
+                    return (
+                        <Box display="inline-flex">
+                            {/* @ts-ignore */}
+                            <DeleteChronogramTask
+                                chronogramTask={settings.row.original}
+                            />
+                        </Box>
+                    );
+                },
             },
         ];
     }, [formatMessage]);

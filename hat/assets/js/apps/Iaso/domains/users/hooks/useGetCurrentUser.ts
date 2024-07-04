@@ -20,7 +20,9 @@ export const useGetCurrentUser = (
                 console.warn('User not connected');
             },
             onSuccess: result => {
-                setLocale(result.language as LangOptions);
+                setLocale(
+                    result.language ? (result.language as LangOptions) : 'en',
+                );
             },
             retry: false,
             enabled,

@@ -1,6 +1,13 @@
 import { LangOptions } from 'bluesquare-components';
 import moment from 'moment';
-import React, { createContext, useContext, useMemo, useState } from 'react';
+import React, {
+    createContext,
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useState,
+} from 'react';
 import { longDateFormats } from '../../../utils/dates';
 
 const LocaleContext = createContext({
@@ -12,11 +19,24 @@ const LocaleContext = createContext({
 });
 
 export const useLocale = () => useContext(LocaleContext);
-
+const defaultLanguage = 'en';
 export const LocaleProvider = ({ children }) => {
-    const [locale, setLocale] = useState<LangOptions>(
-        moment.locale() as LangOptions,
-    );
+    const [locale, setLocale] = useState<LangOptions>(defaultLanguage);
+
+    const updateLocale = useCallback((newLocale: LangOptions) => {
+        moment.locale(newLocale);
+        moment.updateLocale(newLocale, {
+            longDateFormat: longDateFormats[newLocale],
+            week: {
+                dow: 1,
+            },
+        });
+        setLocale(newLocale);
+    }, []);
+
+    useEffect(() => {
+        updateLocale(defaultLanguage);
+    }, [locale, updateLocale]);
 
     const value: {
         locale: LangOptions;
@@ -25,18 +45,9 @@ export const LocaleProvider = ({ children }) => {
     } = useMemo(
         () => ({
             locale,
-            setLocale: (newLocale: LangOptions) => {
-                moment.locale(newLocale);
-                moment.updateLocale(newLocale, {
-                    longDateFormat: longDateFormats[newLocale],
-                    week: {
-                        dow: 1,
-                    },
-                });
-                setLocale(newLocale as LangOptions);
-            },
+            setLocale: updateLocale,
         }),
-        [locale],
+        [locale, updateLocale],
     );
 
     return (

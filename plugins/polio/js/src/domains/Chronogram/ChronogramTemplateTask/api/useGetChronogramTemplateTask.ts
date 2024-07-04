@@ -13,7 +13,7 @@ const getChronogramTemplateTask = async (
     params: Partial<ChronogramTemplateTaskParams>,
 ): Promise<ChronogramTemplateTaskApiResponse> => {
     const queryString = new URLSearchParams(params).toString();
-    return getRequest(`${apiBaseUrl}/template_tasks?${queryString}`);
+    return getRequest(`${apiBaseUrl}/template_tasks/?${queryString}`);
 };
 
 export const useGetChronogramTemplateTask = (

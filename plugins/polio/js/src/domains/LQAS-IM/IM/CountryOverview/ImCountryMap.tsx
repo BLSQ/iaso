@@ -1,28 +1,29 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { Box } from '@mui/material';
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
-import { GreyHashedPattern } from '../../../../../../../../hat/assets/js/apps/Iaso/components/maps/HashedPatterns/GreyHashedPattern';
+import { MapComponent } from '../../../Campaigns/MapComponent/MapComponent.js';
+import { MapLegend } from '../../../Campaigns/MapComponent/MapLegend.js';
+import { MapLegendContainer } from '../../../Campaigns/MapComponent/MapLegendContainer.js';
+import { makePopup } from '../../shared/LqasImPopUp.js';
+import { makeImMapLegendItems } from '../utils';
 import { defaultShapeStyle } from '../../../../utils/index';
-import { LQASIMType } from '../../shared/types/types';
-import { ScopeAndDNFDisclaimer } from '../../shared/ScopeAndDNFDisclaimer';
 import MESSAGES from '../../../../constants/messages';
-import { makeLqasMapLegendItems } from '../utils';
-import { HASHED_MAP_PATTERN, lqasDistrictColors } from '../constants';
-import { makePopup } from '../../shared/LqasImPopUp';
-import { MapLegendContainer } from '../../../Campaigns/MapComponent/MapLegendContainer';
-import { MapLegend } from '../../../Campaigns/MapComponent/MapLegend';
-import { MapComponent } from '../../../Campaigns/MapComponent/MapComponent';
+import { ScopeAndDNFDisclaimer } from '../../shared/ScopeAndDNFDisclaimer';
+import { IMType } from '../../../../constants/types';
+import { imDistrictColors } from '../constants';
 
-const getBackgroundLayerStyle = () => defaultShapeStyle;
+// eslint-disable-next-line no-unused-vars
+const getBackgroundLayerStyle = _shape => defaultShapeStyle;
+
 const getMainLayerStyles = shape => {
-    return lqasDistrictColors[shape.status];
+    return imDistrictColors[shape.status];
 };
 
 type Props = {
     round: number;
     campaigns?: any[];
     selectedCampaign?: string;
-    type: LQASIMType;
+    type: IMType;
     countryId?: number;
     data?: any;
     isFetchingGeoJson?: boolean;
@@ -30,35 +31,33 @@ type Props = {
     isFetching?: boolean;
     disclaimerData?: Record<string, unknown> | null | undefined;
     regionShapes: any;
-    isFetchingRegions: boolean;
+    isFetchingRegions?: boolean;
 };
 
-export const LqasCountryMap: FunctionComponent<Props> = ({
+export const ImCountryMap: FunctionComponent<Props> = ({
     type,
     round,
     selectedCampaign,
     countryId = undefined,
-    campaigns = [],
+    campaigns,
     data,
     isFetching = false,
     disclaimerData = {},
-    isFetchingGeoJson = false,
     mainLayer,
     regionShapes,
+    isFetchingGeoJson = false,
     isFetchingRegions = false,
 }) => {
     const { formatMessage } = useSafeIntl();
-
     const legendItems = useMemo(() => {
-        return makeLqasMapLegendItems(formatMessage)(
+        return makeImMapLegendItems(formatMessage)(
             data,
             selectedCampaign,
             round,
         );
     }, [data, selectedCampaign, round, formatMessage]);
 
-    const title = formatMessage(MESSAGES.lqasResults);
-
+    const title = formatMessage(MESSAGES.imResults);
     return (
         <Box position="relative">
             <MapLegendContainer>
@@ -70,7 +69,7 @@ export const LqasCountryMap: FunctionComponent<Props> = ({
             )}
             <MapComponent
                 key={countryId}
-                name={`LQASIMMap${round}-${type}-${countryId}`}
+                name={`IMMap${round}-${type}-${countryId}`}
                 backgroundLayer={regionShapes}
                 mainLayer={mainLayer}
                 onSelectShape={() => null}
@@ -84,8 +83,8 @@ export const LqasCountryMap: FunctionComponent<Props> = ({
                 fitBoundsToBackground
                 fitToBounds
                 height={600}
-                shapePatternIds={[HASHED_MAP_PATTERN]}
-                shapePatterns={[GreyHashedPattern]}
+                // shapePatternIds={[HASHED_MAP_PATTERN]}
+                // shapePatterns={[GreyHashedPattern]}
             />
             {selectedCampaign && (
                 <ScopeAndDNFDisclaimer

@@ -13,9 +13,7 @@ export const BadRoundNumbers: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const title = formatMessage(MESSAGES.badRoundNumbers);
-    return (
-        <>
-            <Typography variant="h6">{`${title}: ${formsWithBadRoundNumber}`}</Typography>
-        </>
-    );
+    return formsWithBadRoundNumber ? (
+        <Typography variant="h6">{`${title}: ${formsWithBadRoundNumber}`}</Typography>
+    ) : null;
 };

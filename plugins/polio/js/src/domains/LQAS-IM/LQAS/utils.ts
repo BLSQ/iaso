@@ -228,9 +228,3 @@ export const makeCaregiversRatio = (
     );
     return convertStatToPercent(caregiversInformed, childrenChecked);
 };
-
-export const findRegionShape = (shape, regionShapes) => {
-    return regionShapes.filter(
-        regionShape => regionShape.id === shape.parent_id,
-    )[0]?.name;
-};

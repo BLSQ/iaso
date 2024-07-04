@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 
 import { Paper, Divider, Box } from '@mui/material';
 
-import { LqasImMap } from './LqasImMap';
+import { LqasImMap } from '../IM/CountryOverview/LqasImMap';
 
 import { LqasSummary } from '../LQAS/CountryOverview/LqasSummary';
 import { LqasImMapHeader } from './LqasImMapHeader';

@@ -1,5 +1,5 @@
 /* eslint-disable react/no-array-index-key */
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import {
     useSafeIntl,
     commonStyles,
@@ -19,12 +19,13 @@ import { LqasImHorizontalChart } from '../shared/LqasImHorizontalChart.tsx';
 import { DatesIgnored } from '../shared/DatesIgnored.tsx';
 import { HorizontalDivider } from '../../../components/HorizontalDivider.tsx';
 import { LqasImVerticalChart } from '../shared/LqasImVerticalChart.tsx';
-import { MapContainer } from '../shared/MapContainer.tsx';
+import { Sides } from '../../../constants/types.ts';
+import { ImOverviewContainer } from './CountryOverview/ImOverviewContainer.tsx';
 import { useImData } from './hooks/useImData.ts';
 import MESSAGES from '../../../constants/messages.ts';
 import { BadRoundNumbers } from '../shared/BadRoundNumber.tsx';
 import { commaSeparatedIdsToArray } from '../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
-import { defaultRounds, paperElevation } from '../shared/constants.ts';
+import { defaultRounds, paperElevation, LIST } from '../shared/constants.ts';
 import { baseUrls } from '../../../constants/urls.ts';
 
 const styles = theme => ({
@@ -55,7 +56,6 @@ export const ImStats = () => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const redirectToReplace = useRedirectToReplace();
-
     const [selectedRounds, setSelectedRounds] = useState(
         rounds ? commaSeparatedIdsToArray(rounds) : defaultRounds,
     );
@@ -82,10 +82,6 @@ export const ImStats = () => {
             });
     }, [campaign, campaigns]);
 
-    // const dropDownOptions = useMemo(() => {
-    //     return makeDropdownOptions(imData.stats, campaign, selectedRounds);
-    // }, [imData, campaign, selectedRounds]);
-
     const onRoundChange = useCallback(
         index => value => {
             const updatedSelection = [...selectedRounds];
@@ -102,10 +98,32 @@ export const ImStats = () => {
     const divider = (
         <HorizontalDivider mt={6} mb={4} ml={-4} mr={-4} displayTrigger />
     );
-
     useSkipEffectOnMount(() => {
-        setSelectedRounds(defaultRounds);
-    }, [campaign, country]);
+        setSelectedRounds([undefined, undefined]);
+    }, [country]);
+
+    useEffect(() => {
+        if (dropDownOptions && !rounds) {
+            if (dropDownOptions.length === 1) {
+                setSelectedRounds([
+                    dropDownOptions[0].value,
+                    dropDownOptions[0].value,
+                ]);
+                redirectToReplace(baseUrl, {
+                    ...params,
+                    rounds: `${dropDownOptions[0].value},${dropDownOptions[0].value}`,
+                    rightTab: LIST,
+                });
+            }
+            if (dropDownOptions.length > 1) {
+                setSelectedRounds([
+                    dropDownOptions[0].value,
+                    dropDownOptions[1].value,
+                ]);
+            }
+        }
+    }, [dropDownOptions, campaign, rounds, redirectToReplace, params, baseUrl]);
+
     return (
         <>
             <TopBar
@@ -121,23 +139,48 @@ export const ImStats = () => {
                     params={params}
                 />
                 <Grid container spacing={2} direction="row">
-                    {selectedRounds.map((rnd, index) => (
-                        <Grid item xs={6} key={`IM-map-round ${rnd}_${index}`}>
-                            <MapContainer
-                                round={parseInt(rnd, 10)}
-                                campaign={campaign}
-                                campaigns={campaigns}
-                                country={country}
-                                data={convertedData}
-                                isFetching={isFetching || campaignsFetching}
-                                debugData={debugData}
-                                paperElevation={paperElevation}
-                                type={imType}
-                                onRoundChange={onRoundChange(index)}
-                                options={dropDownOptions}
-                            />
-                        </Grid>
-                    ))}
+                    <Grid
+                        item
+                        xs={6}
+                        key={`IM-map-round round_${selectedRounds[0]}_${0}`}
+                    >
+                        <ImOverviewContainer
+                            round={parseInt(selectedRounds[0], 10)}
+                            campaign={campaign}
+                            campaigns={campaigns}
+                            country={country}
+                            data={convertedData}
+                            isFetching={isFetching || campaignsFetching}
+                            debugData={debugData}
+                            paperElevation={paperElevation}
+                            type={imType}
+                            params={params}
+                            onRoundChange={onRoundChange(0)}
+                            side={Sides.left}
+                            options={dropDownOptions}
+                        />
+                    </Grid>
+                    <Grid
+                        item
+                        xs={6}
+                        key={`IM-map-round round_${selectedRounds[1]}_${1}`}
+                    >
+                        <ImOverviewContainer
+                            round={parseInt(selectedRounds[1], 10)}
+                            campaign={campaign}
+                            campaigns={campaigns}
+                            country={country}
+                            data={convertedData}
+                            isFetching={isFetching || campaignsFetching}
+                            debugData={debugData}
+                            paperElevation={paperElevation}
+                            type={imType}
+                            params={params}
+                            side={Sides.right}
+                            onRoundChange={onRoundChange(1)}
+                            options={dropDownOptions}
+                        />
+                    </Grid>
                 </Grid>
                 {campaign && !isFetching && (
                     <>

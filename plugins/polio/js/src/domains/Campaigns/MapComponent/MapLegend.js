@@ -4,7 +4,6 @@ import { array, oneOf, string } from 'prop-types';
 import { useStyles } from './styles';
 import { convertWidth } from '../../../utils/index.tsx';
 
-// TODO pass font size as props
 export const MapLegend = ({ title, legendItems, width }) => {
     const classes = useStyles();
     return (
@@ -16,43 +15,48 @@ export const MapLegend = ({ title, legendItems, width }) => {
                 >
                     {title}
                 </Typography>
-                {legendItems.map((legendItem, i) => (
-                    <Box py={1}>
-                        <Grid
-                            container
-                            spacing={1}
-                            key={`${title}${i}${legendItem.value}`}
-                        >
+                {legendItems.map((legendItem, i) => {
+                    return (
+                        <Box py={1}>
                             <Grid
-                                item
-                                sm={width === 'xs' || width === 'sm' ? 6 : 3}
                                 container
-                                justifyContent="flex-start"
+                                spacing={1}
+                                key={`${title}${i}${legendItem.label}${legendItem.value}`}
                             >
-                                <span
-                                    className={classes.roundColor}
-                                    style={{
-                                        backgroundImage: legendItem.background,
-                                        backgroundColor: legendItem.color,
-                                    }}
-                                />
+                                <Grid
+                                    item
+                                    sm={
+                                        width === 'xs' || width === 'sm' ? 6 : 3
+                                    }
+                                    container
+                                    justifyContent="flex-start"
+                                >
+                                    <span
+                                        className={classes.roundColor}
+                                        style={{
+                                            backgroundImage:
+                                                legendItem.background,
+                                            backgroundColor: legendItem.color,
+                                        }}
+                                    />
+                                </Grid>
+                                <Grid
+                                    item
+                                    sm={
+                                        width === 'xs' || width === 'sm' ? 6 : 9
+                                    }
+                                    container
+                                    justifyContent="flex-end"
+                                    alignItems="center"
+                                >
+                                    <div style={{ fontSize: '14px' }}>
+                                        {legendItem.label}
+                                    </div>
+                                </Grid>
                             </Grid>
-                            <Grid
-                                item
-                                sm={width === 'xs' || width === 'sm' ? 6 : 9}
-                                container
-                                justifyContent="flex-end"
-                                alignItems="center"
-                            >
-                                {/* <Typography variant="subtitle2"> */}
-                                <div style={{ fontSize: '14px' }}>
-                                    {legendItem.label}
-                                </div>
-                                {/* </Typography> */}
-                            </Grid>
-                        </Grid>
-                    </Box>
-                ))}
+                        </Box>
+                    );
+                })}
             </Box>
         </Paper>
     );

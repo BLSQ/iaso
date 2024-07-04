@@ -113,15 +113,15 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
     },
     imGlobal: {
         url: IM_GLOBAL,
-        params: ['campaign', 'country', 'rounds'],
+        params: ['campaign', 'country', 'rounds', 'leftTab', 'rightTab'],
     },
     imIhh: {
         url: IM_IHH,
-        params: ['campaign', 'country', 'rounds'],
+        params: ['campaign', 'country', 'rounds', 'leftTab', 'rightTab'],
     },
     imOhh: {
         url: IM_OHH,
-        params: ['campaign', 'country', 'rounds'],
+        params: ['campaign', 'country', 'rounds', 'leftTab', 'rightTab'],
     },
     budget: {
         url: BUDGET,

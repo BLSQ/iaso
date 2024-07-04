@@ -26,7 +26,7 @@ export const determineLqasImDates = (
     const roundEnd = roundData.ended_at;
     const startDate = lqasImStart ?? roundStart;
     const endDate = lqasImEnd ?? roundEnd;
-    // TODO handle endDate is before startDate
+
     return {
         start: {
             date: startDate,
@@ -54,4 +54,10 @@ export const computeScopeCounts = (
         return scope.length;
     }
     return aggregateScopes(campaign?.scopes ?? []).length;
+};
+
+export const findRegionShape = (shape, regionShapes) => {
+    return regionShapes.filter(
+        regionShape => regionShape.id === shape.parent_id,
+    )[0]?.name;
 };

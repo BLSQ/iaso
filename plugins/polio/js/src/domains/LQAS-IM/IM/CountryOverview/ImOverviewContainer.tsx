@@ -5,51 +5,33 @@ import React, {
     useState,
 } from 'react';
 
-import { Paper, Divider, Tab, Tabs } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-
+import { Paper, Divider, Box, Tabs, Tab } from '@mui/material';
 import {
     commonStyles,
-    useSafeIntl,
     useRedirectToReplace,
+    useSafeIntl,
 } from 'bluesquare-components';
-
-import { LqasSummary } from './LqasSummary';
+import { makeStyles } from '@mui/styles';
+import { baseUrls } from '../../../../constants/urls';
+import { ImCountryMap } from './ImCountryMap';
 import { LqasImMapHeader } from '../../shared/LqasImMapHeader';
 import {
     Campaign,
     ConvertedLqasImData,
+    IMType,
     Side,
     Sides,
 } from '../../../../constants/types';
-
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { determineLqasImDates } from '../../shared/utils';
+import { LIST, MAP } from '../../shared/constants';
+import { ImSummary } from './ImSummary';
 import MESSAGES from '../../../../constants/messages';
-import { computeScopeCounts, determineLqasImDates } from '../../shared/utils';
-import { LIST, LqasIMView, MAP } from '../../shared/constants';
-import { LqasCountryListOverview } from './LqasCountryListOverview';
 import { useGetGeoJson } from '../../../Campaigns/Scope/hooks/useGetGeoJson';
-import { getLqasImMapLayer } from '../../IM/utils';
-import { LqasCountryMap } from './LqasCountryMap';
-import { baseUrls } from '../../../../constants/urls';
+import { getLqasImMapLayer } from '../utils';
+import { ImCountryListOverview } from './ImCountryListOverview';
 
 const defaultShapes = [];
-type Props = {
-    round: number;
-    campaign: string;
-    campaigns: Array<unknown>;
-    country: string;
-    data: Record<string, ConvertedLqasImData>;
-    isFetching: boolean;
-    debugData: Record<string, unknown> | null | undefined;
-    paperElevation: number;
-    options: DropdownOptions<number>[];
-    // eslint-disable-next-line no-unused-vars
-    onRoundChange: (value: number) => void;
-    side: Side;
-    params: Record<string, string | undefined>;
-};
-
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     mapContainer: {
@@ -64,9 +46,24 @@ const useStyles = makeStyles(theme => ({
     hidden: { visibility: 'hidden', height: 0 },
 }));
 
-const baseUrl = baseUrls.lqasCountry;
+type Props = {
+    round: number;
+    campaign: string;
+    campaigns: Array<unknown>;
+    country: string;
+    data: Record<string, ConvertedLqasImData>;
+    isFetching: boolean;
+    debugData: Record<string, unknown> | null | undefined;
+    paperElevation: number;
+    type: IMType;
+    options: DropdownOptions<number>[];
+    // eslint-disable-next-line no-unused-vars
+    onRoundChange: (value: number) => void;
+    side: Side;
+    params: Record<string, string | undefined>;
+};
 
-export const LqasOverviewContainer: FunctionComponent<Props> = ({
+export const ImOverviewContainer: FunctionComponent<Props> = ({
     round,
     campaign,
     campaigns,
@@ -75,42 +72,28 @@ export const LqasOverviewContainer: FunctionComponent<Props> = ({
     isFetching,
     debugData,
     paperElevation,
-    options,
-    onRoundChange,
+    type,
     side,
     params,
+    options,
+    onRoundChange,
 }) => {
-    const { formatMessage } = useSafeIntl();
+    const baseUrl = baseUrls[type];
     const classes: Record<string, string> = useStyles();
-    const redirectToReplace = useRedirectToReplace();
-    const campaignObject = campaigns.filter(
-        (c: Record<string, unknown>) => c.obr_name === campaign,
-    )[0] as Campaign;
-    const countryId = parseInt(country, 10);
-    const { data: shapes = defaultShapes, isFetching: isFetchingGeoJson } =
-        useGetGeoJson(countryId, 'DISTRICT');
-
-    const {
-        data: regionShapes = defaultShapes,
-        isFetching: isFetchingRegions,
-    } = useGetGeoJson(countryId, 'REGION');
-
-    const mainLayer = useMemo(() => {
-        return getLqasImMapLayer({
-            data,
-            selectedCampaign: campaign,
-            type: LqasIMView.lqas,
-            campaigns,
-            round,
-            shapes,
-        });
-    }, [data, campaign, campaigns, round, shapes]);
-
-    const { start: startDate, end: endDate } = determineLqasImDates(
-        campaignObject,
-        round,
-        LqasIMView.lqas,
+    const { formatMessage } = useSafeIntl();
+    const campaignObject = useMemo(
+        () =>
+            campaigns.filter(
+                (c: Record<string, unknown>) => c.obr_name === campaign,
+            )[0] as Campaign,
+        [campaign, campaigns],
     );
+    const { start: startDate, end: endDate } = useMemo(
+        () => determineLqasImDates(campaignObject, round, type),
+        [campaignObject, round, type],
+    );
+    const redirectToReplace = useRedirectToReplace();
+
     const paramTab = side === Sides.left ? params.leftTab : params.rightTab;
 
     const [tab, setTab] = useState(paramTab ?? MAP);
@@ -126,28 +109,47 @@ export const LqasOverviewContainer: FunctionComponent<Props> = ({
             };
             redirectToReplace(baseUrl, newParams);
         },
-        [side, params, redirectToReplace],
+        [side, params, redirectToReplace, baseUrl],
     );
     // TABS
+    const countryId = parseInt(country, 10);
+    const { data: shapes = defaultShapes, isFetching: isFetchingGeoJson } =
+        useGetGeoJson(countryId, 'DISTRICT');
+    const {
+        data: regionShapes = defaultShapes,
+        isFetching: isFetchingRegions,
+    } = useGetGeoJson(countryId, 'REGION');
 
-    const scopeCount = computeScopeCounts(campaignObject, round);
+    const mainLayer = useMemo(() => {
+        return getLqasImMapLayer({
+            data,
+            selectedCampaign: campaign,
+            type,
+            campaigns,
+            round,
+            shapes,
+        });
+    }, [shapes, data, campaign, type, round, campaigns]);
+
     return (
         <Paper elevation={paperElevation}>
-            <LqasImMapHeader
-                round={round}
-                startDate={startDate}
-                endDate={endDate}
-                options={options ?? []}
-                onRoundSelect={onRoundChange}
-                campaignObrName={campaign}
-                isFetching={isFetching}
-            />
+            <Box mb={2}>
+                <LqasImMapHeader
+                    round={round}
+                    startDate={startDate}
+                    endDate={endDate}
+                    options={options}
+                    onRoundSelect={onRoundChange}
+                    campaignObrName={campaign}
+                    isFetching={isFetching}
+                />
+            </Box>
             <Divider />
-            <LqasSummary
+            <ImSummary
                 round={round}
                 campaign={campaign}
                 data={data}
-                scopeCount={scopeCount}
+                type={type}
             />
             <Divider />
             <Tabs
@@ -163,23 +165,23 @@ export const LqasOverviewContainer: FunctionComponent<Props> = ({
                 <Tab value={LIST} label={formatMessage(MESSAGES.list)} />
             </Tabs>
             {tab === MAP && (
-                <LqasCountryMap
+                <ImCountryMap
                     round={round}
                     selectedCampaign={campaign}
-                    type={LqasIMView.lqas}
-                    countryId={countryId}
+                    type={type}
+                    countryId={parseInt(country, 10)}
                     campaigns={campaigns}
                     data={data}
                     isFetching={isFetching}
-                    isFetchingGeoJson={isFetchingGeoJson}
                     disclaimerData={debugData}
                     mainLayer={mainLayer}
+                    isFetchingGeoJson={isFetchingGeoJson}
                     regionShapes={regionShapes}
                     isFetchingRegions={isFetchingRegions}
                 />
             )}
             {tab === LIST && (
-                <LqasCountryListOverview
+                <ImCountryListOverview
                     shapes={mainLayer}
                     regionShapes={regionShapes}
                     isFetching={

@@ -22,21 +22,15 @@ import MapIcon from '@mui/icons-material/Map';
 import {
     OK_COLOR,
     FAIL_COLOR,
-    MODERATE_COLOR,
-    POOR_COLOR,
+    WARNING_COLOR,
 } from '../../../../styles/constants';
-import {
-    LQAS_PASS,
-    LQAS_FAIL,
-    LQAS_MODERATE,
-    LQAS_POOR,
-    LQAS_VERY_POOR,
-} from '../constants';
+
 import { useStyles } from '../../../../styles/theme';
 import MESSAGES from '../../../../constants/messages';
 import { TablePlaceHolder } from '../../../Campaigns/Scope/Scopes/TablePlaceHolder';
 import { TableText } from '../../../Campaigns/Scope/Scopes/TableText';
 import { IN_SCOPE } from '../../shared/constants';
+import { IM_FAIL, IM_PASS, IM_WARNING } from '../constants';
 import { HasLocationIcon } from '../../shared/HasLocationIcon';
 import { findRegionShape } from '../../shared/utils';
 
@@ -69,15 +63,15 @@ const useTableStyle = makeStyles(theme => {
                 backgroundColor: theme.palette.action.hover,
             },
         },
-        [LQAS_PASS]: { color: OK_COLOR },
-        [LQAS_FAIL]: { color: FAIL_COLOR },
-        [LQAS_MODERATE]: { color: MODERATE_COLOR },
-        [LQAS_POOR]: { color: POOR_COLOR },
-        [LQAS_VERY_POOR]: { color: FAIL_COLOR },
+        [IM_PASS]: { color: OK_COLOR },
+        [IM_FAIL]: { color: FAIL_COLOR },
+        [IM_WARNING]: {
+            color: WARNING_COLOR,
+        },
     };
 });
 
-export const LqasCountryListOverview: FunctionComponent<Props> = ({
+export const ImCountryListOverview: FunctionComponent<Props> = ({
     shapes,
     isFetching,
     regionShapes,
@@ -275,11 +269,10 @@ export const LqasCountryListOverview: FunctionComponent<Props> = ({
                                                     }
                                                     variant="body2"
                                                 >
-                                                    {(shape?.data?.status &&
+                                                    {(shape?.status &&
                                                         formatMessage(
                                                             MESSAGES[
-                                                                shape?.data
-                                                                    ?.status
+                                                                shape?.status
                                                             ],
                                                         )) ||
                                                         formatMessage(

@@ -6,9 +6,9 @@ import { UseQueryResult } from 'react-query';
 import {
     IM_COUNTRY_URL,
     IM_GLOBAL_SLUG,
-    IM_HH_SLUG,
     IM_OHH_SLUG,
-} from './constants';
+    IM_HH_SLUG,
+} from '../IM/constants';
 import { LqasImData } from '../../../constants/types';
 import { LQAS_COUNTRY_URL } from '../LQAS/constants';
 

@@ -21,7 +21,7 @@ import { HorizontalDivider } from '../../../components/HorizontalDivider.tsx';
 import { LqasImVerticalChart } from '../shared/LqasImVerticalChart.tsx';
 import { useLqasData } from './hooks/useLqasData.ts';
 import { LqasOverviewContainer } from './CountryOverview/LqasOverviewContainer.tsx';
-import MESSAGES from '../../../constants/messages';
+import MESSAGES from '../../../constants/messages.ts';
 import { BadRoundNumbers } from '../shared/BadRoundNumber.tsx';
 import { commaSeparatedIdsToArray } from '../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
 import { LIST, paperElevation } from '../shared/constants.ts';
@@ -101,10 +101,7 @@ export const Lqas = () => {
                 ]);
                 redirectToReplace(baseUrl, {
                     ...params,
-                    rounds: [
-                        dropDownOptions[0].value,
-                        dropDownOptions[0].value,
-                    ],
+                    rounds: `${dropDownOptions[0].value},${dropDownOptions[0].value}`,
                     rightTab: LIST,
                 });
             }

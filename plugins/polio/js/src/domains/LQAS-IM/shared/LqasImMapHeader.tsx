@@ -76,7 +76,11 @@ export const LqasImMapHeader: FunctionComponent<Props> = ({
                                         ...o,
                                         value: `${o.value}`,
                                     }))}
-                                    value={round ? `${round}` : ''}
+                                    value={
+                                        Number.isSafeInteger(round)
+                                            ? `${round}`
+                                            : ''
+                                    }
                                     onChange={(_keyValue, value) =>
                                         onRoundSelect(parseInt(value, 10))
                                     }

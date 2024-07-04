@@ -13,9 +13,9 @@ import {
 } from '../../../constants/types';
 import { sumChildrenCheckedLqas } from '../LQAS/utils';
 import MESSAGES from '../../../constants/messages';
-import { imNfmKeys, imRfaKeys } from './constants';
 import { sumChildrenCheckedIm } from '../IM/utils';
 import { lqasNfmKeys, lqasRfaKeys } from '../LQAS/constants';
+import { imNfmKeys, imRfaKeys } from '../IM/constants';
 
 const accessFullRoundData = (
     data: LqasImCampaign,

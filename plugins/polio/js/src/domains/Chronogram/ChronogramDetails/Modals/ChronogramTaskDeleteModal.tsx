@@ -39,8 +39,8 @@ const ChronogramTaskDeleteModal: FunctionComponent<Props> = ({
             titleMessage={MESSAGES.modalDeleteTitle}
             onConfirm={onDelete}
             onCancel={() => null}
-            confirmMessage={MESSAGES.modalDeleteYes}
-            cancelMessage={MESSAGES.modalDeleteNo}
+            confirmMessage={MESSAGES.yes}
+            cancelMessage={MESSAGES.no}
         >
             <p>{formatMessage(MESSAGES.modalDeleteConfirm)}</p>
             <p>{chronogramTask.description}</p>

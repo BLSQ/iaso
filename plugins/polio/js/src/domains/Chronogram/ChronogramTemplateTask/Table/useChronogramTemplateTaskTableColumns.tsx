@@ -15,7 +15,7 @@ export const useChronogramTemplateTaskTableColumns = (): Column[] => {
             {
                 Header: formatMessage(MESSAGES.labelPeriod),
                 id: 'period',
-                accessor: 'period',
+                accessor: 'get_period_display',
             },
             {
                 Header: formatMessage(MESSAGES.labelDescription),

@@ -1,6 +1,14 @@
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
+    actions: {
+        id: 'iaso.polio.chronogram.actions',
+        defaultMessage: 'Actions',
+    },
+    details: {
+        id: 'iaso.polio.chronogram.details',
+        defaultMessage: 'Details',
+    },
     yes: {
         id: 'iaso.polio.chronogram.yes',
         defaultMessage: 'Yes',

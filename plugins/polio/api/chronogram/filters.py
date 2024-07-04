@@ -5,7 +5,7 @@ from django.utils.translation import gettext as _
 
 from iaso.models import OrgUnit
 
-from plugins.polio.models import Chronogram, Campaign
+from plugins.polio.models import Campaign, Chronogram, ChronogramTask
 
 
 def countries(request) -> QuerySet[OrgUnit]:
@@ -39,3 +39,9 @@ class ChronogramFilter(django_filters.rest_framework.FilterSet):
             pks = [chronogram.pk for chronogram in queryset if not chronogram.is_on_time]
             return queryset.filter(pk__in=pks)
         return queryset
+
+
+class ChronogramTaskFilter(django_filters.rest_framework.FilterSet):
+    class Meta:
+        model = ChronogramTask
+        fields = ["chronogram_id"]

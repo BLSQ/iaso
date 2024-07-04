@@ -209,7 +209,6 @@ const SidebarMenu = ({ classes, location }) => {
 SidebarMenu.propTypes = {
     classes: PropTypes.object.isRequired,
     location: PropTypes.object.isRequired,
-    activeLocale: PropTypes.object.isRequired,
 };
 
 export default withStyles(styles)(SidebarMenu);

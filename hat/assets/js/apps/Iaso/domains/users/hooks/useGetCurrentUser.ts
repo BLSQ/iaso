@@ -10,7 +10,7 @@ export const useGetCurrentUser = (
     showError = true,
 ): UseQueryResult<Profile, Error> => {
     const queryKey: any[] = ['currentUser'];
-    const { setLocale, locale } = useLocale();
+    const { setLocale } = useLocale();
     return useSnackQuery({
         queryKey,
         queryFn: () => getRequest('/api/profiles/me/'),
@@ -20,9 +20,7 @@ export const useGetCurrentUser = (
                 console.warn('User not connected');
             },
             onSuccess: result => {
-                if (result.language && result.language !== locale) {
-                    setLocale(result.language as LangOptions);
-                }
+                setLocale(result.language as LangOptions);
             },
             retry: false,
             enabled,

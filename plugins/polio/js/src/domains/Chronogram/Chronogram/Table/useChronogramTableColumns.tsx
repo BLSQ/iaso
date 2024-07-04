@@ -66,8 +66,6 @@ export const useChronogramTableColumns = (
             },
             {
                 Header: formatMessage(MESSAGES.actions),
-                id: 'actions',
-                accessor: 'actions',
                 sortable: false,
                 Cell: settings => {
                     return (

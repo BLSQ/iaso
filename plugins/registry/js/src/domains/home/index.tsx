@@ -40,7 +40,7 @@ export const Home = () => {
                             />
                         </Typography>
                     </Grid>
-                    <Grid item xs={12} md={8}>
+                    <Grid item xs={12} md={8} sx={styles.boxContainer}>
                         <Box sx={styles.blueBox}>
                             {formatMessage(MESSAGES.texte1)}
                             <Box sx={styles.link}>

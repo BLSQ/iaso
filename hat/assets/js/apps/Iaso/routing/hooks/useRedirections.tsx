@@ -168,7 +168,6 @@ export const useRedirections: RedirectionsMethod = ({
         if (hasNoAccount) {
             redirections = setupRedirections;
         } else if (!homeOfflineComponent && !currentUser && !allowAnonymous) {
-            console.log('redirect', allowAnonymous);
             redirections = [
                 {
                     path: '/home',
@@ -192,6 +191,8 @@ export const useRedirections: RedirectionsMethod = ({
             }
         }
     }
+    // redirections = [];
+    console.log('redirections', redirections);
     return redirections.map(redirection => {
         if (redirection.element) {
             return (

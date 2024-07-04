@@ -84,9 +84,13 @@ export const styles: SxStyles = {
     container: {
         position: 'relative',
         width: '100vw',
-        minHeight: '100vh',
+        height: 'auto',
         zIndex: 2,
         padding: '5vw',
+    },
+    boxContainer: {
+        height: '100vh',
+        overflow: 'auto',
     },
     blueBox: {
         background: '#0B9BF9',

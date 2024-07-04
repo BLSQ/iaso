@@ -216,7 +216,6 @@ export const useRoutes = (userHomePage?: string): Result => {
             ),
         [isFetchingCurrentUser, protectedRoutes, redirections],
     );
-
     return useMemo(
         () => ({
             routes,

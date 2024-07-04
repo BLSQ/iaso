@@ -24,10 +24,12 @@ class ChronogramTaskSerializer(DynamicFieldsModelSerializer, serializers.ModelSe
             "id",
             "chronogram",
             "period",
+            "get_period_display",
             "description",
             "start_offset_in_days",
             "deadline_date",
             "status",
+            "get_status_display",
             "user_in_charge",
             "delay_in_days",
             "comment",
@@ -40,10 +42,12 @@ class ChronogramTaskSerializer(DynamicFieldsModelSerializer, serializers.ModelSe
             "id",
             "chronogram",
             "period",
+            "get_period_display",
             "description",
             "start_offset_in_days",
             "deadline_date",
             "status",
+            "get_status_display",
             "user_in_charge",
             "delay_in_days",
             "comment",
@@ -53,6 +57,8 @@ class ChronogramTaskSerializer(DynamicFieldsModelSerializer, serializers.ModelSe
             "deadline_date": {"read_only": True},
             "created_at": {"read_only": True},
             "updated_at": {"read_only": True},
+            "get_period_display": {"read_only": True},
+            "get_status_display": {"read_only": True},
         }
 
     def to_representation(self, instance):
@@ -110,6 +116,7 @@ class ChronogramTemplateTaskSerializer(DynamicFieldsModelSerializer, serializers
             "id",
             "account",
             "period",
+            "get_period_display",
             "description",
             "start_offset_in_days",
             "created_at",
@@ -121,12 +128,14 @@ class ChronogramTemplateTaskSerializer(DynamicFieldsModelSerializer, serializers
             "id",
             "account",
             "period",
+            "get_period_display",
             "description",
             "start_offset_in_days",
         ]
         extra_kwargs = {
             "created_at": {"read_only": True},
             "updated_at": {"read_only": True},
+            "get_period_display": {"read_only": True},
         }
 
     def to_representation(self, instance):

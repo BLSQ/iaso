@@ -1,9 +1,13 @@
+import React from 'react';
+
 import { useMemo } from 'react';
-import { Column, useSafeIntl } from 'bluesquare-components';
+import { IconButton, Column, useSafeIntl } from 'bluesquare-components';
+
+import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
+import { baseUrls } from '../../../../constants/urls';
 
 import MESSAGES from '../messages';
 import { ChronogramTaskMetaData } from '../../types';
-import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 
 export const useChronogramTableColumns = (
     chronogramTaskMetaData: ChronogramTaskMetaData,
@@ -59,6 +63,22 @@ export const useChronogramTableColumns = (
                 id: 'num_task_delayed',
                 accessor: 'num_task_delayed',
                 sortable: false,
+            },
+            {
+                Header: formatMessage(MESSAGES.actions),
+                id: 'actions',
+                accessor: 'actions',
+                sortable: false,
+                Cell: settings => {
+                    return (
+                        <IconButton
+                            icon="remove-red-eye"
+                            tooltipMessage={MESSAGES.details}
+                            size="small"
+                            url={`/${baseUrls.chronogramDetails}/chronogram_id/${settings.row.original.id}`}
+                        />
+                    );
+                },
             },
         ];
     }, [formatMessage, chronogramTaskMetaData]);

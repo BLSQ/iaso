@@ -39,6 +39,7 @@ export const STOCK_VARIATION = `${STOCK_MANAGEMENT}/variation`;
 export const NOTIFICATIONS_BASE_URL = 'polio/notifications';
 export const CHRONOGRAM_BASE_URL = 'polio/chronogram';
 export const CHRONOGRAM_TEMPLATE_TASK = `${CHRONOGRAM_BASE_URL}/templateTask`;
+export const CHRONOGRAM_DETAILS = `${CHRONOGRAM_BASE_URL}/details`;
 
 export const campaignParams = [
     'countries',
@@ -248,6 +249,10 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
         url: CHRONOGRAM_TEMPLATE_TASK,
         params: [...paginationPathParams, 'limit'],
     },
+    chronogramDetails: {
+        url: CHRONOGRAM_DETAILS,
+        params: [...paginationPathParams, 'chronogram_id', 'limit'],
+    },
 };
 
 export type PolioBaseUrls = {
@@ -275,6 +280,7 @@ export type PolioBaseUrls = {
     notification: string;
     chronogram: string;
     chronogramTemplateTask: string;
+    chronogramDetails: string;
 };
 export const baseUrls = extractUrls(polioRouteConfigs) as PolioBaseUrls;
 export const baseParams = extractParams(polioRouteConfigs);

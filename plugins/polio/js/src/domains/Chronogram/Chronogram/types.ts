@@ -19,10 +19,12 @@ export type ChronogramTask = {
     id: number;
     chronogram: number;
     period: string;
+    get_period_display: string;
     description: string;
     start_offset_in_days: number;
     deadline_date: string; // Date
     status: string;
+    get_status_display: string;
     user_in_charge: User;
     delay_in_days: number;
     comment: string;

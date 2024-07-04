@@ -14,6 +14,7 @@ export type ChronogramTemplateTask = {
     id: number;
     account: number;
     period: string;
+    get_period_display: string;
     description: string;
     start_offset_in_days: number;
     // Optional fields.

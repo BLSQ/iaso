@@ -60,7 +60,8 @@ class ChronogramViewSet(viewsets.ModelViewSet):
         """
         user_campaigns = Campaign.polio_objects.filter_for_user(self.request.user).filter(country__isnull=False)
         available_rounds = (
-            Round.objects.filter(chronogram__isnull=True, campaign__in=user_campaigns)
+            Round.objects.valid()
+            .filter(chronogram__isnull=True, campaign__in=user_campaigns)
             .select_related("campaign__country")
             .order_by("campaign__country__name", "campaign__obr_name", "number")
             .only(
@@ -87,7 +88,8 @@ class ChronogramTaskViewSet(viewsets.ModelViewSet):
         user = self.request.user
         campaigns = Campaign.polio_objects.filter_for_user(user)
         return (
-            ChronogramTask.objects.filter(chronogram__round__campaign__in=campaigns)
+            ChronogramTask.objects.valid()
+            .filter(chronogram__round__campaign__in=campaigns)
             .select_related("chronogram__round", "user_in_charge", "created_by", "updated_by")
             .order_by("created_at")
         )

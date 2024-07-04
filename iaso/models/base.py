@@ -1062,13 +1062,14 @@ class Instance(models.Model):
         else:
             return flat_parse_xml_soup(soup, [], None)["flat_json"]
 
-    def get_and_save_json_of_xml(self):
+    def get_and_save_json_of_xml(self, force=False):
         """
-        Convert the xml file to json and save it to the instance (if necessary)
+        Convert the xml file to json and save it to the instance.
+        If the instance already has a json, don't do anything unless `force=True`.
 
         :return: in all cases, return the JSON representation of the instance
         """
-        if self.json:
+        if self.json and not force:
             # already converted, we can use this one
             return self.json
         elif self.file:

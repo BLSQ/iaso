@@ -11,6 +11,7 @@ and it's executed in a database transaction to avoid data loss.
 from datetime import datetime
 import json
 import logging
+import ntpath
 import os
 import time
 import zipfile
@@ -22,6 +23,7 @@ from django.db import transaction
 from django.utils.translation import gettext as _
 from traceback import format_exc
 
+from hat.api.export_utils import timestamp_to_utc_datetime
 from hat.api_import.models import APIImport
 from hat.sync.views import create_instance_file, process_instance_file
 from iaso.api.instances import import_data as import_instances
@@ -60,32 +62,32 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
         with transaction.atomic():
             with zipfile.ZipFile(zip_file_path, "r") as zip_ref:
                 if ORG_UNITS_JSON in zip_ref.namelist():
-                    with zip_ref.open(ORG_UNITS_JSON) as file:
-                        new_org_units = import_org_units(json.load(file), user, project.app_id)
-                        stats["new_org_units"] = len(new_org_units)
+                    org_units_data = read_json_file_from_zip(zip_ref, ORG_UNITS_JSON)
+                    new_org_units = import_org_units(org_units_data, user, project.app_id)
+                    stats["new_org_units"] = len(new_org_units)
                 else:
                     logger.info(f"The file {ORG_UNITS_JSON} does not exist in the zip file.")
 
-                if INSTANCES_JSON in zip_ref.namelist():
-                    with zip_ref.open(INSTANCES_JSON) as file:
-                        import_instances(json.load(file), user, project.app_id)
-                else:
-                    logger.info(f"The file {INSTANCES_JSON} does not exist in the zip file.")
+                if not INSTANCES_JSON in zip_ref.namelist():
+                    raise ValueError(f"{zip_file_path}: The file {INSTANCES_JSON} does not exist in the zip file.")
 
                 logger.info("Processing forms and files")
+                instances_data = read_json_file_from_zip(zip_ref, INSTANCES_JSON)
+                import_instances(instances_data, user, project.app_id)
                 new_instance_files = []
-                for directory in zipfile.Path(zip_ref).iterdir():
-                    if not directory.is_dir():
-                        continue
+                dirs = get_directory_handlers(zip_ref)
 
-                    instance = process_instance_xml(directory, zip_ref, user)
+                for instance_data in instances_data:
+                    uuid = instance_data.get("id", None)
+                    instance = process_instance_xml(uuid, instance_data, zip_ref, user)
                     stats["new_instances"] += 1
-                    new_instance_files += process_instance_files(directory, instance)
+                    new_instance_files += process_instance_attachments(dirs[uuid], instance)
 
                 duplicated_count = duplicate_instance_files(new_instance_files)
                 stats["new_instance_files"] = len(new_instance_files) + duplicated_count
 
     except Exception as e:
+        logger.error("Exception! Rolling back import: " + str(e))
         api_import.has_problem = True
         api_import.exception = format_exc()
         api_import.save()
@@ -96,19 +98,67 @@ def process_mobile_bulk_upload(api_import_id, project_id, task=None):
     )
 
 
-def process_instance_xml(directory, zip_ref, user):
-    instance = Instance.objects.get(uuid=directory.name)
+def read_json_file_from_zip(zip_ref, filename):
+    with zip_ref.open(filename) as file:
+        return json.load(file)
+
+
+def get_directory_handlers(zip_ref):
+    result = {}
+    for directory in zipfile.Path(zip_ref).iterdir():
+        if directory.is_dir():
+            result[directory.name] = directory
+    return result
+
+
+def process_instance_xml(uuid, instance_data, zip_ref, user):
+    instance = Instance.objects.get(uuid=uuid)
+    filename = ntpath.basename(instance_data.get("file", None))
     logger.info(f"Processing instance {instance.uuid}")
-    with zip_ref.open(os.path.join(directory.name, instance.file_name), "r") as f:
-        instance = process_instance_file(instance, File(f), user)
+    with zip_ref.open(os.path.join(uuid, filename), "r") as f:
+        if not instance.file or not instance.json:  # new instance
+            instance = process_instance_file(instance, File(f), user)
+        else:
+            instance = update_instance_file_if_needed(
+                instance,
+                instance_data.get("updated_at", None),
+                File(f),
+                user,
+            )
 
     return instance
 
 
-def process_instance_files(directory, instance):
+def update_instance_file_if_needed(instance, incoming_updated_at, file, user):
+    incoming_updated_at = incoming_updated_at and timestamp_to_utc_datetime(int(incoming_updated_at))
+    if incoming_updated_at and incoming_updated_at > instance.source_updated_at:
+        logger.info(
+            "\tUpdating form %s (from timestamp %s to %s)",
+            instance.uuid,
+            str(instance.source_updated_at),
+            str(incoming_updated_at),
+        )
+        instance.file = file
+        instance.last_modified_by = user
+        instance.source_updated_at = incoming_updated_at
+        instance.save()
+        instance.get_and_save_json_of_xml(force=True)
+    else:
+        logger.info(
+            "\tSkipping form %s (current timestamp %s, incoming %s)",
+            instance.uuid,
+            str(instance.source_updated_at),
+            str(incoming_updated_at),
+        )
+
+    return instance
+
+
+# Create form attachments for all non-XML files in the form's directory
+def process_instance_attachments(directory, instance):
     instance_files = []
     for instance_file in directory.iterdir():
-        if instance_file.name != instance.file_name:
+        if not instance_file.name.endswith(".xml"):
             with instance_file.open("rb") as f:
                 logger.info(f"\tProcessing attachment {instance_file.name}")
                 fi = create_instance_file(instance, instance_file.name, File(f))

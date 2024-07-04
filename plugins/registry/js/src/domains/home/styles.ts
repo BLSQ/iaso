@@ -7,6 +7,7 @@ const absoluteStyle = {
 };
 
 const boxRadius = '30px';
+const fontFamily = 'Work Sans, sans-serif';
 
 export const styles: SxStyles = {
     background: {
@@ -84,12 +85,8 @@ export const styles: SxStyles = {
     container: {
         position: 'relative',
         width: '100vw',
-        height: 'auto',
-        zIndex: 2,
-        padding: '5vw',
-    },
-    boxContainer: {
         height: '100vh',
+        zIndex: 2,
         overflow: 'auto',
     },
     blueBox: {
@@ -101,14 +98,14 @@ export const styles: SxStyles = {
         borderRadius: boxRadius,
         color: '#fff',
         fontWeight: 400,
-        fontFamily: 'Work Sans, sans-serif',
+        fontFamily,
     },
     whiteBox: {
         background: '#fff',
         width: '100%',
         padding: '4vw 8vw',
         borderRadius: boxRadius,
-        fontFamily: 'Work Sans, sans-serif',
+        fontFamily,
         fontSize: '1.35vw',
         lineHeight: '1.3',
     },
@@ -117,7 +114,7 @@ export const styles: SxStyles = {
         fontWeight: 500,
         lineHeight: '1',
         color: '#1C3B5F',
-        fontFamily: 'Work Sans, sans-serif',
+        fontFamily,
     },
     link: {
         display: 'block',
@@ -142,5 +139,59 @@ export const styles: SxStyles = {
     arrow: {
         marginLeft: '10px',
         fontSize: '2.4vw',
+    },
+    logoContainer: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        paddingBottom: '4vw',
+        '& span': {
+            fontFamily,
+            fontSize: '0.97vw',
+            fontStyle: 'italic',
+            fontWeight: 400,
+            lineHeight: '24px',
+            textAlign: 'left',
+        },
+    },
+    logo: {
+        width: '120px',
+        height: '120px',
+        borderRadius: '30px',
+        overflow: 'hidden',
+        backgroundColor: '#f7f7f7',
+        boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
+        marginRight: '20px',
+        flexShrink: 0,
+        flexGrow: 0,
+        aspectRatio: '1 / 1',
+        '& img': {
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain',
+        },
+    },
+    content: {
+        width: '100%',
+        padding: '5vw',
+    },
+    footer: {
+        background: '#fff',
+        width: '100%',
+        padding: '4vw 6vw',
+    },
+    footerText: {
+        fontFamily: 'Work Sans',
+        fontSize: '0.97vw',
+        fontWeight: 400,
+        lineHeight: '24px',
+        textAlign: 'left',
+        color: '#111111',
+        width: '19vw',
+        '& a': {
+            color: '#111111',
+            textDecoration: 'underline',
+            marginLeft: '10px',
+        },
     },
 };

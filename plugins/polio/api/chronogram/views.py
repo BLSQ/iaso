@@ -9,7 +9,7 @@ from rest_framework.response import Response
 
 from iaso.api.common import Paginator
 
-from plugins.polio.api.chronogram.filters import ChronogramFilter
+from plugins.polio.api.chronogram.filters import ChronogramFilter, ChronogramTaskFilter
 from plugins.polio.api.chronogram.permissions import HasChronogramPermission
 from plugins.polio.api.chronogram.serializers import (
     ChronogramSerializer,
@@ -78,6 +78,7 @@ class ChronogramViewSet(viewsets.ModelViewSet):
 
 class ChronogramTaskViewSet(viewsets.ModelViewSet):
     filter_backends = [filters.OrderingFilter, django_filters.rest_framework.DjangoFilterBackend]
+    filterset_class = ChronogramTaskFilter
     pagination_class = ChronogramPagination
     permission_classes = [HasChronogramPermission]
     serializer_class = ChronogramTaskSerializer

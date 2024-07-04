@@ -7,11 +7,12 @@ import { LQASIMType } from '../../shared/types/types';
 import { ScopeAndDNFDisclaimer } from '../../shared/ScopeAndDNFDisclaimer';
 import MESSAGES from '../../../../constants/messages';
 import { makeLqasMapLegendItems } from '../utils';
-import { HASHED_MAP_PATTERN, lqasDistrictColors } from '../constants';
+import { lqasDistrictColors } from '../constants';
 import { makePopup } from '../../shared/LqasImPopUp';
 import { MapLegendContainer } from '../../../Campaigns/MapComponent/MapLegendContainer';
 import { MapLegend } from '../../../Campaigns/MapComponent/MapLegend';
 import { MapComponent } from '../../../Campaigns/MapComponent/MapComponent';
+import { HASHED_MAP_PATTERN } from '../../shared/constants';
 
 const getBackgroundLayerStyle = () => defaultShapeStyle;
 const getMainLayerStyles = shape => {

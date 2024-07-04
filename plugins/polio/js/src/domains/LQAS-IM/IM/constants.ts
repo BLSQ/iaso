@@ -1,5 +1,5 @@
 import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../../styles/constants';
-import { IN_SCOPE } from '../shared/constants';
+import { HASHED_MAP_PATTERN, IN_SCOPE } from '../shared/constants';
 
 export const IM_COUNTRY_URL = '/api/polio/lqasimmap/country/';
 export const IM_OHH_SLUG = 'im_ohh';
@@ -10,6 +10,7 @@ export const IM_GLOBAL_SLUG = 'im_hh_ohh';
 export const IM_PASS = '1imOK';
 export const IM_WARNING = '2imWarning';
 export const IM_FAIL = '3imFail';
+export const IM_ERROR = '4imError';
 
 export const imDistrictColors = {
     [IM_PASS]: {
@@ -34,6 +35,13 @@ export const imDistrictColors = {
         opacity: '1',
         fillColor: FAIL_COLOR,
         fillOpacity: 0.8,
+        zIndex: 999,
+    },
+    [IM_ERROR]: {
+        color: '#5e5e5e',
+        opacity: '1',
+        fillColor: `url(#${HASHED_MAP_PATTERN})`,
+        weight: '2',
         zIndex: 999,
     },
     [IN_SCOPE]: {

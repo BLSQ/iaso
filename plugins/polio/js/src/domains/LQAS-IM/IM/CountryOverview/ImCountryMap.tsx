@@ -11,6 +11,8 @@ import MESSAGES from '../../../../constants/messages';
 import { ScopeAndDNFDisclaimer } from '../../shared/ScopeAndDNFDisclaimer';
 import { IMType } from '../../../../constants/types';
 import { imDistrictColors } from '../constants';
+import { GreyHashedPattern } from '../../../../../../../../hat/assets/js/apps/Iaso/components/maps/HashedPatterns/GreyHashedPattern';
+import { HASHED_MAP_PATTERN } from '../../shared/constants';
 
 // eslint-disable-next-line no-unused-vars
 const getBackgroundLayerStyle = _shape => defaultShapeStyle;
@@ -83,8 +85,8 @@ export const ImCountryMap: FunctionComponent<Props> = ({
                 fitBoundsToBackground
                 fitToBounds
                 height={600}
-                // shapePatternIds={[HASHED_MAP_PATTERN]}
-                // shapePatterns={[GreyHashedPattern]}
+                shapePatternIds={[HASHED_MAP_PATTERN]}
+                shapePatterns={[GreyHashedPattern]}
             />
             {selectedCampaign && (
                 <ScopeAndDNFDisclaimer

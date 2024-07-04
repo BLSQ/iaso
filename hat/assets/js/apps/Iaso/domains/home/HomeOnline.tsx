@@ -120,10 +120,7 @@ export const HomeOnline: FunctionComponent = () => {
                         >
                             <MenuIcon />
                         </IconButton>
-                        <SidebarMenuComponent
-                            location={window.location}
-                            activeLocale={{}}
-                        />
+                        <SidebarMenuComponent location={window.location} />
                     </Box>
                 </Grid>
                 <Grid container item xs={6} justifyContent="flex-end">

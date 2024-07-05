@@ -30,7 +30,10 @@ export const DependentSingleSelect: FunctionComponent<Props> = ({
     required = false,
 }) => {
     const showRelatedFieldError = dependsOn.some(name => {
-        return get(form.touched, name) && Boolean(get(form.values, name));
+        return (
+            get(form.touched, name) &&
+            Boolean(get(form.values, name) || get(form.values, name) === 0)
+        );
     });
     const hasError =
         form.errors &&

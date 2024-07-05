@@ -1,13 +1,10 @@
 import { useMemo } from 'react';
-
-import { LQASIMRequestType, useLqasIm } from '../../shared/requests';
-
+import { LQASIMRequestType, useLqasIm } from '../../shared/hooks/api/useLqasIm';
 import { useDebugData } from '../../shared/hooks/useDebugData';
 import { useConvertedLqasImData } from '../../shared/hooks/useConvertedLqasImData';
 import { useVerticalChartData } from '../../shared/hooks/useVerticalChartData';
 import { useNfmTitle } from '../../shared/hooks/useNfmTitle';
 import { useRfaTitle } from '../../shared/hooks/useRfaTitle';
-import { useGetCampaigns } from '../../../Campaigns/hooks/api/useGetCampaigns';
 
 import { formatForRfaChart, formatForNfmChart } from '../../shared/LqasIm';
 
@@ -19,11 +16,7 @@ export const useImData = (
 ): Record<string, unknown> => {
     const { data: imData, isFetching } = useLqasIm(imType, country);
     const convertedData = useConvertedLqasImData(imData);
-    const { data: campaigns = [], isFetching: campaignsFetching } =
-        useGetCampaigns({
-            countries: country,
-            enabled: Boolean(country),
-        });
+
     const debugData = useDebugData(imData, campaign);
     const hasScope = debugData[campaign]?.hasScope;
 
@@ -109,8 +102,6 @@ export const useImData = (
         imData,
         isFetching,
         convertedData,
-        campaigns,
-        campaignsFetching,
         debugData,
         hasScope,
         chartData,

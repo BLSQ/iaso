@@ -14,7 +14,7 @@ import {
 import { makeStyles } from '@mui/styles';
 import { baseUrls } from '../../../../constants/urls';
 import { ImCountryMap } from './ImCountryMap';
-import { LqasImMapHeader } from '../../shared/LqasImMapHeader';
+import { LqasImMapHeader } from '../../shared/Map/LqasImMapHeader';
 import {
     Campaign,
     ConvertedLqasImData,
@@ -73,14 +73,15 @@ export const ImOverviewContainer: FunctionComponent<Props> = ({
     debugData,
     paperElevation,
     type,
-    side,
-    params,
     options,
     onRoundChange,
+    side,
+    params,
 }) => {
     const baseUrl = baseUrls[type];
-    const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
+    const classes: Record<string, string> = useStyles();
+    const redirectToReplace = useRedirectToReplace();
     const campaignObject = useMemo(
         () =>
             campaigns.filter(
@@ -88,11 +89,29 @@ export const ImOverviewContainer: FunctionComponent<Props> = ({
             )[0] as Campaign,
         [campaign, campaigns],
     );
+    const countryId = parseInt(country, 10);
+    const { data: shapes = defaultShapes, isFetching: isFetchingGeoJson } =
+        useGetGeoJson(countryId, 'DISTRICT');
+    const {
+        data: regionShapes = defaultShapes,
+        isFetching: isFetchingRegions,
+    } = useGetGeoJson(countryId, 'REGION');
+
+    const mainLayer = useMemo(() => {
+        return getLqasImMapLayer({
+            data,
+            selectedCampaign: campaign,
+            type,
+            campaigns,
+            round,
+            shapes,
+        });
+    }, [shapes, data, campaign, type, round, campaigns]);
+
     const { start: startDate, end: endDate } = useMemo(
         () => determineLqasImDates(campaignObject, round, type),
         [campaignObject, round, type],
     );
-    const redirectToReplace = useRedirectToReplace();
 
     const paramTab = side === Sides.left ? params.leftTab : params.rightTab;
 
@@ -112,24 +131,6 @@ export const ImOverviewContainer: FunctionComponent<Props> = ({
         [side, params, redirectToReplace, baseUrl],
     );
     // TABS
-    const countryId = parseInt(country, 10);
-    const { data: shapes = defaultShapes, isFetching: isFetchingGeoJson } =
-        useGetGeoJson(countryId, 'DISTRICT');
-    const {
-        data: regionShapes = defaultShapes,
-        isFetching: isFetchingRegions,
-    } = useGetGeoJson(countryId, 'REGION');
-
-    const mainLayer = useMemo(() => {
-        return getLqasImMapLayer({
-            data,
-            selectedCampaign: campaign,
-            type,
-            campaigns,
-            round,
-            shapes,
-        });
-    }, [shapes, data, campaign, type, round, campaigns]);
 
     return (
         <Paper elevation={paperElevation}>

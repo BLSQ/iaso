@@ -1,40 +1,29 @@
 /* eslint-disable react/no-array-index-key */
-import React, { useCallback, useMemo, useState, useEffect } from 'react';
-import {
-    useSafeIntl,
-    commonStyles,
-    useSkipEffectOnMount,
-    useRedirectToReplace,
-} from 'bluesquare-components';
+import React from 'react';
+import { useSafeIntl } from 'bluesquare-components';
 import { Grid, Box, Paper } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { useParamsObject } from '../../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject.tsx';
 import { DisplayIfUserHasPerm } from '../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm.tsx';
 import { Filters } from '../shared/Filters.tsx';
-import { CaregiversTable } from '../shared/CaregiversTable.tsx';
-import { GraphTitle } from '../shared/GraphTitle.tsx';
-import { LqasImHorizontalChart } from '../shared/LqasImHorizontalChart.tsx';
-import { DistrictsNotFound } from '../shared/DistrictsNotFound.tsx';
-import { DatesIgnored } from '../shared/DatesIgnored.tsx';
+import { CaregiversTable } from './Graphs/CaregiversTable.tsx';
+import { GraphTitle } from '../shared/charts/GraphTitle.tsx';
+import { LqasImHorizontalChart } from '../shared/charts/LqasImHorizontalChart.tsx';
+import { DistrictsNotFound } from '../shared/DebugInfo/DistrictsNotFound.tsx';
+import { DatesIgnored } from '../shared/DebugInfo/DatesIgnored.tsx';
 import { HorizontalDivider } from '../../../components/HorizontalDivider.tsx';
-import { LqasImVerticalChart } from '../shared/LqasImVerticalChart.tsx';
+import { LqasImVerticalChart } from '../shared/charts/LqasImVerticalChart.tsx';
 import { useLqasData } from './hooks/useLqasData.ts';
 import { LqasOverviewContainer } from './CountryOverview/LqasOverviewContainer.tsx';
 import MESSAGES from '../../../constants/messages.ts';
-import { BadRoundNumbers } from '../shared/BadRoundNumber.tsx';
-import { commaSeparatedIdsToArray } from '../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
-import { LIST, paperElevation } from '../shared/constants.ts';
-import { useLqasIm } from '../shared/requests.ts';
+import { BadRoundNumbers } from '../shared/DebugInfo/BadRoundNumber.tsx';
+import { paperElevation } from '../shared/constants.ts';
+import { useLqasIm } from '../shared/hooks/api/useLqasIm.ts';
 import { Sides } from '../../../constants/types.ts';
 import { baseUrls } from '../../../constants/urls.ts';
-
-const styles = theme => ({
-    ...commonStyles(theme),
-    filter: { paddingTop: theme.spacing(4), paddingBottom: theme.spacing(4) },
-});
-
-const useStyles = makeStyles(styles);
+import { useSelectedRounds } from '../shared/hooks/useSelectedRounds.tsx';
+import { useGetCampaigns } from '../../Campaigns/hooks/api/useGetCampaigns.ts';
+import { useStyles } from '../shared/hooks/useStyles.ts';
 
 const baseUrl = baseUrls.lqasCountry;
 
@@ -42,77 +31,23 @@ export const Lqas = () => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const params = useParamsObject(baseUrl);
-    const redirectToReplace = useRedirectToReplace();
-    const { campaign, country, rounds } = params;
-    // TODO initialize undefined to be able to make boolean check on it
-    const [selectedRounds, setSelectedRounds] = useState(
-        rounds ? commaSeparatedIdsToArray(rounds) : [undefined, undefined],
-    );
+    const { campaign, country } = params;
+
     const { data: LQASData, isFetching } = useLqasIm('lqas', country);
+    const { data: campaigns = [], isFetching: campaignsFetching } =
+        useGetCampaigns({
+            countries: country,
+            enabled: Boolean(country),
+        });
 
-    const {
-        convertedData,
-        campaigns,
-        campaignsFetching,
-        debugData,
-        hasScope,
-        chartData,
-    } = useLqasData({ campaign, country, selectedRounds, LQASData });
-
-    const dropDownOptions = useMemo(() => {
-        return campaigns
-            ?.filter(c => c.obr_name === campaign)[0]
-            ?.rounds.sort((a, b) => a.number - b.number)
-            .map(r => {
-                return {
-                    label: `Round ${r.number}`,
-                    value: r.number,
-                };
-            });
-    }, [campaign, campaigns]);
-
-    const onRoundChange = useCallback(
-        index => value => {
-            const updatedSelection = [...selectedRounds];
-            updatedSelection[index] = value;
-            setSelectedRounds(updatedSelection);
-            redirectToReplace(baseUrl, {
-                ...params,
-                rounds: updatedSelection.join(','),
-            });
-        },
-        [params, redirectToReplace, selectedRounds],
-    );
-
-    const divider = (
-        <HorizontalDivider mt={6} mb={4} ml={-4} mr={-4} displayTrigger />
-    );
-
-    useSkipEffectOnMount(() => {
-        setSelectedRounds([undefined, undefined]);
-    }, [country]);
-
-    useEffect(() => {
-        if (dropDownOptions && !rounds) {
-            if (dropDownOptions.length === 1) {
-                setSelectedRounds([
-                    dropDownOptions[0].value,
-                    dropDownOptions[0].value,
-                ]);
-                redirectToReplace(baseUrl, {
-                    ...params,
-                    rounds: `${dropDownOptions[0].value},${dropDownOptions[0].value}`,
-                    rightTab: LIST,
-                });
-            }
-            if (dropDownOptions.length > 1) {
-                setSelectedRounds([
-                    dropDownOptions[0].value,
-                    dropDownOptions[1].value,
-                ]);
-            }
-        }
-    }, [dropDownOptions, campaign, rounds, redirectToReplace, params]);
+    const { onRoundChange, selectedRounds, dropDownOptions } =
+        useSelectedRounds({ baseUrl, campaigns, params });
+    const { convertedData, debugData, hasScope, chartData } = useLqasData({
+        campaign,
+        country,
+        selectedRounds,
+        LQASData,
+    });
 
     return (
         <>
@@ -167,7 +102,13 @@ export const Lqas = () => {
 
                 {campaign && !isFetching && (
                     <>
-                        {divider}
+                        <HorizontalDivider
+                            mt={6}
+                            mb={4}
+                            ml={-4}
+                            mr={-4}
+                            displayTrigger
+                        />
                         <Grid container spacing={2} direction="row">
                             <Grid item xs={12}>
                                 <GraphTitle
@@ -194,7 +135,13 @@ export const Lqas = () => {
                                 </Grid>
                             ))}
                         </Grid>
-                        {divider}
+                        <HorizontalDivider
+                            mt={6}
+                            mb={4}
+                            ml={-4}
+                            mr={-4}
+                            displayTrigger
+                        />
                         <Grid container spacing={2} direction="row">
                             <Grid item xs={12}>
                                 <GraphTitle
@@ -252,7 +199,13 @@ export const Lqas = () => {
                                 </Grid>
                             ))}
                         </Grid>
-                        {divider}
+                        <HorizontalDivider
+                            mt={6}
+                            mb={4}
+                            ml={-4}
+                            mr={-4}
+                            displayTrigger
+                        />
                         <Grid container spacing={2} direction="row">
                             <Grid item xs={12}>
                                 <GraphTitle

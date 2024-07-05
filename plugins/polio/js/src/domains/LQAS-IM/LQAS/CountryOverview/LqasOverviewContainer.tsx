@@ -15,7 +15,7 @@ import {
 } from 'bluesquare-components';
 
 import { LqasSummary } from './LqasSummary';
-import { LqasImMapHeader } from '../../shared/LqasImMapHeader';
+import { LqasImMapHeader } from '../../shared/Map/LqasImMapHeader';
 import {
     Campaign,
     ConvertedLqasImData,
@@ -164,9 +164,9 @@ export const LqasOverviewContainer: FunctionComponent<Props> = ({
             </Tabs>
             {tab === MAP && (
                 <LqasCountryMap
+                    side={side}
                     round={round}
                     selectedCampaign={campaign}
-                    type={LqasIMView.lqas}
                     countryId={countryId}
                     campaigns={campaigns}
                     data={data}

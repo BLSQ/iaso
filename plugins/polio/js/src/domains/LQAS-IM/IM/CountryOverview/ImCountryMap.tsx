@@ -1,21 +1,10 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Box } from '@mui/material';
-import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
-import { MapComponent } from '../../../Campaigns/MapComponent/MapComponent.js';
-import { MapLegend } from '../../../Campaigns/MapComponent/MapLegend.js';
-import { MapLegendContainer } from '../../../Campaigns/MapComponent/MapLegendContainer.js';
-import { makePopup } from '../../shared/LqasImPopUp.js';
+import { useSafeIntl } from 'bluesquare-components';
 import { makeImMapLegendItems } from '../utils';
-import { defaultShapeStyle } from '../../../../utils/index';
 import MESSAGES from '../../../../constants/messages';
-import { ScopeAndDNFDisclaimer } from '../../shared/ScopeAndDNFDisclaimer';
 import { IMType } from '../../../../constants/types';
 import { imDistrictColors } from '../constants';
-import { GreyHashedPattern } from '../../../../../../../../hat/assets/js/apps/Iaso/components/maps/HashedPatterns/GreyHashedPattern';
-import { HASHED_MAP_PATTERN } from '../../shared/constants';
-
-// eslint-disable-next-line no-unused-vars
-const getBackgroundLayerStyle = _shape => defaultShapeStyle;
+import { LqasImCountryMap } from '../../shared/Map/LqasImCountryMap';
 
 const getMainLayerStyles = shape => {
     return imDistrictColors[shape.status];
@@ -61,49 +50,22 @@ export const ImCountryMap: FunctionComponent<Props> = ({
 
     const title = formatMessage(MESSAGES.imResults);
     return (
-        <Box position="relative">
-            <MapLegendContainer>
-                <MapLegend title={title} legendItems={legendItems} width="lg" />
-            </MapLegendContainer>
-            {/* Showing spinner on isFetching alone would make the map seem like it's loading before the user has chosen a country and campaign */}
-            {(isFetching || isFetchingGeoJson || isFetchingRegions) && (
-                <LoadingSpinner fixed={false} absolute />
-            )}
-            <MapComponent
-                key={countryId}
-                name={`IMMap${round}-${type}-${countryId}`}
-                backgroundLayer={regionShapes}
-                mainLayer={mainLayer}
-                onSelectShape={() => null}
-                getMainLayerStyle={getMainLayerStyles}
-                getBackgroundLayerStyle={getBackgroundLayerStyle}
-                tooltipLabels={{
-                    main: 'District',
-                    background: 'Region',
-                }}
-                makePopup={makePopup(data, round, selectedCampaign)}
-                fitBoundsToBackground
-                fitToBounds
-                height={600}
-                shapePatternIds={[HASHED_MAP_PATTERN]}
-                shapePatterns={[GreyHashedPattern]}
-            />
-            {selectedCampaign && (
-                <ScopeAndDNFDisclaimer
-                    campaign={selectedCampaign}
-                    data={
-                        disclaimerData as Record<
-                            string,
-                            {
-                                hasScope: boolean;
-                                districtsNotFound: string[];
-                            }
-                        >
-                    }
-                    campaigns={campaigns}
-                    round={round}
-                />
-            )}
-        </Box>
+        <LqasImCountryMap
+            key={countryId}
+            name={`IMMap${round}-${type}-${countryId}`}
+            regionShapes={regionShapes}
+            mainLayer={mainLayer}
+            round={round}
+            data={data}
+            selectedCampaign={selectedCampaign}
+            isFetchingRegions={isFetchingRegions}
+            title={title}
+            legendItems={legendItems}
+            campaigns={campaigns}
+            isFetching={isFetching}
+            isFetchingGeoJson={isFetchingGeoJson}
+            disclaimerData={disclaimerData}
+            getMainLayerStyles={getMainLayerStyles}
+        />
     );
 };

@@ -11,6 +11,8 @@ import { useSidebar } from '../app/contexts/SideBarContext';
 import { ThemeConfigContext } from '../app/contexts/ThemeConfigContext';
 import { LangSwitch } from './components/LangSwitch';
 import { useHomeButtons } from './hooks/useHomeButtons';
+import { CurrentUserInfos } from '../../components/nav/CurrentUser';
+import { useCurrentUser } from '../../utils/usersUtils';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -51,6 +53,13 @@ const useStyles = makeStyles(theme => ({
         position: 'absolute',
         top: 0,
         left: 0,
+        '& span[class*="currentUserInfos"]:first-child': {
+            fontSize: 19,
+        },
+
+        '& span[class*="account"]': {
+            fontSize: 14,
+        },
     },
     container: {
         width: '70%',
@@ -97,6 +106,7 @@ export const HomeOnline: FunctionComponent = () => {
     const staticUrl = window.STATIC_URL ?? '/static/';
     const { toggleSidebar } = useSidebar();
     const homeButtons = useHomeButtons();
+    const currentUser = useCurrentUser();
     return (
         <Box className={classes.root}>
             <Grid className={classes.topMenu} container spacing={2}>
@@ -114,6 +124,16 @@ export const HomeOnline: FunctionComponent = () => {
                     </Box>
                 </Grid>
                 <Grid container item xs={6} justifyContent="flex-end">
+                    <Box
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="flex-end"
+                    >
+                        <CurrentUserInfos
+                            currentUser={currentUser}
+                            version={(window as any).IASO_VERSION}
+                        />
+                    </Box>
                     <Box p={4} display="flex" alignItems="center">
                         <LangSwitch />
                         <Box pl={2}>

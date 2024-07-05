@@ -4,17 +4,17 @@ import { useSafeIntl } from 'bluesquare-components';
 import { isEqual } from 'lodash';
 import { Box } from '@mui/material';
 
-import { ConvertedLqasImData } from '../../../constants/types';
+import { ConvertedLqasImData } from '../../../../constants/types';
 import { PercentageChartWithTitle } from './PercentageChartWithTitle';
-import { useGetRegions } from './hooks/api/useGetRegions';
-import { formatImDataForChart, imTooltipFormatter } from '../IM/utils';
+import { useGetRegions } from '../hooks/api/useGetRegions';
+import { formatImDataForChart, imTooltipFormatter } from '../../IM/utils';
 import {
     formatLqasDataForChart,
     lqasChartTooltipFormatter,
-} from '../LQAS/utils';
+} from '../../LQAS/utils';
 import { NoData } from './NoData';
-import { lqasBarColorTresholds } from '../LQAS/constants';
-import { imBarColorTresholds } from '../IM/constants';
+import { lqasBarColorTresholds } from '../../LQAS/constants';
+import { imBarColorTresholds } from '../../IM/constants';
 
 type Props = {
     type: 'imGlobal' | 'imIHH' | 'imOHH' | 'lqas';

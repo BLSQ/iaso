@@ -1,8 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { Typography, Box, Chip } from '@mui/material';
-import { LqasImData } from '../../../constants/types';
-import MESSAGES from '../../../constants/messages';
+import { LqasImData } from '../../../../constants/types';
+import MESSAGES from '../../../../constants/messages';
 
 type Props = {
     // eslint-disable-next-line react/require-default-props

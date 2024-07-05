@@ -76,7 +76,7 @@ export const useGetProfilesOptions = (): UseQueryResult<
             select: data =>
                 (data?.profiles ?? []).map(user => ({
                     label: user.user_name,
-                    value: user.id,
+                    value: user.user_id,
                 })),
         },
     });

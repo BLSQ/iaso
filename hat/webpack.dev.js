@@ -257,19 +257,17 @@ module.exports = {
             },
             // images
             {
-                test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
-                loader: 'url-loader',
-                options: {
-                    limit: 10000,
-                    mimetype: 'image/svg+xml',
-                },
-            },
-            {
-                test: /\.(png|jpg)$/,
-                loader: 'url-loader',
-                options: {
-                    limit: 8192,
-                },
+                test: /\.(png|jpg|jpeg|gif|svg)$/,
+                use: [
+                    {
+                        loader: 'file-loader',
+                        options: {
+                            name: '[name].[hash].[ext]',
+                            outputPath: 'images',
+                            publicPath: `${WEBPACK_URL}/static/images`,
+                        },
+                    },
+                ],
             },
             // videos
             {

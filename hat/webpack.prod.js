@@ -230,13 +230,19 @@ module.exports = {
                     mimetype: 'image/png',
                 },
             },
+            // images
             {
-                test: /\.jpg(\?v=\d+\.\d+\.\d+)?$/,
-                loader: 'url-loader',
-                options: {
-                    limit: 10000,
-                    mimetype: 'image/jpg',
-                },
+                test: /\.(png|jpg|jpeg|gif|svg)$/,
+                use: [
+                    {
+                        loader: 'file-loader',
+                        options: {
+                            name: '[name].[hash].[ext]',
+                            outputPath: 'images',
+                            publicPath: '',
+                        },
+                    },
+                ],
             },
         ],
         noParse: [require.resolve('typescript/lib/typescript.js')], // remove warning: https://github.com/microsoft/TypeScript/issues/39436

@@ -12,7 +12,7 @@ import {
 import { LqasImData } from '../../../../../constants/types';
 import { LQAS_COUNTRY_URL } from '../../../LQAS/constants';
 
-export type LQASIMRequestType = 'lqas' | 'imOHH' | 'imIHH' | 'imGlobal';
+export type LQASIMRequestType = 'lqas' | 'imOHH' | 'imHH' | 'imGlobal';
 
 export const getLqasIm = (
     type: LQASIMRequestType,
@@ -21,7 +21,7 @@ export const getLqasIm = (
     switch (type) {
         case 'imOHH':
             return getRequest(`${IM_COUNTRY_URL}${IM_OHH_SLUG}_${countryId}`);
-        case 'imIHH':
+        case 'imHH':
             return getRequest(`${IM_COUNTRY_URL}${IM_HH_SLUG}_${countryId}`);
         case 'imGlobal':
             return getRequest(

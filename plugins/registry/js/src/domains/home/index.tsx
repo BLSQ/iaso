@@ -1,12 +1,19 @@
 import ArrowCircleRightIcon from '@mui/icons-material/ArrowCircleRight';
+import MedicalInformationIcon from '@mui/icons-material/MedicalInformation';
 import { Box, Grid, Typography } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import DHIS2Svg from '../../../../../../hat/assets/js/apps/Iaso/components/svg/DHIS2SvgComponent';
+import blsqLogo from '../../../images/blsq.png';
+import datavizLogo from '../../../images/dataviz.png';
+import dhis2Logo from '../../../images/dhis2.png';
+import enabelLogo from '../../../images/enabel.png';
+
 import logo from '../../../images/logo.jpg';
 import { REGISTRY_BASE_URL } from '../../constants/urls';
 import { MESSAGES } from './messages';
-import { styles } from './styles';
+import { primaryColor, secondaryColor, styles } from './styles';
 
 export const Home = () => {
     const { formatMessage } = useSafeIntl();
@@ -47,6 +54,42 @@ export const Home = () => {
                                     }}
                                 />
                             </Typography>
+                            <Box sx={styles.boxLinkContainer}>
+                                <a
+                                    href="http://dhisniger.ne/"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    <Box
+                                        sx={{
+                                            ...styles.boxLink,
+                                            backgroundColor: primaryColor,
+                                        }}
+                                    >
+                                        <Box>
+                                            <DHIS2Svg />
+                                            {formatMessage(MESSAGES.dhis2)}
+                                        </Box>
+                                    </Box>
+                                </a>
+                                <a
+                                    href="https://www.sante.gouvne.org/"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    <Box
+                                        sx={{
+                                            ...styles.boxLink,
+                                            backgroundColor: secondaryColor,
+                                        }}
+                                    >
+                                        <Box>
+                                            <MedicalInformationIcon />
+                                            {formatMessage(MESSAGES.sante)}
+                                        </Box>
+                                    </Box>
+                                </a>
+                            </Box>
                         </Grid>
                         <Grid item xs={12} md={8} sx={styles.boxContainer}>
                             <Box sx={styles.blueBox}>
@@ -77,7 +120,60 @@ export const Home = () => {
                             </Typography>
                         </Grid>
                         <Grid item xs={12} md={4}>
-                            BLA
+                            <Typography sx={styles.footerTitle}>
+                                {formatMessage(MESSAGES.footerTitle1)}
+                            </Typography>
+                            <Box sx={styles.footerBox}>
+                                <a
+                                    href="https://www.enabel.be"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    <Box sx={styles.footerBoxImage}>
+                                        <img
+                                            src={enabelLogo}
+                                            alt="logo-enabel"
+                                        />
+                                    </Box>
+                                </a>
+                                <a
+                                    href="https://www.bluesquarehub.com"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    <Box sx={styles.footerBoxImage}>
+                                        <img src={blsqLogo} alt="logo-blsq" />
+                                    </Box>
+                                </a>
+                            </Box>
+                        </Grid>
+                        <Grid item xs={12} md={4}>
+                            <Typography sx={styles.footerTitle}>
+                                {formatMessage(MESSAGES.footerTitle2)}
+                            </Typography>
+                            <Box sx={styles.footerBox}>
+                                <a
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    href="https://www.bluesquarehub.com/dataviz/"
+                                >
+                                    <Box sx={styles.footerBoxImage}>
+                                        <img
+                                            src={datavizLogo}
+                                            alt="logo-dataviz"
+                                        />
+                                    </Box>
+                                </a>
+                                <a
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    href="https://dhis2.org/"
+                                >
+                                    <Box sx={styles.footerBoxImage}>
+                                        <img src={dhis2Logo} alt="logo-dhis2" />
+                                    </Box>
+                                </a>
+                            </Box>
                         </Grid>
                     </Grid>
                 </Box>

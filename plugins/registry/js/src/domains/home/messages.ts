@@ -34,4 +34,21 @@ export const MESSAGES = defineMessages({
         id: 'register.home.footerLink',
         defaultMessage: 'le gestionnaire du programme',
     },
+    footerTitle1: {
+        id: 'register.home.footerTitle1',
+        defaultMessage: 'PARTENAIRES',
+    },
+    footerTitle2: {
+        id: 'register.home.footerTitle2',
+        defaultMessage: 'PROPULSE PAR',
+    },
+    dhis2: {
+        id: 'register.home.dhis2',
+        defaultMessage: 'DHIS2 National',
+    },
+    sante: {
+        id: 'register.home.sante',
+        defaultMessage:
+            'Ministère de la Santé Publique de la Population et des Affaires Sociales',
+    },
 });

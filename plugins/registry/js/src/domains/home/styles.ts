@@ -8,6 +8,14 @@ const absoluteStyle = {
 
 const boxRadius = '30px';
 const fontFamily = 'Work Sans, sans-serif';
+export const primaryColor = '#0B9BF9';
+export const secondaryColor = '#E36178';
+const whiteColor = '#fff';
+const blackColor = '#111111';
+const lightGrayColor = '#E0EBEE';
+const darkGrayColor = '#1C3B5F';
+const blurFilter = 'blur(17px)';
+const transitionEffect = '0.3s ease';
 
 export const styles: SxStyles = {
     background: {
@@ -31,7 +39,7 @@ export const styles: SxStyles = {
         height: '499px',
         left: '-96px',
         top: '-148px',
-        border: '1px solid #E0EBEE',
+        border: `1px solid ${lightGrayColor}`,
     },
     ellipse3: {
         ...absoluteStyle,
@@ -47,8 +55,8 @@ export const styles: SxStyles = {
         height: '1059px',
         left: '-376px',
         top: '-428px',
-        border: '27px solid #E4F3FE',
-        filter: 'blur(17px)',
+        border: `27px solid #E4F3FE`,
+        filter: blurFilter,
     },
     ellipse5: {
         ...absoluteStyle,
@@ -56,7 +64,7 @@ export const styles: SxStyles = {
         height: '725px',
         left: '-209px',
         top: '-261px',
-        border: '1px solid #E0EBEE',
+        border: `1px solid ${lightGrayColor}`,
     },
     round1: {
         ...absoluteStyle,
@@ -80,7 +88,7 @@ export const styles: SxStyles = {
         height: '12px',
         left: '389px',
         top: '33px',
-        background: '#0B9BF9',
+        background: primaryColor,
     },
     container: {
         position: 'relative',
@@ -90,18 +98,18 @@ export const styles: SxStyles = {
         overflow: 'auto',
     },
     blueBox: {
-        background: '#0B9BF9',
+        background: primaryColor,
         width: '100%',
         padding: '4vw 6vw 0 8vw',
         fontSize: '1.95vw',
         lineHeight: '1.3',
         borderRadius: boxRadius,
-        color: '#fff',
+        color: whiteColor,
         fontWeight: 400,
         fontFamily,
     },
     whiteBox: {
-        background: '#fff',
+        background: whiteColor,
         width: '100%',
         padding: '4vw 8vw',
         borderRadius: boxRadius,
@@ -113,22 +121,22 @@ export const styles: SxStyles = {
         fontSize: '5.7vw',
         fontWeight: 500,
         lineHeight: '1',
-        color: '#1C3B5F',
+        color: darkGrayColor,
         fontFamily,
     },
     link: {
         display: 'block',
         padding: '4vw 0',
         '& a': {
-            color: '#fff',
+            color: whiteColor,
             borderRadius: '25px',
             textDecoration: 'none',
             padding: '14px 20px',
             width: 'fit-content',
             fontSize: '1.35vw',
             lineHeight: '1.3',
-            background: '#E36178',
-            transition: 'background-color 0.3s ease',
+            background: secondaryColor,
+            transition: `background-color ${transitionEffect}`,
             display: 'flex',
             alignItems: 'center',
             '&:hover': {
@@ -148,16 +156,16 @@ export const styles: SxStyles = {
         '& span': {
             fontFamily,
             fontSize: '0.97vw',
-            fontStyle: 'italic',
             fontWeight: 400,
             lineHeight: '24px',
             textAlign: 'left',
+            fontStyle: 'italic',
         },
     },
     logo: {
         width: '120px',
         height: '120px',
-        borderRadius: '30px',
+        borderRadius: boxRadius,
         overflow: 'hidden',
         backgroundColor: '#f7f7f7',
         boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
@@ -175,23 +183,107 @@ export const styles: SxStyles = {
         width: '100%',
         padding: '5vw',
     },
+    boxLinkContainer: {
+        marginTop: '4vw',
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        '& a': {
+            color: 'inherit',
+            textDecoration: 'none',
+        },
+    },
+    boxLink: {
+        width: '13vw',
+        height: '13vw',
+        borderRadius: boxRadius,
+        overflow: 'hidden',
+        marginRight: '10px',
+        flexShrink: 0,
+        flexGrow: 0,
+        transition: `box-shadow ${transitionEffect}, transform ${transitionEffect}`,
+        color: whiteColor,
+        '&:hover': {
+            boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.3)',
+            transform: 'scale(1.05)',
+        },
+        '& div': {
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+            height: '100%',
+            padding: '0 10%',
+            flexDirection: 'column',
+            fontFamily,
+            fontSize: '1vw',
+            lineHeight: '1.3',
+            textAlign: 'center',
+            '& svg': {
+                fontSize: '2.5vw',
+                marginBottom: '1vw',
+            },
+        },
+    },
     footer: {
-        background: '#fff',
+        background: whiteColor,
         width: '100%',
         padding: '4vw 6vw',
     },
     footerText: {
-        fontFamily: 'Work Sans',
+        fontFamily,
         fontSize: '0.97vw',
         fontWeight: 400,
         lineHeight: '24px',
         textAlign: 'left',
-        color: '#111111',
+        color: blackColor,
         width: '19vw',
         '& a': {
-            color: '#111111',
+            color: blackColor,
             textDecoration: 'underline',
             marginLeft: '10px',
+        },
+    },
+    footerBox: {
+        marginTop: '20px',
+        width: '100%',
+        display: 'flex',
+        justifyContent: 'flex-start',
+        alignItems: 'center',
+        '& a': {
+            color: 'inherit',
+            textDecoration: 'none',
+        },
+    },
+    footerTitle: {
+        fontFamily,
+        fontSize: '1.35vw',
+        fontWeight: 400,
+        lineHeight: '24px',
+        textAlign: 'left',
+    },
+    footerBoxImage: {
+        width: '11.274vw',
+        height: '11.274vw',
+        borderRadius: boxRadius,
+        border: `1px solid #0000001A`,
+        overflow: 'hidden',
+        backgroundColor: whiteColor,
+        marginRight: '10px',
+        flexShrink: 0,
+        flexGrow: 0,
+        aspectRatio: '1 / 1',
+        padding: '0 15%',
+        transition: `box-shadow ${transitionEffect}, transform ${transitionEffect}`,
+        '&:hover': {
+            boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
+            transform: 'scale(1.05)',
+        },
+        '& img': {
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain',
         },
     },
 };

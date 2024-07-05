@@ -45,7 +45,12 @@ export const PaneWithPattern: FunctionComponent<Props> = ({
                 <svg>
                     <defs>
                         {patterns.map((Pattern, index) => {
-                            return <Pattern id={patternIds[index]} />;
+                            return (
+                                <Pattern
+                                    id={patternIds[index]}
+                                    key={`${index}-${patternIds[index]}`}
+                                />
+                            );
                         })}
                     </defs>
                 </svg>

@@ -4,7 +4,7 @@ import { array, oneOf, string } from 'prop-types';
 import { useStyles } from './styles';
 import { convertWidth } from '../../../utils/index.tsx';
 
-export const MapLegend = ({ title, legendItems, width }) => {
+export const MapLegend = ({ title, legendItems, width, name }) => {
     const classes = useStyles();
     return (
         <Paper elevation={1} style={{ width: convertWidth(width) }}>
@@ -17,12 +17,11 @@ export const MapLegend = ({ title, legendItems, width }) => {
                 </Typography>
                 {legendItems.map((legendItem, i) => {
                     return (
-                        <Box py={1}>
-                            <Grid
-                                container
-                                spacing={1}
-                                key={`${title}${i}${legendItem.label}${legendItem.value}`}
-                            >
+                        <Box
+                            py={1}
+                            key={`${title}${i}${legendItem.label}${legendItem.value}-${name}`}
+                        >
+                            <Grid container spacing={1}>
                                 <Grid
                                     item
                                     sm={
@@ -66,6 +65,7 @@ MapLegend.propTypes = {
     title: string.isRequired,
     legendItems: array.isRequired,
     width: oneOf(['xs', 'sm', 'md', 'lg', 'xl']),
+    name: string.isRequired,
 };
 MapLegend.defaultProps = {
     width: 'sm',

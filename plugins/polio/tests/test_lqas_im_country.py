@@ -80,5 +80,3 @@ class LQASCountryAPITestCase(APITestCase):
         response = self.client.get(f"{api_url}{self.data_store1.slug}/")
         response_body = self.assertJSONResponse(response, 200)
         self.assertEqual(response_body["data"], data_store_content1)
-
-

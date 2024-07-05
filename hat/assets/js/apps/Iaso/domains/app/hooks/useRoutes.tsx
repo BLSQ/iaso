@@ -142,9 +142,9 @@ const useGetProtectedRoutes = (
 const useCurrentRoute = (routes: RouteCustom[]): RouteCustom | undefined => {
     return useMemo(
         () =>
-            routes.find(route =>
-                window.location.pathname.includes(route.baseUrl),
-            ),
+            routes.find(route => {
+                return window.location.pathname.includes(route.baseUrl);
+            }),
         [routes],
     );
 };
@@ -194,11 +194,18 @@ export const useRoutes = (userHomePage?: string): Result => {
         userHomePage,
         allowAnonymous: Boolean(currentRoute?.allowAnonymous),
     });
-    // routes should only change if currentUser has changed
+    // routes should protectedRoutes change if currentUser has changed
     const routes: ReactElement | null = useMemo(
         () =>
             isFetchingCurrentUser ? null : (
-                <Routes>{[...protectedRoutes, ...redirections]}</Routes>
+                <Routes>
+                    {[
+                        ...protectedRoutes.filter(
+                            route => route.props.useDashboard !== false,
+                        ),
+                        ...redirections,
+                    ]}
+                </Routes>
             ),
         [isFetchingCurrentUser, protectedRoutes, redirections],
     );

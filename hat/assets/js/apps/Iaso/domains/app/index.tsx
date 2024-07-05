@@ -18,7 +18,6 @@ const App: FunctionComponent<Props> = ({ userHomePage }) => {
 
     const isDashboardPath =
         window.location.pathname.includes(dashboardBasename);
-
     if (isLoadingRoutes) {
         return <LoadingSpinner />;
     }

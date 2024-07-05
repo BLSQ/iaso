@@ -9,9 +9,11 @@ import { orderBy } from 'lodash';
 import React, {
     FunctionComponent,
     useCallback,
+    useContext,
     useMemo,
     useState,
 } from 'react';
+import { PublicRegistryContext } from '../../../../../../../plugins/registry/js/src/domains/registry';
 import TopBar from '../../components/nav/TopBarComponent';
 import { getOtChipColors } from '../../constants/chipColors';
 import { baseUrls } from '../../constants/urls';
@@ -67,8 +69,10 @@ const styles: SxStyles = {
     },
 };
 
-const baseUrl = baseUrls.registry;
-export const Registry: FunctionComponent = () => {
+export const Registry: FunctionComponent<{ baseUrl?: string }> = ({
+    baseUrl = baseUrls.registry,
+}) => {
+    const publicRegistryContext = useContext(PublicRegistryContext);
     const params = useParamsObject(baseUrl) as RegistryParams;
     const { orgUnitId, orgUnitChildrenId, fullScreen } = params;
     const isFullScreen = fullScreen === 'true';
@@ -116,12 +120,12 @@ export const Registry: FunctionComponent = () => {
     const handleOrgUnitChange = useCallback(
         (newOrgUnit: OrgUnit) => {
             if (newOrgUnit?.id) {
-                redirectTo(`/${baseUrl}`, {
+                redirectTo(baseUrl, {
                     orgUnitId: `${newOrgUnit.id}`,
                 });
             }
         },
-        [redirectTo],
+        [baseUrl, redirectTo],
     );
 
     const handleChildrenChange = useCallback(
@@ -140,19 +144,21 @@ export const Registry: FunctionComponent = () => {
                 delete newParams.orgUnitChildrenId;
             }
             newParams.submissionId = undefined;
-            redirectToReplace(`/${baseUrl}`, newParams);
+            redirectToReplace(baseUrl, newParams);
         },
-        [params, redirectToReplace],
+        [baseUrl, params, redirectToReplace],
     );
     return (
         <>
-            <TopBar
-                title={`${formatMessage(MESSAGES.title)}${
-                    orgUnit
-                        ? `: ${orgUnit.name} (${orgUnit.org_unit_type_name})`
-                        : ''
-                }`}
-            />
+            {!publicRegistryContext && (
+                <TopBar
+                    title={`${formatMessage(MESSAGES.title)}${
+                        orgUnit
+                            ? `: ${orgUnit.name} (${orgUnit.org_unit_type_name})`
+                            : ''
+                    }`}
+                />
+            )}
             <Box
                 sx={{
                     ...styles.mainContainer,
@@ -239,6 +245,7 @@ export const Registry: FunctionComponent = () => {
                     isLoading={isFetching}
                     subOrgUnitTypes={subOrgUnitTypes}
                     params={params}
+                    baseUrl={baseUrl}
                 />
                 {!orgUnitId && <Placeholder />}
             </Box>

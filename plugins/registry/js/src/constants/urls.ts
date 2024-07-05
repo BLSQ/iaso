@@ -3,10 +3,12 @@ import {
     extractParams,
     extractParamsConfig,
     extractUrls,
+    paginationPathParamsWithPrefix,
 } from '../../../../../hat/assets/js/apps/Iaso/constants/urls';
+import { paginationPathParams } from '../../../../../hat/assets/js/apps/Iaso/routing/common';
 
 export const HOME_BASE_URL = 'registry/home';
-export const REGISTRY_BASE_URL = 'registry';
+export const REGISTRY_BASE_URL = 'registry/data';
 
 export const RouteConfigs: Record<string, RouteConfig> = {
     home: {
@@ -15,7 +17,23 @@ export const RouteConfigs: Record<string, RouteConfig> = {
     },
     registry: {
         url: REGISTRY_BASE_URL,
-        params: ['orgUnitId'],
+        params: [
+            'accountId',
+            'orgUnitId',
+            'orgUnitChildrenId',
+            'fullScreen',
+            'formIds',
+            'columns',
+            'tab',
+            'orgUnitListTab',
+            'submissionId',
+            'missingSubmissionVisible',
+            'showTooltip',
+            'clusterEnabled',
+            ...paginationPathParams,
+            ...paginationPathParamsWithPrefix('orgUnitList'),
+            ...paginationPathParamsWithPrefix('missingSubmissions'),
+        ],
     },
 };
 

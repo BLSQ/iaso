@@ -191,8 +191,6 @@ export const useRedirections: RedirectionsMethod = ({
             }
         }
     }
-    // redirections = [];
-    console.log('redirections', redirections);
     return redirections.map(redirection => {
         if (redirection.element) {
             return (

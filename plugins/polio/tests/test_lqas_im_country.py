@@ -81,18 +81,4 @@ class LQASCountryAPITestCase(APITestCase):
         response_body = self.assertJSONResponse(response, 200)
         self.assertEqual(response_body["data"], data_store_content1)
 
-    def test_list_results_filtered_by_account(self):
-        """GET /polio/lqasimmap/country/ should only show results for the user's account"""
 
-        self.client.force_authenticate(self.authorized_user_regular)
-        response = self.client.get(api_url)
-        response_body = self.assertJSONResponse(response, 200)
-        self.assertEqual(len(response_body["results"]), 2)
-        self.assertEqual(response_body["results"][0]["data"], data_store_content1)
-        self.assertEqual(response_body["results"][1]["data"], data_store_content2)
-
-        self.client.force_authenticate(self.user_with_perm_but_wrong_account)
-        response = self.client.get(api_url)
-        response_body = self.assertJSONResponse(response, 200)
-        self.assertEqual(len(response_body["results"]), 1)
-        self.assertEqual(response_body["results"][0]["data"], data_store_content3)

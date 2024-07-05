@@ -115,11 +115,11 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
         url: IM_GLOBAL,
         params: ['campaign', 'country', 'rounds', 'leftTab', 'rightTab'],
     },
-    imIhh: {
+    imHH: {
         url: IM_IHH,
         params: ['campaign', 'country', 'rounds', 'leftTab', 'rightTab'],
     },
-    imOhh: {
+    imOHH: {
         url: IM_OHH,
         params: ['campaign', 'country', 'rounds', 'leftTab', 'rightTab'],
     },
@@ -242,8 +242,8 @@ export type PolioBaseUrls = {
     lqasCountry: string;
     lqasAfro: string;
     imGlobal: string;
-    imIhh: string;
-    imOhh: string;
+    imHH: string;
+    imOHH: string;
     budget: string;
     budgetDetails: string;
     nopv2Auth: string;

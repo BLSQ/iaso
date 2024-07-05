@@ -11,8 +11,6 @@ import {
     FAIL_COLOR,
     MODERATE_COLOR,
     POOR_COLOR,
-    NO_DATA_COLOR,
-    NO_DATA_COLOR_2,
 } from '../../../styles/constants';
 import { makeLegendItem } from '../../../utils';
 import {
@@ -28,7 +26,7 @@ import {
     LQAS_UNDERSAMPLED,
     LQAS_VERY_POOR,
 } from './constants';
-import { IN_SCOPE } from '../shared/constants';
+import { HASHED_BACKGROUND, IN_SCOPE } from '../shared/constants';
 
 /** @deprecated
  *
@@ -120,7 +118,7 @@ export const makeLqasMapLegendItems =
         const noValidDataLegendItem = makeLegendItem({
             label: formatMessage(MESSAGES.noValidData),
             value: `${noValidDataCount}`,
-            background: `repeating-linear-gradient(-45deg,${NO_DATA_COLOR},${NO_DATA_COLOR} 5px,${NO_DATA_COLOR_2} 5px,${NO_DATA_COLOR_2} 10px)`,
+            background: HASHED_BACKGROUND,
         });
 
         return [

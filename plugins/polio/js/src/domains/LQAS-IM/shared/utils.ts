@@ -1,6 +1,6 @@
 import { Campaign } from '../../../constants/types';
 import { findCampaignRound } from '../../../utils';
-import { LqasImRefDate } from './LqasImMapHeader';
+import { LqasImRefDate } from './Map/LqasImMapHeader';
 import { LQASIMType } from './types/types';
 
 export const determineLqasImDates = (

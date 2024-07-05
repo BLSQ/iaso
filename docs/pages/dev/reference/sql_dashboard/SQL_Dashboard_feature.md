@@ -70,13 +70,15 @@ select line_label,
        line_category,
        sum(line_quantity) over (PARTITION BY line_category order by line_label) as line_quantity
 from (
-select TO_CHAR(date_trunc('month', iaso_instance.created_at), 'YYYY/MM') as line_label, count(*) as line_quantity,  iaso_project.name as line_category from iaso_instance inner join iaso_project on iaso_instance.project_id = iaso_project.id
+select TO_CHAR(date_trunc('month', iaso_instance.source_created_at), 'YYYY/MM') as line_label, count(*) as line_quantity,  iaso_project.name as line_category from iaso_instance inner join iaso_project on iaso_instance.project_id = iaso_project.id
  group by line_label, iaso_project.name order by line_label, line_quantity desc limit 200
 ) as data
 ```
 
 # Cumulative sum
-To generate a cumulative sum (particularly useful for progression over time). Wrap your query with 
+
+To generate a cumulative sum (particularly useful for progression over time). Wrap your query with
+
 ```sql
 select line_label,
        line_category,

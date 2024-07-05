@@ -505,7 +505,7 @@ class Command(BaseCommand):
             )
 
             instance = Instance(project=project)
-            instance.created_at = parse_datetime("2018-02-16T11:00:00+00")
+            instance.source_created_at = parse_datetime("2018-02-16T11:00:00+00")
             instance.org_unit = org_unit
             instance.form = form
             instance.file_name = "fake_it_until_you_make_it.xml"
@@ -553,7 +553,7 @@ class Command(BaseCommand):
                 # print("generating", form.name, org_unit.name, instance_by_ou_periods)
                 for instance_count in range(0, instance_by_ou_periods):
                     instance = Instance(project=self.project)
-                    instance.created_at = parse_datetime("2018-02-16T11:00:00+00")
+                    instance.source_created_at = parse_datetime("2018-02-16T11:00:00+00")
                     instance.org_unit = org_unit
                     instance.period = period
                     instance.file_name = "fake_it_until_you_make_it.xml"

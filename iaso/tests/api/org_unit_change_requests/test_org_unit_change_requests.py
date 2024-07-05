@@ -320,8 +320,8 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         self.org_unit.save()
         self.org_unit.refresh_from_db()
 
-        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
-        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Bar")
+        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
+        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Bar")
 
         change_request.created_by = self.user
         change_request.updated_by = self.user

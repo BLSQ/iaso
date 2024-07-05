@@ -32,7 +32,7 @@ def get_event_date(instance, form_mapping):
     event_date_source = MappingVersion.get_event_date_source(form_mapping)
 
     if event_date_source == MappingVersion.EVENT_DATE_SOURCE_FROM_SUBMISSION_CREATED_AT:
-        return instance.created_at.strftime("%Y-%m-%d")
+        return instance.source_created_at.strftime("%Y-%m-%d")
     if event_date_source == MappingVersion.EVENT_DATE_SOURCE_FROM_SUBMISSION_PERIOD:
         dhis2_period = Period.from_string(instance.period)
         start = dhis2_period.start_date().strftime("%Y-%m-%d")
@@ -107,7 +107,7 @@ class AggregateHandler(BaseHandler):
     def map_to_values(self, instance, form_mapping, export_status=None, related_data=None):
         data_set_entry = {
             "dataSet": form_mapping["data_set_id"],
-            "completeDate": instance.created_at.strftime("%Y-%m-%d"),
+            "completeDate": instance.source_created_at.strftime("%Y-%m-%d"),
             "period": instance.period,
             "orgUnit": instance.org_unit.source_ref,
             "dataValues": [],
@@ -290,7 +290,7 @@ class EventHandler(BaseHandler):
                             boolval = "1" if (value in raw_values) else "0"
                             data_value = {
                                 "dataElement": mapping_de["id"],
-                                "value": format_value(mapping_de, boolval, self.orgunit_resolver)
+                                "value": format_value(mapping_de, boolval, self.orgunit_resolver),
                                 # "debug": str(raw_value) + " " + question_key,
                             }
                             event["dataValues"].append(data_value)

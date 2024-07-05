@@ -292,6 +292,7 @@ class OrgUnit(TreeModel):
     location = PointField(null=True, blank=True, geography=True, dim=3, srid=4326)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    source_created_at = models.DateTimeField(null=True, blank=True, help_text="Creation time on the client device")
     creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
     extra_fields = models.JSONField(default=dict)
 
@@ -303,6 +304,9 @@ class OrgUnit(TreeModel):
         indexes = [
             GistIndex(fields=["path"], buffering=True),
             GinIndex(fields=["extra_fields"]),
+            models.Index(fields=["created_at"]),
+            models.Index(fields=["updated_at"]),
+            models.Index(fields=["source_created_at"]),
         ]
 
     def root(self):
@@ -382,7 +386,7 @@ class OrgUnit(TreeModel):
             "id": self.id,
             "p": self.parent_id,
             "out": self.org_unit_type_id,
-            "c_a": self.created_at.timestamp() if self.created_at else None,
+            "c_a": self.source_created_at.timestamp() if self.source_created_at else None,
             "lat": self.location.y if self.location else None,
             "lon": self.location.x if self.location else None,
             "alt": self.location.z if self.location else None,
@@ -396,7 +400,7 @@ class OrgUnit(TreeModel):
             "org_unit_type_id": self.org_unit_type_id,
             "org_unit_type_name": self.org_unit_type.name if self.org_unit_type else None,
             "validation_status": self.validation_status if self.org_unit_type else None,
-            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "created_at": self.source_created_at.timestamp() if self.source_created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
@@ -416,7 +420,7 @@ class OrgUnit(TreeModel):
             "org_unit_type_id": self.org_unit_type_id,
             "org_unit_type_name": self.org_unit_type.name if self.org_unit_type else None,
             "org_unit_type_depth": self.org_unit_type.depth if self.org_unit_type else None,
-            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "created_at": self.source_created_at.timestamp() if self.source_created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "aliases": self.aliases,
             "validation_status": self.validation_status,
@@ -455,7 +459,7 @@ class OrgUnit(TreeModel):
                 else None
             ),
             "org_unit_type_id": self.org_unit_type_id,
-            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "created_at": self.source_created_at.timestamp() if self.source_created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "aliases": self.aliases,
             "latitude": self.location.y if self.location else None,

@@ -893,12 +893,17 @@ class Instance(models.Model):
     REFERENCE_FLAG_CODE = "flag"
     REFERENCE_UNFLAG_CODE = "unflag"
 
-    created_at = models.DateTimeField(auto_now_add=True)
+    # Previously created_at and update_at where filled by the mobile, now they
+    # have been replaced by `source_created_at`` and `update_created_at``.
+    # Columns `created_at` and `update_at` are set by Django per usual.
+    created_at = models.DateTimeField(auto_now_add=True, editable=False)
+    source_created_at = models.DateTimeField(null=True, blank=True, help_text="Creation time on the device")
     created_by = models.ForeignKey(User, on_delete=models.PROTECT, blank=True, null=True)
     last_modified_by = models.ForeignKey(
         User, on_delete=models.PROTECT, blank=True, null=True, related_name="last_modified_by"
     )
-    updated_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now=True, editable=False)
+    source_updated_at = models.DateTimeField(null=True, blank=True, help_text="Update time on the device")
     uuid = models.TextField(null=True, blank=True)
     export_id = models.TextField(null=True, blank=True, default=generate_id_for_dhis_2)
     correlation_id = models.BigIntegerField(null=True, blank=True)
@@ -933,6 +938,14 @@ class Instance(models.Model):
     deleted = models.BooleanField(default=False)
     # See public_create_url workflow in enketo/README.md. used to tell we should export immediately
     to_export = models.BooleanField(default=False)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["created_at"]),
+            models.Index(fields=["updated_at"]),
+            models.Index(fields=["source_created_at"]),
+            models.Index(fields=["source_updated_at"]),
+        ]
 
     def __str__(self):
         return "%s %s" % (self.form, self.name)
@@ -1097,8 +1110,8 @@ class Instance(models.Model):
             "id": self.id,
             "form_id": self.form_id,
             "form_name": self.form.name if self.form else None,
-            "created_at": self.created_at.timestamp() if self.created_at else None,
-            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+            "created_at": self.source_created_at.timestamp() if self.source_created_at else None,
+            "updated_at": self.source_updated_at.timestamp() if self.source_updated_at else None,
             "org_unit": self.org_unit.as_dict(with_groups=False) if self.org_unit else None,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
@@ -1134,8 +1147,8 @@ class Instance(models.Model):
             "file_url": self.file.url if self.file else None,
             "id": self.id,
             "form_id": self.form_id,
-            "created_at": self.created_at.timestamp() if self.created_at else None,
-            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+            "created_at": self.source_created_at.timestamp() if self.source_created_at else None,
+            "updated_at": self.source_updated_at.timestamp() if self.source_updated_at else None,
             "created_by": get_creator_name(self.created_by) if self.created_by else None,
             "org_unit": self.org_unit.as_dict_with_parents() if self.org_unit else None,
             "latitude": self.location.y if self.location else None,
@@ -1167,8 +1180,8 @@ class Instance(models.Model):
             "form_version_id": self.form_version.id if self.form_version else None,
             "form_name": self.form.name,
             "form_descriptor": form_version.get_or_save_form_descriptor() if form_version is not None else None,
-            "created_at": self.created_at.timestamp() if self.created_at else None,
-            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+            "created_at": self.source_created_at.timestamp() if self.source_created_at else None,
+            "updated_at": self.source_updated_at.timestamp() if self.source_updated_at else None,
             "org_unit": self.org_unit.as_dict_with_parents(light=False, light_parents=False) if self.org_unit else None,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
@@ -1227,8 +1240,8 @@ class Instance(models.Model):
         return {
             "id": self.id,
             "file_url": self.file.url if self.file else None,
-            "created_at": self.created_at.timestamp() if self.created_at else None,
-            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+            "created_at": self.source_created_at.timestamp() if self.source_created_at else None,
+            "updated_at": self.source_updated_at.timestamp() if self.source_updated_at else None,
             "period": self.period,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,

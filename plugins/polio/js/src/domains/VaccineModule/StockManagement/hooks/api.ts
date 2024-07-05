@@ -369,17 +369,6 @@ export const useSaveVaccineStock = () => {
     });
 };
 
-const deleteVaccineStock = (id: string) => {
-    return deleteRequest(`${apiUrl}${id}`);
-};
-
-export const useDeleteVaccineStock = (): UseMutationResult => {
-    return useSnackMutation({
-        mutationFn: deleteVaccineStock,
-        invalidateQueryKey: 'vaccine-stock-list',
-    });
-};
-
 const deleteIncident = (id: string) => {
     return deleteRequest(`${modalUrl}incident_report/${id}`);
 };

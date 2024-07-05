@@ -39,7 +39,7 @@ export const Home = () => {
             <Box sx={styles.container}>
                 <Box sx={styles.content}>
                     <Grid container spacing={6}>
-                        <Grid item xs={12} md={4}>
+                        <Grid item xs={12} sm={4}>
                             <Box sx={styles.logoContainer}>
                                 <Box sx={styles.logo}>
                                     <img src={logo} alt="logo" />
@@ -91,7 +91,7 @@ export const Home = () => {
                                 </a>
                             </Box>
                         </Grid>
-                        <Grid item xs={12} md={8} sx={styles.boxContainer}>
+                        <Grid item xs={12} sm={8} sx={styles.boxContainer}>
                             <Box sx={styles.blueBox}>
                                 {formatMessage(MESSAGES.texte1)}
                                 <Box sx={styles.link}>
@@ -111,15 +111,15 @@ export const Home = () => {
                 </Box>
                 <Box sx={styles.footer}>
                     <Grid container spacing={6}>
-                        <Grid item xs={12} md={4}>
+                        <Grid item xs={12} sm={4}>
                             <Typography sx={styles.footerText}>
                                 {formatMessage(MESSAGES.footer)}
-                                <a href="mailto:contact@pass-enabel.org">
+                                <a href="mailto:">
                                     {formatMessage(MESSAGES.footerLink)}
                                 </a>
                             </Typography>
                         </Grid>
-                        <Grid item xs={12} md={4}>
+                        <Grid item xs={12} sm={4}>
                             <Typography sx={styles.footerTitle}>
                                 {formatMessage(MESSAGES.footerTitle1)}
                             </Typography>
@@ -147,7 +147,7 @@ export const Home = () => {
                                 </a>
                             </Box>
                         </Grid>
-                        <Grid item xs={12} md={4}>
+                        <Grid item xs={12} sm={4}>
                             <Typography sx={styles.footerTitle}>
                                 {formatMessage(MESSAGES.footerTitle2)}
                             </Typography>

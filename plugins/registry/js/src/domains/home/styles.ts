@@ -6,7 +6,7 @@ const absoluteStyle = {
     borderRadius: '100%',
 };
 
-const boxRadius = '30px';
+const boxRadius = '20%';
 const fontFamily = 'Work Sans, sans-serif';
 export const primaryColor = '#0B9BF9';
 export const secondaryColor = '#E36178';
@@ -16,6 +16,9 @@ const lightGrayColor = '#E0EBEE';
 const darkGrayColor = '#1C3B5F';
 const blurFilter = 'blur(17px)';
 const transitionEffect = '0.3s ease';
+const fontSize = '1.35vw';
+const mobileFontSize = '18px';
+const breakpoint = 600;
 
 export const styles: SxStyles = {
     background: {
@@ -103,19 +106,25 @@ export const styles: SxStyles = {
         padding: '4vw 6vw 0 8vw',
         fontSize: '1.95vw',
         lineHeight: '1.3',
-        borderRadius: boxRadius,
+        borderRadius: '30px',
         color: whiteColor,
         fontWeight: 400,
         fontFamily,
+        [`@media (max-width: ${breakpoint}px)`]: {
+            fontSize: '20px',
+        },
     },
     whiteBox: {
         background: whiteColor,
         width: '100%',
         padding: '4vw 8vw',
-        borderRadius: boxRadius,
+        borderRadius: '30px',
         fontFamily,
-        fontSize: '1.35vw',
+        fontSize,
         lineHeight: '1.3',
+        [`@media (max-width: ${breakpoint}px)`]: {
+            fontSize: mobileFontSize,
+        },
     },
     title: {
         fontSize: '5.7vw',
@@ -123,6 +132,11 @@ export const styles: SxStyles = {
         lineHeight: '1',
         color: darkGrayColor,
         fontFamily,
+        [`@media (max-width: ${breakpoint}px)`]: {
+            fontSize: '7.8vw',
+            width: '100%',
+            textAlign: 'center',
+        },
     },
     link: {
         display: 'block',
@@ -133,7 +147,7 @@ export const styles: SxStyles = {
             textDecoration: 'none',
             padding: '14px 20px',
             width: 'fit-content',
-            fontSize: '1.35vw',
+            fontSize,
             lineHeight: '1.3',
             background: secondaryColor,
             transition: `background-color ${transitionEffect}`,
@@ -142,11 +156,17 @@ export const styles: SxStyles = {
             '&:hover': {
                 background: '#cc556a',
             },
+            [`@media (max-width: ${breakpoint}px)`]: {
+                fontSize: mobileFontSize,
+            },
         },
     },
     arrow: {
         marginLeft: '10px',
         fontSize: '2.4vw',
+        [`@media (max-width: ${breakpoint}px)`]: {
+            fontSize: '25px',
+        },
     },
     logoContainer: {
         display: 'flex',
@@ -160,6 +180,13 @@ export const styles: SxStyles = {
             lineHeight: '24px',
             textAlign: 'left',
             fontStyle: 'italic',
+            [`@media (max-width: ${breakpoint}px)`]: {
+                fontSize: '12px',
+                lineHeight: '18px',
+            },
+        },
+        [`@media (max-width: ${breakpoint}px)`]: {
+            paddingBottom: '30px',
         },
     },
     logo: {
@@ -193,6 +220,9 @@ export const styles: SxStyles = {
             color: 'inherit',
             textDecoration: 'none',
         },
+        [`@media (max-width: ${breakpoint}px)`]: {
+            marginTop: '30px',
+        },
     },
     boxLink: {
         width: '13vw',
@@ -204,6 +234,10 @@ export const styles: SxStyles = {
         flexGrow: 0,
         transition: `box-shadow ${transitionEffect}, transform ${transitionEffect}`,
         color: whiteColor,
+        [`@media (max-width: ${breakpoint}px)`]: {
+            width: 'calc(50vw - 25px)',
+            height: 'calc(50vw - 25px)',
+        },
         '&:hover': {
             boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.3)',
             transform: 'scale(1.05)',
@@ -223,6 +257,12 @@ export const styles: SxStyles = {
             '& svg': {
                 fontSize: '2.5vw',
                 marginBottom: '1vw',
+                [`@media (max-width: ${breakpoint}px)`]: {
+                    fontSize: '22px',
+                },
+            },
+            [`@media (max-width: ${breakpoint}px)`]: {
+                fontSize: '14px',
             },
         },
     },
@@ -244,6 +284,10 @@ export const styles: SxStyles = {
             textDecoration: 'underline',
             marginLeft: '10px',
         },
+        [`@media (max-width: ${breakpoint}px)`]: {
+            fontSize: '14px',
+            width: '100%',
+        },
     },
     footerBox: {
         marginTop: '20px',
@@ -258,10 +302,13 @@ export const styles: SxStyles = {
     },
     footerTitle: {
         fontFamily,
-        fontSize: '1.35vw',
+        fontSize,
         fontWeight: 400,
         lineHeight: '24px',
         textAlign: 'left',
+        [`@media (max-width: ${breakpoint}px)`]: {
+            fontSize: mobileFontSize,
+        },
     },
     footerBoxImage: {
         width: '11.274vw',
@@ -284,6 +331,10 @@ export const styles: SxStyles = {
             width: '100%',
             height: '100%',
             objectFit: 'contain',
+        },
+        [`@media (max-width: ${breakpoint}px)`]: {
+            width: 'calc(50vw - 25px)',
+            height: 'calc(50vw - 25px)',
         },
     },
 };

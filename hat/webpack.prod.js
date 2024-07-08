@@ -23,7 +23,8 @@ module.exports = {
     output: {
         path: path.resolve(__dirname, './assets/webpack'),
         filename: '[name]-[chunkhash].js',
-        publicPath: '',
+        publicPath: '/static/',
+        assetModuleFilename: 'images/[name].[hash][ext][query]',
     },
     devtool: 'source-map',
 
@@ -175,74 +176,44 @@ module.exports = {
                 test: /\.css$/,
                 use: [MiniCssExtractPlugin.loader, 'css-loader'],
             },
-            // font files
+            {
+                test: /\.(png|jpg|jpeg|gif|svg)$/,
+                type: 'asset/resource',
+            },
             {
                 test: /\.woff(\?v=\d+\.\d+\.\d+)?$/,
-                loader: 'url-loader',
-                options: {
-                    limit: 10000,
-                    mimetype: 'application/font-woff',
+                type: 'asset/resource',
+                generator: {
+                    filename: 'fonts/[name].[hash][ext]',
                 },
             },
             {
                 test: /\.woff2(\?v=\d+\.\d+\.\d+)?$/,
-                loader: 'url-loader',
-                options: {
-                    limit: 10000,
-                    mimetype: 'application/font-woff',
+                type: 'asset/resource',
+                generator: {
+                    filename: 'fonts/[name].[hash][ext]',
                 },
             },
             {
                 test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/,
-                loader: 'url-loader',
-                options: {
-                    limit: 10000,
-                    mimetype: 'application/octet-stream',
+                type: 'asset/resource',
+                generator: {
+                    filename: 'fonts/[name].[hash][ext]',
                 },
             },
             {
                 test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,
-                loader: 'file-loader',
-            },
-            {
-                test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
-                loader: 'url-loader',
-                options: {
-                    limit: 10000,
-                    mimetype: 'image/svg+xml',
+                type: 'asset/resource',
+                generator: {
+                    filename: 'fonts/[name].[hash][ext]',
                 },
             },
-            // videos
             {
                 test: /\.mp4$/,
-                loader: 'url-loader',
-                options: {
-                    limit: 10000,
-                    mimetype: 'video/mp4',
+                type: 'asset/resource',
+                generator: {
+                    filename: 'videos/[name].[hash][ext]',
                 },
-            },
-            // Leaftlet images
-            {
-                test: /\.png(\?v=\d+\.\d+\.\d+)?$/,
-                loader: 'url-loader',
-                options: {
-                    limit: 10000,
-                    mimetype: 'image/png',
-                },
-            },
-            // images
-            {
-                test: /\.(png|jpg|jpeg|gif|svg)$/,
-                use: [
-                    {
-                        loader: 'file-loader',
-                        options: {
-                            name: '[name].[hash].[ext]',
-                            outputPath: 'images',
-                            publicPath: '',
-                        },
-                    },
-                ],
             },
         ],
         noParse: [require.resolve('typescript/lib/typescript.js')], // remove warning: https://github.com/microsoft/TypeScript/issues/39436

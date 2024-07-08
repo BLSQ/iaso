@@ -192,7 +192,6 @@ export const useRoutes = (userHomePage?: string): Result => {
     const hasNoAccount = useHasNoAccount();
     const { pluginRoutes, pluginRedirections, removeIasoRoutes } =
         usePluginsRouteConfigs();
-    console.log('remove Iaso', removeIasoRoutes);
     const routesConfigs = useGetRoutesConfigs({
         userHomePage,
         pluginRoutes,
@@ -218,14 +217,7 @@ export const useRoutes = (userHomePage?: string): Result => {
     const routes: ReactElement | null = useMemo(
         () =>
             isFetchingCurrentUser ? null : (
-                <Routes>
-                    {[
-                        ...protectedRoutes.filter(
-                            route => route.props.useDashboard !== false,
-                        ),
-                        ...redirections,
-                    ]}
-                </Routes>
+                <Routes>{[...protectedRoutes, ...redirections]}</Routes>
             ),
         [isFetchingCurrentUser, protectedRoutes, redirections],
     );

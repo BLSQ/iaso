@@ -4,17 +4,11 @@ const webpack = require('webpack');
 const BundleTracker = require('webpack-bundle-tracker');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 // Determine STATIC_URL based on USE_S3 environment variable
-const USE_S3 = process.env.USE_S3 === 'true';
+const { AWS_STORAGE_BUCKET_NAME } = process.env;
 let STATIC_URL;
 
-if (USE_S3) {
-    const { CDN_URL } = process.env;
-    if (CDN_URL) {
-        STATIC_URL = `//${CDN_URL}/static/`;
-    } else {
-        const { AWS_STORAGE_BUCKET_NAME } = process.env;
-        STATIC_URL = `https://${AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/iasostatics/`;
-    }
+if (AWS_STORAGE_BUCKET_NAME) {
+    STATIC_URL = `https://${AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/iasostatics/`;
 } else {
     STATIC_URL = '/static/';
 }

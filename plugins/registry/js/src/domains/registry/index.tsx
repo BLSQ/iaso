@@ -1,7 +1,6 @@
 import { Box } from '@mui/material';
-import React, { createContext } from 'react';
+import React from 'react';
 
-export const PublicRegistryContext = createContext(undefined);
 export const Registry = () => {
     return (
         <Box>

@@ -158,7 +158,6 @@ class ChronogramTemplateTaskSerializerTestCase(TestCase):
 
     def test_deserialize_chronogram_template_task(self):
         data = {
-            "account": self.account.pk,
             "period": Period.BEFORE,
             "description": "Bar",
             "start_offset_in_days": 10,
@@ -166,7 +165,7 @@ class ChronogramTemplateTaskSerializerTestCase(TestCase):
         serializer = ChronogramTemplateTaskSerializer(data=data)
         self.assertTrue(serializer.is_valid())
 
-        chronogram_template_task = serializer.save(created_by=self.user)
+        chronogram_template_task = serializer.save(created_by=self.user, account=self.account)
 
         self.assertEqual(chronogram_template_task.account, self.account)
         self.assertEqual(chronogram_template_task.period, "BEFORE")

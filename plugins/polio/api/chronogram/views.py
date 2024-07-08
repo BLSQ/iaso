@@ -120,6 +120,7 @@ class ChronogramTemplateTaskViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.validated_data["created_by"] = self.request.user
+        serializer.validated_data["account"] = self.request.user.iaso_profile.account
         serializer.save()
 
     def perform_update(self, serializer):

@@ -452,6 +452,8 @@ else:
     STATIC_ROOT = os.path.join(BASE_DIR, "static")
     MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
+os.environ["PUBLIC_PATH"] = STATIC_URL
+
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "iaso/static"),
     os.path.join(BASE_DIR, "hat/assets/webpack"),

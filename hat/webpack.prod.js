@@ -2,6 +2,8 @@ const path = require('path');
 const webpack = require('webpack');
 const BundleTracker = require('webpack-bundle-tracker');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+
+const PUBLIC_PATH = process.env.PUBLIC_PATH || '/static/';
 // Switch here for french
 // remember to switch in webpack.dev.js and
 // django settings as well
@@ -23,7 +25,7 @@ module.exports = {
     output: {
         path: path.resolve(__dirname, './assets/webpack'),
         filename: '[name]-[chunkhash].js',
-        publicPath: '',
+        publicPath: PUBLIC_PATH,
         assetModuleFilename: 'assets/[name].[hash][ext][query]',
     },
     devtool: 'source-map',

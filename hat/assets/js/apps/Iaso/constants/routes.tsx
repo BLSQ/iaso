@@ -58,7 +58,7 @@ export type RoutePath = {
 };
 
 export type AnonymousRoutePath = Omit<RoutePath, 'permissions'> & {
-    allowAnonymous: boolean;
+    allowAnonymous: true;
     useDashboard?: boolean;
 };
 

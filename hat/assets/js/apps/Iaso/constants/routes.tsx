@@ -71,7 +71,11 @@ export const setupAccountPath = {
 export const formsPath = {
     baseUrl: baseUrls.forms,
     routerUrl: `${baseUrls.forms}/*`,
-    permissions: [Permission.FORMS, Permission.SUBMISSIONS],
+    permissions: [
+        Permission.FORMS,
+        Permission.SUBMISSIONS,
+        Permission.SUBMISSIONS_UPDATE,
+    ],
     element: <Forms />,
     isRootUrl: true,
 };
@@ -87,7 +91,11 @@ export const pagesPath = {
 export const formDetailPath = {
     baseUrl: baseUrls.formDetail,
     routerUrl: `${baseUrls.formDetail}/*`,
-    permissions: [Permission.FORMS, Permission.SUBMISSIONS],
+    permissions: [
+        Permission.FORMS,
+        Permission.SUBMISSIONS,
+        Permission.SUBMISSIONS_UPDATE,
+    ],
     element: <FormDetail />,
 };
 
@@ -108,14 +116,14 @@ export const instancesPath = {
 export const instanceDetailPath = {
     baseUrl: baseUrls.instanceDetail,
     routerUrl: `${baseUrls.instanceDetail}/*`,
-    permissions: [Permission.SUBMISSIONS],
+    permissions: [Permission.SUBMISSIONS, Permission.SUBMISSIONS_UPDATE],
     element: <InstanceDetail />,
 };
 
 export const compareInstanceLogsPath = {
     baseUrl: baseUrls.compareInstanceLogs,
     routerUrl: `${baseUrls.compareInstanceLogs}/*`,
-    permissions: [Permission.SUBMISSIONS],
+    permissions: [Permission.SUBMISSIONS, Permission.SUBMISSIONS_UPDATE],
     element: <CompareInstanceLogs />,
 };
 

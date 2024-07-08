@@ -40,6 +40,15 @@ export const usersTableColumns = ({
         accessor: 'last_name',
     },
     {
+        Header: formatMessage(MESSAGES.projects),
+        id: 'projects',
+        accessor: 'projects',
+        sortable: false,
+        Cell: settings =>
+            settings.value?.map(project => project.name).join(', ') ||
+            textPlaceholder,
+    },
+    {
         Header: formatMessage(MESSAGES.email),
         id: 'user__email',
         accessor: 'email',

@@ -1,16 +1,11 @@
 import React, { useMemo } from 'react';
 import { Column, IconButton, useSafeIntl } from 'bluesquare-components';
 import { baseUrls } from '../../../../constants/urls';
-import { DisplayIfUserHasPerm } from '../../../../../../../../hat/assets/js/apps/Iaso/components/DisplayIfUserHasPerm';
-import { POLIO_VACCINE_STOCK_WRITE } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/permissions';
 import MESSAGES from '../messages';
 import { NumberCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
-import { useDeleteVaccineStock } from '../hooks/api';
-import { DeleteModal } from '../../../../../../../../hat/assets/js/apps/Iaso/components/DeleteRestoreModals/DeleteModal';
 
 export const useVaccineStockManagementTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
-    const { mutateAsync: deleteStock } = useDeleteVaccineStock();
     return useMemo(() => {
         return [
             {
@@ -75,33 +70,14 @@ export const useVaccineStockManagementTableColumns = (): Column[] => {
                 sortable: false,
                 Cell: settings => {
                     return (
-                        <>
-                            <IconButton
-                                icon="remove-red-eye"
-                                tooltipMessage={MESSAGES.view}
-                                url={`/${baseUrls.stockManagementDetails}/id/${settings.row.original.id}`}
-                            />
-
-                            <DisplayIfUserHasPerm
-                                permissions={[POLIO_VACCINE_STOCK_WRITE]}
-                            >
-                                <DeleteModal
-                                    // Without the key prop, the modal won't close if we're not deleting the last item of the table
-                                    key={settings.row.original.id}
-                                    type="icon"
-                                    onConfirm={() =>
-                                        deleteStock(settings.row.original.id)
-                                    }
-                                    titleMessage={MESSAGES.deleteStockWarning}
-                                    iconProps={{}}
-                                >
-                                    {formatMessage(MESSAGES.deleteTextBody)}
-                                </DeleteModal>
-                            </DisplayIfUserHasPerm>
-                        </>
+                        <IconButton
+                            icon="remove-red-eye"
+                            tooltipMessage={MESSAGES.view}
+                            url={`/${baseUrls.stockManagementDetails}/id/${settings.row.original.id}`}
+                        />
                     );
                 },
             },
         ];
-    }, [deleteStock, formatMessage]);
+    }, [formatMessage]);
 };

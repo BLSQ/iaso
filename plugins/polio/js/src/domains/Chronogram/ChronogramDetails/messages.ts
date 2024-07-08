@@ -61,6 +61,26 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.chronogram.details.modal.delete.title',
         defaultMessage: 'Delete Chronogram Task',
     },
+    modalAddTitle: {
+        id: 'iaso.polio.chronogram.details.modal.add_title',
+        defaultMessage: 'Add Chronogram Task',
+    },
+    modalEditTitle: {
+        id: 'iaso.polio.chronogram.details.modal.edit_title',
+        defaultMessage: 'Edit Chronogram Task',
+    },
+    modalWriteCancel: {
+        id: 'iaso.polio.chronogram.modal.write.cancel',
+        defaultMessage: 'Cancel',
+    },
+    modalWriteConfirm: {
+        id: 'iaso.polio.chronogram.modal.write.confirm',
+        defaultMessage: 'Confirm',
+    },
+    validationFieldRequired: {
+        id: 'iaso.polio.chronogram.validation.field_required',
+        defaultMessage: 'This field is required',
+    },
 });
 
 export default MESSAGES;

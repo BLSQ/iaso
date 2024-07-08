@@ -4,16 +4,19 @@ import { TableWithDeepLink } from '../../../../../../../../hat/assets/js/apps/Ia
 
 import { baseUrls } from '../../../../constants/urls';
 
+import { ChronogramTaskMetaData } from '../../types';
 import { ChronogramTasksParams } from '../types';
 import { useChronogramDetailsTableColumn } from './useChronogramDetailsTableColumn';
 import { useGetChronogramTasks } from '../api/useGetChronogramTasks';
 
 type Props = {
     params: ChronogramTasksParams;
+    chronogramTaskMetaData: ChronogramTaskMetaData;
 };
 
 export const ChronogramDetailsTable: FunctionComponent<Props> = ({
     params,
+    chronogramTaskMetaData,
 }) => {
     const apiParams: ChronogramTasksParams = {
         ...params,
@@ -22,7 +25,7 @@ export const ChronogramDetailsTable: FunctionComponent<Props> = ({
         page: params.page || '1',
     };
     const { data, isFetching } = useGetChronogramTasks(apiParams);
-    const columns = useChronogramDetailsTableColumn();
+    const columns = useChronogramDetailsTableColumn(chronogramTaskMetaData);
     return (
         <TableWithDeepLink
             baseUrl={baseUrls.chronogramDetails}

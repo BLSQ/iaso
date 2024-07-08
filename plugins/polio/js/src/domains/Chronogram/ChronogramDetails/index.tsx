@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Box } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 
 import { LoadingSpinner, useGoBack, useSafeIntl } from 'bluesquare-components';
 
@@ -10,9 +10,13 @@ import { baseUrls } from '../../../constants/urls';
 import { useStyles } from '../../../styles/theme';
 
 import MESSAGES from './messages';
+import { Chronogram } from '../Chronogram/types';
 import { ChronogramDetailsTable } from './Table/ChronogramDetailsTable';
+import { ChronogramTaskMetaData } from '../types';
 import { ChronogramTasksParams } from './types';
+import { CreateChronogramTaskModal } from './Modals/ChronogramTaskCreateEditModal';
 import { useGetChronogram } from './api/useGetChronogram';
+import { useOptionChronogramTask } from '../api/useOptionChronogramTask';
 
 export const ChronogramDetails: FunctionComponent = () => {
     const params = useParamsObject(
@@ -20,6 +24,8 @@ export const ChronogramDetails: FunctionComponent = () => {
     ) as unknown as ChronogramTasksParams;
 
     const { data, isFetching } = useGetChronogram(params.chronogram_id);
+    const { data: chronogramTaskMetaData, isFetching: isFetchingMetaData } =
+        useOptionChronogramTask();
 
     const paramsNew: ChronogramTasksParams = {
         ...params,
@@ -34,8 +40,8 @@ export const ChronogramDetails: FunctionComponent = () => {
 
     return (
         <>
-            {isFetching && <LoadingSpinner />}
-            {!isFetching && (
+            {isFetching && isFetchingMetaData && <LoadingSpinner />}
+            {!isFetching && !isFetchingMetaData && (
                 <>
                     <TopBar
                         title={formatMessage(MESSAGES.chronogramDetailsTitle, {
@@ -47,7 +53,25 @@ export const ChronogramDetails: FunctionComponent = () => {
                         goBack={() => goBack()}
                     />
                     <Box className={classes.containerFullHeightNoTabPadded}>
-                        <ChronogramDetailsTable params={paramsNew} />
+                        <Grid container justifyContent="flex-end">
+                            <Box>
+                                <CreateChronogramTaskModal
+                                    iconProps={{
+                                        message: MESSAGES.modalAddTitle,
+                                    }}
+                                    chronogram={data as Chronogram}
+                                    chronogramTaskMetaData={
+                                        chronogramTaskMetaData as ChronogramTaskMetaData
+                                    }
+                                />
+                            </Box>
+                        </Grid>
+                        <ChronogramDetailsTable
+                            params={paramsNew}
+                            chronogramTaskMetaData={
+                                chronogramTaskMetaData as ChronogramTaskMetaData
+                            }
+                        />
                     </Box>
                 </>
             )}

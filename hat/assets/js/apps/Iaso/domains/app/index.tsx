@@ -11,20 +11,21 @@ type Props = {
 const dashboardBasename = '/dashboard';
 
 const App: FunctionComponent<Props> = ({ userHomePage }) => {
-    const { nonDashboardRoutes, routes, isLoadingRoutes } = useRoutes(
+    const { routes, isLoadingRoutes, removeIasoRoutes } = useRoutes(
         userHomePage && userHomePage !== '' ? userHomePage : undefined,
     );
     useSnackBars();
 
-    const isDashboardPath =
-        window.location.pathname.includes(dashboardBasename);
     if (isLoadingRoutes) {
         return <LoadingSpinner />;
     }
-    return isDashboardPath ? (
-        <BrowserRouter basename={dashboardBasename}>{routes}</BrowserRouter>
-    ) : (
-        <BrowserRouter>{nonDashboardRoutes}</BrowserRouter>
+
+    return (
+        <BrowserRouter
+            basename={removeIasoRoutes ? undefined : dashboardBasename}
+        >
+            {routes}
+        </BrowserRouter>
     );
 };
 

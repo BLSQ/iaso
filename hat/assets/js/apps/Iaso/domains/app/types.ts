@@ -39,6 +39,7 @@ export type Plugin = {
     baseUrls: Record<string, string>;
     paramsConfig: Record<string, string[]>;
     redirections?: RoutingRedirection[];
+    removeIasoRoutes?: boolean;
 };
 
 export type Plugins = {

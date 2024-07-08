@@ -16,6 +16,7 @@ const config: Plugin = {
     redirections: [],
     menu: [],
     translations,
+    removeIasoRoutes: true,
 };
 
 export default config;

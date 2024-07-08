@@ -22,8 +22,8 @@ import { Plugins } from '../types';
 
 type Result = {
     routes: ReactElement | null;
-    nonDashboardRoutes: ReactElement | null;
     isLoadingRoutes: boolean;
+    removeIasoRoutes: boolean | undefined;
 };
 
 const useHomeOnlineComponent = (): ElementType | undefined => {
@@ -89,15 +89,17 @@ export const useHomeOfflineRoute = (): RouteCustom[] => {
 const usePluginsRouteConfigs = (): {
     pluginRoutes: RouteCustom[];
     pluginRedirections: any[];
+    removeIasoRoutes?: boolean;
 } => {
     const { plugins }: Plugins = useContext(PluginsContext);
     const pluginRoutes = plugins.map(plugin => plugin.routes).flat();
     const pluginRedirections = plugins
         .map(plugin => plugin.redirections)
         .flat();
+    const removeIasoRoutes = plugins.some(plugin => plugin.removeIasoRoutes);
     return useMemo(
-        () => ({ pluginRoutes, pluginRedirections }),
-        [pluginRedirections, pluginRoutes],
+        () => ({ pluginRoutes, pluginRedirections, removeIasoRoutes }),
+        [pluginRedirections, pluginRoutes, removeIasoRoutes],
     );
 };
 
@@ -153,15 +155,26 @@ const setupRoutes: RouteCustom[] = [setupAccountPath, page404];
 type UseGetRouteConfigsArgs = {
     userHomePage?: string;
     pluginRoutes: RouteCustom[];
+    removeIasoRoutes?: boolean;
 };
 const useGetRoutesConfigs = ({
     userHomePage,
     pluginRoutes,
+    removeIasoRoutes,
 }: UseGetRouteConfigsArgs): RouteCustom[] => {
     const currentUser = useCurrentUser();
     const hasNoAccount = useHasNoAccount();
     const homeOnlineRoute = useHomeOnlineRoute(userHomePage);
     const homeOfflineRoute = useHomeOfflineRoute();
+    if (removeIasoRoutes) {
+        if (currentUser) {
+            return [...homeOnlineRoute, ...pluginRoutes];
+        }
+        return [
+            ...homeOfflineRoute,
+            ...pluginRoutes.filter(route => route.allowAnonymous),
+        ];
+    }
     if (hasNoAccount) {
         return setupRoutes;
     }
@@ -177,8 +190,14 @@ const useGetRoutesConfigs = ({
 
 export const useRoutes = (userHomePage?: string): Result => {
     const hasNoAccount = useHasNoAccount();
-    const { pluginRoutes, pluginRedirections } = usePluginsRouteConfigs();
-    const routesConfigs = useGetRoutesConfigs({ userHomePage, pluginRoutes });
+    const { pluginRoutes, pluginRedirections, removeIasoRoutes } =
+        usePluginsRouteConfigs();
+    console.log('remove Iaso', removeIasoRoutes);
+    const routesConfigs = useGetRoutesConfigs({
+        userHomePage,
+        pluginRoutes,
+        removeIasoRoutes,
+    });
     const protectedRoutes = useGetProtectedRoutes(routesConfigs, hasNoAccount);
     const currentRoute = useCurrentRoute(routesConfigs);
 
@@ -193,6 +212,7 @@ export const useRoutes = (userHomePage?: string): Result => {
         pluginRedirections,
         userHomePage,
         allowAnonymous: Boolean(currentRoute?.allowAnonymous),
+        removeIasoRoutes,
     });
     // routes should protectedRoutes change if currentUser has changed
     const routes: ReactElement | null = useMemo(
@@ -209,26 +229,13 @@ export const useRoutes = (userHomePage?: string): Result => {
             ),
         [isFetchingCurrentUser, protectedRoutes, redirections],
     );
-    const nonDashboardRoutes: ReactElement | null = useMemo(
-        () =>
-            isFetchingCurrentUser ? null : (
-                <Routes>
-                    {[
-                        ...protectedRoutes.filter(
-                            route => !route.props.useDashboard,
-                        ),
-                        ...redirections,
-                    ]}
-                </Routes>
-            ),
-        [isFetchingCurrentUser, protectedRoutes, redirections],
-    );
+
     return useMemo(
         () => ({
             routes,
-            nonDashboardRoutes,
             isLoadingRoutes: isFetchingCurrentUser,
+            removeIasoRoutes,
         }),
-        [routes, isFetchingCurrentUser, nonDashboardRoutes],
+        [routes, isFetchingCurrentUser, removeIasoRoutes],
     );
 };

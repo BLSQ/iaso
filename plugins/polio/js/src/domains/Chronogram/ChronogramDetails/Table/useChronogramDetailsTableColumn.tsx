@@ -6,9 +6,13 @@ import { Column, useSafeIntl } from 'bluesquare-components';
 import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 
 import MESSAGES from '../messages';
+import { ChronogramTaskMetaData } from '../../types';
 import { DeleteChronogramTask } from '../Modals/ChronogramTaskDeleteModal';
+import { EditChronogramTaskModal } from '../Modals/ChronogramTaskCreateEditModal';
 
-export const useChronogramDetailsTableColumn = (): Column[] => {
+export const useChronogramDetailsTableColumn = (
+    chronogramTaskMetaData: ChronogramTaskMetaData,
+): Column[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
         return [
@@ -69,6 +73,11 @@ export const useChronogramDetailsTableColumn = (): Column[] => {
                 Cell: settings => {
                     return (
                         <Box display="inline-flex">
+                            {/* @ts-ignore */}
+                            <EditChronogramTaskModal
+                                chronogramTaskMetaData={chronogramTaskMetaData}
+                                chronogramTask={settings.row.original}
+                            />
                             {/* @ts-ignore */}
                             <DeleteChronogramTask
                                 chronogramTask={settings.row.original}

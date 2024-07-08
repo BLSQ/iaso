@@ -1,47 +1,60 @@
 import React, { FunctionComponent } from 'react';
+import { Box, Divider } from '@mui/material';
+import { Field, FormikProvider, useFormik } from 'formik';
+import { isEqual } from 'lodash';
+
 import {
     AddButton,
     ConfirmCancelModal,
     makeFullModal,
     useSafeIntl,
 } from 'bluesquare-components';
-import { Box, Divider } from '@mui/material';
-import { Field, FormikProvider, useFormik } from 'formik';
-import { isEqual } from 'lodash';
 
 import TextInput from '../../../../../../../../hat/assets/js/apps/Iaso/domains/pages/components/TextInput';
 import { EditIconButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
-import { SingleSelect } from '../../../../components/Inputs/SingleSelect';
+import { useGetProfilesDropdown } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/teams/hooks/requests/useGetProfilesDropdown';
 
 import MESSAGES from '../messages';
-import { ChronogramTemplateTask } from '../types';
+import { ChronogramTask } from '../../Chronogram/types';
+import { SingleSelect } from '../../../../components/Inputs/SingleSelect';
 
+import { Chronogram } from '../../Chronogram/types';
 import { ChronogramTaskMetaData } from '../../types';
-import { useChronogramTemplateTaskSchema } from '../hooks/validation';
-import { useCreateEditChronogramTemplateTask } from '../api/useCreateEditChronogramTemplateTask';
+import { useChronogramTaskSchema } from '../hooks/validation';
+import { useCreateEditChronogramTask } from '../api/useCreateEditChronogramTask';
 
 type Props = {
     isOpen: boolean;
     closeDialog: () => void;
     chronogramTaskMetaData: ChronogramTaskMetaData;
-    chronogramTemplateTask?: ChronogramTemplateTask;
+    chronogramTask?: ChronogramTask;
+    chronogram?: Chronogram;
 };
 
-const CreateEditChronogramTemplateTaskModal: FunctionComponent<Props> = ({
+const CreateEditChronogramTaskModal: FunctionComponent<Props> = ({
     isOpen,
     closeDialog,
     chronogramTaskMetaData,
-    chronogramTemplateTask,
+    chronogramTask,
+    chronogram,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const { mutate: confirm } = useCreateEditChronogramTemplateTask();
-    const schema = useChronogramTemplateTaskSchema();
+
+    const { data: profilesDropdown, isFetching: isFetchingProfiles } =
+        useGetProfilesDropdown();
+
+    const { mutate: confirm } = useCreateEditChronogramTask();
+    const schema = useChronogramTaskSchema();
     const formik = useFormik({
         initialValues: {
-            id: chronogramTemplateTask?.id,
-            period: chronogramTemplateTask?.period,
-            description: chronogramTemplateTask?.description,
-            start_offset_in_days: chronogramTemplateTask?.start_offset_in_days,
+            id: chronogramTask?.id,
+            chronogram: chronogramTask?.chronogram || chronogram?.id,
+            period: chronogramTask?.period,
+            description: chronogramTask?.description,
+            start_offset_in_days: chronogramTask?.start_offset_in_days,
+            status: chronogramTask?.status,
+            user_in_charge: chronogramTask?.user_in_charge.id,
+            comment: chronogramTask?.comment,
         },
         enableReinitialize: true,
         validateOnBlur: true,
@@ -54,7 +67,7 @@ const CreateEditChronogramTemplateTaskModal: FunctionComponent<Props> = ({
     const allowConfirm =
         !formik.isSubmitting && formik.isValid && isFormChanged;
 
-    const title = chronogramTemplateTask?.id
+    const title = chronogramTask?.id
         ? `${formatMessage(MESSAGES.modalEditTitle)}`
         : `${formatMessage(MESSAGES.modalAddTitle)}`;
 
@@ -101,20 +114,44 @@ const CreateEditChronogramTemplateTaskModal: FunctionComponent<Props> = ({
                         required
                     />
                 </Box>
+                <Box mb={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.labelStatus)}
+                        name="status"
+                        component={SingleSelect}
+                        options={chronogramTaskMetaData.status}
+                        required
+                    />
+                </Box>
+                <Box mb={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.labelUserInCharge)}
+                        name="user_in_charge"
+                        component={SingleSelect}
+                        options={profilesDropdown}
+                        isLoading={isFetchingProfiles}
+                        required
+                    />
+                </Box>
+                <Box mb={2}>
+                    <Field
+                        label={formatMessage(MESSAGES.labelComment)}
+                        name="comment"
+                        component={TextInput}
+                        required
+                    />
+                </Box>
             </ConfirmCancelModal>
         </FormikProvider>
     );
 };
 
 const modalWithIcon = makeFullModal(
-    CreateEditChronogramTemplateTaskModal,
+    CreateEditChronogramTaskModal,
     EditIconButton,
 );
 
-const modalWithButton = makeFullModal(
-    CreateEditChronogramTemplateTaskModal,
-    AddButton,
-);
+const modalWithButton = makeFullModal(CreateEditChronogramTaskModal, AddButton);
 
-export { modalWithIcon as EditChronogramTemplateTaskModal };
-export { modalWithButton as CreateChronogramTemplateTaskModal };
+export { modalWithIcon as EditChronogramTaskModal };
+export { modalWithButton as CreateChronogramTaskModal };

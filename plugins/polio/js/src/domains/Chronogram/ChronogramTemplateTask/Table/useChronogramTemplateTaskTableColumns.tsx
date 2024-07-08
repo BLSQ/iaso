@@ -5,8 +5,12 @@ import { Column, useSafeIntl } from 'bluesquare-components';
 
 import MESSAGES from '../messages';
 import { DeleteChronogramTemplateTask } from '../Modals/ChronogramTemplateTaskDeleteModal';
+import { EditChronogramTemplateTaskModal } from '../Modals/ChronogramTemplateTaskCreateEditModal';
+import { ChronogramTaskMetaData } from '../../types';
 
-export const useChronogramTemplateTaskTableColumns = (): Column[] => {
+export const useChronogramTemplateTaskTableColumns = (
+    chronogramTaskMetaData: ChronogramTaskMetaData,
+): Column[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
         return [
@@ -37,6 +41,11 @@ export const useChronogramTemplateTaskTableColumns = (): Column[] => {
                 Cell: settings => {
                     return (
                         <Box display="inline-flex">
+                            {/* @ts-ignore */}
+                            <EditChronogramTemplateTaskModal
+                                chronogramTaskMetaData={chronogramTaskMetaData}
+                                chronogramTemplateTask={settings.row.original}
+                            />
                             {/* @ts-ignore */}
                             <DeleteChronogramTemplateTask
                                 chronogramTemplateTask={settings.row.original}

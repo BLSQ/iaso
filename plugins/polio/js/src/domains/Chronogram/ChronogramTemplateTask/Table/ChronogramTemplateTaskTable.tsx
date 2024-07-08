@@ -7,13 +7,16 @@ import { baseUrls } from '../../../../constants/urls';
 import { ChronogramTemplateTaskParams } from '../types';
 import { useChronogramTemplateTaskTableColumns } from './useChronogramTemplateTaskTableColumns';
 import { useGetChronogramTemplateTask } from '../api/useGetChronogramTemplateTask';
+import { ChronogramTaskMetaData } from '../../types';
 
 type Props = {
     params: ChronogramTemplateTaskParams;
+    chronogramTaskMetaData: ChronogramTaskMetaData;
 };
 
 export const ChronogramTemplateTaskTable: FunctionComponent<Props> = ({
     params,
+    chronogramTaskMetaData,
 }) => {
     const apiParams: ChronogramTemplateTaskParams = {
         ...params,
@@ -22,7 +25,9 @@ export const ChronogramTemplateTaskTable: FunctionComponent<Props> = ({
         page: params.page || '1',
     };
     const { data, isFetching } = useGetChronogramTemplateTask(apiParams);
-    const columns = useChronogramTemplateTaskTableColumns();
+    const columns = useChronogramTemplateTaskTableColumns(
+        chronogramTaskMetaData,
+    );
     return (
         <TableWithDeepLink
             baseUrl={baseUrls.chronogramTemplateTask}

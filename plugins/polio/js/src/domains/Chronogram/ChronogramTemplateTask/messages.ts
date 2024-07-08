@@ -14,7 +14,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Yes',
     },
     chronogramTemplateTaskTitle: {
-        id: 'iaso.polio.chronogram.template_task.title',
+        id: 'iaso.polio.chronogram.template_task_title',
         defaultMessage: 'Default Chronogram Tasks',
     },
     labelDescription: {
@@ -33,13 +33,33 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.chronogram.label.start_offset_in_days',
         defaultMessage: 'Start',
     },
+    modalAddTitle: {
+        id: 'iaso.polio.chronogram.template_task.modal.add_title',
+        defaultMessage: 'Add Default Chronogram Task',
+    },
     modalDeleteConfirm: {
-        id: 'iaso.polio.chronogram.template_task.modal.delete.confirm',
+        id: 'iaso.polio.chronogram.template_task.modal.delete_confirm',
         defaultMessage: 'Do you really want to delete this default task?',
     },
     modalDeleteTitle: {
-        id: 'iaso.polio.chronogram.template_task.modal.delete.title',
+        id: 'iaso.polio.chronogram.template_task.modal.delete_title',
         defaultMessage: 'Delete Default Chronogram Task',
+    },
+    modalEditTitle: {
+        id: 'iaso.polio.chronogram.template_task.modal.edit_title',
+        defaultMessage: 'Edit Default Chronogram Task',
+    },
+    modalWriteCancel: {
+        id: 'iaso.polio.chronogram.modal.write.cancel',
+        defaultMessage: 'Cancel',
+    },
+    modalWriteConfirm: {
+        id: 'iaso.polio.chronogram.modal.write.confirm',
+        defaultMessage: 'Confirm',
+    },
+    validationFieldRequired: {
+        id: 'iaso.polio.chronogram.validation.field_required',
+        defaultMessage: 'This field is required',
     },
 });
 

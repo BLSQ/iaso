@@ -31,7 +31,7 @@ export const useSourceConfig = (
         useGetDataSourceVersion(versionId ? `${versionId}` : undefined);
     return useMemo(() => {
         const defaultUserConfig =
-            currentUser?.account.default_version?.data_source
+            currentUser.account.default_version?.data_source
                 ?.tree_config_status_fields;
 
         let sourceSettings = DEFAULT_CONFIG;
@@ -64,7 +64,7 @@ export const useSourceConfig = (
             if (defaultUserConfig?.length > 0) {
                 sourceSettings = defaultUserConfig;
             }
-            const defaultVersion = currentUser?.account.default_version;
+            const defaultVersion = currentUser.account.default_version;
             sourceInfos = {
                 sourceName: defaultVersion?.data_source?.name,
                 sourceId: defaultVersion?.data_source?.id,
@@ -78,7 +78,7 @@ export const useSourceConfig = (
             sourceInfos,
         };
     }, [
-        currentUser?.account.default_version,
+        currentUser.account.default_version,
         sourceId,
         source,
         isFetchingSource,

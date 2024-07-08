@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 import React, { useMemo } from 'react';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
+import EditIcon from '@mui/icons-material/Edit';
 import { NumberCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/NumberCell';
 import MESSAGES from '../../messages';
 import { DateCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
@@ -98,7 +99,7 @@ export const useFormATableColumns = (
                             <EditFormA
                                 id={settings.row.original.id}
                                 formA={settings.row.original}
-                                iconProps={{}}
+                                iconProps={{ overridedIcon: EditIcon }}
                                 countryName={countryName}
                                 vaccine={vaccine}
                                 vaccineStockId={
@@ -176,7 +177,7 @@ export const useDestructionTableColumns = (
                             <EditDestruction
                                 id={settings.row.original.id}
                                 destruction={settings.row.original}
-                                iconProps={{}}
+                                iconProps={{ overridedIcon: EditIcon }}
                                 countryName={countryName}
                                 vaccine={vaccine}
                                 vaccineStockId={
@@ -264,7 +265,7 @@ export const useIncidentTableColumns = (
                             <EditIncident
                                 id={settings.row.original.id}
                                 incident={settings.row.original}
-                                iconProps={{}}
+                                iconProps={{ overridedIcon: EditIcon }}
                                 countryName={countryName}
                                 vaccine={vaccine}
                                 vaccineStockId={

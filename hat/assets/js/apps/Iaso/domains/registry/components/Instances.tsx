@@ -11,6 +11,7 @@ import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
+import { baseUrls } from '../../../constants/urls';
 import * as Permissions from '../../../utils/permissions';
 import { Form } from '../../forms/types/forms';
 import { ColumnSelect } from '../../instances/components/ColumnSelect';
@@ -30,14 +31,13 @@ type Props = {
     isLoading: boolean;
     subOrgUnitTypes: OrgunitTypeRegistry[];
     params: RegistryParams;
-    baseUrl: string;
 };
 
+const baseUrl = baseUrls.registry;
 export const Instances: FunctionComponent<Props> = ({
     isLoading,
     subOrgUnitTypes,
     params,
-    baseUrl,
 }) => {
     const redirectToReplace = useRedirectToReplace();
     const [tableColumns, setTableColumns] = useState<Column[]>([]);
@@ -67,12 +67,12 @@ export const Instances: FunctionComponent<Props> = ({
 
     const handleFilterChange = useCallback(
         (key: string, value: number | string) => {
-            redirectToReplace(baseUrl, {
+            redirectToReplace(baseUrls.registry, {
                 ...params,
                 [key]: value,
             });
         },
-        [baseUrl, params, redirectToReplace],
+        [params, redirectToReplace],
     );
 
     const handleChangeTab = useCallback(
@@ -82,9 +82,9 @@ export const Instances: FunctionComponent<Props> = ({
                 tab: `${newType.id}`,
                 formIds: undefined,
             };
-            redirectToReplace(baseUrl, newParams);
+            redirectToReplace(baseUrls.registry, newParams);
         },
-        [baseUrl, params, redirectToReplace],
+        [params, redirectToReplace],
     );
 
     const { data: orgunitTypeDetail } = useGetOrgUnitType(currentType?.id);
@@ -111,7 +111,7 @@ export const Instances: FunctionComponent<Props> = ({
                 ...params,
                 formIds: selectedForm,
             };
-            redirectToReplace(baseUrl, newParams);
+            redirectToReplace(`/${baseUrl}`, newParams);
         }
         // Only preselect a form if forms list contain an element and params is empty
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -164,7 +164,7 @@ export const Instances: FunctionComponent<Props> = ({
                                         setTableColumns={newCols =>
                                             setTableColumns(newCols)
                                         }
-                                        baseUrl={baseUrl}
+                                        baseUrl={baseUrls.registry}
                                         labelKeys={currentForm.label_keys || []}
                                         formDetails={currentForm}
                                         tableColumns={tableColumns}
@@ -238,7 +238,7 @@ export const Instances: FunctionComponent<Props> = ({
                         {/* @ts-ignore */}
                         <TableWithDeepLink
                             marginTop={false}
-                            baseUrl={baseUrl}
+                            baseUrl={baseUrls.registry}
                             data={data?.instances ?? []}
                             pages={data?.pages ?? 1}
                             defaultSorted={defaultSorted}

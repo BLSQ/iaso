@@ -1,13 +1,11 @@
-import React, { createContext, useMemo } from 'react';
-import { Registry as RegistryPage } from '../../../../../../hat/assets/js/apps/Iaso/domains/registry/index';
-import { baseUrls } from '../../constants/urls';
+import { Box } from '@mui/material';
+import React, { createContext } from 'react';
 
 export const PublicRegistryContext = createContext(undefined);
 export const Registry = () => {
-    const contextValue = useMemo(() => ({ data_source_id: 30 }), []);
     return (
-        <PublicRegistryContext.Provider value={contextValue as any}>
-            <RegistryPage baseUrl={baseUrls.registry} />
-        </PublicRegistryContext.Provider>
+        <Box>
+            <h1>Registry Coming soon</h1>
+        </Box>
     );
 };

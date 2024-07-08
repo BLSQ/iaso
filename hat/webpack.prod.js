@@ -5,7 +5,6 @@ const BundleTracker = require('webpack-bundle-tracker');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 const { AWS_STORAGE_BUCKET_NAME, STATIC_URL } = process.env;
-console.log('AWS_STORAGE_BUCKET_NAME:', AWS_STORAGE_BUCKET_NAME);
 let PUBLIC_PATH;
 
 if (AWS_STORAGE_BUCKET_NAME) {
@@ -17,6 +16,8 @@ if (AWS_STORAGE_BUCKET_NAME) {
 } else {
     PUBLIC_PATH = '/static/';
 }
+console.log('AWS_STORAGE_BUCKET_NAME:', AWS_STORAGE_BUCKET_NAME);
+console.log('PUBLIC_PATH:', PUBLIC_PATH);
 // Switch here for french
 // remember to switch in webpack.dev.js and
 // django settings as well
@@ -38,7 +39,8 @@ module.exports = {
     output: {
         path: path.resolve(__dirname, './assets/webpack'),
         filename: '[name]-[chunkhash].js',
-        publicPath: PUBLIC_PATH,
+        // publicPath: PUBLIC_PATH,
+        publicPath: '',
         assetModuleFilename: 'assets/[name].[hash][ext][query]',
     },
     devtool: 'source-map',

@@ -133,6 +133,7 @@ class ChronogramTemplateTaskSerializer(DynamicFieldsModelSerializer, serializers
             "start_offset_in_days",
         ]
         extra_kwargs = {
+            "account": {"read_only": True},
             "created_at": {"read_only": True},
             "updated_at": {"read_only": True},
             "get_period_display": {"read_only": True},

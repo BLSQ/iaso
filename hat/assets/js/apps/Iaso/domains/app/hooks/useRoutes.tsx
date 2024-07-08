@@ -138,13 +138,14 @@ const useGetProtectedRoutes = (
 };
 
 const useCurrentRoute = (routes: RouteCustom[]): RouteCustom | undefined => {
-    return useMemo(
-        () =>
-            routes.find(route =>
-                window.location.pathname.includes(`/${route.baseUrl}/`),
-            ),
-        [routes],
-    );
+    return useMemo(() => {
+        return routes.find(route => {
+            return (
+                window.location.pathname.includes(`/${route.baseUrl}/`) ||
+                window.location.pathname.endsWith(`/${route.baseUrl}`)
+            );
+        });
+    }, [routes]);
 };
 
 const setupRoutes: RouteCustom[] = [setupAccountPath, page404];

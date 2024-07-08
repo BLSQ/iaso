@@ -42,7 +42,7 @@ module.exports = {
         filename: '[name]-[chunkhash].js',
         // publicPath: PUBLIC_PATH,
         publicPath: '',
-        assetModuleFilename: 'assets/[name].[hash][ext][query]',
+        assetModuleFilename: '[name].[hash][ext][query]',
     },
     devtool: 'source-map',
 

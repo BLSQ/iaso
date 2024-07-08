@@ -1,9 +1,23 @@
 const path = require('path');
+require('dotenv').config();
 const webpack = require('webpack');
 const BundleTracker = require('webpack-bundle-tracker');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+// Determine STATIC_URL based on USE_S3 environment variable
+const USE_S3 = process.env.USE_S3 === 'true';
+let STATIC_URL;
 
-const PUBLIC_PATH = process.env.PUBLIC_PATH || '/static/';
+if (USE_S3) {
+    const { CDN_URL } = process.env;
+    if (CDN_URL) {
+        STATIC_URL = `//${CDN_URL}/static/`;
+    } else {
+        const { AWS_STORAGE_BUCKET_NAME } = process.env;
+        STATIC_URL = `https://${AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/iasostatics/`;
+    }
+} else {
+    STATIC_URL = '/static/';
+}
 // Switch here for french
 // remember to switch in webpack.dev.js and
 // django settings as well
@@ -25,7 +39,7 @@ module.exports = {
     output: {
         path: path.resolve(__dirname, './assets/webpack'),
         filename: '[name]-[chunkhash].js',
-        publicPath: PUBLIC_PATH,
+        publicPath: STATIC_URL,
         assetModuleFilename: 'assets/[name].[hash][ext][query]',
     },
     devtool: 'source-map',

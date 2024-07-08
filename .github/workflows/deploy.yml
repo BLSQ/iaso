@@ -29,6 +29,7 @@ jobs:
             DEFAULT_GIT_REFERENCE: main
             DEFAULT_ENVIRONMENT: staging
             DEFAULT_SLACK_CHANNEL: iasops
+            AWS_STORAGE_BUCKET_NAME: ${{ secrets.AWS_STORAGE_BUCKET_NAME }}
         run: |
             echo "::set-output name=GIT_REFERENCE::${{ github.ref_name || env.DEFAULT_GIT_REFERENCE }}"
             echo "::set-output name=ENVIRONMENT::${{ github.event.inputs.environment || env.DEFAULT_ENVIRONMENT }}"

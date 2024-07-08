@@ -3,14 +3,19 @@ require('dotenv').config();
 const webpack = require('webpack');
 const BundleTracker = require('webpack-bundle-tracker');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-// Determine STATIC_URL based on USE_S3 environment variable
-const { AWS_STORAGE_BUCKET_NAME } = process.env;
-let STATIC_URL;
+
+const { AWS_STORAGE_BUCKET_NAME, STATIC_URL } = process.env;
+console.log('AWS_STORAGE_BUCKET_NAME:', AWS_STORAGE_BUCKET_NAME);
+let PUBLIC_PATH;
 
 if (AWS_STORAGE_BUCKET_NAME) {
-    STATIC_URL = `https://${AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/iasostatics/`;
+    if (STATIC_URL) {
+        PUBLIC_PATH = `//${STATIC_URL}/static/`;
+    } else {
+        PUBLIC_PATH = `https://${AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/iasostatics/`;
+    }
 } else {
-    STATIC_URL = '/static/';
+    PUBLIC_PATH = '/static/';
 }
 // Switch here for french
 // remember to switch in webpack.dev.js and
@@ -33,7 +38,7 @@ module.exports = {
     output: {
         path: path.resolve(__dirname, './assets/webpack'),
         filename: '[name]-[chunkhash].js',
-        publicPath: STATIC_URL,
+        publicPath: PUBLIC_PATH,
         assetModuleFilename: 'assets/[name].[hash][ext][query]',
     },
     devtool: 'source-map',

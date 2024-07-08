@@ -29,7 +29,6 @@ jobs:
             DEFAULT_GIT_REFERENCE: main
             DEFAULT_ENVIRONMENT: staging
             DEFAULT_SLACK_CHANNEL: iasops
-            AWS_STORAGE_BUCKET_NAME: ${{ secrets.AWS_STORAGE_BUCKET_NAME }}
         run: |
             echo "::set-output name=GIT_REFERENCE::${{ github.ref_name || env.DEFAULT_GIT_REFERENCE }}"
             echo "::set-output name=ENVIRONMENT::${{ github.event.inputs.environment || env.DEFAULT_ENVIRONMENT }}"
@@ -93,6 +92,7 @@ jobs:
           scripts/set_version.sh
           git add -f hat/__version__.py
         env:
+          AWS_STORAGE_BUCKET_NAME: ${{ secrets.AWS_STORAGE_BUCKET_NAME }}
           VERSION_NAME: ${{ steps.version.outputs.VERSION_NAME }}
           CI: false
 

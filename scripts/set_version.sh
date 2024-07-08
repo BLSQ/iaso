@@ -28,7 +28,7 @@ echo $DEPLOYED_BY
 cat > hat/__version__.py << EOF
 # Generated at deploy
 VERSION="$(git describe --tags)--$BRANCH_NAME"
-DEPLOYED_ON="$(date --rfc-3339=seconds)"
+DEPLOYED_ON="$(TZ='UTC' date --rfc-3339=seconds)"
 DEPLOYED_BY="$DEPLOYED_BY"
 EOF
 

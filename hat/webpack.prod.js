@@ -16,6 +16,7 @@ if (AWS_STORAGE_BUCKET_NAME) {
 } else {
     PUBLIC_PATH = '/static/';
 }
+console.log('process.env:', process.env);
 console.log('AWS_STORAGE_BUCKET_NAME:', AWS_STORAGE_BUCKET_NAME);
 console.log('PUBLIC_PATH:', PUBLIC_PATH);
 // Switch here for french
@@ -61,15 +62,15 @@ module.exports = {
             ),
         }),
         new MiniCssExtractPlugin({ filename: '[name]-[chunkhash].css' }),
-        new webpack.DefinePlugin({
-            'process.env': {
-                // This has effect on the react lib size
-                // need to do JSON stringify on all vars here to take effect,
-                // see https://github.com/eHealthAfrica/guinea-connect-universal-app/blob/development/webpack/prod.config.js
-                NODE_ENV: JSON.stringify('production'),
-            },
-            __LOCALE: JSON.stringify(LOCALE),
-        }),
+        // new webpack.DefinePlugin({
+        //     'process.env': {
+        //         // This has effect on the react lib size
+        //         // need to do JSON stringify on all vars here to take effect,
+        //         // see https://github.com/eHealthAfrica/guinea-connect-universal-app/blob/development/webpack/prod.config.js
+        //         NODE_ENV: JSON.stringify('production'),
+        //     },
+        //     __LOCALE: JSON.stringify(LOCALE),
+        // }),
         // Minification
         new webpack.LoaderOptionsPlugin({ minimize: true }),
         new webpack.WatchIgnorePlugin({

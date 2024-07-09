@@ -17,9 +17,29 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.yes',
         defaultMessage: 'Yes',
     },
+    cancel: {
+        id: 'iaso.label.cancel',
+        defaultMessage: 'Cancel',
+    },
+    save: {
+        id: 'iaso.label.save',
+        defaultMessage: 'Save',
+    },
     chronogramTitle: {
         id: 'iaso.polio.chronogram.title',
         defaultMessage: 'Chronogram',
+    },
+    labelCampaign: {
+        id: 'iaso.polio.chronogram.label.campaign',
+        defaultMessage: 'Campaign',
+    },
+    labelCountry: {
+        id: 'iaso.polio.chronogram.label.country',
+        defaultMessage: 'Country',
+    },
+    labelRound: {
+        id: 'iaso.polio.chronogram.label.round',
+        defaultMessage: 'Round',
     },
     labelId: {
         id: 'iaso.label.id',
@@ -64,6 +84,26 @@ const MESSAGES = defineMessages({
     linkToChronogramTemplateTask: {
         id: 'iaso.polio.chronogram.link_to_chronogram_template_task',
         defaultMessage: 'Edit Default Tasks',
+    },
+    messageCreateSuccess: {
+        id: 'iaso.polio.chronogram.message.create_success',
+        defaultMessage: 'Chronogram successfully created',
+    },
+    createChronogramTitle: {
+        id: 'iaso.polio.chronogram.title.create_chronogram',
+        defaultMessage: 'Create a new chronogram',
+    },
+    requiredField: {
+        id: 'iaso.forms.error.fieldRequired',
+        defaultMessage: 'This field is required',
+    },
+    requiredPositiveInteger: {
+        id: 'iaso.forms.error.positiveInteger',
+        defaultMessage: 'Please use a positive integer',
+    },
+    requiredUuid: {
+        id: 'iaso.forms.error.requiredUuid',
+        defaultMessage: 'Please use an UUID',
     },
 });
 

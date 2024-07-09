@@ -170,6 +170,7 @@ module.exports = {
         filename: '[name].js',
         sourceMapFilename: '[name].[contenthash].js.map',
         publicPath: `${WEBPACK_URL}/static/`, // Tell django to use this URL to load packages and not use STATIC_URL + bundle_name
+        assetModuleFilename: 'assets/[name].[hash][ext][query]',
     },
     devtool: 'source-map',
 
@@ -226,67 +227,43 @@ module.exports = {
                 test: /\.css$/,
                 use: [{ loader: 'style-loader' }, { loader: 'css-loader' }],
             },
-            // font files
+            {
+                test: /\.(png|jpg|jpeg|gif|svg)$/,
+                type: 'asset/resource',
+            },
             {
                 test: /\.woff(\?v=\d+\.\d+\.\d+)?$/,
-                loader: 'url-loader',
-                options: {
-                    limit: 10000,
-                    mimetype: 'application/font-woff',
+                type: 'asset/resource',
+                generator: {
+                    filename: 'fonts/[name].[hash][ext]',
                 },
             },
             {
                 test: /\.woff2(\?v=\d+\.\d+\.\d+)?$/,
-                loader: 'url-loader',
-                options: {
-                    limit: 10000,
-                    mimetype: 'application/font-woff',
+                type: 'asset/resource',
+                generator: {
+                    filename: 'fonts/[name].[hash][ext]',
                 },
             },
             {
                 test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/,
-                loader: 'url-loader',
-                options: {
-                    limit: 10000,
-                    mimetype: 'application/octet-stream',
+                type: 'asset/resource',
+                generator: {
+                    filename: 'fonts/[name].[hash][ext]',
                 },
             },
             {
                 test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,
-                loader: 'file-loader',
-            },
-            // images
-            {
-                test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
-                loader: 'url-loader',
-                options: {
-                    limit: 10000,
-                    mimetype: 'image/svg+xml',
+                type: 'asset/resource',
+                generator: {
+                    filename: 'fonts/[name].[hash][ext]',
                 },
             },
-            {
-                test: /\.(png|jpg)$/,
-                loader: 'url-loader',
-                options: {
-                    limit: 8192,
-                },
-            },
-            // videos
             {
                 test: /\.mp4$/,
-                loader: 'url-loader',
-                options: {
-                    limit: 10000,
-                    mimetype: 'video/mp4',
-                },
-            },
-            // Leaftlet images
-            {
-                test: /\.png(\?v=\d+\.\d+\.\d+)?$/,
-                loader: 'url-loader',
-                options: {
-                    limit: 10000,
-                    mimetype: 'image/png',
+                type: 'asset/resource',
+                generator: {
+                    filename: 'videos/[name].[hash][ext]',
                 },
             },
         ],

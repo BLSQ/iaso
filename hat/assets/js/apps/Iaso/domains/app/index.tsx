@@ -3,25 +3,28 @@ import React, { FunctionComponent } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { useSnackBars } from '../../components/snackBars/useSnackBars';
 import { useRoutes } from './hooks/useRoutes';
-// import { router } from '../../routing/router';
 
 type Props = {
     userHomePage?: string;
 };
 
+const dashboardBasename = '/dashboard';
+
 const App: FunctionComponent<Props> = ({ userHomePage }) => {
-    const { routes, isLoadingRoutes } = useRoutes(
+    const { nonDashboardRoutes, routes, isLoadingRoutes } = useRoutes(
         userHomePage && userHomePage !== '' ? userHomePage : undefined,
     );
     useSnackBars();
 
-    return (
-        <>
-            {isLoadingRoutes && <LoadingSpinner />}
-            {!isLoadingRoutes && (
-                <BrowserRouter basename="/dashboard">{routes}</BrowserRouter>
-            )}
-        </>
+    const isDashboardPath =
+        window.location.pathname.includes(dashboardBasename);
+    if (isLoadingRoutes) {
+        return <LoadingSpinner />;
+    }
+    return isDashboardPath ? (
+        <BrowserRouter basename={dashboardBasename}>{routes}</BrowserRouter>
+    ) : (
+        <BrowserRouter>{nonDashboardRoutes}</BrowserRouter>
     );
 };
 

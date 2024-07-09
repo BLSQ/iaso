@@ -1,17 +1,18 @@
-import React, { FunctionComponent, useCallback, useContext } from 'react';
-import { Link } from 'react-router-dom';
-import { Box, Container, Typography, IconButton, Grid } from '@mui/material';
-import { makeStyles } from '@mui/styles';
 import MenuIcon from '@mui/icons-material/Menu';
-import { useDispatch } from 'react-redux';
+import { Box, Container, Grid, IconButton, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import React, { FunctionComponent, useContext } from 'react';
+import { Link } from 'react-router-dom';
+import { LogoutButton } from '../../components/nav/LogoutButton';
 import iasoBg from '../../images/iaso-bg.jpg';
 import { LogoSvg } from '../app/components/LogoSvg';
+import SidebarMenuComponent from '../app/components/SidebarMenuComponent';
+import { useSidebar } from '../app/contexts/SideBarContext';
 import { ThemeConfigContext } from '../app/contexts/ThemeConfigContext';
 import { LangSwitch } from './components/LangSwitch';
-import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
-import SidebarMenuComponent from '../app/components/SidebarMenuComponent';
 import { useHomeButtons } from './hooks/useHomeButtons';
-import { LogoutButton } from '../../components/nav/LogoutButton';
+import { CurrentUserInfos } from '../../components/nav/CurrentUser';
+import { useCurrentUser } from '../../utils/usersUtils';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -52,6 +53,13 @@ const useStyles = makeStyles(theme => ({
         position: 'absolute',
         top: 0,
         left: 0,
+        '& span[class*="currentUserInfos"]:first-child': {
+            fontSize: 19,
+        },
+
+        '& span[class*="account"]': {
+            fontSize: 14,
+        },
     },
     container: {
         width: '70%',
@@ -96,12 +104,9 @@ export const HomeOnline: FunctionComponent = () => {
     const { LOGO_PATH, APP_TITLE } = useContext(ThemeConfigContext);
     // @ts-ignore
     const staticUrl = window.STATIC_URL ?? '/static/';
-    const dispatch = useDispatch();
-    const toggleSidebar = useCallback(
-        () => dispatch(toggleSidebarMenu()),
-        [dispatch],
-    );
+    const { toggleSidebar } = useSidebar();
     const homeButtons = useHomeButtons();
+    const currentUser = useCurrentUser();
     return (
         <Box className={classes.root}>
             <Grid className={classes.topMenu} container spacing={2}>
@@ -119,6 +124,16 @@ export const HomeOnline: FunctionComponent = () => {
                     </Box>
                 </Grid>
                 <Grid container item xs={6} justifyContent="flex-end">
+                    <Box
+                        display="flex"
+                        alignItems="center"
+                        justifyContent="flex-end"
+                    >
+                        <CurrentUserInfos
+                            currentUser={currentUser}
+                            version={(window as any).IASO_VERSION}
+                        />
+                    </Box>
                     <Box p={4} display="flex" alignItems="center">
                         <LangSwitch />
                         <Box pl={2}>

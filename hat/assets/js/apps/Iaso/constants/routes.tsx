@@ -1,6 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { ReactElement } from 'react';
 import PageError from '../components/errors/PageError';
+import { Runs } from '../domains/algorithmRuns/Runs';
 import { Assignments } from '../domains/assignments';
 import Completeness from '../domains/completeness';
 import { CompletenessStats } from '../domains/completenessStats';
@@ -20,7 +21,6 @@ import CompareSubmissions from '../domains/instances/compare';
 import { CompareInstanceLogs } from '../domains/instances/compare/components/CompareInstanceLogs';
 import InstanceDetail from '../domains/instances/details';
 import { Links } from '../domains/links';
-import { Runs } from '../domains/algorithmRuns/Runs';
 import Mappings from '../domains/mappings';
 import MappingDetails from '../domains/mappings/details';
 import { Modules } from '../domains/modules';
@@ -59,6 +59,7 @@ export type RoutePath = {
 
 export type AnonymousRoutePath = Omit<RoutePath, 'permissions'> & {
     allowAnonymous: true;
+    useDashboard?: boolean;
 };
 
 export const setupAccountPath = {
@@ -71,7 +72,11 @@ export const setupAccountPath = {
 export const formsPath = {
     baseUrl: baseUrls.forms,
     routerUrl: `${baseUrls.forms}/*`,
-    permissions: [Permission.FORMS, Permission.SUBMISSIONS],
+    permissions: [
+        Permission.FORMS,
+        Permission.SUBMISSIONS,
+        Permission.SUBMISSIONS_UPDATE,
+    ],
     element: <Forms />,
     isRootUrl: true,
 };
@@ -87,14 +92,18 @@ export const pagesPath = {
 export const formDetailPath = {
     baseUrl: baseUrls.formDetail,
     routerUrl: `${baseUrls.formDetail}/*`,
-    permissions: [Permission.FORMS, Permission.SUBMISSIONS],
+    permissions: [
+        Permission.FORMS,
+        Permission.SUBMISSIONS,
+        Permission.SUBMISSIONS_UPDATE,
+    ],
     element: <FormDetail />,
 };
 
 export const formsStatsPath = {
     baseUrl: baseUrls.formsStats,
     routerUrl: `${baseUrls.formsStats}/*`,
-    permissions: [Permission.FORMS],
+    permissions: [Permission.FORMS_STATS],
     element: <FormsStats />,
 };
 
@@ -108,14 +117,14 @@ export const instancesPath = {
 export const instanceDetailPath = {
     baseUrl: baseUrls.instanceDetail,
     routerUrl: `${baseUrls.instanceDetail}/*`,
-    permissions: [Permission.SUBMISSIONS],
+    permissions: [Permission.SUBMISSIONS, Permission.SUBMISSIONS_UPDATE],
     element: <InstanceDetail />,
 };
 
 export const compareInstanceLogsPath = {
     baseUrl: baseUrls.compareInstanceLogs,
     routerUrl: `${baseUrls.compareInstanceLogs}/*`,
-    permissions: [Permission.SUBMISSIONS],
+    permissions: [Permission.SUBMISSIONS, Permission.SUBMISSIONS_UPDATE],
     element: <CompareInstanceLogs />,
 };
 

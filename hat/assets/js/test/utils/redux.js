@@ -4,9 +4,6 @@ import configureStore from 'redux-mock-store';
 import thunk from 'redux-thunk';
 import { instancesInitialState } from '../../apps/Iaso/domains/instances/reducer';
 import { orgUnitsInitialState } from '../../apps/Iaso/domains/orgUnits/reducer';
-import { usersInitialState } from '../../apps/Iaso/domains/users/reducer';
-import { routerInitialState } from '../../apps/Iaso/redux/routerReducer';
-import { sidebarMenuInitialState } from '../../apps/Iaso/redux/sidebarMenuReducer';
 
 import { renderWithIntl } from './intl';
 
@@ -18,17 +15,8 @@ const mockStore = configureStore(middlewares);
 const getMockedStore = storeObject => mockStore(storeObject);
 
 const initialState = {
-    sidebar: sidebarMenuInitialState,
     orgUnits: orgUnitsInitialState,
     instances: instancesInitialState,
-    routerCustom: routerInitialState,
-    users: usersInitialState,
-    app: {
-        locale: {
-            code: 'en',
-            label: 'English version',
-        },
-    },
 };
 
 export const renderWithStore = (component, state = null) => (

@@ -73,13 +73,24 @@ const testRowContent = (index, p = listFixture.projects[index]) => {
     });
 };
 
-const testDialogContent = (p, ffIndexes, clearff = true) => {
+const testDialogContent = p => {
     cy.get('#input-text-name').clear().type(p.name);
     cy.testInputValue('#input-text-name', p.name);
     cy.get('#input-text-app_id').clear().type(p.app_id);
     cy.testInputValue('#input-text-name', p.name);
     cy.selectTab(1, '#project-dialog');
-    cy.fillMultiSelect('#feature_flags', ffIndexes, clearff);
+    cy.get('[data-test="featureFlag-checkbox"] input').each($el => {
+        cy.wrap($el).then(el => {
+            const { name } = el[0];
+            if (
+                p.feature_flags
+                    .map(featureflag => featureflag.id)
+                    .includes(name)
+            ) {
+                el.should('be.checked');
+            }
+        });
+    });
 };
 
 const mockListCall = (keyName, body) => {
@@ -197,6 +208,7 @@ describe('Projects', () => {
             });
         });
 
+        // TODO: rewrite tests using table UX
         it('should save correctly', () => {
             goToPage();
             cy.wait('@getProjects').then(() => {
@@ -222,13 +234,28 @@ describe('Projects', () => {
                     projects: newProjects,
                 };
 
+                testDialogContent(newProject);
+                listFixture.projects[theIndex].feature_flags.forEach(
+                    featureFlag => {
+                        cy.get(
+                            `[data-test="featureFlag-checkbox"] input[name="${featureFlag.id}"]`,
+                        ).uncheck();
+                    },
+                );
+
+                newProject.feature_flags.forEach(featureFlag => {
+                    cy.get(
+                        `[data-test="featureFlag-checkbox"] input[name="${featureFlag.id}"]`,
+                    ).check();
+                });
+
                 mockSaveCall(
                     'PUT',
                     theIndex,
                     `/api/apps/${listFixture.projects[theIndex].app_id}/`,
                     newProject,
                 );
-                testDialogContent(newProject, [2, 3]);
+
                 mockListCall('getProjectsAfterSave', newList);
 
                 cy.get('.MuiDialogActions-root').find('button').last().click();
@@ -241,6 +268,8 @@ describe('Projects', () => {
                 });
             });
         });
+
+        // TODO: rewrite tests using table UX
         it('should create correctly', () => {
             goToPage();
             cy.wait('@getProjects').then(() => {
@@ -259,7 +288,13 @@ describe('Projects', () => {
                 };
                 newList.projects.unshift(newProject);
 
-                testDialogContent(newProject, [0, 1], false);
+                testDialogContent(newProject);
+                newProject.feature_flags.forEach(featureFlag => {
+                    cy.get(
+                        `[data-test="featureFlag-checkbox"] input[name="${featureFlag.id}"]`,
+                    ).check();
+                });
+
                 mockSaveCall('POST', theIndex, '/api/apps/', newProject);
                 mockListCall('getProjectsAfterCreate', newList);
 

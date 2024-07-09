@@ -1,41 +1,40 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React from 'react';
-import { connect } from 'react-redux';
-import { FormattedMessage } from 'react-intl';
 import ExitIcon from '@mui/icons-material/ExitToApp';
 import {
     Box,
     Button,
-    IconButton,
-    Drawer,
-    List,
     Divider,
-    Typography,
+    Drawer,
+    IconButton,
+    List,
     Tooltip,
+    Typography,
     useMediaQuery,
     useTheme,
 } from '@mui/material';
 import { withStyles } from '@mui/styles';
+import React from 'react';
+import { FormattedMessage } from 'react-intl';
 
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
-import { toggleSidebarMenu } from '../../../redux/sidebarMenuReducer';
 import { SIDEBAR_WIDTH } from '../../../constants/uiConstants.ts';
 
-import MenuItem from './MenuItemComponent';
-import { Logo } from './Logo.tsx';
 import LanguageSwitch from './LanguageSwitchComponent';
+import { Logo } from './Logo.tsx';
+import MenuItem from './MenuItemComponent';
 
-import { useMenuItems, DOC_URL } from '../../../constants/menu.tsx';
+import { DOC_URL, useMenuItems } from '../../../constants/menu.tsx';
 
 import MESSAGES from './messages';
 
-import { getDefaultSourceVersion } from '../../dataSources/utils';
-import { useCurrentUser } from '../../../utils/usersUtils.ts';
 import { baseUrls } from '../../../constants/urls.ts';
+import { useCurrentUser } from '../../../utils/usersUtils.ts';
+import { getDefaultSourceVersion } from '../../dataSources/utils';
+import { useSidebar } from '../contexts/SideBarContext.tsx';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -87,7 +86,8 @@ const styles = theme => ({
     },
 });
 
-const SidebarMenu = ({ classes, isOpen, toggleSidebar, location }) => {
+const SidebarMenu = ({ classes, location }) => {
+    const { toggleSidebar, isOpen } = useSidebar();
     const onClick = url => {
         toggleSidebar();
         if (url) {
@@ -208,21 +208,7 @@ const SidebarMenu = ({ classes, isOpen, toggleSidebar, location }) => {
 
 SidebarMenu.propTypes = {
     classes: PropTypes.object.isRequired,
-    isOpen: PropTypes.bool.isRequired,
-    toggleSidebar: PropTypes.func.isRequired,
     location: PropTypes.object.isRequired,
-    activeLocale: PropTypes.object.isRequired,
 };
 
-const MapStateToProps = state => ({
-    isOpen: state.sidebar.isOpen,
-    activeLocale: state.app.locale,
-});
-
-const MapDispatchToProps = dispatch => ({
-    toggleSidebar: () => dispatch(toggleSidebarMenu()),
-});
-
-export default withStyles(styles)(
-    connect(MapStateToProps, MapDispatchToProps)(SidebarMenu),
-);
+export default withStyles(styles)(SidebarMenu);

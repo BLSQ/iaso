@@ -1,5 +1,4 @@
 import moment from 'moment';
-
 // this is the date format used in url params
 export const dateFormat = 'DD-MM-YYYY';
 /**
@@ -96,20 +95,6 @@ export const longDateFormats = {
         LLL: 'Do MMMM YYYY LT',
         LLLL: 'dddd, MMMM Do YYYY LT',
     },
-};
-
-/**
- * Configure the local for time displayed to the user.
- * @param {"en"|"fr"} code - Language code string
- */
-export const setLocale = (code: 'en' | 'fr') => {
-    moment.locale(code);
-    moment.updateLocale(code, {
-        longDateFormat: longDateFormats[code],
-        week: {
-            dow: 1,
-        },
-    });
 };
 
 /**

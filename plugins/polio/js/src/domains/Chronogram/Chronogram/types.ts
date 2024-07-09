@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 
-import { User } from '../types';
+import { User, DropdownOptions } from '../types';
 
 export type ChronogramParams = {
     // API params.
@@ -64,4 +64,22 @@ export type ChronogramApiResponse = {
     page: number;
     pages: number;
     limit: number;
+};
+
+export type DropdownOptionsCampaigns = {
+    value: number;
+    label: string;
+    country_id: number;
+};
+
+export type DropdownOptionsRounds = {
+    value: number;
+    label: string;
+    campaign_id: number;
+};
+
+export type AvailableRoundsDropdownOptions = {
+    countries: DropdownOptions[];
+    campaigns: DropdownOptionsCampaigns[];
+    rounds: DropdownOptionsRounds[];
 };

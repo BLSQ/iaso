@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Grid } from '@mui/material';
+import { Box, Button, Grid } from '@mui/material';
 
 import { useSafeIntl } from 'bluesquare-components';
 import { LinkWithLocation } from 'bluesquare-components';
@@ -12,7 +12,7 @@ import MESSAGES from '../messages';
 import { ChronogramParams } from '../types';
 import { baseUrls } from '../../../../constants/urls';
 import { useGetCountries } from '../../../../hooks/useGetCountries';
-import { Link } from 'react-router-dom';
+import { CreateChronogramModal } from '../Modals/CreateChronogramModal';
 
 type Props = {
     params: ChronogramParams;
@@ -91,9 +91,19 @@ export const ChronogramFilters: FunctionComponent<Props> = ({ params }) => {
                 </Box>
             </Grid>
             <Grid container item justifyContent="flex-end" mt={4}>
-                <LinkWithLocation to={`/${baseUrls.chronogramTemplateTask}`}>
-                    {formatMessage(MESSAGES.linkToChronogramTemplateTask)}
-                </LinkWithLocation>
+                <Box mr={2}>
+                    <Button
+                        variant="contained"
+                        href={`/dashboard/${baseUrls.chronogramTemplateTask}`}
+                    >
+                        {formatMessage(MESSAGES.linkToChronogramTemplateTask)}
+                    </Button>
+                </Box>
+                <CreateChronogramModal
+                    iconProps={{
+                        message: MESSAGES.createChronogramTitle,
+                    }}
+                />
             </Grid>
         </>
     );

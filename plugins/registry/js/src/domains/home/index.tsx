@@ -10,6 +10,7 @@ import datavizLogo from '../../../images/dataviz.png';
 import dhis2Logo from '../../../images/dhis2.png';
 import enabelLogo from '../../../images/enabel.png';
 
+import { useStaticUrl } from '../../../../../../hat/assets/js/apps/Iaso/hooks/useStaticUrl';
 import logo from '../../../images/logo.jpg';
 import { REGISTRY_BASE_URL } from '../../constants/urls';
 import { MESSAGES } from './messages';
@@ -17,7 +18,7 @@ import { primaryColor, secondaryColor, styles } from './styles';
 
 export const Home = () => {
     const { formatMessage } = useSafeIntl();
-    const staticUrl = window.STATIC_URL ?? '/static/';
+    const staticUrl = useStaticUrl();
     useEffect(() => {
         const link = document.createElement('link');
         link.href =

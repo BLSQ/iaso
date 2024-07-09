@@ -17,22 +17,24 @@ import { OrgUnit } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUn
 import { useParamsObject } from '../../../../../../hat/assets/js/apps/Iaso/routing/hooks/useParamsObject';
 import { SxStyles } from '../../../../../../hat/assets/js/apps/Iaso/types/general';
 
-/* eslint-disable sort-imports */
-import { OrgUnitPaper } from '../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/OrgUnitPaper';
-import { Placeholder } from '../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/Placeholder';
-import { SelectedOrgUnit } from '../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/selectedOrgUnit';
+import { baseUrls } from '../../constants/urls';
 import {
     useGetOrgUnit,
     useGetOrgUnitListChildren,
     useGetOrgUnitsMapChildren,
-} from '../../../../../../hat/assets/js/apps/Iaso/domains/registry/hooks/useGetOrgUnit';
-import MESSAGES from '../../../../../../hat/assets/js/apps/Iaso/domains/registry/messages';
-import { RegistryParams } from '../../../../../../hat/assets/js/apps/Iaso/domains/registry/types';
-import { OrgunitTypeRegistry } from '../../../../../../hat/assets/js/apps/Iaso/domains/registry/types/orgunitTypes';
-import { baseUrls } from '../../constants/urls';
+} from '../../hooks/useGetOrgUnit';
+import { OrgunitTypeRegistry, RegistryParams } from '../../types';
 import { Instances } from './Instances';
+import { OrgUnitPaper } from './OrgUnitPaper';
 import { RegistryBreadcrumbs } from './RegistryBreadcrumbs';
+import { MESSAGES } from './messages';
+
+/* STILL USING REGISTRY COMPONENTS */
+/* eslint-disable sort-imports */
+import { Placeholder } from '../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/Placeholder';
+import { SelectedOrgUnit } from '../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/selectedOrgUnit';
 /* eslint-enable sort-imports */
+/* STILL USING REGISTRY COMPONENTS */
 
 const styles: SxStyles = {
     breadCrumbContainer: {
@@ -76,7 +78,7 @@ const config = {
 const baseUrl = baseUrls.registry;
 
 export const Registry: FunctionComponent = () => {
-    const params = useParamsObject(baseUrl) as RegistryParams;
+    const params = useParamsObject(baseUrl) as unknown as RegistryParams;
     const { orgUnitId, orgUnitChildrenId, fullScreen } = params;
     const isFullScreen = fullScreen === 'true';
     const [selectedChildrenId, setSelectedChildrenId] = useState<

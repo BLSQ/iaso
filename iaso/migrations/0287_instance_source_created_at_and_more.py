@@ -7,7 +7,7 @@ class Migration(migrations.Migration):
     atomic = False
 
     dependencies = [
-        ("iaso", "0286_entitytype_prevent_add_if_duplicate_found"),
+        ("iaso", "0281_alter_account_modules"),
     ]
 
     operations = [

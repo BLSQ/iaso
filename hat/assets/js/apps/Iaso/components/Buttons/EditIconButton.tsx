@@ -1,7 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { IconButton, IntlMessage } from 'bluesquare-components';
 import { defineMessages } from 'react-intl';
-import { SvgIconComponent } from '@mui/icons-material';
 
 const MESSAGES = defineMessages({
     edit: {
@@ -14,7 +13,7 @@ type Props = {
     onClick: () => void;
     message?: IntlMessage;
     disabled?: boolean;
-    overridedIcon?: SvgIconComponent;
+    overridedIcon?: any;
 };
 
 export const EditIconButton: FunctionComponent<Props> = ({

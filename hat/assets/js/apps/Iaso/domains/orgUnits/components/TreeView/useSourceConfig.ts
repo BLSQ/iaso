@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { User, useCurrentUser } from '../../../../utils/usersUtils';
+import { useGetDataSource } from '../../../dataSources/hooks/useGetDataSource';
 import { useGetDataSourceVersion } from '../../../dataSources/hooks/useGetDataSourceVersion';
 import { OrgUnitStatus } from '../../types/orgUnit';
-import { useGetDataSource } from '../../../dataSources/hooks/useGetDataSource';
 
 export type SourceInfos = {
     sourceName?: string;

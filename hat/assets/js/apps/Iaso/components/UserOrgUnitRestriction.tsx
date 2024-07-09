@@ -1,10 +1,10 @@
 // @ts-ignore
-import { useSafeIntl } from 'bluesquare-components';
-import React, { useState } from 'react';
 import { Alert } from '@mui/lab';
 import { Snackbar } from '@mui/material';
-import { useCurrentUser } from '../utils/usersUtils';
+import { useSafeIntl } from 'bluesquare-components';
+import React, { useState } from 'react';
 import MESSAGES from '../domains/instances/messages';
+import { useCurrentUser } from '../utils/usersUtils';
 
 export const UserOrgUnitRestriction: React.FunctionComponent = () => {
     const currentUser = useCurrentUser();

@@ -170,7 +170,7 @@ module.exports = {
         filename: '[name].js',
         sourceMapFilename: '[name].[contenthash].js.map',
         publicPath: `${WEBPACK_URL}/static/`, // Tell django to use this URL to load packages and not use STATIC_URL + bundle_name
-        assetModuleFilename: 'images/[name].[hash][ext][query]',
+        assetModuleFilename: 'assets/[name].[hash][ext][query]',
     },
     devtool: 'source-map',
 

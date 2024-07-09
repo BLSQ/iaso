@@ -171,14 +171,6 @@ class PublicRegistryViewSet(ViewSet):
 
         # Get the whitelisted fields from the configuration
         whitelisted_fields = public_registry_config.whitelist.get("fields", [])
-        root_orgunit = public_registry_config.root_orgunit
-        root_orgunit_type = root_orgunit.org_unit_type
-
-        # Details of the root orgunit
-
-        # List of forms for root Orgunit
-
-        # Details of forms
 
         # Fetch instances and only include whitelisted fields
         filters = {

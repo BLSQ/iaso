@@ -150,7 +150,7 @@ class ChronogramTemplateTaskManager(models.Manager):
                 period=template.period,
                 start_offset_in_days=template.start_offset_in_days,
             )
-            for template in self.model.objects.filter(account_id=created_by.iaso_profile.account_id)
+            for template in self.model.objects.valid().filter(account_id=created_by.iaso_profile.account_id)
         ]
         if tasks:
             ChronogramTask.objects.bulk_create(tasks)

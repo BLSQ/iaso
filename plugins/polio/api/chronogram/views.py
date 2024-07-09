@@ -60,8 +60,7 @@ class ChronogramViewSet(viewsets.ModelViewSet):
         """
         user_campaigns = Campaign.polio_objects.filter_for_user(self.request.user).filter(country__isnull=False)
         available_rounds = (
-            Round.objects.valid()
-            .filter(chronogram__isnull=True, campaign__in=user_campaigns)
+            Round.objects.filter(chronogram__isnull=True, campaign__in=user_campaigns)
             .select_related("campaign__country")
             .order_by("campaign__country__name", "campaign__obr_name", "number")
             .only(

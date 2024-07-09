@@ -28,13 +28,13 @@ import { Instances } from './Instances';
 import { OrgUnitPaper } from './OrgUnitPaper';
 import { RegistryBreadcrumbs } from './RegistryBreadcrumbs';
 import { MESSAGES } from './messages';
+import { SelectedOrgUnit } from './selectedOrgUnit';
 
 /* STILL USING REGISTRY COMPONENTS */
 /* eslint-disable sort-imports */
 import { Placeholder } from '../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/Placeholder';
-import { SelectedOrgUnit } from '../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/selectedOrgUnit';
-/* eslint-enable sort-imports */
 /* STILL USING REGISTRY COMPONENTS */
+/* eslint-enable sort-imports */
 
 const styles: SxStyles = {
     breadCrumbContainer: {

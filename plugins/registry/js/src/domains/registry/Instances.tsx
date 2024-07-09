@@ -13,18 +13,13 @@ import { TableWithDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/com
 import { Form } from '../../../../../../hat/assets/js/apps/Iaso/domains/forms/types/forms';
 import { ColumnSelect } from '../../../../../../hat/assets/js/apps/Iaso/domains/instances/components/ColumnSelect';
 import { OrgunitType } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgunitTypes';
-import { ActionCell } from '../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/ActionCell';
-import {
-    INSTANCE_METAS_FIELDS,
-    defaultSorted,
-} from '../../../../../../hat/assets/js/apps/Iaso/domains/registry/config';
-import { useGetForms } from '../../../../../../hat/assets/js/apps/Iaso/domains/registry/hooks/useGetForms';
-import { useGetInstances } from '../../../../../../hat/assets/js/apps/Iaso/domains/registry/hooks/useGetInstances';
-import { useGetOrgUnitType } from '../../../../../../hat/assets/js/apps/Iaso/domains/registry/hooks/useGetOrgUnitType';
-import MESSAGES from '../../../../../../hat/assets/js/apps/Iaso/domains/registry/messages';
-import { RegistryParams } from '../../../../../../hat/assets/js/apps/Iaso/domains/registry/types';
-import { OrgunitTypeRegistry } from '../../../../../../hat/assets/js/apps/Iaso/domains/registry/types/orgunitTypes';
 import { baseUrls } from '../../constants/urls';
+import { useGetForms } from '../../hooks/useGetForms';
+import { defaultSorted, useGetInstances } from '../../hooks/useGetInstances';
+import { useGetOrgUnitType } from '../../hooks/useGetOrgUnitType';
+import { OrgunitTypeRegistry, RegistryParams } from '../../types';
+import { INSTANCE_METAS_FIELDS } from './config';
+import { MESSAGES } from './messages';
 
 type Props = {
     isLoading: boolean;
@@ -164,10 +159,6 @@ export const Instances: FunctionComponent<Props> = ({
                                         instanceMetasFields={
                                             INSTANCE_METAS_FIELDS
                                         }
-                                        // eslint-disable-next-line react/no-unstable-nested-components
-                                        getActionCell={settings => (
-                                            <ActionCell settings={settings} />
-                                        )}
                                     />
                                 )}
                             </Grid>

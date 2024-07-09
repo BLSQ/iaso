@@ -1,10 +1,12 @@
 import MapIcon from '@mui/icons-material/Map';
 import { Box } from '@mui/material';
 import { Column, IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
-import React, { Dispatch, SetStateAction } from 'react';
+import React, { Dispatch, ReactElement, SetStateAction } from 'react';
 
 import { LinkToRegistry } from './LinkToRegistry';
 
+import { InstanceMetasField } from '../../../../../../hat/assets/js/apps/Iaso/domains/instances/components/ColumnSelect';
+import { Instance } from '../../../../../../hat/assets/js/apps/Iaso/domains/instances/types/instance';
 import { OrgUnitLocationIcon } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/components/OrgUnitLocationIcon';
 import { OrgUnit } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
 import { MESSAGES } from './messages';
@@ -12,7 +14,69 @@ import { MESSAGES } from './messages';
 export const defaultSorted = [{ id: 'org_unit__name', desc: false }];
 
 export const HEIGHT = '62vh';
-
+export const INSTANCE_METAS_FIELDS: InstanceMetasField[] = [
+    {
+        key: 'uuid',
+        type: 'info',
+    },
+    {
+        key: 'version',
+        accessor: 'formVersion',
+        active: false,
+        sortable: false,
+        tableOrder: 2,
+        type: 'info',
+        renderValue: (data: Instance): string => {
+            return data.file_content?._version || '--';
+        },
+        Cell: (settings: Record<string, any>): ReactElement => {
+            const data = settings.row.original;
+            // eslint-disable-next-line react/jsx-no-useless-fragment
+            return <>{data.file_content?._version || '--'}</>;
+        },
+    },
+    {
+        key: 'updated_at',
+        active: false,
+        tableOrder: 3,
+        type: 'info',
+    },
+    {
+        key: 'created_at',
+        active: true,
+        tableOrder: 5,
+        type: 'info',
+    },
+    {
+        key: 'device_id',
+        type: 'info',
+    },
+    {
+        key: 'org_unit',
+        accessor: 'org_unit__name',
+        active: true,
+        tableOrder: 4,
+        type: 'location',
+    },
+    {
+        key: 'latitude',
+        type: 'location',
+    },
+    {
+        key: 'longitude',
+        type: 'location',
+    },
+    {
+        key: 'period',
+        tableOrder: 3,
+        active: true,
+        type: 'info',
+    },
+    {
+        key: 'last_modified_by',
+        type: 'info',
+    },
+];
 export const useGetOrgUnitsListColumns = (
     setSelectedChildren: Dispatch<SetStateAction<OrgUnit | undefined>>,
     selectedChildrenId: string | undefined,

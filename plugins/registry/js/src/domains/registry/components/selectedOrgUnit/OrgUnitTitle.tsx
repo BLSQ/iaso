@@ -1,9 +1,9 @@
 import { Box, Grid, Typography } from '@mui/material';
 import React, { FunctionComponent } from 'react';
 
-import { OrgUnit } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
-import { SxStyles } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
-import { RegistryParams } from '../../../types';
+import { OrgUnit } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
+import { SxStyles } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
+import { RegistryParams } from '../../../../types';
 import { LinkToRegistry } from '../LinkToRegistry';
 
 type Props = {

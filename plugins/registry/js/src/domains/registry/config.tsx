@@ -3,7 +3,7 @@ import { Box } from '@mui/material';
 import { Column, IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
 import React, { Dispatch, ReactElement, SetStateAction } from 'react';
 
-import { LinkToRegistry } from './LinkToRegistry';
+import { LinkToRegistry } from './components/LinkToRegistry';
 
 import { InstanceMetasField } from '../../../../../../hat/assets/js/apps/Iaso/domains/instances/components/ColumnSelect';
 import { Instance } from '../../../../../../hat/assets/js/apps/Iaso/domains/instances/types/instance';

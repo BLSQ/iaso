@@ -2,10 +2,10 @@ import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import { Table, useRedirectToReplace } from 'bluesquare-components';
 import React, { Dispatch, FunctionComponent, SetStateAction } from 'react';
-import { OrgUnit } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
-import { baseUrls } from '../../constants/urls';
-import { OrgUnitListChildren, RegistryParams } from '../../types';
-import { HEIGHT, useGetOrgUnitsListColumns } from './config';
+import { OrgUnit } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
+import { baseUrls } from '../../../constants/urls';
+import { OrgUnitListChildren, RegistryParams } from '../../../types';
+import { HEIGHT, useGetOrgUnitsListColumns } from '../config';
 
 type Props = {
     params: RegistryParams;

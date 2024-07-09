@@ -13,18 +13,18 @@ import React, {
     useCallback,
     useState,
 } from 'react';
-import { baseUrls } from '../../constants/urls';
-import { MESSAGES } from './messages';
+import { baseUrls } from '../../../constants/urls';
+import { MESSAGES } from '../messages';
 
 import { OrgUnitChildrenMap } from './OrgUnitChildrenMap';
 
-import { OrgUnit } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
-import { OrgunitTypes } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgunitTypes';
+import { OrgUnit } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
+import { OrgunitTypes } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgunitTypes';
 import {
     OrgUnitListChildren,
     OrgUnitListTab,
     RegistryParams,
-} from '../../types';
+} from '../../../types';
 import { OrgUnitChildrenList } from './OrgUnitChildrenList';
 
 type Props = {

@@ -8,13 +8,13 @@ import {
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
 
 import moment from 'moment';
-import { MESSAGES } from '../messages';
+import { MESSAGES } from '../../messages';
 
-import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-import { Instance } from '../../../../../../../hat/assets/js/apps/Iaso/domains/instances/types/instance';
-import { OrgUnit } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
-import { baseUrls } from '../../../constants/urls';
-import { RegistryParams } from '../../../types';
+import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
+import { Instance } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/instances/types/instance';
+import { OrgUnit } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
+import { baseUrls } from '../../../../constants/urls';
+import { RegistryParams } from '../../../../types';
 
 type Props = {
     orgUnit?: OrgUnit;

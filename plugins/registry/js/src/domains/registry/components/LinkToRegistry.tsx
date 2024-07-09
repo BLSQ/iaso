@@ -1,12 +1,12 @@
 import { makeRedirectionUrl } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
-import { LinkTo } from '../../../../../../hat/assets/js/apps/Iaso/components/nav/LinkTo';
+import { LinkTo } from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/LinkTo';
 import {
     OrgUnit,
     ShortOrgUnit,
-} from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
-import { baseUrls } from '../../constants/urls';
-import { MESSAGES } from './messages';
+} from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
+import { baseUrls } from '../../../constants/urls';
+import { MESSAGES } from '../messages';
 
 type Props = {
     orgUnit?: OrgUnit | ShortOrgUnit;

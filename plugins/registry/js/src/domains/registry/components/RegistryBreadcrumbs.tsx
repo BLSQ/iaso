@@ -1,7 +1,7 @@
 import { Breadcrumbs, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import React, { FunctionComponent, useMemo } from 'react';
-import { OrgUnit } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
+import { OrgUnit } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
 import { LinkToRegistry } from './LinkToRegistry';
 
 type BreadCrumbsArgs = {

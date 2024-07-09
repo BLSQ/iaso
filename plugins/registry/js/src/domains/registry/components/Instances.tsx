@@ -7,19 +7,19 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
-import { TableWithDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
+import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
+import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 
-import { Form } from '../../../../../../hat/assets/js/apps/Iaso/domains/forms/types/forms';
-import { ColumnSelect } from '../../../../../../hat/assets/js/apps/Iaso/domains/instances/components/ColumnSelect';
-import { OrgunitType } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgunitTypes';
-import { baseUrls } from '../../constants/urls';
-import { useGetForms } from '../../hooks/useGetForms';
-import { defaultSorted, useGetInstances } from '../../hooks/useGetInstances';
-import { useGetOrgUnitType } from '../../hooks/useGetOrgUnitType';
-import { OrgunitTypeRegistry, RegistryParams } from '../../types';
-import { INSTANCE_METAS_FIELDS } from './config';
-import { MESSAGES } from './messages';
+import { Form } from '../../../../../../../hat/assets/js/apps/Iaso/domains/forms/types/forms';
+import { ColumnSelect } from '../../../../../../../hat/assets/js/apps/Iaso/domains/instances/components/ColumnSelect';
+import { OrgunitType } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgunitTypes';
+import { baseUrls } from '../../../constants/urls';
+import { useGetForms } from '../../../hooks/useGetForms';
+import { defaultSorted, useGetInstances } from '../../../hooks/useGetInstances';
+import { useGetOrgUnitType } from '../../../hooks/useGetOrgUnitType';
+import { OrgunitTypeRegistry, RegistryParams } from '../../../types';
+import { INSTANCE_METAS_FIELDS } from '../config';
+import { MESSAGES } from '../messages';
 
 type Props = {
     isLoading: boolean;

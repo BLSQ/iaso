@@ -3,16 +3,16 @@ import { makeStyles } from '@mui/styles';
 import { LoadingSpinner, commonStyles } from 'bluesquare-components';
 import React, { FunctionComponent, useMemo } from 'react';
 
-import InstanceFileContent from '../../../../../../../hat/assets/js/apps/Iaso/domains/instances/components/InstanceFileContent';
+import InstanceFileContent from '../../../../../../../../hat/assets/js/apps/Iaso/domains/instances/components/InstanceFileContent';
 
 import {
     useGetInstance,
     useGetOrgUnitInstances,
-} from '../../../hooks/useGetInstances';
+} from '../../../../hooks/useGetInstances';
 
-import { OrgUnit } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
-import { RegistryParams } from '../../../types';
-import { HEIGHT } from '../config';
+import { OrgUnit } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
+import { RegistryParams } from '../../../../types';
+import { HEIGHT } from '../../config';
 import { EmptyInstances } from './EmptyInstances';
 import { InstanceTitle } from './InstanceTitle';
 import { OrgUnitTitle } from './OrgUnitTitle';

@@ -18,31 +18,31 @@ import React, {
     useState,
 } from 'react';
 import { MapContainer, ScaleControl } from 'react-leaflet';
-import { CustomTileLayer } from '../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomTileLayer';
-import { CustomZoomControl } from '../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomZoomControl';
-import { Tile } from '../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/TilesSwitchControl';
-import TILES from '../../../../../../hat/assets/js/apps/Iaso/constants/mapTiles';
-import { OrgUnit } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
-import { OrgunitTypes } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgunitTypes';
-import { useObjectState } from '../../../../../../hat/assets/js/apps/Iaso/hooks/useObjectState';
+import { CustomTileLayer } from '../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomTileLayer';
+import { CustomZoomControl } from '../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomZoomControl';
+import { Tile } from '../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/TilesSwitchControl';
+import TILES from '../../../../../../../hat/assets/js/apps/Iaso/constants/mapTiles';
+import { OrgUnit } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
+import { OrgunitTypes } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgunitTypes';
+import { useObjectState } from '../../../../../../../hat/assets/js/apps/Iaso/hooks/useObjectState';
 import {
     getOrgUnitBounds,
     getOrgUnitsBounds,
     mergeBounds,
-} from '../../../../../../hat/assets/js/apps/Iaso/utils/map/mapUtils';
-import { baseUrls } from '../../constants/urls';
-import { RegistryParams } from '../../types';
-import { HEIGHT } from './config';
+} from '../../../../../../../hat/assets/js/apps/Iaso/utils/map/mapUtils';
+import { baseUrls } from '../../../constants/urls';
+import { RegistryParams } from '../../../types';
+import { HEIGHT } from '../config';
 
 /* STILL USING REGISTRY COMPONENTS */
 /* eslint-disable sort-imports */
-import { MapLegend } from '../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/map/MapLegend';
-import { MapSettings } from '../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/map/MapSettings';
-import { MapToggleFullscreen } from '../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/map/MapToggleFullscreen';
-import { OrgUnitChildrenLocations } from '../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/map/OrgUnitChildrenLocations';
-import { OrgUnitChildrenShapes } from '../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/map/OrgUnitChildrenShapes';
-import { OrgUnitLocation } from '../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/map/OrgUnitLocation';
-import { useGetLegendOptions } from '../../../../../../hat/assets/js/apps/Iaso/domains/registry/hooks/useGetLegendOptions';
+import { MapLegend } from '../../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/map/MapLegend';
+import { MapSettings } from '../../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/map/MapSettings';
+import { MapToggleFullscreen } from '../../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/map/MapToggleFullscreen';
+import { OrgUnitChildrenLocations } from '../../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/map/OrgUnitChildrenLocations';
+import { OrgUnitChildrenShapes } from '../../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/map/OrgUnitChildrenShapes';
+import { OrgUnitLocation } from '../../../../../../../hat/assets/js/apps/Iaso/domains/registry/components/map/OrgUnitLocation';
+import { useGetLegendOptions } from '../../../../../../../hat/assets/js/apps/Iaso/domains/registry/hooks/useGetLegendOptions';
 /* eslint-enable sort-imports */
 /* STILL USING REGISTRY COMPONENTS */
 

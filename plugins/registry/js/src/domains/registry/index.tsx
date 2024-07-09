@@ -24,11 +24,11 @@ import {
     useGetOrgUnitsMapChildren,
 } from '../../hooks/useGetOrgUnit';
 import { OrgunitTypeRegistry, RegistryParams } from '../../types';
-import { Instances } from './Instances';
-import { OrgUnitPaper } from './OrgUnitPaper';
-import { RegistryBreadcrumbs } from './RegistryBreadcrumbs';
+import { Instances } from './components/Instances';
+import { OrgUnitPaper } from './components/OrgUnitPaper';
+import { RegistryBreadcrumbs } from './components/RegistryBreadcrumbs';
+import { SelectedOrgUnit } from './components/selectedOrgUnit';
 import { MESSAGES } from './messages';
-import { SelectedOrgUnit } from './selectedOrgUnit';
 
 /* STILL USING REGISTRY COMPONENTS */
 /* eslint-disable sort-imports */

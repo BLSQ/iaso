@@ -4,8 +4,8 @@ import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
 
-import { HEIGHT } from '../config';
-import { MESSAGES } from '../messages';
+import { HEIGHT } from '../../config';
+import { MESSAGES } from '../../messages';
 
 const useStyles = makeStyles(() => ({
     emptyPaper: {

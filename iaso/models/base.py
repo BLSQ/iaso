@@ -908,8 +908,8 @@ class Instance(models.Model):
     REFERENCE_FLAG_CODE = "flag"
     REFERENCE_UNFLAG_CODE = "unflag"
 
-    # Previously created_at and update_at where filled by the mobile, now they
-    # have been replaced by `source_created_at`` and `update_created_at``.
+    # Previously created_at and update_at were filled by the mobile, now they
+    # have been replaced by `source_created_at` and `update_created_at`.
     # Columns `created_at` and `update_at` are set by Django per usual.
     created_at = models.DateTimeField(auto_now_add=True, editable=False)
     source_created_at = models.DateTimeField(null=True, blank=True, help_text="Creation time on the device")

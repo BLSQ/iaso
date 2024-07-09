@@ -82,6 +82,13 @@ jobs:
         run: |
           npm ci
 
+      - name: Print environment variables
+        run: |
+          echo "AWS_STORAGE_BUCKET_NAME: $AWS_STORAGE_BUCKET_NAME"
+          echo "USE_S3: $USE_S3"
+        env:
+          AWS_STORAGE_BUCKET_NAME: ${{ secrets.AWS_STORAGE_BUCKET_NAME }}
+          USE_S3: ${{ secrets.USE_S3 }}
       - name: npm build
         run: |
           rm -f hat/assets/webpack/*

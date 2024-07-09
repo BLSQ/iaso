@@ -17,6 +17,7 @@ import { primaryColor, secondaryColor, styles } from './styles';
 
 export const Home = () => {
     const { formatMessage } = useSafeIntl();
+    const staticUrl = window.STATIC_URL ?? '/static/';
     useEffect(() => {
         const link = document.createElement('link');
         link.href =
@@ -42,7 +43,10 @@ export const Home = () => {
                         <Grid item xs={12} sm={4}>
                             <Box sx={styles.logoContainer}>
                                 <Box sx={styles.logo}>
-                                    <img src={logo} alt="logo" />
+                                    <img
+                                        src={`${staticUrl}${logo}`}
+                                        alt="logo"
+                                    />
                                 </Box>
                                 <span>{formatMessage(MESSAGES.logoText)}</span>
                             </Box>
@@ -131,7 +135,7 @@ export const Home = () => {
                                 >
                                     <Box sx={styles.footerBoxImage}>
                                         <img
-                                            src={enabelLogo}
+                                            src={`${staticUrl}${enabelLogo}`}
                                             alt="logo-enabel"
                                         />
                                     </Box>
@@ -142,7 +146,10 @@ export const Home = () => {
                                     rel="noopener noreferrer"
                                 >
                                     <Box sx={styles.footerBoxImage}>
-                                        <img src={blsqLogo} alt="logo-blsq" />
+                                        <img
+                                            src={`${staticUrl}${blsqLogo}`}
+                                            alt="logo-blsq"
+                                        />
                                     </Box>
                                 </a>
                             </Box>
@@ -159,7 +166,7 @@ export const Home = () => {
                                 >
                                     <Box sx={styles.footerBoxImage}>
                                         <img
-                                            src={datavizLogo}
+                                            src={`${staticUrl}${datavizLogo}`}
                                             alt="logo-dataviz"
                                         />
                                     </Box>
@@ -170,7 +177,10 @@ export const Home = () => {
                                     href="https://dhis2.org/"
                                 >
                                     <Box sx={styles.footerBoxImage}>
-                                        <img src={dhis2Logo} alt="logo-dhis2" />
+                                        <img
+                                            src={`${staticUrl}${dhis2Logo}`}
+                                            alt="logo-dhis2"
+                                        />
                                     </Box>
                                 </a>
                             </Box>

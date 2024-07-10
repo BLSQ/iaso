@@ -30,7 +30,11 @@ class ChronogramViewSet(viewsets.ModelViewSet):
     http_method_names = ["get", "options", "head", "post", "trace"]
     pagination_class = ChronogramPagination
     permission_classes = [HasChronogramPermission]
-    serializer_class = ChronogramSerializer
+
+    def get_serializer_class(self):
+        if self.action in ["create"]:
+            return ChronogramCreateSerializer
+        return ChronogramSerializer
 
     def get_queryset(self) -> QuerySet:
         user = self.request.user
@@ -47,7 +51,7 @@ class ChronogramViewSet(viewsets.ModelViewSet):
         """
         Create a `Chronogram` and populate it with `ChronogramTemplateTask` objects (if any).
         """
-        serializer = ChronogramCreateSerializer(data=request.data, context={"request": request})
+        serializer = self.get_serializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         serializer.save(created_by=self.request.user)
         headers = self.get_success_headers(serializer.data)

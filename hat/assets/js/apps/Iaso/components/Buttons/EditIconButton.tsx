@@ -26,7 +26,7 @@ export const EditIconButton: FunctionComponent<Props> = ({
         <IconButton
             onClick={onClick}
             icon="edit"
-            overrideIcon={overridedIcon}
+            overrideIcon={overrideIcon}
             tooltipMessage={message ?? MESSAGES.edit}
             disabled={disabled}
         />

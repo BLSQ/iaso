@@ -23,8 +23,8 @@ module.exports = {
     output: {
         path: path.resolve(__dirname, './assets/webpack'),
         filename: '[name]-[chunkhash].js',
-        publicPath: '/',
-        assetModuleFilename: 'images/[name].[hash][ext][query]',
+        publicPath: '',
+        assetModuleFilename: 'assets/[name].[hash][ext][query]',
     },
     devtool: 'source-map',
 

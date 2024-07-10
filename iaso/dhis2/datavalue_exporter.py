@@ -32,7 +32,8 @@ def get_event_date(instance, form_mapping):
     event_date_source = MappingVersion.get_event_date_source(form_mapping)
 
     if event_date_source == MappingVersion.EVENT_DATE_SOURCE_FROM_SUBMISSION_CREATED_AT:
-        return instance.source_created_at.strftime("%Y-%m-%d")
+        created_at = instance.source_created_at if instance.source_created_at else instance.created_at
+        return created_at.strftime("%Y-%m-%d")
     if event_date_source == MappingVersion.EVENT_DATE_SOURCE_FROM_SUBMISSION_PERIOD:
         dhis2_period = Period.from_string(instance.period)
         start = dhis2_period.start_date().strftime("%Y-%m-%d")
@@ -105,9 +106,10 @@ class AggregateHandler(BaseHandler):
         return None
 
     def map_to_values(self, instance, form_mapping, export_status=None, related_data=None):
+        created_at = instance.source_created_at if instance.source_created_at else instance.created_at
         data_set_entry = {
             "dataSet": form_mapping["data_set_id"],
-            "completeDate": instance.source_created_at.strftime("%Y-%m-%d"),
+            "completeDate": created_at.strftime("%Y-%m-%d"),
             "period": instance.period,
             "orgUnit": instance.org_unit.source_ref,
             "dataValues": [],

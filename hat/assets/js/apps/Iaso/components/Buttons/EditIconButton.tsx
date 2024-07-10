@@ -20,7 +20,7 @@ export const EditIconButton: FunctionComponent<Props> = ({
     onClick,
     message,
     disabled = false,
-    overridedIcon,
+    overrideIcon,
 }) => {
     return (
         <IconButton

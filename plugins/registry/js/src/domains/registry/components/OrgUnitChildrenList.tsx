@@ -1,7 +1,7 @@
 import { Box } from '@mui/material';
 import { makeStyles } from '@mui/styles';
-import { Table, useRedirectToReplace } from 'bluesquare-components';
 import React, { Dispatch, FunctionComponent, SetStateAction } from 'react';
+import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 import { OrgUnit } from '../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
 import { baseUrls } from '../../../constants/urls';
 import { OrgUnitListChildren, RegistryParams } from '../../../types';
@@ -55,10 +55,9 @@ export const OrgUnitChildrenList: FunctionComponent<Props> = ({
         setSelectedChildren,
         selectedChildrenId,
     );
-    const redirectToReplace = useRedirectToReplace();
     return (
         <Box className={classes.root}>
-            <Table
+            <TableWithDeepLink
                 marginTop={false}
                 marginBottom={false}
                 data={orgUnitChildren?.orgunits || []}
@@ -69,11 +68,12 @@ export const OrgUnitChildrenList: FunctionComponent<Props> = ({
                 count={orgUnitChildren?.count || 0}
                 baseUrl={baseUrls.registry}
                 params={params}
-                extraProps={{ loading: isFetchingChildren, selectedChildrenId }}
-                elevation={0}
-                onTableParamsChange={p => {
-                    redirectToReplace(baseUrls.registry, p);
+                extraProps={{
+                    loading: isFetchingChildren,
+                    selectedChildrenId,
+                    params,
                 }}
+                elevation={0}
             />
         </Box>
     );

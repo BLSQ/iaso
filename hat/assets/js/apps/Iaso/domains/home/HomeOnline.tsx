@@ -5,7 +5,7 @@ import React, { FunctionComponent, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { CurrentUserInfos } from '../../components/nav/CurrentUser';
 import { LogoutButton } from '../../components/nav/LogoutButton';
-import { useStaticUrl } from '../../hooks/useStaticUrl';
+import { STATIC_URL } from '../../constants/urls';
 import iasoBg from '../../images/iaso-bg.jpg';
 import { useCurrentUser } from '../../utils/usersUtils';
 import { LogoSvg } from '../app/components/LogoSvg';
@@ -106,11 +106,10 @@ export const HomeOnline: FunctionComponent = () => {
     const { toggleSidebar } = useSidebar();
     const homeButtons = useHomeButtons();
     const currentUser = useCurrentUser();
-    const bgStaticUrl = useStaticUrl();
     return (
         <Box
             className={classes.root}
-            sx={{ backgroundImage: `url("${bgStaticUrl}${iasoBg}")` }}
+            sx={{ backgroundImage: `url("${STATIC_URL}${iasoBg}")` }}
         >
             <Grid className={classes.topMenu} container spacing={2}>
                 <Grid container item xs={6} justifyContent="flex-start">

@@ -546,19 +546,19 @@ class InstancesViewSet(viewsets.ViewSet):
         )
 
     QUERY = """
-    select DATE_TRUNC('month', iaso_instance.source_created_at) as month,
+    select DATE_TRUNC('month', COALESCE(iaso_instance.source_created_at, iaso_instance.created_at)) as month,
            (select name from iaso_form where id = iaso_instance.form_id) as form_name,
            iaso_instance.form_id,
            count(*)                        as value
     from iaso_instance
     left join iaso_form on (iaso_form.id = iaso_instance.form_id)
-    where iaso_instance.source_created_at > '2019-01-01'
+    where COALESCE(iaso_instance.source_created_at, iaso_instance.created_at) > '2019-01-01'
       and project_id = ANY (%s)
       and iaso_instance.form_id is not null
       and iaso_instance.deleted =  false
       and iaso_form.deleted_at is null
-    group by DATE_TRUNC('month', iaso_instance.source_created_at), iaso_instance.form_id
-    order by DATE_TRUNC('month', iaso_instance.source_created_at)"""
+    group by DATE_TRUNC('month', COALESCE(iaso_instance.source_created_at, iaso_instance.created_at)), iaso_instance.form_id
+    order by DATE_TRUNC('month', COALESCE(iaso_instance.source_created_at, iaso_instance.created_at))"""
 
     @action(detail=False)
     def stats(self, request):
@@ -586,15 +586,15 @@ class InstancesViewSet(viewsets.ViewSet):
         projects = request.user.iaso_profile.account.project_set.all()
         projects_ids = list(projects.values_list("id", flat=True))
         QUERY = """
-        select DATE_TRUNC('day', iaso_instance.source_created_at) as period,
+        select DATE_TRUNC('day', COALESCE(iaso_instance.source_created_at, iaso_instance.created_at)) as period,
         count(*)                        as value
         from iaso_instance
         left join iaso_form on (iaso_form.id = iaso_instance.form_id)
-        where iaso_instance.source_created_at > now() - interval '2700 days'
+        where COALESCE(iaso_instance.source_created_at, iaso_instance.created_at) > now() - interval '2700 days'
         and project_id = ANY (%s)
         and iaso_instance.deleted = false
         and iaso_form.deleted_at is null
-        group by DATE_TRUNC('day', iaso_instance.source_created_at)
+        group by DATE_TRUNC('day', COALESCE(iaso_instance.source_created_at, iaso_instance.created_at))
         order by 1"""
         df = pd.read_sql_query(QUERY, connection, params=[projects_ids])
         df["total"] = df["value"].cumsum()
@@ -648,14 +648,14 @@ def import_data(instances, user, app_id):
                 entity.save()
 
         created_at_ts = instance_data.get("created_at", None)
-        instance.source_created_at = (
-            timestamp_to_utc_datetime(int(created_at_ts)) if created_at_ts is not None else None
-        )
+        if created_at_ts:
+            instance.source_created_at = timestamp_to_utc_datetime(int(created_at_ts))
 
         updated_at_ts = instance_data.get("updated_at", None)
-        instance.source_updated_at = (
-            timestamp_to_utc_datetime(int(updated_at_ts)) if updated_at_ts is not None else instance.source_created_at
-        )
+        if updated_at_ts:
+            instance.source_updated_at = timestamp_to_utc_datetime(int(updated_at_ts))
+        else:
+            instance.source_created_at
 
         latitude = instance_data.get("latitude", None)
         longitude = instance_data.get("longitude", None)

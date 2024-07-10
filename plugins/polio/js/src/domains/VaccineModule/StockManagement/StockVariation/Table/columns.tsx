@@ -177,7 +177,7 @@ export const useDestructionTableColumns = (
                             <EditDestruction
                                 id={settings.row.original.id}
                                 destruction={settings.row.original}
-                                iconProps={{ overridedIcon: EditIcon }}
+                                iconProps={{ overrideIcon: EditIcon }}
                                 countryName={countryName}
                                 vaccine={vaccine}
                                 vaccineStockId={

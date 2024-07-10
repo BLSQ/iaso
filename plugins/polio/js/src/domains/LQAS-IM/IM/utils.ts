@@ -8,14 +8,13 @@ import {
     LqasImCampaign,
     LqasImDistrictData,
 } from '../../../constants/types';
+import { HASHED_BACKGROUND, IN_SCOPE } from '../shared/constants';
 import {
-    IM_PASS,
-    IM_FAIL,
-    IM_WARNING,
-    imNfmKeys,
-    IN_SCOPE,
-} from '../shared/constants';
-import { findDataForShape, findScopeIds, makeLegendItem } from '../../../utils';
+    LegendItem,
+    findDataForShape,
+    findScopeIds,
+    makeLegendItem,
+} from '../../../utils';
 import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../../styles/constants';
 import {
     sortGraphKeys,
@@ -27,6 +26,7 @@ import {
 
 import { determineStatusForDistrict as lqasDistrictStatus } from '../LQAS/utils';
 import { LQASIMType } from '../shared/types/types';
+import { IM_ERROR, IM_FAIL, IM_PASS, IM_WARNING, imNfmKeys } from './constants';
 
 export const determineStatusForDistrict = district => {
     if (!district) return null;
@@ -41,7 +41,7 @@ export const getImStatsForRound = (
     imData: Record<string, ConvertedLqasImData>,
     campaign: string | undefined,
     round: number,
-): ('1imOK' | '2imWarning' | '3imFail' | null)[][] => {
+): ('1imOK' | '2imWarning' | '3imFail' | '4imError' | null)[][] => {
     if (!campaign || !imData[campaign]) return [[], [], []];
     const allStatuses = accessArrayRound(imData[campaign], round).map(
         district => {
@@ -51,8 +51,9 @@ export const getImStatsForRound = (
     const passed = allStatuses.filter(status => status === IM_PASS);
     const disqualified = allStatuses.filter(status => status === IM_WARNING);
     const failed = allStatuses.filter(status => status === IM_FAIL);
+    const errored = allStatuses.filter(status => status === IM_ERROR); // Will be fixed when all statuses come from API
 
-    return [passed, failed, disqualified];
+    return [passed, failed, disqualified, errored];
 };
 
 export const makeImMapLegendItems =
@@ -61,29 +62,39 @@ export const makeImMapLegendItems =
         imData: Record<string, ConvertedLqasImData>,
         campaign: string | undefined,
         round: number,
-    ): { label: string; value: string; color: unknown }[] => {
-        const [passed, failed, disqualified] = getImStatsForRound(
+    ): LegendItem[] => {
+        const [passed, failed, disqualified, errored] = getImStatsForRound(
             imData,
             campaign,
             round,
         );
         const passedLegendItem = makeLegendItem({
             color: OK_COLOR,
-            value: passed?.length,
+            value: passed ? `${passed?.length}` : '',
             label: formatMessage(MESSAGES['1imOK']),
         });
         const disqualifiedLegendItem = makeLegendItem({
             color: WARNING_COLOR,
-            value: disqualified?.length,
+            value: disqualified ? `${disqualified?.length}` : '',
             label: formatMessage(MESSAGES['2imWarning']),
         });
         const failedLegendItem = makeLegendItem({
             color: FAIL_COLOR,
-            value: failed?.length,
+            value: failed ? `${failed?.length}` : '',
             label: formatMessage(MESSAGES['3imFail']),
         });
+        const erroredLegendItem = makeLegendItem({
+            background: HASHED_BACKGROUND,
+            value: errored ? `${errored?.length}` : '',
+            label: formatMessage(MESSAGES['4imError']),
+        });
 
-        return [passedLegendItem, disqualifiedLegendItem, failedLegendItem];
+        return [
+            passedLegendItem,
+            disqualifiedLegendItem,
+            failedLegendItem,
+            erroredLegendItem,
+        ];
     };
 
 export const formatImDataForChart = ({ data, campaign, round, regions }) => {

@@ -265,15 +265,15 @@ yup.addMethod(
     yup.string,
     'isAgeTypeSelected',
     function isAgeTypeSelected(formatMessage) {
-        return this.test('isValidAgeMax', '', (value, context) => {
+        return this.test('isAgeTypeSelected', '', (value, context) => {
             const { path, createError, parent } = context;
             const ageMin = parent.age_min;
             const ageMax = parent.age_max;
+            const hasAgeMin = Boolean(ageMin) || ageMin === 0;
             let errorMessage;
-            if (!value && (Boolean(ageMin) || Boolean(ageMax))) {
+            if (!value && (hasAgeMin || Boolean(ageMax))) {
                 errorMessage = formatMessage(MESSAGES.pleaseSelectAgeType);
             }
-
             if (errorMessage) {
                 return createError({
                     path,

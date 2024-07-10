@@ -1,39 +1,20 @@
-import React, {
-    FunctionComponent,
-    useCallback,
-    useMemo,
-    useState,
-} from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 
-import { Paper, Divider, Tab, Tabs } from '@mui/material';
-import { makeStyles } from '@mui/styles';
-
-import {
-    commonStyles,
-    useSafeIntl,
-    useRedirectToReplace,
-} from 'bluesquare-components';
-
+import { Paper, Divider } from '@mui/material';
 import { LqasSummary } from './LqasSummary';
-import { LqasImMapHeader } from '../../shared/LqasImMapHeader';
-import {
-    Campaign,
-    ConvertedLqasImData,
-    Side,
-    Sides,
-} from '../../../../constants/types';
-
+import { LqasImMapHeader } from '../../shared/Map/LqasImMapHeader';
+import { ConvertedLqasImData, Side } from '../../../../constants/types';
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import MESSAGES from '../../../../constants/messages';
-import { computeScopeCounts, determineLqasImDates } from '../../shared/utils';
 import { LIST, LqasIMView, MAP } from '../../shared/constants';
 import { LqasCountryListOverview } from './LqasCountryListOverview';
-import { useGetGeoJson } from '../../../Campaigns/Scope/hooks/useGetGeoJson';
 import { getLqasImMapLayer } from '../../IM/utils';
 import { LqasCountryMap } from './LqasCountryMap';
 import { baseUrls } from '../../../../constants/urls';
+import { LqasImTabs } from '../../shared/Tabs/LqasImTabs';
+import { useLqasImTabState } from '../../shared/Tabs/useLqasImTabState';
+import { useLqasImMapHeaderData } from '../../shared/hooks/useLqasImMapHeaderData';
+import { useMapShapes } from '../../shared/hooks/api/useMapShapes';
 
-const defaultShapes = [];
 type Props = {
     round: number;
     campaign: string;
@@ -47,22 +28,8 @@ type Props = {
     // eslint-disable-next-line no-unused-vars
     onRoundChange: (value: number) => void;
     side: Side;
-    params: any; // TODO add typing
+    params: Record<string, string | undefined>;
 };
-
-const useStyles = makeStyles(theme => ({
-    ...commonStyles(theme),
-    mapContainer: {
-        '& .tile-switch-control': {
-            top: 'auto',
-            bottom: theme.spacing(1),
-            left: theme.spacing(1),
-            right: 'auto',
-        },
-    },
-    // We need to render the map to have bounds. Otherwise the API call for districts will get a 500
-    hidden: { visibility: 'hidden', height: 0 },
-}));
 
 const baseUrl = baseUrls.lqasCountry;
 
@@ -80,20 +47,14 @@ export const LqasOverviewContainer: FunctionComponent<Props> = ({
     side,
     params,
 }) => {
-    const { formatMessage } = useSafeIntl();
-    const classes: Record<string, string> = useStyles();
-    const redirectToReplace = useRedirectToReplace();
-    const campaignObject = campaigns.filter(
-        (c: Record<string, unknown>) => c.obr_name === campaign,
-    )[0] as Campaign;
+    const { tab, handleChangeTab } = useLqasImTabState({
+        baseUrl,
+        params,
+        side,
+    });
     const countryId = parseInt(country, 10);
-    const { data: shapes = defaultShapes, isFetching: isFetchingGeoJson } =
-        useGetGeoJson(countryId, 'DISTRICT');
-
-    const {
-        data: regionShapes = defaultShapes,
-        isFetching: isFetchingRegions,
-    } = useGetGeoJson(countryId, 'REGION');
+    const { shapes, isFetchingGeoJson, regionShapes, isFetchingRegions } =
+        useMapShapes(countryId);
 
     const mainLayer = useMemo(() => {
         return getLqasImMapLayer({
@@ -106,31 +67,13 @@ export const LqasOverviewContainer: FunctionComponent<Props> = ({
         });
     }, [data, campaign, campaigns, round, shapes]);
 
-    const { start: startDate, end: endDate } = determineLqasImDates(
-        campaignObject,
+    const { startDate, endDate, scopeCount } = useLqasImMapHeaderData({
+        campaign,
+        campaigns,
         round,
-        LqasIMView.lqas,
-    );
-    const paramTab = side === Sides.left ? params.leftTab : params.rightTab;
-
-    const [tab, setTab] = useState(paramTab ?? MAP);
-
-    // TABS
-    const handleChangeTab = useCallback(
-        newtab => {
-            const tabKey = side === Sides.left ? 'leftTab' : 'rightTab';
-            setTab(newtab);
-            const newParams = {
-                ...params,
-                [tabKey]: newtab,
-            };
-            redirectToReplace(baseUrl, newParams);
-        },
-        [side, params, redirectToReplace],
-    );
-    // TABS
-
-    const scopeCount = computeScopeCounts(campaignObject, round);
+        type: LqasIMView.lqas,
+        withScopeCount: true,
+    });
     return (
         <Paper elevation={paperElevation}>
             <LqasImMapHeader
@@ -147,26 +90,15 @@ export const LqasOverviewContainer: FunctionComponent<Props> = ({
                 round={round}
                 campaign={campaign}
                 data={data}
-                scopeCount={scopeCount}
+                scopeCount={scopeCount as number}
             />
             <Divider />
-            <Tabs
-                value={tab}
-                classes={{
-                    root: classes.tabs,
-                }}
-                className={classes.marginBottom}
-                indicatorColor="primary"
-                onChange={(event, newtab) => handleChangeTab(newtab)}
-            >
-                <Tab value={MAP} label={formatMessage(MESSAGES.map)} />
-                <Tab value={LIST} label={formatMessage(MESSAGES.list)} />
-            </Tabs>
+            <LqasImTabs tab={tab} handleChangeTab={handleChangeTab} />
             {tab === MAP && (
                 <LqasCountryMap
+                    side={side}
                     round={round}
                     selectedCampaign={campaign}
-                    type={LqasIMView.lqas}
                     countryId={countryId}
                     campaigns={campaigns}
                     data={data}

@@ -37,18 +37,18 @@ type Props = {
     campaigns: any[];
     campaignsFetching: boolean;
     params: Params;
-    imType?: 'imGlobal' | 'imIHH' | 'imOHH';
+    imType?: 'imGlobal' | 'imHH' | 'imOHH';
 };
 
-const getCurrentUrl = (imType?: 'imGlobal' | 'imIHH' | 'imOHH'): string => {
+const getCurrentUrl = (imType?: 'imGlobal' | 'imHH' | 'imOHH'): string => {
     if (imType === 'imGlobal') {
         return baseUrls.imGlobal;
     }
-    if (imType === 'imIHH') {
-        return baseUrls.imIhh;
+    if (imType === 'imHH') {
+        return baseUrls.imHH;
     }
     if (imType === 'imOHH') {
-        return baseUrls.imOhh;
+        return baseUrls.imOHH;
     }
     return baseUrls.lqasCountry;
 };

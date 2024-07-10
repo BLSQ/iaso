@@ -3,8 +3,8 @@ import { makeStyles } from '@mui/styles';
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import MESSAGES from '../../../constants/messages';
-import { OK_COLOR, FAIL_COLOR } from '../../../styles/constants';
+import MESSAGES from '../../../../constants/messages';
+import { OK_COLOR, FAIL_COLOR } from '../../../../styles/constants';
 import { LqasImRefDate } from './LqasImMapHeader';
 
 type Props = {

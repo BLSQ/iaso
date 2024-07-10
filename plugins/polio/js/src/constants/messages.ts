@@ -878,6 +878,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.imFail',
         defaultMessage: '<90%',
     },
+    '4imError': {
+        id: 'iaso.polio.label.invalidData',
+        defaultMessage: 'Invalid data',
+    },
     imResults: {
         id: 'iaso.polio.label.imResults',
         defaultMessage: 'IM Results',

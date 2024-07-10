@@ -1,19 +1,20 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
+import { makeImMapLegendItems } from '../utils';
 import MESSAGES from '../../../../constants/messages';
-import { makeLqasMapLegendItems } from '../utils';
+import { IMType } from '../../../../constants/types';
+import { imDistrictColors } from '../constants';
 import { LqasImCountryMap } from '../../shared/Map/LqasImCountryMap';
-import { lqasDistrictColors } from '../constants';
-import { Side } from '../../../../constants/types';
 
 const getMainLayerStyles = shape => {
-    return lqasDistrictColors[shape.status];
+    return imDistrictColors[shape.status];
 };
 
 type Props = {
     round: number;
     campaigns?: any[];
     selectedCampaign?: string;
+    type: IMType;
     countryId?: number;
     data?: any;
     isFetchingGeoJson?: boolean;
@@ -21,49 +22,46 @@ type Props = {
     isFetching?: boolean;
     disclaimerData?: Record<string, unknown> | null | undefined;
     regionShapes: any;
-    isFetchingRegions: boolean;
-    side: Side;
+    isFetchingRegions?: boolean;
 };
 
-export const LqasCountryMap: FunctionComponent<Props> = ({
+export const ImCountryMap: FunctionComponent<Props> = ({
+    type,
     round,
-    side,
     selectedCampaign,
     countryId = undefined,
-    campaigns = [],
+    campaigns,
     data,
     isFetching = false,
     disclaimerData = {},
-    isFetchingGeoJson = false,
     mainLayer,
     regionShapes,
+    isFetchingGeoJson = false,
     isFetchingRegions = false,
 }) => {
     const { formatMessage } = useSafeIntl();
-
     const legendItems = useMemo(() => {
-        return makeLqasMapLegendItems(formatMessage)(
+        return makeImMapLegendItems(formatMessage)(
             data,
             selectedCampaign,
             round,
         );
     }, [data, selectedCampaign, round, formatMessage]);
 
-    const title = formatMessage(MESSAGES.lqasResults);
-
+    const title = formatMessage(MESSAGES.imResults);
     return (
         <LqasImCountryMap
-            key={`${countryId}-${side}`}
-            name={`LQASIMMap${round}-LQAS-${countryId}-${side}`}
+            key={countryId}
+            name={`IMMap${round}-${type}-${countryId}`}
             regionShapes={regionShapes}
             mainLayer={mainLayer}
             round={round}
+            data={data}
+            selectedCampaign={selectedCampaign}
             isFetchingRegions={isFetchingRegions}
             title={title}
-            selectedCampaign={selectedCampaign}
             legendItems={legendItems}
             campaigns={campaigns}
-            data={data}
             isFetching={isFetching}
             isFetchingGeoJson={isFetchingGeoJson}
             disclaimerData={disclaimerData}

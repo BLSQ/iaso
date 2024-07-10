@@ -265,7 +265,7 @@ export const useIncidentTableColumns = (
                             <EditIncident
                                 id={settings.row.original.id}
                                 incident={settings.row.original}
-                                iconProps={{ overridedIcon: EditIcon }}
+                                iconProps={{ overrideIcon: EditIcon }}
                                 countryName={countryName}
                                 vaccine={vaccine}
                                 vaccineStockId={

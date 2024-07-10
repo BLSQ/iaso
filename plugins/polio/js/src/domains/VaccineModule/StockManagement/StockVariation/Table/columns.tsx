@@ -99,7 +99,7 @@ export const useFormATableColumns = (
                             <EditFormA
                                 id={settings.row.original.id}
                                 formA={settings.row.original}
-                                iconProps={{ overridedIcon: EditIcon }}
+                                iconProps={{ overrideIcon: EditIcon }}
                                 countryName={countryName}
                                 vaccine={vaccine}
                                 vaccineStockId={

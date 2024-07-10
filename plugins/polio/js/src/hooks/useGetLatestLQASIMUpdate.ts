@@ -3,11 +3,13 @@ import { useSnackQuery } from '../../../../../hat/assets/js/apps/Iaso/libs/apiHo
 import { getRequest } from '../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { Optional } from '../../../../../hat/assets/js/apps/Iaso/types/utils';
 
-const endpoint = '/api/polio/tasks/refreshlqas/last_run_for_country/';
+const lqasEndpoint = '/api/polio/tasks/refreshlqas/last_run_for_country/';
+const imEndpoint = '/api/polio/tasks/refreshim/last_run_for_country/';
 
 const getLatestRefresh = (isLqas: boolean, countryId: Optional<string>) => {
+    const endpoint = isLqas ? lqasEndpoint : imEndpoint;
     const url = countryId ? `${endpoint}?country_id=${countryId}` : endpoint;
-    if (isLqas && countryId !== undefined) {
+    if (countryId !== undefined) {
         return getRequest(url);
     }
     return null;

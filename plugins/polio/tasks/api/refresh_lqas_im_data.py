@@ -12,7 +12,7 @@ from rest_framework.decorators import action
 LQAS_TASK_NAME = "Refresh LQAS data"
 LQAS_CONFIG_SLUG = "lqas-pipeline-config"
 IM_TASK_NAME = "Refresh IM data"
-IM_CONFIG_SLUG = 'im-pipeline-config'
+IM_CONFIG_SLUG = "im-pipeline-config"
 NO_AUTHORIZED_COUNTRY_ERROR_MESSAGE = "No authorised org unit found for user"
 NO_AUTHORIZED_COUNTRY_ERROR = {"country_id": NO_AUTHORIZED_COUNTRY_ERROR_MESSAGE}
 NO_AUTHORIZED_COUNTRY_ERROR = {"country_id": "No authorised org unit found for user"}

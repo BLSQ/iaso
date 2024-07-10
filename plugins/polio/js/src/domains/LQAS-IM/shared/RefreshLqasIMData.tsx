@@ -21,6 +21,8 @@ type Props = {
 
 const LQAS_TASK_ENDPOINT = '/api/polio/tasks/refreshlqas/';
 const LQAS_CONFIG_SLUG = 'lqas-pipeline-config';
+const IM_TASK_ENDPOINT = '/api/polio/tasks/refreshim/';
+const IM_CONFIG_SLUG = 'im-pipeline-config';
 
 const useLastUpdate = (
     lastUpdate: Task<any>,
@@ -46,11 +48,12 @@ const useLastUpdate = (
     return result;
 };
 
-export const RefreshLqasData: FunctionComponent<Props> = ({
+export const RefreshLqasIMData: FunctionComponent<Props> = ({
     countryId,
     isLqas,
 }) => {
-    const taskUrl = isLqas ? LQAS_TASK_ENDPOINT : undefined;
+    const taskUrl = isLqas ? LQAS_TASK_ENDPOINT : IM_TASK_ENDPOINT;
+    const slug = isLqas ? LQAS_CONFIG_SLUG : IM_CONFIG_SLUG;
     const { formatMessage } = useSafeIntl();
     const [lastTaskStatus, setlastTaskStatus] = useState<string | undefined>();
     const queryClient = useQueryClient();
@@ -68,11 +71,11 @@ export const RefreshLqasData: FunctionComponent<Props> = ({
         if (countryId) {
             createRefreshTask({
                 config: { country_id: parseInt(countryId, 10) },
-                slug: LQAS_CONFIG_SLUG,
+                slug,
                 id_field: { country_id: parseInt(countryId, 10) },
             });
         }
-    }, [countryId, createRefreshTask]);
+    }, [countryId, createRefreshTask, slug]);
 
     useEffect(() => {
         if (lastTaskStatus !== latestManualRefresh?.status) {

@@ -17,7 +17,7 @@ import { DisplayIfUserHasPerm } from '../../../../../../../hat/assets/js/apps/Ia
 import MESSAGES from '../../../constants/messages';
 import { makeCampaignsDropDown } from '../../../utils/index';
 import { useGetLqasImCountriesOptions } from './hooks/api/useGetLqasImCountriesOptions';
-import { RefreshLqasData } from './RefreshLqasData';
+import { RefreshLqasIMData } from './RefreshLqasIMData';
 import { baseUrls } from '../../../constants/urls';
 import { POLIO_ADMIN } from '../../../constants/permissions';
 
@@ -142,17 +142,15 @@ export const Filters: FunctionComponent<Props> = ({
                         />
                     </Grid>
                 )}
-                {/* remove condition when IM pipeline is ready */}
-                {!imType && (
-                    <DisplayIfUserHasPerm permissions={[POLIO_ADMIN]}>
-                        <Grid item md={campaignLink ? 3 : 4}>
-                            <RefreshLqasData
-                                isLqas={isLqas}
-                                countryId={country}
-                            />
-                        </Grid>
-                    </DisplayIfUserHasPerm>
-                )}
+
+                <DisplayIfUserHasPerm permissions={[POLIO_ADMIN]}>
+                    <Grid item md={campaignLink ? 3 : 4}>
+                        <RefreshLqasIMData
+                            isLqas={isLqas}
+                            countryId={country}
+                        />
+                    </Grid>
+                </DisplayIfUserHasPerm>
             </Grid>
         </Box>
     );

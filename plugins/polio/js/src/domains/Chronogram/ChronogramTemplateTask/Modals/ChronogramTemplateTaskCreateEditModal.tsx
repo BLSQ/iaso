@@ -11,6 +11,7 @@ import { isEqual } from 'lodash';
 
 import TextInput from '../../../../../../../../hat/assets/js/apps/Iaso/domains/pages/components/TextInput';
 import { EditIconButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
+import { NumberInput } from '../../../../components/Inputs/NumberInput';
 import { SingleSelect } from '../../../../components/Inputs/SingleSelect';
 
 import MESSAGES from '../messages';
@@ -97,7 +98,7 @@ const CreateEditChronogramTemplateTaskModal: FunctionComponent<Props> = ({
                     <Field
                         label={formatMessage(MESSAGES.labelStartOffsetInDays)}
                         name="start_offset_in_days"
-                        component={TextInput}
+                        component={NumberInput}
                         required
                     />
                 </Box>

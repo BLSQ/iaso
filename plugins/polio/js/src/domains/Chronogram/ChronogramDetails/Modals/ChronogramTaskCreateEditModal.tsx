@@ -16,6 +16,7 @@ import { useGetProfilesDropdown } from '../../../../../../../../hat/assets/js/ap
 
 import MESSAGES from '../messages';
 import { ChronogramTask } from '../../Chronogram/types';
+import { NumberInput } from '../../../../components/Inputs/NumberInput';
 import { SingleSelect } from '../../../../components/Inputs/SingleSelect';
 
 import { Chronogram } from '../../Chronogram/types';
@@ -110,7 +111,7 @@ const CreateEditChronogramTaskModal: FunctionComponent<Props> = ({
                     <Field
                         label={formatMessage(MESSAGES.labelStartOffsetInDays)}
                         name="start_offset_in_days"
-                        component={TextInput}
+                        component={NumberInput}
                         required
                     />
                 </Box>

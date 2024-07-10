@@ -13,7 +13,7 @@ type Props = {
     onClick: () => void;
     message?: IntlMessage;
     disabled?: boolean;
-    overridedIcon?: any;
+    overrideIcon?: any;
 };
 
 export const EditIconButton: FunctionComponent<Props> = ({

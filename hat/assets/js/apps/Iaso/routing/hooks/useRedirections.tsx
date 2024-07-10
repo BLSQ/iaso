@@ -138,6 +138,7 @@ type UseRedirectionsArgs = {
     homeUrl?: string;
     pluginRedirections: any[];
     userHomePage?: string;
+    allowAnonymous: boolean;
 };
 // eslint-disable-next-line no-unused-vars
 type RedirectionsMethod = (args: UseRedirectionsArgs) => ReactElement[];
@@ -155,6 +156,7 @@ export const useRedirections: RedirectionsMethod = ({
     isFetchingCurrentUser,
     pluginRedirections,
     userHomePage,
+    allowAnonymous,
 }) => {
     let redirections: Redirection[] = [];
     const currentUser = useCurrentUser();
@@ -165,7 +167,7 @@ export const useRedirections: RedirectionsMethod = ({
     if (!isFetchingCurrentUser) {
         if (hasNoAccount) {
             redirections = setupRedirections;
-        } else if (!homeOfflineComponent && !currentUser) {
+        } else if (!homeOfflineComponent && !currentUser && !allowAnonymous) {
             redirections = [
                 {
                     path: '/home',

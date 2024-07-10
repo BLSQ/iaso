@@ -1,3 +1,4 @@
+import { Box } from '@mui/material';
 import { red } from '@mui/material/colors';
 import { useTheme } from '@mui/styles';
 import L from 'leaflet';
@@ -44,7 +45,7 @@ export const OrgUnitLocation: FunctionComponent<Props> = ({
         ? theme.palette.primary.main
         : selectedOrgUnitColor;
     return (
-        <>
+        <Box>
             {isOrgUnitActive && (
                 <>
                     {orgUnit.geo_json && (
@@ -89,6 +90,6 @@ export const OrgUnitLocation: FunctionComponent<Props> = ({
                     )}
                 </>
             )}
-        </>
+        </Box>
     );
 };

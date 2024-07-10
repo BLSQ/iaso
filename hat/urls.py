@@ -1,4 +1,5 @@
 import importlib
+from importlib import import_module
 
 import django_sql_dashboard  # type: ignore
 from django.apps import apps
@@ -10,8 +11,8 @@ from django.views.generic import RedirectView, TemplateView
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
-from importlib import import_module
 
+from hat.dashboard import views
 from iaso.views import health, page
 
 admin.site.site_header = "Administration de Iaso"
@@ -97,10 +98,13 @@ urlpatterns += [
 for plugin_name in settings.PLUGINS:
     urls_module_name = "plugins." + plugin_name + ".urls"
     urls_module = importlib.util.find_spec(urls_module_name)  # checking if the urls module exists for this plugin
+
     if urls_module:
         urlpatterns = urlpatterns + [
             path(plugin_name + "/", include(urls_module_name)),
         ]
+    else:
+        print(f"URL module not found for plugin: {plugin_name}")
 
 
 # Swagger config

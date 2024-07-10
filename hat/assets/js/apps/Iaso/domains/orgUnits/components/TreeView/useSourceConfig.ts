@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { User, useCurrentUser } from '../../../../utils/usersUtils';
+import { useGetDataSource } from '../../../dataSources/hooks/useGetDataSource';
 import { useGetDataSourceVersion } from '../../../dataSources/hooks/useGetDataSourceVersion';
 import { OrgUnitStatus } from '../../types/orgUnit';
-import { useGetDataSource } from '../../../dataSources/hooks/useGetDataSource';
 
 export type SourceInfos = {
     sourceName?: string;
@@ -31,7 +31,7 @@ export const useSourceConfig = (
         useGetDataSourceVersion(versionId ? `${versionId}` : undefined);
     return useMemo(() => {
         const defaultUserConfig =
-            currentUser.account.default_version?.data_source
+            currentUser?.account?.default_version?.data_source
                 ?.tree_config_status_fields;
 
         let sourceSettings = DEFAULT_CONFIG;
@@ -78,7 +78,7 @@ export const useSourceConfig = (
             sourceInfos,
         };
     }, [
-        currentUser.account.default_version,
+        currentUser?.account.default_version,
         sourceId,
         source,
         isFetchingSource,

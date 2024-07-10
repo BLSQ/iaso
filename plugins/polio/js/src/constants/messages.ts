@@ -2210,6 +2210,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.refreshLqasData',
         defaultMessage: 'Refresh LQAS data',
     },
+    refreshIMData: {
+        id: 'iaso.polio.label.refreshIMData',
+        defaultMessage: 'Refresh IM data',
+    },
     districtsInScope: {
         id: 'iaso.polio.label.districtsInScope',
         defaultMessage: 'Districts in scope',

@@ -87,6 +87,9 @@ export const RefreshLqasIMData: FunctionComponent<Props> = ({
     }, [lastTaskStatus, latestManualRefresh?.status, queryClient]);
 
     const disableButton = Boolean(latestManualRefresh?.status === 'RUNNING'); // TODO make enum with statuses
+    const buttonText = isLqas
+        ? formatMessage(MESSAGES.refreshLqasData)
+        : formatMessage(MESSAGES.refreshIMData);
     if (!countryId) return null;
     return (
         <>
@@ -101,7 +104,7 @@ export const RefreshLqasIMData: FunctionComponent<Props> = ({
                     <Box mr={1} pt={1}>
                         <RefreshIcon fontSize="small" />
                     </Box>
-                    {formatMessage(MESSAGES.refreshLqasData)}
+                    {buttonText}
                     {disableButton && (
                         <LoadingSpinner
                             size={16}

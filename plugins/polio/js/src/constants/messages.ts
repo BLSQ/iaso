@@ -818,6 +818,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.verypoor',
         defaultMessage: 'Very poor',
     },
+    '3lqasverypoor': {
+        id: 'iaso.polio.label.verypoor',
+        defaultMessage: 'Very poor',
+    },
     '3lqasmoderate': {
         id: 'iaso.polio.label.moderate',
         defaultMessage: 'Moderate',

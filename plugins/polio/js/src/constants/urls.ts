@@ -24,7 +24,7 @@ export const LQAS_BASE_URL = 'polio/lqas/lqas';
 export const LQAS_AFRO_MAP_URL = 'polio/lqas/lqas-map';
 export const IM_GLOBAL = 'polio/im/global';
 export const IM_OHH = 'polio/im/ohh';
-export const IM_IHH = 'polio/im/ihh';
+export const IM_HH = 'polio/im/hh';
 export const GROUPED_CAMPAIGNS = 'polio/groupedcampaigns';
 export const BUDGET = 'polio/budget';
 export const BUDGET_DETAILS = 'polio/budget/details';
@@ -116,7 +116,7 @@ export const polioRouteConfigs: Record<string, RouteConfig> = {
         params: ['campaign', 'country', 'rounds', 'leftTab', 'rightTab'],
     },
     imHH: {
-        url: IM_IHH,
+        url: IM_HH,
         params: ['campaign', 'country', 'rounds', 'leftTab', 'rightTab'],
     },
     imOHH: {
